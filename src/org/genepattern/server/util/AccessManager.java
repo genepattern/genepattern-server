@@ -41,7 +41,6 @@ public class AccessManager {
 	protected static Vector getAllowedClients(){
 		if (allowedClients == null){
 			String clientList = System.getProperty("gp.allowed.clients");
-			System.out.println("ClientsList=" + clientList);
 			if (clientList != null){
 				allowedClients = new Vector();				
 				StringTokenizer strtok = new StringTokenizer(clientList, ",");
