@@ -76,9 +76,9 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator {
 	public String emitProlog() throws GenePatternException {
 		StringBuffer prolog = new StringBuffer();
 		Vector vProblems = new Vector();
-		prolog.append("import edu.mit.broad.gp.ws.GPServer;\n");
-		prolog.append("import edu.mit.broad.gp.ws.JobResult;\n");
-		prolog.append("import edu.mit.broad.gp.ws.Parameter;\n");
+		prolog.append("import org.genepattern.client.GPServer;\n");
+		prolog.append("import org.genepattern.webservice.JobResult;\n");
+		prolog.append("import org.genepattern.webservice.Parameter;\n");
 		prolog.append("/**\n");
 		prolog.append(" * " + model.getName() + ".pipeline");
 		if(model.getDescription().length() > 0) {
