@@ -42,7 +42,7 @@ public class LocalTaskExecutor extends TaskExecutor {
 	File libdir = null;
 
 	/**  LSID or task name if connecting to an old server */
-	String taskId = null;
+	protected String taskId = null;
 	/** name of file in libdir that stores task id */
 	static final String ID_FILE_NAME = ".id";
 
