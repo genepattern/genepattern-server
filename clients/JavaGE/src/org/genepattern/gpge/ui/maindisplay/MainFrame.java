@@ -127,6 +127,7 @@ public class MainFrame extends JFrame {
 					.equals(
 							javax.swing.UIManager.getLookAndFeel().getClass()
 									.getName());
+   public static boolean RUNNING_ON_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("windows");
    
    private static short WINDOW_STYLE_ONE_FRAME = 0;
    public static short WINDOW_STYLE_FRAMES = 1;
@@ -654,7 +655,34 @@ public class MainFrame extends JFrame {
 
 		projectDirModel = ProjectDirModel.getInstance();
 		jobResultsTree = new SortableTreeTable(jobModel);
-
+      jobResultsTree.setFocusable(true);
+      jobResultsTree.addKeyListener(new java.awt.event.KeyAdapter() {
+         public void keyPressed(java.awt.event.KeyEvent e) {
+            if(e.getKeyCode()==java.awt.event.KeyEvent.VK_BACK_SPACE) {
+               if(selectedJobNode instanceof JobModel.JobNode) {
+                  JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
+                  try {
+                     jobModel.delete(jobNode);
+                  } catch(WebServiceException wse) {
+                     wse.printStackTrace();
+                     if(!disconnectedFromServer(wse)) {
+                        GenePattern.showErrorDialog("An error occurred deleting job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
+                     }   
+                  }
+               } else if(selectedJobNode instanceof JobModel.ServerFileNode) {
+                  JobModel.ServerFileNode serverFileNode = (JobModel.ServerFileNode) selectedJobNode;
+                  try {
+                     jobModel.delete(serverFileNode);
+                  } catch(WebServiceException wse) {
+                     wse.printStackTrace();
+                     if(!disconnectedFromServer(wse)) {
+                        GenePattern.showErrorDialog("An error occurred while deleting the file " + JobModel.getJobResultFileName(serverFileNode) + ". Please try again.");
+                     }  
+                  }
+               }
+            }
+         }
+      });
       
       JMenuItem reloadMenuItem = new JMenuItem("Reload");
 		jobPopupMenu.add(reloadMenuItem);
@@ -764,7 +792,7 @@ public class MainFrame extends JFrame {
 		serverFilePopupMenu.add(deleteFileMenuItem);
       deleteFileMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-               JobModel.ServerFileNode serverFileNode = (JobModel.ServerFileNode) selectedJobNode;
+            JobModel.ServerFileNode serverFileNode = (JobModel.ServerFileNode) selectedJobNode;
             try {
                jobModel.delete(serverFileNode);
             } catch(WebServiceException wse) {
@@ -1108,14 +1136,16 @@ public class MainFrame extends JFrame {
          JPanel temp = new JPanel(new BorderLayout());
          temp.setBackground(new Color(24,48,115));
          temp.add(projectSP, BorderLayout.CENTER);
-         
+         if(RUNNING_ON_WINDOWS) {
+            projectSP.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
+            jobSP.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
+         }
          
          JLabel l = new JLabel("Projects", JLabel.CENTER);
          l.setForeground(Color.white);
          l.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 14));
          temp.add(l, BorderLayout.NORTH);
          
-         //jobSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(0,0,0,0), "Job Results", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
          JPanel temp2 = new JPanel(new BorderLayout());
          temp2.setBackground(new Color(24,48,115));
          temp2.add(jobSP, BorderLayout.CENTER);
@@ -1126,6 +1156,9 @@ public class MainFrame extends JFrame {
          
          JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 				temp, temp2);
+         if(RUNNING_ON_MAC) {
+            leftPane.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
+         }
         
          JPanel leftPanel = new JPanel(new BorderLayout());
          leftPanel.add(leftPane, BorderLayout.CENTER);
