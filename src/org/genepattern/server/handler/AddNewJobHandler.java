@@ -26,6 +26,10 @@ public class AddNewJobHandler extends RequestHandler {
 	private ParameterInfo[] parameterInfoArray = null;
 
 	private String userID;
+   
+   private int parentJobID;
+   
+   private boolean hasParent = false;
 
 	/** Creates new GetAvailableTasksHandler */
 	public AddNewJobHandler() {
@@ -48,6 +52,26 @@ public class AddNewJobHandler extends RequestHandler {
 		this.userID = userID;
 		this.parameterInfoArray = parameterInfoArray;
 	}
+   
+   /**
+	 * Constructor with taskID, ParameterInfo[], inputFileName, and parentJobID
+	 * 
+	 * @param taskID
+	 *            taskID from <CODE>TaskInfo</CODE>
+	 * @param parameterInfoArray
+	 *            <CODE>ParameterInfo</CODE>
+	 * @param inputFileName
+	 *            String
+    * @param parentJobID the parent job number
+	 */
+	public AddNewJobHandler(int taskID, String userID,
+			ParameterInfo[] parameterInfoArray, int parentJobID) {
+		this.taskID = taskID;
+		this.userID = userID;
+		this.parameterInfoArray = parameterInfoArray;
+      this.parentJobID = parentJobID;
+      hasParent = true;
+	}
 
 	/**
 	 * Creates job. Call this fun. if you need JobInfo object
@@ -67,7 +91,11 @@ public class AddNewJobHandler extends RequestHandler {
 			AnalysisJobDataSource ds = BeanReference
 					.getAnalysisJobDataSourceEJB();
 			//Invoke EJB function
-			ji = ds.addNewJob(taskID, userID, parameter_info);
+         if(hasParent) {
+            ji = ds.addNewJob(taskID, userID, parameter_info, parentJobID);
+         } else {
+            ji = ds.addNewJob(taskID, userID, parameter_info);
+         }
 			//Checking for null
 			if (ji == null)
 				throw new OmnigeneException(
