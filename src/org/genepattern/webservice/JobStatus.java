@@ -3,11 +3,8 @@ package org.genepattern.webservice;
 import java.util.Hashtable;
 
 /**
- * <p>
- * Title: JobStatus.java
- * </p>
- * <p>
- * Description: Gets the parameters about Job status
+ *  
+ * Gets the parameters about Job status
  * </p>
  * 
  * @author Hui Gong

@@ -10,7 +10,7 @@ public interface IGPConstants {
 	/** TaskInfo.description */
 	public static final String DESCRIPTION = "description";
 
-	/** location where scripts, DLLs, etc. are stored */
+	/** Location where scripts, DLLs, etc are stored */
 	public static final String LIBDIR = "libdir";
 
 	/** input filename without directory */

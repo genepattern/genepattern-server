@@ -42,12 +42,7 @@ public interface Annotator extends org.genepattern.data.DataObjector {
 	 */
 	boolean setCapability(Capability cap);
 
-	//    // methods from Object A reminder that these should be overridden
-	// 
-	//    /** gets the hash */
-	//    public int hashCode();
-	//    /** determines if this is equal to another Annotator */
-	//    public boolean equals(Object other);
+	
 
 	// fields
 	/** the NoAnnotations Annotator */
@@ -187,8 +182,10 @@ public interface Annotator extends org.genepattern.data.DataObjector {
 		}
 
 		/**
-		 * this is a reminer that classes that override equals must also create
-		 * a working hash algorithm. for example:
+		 * This is a reminer that classes that override equals must also create
+		 * a working hash algorithm. 
+		 * 
+		 * for example:
 		 * 
 		 * given: boolean b compute (b ? 0 : 1) byte, char, short, or int i
 		 * compute (int)i long l compute (int)(l ^ (l >>> 32)) float f compute

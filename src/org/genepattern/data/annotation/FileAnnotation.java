@@ -150,8 +150,10 @@ public class FileAnnotation implements Annotator {
 	}
 
 	/**
-	 * this is a reminer that classes that override equals must also create a
-	 * working hash algorithm. for example:
+	 * This is a reminer that classes that override equals must also create a
+	 * working hash algorithm. 
+	 * 
+	 * for example:
 	 * 
 	 * given: boolean b compute (b ? 0 : 1) byte, char, short, or int i compute
 	 * (int)i long l compute (int)(l ^ (l >>> 32)) float f compute

@@ -33,7 +33,7 @@ public class TaskInfoAttributes extends HashMap implements Serializable {
 	 * 
 	 * @author Jim Lerner
 	 * @return serialized version of the TaskInfoAttributes object
-	 * @see ObjectOutputStream, Serializable
+	 * @see java.io.ObjectOutputStream, java.io.Serializable
 	 *  
 	 */
 	public String encode() {
@@ -68,8 +68,8 @@ public class TaskInfoAttributes extends HashMap implements Serializable {
 	 *            XMLEncoded string of previously saved object
 	 * @return TaskInfoAttributes object with the data restored via
 	 *         serialization readObject
-	 * @see encode
-	 * @see Serializable
+	 * @see #encode
+	 * @see java.io.Serializable
 	 *  
 	 */
 

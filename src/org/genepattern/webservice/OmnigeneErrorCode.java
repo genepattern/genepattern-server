@@ -3,9 +3,7 @@ package org.genepattern.webservice;
 import java.util.Hashtable;
 
 /**
- * OmnigeneErrorCodes
- * 
- * Used in referencing error no. with messages.
+ * OmnigeneErrorCodes Used in referencing error no. with messages.
  * 
  * @author Rajesh Kuttan
  */

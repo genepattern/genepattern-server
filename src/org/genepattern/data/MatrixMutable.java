@@ -67,9 +67,9 @@ public class MatrixMutable extends DefaultMatrix {
 	 * getRowCount() and getColumnCount() will be one larger than the maximum
 	 * possible matrix index values.
 	 * 
-	 * @param getRowCount()
+	 * @param nrows
 	 *            number of rows in this matrix.
-	 * @param getColumnCount()
+	 * @param ncols
 	 *            number of columns in this matrix.
 	 */
 	public MatrixMutable(int nrows, int ncols) {
@@ -85,9 +85,9 @@ public class MatrixMutable extends DefaultMatrix {
 	 * column numbering begins with zero, getRowCount() and getColumnCount()
 	 * will be one larger than the maximum possible matrix index values.
 	 * 
-	 * @param getRowCount()
+	 * @param nrows
 	 *            number of rows in this matrix.
-	 * @param getColumnCount()
+	 * @param ncols
 	 *            number of columns in this matrix.
 	 * @param matrix
 	 *            a 1D array that specifies a matrix in row major fashion
@@ -151,9 +151,9 @@ public class MatrixMutable extends DefaultMatrix {
 	 * data values will be lost. If the size is decreased, only those data
 	 * values whose matrix positions were eliminated will be lost.
 	 * 
-	 * @param getRowCount()
+	 * @param nrows
 	 *            number of desired rows in this matrix
-	 * @param getColumnCount()
+	 * @param ncols
 	 *            number of desired columns in this matrix
 	 */
 	public final void setSize(final int nrows, final int ncols) {

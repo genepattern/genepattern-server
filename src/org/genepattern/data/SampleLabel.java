@@ -53,8 +53,10 @@ public class SampleLabel extends AbstractObject implements java.lang.Comparable 
 	}
 
 	/**
-	 * this is a reminder that classes that override equals must also create a
-	 * working hash algorithm. for example:
+	 * This is a reminder that classes that override equals must also create a
+	 * working hash algorithm. 
+	 * 
+	 * for example:
 	 * 
 	 * given: boolean b compute (b ? 0 : 1) byte, char, short, or int i compute
 	 * (int)i long l compute (int)(l ^ (l >>> 32)) float f compute

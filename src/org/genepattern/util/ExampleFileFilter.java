@@ -205,10 +205,10 @@ public class ExampleFileFilter extends FileFilter {
 	 * Returns the human readable description of this filter. For example: "JPEG
 	 * and GIF Image Files (*.jpg, *.gif)"
 	 * 
-	 * @see setDescription
-	 * @see setExtensionListInDescription
-	 * @see isExtensionListInDescription
-	 * @see FileFilter#getDescription
+	 * @see #setDescription
+	 * @see #setExtensionListInDescription
+	 * @see ExampleFileFilter#isExtensionListInDescription
+	 * @see #FileFilter#getDescription
 	 */
 	public String getDescription() {
 		if (fullDescription == null) {
@@ -236,9 +236,9 @@ public class ExampleFileFilter extends FileFilter {
 	 * Sets the human readable description of this filter. For example:
 	 * filter.setDescription("Gif and JPG Images");
 	 * 
-	 * @see setDescription
-	 * @see setExtensionListInDescription
-	 * @see isExtensionListInDescription
+	 * @see #setDescription
+	 * @see ExampleFileFilter#setExtensionListInDescription
+	 * @see ExampleFileFilter#isExtensionListInDescription
 	 */
 	public void setDescription(String description) {
 		this.description = description;
@@ -252,9 +252,9 @@ public class ExampleFileFilter extends FileFilter {
 	 * Only relevent if a description was provided in the constructor or using
 	 * setDescription();
 	 * 
-	 * @see getDescription
-	 * @see setDescription
-	 * @see isExtensionListInDescription
+	 * @see #getDescription
+	 * @see ExampleFileFilter#setDescription
+	 * @see #isExtensionListInDescription
 	 */
 	public void setExtensionListInDescription(boolean b) {
 		useExtensionsInDescription = b;
@@ -268,9 +268,9 @@ public class ExampleFileFilter extends FileFilter {
 	 * Only relevent if a description was provided in the constructor or using
 	 * setDescription();
 	 * 
-	 * @see getDescription
-	 * @see setDescription
-	 * @see setExtensionListInDescription
+	 * @see #getDescription
+	 * @see ExampleFileFilter#setDescription
+	 * @see ExampleFileFilter#setExtensionListInDescription
 	 */
 	public boolean isExtensionListInDescription() {
 		return useExtensionsInDescription;

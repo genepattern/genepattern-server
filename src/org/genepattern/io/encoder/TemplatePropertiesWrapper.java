@@ -164,12 +164,16 @@ public class TemplatePropertiesWrapper extends AbstractObject implements
 
 	// overidden Object methods
 
-	// this is a reminder that data objects must override toString()
+	/**
+	 * This is a reminder that data objects must override toString()
+	*/
 	public String toString() {
 		return template.toString();
 	}
 
-	// this is a reminder that data objects must override equals(Object)
+	/**
+	 * This is a reminder that data objects must override equals(Object)
+	 */ 
 	public boolean equals(final Object obj) {
 		if (obj instanceof DatasetPropertiesWrapper) {
 			return template.equals(((TemplatePropertiesWrapper) obj).template);

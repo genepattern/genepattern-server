@@ -47,7 +47,7 @@ public class OmnigeneException extends Exception {
 	 * Constructs an <code>OmnigeneException</code> class with the specified
 	 * detail message.
 	 * 
-	 * @param errNo
+	 * @param errno
 	 *            the Omnigene error number.
 	 */
 	public OmnigeneException(int errno) {
@@ -59,9 +59,9 @@ public class OmnigeneException extends Exception {
 	 * Constructs an <code>OmnigeneException</code> class with the specified
 	 * detail message.
 	 * 
-	 * @param errNo
+	 * @param errno
 	 *            the Omnigene error number.
-	 * @param errMsg
+	 * @param message
 	 *            the detail message associated with this error number.
 	 */
 	public OmnigeneException(int errno, String message) {

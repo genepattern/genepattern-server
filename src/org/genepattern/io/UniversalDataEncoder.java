@@ -196,7 +196,7 @@ public class UniversalDataEncoder implements Encoder {
 	 * gets the <CODE>Encoder</CODE> associated with the <CODE>DataModel
 	 * </CODE>
 	 * 
-	 * @param data_model
+	 * @param data
 	 *            the data model to get an encoder for
 	 * @return <CODE>Encoder</CODE> is returned that was associated with the
 	 *         <CODE>DataModel</CODE>

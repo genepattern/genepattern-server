@@ -40,7 +40,7 @@ public class JobInfo implements Serializable {
 	 * @param status
 	 * @param submittedDate
 	 * @param completedDate
-	 * @param parameter_info
+	 * @param parameters
 	 * @param userId
 	 */
 
@@ -84,8 +84,8 @@ public class JobInfo implements Serializable {
 	/**
 	 * @param jobNo
 	 * @param taskID
-	 * @param parameter_info
-	 * @param inputFileName
+	 * @param parameters
+	 * @param user_id
 	 */
 	public JobInfo(int jobNo, int taskID, ParameterInfo[] parameters,
 			String user_id) {

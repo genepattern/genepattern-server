@@ -359,7 +359,6 @@ public class ArrayUtils {
 	 * Specified array param is not modified in any way. All duplicate (upto
 	 * floats order of precision) elements are removed.
 	 * 
-	 * @done improve algorithm <br>-> Moved to using gnu.trove
 	 */
 	//
 	// 377837 # of uniq elements: 376403
@@ -394,7 +393,6 @@ public class ArrayUtils {
 	 * unique values from the specified array All duplicate elements are
 	 * removed.
 	 * 
-	 * @done improve algorithm <br>-> Moved to using gnu.trove
 	 */
 	public final static int[] unique(final int[] values) {
 		final TIntArrayList list = new TIntArrayList();
@@ -411,8 +409,6 @@ public class ArrayUtils {
 			}
 		}
 
-		//log.debug("# of non-uniq elements: " + values.length + " # of uniq
-		// elements: " + list.size());
 		System.out.println("# of non-uniq elements: " + values.length
 				+ " # of uniq elements: " + list.size());
 		return list.toNativeArray();
@@ -477,11 +473,11 @@ public class ArrayUtils {
 	 * 1993). This algorithm offers n*log(n) performance on many data sets that
 	 * cause other quicksorts to degrade to quadratic performance.
 	 * 
-	 * @param a
+	 * @param aInds
 	 *            the array to be sorted.
-	 * @param fromIndex
+	 * @param x
 	 *            the index of the first element (inclusive) to be sorted.
-	 * @param toIndex
+	 * @param off
 	 *            the index of the last element (exclusive) to be sorted.
 	 * @throws IllegalArgumentException
 	 *             if <tt>fromIndex &gt; toIndex</tt>

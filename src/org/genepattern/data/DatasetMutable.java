@@ -200,8 +200,8 @@ public class DatasetMutable extends AbstractDataset {
 
 	// helper methods
 	/**
-	 * test if the data is consistent i.e. matrix.getRowCount() ==
-	 * rowNames.length etc.
+	 * test if the data is consistent i.e. matrix\.getRowCount() ==
+	 * rowNames\.length etc.
 	 */
 	public boolean isDataConsistant() {
 		try {

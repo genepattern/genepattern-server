@@ -443,7 +443,7 @@ public class KlassTemplate extends AbstractObject implements Template,
 		return DATA_MODEL;
 	}
 
-	/** this is a reminder that data objects must override equals(Object) */
+	/** This is a reminder that data objects must override equals(Object) */
 	public boolean equals(final Object obj) {
 		if (obj == this)
 			return true;
@@ -466,8 +466,10 @@ public class KlassTemplate extends AbstractObject implements Template,
 	}
 
 	/**
-	 * this is a reminer that classes that override equals must also create a
-	 * working hash algorithm. for example:
+	 * This is a reminer that classes that override equals must also create a
+	 * working hash algorithm. 
+	 * 
+	 * for example:
 	 * 
 	 * given: boolean b compute (b ? 0 : 1) byte, char, short, or int i compute
 	 * (int)i long l compute (int)(l ^ (l >>> 32)) float f compute

@@ -386,15 +386,7 @@ public interface Template extends DataObjector, Serializable {
 			//return "[Klass: "+this.name+" num items="+items.size()+"]";
 		}
 
-		//        /**
-		//         * this is called to indicate that the state has changed
-		//         * Does nothing if the class is immutable
-		//         */
-		//        protected final void reset() {
-		//            if( isMutable() ){
-		//                hashcode = 0;
-		//            }
-		//        }
+		
 		/**
 		 * returns false if this is an object that cannot have it's internal
 		 * state changed
@@ -426,8 +418,10 @@ public interface Template extends DataObjector, Serializable {
 		}
 
 		/**
-		 * this is a reminer that classes that override equals must also create
-		 * a working hash algorithm. for example:
+		 * This is a reminer that classes that override equals must also create
+		 * a working hash algorithm. 
+		 * 
+		 * for example:
 		 * 
 		 * given: boolean b compute (b ? 0 : 1) byte, char, short, or int i
 		 * compute (int)i long l compute (int)(l ^ (l >>> 32)) float f compute
