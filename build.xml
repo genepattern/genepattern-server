@@ -122,23 +122,7 @@
      </copy>
    </target>
 
-
-	<target name="gp-library" depends="init">
-		<javac classpathref="library.classpath" debug="true" destdir="build" target="1.4">
-			<src path="src/org/genepattern/"/>
-			<include name="org/genepattern/client/**"/>
-			<include name="org/genepattern/data/**"/>
-			<include name="org/genepattern/io/**"/>
-			<include name="org/genepattern/module/**"/>
-		</javac>
-	
-		<jar basedir="${genepattern.build}" defaultexcludes="true"  jarfile="${genepattern.build}/${gp-library-jarname}" includes="org/genepattern/client/**/*.class">	
-		<manifest>
-				<attribute name="Class-Path" value="./lib/gpwebservice.jar ./lib/broad-cg.jar ./lib/activation.jar ./lib/mail.jar ./lib/axis.jar ./lib/log4j-1.2.4.jar ./lib/jaxrpc.jar ./lib/commons-discovery.jar ./lib/commons-logging.jar ./lib/saaj.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar" />
-			</manifest> 
-		</jar>
-		
-	
+   <target name="gp-library-doc" depends="init" unless="skipdoc">
 	<javadoc destdir="build/doc" Author="no" Public="true" Verbose="no">
 		<classpath>
 			<fileset dir="lib">
@@ -154,7 +138,25 @@
 			<include name="org/genepattern/module/**/*.java"/>
 		</fileset>
 	</javadoc>
-		<zip destfile="build/GenePattern.zip">
+   </target>
+
+	<target name="gp-library" depends="init, gp-library-doc">
+		<javac classpathref="library.classpath" debug="true" destdir="build" target="1.4">
+			<src path="src/org/genepattern/"/>
+			<include name="org/genepattern/client/**"/>
+			<include name="org/genepattern/data/**"/>
+			<include name="org/genepattern/io/**"/>
+			<include name="org/genepattern/module/**"/>
+		</javac>
+	
+		<jar basedir="${genepattern.build}" defaultexcludes="true"  jarfile="${genepattern.build}/${gp-library-jarname}" includes="org/genepattern/client/**/*.class">	
+		<manifest>
+				<attribute name="Class-Path" value="./lib/gpwebservice.jar ./lib/broad-cg.jar ./lib/activation.jar ./lib/mail.jar ./lib/axis.jar ./lib/log4j-1.2.4.jar ./lib/jaxrpc.jar ./lib/commons-discovery.jar ./lib/commons-logging.jar ./lib/saaj.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar" />
+			</manifest> 
+		</jar>
+		
+	
+			<zip destfile="build/GenePattern.zip">
 			<zipfileset dir="build/">
 				<include name="${gp-library-jarname}"/>
 				<include name="gpwebservice.jar"/>
