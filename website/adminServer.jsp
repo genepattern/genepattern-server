@@ -7,11 +7,20 @@
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
 
-	String allowedClients = request.getParameter("allowed.clients");
-	String any = request.getParameter("any");
-	String localhost = request.getParameter("localhost");
+	String allowedClients = null;
+	String clientMode= request.getParameter("clientMode");
+	String ANY= "Any computer";
+	String LOCAL = "This Computer";	
 
-System.out.println("A=" + any + "  LH= " + localhost);
+	if (LOCAL.equals(clientMode)){
+		allowedClients = LOCAL;
+	} else if (ANY.equals(clientMode)){
+		allowedClients = ANY;
+	} else if ("specified".equals(clientMode)){
+		allowedClients  = request.getParameter("allowed.clients");
+	}
+
+
 
 	boolean storeSuccess = true;
 	if (allowedClients != null){
@@ -41,6 +50,7 @@ System.out.println("A=" + any + "  LH= " + localhost);
 		}
 
 	} 
+	allowedClients = System.getProperty("gp.allowed.clients" );
 
 %>
 <html>
@@ -57,33 +67,23 @@ td { padding-left: 5; }
 </style>
 
 <script>
-function afocus(fld, focus) {
-    var deflt = "any";
-    if (focus) {
-	if (fld.value == deflt) { 
-		fld.value = "";
-	} else { 
-		fld.select();
-	}
-    } else {
-	if (fld.value == "") { 
-		fld.value = deflt;
-	}
-    }
-}
-function toggle(visible) {
-		helpObj = document.getElementById('help');
-		showObj = document.getElementById('showhelp');
-		if(!visible) {
-			helpObj .style.display = "none";
-			showObj .style.display = "block";
-		} else {
-			helpObj .style.display = "block";
-			showObj .style.display = "none";
-		}
-	
-}
+var oldClientList;
 
+function clearField(obj) {
+	oldClientList = obj.form.allowed_clients.value;
+	obj.form.submit.disabled=false;
+    	obj.form.allowed_clients.value="";
+ }
+
+function refillField(obj) {
+	obj.form.allowed_clients.value=oldClientList;
+	changeFields(obj);
+    
+ }
+
+function changeFields(obj){
+	obj.form.submit.disabled=(obj.form.allowed_clients.value == "<%=allowedClients%>")  
+}
 
 </script>
 </head>
@@ -130,48 +130,50 @@ function toggle(visible) {
 	Edit the genepattern.properties file directly if this problem repeats.
 <% } %>		
 
+
+
+
 <table cellpadding="0" cellspacing="0" border="0">
-<tr><td halign="left" width="30%"><form action="adminServer.jsp" name="allowedClientForm" method="POST">
-<input type="hidden" name="allowed.clients" value="This computer"/>
-<input type="button" name="localhost" value="This computer" class="wideButton" onclick="this.form.submit()">
-</form></td><td halign="left">
-<form action="adminServer.jsp" name="allowedClientForm" method="POST">
-<input type="hidden" name="allowed.clients" value="Any computer"/>
-<input type="button" name="any" value="Any computer" class="wideButton" onclick="this.form.submit()">
-</form><td>
-</tr><tr><td colspan="2">
+<tr><td colspan="2">
 <form action="adminServer.jsp" name="allowedClientForm" method="POST">
 
+<input type="radio" name="clientMode" value="<%=LOCAL%>" 
+<%
+	if (LOCAL.equals(allowedClients)) out.print(" checked='true' ");
+%>
+onclick="clearField(this);"> Standalone (local connections only)<br>
 
+<input type="radio" name="clientMode" value="<%=ANY%>" 
+<%
+if (ANY.equals(allowedClients))  out.print(" checked='true' ");
+%>
+onclick="clearField(this);"> Any Computer <br>
+<input type="radio" name="clientMode" value="specified" 
+<%
+if (!(ANY.equals(allowedClients) || LOCAL.equals(allowedClients)) ) out.print(" checked='true' ");
+%>
+onclick="refillField(this);"> These Domains <br>
 		
-<% if (System.getProperty("gp.allowed.clients") != null) { %>
-			<input type="text"  name="allowed.clients" size="40" value="<%=System.getProperty("gp.allowed.clients")%>" onfocus="ufocus(this, true, 'Any computer')" onblur="ufocus(this, false, 'Any computer')">
-<% } else { %>
-			<input type="text"  name="allowed.clients" size="40" value="any" onfocus="ufocus(this, true, 'Any computer')" onblur="ufocus(this, false, 'Any computer')">
-<% } %>
-<input type="button" value="set" class="button" onclick="this.form.submit()"><br>
 
-<div id="showhelp" style="display">
-<input type="button" value="show help" class="wideButton" onclick="toggle(true)">
-</div>
-<div id="help" style="display:none;">
-<input type="button" value="hide help" class="wideButton" onclick="toggle(false)"><br>
-<font color="darkred">
 
-<i>List fragments of host names or IP addresses to be allowed to connect to this GenePattern server as a comma delimited string. 
-Computers who's names or addresses include any of the fragments will be allowed to connect. Other computers will be redirected to 
-<a href="notallowed.html">notallowed.html</a>. 
+<% 
+	String displayVal = "";
+	if (!(ANY.equals(allowedClients) || LOCAL.equals(allowedClients)) ) displayVal = allowedClients;
+%>
+<input type="text"  name="allowed_clients" size="40" value="<%=displayVal%>" onkeyup="changeFields(this)" >
+<input type="button" name="submit" value="submit" class="button" onclick="this.form.submit()" disabled="true"><br>
 
-<p>
-GenePattern Clients who are not allowed will see a "403 Forbidden" error when they attempt to connect. 
-<p>
-e.g. <font color="red">"broad.mit.edu,wi.mit.edu"</font> would allow any computer from Broad or Whitehead to connect to this GenePattern server.</i>
-</font>
-</div>
+
+
+
+
 
 </form>
 </td></tr>
 </table>
+
+
+
 			</td>
 		</tr>
 <tr>
@@ -181,8 +183,8 @@ e.g. <font color="red">"broad.mit.edu,wi.mit.edu"</font> would allow any compute
 		</tr>
 
 <tr>
-			<td valign="middle" align="middle" colspan="2">
-<table width="60%><tr><td align="left">
+			<td valign="middle" al colspan="2">
+<table width="60%><tr><td align="right">
 				<a href="shutdownServer.jsp">Shutdown server</a>
 </td></tr></table>
 			</td>
