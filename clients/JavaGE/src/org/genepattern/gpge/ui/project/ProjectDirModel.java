@@ -168,12 +168,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 
 		// keep children sorting alphabetically
 		root.insert(child, insertionIndex);
-     
-      if(children==null || children.size()<=1) { // fixes bug in tree table
-          nodeStructureChanged(root);
-      } else {
-         nodesWereInserted(root, new int[]{insertionIndex});  
-      }
+      nodesWereInserted(root, new int[]{insertionIndex});  
       notifyProjectAdded(projectDir);
 	}
 
