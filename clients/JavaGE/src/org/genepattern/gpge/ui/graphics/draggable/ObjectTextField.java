@@ -197,11 +197,6 @@ public class ObjectTextField extends javax.swing.JTextField {
 							setObject(node);
 							dropComplete = true;
 							break;
-						} else if (last instanceof org.genepattern.gpge.ui.treetable.FileNode) {
-							final org.genepattern.gpge.ui.treetable.FileNode node = (org.genepattern.gpge.ui.treetable.FileNode) last;
-							setObject(node.getFile());
-							dropComplete = true;
-							break;
 						} else {
 							System.out.println("Note couldn't handle class "
 									+ last);
