@@ -275,7 +275,7 @@ public class AnalysisServiceDisplay extends JPanel {
       JPanel buttonPanel = createJPanel();
       JButton submitButton = new JButton("Run");
       submitButton.addActionListener(new SubmitActionListener());
-      getRootPane().setDefaultButton(submitButton);
+     // getRootPane().setDefaultButton(submitButton);
       buttonPanel.add(submitButton);
       JButton resetButton = new JButton("Reset");
       resetButton.addActionListener(new ResetActionListener());
@@ -591,9 +591,10 @@ public class AnalysisServiceDisplay extends JPanel {
       public final void actionPerformed(java.awt.event.ActionEvent ae) {
          try {
             String server = selectedService.getServer();
+            String username = AnalysisServiceManager.getInstance().getUsername();
             String docURL = server + "/gp/getTaskDoc.jsp?name="
                    + org.genepattern.gpge.ui.maindisplay.LSIDUtil.getTaskId(selectedService.getTaskInfo()) + "&"
-                   + GPConstants.USERID + "=GenePattern";
+                   + GPConstants.USERID + "="+java.net.URLEncoder.encode(username, "UTF-8");
             org.genepattern.util.BrowserLauncher.openURL(docURL);
          } catch(java.io.IOException ex) {
             System.err.println(ex);
