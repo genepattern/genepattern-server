@@ -24,13 +24,7 @@ import org.genepattern.webservice.*;
 import org.genepattern.gpge.ui.treetable.*;
 
 /**
- *  Description of the Class
- *
- * @author    Joshua Gould
- */
-
-/**
- * Description of the Class
+ * Job model
  * 
  * @author Joshua Gould
  */
@@ -43,6 +37,9 @@ public class JobModel extends AbstractSortableTreeTableModel {
 	static JobModel instance = new JobModel();
 
 	RootNode root = new RootNode();
+   
+   private Comparator comparator = new TaskNameComparator(false);
+   private int sortColumn = 0;
 
 	private JobModel() {
 	}
@@ -191,13 +188,6 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(
 					node.job.getServer(), jobInfo.getUserId());
 			proxy.deleteJob(jobInfo.getJobNumber());
-
-			/*
-			 * String[] fileNames = new String[node.getChildCount()]; for(int i =
-			 * 0; i < node.getChildCount(); i++) { ServerFileNode child =
-			 * (ServerFileNode) node.getChildAt(i); fileNames[i] = child.name; }
-			 * proxy.deleteJobOutputFiles(jobInfo.getJobNumber(), fileNames);
-			 */
 			int index = root.getIndex(node);
 			root.remove(index);
 			nodesWereRemoved(root, new int[] { index }, new Object[] { node });
@@ -207,22 +197,29 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 	}
 
+   
+   /**
+   * Invoked when job is initially submiited
+   */
 	public void add(AnalysisJob job) {
 		JobNode child = new JobNode(job);
-		root.add(child);
-		int[] newIndexs = new int[1];
-		newIndexs[0] = root.getChildCount() - 1;
-		Object[] p1 = { root };
-		Object[] kids = { child };
-		//  nodeStructureChanged(child);
-		Object[] path = getPathToRoot(root);
-
-		final TreeModelEvent e = new TreeModelEvent(this, path);
-		nodeStructureChanged(root);
-		nodeStructureChanged(root);
-		notifyJobAdded(job);
-		// fireTreeStructureChanged(this, getPathToRoot(child));
-
+      int insertionIndex = 0;
+      List children = root.getChildren();
+		if (children != null) {
+         insertionIndex = Collections.binarySearch(children, child,
+					comparator);   
+		}
+		if (insertionIndex < 0) {
+			insertionIndex = -insertionIndex - 1;
+		}
+      
+		root.insert(child, insertionIndex);
+      if(children==null || children.size()<=1) { // fixes bug in tree table
+         nodeStructureChanged(root);  
+      } else {
+         nodesWereInserted(root, new int[] { insertionIndex });
+		}
+      notifyJobAdded(job);
 	}
 
 	public void jobCompleted(AnalysisJob job) {
@@ -232,30 +229,29 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		for (int i = 0; i < outputFiles; i++) {
 			newIndexs[i] = i;
 		}
-		// nodesWereInserted(jobNode, newIndexs);
-		nodeStructureChanged(root);
+		nodesWereInserted(jobNode, newIndexs);
 		notifyJobCompleted(job);
 	}
 
 	public void jobStatusChanged(AnalysisJob job) {
-		//nodesChanged(findJobNode(job), null);
-		nodeStructureChanged(root);
+		nodeChanged(findJobNode(job));
 		notifyJobStatusChanged(job);
 	}
 
 	public void sortOrderChanged(SortEvent e) {
 		int column = e.getColumn();
 		boolean ascending = e.isAscending();
-		Vector children = root.getChildren();
-		if (children == null) {
-			return;
-		}
+		sortColumn = column;
 		if (column == 0) {
-			Collections.sort(children, new TaskNameComparator(ascending));
+        comparator = new TaskNameComparator(ascending);
 		} else {
-			Collections.sort(children, new TaskDateComparator(ascending));
+         comparator = new TaskDateComparator(ascending);
 		}
-		nodeStructureChanged(root);
+      List children = root.getChildren();
+      if (children != null) {
+         Collections.sort(children, comparator);
+			 nodeStructureChanged(root);;
+		}
 	}
 
 	protected void notifyJobAdded(AnalysisJob job) {
@@ -324,15 +320,25 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(server,
 					username);
 			AnalysisJob[] jobs = proxy.getJobs();
+         Vector children = root.getChildren();
+         children = new Vector();
+ 
 			if (jobs != null) {
 				for (int i = 0; i < jobs.length; i++) {
-					JobNode node = new JobNode(jobs[i]);
-					node.getOutputFiles();
-					root.add(node);
+               JobNode child = new JobNode(jobs[i]);
+               child.getOutputFiles();
+               
+               int insertionIndex = Collections.binarySearch(children, child,
+                        comparator);   
+               
+               if (insertionIndex < 0) {
+                  insertionIndex = -insertionIndex - 1;
+               }
+               
+               root.insert(child, insertionIndex);
 				}
-				nodeStructureChanged(root);
-				nodeStructureChanged(root); // FIXME
 			}
+         nodeStructureChanged(root);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -559,19 +565,22 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		}
 
 		public int compare(Object obj1, Object obj2) {
-			JobNode node1 = (JobNode) obj1;
-			JobNode node2 = (JobNode) obj2;
+         JobNode node1 = (JobNode) obj1;
+         JobNode node2 = (JobNode) obj2;
+         String job1 = node1.job.getTaskName();
+         String job2 = node2.job.getTaskName();
 			if (ascending) {
-				return node1.job.getTaskName().compareTo(
-						node2.job.getTaskName());
+				return job1.compareTo(job2);
 			}
-			return node2.job.getTaskName().compareTo(node1.job.getTaskName());
+			return job2.compareTo(job1);
 		}
 
 		public boolean equals(Object obj1, Object obj2) {
 			JobNode node1 = (JobNode) obj1;
 			JobNode node2 = (JobNode) obj2;
-			return node1.job.getTaskName().equals(node2.job.getTaskName());
+         String job1 = node1.job.getTaskName();
+         String job2 = node2.job.getTaskName();
+         return job1.equals(job2);
 		}
 	}
 
