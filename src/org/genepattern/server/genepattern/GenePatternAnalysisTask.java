@@ -3161,8 +3161,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			String parameter_info, String pipelineName)
 			throws OmnigeneException, RemoteException {
 		JobInfo jobInfo = getDS()
-				.addNewJob(
-						org.genepattern.server.ejb.AnalysisHypersonicDAO.UNPROCESSABLE_TASKID,
+				.addTemporaryPipeline(
 						userID, parameter_info, pipelineName);
 		return jobInfo;
 	}
