@@ -1,6 +1,9 @@
 <%@ page import="java.io.IOException,
 		 java.util.Enumeration,
 		 java.util.HashMap,
+		 java.io.File,
+ 		 java.net.URLEncoder,
+		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient , 
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.webservice.ParameterFormatConverter,
@@ -78,8 +81,27 @@ try {
 	if (parameterInfoArray == null) parameterInfoArray = new ParameterInfo[0];
 } catch (OmnigeneException oe) {
 }
+%>
+<table width="100%" cols="2">
+<tr><td><b><font size="+1"><%= taskName %></font></b></td>
+<%
+if (taskName != null) {
+	LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
+
+	File[] docFiles = taskIntegratorClient.getDocFiles(taskInfo);
+	boolean hasDoc = docFiles != null && docFiles.length > 0;
+	if (hasDoc) {
+		%><td align="right"><b>Documentation:</b><%
+ 		for (int i = 0; i < docFiles.length; i++) { %>
+			<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= GenePatternAnalysisTask.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>" target="new"><%= GenePatternAnalysisTask.htmlEncode(docFiles[i].getName()) %></a><% 
+ 		} 
+		%></td><%
+ 	}
+}
+
 
 %>
+</table>
 
 	<form name="pipeline" action="makePipeline.jsp" method="post" ENCTYPE="multipart/form-data">
 	<input type="hidden" name="pipeline_name" value="try.<%= taskName %>">
@@ -93,18 +115,20 @@ try {
 	<input type="hidden" name="<%= GPConstants.LANGUAGE %>" value="R">
 	<input type="hidden" name="taskName" value="<%= taskName %>">
 	<input type="hidden" name="<%= GPConstants.LSID %>" value="">
+	<table cols="2" valign="top" width="100%">
+	<col align="right" width="10%"><col align="left" width="*">
 
 <%	
 	int numParams = parameterInfoArray.length;
 //	if (taskName.endsWith("." + GPConstants.TASK_TYPE_PIPELINE)) numParams--; // skip server parameter	
+
+
 	if (numParams > 0) { %>
-		<nobr><b><%= taskName %> input parameters</b>
+		<tr><td align='left' colspan='2'><b>&nbsp;&nbsp;</b></td><td></td></tr>
 <%	} else { %>
-		<i><%= taskName %> has no input parameters</i>
+		<tr><td align='left' colspan='2'><i>has no input parameters</i></td><td></td></tr>
 <%	} %>
-	<table cols="2" valign="top" width="100%">
-	<col align="right" width="10%"><col align="left" width="*">
-<% 	
+			<% 	
 
 	String prefix = taskName + (taskNum+1) + ".";
         prefix="t0_";
