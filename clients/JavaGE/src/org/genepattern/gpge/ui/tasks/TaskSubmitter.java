@@ -9,7 +9,7 @@ import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.RequestHandler;
+import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.WebServiceException;
 
 
@@ -20,8 +20,8 @@ import org.genepattern.webservice.WebServiceException;
  */
     public interface TaskSubmitter {
         /** submits the task */
-        public AnalysisJob submitTask(final AnalysisService selectedService, final int id, final ParameterInfo[] parmInfos, final RequestHandler handler) throws OmnigeneException, WebServiceException, java.io.IOException;
+        public AnalysisJob submitTask(final AnalysisService selectedService, final int id, final ParameterInfo[] parmInfos, final AnalysisWebServiceProxy handler) throws OmnigeneException, WebServiceException, java.io.IOException;
         /** determines if this submitter is acceptable for the AnalysisService */
-        public boolean check(final AnalysisService selectedService, final int id, final ParameterInfo[] parmInfos, final RequestHandler handler);
+        public boolean check(final AnalysisService selectedService, final int id, final ParameterInfo[] parmInfos, final AnalysisWebServiceProxy handler);
     }
 

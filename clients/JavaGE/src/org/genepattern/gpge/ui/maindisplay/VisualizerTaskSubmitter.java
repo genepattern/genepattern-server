@@ -25,9 +25,9 @@ import org.genepattern.util.RunGenePatternTaskMain;
 import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.RequestHandler;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
@@ -64,14 +64,14 @@ public class VisualizerTaskSubmitter implements org.genepattern.gpge.ui.tasks.Ta
     }
 
     /** determines if this submitter is acceptable for the AnalysisService  */
-    public boolean check(final AnalysisService selectedService, final int id, final ParameterInfo[] parmInfos, final RequestHandler handler) {
+    public boolean check(final AnalysisService selectedService, final int id, final ParameterInfo[] parmInfos, final AnalysisWebServiceProxy handler) {
         return isVisualizer(selectedService);
     }
     
     /** submits the task  which is to load a visualizer over the net
      * @returns null no job
      */
-    public AnalysisJob submitTask(final AnalysisService selectedService, final int id, final ParameterInfo[] paramInfos, final RequestHandler handler) throws OmnigeneException, WebServiceException, java.io.IOException {
+    public AnalysisJob submitTask(final AnalysisService selectedService, final int id, final ParameterInfo[] paramInfos, final AnalysisWebServiceProxy handler) throws OmnigeneException, WebServiceException, java.io.IOException {
         //System.out.println("\n\ndebug from submitTask():");
         //new Exception().printStackTrace();
         final TaskInfo task_info = selectedService.getTaskInfo();
