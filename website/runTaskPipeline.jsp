@@ -62,7 +62,7 @@ try {
 	String lsid = requestParameters.getParameter("taskLSID");
 	String taskName = requestParameters.getParameter("taskName");
 
-	boolean DEBUG = true; // (requestParameters.getParameter("debug") != null);
+	boolean DEBUG = false; // (requestParameters.getParameter("debug") != null);
 
 	if (DEBUG) {
 		System.out.println("\n\nRUNTASKPIPELINE Request parameters:<br>");
