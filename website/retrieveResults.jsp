@@ -16,6 +16,7 @@ String tempDir = request.getParameter("job");
 if (tempDir == null) tempDir = request.getParameter("dirName");
 String filename = request.getParameter("filename");
 boolean bGridded = (request.getParameter("gridded") != null);
+boolean errorIfNotFound = (request.getParameter("e") != null);
 
 if (tempDir == null || filename == null) {
 	out.println("missing input parameter(s)");
@@ -31,6 +32,10 @@ if (request.getParameter("abs") != null) {
 filename = new File(filename).getName();
 in = new File(GenePatternAnalysisTask.getJobDir(tempDir), filename);
 if (!in.exists()) {
+if(errorIfNotFound) {
+   response.sendError(javax.servlet.http.HttpServletResponse.SC_GONE);
+   return;
+}
 %>
 Unable to locate <%= GenePatternAnalysisTask.htmlEncode(filename) %> for job <%= tempDir %>.  It may have been deleted already.
 <%
