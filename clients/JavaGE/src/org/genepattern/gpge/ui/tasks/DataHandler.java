@@ -211,8 +211,7 @@ public class DataHandler {
 			job.setDateSubmitted(String.valueOf(submittedTime.getTime()));
 		else
 			job.setDateSubmitted("");
-		job.setInputFilename(jobInfo.getInputFileName());
-		job.setResultFilename(jobInfo.getResultFileName());
+		
 		job.setStatus(jobInfo.getStatus());
 		job.setTaskId(Integer.toString(jobInfo.getTaskID()));
 		ParameterInfo[] params = jobInfo.getParameterInfoArray();
@@ -248,8 +247,7 @@ public class DataHandler {
 		String submittedTime = job.getDateSubmitted();
 		if (!submittedTime.equals(""))
 			jobInfo.setDateSubmitted(new Date(Long.parseLong(submittedTime)));
-		jobInfo.setInputFileName(job.getInputFilename());
-		jobInfo.setResultFileName(job.getResultFilename());
+		
 		jobInfo.setStatus(job.getStatus());
 		jobInfo.setTaskID(Integer.parseInt(job.getTaskId()));
 		List paramList = job.getParameter();
