@@ -152,6 +152,7 @@ function addAnother(taskNum, scrollTo) {
 				var selected = selector.options[selector.selectedIndex].value;
 				selector.length = 0;
 				selector.options[0] = new Option('Choose task', NOT_SET);
+				selector.options[0].disabled = true;
 				for (t = 0; t < i; t++) {
 					if (t != taskNum) {
 						//alert((t+1) + '.  ' + document.forms["pipeline"]['t' + t + '_taskName'].value + '=' + t + ', selected=' + (t == selected));
@@ -221,6 +222,7 @@ function deleteTask(taskNum) {
 					var selected = selector.options[selector.selectedIndex].value;
 					selector.length = 0;
 					selector.options[0] = new Option('Choose task', NOT_SET);
+					selector.options[0].disabled = true;
 					for (t = 0; t < newTaskNum; t++) {
 					   	var tName = document.forms["pipeline"]['t' + t + '_taskName'].value;
 						if (tName == NOT_SET) {
@@ -278,13 +280,16 @@ function chooseInheritTask(taskNum, param) {
 	ctl.options.length = 0;
 
 	// semantic knowledge first!
-	ctl.options[ctl.options.length]  = new Option('Choose output file from ' + ti.name, 'NOT_SET');
+	ctl.options[ctl.options.length]  = new Option('Choose output file from ' + ti.name, NOT_SET);
+	ctl.options[ctl.options.length-1].disabled = true;
+	
 	for (f = 0; f < fileFormats.length; f++) {
 		var ff = fileFormats[f];
 		ctl.options[ctl.options.length]  = new Option(ff, ff);
 	}
 	if (fileFormats.length > 0) {
-		ctl.options[ctl.options.length]  = new Option('', 'NOT_SET');
+		ctl.options[ctl.options.length]  = new Option('', NOT_SET);
+		ctl.options[ctl.options.length-1].disabled = true;
 	}
 
 	ctl.options[ctl.options.length]  = new Option('1st output', '1');
@@ -613,7 +618,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 				     '" type="text" readonly size="130" tabindex="-1" class="shadow" style="{ border-style: none; font-style: italic; font-size=9pt; background-color: transparent }">';
 			if (taskNum > 0) {
 				taskFields = taskFields + '<br><nobr>or use output from <select name="t' + taskNum + '_i_' + param + 
-							  '" onchange="chooseInheritTask(' + taskNum + ', ' + param + ')"><option value="NOT SET">Choose task</option>\n';
+							  '" onchange="chooseInheritTask(' + taskNum + ', ' + param + ')"><option value=' + NOT_SET + '" disabled>Choose task</option>\n';
 				for (t = 0; t < taskNum; t++) {
 					taskFields = taskFields + '<option value="' + t + '">' + (t+1) + '.  ' + 
 						     document.forms['pipeline']['t' + t + '_taskName'].value + '</option>\n';
@@ -668,6 +673,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 					if (selector.selectedIndex == 0) selected = -1; // ensure no match against task 0
 					selector.length = 0;
 					selector.options[0] = new Option('Choose task', NOT_SET);
+					selector.options[0].disabled = true;
 					for (t = 0; t < i; t++) {
 						if (t != taskNum) {
 							selector.options[selector.options.length] = new Option((t+1) + '.  ' + document.forms['pipeline']['t' + t + '_taskName'].value, t, (t == selected), (t == selected));

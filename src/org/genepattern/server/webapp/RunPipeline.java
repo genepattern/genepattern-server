@@ -274,9 +274,9 @@ public class RunPipeline {
 
 		if (task == null) {
 			System.err.println("Task " + lsidOrTaskName + " not found."); // write
-																		  // to
-																		  // stderr
-																		  // file
+										  // to
+										  // stderr
+										  // file
 			System.exit(0);
 		}
 
@@ -353,32 +353,60 @@ public class RunPipeline {
 	/**
 	 * return the file name for the previously run job by index or name
 	 */
-	public static String getOutputFileName(
-			org.genepattern.webservice.JobInfo job, String fileStr) {
+	public static String getOutputFileName(org.genepattern.webservice.JobInfo job, String fileStr) {
 		String fileName = null;
+		String fn = null;
+		int j;
+		ParameterInfo[] jobParams = job.getParameterInfoArray();
 
-		try {
-			int fileIdx = Integer.parseInt(fileStr);
-			int jobFileIdx = 1;
-			ParameterInfo[] jobParams = job.getParameterInfoArray();
-			for (int j = 0; j < jobParams.length; j++) {
-				if (jobParams[j].isOutputFile()) {
-					if (jobFileIdx == fileIdx) {
-						fileName = jobParams[j].getValue();
-						int lastIdx = fileName.lastIndexOf(File.separator);
-						if (lastIdx != -1)
-							fileName = fileName.substring(lastIdx + 1);
-						lastIdx = fileName.lastIndexOf("/");
-						if (lastIdx != -1)
-							fileName = fileName.substring(lastIdx + 1);
-						break;
-					}
-					jobFileIdx++;
+		// try semantic match on output files first
+
+		// TODO: Nada's file analyzer gets integrated here.
+		// For now, just match on filename extension
+		for (j = 0; j < jobParams.length; j++) {
+			if (jobParams[j].isOutputFile()) {
+				fn = jobParams[j].getValue();
+				if (fn.endsWith("." + fileStr)) {
+					fileName = fn;
+					break;
 				}
 			}
-		} catch (NumberFormatException nfe) {
-			// fileStr is stderr or stdout instead of an index
-			fileName = fileStr;
+		}
+
+		if (fileName == null) {
+			// no match on extension, try assuming that it is an integer number (1..5)
+			try {
+				int fileIdx = Integer.parseInt(fileStr);
+				// success, find the nth output file
+				int jobFileIdx = 1;
+				for (j = 0; j < jobParams.length; j++) {
+					if (jobParams[j].isOutputFile()) {
+						if (jobFileIdx == fileIdx) {
+							fileName = jobParams[j].getValue();
+							break;
+						}
+						jobFileIdx++;
+					}
+				}
+			} catch (NumberFormatException nfe) {
+				// not an extension, not a number, look for stdout or stderr
+				
+				// fileStr is stderr or stdout instead of an index
+				if (fileStr.equals(STDOUT) || fileStr.equals(STDERR)) {
+					fileName = fileStr;
+				}
+			}
+		}
+
+		if (fileName != null) {
+			int lastIdx = fileName.lastIndexOf(File.separator);
+			if (lastIdx != -1) {
+				fileName = fileName.substring(lastIdx + 1);
+			}
+			lastIdx = fileName.lastIndexOf("/");
+			if (lastIdx != -1) {
+				fileName = fileName.substring(lastIdx + 1);
+			}
 		}
 		return fileName;
 	}
