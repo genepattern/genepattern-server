@@ -491,7 +491,10 @@ public class MainFrame extends JFrame {
 				.getProperty(PreferenceKeys.USER_NAME);
 
 		if (username == null || username.trim().equals("")) {
-			username = "anonymous";
+         username = System.getProperty("user.name");
+         if(username==null || username.trim().equals("")) {
+            username = "anonymous";
+         }
 		}
 		String server = GPpropertiesManager.getProperty(PreferenceKeys.SERVER);
 		if (server == null || server.equals("")) {
@@ -660,7 +663,8 @@ public class MainFrame extends JFrame {
 		serverFilePopupMenu.add(saveServerFileMenu);
 
 		final JMenu serverFileSendToMenu = new JMenu("Send To");
-     
+      serverFileSendToMenu.setEnabled(false);
+      
       serverFileSendToMenu.setIcon(IconManager.loadIcon(IconManager.SEND_TO_ICON));
 		serverFilePopupMenu.add(serverFileSendToMenu);
 
@@ -801,6 +805,7 @@ public class MainFrame extends JFrame {
 		projectDirTree = new SortableTreeTable(projectDirModel, false);
 		projectFilePopupMenu = new JPopupMenu();
 		final JMenu projectFileSendToMenu = new JMenu("Send To");
+      projectFileSendToMenu.setEnabled(false);
       projectFileSendToMenu.setIcon(IconManager.loadIcon(IconManager.SEND_TO_ICON));
 		projectFilePopupMenu.add(projectFileSendToMenu);
 
@@ -955,7 +960,12 @@ public class MainFrame extends JFrame {
 		});
 		analysisServicePanel
 				.addAnalysisServiceSelectionListener(new AnalysisServiceSelectionListener() {
+               
+               
 					public void valueChanged(AnalysisServiceSelectionEvent e) {
+                  serverFileSendToMenu.setEnabled(true);
+                  projectFileSendToMenu.setEnabled(true);
+               
 						serverFileSendToMenu.removeAll();
 						projectFileSendToMenu.removeAll();
 
