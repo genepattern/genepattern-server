@@ -367,7 +367,14 @@ if (tia != null) {
 
 	Collections.sort(vVersions, new Comparator() {
 				public int compare(Object v1, Object v2) {
-					return -(((String)v1).compareTo((String)v2));
+					try {
+						LSID lsid1 = new LSID((String)v1);
+						LSID lsid2 = new LSID((String)v2);
+						return lsid1.compareTo(lsid2);
+					} catch (MalformedURLException mue) {
+						// ignore
+						return 0;
+					}
 				}
 			});
 
