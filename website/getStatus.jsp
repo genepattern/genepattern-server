@@ -86,8 +86,6 @@ try {
 	htColors.put("" + JobStatus.JOB_PROCESSING, "blue");
 	htColors.put("" + JobStatus.JOB_FINISHED, "green");
 	htColors.put("" + JobStatus.JOB_ERROR, "red");
-	htColors.put("" + JobStatus.JOB_TIMEOUT, "red");
-
 	if (rs.last())
 	do {
 //	while (rs.next()) {

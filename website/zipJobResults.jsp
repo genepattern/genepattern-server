@@ -153,7 +153,6 @@ try {
 	htColors.put("" + JobStatus.JOB_PROCESSING, "blue");
 	htColors.put("" + JobStatus.JOB_FINISHED, "green");
 	htColors.put("" + JobStatus.JOB_ERROR, "red");
-	htColors.put("" + JobStatus.JOB_TIMEOUT, "red");
 	Hashtable filenames = new Hashtable();
 	StringBuffer buf = new StringBuffer();
 
