@@ -82,7 +82,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
       JobNode node = (JobNode) serverFile.getParent();
       try {
          JobInfo jobInfo = node.job.getJobInfo();
-         AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(node.job.getSiteName() + "/gp/servlet/AxisServlet", jobInfo.getUserId(), "");
+         AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(node.job.getSiteName(), jobInfo.getUserId());
          String[] fileNames = {serverFile.name};
 
          proxy.deleteJobOutputFiles(jobInfo.getJobNumber(), fileNames);
@@ -109,7 +109,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
    public void delete(JobNode node) {
       try {
          JobInfo jobInfo = node.job.getJobInfo();
-         AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(node.job.getSiteName() + "/gp/servlet/AxisServlet", jobInfo.getUserId(), "");
+         AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(node.job.getSiteName(), jobInfo.getUserId());
          proxy.deleteJob(jobInfo.getJobNumber());
 
          /*
@@ -257,7 +257,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
    public void getJobsFromServer(String server, String username) {
       try {
-         AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(server + "/gp/servlet/AxisServlet", username, "");
+         AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(server, username);
          AnalysisJob[] jobs = new AnalysisJob[]{};// FIXME
          for(int i = 0; i < jobs.length; i++) {
             JobNode node = new JobNode(jobs[i]);
