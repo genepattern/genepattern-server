@@ -494,6 +494,9 @@ public class ModuleFormView extends ViewPart {
                                         showStatus("Downloaded " + task + " to " + f.getName());
                                     } catch (WebServiceException e1) {
                                         e1.printStackTrace();
+                                    } catch (Exception e2){
+                                    	
+                                    	e2.printStackTrace();//XXX what to do here
                                     }
                                 }
                                     
@@ -573,10 +576,13 @@ public class ModuleFormView extends ViewPart {
                                     try {
                                         serviceManager.getTaskIntegratorProxy().importZip(new File(s), GPConstants.ACCESS_PUBLIC);     
                                         showStatus("Imported " + task);
-                                    } catch(WebServiceException e) {
+                                    } catch(WebServiceErrorMessageException e) {
                                         showError(null, e.getErrors());
                                     } catch (WebServiceException e1) {
                                         showError(null, e1.getMessage());
+                                    } catch (Exception e2){
+                                    	 showError(null, e2.getMessage());
+                                    
                                     }
                                 }
                                     
@@ -709,10 +715,10 @@ public class ModuleFormView extends ViewPart {
      
 		        try {
 		            File tomcatFile = new File(System.getProperty("java.io.tmpdir"), "tomcat_log.txt");
-		            serviceManager.getTaskIntegratorProxy().getTomcatLog(tomcatFile);  
+		            //serviceManager.getTaskIntegratorProxy().getTomcatLog(tomcatFile);  
 		            Program.launch(tomcatFile.getCanonicalPath());
-		        } catch (WebServiceException e1) {
-		            e1.printStackTrace();
+		    //    } catch (WebServiceException e1) {
+		     //       e1.printStackTrace();
 		        } catch (IOException e2) {
                     e2.printStackTrace();
                 }
@@ -725,10 +731,10 @@ public class ModuleFormView extends ViewPart {
 		    public void linkActivated(HyperlinkEvent e) {
 		        try {
 		            File gpFile = new File(System.getProperty("java.io.tmpdir"), "GenePattern_log.txt");
-		            serviceManager.getTaskIntegratorProxy().getGenePatternLog(gpFile);  
+		          //  serviceManager.getTaskIntegratorProxy().getGenePatternLog(gpFile);  
 		            Program.launch(gpFile.getCanonicalPath());
-		        } catch (WebServiceException e1) {
-		            e1.printStackTrace();
+		      //  } catch (WebServiceException e1) {
+		      //      e1.printStackTrace();
 		        } catch (IOException e2) {
                     e2.printStackTrace();
                 }

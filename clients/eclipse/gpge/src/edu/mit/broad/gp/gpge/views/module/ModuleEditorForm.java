@@ -214,7 +214,7 @@ public class ModuleEditorForm extends ScrolledForm {
               try {
                 serviceManager.getTaskIntegratorProxy().modifyTask(
                         accessId, taskName, taskDescription,
-                        parameterInfoArray, taskAttributes, supportFiles);
+                        parameterInfoArray, (HashMap)taskAttributes, supportFiles);
                 
                 if(deletedFiles.size() >0) {
                     serviceManager.getTaskIntegratorProxy().deleteFiles(taskName, (String[])deletedFiles.toArray(new String[0]));
@@ -228,6 +228,8 @@ public class ModuleEditorForm extends ScrolledForm {
                 if(rc instanceof WebServiceErrorMessageException) {
                     System.out.println(((WebServiceErrorMessageException)rc).getErrors());
                 }
+            } catch (Exception e1){
+            	 e1.printStackTrace();
             }
         
         
@@ -327,6 +329,9 @@ public class ModuleEditorForm extends ScrolledForm {
                 supportFiles = serviceManager.getTaskIntegratorProxy().getSupportFileNames(taskName);
             } catch (WebServiceException e1) {
                 e1.printStackTrace();
+            } catch (Exception e2){
+            	
+            	e2.printStackTrace();
             }
         }
         
@@ -360,7 +365,9 @@ public class ModuleEditorForm extends ScrolledForm {
        	         try {
        	           String fileName = supportFilesCombo.getItem(index);
        	           File destFile = new File(System.getProperty("java.io.tmpdir"), fileName);
-                    serviceManager.getTaskIntegratorProxy().getSupportFile(taskName, fileName, destFile);
+       	           String[] filenames = new String[1];
+       	           filenames[0] = fileName;
+                    serviceManager.getTaskIntegratorProxy().getSupportFiles(taskName, filenames, destFile);
                     Program.launch(destFile.getCanonicalPath());
                 } catch (WebServiceException e1) {
                     e1.printStackTrace();

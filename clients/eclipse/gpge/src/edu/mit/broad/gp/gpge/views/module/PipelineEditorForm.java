@@ -462,7 +462,7 @@ public class PipelineEditorForm extends ScrolledForm {
         String pipelineDescription = "";
         File[] files = null; // FIXME
         try {
-            serviceManager.getTaskIntegratorProxy().modifyTask(GPConstants.ACCESS_PUBLIC, pipelineName, pipelineDescription, null, taskAttributes, files);
+            serviceManager.getTaskIntegratorProxy().modifyTask(GPConstants.ACCESS_PUBLIC, pipelineName, pipelineDescription, null, (HashMap)taskAttributes, files);
         } catch (WebServiceException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
