@@ -122,7 +122,10 @@ if (isDelete) {
          String value = attachmentNames[j];
          try {
             analysisClient.deleteJobResultFile(_jobId, value);
-          } catch(WebServiceException wse) {}
+          } catch(WebServiceException wse) {
+wse.printStackTrace();
+
+		}
       }
    }
 }
@@ -131,7 +134,9 @@ if (stopTaskID != null) {
    LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
    try {
       analysisClient.terminateJob(Integer.parseInt(stopTaskID));
-   } catch(WebServiceException wse) {}
+   } catch(WebServiceException wse) {
+wse.printStackTrace();
+	}
 }
  
 
@@ -151,7 +156,9 @@ try {
    } else {
       jobs = analysisClient.getJobs(userID, -1, Integer.MAX_VALUE, false);
    }
-} catch(WebServiceException wse) {}
+} catch(WebServiceException wse) {
+	wse.printStackTrace();
+}
 
 DecimalFormat df = new DecimalFormat();
 
@@ -168,11 +175,12 @@ htColors.put(JobStatus.ERROR, "red");
 if (!isDelete) {
 %>
    <title>job results</title>
+   </head>
    <body>
    <jsp:include page="navbar.jsp"></jsp:include>
-<%
-}
-%>
+<% } %>
+
+
 <form>
 <input type="checkbox" name="<%= SHOW_ALL %>" <%= showAll ? "checked" : "" %> value="<%= SHOW_ALL %>"
 onclick="javascript:window.location='zipJobResults.jsp<%= showAll ? "" : ("?" + SHOW_ALL + "=1") %>'">show everyone's jobs
@@ -187,12 +195,15 @@ onclick="javascript:window.location='zipJobResults.jsp<%= showAll ? "" : ("?" + 
    <th><b><u>status</u></b></th>
 </tr>
 <%
+
 if(jobs.length==0) {
    out.println("<p>No jobs to display");
 }
+
+
 for(int i = 0; i < jobs.length; i++) {
    JobInfo job = jobs[i];
-   
+  
    out.print("<tr><td align=\"right\"><a href=\"getJobResults.jsp?jobID=" + job.getJobNumber() + "\">" + job.getJobNumber() + "</a>");
    
    out.print("<td><a href=\"addTask.jsp?view=1&name=" + job.getTaskLSID() + "\">" + job.getTaskName() + "</a>");
@@ -210,37 +221,42 @@ for(int i = 0; i < jobs.length; i++) {
    if(status.equals(JobStatus.PROCESSING)) {
        out.print("<td><font color=" + htColors.get(status)  +">" + status +  " - <a href=\"zipJobResults.jsp?stop=" + job.getJobNumber() + (showAll?"&showAll=":"")  + "\">stop</a>");
    } else if(!status.equals(JobStatus.NOT_STARTED)) {
-      out.print("<td><font color=" + htColors.get(status)  +">" + status + " - <a href=\"zipJobResults.jsp?deleteJob=" + job.getJobNumber() + (showAll?"&showAll=":"")  + "\">delete job</a>");
+       out.print("<td><font color=" + htColors.get(status)  +">" + status + " - <a href=\"zipJobResults.jsp?deleteJob=" + job.getJobNumber() + (showAll?"&showAll=":"")  + "\">delete job</a>");
    } else {
        out.print("<td><font color=" + htColors.get(status)  +">" + status);
    }
    ParameterInfo[] params = job.getParameterInfoArray();
    
    if(params!=null && params.length > 0) {
-     
+    
       boolean firstOutputFile = true;  
       boolean hasOutputFiles = false;
       for(int j = 0; j < params.length; j++) {
          ParameterInfo parameterInfo = params[j];
+ 
          if(parameterInfo.isOutputFile()) {
+
             if(firstOutputFile) {
                 out.println("<form>");
-                out.println("<input type=\"hidden\" name=\"jobID\" value=\"" + job.getJobNumber() + "\">");
+                out.println("<input type=\"hidden\" name=\"jobID\" value=\"" + job.getJobNumber() + "\"/>");
                 if (showAll) {
-                out.println("<input type=\"hidden\" name=\"" + SHOW_ALL + "\" value=\"1\">");
+                	out.println("<input type=\"hidden\" name=\"" + SHOW_ALL + "\" value=\"1\"/>");
                 }
                firstOutputFile = false;
                hasOutputFiles = true;
             }
            String value = parameterInfo.getValue();
            int index = value.lastIndexOf(File.separator);
+	     String altSeperator = "/";
+	     if (index == -1) index = value.lastIndexOf(altSeperator);
+
            String jobNumber = value.substring(0, index);
-           String fileName = value.substring(index + 1, value
-                  .length());
+           String fileName = value.substring(index + 1, value.length());
                   
            out.println("<tr><td></td><td colspan=\"4\">");
-           out.println("<input type=checkbox name=dl value=\"" + value + "\" checked><a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\">" + fileName + "</a>");
-           if(showAll) {
+           out.println("<input type=checkbox name=dl value=\"" + value + "\" checked='true' /><a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\">" + fileName + "</a>");
+   
+        if(showAll) {
                out.println(GenePatternAnalysisTask.htmlEncode(" " + job.getUserId()));
            }
          }
@@ -251,11 +267,15 @@ for(int i = 0; i < jobs.length; i++) {
          out.println("<input type=\"submit\" name=\"download\" value=\"download\" class=\"little\">");
          out.println("</form>");
       }
+
    }
+
 }
 
 out.println("</table>");
 out.println("<br>");
+
 %>
  <jsp:include page="footer.jsp"></jsp:include>
-
+</body>
+</html>
