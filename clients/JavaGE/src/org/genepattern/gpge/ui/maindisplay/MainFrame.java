@@ -256,6 +256,7 @@ public class MainFrame extends JFrame {
          }
       }
    }
+   
 
    private void textViewer(TreeNode node) {
       File file = null;
@@ -344,9 +345,17 @@ public class MainFrame extends JFrame {
 	}
 
 	public void changeServer(final String server, final String username) {
+      analysisServiceManager = AnalysisServiceManager.getInstance();
+      analysisServiceManager.changeServer(server, username);
+      final boolean isLocalHost = analysisServiceManager.isLocalHost();
+      
       Thread messageThread = new Thread() {
 			public void run() {
-				messageLabel.setText("Retrieving modules and jobs from " + server + "...");
+            if(isLocalHost) {
+                messageLabel.setText("Retrieving modules and jobs from local GenePattern server");
+            } else {
+               messageLabel.setText("Retrieving modules and jobs from " + server + "...");
+            }
             historyMenu.removeAll();
 			}
 		};
@@ -354,8 +363,7 @@ public class MainFrame extends JFrame {
 
 		GPpropertiesManager.setProperty(PreferenceKeys.SERVER, server);
 		GPpropertiesManager.setProperty(PreferenceKeys.USER_NAME, username);
-		analysisServiceManager = AnalysisServiceManager.getInstance();
-      analysisServiceManager.changeServer(server, username);
+		
       setChangeServerActionsEnabled(false);
 
 
@@ -374,11 +382,16 @@ public class MainFrame extends JFrame {
                // ignore the exception here, the user will be alerted in refreshTasks
 				}
 				refreshTasks();
-
+            
             Thread changeStatusThread = new Thread() {
                public void run() {
-                  messageLabel.setText("Server: " + server + "   Username: "
+                  if(isLocalHost) {
+                     messageLabel.setText("Server: Running Locally   Username: "
                         + username);
+                  } else {
+                     messageLabel.setText("Server: " + server + "   Username: "
+                        + username);
+                  }
                }
             };
             SwingUtilities.invokeLater(changeStatusThread);
@@ -387,7 +400,7 @@ public class MainFrame extends JFrame {
 
 
 	}
-
+ 
 	/**
 	 * Loads a task with the parameters that were used in the specified job into
 	 * the AnalysisTaskPanel
@@ -943,7 +956,7 @@ public class MainFrame extends JFrame {
 
 						for (Iterator it = analysisServicePanel
 								.getInputFileParameterNames(); it.hasNext();) {
-							final String name = (String) it.next();
+						  final String name = (String) it.next();
                     final String displayName = AnalysisServiceDisplay.getDisplayString(name);
 							MenuItemAction mi = new MenuItemAction(displayName) {
 								public void actionPerformed(ActionEvent e) {
