@@ -21,22 +21,27 @@ public class AnalysisWebServiceProxy {
 	AnalysisSoapBindingStub stub;
 
 	public AnalysisWebServiceProxy(String url, String userName)
-			throws java.net.MalformedURLException, org.apache.axis.AxisFault {
+			throws WebServiceException {
 		this(url, userName, true);
 	}
 
 	public AnalysisWebServiceProxy(String url, String userName,
-			boolean maintainSession) throws java.net.MalformedURLException,
-			org.apache.axis.AxisFault {
-		this.endpoint = url;
-		this.endpoint = this.endpoint + "/gp/services/Analysis";
-		if (!(endpoint.startsWith("http://"))) {
-			this.endpoint = "http://" + this.endpoint;
-		}
-		this.service = new Service();
-		stub = new AnalysisSoapBindingStub(new URL(endpoint), service);
-		stub.setUsername(userName);
-		stub.setMaintainSession(maintainSession);
+			boolean maintainSession) throws WebServiceException {
+     try {
+         this.endpoint = url;
+         this.endpoint = this.endpoint + "/gp/services/Analysis";
+         if (!(endpoint.startsWith("http://"))) {
+            this.endpoint = "http://" + this.endpoint;
+         }
+         this.service = new Service();
+         stub = new AnalysisSoapBindingStub(new URL(endpoint), service);
+         stub.setUsername(userName);
+         stub.setMaintainSession(maintainSession);
+      } catch(org.apache.axis.AxisFault af) {
+         throw new WebServiceException(af);  
+      } catch(java.net.MalformedURLException me) {
+         throw new Error(me);  
+      }
 	}
    
 
@@ -143,10 +148,10 @@ public class AnalysisWebServiceProxy {
 		}
 	}
 
-	public void deleteJobOutputFiles(int jobId, String[] fileNames)
+	public void deleteJobResultFile(int jobId, String fileName)
 			throws WebServiceException {
 		try {
-			stub.deleteJobOutputFiles(jobId, fileNames);
+			stub.deleteJobResultFile(jobId, fileName);
 		} catch (RemoteException re) {
 			throw new WebServiceException(re);
 		}
