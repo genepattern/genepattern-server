@@ -291,6 +291,31 @@ public class Analysis extends GenericWebService {
          throw new WebServiceException(e);  
       }
    }
+   
+   /**
+	 * Purges the all the input and output files for the given job and expunges
+	 * the job from the stored history. If the job is running if will be terminated.
+	 * 
+	 * @param jobId
+	 *            the job id
+	 */
+	public void purgeJob(int jobId) throws WebServiceException {
+		try {
+         deleteJob(jobId);
+         org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+					.getAnalysisJobDataSourceEJB();
+         org.genepattern.server.indexer.Indexer.deleteJob(jobId);  
+         JobInfo[] children = ds.getChildren(jobId);
+         ds.deleteJob(jobId);
+         
+         for(int i = 0; i < children.length; i++) {
+            purgeJob(children[i].getJobNumber());  
+         }
+		} catch (Exception e) {
+			throw new WebServiceException(e);
+		}
+	}
+   
 
 	/**
 	 * Deletes the all the input and output files for the given job and removes
