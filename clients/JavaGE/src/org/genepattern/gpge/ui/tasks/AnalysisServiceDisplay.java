@@ -1,5 +1,6 @@
 package org.genepattern.gpge.ui.tasks;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -31,16 +33,14 @@ import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.MainFrame;
 import org.genepattern.gpge.ui.project.ProjectDirModel;
-import org.genepattern.modules.ui.graphics.*;
-import org.genepattern.util.GPConstants;
-import org.genepattern.util.LSID;
 import org.genepattern.util.*;
+import org.genepattern.modules.ui.graphics.*;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 /**
- *  Description of the Class
+ *  Displays an <tt>AnalysisService</tt>
  *
  * @author    Joshua Gould
  */
@@ -61,6 +61,13 @@ public class AnalysisServiceDisplay extends JPanel {
          wse.printStackTrace();
       }
       parameterName2ComponentMap = new HashMap();
+      javax.swing.Icon icon = new javax.swing.ImageIcon(ClassLoader
+				.getSystemResource("org/genepattern/gpge/resources/intro.gif"));
+		 add(new JLabel(icon));
+       if(!MainFrame.RUNNING_ON_MAC) {
+         this.setBackground(Color.white);
+      } 
+      
    }
 
 
@@ -76,6 +83,21 @@ public class AnalysisServiceDisplay extends JPanel {
       listenerList.remove(AnalysisServiceSelectionListener.class, l);
    }
 
+   private JPanel createJPanel() {
+      JPanel p = new JPanel();
+      if(!MainFrame.RUNNING_ON_MAC) {
+         p.setBackground(Color.white);
+      }
+      return p;
+   }
+   
+    private JPanel createJPanel(java.awt.LayoutManager l) {
+      JPanel p = new JPanel(l);
+      if(!MainFrame.RUNNING_ON_MAC) {
+         p.setBackground(Color.white);
+      }
+      return p;
+   }
 
    /**
     *  Displays the given analysis service
@@ -172,8 +194,9 @@ public class AnalysisServiceDisplay extends JPanel {
       }
 
       ParameterInfo[] params = taskInfo.getParameterInfoArray();
-      JPanel parameterPanel = new JPanel();
-
+      JPanel parameterPanel = createJPanel();
+      parameterPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+     
       if(params == null || params.length == 0) {
          parameterPanel.add(new JLabel(selectedService.getTaskInfo().getName() + " has no input parameters"));
       } else {
@@ -188,11 +211,11 @@ public class AnalysisServiceDisplay extends JPanel {
          // input label, space, input field
          //                     description
          FormLayout formLayout = new FormLayout(
-               "right:default:none, 6px, left:default:grow",
+               "right:pref:none, 6px, left:default:grow",
                rowSpec.toString());
          parameterPanel.setLayout(formLayout);
          CellConstraints cc = new CellConstraints();
-
+        
          for(int i = 0; i < params.length; i++) {
             cc.gridWidth = 1;
             ParameterInfo info = params[i];
@@ -229,27 +252,33 @@ public class AnalysisServiceDisplay extends JPanel {
       JPanel topPanel = null;
       
       if(versionComboBox != null) {
-         JPanel temp = new JPanel(new FormLayout("left:pref:none, 12px, left:pref:none, 6px, left:pref:none", "pref, 12px"));
-         
+         JPanel temp = createJPanel(new FormLayout("left:pref:none, 12px, left:pref:none, 6px, left:pref:none", "pref, 12px"));
+         if(!MainFrame.RUNNING_ON_MAC) {
+            temp.setBackground(Color.white);
+         }
          CellConstraints cc = new CellConstraints();
          JLabel versionLabel = new JLabel("Choose Version:");
          temp.add(title, cc.xy(1, 1));
          temp.add(versionLabel, cc.xy(3, 1));
          temp.add(versionComboBox, cc.xy(5, 1));
-         topPanel = new JPanel(new BorderLayout());
+         topPanel = createJPanel(new BorderLayout());
          topPanel.add(temp, BorderLayout.NORTH);
          topPanel.add(description, BorderLayout.SOUTH);
       } else {
          CellConstraints cc = new CellConstraints();
-         JPanel temp = new JPanel(new FormLayout("left:pref:none", "pref, 12px"));
+         JPanel temp = createJPanel(new FormLayout("left:pref:none", "pref, 12px"));
+         if(!MainFrame.RUNNING_ON_MAC) {
+            temp.setBackground(Color.white);
+         }
          temp.add(title, cc.xy(1, 1));
-         topPanel = new JPanel(new BorderLayout());
+         topPanel = createJPanel(new BorderLayout());
          topPanel.add(temp, BorderLayout.NORTH);
          topPanel.add(description, BorderLayout.SOUTH);
       }
-
+      topPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+      
       setLayout(new BorderLayout());
-      JPanel buttonPanel = new JPanel();
+      JPanel buttonPanel = createJPanel();
       JButton submitButton = new JButton("Submit");
       submitButton.addActionListener(new SubmitActionListener());
       getRootPane().setDefaultButton(submitButton);
@@ -267,6 +296,7 @@ public class AnalysisServiceDisplay extends JPanel {
       revalidate();
       doLayout();
       notifyListeners();
+     
    }
 
 
@@ -356,7 +386,9 @@ public class AnalysisServiceDisplay extends JPanel {
 
    private ObjectTextField createObjectTextField() {
       final ObjectTextField field = new ObjectTextField(null, 20);
-      //field.setDropType(type);
+      if(!MainFrame.RUNNING_ON_MAC) {
+         field.setBackground(Color.white);
+      }
       field.setFont(getFont());
       return field;
    }
@@ -575,60 +607,62 @@ public class AnalysisServiceDisplay extends JPanel {
    private class SubmitActionListener implements ActionListener {
       public final void actionPerformed(ActionEvent ae) {
          final JButton source = (JButton) ae.getSource();
-         source.setEnabled(false);
-         List actualParameters = new ArrayList();
-         ParameterInfo[] formalParameters = selectedService.getTaskInfo().getParameterInfoArray();
-         
-         if(formalParameters != null) {
-            for(int i = 0; i < formalParameters.length; i++) {
-               Component c = (Component) parameterName2ComponentMap.get(formalParameters[i].getName());
-               String value = null;
-               ParameterInfo actualParameter = new ParameterInfo(formalParameters[i].getName(), "", "");
-               if(c instanceof ObjectTextField) {
-                  try {
-                     actualParameter.setAttributes(new HashMap(2));
-                     value = getValue(actualParameter, (ObjectTextField) c);
-                     actualParameter.getAttributes().put(
-								GPConstants.PARAM_INFO_CLIENT_FILENAME[0],
-								value);
-                  } catch(java.io.IOException ioe) {
-                     ioe.printStackTrace();  
+         try {
+            source.setEnabled(false);
+            List actualParameters = new ArrayList();
+            ParameterInfo[] formalParameters = selectedService.getTaskInfo().getParameterInfoArray();
+            
+            if(formalParameters != null) {
+               for(int i = 0; i < formalParameters.length; i++) {
+                  Component c = (Component) parameterName2ComponentMap.get(formalParameters[i].getName());
+                  String value = null;
+                  ParameterInfo actualParameter = new ParameterInfo(formalParameters[i].getName(), "", "");
+                  if(c instanceof ObjectTextField) {
+                     try {
+                        actualParameter.setAttributes(new HashMap(2));
+                        value = getValue(actualParameter, (ObjectTextField) c);
+                        actualParameter.getAttributes().put(
+                           GPConstants.PARAM_INFO_CLIENT_FILENAME[0],
+                           value);
+                     } catch(java.io.IOException ioe) {
+                        ioe.printStackTrace();  
+                     }
+                  } else if(c instanceof JComboBox) {
+                     ChoiceItem ci = (ChoiceItem) ((JComboBox)c).getSelectedItem();
+                     value = ci.getValue();
+                  } else if(c instanceof JTextField) {
+                     value = ((JTextField) c).getText();
                   }
-               } else if(c instanceof JComboBox) {
-                  ChoiceItem ci = (ChoiceItem) ((JComboBox)c).getSelectedItem();
-                  value = ci.getValue();
-               } else if(c instanceof JTextField) {
-                  value = ((JTextField) c).getText();
+                  if(value != null) {
+                     value = value.trim();
+                  }
+                  actualParameter.setValue(value);
+   
+                  if(formalParameters[i].getAttributes().get(
+                        GPConstants.PARAM_INFO_OPTIONAL[0]) != null
+                         && (value == null || value.equals(""))) {
+                     GenePattern.showErrorDialog(
+                           "Missing value for required parameter "
+                            + getDisplayString(formalParameters[i]));
+                     return;
+                  }
+                  actualParameters.add(actualParameter);
                }
-               if(value != null) {
-                  value = value.trim();
-               }
-               actualParameter.setValue(value);
-
-               if(formalParameters[i].getAttributes().get(
-                     GPConstants.PARAM_INFO_OPTIONAL[0]) != null
-                      && (value == null || value.equals(""))) {
-                  GenePattern.showErrorDialog(
-                        "Missing value for required parameter "
-                         + formalParameters[i].getName());
-                  return;
-               }
-               actualParameters.add(actualParameter);
             }
+            System.out.println(actualParameters);
+            final ParameterInfo[] actualParameterArray = (ParameterInfo[]) actualParameters.toArray(new ParameterInfo[0]);
+            final AnalysisService _selectedService = selectedService;
+            final String username = AnalysisServiceManager.getInstance().getUsername();
+               new Thread() {
+                  public void run() {
+                     RunTask rt = new RunTask(_selectedService, actualParameterArray,
+                           username);
+                     rt.exec();
+                  }
+               }.start();
+         } finally {
+            source.setEnabled(true);
          }
-         System.out.println(actualParameters);
-         final ParameterInfo[] actualParameterArray = (ParameterInfo[]) actualParameters.toArray(new ParameterInfo[0]);
-         final AnalysisService _selectedService = selectedService;
-         final String username = AnalysisServiceManager.getInstance().getUsername();
-            new Thread() {
-               public void run() {
-                  RunTask rt = new RunTask(_selectedService, actualParameterArray,
-                        username);
-                  rt.exec();
-               }
-            }.start();
-
-         source.setEnabled(true);
       }
    }
 
