@@ -18,7 +18,7 @@ create index idx_lsid_version on lsids(lsid_version);
 
 --Job Info table
 
-create table analysis_job(job_no int identity primary key, task_id int, status_id int, date_submitted timestamp, date_completed timestamp, input_filename longvarchar, result_filename longvarchar, parameter_info longvarchar, user_id longvarchar, isIndexed bit, access_id int, job_name longvarchar, lsid varchar(200));
+create table analysis_job(job_no int identity primary key, task_id int, status_id int, date_submitted timestamp, date_completed timestamp, parameter_info longvarchar, user_id longvarchar, isIndexed bit, access_id int, job_name longvarchar, lsid varchar(200), task_lsid varchar(200), task_name longvarchar);
 
 create index idx_job_lsid on analysis_job(lsid);
 
