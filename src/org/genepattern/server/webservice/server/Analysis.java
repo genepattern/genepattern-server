@@ -305,36 +305,87 @@ public class Analysis extends GenericWebService {
 		}
 	}
 
+   
+   private ParameterInfo[] removeOutputFile(JobInfo jobInfo, String value) {
+      ParameterInfo[] params = jobInfo.getParameterInfoArray();
+      if(params==null) {
+         return new ParameterInfo[0];
+      }
+      List newParams = new ArrayList();
+      for(int i = 0; i < params.length; i++) {
+         if(!params[i].isOutputFile() || !params[i].getValue().equals(value)) {
+            newParams.add(params[i]);
+         }
+      }
+      return (ParameterInfo[]) newParams.toArray(new ParameterInfo[0]);
+   }
+   
 	/**
 	 * 
-	 * Deletes the given output files for the given job
+	 * Deletes the given output file for the given job and removes the output file from the parameter info array for the job. If jobId is a parent job id and value was created by a child job, the child will be updated as well.
 	 * 
 	 * @param jobId
 	 *            the job id
-	 * @param fileNames
-	 *            the file names to delete
+	 * @param value
+	 *            the value of the parameter info object for the output file to delete
 	 */
-	public void deleteJobOutputFiles(int jobId, String[] fileNames) {
-		String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask
-				.getJobDir(String.valueOf(jobId)); // FIXME pipeline jobs
-		if (fileNames != null) {
-			for (int j = 0; j < fileNames.length; j++) {
-				String name = fileNames[j];
-				File file = new File(jobDir, name);
-				if (file.exists()) {
-					file.delete();
-				}
-				try {
-					org.genepattern.server.indexer.Indexer.deleteJobFile(jobId,
-							name);
-				} catch (IOException ioe) {
-					// ignore Lucene Lock obtain timed out exceptions
-					_cat.debug(ioe + " while deleting search indices for job "
-							+ jobId);
-				}
-
-			}
-		}
+	public void deleteJobResultFile(int jobId, String value) throws WebServiceException {
+      try {
+         org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+                     .getAnalysisJobDataSourceEJB();
+         JobInfo jobInfo = ds.getJobInfo(jobId);
+         int beforeDeletionLength = 0;
+         ParameterInfo[] params = jobInfo.getParameterInfoArray();
+         if(params!=null) {
+             beforeDeletionLength = params.length;
+         }
+         jobInfo.setParameterInfoArray(removeOutputFile(jobInfo, value));
+         
+         if(jobInfo.getParameterInfoArray().length==beforeDeletionLength) {
+            throw new WebServiceException(new java.io.FileNotFoundException());  
+         }
+         
+         int fileCreationJobNumber = jobInfo.getJobNumber();
+        
+         String fileName = value;
+         int index1 = fileName.lastIndexOf('/');
+         int index2 = fileName.lastIndexOf('\\');
+         int index = (index1 > index2 ? index1 : index2);
+         if (index != -1) {
+            fileCreationJobNumber = Integer.parseInt(fileName.substring(0, index));
+            fileName = fileName.substring(index + 1, fileName
+                           .length());
+            
+         }		
+         String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask
+               .getJobDir(String.valueOf(fileCreationJobNumber));
+         File file = new File(jobDir, fileName);
+         if(file.exists()) {
+            file.delete();
+         }
+         
+         ds.updateJob(jobInfo.getJobNumber(), jobInfo.getParameterInfo(), ((Integer)JobStatus.STATUS_MAP.get(jobInfo.getStatus())).intValue());
+            
+         if(fileCreationJobNumber!=jobId) {
+            JobInfo childJob = ds.getJobInfo(fileCreationJobNumber);
+            childJob.setParameterInfoArray(removeOutputFile(childJob, value));
+            ds.updateJob(childJob.getJobNumber(), childJob.getParameterInfo(), ((Integer)JobStatus.STATUS_MAP.get(childJob.getStatus())).intValue());
+         }
+          try {
+             org.genepattern.server.indexer.Indexer.deleteJobFile(fileCreationJobNumber,
+               fileName);
+          } catch (IOException ioe) {
+         // ignore Lucene Lock obtain timed out exceptions
+            _cat.debug(ioe + " while deleting search indices for job "
+               + jobId);
+          }
+      } catch(org.genepattern.webservice.OmnigeneException oe) {
+         throw new WebServiceException(oe);  
+      } catch(java.rmi.RemoteException re) {
+         throw new WebServiceException(re); 
+      }
+          
+     
 	}
   
    
