@@ -347,8 +347,12 @@ public class AdminHSQLDAO implements AdminDAO {
 
 
    private Connection getConnection() throws SQLException {
-         
-      return DriverManager.getConnection(dbURL, dbUsername, dbPassword);
+   	try {
+	      return DriverManager.getConnection(dbURL, dbUsername, dbPassword);
+   	} catch (SQLException se) {
+		System.err.println("AdminHSQLDAO: " + se + " while getting connection to " + dbURL + ", " + dbUsername + ", " + dbPassword);
+		throw se;
+	}
    }
 
    static {
@@ -376,7 +380,7 @@ public class AdminHSQLDAO implements AdminDAO {
       } catch(ClassNotFoundException cnfe) {
       }
       dbURL = props.getProperty("DB.url", "jdbc:hsqldb:hsql://localhost:9001");
-      dbUsername = props.getProperty("DB.dbUsername", "sa");
-      dbPassword = props.getProperty("DB.dbPassword", "");
+      dbUsername = props.getProperty("DB.username", "sa");
+      dbPassword = props.getProperty("DB.password", "");
    }
 }
