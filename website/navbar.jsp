@@ -5,24 +5,63 @@
 		java.util.HashSet,
 		java.util.HashMap,
 		java.util.Set,
-		org.genepattern.server.genepattern.LSIDManager,
-		org.genepattern.util.LSIDUtil,
-		org.genepattern.util.LSID,
+		java.util.Vector,
+		java.util.LinkedHashSet,
 		org.genepattern.webservice.TaskInfo,
 		org.genepattern.webservice.TaskInfoAttributes,
-		org.genepattern.server.genepattern.GenePatternAnalysisTask,
-		org.genepattern.server.webservice.server.local.*,
-		org.genepattern.util.GPConstants,
+		org.genepattern.webservice.JobInfo,
+		org.genepattern.webservice.WebServiceException,
+     		org.genepattern.server.genepattern.GenePatternAnalysisTask,
+		org.genepattern.server.genepattern.LSIDManager,
+		org.genepattern.server.webservice.server.local.LocalAdminClient,
+		org.genepattern.server.webservice.server.local.LocalAnalysisClient,
+ 	 	org.genepattern.util.GPConstants,
+		org.genepattern.util.LSIDUtil,
+		org.genepattern.util.LSID,
 		org.genepattern.server.indexer.Indexer" %>
 <% { %>
 <% 
+String DIVIDER = "------";
+
 if (request.getAttribute("navbar") == null) { 
 
 String userID = GenePatternAnalysisTask.getUserID(request, null); // get userID but don't force login if not defined
 boolean userUnknown = (userID == null || userID.equals(""));
 Collection tmTasks = null;
+int recentCount = Integer.parseInt(System.getProperty("recentJobsToDisplay", "3"));
+Vector recentTasks = new Vector();
+Vector recentPipes = new Vector();
+
 try { 
-	tmTasks = new LocalAdminClient(userID).getTaskCatalog();
+	LocalAdminClient adminClient = new LocalAdminClient(userID);
+	tmTasks = adminClient.getTaskCatalog();
+	
+	LinkedHashSet recentTasksSet = new LinkedHashSet();
+	LinkedHashSet recentPipesSet = new LinkedHashSet();
+	LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
+	JobInfo[] jobs = analysisClient.getJobs(userID, -1, Integer.MAX_VALUE, false);
+
+	for (int i=0; (i < jobs.length) && (recentCount > 0); i++ ){
+		JobInfo job = jobs[i];
+		String jobName = job.getTaskName();
+		if (jobName.endsWith(".pipeline")){
+			if (recentPipes.size() >= recentCount) continue;
+			if (!recentPipesSet.contains(job.getTaskName())){
+				recentPipesSet.add(job.getTaskName());
+				recentPipes.add(adminClient.getTask(job.getTaskLSID()));
+ 			}
+		} else {
+			if (recentTasks.size() >= recentCount) continue;
+			if (!recentTasksSet.contains(job.getTaskName())){
+				recentTasksSet.add(job.getTaskName());
+				recentTasks.add(adminClient.getTask(job.getTaskLSID()));
+ 			}
+		}
+		if ((recentTasks.size() >= recentCount) && (recentPipes.size() >= recentCount)){
+			break;
+		}
+	   }
+
 } catch (Exception e) {
 	tmTasks = new HashSet();
 }
@@ -33,6 +72,7 @@ String SEARCH = "search";
 <!-- begin navbar.jsp -->
 <script language="javascript">
 var IGNORE = "dontJump";
+var DIVIDER = "------";
 var CREATE = "create";
 var EDIT = "edit";
 var VIEW = "view";
@@ -41,13 +81,13 @@ var RUN = "run";
 // handle focus and blur events for a field
 function ufocus(fld, focus, deflt ) {
     if (focus) {
-	if (fld.value == deflt) { 
+	if ((fld.value == deflt) ) { 
 		fld.value = "";
 	} else { 
 		fld.select();
 	}
     } else {
-	if (fld.value == "") { 
+	if ((fld.value == "")) { 
 		fld.value = deflt;
 	}
     }
@@ -88,6 +128,12 @@ function changeTask() {
 	var enableEdit = true;
 	var sel = document.forms['searchForm'].Task;
 	var taskLSID = sel[sel.selectedIndex].value;
+	if (taskLSID == IGNORE){
+		document.forms['searchForm'].navbarrun.disabled = true;
+		document.forms['searchForm'].navbaredit.disabled = true;
+		return;
+	}
+
 	var create = (sel.selectedIndex == 1);
 	if (new LSID(taskLSID).authorityType == '<%= LSIDUtil.AUTHORITY_MINE %>' || create) {
 		enableEdit = true;
@@ -106,6 +152,12 @@ function changePipeline() {
 	var enableEdit = true;
 	var sel = document.forms['searchForm'].Pipeline;
 	var taskLSID = sel[sel.selectedIndex].value;
+	if (taskLSID == IGNORE){
+		document.forms['searchForm'].navbarrun.disabled = true;
+		document.forms['searchForm'].navbaredit.disabled = true;
+		return;
+	}
+
 	var create = (sel.selectedIndex == 1);
 	if (new LSID(taskLSID).authorityType == '<%= LSIDUtil.AUTHORITY_MINE %>' || create) {
 		enableEdit = true;
@@ -208,8 +260,8 @@ function LSID(lsid) {
 	<tr>
 	<td class="navbar" valign="top">
 		<% if (!userUnknown) { %>
-			<%= _taskCatalog(tmTasks, "Task", "changeTask();", null, userID) %>
-			<%= _taskCatalog(tmTasks, "Pipeline", "changePipeline();", GPConstants.TASK_TYPE_PIPELINE, userID) %>
+			<%= _taskCatalog(tmTasks, recentTasks, "Task", "changeTask();", null, userID) %>
+			<%= _taskCatalog(tmTasks, recentPipes, "Pipeline", "changePipeline();", GPConstants.TASK_TYPE_PIPELINE, userID) %>
 			<nobr>
 				<input type="button" value="run" name="navbarrun" onclick="jumpTo(this)" disabled> 
 				<input type="button" value="edit" name="navbaredit" onclick="jumpTo(this)" disabled>
@@ -240,14 +292,30 @@ function LSID(lsid) {
 <% request.setAttribute("navbar", "already set"); %>
 <% } %>
 <% } %>
-<%! private String _taskCatalog(Collection tmTasks, String selectorName, String onSelectURL, String type, String userID) {
+<%! private String _taskCatalog(Collection tmTasks, Vector recent, String selectorName, String onSelectURL, String type, String userID) {
 	String IGNORE = "dontJump";
+	String DIVIDER = "-----------";
+	int maxNameWidth = 0; 
+	for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
+		TaskInfo task = (TaskInfo)itTasks.next();
+		maxNameWidth = Math.max(maxNameWidth, task.getName().length());
+			}
+	StringBuffer divBuff = new StringBuffer(DIVIDER);
+	for (int i=0; i < maxNameWidth; i++){
+		divBuff.append("-");
+	}
+	DIVIDER=divBuff.toString();
+System.out.println("   MAX=" + DIVIDER.length());
+
 	StringBuffer sbCatalog = new StringBuffer();
 	sbCatalog.append("<select name=\"" + selectorName + "\" onchange=\"");
 	sbCatalog.append(onSelectURL);
 	sbCatalog.append("\" class=\"navbar\">\n");
 	sbCatalog.append("<option value=\"" + IGNORE + "\">" + (type == null ? "task" : type) + "</option>\n");
-	sbCatalog.append("<option value=\"\">new " + (type == null ? "task" : type) + "</option>\n");
+	sbCatalog.append("<option select value=\"\">new " + (type == null ? "task" : type) + "</option>\n");
+
+	sbCatalog.append("<option value=\"" + IGNORE + "\">" + DIVIDER + "</option>\n");
+
 	String name;
 	String shortName;
 	String description;
@@ -264,6 +332,38 @@ function LSID(lsid) {
 
 	String authorityType = null;
 
+	// put recent tasks into list first
+	for (Iterator itTasks = recent.iterator(); itTasks.hasNext(); ) {
+		taskInfo = (TaskInfo)itTasks.next();
+		name = taskInfo.getName();
+		tia = taskInfo.giveTaskInfoAttributes();
+		
+		shortName = name;
+		if (name.endsWith("." + GPConstants.TASK_TYPE_PIPELINE)) {
+			shortName = name.substring(0, name.length() - GPConstants.TASK_TYPE_PIPELINE.length() -1);
+		}
+		description = taskInfo.getDescription();
+
+		lsid = tia.get(GPConstants.LSID);
+		try {
+			l = new LSID(lsid);
+			versionlessLSID = l.toStringNoVersion();
+			String key = versionlessLSID+"."+name;			
+			authorityType = LSIDManager.getInstance().getAuthorityType(l);
+		} catch (MalformedURLException mue) {
+			continue; // don't list if it doesn't have an LSID
+		}
+		sbCatalog.append("<option value=\"" + (lsid != null ? l.toString() : name) +
+			 "\" class=\"navbar-tasks-" + authorityType + "\"" + 
+			 " title=\"" + GenePatternAnalysisTask.htmlEncode(description) + ", " + l.getAuthority() + "\"" +
+			 "><i>" + name + "</i></option>\n");
+		
+	}
+
+	if (recent.size() > 0){
+		sbCatalog.append("<option value=\"" + IGNORE + "\">" + DIVIDER  + "</option>\n");
+	}
+	
 	// put public and my tasks into list first
 	for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 		taskInfo = (TaskInfo)itTasks.next();
