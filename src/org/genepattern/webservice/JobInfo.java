@@ -40,19 +40,16 @@ public class JobInfo implements Serializable {
      * @param submittedDate
      * @param completedDate
      * @param parameter_info
-     * @param inputFileName
-     * @param resultFileName 
      * @param userId
      */
-    public JobInfo(int jobNo, int taskID, String status,  Date submittedDate,Date completedDate, ParameterInfo[] parameters, String inputFileName, String resultFileName,String userId) {
+
+    public JobInfo(int jobNo, int taskID, String status,  Date submittedDate,Date completedDate, ParameterInfo[] parameters, String userId) {
         this.jobNo = jobNo;
         this.taskID = taskID;
         this.status=status;
         this.submittedDate = submittedDate;
         this.completedDate = completedDate;
         this.parameterInfoArray = parameters;
-        this.inputFileName = inputFileName;
-        this.resultFileName = resultFileName;
         this.userId = userId;
     }
 
@@ -85,12 +82,11 @@ public class JobInfo implements Serializable {
      * @param taskID
      * @param parameter_info
      * @param inputFileName  */
-    public JobInfo(int jobNo, int taskID, ParameterInfo[] parameters,String inputFileName, String user_id) {
+    public JobInfo(int jobNo, int taskID, ParameterInfo[] parameters,String user_id) {
         this.jobNo=jobNo;
         this.taskID=taskID;
         this.parameterInfoArray = parameters;
-        this.inputFileName=inputFileName;
-	this.userId = user_id;
+        this.userId = user_id;
     }
 
 
@@ -158,13 +154,17 @@ public class JobInfo implements Serializable {
     }
 
     /**
-     * @return  */
+     * @return  
+     * @deprecated
+     */
     public String getInputFileName() {
         return inputFileName;
     }
 
     /**
-     * @param inputFileName  */
+     * @param inputFileName  
+     * @deprecated
+     */
     public void setInputFileName(String  inputFileName) {
         this.inputFileName=inputFileName;
     }
@@ -214,13 +214,17 @@ public class JobInfo implements Serializable {
     }
 
     /**
-     * @return  */
+     * @return  
+     * @deprecated
+     */
     public String getResultFileName() {
         return resultFileName;
     }
 
     /**
-     * @param resultFileName  */
+     * @param resultFileName  
+     * @deprecated
+     */
     public void setResultFileName(String  resultFileName) {
         this.resultFileName=resultFileName;
     }
