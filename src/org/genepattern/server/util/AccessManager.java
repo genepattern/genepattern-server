@@ -49,12 +49,15 @@ public class AccessManager {
 					String tok = strtok.nextToken();
 					allowedClients.add(tok);
 				}
+				allowedClients.add("127.0.0.1");// so that you can always get in locally
+				allowedClients.add("localhost");// so that you can always get in locally
+				
 				try{
 				InetAddress addr = InetAddress.getLocalHost();
 					String host_address = addr.getCanonicalHostName();
 					String host_address2 = addr.getHostAddress();
-					allowedClients.add(host_address);
-					allowedClients.add(host_address2);
+					allowedClients.add(host_address);// so that you can always get in locally
+					allowedClients.add(host_address2);// so that you can always get in locally
 					
 				} catch (UnknownHostException uke){
 					// do nothing
