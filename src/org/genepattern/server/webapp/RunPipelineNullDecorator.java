@@ -12,7 +12,6 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.StringUtils;
 import org.genepattern.util.GPConstants;
-import org.genepattern.util.PropertyFactory;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -29,11 +28,14 @@ public class RunPipelineNullDecorator implements RunPipelineOutputDecoratorIF {
 	public void beforePipelineRuns(PipelineModel model) {
 		this.model = model;
 		try {
-			PropertyFactory property = PropertyFactory.getInstance();
-			genepatternProps = property.getProperties("genepattern.properties");
-		} catch (Exception ioe) {
-			genepatternProps = new Properties();
-		}
+			String genePatternPropertiesFile = System.getProperty("genepattern.properties") +  java.io.File.separator + "genepattern.properties";
+     		java.io.FileInputStream fis = new java.io.FileInputStream(genePatternPropertiesFile);
+      		genepatternProps = new Properties();
+      		genepatternProps.load(fis);
+      		fis.close();
+     	} catch(Exception e) {
+     		genepatternProps = new Properties();
+     	}
 		logger.beforePipelineRuns(model);
 
 	}

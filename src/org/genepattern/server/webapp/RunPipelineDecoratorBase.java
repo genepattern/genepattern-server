@@ -29,7 +29,6 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.util.PropertyFactory;
 
 /**
  * This is the decorator for output from running a pipeline from the web
@@ -38,8 +37,6 @@ import org.genepattern.util.PropertyFactory;
  * pipeline was run, execution times and output files
  */
 public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecoratorIF {
-
-	protected Properties omnigeneProps = null;
 
 	protected Properties genepatternProps = null;
 
@@ -167,14 +164,14 @@ public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecor
 
 	protected void init(){
 		try {
-			PropertyFactory property = PropertyFactory.getInstance();
-			omnigeneProps = property.getProperties("omnigene.properties");
-			genepatternProps = property.getProperties("genepattern.properties");
-
+			String genePatternPropertiesFile = System.getProperty("genepattern.properties") +  java.io.File.separator + "genepattern.properties";
+      		java.io.FileInputStream fis = new java.io.FileInputStream(genePatternPropertiesFile);
+      		genepatternProps = new Properties();
+      		genepatternProps.load(fis);
+      		fis.close();
 			URL = localizeURL(genepatternProps.getProperty("GenePatternURL"));
 
 		} catch (Exception ioe) {
-			omnigeneProps = new Properties();
 			genepatternProps = new Properties();
 		}
 
