@@ -24,6 +24,7 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
+import org.genepattern.webservice.AnalysisJob;
 
 /**
  * Analysis Web Service.
@@ -338,6 +339,33 @@ public class Analysis extends GenericWebService
 		}
     }
     
+    /**
+    *
+    * Gets the jobs for the current user
+    *
+    * @return the jobs
+    */
+    public AnalysisJob[] getJobs() throws WebServiceException {
+       try {
+         org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference.getAnalysisJobDataSourceEJB();
+         JobInfo[] jobs = ds.getJobInfo(getUsernameFromContext());
+         String server = (String) MessageContext.getCurrentContext().getProperty("transport.url");
+        
+         java.net.URL url = new java.net.URL(server);
+         server = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();  
+         
+         AnalysisJob[] analysisJobs = new AnalysisJob[jobs.length];
+         for(int i = 0; i < jobs.length; i++) {
+            String taskName = "TODO"; // FIXME
+            AnalysisJob analysisJob = new AnalysisJob(server, taskName, jobs[i]);
+            analysisJob.setLSID("TODO");
+            analysisJobs[i] = analysisJob;
+         }
+         return analysisJobs;
+       } catch(Exception e) {
+          throw new WebServiceException(e);  
+       }
+    }
 
     /**
      * Returns the username trying to access this service.  The username is retrieved
