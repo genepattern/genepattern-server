@@ -278,12 +278,18 @@ public class MainFrame extends JFrame {
                   System.setProperty("lsid.authority", lsidAuthority);
                } catch(Throwable x) {}
                refresh();
+               
             }
          }.start();
-      
+         
 
       analysisTasksPanel = new AnalysisServicePanel(DefaultExceptionHandler.instance(), analysisServiceManager);
       jobModel = JobModel.getInstance();
+      new Thread() {
+            public void run() {
+               jobModel.getJobsFromServer(analysisServiceManager.getServer(), analysisServiceManager.getUsername()); 
+            }
+         }.start();
       jobModel.addJobListener(new JobListener() {
          public void jobStatusChanged(JobEvent e){}
          public void jobAdded(JobEvent e){}
@@ -298,7 +304,6 @@ public class MainFrame extends JFrame {
       projectDirModel = ProjectDirModel.getInstance();
       projectDirTree = new SortableTreeTable(projectDirModel, false);
       
-      jobModel.getJobsFromServer(server, username);
       jobResultsTree = new SortableTreeTable(jobModel);
       
       jobPopupMenu.add(
