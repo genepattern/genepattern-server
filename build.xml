@@ -93,7 +93,11 @@
        	<fileset dir="src/" includes="**/*.class"/>
        	<fileset dir="build/" includes="**/*"/>
         <fileset dir="website/" includes="**/*.class"/>
-    </delete>
+	    <fileset dir="installer/GP_server_Build_Output/" includes="**/*"/>
+	    <fileset dir="installer/server_Build_Output/" includes="**/*"/>
+	    <fileset dir="installer/" includes=".buildinstaller*.tmp/**"/>
+	    <fileset dir="clients/javage/installer/" includes=".buildinstaller*.tmp/**"/>
+	  </delete>
 	<ant antfile="../build.xml" dir="clients/JavaGE/src" inheritall="true" inheritrefs="true" target="clean"/>
  </target>
 
