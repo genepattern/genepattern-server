@@ -83,7 +83,8 @@ public class MainFrame extends JFrame {
 	JFileChooser saveAsFileChooser = new JFileChooser();
 
 	FileMenu fileMenu;
-
+   JMenu windowMenu;
+   
 	final static int MENU_SHORTCUT_KEY_MASK = Toolkit.getDefaultToolkit()
 			.getMenuShortcutKeyMask();
 
@@ -1106,36 +1107,40 @@ public class MainFrame extends JFrame {
          setTitle(BuildProperties.PROGRAM_NAME);
           
       } else if(windowStyle==WINDOW_STYLE_MDI) {
-         JInternalFrame projectFrame = new JInternalFrame("Projects", true, false, true, true);
-         projectFrame.getContentPane().add(projectSP);
+         JInternalFrame projectsInternalFrame = new JInternalFrame("Projects", true, false, true, true);
+         projectsInternalFrame.getContentPane().add(projectSP);
          int w = (int)(width*0.3);
          int h = (int)(height*.45);
-         projectFrame.setSize(w, h);
-         projectFrame.setVisible(true);
-         projectFrame.setLocation(10, 10);
+         projectsInternalFrame.setSize(w, h);
+         projectsInternalFrame.setVisible(true);
+         projectsInternalFrame.setLocation(10, 10);
          
-         JInternalFrame jobDialog = new JInternalFrame("Job Results", true, false, true, true);
-         jobDialog.getContentPane().add(jobSP);
-         jobDialog.setSize(w, h);
-         jobDialog.setLocation(10, 10 + projectFrame.getHeight());
-         jobDialog.setVisible(true);
+         JInternalFrame jobResultsInternalFrame = new JInternalFrame("Job Results", true, false, true, true);
+         jobResultsInternalFrame.getContentPane().add(jobSP);
+         jobResultsInternalFrame.setSize(w, h);
+         jobResultsInternalFrame.setLocation(10, 10 + projectsInternalFrame.getHeight());
+         jobResultsInternalFrame.setVisible(true);
          
-         JInternalFrame moduleDialog = new JInternalFrame("Module", true, false, true, true);
+         JInternalFrame moduleInternalFrame = new JInternalFrame("Module", true, false, true, true);
          
-         moduleDialog.getContentPane().add(analysisServicePanel);
+         moduleInternalFrame.getContentPane().add(analysisServicePanel);
          w = (int)(width*0.6);
          h = (int)(height*.9);
-         moduleDialog.setSize(w, h);
-         moduleDialog.setLocation(10 + projectFrame.getWidth(), 10);
-         moduleDialog.setVisible(true);
+         moduleInternalFrame.setSize(w, h);
+         moduleInternalFrame.setLocation(10 + projectsInternalFrame.getWidth(), 10);
+         moduleInternalFrame.setVisible(true);
          
          JDesktopPane dp = new JDesktopPane();
-         dp.add(projectFrame);
-         dp.add(jobDialog);
-         dp.add(moduleDialog);
+         dp.add(projectsInternalFrame);
+         dp.add(jobResultsInternalFrame);
+         dp.add(moduleInternalFrame);
          setContentPane(new JScrollPane(dp));
          setSize(screenSize.width, screenSize.height);
          setTitle(BuildProperties.PROGRAM_NAME);
+         
+         addToWindowMenu("Job Results", jobResultsInternalFrame);
+         addToWindowMenu("Module", moduleInternalFrame);
+         addToWindowMenu("Projects", projectsInternalFrame);
          setJMenuBar(menuBar);
       }
       
@@ -1143,6 +1148,23 @@ public class MainFrame extends JFrame {
       show();
 	}
 
+   void addToWindowMenu(String name, final java.awt.Component c) {
+      JMenuItem mi = new JMenuItem(name);
+      mi.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+            c.setVisible(true);
+            if(c instanceof JInternalFrame) {
+               ((JInternalFrame)c).toFront(); 
+               try {
+                  ((JInternalFrame)c).setSelected(true);
+               } catch(java.beans.PropertyVetoException pe){}
+               
+            }
+         }
+      });
+      windowMenu.add(mi);
+   }
+   
 	public void refreshJobs() {
 		new Thread() {
 			public void run() {
@@ -1228,9 +1250,13 @@ public class MainFrame extends JFrame {
       historyMenu = new HistoryMenu();
       menuBar.add(historyMenu);
       
+      windowMenu = new JMenu("Window");
+      menuBar.add(windowMenu);
+      
 		JMenu helpMenu = new HelpMenu();
       menuBar.add(helpMenu);
 		
+      
       if(RUNNING_ON_MAC) {
          macos.MacOSMenuHelper.registerHandlers();  
       }
