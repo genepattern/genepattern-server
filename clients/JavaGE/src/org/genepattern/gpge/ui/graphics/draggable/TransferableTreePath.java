@@ -9,7 +9,7 @@ import javax.swing.tree.TreePath;
 /**
  * This represents a TreePath (a node in a JTree) that can be transferred between a drag source and a drop target.
  */
-class TransferableTreePath implements Transferable {
+public class TransferableTreePath implements Transferable {
     // The type of DnD object being dragged...
     public static final DataFlavor TREEPATH_FLAVOR = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType, "TreePath");
     
