@@ -324,9 +324,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 						.updateTask(
 								taskName,
 								description,
-								"edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask",
 								parameterInfoArray, // FIXME
-
 								new TaskInfoAttributes(taskAttributes),
 								username, accessId);
 			} // task does not already exist, treat as new
@@ -334,10 +332,8 @@ public class TaskIntegrator implements ITaskIntegrator {
 				lsid = GenePatternAnalysisTask
 						.installNewTask(
 								taskName,
-								description,
-								"edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask",
+								description,								
 								parameterInfoArray, // FIXME
-
 								new TaskInfoAttributes(taskAttributes),
 								username, accessId);
 			}
