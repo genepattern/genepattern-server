@@ -1409,40 +1409,6 @@ function(server, method, ..., action, nameSpaces = SOAPNameSpaces(), xmlns = NUL
 	return(content)
 }
 
-gpWaitForGCTs <-
-#
-# for a specified jobID, wait for results and parse into array of GCT files
-#
-function(jobID, server=defaultServer)
-{
-	server <- gpNormalizeServer(server)
-# TODO: don't read whole file into memory at once, just work on a line by line basis
-	txt <- gpReadFile(gpWaitForResults(jobID, server=server))	# get results
-	txt <- unlist(strsplit(txt, "\n\n"))		# turn into pairs of filenames and texts
-	names <- gsub("^\n", "", txt[seq(1, length(txt), by=2)])	# generate list of filenames, stripping leading \n's
-	values <- txt[seq(2, length(txt), by=2)]	# generate list of datafiles
-							# parse into a data.frame
-#	values<-c("#1.2\n190  190\nName       Description     C_31    C_26    C_23    C_131\nC_31\tC_31\t1.0\t0.0\t0.0\t0.0\nmore\tother\ta\tb\tc\td\n","#1.2\n190\t190\nName\tDescription\tC_23\tC_83\tC_84\tC_85\nC_23\tC_23\t1.0\t0.5\t0.125\t0.14285715")
-
-	gcts <- lapply(values, function(v) { return (gpResultAsGCT(v)) })
-	
-	# set the filename of each element
-	for (i in 1:length(names)) { gcts[[i]]@filename <- names[i] }
-	return(gcts)
-}
-
-gpWaitForGCT <-
-#
-# for a specified jobID, wait for results and parse into array of GCT files
-#
-function(jobID, server=defaultServer)
-{
-	server <- gpNormalizeServer(server)
-	oldName <- gpWaitForResults(jobID, server=server)		# get results oldName
-	newName <- paste(jobID, ".gct", sep="", collape="")
-	return (gpSaveAs(oldName@filenames[[1]], newName))
-}
-
 r <- function(...) { 
  args <- list(...)
  for(i in names(args)) {
@@ -1588,29 +1554,6 @@ function(original)
   encoded <- gsub("<", "&lt;", encoded)
   encoded <- gsub(">", "&gt;", encoded)
   return (encoded)
-}
-
-runGenePatternTaskMain <-
-#
-# invoke the remote class loader to run a Java-based application (eg. visualizer) using
-# jar files that live on the GenePattern server.  The JVM will run locally, but will have
-# a network-extended classpath.
-#
-function(className, taskName, host, port, classPath, ...)
-{
-	# quote classpath to protect <libdir> from I/O redirection
-	classPath <- paste("\"", classPath, "\"", sep="", collapse="") 
-
-	# location of the RunGenePatternTaskMain class file
-	RGPTMPath <- file.path(Sys.getenv("GENEPATTERN_HOME"), "Tomcat", "webapps", "gp", "WEB-INF", "lib", "runTask.jar")
-
-	# build command line
-	java <- gpFindJava()
-	cmdLine <- paste(java, "-cp", RGPTMPath, 
-			"edu.mit.genome.gp.util.RunGenePatternTaskMain", className, taskName, 
-			host, port, classPath, ..., sep=" ", collapse="")
-	# cat(cmdLine)
-	system(cmdLine, invisible=FALSE, wait=TRUE)
 }
 
 # begin gpio.R
