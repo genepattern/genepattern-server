@@ -129,7 +129,7 @@ function addNavbarItem(name, lsid) {
 	newOption.className = "navbar-tasks-" + l.authorityType;
 //	if (l.authorityType == "<%= LSIDUtil.AUTHORITY_FOREIGN %>") {
 		newOption.setAttribute("title", l.getAuthority());
-/	}
+//	}
 	selector.options[selector.options.length] = newOption;
 	selector.options[selector.options.length-1].selected = true; // highlight it
 	eval("change" + taskType + "()"); // call either changeTask() or changePipeline()
