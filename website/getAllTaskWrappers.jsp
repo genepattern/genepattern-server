@@ -180,12 +180,18 @@ if (language.equals("R")) {
 		File[] supportFiles = new File(libdir).listFiles();
 		String paramName = null;
 
+		String commandLine = taskInfoAttributes.get(GPConstants.COMMAND_LINE);
+		commandLine = GenePatternAnalysisTask.replace(commandLine, "\"", "\\\""); // change quotes to backslash-quotes
+		commandLine = makePaste(commandLine);
+		
+		// libdir: change backslashes to forward slashes
+		libdir = GenePatternAnalysisTask.replace(libdir, "\\", "/");
+
 		// task name
 		out.append("gpRunVisualizer(\"" + taskInfo.getName() + "\", ");
 		// command line
-		out.append("\"" + taskInfoAttributes.get(GPConstants.COMMAND_LINE) + "\", ");
-		// libdir
-		out.append("\"" + GenePatternAnalysisTask.replace(libdir, "\\", "/") + "\", ");
+		out.append(commandLine + ", ");
+		out.append("\"" + libdir + "\", ");
 		// OS
 		out.append("\"" + taskInfoAttributes.get(GPConstants.OS) + "\", ");
 		// CPU
@@ -297,4 +303,30 @@ if (language.equals("R")) {
 	}
 	return hmTasks;
 }
+%>
+<%! public String makePaste(String line) { 
+	StringBuffer ret = new StringBuffer();
+	int CHUNK_SIZE = 512;
+	if (line.length() < CHUNK_SIZE) {
+		ret.append("\"");
+		ret.append(line);
+		ret.append("\"");
+	} else {
+		int i = 0;
+		for (; i < line.length(); i += CHUNK_SIZE) {
+			if (ret.length() == 0) {
+				ret.append("paste(\"");
+			} else {
+				ret.append("\",\n\t\t\t\"");
+			}
+			ret.append(line.substring(i, Math.min(i + CHUNK_SIZE, line.length())));
+		}
+		if (i < line.length()) {
+			ret.append("\",\n\t\t\t\"");
+			ret.append(line.substring(i));
+		}
+		ret.append("\", sep=\"\", collapse=\"\")\n\t\t\t");
+	}
+	return ret.toString();
+    }
 %>
