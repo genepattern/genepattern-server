@@ -2335,8 +2335,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	 * @author Jim Lerner
 	 *  
 	 */
-	public static String getUserID(HttpServletRequest request,
-			HttpServletResponse response) {
+	public static String getUserID(HttpServletRequest request, HttpServletResponse response) {
 		String userID = null;
 		if (request.getAttribute(USER_LOGGED_OFF) != null) {
 			return userID;
@@ -2375,7 +2374,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
 							+ request.getServerPort() + "/gp/login.jsp?origin="
 							+ URLEncoder.encode(URL, UTF8);
 					response.sendRedirect(fqAddress);
+					return null;
 				}
+				response.sendRedirect("login.jsp");
+				return null;
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
 			}
