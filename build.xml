@@ -123,7 +123,7 @@
    </target>
 
    <target name="gp-library-doc" depends="init" unless="skipdoc">
-	<javadoc destdir="build/doc" Author="no" Public="true" Verbose="no">
+	<javadoc destdir="build/doc" Author="no" Public="true" Verbose="false">
 		<classpath>
 			<fileset dir="lib">
 				<include name="**/*.jar"/>
@@ -133,7 +133,8 @@
 		<fileset dir="src" defaultexcludes="yes">
       		<include name="org/genepattern/data/**/*.java"/>
 			<include name="org/genepattern/client/**.java" />
-			<include name="org/genepattern/webservice/**.java" />
+			<include name="org/genepattern/webservice/**/*.java" />
+			<include name="org/genepattern/util/**.java" />
 			<include name="org/genepattern/io/**/*.java"/>
 			<include name="org/genepattern/module/**/*.java"/>
 		</fileset>

@@ -1,6 +1,8 @@
 
 package org.genepattern.server.webservice;
 
+import org.genepattern.webservice.WebService;
+
 /**
  * Defines a generic web service.
  * <p>
