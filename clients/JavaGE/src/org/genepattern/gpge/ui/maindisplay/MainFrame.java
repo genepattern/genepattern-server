@@ -32,7 +32,7 @@ import org.genepattern.webservice.*;
  */
 public class MainFrame extends JFrame {
    public static boolean RUNNING_ON_MAC = System.getProperty("mrj.version") != null && javax.swing.UIManager.getSystemLookAndFeelClassName().equals(javax.swing.UIManager.getLookAndFeel().getClass().getName());
-   AnalysisServicePanel analysisTasksPanel;
+   AnalysisServicePanel analysisServicePanel;
 
    JLabel messageLabel = new JLabel();
    AnalysisServiceManager analysisServiceManager;
@@ -44,6 +44,7 @@ public class MainFrame extends JFrame {
 
    JPopupMenu jobPopupMenu = new JPopupMenu();
    JPopupMenu projectDirPopupMenu;
+   JPopupMenu projectFilePopupMenu;
    JPopupMenu serverFilePopupMenu = new JPopupMenu();
    SortableTreeTable jobResultsTree;
    JobModel jobModel;
@@ -212,7 +213,7 @@ public class MainFrame extends JFrame {
 		TaskInfo taskCopy = new TaskInfo(task.getID(), task.getName(), task.getDescription(),task.getParameterInfo(),task.getTaskClassName(), task.giveTaskInfoAttributes(),task.getUserId(), task.getAccessId());
 		taskCopy.setParameterInfoArray((ParameterInfo[])actualParams.toArray(new ParameterInfo[0]));
 		AnalysisService serviceCopy = new AnalysisService(service.getServer(), taskCopy);
-		analysisTasksPanel.loadTask(serviceCopy);	
+		analysisServicePanel.loadTask(serviceCopy);	
 		
 	}
    
@@ -283,7 +284,7 @@ public class MainFrame extends JFrame {
          }.start();
          
 
-      analysisTasksPanel = new AnalysisServicePanel(DefaultExceptionHandler.instance(), analysisServiceManager);
+      analysisServicePanel = new AnalysisServicePanel(DefaultExceptionHandler.instance(), analysisServiceManager);
       jobModel = JobModel.getInstance();
       new Thread() {
             public void run() {
@@ -364,6 +365,8 @@ public class MainFrame extends JFrame {
       saveServerFileMenu.add(saveToFileSystemMenuItem);
       serverFilePopupMenu.add(saveServerFileMenu);
          
+      final JMenu serverFileSendToMenu = new JMenu("Send To");
+      serverFilePopupMenu.add(serverFileSendToMenu);
 
        serverFilePopupMenu.add(
          new AbstractAction("Delete File") {
@@ -492,6 +495,10 @@ public class MainFrame extends JFrame {
          }
       }
       projectDirTree = new SortableTreeTable(projectDirModel);
+      projectFilePopupMenu = new JPopupMenu();
+      final JMenu projectFileSendToMenu = new JMenu("Send To");
+      projectFilePopupMenu.add(projectFileSendToMenu);
+      
       projectDirPopupMenu = new JPopupMenu();
       projectDirPopupMenu.add(
          new AbstractAction("Refresh") {
@@ -580,7 +587,36 @@ public class MainFrame extends JFrame {
                }
                if(selectedProjectDirNode instanceof ProjectDirModel.ProjectDirNode) {
                   projectDirPopupMenu.show(e.getComponent(), e.getX(), e.getY());
+               } else if(selectedProjectDirNode instanceof ProjectDirModel.FileNode) {
+                  projectFilePopupMenu.show(e.getComponent(), e.getX(), e.getY());
                } 
+            }
+         });
+         analysisServicePanel.addAnalysisServiceSelectionListener(new AnalysisServiceSelectionListener() {
+            public void valueChanged(AnalysisServiceSelectionEvent e) {
+               serverFileSendToMenu.removeAll();
+               projectFileSendToMenu.removeAll();
+               
+               for(Iterator it = analysisServicePanel.getInputFileParameterNames(); it.hasNext(); ) {
+                  final String name = (String) it.next();
+                  JMenuItem mi = new JMenuItem(name);
+                  mi.addActionListener(new ActionListener() {
+                     public void actionPerformed(ActionEvent e) {
+                        analysisServicePanel.setInputFile(name, selectedJobNode);
+                     }
+                  });
+                  serverFileSendToMenu.add(mi);
+                  
+                  JMenuItem projectMenuItem = new JMenuItem(name);
+                  projectMenuItem.addActionListener(new ActionListener() {
+                     public void actionPerformed(ActionEvent e) {
+                        analysisServicePanel.setInputFile(name, selectedProjectDirNode);
+                     }
+                  });
+                  
+                  projectFileSendToMenu.add(projectMenuItem);
+               }
+               
             }
          });
          
@@ -589,7 +625,7 @@ public class MainFrame extends JFrame {
       leftPanel.add(leftPane, BorderLayout.CENTER);
       leftPanel.add(fileSummaryComponent, BorderLayout.SOUTH);
       
-      JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, analysisTasksPanel);
+      JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, analysisServicePanel);
       getContentPane().add(splitPane, BorderLayout.CENTER);
       getContentPane().add(messageLabel, BorderLayout.SOUTH);
 
@@ -687,7 +723,7 @@ public class MainFrame extends JFrame {
             new ActionListener() {
                public void actionPerformed(ActionEvent e) {
                   AnalysisMenuItem mi = (AnalysisMenuItem) e.getSource();
-                  analysisTasksPanel.loadTask(mi.svc);
+                  analysisServicePanel.loadTask(mi.svc);
                }
             };
       }
