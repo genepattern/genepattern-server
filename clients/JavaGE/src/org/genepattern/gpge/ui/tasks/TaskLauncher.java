@@ -4,9 +4,10 @@ import java.util.*;
 
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.*;
+import org.genepattern.gpge.GenePattern;
 
 /**
- * Description of the Class
+ * Runs tasks for the GPGE
  * 
  * @author Joshua Gould
  */
@@ -23,9 +24,9 @@ public class TaskLauncher {
 	 * @param username
 	 *            Description of the Parameter
 	 */
-	static void submitVisualizer(AnalysisService svc,
+	public static void submitVisualizer(AnalysisService svc,
 			ParameterInfo[] paramInfos, String username) {
-		try {
+      try {
 			Map substitutions = new HashMap();
 			substitutions
 					.putAll(org.genepattern.gpge.ui.tasks.JavaGELocalTaskExecutor
@@ -42,14 +43,15 @@ public class TaskLauncher {
 					substitutions.put(paramInfos[i].getName(), paramInfos[i]
 							.getValue());
 				}
-			}
+         }
 
-			new org.genepattern.gpge.ui.tasks.JavaGELocalTaskExecutor(null, svc
+         new org.genepattern.gpge.ui.tasks.JavaGELocalTaskExecutor(null, svc
 					.getTaskInfo(), substitutions, username, svc.getServer())
 					.exec();
-		} catch (Exception e1) {
-			throw new RunTaskException(e1);
-		}
+      } catch(Throwable t) {
+          GenePattern.showErrorDialog("An error occurred while running " + svc.getTaskInfo().getName());
+      }
+		
 	}
 
 	/**
@@ -63,36 +65,43 @@ public class TaskLauncher {
 	 * @exception Exception
 	 *                Description of the Exception
 	 */
-	static void submitAndWaitUntilCompletionInNewThread(
+	public static void submitAndWaitUntilCompletionInNewThread(
 			final ParameterInfo[] paramInfos,
 			final AnalysisWebServiceProxy serviceProxy,
-			final AnalysisService svc) throws Exception {
+			final AnalysisService svc) {
 		new Thread() {
 			public void run() {
 				try {
 					submitAndWaitUntilCompletion(paramInfos, serviceProxy, svc);
-				} catch (Exception e) {
-					throw new RunTaskException(e); // FIXME
+				} catch (WebServiceException wse) {
+					if(!GenePattern.disconnectedFromServer(wse, svc.getServer())) {
+                  GenePattern.showErrorDialog("An error occurred while running " + svc.getTaskInfo().getName());
+               }
 				}
 			}
 		}.start();
 	}
 
+   /**
+   * Waits for the given job to complete in a new thread. Used when user refreshes jobs from the server and a job is in progress
+   */
    public static void waitUntilCompletionInNewThread(final AnalysisJob job) {
       new Thread() {
          public void run() {
             try {
                waitUntilCompletion(job, null);  
-            } catch(Exception e) {
-               e.printStackTrace();  
+            } catch(WebServiceException wse) {
+               //if(!GenePattern.disconnectedFromServer(wse, svc.getServer())) {
+                  GenePattern.showErrorDialog("An error occurred while running " + job.getTaskName());
+               //} 
             }
          }
       }.start();
    }
    
-	static AnalysisJob submitAndWaitUntilCompletion(ParameterInfo[] paramInfos,
+	private static AnalysisJob submitAndWaitUntilCompletion(ParameterInfo[] paramInfos,
 			final AnalysisWebServiceProxy serviceProxy,
-			final AnalysisService svc) throws Exception {
+			final AnalysisService svc) throws WebServiceException {
 
 		TaskInfo tinfo = svc.getTaskInfo();
 		final JobInfo jobInfo = serviceProxy.submitJob(tinfo.getID(),
@@ -103,7 +112,7 @@ public class TaskLauncher {
       return waitUntilCompletion(job, serviceProxy);
    }
    
-   static AnalysisJob waitUntilCompletion(AnalysisJob job, AnalysisWebServiceProxy serviceProxy) throws Exception {
+   private static AnalysisJob waitUntilCompletion(AnalysisJob job, AnalysisWebServiceProxy serviceProxy) throws WebServiceException {
       
 		String status = "";
 		JobInfo info = null;
@@ -121,18 +130,16 @@ public class TaskLauncher {
 				Thread.currentThread().sleep(sleep);
 			} catch (InterruptedException ie) {
 			}
-			try {
-				info = serviceProxy
-						.checkStatus(job.getJobInfo().getJobNumber());
-				job.setJobInfo(info);
-				String currentStatus = info.getStatus();
-				if (!(status.equals(currentStatus))) {
-					JobModel.getInstance().jobStatusChanged(job);
-				}
-				status = currentStatus;
-			} catch (Exception e) {
-				throw new RunTaskException(e);
-			}
+	
+         info = serviceProxy
+               .checkStatus(job.getJobInfo().getJobNumber());
+         job.setJobInfo(info);
+         String currentStatus = info.getStatus();
+         if (!(status.equals(currentStatus))) {
+            JobModel.getInstance().jobStatusChanged(job);
+         }
+         status = currentStatus;
+			
 			sleep = incrementSleep(initialSleep, tries, maxTries);
 
 		}

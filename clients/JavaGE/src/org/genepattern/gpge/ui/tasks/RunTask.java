@@ -15,9 +15,10 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.*;
 import org.genepattern.gpge.ui.tasks.*;
+import org.genepattern.gpge.GenePattern;
 
 /**
- * Description of the Class
+ * Runs tasks for the GPGE
  * 
  * @author Joshua Gould
  */
@@ -79,7 +80,8 @@ public class RunTask {
 					try {
 						fileOrUrl = f.getCanonicalPath();
 					} catch (IOException e1) {
-						throw new RunTaskException(e1);
+						GenePattern.showErrorDialog("An error occurred while running " + analysisService.getTaskInfo().getName());
+                  return;
 					}
 				}
 				java.io.File file = new java.io.File(fileOrUrl);
@@ -94,7 +96,8 @@ public class RunTask {
 			for (int j = 0, size = missingParams.size(); j < size; j++) {
 				message += "\n" + missingParams.get(j);
 			}
-			throw new RunTaskException(message);
+         GenePattern.showErrorDialog(message);
+         return;
 		}
 		if (directoryInputs.size() > 1) {
 			String message = "Only one input field can be a folder. The following input fields are folders: ";
@@ -102,7 +105,8 @@ public class RunTask {
 				ParameterInfo param = (ParameterInfo) directoryInputs.get(j);
 				message += "\n" + param.getName();
 			}
-			throw new RunTaskException(message);
+			GenePattern.showErrorDialog(message);
+         return;
 		}
 
 		Map tia = taskInfo.getTaskInfoAttributes();
@@ -116,8 +120,9 @@ public class RunTask {
 		AnalysisWebServiceProxy _serviceProxy = null;
 		try {
 			_serviceProxy = new AnalysisWebServiceProxy(server, username);
-		} catch (Exception e) {
-			throw new RunTaskException(e);
+		} catch (WebServiceException wse) {
+         GenePattern.disconnectedFromServer(wse, server);
+         return;
 		}
 		final AnalysisWebServiceProxy serviceProxy = _serviceProxy;
 
@@ -133,35 +138,36 @@ public class RunTask {
 			});
 
 			for (int j = 0, length = files.length; j < length; j++) {
-				try {
-					directoryParam.getAttributes().put(
-							GPConstants.PARAM_INFO_CLIENT_FILENAME[0],
-							files[j].getCanonicalPath());
-					directoryParam.setValue(files[j].getCanonicalPath());
-					if (TaskLauncher.isVisualizer(analysisService)) {
-						TaskLauncher.submitVisualizer(analysisService,
-								actualParams, username);
-					} else {
-						TaskLauncher.submitAndWaitUntilCompletionInNewThread(
-								actualParams, serviceProxy, analysisService);
+				
+            try {
+               directoryParam.getAttributes().put(
+                  GPConstants.PARAM_INFO_CLIENT_FILENAME[0],
+                  files[j].getCanonicalPath());
+               directoryParam.setValue(files[j].getCanonicalPath());
+            } catch(IOException ioe) {
+               GenePattern.showErrorDialog("An error occurred while running " + analysisService.getTaskInfo().getName());
+               return;
+            }
+            
+            if (TaskLauncher.isVisualizer(analysisService)) {
+               TaskLauncher.submitVisualizer(analysisService,
+                     actualParams, username);
+            } else {
+               TaskLauncher.submitAndWaitUntilCompletionInNewThread(
+                     actualParams, serviceProxy, analysisService);
 
-					}
-				} catch (Exception e) {
-					throw new RunTaskException(e);
-				}
+            }
 			}
 		} else {
-			try {
-				if (TaskLauncher.isVisualizer(analysisService)) {
-					TaskLauncher.submitVisualizer(analysisService,
-							actualParams, username);
-				} else {
-					TaskLauncher.submitAndWaitUntilCompletionInNewThread(
-							actualParams, serviceProxy, analysisService);
-				}
-			} catch (Exception e) {
-				throw new RunTaskException(e);
-			}
+		
+         if (TaskLauncher.isVisualizer(analysisService)) {
+            TaskLauncher.submitVisualizer(analysisService,
+                  actualParams, username);
+         } else {
+            TaskLauncher.submitAndWaitUntilCompletionInNewThread(
+                  actualParams, serviceProxy, analysisService);
+         }
+			
 		}
 	}
 
