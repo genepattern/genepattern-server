@@ -24,6 +24,10 @@ import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.WebServiceException;
+import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
+		
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
 
 public class HTMLPipelineView implements IPipelineView {
 
@@ -159,7 +163,7 @@ public class HTMLPipelineView implements IPipelineView {
 
 				try {
 					
-					File[] docFiles = new org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient(userID).getDocFiles(taskInfo);
+					File[] docFiles = new LocalTaskIntegratorClient(userID).getDocFiles(taskInfo);
 					for (int i = 0; i < docFiles.length; i++) {
 						if (i > 0) writer.write(",");
 						writer.write("\"" + docFiles[i].getName() + "\"");
@@ -285,6 +289,10 @@ public class HTMLPipelineView implements IPipelineView {
 		// output language is no longer used, but the radio button to support it is required to avoid getting an error on existing pipelines
 		writer.write("<input type=\"radio\" name=\"" + GenePatternAnalysisTask.LANGUAGE + "\" style=\"visibility: hidden\">\n");
 
+		// JTL 3/2/05 Adding spot to add doc to pipelines
+		addPipelineDoc();
+
+
 		writer.write("<tr><td align=\"right\" width=\"1\">LSID:</td><td width=\"*\"><input type=\"text\" name=\"" + GPConstants.LSID + "\" value=\"\" size=\"80\" readonly style=\"border-style: none\"></td></tr>\n");
 
 		// TODO: great place for a summary of the tasks!  Eg. Threshold -> Slice -> GetRows, next line: Slice -> NearestNeighbors.
@@ -304,6 +312,44 @@ public class HTMLPipelineView implements IPipelineView {
 
 	}
 	
+	protected void addPipelineDoc()throws IOException {
+try {
+		TaskInfo task = new LocalAdminClient(userID).getTask(pipelineName);
+		LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID);
+		File[] docFiles = taskIntegratorClient.getDocFiles(task);
+
+		writer.write("<tr><td valign='top'>Documentation:</td><td>");
+		if (docFiles.length > 0){
+		
+			for (int i = 0; i < docFiles.length; i++) {
+				if (i > 0) writer.write("  ,");
+
+// getTaskDoc.jsp?name=' + task.lsid + '&file=' + task.docs[doc] 
+				writer.write("<a href='getTaskDoc.jsp?name="+pipelineName+"'&file="+docFiles[i].getName()+" target='_new'>"+docFiles[i].getName()+"</a>");
+			}
+			writer.write("<br>");
+		}
+		writer.write("<input type='file' name='doc' size='60' ></td></tr>");
+		
+		if (docFiles.length > 0){
+		  			
+			writer.write("<tr><td></td><td><select name='deleteFiles'>");
+		   	writer.write("<option value=''>delete doc files...</option>");
+		   	for (int i = 0; i < docFiles.length; i++) { 
+				writer.write("<option value='"+ GenePatternAnalysisTask.htmlEncode(docFiles[i].getName())+"'>"+ docFiles[i].getName()+"</option>"); 
+		   	}  
+		   	writer.write("</select>");
+		   	writer.write("<input type='button' value='delete...' class='little' onclick='deleteDocFiles()'>");
+		   	writer.write("</td></tr>");
+
+		}
+			  
+	} catch (WebServiceException e){
+
+	}					 
+			
+	}
+
 	protected String versionSelector(TaskInfo taskInfo) {
 		// build version selector		
 		
