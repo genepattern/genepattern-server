@@ -14,7 +14,7 @@ public class TaskInfo implements Serializable {
 
 	private int taskID = 0;
 
-	private String taskName = "", description = "", taskClassName = "",
+	private String taskName = "", description = "",
 			parameter_info = "";
 
 	private int accessId = 0;
@@ -31,25 +31,23 @@ public class TaskInfo implements Serializable {
 	}
 
 	public TaskInfo(int taskID, String taskName, String description,
-			String parameter_info, String taskClassName) {
-		this(taskID, taskName, description, parameter_info, taskClassName, null);
+			String parameter_info) {
+		this(taskID, taskName, description, parameter_info, null);
 	}
 
 	public TaskInfo(int taskID, String taskName, String description,
-			String parameter_info, String taskClassName,
-			TaskInfoAttributes taskInfoAttributes) {
-		this(taskID, taskName, description, parameter_info, taskClassName,
+			String parameter_info, TaskInfoAttributes taskInfoAttributes) {
+		this(taskID, taskName, description, parameter_info,
 				taskInfoAttributes, null, 0);
 	}
 
 	public TaskInfo(int taskID, String taskName, String description,
-			String parameter_info, String taskClassName,
+			String parameter_info,
 			TaskInfoAttributes taskInfoAttributes, String userId, int accessId) {
 		this.taskID = taskID;
 		this.taskName = taskName;
 		this.description = description;
 		this.parameter_info = parameter_info;
-		this.taskClassName = taskClassName;
 		this.taskInfoAttributes = taskInfoAttributes;
 		this.userId = userId;
 		this.accessId = accessId;
@@ -161,21 +159,7 @@ public class TaskInfo implements Serializable {
 		this.parameterInfoArray = parameterInfoArray;
 	}
 
-	/**
-	 * get Taskclass name
-	 * 
-	 * @return taskClassName
-	 */
-	public String getTaskClassName() {
-		return taskClassName;
-	}
-
-	/**
-	 * set Taskclass name
-	 */
-	public void setTaskClassName(java.lang.String taskClassName) {
-		this.taskClassName = taskClassName;
-	}
+	
 
 	/**
 	 * Checks to see if the TaslInfo contains a input file parameter field
@@ -210,7 +194,6 @@ public class TaskInfo implements Serializable {
 				&& getDescription().equals(other.getDescription())
 				&& ((getParameterInfo() == null && other.getParameterInfo() == null) || (getParameterInfo() != null
 						&& other.getParameterInfo() != null && getParameterInfo()
-						.equals(other.getParameterInfo())))
-				&& getTaskClassName().equals(other.getTaskClassName());
+						.equals(other.getParameterInfo())));
 	}
 }
