@@ -1,7 +1,7 @@
 
-package org.genepattern.server.webservice;
+package org.genepattern.analysis;
 
-import org.genepattern.analysis.WebServiceException;
+import org.genepattern.server.webservice.WebService;
 
 /**
  * Defines an exception that a web service throws to indicate that

@@ -5,8 +5,7 @@
  * by the Apache Axis WSDL2Java emitter.
  */
 
-package org.genepattern.server.analysis.webservice.client;
-import org.genepattern.analysis.ParameterInfo;
+package org.genepattern.analysis;
 
 public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
     private java.util.Vector cachedSerClasses = new java.util.Vector();

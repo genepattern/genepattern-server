@@ -1,4 +1,4 @@
-package org.genepattern.server.webservice;
+package org.genepattern.analysis;
 
 import javax.activation.DataHandler;
 

@@ -1,4 +1,5 @@
-package org.genepattern.server.jaxb.analysis.job;
+package org.genepattern.analysis.jaxb.task;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -24,39 +25,39 @@ import javax.xml.marshal.XMLScanner;
 import javax.xml.marshal.XMLWriter;
 
 
-public class ANALYSISJOBINFO
+public class ANALYSISTASKINFO
     extends MarshallableRootElement
     implements RootElement
 {
 
-    private List _JOB = PredicatedLists.createInvalidating(this, new JOBPredicate(), new ArrayList());
-    private PredicatedLists.Predicate pred_JOB = new JOBPredicate();
+    private List _TASK = PredicatedLists.createInvalidating(this, new TASKPredicate(), new ArrayList());
+    private PredicatedLists.Predicate pred_TASK = new TASKPredicate();
 
-    public List getJOB() {
-        return _JOB;
+    public List getTASK() {
+        return _TASK;
     }
 
-    public void deleteJOB() {
-        _JOB = null;
+    public void deleteTASK() {
+        _TASK = null;
         invalidate();
     }
 
-    public void emptyJOB() {
-        _JOB = PredicatedLists.createInvalidating(this, pred_JOB, new ArrayList());
+    public void emptyTASK() {
+        _TASK = PredicatedLists.createInvalidating(this, pred_TASK, new ArrayList());
     }
 
     public void validateThis()
         throws LocalValidationException
     {
-        if (_JOB == null) {
-            throw new MissingContentException("JOB");
+        if (_TASK == null) {
+            throw new MissingContentException("TASK");
         }
     }
 
     public void validate(Validator v)
         throws StructureValidationException
     {
-        for (Iterator i = _JOB.iterator(); i.hasNext(); ) {
+        for (Iterator i = _TASK.iterator(); i.hasNext(); ) {
             v.validate(((ValidatableObject) i.next()));
         }
     }
@@ -65,11 +66,11 @@ public class ANALYSISJOBINFO
         throws IOException
     {
         XMLWriter w = m.writer();
-        w.start("ANALYSISJOBINFO");
-        for (Iterator i = _JOB.iterator(); i.hasNext(); ) {
+        w.start("ANALYSISTASKINFO");
+        for (Iterator i = _TASK.iterator(); i.hasNext(); ) {
             m.marshal(((MarshallableObject) i.next()));
         }
-        w.end("ANALYSISJOBINFO");
+        w.end("ANALYSISTASKINFO");
     }
 
     public void unmarshal(Unmarshaller u)
@@ -77,56 +78,56 @@ public class ANALYSISJOBINFO
     {
         XMLScanner xs = u.scanner();
         Validator v = u.validator();
-        xs.takeStart("ANALYSISJOBINFO");
+        xs.takeStart("ANALYSISTASKINFO");
         while (xs.atAttribute()) {
             String an = xs.takeAttributeName();
             throw new InvalidAttributeException(an);
         }
         {
-            List l = PredicatedLists.create(this, pred_JOB, new ArrayList());
-            while (xs.atStart("JOB")) {
-                l.add(((JOB) u.unmarshal()));
+            List l = PredicatedLists.create(this, pred_TASK, new ArrayList());
+            while (xs.atStart("TASK")) {
+                l.add(((TASK) u.unmarshal()));
             }
-            _JOB = PredicatedLists.createInvalidating(this, pred_JOB, l);
+            _TASK = PredicatedLists.createInvalidating(this, pred_TASK, l);
         }
-        xs.takeEnd("ANALYSISJOBINFO");
+        xs.takeEnd("ANALYSISTASKINFO");
     }
 
-    public static ANALYSISJOBINFO unmarshal(InputStream in)
+    public static ANALYSISTASKINFO unmarshal(InputStream in)
         throws UnmarshalException
     {
         return unmarshal(XMLScanner.open(in));
     }
 
-    public static ANALYSISJOBINFO unmarshal(XMLScanner xs)
+    public static ANALYSISTASKINFO unmarshal(XMLScanner xs)
         throws UnmarshalException
     {
         return unmarshal(xs, newDispatcher());
     }
 
-    public static ANALYSISJOBINFO unmarshal(XMLScanner xs, Dispatcher d)
+    public static ANALYSISTASKINFO unmarshal(XMLScanner xs, Dispatcher d)
         throws UnmarshalException
     {
-        return ((ANALYSISJOBINFO) d.unmarshal(xs, (ANALYSISJOBINFO.class)));
+        return ((ANALYSISTASKINFO) d.unmarshal(xs, (ANALYSISTASKINFO.class)));
     }
 
     public boolean equals(Object ob) {
         if (this == ob) {
             return true;
         }
-        if (!(ob instanceof ANALYSISJOBINFO)) {
+        if (!(ob instanceof ANALYSISTASKINFO)) {
             return false;
         }
-        ANALYSISJOBINFO tob = ((ANALYSISJOBINFO) ob);
-        if (_JOB!= null) {
-            if (tob._JOB == null) {
+        ANALYSISTASKINFO tob = ((ANALYSISTASKINFO) ob);
+        if (_TASK!= null) {
+            if (tob._TASK == null) {
                 return false;
             }
-            if (!_JOB.equals(tob._JOB)) {
+            if (!_TASK.equals(tob._TASK)) {
                 return false;
             }
         } else {
-            if (tob._JOB!= null) {
+            if (tob._TASK!= null) {
                 return false;
             }
         }
@@ -135,15 +136,15 @@ public class ANALYSISJOBINFO
 
     public int hashCode() {
         int h = 0;
-        h = ((127 *h)+((_JOB!= null)?_JOB.hashCode(): 0));
+        h = ((127 *h)+((_TASK!= null)?_TASK.hashCode(): 0));
         return h;
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer("<<ANALYSISJOBINFO");
-        if (_JOB!= null) {
-            sb.append(" JOB=");
-            sb.append(_JOB.toString());
+        StringBuffer sb = new StringBuffer("<<ANALYSISTASKINFO");
+        if (_TASK!= null) {
+            sb.append(" TASK=");
+            sb.append(_TASK.toString());
         }
         sb.append(">>");
         return sb.toString();
@@ -151,21 +152,21 @@ public class ANALYSISJOBINFO
 
     public static Dispatcher newDispatcher() {
         Dispatcher d = new Dispatcher();
-        d.register("ANALYSISJOBINFO", (ANALYSISJOBINFO.class));
-        d.register("JOB", (JOB.class));
+        d.register("ANALYSISTASKINFO", (ANALYSISTASKINFO.class));
+        d.register("TASK", (TASK.class));
         d.freezeElementNameMap();
         return d;
     }
 
 
-    private static class JOBPredicate
+    private static class TASKPredicate
         implements PredicatedLists.Predicate
     {
 
 
         public void check(Object ob) {
-            if (!(ob instanceof JOB)) {
-                throw new InvalidContentObjectException(ob, (JOB.class));
+            if (!(ob instanceof TASK)) {
+                throw new InvalidContentObjectException(ob, (TASK.class));
             }
         }
 

@@ -10,8 +10,10 @@ import java.util.Map;
 
 import org.genepattern.analysis.JobInfo;
 import org.genepattern.analysis.JobStatus;
+
 import org.genepattern.analysis.ParameterInfo;
 import org.genepattern.analysis.TaskInfo;
+
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
@@ -196,7 +198,7 @@ public class RunPipelineForJsp {
         cmdLine.add("-Dgenepattern.properties=" + resourcesDir);
         cmdLine.add("-DGenePatternURL="+System.getProperty("GenePatternURL") );
         cmdLine.add("-D" + GPConstants.LSID + "="+(String)taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
-        cmdLine.add("edu.mit.genome.gp.ui.analysis.RunPipeline");
+        cmdLine.add("org.genepattern.client.RunPipeline");
         
         
         //-------------------------------------------------------------
@@ -288,7 +290,7 @@ public class RunPipelineForJsp {
         tempDir.delete();
         tempDir.mkdirs();
 
-        if (decorator == null) decorator = "edu.mit.genome.gp.ui.analysis.RunPipelineHTMLDecorator";
+        if (decorator == null) decorator = "org.genepattern.client.RunPipelineHTMLDecorator";
 
         boolean deleteDirAfterRun = RunPipelineForJsp.deletePipelineDirAfterRun(taskInfo.getName());   
 

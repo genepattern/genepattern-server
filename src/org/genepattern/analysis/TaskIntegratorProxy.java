@@ -1,4 +1,4 @@
-package org.genepattern.server.analysis.webservice.client;
+package org.genepattern.analysis;
 
 
 import java.io.File;
@@ -10,8 +10,6 @@ import java.rmi.RemoteException;
 import java.util.Map;
 
 import org.apache.axis.client.Service;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.WebServiceException;
 
 /**
  *@author    Joshua Gould

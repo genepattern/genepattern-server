@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using Zero G's InstallAnywhere 6.1 Enterprise, Build 2325
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Fri Jan 28 10:33:32 EST 2005 -->
+     DATE:   Tue Feb 01 10:39:12 EST 2005 -->
 <InstallAnywhere_Deployment_Project increments="5292">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
@@ -10,7 +10,7 @@
 		<scriptID>12,42,11,90,81,50,49,56,54,57,71,70,78,52,69,53</scriptID>
 		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,51,46,49,95,48,56,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,83,59,32,67,112,49,50,53,50</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,0,-77,-8,-96,96,80,112,116,103,88,98,113,97,113,65,65,88,74,65,72,71,70,69,64,69,66,69,48,79,87,5,2,2,4,52,105,1,1,0,0</authorizationID>
+		<authorizationID>1,0,0,0,-61,-104,64,-48,80,112,116,103,88,98,113,97,113,65,65,88,74,65,72,71,70,69,64,69,66,69,48,79,87,5,2,11,3,51,110,1,1,0,0</authorizationID>
 	</essentialScriptInfo>
 	<installationObjects uniqueObjects="423">
 		<object class="com.zerog.ia.installer.Installer" objectID="7daeb2feafa5">
@@ -205,7 +205,7 @@ it will search for ones in this list]]></string>
 								</object>
 							</method>
 							<method name="addElement">
-								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="cd7474c98ed3">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="e20b66628897">
 									<property name="propertyValue">
 										<string><![CDATA[org.genepattern.gpge.GenePattern]]></string>
 									</property>
@@ -289,7 +289,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[gpge.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>468169</long>
+								<long>419292</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -367,13 +367,13 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[664]]></string>
 							</property>
 							<property name="sourceName">
-								<string><![CDATA[file_support.jar]]></string>
+								<string><![CDATA[broad-cg.jar]]></string>
 							</property>
 							<property name="overrideUnixPermissions">
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\build\]]></string>
+								<string><![CDATA[C:\projects\gp2_refactor\build\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -382,7 +382,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[file_support.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>157607</long>
+								<long>299680</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -413,7 +413,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[gp-common.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>782263</long>
+								<long>586356</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -537,7 +537,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[runMain.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>3949</long>
+								<long>3947</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1126,7 +1126,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[analysis.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>259921</long>
+								<long>232</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -5900,7 +5900,7 @@ Please see the installation log for details.  Press ""Done"" to quit the install
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.build.last.date]]></string>
-						<string><![CDATA[January 28, 2005 10:33:32 AM EST]]></string>
+						<string><![CDATA[February 1, 2005 10:39:12 AM EST]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.windows.vm]]></string>
@@ -5960,7 +5960,7 @@ Please see the installation log for details.  Press ""Done"" to quit the install
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[January 28, 2005 10:33:32 AM EST]]></string>
+						<string><![CDATA[February 1, 2005 10:39:12 AM EST]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
@@ -6959,7 +6959,7 @@ and any path to a file to read from that file]]></string>
 														<string><![CDATA[build.properties]]></string>
 													</property>
 													<property name="fileSize">
-														<long>300</long>
+														<long>301</long>
 													</property>
 													<property name="macBinary">
 														<boolean>false</boolean>

@@ -4,11 +4,11 @@ package org.genepattern.client;
 import java.io.File;
 import javax.activation.DataHandler;
 import org.apache.log4j.Category;
+import org.genepattern.analysis.AnalysisWebServiceProxy;
 import org.genepattern.analysis.JobInfo;
 import org.genepattern.analysis.ParameterInfo;
 import org.genepattern.analysis.TaskInfo;
 import org.genepattern.analysis.WebServiceException;
-import org.genepattern.server.analysis.webservice.client.AnalysisWebServiceProxy;
 
 /**
  * RequestHandler.java

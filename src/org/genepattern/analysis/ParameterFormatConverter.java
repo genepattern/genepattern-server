@@ -9,9 +9,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import org.genepattern.server.jaxb.analysis.parameter.ANALYSISPARAMETERS;
-import org.genepattern.server.jaxb.analysis.parameter.ATTRIBUTE;
-import org.genepattern.server.jaxb.analysis.parameter.PARAMETER;
+import org.genepattern.analysis.jaxb.parameter.ANALYSISPARAMETERS;
+import org.genepattern.analysis.jaxb.parameter.ATTRIBUTE;
+import org.genepattern.analysis.jaxb.parameter.PARAMETER;
 
 
 /**

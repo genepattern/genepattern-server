@@ -3,12 +3,12 @@
 		 java.util.HashMap,
 		 org.genepattern.analysis.TaskInfo,
 		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.server.analysis.ParameterFormatConverter,
-		 org.genepattern.server.analysis.ParameterInfo,
+		 org.genepattern.analysis.ParameterFormatConverter,
+		 org.genepattern.analysis.ParameterInfo,
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.LSID,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.server.util.OmnigeneException, 
+		 org.genepattern.analysis.OmnigeneException, 
 		 org.genepattern.data.pipeline.PipelineModel"
 	session="false" contentType="text/html" language="Java" %><%
 

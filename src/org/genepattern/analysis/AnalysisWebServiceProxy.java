@@ -1,4 +1,4 @@
-package org.genepattern.server.analysis.webservice.client;
+package org.genepattern.analysis;
 
 
 import java.io.File;
@@ -28,13 +28,8 @@ import org.apache.axis.encoding.ser.JAFDataHandlerSerializerFactory;
 import org.apache.axis.encoding.ser.MapDeserializerFactory;
 import org.apache.axis.encoding.ser.MapSerializerFactory;
 import org.apache.log4j.Category;
-import org.genepattern.analysis.JobInfo;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.TaskInfoAttributes;
-import org.genepattern.analysis.WebServiceException;
-import org.genepattern.server.webservice.FileWrapper;
-import org.genepattern.server.webservice.UnavailableException;
+
+
 //import edu.mit.broad.gp.ws.*;
 
 /**

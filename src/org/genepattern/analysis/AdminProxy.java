@@ -10,7 +10,6 @@ import java.rmi.RemoteException;
 import java.util.Map;
 
 import org.apache.axis.client.Service;
-import org.genepattern.server.analysis.webservice.client.AdminSoapBindingStub;
 
 
 /**

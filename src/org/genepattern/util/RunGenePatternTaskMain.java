@@ -26,8 +26,8 @@ public class RunGenePatternTaskMain {
    public RunGenePatternTaskMain(String host, String port, String taskName, String classPath, boolean debug) throws Throwable {
 	   this.debug = debug;
    	   // get a network classloader to extend the classpath to the GenePattern installed tasks
-	   networkLoader = new GenePatternNetworkClassLoader(host, port, taskName, classPath, debug);
-   }
+	   //networkLoader = new GenePatternNetworkClassLoader(host, port, taskName, classPath, debug);
+   }                  
    
    public RunGenePatternTaskMain(String host, String port, String taskName, String classPath) throws Throwable {
 	   this(host, port, taskName, classPath, false);
@@ -35,9 +35,10 @@ public class RunGenePatternTaskMain {
    
    public Method getMain(String className) throws Exception {
 	   // load the class and invoke it's main(String args[]) method using the network class loader
-	   Class theClass = Class.forName(className, true, networkLoader);
-	   Method main = theClass.getMethod("main", new Class[] { String[].class });
-	   return main;
+	   //Class theClass = Class.forName(className, true, networkLoader);
+	   //Method main = theClass.getMethod("main", new Class[] { String[].class });
+	   //return main;
+   	   return null;
    }
 
    /**

@@ -593,7 +593,7 @@ if (taskName != null) {
 	lsid = tia.get(GPConstants.LSID);
 	l = new LSID(lsid);
 	authorityType = LSIDManager.getInstance().getAuthorityType(l);
-	if (authorityType.equals(LSIDManager.AUTHORITY_MINE)) {
+	if (authorityType.equals(LSIDUtil.AUTHORITY_MINE)) {
 %>
 		<input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button">
 <%	} else { %>

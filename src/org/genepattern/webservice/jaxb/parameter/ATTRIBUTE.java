@@ -1,4 +1,4 @@
-package org.genepattern.server.jaxb.analysis.parameter;
+package org.genepattern.analysis.jaxb.parameter;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -23,8 +23,8 @@ import java.util.StringTokenizer;
 
 import org.genepattern.analysis.ParameterInfo;
 import org.genepattern.analysis.TaskInfo;
+import org.genepattern.analysis.TaskIntegratorProxy;
 import org.genepattern.analysis.WebServiceException;
-import org.genepattern.server.analysis.webservice.client.TaskIntegratorProxy;
 
 /**
  *@author     Joshua Gould

@@ -165,7 +165,7 @@ public final class GenePattern {
         //java.net.URL url = ClassLoader.getSystemResource ("edu/mit/genome/gp/resources/About_GenePattern.html");
         String contents = null;
         try {
-            final InputStream in = ClassLoader.getSystemResourceAsStream("edu/mit/genome/gp/resources/About_GenePattern.html");
+            final InputStream in = ClassLoader.getSystemResourceAsStream("org/genepattern/gpge/resources/About_GenePattern.html");
             contents = org.genepattern.io.StorageUtils.createStringFromReader(new InputStreamReader(in));
             in.close();
             //contents = org.genepattern.io.StorageUtils.createStringFromContents(new File(url.getFile()));

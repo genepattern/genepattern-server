@@ -1,4 +1,4 @@
-package org.genepattern.server.jaxb.analysis.job;
+package org.genepattern.analysis.jaxb.job;
 import java.io.IOException;
 import java.io.InputStream;
 

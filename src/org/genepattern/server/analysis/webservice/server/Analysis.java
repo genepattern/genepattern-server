@@ -16,13 +16,13 @@ import javax.xml.soap.SOAPException;
 import org.apache.axis.MessageContext;
 import org.apache.axis.attachments.AttachmentPart;
 import org.apache.log4j.Category;
+import org.genepattern.analysis.FileWrapper;
 import org.genepattern.analysis.JobInfo;
 import org.genepattern.analysis.ParameterInfo;
 import org.genepattern.analysis.TaskInfo;
 import org.genepattern.analysis.WebServiceException;
 import org.genepattern.server.analysis.handler.AddNewJobHandler;
 import org.genepattern.server.analysis.handler.GetJobStatusHandler;
-import org.genepattern.server.webservice.FileWrapper;
 import org.genepattern.server.webservice.GenericWebService;
 
 /**
