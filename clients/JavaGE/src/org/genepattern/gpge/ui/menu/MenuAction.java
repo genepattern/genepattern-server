@@ -139,6 +139,20 @@ public class MenuAction extends AbstractAction {
       items[oldLength] = action;
       firePropertyChange("MenuAction.addAction", null, action);
    }
+   
+   /**
+    *  Add an item to this MenuAction and all the JMenu instances that use it
+    *
+    * @param  action  Description of the Parameter
+    */
+   public void add(MenuAction action) {
+      int oldLength = items.length;
+      Object[] newItems = new Object[oldLength + 1];
+      System.arraycopy(items, 0, newItems, 0, oldLength);
+      items = newItems;
+      items[oldLength] = action;
+      firePropertyChange("MenuAction.addMenuAction", null, action);
+   }
 
    
    /**
@@ -272,6 +286,8 @@ public class MenuAction extends AbstractAction {
             String propertyName = e.getPropertyName();
             if(e.getPropertyName().equals("MenuAction.addAction")) {
                getMenu().add(((MenuItemAction) e.getNewValue()).createMenuItem());
+            } else if(e.getPropertyName().equals("MenuAction.addMenuAction")) {
+               getMenu().add(((MenuAction) e.getNewValue()).createMenu()); 
             } else if(e.getPropertyName().equals("MenuAction.remove")) {
                getMenu().remove(((Integer) e.getNewValue()).intValue());
             } else if(e.getPropertyName().equals("MenuAction.insert")) {
@@ -318,6 +334,8 @@ public class MenuAction extends AbstractAction {
             String propertyName = e.getPropertyName();
             if(e.getPropertyName().equals("MenuAction.addAction")) {
                getMenu().add(((MenuItemAction) e.getNewValue()).createMenuItem());
+            } else if(e.getPropertyName().equals("MenuAction.addMenuAction")) {
+               getMenu().add(((MenuAction) e.getNewValue()).createMenu());
             } else if(e.getPropertyName().equals("MenuAction.remove")) {
                getMenu().remove(((Integer) e.getNewValue()).intValue());
             } else if(e.getPropertyName().equals("MenuAction.insert")) {
