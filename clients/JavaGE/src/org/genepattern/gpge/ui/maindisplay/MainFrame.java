@@ -111,7 +111,7 @@ public class MainFrame extends JFrame {
 
 	DefaultMutableTreeNode selectedProjectDirNode = null;
 
-	JFileChooser saveAsFileChooser = new JFileChooser();
+	JFileChooser saveAsFileChooser;
 
 	FileMenu fileMenu;
    JMenu windowMenu;
@@ -283,7 +283,10 @@ public class MainFrame extends JFrame {
    
 	public void showSaveDialog(final JobModel.ServerFileNode node) {
 		final File initiallySelectedFile = new File(node.toString());
-		saveAsFileChooser.setSelectedFile(initiallySelectedFile);
+		if(saveAsFileChooser == null) {
+         saveAsFileChooser = new JFileChooser();
+      }
+      saveAsFileChooser.setSelectedFile(initiallySelectedFile);
 
 		if (saveAsFileChooser.showSaveDialog(GenePattern.getDialogParent()) == JFileChooser.APPROVE_OPTION) {
 			final File outputFile = saveAsFileChooser.getSelectedFile();
@@ -335,13 +338,14 @@ public class MainFrame extends JFrame {
       
 		new Thread() {
 			public void run() {
+            
 				try {
 					String lsidAuthority = (String) new org.genepattern.webservice.AdminProxy(
 							analysisServiceManager.getServer(),
 							analysisServiceManager.getUsername(), false)
 							.getServiceInfo().get("lsid.authority");
 					System.setProperty("lsid.authority", lsidAuthority);
-               jobModel.getJobsFromServer();
+               refreshJobs();
 				} catch (WebServiceException wse) {
                wse.printStackTrace();
                // ignore the exception here, the user will be alerted in refreshTasks
@@ -1204,6 +1208,7 @@ public class MainFrame extends JFrame {
          addToWindowMenu("Module", moduleInternalFrame);
          addToWindowMenu("Projects", projectsInternalFrame);
          setJMenuBar(menuBar);
+    
       }
       
 		splash.dispose();
@@ -1228,18 +1233,49 @@ public class MainFrame extends JFrame {
    }
    
 	public void refreshJobs() {
+      final List errors = new ArrayList(); 
 		new Thread() {
 			public void run() {
             try {
                jobModel.getJobsFromServer();
             } catch(WebServiceException wse) {
                wse.printStackTrace();
-               if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred while retrieving your jobs. Please try again.");
-               }   
+               synchronized(errors) {
+                  if(errors.size()==0) {
+                     if(!disconnectedFromServer(wse)) {
+                        GenePattern.showErrorDialog("An error occurred while retrieving your jobs. Please try again.");
+                     }   
+                     errors.add(new Object());
+                  }
+               }
             }
 			}
 		}.start();
+      
+      new Thread() {
+         public void run() {
+            historyMenu.clear();
+            String server = AnalysisServiceManager.getInstance().getServer();
+            String username = AnalysisServiceManager.getInstance().getUsername();
+            try {
+               AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(server, username);
+               JobInfo[] jobs = proxy.getJobs(username, true);
+               for(int i = 0; i < jobs.length; i++) {
+                  historyMenu.add(new AnalysisJob(server, jobs[i]));
+               }
+            } catch(WebServiceException wse) {
+               wse.printStackTrace();
+               synchronized(errors) {
+                  if(errors.size()==0) {
+                     if(!disconnectedFromServer(wse)) {
+                        GenePattern.showErrorDialog("An error occurred while retrieving your job history. Please try again.");
+                     }   
+                     errors.add(new Object());
+                  }
+               }
+            }
+         }
+      }.start();
 	}
 
    private void setChangeServerActionsEnabled(final boolean b) {
@@ -1326,10 +1362,49 @@ public class MainFrame extends JFrame {
       }
 	}
 
+   
+   
    class HistoryMenu extends JMenu {
       final ActionListener historyMenuItemActionListener;
-      JMenuItem clearHistoryMenuItem;
-       
+      List jobs = new ArrayList();
+      JobNumberComparator jobNumberComparator = new JobNumberComparator();
+      JMenuItem historyMenuItem = new JMenuItem("History");
+     // JMenuItem clearHistoryMenuItem;
+      
+      
+      /*class HistoryUpdateThread extends Thread {
+         Calendar now;
+         
+         
+         public HistoryUpdateThread() {
+            setDaemon(true);  
+            now = Calendar.getInstance();
+         }
+         
+         public void run() {
+            Calendar midnight = Calendar.getInstance();
+            midnight.set(Calendar.HOUR, 0);
+            midnight.set(Calendar.MINUTE, 0);
+            midnight.set(Calendar.SECOND, 0);
+            midnight.set(Calendar.MILLISECOND, 0);
+            long sleepTime = midnight.getTimeInMillis() - now.getTimeInMillis();
+            try {
+               Thread.sleep(sleepTime);
+            } catch(InterruptedException ie){}
+            
+            historyUpdateThread = new HistoryUpdateThread();
+            historyUpdateThread.start();
+         }
+         
+         int daysBefore(long otherMillis) {
+            long nowMillis = now.getTimeInMillis();
+            return (int)((otherMillis-nowMillis)/1000/60/60/24);
+         }
+      
+      }*/
+      
+      
+      
       public HistoryMenu() {
          super("History");
          historyMenuItemActionListener = new ActionListener() {
@@ -1340,28 +1415,64 @@ public class MainFrame extends JFrame {
             }
          }; 
          removeAll();
+         
       }
       
-      public void removeAll() {
+     // public void removeAll() {
+     //    super.removeAll();  
+        // addSeparator();
+       //  clearHistoryMenuItem = new JMenuItem("Clear History");
+       //  ActionListener clearHistoryListener = new ActionListener() {
+       //     public void actionPerformed(ActionEvent e) {
+       //        removeAll();
+       //     }
+       //  };
+       //  clearHistoryMenuItem.addActionListener(clearHistoryListener);
+       //  add(clearHistoryMenuItem);
+       //  clearHistoryMenuItem.setEnabled(false);
+      //}
+      
+      public void clear() {
+         jobs.clear();
          super.removeAll();  
-         addSeparator();
-         clearHistoryMenuItem = new JMenuItem("Clear History");
-         ActionListener clearHistoryListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-               removeAll();
-            }
-         };
-         clearHistoryMenuItem.addActionListener(clearHistoryListener);
-         add(clearHistoryMenuItem);
-         clearHistoryMenuItem.setEnabled(false);
       }
+     
       
       public void add(AnalysisJob job) {
-         AnalysisJobMenuItem menuItem = new AnalysisJobMenuItem(job);
-         menuItem.setToolTipText(job.getJobInfo().getTaskLSID());
-         menuItem.addActionListener(historyMenuItemActionListener);
-         historyMenu.insert(menuItem, 0);
-         clearHistoryMenuItem.setEnabled(true);
+         int insertionIndex = Collections.binarySearch(jobs, job, jobNumberComparator);   
+            
+         if (insertionIndex < 0) {
+            insertionIndex = -insertionIndex - 1;
+         }
+         if(insertionIndex < 10) {
+            AnalysisJobMenuItem menuItem = new AnalysisJobMenuItem(job);
+            menuItem.setToolTipText(job.getJobInfo().getTaskLSID());
+            menuItem.addActionListener(historyMenuItemActionListener);
+            insert(menuItem, insertionIndex);
+            if(getItemCount()==11) {
+               remove(10);
+            }
+         }
+         
+         jobs.add(insertionIndex, job);
+        // clearHistoryMenuItem.setEnabled(true);
+      }
+   }
+   
+   
+   static class JobNumberComparator implements java.util.Comparator {
+      public int compare(Object obj1, Object obj2) {
+         Integer job1Number = new Integer(((AnalysisJob)obj1).getJobInfo().getJobNumber());
+         Integer job2Number = new Integer(((AnalysisJob)obj2).getJobInfo().getJobNumber());
+         return job2Number.compareTo(job1Number);
+         
+      }
+      
+      public boolean equals(Object obj1, Object obj2) {
+         Integer job1Number = new Integer(((AnalysisJob)obj1).getJobInfo().getJobNumber());
+         Integer job2Number = new Integer(((AnalysisJob)obj2).getJobInfo().getJobNumber());
+         return job1Number.equals(job2Number);
+         
       }
    }
    
@@ -1372,6 +1483,7 @@ public class MainFrame extends JFrame {
             super(job.getJobInfo().getTaskName() + " (" + job.getJobInfo().getJobNumber() + ")");
             this.job = job;  
          }
+      
    }   
       
    
