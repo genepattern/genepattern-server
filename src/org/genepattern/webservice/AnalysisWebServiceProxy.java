@@ -172,6 +172,14 @@ public class AnalysisWebServiceProxy {
 			throw new WebServiceException(re);
 		}
 	}
+   
+   public void purgeJob(int jobId) throws WebServiceException {
+		try {
+			stub.purgeJob(jobId);
+		} catch (RemoteException re) {
+			throw new WebServiceException(re);
+		}
+	}
 
 	/**
 	 * Pings the service to see if it's alive.

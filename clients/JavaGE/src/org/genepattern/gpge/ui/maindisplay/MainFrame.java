@@ -1810,18 +1810,74 @@ public class MainFrame extends JFrame {
          clear();
          historyDialog = new JDialog((java.awt.Frame)GenePattern.getDialogParent());
          historyDialog.setTitle("History");
-         final JTable t = new JTable(historyTableModel);
-         t.addMouseListener(new MouseAdapter() {
+         final JTable table = new JTable(historyTableModel);
+         
+         JToolBar toolBar = new JToolBar();
+         toolBar.setLayout(new java.awt.FlowLayout());
+         toolBar.setFloatable(false);
+         JButton reload = new JButton("Reload");
+         reload.setToolTipText("Reload the job");
+         reload.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+               int row = table.getSelectedRow();
+               AnalysisJob job = (AnalysisJob) jobs.get(row);
+               reload(job);
+            }
+         });
+         
+         JButton clear = new JButton("Purge");
+         clear.setToolTipText("Purge the job from your history");
+         clear.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+               int row = table.getSelectedRow();
+               AnalysisJob job = (AnalysisJob) jobs.get(row);
+               try {
+                  AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(AnalysisServiceManager.getInstance().getServer(), AnalysisServiceManager.getInstance().getUsername());
+                  proxy.purgeJob(job.getJobInfo().getJobNumber());
+                  jobs.remove(row);
+                  historyTableModel.fireTableRowsDeleted(row, row);
+               } catch(WebServiceException wse) {
+                  wse.printStackTrace();
+                  if(!disconnectedFromServer(wse)) {
+                     GenePattern.showErrorDialog("An error occurred while removing job number " +  job.getJobInfo().getJobNumber());
+                  }
+               }
+            }
+         });
+         
+        
+      /*   JButton clearAll = new JButton("Remove All");
+         clearAll.setToolTipText("Remove all jobs from your history");
+         clearAll.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+               int row = table.getSelectedRow();
+               AnalysisJob job = (AnalysisJob) jobs.get(row);
+               
+            }
+         });
+         */
+         
+         toolBar.add(reload);
+         toolBar.add(clear);
+      //   toolBar.add(clearAll);
+         
+         
+         table.setShowGrid(true);
+         table.setShowVerticalLines(true);
+         table.setShowHorizontalLines(false);
+         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                if(e.getClickCount()==2 && !e.isPopupTrigger()) {
-                  int row = t.getSelectedRow();
+                  int row = table.getSelectedRow();
                   AnalysisJob job = (AnalysisJob) jobs.get(row);
                   reload(job);
                }
             }
          });
-         SortableHeaderRenderer r = new SortableHeaderRenderer(t, historyTableModel);
-         historyDialog.getContentPane().add(new JScrollPane(t));
+         SortableHeaderRenderer r = new SortableHeaderRenderer(table, historyTableModel);
+         historyDialog.getContentPane().add(toolBar, BorderLayout.PAGE_START);
+         historyDialog.getContentPane().add(new JScrollPane(table));
          historyDialog.pack();
          historyDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
