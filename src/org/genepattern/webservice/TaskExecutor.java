@@ -166,11 +166,8 @@ public abstract class TaskExecutor {
 
 		final String[] _commandLine = commandLine;
 
-		try {
-			doExec(commandLine);
-		} catch (Throwable t) {
-			throw new TaskExecException(t);
-		}
+      doExec(commandLine);
+		
 
 	}
 
@@ -233,12 +230,19 @@ public abstract class TaskExecutor {
 
 	protected abstract void startErrorStreamThread(Process p);
 
-	private void doExec(String[] commandLine) throws IOException,
-			InterruptedException {
-		final Process p = Runtime.getRuntime().exec(commandLine);
-		startOutputStreamThread(p);
-		startErrorStreamThread(p);
-		p.waitFor();
+	private void doExec(final String[] commandLine) {
+      new Thread() {
+         public void run() {
+            try {
+               final Process p = Runtime.getRuntime().exec(commandLine);
+               startOutputStreamThread(p);
+               startErrorStreamThread(p);
+               p.waitFor();
+            } catch(Exception e){
+               e.printStackTrace();
+            }
+         }
+      }.start();
 	}
 
 	static {
