@@ -117,14 +117,22 @@ public final class GenePattern {
 		final GenePattern gp = new GenePattern();
 	}
 
-	public static void showErrorDialog(String message) {
+   public static void showMessageDialog(String title, String message) {
+      javax.swing.JOptionPane.showMessageDialog(mainFrame, message, title,
+				javax.swing.JOptionPane.INFORMATION_MESSAGE);
+   }
+   
+   public static void showErrorDialog(String title, String message) {
 		javax.swing.JOptionPane.showMessageDialog(mainFrame, message, "Error",
 				javax.swing.JOptionPane.ERROR_MESSAGE);
+	}
+   
+	public static void showErrorDialog(String message) {
+		showErrorDialog("Error", message);
 	}
 
 	public static final void showError(final java.awt.Component parent,
 			final String message) {
-		//System.out.println("REPORTER="+getReporter().getClass());
 		REPORTER.showError(message);
 	}
 
