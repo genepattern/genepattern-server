@@ -1,6 +1,6 @@
 package org.genepattern.codegenerator;
 
-import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.*;
 
 
 /**
@@ -10,9 +10,8 @@ import org.genepattern.webservice.ParameterInfo;
  */
 public interface TaskCodeGenerator {
 
-   public String generateTask(String lsid,
+   public String generateTask(JobInfo job,
          ParameterInfo[] params);
-         
-   public String getLanguage();
+     
 
 }

@@ -12,6 +12,7 @@ import java.util.Vector;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -200,9 +201,13 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
    }
 
 
-   public String generateTask(String lsid, ParameterInfo[] params) {
+   public String generateTask(JobInfo job, ParameterInfo[] params) {
        boolean visualizer = false;
+       String lsid = job.getTaskLSID();
        StringBuffer invocation = new StringBuffer();
+       if(!visualizer) {
+          invocation.append("JobResult result = ");
+       }
        invocation.append("gpServer.");
        if(visualizer) {
            invocation.append("runVisualizer(");
