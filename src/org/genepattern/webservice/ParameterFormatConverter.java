@@ -20,7 +20,7 @@ import org.genepattern.webservice.jaxb.parameter.PARAMETER;
  */
 public class ParameterFormatConverter {
 
-	/** Creates new ParameterFormatConverter */
+	/** Creates new ParameterFormatConverter  */
 	public ParameterFormatConverter() {
 	}
 
@@ -31,7 +31,7 @@ public class ParameterFormatConverter {
 	 * @throws OmnigeneException
 	 * @return
 	 */
-	public String getJaxbString(ParameterInfo[] parameterInfoArray)
+	public static String getJaxbString(ParameterInfo[] parameterInfoArray)
 			throws OmnigeneException {
 
 		String jaxbParameterString = "";
@@ -95,7 +95,7 @@ public class ParameterFormatConverter {
 	 * @throws OmnigeneException
 	 * @return
 	 */
-	public ParameterInfo[] getParameterInfoArray(String jxbParameterInfoString)
+	public static ParameterInfo[] getParameterInfoArray(String jxbParameterInfoString)
 			throws OmnigeneException {
 
 		ParameterInfo[] parameterInfoArray = null;
