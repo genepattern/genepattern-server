@@ -229,10 +229,10 @@ public interface IGPConstants {
 	public static final String[] PARAM_INFO_PREFIX = { "prefix_when_specified",
 			PARAM_INFO_STRING };
 
-	public static Object[] PARAM_INFO_FILE_FORMAT = { "file_format",
+	public static Object[] PARAM_INFO_FILE_FORMAT = { FILE_FORMAT,
 			PARAM_INFO_CHOICE, null, MULTIPLE };
 
-	public static Object[] PARAM_INFO_DOMAIN = { "domain", PARAM_INFO_CHOICE,
+	public static Object[] PARAM_INFO_DOMAIN = { DOMAIN, PARAM_INFO_CHOICE,
 			null, MULTIPLE };
 
 	public static final Object[][] PARAM_INFO_ATTRIBUTES = {

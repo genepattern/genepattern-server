@@ -83,6 +83,48 @@ if (taskName != null) {
 	} catch (OmnigeneException oe) {
 	}
 }
+
+	TreeMap tmFileFormats = new TreeMap(String.CASE_INSENSITIVE_ORDER);
+	tmFileFormats.put("", "");
+	TreeMap tmDomains = new TreeMap(String.CASE_INSENSITIVE_ORDER);
+	tmDomains.put("", "");
+
+	int DOMAIN_PARAM_OFFSET = -1;
+	for (int j = 0; j < GPConstants.PARAM_INFO_ATTRIBUTES.length; j++) {
+		if (GPConstants.PARAM_INFO_ATTRIBUTES[j] == GPConstants.PARAM_INFO_DOMAIN) {
+			DOMAIN_PARAM_OFFSET = j;
+			break;
+		}
+	}
+	int FILE_FORMAT_PARAM_OFFSET = -1;
+	for (int j = 0; j < GPConstants.PARAM_INFO_ATTRIBUTES.length; j++) {
+		if (GPConstants.PARAM_INFO_ATTRIBUTES[j] == GPConstants.PARAM_INFO_FILE_FORMAT) {
+			FILE_FORMAT_PARAM_OFFSET = j;
+			break;
+		}
+	}
+
+Collection tmTasks = adminClient.getTaskCatalog(); 
+TreeSet tsTaskTypes = new TreeSet(String.CASE_INSENSITIVE_ORDER);
+
+// well-known task types, regardless of domain
+tsTaskTypes.add(""); // blank entry at top of list
+tsTaskTypes.add(GPConstants.TASK_TYPE_PIPELINE);
+tsTaskTypes.add(GPConstants.TASK_TYPE_VISUALIZER);
+
+for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
+	TaskInfo ti = (TaskInfo)itTasks.next();
+	TaskInfoAttributes tia2 = ti.giveTaskInfoAttributes();
+	if (tia2 == null) continue;
+	boolean isPrivate = tia2.get(GPConstants.PRIVACY).equals(GPConstants.PRIVATE);
+	boolean isMine = tia2.get(GPConstants.PRIVACY).equals(GPConstants.PUBLIC) || tia2.get(GPConstants.USERID).equals(userID);
+	String owner = tia2.get(GPConstants.USERID);
+	if (!tsTaskTypes.contains(tia2.get(GPConstants.TASK_TYPE))) {
+		tsTaskTypes.add(tia2.get(GPConstants.TASK_TYPE));
+	}
+}
+taskTypes = (String[])tsTaskTypes.toArray(new String[0]);
+
 %>
 <html>
 <head>
@@ -116,26 +158,6 @@ function deleteSupportFiles() {
 
 <%
 // create Javascript associative array of all Tasks (mine and others) so that determination of ownership and rights can be ascertained
-Collection tmTasks = adminClient.getTaskCatalog(); 
-TreeSet tsTaskTypes = new TreeSet(String.CASE_INSENSITIVE_ORDER);
-
-// well-known task types, regardless of domain
-tsTaskTypes.add(""); // blank entry at top of list
-tsTaskTypes.add(GPConstants.TASK_TYPE_PIPELINE);
-tsTaskTypes.add(GPConstants.TASK_TYPE_VISUALIZER);
-
-for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
-	TaskInfo ti = (TaskInfo)itTasks.next();
-	TaskInfoAttributes tia2 = ti.giveTaskInfoAttributes();
-	if (tia2 == null) continue;
-	boolean isPrivate = tia2.get(GPConstants.PRIVACY).equals(GPConstants.PRIVATE);
-	boolean isMine = tia2.get(GPConstants.PRIVACY).equals(GPConstants.PUBLIC) || tia2.get(GPConstants.USERID).equals(userID);
-	String owner = tia2.get(GPConstants.USERID);
-	if (!tsTaskTypes.contains(tia2.get(GPConstants.TASK_TYPE))) {
-		tsTaskTypes.add(tia2.get(GPConstants.TASK_TYPE));
-	}
-}
-taskTypes = (String[])tsTaskTypes.toArray(new String[0]);
 %>
 
 <% if (taskInfo != null) { %>
@@ -187,6 +209,52 @@ function prototypeDoc() {
 	frm.target = oldTarget;
 }
 
+function addNewFileType(name, desc){
+	if (name == null || name == "") return;
+	if (desc == "") desc = name;
+	var frm = document.forms['task'];
+	var fld = frm.<%= GPConstants.FILE_FORMAT %>;
+	var n = fld.options.length;
+	var found = false;
+	for (i = 0; i < n; i++) {
+		if (fld.options[i].text == name) {
+			fld.options[i].selected = true;
+			found = true;
+			break;
+		}
+	}
+	if (!found) {
+		fld.options[n] = new Option(name, desc, true, true);
+		for (i = 0; i < <%= GPConstants.MAX_PARAMETERS %>; i++) {
+			fld = frm["p" + i + "_<%= GPConstants.PARAM_INFO_FILE_FORMAT[GPConstants.PARAM_INFO_NAME_OFFSET] %>"];
+			fld.options[fld.options.length] = new Option(name, desc);
+		}
+	}
+}
+
+function addNewDomainType(name, desc){
+	if (name == null || name == "") return;
+	if (desc == "") desc = name;
+	var frm = document.forms['task'];
+	var fld = frm.<%= GPConstants.DOMAIN %>;
+	var n = fld.options.length;
+	var found = false;
+	for (i = 0; i < n; i++) {
+		if (fld.options[i].text == name) {
+			found = true;
+			fld.options[i].selected = true;
+			break;
+		}
+	}
+	if (!found) {
+		fld.options[n] = new Option(name, desc, true, true);
+		for (i = 0; i < <%= GPConstants.MAX_PARAMETERS %>; i++) {
+			fld = frm["p" + i + "_<%= GPConstants.PARAM_INFO_DOMAIN[GPConstants.PARAM_INFO_NAME_OFFSET] %>"];
+			fld.options[fld.options.length] = new Option(name, desc);
+		}
+	}
+}
+
 </script>
 
 </head>
@@ -200,7 +268,6 @@ function prototypeDoc() {
 	taskName = null;
 	}
 
-tmTasks = adminClient.getTaskCatalog(); 
 StringBuffer publicTasks = new StringBuffer();
 String name;
 String description;
@@ -224,84 +291,6 @@ if (tia != null) {
 }
 
 	String authorityType = null;
-
-	TreeMap tmFileFormats = new TreeMap(String.CASE_INSENSITIVE_ORDER);
-	tmFileFormats.put("", "");
-	TreeMap tmDomains = new TreeMap(String.CASE_INSENSITIVE_ORDER);
-	tmDomains.put("", "");
-/*
-	tmFileFormats.put("res", "res");
-	tmFileFormats.put("odf", "odf");
-	tmFileFormats.put("gct", "gct");
-
-	tmDomains.put("gene", "gene");
-	tmDomains.put("protein", "protein");
-*/
-	int DOMAIN_PARAM_OFFSET = -1;
-	for (int j = 0; j < GPConstants.PARAM_INFO_ATTRIBUTES.length; j++) {
-		if (GPConstants.PARAM_INFO_ATTRIBUTES[j] == GPConstants.PARAM_INFO_DOMAIN) {
-			DOMAIN_PARAM_OFFSET = j;
-			break;
-		}
-	}
-	int FILE_FORMAT_PARAM_OFFSET = -1;
-	for (int j = 0; j < GPConstants.PARAM_INFO_ATTRIBUTES.length; j++) {
-		if (GPConstants.PARAM_INFO_ATTRIBUTES[j] == GPConstants.PARAM_INFO_FILE_FORMAT) {
-			FILE_FORMAT_PARAM_OFFSET = j;
-			break;
-		}
-	}
-
-%>
-<script language="javascript">
-function addNewFileType(name, desc){
-	if (name == null || name == "") return;
-	if (desc == "") desc = name;
-	var frm = document.forms['task'];
-	var fld = frm.<%= GPConstants.FILE_FORMAT %>;
-	var n = fld.options.length;
-	var found = false;
-	for (i = 0; i < n; i++) {
-		if (fld.options[i].text == name) {
-			fld.options[i].selected = true;
-			found = true;
-			break;
-		}
-	}
-	if (!found) {
-		fld.options[n] = new Option(name, desc, true, true);
-		for (i = 0; i < <%= GPConstants.MAX_PARAMETERS %>; i++) {
-			fld = frm["p" + i + "_<%= GPConstants.FILE_FORMAT %>"];
-			fld.options[fld.options.length] = new Option(name, desc);
-		}
-	}
-}
-
-function addNewDomainType(name, desc){
-	if (name == null || name == "") return;
-	if (desc == "") desc = name;
-	var frm = document.forms['task'];
-	var fld = frm.<%= GPConstants.DOMAIN %>;
-	var n = fld.options.length;
-	var found = false;
-	for (i = 0; i < n; i++) {
-		if (fld.options[i].text == name) {
-			found = true;
-			fld.options[i].selected = true;
-			break;
-		}
-	}
-	if (!found) {
-		fld.options[n] = new Option(name, desc, true, true);
-		for (i = 0; i < <%= GPConstants.MAX_PARAMETERS %>; i++) {
-			fld = frm["p" + i + "_<%= GPConstants.DOMAIN %>"];
-			fld.options[fld.options.length] = new Option(name, desc);
-		}
-	}
-}
-</script>
-
-<%
 
 	for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 		TaskInfo ti = (TaskInfo)itTasks.next();
