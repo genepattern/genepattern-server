@@ -14,9 +14,11 @@ import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobResult;
+import org.genepattern.webservice.LocalTaskExecutor;
 import org.genepattern.webservice.Parameter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.RequestHandler;
+import org.genepattern.webservice.TaskExecutor;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 

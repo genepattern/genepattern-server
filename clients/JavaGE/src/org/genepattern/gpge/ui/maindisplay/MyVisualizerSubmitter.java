@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.genepattern.client.TaskExecutor;
 import org.genepattern.gpge.ui.tasks.JavaGELocalTaskExecutor;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AnalysisJob;
@@ -13,6 +12,7 @@ import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.RequestHandler;
+import org.genepattern.webservice.TaskExecutor;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
