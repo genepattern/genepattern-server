@@ -58,10 +58,26 @@ public class ModuleRepository {
 		String DBF = "javax.xml.parsers.DocumentBuilderFactory";
 		String oldDocumentBuilderFactory = System.getProperty(DBF);
 		URL reposURL = new URL(url);
+
 		InputStream is = null;
 		Document doc = null;
+
 		try {
-			is = reposURL.openStream();
+			//
+			// proxy support for people behind an authenticating web proxy.
+			// use it only if we find a username/password in the System properties
+			//
+			HttpURLConnection conn = (HttpURLConnection )reposURL.openConnection();
+			String user = System.getProperty("http.proxyUser");
+			String pass = System.getProperty("http.proxyPassword");			
+			if ((user != null) && (pass != null)){
+				Authenticator.setDefault(new SimpleAuthenticator(user,pass));
+			}
+			conn.setDoInput( true );
+
+
+     			is = conn.getInputStream();
+
 			System.setProperty(DBF,
 					"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
 			doc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
@@ -338,4 +354,19 @@ public class ModuleRepository {
 	public static String NODE_MOTD_TIMESTAMP = "motd_timestamp";
 
 	public static String NODE_MOTD_LATESTSERVERVERSION = "motd_latestServerVersion";
+}
+
+class SimpleAuthenticator   extends Authenticator{
+   private String username,  password;
+                     
+   public SimpleAuthenticator(String username,String password)
+   {
+      this.username = username;
+      this.password = password;
+   }
+   
+   protected PasswordAuthentication getPasswordAuthentication()
+   {
+      return new PasswordAuthentication(username,password.toCharArray());
+   }
 }
