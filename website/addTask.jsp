@@ -613,7 +613,6 @@ if (taskName != null) {
  </form>
 
 <% if (tia != null) { %>
-<a href="taskWrapperGenerator.jsp?<%= GPConstants.NAME %>=<%= request.getParameter(GPConstants.NAME) %>" target="<%= taskName %>_wrapper">generate client code</a><br>
 <a href="makeZip.jsp?<%= GPConstants.NAME %>=<%= request.getParameter(GPConstants.NAME) %>&includeDependents=1">package this task into a zip file</a><br>
 <% } %>
 <jsp:include page="footer.jsp"></jsp:include>

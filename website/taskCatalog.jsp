@@ -19,6 +19,8 @@
 		 java.util.Map,
 		 java.util.StringTokenizer,
 		 java.util.TreeSet,
+		 java.util.List,
+		 java.util.ArrayList,
 		 java.util.Vector"
    session="false" language="Java" %>
 <%
@@ -42,7 +44,9 @@
 
 	String sort = request.getParameter(SORT);
 	boolean initialInstall = (request.getParameter("initialInstall") != null);
+	boolean checkAll = (request.getParameter("checkAll") != null);
 	if (sort == null || sort.length() == 0) sort = InstallTask.STATE;
+
 %>
 	<html>
 	<head>
@@ -223,6 +227,7 @@ function changeFilter(fld) {
 			hmFilter.put(columns1[col], vCol);
 		}
 	}
+
 	Vector vState = (Vector)hmFilter.get(InstallTask.STATE);
 	if (vState == null || vState.size() == 0) {
 		vState = new Vector(2);
@@ -230,13 +235,14 @@ function changeFilter(fld) {
 		vState.add(InstallTask.UPDATED);
 		hmFilter.put(InstallTask.STATE, vState);
 	}
-
 	// if a specific list of LSIDs is requested, display just those
 	Vector vLSIDs = new Vector();
 	String[] requestedLSIDs = request.getParameterValues(GPConstants.LSID);
+	List requestedLSIDList = new ArrayList();
 	if (requestedLSIDs != null && requestedLSIDs.length > 0) {
+		requestedLSIDList = Arrays.asList(requestedLSIDs);
 		hmFilter.clear();
-		vLSIDs.addAll(Arrays.asList(requestedLSIDs));
+		vLSIDs.addAll(requestedLSIDList);
 		hmFilter.put(GPConstants.LSID, vLSIDs);
 	}
 
@@ -351,7 +357,25 @@ Select from the following tasks from the GenePattern public access website to do
 
 <form name="install" method="post">
 
-<% if (tasks.length == 0) { 
+<% 
+  List missingLSIDList = new ArrayList();
+  missingLSIDList.addAll(requestedLSIDList);
+  for (int module = 0; module < tasks.length; module++) {
+	InstallTask task = tasks[module];
+	Map attributes = task.getAttributes();
+	String lsidStr = (String)attributes.get(GPConstants.LSID);
+	missingLSIDList.remove(lsidStr); // to look for LSIDs requested but absent
+  }
+  if (missingLSIDList.size() > 0){
+  	out.println("<hr><font size=\"+1\" color=\"red\"><b>");
+  	out.println("The following requested tasks could not be found in the Broad Task Catalog;</b></font><br>");
+	for (int module=0; module < missingLSIDList.size(); module++){
+		out.println("<tab>"+missingLSIDList.get(module) + "<br>");
+	}
+	if (tasks.length > 0) out.println("<hr>");
+  }
+
+  if (tasks.length == 0) { 
 	String selectedStates = "";
 	for (int s = 0; s < vState.size(); s++) {
 		if (selectedStates.length() > 0) {
@@ -395,13 +419,14 @@ Select from the following tasks from the GenePattern public access website to do
 				}
 			});
 
-	// count number of unique tasks (ignore LSID versions of otherwise-same tasks)
+	// count number of unique tasks (ignore LSID versions of otherwise-same tasks) XXX
 	int numUniqueTasks = 0;
 	int numRefreshable = 0;
 	for (int module = 0; module < tasks.length; module++) {
 		InstallTask task = tasks[module];
 		Map attributes = task.getAttributes();
-		LSID lsid = new LSID((String)attributes.get(GPConstants.LSID));
+		String lsidStr = (String)attributes.get(GPConstants.LSID);
+		LSID lsid = new LSID(lsidStr);
 		numUniqueTasks++;
 		if (attributes.get(InstallTask.REFRESHABLE).equals(InstallTask.YES)) numRefreshable++;
 		while (true) { // skip lower-versions of same module
@@ -463,7 +488,7 @@ Select from the following tasks from the GenePattern public access website to do
 <tr>
 
 		<td valign="top" rowspan="2">
-		<input type="checkbox" name="<%= INSTALL_LSID_GROUP %>_<%= module %>" value="<%= lsid %>"<%= attributes.get(InstallTask.REFRESHABLE).equals("yes") ? " checked" : "" %>>
+		<input type="checkbox" name="<%= INSTALL_LSID_GROUP %>_<%= module %>" value="<%= lsid %>"<%= ((attributes.get(InstallTask.REFRESHABLE).equals("yes")) || checkAll) ? " checked" : "" %>>
 		</td>
 
 		<td valign="top" height="1">

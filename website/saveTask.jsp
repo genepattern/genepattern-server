@@ -23,6 +23,7 @@
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.webservice.OmnigeneException, 
 		 org.genepattern.webservice.WebServiceException, 
+		 org.genepattern.webservice.WebServiceErrorMessageException, 
 		 org.genepattern.server.webservice.*,
 		 org.genepattern.server.webapp.*,
 		 org.genepattern.data.pipeline.PipelineModel,
