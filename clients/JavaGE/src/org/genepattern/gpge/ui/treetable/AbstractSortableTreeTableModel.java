@@ -1,28 +1,14 @@
 package org.genepattern.gpge.ui.treetable;
 
-import java.awt.event.*;
-import java.io.*;
-import java.net.*;
-import java.text.DateFormat;
-import java.util.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Vector;
 
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
-import javax.swing.tree.*;
+import javax.swing.event.EventListenerList;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import javax.swing.tree.DefaultMutableTreeNode;
-import org.genepattern.data.pipeline.JobSubmission;
-import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.gpge.ui.tasks.*;
-import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.*;
-import org.jdesktop.swing.*;
-import org.jdesktop.swing.treetable.*;
 
 /**
  *  Description of the Class
@@ -175,19 +161,23 @@ public abstract class AbstractSortableTreeTableModel implements
 	protected void fireTreeNodesChanged(Object source, Object[] path,
 			int[] childIndices, Object[] children) {
 		// Guaranteed to return a non-null array
-		Object[] listeners = listenerList.getListenerList();
-		TreeModelEvent e = null;
-		// Process the listeners last to first, notifying
-		// those that are interested in this event
-		for (int i = listeners.length - 2; i >= 0; i -= 2) {
-			if (listeners[i] == TreeModelListener.class) {
-				// Lazily create the event:
-				if (e == null) {
-					e = new TreeModelEvent(source, path, childIndices, children);
-				}
-				((TreeModelListener) listeners[i + 1]).treeNodesChanged(e);
-			}
-		}
+		try {
+         Object[] listeners = listenerList.getListenerList();
+         TreeModelEvent e = null;
+         // Process the listeners last to first, notifying
+         // those that are interested in this event
+         for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == TreeModelListener.class) {
+               // Lazily create the event:
+               if (e == null) {
+                  e = new TreeModelEvent(source, path, childIndices, children);
+               }
+               ((TreeModelListener) listeners[i + 1]).treeNodesChanged(e);
+            }
+         }
+      } catch(Throwable t) {
+         t.printStackTrace();  
+      }
 	}
 
 	/*
@@ -199,20 +189,24 @@ public abstract class AbstractSortableTreeTableModel implements
 	 */
 	protected void fireTreeNodesInserted(Object source, Object[] path,
 			int[] childIndices, Object[] children) {
-		// Guaranteed to return a non-null array
-		Object[] listeners = listenerList.getListenerList();
-		TreeModelEvent e = null;
-		// Process the listeners last to first, notifying
-		// those that are interested in this event
-		for (int i = listeners.length - 2; i >= 0; i -= 2) {
-			if (listeners[i] == TreeModelListener.class) {
-				// Lazily create the event:
-				if (e == null) {
-					e = new TreeModelEvent(source, path, childIndices, children);
-				}
-				((TreeModelListener) listeners[i + 1]).treeNodesInserted(e);
-			}
-		}
+      try {
+         // Guaranteed to return a non-null array
+         Object[] listeners = listenerList.getListenerList();
+         TreeModelEvent e = null;
+         // Process the listeners last to first, notifying
+         // those that are interested in this event
+         for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == TreeModelListener.class) {
+               // Lazily create the event:
+               if (e == null) {
+                  e = new TreeModelEvent(source, path, childIndices, children);
+               }
+               ((TreeModelListener) listeners[i + 1]).treeNodesInserted(e);
+            }
+         }
+      } catch(Throwable t) {
+         t.printStackTrace();  
+      }
 	}
 
 	/*
@@ -225,19 +219,23 @@ public abstract class AbstractSortableTreeTableModel implements
 	protected void fireTreeNodesRemoved(Object source, Object[] path,
 			int[] childIndices, Object[] children) {
 		// Guaranteed to return a non-null array
-		Object[] listeners = listenerList.getListenerList();
-		TreeModelEvent e = null;
-		// Process the listeners last to first, notifying
-		// those that are interested in this event
-		for (int i = listeners.length - 2; i >= 0; i -= 2) {
-			if (listeners[i] == TreeModelListener.class) {
-				// Lazily create the event:
-				if (e == null) {
-					e = new TreeModelEvent(source, path, childIndices, children);
-				}
-				((TreeModelListener) listeners[i + 1]).treeNodesRemoved(e);
-			}
-		}
+		try {
+         Object[] listeners = listenerList.getListenerList();
+         TreeModelEvent e = null;
+         // Process the listeners last to first, notifying
+         // those that are interested in this event
+         for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == TreeModelListener.class) {
+               // Lazily create the event:
+               if (e == null) {
+                  e = new TreeModelEvent(source, path, childIndices, children);
+               }
+               ((TreeModelListener) listeners[i + 1]).treeNodesRemoved(e);
+            }
+         }
+      } catch(Throwable t) {
+         t.printStackTrace();  
+      }
 	}
 
 	/*
@@ -272,20 +270,24 @@ public abstract class AbstractSortableTreeTableModel implements
 	protected void fireTreeStructureChanged(Object source, Object[] path) {
 		//      int[] childIndices, Object[] children) {
 		// Guaranteed to return a non-null array
-		Object[] listeners = listenerList.getListenerList();
-		TreeModelEvent e = null;
-		// Process the listeners last to first, notifying
-		// those that are interested in this event
-		for (int i = listeners.length - 2; i >= 0; i -= 2) {
-			if (listeners[i] == TreeModelListener.class) {
-				// Lazily create the event:
-				if (e == null) {
-					e = new TreeModelEvent(source, path);
-					//childIndices, children);
-				}
-				((TreeModelListener) listeners[i + 1]).treeStructureChanged(e);
-			}
-		}
+		try {
+         Object[] listeners = listenerList.getListenerList();
+         TreeModelEvent e = null;
+         // Process the listeners last to first, notifying
+         // those that are interested in this event
+         for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == TreeModelListener.class) {
+               // Lazily create the event:
+               if (e == null) {
+                  e = new TreeModelEvent(source, path);
+                  //childIndices, children);
+               }
+               ((TreeModelListener) listeners[i + 1]).treeStructureChanged(e);
+            }
+         }
+      } catch(Throwable t) {
+         t.printStackTrace();  
+      }
 	}
 
 	public void setValueAt(Object value, Object node, int column) {
