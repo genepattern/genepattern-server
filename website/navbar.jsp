@@ -38,25 +38,8 @@ var EDIT = "edit";
 var VIEW = "view";
 var RUN = "run";
 
-// handle focus and blur events for search field
-function sfocus(fld, focus) {
-    var deflt = "<%= SEARCH %>";
-    if (focus) {
-	if (fld.value == deflt) { 
-		fld.value = "";
-	} else { 
-		fld.select();
-	}
-    } else {
-	if (fld.value == "") { 
-		fld.value = deflt;
-	}
-    }
-}
-
-// handle focus and blur events for userid field
-function ufocus(fld, focus) {
-    var deflt = "<%= EMAIL_ADDRESS %>";
+// handle focus and blur events for a field
+function ufocus(fld, focus, deflt ) {
     if (focus) {
 	if (fld.value == deflt) { 
 		fld.value = "";
@@ -202,7 +185,7 @@ function LSID(lsid) {
 			<nobr>
 			<% if (request.getAttribute(GPConstants.USER_LOGGED_OFF) == null) { %>
 				<% if (userUnknown) { %>
-					<input type="text" class="little" size="30" name="<%= GPConstants.USERID %>" value="<%= EMAIL_ADDRESS %>" onfocus="ufocus(this, true)" onblur="ufocus(this, false)"> 
+					<input type="text" class="little" size="30" name="<%= GPConstants.USERID %>" value="<%= EMAIL_ADDRESS %>" onfocus="ufocus(this, true, '<%= EMAIL_ADDRESS %>')" onblur="ufocus(this, false, '<%= EMAIL_ADDRESS %>')"> 
 					<input type="submit" value="sign in" class="little">
 				<% } else { %>
 					<a href="login.jsp" class="navbar">sign out</a> <%= GenePatternAnalysisTask.htmlEncode(userID) %>
@@ -233,8 +216,8 @@ function LSID(lsid) {
 	<td align="right" valign="top" class="navbar">
 			<nobr><input type="text" class="little" size="10" name="search" 
 			      value="<%= request.getParameter("search") != null ? 
-				request.getParameter("search") : SEARCH %>" onfocus="sfocus(this, true)" 
-				onblur="sfocus(this, false)"><input type="image" src="search.jpeg" 
+				request.getParameter("search") : SEARCH %>" onfocus="ufocus(this, true, '<%= SEARCH %>')" 
+				onblur="ufocus(this, false, '<%= SEARCH %>')"><input type="image" src="search.jpeg" 
 				alt="search" value="?" onclick="this.form.submit()" align="top" 
 				class="little"></nobr>
 			<input type="hidden" name="<%= Indexer.TASK %>" value="1">

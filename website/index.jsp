@@ -317,14 +317,8 @@ function LSID(lsid) {
 			</td>
 		</tr>
 		<tr>
-			<td valign="middle" align="right">
-				Logs
-			</td>
-			<td valign="top" align="left">
-				<input type="button" value="GenePattern" class="wideButton" onclick="javascript:window.location='tomcatLog.jsp'"><br>
-<% if (System.getProperty("serverInfo").indexOf("Apache Tomcat") != -1) { %>
-				<input type="button" value="web server" class="wideButton" onclick="javascript:window.location='tomcatLog.jsp?tomcat=1'"><br>
-<% } %>
+			<td valign="middle" align="middle" colspan="2">
+				<a href="adminServer.jsp">Server administration</a>
 			</td>
 		</tr>
 	</table> <!-- end admin cell -->
