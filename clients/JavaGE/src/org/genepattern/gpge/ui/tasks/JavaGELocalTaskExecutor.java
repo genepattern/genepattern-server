@@ -60,22 +60,20 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 	}
 
 	protected void startOutputStreamThread(Process proc) {
-	/*	try {
-			new StreamGobbler(proc.getInputStream(), taskName + "-OUT").start();
+      try {
+			new StreamGobbler(proc.getInputStream()).start();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
-      */
 	}
 
 	protected void startErrorStreamThread(Process proc) {
-	/*	try {
-			errorGobbler = new StreamGobbler(proc.getErrorStream(), taskName
-					+ "-ERR");
+	try {
+			errorGobbler = new StreamGobbler(proc.getErrorStream());
 			errorGobbler.start();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
-		}*/
+		}
 	}
 
 	public void exec() throws TaskExecException {
@@ -84,18 +82,6 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 			if (dataObjectBrowser != null
 					&& dataObjectBrowser.getMessage().endsWith(taskName)) {
 				dataObjectBrowser.setMessage(null);
-			}
-
-			if (errorGobbler != null && errorGobbler.tmp_file != null
-					&& errorGobbler.tmp_file.length() > 0L) {
-				try {
-					final String error_text = StorageUtils
-							.createStringFromContents(errorGobbler.tmp_file);
-					org.genepattern.gpge.GenePattern.showErrorDialog(taskName
-							+ " error:\n" + error_text);
-				} catch (IOException ioe) {
-					ioe.printStackTrace();
-				}
 			}
 		} catch (Exception e) {
 			String message = "An error occurred while attempting to run "
@@ -118,27 +104,19 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 	 * @created May 18, 2004
 	 */
 	static class StreamGobbler extends Thread {
-		private final InputStream is;
-
-		public final File tmp_file;
-
-		StreamGobbler(final InputStream is, final String type)
+		private final InputStream is;   
+      
+	StreamGobbler(final InputStream is)
 				throws IOException {
 			this.is = is;
-			this.tmp_file = File.createTempFile(type, ".txt");
 		}
 
 		public void run() {
 			try {
-				final PrintWriter writer = new PrintWriter(new FileWriter(
-						tmp_file));
-				final InputStreamReader isr = new InputStreamReader(is);
-				final BufferedReader br = new BufferedReader(isr);
+				BufferedReader br = new BufferedReader(new InputStreamReader(is));
 				for (String line = br.readLine(); line != null; line = br
 						.readLine()) {
-					writer.println(line);
 				}
-				writer.close();
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
 			}
