@@ -18,7 +18,7 @@ obj.methods = [];
 obj = class(obj, 'GenePatternServer');
 
 
-obj.javaInstance = edu.mit.broad.gp.ws.MatlabGPClient(url,userID);
+obj.javaInstance = org.genepattern.client.MatlabGPClient(url,userID);
 obj.latestModules = obj.javaInstance.getLatestServices();
 obj.allModules = obj.javaInstance.getServices();
 

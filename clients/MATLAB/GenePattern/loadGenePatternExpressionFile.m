@@ -16,37 +16,30 @@ initGenePatternPath();
 
 pathLen = length(path);
 extension = path(pathLen - 3:pathLen);
+edc = org.genepattern.io.expr.ExpressionDataCreator();
+
 if (extension == '.res')
-    reader = edu.mit.broad.io.microarray.ResReader();
+    reader = org.genepattern.io.expr.res.ResReader();
 elseif (extension == '.gct')
-    reader = edu.mit.broad.io.microarray.GctReader();    
+    reader = org.genepattern.io.expr.gct.GctReader();    
 elseif (extension == '.odf')
-    reader = edu.mit.broad.io.microarray.OdfDatasetReader();
+    reader = org.genepattern.io.expr.odf.OdfDatasetReader();
 else
    return 
 end
-
-edata = reader.read(path);
+edata = reader.read(path, edc);
 edataset = edata.getExpressionMatrix;
-rowcount = edataset.getRowDimension;
-colcount = edataset.getColumnDimension;
+expressionDataset.data = edata.getArray();
+[rowcount, colcount] = size(expressionDataset.data);
 
-for i=0:rowcount-1
-    rowNames(i+1) = edataset.getRowName(i); 
-    rowDescriptions(i+1) = edata.getRowDescription(i); 
-   
-    for j=0:colcount-1
-        if (i == 0)
-            colNames(j+1) = edataset.getColumnName(j);
-            if (not (extension == '.gct'))
-                colDescriptions(j+1) = edata.getColumnDescription(j); 
-            end
-        end
-        expressionMatrix(i+1,j+1) = edataset.get(i,j);
-    end
+rowNames = edata.getRowNames();
+rowDescriptions = edata.getRowDescriptions();
+
+colNames = edata.getColumnNames();
+if (not (extension == '.gct'))
+    colDescriptions = edata.getColumnDescriptions(); 
 end
 
-expressionDataset.data = expressionMatrix;
 expressionDataset.rowNames = cellstr(char(rowNames));
 expressionDataset.columnNames = cellstr(char(colNames));
 expressionDataset.rowDescriptions = cellstr(char(rowDescriptions));

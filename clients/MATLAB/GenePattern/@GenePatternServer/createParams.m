@@ -7,7 +7,7 @@ method = getMethod(obj, methodNameOrId);
 
 paramInfo = method.getTaskInfo.getParameterInfoArray;
 pcount = length(paramInfo);
-ar = javaArray('edu.mit.broad.gp.ws.Parameter',length(pcount));
+ar = javaArray('org.genepattern.webservice.Parameter',length(pcount));
 
 idx=1;
 for i=1:pcount
@@ -70,7 +70,7 @@ for i=1:pcount
 
 
    % if (~isempty(value))
-        ar(idx) = edu.mit.broad.gp.ws.Parameter(nom,value);
+        ar(idx) = org.genepattern.webservice.Parameter(nom,value);
         idx = idx+1;
  %   end
     clear paramValueMap
