@@ -20,18 +20,20 @@
 	<target name="checkForOldInstall" depends="init">
 		<available property="oldInstallpresent" value="true" 
 			file="${defaultInstallDir}" 	/>
+		<available file="${defaultInstallDir}\StopGenePatternServer.exe" property="stopServerPresent"/>
+		<available file="${defaultInstallDir}\UninstallerData\uninst~1.exe" property="uninstallerPresent"/>
+		
 	</target>
 
-
-	<target name="uninstall" if="oldInstallpresent" depends="init, checkForOldInstall">
-
-		<!-- Stop the server (2 ways) -->
+	<target name="stoprunningserver" depends="checkForOldInstall" if="stopServerPresent">
 		<exec dir="${defaultInstallDir}\" 
-					executable="${defaultInstallDir}\StopGenePatternServer.exe -i SILENT" 
+			executable="${defaultInstallDir}\StopGenePatternServer.exe -i SILENT" 
 			failifexecutionfails="false" failonerror="false"/>
 		<antcall target="shutdownServer" inheritRefs="true"/>
 
-		<!-- uninstall the old one -->
+	</target>
+
+	<target name="uninstall" if="uninstallerPresent" depends="init, checkForOldInstall, stoprunningserver">		
 		<exec failifexecutionfails="false" 
 				dir="${defaultInstallDir}\UninstallerData" 
 				executable="${defaultInstallDir}\UninstallerData\uninst~1.exe">
