@@ -90,13 +90,13 @@ public class AnalysisHypersonicDAO implements
 
 			//Query job table for waiting job
 			stat = conn
-					.prepareStatement("SELECT job_no,analysis_job.task_id,analysis_job.parameter_info,analysis_job.user_id FROM analysis_job, task_master where analysis_job.task_id=task_master.task_id and  status_id = ? order by date_submitted");
+					.prepareStatement("SELECT job_no,analysis_job.task_id,analysis_job.parameter_info,analysis_job.user_id, analysis_job.task_lsid FROM analysis_job, task_master where analysis_job.task_id=task_master.task_id and  status_id = ? order by date_submitted");
 			stat.setInt(1, JOB_WAITING_STATUS);
 			resultSet = stat.executeQuery();
 
 			int jobNo = 0, taskID = 0;
 			String parameter_info = "";
-
+			String lsid = null;
 			boolean recordFoundFlag = false;
 
 			ParameterFormatConverter parameterFormatConverter = new ParameterFormatConverter();
@@ -107,6 +107,7 @@ public class AnalysisHypersonicDAO implements
 				jobNo = resultSet.getInt(1);
 				taskID = resultSet.getInt(2);
 				parameter_info = resultSet.getString(3);
+				lsid = resultSet.getString("task_lsid");
 
 				updateJob(jobNo, PROCESSING_STATUS);
 
@@ -114,7 +115,7 @@ public class AnalysisHypersonicDAO implements
 				ParameterInfo[] params = parameterFormatConverter
 						.getParameterInfoArray(parameter_info);
 				JobInfo singleJobInfo = new JobInfo(jobNo, taskID, params,
-						resultSet.getString(4));
+						resultSet.getString(4), lsid);
 				jobVector.add(singleJobInfo);
 				//break; // JL: only one job at a time, so that other threads
 				// can compete for same classname jobs
@@ -563,7 +564,7 @@ public class AnalysisHypersonicDAO implements
    * @return the SELECT clause
    */
    private String getJobInfoSelectClause() {
-      return "SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id";   
+      return "SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id, task_lsid";   
    }
    
 	protected JobInfo jobInfoFromResultSet(ResultSet resultSet)
@@ -574,7 +575,7 @@ public class AnalysisHypersonicDAO implements
 				resultSet.getString(3), resultSet.getTimestamp(4), resultSet
 						.getTimestamp(5), parameterFormatConverter
 						.getParameterInfoArray(resultSet.getString(6)),
-				resultSet.getString(7));
+				resultSet.getString(7), resultSet.getString("task_lsid"));
 		return ji;
 	}
 

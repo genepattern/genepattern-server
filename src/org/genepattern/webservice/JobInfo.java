@@ -26,6 +26,8 @@ public class JobInfo implements Serializable {
 
 	private String userId = null;
 
+	private String lsid = null;
+
    
 	public JobInfo() {
 		parameterInfoArray = new ParameterInfo[0];
@@ -40,10 +42,11 @@ public class JobInfo implements Serializable {
 	 * @param completedDate
 	 * @param parameters
 	 * @param userId
+	 * @param lsid 
 	 */
 
 	public JobInfo(int jobNo, int taskID, String status, Date submittedDate,
-			Date completedDate, ParameterInfo[] parameters, String userId) {
+			Date completedDate, ParameterInfo[] parameters, String userId, String lsid) {
 		this.jobNo = jobNo;
 		this.taskID = taskID;
 		this.status = status;
@@ -51,6 +54,7 @@ public class JobInfo implements Serializable {
 		this.completedDate = completedDate;
 		this.parameterInfoArray = parameters;
 		this.userId = userId;
+		this.lsid = lsid;
 	}
    
    /**
@@ -58,13 +62,15 @@ public class JobInfo implements Serializable {
 	 * @param taskID
 	 * @param parameters
 	 * @param user_id
+	 * @param lsid
 	 */
 	public JobInfo(int jobNo, int taskID, ParameterInfo[] parameters,
-			String user_id) {
+			String user_id, String lsid) {
 		this.jobNo = jobNo;
 		this.taskID = taskID;
 		this.parameterInfoArray = parameters;
 		this.userId = user_id;
+		this.lsid = lsid;
 	}
    
 
@@ -135,6 +141,20 @@ public class JobInfo implements Serializable {
 	 */
 	public void setTaskID(int taskID) {
 		this.taskID = taskID;
+	}
+
+	/**
+	 * @return taskLSID
+	 */
+	public String getTaskLSID() {
+		return lsid;
+	}
+
+	/**
+	 * @param taskLSID
+	 */
+	public void setTaskLSID(String lsid) {
+		this.lsid = lsid;
 	}
 
 	/**
