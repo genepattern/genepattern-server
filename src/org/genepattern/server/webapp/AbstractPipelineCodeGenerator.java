@@ -114,15 +114,13 @@ public abstract class AbstractPipelineCodeGenerator {
 				// updating " + lsid);
 				lsid = GenePatternAnalysisTask.updateTask(model.getName() + "."
 						+ GPConstants.TASK_TYPE_PIPELINE, ""
-						+ model.getDescription(), GenePatternAnalysisTask.class
-						.getName(), params, tia, model.getUserID(), model
+						+ model.getDescription(), params, tia, model.getUserID(), model
 						.isPrivate() ? GPConstants.ACCESS_PRIVATE
 						: GPConstants.ACCESS_PUBLIC);
 			} else {
 				lsid = GenePatternAnalysisTask.installNewTask(model.getName()
 						+ "." + GPConstants.TASK_TYPE_PIPELINE, ""
-						+ model.getDescription(), GenePatternAnalysisTask.class
-						.getName(), params, tia, model.getUserID(), model
+						+ model.getDescription(), params, tia, model.getUserID(), model
 						.isPrivate() ? GPConstants.ACCESS_PRIVATE
 						: GPConstants.ACCESS_PUBLIC);
 			}
@@ -140,7 +138,6 @@ public abstract class AbstractPipelineCodeGenerator {
 	public TaskInfoAttributes getCommonTaskInfoAttributes() {
 		TaskInfoAttributes tia = new TaskInfoAttributes();
 		tia.put(GPConstants.TASK_TYPE, GPConstants.TASK_TYPE_PIPELINE);
-		tia.put(GPConstants.CLASSNAME, GenePatternAnalysisTask.class.getName());
 		tia.put(GPConstants.AUTHOR, model.getAuthor());
 		tia.put(GPConstants.USERID, model.getUserID());
 		tia.put(GPConstants.PRIVACY, model.isPrivate() ? GPConstants.PRIVATE

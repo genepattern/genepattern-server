@@ -237,7 +237,6 @@ public class TestTaskIntegrator extends TestWebService {
       taskAttributes.put("serializedModel", "");
       taskAttributes.put("pipelineModel", "");
       taskAttributes.put("version", "");
-      taskAttributes.put("className", "edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask");
       taskAttributes.put("JVMLevel", "");
       taskAttributes.put("quality", "development");
       return taskAttributes;

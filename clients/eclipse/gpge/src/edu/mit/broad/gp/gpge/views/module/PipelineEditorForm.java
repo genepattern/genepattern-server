@@ -452,7 +452,6 @@ public class PipelineEditorForm extends ScrolledForm {
         taskAttributes.put(GPConstants.AUTHOR, "GenePattern");
         taskAttributes.put(GPConstants.LANGUAGE, "any");
         taskAttributes.put(GPConstants.VERSION, "1.0");
-        taskAttributes.put(GPConstants.CLASSNAME, "edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask");
         taskAttributes.put(GPConstants.QUALITY, "production");
         taskAttributes.put(GPConstants.DESCRIPTION, "");
         taskAttributes.put(GPConstants.CPU_TYPE, "any");

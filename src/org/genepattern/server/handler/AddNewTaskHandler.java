@@ -22,8 +22,7 @@ import org.genepattern.webservice.TaskInfo;
 
 public class AddNewTaskHandler extends RequestHandler {
 
-	private String taskName = "", description = "", parameter_info = "",
-			className = "", taskInfoAttributes = null;
+	private String taskName = "", description = "", parameter_info = "", taskInfoAttributes = null;
 
 	private ParameterInfo[] parameterInfoArray = null;
 
@@ -45,14 +44,12 @@ public class AddNewTaskHandler extends RequestHandler {
 	 * @param className
 	 */
 	public AddNewTaskHandler(String userId, int accessId, String taskName,
-			String description, ParameterInfo[] parameterInfoArray,
-			String className, String taskInfoAttributes) {
+			String description, ParameterInfo[] parameterInfoArray, String taskInfoAttributes) {
 		this.userId = userId;
 		this.accessId = accessId;
 		this.taskName = taskName;
 		this.description = description;
 		this.parameterInfoArray = parameterInfoArray;
-		this.className = className;
 		this.taskInfoAttributes = taskInfoAttributes;
 	}
 
@@ -95,7 +92,7 @@ public class AddNewTaskHandler extends RequestHandler {
 			//Invoke EJB function
 
 			taskID = ds.addNewTask(taskName, userId, accessId, description,
-					parameter_info, className, taskInfoAttributes);
+					parameter_info, taskInfoAttributes);
 			analysisManager.startNewAnalysisTask(taskID);
 
 		} catch (Exception ex) {

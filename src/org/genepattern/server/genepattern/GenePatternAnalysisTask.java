@@ -989,7 +989,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			// ignore
 		}
 		GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(lsid,
-				null, null, null, null, username, 0);
+				null, null, null, username, 0);
 		int formerID = loader.getTaskIDByName(lsid, username);
 		loader.run(GenePatternTaskDBLoader.DELETE);
 		try {
@@ -1096,7 +1096,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			try {
 				// search for an existing task with the same name
 				GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(
-						taskName, null, null, null, null, username, 0);
+						taskName, null, null, null, username, 0);
 				taskID = loader.getTaskIDByName(taskName, username);
 				if (taskID != -1) {
 					taskInfo = ds.getTask(taskID);
@@ -2113,11 +2113,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	 *            task name
 	 * @param description
 	 *            description of task
-	 * @param classname
-	 *            should always be
-	 *            "edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask",
-	 *            which is the class that will be instantiated/invoked by
-	 *            Omnigene when a request for that task arrives
 	 * @param params
 	 *            ParameterInfo[] of formal parameters for the task
 	 * @param taskInfoAttributes
@@ -2134,8 +2129,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	 * @author Jim Lerner
 	 *  
 	 */
-	protected static Vector installTask(String name, String description,
-			String classname, ParameterInfo[] params,
+	protected static Vector installTask(String name, String description, ParameterInfo[] params,
 			TaskInfoAttributes taskInfoAttributes, String username,
 			int access_id) throws OmnigeneException, RemoteException {
 		String originalUsername = username;
@@ -2165,7 +2159,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		// TODO: if the task is a pipeline, generate the serialized model right
 		// now too
 		GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(name,
-				description, params, classname, taskInfoAttributes.encode(),
+				description, params, taskInfoAttributes.encode(),
 				username, access_id);
 
 		int formerID = loader.getTaskIDByName(lsid, originalUsername);
@@ -2200,8 +2194,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	 * unchanged. If not, create a new one to be used when creating a new task
 	 * or installing from a zip file
 	 */
-	public static String installNewTask(String name, String description,
-			String classname, ParameterInfo[] params,
+	public static String installNewTask(String name, String description, ParameterInfo[] params,
 			TaskInfoAttributes taskInfoAttributes, String username,
 			int access_id) throws OmnigeneException, RemoteException,
 			TaskInstallationException {
@@ -2227,7 +2220,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		//System.out.println("GPAT.installNewTask: new LSID=" +
 		// taskLSID.toString());
 
-		Vector probs = installTask(name, description, classname, params,
+		Vector probs = installTask(name, description, params,
 				taskInfoAttributes, username, access_id);
 		if ((probs != null) && (probs.size() > 0)) {
 			throw new TaskInstallationException(probs);
@@ -2240,8 +2233,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	 * version. If it has an external LSID create a new one. Used when modifying
 	 * an existing task in an editor
 	 */
-	public static String updateTask(String name, String description,
-			String classname, ParameterInfo[] params,
+	public static String updateTask(String name, String description, ParameterInfo[] params,
 			TaskInfoAttributes taskInfoAttributes, String username,
 			int access_id) throws OmnigeneException, RemoteException,
 			TaskInstallationException {
@@ -2290,7 +2282,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			taskInfoAttributes.put(LSID, taskLSID.toString());
 		}
 
-		Vector probs = installTask(name, description, classname, params,
+		Vector probs = installTask(name, description, params,
 				taskInfoAttributes, username, access_id);
 
 		if ((probs != null) && (probs.size() > 0)) {
@@ -2836,8 +2828,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			if (vProblems.size() == 0) {
 				_cat.info("installing " + taskName + " into database");
 				vProblems = GenePatternAnalysisTask.installTask(taskName,
-						taskDescription, GenePatternAnalysisTask.class
-								.getName(), params, tia, username, access_id);
+						taskDescription, params, tia, username, access_id);
 				// get the newly assigned LSID
 				lsid = (String) tia.get(IGPConstants.LSID);
 
@@ -3747,7 +3738,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		vProblems = installTask(
 				"echo",
 				"echo input",
-				"edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask",
 				new ParameterInfo[] { /* no input parameters */}, tia,
 				"jlerner@broad.mit.edu", 1);
 		if (vProblems != null) {
@@ -3767,7 +3757,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		vProblems = installTask(
 				"Transpose",
 				"transpose a res or gct file",
-				"edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask",
 				new ParameterInfo[] { /* no input parameters */}, tia,
 				"jlerner@broad.mit.edu", 1);
 		if (vProblems != null) {
@@ -3787,7 +3776,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		vProblems = installTask(
 				"ExcludeRows",
 				"exclude rows from a res or gct file",
-				"edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask",
 				new ParameterInfo[] {
 						new ParameterInfo("low", null, "low"),
 						new ParameterInfo("high", null, "high"),
@@ -3812,7 +3800,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		vProblems = installTask(
 				"Threshold",
 				"threshold a res or gct file",
-				"edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask",
 				new ParameterInfo[] {
 						new ParameterInfo("min", null, "minimum"),
 						new ParameterInfo("max", null, "maximum") }, tia,
@@ -3834,7 +3821,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		vProblems = installTask(
 				"BluePinkOGram",
 				"display a BPOG of a RES or GCT file",
-				"edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask",
 				new ParameterInfo[] { /* no input parameters */}, tia,
 				"jlerner@broad.mit.edu", 1);
 		if (vProblems != null) {
@@ -3917,10 +3903,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
 				+ System.getProperty("GenePatternVersion") + " is ready.");
 	}
 
-	public String getClassName() {
-		return getClass().getName();
-	}
-
 	/**
 	 * loads the request into queue
 	 * 
@@ -3931,7 +3913,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		Vector jobVector = null;
 		try {
 			jobVector = getDS()
-					.getWaitingJob(getClass().getName(), NUM_THREADS);
+					.getWaitingJob(NUM_THREADS);
 		} catch (Exception e) {
 			_cat.error(getClass().getName() + ": getWaitingJobs "
 					+ e.getMessage());
@@ -4057,7 +4039,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 /**
  * The GenePatternTaskDBLoader dynamically creates Omnigene TASK_MASTER table
  * entries for new or modified GenePatternAnalysisTasks. Each task has a name,
- * description, classname (always GenePatternAnalysisTask), array of
+ * description, array of
  * ParameterInfo declarations, and an XML-encoded form of TaskInfoAttributes.
  * These are all persisted in the Omnigene database and recalled when a task is
  * going to be invoked.
@@ -4072,12 +4054,11 @@ class GenePatternTaskDBLoader extends DBLoader {
 	}
 
 	public GenePatternTaskDBLoader(String name, String description,
-			ParameterInfo[] params, String classname,
+			ParameterInfo[] params,
 			String taskInfoAttributes, String username, int access_id) {
 		this._name = name;
 		this._taskDescription = description;
 		this._params = params;
-		this._classname = classname;
 		this._taskInfoAttributes = taskInfoAttributes;
 		this.access_id = access_id;
 		this.user_id = username;

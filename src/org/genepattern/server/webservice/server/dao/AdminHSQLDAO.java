@@ -21,7 +21,6 @@ import java.util.Properties;
 
 import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
-import org.genepattern.server.TaskType;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -149,23 +148,19 @@ public class AdminHSQLDAO implements AdminDAO {
 			if (version != null && !version.equals("")) {
 				if (username != null) {
 					sql = "SELECT * FROM task_Master WHERE lsid='"
-							+ lsidOrTaskName + "' AND (type_id="
-							+ TaskType.REGULAR + " ) AND (user_id='" + username
+							+ lsidOrTaskName + "' AND (user_id='" + username
 							+ "' OR access_id=" + GPConstants.ACCESS_PUBLIC
 							+ ")";
 				} else {
 					sql = "SELECT * FROM task_Master WHERE lsid='"
-							+ lsidOrTaskName + "' AND (type_id="
-							+ TaskType.REGULAR + " )";
+							+ lsidOrTaskName + "'";
 				}
 
 			} else {
 				if (username != null) {
 					sql = "SELECT * FROM task_master, (SELECT MAX(lsid_version) AS max_version, lsid_no_version FROM lsids, task_master WHERE lsids.lsid=task_master.lsid AND lsid_no_version='"
 							+ lsidOrTaskName
-							+ "' AND (type_id="
-							+ TaskType.REGULAR
-							+ ") AND (user_id='"
+							+ "' AND (user_id='"
 							+ username
 							+ "' OR access_id="
 							+ GPConstants.ACCESS_PUBLIC
@@ -173,9 +168,7 @@ public class AdminHSQLDAO implements AdminDAO {
 				} else {
 					sql = "SELECT * FROM task_master, (SELECT MAX(lsid_version) AS max_version, lsid_no_version FROM lsids, task_master WHERE lsids.lsid=task_master.lsid AND lsid_no_version='"
 							+ lsidOrTaskName
-							+ "' AND (type_id="
-							+ TaskType.REGULAR
-							+ ") GROUP BY lsid_no_version) WHERE task_master.lsid=CONCAT(CONCAT(lsid_no_version, ':'), max_version)";
+							+ "' GROUP BY lsid_no_version) WHERE task_master.lsid=CONCAT(CONCAT(lsid_no_version, ':'), max_version)";
 				}
 			}
 
@@ -189,9 +182,7 @@ public class AdminHSQLDAO implements AdminDAO {
 			if (username != null) {
 				sql = "SELECT * FROM task_master, (SELECT lsid_no_version AS no_version, MAX(lsid_version) AS max_version FROM task_master, lsids WHERE task_name='"
 						+ lsidOrTaskName
-						+ "' AND lsids.lsid=task_master.lsid AND (type_id="
-						+ TaskType.REGULAR
-						+ ") AND (user_id='"
+						+ "' AND lsids.lsid=task_master.lsid AND (user_id='"
 						+ username
 						+ "' OR access_id="
 						+ GPConstants.ACCESS_PUBLIC
@@ -199,9 +190,7 @@ public class AdminHSQLDAO implements AdminDAO {
 			} else {
 				sql = "SELECT * FROM task_master, (SELECT lsid_no_version AS no_version, MAX(lsid_version) AS max_version FROM task_master, lsids WHERE task_name='"
 						+ lsidOrTaskName
-						+ "' AND lsids.lsid=task_master.lsid AND (type_id="
-						+ TaskType.REGULAR
-						+ ") GROUP BY lsid_no_version) WHERE task_master.lsid=CONCAT(CONCAT(no_version, ':'), max_version)";
+						+ "' AND lsids.lsid=task_master.lsid GROUP BY lsid_no_version) WHERE task_master.lsid=CONCAT(CONCAT(no_version, ':'), max_version)";
 			}
 
 			c = getConnection();
@@ -273,14 +262,12 @@ public class AdminHSQLDAO implements AdminDAO {
 	}
 
 	public TaskInfo[] getAllTasks() throws AdminDAOSysException {
-		String sql = "SELECT * FROM task_master where type_id="
-				+ TaskType.REGULAR;
+		String sql = "SELECT * FROM task_master";
 		return _getTasks(sql, true);
 	}
 
 	public TaskInfo[] getAllTasks(String username) throws AdminDAOSysException {
-		String sql = "SELECT * FROM task_master where (type_id="
-				+ TaskType.REGULAR + " ) AND (user_id='" + username
+		String sql = "SELECT * FROM task_master where (user_id='" + username
 				+ "' OR access_id = " + PUBLIC_ACCESS_ID + ")";
 		return _getTasks(sql, true);
 	}
@@ -292,9 +279,7 @@ public class AdminHSQLDAO implements AdminDAO {
 		ResultSet rs = null;
 		Map taskName2TaskInfoMap = new HashMap();
 		try {
-			String sql = "SELECT * FROM task_master,(SELECT lsid_no_version AS no_version, MAX(lsid_version) AS max_version FROM task_master, lsids WHERE task_master.lsid=lsids.lsid and type_id="
-					+ TaskType.REGULAR
-					+ " AND (user_id='"
+			String sql = "SELECT * FROM task_master,(SELECT lsid_no_version AS no_version, MAX(lsid_version) AS max_version FROM task_master, lsids WHERE task_master.lsid=lsids.lsid AND (user_id='"
 					+ username
 					+ "' OR access_id="
 					+ GPConstants.ACCESS_PUBLIC
@@ -339,9 +324,7 @@ public class AdminHSQLDAO implements AdminDAO {
 
 	public TaskInfo[] getLatestTasks(String username)
 			throws AdminDAOSysException {
-		String sql = "SELECT * FROM task_master, (SELECT lsid_no_version AS no_version, MAX(lsid_version) AS max_version FROM lsids, task_master WHERE task_master.lsid=lsids.lsid and type_id="
-				+ TaskType.REGULAR
-				+ " AND (user_id='"
+		String sql = "SELECT * FROM task_master, (SELECT lsid_no_version AS no_version, MAX(lsid_version) AS max_version FROM lsids, task_master WHERE task_master.lsid=lsids.lsid AND (user_id='"
 				+ username
 				+ "' OR access_id="
 				+ GPConstants.ACCESS_PUBLIC

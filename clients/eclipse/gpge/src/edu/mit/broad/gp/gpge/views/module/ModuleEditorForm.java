@@ -129,8 +129,6 @@ public class ModuleEditorForm extends ScrolledForm {
                 commandLine);
         taskAttributes.put(GPConstants.TASK_TYPE,
                 getValue("Task type:"));
-        taskAttributes.put(GPConstants.CLASSNAME,
-                "edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask");
         taskAttributes.put(GPConstants.CPU_TYPE,
                 getValue("CPU type:"));
         taskAttributes.put(GPConstants.OS,

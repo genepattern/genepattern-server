@@ -28,8 +28,6 @@ public abstract class DBLoader {
 
 	protected String _taskDescription;
 
-	protected String _classname;
-
 	protected ParameterInfo[] _params;
 
 	protected String _taskInfoAttributes;
@@ -87,7 +85,7 @@ public abstract class DBLoader {
 			int id;
 			try {
 				id = ds.addNewTask(this._name, this.user_id, this.access_id,
-						this._taskDescription, parameter_info, this._classname,
+						this._taskDescription, parameter_info,
 						this._taskInfoAttributes);
 				System.out.println(this._name + " has been created with id "
 						+ id);
@@ -143,7 +141,7 @@ public abstract class DBLoader {
 		int id;
 		try {
 			id = ds.addNewTask(this._name, this.user_id, this.access_id,
-					this._taskDescription, parameter_info, this._classname,
+					this._taskDescription, parameter_info,
 					this._taskInfoAttributes);
 			//            System.out.println(this._name+" is created with id "+id);
 		} catch (Exception e) {
