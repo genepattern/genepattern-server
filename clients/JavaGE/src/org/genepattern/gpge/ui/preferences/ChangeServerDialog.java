@@ -53,11 +53,14 @@ public class ChangeServerDialog extends JDialog {
 			url = new URL(server);
 		} catch (Exception x) {
 		}
-		serverTextField.setText(url.getHost());
+      if(url!=null) {
+         serverTextField.setText(url.getHost());
+      }
 		portLabel = new JLabel("Port: ", javax.swing.SwingConstants.RIGHT);
 		portTextField = new JTextField(10);
-		portTextField.setText("" + url.getPort());
-
+      if(url!=null) {
+         portTextField.setText("" + url.getPort());
+      }
 		usernameLabel = new JLabel("Username: ",
 				javax.swing.SwingConstants.RIGHT);
 		usernameTextField = new JTextField(20);
