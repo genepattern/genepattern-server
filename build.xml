@@ -404,7 +404,7 @@
             <entry key="build" operation="=" pattern="yyyyMMdd" type="date" value="now"/>
             <entry key="date" pattern="EEE, MMM d yyyy" type="date" value="now"/>
             <entry key="version.major" operation="=" type="int" value="1"/>
-            <entry key="version.minor" operation="=" type="string" value="3"/>
+            <entry key="version.minor" operation="=" type="string" value="4.0"/>
             <entry default="-1" key="version.revision" operation="=" type="int" value="0"/>
             <entry default="0" key="count" operation="+" type="int"/>
             <entry key="release" operation="=" type="string" value=""/>
