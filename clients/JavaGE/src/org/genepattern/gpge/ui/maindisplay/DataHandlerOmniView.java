@@ -66,10 +66,16 @@ public class DataHandlerOmniView implements ExceptionListener {
       final InputStream in = new FileInputStream(file);
       contents = org.genepattern.io.StorageUtils.createStringFromReader(new InputStreamReader(in));
       in.close();
-          
-      contents = StringUtils.replaceAll(contents, "edu.mit.wi.omniview", "edu.mit.genome.gp.ui");
-
-	return new ByteArrayInputStream(contents.getBytes());
+      // XXX hack
+      contents = contents.replaceAll("edu.mit.wi.omniview", "edu.mit.genome.gp.ui"); 
+      
+      contents = contents.replaceAll("edu.mit.genome.gp.ui.analysis.DataModel", "org.genepattern.gpge.ui.tasks.DataModel");
+     
+      contents = contents.replaceAll("edu.mit.wi.omnigene.framework.analysis", "org.genepattern.webservice"); // rename ParameterInfo, JobInfo
+     
+      contents = contents.replaceAll("edu.mit.genome.gp.ui.analysis", "org.genepattern.webservice"); // rename AnalysisJob
+     
+      return new ByteArrayInputStream(contents.getBytes());
     }
 
     
