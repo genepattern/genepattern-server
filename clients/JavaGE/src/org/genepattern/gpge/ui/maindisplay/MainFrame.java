@@ -41,7 +41,7 @@ public class MainFrame extends JFrame {
 							javax.swing.UIManager.getLookAndFeel().getClass()
 									.getName());
        
-	AnalysisServicePanel analysisServicePanel;
+	AnalysisServiceDisplay analysisServicePanel;
 
 	JLabel messageLabel = new JLabel("", JLabel.CENTER);
 
@@ -600,7 +600,7 @@ public class MainFrame extends JFrame {
 		});
 
 		changeServer(server, username);
-		analysisServicePanel = new AnalysisServicePanel(analysisServiceManager);
+		analysisServicePanel = new AnalysisServiceDisplay();
 
 		projectDirModel = ProjectDirModel.getInstance();
 		projectDirTree = new SortableTreeTable(projectDirModel);
