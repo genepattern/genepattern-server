@@ -173,7 +173,6 @@ try {
     out.println("An error occurred while processing your request. Please try again.");
    return;
 }
-
 List tasks = model.getTasks();
 for(int i = 0; i < tasks.size(); i++) {
 
@@ -193,8 +192,7 @@ for(int i = 0; i < tasks.size(); i++) {
 		
 		unknownTaskVersion = !GenePatternAnalysisTask.taskExists(taskLSIDstrNoVer , userID);
 	}
-   
-  
+    
    out.print("<p><font size=\"+1\"><a name=\""+ displayNumber +"\"/> " + displayNumber + ". ");
     
    Map tia = formalTask!=null?formalTask.getTaskInfoAttributes():null;
@@ -232,6 +230,8 @@ for(int i = 0; i < tasks.size(); i++) {
 
 	}
 
+
+
 	out.print("<div id=\"lsid"+ i + "\" style=\"display:none;\">");
 	out.print("<pre>     " + js.getLSID() + "</pre>");
 	out.print("</div>");
@@ -246,7 +246,6 @@ out.println("<table cellspacing='0' width='100%' frame='box'>");
 		paramName2FormalParamMap.put(formalParams[j].getName(), formalParams[j]);
 	}
 	boolean odd = false;
-
 	for(int j = 0; j < formalParams.length; j++) {
 		String paramName = formalParams[j].getName();
 
@@ -258,11 +257,12 @@ out.println("<table cellspacing='0' width='100%' frame='box'>");
 				informalParam = parameterInfo[k];
 				break;
 			}		
+		} // for k
+		if (informalParam == null) {
+			informalParam = formalParam;
+			k = j;
 		}
-if (informalParam == null) {
-	informalParam = formalParam;
-	k = j;
-}
+
  		String value = null;
 		if(formalParam.isInputFile()) {
 			
@@ -273,7 +273,7 @@ if (informalParam == null) {
 				taskNumber = (String) pipelineAttributes.get(PipelineModel.INHERIT_TASKNAME);
 			}
 
-			if(runtimePrompt[k]) {
+			if((k < runtimePrompt.length )&&(runtimePrompt[k])) {
 				value = "Prompt when run";
 			} else if (taskNumber != null) {
 				String outputFileNumber = (String) pipelineAttributes
@@ -311,7 +311,6 @@ if (informalParam == null) {
 		}  else {
 			value = GenePatternAnalysisTask.htmlEncode(informalParam.getValue());
 		}
-
       
 		paramName = paramName.replace('.', ' ');
 		//	out.print("<dd>" + paramName);
