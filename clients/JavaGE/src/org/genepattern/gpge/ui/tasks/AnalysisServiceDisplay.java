@@ -1,6 +1,8 @@
 package org.genepattern.gpge.ui.tasks;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,7 +12,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -18,7 +19,6 @@ import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -38,7 +38,6 @@ import org.genepattern.modules.ui.graphics.*;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.WebServiceException;
 /**
  *  Displays an <tt>AnalysisService</tt>
  *
@@ -286,7 +285,26 @@ public class AnalysisServiceDisplay extends JPanel {
       helpButton.addActionListener(new HelpActionListener());
       buttonPanel.add(helpButton);
       add(topPanel, BorderLayout.NORTH);
-      add(new JScrollPane(parameterPanel), BorderLayout.CENTER);
+     
+		JScrollPane sp = new JScrollPane(parameterPanel);
+      final javax.swing.border.Border b = sp.getBorder();
+      sp.setBorder(new javax.swing.border.Border() {
+			public Insets getBorderInsets(java.awt.Component c) {
+				Insets i = b.getBorderInsets(c);
+				i.left = 0;
+				return i;
+			}
+			
+			public boolean isBorderOpaque() {
+				return b.isBorderOpaque();
+			}
+			
+			public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+				b.paintBorder(c, g, x, y, width, height);
+			}
+
+		});
+	   add(sp, BorderLayout.CENTER);
       add(buttonPanel, BorderLayout.SOUTH);
       setMinimumSize(new java.awt.Dimension(100, 100));
       revalidate();
