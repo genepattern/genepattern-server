@@ -90,7 +90,7 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 				try {
 					final String error_text = StorageUtils
 							.createStringFromContents(errorGobbler.tmp_file);
-					org.genepattern.gpge.GenePattern.showError(null, taskName
+					org.genepattern.gpge.GenePattern.showErrorDialog(taskName
 							+ " error:\n" + error_text);
 				} catch (IOException ioe) {
 					ioe.printStackTrace();
@@ -107,10 +107,8 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 				if (fault.getFaultCode().equals(noService)) {
 					message += "\nCause: Cannot run visualizers when connecting to an old server.";
 				}
-			} else if (e.getMessage() != null) {
-				message += "\nCause: " + e.getMessage();
-			}
-			org.genepattern.gpge.GenePattern.showError(null, message);
+			} 
+			org.genepattern.gpge.GenePattern.showErrorDialog(message);
 		}
 	}
 

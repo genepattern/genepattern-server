@@ -98,10 +98,16 @@ public class MainFrame extends JFrame {
 		pi.setAttributes(attrs);
 		return pi;
 	}
+   
+   
+   boolean disconnectedFromServer(WebServiceException wse) {
+      return GenePattern.disconnectedFromServer(wse, analysisServiceManager.getServer());
+   }
 
 	private static boolean isPopupTrigger(MouseEvent e) {
 		return (e.isPopupTrigger() || e.getModifiers() == MouseEvent.BUTTON3_MASK);
 	}
+   
    
    private static String fileToString(File file) throws IOException {
       StringBuffer sb = new StringBuffer();
@@ -247,10 +253,13 @@ public class MainFrame extends JFrame {
 				public void run() {
 					try {
 						node.download(outputFile);
-					} catch (Exception e) {
-						GenePattern.showErrorDialog(
-								"An error occurred while saving " + outputFile.getName());
-					}
+					//} catch (WebServiceException wse) {
+                //  if(!disconnectedFromServer(wse)) {
+                 //    GenePattern.showErrorDialog("An error occurred while saving " + outputFile.getName() + ". Please try again.");
+                 // }
+					} catch(IOException ioe) {
+                  GenePattern.showErrorDialog("An error occurred while saving " + outputFile.getName() + ". Please try again.");
+               }
 				}
 			}.start();
 		}
@@ -269,19 +278,16 @@ public class MainFrame extends JFrame {
 							analysisServiceManager.getUsername(), false)
 							.getServiceInfo().get("lsid.authority");
 					System.setProperty("lsid.authority", lsidAuthority);
-				} catch (Throwable x) {
+               jobModel.getJobsFromServer();
+				} catch (WebServiceException wse) {
+               wse.printStackTrace();
+               // ignore the exception here, the user will be alerted in refreshTasks
 				}
 				refreshTasks();
 
 			}
 		}.start();
-		new Thread() {
-			public void run() {
-				jobModel.getJobsFromServer(analysisServiceManager.getServer(),
-						analysisServiceManager.getUsername());
-			}
-		}.start();
-
+      
 		Thread changeStatusThread = new Thread() {
 			public void run() {
 				messageLabel.setText("Server: " + server + "   Username: "
@@ -506,24 +512,6 @@ public class MainFrame extends JFrame {
 			}
 		}
 
-		/*
-		 * ChangeServerDialog changeServerDialog = new ChangeServerDialog(this,
-		 * true);
-		 * 
-		 * ActionListener listener = new ActionListener() { public void
-		 * actionPerformed(ActionEvent e) { dialog.dispose(); server =
-		 * dialog.getServer(); username= dialog.getUsername(); try { int port =
-		 * Integer.parseInt(dialog.getPort());
-		 * 
-		 * server = server + ":" + port;
-		 * if(!server.toLowerCase().startsWith("http://")) { server = "http://" +
-		 * server; }
-		 *  } catch(NumberFormatException nfe) {
-		 * JOptionPane.showMessageDialog(GenePattern.getDialogParent(), "Invalid
-		 * port. Please try again."); changeServerDialog.setVisible(true); } } };
-		 * changeServerDialog.show(server, username, listener); }
-		 */
-
 		createMenuBar();
 		jobModel = JobModel.getInstance();
 
@@ -589,12 +577,14 @@ public class MainFrame extends JFrame {
       final JMenuItem terminateJobMenuItem = new JMenuItem("Terminate Job", IconManager.loadIcon(IconManager.STOP_ICON));
 		terminateJobMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+            JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
             try {
-               JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
                AnalysisWebServiceProxy p = new AnalysisWebServiceProxy(analysisServiceManager.getServer(), analysisServiceManager.getUsername(), false);
                p.terminateJob(jobNode.job.getJobInfo().getJobNumber());
-            } catch(Exception x) {
-               x.printStackTrace();  
+            } catch(WebServiceException wse) {
+                if(!disconnectedFromServer(wse)) {
+                  GenePattern.showErrorDialog("An error occurred terminating job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
+                } 
             }
 			}
 		});
@@ -606,7 +596,14 @@ public class MainFrame extends JFrame {
 				"Delete Job", IconManager.loadIcon(IconManager.DELETE_ICON));
       deleteJobMenuItem.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e) {
-            jobModel.delete((JobModel.JobNode) selectedJobNode);
+            JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
+            try {
+               jobModel.delete(jobNode);
+            } catch(WebServiceException wse) {
+               if(!disconnectedFromServer(wse)) {
+                  GenePattern.showErrorDialog("An error occurred deleting job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
+               }   
+            }
          }
       });
 		jobPopupMenu.add(deleteJobMenuItem);
@@ -635,9 +632,14 @@ public class MainFrame extends JFrame {
 										try {
 											node.download(outputFile);
 											projectDirModel.refresh(dir);
-										} catch (Exception e) {
-											GenePattern.showErrorDialog("An error occurred while saving the file " + node.name);
-										}
+                              } catch(IOException ioe) {
+                                  GenePattern.showErrorDialog("An error occurred while saving the file " + node.name  + ". Please try again.");
+                              }
+                             //	} catch (WebServiceException wse) {
+                            //      if(!disconnectedFromServer(wse)) {
+                            //         GenePattern.showErrorDialog("An error occurred while saving the file " + node.name  + ". Please try again.");
+                           //       }  
+										//}
 									}
 								}.start();
 							}
@@ -671,11 +673,9 @@ public class MainFrame extends JFrame {
             try {
                jobModel.delete(serverFileNode);
             } catch(WebServiceException wse) {
-               if(wse.getRootCause() instanceof FileNotFoundException) {
-                  GenePattern.showMessageDialog("File deleted", "The file " + JobModel.getJobResultFileName(serverFileNode) + " has been deleted");  
-               } else {
-                  wse.printStackTrace();  
-               }
+               if(!disconnectedFromServer(wse)) {
+                  GenePattern.showErrorDialog("An error occurred while deleting the file " + JobModel.getJobResultFileName(serverFileNode) + ". Please try again.");
+               }  
             }
 			}
 		});
@@ -777,7 +777,7 @@ public class MainFrame extends JFrame {
 				if (selectedJobNode instanceof JobModel.JobNode) {
 					JobModel.JobNode node = (JobModel.JobNode) selectedJobNode;
 					deleteJobMenuItem.setEnabled(node.isComplete());
-               terminateJobMenuItem.setVisible(!node.isComplete());
+               terminateJobMenuItem.setEnabled(!node.isComplete());
 					jobPopupMenu.show(e.getComponent(), e.getX(), e.getY());
 				} else if (selectedJobNode instanceof JobModel.ServerFileNode) {
 					serverFilePopupMenu.show(e.getComponent(), e.getX(), e
@@ -1021,8 +1021,13 @@ public class MainFrame extends JFrame {
 	public void refreshJobs() {
 		new Thread() {
 			public void run() {
-				jobModel.getJobsFromServer(analysisServiceManager.getServer(),
-						analysisServiceManager.getUsername());
+            try {
+               jobModel.getJobsFromServer();
+            } catch(WebServiceException wse) {
+               if(!disconnectedFromServer(wse)) {
+                  GenePattern.showErrorDialog("An error occurred while retrieving your jobs. Please try again.");
+               }   
+            }
 			}
 		}.start();
 	}
@@ -1047,11 +1052,9 @@ public class MainFrame extends JFrame {
 				try {
 					analysisServiceManager.refresh();
 				} catch (WebServiceException wse) {
-					wse.printStackTrace();
-					JOptionPane.showMessageDialog(
-							GenePattern.getDialogParent(),
-							"Unable to connect to "
-									+ analysisServiceManager.getServer());
+               if(!disconnectedFromServer(wse)) {
+                  GenePattern.showErrorDialog("An error occurred while retrieving the tasks from the server. Please try again.");
+               }   
 				}
 
 				final Collection latestTasks = analysisServiceManager
