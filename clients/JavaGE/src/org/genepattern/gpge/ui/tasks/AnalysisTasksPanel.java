@@ -1345,7 +1345,7 @@ public class AnalysisTasksPanel extends JPanel implements Observer {
 			System.out.println(converter.getJaxbString(parmInfos));
 
 			final JobInfo job = handler.submitJob(id, parmInfos);
-			final AnalysisJob aJob = new AnalysisJob(name, task, job);
+			final AnalysisJob aJob = new AnalysisJob(name, job);
 			String lsid = (String) selectedService.getTaskInfo()
 					.getTaskInfoAttributes().get(GPConstants.LSID);
 			aJob.setLSID(lsid);

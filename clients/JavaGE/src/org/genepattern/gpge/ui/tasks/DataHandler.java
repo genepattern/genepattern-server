@@ -157,8 +157,7 @@ public class DataHandler {
 			JobInfo jobInfo = jobToJobInfo(jobHistory.getJob());
 			//System.out.println("Job ID: "+jobInfo.getJobNumber()+" Submitted:
 			// "+jobInfo.getDateSubmitted());
-			AnalysisJob analysisJob = new AnalysisJob(jobHistory.getSiteName(),
-					jobHistory.getTaskName(), jobInfo);
+			AnalysisJob analysisJob = new AnalysisJob(jobHistory.getSiteName(), jobInfo);
 			history.add(analysisJob);
 		}
 
@@ -174,7 +173,7 @@ public class DataHandler {
 			while (jobListIt.hasNext()) {
 				Job job = (Job) jobListIt.next();
 				JobInfo jobInfo = jobToJobInfo(job);
-				AnalysisJob aJob = new AnalysisJob(siteName, taskName, jobInfo);
+				AnalysisJob aJob = new AnalysisJob(siteName, jobInfo);
 				if (results.containsKey(siteName)) {
 					taskResults = (Hashtable) results.get(siteName);
 					if (taskResults.containsKey(taskName)) {

@@ -449,8 +449,7 @@ semantic_search_loop:
       }
 		TaskInfo tinfo = svc.getTaskInfo();
 		final JobInfo job = analysisProxy.submitJob(tinfo.getID(), parmInfos, jobId);
-		final AnalysisJob aJob = new AnalysisJob(svc.getServer(), tinfo
-				.getName(), job);
+		final AnalysisJob aJob = new AnalysisJob(svc.getServer(), job);
 		return aJob;
 	}
 

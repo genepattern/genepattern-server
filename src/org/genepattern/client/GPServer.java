@@ -97,7 +97,7 @@ public class GPServer {
 			TaskInfo tinfo, ParameterInfo[] parmInfos)
 			throws org.genepattern.webservice.WebServiceException {
 		final JobInfo job = handler.submitJob(tinfo.getID(), parmInfos);
-		final AnalysisJob aJob = new AnalysisJob(server, tinfo.getName(), job);
+		final AnalysisJob aJob = new AnalysisJob(server, job);
 		return aJob;
 	}
 
