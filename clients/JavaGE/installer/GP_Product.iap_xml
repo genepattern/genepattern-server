@@ -373,7 +373,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[C:\projects\genepattern_rf\build\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\build\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -1117,7 +1117,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\build\jars\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\build\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -7251,7 +7251,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[C:\projects\gp2_refactor\lib\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
