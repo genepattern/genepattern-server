@@ -283,7 +283,15 @@ public class CommandLineAction {
 		String all = readFile(schemaFile);
 		Statement stmt = conn.createStatement();
 		while (!all.equals("")) {
-			int i = all.indexOf(';');
+			all = all.trim();
+			int i = all.indexOf('\n');
+			if (i == -1) i = all.length()-1;
+			if (all.startsWith("--")) {
+				all = all.substring(i+1);
+				continue;
+			}
+
+			i = all.indexOf(';');
 			String sql;
 			if (i != -1) {
 				sql = all.substring(0, i);
@@ -292,9 +300,7 @@ public class CommandLineAction {
 				sql = all;
 				all = "";
 			}
-			if (sql.startsWith("--")) {
-				continue;
-			}
+			sql = sql.trim();
 			try {
 				if (DEBUG)
 					System.out.println("-> " + sql);
