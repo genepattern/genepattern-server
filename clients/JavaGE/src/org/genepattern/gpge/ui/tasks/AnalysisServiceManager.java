@@ -3,6 +3,8 @@ package org.genepattern.gpge.ui.tasks;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.net.InetAddress;
+import java.net.URL;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.AnalysisWebServiceProxy;
@@ -58,6 +60,26 @@ public class AnalysisServiceManager {
 	 */
    public Map getLSIDToVersionsMap() {
      return lsid2VersionsMap;
+   }
+   
+   /**
+   * Returns <tt>true</tt> if the server is localhost, <tt>false</tt> otherwise
+   *
+   * @return whether the server is localhost
+   */
+   public boolean isLocalHost() {
+      try {
+         URL url = new URL(server);
+         String host = url.getHost();
+         if("127.0.0.1".equals(host) || "localhost".equals(host)) {
+            return true;  
+         }
+         InetAddress localHost = InetAddress.getLocalHost();  
+         return localHost.getCanonicalHostName().equals(InetAddress.getByName(host).getCanonicalHostName());
+      } catch(Exception e) {
+         e.printStackTrace();
+         return false;
+      }
    }
    
 
