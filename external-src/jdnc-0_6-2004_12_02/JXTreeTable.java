@@ -87,7 +87,7 @@ import org.jdesktop.swing.treetable.TreeTableModel;
  * @author Scott Violet
  * @author Ramesh Gupta
  */
-public class JXTreeTable extends JXTable {
+public class JXTreeTable extends JTable {
     // TOTAL HACK to fix icons that disappeared in a regression after M3!
     private Icon    collapsedIcon = null;
     private Icon    expandedIcon = null;
@@ -100,7 +100,7 @@ public class JXTreeTable extends JXTable {
      * {@link #isHierarchical(int) hierarchical} column.
      */
     private TreeTableCellRenderer renderer = null;
-    // renderer extends JXTree and implements TableCellRenderer
+    // renderer extends JTree and implements TableCellRenderer
 
     /**
      * Constructs a JXTreeTable using a
@@ -476,9 +476,9 @@ public class JXTreeTable extends JXTable {
      * @param columnMargin margin between columns; must be greater than or equal to zero.
      * @see #setShowVerticalLines(boolean) setShowVerticalLines
      */
-    public void setColumnMargin(int columnMargin) {
-        super.setColumnMargin(columnMargin);
-    }
+  //  public void setColumnMargin(int columnMargin) {
+    //    super.setColumnMargin(columnMargin);
+   // }
 
     /**
      * <p>Overridden to ensure that private renderer state is kept in sync with the
@@ -740,15 +740,17 @@ public class JXTreeTable extends JXTable {
      * Collapses all nodes in the treetable.
      */
     public void collapseAll() {
-        renderer.collapseAll();
+   //     renderer.collapseAll();
     }
-
+    
     /**
      * Expands all nodes in the treetable.
      */
     public void expandAll() {
-        renderer.expandAll();
+      //  renderer.expandAll();
     }
+    
+    public void setHighlighters(Object o){}
 
     /**
      * Collapses the node at the specified path in the treetable.
@@ -1338,7 +1340,7 @@ public class JXTreeTable extends JXTable {
         private JXTreeTable treeTable = null; // logically immutable
     }
 
-    static class TreeTableCellRenderer extends JXTree implements
+    static class TreeTableCellRenderer extends JTree implements
         TableCellRenderer {
         // Force user to specify TreeTableModel instead of more general TreeModel
         public TreeTableCellRenderer(TreeTableModel model) {
