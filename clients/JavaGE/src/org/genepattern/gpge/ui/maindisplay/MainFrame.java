@@ -57,7 +57,7 @@ public class MainFrame extends JFrame {
    final static int MENU_SHORTCUT_KEY_MASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
    FileInfoComponent fileSummaryComponent = new FileInfoComponent();
    
-         
+
    private static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone.getValue(), toClone.getDescription());
 		HashMap attrs = toClone.getAttributes();
@@ -218,31 +218,69 @@ public class MainFrame extends JFrame {
    
    public MainFrame() {
       JWindow splash = GenePattern.showSplashScreen();
+      splash.setVisible(true);
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      Properties prop = null;
+      String server = null;
       try {
-         prop = org.genepattern.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
-      } catch(Exception ioe) {
-         GenePattern.showErrorDialog("An error occurred while reading the omnigene properties file.");
-      }
+         Properties omnigeneProps = org.genepattern.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
+         server = "http://" + omnigeneProps.getProperty("analysis.service.site.name"); // omnigene properties are deprecated
+      } catch(Exception e) {
+      } 
      
       
-      final String server = "http://" + prop.getProperty("analysis.service.site.name");// FIXME
+      String username = GPpropertiesManager.getProperty(PreferenceKeys.USER_NAME);
+      boolean showChangeServerDialog = false;
+      if(username==null) {
+         username = ""; 
+         showChangeServerDialog = true;
+      }
+      server = GPpropertiesManager.getProperty(PreferenceKeys.SERVER);
+      if(server==null) { 
+         server = "http://127.0.0.1:8080";
+         showChangeServerDialog = true;
+      }
+      GPpropertiesManager.setProperty(PreferenceKeys.SERVER, server);
+      GPpropertiesManager.setProperty(PreferenceKeys.USER_NAME, username);
+      if(showChangeServerDialog) {
+         // FIXME
+      }
+    /*     ChangeServerDialog changeServerDialog = new ChangeServerDialog(this, true);
+         
+         ActionListener listener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {    
+               dialog.dispose();
+               server = dialog.getServer();
+               username= dialog.getUsername();
+               try {
+                  int port = Integer.parseInt(dialog.getPort());
+        
+                  server = server + ":" + port;
+                  if(!server.toLowerCase().startsWith("http://")) {
+                     server = "http://" + server;
+                  }
+                 
+               } catch(NumberFormatException nfe) {
+                  JOptionPane.showMessageDialog(GenePattern.getDialogParent(), "Invalid port. Please try again.");
+                  changeServerDialog.setVisible(true);
+               }
+            }
+         };
+         changeServerDialog.show(server, username, listener);
+      }
+      */
       
-      final String username = GPpropertiesManager.getProperty("gp.user.name");
-      GPpropertiesManager.setProperty("gp.user.name", username);
-       
-      analysisServiceManager = AnalysisServiceManager.getInstance(server, username);
-         new Thread() {
+      analysisServiceManager = new AnalysisServiceManager(server, username);
+      createMenuBar();
+      new Thread() {
             public void run() {
                try {
-                  String lsidAuthority = (String) new org.genepattern.webservice.AdminProxy(server, username, false).getServiceInfo().get("lsid.authority");
+                  String lsidAuthority = (String) new org.genepattern.webservice.AdminProxy(analysisServiceManager.getServer(), analysisServiceManager.getUsername(), false).getServiceInfo().get("lsid.authority");
                   System.setProperty("lsid.authority", lsidAuthority);
                } catch(Throwable x) {}
                refresh();
             }
          }.start();
-      createMenuBar();
+      
 
       analysisTasksPanel = new AnalysisServicePanel(DefaultExceptionHandler.instance(), analysisServiceManager);
       jobModel = JobModel.getInstance();
@@ -387,7 +425,7 @@ public class MainFrame extends JFrame {
          });
       projectDirModel = ProjectDirModel.getInstance();
       
-      String projectDirsString = GPpropertiesManager.getProperty("gp.project.dirs");
+      String projectDirsString = GPpropertiesManager.getProperty(PreferenceKeys.PROJECT_DIRS);
       if(projectDirsString!=null) {
          String[] projectDirs = projectDirsString.split(";");
          for(int i = 0; i < projectDirs.length; i++) {
@@ -475,13 +513,10 @@ public class MainFrame extends JFrame {
       setSize(width, (int) (screenSize.height * .9));
       setLocation((screenSize.width - getWidth()) / 2, 20);
       setTitle(BuildProperties.PROGRAM_NAME + ' ' + BuildProperties.FULL_VERSION + "  Build: " + BuildProperties.BUILD);
-    //  jobResultsTree.setRootVisible(false);
       splash.hide();
       splash.dispose();
       splitPane.setDividerLocation((int)(width*0.4));
       show();
-     // jobModel.add(new AnalysisJob("SAD", "ASD", new JobInfo()));
-     
      
    }
 
@@ -502,7 +537,12 @@ public class MainFrame extends JFrame {
       
       new Thread() {
             public void run() {
-               analysisServiceManager.refresh();
+               try {
+                  analysisServiceManager.refresh();
+               } catch(WebServiceException wse) {
+                  JOptionPane.showMessageDialog(GenePattern.getDialogParent(), "Unable to connect to " + analysisServiceManager.getServer());  
+               }
+             
                final Collection latestTasks = analysisServiceManager.getLatestAnalysisServices();
                
                SwingUtilities.invokeLater(
@@ -513,8 +553,8 @@ public class MainFrame extends JFrame {
                         analysisMenu.init(latestTasks);
                         visualizerMenu.init(latestTasks);
                         fileMenu.setServerActionsEnabled(true);
-                         analysisMenu.setEnabled(true);
-                         visualizerMenu.setEnabled(true);
+                        analysisMenu.setEnabled(true);
+                        visualizerMenu.setEnabled(true);
                      }
                   });
 
@@ -548,7 +588,7 @@ public class MainFrame extends JFrame {
 
    class AnalysisMenu extends JMenu {
       boolean visualizer;
-
+      ActionListener serviceSelectedListener;
 
       public AnalysisMenu(boolean visualizer) {
          if(visualizer) {
@@ -557,71 +597,47 @@ public class MainFrame extends JFrame {
             setText("Data Analysis");
          }
          this.visualizer = visualizer;
-      }
-
-
-      public void init(Collection tasks) {
-         ActionListener listener =
+         serviceSelectedListener =
             new ActionListener() {
                public void actionPerformed(ActionEvent e) {
                   AnalysisMenuItem mi = (AnalysisMenuItem) e.getSource();
                   analysisTasksPanel.loadTask(mi.svc);
                }
             };
-         Map categories2Tasks = new TreeMap(String.CASE_INSENSITIVE_ORDER);
-         for(Iterator it = tasks.iterator(); it.hasNext(); ) {
-            AnalysisService svc = (AnalysisService) it.next();
-            String category = (String) svc.getTaskInfo().getTaskInfoAttributes().get(GPConstants.TASK_TYPE);
+      }
 
-            if(!visualizer && (category.equals(GPConstants.TASK_TYPE_VISUALIZER) || category.equals("Image Creators"))) {
-               continue;
-            } else if(visualizer && !category.equals(GPConstants.TASK_TYPE_VISUALIZER) && !category.equals("Image Creators")) {
-               continue;
-            }
-            List services = (List) categories2Tasks.get(category);
-            if(services == null) {
-               services = new ArrayList();
-               categories2Tasks.put(category, services);
-            }
-            services.add(svc);
+
+      private void add(JMenu menu, List services) {
+         if(services==null) {
+            return;  
          }
-         for(Iterator values = categories2Tasks.values().iterator(); values.hasNext(); ) {
-            List services = (List) values.next();
-            java.util.Collections.sort(services,
-               new java.util.Comparator() {
-                  public int compare(Object obj1, Object obj2) {
-                     AnalysisService svc1 = (AnalysisService) obj1;
-                     AnalysisService svc2 = (AnalysisService) obj2;
-                     return svc1.getTaskInfo().getName().compareTo(
-                           svc2.getTaskInfo().getName());
-                  }
-
-
-                  public boolean equals(Object obj1, Object obj2) {
-                     AnalysisService svc1 = (AnalysisService) obj1;
-                     AnalysisService svc2 = (AnalysisService) obj2;
-                     return svc1.getTaskInfo().getName().equals(
-                           svc2.getTaskInfo().getName());
-                  }
-               });
-
-         }
-         for(Iterator keys = categories2Tasks.keySet().iterator(); keys.hasNext(); ) {
-            String category = (String) keys.next();
-            category = Character.toUpperCase(category.charAt(0)) + category.substring(1, category.length());
-            List services = (List) categories2Tasks.get(category);
-            JMenu menu = null;
-            if(!visualizer) {
-               menu = new JMenu(category);
-               add(menu);
-            } else {
-               menu = this;// FIXME
+         for(int i = 0; i < services.size(); i++) {
+            AnalysisMenuItem mi = new AnalysisMenuItem((AnalysisService) services.get(i));
+            mi.addActionListener(serviceSelectedListener);
+            menu.add(mi);
+         }  
+      }
+      
+      public void init(Collection tasks) {
+         Map categoryToAnalysisServices = AnalysisServiceUtil.getCategoryToAnalysisServicesMap(tasks);
+  
+         if(!visualizer) {
+           
+            categoryToAnalysisServices.remove(GPConstants.TASK_TYPE_VISUALIZER);
+            categoryToAnalysisServices.remove("Image Creators");
+            for(Iterator keys = categoryToAnalysisServices.keySet().iterator(); keys.hasNext(); ) {
+               String category = (String) keys.next();
+               List services = (List) categoryToAnalysisServices.get(category);
+               JMenu menu = new JMenu(category);
+               add(menu, services);
+               this.add(menu);
             }
-            for(int i = 0; i < services.size(); i++) {
-               AnalysisMenuItem mi = new AnalysisMenuItem((AnalysisService) services.get(i));
-               mi.addActionListener(listener);
-               menu.add(mi);
-            }
+         } else {
+            List visualizers = (List) categoryToAnalysisServices.get(GPConstants.TASK_TYPE_VISUALIZER);
+            add(this, visualizers);
+            addSeparator();
+            List imageCreators = (List) categoryToAnalysisServices.get("Image Creators");
+            add(this, imageCreators);
          }
 
       }
@@ -760,10 +776,13 @@ public class MainFrame extends JFrame {
                            if(!server.toLowerCase().startsWith("http://")) {
                               server = "http://" + server;
                            }
-                           analysisServiceManager.disconnect();
-                           analysisServiceManager = AnalysisServiceManager.getInstance(server, username);
-                           refresh();
-                           jobModel.removeAll();
+                           analysisServiceManager = new AnalysisServiceManager(server, username);
+                           try {
+                              analysisServiceManager.refresh();
+                              jobModel.removeAll();
+                           } catch(WebServiceException wse) {
+                              JOptionPane.showMessageDialog(GenePattern.getDialogParent(), "Unable to connect to " + server);  
+                           }
                         } catch(NumberFormatException nfe) {
                            JOptionPane.showMessageDialog(GenePattern.getDialogParent(), "Invalid port. Please try again.");
                         }
