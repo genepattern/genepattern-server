@@ -23,6 +23,17 @@ public class FileInfoComponent extends JLabel {
 
 	static String SIZE = "Size";
 
+   private String semanticType;
+   private String kind;
+   
+   public String getSemanticType() {
+      return semanticType;   
+   }
+   
+   public String getKind() {
+      return kind;   
+   }
+   
 	public FileInfoComponent() {
       setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		setVisible(false);
@@ -35,11 +46,13 @@ public class FileInfoComponent extends JLabel {
 			return;
 		}
 		setVisible(true);
-		String kind = null;
+		kind = null;
 		FileInputStream fis = null;
 		try {
 			fis = new FileInputStream(file);
-			kind = FileSummaryReader.getKind(fis, file.getName());
+			String[] info = FileSummaryReader.getKindAndType(fis, file.getName());
+         kind = info[0];
+         semanticType = info[1];
 
 		} finally {
 			if (fis != null) {
@@ -68,11 +81,13 @@ public class FileInfoComponent extends JLabel {
 			return;
 		}
 		setVisible(true);
-		String kind = null;
+		kind = null;
 		InputStream is = null;
 		try {
 			is = conn.getInputStream();
-			kind = FileSummaryReader.getKind(is, name);
+			String[] info = FileSummaryReader.getKindAndType(is, name);
+         kind = info[0];
+         semanticType = info[1];
 		} finally {
 			if (is != null) {
 				try {
@@ -119,20 +134,20 @@ public class FileInfoComponent extends JLabel {
 
 	static class FileSummaryReader {
 		static Map extension2KindMap = new HashMap();
-
-		static OdfSummaryHandler odfHandler = new OdfSummaryHandler();
-
-		static OdfParser odfParser = new OdfParser();
-
 		static NumberFormat numberFormat;
 
-		public static String getKind(InputStream is, String name)
+		public static String[] getKindAndType(InputStream is, String name)
 				throws IOException {
+         OdfParser odfParser = new OdfParser();
+         OdfSummaryHandler odfHandler = new OdfSummaryHandler();
+         
 			int dotIndex = name.lastIndexOf(".");
 			String kind = "";
+         String type = null;
 			if (dotIndex != -1 && dotIndex != (name.length() - 1)) {
 				String extension = name.substring(dotIndex + 1, name.length());
 				extension = extension.toLowerCase();
+            type = extension;
 				kind = (String) extension2KindMap.get(extension);
 				if (kind == null) {
 					kind = extension;
@@ -144,11 +159,12 @@ public class FileInfoComponent extends JLabel {
 				} catch (ParseException e) {
 				}
 				kind = odfHandler.model;
+            type = kind;
 				if (kind == null) {
 					kind = "Unknown";
 				}
 			}
-			return kind;
+			return new String[]{kind, type};
 		}
 
 		public static String getSize(long lengthInBytes) {
@@ -164,14 +180,6 @@ public class FileInfoComponent extends JLabel {
 			}
 
 			return size;
-		}
-
-		public static String[] getSummary(InputStream is, String name)
-				throws IOException {
-			String kind = getKind(is, name);
-			long available = is.available();
-			String size = getSize(available);
-			return new String[] { kind, size };
 		}
 
 		static {
@@ -191,7 +199,6 @@ public class FileInfoComponent extends JLabel {
 
 			// FIXME, pol, gmt, xxx
 
-			odfParser.setHandler(odfHandler);
 			numberFormat = NumberFormat.getInstance();
 			numberFormat.setMaximumFractionDigits(1);
 
