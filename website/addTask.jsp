@@ -145,12 +145,14 @@ function onPrivacyChange(selector) {
 	}
 }
 
-function deleteSupportFiles() {
+function confirmDeleteSupportFiles() {
 	var sel = document.forms['task'].deleteFiles;
 	var selection = sel.options[sel.selectedIndex].value;
 	if (selection == null || selection == "") return;
 	if (window.confirm('Really delete ' + selection + ' from ' + document.forms['task']['<%= GPConstants.FORMER_NAME %>'].value + '\'s support files?')) { 
-		window.location='saveTask.jsp?deleteSupportFiles=1&deleteFiles=' + selection + '&<%= GPConstants.NAME %>=' + document.forms['task'].<%= GPConstants.NAME %>.value + '&<%= GPConstants.LSID %>=' + document.forms['task']['<%= GPConstants.LSID %>'].value;
+		//window.location='saveTask.jsp?deleteSupportFiles=1&deleteFiles=' + selection + '&<%= GPConstants.NAME %>=' + document.forms['task'].<%= GPConstants.NAME %>.value + '&<%= GPConstants.LSID %>=' + document.forms['task']['<%= GPConstants.LSID %>'].value;
+		sel.form.deleteSupportFiles.value = "1";
+		sel.form.submit();
 	}
 }
 
@@ -750,7 +752,8 @@ if (taskName != null) {
 			<option value="<%= GenePatternAnalysisTask.htmlEncode(allFiles[i].getName()) %>"><%= allFiles[i].getName() %></option> 
 <%		   }  %>
 		   </select>
-		   <input type="button" value="<%= DELETE %>..." class="little" onclick="deleteSupportFiles()">
+		   <input type="hidden" name="deleteSupportFiles" value="">
+		   <input type="button" value="<%= DELETE %>..." class="little" onclick="confirmDeleteSupportFiles()">
 <%	   } %>
 
 <%   } %>

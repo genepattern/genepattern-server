@@ -127,44 +127,49 @@ if (requestParameters.getParameter("delete") != null || request.getParameter("de
 // delete support file
 if ((requestParameters.getParameter("deleteFiles") != null || request.getParameter("deleteFiles") != null) &&
     (requestParameters.getParameter("deleteSupportFiles") != null || request.getParameter("deleteSupportFiles") != null)) {
-	String filename = requestParameters.getParameter("deleteFiles");
-	if (filename == null) filename = request.getParameter("deleteFiles");
 
-	forward = request.getParameter("forward");
-	if (forward== null) forward = "addTask.jsp";
+	if ((requestParameters.getParameter("deleteSupportFiles") != null && requestParameters.getParameter("deleteSupportFiles").length() > 0) ||
+	    (request.getParameter("deleteSupportFiles") != null && request.getParameter("deleteSupportFiles").length() > 0)) {
+
+		String filename = requestParameters.getParameter("deleteFiles");
+		if (filename == null) filename = request.getParameter("deleteFiles");
+
+		forward = request.getParameter("forward");
+		if (forward== null) forward = "addTask.jsp";
 
 
-	if (filename != null && !filename.equals("")) {
-		try {
-			StringBuffer sbURL = request.getRequestURL();
-			String queryString = request.getQueryString();
-			if (queryString != null) {
-				sbURL.append("?");
-				sbURL.append(queryString);
-			}
-			lsid = taskIntegratorClient.deleteFiles(lsid, new String[] { filename });
-			if (lsid != null) { 
-				forward = forward + "?" + GPConstants.NAME + "=" + lsid;
-				//response.sendRedirect(forward + "?" + GPConstants.NAME + "=" + lsid);
-				//return;
-			} else { %>
+		if (filename != null && !filename.equals("")) {
+			try {
+				StringBuffer sbURL = request.getRequestURL();
+				String queryString = request.getQueryString();
+				if (queryString != null) {
+					sbURL.append("?");
+					sbURL.append(queryString);
+				}
+				lsid = taskIntegratorClient.deleteFiles(lsid, new String[] { filename });
+				if (lsid != null) { 
+					forward = forward + "?" + GPConstants.NAME + "=" + lsid;
+					//response.sendRedirect(forward + "?" + GPConstants.NAME + "=" + lsid);
+					//return;
+				} else { %>
+					<jsp:include page="navbar.jsp"></jsp:include>
+					Unable to delete <%= filename %> from <%= taskName %> support files.<br>
+					<jsp:include page="footer.jsp"></jsp:include>
+					</body>
+					</html>
+<% 				}
+			} catch (Throwable t) { 
+%>
 				<jsp:include page="navbar.jsp"></jsp:include>
-				Unable to delete <%= filename %> from <%= taskName %> support files.<br>
+				<%= t %> while attempting to delete <%= filename %>
+				<br>
 				<jsp:include page="footer.jsp"></jsp:include>
 				</body>
 				</html>
-			<% }
-		} catch (Throwable t) { 
-%>
-			<jsp:include page="navbar.jsp"></jsp:include>
-			<%= t %> while attempting to delete <%= filename %>
-			<br>
-			<jsp:include page="footer.jsp"></jsp:include>
-			</body>
-			</html>
 <%
+				return;
+			}
 		}
-		return;
 	}
 }
 
@@ -369,9 +374,12 @@ try {
 } catch (WebServiceErrorMessageException wseme) {
 	vProblems = wseme.getErrors();
 }
+
+if (forward == null) {
 %>
 <jsp:include page="navbar.jsp"></jsp:include>
 <%
+}
 
 if(vProblems != null && vProblems.size() > 0) {
 	if (formerName != null && formerName.length() > 0 && !formerName.equals(taskName)) {
