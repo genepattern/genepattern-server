@@ -65,6 +65,7 @@ import org.genepattern.modules.ui.graphics.*;
 import org.genepattern.util.*;
 import org.genepattern.gpge.ui.table.*;
 import org.genepattern.webservice.*;
+import org.genepattern.gpge.ui.menu.*;
 
 /**
  * Description of the Class
@@ -92,13 +93,13 @@ public class MainFrame extends JFrame {
 
    HistoryMenu historyMenu;
    
-	JPopupMenu jobPopupMenu = new JPopupMenu();
+	JPopupMenu jobPopupMenu;
 
+   JPopupMenu jobResultFilePopupMenu;
+   
 	JPopupMenu projectDirPopupMenu;
 
 	JPopupMenu projectFilePopupMenu;
-
-	JPopupMenu serverFilePopupMenu = new JPopupMenu();
 
 	SortableTreeTable jobResultsTree;
 
@@ -135,7 +136,26 @@ public class MainFrame extends JFrame {
    public static short windowStyle = System.getProperty("mdi")!=null?WINDOW_STYLE_MDI:WINDOW_STYLE_ONE_FRAME;
    private JMenuBar menuBar;
    Color blue = new Color(51,0,204);
-  
+   MenuAction projectFileSendToMenu;
+   MenuAction projectFileOpenWithMenu;
+   
+   MenuItemAction projectFileDefaultAppMenuItem;
+   MenuItemAction revealFileMenuItem;
+   MenuItemAction refreshProjectMenuItem;
+   MenuItemAction removeProjectMenuItem;
+   
+   MenuItemAction reloadMenuItem;
+   MenuItemAction deleteJobAction;
+   MenuItemAction terminateJobAction;
+   
+   MenuAction jobResultFileSendToMenu;
+   MenuAction saveServerFileMenu;
+   MenuItemAction saveToFileSystemMenuItem;
+   MenuItemAction deleteFileMenuItem;
+   MenuAction openWithMenu;
+   MenuItemAction jobResultFileTextViewerMenuItem;
+   MenuItemAction jobResultFileDefaultAppMenuItem;
+      
 	public static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone
 				.getValue(), toClone.getDescription());
@@ -590,10 +610,19 @@ public class MainFrame extends JFrame {
       } catch(MalformedURLException mfe) {
          server = "http://" + server;
       }
+      jobModel = JobModel.getInstance();      
+      jobResultsTree = new SortableTreeTable(jobModel);
+      projectDirModel = ProjectDirModel.getInstance();
+      projectDirTree = new SortableTreeTable(projectDirModel, false);
+		
+      
+      createJobActions();
+      createJobResultFileActions();
+      createProjectDirActions();
+      createProjectFileActions();
      
-		createMenuBar();
-		jobModel = JobModel.getInstance();      
-     
+		createMenus();
+		
       
 		jobModel.addJobListener(new JobListener() {
 			public void jobStatusChanged(JobEvent e) {
@@ -653,8 +682,8 @@ public class MainFrame extends JFrame {
 		changeServer(server, username);
 		analysisServicePanel = new AnalysisServiceDisplay();
 
-		projectDirModel = ProjectDirModel.getInstance();
-		jobResultsTree = new SortableTreeTable(jobModel);
+		
+		
       jobResultsTree.setFocusable(true);
       jobResultsTree.addKeyListener(new java.awt.event.KeyAdapter() {
          public void keyPressed(java.awt.event.KeyEvent e) {
@@ -684,154 +713,65 @@ public class MainFrame extends JFrame {
          }
       });
       
-      JMenuItem reloadMenuItem = new JMenuItem("Reload");
-		jobPopupMenu.add(reloadMenuItem);
-      reloadMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				reload(((JobModel.JobNode) selectedJobNode).job);
-			}
-		});
       
-      final JMenuItem deleteJobMenuItem = new JMenuItem(
-				"Delete Job", IconManager.loadIcon(IconManager.DELETE_ICON));
-      deleteJobMenuItem.addActionListener(new ActionListener() {
-         public void actionPerformed(ActionEvent e) {
-            JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
-            try {
-               jobModel.delete(jobNode);
-            } catch(WebServiceException wse) {
-               wse.printStackTrace();
-               if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred deleting job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
-               }   
+     
+      
+      jobResultsTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+         public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
+            TreePath path = jobResultsTree.getSelectionPath();
+            if(path==null) {
+               selectedJobNode = null;
+            } else {
+               selectedJobNode = (DefaultMutableTreeNode) path
+						.getLastPathComponent();
             }
+            boolean isJobNode = selectedJobNode instanceof JobModel.JobNode;
+           
+            deleteJobAction.setEnabled(isJobNode);
+            terminateJobAction.setEnabled(isJobNode);
+            reloadMenuItem.setEnabled(isJobNode);
+            if(isJobNode) {
+               JobModel.JobNode node = (JobModel.JobNode) selectedJobNode;
+					 deleteJobAction.setEnabled(node.isComplete());
+               terminateJobAction.setEnabled(!node.isComplete());
+            }
+            
+            if(selectedJobNode==null) {
+               isJobNode = true;
+            }
+            jobResultFileSendToMenu.setEnabled(!isJobNode); // FIXME
+            saveServerFileMenu.setEnabled(!isJobNode);
+            saveToFileSystemMenuItem.setEnabled(!isJobNode);
+            deleteFileMenuItem.setEnabled(!isJobNode);
+            openWithMenu.setEnabled(!isJobNode);
+           
+            if (selectedJobNode instanceof JobModel.ServerFileNode) {
+					JobModel.ServerFileNode node = (JobModel.ServerFileNode) selectedJobNode;
+
+					try {
+						HttpURLConnection connection = (HttpURLConnection) node
+								.getURL().openConnection();
+						if (connection.getResponseCode() == HttpURLConnection.HTTP_GONE) {
+							GenePattern.showMessageDialog(node.name
+									+ " has been deleted from the server.");
+							jobModel.remove(node);
+							fileSummaryComponent.select(null);
+                     return;
+						} else {
+							fileSummaryComponent.select(connection, node.name);
+						}
+
+					} catch (IOException ioe) {
+                  ioe.printStackTrace();
+					}
+
+				} else {
+					try {
+						fileSummaryComponent.select(null);
+					} catch (IOException x) {}
+				}
          }
       });
-		jobPopupMenu.add(deleteJobMenuItem);
-      
-      final JMenuItem terminateJobMenuItem = new JMenuItem("Terminate Job", IconManager.loadIcon(IconManager.STOP_ICON));
-		terminateJobMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-            JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
-            try {
-               AnalysisWebServiceProxy p = new AnalysisWebServiceProxy(analysisServiceManager.getServer(), analysisServiceManager.getUsername(), false);
-               p.terminateJob(jobNode.job.getJobInfo().getJobNumber());
-            } catch(WebServiceException wse) {
-                wse.printStackTrace();
-                if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred terminating job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
-                } 
-            }
-			}
-		});      
-      jobPopupMenu.add(terminateJobMenuItem);
-      
-      final JMenu serverFileSendToMenu = new JMenu("Send To");
-      serverFileSendToMenu.setEnabled(false);
-      serverFileSendToMenu.setIcon(IconManager.loadIcon(IconManager.SEND_TO_ICON));
-		serverFilePopupMenu.add(serverFileSendToMenu);
-      
-      
-		final JMenu saveServerFileMenu = new JMenu("Save To");
-		JMenuItem saveToFileSystemMenuItem = new JMenuItem("Other...", IconManager.loadIcon(IconManager.SAVE_AS_ICON));
-		saveToFileSystemMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				showSaveDialog((JobModel.ServerFileNode) selectedJobNode);
-			}
-		});
-		projectDirModel
-				.addProjectDirectoryListener(new ProjectDirectoryListener() {
-					public void projectAdded(ProjectEvent e) {
-						final File dir = e.getDirectory();
-						JMenuItem menuItem = new JMenuItem(dir.getPath(), IconManager.loadIcon(IconManager.SAVE_ICON));
-                  
-						saveServerFileMenu.insert(menuItem, projectDirModel.indexOf(dir));
-						menuItem.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent e) {
-								new Thread() {
-									public void run() {
-                             JobModel.ServerFileNode node = (JobModel.ServerFileNode) selectedJobNode;
-                             File outputFile = new File(dir,
-													node.name);
-										try {
-											node.download(outputFile);
-											projectDirModel.refresh(dir);
-                              } catch(IOException ioe) {
-                                 ioe.printStackTrace();
-                                 GenePattern.showErrorDialog("An error occurred while saving the file " + node.name  + ". Please try again.");
-                              }
-                             //	} catch (WebServiceException wse) {
-                            //      if(!disconnectedFromServer(wse)) {
-                            //         GenePattern.showErrorDialog("An error occurred while saving the file " + node.name  + ". Please try again.");
-                           //       }  
-										//}
-									}
-								}.start();
-							}
-						});
-					}
-
-					public void projectRemoved(ProjectEvent e) {
-						File dir = e.getDirectory();
-						for (int i = 0; i < saveServerFileMenu.getItemCount(); i++) {
-							JMenuItem m = (JMenuItem) saveServerFileMenu
-									.getMenuComponent(i);
-							if (m.getText().equals(dir.getPath())) {
-								saveServerFileMenu.remove(i);
-								break;
-							}
-						}
-					}
-				});
-		saveServerFileMenu.add(saveToFileSystemMenuItem);
-		serverFilePopupMenu.add(saveServerFileMenu);
-
-		
-
-      JMenuItem deleteFileMenuItem = new JMenuItem("Delete File", IconManager.loadIcon(IconManager.DELETE_ICON));
-		serverFilePopupMenu.add(deleteFileMenuItem);
-      deleteFileMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-            JobModel.ServerFileNode serverFileNode = (JobModel.ServerFileNode) selectedJobNode;
-            try {
-               jobModel.delete(serverFileNode);
-            } catch(WebServiceException wse) {
-               wse.printStackTrace();
-               if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred while deleting the file " + JobModel.getJobResultFileName(serverFileNode) + ". Please try again.");
-               }  
-            }
-			}
-		});
-      
-      JMenu openWithMenu = new JMenu("Open With");
-      
-      JMenuItem jobResultFileTextViewerMenuItem = new JMenuItem("Text Viewer", IconManager.loadIcon(IconManager.TEXT_ICON));
-      jobResultFileTextViewerMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-            new Thread() {
-               public void run() {
-                  textViewer(selectedJobNode);
-               }
-            }.start();
-			}
-		});
-      openWithMenu.add(jobResultFileTextViewerMenuItem);
-      
-      JMenuItem jobResultFileDefaultAppMenuItem = new JMenuItem("Default Application");
-      jobResultFileDefaultAppMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-            new Thread() {
-               public void run() {
-                  defaultApplication(selectedJobNode);
-               }
-            }.start();
-			}
-		});
-      openWithMenu.add(jobResultFileDefaultAppMenuItem);
-      serverFilePopupMenu.add(openWithMenu);
-      
-    
 		jobResultsTree.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() != 2 || isPopupTrigger(e)) {
@@ -866,51 +806,24 @@ public class MainFrame extends JFrame {
 				selectedJobNode = (DefaultMutableTreeNode) path
 						.getLastPathComponent();
 
-				if (selectedJobNode instanceof JobModel.ServerFileNode) {
-					JobModel.ServerFileNode node = (JobModel.ServerFileNode) selectedJobNode;
-
-					try {
-						HttpURLConnection connection = (HttpURLConnection) node
-								.getURL().openConnection();
-						if (connection.getResponseCode() == HttpURLConnection.HTTP_GONE) {
-							GenePattern.showMessageDialog(node.name
-									+ " has been deleted from the server.");
-							jobModel.remove(node);
-							fileSummaryComponent.select(null);
-                     return;
-						} else {
-							fileSummaryComponent.select(connection, node.name);
-						}
-
-					} catch (IOException ioe) {
-                  ioe.printStackTrace();
-					}
-
-				} else {
-					try {
-						fileSummaryComponent.select(null);
-					} catch (IOException x) {}
-				}
-
 				if (!isPopupTrigger(e)) {
 					return;
 				}
 
 				if (selectedJobNode instanceof JobModel.JobNode) {
 					JobModel.JobNode node = (JobModel.JobNode) selectedJobNode;
-					deleteJobMenuItem.setEnabled(node.isComplete());
-               terminateJobMenuItem.setEnabled(!node.isComplete());
+					deleteJobAction.setEnabled(node.isComplete());
+              terminateJobAction.setEnabled(!node.isComplete());
 					jobPopupMenu.show(e.getComponent(), e.getX(), e.getY());
 				} else if (selectedJobNode instanceof JobModel.ServerFileNode) {
-					serverFilePopupMenu.show(e.getComponent(), e.getX(), e
+					jobResultFilePopupMenu.show(e.getComponent(), e.getX(), e
 							.getY());
-				}
+         }
 			}
 
 			
 		});
-		projectDirModel = ProjectDirModel.getInstance();
-
+		
 		String projectDirsString = GPpropertiesManager
 				.getProperty(PreferenceKeys.PROJECT_DIRS);
 		if (projectDirsString != null) {
@@ -919,91 +832,61 @@ public class MainFrame extends JFrame {
 				projectDirModel.add(new File(projectDirs[i]));
 			}
 		}
-		projectDirTree = new SortableTreeTable(projectDirModel, false);
-		projectFilePopupMenu = new JPopupMenu();
-		final JMenu projectFileSendToMenu = new JMenu("Send To");
-      projectFileSendToMenu.setEnabled(false);
-      projectFileSendToMenu.setIcon(IconManager.loadIcon(IconManager.SEND_TO_ICON));
-		projectFilePopupMenu.add(projectFileSendToMenu);
+      
+      projectDirTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+         public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
+            TreePath path = projectDirTree.getSelectionPath();
+            if(path==null) {
+               selectedProjectDirNode = null;
+            } else {
+               selectedProjectDirNode = (DefaultMutableTreeNode) path
+                  .getLastPathComponent();
+            }
+            boolean projectNodeSelected = selectedProjectDirNode instanceof ProjectDirModel.ProjectDirNode;
+            
+            projectFileSendToMenu.setEnabled(!projectNodeSelected);
+            projectFileOpenWithMenu.setEnabled(!projectNodeSelected);
+            revealFileMenuItem.setEnabled(!projectNodeSelected);
+             
+            refreshProjectMenuItem.setEnabled(projectNodeSelected);
+            removeProjectMenuItem.setEnabled(projectNodeSelected);
+   
+   
+            if (selectedProjectDirNode instanceof ProjectDirModel.FileNode) {
+					ProjectDirModel.FileNode node = (ProjectDirModel.FileNode) selectedProjectDirNode;
+					ProjectDirModel.ProjectDirNode parent = (ProjectDirModel.ProjectDirNode) node
+							.getParent();
+					FileInputStream fis = null;
+					File f = null;
+					try {
+						f = new File(parent.directory, node.file.getName());
+						fileSummaryComponent.select(f);
+					} catch (IOException ioe) {
+                  ioe.printStackTrace();
+						if (!f.exists()) {
+							projectDirModel.refresh(parent);
+						}
+					} finally {
+						if (fis != null) {
+							try {
+								fis.close();
+							} catch (IOException x) {
+							}
+						}
+					}
 
-      JMenu projectFileOpenWithMenu = new JMenu("Open With");
-      JMenuItem projectFileTextViewerMenuItem = new JMenuItem("Text Viewer", IconManager.loadIcon(IconManager.TEXT_ICON));
-      projectFileTextViewerMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-            new Thread() {
-               public void run() {
-                  textViewer(selectedProjectDirNode);
-               }
-            }.start();
-			}
-		});
-      projectFileOpenWithMenu.add(projectFileTextViewerMenuItem);
-      
-      JMenuItem projectFileDefaultAppMenuItem = new JMenuItem("Default Application");
-      projectFileDefaultAppMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-            new Thread() {
-               public void run() {
-                  defaultApplication(selectedProjectDirNode);
-               }
-            }.start();
-			}
-		});
-      projectFileOpenWithMenu.add(projectFileDefaultAppMenuItem);
-      
-      projectFilePopupMenu.add(projectFileOpenWithMenu);
-      
-      if(RUNNING_ON_MAC) {
-         JMenuItem revealInFinderMenuItem = new JMenuItem("Show In Finder");
-          revealInFinderMenuItem.addActionListener(new ActionListener() {
-             public void actionPerformed(ActionEvent e) {
-                ProjectDirModel.FileNode fn = (ProjectDirModel.FileNode) selectedProjectDirNode;
-                org.genepattern.gpge.util.MacOS.showFileInFinder(fn.file);
-             }
-          });
-      
-         projectFilePopupMenu.add(revealInFinderMenuItem);
-      } else if(System.getProperty("os.name").startsWith("Windows")) {
-         JMenuItem revealInExplorerMenuItem = new JMenuItem("Show File Location");
-         revealInExplorerMenuItem.addActionListener(new ActionListener() {
-             public void actionPerformed(ActionEvent e) {
-                try {
-                   ProjectDirModel.FileNode fn = (ProjectDirModel.FileNode) selectedProjectDirNode;
-                   BrowserLauncher.openURL(fn.file.getParentFile().getCanonicalPath());  
-                } catch(IOException x){
-                   x.printStackTrace();
-                }
-             }
-          });
-         projectFilePopupMenu.add(revealInExplorerMenuItem);            
-      }
-      
-		projectDirPopupMenu = new JPopupMenu();
-      JMenuItem refreshProjectMenuItem = new JMenuItem("Refresh", IconManager.loadIcon(IconManager.REFRESH_ICON));
-		projectDirPopupMenu.add(refreshProjectMenuItem);
-      refreshProjectMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				projectDirModel
-						.refresh((ProjectDirModel.ProjectDirNode) selectedProjectDirNode);
-			}
-		});
-      
-    
-      JMenuItem removeProjectMenuItem = new JMenuItem("Close Project", IconManager.loadIcon(IconManager.REMOVE_ICON));
-		projectDirPopupMenu.add(removeProjectMenuItem);
-      removeProjectMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				projectDirModel
-						.remove((ProjectDirModel.ProjectDirNode) selectedProjectDirNode);
-				GPpropertiesManager.setProperty(PreferenceKeys.PROJECT_DIRS,
-						projectDirModel.getPreferencesString());
-			}
-		});
-
-      
-    
-      
-      
+				} else {
+					try {
+                  fileSummaryComponent.select(null);
+                           
+					} catch (IOException x) {
+					}
+				}
+            
+         }
+      });
+        
+            
 		projectDirTree.addMouseListener(new MouseAdapter() {
 
 			public void mouseClicked(MouseEvent e) {
@@ -1035,36 +918,7 @@ public class MainFrame extends JFrame {
 				selectedProjectDirNode = (DefaultMutableTreeNode) path
 						.getLastPathComponent();
 
-				if (selectedProjectDirNode instanceof ProjectDirModel.FileNode) {
-					ProjectDirModel.FileNode node = (ProjectDirModel.FileNode) selectedProjectDirNode;
-					ProjectDirModel.ProjectDirNode parent = (ProjectDirModel.ProjectDirNode) node
-							.getParent();
-					FileInputStream fis = null;
-					File f = null;
-					try {
-						f = new File(parent.directory, node.file.getName());
-						fileSummaryComponent.select(f);
-					} catch (IOException ioe) {
-                  ioe.printStackTrace();
-						if (!f.exists()) {
-							projectDirModel.refresh(parent);
-						}
-					} finally {
-						if (fis != null) {
-							try {
-								fis.close();
-							} catch (IOException x) {
-							}
-						}
-					}
-
-				} else {
-					try {
-                  fileSummaryComponent.select(null);
-                           
-					} catch (IOException x) {
-					}
-				}
+				
 
 				if (!isPopupTrigger(e)) {
 					return;
@@ -1081,37 +935,33 @@ public class MainFrame extends JFrame {
 		analysisServicePanel
 				.addAnalysisServiceSelectionListener(new AnalysisServiceSelectionListener() {
                
-               
 					public void valueChanged(AnalysisServiceSelectionEvent e) {
-                  serverFileSendToMenu.setEnabled(true);
+                  jobResultFileSendToMenu.setEnabled(true);
                   projectFileSendToMenu.setEnabled(true);
                
-						serverFileSendToMenu.removeAll();
+						jobResultFileSendToMenu.removeAll();
 						projectFileSendToMenu.removeAll();
 
 						for (Iterator it = analysisServicePanel
 								.getInputFileParameterNames(); it.hasNext();) {
 							final String name = (String) it.next();
-                     final String displayName = AnalysisServiceDisplay.getDisplayString(name);
-							JMenuItem mi = new JMenuItem(displayName);
-							mi.addActionListener(new ActionListener() {
+                    final String displayName = AnalysisServiceDisplay.getDisplayString(name);
+							MenuItemAction mi = new MenuItemAction(displayName) {
 								public void actionPerformed(ActionEvent e) {
 									analysisServicePanel.setInputFile(name,
 											selectedJobNode);
 								}
-							});
-							serverFileSendToMenu.add(mi);
+							};
+							jobResultFileSendToMenu.add(mi);
 
-							JMenuItem projectMenuItem = new JMenuItem(displayName);
-							projectMenuItem
-									.addActionListener(new ActionListener() {
-										public void actionPerformed(
-												ActionEvent e) {
-											analysisServicePanel.setInputFile(
-													name,
-													selectedProjectDirNode);
-										}
-									});
+							MenuItemAction projectMenuItem = new MenuItemAction(displayName) {
+                        public void actionPerformed(
+                              ActionEvent e) {
+                           analysisServicePanel.setInputFile(
+                                 name,
+                                 selectedProjectDirNode);
+                        }
+							};
 
 							projectFileSendToMenu.add(projectMenuItem);
 						}
@@ -1311,6 +1161,213 @@ public class MainFrame extends JFrame {
          }
       }.start();
 	}
+   
+   private void createProjectFileActions() {
+      projectFileSendToMenu = new MenuAction("Send To", IconManager.loadIcon(IconManager.SEND_TO_ICON));
+      projectFileSendToMenu.setEnabled(false);
+		
+      projectFileOpenWithMenu = new MenuAction("Open With");
+      MenuItemAction projectFileTextViewerMenuItem = new MenuItemAction("Text Viewer", IconManager.loadIcon(IconManager.TEXT_ICON)) {
+			public void actionPerformed(ActionEvent e) {
+            new Thread() {
+               public void run() {
+                  textViewer(selectedProjectDirNode);
+               }
+            }.start();
+			}
+		};
+      projectFileOpenWithMenu.add(projectFileTextViewerMenuItem);
+      
+      projectFileDefaultAppMenuItem = new MenuItemAction("Default Application") {
+         public void actionPerformed(ActionEvent e) {
+            new Thread() {
+               public void run() {
+                  defaultApplication(selectedProjectDirNode);
+               }
+            }.start();
+			}
+		};
+      projectFileOpenWithMenu.add(projectFileDefaultAppMenuItem);
+      
+      
+      if(RUNNING_ON_MAC) {
+          revealFileMenuItem = new MenuItemAction("Show In Finder") {
+             public void actionPerformed(ActionEvent e) {
+                ProjectDirModel.FileNode fn = (ProjectDirModel.FileNode) selectedProjectDirNode;
+                org.genepattern.gpge.util.MacOS.showFileInFinder(fn.file);
+             }
+          };
+      
+        
+      } else if(System.getProperty("os.name").startsWith("Windows")) {
+         revealFileMenuItem = new MenuItemAction("Show File Location") {
+             public void actionPerformed(ActionEvent e) {
+                try {
+                   ProjectDirModel.FileNode fn = (ProjectDirModel.FileNode) selectedProjectDirNode;
+                   BrowserLauncher.openURL(fn.file.getParentFile().getCanonicalPath());  
+                } catch(IOException x){
+                   x.printStackTrace();
+                }
+             }
+          };
+                   
+      }
+   }
+   
+   private void createProjectDirActions() {
+      refreshProjectMenuItem = new MenuItemAction("Refresh", IconManager.loadIcon(IconManager.REFRESH_ICON)) {
+         public void actionPerformed(ActionEvent e) {
+				projectDirModel
+						.refresh((ProjectDirModel.ProjectDirNode) selectedProjectDirNode);
+			}
+		};
+      
+		
+      removeProjectMenuItem = new MenuItemAction("Close Project", IconManager.loadIcon(IconManager.REMOVE_ICON)) {
+         public void actionPerformed(ActionEvent e) {
+				projectDirModel
+						.remove((ProjectDirModel.ProjectDirNode) selectedProjectDirNode);
+				GPpropertiesManager.setProperty(PreferenceKeys.PROJECT_DIRS,
+						projectDirModel.getPreferencesString());
+			}
+		};
+      
+      
+   }
+   
+   private void createJobActions() {
+      reloadMenuItem = new MenuItemAction("Reload") {
+			public void actionPerformed(ActionEvent e) {
+				reload(((JobModel.JobNode) selectedJobNode).job);
+			}
+		};
+      
+      deleteJobAction = new MenuItemAction(
+      "Delete Job", IconManager.loadIcon(IconManager.DELETE_ICON)) {
+         public void actionPerformed(ActionEvent e) {
+            JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
+            try {
+               jobModel.delete(jobNode);
+            } catch(WebServiceException wse) {
+               wse.printStackTrace();
+               if(!disconnectedFromServer(wse)) {
+                  GenePattern.showErrorDialog("An error occurred deleting job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
+               }   
+            }
+         }
+      };
+		 
+      terminateJobAction = new MenuItemAction("Terminate Job", IconManager.loadIcon(IconManager.STOP_ICON)) {
+			public void actionPerformed(ActionEvent e) {
+            JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
+            try {
+               AnalysisWebServiceProxy p = new AnalysisWebServiceProxy(analysisServiceManager.getServer(), analysisServiceManager.getUsername(), false);
+               p.terminateJob(jobNode.job.getJobInfo().getJobNumber());
+            } catch(WebServiceException wse) {
+                wse.printStackTrace();
+                if(!disconnectedFromServer(wse)) {
+                  GenePattern.showErrorDialog("An error occurred terminating job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
+                } 
+            }
+			}
+		};      
+      
+   }
+   
+   private void createJobResultFileActions() {
+      jobResultFileSendToMenu = new MenuAction("Send To", IconManager.loadIcon(IconManager.SEND_TO_ICON));
+      jobResultFileSendToMenu.setEnabled(false);
+		 
+		saveServerFileMenu = new MenuAction("Save To");
+		
+      saveToFileSystemMenuItem = new MenuItemAction("Other...", IconManager.loadIcon(IconManager.SAVE_AS_ICON));
+		saveToFileSystemMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				showSaveDialog((JobModel.ServerFileNode) selectedJobNode);
+			}
+		});
+		projectDirModel
+				.addProjectDirectoryListener(new ProjectDirectoryListener() {
+					public void projectAdded(ProjectEvent e) {
+						final File dir = e.getDirectory();
+						MenuItemAction menuItem = new MenuItemAction(dir.getPath(), IconManager.loadIcon(IconManager.SAVE_ICON)) {
+							public void actionPerformed(ActionEvent e) {
+								new Thread() {
+									public void run() {
+                             JobModel.ServerFileNode node = (JobModel.ServerFileNode) selectedJobNode;
+                             File outputFile = new File(dir,
+													node.name);
+										try {
+											node.download(outputFile);
+											projectDirModel.refresh(dir);
+                              } catch(IOException ioe) {
+                                 ioe.printStackTrace();
+                                 GenePattern.showErrorDialog("An error occurred while saving the file " + node.name  + ". Please try again.");
+                              }
+                             //	} catch (WebServiceException wse) {
+                            //      if(!disconnectedFromServer(wse)) {
+                            //         GenePattern.showErrorDialog("An error occurred while saving the file " + node.name  + ". Please try again.");
+                           //       }  
+										//}
+									}
+								}.start();
+							}
+						};
+                 saveServerFileMenu.insert(menuItem, projectDirModel.indexOf(dir));
+					}
+
+					public void projectRemoved(ProjectEvent e) {
+						File dir = e.getDirectory();
+						for (int i = 0; i < saveServerFileMenu.getItemCount(); i++) {
+							JMenuItem m = (JMenuItem) saveServerFileMenu
+									.getMenuComponent(i);
+							if (m.getText().equals(dir.getPath())) {
+								saveServerFileMenu.remove(i);
+								break;
+							}
+						}
+					}
+				});
+		saveServerFileMenu.add(saveToFileSystemMenuItem);
+	
+      deleteFileMenuItem = new MenuItemAction("Delete File", IconManager.loadIcon(IconManager.DELETE_ICON)) {
+         public void actionPerformed(ActionEvent e) {
+            JobModel.ServerFileNode serverFileNode = (JobModel.ServerFileNode) selectedJobNode;
+            try {
+               jobModel.delete(serverFileNode);
+            } catch(WebServiceException wse) {
+               wse.printStackTrace();
+               if(!disconnectedFromServer(wse)) {
+                  GenePattern.showErrorDialog("An error occurred while deleting the file " + JobModel.getJobResultFileName(serverFileNode) + ". Please try again.");
+               }  
+            }
+			}
+		};
+      
+      openWithMenu = new MenuAction("Open With");
+      
+      jobResultFileTextViewerMenuItem = new MenuItemAction("Text Viewer", IconManager.loadIcon(IconManager.TEXT_ICON)){
+         public void actionPerformed(ActionEvent e) {
+            new Thread() {
+               public void run() {
+                  textViewer(selectedJobNode);
+               }
+            }.start();
+			}
+		};
+      openWithMenu.add(jobResultFileTextViewerMenuItem);
+      
+      jobResultFileDefaultAppMenuItem = new MenuItemAction("Default Application") {
+         public void actionPerformed(ActionEvent e) {
+            new Thread() {
+               public void run() {
+                  defaultApplication(selectedJobNode);
+               }
+            }.start();
+			}
+		};                         
+      openWithMenu.add(jobResultFileDefaultAppMenuItem);
+   }
 
    private void setChangeServerActionsEnabled(final boolean b) {
       Thread disableActions = new Thread() {
@@ -1360,14 +1417,25 @@ public class MainFrame extends JFrame {
 
 			}
 		}.start();
-
 	}
 
    
-	void createMenuBar() {
+	void createMenus() {
 	   menuBar = new JMenuBar();
 		fileMenu = new FileMenu();
 		menuBar.add(fileMenu);
+      
+      MenuAction projectsMenuAction = null;
+      if(revealFileMenuItem!=null) {
+         projectsMenuAction = new MenuAction("Projects", new Object[]{refreshProjectMenuItem,  removeProjectMenuItem, new JSeparator(), projectFileSendToMenu, projectFileOpenWithMenu, revealFileMenuItem});
+      } else {
+          projectsMenuAction = new MenuAction("Projects", new Object[]{refreshProjectMenuItem,  removeProjectMenuItem, new JSeparator(), projectFileSendToMenu, projectFileOpenWithMenu});  
+      }
+      menuBar.add(projectsMenuAction.createMenu());
+      
+      MenuAction jobResultsMenuAction = new MenuAction("Job Results", new Object[]{reloadMenuItem, deleteJobAction, terminateJobAction, new JSeparator(), jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu});
+      menuBar.add(jobResultsMenuAction.createMenu());
+      
 		analysisMenu = new AnalysisMenu(AnalysisMenu.DATA_ANALYZERS);
 		analysisMenu.setEnabled(false);
 		menuBar.add(analysisMenu);
@@ -1394,6 +1462,19 @@ public class MainFrame extends JFrame {
       if(RUNNING_ON_MAC) {
          macos.MacOSMenuHelper.registerHandlers();  
       }
+      
+       
+      MenuAction jobPopupAction = new MenuAction("", new Object[]{reloadMenuItem, deleteJobAction, terminateJobAction});
+      jobPopupMenu = jobPopupAction.createPopupMenu();
+      
+      MenuAction jobResultFilePopupAction = new MenuAction("", new Object[]{jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu});
+      jobResultFilePopupMenu = jobResultFilePopupAction.createPopupMenu();
+      
+      MenuAction projectDirPopupMenuAction = new MenuAction("", new Object[]{refreshProjectMenuItem,  removeProjectMenuItem});
+      projectDirPopupMenu = projectDirPopupMenuAction.createPopupMenu();
+     
+      MenuAction projectFilePopupMenuAction = new MenuAction("", new Object[]{projectFileSendToMenu, projectFileOpenWithMenu, revealFileMenuItem});
+      projectFilePopupMenu = projectFilePopupMenuAction.createPopupMenu();
 	}
 
    
@@ -1405,7 +1486,7 @@ public class MainFrame extends JFrame {
       List jobs = new ArrayList();
       List jobsInMenu = new ArrayList();
       JobNumberComparator jobNumberComparator = new JobNumberComparator();
-      JMenuItem historyMenuItem = new JMenuItem("History");
+      JMenuItem historyMenuItem = new JMenuItem("View All");
       final int JOBS_IN_MENU = 10;
       HistoryTableModel historyTableModel = new HistoryTableModel();
       JDialog historyDialog;
@@ -1507,7 +1588,7 @@ public class MainFrame extends JFrame {
       
       
       public HistoryMenu() {
-         super("Go");
+         super("Job History");
          reloadJobActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                AnalysisJobMenuItem menuItem = (AnalysisJobMenuItem) e.getSource();
@@ -1596,13 +1677,6 @@ public class MainFrame extends JFrame {
          Integer job1Number = new Integer(((AnalysisJob)obj1).getJobInfo().getJobNumber());
          Integer job2Number = new Integer(((AnalysisJob)obj2).getJobInfo().getJobNumber());
          return job2Number.compareTo(job1Number);
-         
-      }
-      
-      public boolean equals(Object obj1, Object obj2) {
-         Integer job1Number = new Integer(((AnalysisJob)obj1).getJobInfo().getJobNumber());
-         Integer job2Number = new Integer(((AnalysisJob)obj2).getJobInfo().getJobNumber());
-         return job1Number.equals(job2Number);
          
       }
    }
