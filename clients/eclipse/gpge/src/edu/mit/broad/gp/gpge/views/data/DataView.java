@@ -679,7 +679,7 @@ private void makeActions() {
                         IViewPart[] views = page.getViews();
                         for(int i = 0; i < views.length; i++) {
                             if(views[i] instanceof ModuleFormView) {
-                                String serverId = job.getSiteName().replace(':','-');
+                                String serverId = job.getServer().replace(':','-');
                             	
                                 try {
                                     

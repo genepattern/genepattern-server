@@ -273,7 +273,7 @@ class RunPipeline {
 
       } catch(NumberFormatException nfe) {
       }
-      String server = job.getSiteName();
+      String server = job.getServer();
       return "http://" + server + "/gp/retrieveResults.jsp?job="
              + job.getJobInfo().getJobNumber() + "&filename=" + fileName;
    }

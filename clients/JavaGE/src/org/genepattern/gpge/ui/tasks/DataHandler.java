@@ -57,7 +57,7 @@ public class DataHandler {
         while(enu.hasMoreElements()){
             AnalysisJob ajob = (AnalysisJob)enu.nextElement();
             History his = new History();
-            his.setSiteName(ajob.getSiteName());
+            his.setSiteName(ajob.getServer());
             his.setTaskName(ajob.getTaskName());
             JobInfo jobInfo = ajob.getJobInfo();
             Job job = jobInfoToJob(jobInfo);

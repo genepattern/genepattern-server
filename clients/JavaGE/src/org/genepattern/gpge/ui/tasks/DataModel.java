@@ -146,13 +146,13 @@ public class DataModel extends Observable implements Serializable{
      */
     private void updateHistory(AnalysisJob aJob){
         JobInfo job = aJob.getJobInfo();
-        String siteName = aJob.getSiteName();
+        String siteName = aJob.getServer();
         int id = job.getJobNumber();
         String status = job.getStatus();
         for(int i=0; i<_jobs.size(); i++){
             AnalysisJob aInfo = (AnalysisJob)_jobs.get(i);
             JobInfo info = aInfo.getJobInfo();
-            if(aInfo.getSiteName().equals(siteName)&& info.getJobNumber()== id && !info.getStatus().equals(status)){
+            if(aInfo.getServer().equals(siteName)&& info.getJobNumber()== id && !info.getStatus().equals(status)){
                 _jobs.setElementAt(aJob, i);
                 break;
             }
@@ -186,7 +186,7 @@ public class DataModel extends Observable implements Serializable{
      * Removes a record from the result
      */
     public final void removeResult(final AnalysisJob job){
-        final String siteName = job.getSiteName();
+        final String siteName = job.getServer();
         final String taskName = job.getTaskName();
         final Hashtable siteResult = (Hashtable)this._results.get(siteName);
         final Vector jobs = (Vector)siteResult.get(taskName);
@@ -197,7 +197,7 @@ public class DataModel extends Observable implements Serializable{
     
 
 	/**
-		Removes the job from the list of jobs with the with job number equal to job.getJobInfo().getJobNumber() and server name equal to job.getSiteName()
+		Removes the job from the list of jobs with the with job number equal to job.getJobInfo().getJobNumber() and server name equal to job.getServer()
 		@param job the job to remove
 	*/
     public void removeJobById(AnalysisJob job) {
@@ -205,16 +205,16 @@ public class DataModel extends Observable implements Serializable{
 		
 		for(int i=0; i<_jobs.size(); i++){
 			AnalysisJob temp = (AnalysisJob) _jobs.get(i); 
-			if(temp.getJobInfo().getJobNumber()==job.getJobInfo().getJobNumber() && temp.getSiteName().equals(job.getSiteName())) {
+			if(temp.getJobInfo().getJobNumber()==job.getJobInfo().getJobNumber() && temp.getServer().equals(job.getServer())) {
 				 removeResult((AnalysisJob)_jobs.remove(i));
 				found = true;
 			}
 		}
 		if(!found) {
-			throw new IllegalArgumentException("Job number " + job.getJobInfo().getJobNumber() + " on the server " + job.getSiteName() + " not found.");	
+			throw new IllegalArgumentException("Job number " + job.getJobInfo().getJobNumber() + " on the server " + job.getServer() + " not found.");	
 		}
 		String taskName = job.getTaskName();
-		String siteName = job.getSiteName();
+		String siteName = job.getServer();
 		Hashtable siteJobs = (Hashtable)this._results.get(siteName);
 		if(siteJobs.containsKey(taskName)){
 			Vector jobs = (Vector)siteJobs.get(taskName);
@@ -249,8 +249,8 @@ public class DataModel extends Observable implements Serializable{
      * Adds a new result
      */
     private void addResult(AnalysisJob job){
-        cat.debug("adding result for site:"+job.getSiteName()+" task: "+job.getTaskName());
-        String siteName = job.getSiteName();
+        cat.debug("adding result for site:"+job.getServer()+" task: "+job.getTaskName());
+        String siteName = job.getServer();
         String taskName = job.getTaskName();
         Hashtable siteJobs;
         Vector jobs;

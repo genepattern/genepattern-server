@@ -219,7 +219,7 @@ public class GPServer {
             }
          }
          try {
-            return new JobResult(new URL(job.getSiteName()), 
+            return new JobResult(new URL(job.getServer()), 
                                  job.getJobInfo().getJobNumber(), 
                                  (String[]) resultFiles.toArray(new String[0]), 
                                  stdout, stderr, 

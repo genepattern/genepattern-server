@@ -82,7 +82,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
       JobNode node = (JobNode) serverFile.getParent();
       try {
          JobInfo jobInfo = node.job.getJobInfo();
-         AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(node.job.getSiteName(), jobInfo.getUserId());
+         AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(node.job.getServer(), jobInfo.getUserId());
          String[] fileNames = {serverFile.name};
 
          proxy.deleteJobOutputFiles(jobInfo.getJobNumber(), fileNames);
@@ -109,7 +109,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
    public void delete(JobNode node) {
       try {
          JobInfo jobInfo = node.job.getJobInfo();
-         AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(node.job.getSiteName(), jobInfo.getUserId());
+         AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(node.job.getServer(), jobInfo.getUserId());
          proxy.deleteJob(jobInfo.getJobNumber());
 
          /*
@@ -258,7 +258,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
    public void getJobsFromServer(String server, String username) {
       try {
          AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(server, username);
-         AnalysisJob[] jobs = new AnalysisJob[]{};// FIXME
+         AnalysisJob[] jobs = proxy.getJobs();
          for(int i = 0; i < jobs.length; i++) {
             JobNode node = new JobNode(jobs[i]);
             node.getOutputFiles();
@@ -474,7 +474,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
        */
       public URL getURL(String fileName) {
          try {
-            return new URL(job.getSiteName() + "/gp/retrieveResults.jsp?job=" + job.getJobInfo().getJobNumber() + "&filename=" + URLEncoder.encode(fileName, "UTF-8"));
+            return new URL(job.getServer() + "/gp/retrieveResults.jsp?job=" + job.getJobInfo().getJobNumber() + "&filename=" + URLEncoder.encode(fileName, "UTF-8"));
          } catch(MalformedURLException x) {
             throw new Error(x);
          } catch(java.io.UnsupportedEncodingException uee) {

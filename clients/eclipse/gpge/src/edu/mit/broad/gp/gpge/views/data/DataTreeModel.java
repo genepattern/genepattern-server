@@ -53,7 +53,7 @@ public class DataTreeModel {
 public void addJob(String taskName,
 		AnalysisJob job) {
         JobResultNode jrn = new JobResultNode(taskName, job);
-        ServerNode serverNode = this.getServerNode(job.getSiteName());
+        ServerNode serverNode = this.getServerNode(job.getServer());
         // root.addServerNode(serverNode);
         serverNode.addJobResultNode(jrn);
         notifyListeners(new DataTreeModelEvent(this, serverNode));
@@ -101,7 +101,7 @@ public ServerNode getServerNode(String siteName){
 	for (int i=0; i < nodes.length; i++){
 		if (nodes[i] instanceof ServerNode){
 		    ServerNode inst = (ServerNode)nodes[i];
-		    if (inst.getSiteName().equals(siteName)){
+		    if (inst.getServer().equals(siteName)){
 		        return inst;
 		    }
 		}

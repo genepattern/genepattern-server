@@ -65,8 +65,8 @@ public class HistoryTableModel extends AbstractTableModel {
             for(int i = 0; i < cnt; i++) {
                 final AnalysisJob job = (AnalysisJob)jobs.elementAt(i);
                 System.out.println("Job "+job);
-                System.out.println("site_name='"+job.getSiteName()+"'");
-                if( site_name.equalsIgnoreCase(job.getSiteName()) )
+                System.out.println("site_name='"+job.getServer()+"'");
+                if( site_name.equalsIgnoreCase(job.getServer()) )
                     _jobs.add(job);
             }
         }
@@ -118,7 +118,7 @@ public class HistoryTableModel extends AbstractTableModel {
         else if(col == 4)
             info = job.getJobInfo().getStatus();
         else
-            info = job.getSiteName();
+            info = job.getServer();
         return info;
     }
 	 

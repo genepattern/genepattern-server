@@ -74,7 +74,7 @@ public class StatusFinder implements Runnable, Observer {
 						if(!status.equals(JobStatus.FINISHED) && !status.equals(JobStatus.ERROR)) {
 							try {
 								RequestHandlerFactory factory = RequestHandlerFactory.getInstance(job.getJobInfo().getUserId(), null);
-								RequestHandler handler = factory.getRequestHandler(job.getSiteName());
+								RequestHandler handler = factory.getRequestHandler(job.getServer());
 								JobInfo info = handler.checkStatus(job.getJobInfo().getJobNumber());
 
 								if(!info.getStatus().equals(job.getJobInfo().getStatus())) {

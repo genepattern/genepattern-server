@@ -75,7 +75,7 @@ public class JobSubmissionRegistry {
     }
     
     public String getJobKey(AnalysisJob job){
-        return job.getSiteName() + ":" + job.getJobInfo().getJobNumber();
+        return job.getServer() + ":" + job.getJobInfo().getJobNumber();
     }
     
     public static JobSubmissionRegistry getDefault(){

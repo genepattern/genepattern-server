@@ -135,7 +135,7 @@ public class TestCallTasks extends TestCase{
 	while (!(status.equalsIgnoreCase("ERROR") || (status.equalsIgnoreCase("Finished")))) {
 	    count++;
 	    Thread.currentThread().sleep(sleep);
-	    info = rhFactory.getInstance().getRequestHandler(										                        job.getSiteName()).checkStatus(job.getJobInfo().getJobNumber());
+	    info = rhFactory.getInstance().getRequestHandler(										                        job.getServer()).checkStatus(job.getJobInfo().getJobNumber());
 	    status = info.getStatus();
 	    if (isDebug()) System.out.print(".");
 	    	    
@@ -149,7 +149,7 @@ public class TestCallTasks extends TestCase{
 
     public String[] getResultFiles(AnalysisJob job) throws Exception{
 		
-	RequestHandler handler  = rhFactory.getInstance().getRequestHandler( job.getSiteName());
+	RequestHandler handler  = rhFactory.getInstance().getRequestHandler( job.getServer());
 	String[] files = handler.getResultFiles(job.getJobInfo().getJobNumber());
 	
 

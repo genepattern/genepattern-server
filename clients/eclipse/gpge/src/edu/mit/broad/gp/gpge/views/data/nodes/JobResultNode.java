@@ -78,7 +78,7 @@ public class JobResultNode implements TreeNode, Comparable {
                 
             }
         }
-        server = job.getSiteName();
+        server = job.getServer();
         jobNumber = job.getJobInfo().getJobNumber();
         fileNames = (String[]) resultFiles.toArray(new String[0]);
         timeCompleted = job.getJobInfo().getDateCompleted();
