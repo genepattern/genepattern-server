@@ -1,11 +1,14 @@
-package org.genepattern.webservice;
+package org.genepattern.util;
 
 
 import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.log4j.Category;
-import org.genepattern.util.PropertyFactory;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.PropertyNotFoundException;
+import org.genepattern.webservice.RequestHandler;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  *  <p>
