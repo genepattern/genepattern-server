@@ -792,11 +792,12 @@ public class MainFrame extends JFrame {
 					try {
 						HttpURLConnection connection = (HttpURLConnection) parent
 								.getURL(node.name).openConnection();
-						if (connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+						if (connection.getResponseCode() == HttpURLConnection.HTTP_GONE) {
 							GenePattern.showMessageDialog(node.name
 									+ " has been deleted from the server.");
 							jobModel.remove(node);
 							fileSummaryComponent.select(null);
+                     return;
 						} else {
 							fileSummaryComponent.select(connection, node.name);
 						}
