@@ -211,7 +211,7 @@ public class MainFrame extends JFrame {
 		}
 		TaskInfo taskCopy = new TaskInfo(task.getID(), task.getName(), task.getDescription(),task.getParameterInfo(),task.getTaskClassName(), task.giveTaskInfoAttributes(),task.getUserId(), task.getAccessId());
 		taskCopy.setParameterInfoArray((ParameterInfo[])actualParams.toArray(new ParameterInfo[0]));
-		AnalysisService serviceCopy = new AnalysisService(service.getName(), service.getURL(), taskCopy);
+		AnalysisService serviceCopy = new AnalysisService(service.getServer(), taskCopy);
 		analysisTasksPanel.loadTask(serviceCopy);	
 		
 	}
@@ -371,6 +371,60 @@ public class MainFrame extends JFrame {
 
       jobResultsTree.addMouseListener(
          new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+               if(e.getClickCount()!=2 || e.isPopupTrigger()) {
+                  return;  
+               }
+               final TreePath path = jobResultsTree.getPathForLocation(e.getX(), e.getY());
+               
+               if(path == null) {
+                  return;
+               }
+               
+               TreeNode node = (TreeNode) path.getLastPathComponent();
+               if(node instanceof JobModel.ServerFileNode) {
+                 
+                     final JobModel.ServerFileNode sn = (JobModel.ServerFileNode) node;
+                     
+                     File downloadDir = new File("tmp");
+                     if(!downloadDir.exists()) {
+                        downloadDir.mkdir();
+                     }
+                     String name = sn.name;
+                     int dotIndex = name.lastIndexOf(".");
+                     String baseName = name;
+                     String extension = "";
+                     if(dotIndex > 0) {
+                         baseName = name.substring(0, dotIndex);
+                         extension = name.substring(dotIndex, name.length());
+                     }
+                     File download = new File(downloadDir, name);
+                     int tries = 1;
+                     while(download.exists()) {
+                        String newName = baseName + "-" + tries + extension;
+                        download = new File(downloadDir, newName); 
+                        tries++;
+                     }
+                     final File destination = download;
+                     destination.deleteOnExit();
+                     new Thread() {
+                        public void run() {
+                           try {
+                              sn.download(destination);
+                              String filePath = destination.getCanonicalPath();
+                              if(RUNNING_ON_MAC) {
+                                 String[] args= new String[] {"/usr/bin/open", filePath};
+                                 Runtime.getRuntime().exec(args);
+                              } else {
+                                 org.genepattern.util.BrowserLauncher.openURL(filePath);
+                              }
+                           } catch(IOException ioe){}
+                        }
+                     }.start();
+                  
+               }
+            }
+            
             public void mousePressed(MouseEvent e) {
               
                final TreePath path = jobResultsTree.getPathForLocation(e.getX(), e.getY());
@@ -450,6 +504,32 @@ public class MainFrame extends JFrame {
          
        projectDirTree.addMouseListener(
          new MouseAdapter() {
+            
+            public void mouseClicked(MouseEvent e) {
+               if(e.getClickCount()!=2 || e.isPopupTrigger()) {
+                  return;  
+               }
+               final TreePath path = projectDirTree.getPathForLocation(e.getX(), e.getY());
+               
+               if(path == null) {
+                  return;
+               }
+               
+               TreeNode node = (TreeNode) path.getLastPathComponent();
+               if(node instanceof ProjectDirModel.FileNode) {
+                  try {
+                     ProjectDirModel.FileNode fn = (ProjectDirModel.FileNode) node;
+                     String filePath = fn.file.getCanonicalPath();
+                     if(RUNNING_ON_MAC) {
+                        String[] args= new String[] {"/usr/bin/open", filePath};
+                        Runtime.getRuntime().exec(args);
+                     } else {
+                        org.genepattern.util.BrowserLauncher.openURL(filePath);
+                     }
+                  } catch(IOException ioe){}
+               }
+            }
+            
             public void mousePressed(MouseEvent e) {
               
                final TreePath path = projectDirTree.getPathForLocation(e.getX(), e.getY());
@@ -540,6 +620,7 @@ public class MainFrame extends JFrame {
                try {
                   analysisServiceManager.refresh();
                } catch(WebServiceException wse) {
+                  wse.printStackTrace();
                   JOptionPane.showMessageDialog(GenePattern.getDialogParent(), "Unable to connect to " + analysisServiceManager.getServer());  
                }
              
