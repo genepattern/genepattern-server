@@ -19,6 +19,7 @@ import org.genepattern.server.handler.GetJobStatusHandler;
 import org.genepattern.server.webservice.GenericWebService;
 import org.genepattern.webservice.FileWrapper;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.JobStatus;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -233,7 +234,7 @@ public class Analysis extends GenericWebService {
 			File jobDir = new File(
 					org.genepattern.server.genepattern.GenePatternAnalysisTask
 							.getJobDir(String.valueOf(jobId)));
-			File[] files = jobDir.listFiles();
+			File[] files = jobDir.listFiles(); // FIXME pipeline jobs
 			if (files != null) {
 				for (int i = 0; i < files.length; i++) {
 					files[i].delete();
@@ -261,7 +262,7 @@ public class Analysis extends GenericWebService {
 	 */
 	public void deleteJobOutputFiles(int jobId, String[] fileNames) {
 		String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask
-				.getJobDir(String.valueOf(jobId));
+				.getJobDir(String.valueOf(jobId)); // FIXME pipeline jobs
 		if (fileNames != null) {
 			for (int j = 0; j < fileNames.length; j++) {
 				String name = fileNames[j];
@@ -281,7 +282,59 @@ public class Analysis extends GenericWebService {
 			}
 		}
 	}
-
+  
+   
+   /**
+   * Adds the output files for the given child job to the output files for the given parent job
+   * @param parent the parent job id
+   * @param child the child <tt>JobInfo</tt> object
+   * @return the parent <tt>JobInfo</tt> object
+   */
+   public JobInfo addChildJob(int parent, JobInfo child) throws WebServiceException {
+      try {
+         org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+                  .getAnalysisJobDataSourceEJB();
+        JobInfo jobInfo = ds.getJobInfo(parent);
+        ParameterInfo[] parameterInfo = child.getParameterInfoArray();
+        List outputParameters = new ArrayList();
+        if(parameterInfo!=null) {
+           for(int i = 0, length = parameterInfo.length; i < length; i++) {
+              if(parameterInfo[i].isOutputFile()) {
+                 jobInfo.addParameterInfo(parameterInfo[i]);
+              }
+           }
+        }
+        Integer intStatus = (Integer) JobStatus.STATUS_MAP.get(jobInfo.getStatus());
+        ds.updateJob(parent, jobInfo.getParameterInfo(), intStatus.intValue());
+        ds.setParent(child.getJobNumber(), parent);
+        return jobInfo;
+     } catch (Exception e) {
+			throw new WebServiceException(e);
+     }
+   }
+   
+   /**
+   * Sets the status of the given job
+   * @param jobId the job id
+   * @param status the job status. One of "Not Started", "Processing", "Finished, "Error", "Time Out"
+   */
+   public void setJobStatus(int jobId, String status) throws WebServiceException {
+      try {
+         org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+                  .getAnalysisJobDataSourceEJB();
+         JobInfo jobInfo = ds.getJobInfo(jobId);
+         Integer intStatus = (Integer) JobStatus.STATUS_MAP.get(status);
+         if(intStatus==null) {
+            throw new WebServiceException("Unknown status: " + status);  
+         }
+         ds.updateJob(jobId, intStatus.intValue());
+      } catch (Exception e) {
+			throw new WebServiceException(e);
+		}
+   }
+   
+   
+   
 	/**
 	 * 
 	 * Gets the jobs for the current user
