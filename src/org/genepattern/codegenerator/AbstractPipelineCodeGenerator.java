@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -11,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
@@ -22,15 +22,9 @@ public abstract class AbstractPipelineCodeGenerator {
 
 	protected PipelineModel model;
 
-	protected String serverName = null;
+	protected String server = null;
 
-	protected int serverPort = 0;
-
-	protected String invokingURL = null;
-
-	protected String baseURL = null;
-
-	protected Collection tmTasks = null;
+	protected List jobSubmissionTaskInfos = null;
 
 	public static final String INHERIT_TASKNAME = "inheritTaskname";
 
@@ -41,42 +35,27 @@ public abstract class AbstractPipelineCodeGenerator {
    protected AbstractPipelineCodeGenerator(){}
    
 	public AbstractPipelineCodeGenerator(PipelineModel model,
-			String serverName, int serverPort, String invokingURL,
-			Collection tmTasks) {
+			String server,
+			List jobSubmissionTaskInfos) {
 		this.model = model;
-		this.serverName = serverName;
-		this.serverPort = serverPort;
-		this.invokingURL = invokingURL;
-		this.tmTasks = tmTasks;
-		int i = invokingURL.indexOf(".jsp");
-		if (i == -1)
-			i = invokingURL.indexOf(".htm");
-		if (i != -1) {
-			baseURL = invokingURL.substring(0, i);
-			baseURL = baseURL.substring(0, baseURL.lastIndexOf("/") + 1);
-		}
+		this.server = server;
+		this.jobSubmissionTaskInfos = jobSubmissionTaskInfos;
+		
 	}
 
 	public String generateCode() throws Exception {
 		Vector vTasks = model.getTasks();
 		StringBuffer out = new StringBuffer();
-		JobSubmission jobSubmission = null;
-		TaskInfo taskInfo = null;
+		
 		ParameterInfo[] parameterInfo = null;
 		out.append(emitProlog());
 		int taskNum = 0;
 		for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
-			jobSubmission = (JobSubmission) eTasks.nextElement();
+			JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
 			try {
-				try {
-					taskInfo = GenePatternAnalysisTask.getTaskInfo(
-							jobSubmission.getName(), model.getUserID());
-				} catch (OmnigeneException e) {
-					//this is a new task, no taskID exists
-					// do nothing
-					throw new Exception("no such task: "
-							+ jobSubmission.getName());
-				}
+				
+				TaskInfo taskInfo = (TaskInfo) jobSubmissionTaskInfos.get(taskNum);
+				
 				parameterInfo = jobSubmission.giveParameterInfoArray();
 
 				// emit the code
@@ -136,7 +115,7 @@ public abstract class AbstractPipelineCodeGenerator {
 		}
 	} */
 
-	public TaskInfoAttributes getCommonTaskInfoAttributes() {
+	private static TaskInfoAttributes getCommonTaskInfoAttributes(PipelineModel model) {
 		TaskInfoAttributes tia = new TaskInfoAttributes();
 		tia.put(GPConstants.TASK_TYPE, GPConstants.TASK_TYPE_PIPELINE);
 		tia.put(GPConstants.AUTHOR, model.getAuthor());
@@ -149,9 +128,13 @@ public abstract class AbstractPipelineCodeGenerator {
 	}
 
 	public TaskInfoAttributes getTaskInfoAttributes() {
-		TaskInfoAttributes tia = getCommonTaskInfoAttributes();
+		return getTaskInfoAttributes(model);
+	}
+	
+	public static TaskInfoAttributes getTaskInfoAttributes(PipelineModel model) {
+		TaskInfoAttributes tia = getCommonTaskInfoAttributes(model);
 		tia.put(GPConstants.LANGUAGE, "Java");
-		pia = giveParameterInfoArray();
+		ParameterInfo[] pia = giveParameterInfoArray(model);
 		StringBuffer commandLine = new StringBuffer("<java> -cp <pipeline.cp>");
 
 		// System properties
@@ -187,6 +170,13 @@ public abstract class AbstractPipelineCodeGenerator {
 		tia.put(GPConstants.LSID, model.getLsid());
 		return tia;
 	}
+	
+	public ParameterInfo[] giveParameterInfoArray() {
+		if (pia == null) {
+			pia = giveParameterInfoArray(model);
+		}
+		return pia;
+	}
 
 	/**
 	 * returns a ParameterInfo[] for all of the runtime-promptable parameters in
@@ -197,8 +187,7 @@ public abstract class AbstractPipelineCodeGenerator {
 	 * @author Jim Lerner
 	 *  
 	 */
-	public ParameterInfo[] giveParameterInfoArray() {
-		if (pia == null) {
+	private static ParameterInfo[] giveParameterInfoArray(PipelineModel model) {
 			Vector vParams = new Vector();
 			int taskNum = 1;
 			for (Enumeration eTasks = model.getTasks().elements(); eTasks
@@ -227,65 +216,38 @@ public abstract class AbstractPipelineCodeGenerator {
 					}
 				}
 			}
-			pia = (ParameterInfo[]) vParams.toArray(new ParameterInfo[vParams
+			return  (ParameterInfo[]) vParams.toArray(new ParameterInfo[vParams
 					.size()]);
-		}
-		return pia;
+		
 	}
 
-	public static String getCode(String pipelineName,
-			HttpServletRequest request, String language, String userID)
-			throws Exception {
-		TaskInfo taskInfo = GenePatternAnalysisTask.getTaskInfo(pipelineName,
-				userID);
-		if (taskInfo == null)
-			throw new Exception("No such task: " + pipelineName);
-		return getCode(taskInfo, request, language, userID);
-	}
 
-	public static String getCode(TaskInfo taskInfo, HttpServletRequest request,
-			String language, String userID) throws IOException,
-			OmnigeneException, ClassNotFoundException, NoSuchMethodException,
-			InstantiationException, Exception {
-		Map tia = taskInfo.getTaskInfoAttributes();
-		String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-		if (language.equalsIgnoreCase("xml")) {
-			return serializedModel;
-		}
-		PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
-		model.setLsid((String) tia.get(GPConstants.LSID));
+	/**
+	* Gets the code for the given pipeline
+	* 
+	* @param model the pipeline model. The lsid and user id of the model should be set
+	* @param pipelineTaskInfos a list of <tt>TaskInfo</tt> objects in the same order as the tasks in the pipeline
+	* @param the server, e.g. 'http://localhost:8080'
+	* @param language the language to generate the code in
+	* 
+	*/
+	public static String getCode(PipelineModel model, List pipelineTaskInfos, String server, String language) throws Exception {
+		
 		Class clsPipelineCodeGenerator = Class
 				.forName(AbstractPipelineCodeGenerator.class.getPackage()
 						.getName()
 						+ "." + language + "PipelineCodeGenerator");
 		Constructor consAbstractPipelineCodeGenerator = clsPipelineCodeGenerator
 				.getConstructor(new Class[] { PipelineModel.class,
-						String.class, int.class, String.class, Collection.class });
+						String.class, List.class });
 		AbstractPipelineCodeGenerator codeGenerator = (AbstractPipelineCodeGenerator) consAbstractPipelineCodeGenerator
 				.newInstance(new Object[] {
 						model,
-						request.getServerName(),
-						new Integer(request.getServerPort()),
-						System.getProperty("GenePatternURL")
-								+ "makePipeline.jsp?"
-								+ request.getQueryString(), null });
-		model.setUserID(userID); // set ownership to current user
+						server, pipelineTaskInfos });
 		return codeGenerator.generateCode(); // R (or some other language)
 
 	}
 
-	public static PipelineModel getModel(String pipelineName, String userID)
-			throws Exception {
-		TaskInfo taskInfo = GenePatternAnalysisTask.getTaskInfo(pipelineName,
-				userID);
-		if (taskInfo == null)
-			throw new Exception("No such task: " + pipelineName);
-		Map tia = taskInfo.getTaskInfoAttributes();
-		String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-		PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
-		model.setLsid((String) tia.get(GPConstants.LSID));
-		return model;
-	}
 
 	public static Collection getLanguages() {
 		Vector vLanguages = new Vector();
@@ -329,12 +291,13 @@ public abstract class AbstractPipelineCodeGenerator {
 		return "";
 	}
 
+	public String getFullServerURL() {
+		String path = System.getProperty("GP_Path");	
+		return path!=null?server + path + "/":server + "/gp/";
+	}
+	
 	public String emitUserInstructions() {
 		return "";
-	}
-
-	public String getBaseURL() {
-		return baseURL;
 	}
 
 	public abstract String invoke();

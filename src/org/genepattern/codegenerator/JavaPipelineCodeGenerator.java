@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Vector;
+import java.util.List;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
@@ -42,19 +43,10 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
 
    java.util.Map taskNum2ResultsArrayIndex = new java.util.HashMap();
 
-
-   /**
-    *  create a new pipeline using the given PipelineModel, server, and URL
-    *
-    * @param  model        Description of the Parameter
-    * @param  serverName   Description of the Parameter
-    * @param  serverPort   Description of the Parameter
-    * @param  invokingURL  Description of the Parameter
-    * @param  tmTasks      Description of the Parameter
-    */
-   public JavaPipelineCodeGenerator(PipelineModel model, String serverName,
-         int serverPort, String invokingURL, Collection tmTasks) {
-      super(model, serverName, serverPort, invokingURL, tmTasks);
+   public JavaPipelineCodeGenerator(PipelineModel model,
+			String server,
+			List jobSubmissionTaskInfos) {
+      super(model, server, jobSubmissionTaskInfos);
    }
 
    public JavaPipelineCodeGenerator() {
@@ -64,7 +56,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
    
    public String emitUserInstructions() {
       return model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE
-             + " has been saved as a pipeline task on " + serverName + ".";
+             + " has been saved as a pipeline task on " + server + ".";
    }
 
 
@@ -100,7 +92,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
       prolog.append("\n * generated: ");
       prolog.append(new Date().toString());
       prolog.append("\n * regenerate with: ");
-      prolog.append(getBaseURL() + "getPipelineCode.jsp?"
+      prolog.append(getFullServerURL() + "getPipelineCode.jsp?"
              + GPConstants.LANGUAGE + "=Java&" + GPConstants.NAME + "="
              + model.getLsid());
       if(model.getAuthor() != null && !model.getAuthor().trim().equals("")) {
@@ -175,9 +167,6 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
          }
       }
 
-      String server = getBaseURL();
-      server = server.substring(0, server.length() - 4);// remove /gp/ from
-      // server
       prolog.append("\t\tGPServer gpServer = new GPServer(\"" + server
              + "\", \"" + model.getUserID() + "\");\n");
 

@@ -16,7 +16,7 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
-
+import java.util.List;
 /**
  * Generate R code to form a pipeline of GenePatternAnalysis tasks, complete
  * with
@@ -44,11 +44,11 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
 	/** number of tasks in the pipeline */
 	int numTasks = 0;
 
-	/** create a new pipeline using the given PipelineModel, server, and URL */
-	public RPipelineCodeGenerator(PipelineModel model, String serverName,
-			int serverPort, String invokingURL, Collection tmTasks) {
-		super(model, serverName, serverPort, invokingURL, tmTasks);
-	}
+	public RPipelineCodeGenerator(PipelineModel model,
+			String server,
+			List jobSubmissionTaskInfos) {
+      super(model, server, jobSubmissionTaskInfos);
+   }
 
    public RPipelineCodeGenerator(){}
    
@@ -59,7 +59,7 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
 		} catch (MalformedURLException mue) {
 		}
 		return model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE
-				+ " version " + version + " has been saved on " + serverName
+				+ " version " + version + " has been saved on " + server
 				+ ".";
 	}
 
@@ -98,7 +98,7 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
 		prolog.append("\n# generated: ");
 		prolog.append(new Date().toString());
 		prolog.append("\n# regenerate with: ");
-		prolog.append(getBaseURL() + "pipelineDesigner.jsp?" + GPConstants.NAME
+		prolog.append(getFullServerURL() + "pipelineDesigner.jsp?" + GPConstants.NAME
 				+ "=" + model.getLsid() + "&language=" + getLanguage() + "\n");
 		prolog.append("# Author: ");
 		prolog.append(model.getAuthor());
@@ -357,8 +357,7 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
 					// systems that can't resolve the server name or the port
 					// number!!!
 					if (val.indexOf(System.getProperty("GenePatternURL")) == 0) {
-						val = GenePatternAnalysisTask.replace(val, "http://"
-								+ serverName + ":" + serverPort,
+						val = GenePatternAnalysisTask.replace(val, server,
 								"paste(server, \"");
 						val = val + "\", sep=\"\")";
 						invocation.append(val);
