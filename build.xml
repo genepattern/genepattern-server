@@ -89,7 +89,7 @@
     </target>
 
    <target name="clean">
-     <delete>
+     <delete quiet="true" failonerror="false">
        	<fileset dir="src/" includes="**/*.class"/>
        	<fileset dir="build/" includes="**/*"/>
         <fileset dir="website/" includes="**/*.class"/>
