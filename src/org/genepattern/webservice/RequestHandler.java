@@ -10,12 +10,12 @@ import org.apache.log4j.Category;
  * <p>Description: handles the requests sent to web services.</p>
  * @author Hui Gong
  * @version $Revision$
+ * @deprecated use AnalysisWebServiceProxy instead
  */
 
 public class RequestHandler {
     private AnalysisWebServiceProxy _proxy;
-    private String _url;
-    private String _siteName;
+    private String server;
     private static Category cat = Category.getInstance(RequestHandler.class.getName());
 
 	
@@ -24,18 +24,18 @@ public class RequestHandler {
 		cat.debug(str);
     }
 
-    public RequestHandler(String name, String url) {
-	this(name, url, null, null);
-    }
-
-    public RequestHandler(String name, String url, String username, String password) {
-        this._siteName = name;
-        this._url = url;
-        _proxy = new AnalysisWebServiceProxy(url, username, password);
+  
+    public RequestHandler(String server, String username) {
+        this.server = server;
+        try {
+           _proxy = new AnalysisWebServiceProxy(server, username);
+        } catch(Exception e) {
+            e.printStackTrace();  
+        }
     }
 
     public synchronized String getURL(){
-        return this._url;
+        return this.server;
     }
 
     public synchronized AnalysisService[] getAnalysisServices() throws WebServiceException{
@@ -44,7 +44,7 @@ public class RequestHandler {
         size = tasks.length;
         AnalysisService[] services = new AnalysisService[size];
         for(i=0; i< size; i++){
-            services[i] = new AnalysisService(_siteName, _url, tasks[i]);
+            services[i] = new AnalysisService(server, tasks[i]);
         }
         return services;
     }
