@@ -83,14 +83,14 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
             //assuming once job is submitted, it should be executed even if taskid is removed from task master
 
             //Query job table for waiting job
-            stat=conn.prepareStatement("SELECT job_no,analysis_job.task_id,analysis_job.parameter_info,input_filename,analysis_job.user_id FROM analysis_job, task_master where analysis_job.task_id=task_master.task_id and " +
+            stat=conn.prepareStatement("SELECT job_no,analysis_job.task_id,analysis_job.parameter_info,analysis_job.user_id FROM analysis_job, task_master where analysis_job.task_id=task_master.task_id and " +
             " classname = ? and  status_id = ? order by date_submitted");
             stat.setString(1,classname);
             stat.setInt(2, JOB_WAITING_STATUS);
             resultSet=stat.executeQuery();
 
             int jobNo=0,taskID=0;
-            String inputFileName="",parameter_info="";
+            String parameter_info="";
 
             boolean recordFoundFlag=false;
 
@@ -102,12 +102,12 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
                 jobNo=resultSet.getInt(1);
                 taskID=resultSet.getInt(2);
                 parameter_info=resultSet.getString(3);
-                inputFileName=resultSet.getString(4);
+       
                 updateJob(jobNo,PROCESSING_STATUS,"");
 
                 //Add waiting job info to vector, for AnalysisTask
                 ParameterInfo[] params = parameterFormatConverter.getParameterInfoArray(parameter_info);
-                JobInfo singleJobInfo = new JobInfo(jobNo,taskID,params,inputFileName,resultSet.getString(5));
+                JobInfo singleJobInfo = new JobInfo(jobNo,taskID,params,resultSet.getString(4));
                 jobVector.add(singleJobInfo);
         //break; // JL: only one job at a time, so that other threads can compete for same classname jobs
             }
@@ -166,16 +166,15 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
        }
             //Store submitted job
             stat=conn.prepareStatement("INSERT INTO analysis_job(task_id,status_id, " +
-            "date_submitted, parameter_info,input_filename,user_id, task_name, task_lsid)  VALUES (? , ?, current_timestamp,?,?,?, ?, ?)");
+            "date_submitted, parameter_info,user_id, task_name, task_lsid)  VALUES (? , ?, current_timestamp,?,?, ?, ?)");
 
             //stat.setInt(1,jobNo);
             stat.setInt(1,taskID);
             stat.setInt(2, JOB_WAITING_STATUS);
             stat.setString(3,parameter_info);
-            stat.setString(4,inputfile);
-            stat.setString(5,user_id);
-            stat.setString(6,taskName);
-            stat.setString(7,lsid);
+            stat.setString(4,user_id);
+            stat.setString(5,taskName);
+            stat.setString(6,lsid);
 
             updatedRecord=stat.executeUpdate() ;
             
@@ -224,10 +223,9 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
         PreparedStatement stat=null;
         try {
             conn = getConnection();
-            stat=conn.prepareStatement("UPDATE analysis_job SET status_id = ?, result_filename = ?, date_completed = current_timestamp WHERE job_no = ?");
+            stat=conn.prepareStatement("UPDATE analysis_job SET status_id = ?, date_completed = current_timestamp WHERE job_no = ?");
             stat.setInt(1,jobStatusID);
-            stat.setString(2,outputFilename);
-            stat.setInt(3,jobNo);
+            stat.setInt(2,jobNo);
             updateRecord=stat.executeUpdate() ;
 
         } catch (Exception e) {
@@ -288,14 +286,14 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
             conn = getConnection();
 
             //Fetch from database
-            stat=conn.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,input_filename,result_filename,user_id " +
+            stat=conn.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id " +
             "FROM analysis_job , job_status WHERE job_no = ? and analysis_job.status_id = job_status.status_id");
             stat.setInt(1,jobNo);
             resultSet=stat.executeQuery() ;
             boolean recordFound = false;
             while(resultSet.next()) {
                 recordFound=true;
-		ji = jobInfoFromResultSet(resultSet);
+                ji = jobInfoFromResultSet(resultSet);
                 logger.debug("submit: "+ji.getDateSubmitted()+"complete: "+ji.getDateCompleted());
             }
 
@@ -335,7 +333,7 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
                 conn = getConnection();
                 
                 //Fetch from database
-                stat=conn.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,input_filename,result_filename,user_id " +
+                stat=conn.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id " +
                 "FROM analysis_job , job_status WHERE user_id = ? and analysis_job.status_id = job_status.status_id");
                 stat.setString(1,user_id);
                 
@@ -369,15 +367,15 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
                 conn = getConnection();
                 
                 //Fetch from database
-                stat=conn.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,input_filename,result_filename,user_id, task_name, task_lsid FROM analysis_job, job_status WHERE user_id = ? and analysis_job.status_id = job_status.status_id");
+                stat=conn.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id, task_name, task_lsid FROM analysis_job, job_status WHERE user_id = ? and analysis_job.status_id = job_status.status_id");
                 stat.setString(1,username);
                 
                 resultSet=stat.executeQuery() ;
                 
                 while(resultSet.next()) {
                     JobInfo ji = jobInfoFromResultSet(resultSet);
-                    AnalysisJob job = new AnalysisJob(null, resultSet.getString(10), ji);
-                    job.setLSID(resultSet.getString(11));
+                    AnalysisJob job = new AnalysisJob(null, resultSet.getString("task_name"), ji);
+                    job.setLSID(resultSet.getString("task_lsid"));
                     results.add(ji);
                 }
                 
@@ -408,7 +406,7 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
                 conn = getConnection();
                 
                 //Fetch from database
-                stat=conn.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,input_filename,result_filename,user_id " +
+                stat=conn.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id " +
                 "FROM analysis_job , job_status WHERE date_completed <= ? and analysis_job.status_id = job_status.status_id");
                 stat.setTimestamp(1, new java.sql.Timestamp(date.getTime()));
                 
@@ -434,16 +432,14 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
         
     protected JobInfo jobInfoFromResultSet(ResultSet resultSet) throws SQLException, OmnigeneException {
 	ParameterFormatConverter parameterFormatConverter = new ParameterFormatConverter();
-   
+  
 	JobInfo ji = new JobInfo(resultSet.getInt(1),
 		                resultSet.getInt(2),
 		                resultSet.getString(3),
 		                resultSet.getTimestamp(4),
 		                resultSet.getTimestamp(5),
 		                parameterFormatConverter.getParameterInfoArray(resultSet.getString(6)),
-		                resultSet.getString(7),
-		                resultSet.getString(8),
-		                resultSet.getString(9)
+		                resultSet.getString(7)
 		                );
 	return ji;
     }
@@ -1057,7 +1053,7 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
             //getConnection
             conn = getConnection();
 
-            stat=conn.prepareStatement("update analysis_job set status_id=" + JOB_WAITING_STATUS + ", result_filename='' where status_id=" + PROCESSING_STATUS );
+            stat=conn.prepareStatement("update analysis_job set status_id=" + JOB_WAITING_STATUS + " where status_id=" + PROCESSING_STATUS );
             exist = (stat.executeUpdate() > 0);
 
         } catch (Exception e) {
