@@ -24,6 +24,7 @@ public class AnalysisServiceManager {
    
    private static AnalysisServiceManager instance = new AnalysisServiceManager();
    
+   private Map lsid2VersionsMap = new HashMap();
    
    private AnalysisServiceManager(){}
    
@@ -49,6 +50,16 @@ public class AnalysisServiceManager {
       lsidOrTaskName2AnalysisService.clear();
 	}
    
+   /**
+	 * Gets the internal cache of an unmodifiable map of the module LSIDs without the version to a <tt>List</tt> of versions. Invoke refresh
+	 * to update the internal cache.
+	 * 
+	 * @return the lsid to versions map
+	 */
+   public Map getLSIDToVersionsMap() {
+     return lsid2VersionsMap;
+   }
+   
 
 	/**
 	 * Retrieves the latest versions of all analysis services from the server
@@ -70,6 +81,9 @@ public class AnalysisServiceManager {
          lsidOrTaskName2AnalysisService.put(lsidOrTaskName,
                new AnalysisService(server, task));
       }
+      this.lsid2VersionsMap = java.util.Collections.unmodifiableMap(new org.genepattern.webservice.AdminProxy(
+      server,username)
+               .getLSIDToVersionsMap());
 		
 
 	}
