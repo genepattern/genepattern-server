@@ -238,29 +238,26 @@ public class CommandLineAction {
 			// ignore
 		}
 
-		System.out.println("schema up-to-date: " + upToDate);		
+		System.out.println("schema up-to-date: " + upToDate);
 		return upToDate;
 	}
 
-	private void createSchema(String resourceDir, Properties props)
+	private void createSchema(String resourceDir, final Properties props)
 			throws SQLException, IOException {
 		File[] schemaFiles = new File(resourceDir).listFiles(new FilenameFilter() {
 				// INNER CLASS !!!
 				public boolean accept(File dir, String name) {
-					return name.endsWith(".sql") && name.indexOf("-") != -1;
+					return name.endsWith(".sql") && name.startsWith(props.getProperty("DB.schema"));
 				}
 			});
 		Arrays.sort(schemaFiles, new Comparator() {
 				public int compare(Object o1, Object o2) {
-					int dash;
 					File f1 = (File) o1;
 					File f2 = (File) o2;
 					String name1 = f1.getName();
-					dash = name1.lastIndexOf("-");
-					String version1 = name1.substring(dash+1, name1.length() - ".sql".length());
+					String version1 = name1.substring(props.getProperty("DB.schema").length()+1, name1.length() - ".sql".length());
 					String name2 = f2.getName();
-					dash = name2.lastIndexOf("-");
-					String version2 = name2.substring(dash+1, name2.length() - ".sql".length());
+					String version2 = name2.substring(props.getProperty("DB.schema").length()+1, name2.length() - ".sql".length());
 					return version1.compareToIgnoreCase(version2);
 					}
 			});
@@ -269,8 +266,7 @@ public class CommandLineAction {
 		for (int f = 0; f < schemaFiles.length; f++) {
 			File schemaFile = schemaFiles[f];
 			String name = schemaFile.getName();
-			int dash = name.lastIndexOf("-");
-			String version = name.substring(dash+1, name.length() - ".sql".length());
+			String version = name.substring(props.getProperty("DB.schema").length()+1, name.length() - ".sql".length());
 			if (version.compareTo(expectedSchemaVersion) <= 0 && version.compareTo(dbSchemaVersion) > 0) {
 				processSchemaFile(schemaFile);
 			} else {
