@@ -11,13 +11,13 @@ import java.util.Map;
 
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AdminProxy;
+import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobResult;
 import org.genepattern.webservice.LocalTaskExecutor;
 import org.genepattern.webservice.Parameter;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.RequestHandler;
 import org.genepattern.webservice.TaskExecutor;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -37,8 +37,7 @@ public class GPServer {
    /** number of tasks to cache */
    protected final static int MAX_ENTRIES=20;
    protected AdminProxy adminProxy;
-   protected final String axisServletURL;
-
+   
    /**
     * Creates a new GPServer instance.
     * 
@@ -51,7 +50,6 @@ public class GPServer {
    public GPServer(String server, String userName)
             throws WebServiceException {
       this.server=server;
-      this.axisServletURL=server + "/gp/servlet/AxisServlet";
       this.userName=userName;
       this.cachedTasks=new LinkedHashMap(MAX_ENTRIES + 1, .75F, true) {
          public boolean removeEldestEntry(Map.Entry eldest) {
@@ -92,7 +90,7 @@ public class GPServer {
     * @exception org.genepattern.webservice.WebServiceException
     *            Description of the Exception
     */
-   private AnalysisJob submitJob(RequestHandler handler, TaskInfo tinfo, 
+   private AnalysisJob submitJob(AnalysisWebServiceProxy handler, TaskInfo tinfo, 
                                  ParameterInfo[] parmInfos)
       throws org.genepattern.webservice.WebServiceException {
       final JobInfo job=handler.submitJob(tinfo.getID(), parmInfos);
@@ -110,7 +108,7 @@ public class GPServer {
     * @exception org.genepattern.webservice.WebServiceException
     *            Description of the Exception
     */
-   private static void waitForErrorOrCompletion(RequestHandler handler, 
+   private static void waitForErrorOrCompletion(AnalysisWebServiceProxy handler, 
                                                 AnalysisJob job)
       throws org.genepattern.webservice.WebServiceException {
       int maxtries=20;
@@ -118,7 +116,7 @@ public class GPServer {
       waitForErrorOrCompletion(handler, job, maxtries, sleep);
    }
 
-   private static void waitForErrorOrCompletion(RequestHandler handler, 
+   private static void waitForErrorOrCompletion(AnalysisWebServiceProxy handler, 
                                                 AnalysisJob job, int maxTries, 
                                                 int initialSleep)
       throws org.genepattern.webservice.WebServiceException {
@@ -186,9 +184,14 @@ public class GPServer {
       try { 
          TaskInfo taskInfo=getTask(taskNameOrLSID);
          ParameterInfo[] actualParameters = createParameterInfoArray(taskInfo, parameters);
-         RequestHandler requestHandler=createRequestHandler();
-         AnalysisJob job=submitJob(requestHandler, taskInfo, actualParameters);
-         waitForErrorOrCompletion(requestHandler, job);
+         AnalysisWebServiceProxy analysisProxy=null;
+         try {
+            analysisProxy = new AnalysisWebServiceProxy(server, userName);
+         } catch(Exception x) {
+            throw new WebServiceException(x);  
+         }
+         AnalysisJob job=submitJob(analysisProxy, taskInfo, actualParameters);
+         waitForErrorOrCompletion(analysisProxy, job);
          ArrayList resultFiles=new ArrayList();
          ParameterInfo[] jobParameterInfo=job.getJobInfo().getParameterInfoArray();
          boolean stderr=false;
@@ -359,10 +362,7 @@ public class GPServer {
       }
    }
 
-   private RequestHandler createRequestHandler() {
-      return new RequestHandler(server, axisServletURL, userName, null);
-   }
-
+   
    /**
     * make the sleep time go up as it takes longer to exec. eg for 100 tries
     * of 1000ms (1 sec) first 20 are 1 sec each next 20 are 2 sec each next
