@@ -138,7 +138,6 @@ public class JobModel extends AbstractSortableTreeTableModel {
       Object[] p1 = {root};
       Object[] kids = {child};
       //  nodeStructureChanged(child);
-      System.out.println("job added");
       Object[] path = getPathToRoot(root);
 
       final TreeModelEvent e = new TreeModelEvent(this, path);
@@ -264,6 +263,8 @@ public class JobModel extends AbstractSortableTreeTableModel {
             node.getOutputFiles();
             root.add(node);
          }
+         nodeStructureChanged(root);
+         nodeStructureChanged(root); // FIXME
       } catch(Exception e) {
          e.printStackTrace();
       }
