@@ -14,13 +14,7 @@ import org.genepattern.webservice.*;
 import org.genepattern.gpge.ui.treetable.*;
 
 /**
- *  Description of the Class
- *
- * @author    Joshua Gould
- */
-
-/**
- * Description of the Class
+ * Project directory model
  * 
  * @author Joshua Gould
  */
@@ -164,15 +158,9 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 
 		// keep children sorting alphabetically
 		root.insert(child, insertionIndex);
-		int[] newIndexs = { insertionIndex };
-
-		Object[] p1 = { root };
-		Object[] kids = { child };
-
-		Object[] path = getPathToRoot(root);
-		final TreeModelEvent e = new TreeModelEvent(this, path);
-		nodeStructureChanged(root);
-		notifyProjectAdded(projectDir);
+		
+		nodesWereInserted(root, new int[] { insertionIndex });
+      notifyProjectAdded(projectDir);
 	}
 
 	public void sortOrderChanged(SortEvent e) {
