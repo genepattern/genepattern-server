@@ -384,12 +384,7 @@ public class AnalysisHypersonicDAO implements
 						"AnalysisHypersonicDAO:getJobInfo JobID " + jobNo
 								+ " not found");
 
-		} catch (JobIDNotFoundException e) {
-			logger
-					.error("AnalysisHypersonicDAO:getJobInfo JobIDNotFoundException "
-							+ e.getMessage());
-			throw e;
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			logger.error("AnalysisHypersonicDAO:getJobInfo failed " + e);
 			throw new OmnigeneException(e.getMessage());
 		} finally {

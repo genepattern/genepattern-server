@@ -400,6 +400,8 @@ public class Analysis extends GenericWebService {
             _cat.debug(ioe + " while deleting search indices for job "
                + jobId);
           }
+      } catch(org.genepattern.server.JobIDNotFoundException jnfe) {
+         // file and job has already been deleted-ignore
       } catch(org.genepattern.webservice.OmnigeneException oe) {
          throw new WebServiceException(oe);  
       } catch(java.rmi.RemoteException re) {
