@@ -172,8 +172,12 @@ public class AnalysisServicePanel extends JPanel {
 
 		tasksLabel = new JLabel();
 
-		_servicePanel = new JPanel();//createTaskPane(_selectedService);
+		_servicePanel = new JPanel();
 		this.setLayout(new BorderLayout());
+      javax.swing.Icon icon = new javax.swing.ImageIcon(ClassLoader
+				.getSystemResource("org/genepattern/gpge/resources/intro.gif"));
+		_servicePanel.add(new JLabel(icon));
+      
 		JPanel listPanel = new JPanel();
 		listPanel.setLayout(new BorderLayout());
 		listPanel.add(tasksLabel, BorderLayout.CENTER);
