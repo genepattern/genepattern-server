@@ -8,10 +8,12 @@
 		 org.genepattern.server.genepattern.LSIDManager,
 		 org.genepattern.data.pipeline.*,
 		 org.genepattern.server.*,
-         org.genepattern.server.webapp.RunPipelineForJsp,
+         	 org.genepattern.server.webapp.RunPipelineForJsp,
+		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.LSID,
 		 org.genepattern.util.LSIDUtil,
+		 java.io.File,
 		 java.util.Map,
 		 java.util.HashMap,
 		 java.util.*,
@@ -30,18 +32,21 @@ if (pipelineName == null) {
 }
 PipelineModel model = null;
 TaskInfo task = new org.genepattern.server.webservice.server.local.LocalAdminClient(userID).getTask(pipelineName);
+String version = "";
 if (task != null) {
 	TaskInfoAttributes tia = task.giveTaskInfoAttributes();
 	if (tia != null) {
 		 String serializedModel = (String)tia.get(GenePatternAnalysisTask.SERIALIZED_MODEL);
 		 if (serializedModel != null && serializedModel.length() > 0) {
 			 try {
-			 	 model = PipelineModel
-				.toPipelineModel(serializedModel);
+			 	 model = PipelineModel.toPipelineModel(serializedModel);
 			} catch (Throwable x) {
 				x.printStackTrace(System.out);
 			}
 		}
+		String lsidStr = tia.get("LSID");
+		LSID pipeLSID = new LSID(lsidStr);
+		version = pipeLSID.getVersion();
 	}
 }
 %>
@@ -62,9 +67,16 @@ function toggle() {
 }
 
 function toggleLSID() {
+	formobj = document.getElementById('pipeline_lsid');
+	var visible = document.form1.togglelsid.checked;
+	if(!visible) {
+		formobj.style.display = "none";
+	} else {
+		formobj.style.display = "inline";
+	}
+
 	for(var i = 0; i < numTasks; i++) {
 		formobj = document.getElementById('lsid' + i);
-		var visible = document.form1.togglelsid.checked;
 		if(!visible) {
 			formobj.style.display = "none";
 		} else {
@@ -106,7 +118,7 @@ String displayName = model.getName();
 if(displayName.endsWith(".pipeline")) {
 	displayName = displayName.substring(0, displayName.length()-".pipeline".length());
 }
-out.println("<p><font size='+2'><b>" + displayName+ "</b></font>");
+out.println("<p><font size='+2'><b>" + displayName+ "</font> version <font size='+2'>"+version+"</font></b>");
 
 // show edit link when task has local authority and either belongs to current user or is public
 String lsid = (String) task.getTaskInfoAttributes().get(GPConstants.LSID);
@@ -127,6 +139,32 @@ out.println("  <input type=\"button\" value=\"clone...\" name=\"clone\"       cl
 if (! RunPipelineForJsp.isMissingTasks(model, userID)){
 	out.println("  <input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runPipeline.jsp?cmd=run&name="+pipelineName + "')\"; />");
 }				
+//XXXXXXXXXXXXX
+String descrip = task.getDescription();
+out.print("<span id=\"pipeline_lsid\" style=\"display:none;\">");
+out.print("<pre>     " + lsid + "</pre></span>");
+
+
+if ((descrip != null) && (descrip.length() > 0))
+	out.println("</br>"+ descrip);
+out.println("<br>Owner: " + task.getUserId());
+		
+
+LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID);
+File[] docFiles = taskIntegratorClient.getDocFiles(task);
+if (docFiles != null){
+	if (docFiles.length > 0){
+		out.println("<br>Documentation: ");
+		for (int i = 0; i < docFiles.length; i++) {
+			if (i > 0) out.println("  ,");
+			out.println("<a href='getTaskDoc.jsp?name="+pipelineName+"'&file="+docFiles[i].getName()+" target='_new'>"+docFiles[i].getName()+"</a>");
+		}
+
+	}
+}
+
+
+//XXXXXXXXXXX
 out.println("&nbsp;&nbsp;<form name=\"form1\"><input name=\"togglecb\" type=\"checkbox\" onClick=toggle();>Show Input Parameters</input><input name=\"togglelsid\" type=\"checkbox\" onClick=toggleLSID();>Show LSIDs</input></form>");
 
 try {
