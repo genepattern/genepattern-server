@@ -5,20 +5,57 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Toolkit;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-import java.net.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
-import javax.swing.tree.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.swing.BorderFactory;
+import javax.swing.JDesktopPane;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.JWindow;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.border.Border;
 import org.genepattern.gpge.*;
 import org.genepattern.gpge.io.*;
 import org.genepattern.gpge.ui.browser.*;
 import org.genepattern.gpge.ui.graphics.draggable.*;
-import org.genepattern.gpge.ui.maindisplay.*;
 import org.genepattern.gpge.ui.preferences.*;
 import org.genepattern.gpge.ui.tasks.*;
 import org.genepattern.gpge.ui.project.*;
@@ -34,12 +71,6 @@ import org.genepattern.webservice.*;
  * @author Joshua Gould
  */
 public class MainFrame extends JFrame {
-         
-	public static boolean RUNNING_ON_MAC = System.getProperty("mrj.version") != null
-			&& javax.swing.UIManager.getSystemLookAndFeelClassName()
-					.equals(
-							javax.swing.UIManager.getLookAndFeel().getClass()
-									.getName());
        
 	AnalysisServiceDisplay analysisServicePanel;
 
@@ -90,11 +121,18 @@ public class MainFrame extends JFrame {
 
 	FileInfoComponent fileSummaryComponent = new FileInfoComponent();
 
+    public static boolean RUNNING_ON_MAC = System.getProperty("mrj.version") != null
+			&& javax.swing.UIManager.getSystemLookAndFeelClassName()
+					.equals(
+							javax.swing.UIManager.getLookAndFeel().getClass()
+									.getName());
+   
    private static short WINDOW_STYLE_ONE_FRAME = 0;
-   private static short WINDOW_STYLE_FRAMES = 1;
-   private static short WINDOW_STYLE_MDI = 2;
-   public short windowStyle = WINDOW_STYLE_MDI;
+   public static short WINDOW_STYLE_FRAMES = 1;
+   public static short WINDOW_STYLE_MDI = 2;
+   public static short windowStyle = WINDOW_STYLE_ONE_FRAME;
    private JMenuBar menuBar;
+   Color blue = new Color(51,0,204);
    
 	private static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone
@@ -1056,11 +1094,26 @@ public class MainFrame extends JFrame {
       int width = (int) (screenSize.width * .9);
       int height = (int) (screenSize.height * .9);
       
+      
       if(windowStyle==WINDOW_STYLE_ONE_FRAME) {
-         projectSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Projects", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
-         jobSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Jobs", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
+         
+         Border title =  BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(0,0,0,0), "Projects", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP);
+         //projectSP.setBorder(title);
+         
+         JPanel temp = new JPanel(new BorderLayout());
+         temp.setBackground(blue);
+         temp.add(projectSP, BorderLayout.CENTER);
+         temp.add(new JLabel("Projects", JLabel.CENTER), BorderLayout.NORTH);
+         
+         //jobSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(0,0,0,0), "Job Results", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
+         JPanel temp2 = new JPanel(new BorderLayout());
+         temp2.setBackground(blue);
+         temp2.add(jobSP, BorderLayout.CENTER);
+         temp2.add(new JLabel("Job Results", JLabel.CENTER), BorderLayout.NORTH);
+         
          JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-				projectSP, jobSP);
+				temp, temp2);
+        
          JPanel leftPanel = new JPanel(new BorderLayout());
          leftPanel.add(leftPane, BorderLayout.CENTER);
          leftPanel.add(fileSummaryComponent, BorderLayout.SOUTH);
@@ -1131,6 +1184,7 @@ public class MainFrame extends JFrame {
          moduleInternalFrame.setVisible(true);
          
          JDesktopPane dp = new JDesktopPane();
+         dp.setBackground(new Color(139, 139, 139));
          dp.add(projectsInternalFrame);
          dp.add(jobResultsInternalFrame);
          dp.add(moduleInternalFrame);
@@ -1250,8 +1304,10 @@ public class MainFrame extends JFrame {
       historyMenu = new HistoryMenu();
       menuBar.add(historyMenu);
       
-      windowMenu = new JMenu("Window");
-      menuBar.add(windowMenu);
+      if(windowStyle==WINDOW_STYLE_MDI) {
+         windowMenu = new JMenu("Window");
+         menuBar.add(windowMenu);
+      }
       
 		JMenu helpMenu = new HelpMenu();
       menuBar.add(helpMenu);
