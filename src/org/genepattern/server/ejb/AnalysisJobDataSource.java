@@ -74,7 +74,26 @@ public interface AnalysisJobDataSource {
 	 * @throws RemoteException
 	 *             if thrown by Omnigene
 	 */
-   public JobInfo addTemporaryPipeline(String user_id, String parameter_info, String pipelineName) throws OmnigeneException, RemoteException;
+   public JobInfo createTemporaryPipeline(String user_id, String parameter_info, String pipelineName) throws OmnigeneException, RemoteException;
+   
+   
+   /**
+	 * Creates an Omnigene database entry in the analysis_job table. This
+	 * entry is dispatchable to a known analysis task (pipeline)
+	 * in the database. Since it is a pipeline, it is actually
+	 * being invoked by a separate process, but is
+	 * using the rest of the infrastructure to get input files, store output
+	 * files, and retrieve status and result files.
+    * @param taskId the pipeline task id
+	 * @param userID user who owns this pipeline data instance
+	 * @param parameterInfo ParameterInfo array containing pipeline data file output entries
+
+	 * @throws OmnigeneException
+	 *             if thrown by Omnigene
+	 * @throws RemoteException
+	 *             if thrown by Omnigene
+	 */
+   public JobInfo createPipeline(int taskId, String user_id, String parameter_info) throws OmnigeneException, RemoteException;
 
    
    /**
@@ -99,6 +118,15 @@ public interface AnalysisJobDataSource {
 	public int updateJob(int jobNo, int jobStatusID)
 			throws OmnigeneException, RemoteException;
 
+   /**
+   * Sets the parent of the given job number
+   * @param childJobNo the child job number
+   * @param parentJobNo the parent job number
+   * @throws OmnigeneException
+   * @throws RemoteException
+   */
+   public void setParent(int childJobNo, int parentJobNo)
+         throws OmnigeneException, RemoteException;
 	/**
 	 * Update job info with paramter infos and status
 	 * 
