@@ -191,7 +191,7 @@ public class AnalysisServiceDisplay extends JPanel {
 
       ParameterInfo[] params = taskInfo.getParameterInfoArray();
       JPanel parameterPanel = createJPanel();
-      parameterPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+      parameterPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
      
       if(params == null || params.length == 0) {
          parameterPanel.add(new JLabel(selectedService.getTaskInfo().getName() + " has no input parameters"));
