@@ -6,6 +6,8 @@
 		 org.genepattern.webservice.ParameterFormatConverter,
 		 org.genepattern.visualizer.RunVisualizerConstants,
 		 org.genepattern.util.GPConstants,
+		 java.util.Enumeration,
+		 java.util.Properties,
 		 java.io.File" 
    session="false" language="Java" %><%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -15,9 +17,22 @@
 	String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
 	if (userID == null) return; // come back after login
 
-	String name = request.getParameter(GPConstants.NAME);
+	// create a map of params and attributes in case this call was from a dispatch
+	Properties params = new Properties();
+	for (Enumeration enum = request.getParameterNames(); enum.hasMoreElements(); ){
+		String key = (String) enum.nextElement();
+		params.put(key, request.getParameter(key));
+	}
+	for (Enumeration enum = request.getAttributeNames(); enum.hasMoreElements(); ){
+		String key = (String) enum.nextElement();
+		params.put(key, (String)request.getAttribute(key));
+	}
+	System.out.println("Params+Attributes="+params);
+
+
+	String name = params.getProperty(GPConstants.NAME);
 	TaskInfo taskInfo = GenePatternAnalysisTask.getTaskInfo(name, userID);
-	String message = request.getParameter("message");
+	String message = params.getProperty("message");
    	if (message != null) {
 %>
 		<html>
@@ -80,16 +95,16 @@
 <%			continue;
 		}
 %>
-<param name="<%= GenePatternAnalysisTask.htmlEncode(paramName) %>" value="<%= GenePatternAnalysisTask.htmlEncode(request.getParameter(paramName)) %>">
+<param name="<%= GenePatternAnalysisTask.htmlEncode(paramName) %>" value="<%= GenePatternAnalysisTask.htmlEncode(params.getProperty(paramName)) %>">
 <%	} %>
 <param name="<%= RunVisualizerConstants.DOWNLOAD_FILES %>" value="<%
 	int numToDownload = 0;
 	for (i = 0; i < parameterInfoArray.length; i++) {
 		String paramName = parameterInfoArray[i].getName();
 		if (parameterInfoArray[i].isInputFile() && 
-		    (request.getParameter(paramName).startsWith("http:") ||
-		     request.getParameter(paramName).startsWith("https:") ||
-		     request.getParameter(paramName).startsWith("ftp:"))) {
+		    (params.getProperty(paramName).startsWith("http:") ||
+		     params.getProperty(paramName).startsWith("https:") ||
+		     params.getProperty(paramName).startsWith("ftp:"))) {
 			// note that this parameter is a URL that must be downloaded by adding it to the CSV list for the applet
 			if (numToDownload > 0) out.print(",");
 			out.print(GenePatternAnalysisTask.htmlEncode(parameterInfoArray[i].getName()));

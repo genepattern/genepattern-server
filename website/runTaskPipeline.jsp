@@ -2,6 +2,19 @@
 		 java.util.StringTokenizer,
 		 java.util.Enumeration,
 		 java.util.HashMap,
+		 java.io.File,
+		 java.util.Date,
+		 java.io.UnsupportedEncodingException,
+		 java.net.InetAddress,
+ 		 java.net.URLEncoder, 
+		 java.net.URLDecoder,
+ 		 java.text.SimpleDateFormat,
+		 java.util.Date,
+		 java.util.Enumeration, 
+		 java.util.GregorianCalendar,
+		 java.text.ParseException,
+		 java.text.DateFormat,
+		
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.webservice.ParameterFormatConverter,
@@ -9,6 +22,9 @@
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.webservice.OmnigeneException,
+		 org.genepattern.webservice.AnalysisWebServiceProxy,
+		 org.genepattern.webservice.TaskInfo,
+		 org.genepattern.webservice.JobInfo,
 		 com.jspsmart.upload.*,
 		 org.genepattern.data.pipeline.PipelineModel"
 	session="false" contentType="text/html" language="Java" %>
@@ -22,198 +38,284 @@ response.setDateHeader("Expires", 0);
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
 	<link href="favicon.ico" rel="shortcut icon">
-	<title>Running Pipeline</title>
+	<title>Running Task</title>
 </head>
 <body>
-	<jsp:include page="navbar.jsp"></jsp:include>
-
+	
+<jsp:include page="navbar.jsp"></jsp:include>
 
 <%
-//mySmartUpload.initialize(pageContext);
-//mySmartUpload.upload();
-
 com.jspsmart.upload.Request requestParameters = null;
+String userID = null;
 
-
-//requestParameters = (com.jspsmart.upload.Request)request.getAttribute("smartUpload");
-
-requestParameters = mySmartUpload.getRequest();
-String taskName = requestParameters.getParameter(GPConstants.NAME);
-
-if (taskName == null) {
-	requestParameters = mySmartUpload.getRequest();
-}
-taskName = requestParameters.getParameter(GPConstants.NAME);
-if (taskName == null) {
-	taskName = request.getParameter(GPConstants.NAME);
-}
-
-
-if (taskName == null)
-	taskName = requestParameters.getParameter(GPConstants.NAME);
-
-
-if (taskName == null || taskName.length() == 0) {
-	taskName = (String)request.getAttribute("name");
-}
-
-if (taskName == null || taskName.length() == 0) {
-	out.println("Must specify task name.");
-	return;
-}
-String username = requestParameters.getParameter(GPConstants.USERID);
-if (username == null || username.length() == 0) {
-	username = GenePatternAnalysisTask.getUserID(request, response);
-}
-boolean bNoEnvelope = (requestParameters.getParameter("noEnvelope") != null);
-
-int taskNum = 0;
-
-TaskInfo taskInfo = null;
-try { taskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, username); } catch (OmnigeneException oe) {}
-if (taskInfo == null) {
-%>
-	<script language="javascript">
-	alert('No such task <%= taskName %>');
-	</script>
-	No such task <%= taskName %><br>
-	
-		
-<%
-	return;
-}
-TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-if (tia.get(GPConstants.TASK_TYPE).equals(GPConstants.TASK_TYPE_VISUALIZER)) {
-%>
-	Sorry, visualizers cannot be run from the web client.<br>
-<%	 if (!bNoEnvelope) { %>
-		<jsp:include page="footer.jsp"></jsp:include>
-		</body>
-		</html>
-<% 	
-	} 
-	return;
-}
-
-ParameterInfo[] parameterInfoArray = null;
 try {
-        parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
-	if (parameterInfoArray == null) parameterInfoArray = new ParameterInfo[0];
-} catch (OmnigeneException oe) {
-} 
+	// mySmartUpload is from http://www.jspsmart.com/
+	// Initialization
+	mySmartUpload.initialize(pageContext);
+	mySmartUpload.upload();
+	requestParameters = mySmartUpload.getRequest();
+	userID = requestParameters.getParameter(GPConstants.USERID);
+	String RUN = "run";
+	String CLONE = "clone";
+	HashMap htFilenames = new HashMap();
 
+	String lsid = requestParameters.getParameter("taskLSID");
+	String taskName = requestParameters.getParameter("taskName");
+
+	boolean DEBUG = true; // (requestParameters.getParameter("debug") != null);
+
+	if (DEBUG) {
+		System.out.println("\n\nRUNTASKPIPELINE Request parameters:<br>");
+		for (java.util.Enumeration eNames = requestParameters.getParameterNames(); eNames.hasMoreElements(); ) {
+			String n = (String)eNames.nextElement();
+                        if (!("code".equals(n)))
+			System.out.println(n + "='" + GenePatternAnalysisTask.htmlEncode(requestParameters.getParameter(n)) + "'");
+		}
+	}
+	String tmpDirName = null;
+	if (mySmartUpload.getFiles().getCount() > 0) {
+
+		String attachmentDir = null;
+		File dir = null;
+		String attachmentName = null;
+
+		com.jspsmart.upload.File attachedFile = null;
+		for (int i=0;i<mySmartUpload.getFiles().getCount();i++){
+			attachedFile = mySmartUpload.getFiles().getFile(i);
+			if (attachedFile.isMissing()) continue;
+			try {
+				attachmentName = attachedFile.getFileName();
+				if (attachmentName.trim().length() == 0) continue;
+				String fieldName = attachedFile.getFieldName();
+				String fullName = attachedFile.getFilePathName();
+				if (DEBUG) System.out.println("makePipeline: " + fieldName + " -> " + fullName);
+				if (fullName.startsWith("http:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
+				// don't bother trying to save a file that is a URL, retrieve it at execution time instead
+					htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
+					continue;
+				}
+					
+				dir = new File(System.getProperty("java.io.tmpdir"));
+				// create a bogus dir under this for the input files
+				tmpDirName = taskName + "_" + userID + "_" + System.currentTimeMillis();			
+				dir = new File(dir, tmpDirName );
+				dir.mkdir();
+				attachmentName = dir.getPath() + File.separator + attachmentName;
+
+				File attachment = new File(attachmentName);
+				if (attachment.exists()) {
+					attachment.delete();
+				}
+						
+				attachedFile.saveAs(attachmentName);
+				htFilenames.put(fieldName, attachmentName ); // map between form field name and filesystem name
+				
+				if (DEBUG) System.out.println(fieldName + "=" + fullName + " (" + attachedFile.getSize() + " bytes) in " + htFilenames.get(fieldName) + "<br>");
+			} catch (SmartUploadException sue) {
+			    	throw new Exception("error saving " + attachmentName  + ": " + sue.getMessage());
+			}
+		}
+		
+	} // loop over files
+
+	// set up the call to the analysis engine
+ 	String server = "http://"+ InetAddress.getLocalHost().getCanonicalHostName() + ":"
+					+ System.getProperty("GENEPATTERN_PORT");
+
+	AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, userID);
+	TaskInfo task = GenePatternAnalysisTask.getTaskInfo(lsid, userID);
+
+	ParameterInfo[] parmInfos = task.getParameterInfoArray();
+	
+	for (int i=0; i < parmInfos.length; i++){
+		ParameterInfo pinfo = parmInfos[i];
+		String value;	
+		if (pinfo.isInputFile()){
+			value = (String)htFilenames.get(pinfo.getName());
+		} else {
+			value = requestParameters.getParameter(pinfo.getName());
+		}
+		pinfo.setValue(value);
+	}
+	JobInfo job = analysisProxy.submitJob(task.getID(), parmInfos);
+	String jobID = ""+job.getJobNumber();
+ 
 %>
+<script language="Javascript">
 
-<form name="pipeline" action="runPipeline.jsp" method="post" ENCTYPE="multipart/form-data">
+var pipelineStopped = false;
 
-	<input type="hidden" name="name" value="<%= taskName %>">
-	<input type="hidden" name="t<%= taskNum %>_taskName" value="<%= taskName %>">
-	<input type="hidden" name="pipeline_description" value="try running <%= taskName %>">
-	<input type="hidden" name="pipeline_author" value="<%= username %>">
-	<input type="hidden" name="<%= GPConstants.USERID %>" value="<%= username %>">
-	<input type="hidden" name="<%= GPConstants.PRIVACY %>" value="<%= GPConstants.PRIVATE %>">
-	<input type="hidden" name="<%= GPConstants.VERSION %>" value="">
-	<input type="hidden" name="<%= GPConstants.LANGUAGE %>" value="R">
-	<input type="hidden" name="taskName" value="<%= taskName %>">
-	<table cols="2" valign="top" width="100%">
-	<col align="right" width="10%"><col align="left" width="*">
-<% 	
-	int numParams = parameterInfoArray.length;
-//	if (taskName.endsWith("." + GPConstants.TASK_TYPE_PIPELINE)) numParams--; // skip server parameter	
-	if (numParams > 0) { %>
-		<tr><td valign="bottom" align="left" colspan="2"><nobr><b><%= taskName %> input parameters</b></td></tr>
-<%	} else { 
-
-		request.setAttribute("smartUpload", requestParameters);
-		request.setAttribute("name", taskName );
-		request.setAttribute("taskInfo", taskInfo );
-		request.setAttribute("skipFileUpload", "true");
-		request.getRequestDispatcher("runPipeline.jsp").forward(request, response);	
-		return;
+function stopPipeline(button) {
+	var really = confirm('Really stop the pipeline?');
+	if (!really) return;
+	window.open("runPipeline.jsp?cmd=stop&jobID=<%= job.getJobNumber() %>", "_blank", "height=100, width=100, directories=no, menubar=no, statusbar=no, resizable=no");
+	pipelineStopped = true;
+}
+function checkAll(frm, bChecked) {
+	frm = document.forms["results"];
+	for (i = 0; i < frm.elements.length; i++) {
+		if (frm.elements[i].type != "checkbox") continue;
+		frm.elements[i].checked = bChecked;
+	}
 }
 
+
+</script>
+
+
+<form name="frmstop">
+		<input name="cmd" type="button" value="stop..." onclick="stopPipeline(this)" class="little">
+		<input type="hidden" name="jobID" value="<%= job.getJobNumber()%>">
+</form>
+<form name="frmemail" method="POST" target="_blank" action="sendMail.jsp" onsubmit="javascript:return false;">
+		email notification to: <input name="to" class="little" size="70" value="" onkeydown="return suppressEnterKey(event)">
+		<input type="hidden" name="from" value="<%= GenePatternAnalysisTask.htmlEncode(userID) %>">
+		<input type="hidden" name="subject" value="<%= task.getName() %> results for job # <%= jobID %>">
+		<input type="hidden" name="message" value="<html><head><link href='stylesheet.css' rel='stylesheet' type='text/css'><script language='Javascript'>\nfunction checkAll(frm, bChecked) {\n\tfrm = document.forms['results'];\n\tfor (i = 0; i < frm.elements.length; i++) {\n\t\tif (frm.elements[i].type != 'checkbox') continue; \n\t\tfrm.elements[i].checked = bChecked;\n\t}\n}\n</script></head><body>">
+</form>
+
+<table width='100%' cellpadding='10'>
+<tr><td>
+Running <a href="addTask.jsp?view=1&name=<%=requestParameters.getParameter("taskName")%>"><%=requestParameters.getParameter("taskName")%></a> as job # <a href="getJobResults.jsp?jobID=<%=job.getJobNumber() %>"><%=job.getJobNumber() %></a> on <%=new Date()%> 
+				
+</tr></td>
+<tr><td>
+<%=requestParameters.getParameter("taskName")%> ( 
+<%
+for (int i=0; i < parmInfos.length; i++){
+		ParameterInfo pinfo = parmInfos[i];
+		String value = pinfo.getValue();	
+		out.println(pinfo.getName());
+		out.println("=");
+		if (pinfo.isInputFile()) {
+			String htmlValue = GenePatternAnalysisTask.htmlEncode(pinfo.getValue());		
+			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
+				out.println("<a href='"+ htmlValue + "'>"+htmlValue +"</a>");
+			} else {
+				out.println("<a href='getFile.jsp?task=&file="+ URLEncoder.encode(tmpDirName +"/" + value)+"'>"+htmlValue +"</a>");
 	
-	for (int param = 0; param < parameterInfoArray.length; param++) {
-		ParameterInfo pi = parameterInfoArray[param];
-//		if (pi.getName().equals("server") && taskName.endsWith("." + GPConstants.TASK_TYPE_PIPELINE)) continue; // skip server parameter
-		HashMap pia = pi.getAttributes();
-		String[] choices = null;
-		String[] stChoices = null;
-		String val = pi.getValue();
-		String defaultValue = (requestParameters.getParameter(pi.getName()) != null ? requestParameters.getParameter(pi.getName()) : (String)pia.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]));
-		if (defaultValue != null) defaultValue = defaultValue.trim();
-		String description = pi.getDescription();
-		stChoices = pi.getChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-%>
-		<tr><input type="hidden" name="t<%= taskNum %>_prompt_<%= param %>">
-		<td align="right" width="10%" valign="top"><nobr><%= pi.getName().replace('.',' ') %>:</nobr></td>
-		<td valign="top">
-<% 		if (pi.isInputFile()) { %>
-			<input	type="file" 
-				name="<%= pi.getName() %>" 
-				size="60" 
-				ondrop="this.form.t<%= taskNum %>_shadow<%= param %>.value=this.value;" 
-				class="little">
-			<br><input name="t<%= taskNum %>_shadow<%= param %>" 
-			 	   type="text" 
-				   value="<%= defaultValue %>"
-				   readonly 
-				   size="130" 
-				   tabindex="-1" 
-				   class="shadow" 
-				   style="{ border-style: none; font-style: italic; font-size=9pt; background-color: transparent }">
-<%
-			if (description.length() > 0 && !description.equals(pi.getName().replace('.',' '))) {
-				out.println("<br>" + GenePatternAnalysisTask.htmlEncode(description));
 			}
-		} else if (pi.isOutputFile()) {
-		} else if (stChoices.length < 2) { %>
-			<table align="left"><tr><td valign="top">
-		 	<input name="<%= pi.getName() %>" value="<%=  defaultValue %>">
-			</td><%
-			if (description.length() > 0) { %>
-				<td valign="top"><%= GenePatternAnalysisTask.htmlEncode(description) %></td>
-			<% } %>
-			</tr></table>
-<%		} else { %>
-			<table align="left"><tr><td valign="top">
-			<select name="<%= pi.getName() %>">
-<%
-			String display = null;
-			String option = null;
-			for (int iChoice = 0; iChoice < stChoices.length; iChoice++) {
-				String choice = stChoices[iChoice];
-				int c = choice.indexOf(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
-				if (c == -1) {
-					display = choice;
-					option = choice;
-				} else {
-					option = choice.substring(0, c);
-					display = choice.substring(c+1);
-				}
-				display = display.trim();
-				option = option.trim();
-%>			<option value="<%= option %>"<%= defaultValue.equals(option) || defaultValue.equals(display) ? " selected" : "" %>><%= display %></option>
-<%			} %>
-			</select>
-			</td>
-			<td valign="top"><%= GenePatternAnalysisTask.htmlEncode(description) %></td>
-			</tr></table>
-<%
+		} else {
+			out.println(GenePatternAnalysisTask.htmlEncode(pinfo.getValue()));
 		}
-		out.println("</td></tr>");
+		if (i != (parmInfos.length -1))out.println(", ");
 	}
 %>
-	<tr>	
-		<td></td>
-		<td><input type="submit" name="cmd" value="run"> <input type="button" value="help" onclick="window.open('getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= taskName %>', '_new')"></td>
-	</tr>
+)<br></td></tr>
 
-	</table>
-	</form>
+<form name="results" action="zipJobResults.jsp">
+<input type="hidden" name="name" value="<%=task.getName()%>" />
+<input type="hidden" name="jobID" value="<%=jobID%>" />
 
-	</center>
-	<jsp:include page="footer.jsp"></jsp:include>
-	</body>
-	</html>
+
+<%
+
+	String status = "started";
+	while (!(status.equalsIgnoreCase("ERROR") || (status
+				.equalsIgnoreCase("Finished")))) {
+		Thread.currentThread().sleep(500);
+		job = analysisProxy.checkStatus(job.getJobNumber());
+		status = job.getStatus();
+	}
+	
+
+	// after task completes
+	JobInfo jobInfo = job; 
+
+	ParameterInfo[] jobParams = jobInfo.getParameterInfoArray();
+	StringBuffer sbOut = new StringBuffer();
+
+	for (int j = 0; j < jobParams.length; j++) {
+		if (!jobParams[j].isOutputFile()) {
+			continue;
+		}
+		sbOut.setLength(0);
+		String fileName = new File("../../" + jobParams[j].getValue())
+			.getName();
+		sbOut.append("<tr><td><input type=\"checkbox\" value=\"");
+		sbOut.append("NAME" + "/" + fileName + "=" + jobInfo.getJobNumber()
+				+ "/" + fileName);
+		sbOut.append("\" name=\"dl\" ");
+		sbOut.append("checked><a target=\"_blank\" href=\"");
+			String outFileUrl = null;
+		try {
+			outFileUrl = "retrieveResults.jsp?job="
+					+ jobInfo.getJobNumber() + "&filename="
+					+ URLEncoder.encode(fileName, "utf-8");
+		} catch (UnsupportedEncodingException uee) {
+			outFileUrl = "retrieveResults.jsp?job="
+					+ jobInfo.getJobNumber() + "&filename=" + fileName;
+		}
+			sbOut.append(outFileUrl);
+		try {
+			fileName = URLDecoder.decode(fileName, "UTF-8");
+		} catch (UnsupportedEncodingException uee) {
+			// ignore
+		}
+		sbOut.append("\">" + GenePatternAnalysisTask.htmlEncode(fileName) + "</a></td></tr>");
+		out.println(sbOut.toString());
+	}
+	out.flush();
+
+	out.println("<tr><td><center><input type=\"submit\" name=\"download\" value=\"download selected results\">&nbsp;&nbsp;");
+	out.println("<a href=\"javascript:checkAll(this.form, true)\">check all</a> &nbsp;&nbsp;");
+	out.println("<a href=\"javascript:checkAll(this.form, false)\">uncheck all</a></center><br><center>");
+	out.println("<input type=\"submit\" name=\"delete\" value=\"delete selected results\"");
+	out.println(" onclick=\"return confirm(\'Really delete the selected files?\')\">");
+	out.println("</form></td></tr>");
+
+
+%>
+
+</table>
+<script language="Javascript">
+
+			document.frmstop.cmd.disabled = true;
+			document.frmstop.cmd.visibility = false;
+			var frm = document.frmemail;
+			frm.to.readonly = true; // no more edits as it is about to be used for addressing
+			var to = frm.to.value;
+			if (to != "") {
+				frm.message.value = frm.message.value + 'job <%=jobID%> completed';
+				frm.submit();
+			}
+		</script>
+<%
+		GregorianCalendar purgeTOD = new GregorianCalendar();
+		
+		try {
+                    
+			SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+			GregorianCalendar gcPurge = new GregorianCalendar();
+			gcPurge.setTime(dateFormat.parse(System.getProperty("purgeTime", "23:00")));
+			purgeTOD.set(GregorianCalendar.HOUR_OF_DAY, gcPurge.get(GregorianCalendar.HOUR_OF_DAY));
+			purgeTOD.set(GregorianCalendar.MINUTE, gcPurge.get(GregorianCalendar.MINUTE));
+		} catch (ParseException pe) {
+			purgeTOD.set(GregorianCalendar.HOUR_OF_DAY, 23);
+			purgeTOD.set(GregorianCalendar.MINUTE, 0);
+		}
+		purgeTOD.set(GregorianCalendar.SECOND, 0);
+		purgeTOD.set(GregorianCalendar.MILLISECOND, 0);
+		int purgeInterval;
+		try {
+			purgeInterval = Integer.parseInt(System.getProperty("purgeJobsAfter", "-1"));
+		} catch (NumberFormatException nfe) {
+			purgeInterval  = 7;
+		}
+		purgeTOD.add(GregorianCalendar.DATE, purgeInterval);
+		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+%>
+</center>
+<br>
+	These job results are scheduled to be purged from the server on <%= df.format(purgeTOD.getTime()).toLowerCase() %><br>
+
+<%
+} catch (Exception e){
+	e.printStackTrace();
+}
+%>
+<jsp:include page="footer.jsp"></jsp:include>
+
+</body>
+</html>
 

@@ -43,7 +43,6 @@ if (username == null || username.length() == 0) {
 }
 boolean bNoEnvelope = (request.getParameter("noEnvelope") != null);
 
-int taskNum = 0;
 TaskInfo taskInfo = null;
 try { taskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, username); } catch (OmnigeneException oe) {}
 
@@ -99,29 +98,28 @@ if (taskName != null) {
  	}
 }
 
+String taskType = tia.get("taskType");
+boolean isVisualizer = "visualizer".equalsIgnoreCase(taskType);
+
+String formAction = "runTaskPipeline.jsp";
+if (isVisualizer){
+	System.out.println("\n\nVIZ");
+	formAction = "preRunVisualizer.jsp";
+}
 
 %>
 </table>
 
-	<form name="pipeline" action="makePipeline.jsp" method="post" ENCTYPE="multipart/form-data">
-	<input type="hidden" name="pipeline_name" value="try.<%= taskName %>">
-	<input type="hidden" name="t<%= taskNum %>_taskName" value="<%= taskName %>">
-	<input type="hidden" name="t<%= taskNum %>_taskLSID" value="<%= tia.get(GPConstants.LSID) %>">
-	<input type="hidden" name="pipeline_description" value="try running <%= taskName %>">
-	<input type="hidden" name="pipeline_author" value="<%= username %>">
-	<input type="hidden" name="<%= GPConstants.USERID %>" value="<%= username %>">
-	<input type="hidden" name="<%= GPConstants.PRIVACY %>" value="<%= GPConstants.PRIVATE %>">
-	<input type="hidden" name="<%= GPConstants.VERSION %>" value="">
-	<input type="hidden" name="<%= GPConstants.LANGUAGE %>" value="R">
+	<form name="pipeline" action="<%=formAction%>" method="post" ENCTYPE="multipart/form-data">
 	<input type="hidden" name="taskName" value="<%= taskName %>">
-	<input type="hidden" name="<%= GPConstants.LSID %>" value="">
+	<input type="hidden" name="taskLSID" value="<%= tia.get(GPConstants.LSID) %>">
+	<input type="hidden" name="<%= GPConstants.USERID %>" value="<%= username %>">
+	<input type="hidden" name="taskName" value="<%= taskName %>">
 	<table cols="2" valign="top" width="100%">
 	<col align="right" width="10%"><col align="left" width="*">
 
 <%	
 	int numParams = parameterInfoArray.length;
-//	if (taskName.endsWith("." + GPConstants.TASK_TYPE_PIPELINE)) numParams--; // skip server parameter	
-
 
 	if (numParams > 0) { %>
 		<tr><td align='left' colspan='2'><b>&nbsp;&nbsp;</b></td><td></td></tr>
@@ -130,8 +128,7 @@ if (taskName != null) {
 <%	} %>
 			<% 	
 
-	String prefix = taskName + (taskNum+1) + ".";
-        prefix="t0_";
+	String prefix = "";
 	for (int param = 0; param < parameterInfoArray.length; param++) {
 out.flush();
 		ParameterInfo pi = parameterInfoArray[param];
@@ -145,18 +142,17 @@ out.flush();
 		String description = pi.getDescription();
 %>
 		<tr>
-                    <input type="hidden" name="t<%= taskNum %>_AAApromptAAA_<%= param %>">
-		<td align="right" width="10%" valign="top"><nobr><%= pi.getName().replace('.',' ') %>:</nobr></td>
+     		<td align="right" width="10%" valign="top"><nobr><%= pi.getName().replace('.',' ') %>:</nobr></td>
 		<td valign="top">
 <% 		if (pi.isInputFile()) { %>
 			<input	type="file" 
-				name="t<%= taskNum %>_<%= pi.getName() %>" 
+				name="<%= pi.getName() %>" 
 				size="60" 
-				onchange="this.form.t<%= taskNum %>_shadow<%= param %>.value=this.value;" 
-				onblur="javascript:if (this.value.length > 0) { this.form.t<%= taskNum %>_shadow<%= param %>.value=this.value; }" 
-				ondrop="this.form.t<%= taskNum %>_shadow<%= param %>.value=this.value;" 
+				onchange="this.form.shadow<%= param %>.value=this.value;" 
+				onblur="javascript:if (this.value.length > 0) { this.form.shadow<%= param %>.value=this.value; }" 
+				ondrop="this.form.shadow<%= param %>.value=this.value;" 
 				class="little">
-			<br><input name="t<%= taskNum %>_shadow<%= param %>" 
+			<br><input name="shadow<%= param %>" 
 			 	   type="text" 
 				   value="<%= defaultValue == null ? "" : defaultValue %>"
 				   readonly 
@@ -171,7 +167,7 @@ out.flush();
 		} else if (pi.isOutputFile()) {
 		} else if (stChoices.length < 2) { %>
 			<table align="left"><tr><td valign="top">
-			<input name="t<%= taskNum %>_<%= pi.getName() %>" value="<%=  defaultValue %>">
+			<input name="<%= pi.getName() %>" value="<%=  defaultValue %>">
 			</td><%
 			if (description.length() > 0) { %>
 				<td valign="top"><%= GenePatternAnalysisTask.htmlEncode(description) %></td>
@@ -179,7 +175,7 @@ out.flush();
 			</tr></table>
 <%		} else { %>
 			<table align="left"><tr><td valign="top">
-			<select name="t<%= taskNum %>_<%= pi.getName() %>">
+			<select name="<%= pi.getName() %>">
 <%
 			String display = null;
 			String option = null;
