@@ -27,14 +27,14 @@ import edu.mit.broad.gp.core.ServiceManager;
 import edu.mit.broad.gp.gpge.JobSubmissionRegistry;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import edu.mit.genome.gp.ui.analysis.AnalysisJob;
-import edu.mit.genome.gp.ui.analysis.AnalysisService;
-import edu.mit.genome.gp.ui.analysis.RequestHandler;
-import edu.mit.wi.omnigene.framework.analysis.JobInfo;
-import edu.mit.wi.omnigene.framework.analysis.ParameterInfo;
-import edu.mit.wi.omnigene.framework.analysis.TaskInfo;
-import edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask;
-import edu.mit.genome.util.GPConstants;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.RequestHandler;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.util.GPConstants;
+
 
 /**
  * @author genepattern
@@ -477,7 +477,7 @@ public class SubmitAnalysisAction {
                         .getTaskInfo()
                         .getTaskInfoAttributes()
                         .get(
-                                edu.mit.wi.omnigene.service.analysis.genepattern.GPConstants.TASK_TYPE));
+                                GPConstants.TASK_TYPE));
 
     }
 
@@ -493,8 +493,8 @@ public class SubmitAnalysisAction {
             paramName2ValueMap.put(params[i].getName(), params[i].getValue());
         }
         try {
-            new EclipseLocalTaskExecutor(shell, taskInfo, paramName2ValueMap,
-                    gpURL).exec();
+            new EclipseLocalTaskExecutor(shell, taskInfo, paramName2ValueMap, "username",
+                    gpURL.toString()).exec();
         } catch (Exception e1) {
             e1.printStackTrace();
         }

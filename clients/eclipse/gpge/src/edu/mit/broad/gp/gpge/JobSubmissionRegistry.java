@@ -12,8 +12,8 @@ import java.util.Iterator;
 import edu.mit.broad.gp.core.GPGECorePlugin;
 import edu.mit.broad.gp.core.ServiceManager;
 import edu.mit.broad.gp.gpge.job.JobEventListener;
-import edu.mit.genome.gp.ui.analysis.AnalysisJob;
-import edu.mit.wi.omnigene.framework.analysis.JobInfo;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.JobInfo;
 
 /**
  * @author genepattern

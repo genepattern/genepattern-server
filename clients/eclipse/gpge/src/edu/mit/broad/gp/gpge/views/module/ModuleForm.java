@@ -34,11 +34,10 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 
 import edu.mit.broad.gp.core.ServiceManager;
 import edu.mit.broad.gp.gpge.util.BrowserLauncher;
-import edu.mit.genome.gp.ui.analysis.AnalysisService;
-import edu.mit.wi.omnigene.framework.analysis.ParameterInfo;
-import edu.mit.wi.omnigene.framework.analysis.TaskInfo;
-import edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask;
-import edu.mit.genome.util.GPConstants;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.util.GPConstants;
 
 
 /**

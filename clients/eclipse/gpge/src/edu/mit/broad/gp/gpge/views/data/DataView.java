@@ -69,10 +69,9 @@ import edu.mit.broad.gp.gpge.views.data.nodes.ServerNode;
 import edu.mit.broad.gp.gpge.views.data.nodes.SubDirNode;
 import edu.mit.broad.gp.gpge.views.data.nodes.TreeNode;
 import edu.mit.broad.gp.gpge.views.module.ModuleFormView;
-import edu.mit.genome.gp.ui.analysis.AnalysisJob;
-import edu.mit.wi.omnigene.framework.analysis.ParameterInfo;
-import edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask;
-import edu.mit.genome.util.GPConstants;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.util.GPConstants;
 
 /**
  *  * This sample class demonstrates how to plug-in a new workbench view. The view

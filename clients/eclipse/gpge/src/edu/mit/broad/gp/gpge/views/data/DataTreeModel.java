@@ -12,6 +12,7 @@ import edu.mit.broad.gp.gpge.views.data.nodes.JobResultNode;
 import edu.mit.broad.gp.gpge.views.data.nodes.ProjectDirNode;
 import edu.mit.broad.gp.gpge.views.data.nodes.ServerNode;
 import edu.mit.broad.gp.gpge.views.data.nodes.TreeNode;
+import org.genepattern.webservice.AnalysisJob;
 
 public class DataTreeModel {
     DummyNode root = new DummyNode();
@@ -50,7 +51,7 @@ public class DataTreeModel {
     }
 
 public void addJob(String taskName,
-            edu.mit.genome.gp.ui.analysis.AnalysisJob job) {
+		AnalysisJob job) {
         JobResultNode jrn = new JobResultNode(taskName, job);
         ServerNode serverNode = this.getServerNode(job.getSiteName());
         // root.addServerNode(serverNode);

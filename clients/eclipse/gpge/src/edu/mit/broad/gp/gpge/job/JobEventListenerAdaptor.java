@@ -6,8 +6,8 @@
  */
 package edu.mit.broad.gp.gpge.job;
 
-import edu.mit.genome.gp.ui.analysis.AnalysisJob;
-import edu.mit.wi.omnigene.framework.analysis.JobInfo;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.JobInfo;
 
 /**
  * @author genepattern

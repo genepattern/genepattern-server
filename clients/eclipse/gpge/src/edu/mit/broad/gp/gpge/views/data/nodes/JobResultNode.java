@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import edu.mit.genome.gp.ui.analysis.AnalysisJob;
-import edu.mit.wi.omnigene.framework.analysis.ParameterInfo;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.ParameterInfo;
 
 public class JobResultNode implements TreeNode, Comparable {
     String server;
@@ -57,7 +57,7 @@ public class JobResultNode implements TreeNode, Comparable {
         }
         
     }
-    public JobResultNode(String taskName, edu.mit.genome.gp.ui.analysis.AnalysisJob job) { // TreeNode parent) {
+    public JobResultNode(String taskName, AnalysisJob job) { // TreeNode parent) {
         this.job = job;
         //this.parent = parent;
         ArrayList jobParameters = new ArrayList();

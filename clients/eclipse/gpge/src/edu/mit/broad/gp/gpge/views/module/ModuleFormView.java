@@ -71,14 +71,13 @@ import edu.mit.broad.gp.gpge.RcpWorkbenchAdvisor;
 import edu.mit.broad.gp.gpge.job.JobEventListenerAdaptor;
 import edu.mit.broad.gp.gpge.util.BrowserLauncher;
 import org.genepattern.data.pipeline.PipelineModel;
-import edu.mit.genome.gp.ui.analysis.AnalysisService;
-import edu.mit.wi.omnigene.framework.analysis.JobInfo;
-import edu.mit.wi.omnigene.framework.analysis.TaskInfo;
-import edu.mit.wi.omnigene.framework.webservice.WebServiceErrorMessageException;
-import edu.mit.wi.omnigene.framework.webservice.WebServiceException;
-import edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask;
-import edu.mit.wi.omnigene.util.OmnigeneException;
-import edu.mit.genome.util.GPConstants;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceErrorMessageException;
+import org.genepattern.webservice.WebServiceException;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.util.GPConstants;
 
 /**
  * This sample class demonstrates how to plug-in a new workbench view. The view
@@ -574,7 +573,7 @@ public class ModuleFormView extends ViewPart {
                                     try {
                                         serviceManager.getTaskIntegratorProxy().importZip(new File(s), GPConstants.ACCESS_PUBLIC);     
                                         showStatus("Imported " + task);
-                                    } catch(WebServiceErrorMessageException e) {
+                                    } catch(WebServiceException e) {
                                         showError(null, e.getErrors());
                                     } catch (WebServiceException e1) {
                                         showError(null, e1.getMessage());

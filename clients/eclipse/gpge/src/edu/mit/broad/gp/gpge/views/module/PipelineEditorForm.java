@@ -41,14 +41,13 @@ import org.eclipse.ui.forms.widgets.Section;
 import edu.mit.broad.gp.core.ServiceManager;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import edu.mit.genome.gp.ui.analysis.AnalysisService;
-import edu.mit.wi.omnigene.framework.analysis.ParameterFormatConverter;
-import edu.mit.wi.omnigene.framework.analysis.ParameterInfo;
-import edu.mit.wi.omnigene.framework.analysis.TaskInfo;
-import edu.mit.wi.omnigene.framework.webservice.WebServiceException;
-import edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask;
-import edu.mit.wi.omnigene.util.OmnigeneException;
-import edu.mit.genome.util.GPConstants;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.ParameterFormatConverter;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.util.GPConstants;
 
 /**
  * @author jgould
