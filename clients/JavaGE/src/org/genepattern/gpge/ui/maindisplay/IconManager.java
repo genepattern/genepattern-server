@@ -17,7 +17,9 @@ public class IconManager {
    public final static String REMOVE_ICON = "remove.gif";
    public final static String TEXT_ICON = "text.gif";
    public final static String ERROR_ICON = "error.gif";
-
+   public final static String SEND_TO_ICON = "send_to.gif";
+   
+   
    private IconManager() { }
 
 

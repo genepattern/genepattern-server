@@ -663,6 +663,7 @@ public class MainFrame extends JFrame {
 		serverFilePopupMenu.add(saveServerFileMenu);
 
 		final JMenu serverFileSendToMenu = new JMenu("Send To");
+      serverFileSendToMenu.setIcon(IconManager.loadIcon(IconManager.SEND_TO_ICON));
 		serverFilePopupMenu.add(serverFileSendToMenu);
 
       JMenuItem deleteFileMenuItem = new JMenuItem("Delete File", IconManager.loadIcon(IconManager.DELETE_ICON));
@@ -791,6 +792,7 @@ public class MainFrame extends JFrame {
 		projectDirTree = new SortableTreeTable(projectDirModel, false);
 		projectFilePopupMenu = new JPopupMenu();
 		final JMenu projectFileSendToMenu = new JMenu("Send To");
+      projectFileSendToMenu.setIcon(IconManager.loadIcon(IconManager.SEND_TO_ICON));
 		projectFilePopupMenu.add(projectFileSendToMenu);
 
       JMenu projectFileOpenWithMenu = new JMenu("Open With");
