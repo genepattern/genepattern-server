@@ -110,7 +110,9 @@ function refillField(obj) {
  }
 
 function changeFields(obj){
-	obj.form.submit.disabled=(obj.form.allowed_clients.value == "<%=allowedClients%>")  
+	var ac = "<%=allowedClients%>";
+	if (ac = "undefined") ac = "";
+	obj.form.submit.disabled=(obj.form.allowed_clients.value == ac)  
 }
 
 function changeProxyFields(obj){
@@ -183,7 +185,7 @@ onclick="clearField(this);"> Any Computer <br>
 <%
 if (!(ANY.equals(allowedClients) || LOCAL.equals(allowedClients)) ) out.print(" checked='true' ");
 %>
-onclick="refillField(this);"> These Domains <br>
+onclick="refillField(this);"> These Domains (comma delimited list)<br>
 		
 
 
