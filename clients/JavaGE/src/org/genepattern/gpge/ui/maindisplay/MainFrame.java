@@ -352,7 +352,7 @@ public class MainFrame extends JFrame {
       Thread messageThread = new Thread() {
 			public void run() {
             if(isLocalHost) {
-                messageLabel.setText("Retrieving modules and jobs from local GenePattern server");
+                messageLabel.setText("Retrieving modules and jobs from local GenePattern server...");
             } else {
                messageLabel.setText("Retrieving modules and jobs from " + server + "...");
             }
@@ -386,7 +386,7 @@ public class MainFrame extends JFrame {
             Thread changeStatusThread = new Thread() {
                public void run() {
                   if(isLocalHost) {
-                     messageLabel.setText("Server: Running Locally   Username: "
+                     messageLabel.setText("Server: Local   Username: "
                         + username);
                   } else {
                      messageLabel.setText("Server: " + server + "   Username: "
