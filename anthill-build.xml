@@ -12,8 +12,8 @@
 
 	
 	<target name="loadModules" depends="">
-		<ant antfile="build.xml" dir="nightly_build" target="compile"/>
-		<ant antfile="build.xml" dir="nightly_build" target="uploadModulesFromDir"/>
+		<ant antfile="build.xml" dir="build_tools/ZipUpload" target="compile"/>
+		<ant antfile="build.xml" dir="build_tools/ZipUpload" target="uploadModulesFromDir"/>
 	</target>
 
 
