@@ -80,6 +80,7 @@ public class RunTask {
 					try {
 						fileOrUrl = f.getCanonicalPath();
 					} catch (IOException e1) {
+                  e1.printStackTrace();
 						GenePattern.showErrorDialog("An error occurred while running " + analysisService.getTaskInfo().getName());
                   return;
 					}
@@ -117,15 +118,7 @@ public class RunTask {
 		// return;
 		// }
 		String server = analysisService.getServer();
-		AnalysisWebServiceProxy _serviceProxy = null;
-		try {
-			_serviceProxy = new AnalysisWebServiceProxy(server, username);
-		} catch (WebServiceException wse) {
-         GenePattern.disconnectedFromServer(wse, server);
-         return;
-		}
-		final AnalysisWebServiceProxy serviceProxy = _serviceProxy;
-
+		
 		if (directoryInputs.size() > 0) {
 			ParameterInfo directoryParam = (ParameterInfo) directoryInputs
 					.get(0);
@@ -138,34 +131,47 @@ public class RunTask {
 			});
 
 			for (int j = 0, length = files.length; j < length; j++) {
-				
             try {
                directoryParam.getAttributes().put(
                   GPConstants.PARAM_INFO_CLIENT_FILENAME[0],
                   files[j].getCanonicalPath());
                directoryParam.setValue(files[j].getCanonicalPath());
             } catch(IOException ioe) {
+               ioe.printStackTrace();
                GenePattern.showErrorDialog("An error occurred while running " + analysisService.getTaskInfo().getName());
                return;
             }
-            
+            try {
+               AnalysisWebServiceProxy serviceProxy = new AnalysisWebServiceProxy(server, username);
+               if (TaskLauncher.isVisualizer(analysisService)) {
+                  TaskLauncher.submitVisualizer(analysisService,
+                        actualParams, username, serviceProxy);
+               } else {
+                  TaskLauncher.submitAndWaitUntilCompletionInNewThread(
+                        actualParams, serviceProxy, analysisService);
+               }
+            } catch (WebServiceException wse) {
+               if(!GenePattern.disconnectedFromServer(wse, server)) {
+                  GenePattern.showErrorDialog("An error occurred while running " +  analysisService.getTaskInfo().getName()); 
+               }
+               return;
+            }
+			}
+		} else {
+         try {
+            AnalysisWebServiceProxy serviceProxy = new AnalysisWebServiceProxy(server, username);
             if (TaskLauncher.isVisualizer(analysisService)) {
                TaskLauncher.submitVisualizer(analysisService,
                      actualParams, username, serviceProxy);
             } else {
                TaskLauncher.submitAndWaitUntilCompletionInNewThread(
                      actualParams, serviceProxy, analysisService);
-
             }
-			}
-		} else {
-		
-         if (TaskLauncher.isVisualizer(analysisService)) {
-            TaskLauncher.submitVisualizer(analysisService,
-                  actualParams, username, serviceProxy);
-         } else {
-            TaskLauncher.submitAndWaitUntilCompletionInNewThread(
-                  actualParams, serviceProxy, analysisService);
+         } catch (WebServiceException wse) {
+            if(!GenePattern.disconnectedFromServer(wse, server)) {
+               GenePattern.showErrorDialog("An error occurred while running " +  analysisService.getTaskInfo().getName()); 
+            }
+            return;
          }
 			
 		}
