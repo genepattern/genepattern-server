@@ -286,7 +286,32 @@ public class Analysis extends GenericWebService
                                 
         return list;
     }
-
+   
+    
+    /**
+    *
+    * Deletes the given output files for the given job
+    *
+    * @param jobId the job id
+    * @param fileNames the file names to delete
+    */
+    public void deleteJobOutputFiles(int jobId, String[] fileNames) {
+       String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String.valueOf(jobId));
+       if (fileNames != null) {
+			for (int j = 0; j < fileNames.length; j++) {
+				String name = fileNames[j];
+				new File(jobDir, name).delete();
+            try {
+                org.genepattern.server.indexer.Indexer.deleteJobFile(jobId, name);
+            } catch (IOException ioe) {
+               // ignore Lucene Lock obtain timed out exceptions
+               _cat.debug(ioe + " while deleting search indices for job " + jobId);
+            }
+				
+			}
+		}
+    }
+    
 
     /**
      * Returns the username trying to access this service.  The username is retrieved

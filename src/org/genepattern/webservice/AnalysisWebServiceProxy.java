@@ -324,7 +324,20 @@ public class AnalysisWebServiceProxy
         return filenames;
     }
 
-
+    public void deleteJobOutputFiles(int jobId, String[] fileNames) throws WebServiceException {
+        call.setOperationName(new QName("Analysis","deleteJobOutputFiles") );
+        call.removeAllParameters();
+        //call.addParameter("jobid", XMLType.XSD_INT , ParameterMode.IN );
+        try {
+    	   call.invoke(new Object[] { new Integer(jobId), fileNames});
+    	    
+    	}
+    	catch (java.rmi.RemoteException re) {
+    	    throw new WebServiceException(re.getMessage());
+    	}
+    }
+    
+   
     /**
      * Pings the service to see if it's alive.
      */
