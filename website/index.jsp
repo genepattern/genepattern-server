@@ -240,7 +240,7 @@ You may select and install modules from the <a href="taskCatalog.jsp">Broad webs
 		</tr>
 		<tr>
 			<td valign="top" align="center">
-				<input type="button" value="run" name="runpipeline" class="button" onclick="jmp(this, 'runPipeline.jsp?cmd=run&name=', document.forms['index'].pipeline, document.forms['index'].pipelineVersion)">
+				<input type="button" value="run" name="runpipeline" class="button" onclick="jmp(this, 'runTask.jsp?cmd=run&name=', document.forms['index'].pipeline, document.forms['index'].pipelineVersion)">
 				<input type="button" value="view" name="viewpipeline" class="button" onclick="jmp(this, 'viewPipeline.jsp?name=', document.forms['index'].pipeline, document.forms['index'].pipelineVersion)">
 				<input type="button" value="edit" name="editpipeline" class="button" onclick="jmp(this, 'pipelineDesigner.jsp?name=', document.forms['index'].pipeline, document.forms['index'].pipelineVersion)">
 				<input type="button" value="export" name="exportpipeline" class="button" onclick="exportPipeline(this)">

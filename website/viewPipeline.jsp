@@ -137,7 +137,7 @@ if(showEdit) {
 out.println("  <input type=\"button\" value=\"clone...\" name=\"clone\"       class=\"little\" onclick=\"cloneTask('"+displayName+"', '" + pipelineName + "', '" + userID + "')\"; />");
 
 if (! RunPipelineForJsp.isMissingTasks(model, userID)){
-	out.println("  <input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runPipeline.jsp?cmd=run&name="+pipelineName + "')\"; />");
+	out.println("  <input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runTask.jsp?cmd=run&name="+pipelineName + "')\"; />");
 }				
 //XXXXXXXXXXXXX
 String descrip = task.getDescription();
@@ -348,7 +348,7 @@ out.println("<table cellspacing='0' width='100%' frame='box'>");
 }out.println("<table cellspacing='0' width='100%' frame='box'>");
 if (! RunPipelineForJsp.isMissingTasks(model, userID)){
 
-out.println("<table width='100%'><tr><td align='center'><input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runPipeline.jsp?cmd=run&name="+pipelineName + "')\"; /></td></tr></table>");
+out.println("<table width='100%'><tr><td align='center'><input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runTask.jsp?cmd=run&name="+pipelineName + "')\"; /></td></tr></table>");
 }
 
 %>

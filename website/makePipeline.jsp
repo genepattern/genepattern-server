@@ -556,7 +556,7 @@ try {
 			out.println("<script language=\"Javascript\">window.close();</script>");
 		}
 
-		out.println("<form action=\"runPipeline.jsp\" method=\"post\">");
+		out.println("<form action=\"runTask.jsp\" method=\"post\">");
 		out.println("<input type=\"hidden\" name=\"" + GPConstants.NAME + "\" value=\"" + lsid + "\">");
 		out.println("<br><br><center><input type=\"submit\" value=\"run\" name=\"cmd\">&nbsp;&nbsp;");
 		//out.println("<input type=\"submit\" value=\"edit pipeline code\" name=\"cmd\">");
