@@ -644,7 +644,13 @@ public class MainFrame extends JFrame {
 			}
 		});      
       jobPopupMenu.add(terminateJobMenuItem);
-
+      
+      final JMenu serverFileSendToMenu = new JMenu("Send To");
+      serverFileSendToMenu.setEnabled(false);
+      serverFileSendToMenu.setIcon(IconManager.loadIcon(IconManager.SEND_TO_ICON));
+		serverFilePopupMenu.add(serverFileSendToMenu);
+      
+      
 		final JMenu saveServerFileMenu = new JMenu("Save To");
 		JMenuItem saveToFileSystemMenuItem = new JMenuItem("Other...", IconManager.loadIcon(IconManager.SAVE_AS_ICON));
 		saveToFileSystemMenuItem.addActionListener(new ActionListener() {
@@ -699,11 +705,7 @@ public class MainFrame extends JFrame {
 		saveServerFileMenu.add(saveToFileSystemMenuItem);
 		serverFilePopupMenu.add(saveServerFileMenu);
 
-		final JMenu serverFileSendToMenu = new JMenu("Send To");
-      serverFileSendToMenu.setEnabled(false);
-      
-      serverFileSendToMenu.setIcon(IconManager.loadIcon(IconManager.SEND_TO_ICON));
-		serverFilePopupMenu.add(serverFileSendToMenu);
+		
 
       JMenuItem deleteFileMenuItem = new JMenuItem("Delete File", IconManager.loadIcon(IconManager.DELETE_ICON));
 		serverFilePopupMenu.add(deleteFileMenuItem);
@@ -1157,6 +1159,9 @@ public class MainFrame extends JFrame {
       menuBar.add(helpMenu);
 		
 		setJMenuBar(menuBar);
+      if(RUNNING_ON_MAC) {
+         macos.MacOSMenuHelper.registerHandlers();  
+      }
 	}
 
    class HistoryMenu extends JMenu {
@@ -1317,13 +1322,15 @@ public class MainFrame extends JFrame {
 		public HelpMenu() {
 			super("Help");
 
-         JMenuItem aboutMenuItem = new JMenuItem("About");
-			add(aboutMenuItem);
-         aboutMenuItem.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					GenePattern.showAbout();
-				}
-			});
+         if(!RUNNING_ON_MAC) {
+            JMenuItem aboutMenuItem = new JMenuItem("About");
+            add(aboutMenuItem);
+            aboutMenuItem.addActionListener(new ActionListener() {
+               public void actionPerformed(ActionEvent e) {
+                  GenePattern.showAbout();
+               }
+            });
+         }
 
 			JMenuItem moduleColorKeyMenuItem = new JMenuItem("Module Color Key");
 			add(moduleColorKeyMenuItem);
@@ -1504,14 +1511,18 @@ public class MainFrame extends JFrame {
 			refreshJobsMenuItem.setEnabled(false);
 			refreshMenu.add(refreshJobsMenuItem);
 
-			AbstractAction quitAction = new javax.swing.AbstractAction("Quit") {
+			JMenuItem quitMenuItem = new JMenuItem("Quit");
+         quitMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					System.exit(0);
 				}
-			};
-			quitAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(
-					'Q', MENU_SHORTCUT_KEY_MASK));
-			add(quitAction);
+			});
+         quitMenuItem.setAccelerator(KeyStroke.getKeyStroke('Q',
+					MENU_SHORTCUT_KEY_MASK));
+
+         if(!RUNNING_ON_MAC) {
+            add(quitMenuItem);
+         }
 
 		}
 	}
