@@ -344,22 +344,25 @@ public class RunPipeline {
 
 		// try semantic match on output files first
 
-		// TODO: Nada's file analyzer gets integrated here.
 		// For now, just match on filename extension
 	 	String [] fileFormats = fileStr.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-      semantic_search_loop:
-         for (j = 0; j < jobParams.length; j++) {
-            if (jobParams[j].isOutputFile()) {
-               fn = jobParams[j].getValue(); // get the filename
-               for (int ff = 0; ff < fileFormats.length; ff++) {
-                  if (fn.endsWith("." + fileFormats[ff])) {
-                     // if there's match with the extension, then we've found it (for now)
-                     fileName = fn;
-                     break semantic_search_loop;
-                  }
-               }
-            }
-         }
+semantic_search_loop:
+		for (j = 0; j < jobParams.length; j++) {
+			if (jobParams[j].isOutputFile()) {
+				fn = jobParams[j].getValue(); // get the filename
+				for (int ff = 0; ff < fileFormats.length; ff++) {
+					if (isFileType(fn, fileFormats[ff])) {
+						fileName = fn;
+						break semantic_search_loop;
+					}
+					if (fn.endsWith("." + fileFormats[ff])) {
+						// if there's match with the extension, then we've found it (for now)
+						fileName = fn;
+						break semantic_search_loop;
+					}
+				}
+			}
+		}
 
 		if (fileName == null) {
 			// no match on extension, try assuming that it is an integer number (1..5)
@@ -400,6 +403,11 @@ public class RunPipeline {
 			throw new FileNotFoundException("Unable to find output files from job " + job.getJobNumber() + " that match " + fileStr);
 		}
 		return fileName;
+	}
+
+	// TODO: Nada's file analyzer gets integrated here.
+	public static boolean isFileType(String filename, String fileFormat) {
+		return false;
 	}
 
 	/**
