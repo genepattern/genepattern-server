@@ -38,7 +38,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 	RootNode root = new RootNode();
    
-   private Comparator comparator = new TaskNameComparator(true);
+   private Comparator comparator = new TaskNameComparator(false);
    private int sortColumn = 0;
    
 	private JobModel() {
@@ -59,7 +59,6 @@ public class JobModel extends AbstractSortableTreeTableModel {
       int index2 = fileName.lastIndexOf('\\');
       int index = (index1 > index2 ? index1 : index2);
       if (index != -1) {
-         
          fileName = fileName.substring(index + 1, fileName
 								.length());
          
@@ -438,14 +437,27 @@ public class JobModel extends AbstractSortableTreeTableModel {
 	 */
 	public static class ServerFileNode extends DefaultMutableTreeNode implements
 			Comparable {
+      /** The name of this output file */
 		public final String name;
+      
+      /** The string for this node to display. Equals the <tt>name</tt> when the output file was not produced by a child job */
+      private final String displayString;
 
+      /** The index in the <tt>ParameterInfo</tt> array of this job result file */
 		public final int index;
 
-		public ServerFileNode(String name, int index) {
+		public ServerFileNode(String displayString, String name, int index) {
+         this.displayString = displayString;
 			this.name = name;
 			this.index = index;
 		}
+      
+      public String getParameterValue() {
+          JobNode parent = (JobNode) getParent();
+          return parent.job.getJobInfo().getParameterInfoArray()[index]
+            .getValue();
+      }
+
       
       /**
 		 * Returns the url to download the file from
@@ -477,20 +489,14 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		}
 
 		public String toString() {
-			return name;
+			return displayString;
 		}
 
 		public int compareTo(Object other) {
 			ServerFileNode node = (ServerFileNode) other;
 			return this.name.compareTo(node.name);
 		}
-
-		public String getServerName() {
-			JobNode parent = (JobNode) getParent();
-			return parent.job.getJobInfo().getParameterInfoArray()[index]
-					.getValue();
-		}
-
+      
 		public boolean getAllowsChildren() {
 			return false;
 		}
@@ -530,17 +536,25 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			int count = 0;
 			ParameterInfo[] jobParameterInfo = job.getJobInfo()
 					.getParameterInfoArray();
+         int jobNumber = job.getJobInfo().getJobNumber();
 			for (int j = 0; j < jobParameterInfo.length; j++) {
 				if (jobParameterInfo[j].isOutputFile()) {
+               int paramJobNumber = jobNumber;
 					String fileName = jobParameterInfo[j].getValue();
 					int index1 = fileName.lastIndexOf('/');
 					int index2 = fileName.lastIndexOf('\\');
 					int index = (index1 > index2 ? index1 : index2);
 					if (index != -1) {
+                  paramJobNumber = Integer.parseInt(fileName.substring(0, index));
 						fileName = fileName.substring(index + 1, fileName
 								.length());
+                  
 					}
-					add(new ServerFileNode(fileName, j));
+               String displayString = fileName;
+              // if(paramJobNumber != jobNumber) {
+               //   displayString = jobParameterInfo[j].getValue(); will prefix fileName with jobNumber/
+               // }
+					add(new ServerFileNode(displayString, fileName, j));
 					count++;
 				}
 			}
@@ -609,12 +623,14 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		public int compare(Object obj1, Object obj2) {
          JobNode node1 = (JobNode) obj1;
          JobNode node2 = (JobNode) obj2;
-         String job1 = node1.toString();
-         String job2 = node2.toString();
-			if (ascending) {
-				return job1.compareTo(job2);
-			}
-			return job2.compareTo(job1);
+         String job1 = node1.job.getTaskName();
+         String job2 = node2.job.getTaskName();
+         if(job1.equals(job2)) {
+            Integer jobNumber1 = new Integer(node1.job.getJobInfo().getJobNumber());
+            Integer jobNumber2 = new Integer(node2.job.getJobInfo().getJobNumber());
+            return ascending ? jobNumber1.compareTo(jobNumber2):jobNumber2.compareTo(jobNumber1);  
+         }
+			return ascending ? job1.compareTo(job2): job2.compareTo(job1);
 		}
 
 		public boolean equals(Object obj1, Object obj2) {
