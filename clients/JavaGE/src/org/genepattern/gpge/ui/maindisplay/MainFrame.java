@@ -980,9 +980,7 @@ public class MainFrame extends JFrame {
 		int height = (int) (screenSize.height * .9);
 		setSize(width, height);
 		setLocation((screenSize.width - getWidth()) / 2, 20);
-		setTitle(BuildProperties.PROGRAM_NAME + ' '
-				+ BuildProperties.FULL_VERSION + "  Build: "
-				+ BuildProperties.BUILD);
+		setTitle(BuildProperties.PROGRAM_NAME);
 		splash.hide();
 		splash.dispose();
 		leftPane.setDividerLocation((int) (height * 0.4));
