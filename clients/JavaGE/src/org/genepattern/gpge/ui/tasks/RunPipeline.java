@@ -38,7 +38,13 @@ class RunPipeline {
    public void exec() {
          new Thread() {
             public void run() {
-               final AnalysisWebServiceProxy serviceProxy = new AnalysisWebServiceProxy(analysisService.getURL(), username, "");
+               AnalysisWebServiceProxy _serviceProxy = null;
+               try {
+                  _serviceProxy = new AnalysisWebServiceProxy(analysisService.getServer(), username);
+               } catch(Exception e) {
+                  throw new RunTaskException(e);  
+               }
+               final AnalysisWebServiceProxy serviceProxy = _serviceProxy;
                try {
                   PipelineModel model = null;
                   try {
