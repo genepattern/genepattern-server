@@ -249,7 +249,7 @@ public class AnalysisWebServiceProxy {
          final int querySize = 100;
          int numRetrieved = querySize;
          while(numRetrieved==querySize) {
-            JobInfo[] jobs = stub.getJobs(null, maxJobNumber, querySize, getAll); 
+            JobInfo[] jobs = stub.getJobs(username, maxJobNumber, querySize, getAll); 
             numRetrieved = jobs.length;
             results.addAll(java.util.Arrays.asList(jobs));
             if(jobs.length > 1) {
