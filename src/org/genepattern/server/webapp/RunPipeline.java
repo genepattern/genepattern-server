@@ -195,9 +195,6 @@ public class RunPipeline {
 					JobInfo taskResult = executeTask(jobSubmission, params,
 							taskNum, results);
 
-					notifyPipelineOfOutputFiles(taskResult, jobSubmission
-							.getName(), taskNum);
-
 					decorator.recordTaskCompletion(taskResult, jobSubmission
 							.getName()
 							+ (taskNum + 1));
@@ -218,16 +215,6 @@ public class RunPipeline {
 		setStatus(JobStatus.FINISHED);
 	}
 
-	/**
-	 * notify the server that the output files of the jobs in the pipeline
-	 * belong to the pipeline job. stdout is always the next to last output
-	 * file, and stderr is the very last (when they exist)
-	 */
-	protected void notifyPipelineOfOutputFiles(JobInfo jobInfo,
-			String taskName, int taskNum) throws Exception {
-      analysisProxy.addChildJob(jobId, jobInfo);
-          
-	}
 
 	/**
 	 * Notify the server of the pipeline's status (Process, Finished, etc)
@@ -416,7 +403,7 @@ semantic_search_loop:
 	protected AnalysisJob submitJob(AnalysisService svc,
 			ParameterInfo[] parmInfos) throws Exception {
 		TaskInfo tinfo = svc.getTaskInfo();
-		final JobInfo job = analysisProxy.submitJob(tinfo.getID(), parmInfos);
+		final JobInfo job = analysisProxy.submitJob(tinfo.getID(), parmInfos, jobId);
 		final AnalysisJob aJob = new AnalysisJob(svc.getServer(), tinfo
 				.getName(), job);
 		return aJob;
