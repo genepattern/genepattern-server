@@ -1,0 +1,8 @@
+Instructions for building the jdnc swingx library (https://jdnc.dev.java.net/)
+The directory contains the zip file of source code from jdnc (jdnc-0_6-2004_12_02-src.zip) and the one source file that was modified by the GenePattern team (JXTreeTable.java)
+
+unzip jdnc-0_6-2004_12_02-src.zip
+cp JXTreeTable.java jdnc-0_6/swingx/src/java/org/jdesktop/swing/
+cd jdnc-0_6/dist
+ant build
+cp ../dist/bin/swingx.jar ~genepattern/lib/jdnc-0_6-all.jar
