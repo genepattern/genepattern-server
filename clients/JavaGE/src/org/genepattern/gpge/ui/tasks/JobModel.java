@@ -47,6 +47,10 @@ public class JobModel extends AbstractSortableTreeTableModel {
 	private JobModel() {
 	}
    
+   public static String getJobResultFileName(ServerFileNode node) {
+       return getJobResultFileName(((JobNode)node.getParent()).job, node.index);
+   }
+    
    public static String getJobResultFileName(AnalysisJob job, int parameterInfoIndex) {
        String fileName = job.getJobInfo().getParameterInfoArray()[parameterInfoIndex].getValue();
       int index1 = fileName.lastIndexOf('/');
@@ -59,6 +63,19 @@ public class JobModel extends AbstractSortableTreeTableModel {
          
       }
       return fileName;
+    }
+    
+   private static int getJobCreationJobNumber(AnalysisJob job, int parameterInfoIndex) {
+      int jobNumber = job.getJobInfo().getJobNumber();
+      String fileName = job.getJobInfo().getParameterInfoArray()[parameterInfoIndex].getValue();
+      int index1 = fileName.lastIndexOf('/');
+      int index2 = fileName.lastIndexOf('\\');
+      int index = (index1 > index2 ? index1 : index2);
+      if (index != -1) {
+        jobNumber = Integer.parseInt(fileName.substring(0, index));
+         
+      }
+      return jobNumber;
     }
 
    public static void downloadJobResultFile(AnalysisJob job, int parameterInfoIndex, File destination) throws IOException {
@@ -146,28 +163,20 @@ public class JobModel extends AbstractSortableTreeTableModel {
 	 * @param serverFile
 	 *            Description of the Parameter
 	 */
-	public void delete(ServerFileNode serverFile) {
+	public void delete(ServerFileNode serverFile) throws WebServiceException {
 		JobNode node = (JobNode) serverFile.getParent();
-		try {
-			JobInfo jobInfo = node.job.getJobInfo();
-			AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(
-					node.job.getServer(), jobInfo.getUserId());
-			String[] fileNames = { serverFile.name };
-
-			proxy.deleteJobOutputFiles(jobInfo.getJobNumber(), fileNames);
-			int serverFileIndex = node.getIndex(serverFile);
-			node.remove(serverFileIndex);
-			//if(node.getChildCount() == 0) {
-			//    int index = root.getIndex(node);
-			//    root.remove(index);
-			//     nodesWereRemoved(root, new int[]{index}, new Object[]{node});
-			//  } else {
-			nodesWereRemoved(node, new int[] { serverFileIndex },
-					new Object[] { serverFile });
-			//  }
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	
+      JobInfo jobInfo = node.job.getJobInfo();
+      AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(
+            node.job.getServer(), jobInfo.getUserId());
+              
+      proxy.deleteJobResultFile(jobInfo.getJobNumber(), jobInfo.getParameterInfoArray()[serverFile.index].getValue());
+      
+      int serverFileIndex = node.getIndex(serverFile);
+      node.remove(serverFileIndex);
+      nodesWereRemoved(node, new int[] { serverFileIndex },
+            new Object[] { serverFile });
+		
 	}
 
 	/**
