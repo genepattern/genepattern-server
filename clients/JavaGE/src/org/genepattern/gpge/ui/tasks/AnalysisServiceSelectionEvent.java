@@ -17,6 +17,10 @@ public class AnalysisServiceSelectionEvent extends java.util.EventObject {
 		this.svc = svc;
 	}
 
+   /**
+   * Gets the analysis service that is selected or <tt>null</tt> if no analysis service is selected
+   * @return the analysis service
+   */
 	public AnalysisService getAnalysisService() {
 		return svc;
 	}
