@@ -63,9 +63,11 @@ public class FileInfoComponent extends JLabel {
 	public void select(java.net.URLConnection conn, String name)
 			throws IOException {
 		if (conn == null) {
+			setVisible(false);
 			setText("");
 			return;
 		}
+		setVisible(true);
 		String kind = null;
 		InputStream is = null;
 		try {
