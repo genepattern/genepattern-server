@@ -94,7 +94,7 @@ class RunPipeline {
                   for(int i = 0; i < directoryTaskIndex; i++) {
                      String taskName = ((JobSubmission) tasks.get(i))
                            .getName();
-                     AnalysisService svc2 = AnalysisServiceManager.getInstance(analysisService.getName(), username).getAnalysisService(taskName);
+                     AnalysisService svc2 = null; // FIXME AnalysisServiceManager.getInstance(analysisService.getName(), username).getAnalysisService(taskName);
                      TaskInfo tinfo2 = svc2.getTaskInfo();
                      ParameterInfo[] actualParams = getPipelineParameters(
                            tasks, i, paramName2ActualParamMap, results,
@@ -119,7 +119,7 @@ class RunPipeline {
                            public void run() {
                               for(int j = directoryTaskIndex; j < tasks.size(); j++) {
                                  String taskName = ((JobSubmission) tasks.get(j)).getName();
-                                 AnalysisService svc2 = AnalysisServiceManager.getInstance(analysisService.getName(), username).getAnalysisService(taskName);
+                                 AnalysisService svc2 = null; // FIXME AnalysisServiceManager.getInstance(analysisService.getName(), username).getAnalysisService(taskName);
                                  TaskInfo tinfo2 = svc2.getTaskInfo();
 
                                  ParameterInfo[] actualParams = getPipelineParameters(
