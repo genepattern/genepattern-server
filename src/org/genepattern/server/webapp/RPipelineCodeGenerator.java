@@ -151,7 +151,7 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator {
 								.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[GPConstants.PARAM_INFO_NAME_OFFSET]);
 						if (defaultValue == null)
 							defaultValue = "";
-						//					prolog.append("=askUser(\"" + paramName + "\",
+						//					prolog.append("=gpAskUser(\"" + paramName + "\",
 						// default=\"" + defaultValue + "\", TRUE)");
 
 					}
@@ -183,14 +183,14 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator {
 						if (parameterInfo[i].isInputFile()) {
 							prolog.append(paramName + " <- ");
 							prolog
-									.append("askUserFileChoice(\"Using the next dialog, please choose an input file for "
+									.append("gpAskUserFileChoice(\"Using the next dialog, please choose an input file for "
 											+ taskName
 											+ "'s "
 											+ parameterInfo[i].getName()
 											+ "\")\n");
 						} else {
 							prolog.append(paramName
-									+ " <- askUser(\""
+									+ " <- gpAskUser(\""
 									+ taskName
 									+ ": "
 									+ parameterInfo[i].getName().replace('.',

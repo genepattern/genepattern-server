@@ -1007,7 +1007,7 @@ function(taskName, server=defaultServer, taskID, ...)
 		fileSizes <- fileSizes + fSize
 		contentIDs <- c(contentIDs, attachmentID) # generate a "random" attachmentID
  	} else { 
-		args[i] = htmlEncode(as.character(args[i]))
+		args[i] = gpHtmlEncode(as.character(args[i]))
 		items <- c(items, args[i])
  	}
  }
@@ -1446,7 +1446,7 @@ function(taskName, server=defaultServer, ...)
 		    if (class(args[[i]]) == "character") {
 			isURL <- (length(grep("^http", args[[i]])) != 0 || length(grep("^ftp", args[[i]])) != 0)
 			cat("\"", ifelse(isURL, paste("<a href=\"", args[[i]], "\">", sep=""), ""), 
-			    htmlEncode(args[[i]]), 
+			    gpHtmlEncode(args[[i]]), 
 			    ifelse(isURL, "</a>", ""), 
 			    "\"", sep="")
 		    } else {
@@ -1544,7 +1544,7 @@ function(wwwAddress)
  return(length) 
 }
 
-htmlEncode <-
+gpHtmlEncode <-
 #
 # encode protected characters (see htmlEncode in GenePatternAnalysisTask)
 #
@@ -1558,13 +1558,13 @@ function(original)
 
 # begin gpio.R
 
-askUser <-
+gpAskUser <-
 #
 # prompt user interactively for a value
 #
 function(prompt, default="", stopIfBlank) {
 	stopifnot(!missing(prompt))
-	if (length(grep("filename", prompt)) > 0) return (askUserFileChoice(prompt=prompt))
+	if (length(grep("filename", prompt)) > 0) return (gpAskUserFileChoice(prompt=prompt))
 	if (!exists("runningOnServer", envir=globalenv())) runningOnServer <- FALSE
 	if (missing(stopIfBlank)) stopIfBlank <- runningOnServer
 	if (runningOnServer) {
@@ -1581,7 +1581,7 @@ function(prompt, default="", stopIfBlank) {
 	return(ret)
 }
 
-askUserFileChoice <-
+gpAskUserFileChoice <-
 #
 # prompt user interactively for a value
 #
@@ -1597,7 +1597,7 @@ function(prompt) {
 		stopifnot(class(f) == "character")
 		return(f)
 	} else {
-		return (askUser(prompt))
+		return (gpAskUser(prompt))
 	}
 }
 
@@ -2067,7 +2067,7 @@ gpLogin <-
 # implementation: JSP page returns R code that recapitulates task as function, calling runAnalysis
 #
 function(userid=get("userID", envir=globalenv()), server=defaultServer) {
-	if (!is.null(userid) && userid == "") userid <- askUser("username", "", F)
+	if (!is.null(userid) && userid == "") userid <- gpAskUser("username", "", F)
 	userID <<- userid
 	server <- gpNormalizeServer(server)
 	if (!is.null(userID) && userID != "") {
