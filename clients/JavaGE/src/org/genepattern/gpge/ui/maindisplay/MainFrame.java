@@ -409,11 +409,29 @@ public class MainFrame extends JFrame {
 
 		jobResultsTree = new SortableTreeTable(jobModel);
 
+      
 		jobPopupMenu.add(new AbstractAction("Reload") {
 			public void actionPerformed(ActionEvent e) {
 				reload(((JobModel.JobNode) selectedJobNode).job);
 			}
 		});
+      
+      final JMenuItem terminateJobMenuItem = new JMenuItem("Terminate Job");
+		terminateJobMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+            try {
+               JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
+               AnalysisWebServiceProxy p = new AnalysisWebServiceProxy(analysisServiceManager.getServer(), analysisServiceManager.getUsername(), false);
+               p.terminateJob(jobNode.job.getJobInfo().getJobNumber());
+            } catch(Exception x) {
+               x.printStackTrace();  
+            }
+			}
+		});
+      
+     
+      jobPopupMenu.add(terminateJobMenuItem);
+      
 		final AbstractAction deleteFilesAction = new AbstractAction(
 				"Delete Job") {
 			public void actionPerformed(ActionEvent e) {
@@ -589,6 +607,7 @@ public class MainFrame extends JFrame {
 				if (selectedJobNode instanceof JobModel.JobNode) {
 					JobModel.JobNode node = (JobModel.JobNode) selectedJobNode;
 					deleteFilesAction.setEnabled(node.isComplete());
+               terminateJobMenuItem.setVisible(!node.isComplete());
 					jobPopupMenu.show(e.getComponent(), e.getX(), e.getY());
 				} else if (selectedJobNode instanceof JobModel.ServerFileNode) {
 					serverFilePopupMenu.show(e.getComponent(), e.getX(), e
