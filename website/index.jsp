@@ -65,7 +65,7 @@ Collection tmTasks = new LocalAdminClient(userID).getTaskCatalog();
 .majorCell { border-width: 2; font-size: 10pt; }
 .button  { width: 50; }
 .wideButton  { width: 100; }
-.wideBoldButton  { width: 100; font-weight: bold; }
+.wideBoldButton  { width: 100; font-weight: bold; color: red }
 td { padding-left: 5; }
 </style>
 
@@ -209,6 +209,15 @@ setTimeout("blinkInstallModules()", 1000); // delay 1000 milliseconds
 <body>
 <jsp:include page="navbar.jsp"></jsp:include>
 <form name="index" method="post">
+
+<% if (tmTasks.size() == 0) { %>
+<font size="+1" color="red">
+There are currently no modules installed on this server.  
+You may select from and install modules from the <a href="taskCatalog.jsp">public Broad website</a> or from your own collection.
+<br><br>
+<% } %>
+
+</font>
 
 <table cellpadding="10" width="100%" border="1" rules="all" frame="border">
 <% if (userIDKnown) { %>
