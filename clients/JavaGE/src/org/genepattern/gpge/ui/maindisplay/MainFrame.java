@@ -29,7 +29,7 @@ import java.util.Properties;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.swing.BorderFactory;
+import javax.swing.*;
 import javax.swing.JDesktopPane;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -63,6 +63,7 @@ import org.genepattern.gpge.ui.treetable.*;
 import org.genepattern.gpge.util.BuildProperties;
 import org.genepattern.modules.ui.graphics.*;
 import org.genepattern.util.*;
+import org.genepattern.gpge.ui.table.*;
 import org.genepattern.webservice.*;
 
 /**
@@ -551,7 +552,7 @@ public class MainFrame extends JFrame {
    }
 
 	public MainFrame() {
-		JWindow splash = GenePattern.showSplashScreen();
+      JWindow splash = GenePattern.showSplashScreen();
 		splash.setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -1364,13 +1365,80 @@ public class MainFrame extends JFrame {
 
    
    
+   
+   
    class HistoryMenu extends JMenu {
-      final ActionListener historyMenuItemActionListener;
+      final ActionListener reloadJobActionListener;
       List jobs = new ArrayList();
+      List jobsInMenu = new ArrayList();
       JobNumberComparator jobNumberComparator = new JobNumberComparator();
       JMenuItem historyMenuItem = new JMenuItem("History");
-     // JMenuItem clearHistoryMenuItem;
-      
+      final int JOBS_IN_MENU = 10;
+      HistoryTableModel historyTableModel = new HistoryTableModel();
+      JDialog historyDialog;
+        
+     class HistoryTableModel extends javax.swing.table.AbstractTableModel implements SortTableModel {
+        private java.util.Comparator comparator = new JobModel.TaskNameComparator(false);
+        
+        public void sortOrderChanged(SortEvent e) {
+            int column = e.getColumn();
+            boolean ascending = e.isAscending();
+            if (column == 0) {
+               comparator = new JobModel.TaskNameComparator(ascending);
+            } else if(column==1) {
+               comparator = new JobModel.TaskCompletedDateComparator(ascending);
+            } else {
+               comparator = new JobModel.TaskSubmittedDateComparator(ascending);
+            }
+            Collections.sort(jobs, comparator);
+            fireTableStructureChanged();
+        }
+   
+        public Object getValueAt(int r, int c) {
+           AnalysisJob job = (AnalysisJob) jobs.get(r);
+           JobInfo jobInfo = job.getJobInfo();
+           boolean complete = JobModel.isComplete(job); 
+           switch(c) {
+              case 0:
+                  return JobModel.jobToString(job);
+              case 1:
+                  if(!complete) {
+                     return jobInfo.getStatus();
+                  }
+                  return java.text.DateFormat.getDateTimeInstance(
+						   java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
+                     .format(jobInfo.getDateCompleted());
+              case 2:
+                  return java.text.DateFormat.getDateTimeInstance(
+						   java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
+                     .format(jobInfo.getDateSubmitted());
+              default:
+                  return null;
+           }
+        }
+        
+        public int getRowCount() {
+            return jobs.size();   
+        }
+        
+        public int getColumnCount() {
+            return 3;  
+        }
+        
+        public String getColumnName(int c) {
+           switch(c) {
+              case 0:
+                  return "Name";
+              case 1:
+                  return "Completed";
+              case 2:
+                  return "Submitted";
+              default:
+                  return null;
+           }
+        }
+     }
+   
       
       /*class HistoryUpdateThread extends Thread {
          Calendar now;
@@ -1406,15 +1474,37 @@ public class MainFrame extends JFrame {
       
       
       public HistoryMenu() {
-         super("History");
-         historyMenuItemActionListener = new ActionListener() {
+         super("Go");
+         reloadJobActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                AnalysisJobMenuItem menuItem = (AnalysisJobMenuItem) e.getSource();
                AnalysisJob job = menuItem.job;
                reload(job);
             }
          }; 
-         removeAll();
+         
+         historyMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+               historyDialog.setVisible(true);
+            }
+         });
+         clear();
+         historyDialog = new JDialog((java.awt.Frame)GenePattern.getDialogParent());
+         historyDialog.setTitle("History");
+         final JTable t = new JTable(historyTableModel);
+         t.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+               if(e.getClickCount()==2 && !e.isPopupTrigger()) {
+                  int row = t.getSelectedRow();
+                  AnalysisJob job = (AnalysisJob) jobs.get(row);
+                  reload(job);
+               }
+            }
+         });
+         SortableHeaderRenderer r = new SortableHeaderRenderer(t, historyTableModel);
+         historyDialog.getContentPane().add(new JScrollPane(t));
+         historyDialog.pack();
+         historyDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
          
       }
       
@@ -1434,27 +1524,35 @@ public class MainFrame extends JFrame {
       
       public void clear() {
          jobs.clear();
+         jobsInMenu.clear();
          super.removeAll();  
+         
+         addSeparator();
+         add(historyMenuItem);
       }
      
       
       public void add(AnalysisJob job) {
-         int insertionIndex = Collections.binarySearch(jobs, job, jobNumberComparator);   
+         int insertionIndex = Collections.binarySearch(jobsInMenu, job, jobNumberComparator);   
             
          if (insertionIndex < 0) {
             insertionIndex = -insertionIndex - 1;
          }
-         if(insertionIndex < 10) {
+         
+         if(insertionIndex < JOBS_IN_MENU) {
             AnalysisJobMenuItem menuItem = new AnalysisJobMenuItem(job);
             menuItem.setToolTipText(job.getJobInfo().getTaskLSID());
-            menuItem.addActionListener(historyMenuItemActionListener);
+            menuItem.addActionListener(reloadJobActionListener);
             insert(menuItem, insertionIndex);
-            if(getItemCount()==11) {
-               remove(10);
+            if(getItemCount()==(JOBS_IN_MENU+3)) {
+               remove(JOBS_IN_MENU-1); // separator is at JOBS_IN_MENU index
+               jobsInMenu.remove(jobsInMenu.size()-1);
             }
+            jobsInMenu.add(insertionIndex, job);
          }
          
-         jobs.add(insertionIndex, job);
+         jobs.add(job);
+         historyTableModel.fireTableStructureChanged();
         // clearHistoryMenuItem.setEnabled(true);
       }
    }
