@@ -38,7 +38,52 @@ public class AnalysisWebServiceProxy {
 		stub.setUsername(userName);
 		stub.setMaintainSession(maintainSession);
 	}
+   
 
+   /**
+	 * Submits a job to be processed. The job is a child job of the supplied parent job.
+	 * 
+	 * @param taskID
+	 *            Description of the Parameter
+	 * @param parameters
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
+	 * @exception WebServiceException
+	 *                Description of the Exception
+	 */
+	public JobInfo submitJob(int taskID, ParameterInfo[] parameters, int parentJobNumber)
+			throws WebServiceException {
+		try {
+			HashMap files = null;
+			// loop through parameters array looking for any parm of type FILE
+			for (int x = 0; x < parameters.length; x++) {
+				final ParameterInfo param = parameters[x];
+				if (parameters[x].isInputFile()) {
+					String filename = parameters[x].getValue();
+					DataHandler dataHandler = new DataHandler(
+							new FileDataSource(filename));
+					if (filename != null) {
+						if (files == null) {
+							files = new HashMap();
+						}
+						parameters[x].setValue(dataHandler.getName());// pass
+																	  // only
+																	  // name &
+																	  // not
+																	  // path
+						files.put(dataHandler.getName(), dataHandler);
+					}
+				}
+			}
+
+			return stub.submitJob(taskID, parameters, files, parentJobNumber);
+		} catch (RemoteException re) {
+			throw new WebServiceException(re);
+		}
+	}
+   
+   
+            
 	/**
 	 * Submits a job to be processed.
 	 * 
@@ -175,18 +220,18 @@ public class AnalysisWebServiceProxy {
 			throw new WebServiceException(re);
 		}
 	}
+   
+   public void terminateJob(int jobId) throws WebServiceException {
+      try {
+         stub.terminateJob(jobId);
+		} catch (RemoteException re) {
+			throw new WebServiceException(re);
+		}
+   }
 
 	public AnalysisJob[] getJobs() throws WebServiceException {
 		try {
 			return stub.getJobs();
-		} catch (RemoteException re) {
-			throw new WebServiceException(re);
-		}
-	}
-   
-   public JobInfo addChildJob(int parent, JobInfo child) throws WebServiceException {
-		try {
-         return stub.addChildJob(parent, child);
 		} catch (RemoteException re) {
 			throw new WebServiceException(re);
 		}

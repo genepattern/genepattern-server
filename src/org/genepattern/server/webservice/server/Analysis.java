@@ -64,8 +64,10 @@ public class Analysis extends GenericWebService {
 		}.getLatestTasksByName();
 	}
 
-	/**
-	 * Submits an analysis job to be processed.
+  
+   
+   /**
+	 * Submits an analysis job to be processed. The job is a child job of the supplied parent job.
 	 * 
 	 * @param taskID
 	 *            the ID of the task to run.
@@ -73,21 +75,26 @@ public class Analysis extends GenericWebService {
 	 *            the parameters to process
 	 * @param files
 	 *            a HashMap of input files sent as attachments
+    * @param the parent job number
 	 * @return the job information for this process
 	 * @exception is
 	 *                thrown if problems are encountered
 	 */
-	public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files)
-			throws WebServiceException {
-		Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
-						// sometimes empty
-
-		// get the username
-		String username = getUsernameFromContext();
-
-		JobInfo jobInfo = null;
-		// find any input files and concat axis name with original file name.
-		if (parameters != null)
+    
+   public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files, int parentJobId) throws WebServiceException {
+      try {
+         renameInputFiles(parameters, files);
+         AddNewJobHandler req = new AddNewJobHandler(taskID, getUsernameFromContext(),
+					parameters, parentJobId);
+			return req.executeRequest();
+      } catch(Exception e) {
+         throw new WebServiceException(e);  
+      }
+   }
+   
+   // find any input files and concat axis name with original file name.
+   private void renameInputFiles(ParameterInfo[] parameters, Map files) throws WebServiceException {
+      if (parameters != null)
 			for (int x = 0; x < parameters.length; x++) {
 				if (parameters[x].isInputFile()) {
 					String orgFilename = parameters[x].getValue();
@@ -115,7 +122,33 @@ public class Analysis extends GenericWebService {
 						}
 					}
 				}
-			}
+         }
+   }
+   
+	/**
+	 * Submits an analysis job to be processed.
+	 * 
+	 * @param taskID
+	 *            the ID of the task to run.
+	 * @param parmInfo
+	 *            the parameters to process
+	 * @param files
+	 *            a HashMap of input files sent as attachments
+	 * @return the job information for this process
+	 * @exception is
+	 *                thrown if problems are encountered
+	 */
+	public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files)
+			throws WebServiceException {
+		Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
+						// sometimes empty
+
+		// get the username
+		String username = getUsernameFromContext();
+
+		JobInfo jobInfo = null;
+		
+		renameInputFiles(parameters, files);
 
 		try {
 			AddNewJobHandler req = new AddNewJobHandler(taskID, username,
@@ -221,20 +254,37 @@ public class Analysis extends GenericWebService {
 
 		return list;
 	}
+   
+   /**
+   * Terminates the execution of the given job
+   *
+   * @param jobId the job id
+   */
+   public void terminateJob(int jobId) throws WebServiceException {
+      try {
+         Process p = org.genepattern.server.genepattern.GenePatternAnalysisTask.terminatePipeline("" + jobId);
+         if (p != null) {
+            setJobStatus(jobId, JobStatus.ERROR);
+         }
+      } catch(Exception e) {
+         throw new WebServiceException(e);  
+      }
+   }
 
 	/**
 	 * Deletes the all the input and output files for the given job and removes
-	 * the job from the stored history.
+	 * the job from the stored history. If the job is running if will be terminated.
 	 * 
 	 * @param jobId
 	 *            the job id
 	 */
 	public void deleteJob(int jobId) throws WebServiceException {
 		try {
+         terminateJob(jobId);
 			File jobDir = new File(
 					org.genepattern.server.genepattern.GenePatternAnalysisTask
 							.getJobDir(String.valueOf(jobId)));
-			File[] files = jobDir.listFiles(); // FIXME pipeline jobs
+			File[] files = jobDir.listFiles();
 			if (files != null) {
 				for (int i = 0; i < files.length; i++) {
 					files[i].delete();
@@ -246,6 +296,10 @@ public class Analysis extends GenericWebService {
 			org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
 					.getAnalysisJobDataSourceEJB();
 			ds.deleteJob(jobId);
+         JobInfo[] children = ds.getChildren(jobId);
+         for(int i = 0; i < children.length; i++) {
+            deleteJob(children[i].getJobNumber());  
+         }
 		} catch (Exception e) {
 			throw new WebServiceException(e);
 		}
@@ -283,35 +337,6 @@ public class Analysis extends GenericWebService {
 		}
 	}
   
-   
-   /**
-   * Adds the output files for the given child job to the output files for the given parent job
-   * @param parent the parent job id
-   * @param child the child <tt>JobInfo</tt> object
-   * @return the parent <tt>JobInfo</tt> object
-   */
-   public JobInfo addChildJob(int parent, JobInfo child) throws WebServiceException {
-      try {
-         org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
-                  .getAnalysisJobDataSourceEJB();
-        JobInfo jobInfo = ds.getJobInfo(parent);
-        ParameterInfo[] parameterInfo = child.getParameterInfoArray();
-        List outputParameters = new ArrayList();
-        if(parameterInfo!=null) {
-           for(int i = 0, length = parameterInfo.length; i < length; i++) {
-              if(parameterInfo[i].isOutputFile()) {
-                 jobInfo.addParameterInfo(parameterInfo[i]);
-              }
-           }
-        }
-        Integer intStatus = (Integer) JobStatus.STATUS_MAP.get(jobInfo.getStatus());
-        ds.updateJob(parent, jobInfo.getParameterInfo(), intStatus.intValue());
-        ds.setParent(child.getJobNumber(), parent);
-        return jobInfo;
-     } catch (Exception e) {
-			throw new WebServiceException(e);
-     }
-   }
    
    /**
    * Sets the status of the given job
