@@ -381,6 +381,10 @@ public class SortableTreeTable extends JXTreeTable implements
 	}
 
 	private class MouseHandler extends MouseAdapter {
+      public MouseHandler() {
+         setSortingStatus(0, ASCENDING);   
+      }
+      
 		public void mouseClicked(MouseEvent e) {
 			JTableHeader h = (JTableHeader) e.getSource();
 			TableColumnModel columnModel = h.getColumnModel();
@@ -406,14 +410,6 @@ public class SortableTreeTable extends JXTreeTable implements
 				default:
 					break;
 				}
-
-				// Cycle the sorting states through {NOT_SORTED, ASCENDING,
-				// DESCENDING} or
-				// {NOT_SORTED, DESCENDING, ASCENDING} depending on whether
-				// shift is pressed.
-				// status = status + (e.isShiftDown() ? -1 : 1);
-				// status = (status + 4) % 3 - 1;// signed mod, returning {-1,
-				// 0, 1}
 				setSortingStatus(column, status);
 			}
 		}
