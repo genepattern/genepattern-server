@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ant build file --><project basedir="." default="installer" name="GPGEInstaller">
+    
+   
+    	<target name="compile">
+		<javac debug="true" destdir="." 
+				optimize="false" proceed="false" srcdir=".">
+	    		<classpath>
+				<filelist dir="." files="IAClasses.zip"/>
+            	</classpath>
+            	            
+        	</javac>
+	</target>
+
+	<target name="package">
+ 		<jar basedir="." 
+			defaultexcludes="true" 
+			excludes="**/*.java **/*.zip **/.nbattrs **/.DS_Store" 
+			includes="**/*.class" 
+			jarfile="../reggp.jar" />
+            	        	
+	</target>
+    
+   
+</project>

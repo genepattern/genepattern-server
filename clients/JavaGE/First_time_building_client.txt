@@ -1,0 +1,11 @@
+The first time the graphical environment client is built must be from the root of the repository. Thus you will have to go up two directories.  Type:
+> cd ../..
+
+and run the ant script GPGE:
+> ant GPGE
+
+This will create all the neccessary support jars that the graphical environment needs.  After that the client can be compiled or the jar file created in this directory by typing:
+> ant compile
+      or
+> ant package
+

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="installer" name="GPGEInstaller">
+    <taskdef name="buildinstaller" classname="com.zerog.ia.integration.ant.InstallAnywhereAntTask"/>
+   
+
+    <target name="installer"  >
+	<property file="../../../resources/build.properties"/>
+	<delete verbose="true" file="GP_clientlocales/custom_en"/>
+	<copy file="GP_Product.iap_xml" tofile="GP_client.iap_xml">
+		<filterset>
+      		<filter token="version.major" value="${version.major}"/>
+       		<filter token="version.minor" value="${version.minor}"/>
+      		<filter token="buildrelease" value="${release}"/>
+			<filter token="builddate" value="${date}"/>
+			<filter token="buildtag" value="${build.tag}"/>
+   		</filterset>
+	</copy>
+	
+
+      <buildinstaller IAProjectFile="${basedir}/GP_client.iap_xml"/>
+
+	<delete file="GP_client.iap_xml"/>
+	<delete file="GP_clientBuild.iap_xml"/>
+
+    </target>
+
+     
+   
+    <target description="Removes all the .class files" name="clean">
+        <delete>
+            <fileset dir="../../../build/Web_Installers" />
+        </delete>
+    </target>
+    
+   
+</project>

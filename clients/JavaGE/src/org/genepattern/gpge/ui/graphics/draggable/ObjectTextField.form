@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.1">
+  <Properties>
+    <Property name="toolTipText" type="java.lang.String" value="Drag and Drop objects onto this"/>
+    <Property name="editable" type="boolean" value="false"/>
+    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+      <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+        <EtchetBorder>
+          <Color PropertyName="highlight" blue="40" green="40" id="darkGray" palette="1" red="40" type="palette"/>
+          <Color PropertyName="shadow" blue="0" green="c8" id="orange" palette="1" red="ff" type="palette"/>
+        </EtchetBorder>
+      </Border>
+    </Property>
+  </Properties>
+</Form>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir=".." name="test">
+   <import file="../build.xml"/>
+
+   <target name="compile-test">
+
+      <javac debug="true" destdir="test/build">
+         <src path="test/src/"/>
+         <include name="**"/>
+         <classpath>
+
+            <fileset dir="build">
+               <include name="**/*.jar"/>
+            </fileset>
+            <fileset dir="lib">
+               <include name="**/*.jar"/>
+            </fileset>
+         </classpath>
+      </javac>
+   </target>
+
+   <target name="test-gp-library" depends="init, compile-test">
+      <unzip src="build/GenePattern.zip" dest="test/build/GenePattern"/>
+	
+      <junit fork="yes" printsummary="on" showoutput="yes">
+         <classpath>
+            <pathelement location="test/build"/>
+            <pathelement location="test/build/GenePattern/GenePattern.jar"/>
+         </classpath>
+
+         <test name="edu.mit.broad.gp.ws.TestGPServer"/>
+         <formatter type="plain"/>
+      </junit>
+   </target>
+
+   <target name="test-taskintegrator" depends="init, compile-test">
+      <junit fork="yes" printsummary="on" showoutput="yes">
+         <classpath>
+            <pathelement location="test/build"/>
+            <fileset dir="build">
+               <include name="**/*.jar"/>
+            </fileset>
+            <fileset dir="lib">
+               <include name="**/*.jar"/>
+            </fileset>
+         </classpath>
+         <test name="edu.mit.broad.gp.ws.TestTaskIntegrator"/>
+         <formatter type="plain"/>
+      </junit>
+   </target>
+
+   <target name="test-admin" depends="init, compile-test">
+      <junit fork="yes" printsummary="on" showoutput="yes">
+         <classpath>
+            <pathelement location="test/build"/>
+            <fileset dir="build">
+               <include name="**/*.jar"/>
+            </fileset>
+            <fileset dir="lib">
+               <include name="**/*.jar"/>
+            </fileset>
+         </classpath>
+         <test name="edu.mit.broad.gp.ws.TestAdminService"/>
+         <formatter type="plain"/>
+      </junit>
+   </target>
+   
+</project>

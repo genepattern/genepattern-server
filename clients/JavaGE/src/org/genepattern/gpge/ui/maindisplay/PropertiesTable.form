@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.1">
+  <Properties>
+    <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.beaninfo.editors.TableModelEditor">
+      <Table columnCount="2" rowCount="0">
+        <Column editable="false" title="Name" type="java.lang.String"/>
+        <Column editable="false" title="Value(s)" type="java.lang.Object"/>
+      </Table>
+    </Property>
+  </Properties>
+</Form>

@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ant build file --><project basedir="src" default="targets" name="Graphical Environment for GenePattern">
+    
+    <!-- This script can be used as a template for other projects. -->
+    <!-- Simply copy this file to the new project's build dir and  -->
+    <!-- modify the values of the following properties in the 'init' task  -->
+    <target description="Echos all the targets" name="targets">
+        <antstructure output="../gpge.dtd"/>
+        <echo append="true"><![CDATA[This should be a complete build file needed to compile and make GenePattern Graphical Environment as a jar file.
+
+Targets:
+
+package
+creates a jar file that can be run with the current lib/ and languages/ directories.
+
+clean
+removes all class files (*.class)
+
+compile
+compiles only modified java files
+
+build
+cleans then compiles all java files
+
+run
+runs the program without first creating the jar file.  Note that it does not build nor compile first.
+
+To build the project from scratch:
+ant build
+
+To create a test jar file:
+ant package
+Note creates a jar file with the name gp-XXXXXXXX.jar where the XXXXXXX is the build number/current date.  However, the internal build number is not affected!
+
+To create the final jar file for distribution:
+ant Final_Distribution
+This will create a jar file with the pattern gp-XXXXXXXX.jar where the Xs will be the build number and all internal version, build numbers and dates will be updated as per the description above.]]></echo>
+    </target>
+
+
+    <target name="setCvsTag" unless="cvsTag">
+         <property name="cvsTag" value="This build was not tagged in CVS"/>
+    </target>
+
+
+
+    <target  name="init"  depends="setCvsTag">
+        <echo message="gpge basedir: ${basedir}"/>
+        <!-- Create the time stamp -->
+        <tstamp/>
+        <property description="The name of the application file (.jar)" name="appfile" value="../gpge.jar"/>
+        <property description="All the directories that need to be compiled and whose .class files will be part of the appfile" name="inclds" value="org/genepattern/gpge/,edu/mit/broad/"/>
+        <property description="Set this to the location of the version property file." name="version_file" value="org/genepattern/gpge/resources/build.properties"/>
+        <property description="The manifest file" name="manifest" value="../gp.mf"/>
+        <property description="The initials for the version properties" name="initials" value="gpge"/>
+        <property description="The path to the ditribution dir for GenePattern Graphical Environment" name="gpge_dist_dir" value="../../gpge_distibution"/>
+	
+        <property description="All the directories that need to be compiled and whose .class files will be part of the appfile" name="task_inclds" value="org/genepattern/gpge/"/>
+        <property description="The path to the library" name="repos_root" value="../../.."/>
+        <property description="The path to the library" name="installer.dir" value="${repos_root}/build/Web_Installers"/>
+        <path description="defines the classpath based on the value of &apos;libpath&apos;." id="library.classpath">
+	                
+            <fileset dir="${repos_root}/lib" id="base.libs">
+                <include name="*.jar"/>
+                <include name="*.zip"/>
+            </fileset>
+            
+            <filelist dir="${repos_root}/build/jars" files="analysis.jar" id="omni.client"/>
+            <filelist dir="${repos_root}/build" files="file_support.jar gp-common.jar ui_support.jar, runMain.jar" id="build.jars"/>
+            <path id="props.path" path="${repos_root}/resources"/>
+        </path>
+        
+        <path description="run time class paths" id="run.classpaths">
+            <filelist dir="${repos_root}/lib/" files="jaxrpc.jar mail.jar" id="omniview.libs"/>
+            
+            <fileset refid="base.libs"/>
+            <pathelement path="."/>
+            
+            <filelist refid="omni.client"/>
+            <filelist refid="build.jars"/>
+            <path refid="props.path"/>
+        </path>
+        
+    </target>
+    
+    
+
+    <target depends="compile,init" description="All jars are included. Compiles and creates the jar file" name="package">
+        <!-- use index="true" -->
+        
+        
+        <echo message="${repos_root}/resources"/>
+        <jar basedir="." defaultexcludes="true" excludes="**/*.java **/*.form **/.nbattrs **/.DS_Store" includes="${inclds}" jarfile="${appfile}" manifest="${manifest}">
+            <fileset defaultexcludes="true" dir="${repos_root}/resources" excludes="**/*.java"/>
+        </jar>
+
+	  <antcall target="package-client-jar"/>
+    </target>
+
+    <target name="package-client-jar" depends="compile,init" >
+        <jar basedir="." defaultexcludes="true" excludes="**/*.java **/*.form **/.nbattrs **/.DS_Store" includes="org/genepattern/gpge/ui/analysis/**" jarfile="${repos_root}/build/jars/gpclient.jar" >
+            <fileset defaultexcludes="true" dir="${repos_root}/resources" excludes="**/*.java"/>
+        </jar>
+    </target>
+
+    <target depends="init, compile" description="All jars are included. Compiles and creates the jar file" name="package_jars">
+        <!-- use index="true" -->
+        <jar basedir="." defaultexcludes="true" excludes="**/*.java **/*.form **/.nbattrs **/.DS_Store" includes="${inclds}" jarfile="${appfile}" manifest="${manifest}">
+            <zipfileset refid="build.jars"/>
+            <zipfileset refid="omniview.libs"/>
+        </jar>
+    </target>
+    <target depends="init, compile" description="Compiles and creates the jar file" name="package_AllAsOne">
+        <jar basedir="." defaultexcludes="true" excludes="**/*.java **/*.form **/.nbattrs **/.DS_Store" jarfile="${java.io.tmpdir}/tempjar.jar">
+            <zipgroupfileset refid="build.jars"/>
+            <zipgroupfileset refid="omniview.libs"/>
+        </jar>
+        <jar basedir="." defaultexcludes="true" excludes="**/MYSELF.SF **/*.java **/*.form **/.nbattrs **/.DS_Store" includes="${inclds}" jarfile="${appfile}" manifest="${manifest}">
+            <zipfileset excludes="**/*.java **/*.form META-INF/MYSELF.*" src="${java.io.tmpdir}/tempjar.jar"/>
+            
+        </jar>
+    </target>
+    <target description="Removes all the .class files" name="clean">
+        <delete>
+            <fileset dir="." includes="**/*.class"/>
+        </delete>
+    </target>
+    
+    <target depends=" init" description="Compiles the .java files that have been modified or that don&apos;t have .class files" name="compile">
+        
+        <javac debug="true" defaultexcludes="true" deprecation="true" destdir="." includes="${inclds}" optimize="false" proceed="false" srcdir=".">
+	    <classpath refid="library.classpath"/>
+          <!-- sourcepath path="${repos_root}/resources"/ -->
+            
+        </javac>
+    </target>
+
+ 
+    <target depends="clean,compile" description="Cleans the source then compiles all" name="build"/>
+    
+    <target depends="init" description="Run the program" name="run">
+        <java classname="org.genepattern.gpge.GenePattern" fork="true">
+	    <classpath refid="run.classpaths"/>
+        </java>
+    </target>
+
+
+
+<!-- ============================================================================= -->
+<!-- Targets for compiling and running tests -->
+<!-- ============================================================================= -->
+    <target depends=" init" description="Compiles the .java test files that have been modified or that don&apos;t have .class files" name="compiletests">
+        
+        <javac debug="true" defaultexcludes="true" deprecation="true" destdir="." includes="${inclds}" optimize="false" proceed="false">
+	    <classpath refid="library.classpath"/>
+            <sourcepath path="${repos_root}/resources"/>
+            <src path="../test_src"/>
+	    <src path="."/>
+        </javac>
+    </target>
+
+
+    <!-- make sure some preoperties are set before the test is run -->
+    <!-- ========================================================= -->
+    <target name="setDefaultTestConf" unless="omnigene.test.conf">
+         <property name="omnigene.test.conf" value="${user.home}/gp/resources/"/>
+    </target>
+    <target name="setDefaultTestDataRoot" unless="test.data.root">
+         <property name="test.data.root" value="../../testdata"/>
+    </target>
+    <!-- ========================================================= -->
+ 
+    <target depends="init, setDefaultTestConf, setDefaultTestDataRoot" description="Run the tests" name="runtests">
+   
+        <junit fork="yes" printsummary="on" showoutput="yes">
+	    <classpath refid="run.classpaths"/>
+	    <sysproperty key="omnigene.test.conf" value="${omnigene.test.conf}"/>
+	    <sysproperty key="test.data.root" value="${test.data.root}"/>
+	    <sysproperty key="DEBUG" value="${DEBUG}"/>
+
+	    <formatter type="plain"/>
+	    <batchtest fork="yes" todir="..">
+	      <fileset dir="../test_src">
+	         <include name="**/*.java"/>
+		 <exclude name="**/TestCallTasks.java"/>
+	      </fileset>
+	    </batchtest>
+        </junit> 
+    </target>
+
+    <target depends="init, setDefaultTestConf, setDefaultTestDataRoot" description="Run the tests" name="runtest">
+   
+        <junit fork="yes" printsummary="on" showoutput="yes">
+        <jvmarg value="-Xmx512m"/>
+	    <classpath refid="run.classpaths"/>
+	    <sysproperty key="omnigene.test.conf" value="${omnigene.test.conf}"/>
+	    <sysproperty key="test.data.root" value="${test.data.root}"/>
+	    <sysproperty key="DEBUG" value="${DEBUG}"/>
+	  
+	    <formatter type="plain"/>
+	    <test fork="yes" name="edu.mit.genome.gp.TestRunPipelines" todir="."/> 
+		<!-- <batchtest fork="yes" todir=".">
+	      <fileset dir="../test_src">
+	         <include name="**/TestHierarchicalClustering.java"/>
+		 <exclude name="**/TestCallTasks.java"/>
+	      </fileset>
+	    </batchtest> -->
+	     
+        </junit> 
+    </target>
+
+
+
+<!-- ============================================================================= -->
+<!-- end of targets for Tests -->
+<!-- ============================================================================= -->
+
+
+
+    <target name="signer"/>
+    <target depends="init, package" name="create_dist">
+
+        <delete dir="${gpge_dist_dir}"/>
+
+        <mkdir dir="${gpge_dist_dir}"/>
+        <copy file="../gpge.jar" todir="${gpge_dist_dir}"/>
+        <copy todir="${gpge_dist_dir}/lib/">
+            <fileset dir="../lib"/>
+        </copy>
+        
+        <copy todir="${gpge_dist_dir}/languages">
+            <fileset dir="../languages"/>
+        </copy>
+    </target>
+    <target depends="init" description="Creates the jar file without cleaning and compiles" name="just_package">
+        <!-- use index="true" -->
+        <jar basedir="." defaultexcludes="true" excludes="**/*.java, **/*.form, **/.nbattrs" includes="${inclds}" jarfile="${appfile}" manifest="${manifest}">
+        </jar>
+    </target>
+    
+    <target depends="init" description="Runs some test main" name="test_run">
+        <java classname="edu.mit.genome.gp.ui.maindisplay.DataHandlerOmniView" fork="true">
+	    <classpath refid="run.classpaths"/>
+        </java>
+    </target>
+    <target depends="init" description="Run the program assuming Java 1.4.1+ " name="run141">
+        <java classname="edu.mit.genome.gp.GenePattern" fork="true">
+	    <classpath refid="run.classpaths"/>
+            
+        </java>
+    </target>
+    
+    
+    <target depends="init" description="Run the program" name="JWhich">
+        <java args="javax/xml/bind/IdentifiableElement" classname="edu.mit.genome.debug.JWhich" fork="true">
+	    <classpath refid="run.classpaths"/>
+        </java>
+    </target>
+    <target depends="package, package-client-jar" description="Builds the installer using comman-line InstallAnywhere" name="installer">
+        
+        <exec dir="/Users/kohm/code/gp2/clients/JavaGE/installer" executable="/Applications/InstallAnywhere 5 Enterprise/build.command">
+            <arg line="/Users/kohm/code/gp2/clients/JavaGE/installer/GP_Product.iap_xml"/>
+        </exec>
+        
+        
+        <copy overwrite="true" todir="../../../build/Web_Installers/">
+            <fileset dir="../installer/GP_Product_Build_Output/Web_Installers"/>
+        </copy>
+    </target>
+</project>
