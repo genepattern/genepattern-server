@@ -204,12 +204,12 @@ try {
 		File jobDirFile = new File(jobDir);
 		jobDirFile.mkdirs(); 
 		
-		request.setAttribute("pipelineModel", model);
-		request.setAttribute("outputWriter", new java.io.FileWriter(new File(jobDirFile, "pipelineDescription.html")));
-		RequestDispatcher rd = request.getRequestDispatcher("/viewPipelineBody.jsp?hideButtons='true'&showLSID='true'&showParams='true'");
-        	rd.include(request, response);
+		//request.setAttribute("pipelineModel", model);
+		//request.setAttribute("outputWriter", new java.io.FileWriter(new File(jobDirFile, "pipelineDescription.html")));
+		//RequestDispatcher rd = request.getRequestDispatcher("/viewPipelineBody.jsp?hideButtons='true'&showLSID='true'&showParams='true'");
+        	//rd.include(request, response);
 		
-		GenePatternAnalysisTask.updatePipelineStatus(jobID, -1, pipelineName, jobDirFile.getName() + File.separator + "pipelineDescription.html");
+		//GenePatternAnalysisTask.updatePipelineStatus(jobID, -1, pipelineName, jobDirFile.getName() + File.separator + "pipelineDescription.html");
 
 		StringBuffer cc = new StringBuffer();
 		// create threads to read from the command's stdout and stderr streams
