@@ -89,7 +89,9 @@ function cloneTask(origName, lsid, user) {
 	}
 }
 
-
+function runpipeline( url) {
+		window.location= url;
+}
 </script>
 	
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
@@ -104,7 +106,7 @@ String displayName = model.getName();
 if(displayName.endsWith(".pipeline")) {
 	displayName = displayName.substring(0, displayName.length()-".pipeline".length());
 }
-out.println("<p>" + displayName);
+out.println("<p><font size='+2'><b>" + displayName+ "</b></font>");
 
 // show edit link when task has local authority and either belongs to current user or is public
 String lsid = (String) task.getTaskInfoAttributes().get(GPConstants.LSID);
@@ -120,8 +122,9 @@ if(showEdit) {
 	String editURL = "pipelineDesigner.jsp?name=" + pipelineName;
 	out.println("  <input type=\"button\" value=\"edit\" name=\"edit\" class=\"little\" onclick=\"window.location='" + editURL + "'\"; />");
 }
-out.println("  <input type=\"button\" value=\"clone...\" name=\"clone\" class=\"little\" onclick=\"cloneTask('"+displayName+"', '" + pipelineName + "', '" + userID + "')\"; />");
-
+out.println("  <input type=\"button\" value=\"clone...\" name=\"clone\"       class=\"little\" onclick=\"cloneTask('"+displayName+"', '" + pipelineName + "', '" + userID + "')\"; />");
+out.println("  <input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runPipeline.jsp?cmd=run&name="+pipelineName + "')\"; />");
+				
 out.println("&nbsp;&nbsp;<form name=\"form1\"><input name=\"togglecb\" type=\"checkbox\" onClick=toggle();>Show Input Parameters</input><input name=\"togglelsid\" type=\"checkbox\" onClick=toggleLSID();>Show LSIDs</input></form>");
 
 try {
@@ -291,7 +294,8 @@ if (informalParam == null) {
 	out.println("</div>");
    
 
-}
+}out.println("<table cellspacing='0' width='100%' frame='box'>");
+out.println("<table width='100%'><tr><td align='center'><input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runPipeline.jsp?cmd=run&name="+pipelineName + "')\"; /></td></tr></table>");
 
 
 %>
