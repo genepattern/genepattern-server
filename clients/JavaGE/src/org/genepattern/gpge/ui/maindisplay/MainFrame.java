@@ -834,7 +834,7 @@ public class MainFrame extends JFrame {
 		});
       
     
-      JMenuItem removeProjectMenuItem = new JMenuItem("Remove", IconManager.loadIcon(IconManager.REMOVE_ICON));
+      JMenuItem removeProjectMenuItem = new JMenuItem("Close Project", IconManager.loadIcon(IconManager.REMOVE_ICON));
 		projectDirPopupMenu.add(removeProjectMenuItem);
       removeProjectMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
