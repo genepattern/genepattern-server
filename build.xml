@@ -250,7 +250,9 @@
    <target depends="init" name="prepare-compile" unless="prepare.disable">
      <mkdir dir="${genepattern.build}"/>
    </target>
-   		<target depends="R-client,GPGE" name="clients">
+   
+
+   <target depends="R-client,GPGE, matlabclient" name="clients">
    </target>
 
    <target depends="init" name="R-client">
@@ -284,6 +286,12 @@
                      inheritall="true"
 	             inheritrefs="true" 
                      target="installers"/>
+
+   </target>
+   
+ <target depends="gp-library, analysis, broad-cg" name="matlabclient">
+
+	<ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB"/>
 
    </target>
    

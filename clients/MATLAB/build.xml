@@ -4,6 +4,29 @@
 
 	
 <target name="create-zip" >
+	<copy todir="GenePattern/lib">
+		<fileset dir="../../build">
+		    	<include name="broad-cg.jar"/>
+			<include name="gpwebservice.jar"/>
+			<include name="GenePattern.jar"/>
+		</fileset>
+		<fileset dir="../../lib">
+		    	<include name="Jama-1.0.1.jar"/>
+			<include name="MAGEstk-2003-10-24-v1.1-compatible.jar"/>
+			<include name="activation.jar"/>
+			<include name="axis.jar"/>
+			<include name="commons-discovery.jar"/>
+			<include name="commons-logging.jar"/>
+			<include name="jakarta-oro-2.0.8.jar"/>
+			<include name="jaxb-rt-1.0-ea.jar.jar"/>
+			<include name="jaxrpc.jar"/>
+			<include name="log4j-1.2.4.jar"/>
+			<include name="mail.jar"/>
+			<include name="saaj.jar"/>
+			<include name="trove.jar"/>
+		</fileset>
+	</copy>
+
 	<zip destfile="../../build/${ant.project.name}.zip" whenempty="fail" defaultexcludes="true">
 		<fileset dir=".">
 		    	<exclude name="build.xml"/>
