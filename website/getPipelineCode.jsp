@@ -1,6 +1,6 @@
 <%@ page import="org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.server.webapp.*, java.io.*, java.util.zip.*"
+		 org.genepattern.codegenerator.*, org.genepattern.server.webapp.*, java.io.*, java.util.zip.*"
 	    session="false" language="Java" contentType="text/plain" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><%
 
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
