@@ -18,4 +18,6 @@ public interface RunPipelineOutputDecoratorIF {
 	public void recordTaskCompletion(JobInfo jobInfo, String name);
 
 	public void afterPipelineRan(PipelineModel model);
+
+	public void error(PipelineModel model, String message);
 }

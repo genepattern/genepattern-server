@@ -15,34 +15,34 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
-public class RunPipelineNullDecorator implements RunPipelineOutputDecoratorIF {
-	PipelineModel model = null;
+public class RunPipelineNullDecorator extends RunPipelineBasicDecorator implements RunPipelineOutputDecoratorIF {
  	RunPipelineExecutionLogger logger =  new RunPipelineExecutionLogger();
-
-
 	Properties genepatternProps = null;
 
 	public void setOutputStream(PrintStream outstr) {
+	}
+
+	public void error(PipelineModel model, String message) {
+		logger.error(model, message);
 	}
 
 	public void beforePipelineRuns(PipelineModel model) {
 		this.model = model;
 		try {
 			String genePatternPropertiesFile = System.getProperty("genepattern.properties") +  java.io.File.separator + "genepattern.properties";
-     		java.io.FileInputStream fis = new java.io.FileInputStream(genePatternPropertiesFile);
-      		genepatternProps = new Properties();
-      		genepatternProps.load(fis);
-      		fis.close();
-     	} catch(Exception e) {
-     		genepatternProps = new Properties();
-     	}
-      logger.setRegisterExecutionLog(false);
+	     		java.io.FileInputStream fis = new java.io.FileInputStream(genePatternPropertiesFile);
+	      		genepatternProps = new Properties();
+	      		genepatternProps.load(fis);
+	      		fis.close();
+	     	} catch(Exception e) {
+	     		genepatternProps = new Properties();
+	     	}
+		logger.setRegisterExecutionLog(false);
 		logger.beforePipelineRuns(model);
 
 	}
 
-	public void recordTaskExecution(JobSubmission jobSubmission, int idx,
-			int numSteps) {
+	public void recordTaskExecution(JobSubmission jobSubmission, int idx, int numSteps) {
 		ParameterInfo[] parameterInfo = jobSubmission.giveParameterInfoArray();
 		for (int i = 0; i < parameterInfo.length; i++) {
 			ParameterInfo aParam = parameterInfo[i];

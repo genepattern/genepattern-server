@@ -35,6 +35,11 @@ public class RunPipelineLoggingHTMLDecorator extends RunPipelineHTMLDecorator {
 
 	RunPipelineExecutionLogger logger =  new RunPipelineExecutionLogger();
 
+	public void error(PipelineModel model, String message) {
+		super.error(model, message);
+		logger.error(model, message);
+	}
+
 	public void beforePipelineRuns(PipelineModel model) {
 		super.beforePipelineRuns(model);
 		logger.beforePipelineRuns(model);

@@ -173,6 +173,22 @@ public class RunPipeline {
 		TaskInfo taskInfo = null;
 		ParameterInfo[] parameterInfo = null;
 		int taskNum = 0;
+		boolean okayToRun = true;
+		for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
+			jobSubmission = (JobSubmission) eTasks.nextElement();
+			taskInfo = adminProxy.getTask(jobSubmission.getLSID());
+			if (taskInfo == null) {
+				okayToRun = false;
+				System.err.println("No such task " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")");
+				decorator.error(model, "No such task " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")");
+			}
+
+		}
+		if (!okayToRun) {
+			setStatus(JobStatus.ERROR);
+			return;
+		}
+
 		JobInfo results[] = new JobInfo[vTasks.size()];
 		decorator.beforePipelineRuns(model);
 		try {
@@ -220,7 +236,7 @@ public class RunPipeline {
 	 * Notify the server of the pipeline's status (Process, Finished, etc)
 	 */
 	protected void setStatus(String status) throws Exception {
-      analysisProxy.setJobStatus(jobId, status);
+	      analysisProxy.setJobStatus(jobId, status);
 	}
 
    protected JobInfo executeVisualizer(AnalysisService svc, ParameterInfo[] params) {
@@ -426,21 +442,21 @@ semantic_search_loop:
 	/**
 	 * submit a job based on a service and its parameters
 	 */
-	protected AnalysisJob submitJob(AnalysisService svc,
-			ParameterInfo[] parmInfos) throws Exception {
-      if(parmInfos!=null) {
-         for(int i = 0; i < parmInfos.length; i++) {
-            if(parmInfos[i].isInputFile()) {
-               String file = parmInfos[i].getValue(); // bug 724
-		   String val = file;
-		   if (!(file.startsWith("http:") || file.startsWith("ftp:") || file.startsWith("file:")))
-			val = new File(file).toURI().toString();
-               parmInfos[i].setValue(val);
-               parmInfos[i].getAttributes().remove("TYPE");
-               parmInfos[i].getAttributes().remove("MODE");
-            }
-         }
-      }
+	protected AnalysisJob submitJob(AnalysisService svc, ParameterInfo[] parmInfos) throws Exception {
+	      if(parmInfos!=null) {
+	         for(int i = 0; i < parmInfos.length; i++) {
+	            if(parmInfos[i].isInputFile()) {
+			String file = parmInfos[i].getValue(); // bug 724
+			String val = file;
+			if (!(file.startsWith("http:") || file.startsWith("ftp:") || file.startsWith("file:"))) {
+				val = new File(file).toURI().toString();
+			}
+			parmInfos[i].setValue(val);
+			parmInfos[i].getAttributes().remove("TYPE");
+			parmInfos[i].getAttributes().remove("MODE");
+	            }
+	         }
+	      }
 		TaskInfo tinfo = svc.getTaskInfo();
 		final JobInfo job = analysisProxy.submitJob(tinfo.getID(), parmInfos, jobId);
 		final AnalysisJob aJob = new AnalysisJob(svc.getServer(), job);

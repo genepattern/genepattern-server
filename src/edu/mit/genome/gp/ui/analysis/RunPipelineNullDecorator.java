@@ -16,6 +16,10 @@ import org.genepattern.server.webapp.*;
 public class RunPipelineNullDecorator implements RunPipelineOutputDecoratorIF {
 	org.genepattern.server.webapp.RunPipelineNullDecorator decorator = new org.genepattern.server.webapp.RunPipelineNullDecorator();
 
+	public void error(PipelineModel model, String message) {
+		decorator.error(model, message);
+	}
+
 	public void beforePipelineRuns(PipelineModel model) {
 		decorator.beforePipelineRuns(model);
 	}

@@ -7,11 +7,15 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
-public class RunPipelineBasicDecorator implements RunPipelineOutputDecoratorIF {
+public class RunPipelineBasicDecorator extends RunPipelineDecoratorBase implements RunPipelineOutputDecoratorIF {
 	PrintStream out = System.out;
 
 	public void setOutputStream(PrintStream outstr) {
 		out = outstr;
+	}
+
+	public void error(PipelineModel model, String message) {
+		out.println(htmlEncode(message));
 	}
 
 	public void beforePipelineRuns(PipelineModel model) {

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
@@ -36,13 +37,16 @@ import org.genepattern.webservice.ParameterInfo;
 public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase implements RunPipelineOutputDecoratorIF {
 	protected static String GET_TASK_FILE = "retrieveResults.jsp?";
 
+	protected String jobID = null;
+	protected File jobDir = null;
+	protected File logFile = null;
 	protected PrintWriter logWriter = null;
 
 	protected Date lastJobStart = null;
 
 	protected Date pipelineStart = null;
 
-   protected boolean notifyPipelineOfOutputFile = true;
+	protected boolean notifyPipelineOfOutputFile = true;
    
 	protected static SimpleDateFormat dateFormat = new SimpleDateFormat(
 			"HH:mm:ss dd-MM-yy");
@@ -57,6 +61,27 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 		// the execution logger ignores this call;
 	}
 
+	public RunPipelineExecutionLogger() {
+		try {
+			jobID = System.getProperty("jobID");
+			jobDir = new File(".." + File.separator + jobID);
+			if (model != null) {
+				logFile = new File(jobDir, model.getName() + "_execution_log.html");
+				logWriter = new PrintWriter(new FileWriter(logFile));
+			            String updateUrl = URL + "updatePipelineStatus.jsp?jobID="
+								+ System.getProperty("jobID") + "&" + GPConstants.NAME
+								+ "=";
+			            updateUrl += "&filename=" + jobDir.getName() + File.separator
+								+ logFile.getName();
+			            URL url = new URL(updateUrl);
+				    HttpURLConnection uconn = (HttpURLConnection) url.openConnection();
+				    int rc = uconn.getResponseCode();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
    /**
    * Sets whether to notify the pipeline of the log file this instance creates. Should be set to true if running from the web client and false if the pipeline was submitted from the java client. This method needs to be invoked before beforePipelineRuns is called to have any effect.
    * @param b whether to notify the pipeline of execution log output file
@@ -65,19 +90,34 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
       notifyPipelineOfOutputFile = b;
    }
 
+	public void error(PipelineModel model, String message) {
+		if (logWriter == null) {
+			    try {
+				logFile = new File(jobDir, model.getName() + "_execution_log.html");
+				logWriter = new PrintWriter(new FileWriter(logFile));
+
+			            String updateUrl = URL + "updatePipelineStatus.jsp?jobID="
+								+ System.getProperty("jobID") + "&" + GPConstants.NAME
+								+ "=";
+			            updateUrl += "&filename=" + jobDir.getName() + File.separator
+								+ logFile.getName();
+			            URL url = new URL(updateUrl);
+				    HttpURLConnection uconn = (HttpURLConnection) url.openConnection();
+				    int rc = uconn.getResponseCode();
+
+			    } catch (IOException ioe) {
+			    }
+		}
+		logWriter.println(htmlEncode(message) + "<br>");
+	}
+
 	public void beforePipelineRuns(PipelineModel amodel) {
 		model = amodel;
 		init();
 
 
-		String jobID = System.getProperty("jobID");
 		try {
 			pipelineStart = new Date();
-
-			File jobDir = new File(".." + File.separator + jobID);
-			String fileName = model.getName() + "_execution_log.html";
-			File logFile = new File(jobDir, fileName);
-			logWriter = new PrintWriter(new FileWriter(logFile));
 
 			URL url = new URL(URL + "stylesheet.css");
 			HttpURLConnection uconn = (HttpURLConnection) url.openConnection();
@@ -115,16 +155,16 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 			logWriter.flush();
 
 			// register the execution log as an output file of the pipeline
-         if(notifyPipelineOfOutputFile) {
-            String updateUrl = URL + "updatePipelineStatus.jsp?jobID="
-					+ System.getProperty("jobID") + "&" + GPConstants.NAME
-					+ "=";
-            updateUrl += "&filename=" + jobDir.getName() + File.separator
-					+ logFile.getName();
-               url = new URL(updateUrl);
-			   uconn = (HttpURLConnection) url.openConnection();
-			   int rc = uconn.getResponseCode();
-         }
+		         if(notifyPipelineOfOutputFile) {
+		            String updateUrl = URL + "updatePipelineStatus.jsp?jobID="
+							+ System.getProperty("jobID") + "&" + GPConstants.NAME
+							+ "=";
+		            updateUrl += "&filename=" + jobDir.getName() + File.separator
+							+ logFile.getName();
+		            url = new URL(updateUrl);
+			    uconn = (HttpURLConnection) url.openConnection();
+			    int rc = uconn.getResponseCode();
+		         }
 
 		} catch (Exception e) {
 			e.printStackTrace();

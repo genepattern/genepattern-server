@@ -52,6 +52,10 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 		out = outstr;
 	}
 
+	public void error(PipelineModel model, String message) {
+		out.println(htmlEncode(message) + "<br>");
+	}
+
 	public void beforePipelineRuns(PipelineModel model) {
 		this.model = model;
 		super.init();
