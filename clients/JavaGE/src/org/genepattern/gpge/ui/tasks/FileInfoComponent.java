@@ -1,7 +1,12 @@
 package org.genepattern.gpge.ui.tasks;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import org.genepattern.io.*;
 import java.text.NumberFormat;
@@ -19,6 +24,7 @@ public class FileInfoComponent extends JLabel {
 	static String SIZE = "Size";
 
 	public FileInfoComponent() {
+      setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 	}
 
 	public void select(File file) throws IOException {
