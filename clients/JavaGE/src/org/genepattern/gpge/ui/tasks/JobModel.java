@@ -46,7 +46,72 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 	private JobModel() {
 	}
+   
+   public static String getJobResultFileName(AnalysisJob job, int parameterInfoIndex) {
+       String fileName = job.getJobInfo().getParameterInfoArray()[parameterInfoIndex].getValue();
+      int index1 = fileName.lastIndexOf('/');
+      int index2 = fileName.lastIndexOf('\\');
+      int index = (index1 > index2 ? index1 : index2);
+      if (index != -1) {
+         
+         fileName = fileName.substring(index + 1, fileName
+								.length());
+         
+      }
+      return fileName;
+    }
 
+   public static void downloadJobResultFile(AnalysisJob job, int parameterInfoIndex, File destination) throws IOException {
+      String jobNumber = String.valueOf(job.getJobInfo().getJobNumber());
+     
+      String fileName = job.getJobInfo().getParameterInfoArray()[parameterInfoIndex].getValue();
+      int index1 = fileName.lastIndexOf('/');
+      int index2 = fileName.lastIndexOf('\\');
+      int index = (index1 > index2 ? index1 : index2);
+      if (index != -1) {
+         jobNumber = fileName.substring(0, index);
+         fileName = fileName.substring(index + 1, fileName
+								.length());
+         
+      }					           
+		URL url = null;	
+      try {
+			   url = new URL(job.getServer() + "/gp/retrieveResults.jsp?job="
+						+ jobNumber + "&filename="
+						+ URLEncoder.encode(fileName, "UTF-8"));
+			} catch (MalformedURLException x) {
+				throw new Error(x);
+			} catch (java.io.UnsupportedEncodingException uee) {
+				throw new Error("Unable to encode " + fileName);
+			}
+         
+			FileOutputStream fos = null;
+			InputStream is = null;
+			try {
+				URLConnection connection = url.openConnection();
+				is = connection.getInputStream();
+				byte[] b = new byte[100000];
+				int bytesRead = 0;
+				fos = new FileOutputStream(destination);
+				while ((bytesRead = is.read(b)) != -1) {
+					fos.write(b, 0, bytesRead);
+				}
+			} finally {
+				if (is != null) {
+					try {
+						is.close();
+					} catch (IOException x) {
+					}
+				}
+				if (fos != null) {
+					try {
+						fos.close();
+					} catch (IOException x) {
+					}
+				}
+			}
+   }
+      
 	public void removeAll() {
 		root.removeAllChildren();
 		nodeStructureChanged(root);
@@ -332,36 +397,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		public void download(File destination) throws IOException {
 			JobNode parent = (JobNode) getParent();
 			AnalysisJob job = parent.job;
-			FileOutputStream fos = null;
-			InputStream is = null;
-			try {
-				HttpURLConnection connection = (HttpURLConnection) parent
-						.getURL(name).openConnection();
-				if (connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
-					throw new java.io.FileNotFoundException();
-				}
-
-				is = connection.getInputStream();
-				byte[] b = new byte[100000];
-				int bytesRead = 0;
-				fos = new FileOutputStream(destination);
-				while ((bytesRead = is.read(b)) != -1) {
-					fos.write(b, 0, bytesRead);
-				}
-			} finally {
-				if (is != null) {
-					try {
-						is.close();
-					} catch (IOException x) {
-					}
-				}
-				if (fos != null) {
-					try {
-						fos.close();
-					} catch (IOException x) {
-					}
-				}
-			}
+         downloadJobResultFile(job, index, destination);
 		}
 
 		public String toString() {
@@ -385,37 +421,6 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 		public boolean isLeaf() {
 			return true;
-		}
-
-	}
-
-	/**
-	 * Description of the Class
-	 * 
-	 * @author Joshua Gould
-	 */
-	public static class PipelineNode extends DefaultMutableTreeNode {
-		String pipelineName;
-
-		public PipelineNode(String pipelineName, AnalysisJob[] jobs) {
-			this.pipelineName = pipelineName;
-			children = new Vector();
-			for (int i = 0; i < jobs.length; i++) {
-				children.add(new JobNode(jobs[i]));
-			}
-
-		}
-
-		public String toString() {
-			return pipelineName;
-		}
-
-		public boolean getAllowsChildren() {
-			return true;
-		}
-
-		public boolean isLeaf() {
-			return false;
 		}
 
 	}
