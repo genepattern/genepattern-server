@@ -482,7 +482,9 @@ public class JobModel extends AbstractSortableTreeTableModel {
 					count++;
 				}
 			}
-			Collections.sort(children);// sort files alphabetically
+         if(children!=null) {
+            Collections.sort(children);// sort files alphabetically
+         }
 			return count;
 		}
 
