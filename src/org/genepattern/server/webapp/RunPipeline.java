@@ -23,7 +23,6 @@ import org.xml.sax.InputSource;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.GPConstants;
-import org.genepattern.util.PropertyFactory;
 import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.AnalysisService;
@@ -57,6 +56,7 @@ public class RunPipeline {
       this.analysisProxy = new AnalysisWebServiceProxy(server, userID);
       this.adminProxy = new AdminProxy(server, userID);
       this.server = server;
+	  System.setProperty("userID", userID);
       this.jobId = jobId;
       this.model = model;
       this.decorator = decorator==null?new RunPipelineBasicDecorator():decorator;  
@@ -97,7 +97,7 @@ public class RunPipeline {
 	
 		String pipelineFileName = args[0];
 		String userId = args[1];
-     
+ 
       String pipelineLSID = System.getProperty(GPConstants.LSID);
       int jobId = -1;
       if (System.getProperty("jobID") == null) { // null when run using java client
@@ -113,10 +113,13 @@ public class RunPipeline {
             decorator = (RunPipelineOutputDecoratorIF) (Class
 						.forName(decoratorClass)).newInstance();
       }
-      PropertyFactory property = PropertyFactory.getInstance();
-      Properties genepatternProps = property
-					.getProperties("genepattern.properties");
-		String server = "http://"
+      String genePatternPropertiesFile = System.getProperty("genepattern.properties") +  java.io.File.separator + "genepattern.properties";
+      java.io.FileInputStream fis = new java.io.FileInputStream(genePatternPropertiesFile);
+      
+      Properties genepatternProps = new Properties();
+      genepatternProps.load(fis);
+      fis.close();
+	  String server = "http://"
 					+ InetAddress.getLocalHost().getCanonicalHostName() + ":"
 					+ genepatternProps.getProperty("GENEPATTERN_PORT");
       PipelineModel pipelineModel = getPipelineModel(pipelineFileName, pipelineLSID);
