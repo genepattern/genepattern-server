@@ -354,7 +354,7 @@ public class AdminHSQLDAO implements AdminDAO {
    static {
       Properties props = new Properties();
       String gpPropsFilename = System.getProperty("genepattern.properties");
-      System.out.println("GPPropsFile="+ gpPropsFilename);
+      //System.out.println("GPPropsFile="+ gpPropsFilename);
       File gpProps = new File(gpPropsFilename, "genepattern.properties");
       FileInputStream fis = null;
       try {
