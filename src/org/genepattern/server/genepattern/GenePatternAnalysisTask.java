@@ -849,7 +849,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		String nom = f.getName();
 		File rf = new File(f.getParentFile(),"ODF_temp"+System.currentTimeMillis()+".odf");
 		boolean renamed = f.renameTo(rf );
-		System.out.println("RENAMED=" + renamed);
+		if (!renamed) return; // no provenance is better than deleting the file as we will
 		BufferedReader br = new BufferedReader(new FileReader(rf));
 		File f2 = new File(f.getParentFile(), nom);
 		BufferedWriter bw = new BufferedWriter(new FileWriter(f2));
@@ -901,7 +901,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		bw.close();
 		br.close();
 		rf.delete();
-		//f.delete();
 		} catch (Exception e){
 			e.printStackTrace();
 		}
