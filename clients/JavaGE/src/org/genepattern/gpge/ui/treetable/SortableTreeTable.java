@@ -101,6 +101,14 @@ public class SortableTreeTable extends JXTreeTable implements
 		}
 
 	}
+   
+   public Object getValueAt(int row, int column) {
+      try {
+         return super.getValueAt(row, column);
+      } catch(Throwable t) {
+         return null;  
+      }
+   }
 
 	public final void dragGestureRecognized(final DragGestureEvent e) {
 
