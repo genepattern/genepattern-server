@@ -284,13 +284,17 @@ public class GPServer {
 					}
 
 				}
-				if (formalParameters[i].getAttributes().get(
-						TaskExecutor.PARAM_INFO_OPTIONAL[0]) != null
-						&& value == null) {
-					throw new WebServiceException(
-							"Missing value for required parameter "
-									+ formalParameters[i].getName());
-				}
+            if (value == null || value.trim().equals("")) {  
+               String sOptional = (String) formalAttributes
+						.get(GPConstants.PARAM_INFO_OPTIONAL[0]);
+               boolean optional = (sOptional != null && sOptional.length() > 0);
+               if (!optional) {
+                  throw new WebServiceException(
+                  "Missing value for required parameter "
+                        + formalParameters[i].getName());
+               }
+            }
+            
 
 				// see if parameter belongs to a set of choices, e.g. 1=T-Test.
 				// If so substitute 1 for T-Test, also check to see if value is
