@@ -60,21 +60,22 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 	}
 
 	protected void startOutputStreamThread(Process proc) {
-		try {
+	/*	try {
 			new StreamGobbler(proc.getInputStream(), taskName + "-OUT").start();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
+      */
 	}
 
 	protected void startErrorStreamThread(Process proc) {
-		try {
+	/*	try {
 			errorGobbler = new StreamGobbler(proc.getErrorStream(), taskName
 					+ "-ERR");
 			errorGobbler.start();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
-		}
+		}*/
 	}
 
 	public void exec() throws TaskExecException {
