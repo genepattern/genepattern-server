@@ -55,7 +55,7 @@ public class OdfDatasetWriter implements IExpressionDataWriter {
 
 		out.print("COLUMN_DESCRIPTIONS:Name for each row\tDescription for each row\t");
 
-		for(int j = 0; j < columns - 1; j++) {
+		for(int j = 0; j < columns-1; j++) {
 			String columnDescription = expressionData.getColumnDescription(j);
 			if(columnDescription == null) {
 				columnDescription = "";
@@ -68,7 +68,7 @@ public class OdfDatasetWriter implements IExpressionDataWriter {
 			columnDescription = "";
 		}
       
-		out.println();
+		out.println(columnDescription);
 
 		out.println("RowNamesColumn=0");
 
