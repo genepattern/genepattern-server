@@ -342,7 +342,7 @@ semantic_search_loop:
 						fileName = fn;
 						break semantic_search_loop;
 					}
-					if (fn.endsWith("." + fileFormats[ff])) {
+					if (fn.toLowerCase().endsWith("." + fileFormats[ff].toLowerCase())) {
 						// if there's match with the extension, then we've found it (for now)
 						fileName = fn;
 						break semantic_search_loop;
