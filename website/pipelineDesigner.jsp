@@ -1088,6 +1088,7 @@ function newTaskHTML(taskNum) {
 
 	// now find all tasks which have input parameters that accept file formats from among those possibly output at this stage
 	var suggestedTasks = new Array();
+	var numSuggested = 0;
 	for (t in TaskInfos) {
 	   	var task = TaskInfos[t];
 //if (task.name.indexOf("copyOf") == 0) alert("considering " + task.name + " which has " + task.parameterInfoArray.length + " parameters");
@@ -1106,29 +1107,29 @@ nextTask:
 					}
 //alert("adding " + task.name);
 					suggestedTasks[task.lsid] = task;
+					numSuggested++;
+
 					break nextTask;
 				}
 			}
 		}
 	}
 
-	// sort by something useful!
+	// TODO: sort by something useful!
 	//suggestedTasks.sort(sortSuggested);
 
-	var first = true;
+	if (numSuggested > 0) {
+		newTask = newTask + '<tr><td valign="top" colspan="3">';
+		newTask = newTask + '<select onchange="chgTask(this, ' + taskNum + ')" size="' + (numSuggested+1) + '">\n';
+		newTask = newTask + '<option value="' + NOT_SET + 
+				    '" selected style="font-weight: bold">proto-semantic suggestions</option>\n';
+	}
 	for (t in suggestedTasks) {
 		var task = suggestedTasks[t];
-		if (first) {
-			newTask = newTask + '<tr><td valign="top" colspan="3">';
-			newTask = newTask + '<select onchange="chgTask(this, ' + taskNum + ')">\n';
-			newTask = newTask + '<option value="' + NOT_SET + 
-					    '">proto-semantic suggestions</option>\n';
-			first = false;
-		}
-		newTask = newTask + '<option value="' + task.lsid + '">' + task.name +
-				    ' (' + task.taskType + ')</option>\n';
+		newTask = newTask + '<option value="' + task.lsid + '" title="' + task.taskType + '">' + 
+			  task.name + ' - ' + task.description + '</option>\n';
 	}
-	if (!first) newTask = newTask + '</select></td></tr>\n';
+	if (numSuggested > 0) newTask = newTask + '</select></td></tr>\n';
 
 	newTask = newTask + '<tr><td valign="top">\n';
 	newTask = newTask + '<select onchange="changeTaskType(this, ' + taskNum + ')" name="notused" size="' + (TaskTypesList.length+1) + '">\n';
@@ -1139,7 +1140,7 @@ nextTask:
 		newTask = newTask + '<option value="' + TaskTypesList[taskType] + '">' + name + '</option>\n';
 	}
 	newTask = newTask + '</select></td>\n';
-	newTask = newTask + '<td valign="top">&#8594;</td>';
+	newTask = newTask + '<td valign="top"><font size="+3">&#8594;</font></td>';
 	newTask = newTask + '<td align="left" valign="top"><select name="t' + taskNum + '" onchange="chgTask(this, ' + taskNum + ')">\n';
 	newTask = newTask + '</select></td></tr></table>\n';
 	newTask = newTask + '<input type="hidden" name="t' + taskNum + '_taskName" value="' + NOT_SET + '">';
