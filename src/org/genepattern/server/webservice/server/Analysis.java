@@ -64,6 +64,15 @@ public class Analysis extends GenericWebService {
 		}.getLatestTasksByName();
 	}
 
+   public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters) 	throws WebServiceException {
+      try {
+          org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+                     .getAnalysisJobDataSourceEJB();   
+         return ds.recordClientJob(taskID, getUsernameFromContext(), org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters));
+      } catch(Exception e) {
+         throw new WebServiceException(e);  
+      }
+   }
   
    
    /**

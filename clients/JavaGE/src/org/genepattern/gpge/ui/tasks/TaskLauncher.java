@@ -25,7 +25,7 @@ public class TaskLauncher {
 	 *            Description of the Parameter
 	 */
 	public static void submitVisualizer(AnalysisService svc,
-			ParameterInfo[] paramInfos, String username) {
+			ParameterInfo[] paramInfos, String username, AnalysisWebServiceProxy proxy) {
       try {
 			Map substitutions = new HashMap();
 			substitutions
@@ -59,6 +59,9 @@ public class TaskLauncher {
          new org.genepattern.gpge.ui.tasks.JavaGELocalTaskExecutor(null, svc
 					.getTaskInfo(), substitutions, username, svc.getServer())
 					.exec();
+         JobInfo jobInfo = proxy.recordClientJob(svc.getTaskInfo().getID(), paramInfos);
+         AnalysisJob job = new AnalysisJob(svc.getServer(), jobInfo, true);
+         JobModel.getInstance().add(job);
       } catch(Throwable t) {
           GenePattern.showErrorDialog("An error occurred while running " + svc.getTaskInfo().getName());
       }
@@ -127,7 +130,7 @@ public class TaskLauncher {
 		String status = "";
 		JobInfo info = null;
       if(serviceProxy==null) {
-         serviceProxy = new AnalysisWebServiceProxy(job.getServer(), "GenePattern"); // FIXME  
+         serviceProxy = new AnalysisWebServiceProxy(job.getServer(), job.getJobInfo().getUserId());
       }
 		int initialSleep = 100;
 		int sleep = initialSleep;

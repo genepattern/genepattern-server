@@ -196,23 +196,25 @@ public class JobModel extends AbstractSortableTreeTableModel {
       if(!isSameServerAndUsername(job)) {
          return;  
       }
-		JobNode child = new JobNode(job);
-      int insertionIndex = 0;
-      List children = root.getChildren();
-		if (children != null) {
-         insertionIndex = Collections.binarySearch(children, child,
-					comparator);   
-		}
-		if (insertionIndex < 0) {
-			insertionIndex = -insertionIndex - 1;
-		}
-      
-		root.insert(child, insertionIndex);
-      if(children==null || children.size()<=1) { // fixes bug in tree table
-         nodeStructureChanged(root);  
-      } else {
-         nodesWereInserted(root, new int[] { insertionIndex });
-		}
+      if(!job.isClientJob()) {
+         JobNode child = new JobNode(job);
+         int insertionIndex = 0;
+         List children = root.getChildren();
+         if (children != null) {
+            insertionIndex = Collections.binarySearch(children, child,
+                  comparator);   
+         }
+         if (insertionIndex < 0) {
+            insertionIndex = -insertionIndex - 1;
+         }
+         
+         root.insert(child, insertionIndex);
+         if(children==null || children.size()<=1) { // fixes bug in tree table
+            nodeStructureChanged(root);  
+         } else {
+            nodesWereInserted(root, new int[] { insertionIndex });
+         }
+      }
       notifyJobAdded(job);
 	}
 

@@ -1146,19 +1146,15 @@ public class MainFrame extends JFrame {
       menuBar.add(historyMenu);
       
 		JMenu helpMenu = new HelpMenu();
-      
-		try {
-			menuBar.setHelpMenu(helpMenu);
-		} catch (Throwable ex) {// setHelpMenu is not implemented on
-			menuBar.add(helpMenu);// some platform/Java versions
-		}
+      menuBar.add(helpMenu);
+		
 		setJMenuBar(menuBar);
 	}
 
    class HistoryMenu extends JMenu {
       final ActionListener historyMenuItemActionListener;
-      JMenuItem clearHistoryMenuItem = new JMenuItem("Clear History");
-      
+      JMenuItem clearHistoryMenuItem;
+       
       public HistoryMenu() {
          super("History");
          historyMenuItemActionListener = new ActionListener() {
@@ -1174,6 +1170,7 @@ public class MainFrame extends JFrame {
       public void removeAll() {
          super.removeAll();  
          addSeparator();
+         clearHistoryMenuItem = new JMenuItem("Clear History");
          ActionListener clearHistoryListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                removeAll();

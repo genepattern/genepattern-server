@@ -45,6 +45,15 @@ public class AnalysisWebServiceProxy {
 	}
    
 
+   public JobInfo recordClientJob(int taskID, ParameterInfo[] params) throws WebServiceException {
+      try {
+         return stub.recordClientJob(taskID, params);
+		} catch (RemoteException re) {
+			throw new WebServiceException(re);
+		}
+   }
+   
+   
    /**
 	 * Submits a job to be processed. The job is a child job of the supplied parent job.
 	 * 
@@ -87,8 +96,7 @@ public class AnalysisWebServiceProxy {
 		}
 	}
    
-   
-            
+
 	/**
 	 * Submits a job to be processed.
 	 * 
@@ -252,6 +260,8 @@ public class AnalysisWebServiceProxy {
 			throw new WebServiceException(re);
 		}
 	}
+   
+  
    
    public void setJobStatus(int parentJobId, String status) throws WebServiceException {
 		try {

@@ -151,7 +151,7 @@ public class RunTask {
             
             if (TaskLauncher.isVisualizer(analysisService)) {
                TaskLauncher.submitVisualizer(analysisService,
-                     actualParams, username);
+                     actualParams, username, serviceProxy);
             } else {
                TaskLauncher.submitAndWaitUntilCompletionInNewThread(
                      actualParams, serviceProxy, analysisService);
@@ -162,7 +162,7 @@ public class RunTask {
 		
          if (TaskLauncher.isVisualizer(analysisService)) {
             TaskLauncher.submitVisualizer(analysisService,
-                  actualParams, username);
+                  actualParams, username, serviceProxy);
          } else {
             TaskLauncher.submitAndWaitUntilCompletionInNewThread(
                   actualParams, serviceProxy, analysisService);

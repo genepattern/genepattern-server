@@ -57,6 +57,19 @@ public interface AnalysisJobDataSource {
 	public JobInfo addNewJob(int taskID, String user_id, String parameter_info) throws OmnigeneException, RemoteException;
    
    /**
+	 * Saves a record of a job that was executed on the client into the database
+	 * 
+	 * @param taskID
+	 * @param user_id
+	 * @param parameter_info
+	 * @throws OmnigeneException
+	 * @throws RemoteException
+	 * @return Job ID
+	 */
+	public JobInfo recordClientJob(int taskID, String user_id, String parameter_info) throws OmnigeneException, RemoteException;
+   
+   
+   /**
 	 * Submit a new child job
 	 * 
 	 * @param taskID
