@@ -16,6 +16,7 @@ import org.genepattern.io.StorageUtils;
 import org.genepattern.webservice.LocalTaskExecutor;
 import org.genepattern.webservice.TaskExecException;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * @author Joshua Gould
@@ -31,7 +32,7 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 	public JavaGELocalTaskExecutor(DataObjectBrowser dataObjectBrowser,
 			TaskInfo taskInfo, Map paramName2ValueMap, String userName,
 			String server) throws java.io.IOException,
-			java.net.MalformedURLException {
+			WebServiceException {
 		super(taskInfo, paramName2ValueMap, userName, server);
 		this.dataObjectBrowser = dataObjectBrowser;
 		this.taskName = taskInfo.getName();

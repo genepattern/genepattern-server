@@ -63,7 +63,7 @@ public class LocalTaskExecutor extends TaskExecutor {
 
 	public LocalTaskExecutor(TaskInfo taskInfo, Map substitutions,
 			String username, String server)
-			throws java.net.MalformedURLException, org.apache.axis.AxisFault {
+			throws WebServiceException {
 		super(taskInfo, substitutions, username);
 		this.server = server;
 		try {
@@ -298,8 +298,7 @@ public class LocalTaskExecutor extends TaskExecutor {
 	 *                Description of the Exception
 	 */
 
-	public void synchronizeTaskFiles() throws WebServiceException,
-			java.rmi.RemoteException {
+	public void synchronizeTaskFiles() throws WebServiceException {
 		String[] supportFileNames = null;
 		long[] supportFileDates = null;
 
@@ -309,15 +308,19 @@ public class LocalTaskExecutor extends TaskExecutor {
 						.getSupportFileNames(taskId);
 				supportFileDates = taskIntegratorProxy
 						.getLastModificationTimes(taskId, supportFileNames);
-			} catch (org.apache.axis.AxisFault e) {
-				javax.xml.namespace.QName noService = new javax.xml.namespace.QName(
-						"http://xml.apache.org/axis/", "Server.NoService");
-				if (e.getFaultCode().equals(noService)) {
-					oldServer = true;
-				} else {
-					throw e;
-				}
-			}
+			} catch (WebServiceException wse) {
+            Throwable rootCause = wse.getRootCause();
+            if(rootCause instanceof org.apache.axis.AxisFault) { 
+               org.apache.axis.AxisFault e = (org.apache.axis.AxisFault) rootCause;
+               javax.xml.namespace.QName noService = new javax.xml.namespace.QName(
+                     "http://xml.apache.org/axis/", "Server.NoService");
+               if (e.getFaultCode().equals(noService)) {
+                  oldServer = true;
+               } 
+            } else {
+               throw wse;
+            }
+         }
 		}
 		if (oldServer) {
 			InputStream is = null;
