@@ -1824,6 +1824,9 @@ public class MainFrame extends JFrame {
          reload.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                int row = table.getSelectedRow();
+               if(row==-1) {
+                  return;
+               }
                AnalysisJob job = (AnalysisJob) jobs.get(row);
                reload(job);
             }
@@ -1834,6 +1837,9 @@ public class MainFrame extends JFrame {
          clear.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                int row = table.getSelectedRow();
+               if(row==-1) {
+                  return;
+               }
                AnalysisJob job = (AnalysisJob) jobs.get(row);
                try {
                   AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(AnalysisServiceManager.getInstance().getServer(), AnalysisServiceManager.getInstance().getUsername());
@@ -1874,14 +1880,17 @@ public class MainFrame extends JFrame {
             public void mouseClicked(MouseEvent e) {
                if(e.getClickCount()==2 && !e.isPopupTrigger()) {
                   int row = table.getSelectedRow();
+                  if(row==-1) {
+                     return;
+                  }
                   AnalysisJob job = (AnalysisJob) jobs.get(row);
                   reload(job);
                }
             }
          });
          SortableHeaderRenderer r = new SortableHeaderRenderer(table, historyTableModel);
-         historyDialog.getContentPane().add(toolBar, BorderLayout.PAGE_START);
-         historyDialog.getContentPane().add(new JScrollPane(table));
+         historyDialog.getContentPane().add(toolBar, BorderLayout.NORTH);
+         historyDialog.getContentPane().add(new JScrollPane(table), BorderLayout.CENTER);
          historyDialog.pack();
          historyDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
