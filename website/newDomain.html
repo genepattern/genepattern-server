@@ -10,19 +10,19 @@ function sendData(){
 }
 </SCRIPT>
 </head>
-<body>
+<body onload="javascript:document.data.name.focus()">
 <form name="data">
 <table>
 <tr>
-<td align="right">Domain Name:</td>
+<td align="right"><nobr>Domain Name:</nobr></td>
 <td><input type="text" name="name" value="" size="10"></td>
 </tr>
 <tr>
-<td align="right">Description:</td>
+<td align="right"><nobr>Description:</nobr></td>
 <td><input type="text" name="desc" value="" size="10"></td>
 </tr>
 </table>
 </form>
-<input type="button" onclick="sendData()" value="add" class="little">
+<center><input type="button" onclick="sendData()" value="add" class="little"></center>
 </body>
 </html>

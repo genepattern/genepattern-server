@@ -319,7 +319,7 @@ function TaskType(taskType) {
 	this.taskType = taskType;
 }
 
-function TaskInfo(name, description, lsid, taskType, parameterInfoArray, docs) {
+function TaskInfo(name, description, lsid, taskType, parameterInfoArray, docs, fileFormats, domains) {
 	this.name = name;
 	this.description = description;
 	this.lsid = lsid;
@@ -328,13 +328,15 @@ function TaskInfo(name, description, lsid, taskType, parameterInfoArray, docs) {
 	this.taskType = taskType;
 	this.parameterInfoArray = parameterInfoArray;
 	this.docs = docs;
+	this.fileFormats = fileFormats;
+	this.domains = domains;
 }
 
 function LSIDNoVersion(lsid) {
 	return lsid.split('<%= LSID.DELIMITER %>').slice(0,-1).join('<%= LSID.DELIMITER %>')
 }
 
-function ParameterInfo(name, description, value, isInputFile, isOutputFile, defaultValue, isOptional) {
+function ParameterInfo(name, description, value, isInputFile, isOutputFile, defaultValue, isOptional, fileFormats, domains) {
 	this.name = name;
 	this.description = description;
 	this.value = value;
@@ -342,6 +344,8 @@ function ParameterInfo(name, description, value, isInputFile, isOutputFile, defa
 	this.isOutputFile = isOutputFile;
 	this.defaultValue = defaultValue;
 	this.isOptional = isOptional;
+	this.fileFormats = fileFormats;
+	this.domains = domains;
 }
 
 function LSID(lsid) {

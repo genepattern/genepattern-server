@@ -180,29 +180,51 @@ public class HTMLPipelineView implements IPipelineView {
 					ParameterInfo pi = parameterInfoArray[i];
 					HashMap pia = pi.getAttributes();
 					writer
-							.write("new ParameterInfo(\""
-									+ pi.getName()
-									+ "\", \""
-									+ GenePatternAnalysisTask.htmlEncode(pi
-											.getDescription())
-									+ "\", \""
-									+ GenePatternAnalysisTask
-											.htmlEncode((String) pi.getValue())
-									+ "\", "
-									+ (pi.isInputFile() ? "true" : "false")
-									+ ", "
-									+ (pi.isOutputFile() ? "true" : "false")
-									+ ", \""
-									+ ((pia != null && pia
-											.get(GenePatternAnalysisTask.PARAM_INFO_DEFAULT_VALUE[0]) != null) ? GenePatternAnalysisTask
-											.htmlEncode(((String) pia
-													.get(GenePatternAnalysisTask.PARAM_INFO_DEFAULT_VALUE[0]))
-													.trim())
-											: "")
-									+ "\", "
-									+ ((pia != null && pia
-											.get(GenePatternAnalysisTask.PARAM_INFO_OPTIONAL[0]) != null) ? "true"
-											: "false") + ")");
+						.write("new ParameterInfo(\""
+								+ pi.getName()
+								+ "\", \""
+								+ GenePatternAnalysisTask.htmlEncode(pi
+										.getDescription())
+								+ "\", \""
+								+ GenePatternAnalysisTask
+										.htmlEncode((String) pi.getValue())
+								+ "\", "
+								+ (pi.isInputFile() ? "true" : "false")
+								+ ", "
+								+ (pi.isOutputFile() ? "true" : "false")
+								+ ", \""
+								+ ((pia != null && pia
+										.get(GenePatternAnalysisTask.PARAM_INFO_DEFAULT_VALUE[0]) != null) ? GenePatternAnalysisTask
+										.htmlEncode(((String) pia
+												.get(GenePatternAnalysisTask.PARAM_INFO_DEFAULT_VALUE[0]))
+												.trim())
+										: "")
+								+ "\", "
+								+ ((pia != null && pia
+										.get(GenePatternAnalysisTask.PARAM_INFO_OPTIONAL[0]) != null) ? "true"
+										: "false"));
+					writer.write(", new Array("); // create array of file formats
+					String fileFormats = (String)pia.get(GPConstants.FILE_FORMAT);
+					if (fileFormats == null || fileFormats.length() == 0) {
+						fileFormats = "";
+					} else {
+						fileFormats = "\"" + fileFormats.replaceAll(GPConstants.PARAM_INFO_CHOICE_DELIMITER, "\", \"") + "\"";
+					}
+					writer.write(fileFormats);
+					writer.write(")"); // close array of file formats
+					
+					writer.write(", new Array("); // create array of domains
+					String domain = (String)pia.get(GPConstants.DOMAIN);
+					if (domain == null || domain.length() == 0) {
+						domain = "";
+					} else {
+						domain = "\"" + domain.replaceAll(GPConstants.PARAM_INFO_CHOICE_DELIMITER, "\", \"") + "\"";
+					}
+					writer.write(domain);
+					writer.write(")"); // close array of domains
+				
+
+					writer.write(")");
 				}
 				writer.write(")"); // close Array
 				writer.write(", new Array("); // create array of doc filenames
@@ -219,6 +241,27 @@ public class HTMLPipelineView implements IPipelineView {
 				} catch (Exception e) {
 				}
 				writer.write(")"); // close array of docs
+
+				writer.write(", new Array("); // create array of file formats
+				String fileFormats = tia.get(GPConstants.FILE_FORMAT);
+				if (fileFormats == null) {
+					fileFormats = "";
+				} else {
+					fileFormats = "\"" + fileFormats.replaceAll(GPConstants.PARAM_INFO_CHOICE_DELIMITER, "\", \"") + "\"";
+				}
+				writer.write(fileFormats);
+				writer.write(")"); // close array of file formats
+				
+				writer.write(", new Array("); // create array of domains
+				String domain = tia.get(GPConstants.DOMAIN);
+				if (domain == null) {
+					domain = "";
+				} else {
+					domain = "\"" + domain.replaceAll(GPConstants.PARAM_INFO_CHOICE_DELIMITER, "\", \"") + "\"";
+				}
+				writer.write(domain);
+				writer.write(")"); // close array of domains
+				
 				writer.write(");\n"); // close TaskInfo
 			}
 		}
