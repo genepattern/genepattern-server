@@ -9,7 +9,6 @@ import java.util.Vector;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.JobInfo;
@@ -341,7 +340,7 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
 							val = "";
 						}
 					}
-					val = GenePatternAnalysisTask.replace(val,
+					val = replace(val,
 							GPConstants.LEFT_DELIMITER + GPConstants.LSID
 									+ GPConstants.RIGHT_DELIMITER, model
 									.getLsid());
@@ -356,8 +355,9 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
 					// BUG: bug 116: this makes the pipeline non-portable to
 					// systems that can't resolve the server name or the port
 					// number!!!
-					if (val.indexOf(System.getProperty("GenePatternURL")) == 0) {
-						val = GenePatternAnalysisTask.replace(val, server,
+					String GenePatternURL = System.getProperty("GenePatternURL");
+					if (GenePatternURL!=null && val.indexOf(GenePatternURL) == 0) {
+						val = replace(val, server,
 								"paste(server, \"");
 						val = val + "\", sep=\"\")";
 						invocation.append(val);
@@ -377,6 +377,39 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
 				+ invocation.toString() + "\n");
 
 		return out.toString();
+	}
+	
+	/**
+	 * replace all instances of "find" in "original" string and substitute
+	 * "replace" for them
+	 * 
+	 * @param original
+	 *            String before replacements are made
+	 * @param find
+	 *            String to search for
+	 * @param replace
+	 *            String to replace the sought string with
+	 * @return String String with all replacements made
+	 * @author Jim Lerner
+	 */
+	public static final String replace(String original, String find,
+			String replace) {
+		StringBuffer res = new StringBuffer();
+		int idx = 0;
+		int i = 0;
+		while (true) {
+			i = idx;
+			idx = original.indexOf(find, idx);
+			if (idx == -1) {
+				res.append(original.substring(i));
+				break;
+			} else {
+				res.append(original.substring(i, idx));
+				res.append(replace);
+				idx += find.length();
+			}
+		}
+		return res.toString();
 	}
 
 	/**
