@@ -13,17 +13,26 @@
 	String proxyHost= request.getParameter("proxyHost");
 	String proxyPort= request.getParameter("proxyPort");
 
-System.out.println("Here..." + clientMode + "=" + proxyHost + "=" + proxyPort);
+	String proxyUser= request.getParameter("proxyUser");
+	String proxyPass= request.getParameter("proxyPass");
+
+	String moduleRepository = request.getParameter("moduleRepository");
+	String reposDefault = request.getParameter("submitReposDefault");
+	String clearProxy = request.getParameter("submitClearProxy");
+	String defaultModuleRepository = System.getProperty("DefaultModuleRepositoryURL");
+
+	if (reposDefault != null){
+		moduleRepository = defaultModuleRepository ;
+	}
 
 	String ANY= "Any computer";
 	String LOCAL = "This Computer";	
-
 	if (LOCAL.equals(clientMode)){
 		allowedClients = LOCAL;
 	} else if (ANY.equals(clientMode)){
 		allowedClients = ANY;
 	} else if ("specified".equals(clientMode)){
-		allowedClients  = request.getParameter("allowed.clients");
+		allowedClients  = request.getParameter("allowed_clients");
 	}
 
 	boolean storeSuccess = true;
@@ -34,21 +43,34 @@ System.out.println("Here..." + clientMode + "=" + proxyHost + "=" + proxyPort);
 	if (allowedClients == null) allowedClients = ANY;
 
 
-	if (proxyHost!= null){
-		storeSuccess  = PropertiesManager.storeChange("http.proxyHost", proxyHost);
+	if ((proxyHost!= null) || (proxyPort!= null)){
+		Properties p = new Properties();
+		if (proxyPort!= null) p.setProperty("http.proxyPort", proxyPort);
+		if (proxyHost!= null) p.setProperty("http.proxyHost", proxyHost);
+
+		storeSuccess  = PropertiesManager.storeChanges(p);
 	} 
+
+	if (clearProxy != null){
+		Vector vec = new Vector();
+		vec.add("http.proxyPort");
+		vec.add("http.proxyHost");
+		vec.add("http.proxyUser");
+		vec.add("http.proxyPassword");
+
+		storeSuccess  = PropertiesManager.removeProperties(vec);
+	}
 	proxyHost= System.getProperty("http.proxyHost" );
 	if (proxyHost== null) proxyHost= "";
-
-
-	if (proxyPort!= null){
-		storeSuccess  = PropertiesManager.storeChange("http.proxyPort", proxyPort);
-	} 
-	proxyPort= System.getProperty("proxyPort" );
+	proxyPort= System.getProperty("http.proxyPort" );
 	if (proxyPort== null) proxyPort= "";
 
 
-
+	if (moduleRepository != null){
+		storeSuccess  = PropertiesManager.storeChange("ModuleRepositoryURL", moduleRepository );
+	} 
+	moduleRepository = System.getProperty("ModuleRepositoryURL" );
+	if (moduleRepository == null) moduleRepository = "";
 
 	
 
@@ -87,6 +109,13 @@ function changeFields(obj){
 
 function changeProxyFields(obj){
 	obj.form.submitProxy.disabled=((obj.form.proxyHost.value == "<%=proxyHost%>")  && (obj.form.proxyPort.value == "<%=proxyPort%>")) 
+
+	obj.form.submitClearProxy.disabled = ((obj.form.proxyHost.value.length + obj.form.proxyPort.value.length ) == 0)  
+}
+
+function changeReposFields(obj){
+	obj.form.submitRepos.disabled = (obj.form.moduleRepository.value == "<%=moduleRepository%>")
+	obj.form.submitReposDefault.disabled = (obj.form.moduleRepository.value == "<%=defaultModuleRepository%>")
 }
 
 </script>
@@ -95,34 +124,16 @@ function changeProxyFields(obj){
 <jsp:include page="navbar.jsp"></jsp:include>
 
 
-<table class="majorCell" width="100%" class="navbar">
-		<tr>
-		<td class="heading" colspan="2">GenePattern Server Administration</td>
-		</tr>
-		<tr><td height="3"></td></tr>
+<table class="majorCell" width="100%" class="navbar"  border="1" rules="all" frame="border" cellpadding="10">
 		
+		
+		<tr>
+		
+		<td width='50%'><table class="majorCell" width='100%'>
+		<tr>
+		<td class="heading" colspan="2">Access</td>
+		</tr>
 
-		
-		<tr>
-			<td valign="middle" align="right" width="30%">
-				Logs
-			</td>
-			<td valign="top" align="left">
-<table cellpadding="0" cellspacing="0">
-<tr><td halign="left">
-				<input type="button" value="GenePattern" class="wideButton" onclick="javascript:window.location='tomcatLog.jsp'"></td></tr>
-<% if (System.getProperty("serverInfo").indexOf("Apache Tomcat") != -1) { %>
-				<tr><td><input type="button" value="web server" class="wideButton" onclick="javascript:window.location='tomcatLog.jsp?tomcat=1'"></td></tr>
-<% } %>
-</table>
-			</td>
-		</tr>
-		<tr>
-			<td colspan="2">
-				<hr noshade size="1">
-			</td>
-		</tr>
-		<tr>
 			<td valign="top" align="right" width="30%">
 				<br>Allow Clients to connect from:
 			</td>
@@ -172,40 +183,85 @@ onclick="refillField(this);"> These Domains <br>
 </table>
 
 
-
-			</td>
-		</tr>
-<tr>
-			<td colspan="2">
-				<hr noshade size="1">
-			</td>
-		</tr>
-<tr>
-<td align='right'>
-<table>
-<tr><td align='right'>HTTP Proxy Host:</td></tr>
-<tr><td align='right'>HTTP Proxy Port:</td></tr>
-<tr><td>&nbsp;</td></tr>
 </table>
+</td>
+<td valign="top"  width='50%'>
+		<table class="majorCell" width='100%'>
+			<tr><td class="heading">
+				Logs
+			</td></tr>
+			<tr><td valign="top" align="center">
+<table class="majorCell">
+<tr><td halign="left">
+				<input type="button" value="GenePattern" class="wideButton" onclick="javascript:window.location='tomcatLog.jsp'"></td></tr>
+<% if (System.getProperty("serverInfo").indexOf("Apache Tomcat") != -1) { %>
+				<tr><td><input type="button" value="web server" class="wideButton" onclick="javascript:window.location='tomcatLog.jsp?tomcat=1'"></td></tr>
+<% } %>
+</table>
+			</td>
+		</tr>
+		</table>
+		</td>
+</tr>
 
-<td>
+	
+<tr>
+<td width='50%' valign='top' align='center'>
+<form action="adminServer.jsp" name="moduleRepositoryForm" method="POST">
+
+<table width='100%'>
+<tr><td class="heading" colspan='2'>Module Repository	</td></tr>
+<tr><td align='right'>Repository URL:</td><td><input type='text' size='40' name="moduleRepository" value='<%=moduleRepository%>' onkeyup="changeReposFields(this)"/>
+</td></tr>
+<tr><td colspan='2' ALIGN='CENTER'><input type="submit" name="submitRepos" value="change" class="button"  disabled="true"> 
+<input type="submit" name="submitReposDefault" value="reset to default" 
+<%
+	if (defaultModuleRepository.equals(moduleRepository)){
+%>
+	disabled="true"> <%
+	}
+%>
+</td></tr>
+<tr><td colspan='2' align='center'><a href="taskCatalog.jsp">Install/Update modules</a></td></tr>
+</table>
+</form>
+</td>
+
+
+
+<td colspan=2>
 <form action="adminServer.jsp" name="proxySettingsForm" method="POST">
-<table>
-<tr><td><input type='text' size='40' name="proxyHost" value='<%=proxyHost%>' onkeyup="changeProxyFields(this)"/></td></tr>
-<tr><td><input type='text' size='40' name="proxyPort" value='<%=proxyPort%>' onkeyup="changeProxyFields(this)"/></td></tr>
-<tr><td><input type="submit" name="submitProxy" value="submit" class="button"  disabled="true"></td></tr>
+
+<table width='100%'>
+<tr><td class="heading" colspan='2'>HTTP Proxy Settings</td></tr>
+
+<tr><td align='right'>Proxy Host:</td><td><input type='text' size='40' name="proxyHost" value='<%=proxyHost%>' onkeyup="changeProxyFields(this)"/></td></tr>
+
+<tr><td align='right'>Proxy Port:</td><td><input type='text' size='40' name="proxyPort" value='<%=proxyPort%>' onkeyup="changeProxyFields(this)"/></td></tr>
+
+<tr><td align='right'>Proxy Username:</td><td><input type='password' size='40' name="proxyUser" value='<%=proxyUser%>' onkeyup="changeProxyFields(this)"/></td></tr>
+<tr><td align='right'>Proxy Password:</td><td><input type='password' size='40' name="proxyPass" value='<%=proxyPass%>' onkeyup="changeProxyFields(this)"/></td></tr>
+<tr><td>&nbsp;</td></tr>
+
+<tr><td colspan=2 align='center'><input type="submit" name="submitProxy" value="submit" class="button"  disabled="true">
+<input type="submit" name="submitClearProxy" value="clear" class="button"
+<%
+	if ((proxyPort.length() + proxyHost.length()) == 0){
+%>
+	disabled="true" 
+<%
+	}
+%>
+><input type="button" name="proxyHelp" value="Help" class="button" onclick="alert('HTTP proxy settings are needed only to connect to the Module Repository, and only if your organization has a web proxy between you and the internet. \nUsername and password are required only if your proxy requires authentication. \nThe username and password values will not be saved to the config file for security reasons and need to be re-entered after a server restart.')">
+
+</td></tr>
 </table>
 </form>
 </td>
 </tr>
-<tr>
-			<td colspan="2">
-				<hr noshade size="1">
-			</td>
-		</tr>
 
 <tr>
-			<td valign="middle" al colspan="2">
+			<td valign="middle" align='center' colspan="2">
 				<a href="shutdownServer.jsp">Shutdown server</a>
 			</td>
 		</tr>
