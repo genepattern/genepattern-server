@@ -277,7 +277,17 @@ try {
 				if (inherited) {
 					runTimePrompt[i] = false;
 					inheritedTaskNum = requestParameters.getParameter(taskPrefix + "_i_" + i);
-					inheritedFilename = requestParameters.getParameter(taskPrefix + "_if_" + i);
+					inheritedFilename = null;
+
+					String[] values = requestParameters.getParameterValues(taskPrefix + "_if_" + i);
+					for (int x=0; values!=null && x < values.length ; x++){
+					 	if (x > 0) {
+							inheritedFilename = inheritedFilename + GPConstants.PARAM_INFO_CHOICE_DELIMITER;
+						} else {
+							inheritedFilename = "";
+						}
+						inheritedFilename += values[x];
+					}
 				}
 
 				if (runTimePrompt[i]) {

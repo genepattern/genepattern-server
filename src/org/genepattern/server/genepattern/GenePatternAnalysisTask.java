@@ -400,13 +400,13 @@ public class GenePatternAnalysisTask implements IGPConstants {
 							String baseName = originalPath
 									.substring(originalPath.lastIndexOf("/") + 1);
 							int j;
-							j = baseName.indexOf("?");
+							j = baseName.lastIndexOf("?");
 							if (j != -1 && j < baseName.length())
 								baseName = baseName.substring(j + 1);
-							j = baseName.indexOf("&");
+							j = baseName.lastIndexOf("&");
 							if (j != -1 && j < baseName.length())
 								baseName = baseName.substring(j + 1);
-							j = baseName.indexOf("=");
+							j = baseName.lastIndexOf("=");
 							if (j != -1 && j < baseName.length())
 								baseName = baseName.substring(j + 1);
 							j = baseName.indexOf("Axis");
@@ -416,7 +416,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 										.indexOf("_") + 1);
 							if (baseName.length() == 0)
 								baseName = "indexPage";
-							baseName = URLDecoder.decode(baseName, "UTF-8");
+							baseName = URLDecoder.decode(baseName, UTF8);
 
 							outFile = new File(outDirName, baseName);
 							_cat.info("downloading " + originalPath + " to "

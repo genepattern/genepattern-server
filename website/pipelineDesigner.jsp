@@ -127,7 +127,7 @@ function addAnother(taskNum, scrollTo) {
 				} else {
 				}
 				if (oldTaskNum > 0) {
-					setFileInheritance(newTaskNum, param, inheritsFromTaskNum, document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param].options[document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param].selectedIndex].value);
+					setFileInheritance(newTaskNum, param, inheritsFromTaskNum, getSelectorValues(document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param]));
 				}
 				else { 
 					//alert('not setting file inheritance');
@@ -241,7 +241,7 @@ function deleteTask(taskNum) {
 //							alert('deleteTask: ' + (t+1) + '. ' + taskName + ' has lost its inherited input for ' + pi.name + ' from ' + (taskNum+1) + '. ' + deletedTaskName);
 						}
 					}
-					setFileInheritance(newTaskNum, param, inheritsFromTaskNum, document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param].options[document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param].selectedIndex].value);
+					setFileInheritance(newTaskNum, param, inheritsFromTaskNum, getSelectorValues(document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param]));
 				}
 	   		} else {
 				setParameter(newTaskNum, pi.name, document.forms["pipeline"]['t' + oldTaskNum + '_' + pi.name].value);
@@ -521,7 +521,7 @@ function chgLSIDVer(oldTaskNum, selector) {
 			} else {
 			}
 			if (oldTaskNum > 0) {
-				setFileInheritance(newTaskNum, param, inheritsFromTaskNum, document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param].options[document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param].selectedIndex].value);
+				setFileInheritance(newTaskNum, param, inheritsFromTaskNum, getSelectorValues(document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param]));
 			}
 			else { 
 				//alert('not setting file inheritance');
@@ -553,7 +553,7 @@ function chgLSIDVer(oldTaskNum, selector) {
 			} else {
 			}
 			if (oldTaskNum > 0) {
-				setFileInheritance(newTaskNum, param, inheritsFromTaskNum, document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param].options[document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param].selectedIndex].value);
+				setFileInheritance(newTaskNum, param, inheritsFromTaskNum, getSelectorValues(document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param]));
 			}
 			else { 
 				//alert('not setting file inheritance');
@@ -650,20 +650,22 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 			taskFields = taskFields + '<br><input name="t' + taskNum + '_shadow' + param + 
 				     '" type="text" readonly size="130" tabindex="-1" class="shadow">';
 			if (taskNum > 0) {
-				taskFields = taskFields + '<br><nobr>or use output from <select name="t' + taskNum + '_i_' + param + 
+				taskFields = taskFields + '<br><table><tr><td valign="top"><nobr>or use output from <select name="t' + taskNum + '_i_' + param + 
 							  '" onchange="chooseInheritTask(' + taskNum + ', ' + param + ')"><option value=' + NOT_SET + '" disabled>Choose task</option>\n';
 				for (t = 0; t < taskNum; t++) {
 					taskFields = taskFields + '<option value="' + t + '">' + (t+1) + '.  ' + 
 						     document.forms['pipeline']['t' + t + '_taskName'].value + '</option>\n';
 				}
 				taskFields = taskFields + ' </select>\n';
-				taskFields = taskFields + ' <select name="t' + taskNum + '_if_' + param + '"' +
-					' onChange="changeTaskInheritFile(this, ' + taskNum + ', ' + param + ', \'' + pi.name + '\')">\n';
+				if (pi.description.length > 0 && pi.description != pi.name.replace(/\./g,' ').replace(/\_/g,' ')) taskFields = taskFields + '<br><br>' + pi.description;
+				taskFields = taskFields + ' </td><td valign="top">';
+				taskFields = taskFields + '<select name="t' + taskNum + '_if_' + param + '"' +
+					' onChange="changeTaskInheritFile(this, ' + taskNum + ', ' + param + ', \'' + pi.name + '\')" multiple size="6">\n';
 				// this selector will be filled in dynamically by chooseInheritTask when the task is selected
-				taskFields = taskFields + ' </select></nobr>\n';
+				taskFields = taskFields + ' </select></nobr></td></td></table>\n';
 			}
-			if (pi.description.length > 0 && pi.description != pi.name.replace(/\./g,' ').replace(/\_/g,' ')) taskFields = taskFields + '<br>' + pi.description;
 		} else if (pi.isOutputFile) {
+			// should never happen
 		} else if (choices.length < 2) {
 			taskFields = taskFields + "<table><tr><td valign='top'><input name='t" + taskNum + "_" + pi.name + "' value='" + pi.defaultValue + "'> &nbsp;</td>";
 			if (pi.description.length > 0) taskFields = taskFields + '<td valign="top">' + pi.description + '</td>';
@@ -746,13 +748,30 @@ function setSelector(selector, findValue) {
 		alert(taskName + "'s " + paramName + " parameter does not exist in the current task definition!");
 		return;
 	}
-	for (f = 0; f < fld.options.length; f++) {
-		if (fld.options[f].value != "" && fld.options[f].value == findValue) {
-			fld.selectedIndex = f;
-			return;
-		}
-		vals = vals + "'" + fld.options[f].value + "'" + '=' + fld.options[f].text + '\n';
+	var numFound = 0;
+	var multiple = fld.multiple;
+	var findValues = new Array();
+	if (multiple) {
+		findValues = findValue.split("<%= GPConstants.PARAM_INFO_CHOICE_DELIMITER %>");
+	} else {
+		findValues[0] = findValue;
 	}
+
+	for (fv = 0; fv < findValues.length; fv++) {
+		findValue = findValues[fv];
+		var found = false;
+		for (f = 0; f < fld.options.length; f++) {
+			if (fld.options[f].value != "" && fld.options[f].value == findValue) {
+				fld.options[f].selected = true;
+				numFound++;
+				found = true;
+				break;
+			}
+		}
+		if (!found) vals = vals + "'" + fld.options[f].value + "'" + '=' + fld.options[f].text + '\n';
+	}
+	if (numFound == findValues.length) return;
+
 	var i = fld.name.indexOf("_");
 	var taskNum = fld.name.substring(1, i);
 	var taskName = document.forms['pipeline']['t' + t + '_taskName'].value;
@@ -771,6 +790,20 @@ function setOption(selector, findValue) {
 			break;
 		}
 	}
+}
+
+function getSelectorValues(selector) {
+	var delimiter = "<%= GPConstants.PARAM_INFO_CHOICE_DELIMITER %>";
+	var vals = "";
+	for (f = 0; f < selector.options.length; f++) {
+		if (selector.options[f].selected) {
+			if (vals.length > 0) {
+				val = vals + delimiter;
+			}
+			vals = vals + selector.options[f].value
+		}
+	}
+	return vals;
 }
 
 function setField(field, value) {

@@ -3,6 +3,7 @@ package org.genepattern.server.webapp;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
@@ -288,7 +289,7 @@ public class RunPipeline {
 	}
 
 	public static ParameterInfo[] setInheritedJobParameters(
-			ParameterInfo[] parameterInfo, JobInfo[] results) {
+			ParameterInfo[] parameterInfo, JobInfo[] results) throws FileNotFoundException {
 		for (int i = 0; i < parameterInfo.length; i++) {
 			ParameterInfo aParam = parameterInfo[i];
 			if (aParam.getAttributes() != null) {
@@ -303,7 +304,7 @@ public class RunPipeline {
 	}
 
 	protected static String getInheritedFilename(Map attributes,
-			JobInfo[] results) {
+			JobInfo[] results) throws FileNotFoundException {
 		// these params must be removed so that the soap lib doesn't try to send
 		// the
 		// file as ana attachment
@@ -354,7 +355,7 @@ public class RunPipeline {
 	/**
 	 * return the file name for the previously run job by index or name
 	 */
-	public static String getOutputFileName(org.genepattern.webservice.JobInfo job, String fileStr) {
+	public static String getOutputFileName(org.genepattern.webservice.JobInfo job, String fileStr) throws FileNotFoundException {
 		String fileName = null;
 		String fn = null;
 		int j;
@@ -364,14 +365,17 @@ public class RunPipeline {
 
 		// TODO: Nada's file analyzer gets integrated here.
 		// For now, just match on filename extension
+	 	String [] fileFormats = fileStr.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+semantic_search_loop:
 		for (j = 0; j < jobParams.length; j++) {
 			if (jobParams[j].isOutputFile()) {
 				fn = jobParams[j].getValue(); // get the filename
-				
-				if (fn.endsWith("." + fileStr)) {
-					// if there's match with the extension, then we've found it (for now)
-					fileName = fn;
-					break;
+				for (int ff = 0; ff < fileFormats.length; ff++) {
+					if (fn.endsWith("." + fileFormats[ff])) {
+						// if there's match with the extension, then we've found it (for now)
+						fileName = fn;
+						break semantic_search_loop;
+					}
 				}
 			}
 		}
@@ -410,6 +414,9 @@ public class RunPipeline {
 			if (lastIdx != -1) {
 				fileName = fileName.substring(lastIdx + 1);
 			}
+		}
+		if (fileName == null) {
+			throw new FileNotFoundException("Unable to find output files from job " + job.getJobNumber() + " that match " + fileStr);
 		}
 		return fileName;
 	}
