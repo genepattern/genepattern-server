@@ -2,6 +2,9 @@ package org.genepattern.webservice;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,6 +14,7 @@ import java.util.Vector;
 import org.genepattern.webservice.jaxb.parameter.ANALYSISPARAMETERS;
 import org.genepattern.webservice.jaxb.parameter.ATTRIBUTE;
 import org.genepattern.webservice.jaxb.parameter.PARAMETER;
+import org.genepattern.util.GPConstants;
 
 /**
  * Utility class to convert between jxb string and <CODE>ParameterInfo <CODE>
@@ -68,7 +72,15 @@ public class ParameterFormatConverter {
 					}
 				}
 				jxbParameter.setName(parameterInfo.getName());
-				jxbParameter.setValue(parameterInfo.getValue());
+				/*
+					BUG 55:
+					Due to what appears to be a bug in JAXB 1.0 early access, the unmarshalling
+					of arguments involves the trimming to a single space of any multiple space
+					character sequence.  As a workaround, parameters are being URLEncoded, thus
+					turning spaces into pluses.  The reverse operation is performed when they
+					are unmarshalled.
+				 */
+				jxbParameter.setValue(URLEncoder.encode(parameterInfo.getValue(), GPConstants.UTF8));
 				jxbParameter.setDESCRIPTION(parameterInfo.getDescription());
 				parameterList.add(jxbParameter);
 
@@ -122,8 +134,18 @@ public class ParameterFormatConverter {
 					ATTRIBUTE att = (ATTRIBUTE) atts.get(j);
 					attsMap.put(att.getKey(), att.getContent());
 				}
+
+				/*
+					BUG 55:
+					Due to what appears to be a bug in JAXB 1.0 early access, the unmarshalling
+					of arguments involves the trimming to a single space of any multiple space
+					character sequence.  As a workaround, parameters are being URLEncoded, thus
+					turning spaces into pluses.  The reverse operation is performed when they
+					are unmarshalled.
+				 */
+
 				ParameterInfo parameterInfo = new ParameterInfo(jxbParameter
-						.getName(), jxbParameter.getValue(), jxbParameter
+						.getName(), URLDecoder.decode(jxbParameter.getValue(), GPConstants.UTF8), jxbParameter
 						.getDESCRIPTION());
 				parameterInfo.setAttributes(attsMap);
 				parameterVector.add(parameterInfo);
