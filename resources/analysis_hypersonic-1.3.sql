@@ -2,7 +2,7 @@
 
 --Task master table
 
-create table task_master(task_ID int identity primary key, task_Name longvarchar, description longvarchar, parameter_info longvarchar, taskInfoAttributes longvarchar, user_id longvarchar, access_id int, isIndexed bit, lsid varchar(200));
+create table task_master(task_ID int identity primary key, task_Name longvarchar, description longvarchar, className longvarchar, parameter_info longvarchar, load_flag bit, type_id int, repeat_minute longvarchar, repeat_hour varchar(60), repeat_day_of_month varchar(60), repeat_month_of_year varchar(60), repeat_day_of_week varchar(60), taskInfoAttributes longvarchar, user_id longvarchar, access_id int, isIndexed bit, lsid varchar(200));
 
 create index idx_lsid on task_master(lsid);
 create index idx_is_indexed on task_master(isIndexed);
@@ -17,12 +17,9 @@ create index idx_lsid_version on lsids(lsid_version);
 
 --Job Info table
 
-create table analysis_job(job_no int identity primary key, task_id int, status_id int, date_submitted timestamp, date_completed timestamp, parameter_info longvarchar, user_id longvarchar, isIndexed bit, access_id int, job_name longvarchar, lsid varchar(200), task_lsid varchar(200), task_name longvarchar, parent int, deleted bit default false);
+create table analysis_job(job_no int identity primary key, task_id int, status_id int, date_submitted timestamp, date_completed timestamp, parameter_info longvarchar, user_id longvarchar, isIndexed bit, access_id int, job_name longvarchar, lsid varchar(200), input_filename longvarchar, result_filename longvarchar);
 
-create index idx_analysis_job_lsid on analysis_job(lsid);
-create index idx_analysis_job_parent on analysis_job(parent);
-create index idx_analysis_job_job_no on analysis_job(job_no);
-create index idx_analysis_job_deleted on analysis_job(deleted);
+create index idx_job_lsid on analysis_job(lsid);
 
 --Job Status Info table
 create table Job_status(status_id int, status_name varchar(20));
@@ -38,6 +35,9 @@ create unique index idx_status_id on job_status(status_id);
 
 --Access Table
 create table task_access(access_id int identity primary key, name longvarchar, description longvarchar);
+
+-- Task type
+create table task_type(id int identity primary key);
 
 --Populate access  table
 insert into task_access values(1,'public','public access');
