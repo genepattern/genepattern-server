@@ -37,15 +37,13 @@ import javax.swing.tree.TreeSelectionModel;
 import java.awt.dnd.DragGestureRecognizer;
 import java.awt.event.InputEvent;
 import org.genepattern.gpge.ui.graphics.draggable.TransferableTreePath;
-import org.jdesktop.swing.*;
-import org.jdesktop.swing.treetable.*;
 
 /**
  * A tree table that supports sorting the columns
  * 
  * @author Joshua Gould
  */
-public class SortableTreeTable extends JXTreeTable implements
+public class SortableTreeTable extends JTreeTable implements
 		DragSourceListener, DragGestureListener {
 	public final static int DESCENDING = -1;
 
@@ -81,7 +79,7 @@ public class SortableTreeTable extends JXTreeTable implements
 		this.model = m;
 		setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
-		tree = (JTree) getDefaultRenderer(TreeTableModel.class);
+		tree = (JTree) getDefaultRenderer(org.jdesktop.swing.treetable.TreeTableModel.class);
 
 		dragSource = DragSource.getDefaultDragSource();
 
