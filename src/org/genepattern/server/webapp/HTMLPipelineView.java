@@ -313,42 +313,51 @@ public class HTMLPipelineView implements IPipelineView {
 	}
 	
 	protected void addPipelineDoc()throws IOException {
-try {
+	try {
+		writer.write("<tr><td valign='top'>Documentation:</td><td>");
 		TaskInfo task = new LocalAdminClient(userID).getTask(pipelineName);
 		LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID);
+
+
 		File[] docFiles = taskIntegratorClient.getDocFiles(task);
-
+		
 		writer.write("<tr><td valign='top'>Documentation:</td><td>");
-		if (docFiles.length > 0){
+		if (docFiles != null){
+			if (docFiles.length > 0){
 		
-			for (int i = 0; i < docFiles.length; i++) {
-				if (i > 0) writer.write("  ,");
-
-// getTaskDoc.jsp?name=' + task.lsid + '&file=' + task.docs[doc] 
-				writer.write("<a href='getTaskDoc.jsp?name="+pipelineName+"'&file="+docFiles[i].getName()+" target='_new'>"+docFiles[i].getName()+"</a>");
+				for (int i = 0; i < docFiles.length; i++) {
+					if (i > 0) writer.write("  ,");
+					writer.write("<a href='getTaskDoc.jsp?name="+pipelineName+"'&file="+docFiles[i].getName()+" target='_new'>"+docFiles[i].getName()+"</a>");
+				}
+				writer.write("<br>");
 			}
-			writer.write("<br>");
-		}
-		writer.write("<input type='file' name='doc' size='60' ></td></tr>");
+			writer.write("<input type='file' name='doc' size='60' ></td></tr>");
 		
-		if (docFiles.length > 0){
-		  			
-			writer.write("<tr><td></td><td><select name='deleteFiles'>");
-		   	writer.write("<option value=''>delete doc files...</option>");
-		   	for (int i = 0; i < docFiles.length; i++) { 
-				writer.write("<option value='"+ GenePatternAnalysisTask.htmlEncode(docFiles[i].getName())+"'>"+ docFiles[i].getName()+"</option>"); 
-		   	}  
-		   	writer.write("</select>");
-		   	writer.write("<input type='button' value='delete...' class='little' onclick='deleteDocFiles()'>");
-		   	writer.write("</td></tr>");
-
+			if (docFiles.length > 0){
+			  			
+				writer.write("<tr><td></td><td><select name='deleteFiles'>");
+			   	writer.write("<option value=''>delete doc files...</option>");	
+			   	for (int i = 0; i < docFiles.length; i++) { 
+					writer.write("<option value='"+ GenePatternAnalysisTask.htmlEncode(docFiles[i].getName())+"'>"+ docFiles[i].getName()+"</option>"); 
+			   	}  
+			   	writer.write("</select>");
+			   	writer.write("<input type='button' value='delete...' class='little' onclick='deleteDocFiles()'>");
+			   	writer.write("</td></tr>");
+			}
 		}
 			  
 	} catch (WebServiceException e){
-
-	}					 
+		// no doc displayed
+	} catch (IOException ioe){
+		throw ioe;
+	} catch (Exception e){
+		// no doc displayed			 	
 			
+	} finally {
+		writer.write("<input type='file' name='doc' size='60' ></td></tr>");
+
 	}
+}
 
 	protected String versionSelector(TaskInfo taskInfo) {
 		// build version selector		
