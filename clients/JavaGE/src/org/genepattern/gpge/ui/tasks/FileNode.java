@@ -15,7 +15,7 @@ import javax.swing.JTextArea;
 import javax.swing.tree.TreeModel;
 
 import org.apache.log4j.Category;
-import org.genepattern.webservice.RequestHandlerFactory;
+import org.genepattern.util.RequestHandlerFactory;
 import org.genepattern.webservice.WebServiceException;
 
 /**

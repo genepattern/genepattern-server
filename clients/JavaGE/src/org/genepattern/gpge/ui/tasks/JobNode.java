@@ -19,7 +19,7 @@ import javax.swing.tree.TreeNode;
 
 import org.apache.log4j.Category;
 import org.genepattern.webservice.AnalysisJob;
-import org.genepattern.webservice.RequestHandlerFactory;
+import org.genepattern.util.RequestHandlerFactory;
 import org.genepattern.webservice.WebServiceException;
 
 /**

@@ -7,7 +7,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Category;
 import org.genepattern.webservice.AnalysisService;
-import org.genepattern.webservice.RequestHandlerFactory;
+import org.genepattern.util.RequestHandlerFactory;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 

@@ -11,7 +11,7 @@ import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
 import org.genepattern.webservice.RequestHandler;
-import org.genepattern.webservice.RequestHandlerFactory;
+import org.genepattern.util.RequestHandlerFactory;
 import org.genepattern.webservice.WebServiceException;
 
 
