@@ -28,7 +28,7 @@ String[] attachmentNames = request.getParameterValues("dl"); // for deleting or 
 boolean showAll = (request.getParameter(SHOW_ALL) != null);
 boolean isDelete = (request.getParameter("delete") != null);
 boolean isDownload = (request.getParameter("download") != null);
-String deleteJob = request.getParameter("deleteJob");
+String[] deleteJob = request.getParameterValues("deleteJob");
 String stopTaskID = request.getParameter(STOP);
 String userID = GenePatternAnalysisTask.getUserID(request, null); // get userID but don't force login if not defined
 
@@ -100,16 +100,19 @@ if (isDelete || !isDownload) {
 <%
 }
 
-if(deleteJob!=null) {
-    try {
-      LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
-      analysisClient.deleteJob(Integer.parseInt(deleteJob));
-    } catch(Exception e){}
+if(deleteJob!=null && deleteJob.length > 0) {
+    for (int j = 0; j < deleteJob.length; j++) {
+	    try {
+	      LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
+	      analysisClient.deleteJob(Integer.parseInt(deleteJob[j]));
+	    } catch(Exception e){}
+    }
 }
 
 if (isDelete) {
 %>
    <title>Delete job results</title>
+
    </head>
    <body>
    <jsp:include page="navbar.jsp"></jsp:include>
@@ -174,6 +177,53 @@ htColors.put(JobStatus.ERROR, "red");
 if (!isDelete) {
 %>
    <title>job results</title>
+   <script language="javascript">
+	function deleteJobs() {
+		// iterate through all forms in document
+		// for each form, iterate over all controls
+		// if controlName==deleteJobID && checked
+		// add to list of jobs to delete
+
+		var deleteIDs = "";
+		var url = "";
+		var numDeleted = 0;
+		for (f = 0; f < document.forms.length; f++) {
+			var frm = document.forms[f];
+			for (i = 0; i < frm.elements.length; i++) {
+				if (frm.elements[i].type != "checkbox") continue;
+				if (frm.elements[i].name != "deleteJobID") continue;
+				if (frm.elements[i].checked) {
+					if (numDeleted > 0) {
+						url = url + "&";
+						deleteIDs = deleteIDs + ", ";
+					}
+					url = url + "deleteJob=" + frm.elements[i].value;
+					deleteIDs = deleteIDs + frm.elements[i].value;
+					numDeleted++;
+				}
+			}
+		}
+
+		// confirm deletion
+		if (numDeleted > 0 && window.confirm('Really delete jobs ' + deleteIDs + '?')) {
+			// call self with URL to delete all selected jobs
+			window.location = "zipJobResults.jsp?" + url;
+		}
+	}
+
+	function checkAll(bChecked) {
+		for (f = 0; f < document.forms.length; f++) {
+			var frm = document.forms[f];
+			for (i = 0; i < frm.elements.length; i++) {
+				if (frm.elements[i].type != "checkbox") continue;
+				if (frm.elements[i].name != "deleteJobID") continue;
+				frm.elements[i].checked = bChecked;
+			}
+		}
+	}
+
+   </script>
+
    </head>
    <body>
    <jsp:include page="navbar.jsp"></jsp:include>
@@ -187,11 +237,18 @@ onclick="javascript:window.location='zipJobResults.jsp<%= showAll ? "" : ("?" + 
 
 <table cellspacing="4">
 <tr>
-   <th align="right"><b><u>job &nabla;</u></b></th>
-   <th><b><u>task</u></b></th>
-   <th><b><u>submitted</u></b></th>
-   <th><b><u>completed</u></b></th>
-   <th><b><u>status</u></b></th>
+   <th valign="bottom" align="right"><b><u>job &nabla;</u></b></th>
+   <th valign="bottom"><b><u>task</u></b></th>
+   <th valign="bottom"><b><u>submitted</u></b></th>
+   <th valign="bottom"><b><u>completed</u></b></th>
+   <th valign="bottom"><b><u>status</u></b></th>
+   <th valign="bottom">
+	<form>
+		<a href="#" onclick="checkAll(true)">check all</a> &nbsp;&nbsp;
+		<a href="#" onclick="checkAll(false)">uncheck all</a><br>
+		<input type="button" value="delete checked jobs" onclick="deleteJobs()">
+	</form>
+   </th>
 </tr>
 <%
 
@@ -218,11 +275,15 @@ for(int i = 0; i < jobs.length; i++) {
    String status = job.getStatus();
    
    if(status.equals(JobStatus.PROCESSING)) {
-       out.print("<td><font color=" + htColors.get(status)  +">" + status +  " - <a href=\"zipJobResults.jsp?stop=" + job.getJobNumber() + (showAll?"&showAll=":"")  + "\">stop</a>");
+	out.print("<td><font color=" + htColors.get(status)  +">" + status + "</font></td>" +
+		"<td><form><input type=\"checkbox\" name=\"deleteJobID\" value=\"" + job.getJobNumber() + "\"></form>");
    } else if(!status.equals(JobStatus.NOT_STARTED)) {
-       out.print("<td><font color=" + htColors.get(status)  +">" + status + " - <a href=\"zipJobResults.jsp?deleteJob=" + job.getJobNumber() + (showAll?"&showAll=":"")  + "\">delete job</a>");
+	out.print("<td><font color=" + htColors.get(status)  +">" + status + "</font></td><td><form><input type=\"checkbox\" name=\"deleteJobID\" value=\"" + job.getJobNumber() + "\"></form>");
    } else {
-       out.print("<td><font color=" + htColors.get(status)  +">" + status);
+System.out.println("status=" + status + ", FINISHED=" + JobStatus.FINISHED);
+	out.print("<td><font color=" + htColors.get(status)  +">" + status);
+	if (status.equals(JobStatus.FINISHED)) {
+		out.print("</td><td><form><input type=\"checkbox\" name=\"deleteJobID\" value=\"" + job.getJobNumber() + "\"></form>");	}
    }
    ParameterInfo[] params = job.getParameterInfoArray();
    
