@@ -69,11 +69,11 @@ import org.genepattern.gpge.ui.menu.*;
 
 /**
  * Description of the Class
- * 
+ *
  * @author Joshua Gould
  */
 public class MainFrame extends JFrame {
-       
+
 	AnalysisServiceDisplay analysisServicePanel;
 
 	JLabel messageLabel = new JLabel("", JLabel.CENTER);
@@ -88,15 +88,15 @@ public class MainFrame extends JFrame {
 	AnalysisMenu analysisMenu;
 
 	AnalysisMenu visualizerMenu;
-   
+
    AnalysisMenu pipelineMenu;
 
    HistoryMenu historyMenu;
-   
+
 	JPopupMenu jobPopupMenu;
 
    JPopupMenu jobResultFilePopupMenu;
-   
+
 	JPopupMenu projectDirPopupMenu;
 
 	JPopupMenu projectFilePopupMenu;
@@ -117,7 +117,7 @@ public class MainFrame extends JFrame {
 
 	FileMenu fileMenu;
    JMenu windowMenu;
-   
+
 	final static int MENU_SHORTCUT_KEY_MASK = Toolkit.getDefaultToolkit()
 			.getMenuShortcutKeyMask();
 
@@ -129,7 +129,7 @@ public class MainFrame extends JFrame {
 							javax.swing.UIManager.getLookAndFeel().getClass()
 									.getName());
    public static boolean RUNNING_ON_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("windows");
-   
+
    private static short WINDOW_STYLE_ONE_FRAME = 0;
    public static short WINDOW_STYLE_FRAMES = 1;
    public static short WINDOW_STYLE_MDI = 2;
@@ -138,16 +138,16 @@ public class MainFrame extends JFrame {
    Color blue = new Color(51,0,204);
    MenuAction projectFileSendToMenu;
    MenuAction projectFileOpenWithMenu;
-   
+
    MenuItemAction projectFileDefaultAppMenuItem;
    MenuItemAction revealFileMenuItem;
    MenuItemAction refreshProjectMenuItem;
    MenuItemAction removeProjectMenuItem;
-   
+
    MenuItemAction reloadMenuItem;
    MenuItemAction deleteJobAction;
    MenuItemAction terminateJobAction;
-   
+
    MenuAction jobResultFileSendToMenu;
    MenuAction saveServerFileMenu;
    MenuItemAction saveToFileSystemMenuItem;
@@ -156,7 +156,7 @@ public class MainFrame extends JFrame {
    MenuItemAction jobResultFileTextViewerMenuItem;
    MenuItemAction jobResultFileDefaultAppMenuItem;
    MenuItemAction deleteAllJobsAction;
-   
+
 	public static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone
 				.getValue(), toClone.getDescription());
@@ -169,8 +169,8 @@ public class MainFrame extends JFrame {
 		pi.setAttributes(attrs);
 		return pi;
 	}
-   
-   
+
+
    boolean disconnectedFromServer(WebServiceException wse) {
       return GenePattern.disconnectedFromServer(wse, analysisServiceManager.getServer());
    }
@@ -178,8 +178,8 @@ public class MainFrame extends JFrame {
 	private static boolean isPopupTrigger(MouseEvent e) {
 		return (e.isPopupTrigger() || e.getModifiers() == MouseEvent.BUTTON3_MASK);
 	}
-   
-   
+
+
    private static String fileToString(File file) throws IOException {
       StringBuffer sb = new StringBuffer();
       BufferedReader br = null;
@@ -217,7 +217,7 @@ public class MainFrame extends JFrame {
          }
       } else if (node instanceof JobModel.ServerFileNode) {
          final JobModel.ServerFileNode sn = (JobModel.ServerFileNode) node;
-         
+
          File downloadDir = new File("tmp");
          if (!downloadDir.exists()) {
             downloadDir.mkdir();
@@ -256,7 +256,7 @@ public class MainFrame extends JFrame {
          }
       }
    }
-   
+
    private void textViewer(TreeNode node) {
       File file = null;
       boolean deleteFile = false;
@@ -279,7 +279,7 @@ public class MainFrame extends JFrame {
          file = fileNode.file;
          title = file.getPath();
       }
-      if(file!=null) { 
+      if(file!=null) {
          String contents = null;
          try {
             contents = fileToString(file);
@@ -289,7 +289,7 @@ public class MainFrame extends JFrame {
             return;
          }
          if(deleteFile) {
-            file.delete();  
+            file.delete();
          }
          JDialog dialog = new JDialog(this);
          dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -303,7 +303,7 @@ public class MainFrame extends JFrame {
          dialog.show();
       }
    }
-   
+
 	public void showSaveDialog(final JobModel.ServerFileNode node) {
 		final File initiallySelectedFile = new File(node.toString());
 		if(saveAsFileChooser == null) {
@@ -351,17 +351,17 @@ public class MainFrame extends JFrame {
 			}
 		};
 		SwingUtilities.invokeLater(messageThread);
-      
+
 		GPpropertiesManager.setProperty(PreferenceKeys.SERVER, server);
 		GPpropertiesManager.setProperty(PreferenceKeys.USER_NAME, username);
 		analysisServiceManager = AnalysisServiceManager.getInstance();
       analysisServiceManager.changeServer(server, username);
       setChangeServerActionsEnabled(false);
-      
-      
+
+
 		new Thread() {
 			public void run() {
-            
+
 				try {
 					String lsidAuthority = (String) new org.genepattern.webservice.AdminProxy(
 							analysisServiceManager.getServer(),
@@ -374,7 +374,7 @@ public class MainFrame extends JFrame {
                // ignore the exception here, the user will be alerted in refreshTasks
 				}
 				refreshTasks();
-            
+
             Thread changeStatusThread = new Thread() {
                public void run() {
                   messageLabel.setText("Server: " + server + "   Username: "
@@ -384,14 +384,14 @@ public class MainFrame extends JFrame {
             SwingUtilities.invokeLater(changeStatusThread);
 			}
 		}.start();
-      
-		
+
+
 	}
 
 	/**
 	 * Loads a task with the parameters that were used in the specified job into
 	 * the AnalysisTaskPanel
-	 * 
+	 *
 	 * @param job
 	 *            the job
 	 */
@@ -544,7 +544,7 @@ public class MainFrame extends JFrame {
 		TaskInfo taskCopy = new TaskInfo(task.getID(), task.getName(), task
 				.getDescription(), task.getParameterInfo(), task.giveTaskInfoAttributes(), task
 				.getUserId(), task.getAccessId());
-           
+
 		taskCopy.setParameterInfoArray((ParameterInfo[]) actualParams
 				.toArray(new ParameterInfo[0]));
 		AnalysisService serviceCopy = new AnalysisService(service.getServer(),
@@ -552,7 +552,7 @@ public class MainFrame extends JFrame {
 		analysisServicePanel.loadTask(serviceCopy);
 
 	}
-   
+
    public static List getOuputFileNames(AnalysisJob job) {
       ParameterInfo[] jobParameterInfo = job.getJobInfo()
 					.getParameterInfoArray();
@@ -611,20 +611,20 @@ public class MainFrame extends JFrame {
       } catch(MalformedURLException mfe) {
          server = "http://" + server;
       }
-      jobModel = JobModel.getInstance();      
+      jobModel = JobModel.getInstance();
       jobResultsTree = new SortableTreeTable(jobModel);
       projectDirModel = ProjectDirModel.getInstance();
       projectDirTree = new SortableTreeTable(projectDirModel, false);
-		
-      
+
+
       createJobActions();
       createJobResultFileActions();
       createProjectDirActions();
       createProjectFileActions();
-     
+
 		createMenus();
-		
-      
+
+
 		jobModel.addJobListener(new JobListener() {
 			public void jobStatusChanged(JobEvent e) {
 			}
@@ -632,14 +632,14 @@ public class MainFrame extends JFrame {
 			public void jobAdded(JobEvent e) {
             // add to history
             final AnalysisJob job = e.getJob();
-            
+
             Runnable doInsert = new Thread() {
                public void run() {
                   historyMenu.add(job);
                }
             };
             if(SwingUtilities.isEventDispatchThread()) {
-               doInsert.run();  
+               doInsert.run();
             } else {
                SwingUtilities.invokeLater(doInsert);
             }
@@ -658,7 +658,7 @@ public class MainFrame extends JFrame {
                   if(params[i].isOutputFile()) {
                      if(params[i].getValue().equals(jobNumber + "/stderr.txt") || params[i].getValue().equals(jobNumber + "\\stderr.txt")) {
                         stderrIndex = i;
-                        break;  
+                        break;
                      }
                   }
                }
@@ -668,13 +668,13 @@ public class MainFrame extends JFrame {
                try {
                   stderrFile = File.createTempFile("stderr.txt", null);
                   JobModel.downloadJobResultFile(job, stderrIndex, stderrFile);
-                  GenePattern.showError(GenePattern.getDialogParent(), fileToString(stderrFile));  
+                  GenePattern.showError(GenePattern.getDialogParent(), fileToString(stderrFile));
                } catch(IOException ioe) {
                   ioe.printStackTrace();
                } finally {
                   if(stderrFile!=null) {
                      stderrFile.delete();
-                  } 
+                  }
                }
             }
 			}
@@ -683,8 +683,8 @@ public class MainFrame extends JFrame {
 		changeServer(server, username);
 		analysisServicePanel = new AnalysisServiceDisplay();
 
-		
-		
+
+
       jobResultsTree.setFocusable(true);
       jobResultsTree.addKeyListener(new java.awt.event.KeyAdapter() {
          public void keyPressed(java.awt.event.KeyEvent e) {
@@ -697,7 +697,7 @@ public class MainFrame extends JFrame {
                      wse.printStackTrace();
                      if(!disconnectedFromServer(wse)) {
                         GenePattern.showErrorDialog("An error occurred deleting job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
-                     }   
+                     }
                   }
                } else if(selectedJobNode instanceof JobModel.ServerFileNode) {
                   JobModel.ServerFileNode serverFileNode = (JobModel.ServerFileNode) selectedJobNode;
@@ -707,16 +707,16 @@ public class MainFrame extends JFrame {
                      wse.printStackTrace();
                      if(!disconnectedFromServer(wse)) {
                         GenePattern.showErrorDialog("An error occurred while deleting the file " + JobModel.getJobResultFileName(serverFileNode) + ". Please try again.");
-                     }  
+                     }
                   }
                }
             }
          }
       });
-      
-      
-     
-      
+
+
+
+
       jobResultsTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
          public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
             TreePath path = jobResultsTree.getSelectionPath();
@@ -728,7 +728,7 @@ public class MainFrame extends JFrame {
             }
             boolean isJobNode = selectedJobNode instanceof JobModel.JobNode;
             boolean isJobResultFileNode = selectedJobNode instanceof JobModel.ServerFileNode;
-            
+
             deleteJobAction.setEnabled(isJobNode);
             terminateJobAction.setEnabled(isJobNode);
             reloadMenuItem.setEnabled(isJobNode);
@@ -737,13 +737,13 @@ public class MainFrame extends JFrame {
 					 deleteJobAction.setEnabled(node.isComplete());
                terminateJobAction.setEnabled(!node.isComplete());
             }
-           
-            jobResultFileSendToMenu.setEnabled(isJobResultFileNode && analysisServicePanel.isShowingAnalysisService()); 
+
+            jobResultFileSendToMenu.setEnabled(isJobResultFileNode && analysisServicePanel.isShowingAnalysisService());
             saveServerFileMenu.setEnabled(isJobResultFileNode);
             saveToFileSystemMenuItem.setEnabled(isJobResultFileNode);
             deleteFileMenuItem.setEnabled(isJobResultFileNode);
             openWithMenu.setEnabled(isJobResultFileNode);
-           
+
             if (selectedJobNode instanceof JobModel.ServerFileNode) {
 					JobModel.ServerFileNode node = (JobModel.ServerFileNode) selectedJobNode;
 
@@ -790,18 +790,18 @@ public class MainFrame extends JFrame {
                }
             }.start();
 			}
-         
+
          public void mousePressed(MouseEvent e) {
 
             final TreePath path = jobResultsTree.getPathForLocation(e
 			      .getX(), e.getY());
-				
+
             if (path == null) {
 					selectedJobNode = null;
 					return;
 				}
             jobResultsTree.setSelectionPath(path);
-            
+
 				selectedJobNode = (DefaultMutableTreeNode) path
 						.getLastPathComponent();
 
@@ -820,9 +820,9 @@ public class MainFrame extends JFrame {
          }
 			}
 
-			
+
 		});
-		
+
 		String projectDirsString = GPpropertiesManager
 				.getProperty(PreferenceKeys.PROJECT_DIRS);
 		if (projectDirsString != null) {
@@ -831,7 +831,7 @@ public class MainFrame extends JFrame {
 				projectDirModel.add(new File(projectDirs[i]));
 			}
 		}
-      
+
       projectDirTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
          public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
             TreePath path = projectDirTree.getSelectionPath();
@@ -843,16 +843,16 @@ public class MainFrame extends JFrame {
             }
             boolean projectNodeSelected = selectedProjectDirNode instanceof ProjectDirModel.ProjectDirNode;
             boolean projectFileSelected = selectedProjectDirNode instanceof ProjectDirModel.FileNode;
-            
+
             projectFileSendToMenu.setEnabled(projectFileSelected&& analysisServicePanel.isShowingAnalysisService());
-            
+
             projectFileOpenWithMenu.setEnabled(projectFileSelected);
             revealFileMenuItem.setEnabled(projectFileSelected);
-             
+
             refreshProjectMenuItem.setEnabled(projectNodeSelected);
             removeProjectMenuItem.setEnabled(projectNodeSelected);
-   
-   
+
+
             if (selectedProjectDirNode instanceof ProjectDirModel.FileNode) {
 					ProjectDirModel.FileNode node = (ProjectDirModel.FileNode) selectedProjectDirNode;
 					ProjectDirModel.ProjectDirNode parent = (ProjectDirModel.ProjectDirNode) node
@@ -879,15 +879,15 @@ public class MainFrame extends JFrame {
 				} else {
 					try {
                   fileSummaryComponent.select(null);
-                           
+
 					} catch (IOException x) {
 					}
 				}
-            
+
          }
       });
-        
-            
+
+
 		projectDirTree.addMouseListener(new MouseAdapter() {
 
 			public void mouseClicked(MouseEvent e) {
@@ -915,11 +915,11 @@ public class MainFrame extends JFrame {
 					return;
 				}
             projectDirTree.setSelectionPath(path);
-            
+
 				selectedProjectDirNode = (DefaultMutableTreeNode) path
 						.getLastPathComponent();
 
-				
+
 
 				if (!isPopupTrigger(e)) {
 					return;
@@ -935,9 +935,9 @@ public class MainFrame extends JFrame {
 		});
 		analysisServicePanel
 				.addAnalysisServiceSelectionListener(new AnalysisServiceSelectionListener() {
-               
+
 					public void valueChanged(AnalysisServiceSelectionEvent e) {
-                 
+
 						jobResultFileSendToMenu.removeAll();
 						projectFileSendToMenu.removeAll();
 
@@ -968,20 +968,20 @@ public class MainFrame extends JFrame {
 					}
 				});
 
-      
+
       JScrollPane projectSP = new JScrollPane(projectDirTree);
       JScrollPane jobSP = new JScrollPane(jobResultsTree);
       java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit()
 				.getScreenSize();
       int width = (int) (screenSize.width * .9);
       int height = (int) (screenSize.height * .9);
-      
-      
+
+
       if(windowStyle==WINDOW_STYLE_ONE_FRAME) {
-         
+
          Border title =  BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(0,0,0,0), "Projects", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP);
        //  projectSP.setBorder(title);
-         
+
          JPanel temp = new JPanel(new BorderLayout());
          temp.setBackground(new Color(24,48,115));
          temp.add(projectSP, BorderLayout.CENTER);
@@ -989,12 +989,12 @@ public class MainFrame extends JFrame {
             projectSP.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
             jobSP.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
          }
-         
+
          JLabel l = new JLabel("Projects", JLabel.CENTER);
          l.setForeground(Color.white);
          l.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 14));
          temp.add(l, BorderLayout.NORTH);
-         
+
          JPanel temp2 = new JPanel(new BorderLayout());
          temp2.setBackground(new Color(24,48,115));
          temp2.add(jobSP, BorderLayout.CENTER);
@@ -1002,21 +1002,43 @@ public class MainFrame extends JFrame {
          l2.setForeground(Color.white);
          l2.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 14));
          temp2.add(l2, BorderLayout.NORTH);
-         
+
          JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 				temp, temp2);
          if(RUNNING_ON_MAC) {
             leftPane.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
          }
-        
+
          JPanel leftPanel = new JPanel(new BorderLayout());
+         if(!RUNNING_ON_MAC) {
+			 leftPanel.setBackground(Color.white);
+			 final Border scrollBorder = UIManager.getBorder("ScrollPane.border");
+			 Border b = new Border() {
+				public Insets getBorderInsets(Component c) {
+					return new Insets(10,10,10,10);
+				}
+
+				public boolean isBorderOpaque() {
+					return scrollBorder.isBorderOpaque();
+				}
+
+				public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
+					scrollBorder.paintBorder(c,g,x,y,w,h);
+				}
+			 };
+			 fileSummaryComponent.setBorder(b);
+		 }
+
          leftPanel.add(leftPane, BorderLayout.CENTER);
-         leftPanel.add(fileSummaryComponent, BorderLayout.SOUTH);
+		 leftPanel.add(fileSummaryComponent, BorderLayout.SOUTH);
          JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
 				leftPanel, analysisServicePanel);
          getContentPane().add(splitPane, BorderLayout.CENTER);
+         if(!RUNNING_ON_MAC) {
+			getContentPane().setBackground(Color.white);
+		 }
          getContentPane().add(messageLabel, BorderLayout.SOUTH);
-        
+
          setSize(width, height);
          setLocation((screenSize.width - getWidth()) / 2, 20);
          setTitle(BuildProperties.PROGRAM_NAME);
@@ -1033,16 +1055,16 @@ public class MainFrame extends JFrame {
          projectDialog.setSize(w, h);
          projectDialog.setVisible(true);
          projectDialog.setLocation(10, 10);
-         
+
          JFrame jobDialog = new JFrame("Job Results");
          jobDialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
          jobDialog.getContentPane().add(jobSP);
          jobDialog.setSize(w, h);
          jobDialog.setLocation(10, 10 + projectDialog.getHeight());
          jobDialog.setVisible(true);
-         
+
          JFrame moduleDialog = new JFrame("Module");
-         
+
          moduleDialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
          moduleDialog.getContentPane().add(analysisServicePanel);
          moduleDialog.pack();
@@ -1053,7 +1075,7 @@ public class MainFrame extends JFrame {
          moduleDialog.setVisible(true);
 
          setTitle(BuildProperties.PROGRAM_NAME);
-          
+
       } else if(windowStyle==WINDOW_STYLE_MDI) {
          JInternalFrame projectsInternalFrame = new JInternalFrame("Projects", true, false, true, true);
          projectsInternalFrame.getContentPane().add(projectSP);
@@ -1062,22 +1084,22 @@ public class MainFrame extends JFrame {
          projectsInternalFrame.setSize(w, h);
          projectsInternalFrame.setVisible(true);
          projectsInternalFrame.setLocation(10, 10);
-         
+
          JInternalFrame jobResultsInternalFrame = new JInternalFrame("Job Results", true, false, true, true);
          jobResultsInternalFrame.getContentPane().add(jobSP);
          jobResultsInternalFrame.setSize(w, h);
          jobResultsInternalFrame.setLocation(10, 10 + projectsInternalFrame.getHeight());
          jobResultsInternalFrame.setVisible(true);
-         
+
          JInternalFrame moduleInternalFrame = new JInternalFrame("Module", true, false, true, true);
-         
+
          moduleInternalFrame.getContentPane().add(analysisServicePanel);
          w = (int)(width*0.6);
          h = (int)(height*.9);
          moduleInternalFrame.setSize(w, h);
          moduleInternalFrame.setLocation(10 + projectsInternalFrame.getWidth(), 10);
          moduleInternalFrame.setVisible(true);
-         
+
          JDesktopPane dp = new JDesktopPane();
          dp.setBackground(new Color(139, 139, 139));
          dp.add(projectsInternalFrame);
@@ -1086,14 +1108,14 @@ public class MainFrame extends JFrame {
          setContentPane(new JScrollPane(dp));
          setSize(screenSize.width, screenSize.height);
          setTitle(BuildProperties.PROGRAM_NAME);
-         
+
          addToWindowMenu("Job Results", jobResultsInternalFrame);
          addToWindowMenu("Module", moduleInternalFrame);
          addToWindowMenu("Projects", projectsInternalFrame);
          setJMenuBar(menuBar);
-    
+
       }
-      
+
 		splash.dispose();
       show();
 	}
@@ -1104,19 +1126,19 @@ public class MainFrame extends JFrame {
          public void actionPerformed(ActionEvent e) {
             c.setVisible(true);
             if(c instanceof JInternalFrame) {
-               ((JInternalFrame)c).toFront(); 
+               ((JInternalFrame)c).toFront();
                try {
                   ((JInternalFrame)c).setSelected(true);
                } catch(java.beans.PropertyVetoException pe){}
-               
+
             }
          }
       });
       windowMenu.add(mi);
    }
-   
+
 	public void refreshJobs() {
-      final List errors = new ArrayList(); 
+      final List errors = new ArrayList();
 		new Thread() {
 			public void run() {
             try {
@@ -1127,14 +1149,14 @@ public class MainFrame extends JFrame {
                   if(errors.size()==0) {
                      if(!disconnectedFromServer(wse)) {
                         GenePattern.showErrorDialog("An error occurred while retrieving your jobs. Please try again.");
-                     }   
+                     }
                      errors.add(new Object());
                   }
                }
             }
 			}
 		}.start();
-      
+
       new Thread() {
          public void run() {
             historyMenu.clear();
@@ -1152,7 +1174,7 @@ public class MainFrame extends JFrame {
                   if(errors.size()==0) {
                      if(!disconnectedFromServer(wse)) {
                         GenePattern.showErrorDialog("An error occurred while retrieving your job history. Please try again.");
-                     }   
+                     }
                      errors.add(new Object());
                   }
                }
@@ -1160,11 +1182,11 @@ public class MainFrame extends JFrame {
          }
       }.start();
 	}
-   
+
    private void createProjectFileActions() {
       projectFileSendToMenu = new MenuAction("Send To", IconManager.loadIcon(IconManager.SEND_TO_ICON));
       projectFileSendToMenu.setEnabled(false);
-		
+
       projectFileOpenWithMenu = new MenuAction("Open With");
       MenuItemAction projectFileTextViewerMenuItem = new MenuItemAction("Text Viewer", IconManager.loadIcon(IconManager.TEXT_ICON)) {
 			public void actionPerformed(ActionEvent e) {
@@ -1176,7 +1198,7 @@ public class MainFrame extends JFrame {
 			}
 		};
       projectFileOpenWithMenu.add(projectFileTextViewerMenuItem);
-      
+
       projectFileDefaultAppMenuItem = new MenuItemAction("Default Application") {
          public void actionPerformed(ActionEvent e) {
             new Thread() {
@@ -1187,8 +1209,8 @@ public class MainFrame extends JFrame {
 			}
 		};
       projectFileOpenWithMenu.add(projectFileDefaultAppMenuItem);
-      
-      
+
+
       if(RUNNING_ON_MAC) {
           revealFileMenuItem = new MenuItemAction("Show In Finder") {
              public void actionPerformed(ActionEvent e) {
@@ -1196,23 +1218,23 @@ public class MainFrame extends JFrame {
                 org.genepattern.gpge.util.MacOS.showFileInFinder(fn.file);
              }
           };
-      
-        
+
+
       } else if(System.getProperty("os.name").startsWith("Windows")) {
          revealFileMenuItem = new MenuItemAction("Show File Location") {
              public void actionPerformed(ActionEvent e) {
                 try {
                    ProjectDirModel.FileNode fn = (ProjectDirModel.FileNode) selectedProjectDirNode;
-                   BrowserLauncher.openURL(fn.file.getParentFile().getCanonicalPath());  
+                   BrowserLauncher.openURL(fn.file.getParentFile().getCanonicalPath());
                 } catch(IOException x){
                    x.printStackTrace();
                 }
              }
           };
-                   
+
       }
    }
-   
+
    private void createProjectDirActions() {
       refreshProjectMenuItem = new MenuItemAction("Refresh", IconManager.loadIcon(IconManager.REFRESH_ICON)) {
          public void actionPerformed(ActionEvent e) {
@@ -1220,8 +1242,8 @@ public class MainFrame extends JFrame {
 						.refresh((ProjectDirModel.ProjectDirNode) selectedProjectDirNode);
 			}
 		};
-      
-		
+
+
       removeProjectMenuItem = new MenuItemAction("Close Project", IconManager.loadIcon(IconManager.REMOVE_ICON)) {
          public void actionPerformed(ActionEvent e) {
 				projectDirModel
@@ -1230,17 +1252,17 @@ public class MainFrame extends JFrame {
 						projectDirModel.getPreferencesString());
 			}
 		};
-      
-      
+
+
    }
-   
+
    private void createJobActions() {
       reloadMenuItem = new MenuItemAction("Reload") {
 			public void actionPerformed(ActionEvent e) {
 				reload(((JobModel.JobNode) selectedJobNode).job);
 			}
 		};
-      
+
       deleteJobAction = new MenuItemAction(
       "Delete Job", IconManager.loadIcon(IconManager.DELETE_ICON)) {
          public void actionPerformed(ActionEvent e) {
@@ -1251,11 +1273,11 @@ public class MainFrame extends JFrame {
                wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
                   GenePattern.showErrorDialog("An error occurred deleting job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
-               }   
+               }
             }
          }
       };
-      
+
       deleteAllJobsAction = new MenuItemAction(
       "Delete All Jobs") {
          public void actionPerformed(ActionEvent e) {
@@ -1271,11 +1293,11 @@ public class MainFrame extends JFrame {
                wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
                   GenePattern.showErrorDialog("An error occurred deleting all jobs. Please try again.");
-               }   
+               }
             }
          }
       };
-		 
+
       terminateJobAction = new MenuItemAction("Terminate Job", IconManager.loadIcon(IconManager.STOP_ICON)) {
 			public void actionPerformed(ActionEvent e) {
             JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
@@ -1286,19 +1308,19 @@ public class MainFrame extends JFrame {
                 wse.printStackTrace();
                 if(!disconnectedFromServer(wse)) {
                   GenePattern.showErrorDialog("An error occurred terminating job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
-                } 
+                }
             }
 			}
-		};      
-      
+		};
+
    }
-   
+
    private void createJobResultFileActions() {
       jobResultFileSendToMenu = new MenuAction("Send To", IconManager.loadIcon(IconManager.SEND_TO_ICON));
       jobResultFileSendToMenu.setEnabled(false);
-		 
+
 		saveServerFileMenu = new MenuAction("Save To");
-		
+
       saveToFileSystemMenuItem = new MenuItemAction("Other...", IconManager.loadIcon(IconManager.SAVE_AS_ICON));
 		saveToFileSystemMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -1326,7 +1348,7 @@ public class MainFrame extends JFrame {
                              //	} catch (WebServiceException wse) {
                             //      if(!disconnectedFromServer(wse)) {
                             //         GenePattern.showErrorDialog("An error occurred while saving the file " + node.name  + ". Please try again.");
-                           //       }  
+                           //       }
 										//}
 									}
 								}.start();
@@ -1349,7 +1371,7 @@ public class MainFrame extends JFrame {
 					}
 				});
 		saveServerFileMenu.add(saveToFileSystemMenuItem);
-	
+
       deleteFileMenuItem = new MenuItemAction("Delete File", IconManager.loadIcon(IconManager.DELETE_ICON)) {
          public void actionPerformed(ActionEvent e) {
             JobModel.ServerFileNode serverFileNode = (JobModel.ServerFileNode) selectedJobNode;
@@ -1359,13 +1381,13 @@ public class MainFrame extends JFrame {
                wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
                   GenePattern.showErrorDialog("An error occurred while deleting the file " + JobModel.getJobResultFileName(serverFileNode) + ". Please try again.");
-               }  
+               }
             }
 			}
 		};
-      
+
       openWithMenu = new MenuAction("Open With");
-      
+
       jobResultFileTextViewerMenuItem = new MenuItemAction("Text Viewer", IconManager.loadIcon(IconManager.TEXT_ICON)){
          public void actionPerformed(ActionEvent e) {
             new Thread() {
@@ -1376,7 +1398,7 @@ public class MainFrame extends JFrame {
 			}
 		};
       openWithMenu.add(jobResultFileTextViewerMenuItem);
-      
+
       jobResultFileDefaultAppMenuItem = new MenuItemAction("Default Application") {
          public void actionPerformed(ActionEvent e) {
             new Thread() {
@@ -1385,7 +1407,7 @@ public class MainFrame extends JFrame {
                }
             }.start();
 			}
-		};                         
+		};
       openWithMenu.add(jobResultFileDefaultAppMenuItem);
    }
 
@@ -1404,7 +1426,7 @@ public class MainFrame extends JFrame {
 			SwingUtilities.invokeLater(disableActions);
 		}
    }
-   
+
 	public void refreshTasks() {
 		setChangeServerActionsEnabled(false);
 		new Thread() {
@@ -1415,7 +1437,7 @@ public class MainFrame extends JFrame {
                wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
                   GenePattern.showErrorDialog("An error occurred while retrieving the modules from the server. Please try again.");
-               }   
+               }
 				}
 
 				final Collection latestTasks = analysisServiceManager
@@ -1439,7 +1461,7 @@ public class MainFrame extends JFrame {
 		}.start();
 	}
 
-   
+
 	void createMenus() {
 	   menuBar = new JMenuBar();
 		fileMenu = new FileMenu();
@@ -1458,65 +1480,65 @@ public class MainFrame extends JFrame {
       saveServerFileMenu.setEnabled(false);
       deleteFileMenuItem.setEnabled(false);
       openWithMenu.setEnabled(false);
-      
+
       MenuAction projectsMenuAction = null;
       if(revealFileMenuItem!=null) {
          projectsMenuAction = new MenuAction("Projects", new Object[]{refreshProjectMenuItem,  removeProjectMenuItem, new JSeparator(), projectFileSendToMenu, projectFileOpenWithMenu, revealFileMenuItem});
       } else {
-          projectsMenuAction = new MenuAction("Projects", new Object[]{refreshProjectMenuItem,  removeProjectMenuItem, new JSeparator(), projectFileSendToMenu, projectFileOpenWithMenu});  
+          projectsMenuAction = new MenuAction("Projects", new Object[]{refreshProjectMenuItem,  removeProjectMenuItem, new JSeparator(), projectFileSendToMenu, projectFileOpenWithMenu});
       }
-      
+
       menuBar.add(projectsMenuAction.createMenu());
-      
+
       MenuAction jobResultsMenuAction = new MenuAction("Job Results", new Object[]{reloadMenuItem, deleteJobAction, deleteAllJobsAction, terminateJobAction, new JSeparator(), jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu});
-     
+
       menuBar.add(jobResultsMenuAction.createMenu());
-      
+
 		analysisMenu = new AnalysisMenu(AnalysisMenu.DATA_ANALYZERS);
 		analysisMenu.setEnabled(false);
 		menuBar.add(analysisMenu);
 		visualizerMenu = new AnalysisMenu(AnalysisMenu.VISUALIZERS);
 		visualizerMenu.setEnabled(false);
 		menuBar.add(visualizerMenu);
-      
+
       pipelineMenu = new AnalysisMenu(AnalysisMenu.PIPELINES);
 		pipelineMenu.setEnabled(false);
 		menuBar.add(pipelineMenu);
-      
+
       historyMenu = new HistoryMenu();
       menuBar.add(historyMenu);
-      
+
       if(windowStyle==WINDOW_STYLE_MDI) {
          windowMenu = new JMenu("Window");
          menuBar.add(windowMenu);
       }
-      
+
 		JMenu helpMenu = new HelpMenu();
       menuBar.add(helpMenu);
-		
-      
+
+
       if(RUNNING_ON_MAC) {
-         macos.MacOSMenuHelper.registerHandlers();  
+         macos.MacOSMenuHelper.registerHandlers();
       }
-      
-       
+
+
       MenuAction jobPopupAction = new MenuAction("", new Object[]{reloadMenuItem, deleteJobAction, terminateJobAction});
       jobPopupMenu = jobPopupAction.createPopupMenu();
-      
+
       MenuAction jobResultFilePopupAction = new MenuAction("", new Object[]{jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu});
       jobResultFilePopupMenu = jobResultFilePopupAction.createPopupMenu();
-      
+
       MenuAction projectDirPopupMenuAction = new MenuAction("", new Object[]{refreshProjectMenuItem,  removeProjectMenuItem});
       projectDirPopupMenu = projectDirPopupMenuAction.createPopupMenu();
-     
+
       MenuAction projectFilePopupMenuAction = new MenuAction("", new Object[]{projectFileSendToMenu, projectFileOpenWithMenu, revealFileMenuItem});
       projectFilePopupMenu = projectFilePopupMenuAction.createPopupMenu();
 	}
 
-   
-   
-   
-   
+
+
+
+
    class HistoryMenu extends JMenu {
       final ActionListener reloadJobActionListener;
       List jobs = new ArrayList();
@@ -1526,10 +1548,10 @@ public class MainFrame extends JFrame {
       final int JOBS_IN_MENU = 10;
       HistoryTableModel historyTableModel = new HistoryTableModel();
       JDialog historyDialog;
-        
+
      class HistoryTableModel extends javax.swing.table.AbstractTableModel implements SortTableModel {
         private java.util.Comparator comparator = new JobModel.TaskNameComparator(false);
-        
+
         public void sortOrderChanged(SortEvent e) {
             int column = e.getColumn();
             boolean ascending = e.isAscending();
@@ -1543,11 +1565,11 @@ public class MainFrame extends JFrame {
             Collections.sort(jobs, comparator);
             fireTableStructureChanged();
         }
-   
+
         public Object getValueAt(int r, int c) {
            AnalysisJob job = (AnalysisJob) jobs.get(r);
            JobInfo jobInfo = job.getJobInfo();
-           boolean complete = JobModel.isComplete(job); 
+           boolean complete = JobModel.isComplete(job);
            switch(c) {
               case 0:
                   return JobModel.jobToString(job);
@@ -1566,15 +1588,15 @@ public class MainFrame extends JFrame {
                   return null;
            }
         }
-        
+
         public int getRowCount() {
-            return jobs.size();   
+            return jobs.size();
         }
-        
+
         public int getColumnCount() {
-            return 3;  
+            return 3;
         }
-        
+
         public String getColumnName(int c) {
            switch(c) {
               case 0:
@@ -1588,17 +1610,17 @@ public class MainFrame extends JFrame {
            }
         }
      }
-   
-      
+
+
       /*class HistoryUpdateThread extends Thread {
          Calendar now;
-         
-         
+
+
          public HistoryUpdateThread() {
-            setDaemon(true);  
+            setDaemon(true);
             now = Calendar.getInstance();
          }
-         
+
          public void run() {
             Calendar midnight = Calendar.getInstance();
             midnight.set(Calendar.HOUR, 0);
@@ -1609,20 +1631,20 @@ public class MainFrame extends JFrame {
             try {
                Thread.sleep(sleepTime);
             } catch(InterruptedException ie){}
-            
+
             historyUpdateThread = new HistoryUpdateThread();
             historyUpdateThread.start();
          }
-         
+
          int daysBefore(long otherMillis) {
             long nowMillis = now.getTimeInMillis();
             return (int)((otherMillis-nowMillis)/1000/60/60/24);
          }
-      
+
       }*/
-      
-      
-      
+
+
+
       public HistoryMenu() {
          super("Job History");
          reloadJobActionListener = new ActionListener() {
@@ -1631,8 +1653,8 @@ public class MainFrame extends JFrame {
                AnalysisJob job = menuItem.job;
                reload(job);
             }
-         }; 
-         
+         };
+
          historyMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                historyDialog.setVisible(true);
@@ -1655,11 +1677,11 @@ public class MainFrame extends JFrame {
          historyDialog.getContentPane().add(new JScrollPane(t));
          historyDialog.pack();
          historyDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-         
+
       }
-      
+
      // public void removeAll() {
-     //    super.removeAll();  
+     //    super.removeAll();
         // addSeparator();
        //  clearHistoryMenuItem = new JMenuItem("Clear History");
        //  ActionListener clearHistoryListener = new ActionListener() {
@@ -1671,24 +1693,24 @@ public class MainFrame extends JFrame {
        //  add(clearHistoryMenuItem);
        //  clearHistoryMenuItem.setEnabled(false);
       //}
-      
+
       public void clear() {
          jobs.clear();
          jobsInMenu.clear();
-         super.removeAll();  
-         
+         super.removeAll();
+
          add(new JSeparator());
          add(historyMenuItem);
       }
-     
-      
+
+
       public void add(AnalysisJob job) {
-         int insertionIndex = Collections.binarySearch(jobsInMenu, job, jobNumberComparator);   
-            
+         int insertionIndex = Collections.binarySearch(jobsInMenu, job, jobNumberComparator);
+
          if (insertionIndex < 0) {
             insertionIndex = -insertionIndex - 1;
          }
-         
+
          if(insertionIndex < JOBS_IN_MENU) {
             AnalysisJobMenuItem menuItem = new AnalysisJobMenuItem(job);
             menuItem.setToolTipText(job.getJobInfo().getTaskLSID());
@@ -1700,42 +1722,42 @@ public class MainFrame extends JFrame {
             }
             jobsInMenu.add(insertionIndex, job);
          }
-         
+
          jobs.add(job);
          historyTableModel.fireTableStructureChanged();
         // clearHistoryMenuItem.setEnabled(true);
       }
    }
-   
-   
+
+
    static class JobNumberComparator implements java.util.Comparator {
       public int compare(Object obj1, Object obj2) {
          Integer job1Number = new Integer(((AnalysisJob)obj1).getJobInfo().getJobNumber());
          Integer job2Number = new Integer(((AnalysisJob)obj2).getJobInfo().getJobNumber());
          return job2Number.compareTo(job1Number);
-         
+
       }
    }
-   
+
    static class AnalysisJobMenuItem extends JMenuItem {
          AnalysisJob job;
-         
+
          public AnalysisJobMenuItem(AnalysisJob job) {
             super(job.getJobInfo().getTaskName() + " (" + job.getJobInfo().getJobNumber() + ")");
-            this.job = job;  
+            this.job = job;
          }
-      
-   }   
-      
-   
+
+   }
+
+
 	class AnalysisMenu extends JMenu {
 		int type;
       static final int VISUALIZERS = 1;
       static final int DATA_ANALYZERS = 2;
       static final int PIPELINES = 3;
-      
-      
-         
+
+
+
 		ActionListener serviceSelectedListener;
 
 		public AnalysisMenu(int type) {
@@ -1746,7 +1768,7 @@ public class MainFrame extends JFrame {
 			} else if(type==PIPELINES) {
             setText("Pipelines");
          } else {
-            throw new IllegalArgumentException("Unknown type");  
+            throw new IllegalArgumentException("Unknown type");
          }
 			this.type = type;
 			serviceSelectedListener = new ActionListener() {
@@ -1786,7 +1808,7 @@ public class MainFrame extends JFrame {
 			} else if(type==VISUALIZERS){
 				List visualizers = (List) categoryToAnalysisServices
 						.get(GPConstants.TASK_TYPE_VISUALIZER);
-				
+
 				List imageCreators = (List) categoryToAnalysisServices
 						.get("Image Creators");
             List all = new ArrayList();
@@ -1816,10 +1838,10 @@ public class MainFrame extends JFrame {
 			this.svc = svc;
          String lsid = (String) svc.getTaskInfo().getTaskInfoAttributes().get(
 					GPConstants.LSID);
-         try { 
+         try {
            String authType = org.genepattern.util.LSIDUtil.getInstance()
                      .getAuthorityType(new org.genepattern.util.LSID(lsid));
-   
+
             if (authType
                   .equals(org.genepattern.util.LSIDUtil.AUTHORITY_MINE)) {
                setForeground(AUTHORITY_MINE_COLOR);
@@ -1877,7 +1899,7 @@ public class MainFrame extends JFrame {
 			});
 
          JMenuItem errorsMenuItem = new JMenuItem("Errors", IconManager.loadIcon(IconManager.ERROR_ICON));
-         
+
 			add(errorsMenuItem);
          errorsMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -1911,7 +1933,7 @@ public class MainFrame extends JFrame {
 			super("File");
 			JMenuItem openProjectDirItem = new JMenuItem(
 					"Open Project Directory...", IconManager.loadIcon(IconManager.NEW_PROJECT_ICON));
-               
+
 			openProjectDirItem.setAccelerator(KeyStroke.getKeyStroke('O',
 					MENU_SHORTCUT_KEY_MASK));
 			openProjectDirItem.addActionListener(new ActionListener() {
