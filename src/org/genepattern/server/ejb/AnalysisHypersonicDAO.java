@@ -156,8 +156,27 @@ public class AnalysisHypersonicDAO implements
 		}
    }
    
+   public void setParent(int childJobId, int parentJobId) throws OmnigeneException, RemoteException {
+      java.sql.Connection conn = null;
+		PreparedStatement stat = null;
+		try {
+			conn = getConnection();
+         stat = conn
+               .prepareStatement("UPDATE analysis_job SET parent = " + parentJobId + " WHERE job_no = " + childJobId);
+         stat.executeUpdate();
+      } catch(SQLException sqle) {
+         throw new OmnigeneException(sqle.getMessage()); 
+      } finally {
+			closeConnection(null, stat, conn);
+		}
+   }
 
-   public JobInfo addTemporaryPipeline(String user_id, String parameter_info, String pipelineName) throws OmnigeneException, RemoteException {
+   public JobInfo createPipeline(int pipelineTaskId, String user_id, String parameter_info) throws OmnigeneException, RemoteException {
+      return addNewJob(pipelineTaskId, user_id, parameter_info);
+   }
+   
+   
+   public JobInfo createTemporaryPipeline(String user_id, String parameter_info, String pipelineName) throws OmnigeneException, RemoteException {
       return addNewJob(UNPROCESSABLE_TASKID, user_id, parameter_info, pipelineName);
    }
    
@@ -426,7 +445,7 @@ public class AnalysisHypersonicDAO implements
 
 			//Fetch from database
 			stat = conn
-					.prepareStatement(getJobInfoSelectClause() + ", task_name, task_lsid FROM analysis_job, job_status WHERE user_id = ? and analysis_job.status_id = job_status.status_id");
+					.prepareStatement(getJobInfoSelectClause() + ", task_name, task_lsid FROM analysis_job, job_status WHERE user_id = ? and analysis_job.status_id = job_status.status_id AND parent IS NULL");
 			stat.setString(1, username);
 
 			resultSet = stat.executeQuery();
