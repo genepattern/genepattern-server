@@ -43,8 +43,7 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.RequestHandler;
-import org.genepattern.webservice.RequestHandlerFactory;
+import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 /**
@@ -1077,12 +1076,12 @@ public class AnalysisTasksPanel extends JPanel implements Observer {
 			
 			//submit job, update the dataModel, delete temp file
 			try {
-				final String name = _selectedService.getName();
+				final String server = _selectedService.getServer();
+				AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, "");
 				
-				final RequestHandler handler = RequestHandlerFactory.getInstance(username, password).getRequestHandler(name);
 				final int id = _selectedService.getTaskInfo().getID();
-				final TaskSubmitter task_submitter = getPreferedTaskSubmitter(_selectedService, id, parmInfos, handler);
-				if(handler != null) {
+				final TaskSubmitter task_submitter = getPreferedTaskSubmitter(_selectedService, id, parmInfos, analysisProxy);
+				if(analysisProxy != null) {
 					
 					if(directoryParam != null) {
 						File dir = new File(directoryParam.getValue());
@@ -1095,7 +1094,7 @@ public class AnalysisTasksPanel extends JPanel implements Observer {
 							directoryParam.getAttributes().put(GPConstants.PARAM_INFO_CLIENT_FILENAME[0], files[i].getCanonicalPath());
 							directoryParam.setValue(files[i].getCanonicalPath());
 						
-							AnalysisJob aJob = task_submitter.submitTask(_selectedService, id, parmInfos, handler);
+							AnalysisJob aJob = task_submitter.submitTask(_selectedService, id, parmInfos, analysisProxy);
 							if(aJob != null) {
 								AnalysisTasksPanel.this._dataModel.addJob(aJob);
 							}
@@ -1106,7 +1105,7 @@ public class AnalysisTasksPanel extends JPanel implements Observer {
 						}
 					} else {
 						// submit here
-						AnalysisJob aJob = task_submitter.submitTask(_selectedService, id, parmInfos, handler);
+						AnalysisJob aJob = task_submitter.submitTask(_selectedService, id, parmInfos, analysisProxy);
 						if(aJob != null) {
 							AnalysisTasksPanel.this._dataModel.addJob(aJob);
 						}
@@ -1146,7 +1145,7 @@ public class AnalysisTasksPanel extends JPanel implements Observer {
 		 *@param  handler          Description of the Parameter
 		 *@return                  The preferedTaskSubmitter
 		 */
-		private TaskSubmitter getPreferedTaskSubmitter(final AnalysisService selectedService, final int id, final ParameterInfo[] parmInfos, final RequestHandler handler) {
+		private TaskSubmitter getPreferedTaskSubmitter(final AnalysisService selectedService, final int id, final ParameterInfo[] parmInfos, final AnalysisWebServiceProxy handler) {
 			for(int i = submitters.length - 1; i >= 0; i--) { // rev. loop
 				final TaskSubmitter submitter = submitters[i];
 				if(submitter.check(selectedService, id, parmInfos, handler)) {
@@ -1178,11 +1177,11 @@ public class AnalysisTasksPanel extends JPanel implements Observer {
 		 *@exception  WebServiceException  Description of the Exception
 		 *@exception  IOException          Description of the Exception
 		 */
-		public final AnalysisJob submitTask(final AnalysisService selectedService, final int id, final ParameterInfo[] parmInfos, final RequestHandler handler) throws OmnigeneException, WebServiceException, IOException {
+		public final AnalysisJob submitTask(final AnalysisService selectedService, final int id, final ParameterInfo[] parmInfos, final AnalysisWebServiceProxy handler) throws OmnigeneException, WebServiceException, IOException {
 			
 			final String task = selectedService.getTaskInfo().getName();
 			
-			final String name = selectedService.getName();
+			final String name = selectedService.getServer();
 			cat.debug("name: " + name + " tasks: " + task);
 
 			final ParameterFormatConverter converter = new ParameterFormatConverter();
@@ -1206,7 +1205,7 @@ public class AnalysisTasksPanel extends JPanel implements Observer {
 		 *@param  handler           Description of the Parameter
 		 *@return                   Description of the Return Value
 		 */
-		public final boolean check(final AnalysisService _selectedService, final int id, final ParameterInfo[] parmInfos, final RequestHandler handler) {
+		public final boolean check(final AnalysisService _selectedService, final int id, final ParameterInfo[] parmInfos, final AnalysisWebServiceProxy handler) {
 			return true;
 		}
 	} // end DefaultTaskSubmitter
