@@ -392,7 +392,7 @@ public class Analysis extends GenericWebService {
    /**
    * Sets the status of the given job
    * @param jobId the job id
-   * @param status the job status. One of "Not Started", "Processing", "Finished, "Error", "Time Out"
+   * @param status the job status. One of "Pending", "Processing", "Finished, or "Error"
    */
    public void setJobStatus(int jobId, String status) throws WebServiceException {
       try {
