@@ -12,7 +12,7 @@
 		 java.util.Set,
 		 java.util.TreeMap,
 		 java.util.Vector,
-		 org.genepattern.server.webapp.AbstractPipelineCodeGenerator,
+		 org.genepattern.codegenerator.AbstractPipelineCodeGenerator,
 		 org.genepattern.util.LSID,
 		 org.genepattern.server.genepattern.LSIDManager,
 		 org.genepattern.util.LSIDUtil,
