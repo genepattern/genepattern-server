@@ -12,6 +12,7 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -32,7 +33,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
  * 
  * @author Jim Lerner
  */
-public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator {
+public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implements TaskCodeGenerator {
 
 	/** vector of tasks making up the pipeline */
 	Vector vTaskNames = new Vector();
@@ -49,6 +50,8 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator {
 		super(model, serverName, serverPort, invokingURL, tmTasks);
 	}
 
+   public RPipelineCodeGenerator(){}
+   
 	public String emitUserInstructions() {
 		String version = "";
 		try {
@@ -236,7 +239,30 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator {
 		}
 		return prolog.toString();
 	}
+   
+   public String generateTask(JobInfo jobInfo, ParameterInfo[] params) {
+      String taskName = rEncode(jobInfo.getTaskName());
+      String lsid = jobInfo.getTaskLSID();
+      StringBuffer sb = new StringBuffer();
+      sb.append("results <- " + taskName + "(");
+      if(params!=null) {
+         for(int i = 0; i < params.length; i++) {
+            if(i > 0) {
+               sb.append(", ");  
+            }
+            sb.append(rEncode(params[i].getName()) + "=\"" + params[i].getValue() + "\"");  
+         }
+      }
+      if(params!=null && params.length > 0) {
+         sb.append(", ");
+      }
+      sb.append("LSID=\"" + lsid + "\")");
+      return sb.toString();
+   }
+   
 
+   
+      
 	/**
 	 * generate R code for a particular task to execute within the pipeline,
 	 * including a bit of documentation for the task. Generate file input
