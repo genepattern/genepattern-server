@@ -394,68 +394,36 @@ semantic_search_loop:
 
 	// TODO: Nada's file analyzer gets integrated here.
 	public static boolean isFileType(String filename, String fileFormat) {
-
-		BufferedReader inputB;
-		try {
-			inputB = new BufferedReader(new FileReader(filename));
-			String line;
-			line = inputB.readLine();
-			inputB.close();
-
-			//known formats not yet incorporated in GP: EMBL, PIR, FASTA, IG/Stanford
-			if (line.startsWith(GPConstants.KW_EMB) && fileFormat.equalsIgnoreCase(GPConstants.EMB))
-				return true;
-			else if (line.startsWith(GPConstants.KW_PIR)
-					&& fileFormat.equalsIgnoreCase(GPConstants.PIR))
-				return true;
-			else if (line.startsWith(GPConstants.KW_FASTA) && fileFormat.equalsIgnoreCase(GPConstants.FASTA))
-				return true;
-			else if (line.startsWith(GPConstants.KW_IG) && fileFormat.equalsIgnoreCase(GPConstants.IG))
-				return true;
-			
-			//GCT, RES, CLS, ODF
-			else if (line.startsWith(GPConstants.KW_GCT) && fileFormat.equalsIgnoreCase(GPConstants.GCT))
-				return true;
-			else if (line.startsWith(GPConstants.KW_RES) && fileFormat.equalsIgnoreCase(GPConstants.RES))
-				return true;
-			else if (fileFormat.equalsIgnoreCase(GPConstants.CLS)){
-				String[] numbers = line.split(" ");
-				int aNum;
-
-				try {
-				   aNum = Integer.parseInt(numbers[0]);
-				} catch (NumberFormatException nfe) {
-				   return false;
-				}
-							
-				return true;
-			}
-			
-			else if (line.startsWith(GPConstants.KW_ODF) && fileFormat.equalsIgnoreCase(GPConstants.ODF))
-				return true;
-			else
-				return false;
-
-		} catch (Exception e) {
-			e.printStackTrace();
+		//ODF
+		if (filename.endsWith(GPConstants.ODF)) 
+		{	
+		String ODFModel = ODFModelType(filename);
+		if(ODFModel.equalsIgnoreCase(fileFormat))
+			return true;
 		}
-		return false;
+		
+		return false;			
+
 	}
 
-	protected String getODFModelType(String filename)
+	public static String ODFModelType(String filename)
 	{
 		String model="";
 		BufferedReader inputB;
 		try {
 			inputB = new BufferedReader(new FileReader(filename));
-			String modelLine="";
-			for (int x=0; x<GPConstants.ODF_MODEL_LINE; x++){
+			String modelLine=inputB.readLine();
+			while(!modelLine.startsWith("Model") || modelLine!=null){
 			   modelLine = inputB.readLine();
 			}
-
+			if (modelLine!=null){
 			model = modelLine.substring(model.indexOf("=")+1);			
 			inputB.close();
 			return model.trim();
+			}
+			else{
+			   return model;
+			}
 		}
 		catch(Exception e)
 		{

@@ -271,61 +271,10 @@ public interface IGPConstants {
 	public static final String STDERR = "stderr";
 	
 	/**
-	 * filenames of well-known files that may be output or input by a job
+	 * fileextension of ODF
 	 */
-	public final static String FASTA = "FA";
-
-	public final static String RES = "RES";
-
-	public final static String GCT = "GCT";
-
 	public final static String ODF = "ODF";
 
-	public final static String CLS = "CLS";
-
-	public final static String GTR = "GTR";
-
-	public final static String POL = "POL";
-
-	public final static String CDT = "CDT";
-
-	public final static String PIR = "PIR";
-
-	public final static String EMB = "EMBL";
-
-	public final static String IG = "IG";
-
-	/**
-	 * keyword(s)/identifier(s) of known file formats
-	 */
-
-	public final static String KW_FASTA = ">";
-
-	public final static String KW_RES = "Description";
-
-	public final static String KW_GCT = "#1.2";
-
-	public final static String KW_ODF = "ODF";
-
-	public final static String KW_CLS = "CLS";
-
-	public final static String KW_GTR = "GTR";
-
-	public final static String KW_POL = "POL";
-
-	public final static String KW_CDT = "CDT";
-
-	public final static String KW_PIR = "ENTRY";
-
-	public final static String KW_EMB = "ID";
-
-	public final static String KW_IG = ";";
-
-	/**
-	 * ODF Model line number
-	 */
-	
-	public final static int ODF_MODEL_LINE= 2;
 
 	public static String UTF8 = "UTF-8";
 }
