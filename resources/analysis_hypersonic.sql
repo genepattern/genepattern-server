@@ -3,7 +3,7 @@ create user SA password "" ADMIN;
 
 --Task master table
 
-create table task_master(task_ID int identity primary key, task_Name longvarchar, description longvarchar, className longvarchar, parameter_info longvarchar, load_flag bit, type_id int, repeat_minute longvarchar, repeat_hour varchar(60), repeat_day_of_month varchar(60), repeat_month_of_year varchar(60), repeat_day_of_week varchar(60), taskInfoAttributes longvarchar, user_id longvarchar, access_id int, isIndexed bit, lsid varchar(200));
+create table task_master(task_ID int identity primary key, task_Name longvarchar, description longvarchar, parameter_info longvarchar, type_id int, taskInfoAttributes longvarchar, user_id longvarchar, access_id int, isIndexed bit, lsid varchar(200));
 
 create index idx_lsid on task_master(lsid);
 create index idx_is_indexed on task_master(isIndexed);
