@@ -59,35 +59,35 @@ public class SortableTreeTable extends JXTreeTable implements DragSourceListener
    private static Directive EMPTY_DIRECTIVE = new Directive(-1, NOT_SORTED);
    SortTreeTableModel model;
    DragSource dragSource;
-   
+
    public SortableTreeTable(SortTreeTableModel m) {
       this(m, true);
    }
-   
+
    public SortableTreeTable(SortTreeTableModel m, boolean enableSort) {
       super(m);
       this.model = m;
-      setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION); 
-     
+      setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+
       tree = (JTree) getDefaultRenderer(TreeTableModel.class);
-      
+
       dragSource = DragSource.getDefaultDragSource();
-     
+
       DragGestureRecognizer dgr = dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
       dgr.setSourceActions(dgr.getSourceActions() & ~InputEvent.BUTTON3_MASK);
-       
+
       tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
       setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
       if(enableSort) {
-         getTableHeader().setDefaultRenderer(new SortableHeaderRenderer(new JTable().getTableHeader().getDefaultRenderer())); 
+         getTableHeader().setDefaultRenderer(new SortableHeaderRenderer(new JTable().getTableHeader().getDefaultRenderer()));
          getTableHeader().addMouseListener(new MouseHandler());
       }
-     
+
    }
 
 
    public final void dragGestureRecognized(final DragGestureEvent e) {
-      
+
       final Point ptDragOrigin = e.getDragOrigin();
       int row = this.getSelectedRow();
 
@@ -109,7 +109,7 @@ public class SortableTreeTable extends JXTreeTable implements DragSourceListener
 
       // Work out the offset of the drag point from the TreePath bounding rectangle origin
       final Rectangle raPath = tree.getPathBounds(path);
-     
+
       _ptOffset.setLocation(raPath.x - ptDragOrigin.x, raPath.y - ptDragOrigin.y);
 
       // Get the cell renderer (which is a JLabel) for the path being dragged
@@ -152,9 +152,10 @@ public class SortableTreeTable extends JXTreeTable implements DragSourceListener
       _pathSource = path;
 
       // We pass our drag image just in case it IS supported by the platform
-      
+
+
       _ptOffset.y = 0;
-      e.startDrag(java.awt.Cursor.getDefaultCursor(), _imgGhost, _ptOffset, transferable, this);
+      e.startDrag(DragSource.DefaultCopyDrop, _imgGhost, _ptOffset, transferable, this);
    }
 
 
@@ -173,7 +174,7 @@ public class SortableTreeTable extends JXTreeTable implements DragSourceListener
    public final void dragExit(DragSourceEvent e) {
 
       inDrag = false;
-      java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(this);
+      java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(tree);
       if(window != null) {
          window.repaint();
       }
@@ -229,7 +230,7 @@ public class SortableTreeTable extends JXTreeTable implements DragSourceListener
       }
       sortingStatusChanged();
       model.sortOrderChanged(new SortEvent(this, column, status!=DESCENDING));
-      
+
    }
 
 
@@ -337,10 +338,10 @@ public class SortableTreeTable extends JXTreeTable implements DragSourceListener
       switch(status) {
                case NOT_SORTED:
                  return "NOT_SORTED";
-                 
+
                case ASCENDING:
                   return "ASCENDING";
-               
+
                case DESCENDING:
                   return "DESCENDING";
                default:
@@ -359,7 +360,7 @@ public class SortableTreeTable extends JXTreeTable implements DragSourceListener
             if(!e.isControlDown()) {
                cancelSorting();
             }
-          
+
             switch(status) {
                case NOT_SORTED:
                   status = DESCENDING;
@@ -373,7 +374,7 @@ public class SortableTreeTable extends JXTreeTable implements DragSourceListener
                default:
                   break;
             }
-               
+
             // Cycle the sorting states through {NOT_SORTED, ASCENDING, DESCENDING} or
             // {NOT_SORTED, DESCENDING, ASCENDING} depending on whether shift is pressed.
            // status = status + (e.isShiftDown() ? -1 : 1);
