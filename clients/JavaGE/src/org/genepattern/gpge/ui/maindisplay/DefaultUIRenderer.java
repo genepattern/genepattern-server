@@ -163,30 +163,8 @@ public class DefaultUIRenderer implements UIRenderer {
 				ParameterInfo info = params[i];
 				createParamPanel(task, info, name_retriever);
 			}
-			//            final JButton help_button = new JButton("Help");
-			//            remainder.anchor = GridBagConstraints.EAST;
-			//            pane.add(help_button, remainder);
-			//            help_button.addActionListener(new ActionListener() {
-			//                public final void actionPerformed(java.awt.event.ActionEvent ae)
-			// throws java.io.IOException{
-			//                    edu.mit.genome.util.BrowserLauncher.openURL(DOC_URL +
-			// task.getName());
-			//                }
-			//            });
 		}
-		help_listener = new ActionListener() {
-			public final void actionPerformed(java.awt.event.ActionEvent ae) {
-				try {
-					String server = executer.service.getServer();
-					String docURL = server + "/gp/getTaskDoc.jsp?name="
-							+ LSIDUtil.getTaskId(task) + "&"
-							+ GPConstants.USERID + "=GenePattern";
-					org.genepattern.util.BrowserLauncher.openURL(docURL);
-				} catch (java.io.IOException ex) {
-					ExceptionHandler.handleException(ex);
-				}
-			}
-		};
+		
 		params_list.clear();
 	}
 
@@ -803,8 +781,8 @@ public class DefaultUIRenderer implements UIRenderer {
 	}
 
 	public JComponent createSubmitPanel(final AnalysisService service,
-			final java.awt.event.ActionListener listener) {
-		return createSubmitPanel(service, listener, null);
+			final java.awt.event.ActionListener submitListener) {
+		return createSubmitPanel(service, submitListener, null);
 	}
 
 	/**
@@ -818,7 +796,7 @@ public class DefaultUIRenderer implements UIRenderer {
 	 * @return Description of the Return Value
 	 */
 	public JComponent createSubmitPanel(final AnalysisService service,
-			final java.awt.event.ActionListener listener,
+			final java.awt.event.ActionListener submitListener,
 			java.awt.event.ActionListener resetListener) {
 		final JPanel panel = new JPanel(new GridBagLayout());
 		final GridBagConstraints gbc = new GridBagConstraints();
@@ -826,7 +804,7 @@ public class DefaultUIRenderer implements UIRenderer {
 		final String label = (VisualizerTaskSubmitter.isVisualizer(service)) ? "Show"
 				: "Submit";
 		final JButton submit = new JButton(label);
-		submit.addActionListener(listener);
+		submit.addActionListener(submitListener);
 		panel.add(submit, gbc);
 
 		if (resetListener != null) {
@@ -835,13 +813,24 @@ public class DefaultUIRenderer implements UIRenderer {
 			panel.add(reset, gbc);
 		}
 
-		if (help_listener != null) {
-			final JButton help = new JButton("Help");
-			help.addActionListener(help_listener);
-			gbc.gridwidth = GridBagConstraints.REMAINDER;
-			panel.add(help, gbc);
-		}
-		//panel.setBackground(java.awt.Color.blue);
+		 help_listener = new ActionListener() {
+          public final void actionPerformed(java.awt.event.ActionEvent ae) {
+				try {
+					String server =  service.getServer();
+					String docURL = server + "/gp/getTaskDoc.jsp?name="
+							+ LSIDUtil.getTaskId(service.getTaskInfo()) + "&"
+							+ GPConstants.USERID + "=GenePattern";
+					org.genepattern.util.BrowserLauncher.openURL(docURL);
+				} catch (java.io.IOException ex) {
+					ExceptionHandler.handleException(ex);
+				}
+			}
+       };
+      final JButton help = new JButton("Help");
+      help.addActionListener(help_listener);
+      gbc.gridwidth = GridBagConstraints.REMAINDER;
+      panel.add(help, gbc);
+		
 		return panel;
 	}
 

@@ -449,7 +449,6 @@ public class AnalysisServicePanel extends JPanel {
 			//add bottom panel for submit button
 			if (renderer != null) {
 				top_pane.add(renderer.createTaskLabel(service));
-				//((FlowLayout)bottom_pane.getLayout()).setAlignment(FlowLayout.LEADING);
 				bottom_pane.add(renderer.createSubmitPanel(service,
 						new SubmitActionListener(), new ResetActionListener()),
 						BorderLayout.CENTER);
@@ -459,9 +458,9 @@ public class AnalysisServicePanel extends JPanel {
 					.add(
 							getWarningLabel("Note: This module has no input parameters."),
 							BorderLayout.SOUTH);
-			//add bottom panel for submit button
-			//((FlowLayout)bottom_pane.getLayout()).setAlignment(FlowLayout.LEADING);
-			bottom_pane.add(createSubmitPanel(), BorderLayout.CENTER);
+			bottom_pane.add(renderer.createSubmitPanel(service,
+						new SubmitActionListener(), null),
+						BorderLayout.CENTER);
 		}
 
 		//return scrollPane;
@@ -480,14 +479,6 @@ public class AnalysisServicePanel extends JPanel {
 		//return labelPane;
 	}
 
-	//private JPanel createSubmitPanel(final GridBagConstraints gbc, final int
-	// gridy){
-
-	private JComponent createSubmitPanel() {
-		JButton submit = new JButton("Submit");
-		submit.addActionListener(new SubmitActionListener());
-		return submit;
-	}
 
 	protected static void setGridBagConstraints(final GridBagConstraints gbc,
 			final int gridx, final int gridy, final int gridw, final int gridh,
@@ -511,7 +502,6 @@ public class AnalysisServicePanel extends JPanel {
 	// {
 	private JComponent getErrorLabel(final String message) {
 		final JLabel label = new JLabel(message);
-		label.setForeground(Color.red);
 		return label;
 	}
 
@@ -526,7 +516,6 @@ public class AnalysisServicePanel extends JPanel {
 	// {
 	private JComponent getWarningLabel(final String message) {
 		final JLabel label = new JLabel(message);
-		label.setForeground(Color.magenta);
 		return label;
 	}
 
