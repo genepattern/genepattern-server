@@ -42,7 +42,7 @@ import java.util.Random;
  * Code from: http://groups.google.com/groups?q=generating+a+unique+name&hl=en&group=comp.lang.java.*&rnum=1&selm=98sopr%2459e%241%40plutonium.compulink.co.uk
  *
  * @author Jim Amsden &lt;jamsden@us.ibm.com&gt;
- * @authorModifications by Torgeir Veimo &lt;torgeir.veimo@ecomda.de&gt; for Ecomda GmbH.
+ * authorModifications by Torgeir Veimo &lt;torgeir.veimo@ecomda.de&gt; for Ecomda GmbH.
  * @author Aravind Subramanian - minor porting related changes for GenePattern
  * @version %I%, %G%
  *

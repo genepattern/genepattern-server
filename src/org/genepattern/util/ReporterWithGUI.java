@@ -19,7 +19,7 @@ import javax.swing.JTextArea;
  *  Displays the messages and records them to the Error and Warning consoles
  *
  *@author     kohm
- *@created    November 24, 2003
+ *
  */
 public final class ReporterWithGUI extends AbstractReporter {
     

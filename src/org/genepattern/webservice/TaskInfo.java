@@ -114,19 +114,20 @@ public class TaskInfo implements Serializable {
     }
      /**
      * get parameter info jaxb string
-     * @return  */
+     * @return parameter_info */
     public String getParameterInfo() {
         return parameter_info;
     }
     /**
      * get <CODE>ParameterInfo</CODE> array
-     * @return  */
+     * 
+     *   */
     public void setParameterInfo(java.lang.String parameter_info) {
         this.parameter_info = parameter_info;
     }
     /**
      * get <CODE>ParameterInfo</CODE> array
-     * @return  */
+     * @return parameterInfoArray */
     public ParameterInfo[] getParameterInfoArray(){
         //add checking in here --Hui
         if(this.parameterInfoArray==null && this.parameter_info!=null){
@@ -148,14 +149,14 @@ public class TaskInfo implements Serializable {
     }
      /**
      * get Taskclass name
-     * @return  */
+     * @return taskClassName */
     public String getTaskClassName() {
         return taskClassName;
     }
 
     /**
      * set Taskclass name
-     * @return  */
+     *   */
     public void setTaskClassName(java.lang.String taskClassName) {
         this.taskClassName = taskClassName;
     }

@@ -9,7 +9,7 @@ package org.genepattern.util;
 /**
  *
  * @author  keith
- * @version 
+ * 
  */
 public class MutableFloat {
 

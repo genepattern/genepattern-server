@@ -91,7 +91,7 @@ public class JobInfo implements Serializable {
 
 
     /**
-     * @return  */
+     * @return jobNo */
     public int getJobNumber() {
         return jobNo;
     }
@@ -103,7 +103,7 @@ public class JobInfo implements Serializable {
     }
 
     /**
-     * @return  */
+     * @return status */
     public String getStatus() {
         return status;
     }
@@ -117,7 +117,7 @@ public class JobInfo implements Serializable {
 
 
     /**
-     * @return  */
+     * @return taskID */
     public int getTaskID() {
         return taskID;
     }
@@ -130,7 +130,7 @@ public class JobInfo implements Serializable {
 
 
     /**
-     * @return  */
+     * @return submittedDate */
     public Date  getDateSubmitted() {
         return submittedDate;
     }
@@ -142,7 +142,7 @@ public class JobInfo implements Serializable {
     }
 
     /**
-     * @return  */
+     * @return completedDate */
     public Date getDateCompleted() {
         return completedDate;
     }
@@ -154,7 +154,7 @@ public class JobInfo implements Serializable {
     }
 
     /**
-     * @return  
+     * @return  inputFileName
      * @deprecated
      */
     public String getInputFileName() {
@@ -172,7 +172,7 @@ public class JobInfo implements Serializable {
 
     /**
      * get parameter info jaxb string
-     * @return  */
+     * @return parameter_info */
     public String getParameterInfo() throws OmnigeneException{
         String parameter_info="";
         ParameterFormatConverter converter = new ParameterFormatConverter();
@@ -186,7 +186,7 @@ public class JobInfo implements Serializable {
 
     /**
      * get <CODE>ParameterInfo</CODE> array
-     * @return  */
+     * @return parameterInfoArray */
     public ParameterInfo[] getParameterInfoArray() {
         return parameterInfoArray;
     }
@@ -214,7 +214,7 @@ public class JobInfo implements Serializable {
     }
 
     /**
-     * @return  
+     * @return resultFileName 
      * @deprecated
      */
     public String getResultFileName() {
