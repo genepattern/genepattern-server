@@ -219,7 +219,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		int i;
 		int jobStatus = JobStatus.JOB_ERROR;
 		String outDirName = getJobDir(Integer.toString(jobInfo.getJobNumber()));
-
+      JobInfo parentJobInfo = null;
 		try {
 			/**
 			 * make directory to hold input and output files
@@ -771,30 +771,37 @@ public class GenePatternAnalysisTask implements IGPConstants {
 					return 1;
 				}
 			});
+         
+         
+         parentJobInfo = getDS().getParent(jobInfo.getJobNumber());
 
 			for (i = 0; i < outputFiles.length; i++) {
 				File f = outputFiles[i];
 				_cat.debug("adding output file to output parameters "
 						+ f.getName() + " from " + outDirName);
-				addFileToOutputParameters(jobInfo, f.getName(), f.getName());
+				addFileToOutputParameters(jobInfo, f.getName(), f.getName(), parentJobInfo);
 			}
 
 			if (stdout.length() > 0) {
 				//System.out.println("adding stdout");
 				outFile = writeStringToFile(outDirName, STDOUT, stdout
 						.toString());
-				addFileToOutputParameters(jobInfo, STDOUT, STDOUT);
+				addFileToOutputParameters(jobInfo, STDOUT, STDOUT, parentJobInfo);
 			}
 
 			if (stderr.length() > 0) {
 				//System.out.println("adding stderr");
 				outFile = writeStringToFile(outDirName, STDERR, stderr
 						.toString());
-				addFileToOutputParameters(jobInfo, STDERR, STDERR);
+				addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
 			}
 
 			getDS().updateJob(jobInfo.getJobNumber(),
 					jobInfo.getParameterInfo(), jobStatus);
+         if(parentJobInfo!=null) {
+            getDS().updateJob(parentJobInfo.getJobNumber(),
+			      parentJobInfo.getParameterInfo(), ((Integer)JobStatus.STATUS_MAP.get(parentJobInfo.getStatus())).intValue());
+         }
 			if (outputFiles.length == 0 && stderr.length() == 0
 					&& stdout.length() == 0) {
 				//System.err.println("no output for " + taskName + " (job " +
@@ -811,9 +818,13 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			try {
 				outFile = writeStringToFile(outDirName, STDERR, e.getMessage()
 						+ "\n\n");
-				addFileToOutputParameters(jobInfo, STDERR, STDERR);
+				addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
 				getDS().updateJob(jobInfo.getJobNumber(),
 						jobInfo.getParameterInfo(), JobStatus.JOB_ERROR);
+            if(parentJobInfo!=null) {
+               getDS().updateJob(parentJobInfo.getJobNumber(),
+			         parentJobInfo.getParameterInfo(), ((Integer)JobStatus.STATUS_MAP.get(parentJobInfo.getStatus())).intValue());
+            }
 			} catch (Exception e2) {
 				//System.err.println(taskName + " error: unable to update job
 				// error status" +e2);
@@ -1682,11 +1693,12 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	 * @param label
 	 *            "short name of the file", ie. the basename without the
 	 *            directory
+    * @param parentJobInfo the parent job of the given jobInfo or <tt>null</tt> if no parent exists
 	 * @author Jim Lerner
 	 *  
 	 */
 	protected void addFileToOutputParameters(JobInfo jobInfo, String fileName,
-			String label) {
+			String label, JobInfo parentJobInfo) {
 		fileName = jobInfo.getJobNumber() + "/" + fileName;
 		// try { _cat.debug("addFileToOutputParameters: job " +
 		// jobInfo.getJobNumber() + ", file: " + new
@@ -1695,6 +1707,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		ParameterInfo paramOut = new ParameterInfo(label, fileName, "");
 		paramOut.setAsOutputFile();
 		jobInfo.addParameterInfo(paramOut);
+      if(parentJobInfo!=null) {
+         parentJobInfo.addParameterInfo(paramOut);
+      }
 	}
 
 	/**
