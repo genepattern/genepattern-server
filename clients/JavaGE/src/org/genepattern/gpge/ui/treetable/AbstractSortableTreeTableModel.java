@@ -77,6 +77,29 @@ public abstract class AbstractSortableTreeTableModel implements
 					newChildren);
 		}
 	}
+   
+    /**
+      * Invoke this method after you've changed how node is to be
+      * represented in the tree.
+      */
+    public void nodeChanged(TreeNode node) {
+        if(listenerList != null && node != null) {
+            TreeNode         parent = node.getParent();
+
+            if(parent != null) {
+                int        anIndex = parent.getIndex(node);
+                if(anIndex != -1) {
+                    int[]        cIndexs = new int[1];
+
+                    cIndexs[0] = anIndex;
+                    nodesChanged(parent, cIndexs);
+                }
+            }
+	    else if (node == getRoot()) {
+		nodesChanged(node, null);
+	    }
+        }
+    }
 
 	/**
 	 * Invoke this method after you've removed some TreeNodes from node.
