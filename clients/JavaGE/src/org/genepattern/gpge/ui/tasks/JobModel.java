@@ -193,7 +193,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
    * Invoked when job is initially submiited
    */
 	public void add(AnalysisJob job) {
-      if(!job.getServer().equals(AnalysisServiceManager.getInstance().getServer())) {
+      if(!isSameServerAndUsername(job)) {
          return;  
       }
 		JobNode child = new JobNode(job);
@@ -216,12 +216,20 @@ public class JobModel extends AbstractSortableTreeTableModel {
       notifyJobAdded(job);
 	}
 
+   private boolean isSameServerAndUsername(AnalysisJob job) {
+      return job.getServer().equals(AnalysisServiceManager.getInstance().getServer()) && job.getJobInfo().getUserId().equals(AnalysisServiceManager.getInstance().getUsername());
+   }
+   
 	public void jobCompleted(AnalysisJob job) {
-      if(!job.getServer().equals(AnalysisServiceManager.getInstance().getServer())) {
+      if(!isSameServerAndUsername(job)) {
          return;  
       }
       
 		JobNode jobNode = findJobNode(job);
+      if(jobNode==null) {
+         add(job);
+         jobNode = findJobNode(job);
+      }
 		int outputFiles = jobNode.getOutputFiles();
 		int[] newIndexs = new int[outputFiles];
 		for (int i = 0; i < outputFiles; i++) {
@@ -232,10 +240,15 @@ public class JobModel extends AbstractSortableTreeTableModel {
 	}
 
 	public void jobStatusChanged(AnalysisJob job) {
-      if(!job.getServer().equals(AnalysisServiceManager.getInstance().getServer())) {
+      if(!isSameServerAndUsername(job)) {
          return;  
       }
-		nodeChanged(findJobNode(job));
+      JobNode jobNode = findJobNode(job);
+      if(jobNode==null) {
+         add(job);
+         jobNode = findJobNode(job);
+      }
+		nodeChanged(jobNode);
 		notifyJobStatusChanged(job);
 	}
 
