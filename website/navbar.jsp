@@ -335,6 +335,7 @@ function LSID(lsid) {
 	// put recent tasks into list first
 	for (Iterator itTasks = recent.iterator(); itTasks.hasNext(); ) {
 		taskInfo = (TaskInfo)itTasks.next();
+		if (taskInfo == null) continue;
 		name = taskInfo.getName();
 		tia = taskInfo.giveTaskInfoAttributes();
 		
