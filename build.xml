@@ -128,9 +128,9 @@
 			<include name="org/genepattern/module/**"/>
 		</javac>
 	
-		<jar basedir="${genepattern.build}" defaultexcludes="true"  jarfile="${genepattern.build}/${gp-library-jarname}" includes="org/genepattern/client/**/*.class, org/genepattern/data/**, org/genepattern/io/**, org/genepattern/module/**">	
+		<jar basedir="${genepattern.build}" defaultexcludes="true"  jarfile="${genepattern.build}/${gp-library-jarname}" includes="org/genepattern/client/**/*.class, org/genepattern/module/**">	
 		<manifest>
-				<attribute name="Class-Path" value="./lib/gpwebservice.jar ./lib/activation.jar ./lib/mail.jar ./lib/axis.jar ./lib/log4j-1.2.4.jar ./lib/jaxrpc.jar ./lib/commons-discovery.jar ./lib/commons-logging.jar ./lib/saaj.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar" />
+				<attribute name="Class-Path" value="./lib/gpwebservice.jar ./lib/broad-cg.jar ./lib/activation.jar ./lib/mail.jar ./lib/axis.jar ./lib/log4j-1.2.4.jar ./lib/jaxrpc.jar ./lib/commons-discovery.jar ./lib/commons-logging.jar ./lib/saaj.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar" />
 			</manifest> 
 		</jar>
 		
@@ -157,6 +157,7 @@
 			
 			<zipfileset dir="lib" prefix="lib">
 				<include name="gpwebservice.jar"/>
+				<include name="broad-cg.jar"/>
 				<include name="activation.jar"/>
 				<include name="mail.jar"/>
 				<include name="axis.jar"/> 
@@ -172,7 +173,7 @@
 			
 			<zipfileset dir="build/doc" prefix="doc"/>
 		</zip> 
-		</target> 
+	</target> 
 	
    <target depends="init,compile" name="common">
 <!-- Makes gp-common.jar -->

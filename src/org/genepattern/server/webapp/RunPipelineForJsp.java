@@ -164,7 +164,7 @@ public class RunPipelineForJsp {
         String JAVA_HOME = System.getProperty("java.home");
         boolean savedPipeline = isSavedModel(taskInfo, name, userID);
         // these jar files are required to execute
-        // analysis.jar; 			gpclient.jar;
+        //  			gp-full.jar;
         // log4j-1.2.4.jar; 		xerces.jar;
         // activation.jar;		saaj.jar
         // axis.jar;			jaxrpc.jar;
@@ -198,7 +198,7 @@ public class RunPipelineForJsp {
         cmdLine.add("-Dgenepattern.properties=" + resourcesDir);
         cmdLine.add("-DGenePatternURL="+System.getProperty("GenePatternURL") );
         cmdLine.add("-D" + GPConstants.LSID + "="+(String)taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
-        cmdLine.add("org.genepattern.client.RunPipeline");
+        cmdLine.add("org.genepattern.server.webapp.RunPipeline");
         
         
         //-------------------------------------------------------------
@@ -290,7 +290,7 @@ public class RunPipelineForJsp {
         tempDir.delete();
         tempDir.mkdirs();
 
-        if (decorator == null) decorator = "org.genepattern.client.RunPipelineHTMLDecorator";
+        if (decorator == null) decorator = "org.genepattern.server.webapp.RunPipelineHTMLDecorator";
 
         boolean deleteDirAfterRun = RunPipelineForJsp.deletePipelineDirAfterRun(taskInfo.getName());   
 

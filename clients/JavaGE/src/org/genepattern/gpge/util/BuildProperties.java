@@ -91,7 +91,7 @@ public class BuildProperties {
     /** The minor version */
     public static final String MINOR_VERSION;
     /** The revision */
-    public static final int REVISION;
+    public static final String REVISION;
     /** The full version as a String */
     public static final String FULL_VERSION;
     
