@@ -19,7 +19,7 @@
         <property name="genepatternServerUrl" value="http://localhost:8080/gp" />
     </target>
     <target name="setDefaultModulesDir" unless="modulesDirectory">
-        <property name="modulesDirectory" value="../modules/release_archive" />
+        <property name="modulesDirectory" value="../../modules/release_archive" />
     </target>
 
 
