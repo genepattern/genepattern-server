@@ -1340,49 +1340,77 @@ public class MainFrame extends JFrame {
       
      
       viewCodeAction = new MenuAction("View Code");
+      
       MenuItemAction viewJavaCodeAction = new MenuItemAction("Java") {
-			public void actionPerformed(ActionEvent e) {
-           
-            JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
-            JobInfo jobInfo = jobNode.job.getJobInfo();
-            List parameterInfoList = new ArrayList();
-            ParameterInfo[] params = jobInfo.getParameterInfoArray();
-            for(int i = 0; i < params.length; i++) {
-               if(!params[i].isOutputFile()) {
-                  if(params[i].isInputFile()) {
-                     if(params[i].getAttributes().get("client_filename")!=null) {
-                        String clientFile = (String) params[i].getAttributes().get("client_filename");
-                        parameterInfoList.add(new ParameterInfo(params[i].getName(), clientFile, ""));
-                     } else {
-                        parameterInfoList.add(params[i]);
-                     }
-                  } else {
-                     parameterInfoList.add(params[i]);
-                  }
-               }
-               
-            }
-            
-            org.genepattern.codegenerator.TaskCodeGenerator codeGenerator = new org.genepattern.codegenerator.JavaPipelineCodeGenerator();
-            String lsid = jobInfo.getTaskLSID();
-            String code = codeGenerator.generateTask(lsid, (ParameterInfo[]) parameterInfoList.toArray(new ParameterInfo[0]));
-            JDialog dialog = new JDialog(MainFrame.this);
-            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-            dialog.setTitle("Code for " + jobInfo.getTaskName() + ", job " + jobInfo.getJobNumber());
-            JTextArea textArea = new JTextArea(code);
-            textArea.setLineWrap(true);
-            textArea.setEditable(false);
-            JScrollPane sp = new JScrollPane(textArea);
-            dialog.getContentPane().add(sp, BorderLayout.CENTER);
-            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            dialog.setSize(screenSize.width/2, screenSize.height/2);
-            dialog.show();
+         public void actionPerformed(ActionEvent e) {
+            viewCode(new org.genepattern.codegenerator.JavaPipelineCodeGenerator());
          }
-		};
-      viewCodeAction.add(viewJavaCodeAction);
+      };
 
+      viewCodeAction.add(viewJavaCodeAction);
+      
+       
+      MenuItemAction viewMATLABCodeAction = new MenuItemAction("MATLAB") {
+         public void actionPerformed(ActionEvent e) {
+            viewCode(new org.genepattern.codegenerator.MATLABPipelineCodeGenerator());
+         }
+      };
+      viewCodeAction.add(viewMATLABCodeAction);
+      
+       MenuItemAction viewRCodeAction = new MenuItemAction("R") {
+         public void actionPerformed(ActionEvent e) {
+            viewCode(new org.genepattern.codegenerator.RPipelineCodeGenerator());
+         }
+      };
+      viewCodeAction.add(viewRCodeAction);
+      
    }
 
+   private void viewCode(org.genepattern.codegenerator.TaskCodeGenerator codeGenerator) {
+      JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
+      JobInfo jobInfo = jobNode.job.getJobInfo();
+     
+      List parameterInfoList = new ArrayList();
+      ParameterInfo[] params = jobInfo.getParameterInfoArray();
+      for(int i = 0; i < params.length; i++) {
+         if(!params[i].isOutputFile()) {
+            Object mode = params[i].getAttributes().get(ParameterInfo.MODE);
+            if(mode!=null && mode.equals(ParameterInfo.CACHED_INPUT_MODE)) {
+               String name = JobModel.getJobResultFileName(jobNode.job, i);
+               int jobNumber = JobModel.getJobCreationJobNumber(jobNode.job, i);
+               try {
+                  String url = jobNode.job.getServer() + "/gp/retrieveResults.jsp?job=" + jobNumber + "&filename=" + java.net.URLEncoder.encode(name, "UTF-8");
+            
+                  parameterInfoList.add(new ParameterInfo(params[i].getName(), url , ""));
+               } catch(java.io.UnsupportedEncodingException x) {
+                  x.printStackTrace();  
+               }
+            }
+            else if(params[i].getAttributes().get("client_filename")!=null) {
+               String clientFile = (String) params[i].getAttributes().get("client_filename");
+               parameterInfoList.add(new ParameterInfo(params[i].getName(), clientFile, ""));
+            } else {
+               parameterInfoList.add(params[i]);
+            }
+            
+         }
+         
+      }
+      
+      String code = codeGenerator.generateTask(jobInfo, (ParameterInfo[]) parameterInfoList.toArray(new ParameterInfo[0]));
+      JDialog dialog = new JDialog(MainFrame.this);
+      dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+      dialog.setTitle("Code for " + jobInfo.getTaskName() + ", job " + jobInfo.getJobNumber());
+      JTextArea textArea = new JTextArea(code);
+      textArea.setLineWrap(true);
+      textArea.setEditable(false);
+      JScrollPane sp = new JScrollPane(textArea);
+      dialog.getContentPane().add(sp, BorderLayout.CENTER);
+      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+      dialog.setSize(screenSize.width/2, screenSize.height/2);
+      dialog.show();
+   }
+         
    private void createJobResultFileActions() {
       jobResultFileSendToMenu = new MenuAction("Send To", IconManager.loadIcon(IconManager.SEND_TO_ICON));
       jobResultFileSendToMenu.setEnabled(false);
