@@ -11,10 +11,9 @@ import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.TaskInfo;
 
 /**
- * AnalysisJobDataSource.java This interface used by AnalysisDAO
+ * Interface for analysis web service tasks. 
  * 
  * @author rajesh kuttan
- * @version
  */
 
 public interface AnalysisJobDataSource {
@@ -53,25 +52,53 @@ public interface AnalysisJobDataSource {
 	 * @param taskID
 	 * @param user_id
 	 * @param parameter_info
-	 * @param inputfile
 	 * @throws OmnigeneException
 	 * @throws RemoteException
 	 * @return Job ID
 	 */
-	public JobInfo addNewJob(int taskID, String user_id, String parameter_info,
-			String inputfile) throws OmnigeneException, RemoteException;
+	public JobInfo addNewJob(int taskID, String user_id, String parameter_info) throws OmnigeneException, RemoteException;
+   
+   
+  /**
+	 * Creates an Omnigene database entry in the analysis_job table. Unlike
+	 * other entries, this one is not dispatchable to any known analysis task
+	 * because it has a bogus taskID. Since it is a pipeline, it is actually
+	 * being invoked by a separate process, but is
+	 * using the rest of the infrastructure to get input files, store output
+	 * files, and retrieve status and result files.
 
+	
+	 * @param userID user who owns this pipeline data instance
+	 * @param parameterInfo ParameterInfo array containing pipeline data file output entries
+    * @param pipelineName a name for the temporary pipeline
+	 * @throws OmnigeneException
+	 *             if thrown by Omnigene
+	 * @throws RemoteException
+	 *             if thrown by Omnigene
+	 */
+   public JobInfo addTemporaryPipeline(String user_id, String parameter_info, String pipelineName) throws OmnigeneException, RemoteException;
+
+   
+   /**
+   * Gets the task name of a temporary (unsaved) pipeline
+   * @throws OmnigeneException
+   *             if thrown by Omnigene
+   * @throws RemoteException
+   *             if thrown by Omnigene
+   * @return the temporary pipeline name
+   */
+   public String getTemporaryPipelineName(int jobNumber) throws OmnigeneException, RemoteException;;
+   
 	/**
 	 * Update job information like status and resultfilename
 	 * 
 	 * @param jobNo
 	 * @param jobStatusID
-	 * @param outputFilename
 	 * @throws OmnigeneException
 	 * @throws RemoteException
 	 * @return record count of updated records
 	 */
-	public int updateJob(int jobNo, int jobStatusID, String outputFilename)
+	public int updateJob(int jobNo, int jobStatusID)
 			throws OmnigeneException, RemoteException;
 
 	/**
@@ -277,13 +304,6 @@ public interface AnalysisJobDataSource {
 	 */
 	public void startNewTask(int id) throws OmnigeneException, RemoteException;
 
-	/**
-	 * Stops the running thread of a task
-	 * 
-	 * @param classname
-	 *            analysis task name
-	 */
-	public void stopTask(String classname) throws RemoteException;
 
 	/**
 	 * Stops the running thread of a task
