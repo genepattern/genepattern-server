@@ -544,8 +544,24 @@ public class DoubleMatrix2D {
     */
    public double get(int row, int column) {
       return matrix.get(row, column);
+   } 
+   
+   /**
+	* Gets the underlying array at the given row 
+   * @param row   Row index
+   * @return the row array
+	*/
+   public double[] getRow(int row) {
+      return matrix.getArray()[row];
    }
 
+   /**
+	* Gets the underlying double[][] array 
+   * @return the array
+	*/
+	public double[][] getArray(){
+		return matrix.getArray();
+	}
 
    /**
     *  Gets the row name at the specified index
@@ -568,6 +584,24 @@ public class DoubleMatrix2D {
    public String getColumnName(int columnIndex) {
       return columnNames[columnIndex];
    }
+
+   /**
+    *  Allocates a new array contains the column names
+    *
+    * @return              The column names.
+    */
+   public String[] getColumnNames(){
+      return (String[])columnNames.clone();
+   } 
+
+    /**
+    *  Allocates a new array contains the row names
+    *
+    * @return              The row names.
+    */
+   public String[] getRowNames(){
+      return (String[])rowNames.clone();
+   } 
 
 
    /**
