@@ -147,6 +147,7 @@ if (contentType == null) {
 	htTypes.put(".zip", "application/zip");
 	htTypes.put("." + GPConstants.TASK_TYPE_PIPELINE, "text/plain");
 	htTypes.put(".class", "application/octet-stream");
+	htTypes.put(".doc", "application/msword");
 
 	i = filename.lastIndexOf(".");
 	String extension = (i > -1 ? filename.substring(i) : "");

@@ -128,6 +128,12 @@ if (requestParameters.getParameter("delete") != null || request.getParameter("de
 if (requestParameters.getParameter("deleteFiles") != null || request.getParameter("deleteFiles") != null) {
 	String filename = requestParameters.getParameter("deleteFiles");
 	if (filename == null) filename = request.getParameter("deleteFiles");
+
+String forward = request.getParameter("forward");
+System.out.println("FOR=" + forward);
+if (forward== null) forward = "addTask.jsp";
+
+
 	if (filename != null && !filename.equals("")) {
 		try {
 			StringBuffer sbURL = request.getRequestURL();
@@ -138,8 +144,10 @@ if (requestParameters.getParameter("deleteFiles") != null || request.getParamete
 			}
 			lsid = taskIntegratorClient.deleteFiles(lsid, new String[] { filename });
 			if (lsid != null) { 
-				response.sendRedirect("addTask.jsp?" + GPConstants.NAME + "=" + lsid);
+				response.sendRedirect(forward + "?" + GPConstants.NAME + "=" + lsid);
 				return;
+
+
 			} else { %>
 				<jsp:include page="navbar.jsp"></jsp:include>
 				Unable to delete <%= filename %> from <%= taskName %> support files.<br>

@@ -879,6 +879,16 @@ function savePipeline(bMustName, cmd) {
 	return success;
 }
 
+function deleteDocFiles() {
+	var sel = document.forms['pipeline'].deleteFiles;
+	var selection = sel.options[sel.selectedIndex].value;
+	if (selection == null || selection == "") return;
+	if (window.confirm('Really delete ' + selection + ' from support files?\nThis will discard other pipeline changes since the last save.')) { 
+		window.location='saveTask.jsp?deleteFiles=' + selection + '&<%= GPConstants.NAME %>=' + document.forms['pipeline'].pipeline_name.value + '&<%= GPConstants.LSID %>=' + document.forms['pipeline']['LSID'].value +'&forward=pipelineDesigner.jsp';
+	}
+}
+
+
 function clonePipeline() {
 	while (true) {
 		var cloneName = window.prompt("Name for cloned pipeline", "copyOf" + document.forms['pipeline'].pipeline_name.value);
