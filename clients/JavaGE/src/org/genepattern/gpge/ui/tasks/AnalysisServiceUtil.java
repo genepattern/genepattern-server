@@ -27,15 +27,8 @@ public class AnalysisServiceUtil {
          public int compare(Object obj1, Object obj2) {
             AnalysisService svc1 = (AnalysisService) obj1;
             AnalysisService svc2 = (AnalysisService) obj2;
-            return svc1.getTaskInfo().getName().compareTo(
-                  svc2.getTaskInfo().getName());
-         }
-
-         public boolean equals(Object obj1, Object obj2) {
-            AnalysisService svc1 = (AnalysisService) obj1;
-            AnalysisService svc2 = (AnalysisService) obj2;
-            return svc1.getTaskInfo().getName().equals(
-                  svc2.getTaskInfo().getName());
+            return svc1.getTaskInfo().getName().toLowerCase().compareTo(
+                  svc2.getTaskInfo().getName().toLowerCase());
          }
       };
    }
