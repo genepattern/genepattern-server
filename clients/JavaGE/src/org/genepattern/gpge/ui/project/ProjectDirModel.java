@@ -112,7 +112,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 		int index = root.getIndex(node);
 		root.remove(index);
 		nodesWereRemoved(root, new int[] { index }, new Object[] { node });
-		notifyProjectRemoved(node.directory);
+      notifyProjectRemoved(node.directory);
 	}
 
 	public void refresh(File projectDirectory) {
@@ -158,8 +158,12 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 
 		// keep children sorting alphabetically
 		root.insert(child, insertionIndex);
-		
-		nodesWereInserted(root, new int[] { insertionIndex });
+     
+      if(children==null || children.size()<=1) { // fixes bug in tree table
+          nodeStructureChanged(root);
+      } else {
+         nodesWereInserted(root, new int[]{insertionIndex});  
+      }
       notifyProjectAdded(projectDir);
 	}
 
@@ -284,6 +288,10 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 		public Vector getChildren() {
 			return children;
 		}
+      
+      public String toString() {
+         return "Root";  
+      }
 	}
 
 }
