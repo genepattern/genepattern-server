@@ -19,7 +19,7 @@
    <property name="full-jarname" value="gp-full.jar"/>
    <property name="uisupport-jarname" value="ui_support.jar"/>
    <property name="runtask-jarname" value="runMain.jar"/>
-	 <property name="gp-library-jarname" value="GenePattern.jar"/>
+   <property name="gp-library-jarname" value="GenePattern.jar"/>
    <!-- signed applet stuff for running visualizers from web page -->
    <property name="runVisualizer-jarname" value="runVisualizer.jar"/>
    <property name="signingKey" value="gEnEpAtTeRn"/>
@@ -157,11 +157,11 @@
 		<zip destfile="build/GenePattern.zip">
 			<zipfileset dir="build/">
 				<include name="${gp-library-jarname}"/>
+				<include name="gpwebservice.jar"/>
+				<include name="broad-cg.jar"/>
 			</zipfileset>
 			
 			<zipfileset dir="lib" prefix="lib">
-				<include name="gpwebservice.jar"/>
-				<include name="broad-cg.jar"/>
 				<include name="activation.jar"/>
 				<include name="mail.jar"/>
 				<include name="axis.jar"/> 
