@@ -99,17 +99,10 @@ public class DefaultUIRenderer implements UIRenderer {
 	 */
 	public void render(final JComponent pane, final AnalysisService service, final java.util.List params_list, final Map name_retriever) {
 		this.pane = (JPanel) pane;
-		//debug
-//        System.out.println("\n\nDumping AnalysisService:");
-//        new edu.mit.genome.debug.FieldDumper(service).dumpFieldsTo(System.out);
-//        new edu.mit.genome.debug.FieldDumper(service.getTaskInfo()).dumpFieldsTo(System.out);
-//        System.out.println();
-		//end debug
 		executer.service = service;
 		executer.params_list = params_list;
 		executer.name_retriever = name_retriever;
 		executer.run();
-		//safeExecution(service, params_list, name_retriever);
 	}
 
 
@@ -151,8 +144,9 @@ public class DefaultUIRenderer implements UIRenderer {
 			new ActionListener() {
 				public final void actionPerformed(java.awt.event.ActionEvent ae) {
 					try {
-						org.genepattern.util.BrowserLauncher.openURL(DOC_URL  + 
-								LSIDUtil.getTaskId(task) + "&"+GPConstants.USERID+"=GenePattern"); 
+                  String server = executer.service.getServer();
+                  String docURL = server + "/gp/getTaskDoc.jsp?name=" + LSIDUtil.getTaskId(task) + "&"+GPConstants.USERID+"=GenePattern";
+						org.genepattern.util.BrowserLauncher.openURL(docURL); 
 					} catch(java.io.IOException ex) {
 						ExceptionHandler.handleException(ex);
 					}
