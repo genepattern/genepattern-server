@@ -347,10 +347,10 @@ public class DefaultUIRenderer implements UIRenderer {
 			field = new JTextField(num_cols);
 			field.setToolTipText("Type in text");
 		} else if(value.equals("java.lang.Integer")) {
-			field = new IntegerField(0, num_cols);
+			field = new IntegerField(num_cols);
 			field.setToolTipText("Type in integer values");
 		} else if(value.equals("java.lang.Float")) {
-			field = new FloatField(0.0f, num_cols);
+			field = new FloatField(num_cols);
 			field.setToolTipText("Type in floating point values");
 		} else {
 			org.genepattern.util.AbstractReporter.getInstance().showWarning("Don't have input field associated with " + value);
