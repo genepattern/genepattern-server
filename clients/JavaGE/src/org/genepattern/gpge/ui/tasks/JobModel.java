@@ -100,8 +100,8 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		URL url = null;	
       try {
 			   url = new URL(job.getServer() + "/gp/retrieveResults.jsp?job="
-						+ jobNumber + "&e=&filename="
-						+ URLEncoder.encode(fileName, "UTF-8"));
+						+ jobNumber + "&filename="
+						+ URLEncoder.encode(fileName, "UTF-8")); // include &e= to get response code HttpURLConnection.HTTP_GONE if file not found on server
 			} catch (MalformedURLException x) {
 				throw new Error(x);
 			} catch (java.io.UnsupportedEncodingException uee) {
@@ -114,7 +114,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 				URLConnection connection = url.openConnection();
             if(connection instanceof HttpURLConnection) {
                HttpURLConnection httpConn = (HttpURLConnection) connection;
-               if(httpConn.getResponseCode()==HttpURLConnection.HTTP_GONE) {
+               if(httpConn.getResponseCode()==HttpURLConnection.HTTP_GONE) { 
                   throw new FileNotFoundException(fileName + " has been deleted");  
                }
             }
@@ -243,11 +243,8 @@ public class JobModel extends AbstractSortableTreeTableModel {
          }
          
          root.insert(child, insertionIndex);
-         if(children==null || children.size()<=1) { // fixes bug in tree table
-            nodeStructureChanged(root);  
-         } else {
-            nodesWereInserted(root, new int[] { insertionIndex });
-         }
+         nodesWereInserted(root, new int[] { insertionIndex });
+        
       }
       notifyJobAdded(job);
 	}
@@ -504,7 +501,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
             int jobNumber = getJobCreationJobNumber(this);
             
 				return new URL(job.getServer() + "/gp/retrieveResults.jsp?job="
-						+ jobNumber + "&e=&filename="
+						+ jobNumber + "&filename="
 						+ URLEncoder.encode(fileName, "UTF-8"));
 			} catch (MalformedURLException x) {
 				throw new Error(x);
