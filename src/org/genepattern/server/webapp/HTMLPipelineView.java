@@ -732,6 +732,8 @@ public class HTMLPipelineView implements IPipelineView {
 					+ javascriptEncode(model.getLsid()) + "\");\n");
 
 			int taskNum = 0;
+			boolean stopLoading = false;
+			String missingLSIDs = "";
 			for (Enumeration eTasks = model.getTasks().elements(); eTasks
 					.hasMoreElements(); taskNum++) {
 				s.append("</script><script language=\"Javascript\">\n");
@@ -765,6 +767,14 @@ public class HTMLPipelineView implements IPipelineView {
 									+ jobSubmission.getName()
 									+ " ("
 									+ jobSubmission.getLSID() + ")");
+					s.append("alert('Unable to load "
+									+ jobSubmission.getName()
+									+ " ("
+									+ jobSubmission.getLSID() + "')\n");
+					missingLSIDs = missingLSIDs + "&LSID=" + jobSubmission.getLSID();
+					stopLoading = true;
+				}
+				if (stopLoading) {
 					continue;
 				}
 				ParameterInfo[] formals = new ParameterFormatConverter()
@@ -862,6 +872,10 @@ public class HTMLPipelineView implements IPipelineView {
 					}
 				}
 			}
+			if (stopLoading) {
+				s.append("if (window.confirm('Loading missing tasks?')) window.location='taskCatalog.jsp?checkAll=1" + missingLSIDs + "';\n");
+			}
+
 			return s.toString();
 
 		} catch (Exception e) {
