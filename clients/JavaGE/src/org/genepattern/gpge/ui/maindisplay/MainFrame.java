@@ -830,6 +830,17 @@ public class MainFrame extends JFrame {
       
       projectFilePopupMenu.add(projectFileOpenWithMenu);
       
+      if(RUNNING_ON_MAC) {
+         JMenuItem revealInFinderMenuItem = new JMenuItem("Show In Finder");
+          revealInFinderMenuItem.addActionListener(new ActionListener() {
+             public void actionPerformed(ActionEvent e) {
+                ProjectDirModel.FileNode fn = (ProjectDirModel.FileNode) selectedProjectDirNode;
+                org.genepattern.gpge.util.MacOS.showFileInFinder(fn.file);
+             }
+          });
+      
+         projectFilePopupMenu.add(revealInFinderMenuItem);
+      }
       
 		projectDirPopupMenu = new JPopupMenu();
       JMenuItem refreshProjectMenuItem = new JMenuItem("Refresh", IconManager.loadIcon(IconManager.REFRESH_ICON));
