@@ -194,7 +194,7 @@ public class AnalysisWebServiceProxy {
    
    public void setJobStatus(int parentJobId, String status) throws WebServiceException {
 		try {
-         stub.setParentJobStatus(parentJobId, status);
+         stub.setJobStatus(parentJobId, status);
 		} catch (RemoteException re) {
 			throw new WebServiceException(re);
 		}
