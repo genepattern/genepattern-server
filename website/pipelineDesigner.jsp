@@ -23,6 +23,11 @@
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
 <link href="favicon.ico" rel="shortcut icon">
+
+<style>
+.shadow { border-style: none; font-style: italic; font-size=9pt; background-color: transparent ;}
+</style>
+
 <script language="Javascript">
 var ie4 = (document.all) ? true : false;
 var ns4 = (document.layers) ? true : false;
@@ -274,13 +279,15 @@ function chooseInheritTask(taskNum, param) {
 	var lsid = frm['t' + inheritFromTaskNum + '_taskLSID'].value;
 	var ti = TaskInfos[lsid];
 	var fileFormats = ti.fileFormats;
+
+	frm['t' + taskNum + '_prompt_' + param].checked = false;
 	
 	ctl = frm['t' + taskNum + '_if_' + param];
 	// clear any previous entries in the file number selector
 	ctl.options.length = 0;
 
 	// semantic knowledge first!
-	ctl.options[ctl.options.length]  = new Option('Choose output file from ' + ti.name, NOT_SET);
+	ctl.options[ctl.options.length]  = new Option('Choose output file', NOT_SET);
 	ctl.options[ctl.options.length-1].disabled = true;
 	
 	for (f = 0; f < fileFormats.length; f++) {
@@ -422,7 +429,9 @@ function changeTaskType(selectorTaskType, taskNum) {
 		task = TaskInfos[taskLSID.lsid];
 		var optionText = task.name;
 		if (task.description != "") optionText = optionText + ' - ' + task.description
-		if (optionText.length > MAX_TASK_DESCRIPTION_LENGTH) optionText = optionText.substring(0,MAX_TASK_DESCRIPTION_LENGTH) + "..."
+		if (optionText.length > MAX_TASK_DESCRIPTION_LENGTH) {
+			optionText = optionText.substring(0,MAX_TASK_DESCRIPTION_LENGTH) + "..."
+		}
 		if (taskLSID.authority != broadAuthority && taskLSID.authority != myAuthority) {
 			optionText = optionText + " (" + taskLSID.authority + ")";
 		}
@@ -430,6 +439,36 @@ function changeTaskType(selectorTaskType, taskNum) {
 		var t = taskSelector.options.length-1;
 		taskSelector.options[t].setAttribute('class', "tasks-" + taskLSID.authorityType);
 	}
+}
+
+function changeFile(ctl, taskNum, param) {
+	var frm = ctl.form;
+	frm['t' + taskNum + '_shadow' + param].value = ctl.value;
+	if (ctl.value != '') {
+		frm['t' + taskNum + '_prompt_' + param].checked = false;
+		if (taskNum > 0) {
+			frm['t' + taskNum + '_i_' + param].selectedIndex = 0;
+			frm['t' + taskNum + '_if_' + param].options.length = 0;
+		}
+	}
+}
+
+function blurFile(ctl, taskNum, param) {
+	changeFile(ctl, taskNum, param);
+}
+
+function dropFile(ctl, taskNum, param) {
+	changeFile(ctl, taskNum, param);
+}
+
+function changeTaskInheritFile(ctl, taskNum, param, name) {
+	var frm = ctl.form;
+	frm['t' + taskNum + '_shadow' + param].value = "";
+	frm['t' + taskNum + '_prompt_' + param].checked = false;
+}
+
+function changeChoice(ctl, taskNum, param) {
+	ctl.form['t' + taskNum + "_prompt_" + param].checked = false;
 }
 
 function chgLSIDVer(oldTaskNum, selector) {
@@ -604,18 +643,12 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		if (pi.isInputFile) {
 			taskFields = taskFields + '<input type="file" name="t' + taskNum + '_' + pi.name + 
 						  '" size="60" ' +
-						  'onchange="javascript:document.forms[\'pipeline\'].t' + taskNum + 
-						  '_shadow' + param + 
-						  '.value=this.value; ' + 
-						  'document.forms[\'pipeline\'].t' + taskNum + '_prompt_' + param + 
-						  '.checked=false;"' + 
-						  'onblur="javascript:if (this.value.length > 0) { document.forms[\'pipeline\'].t' + 
-						  taskNum + '_shadow' + param + '.value=this.value; document.forms[\'pipeline\'].t' + taskNum + '_prompt_' + param + '.checked=false; if (' + taskNum + 
-						  '>0) { document.forms[\'pipeline\'].t' + taskNum + '_i_' + param + '.selectedIndex=0; document.forms[\'pipeline\'].t' + 
-						  taskNum + '_if_' + param + '.selectedIndex=0; }}" ondrop="document.forms[\'pipeline\'].t' + taskNum + 
-						  '_shadow' + param + '.value=this.value;" class="little">';
+						  'onchange="changeFile(this, ' + taskNum + ', ' + param + ')" ' + 
+						  'onblur="blurFile(this, ' + taskNum + ', ' + param + ')" ' +
+						  'ondrop="dropFile(this, ' + taskNum + ', ' + param + ')" ' +
+						  'class="little">';
 			taskFields = taskFields + '<br><input name="t' + taskNum + '_shadow' + param + 
-				     '" type="text" readonly size="130" tabindex="-1" class="shadow" style="{ border-style: none; font-style: italic; font-size=9pt; background-color: transparent }">';
+				     '" type="text" readonly size="130" tabindex="-1" class="shadow">';
 			if (taskNum > 0) {
 				taskFields = taskFields + '<br><nobr>or use output from <select name="t' + taskNum + '_i_' + param + 
 							  '" onchange="chooseInheritTask(' + taskNum + ', ' + param + ')"><option value=' + NOT_SET + '" disabled>Choose task</option>\n';
@@ -624,7 +657,8 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 						     document.forms['pipeline']['t' + t + '_taskName'].value + '</option>\n';
 				}
 				taskFields = taskFields + ' </select>\n';
-				taskFields = taskFields + ' <select name="t' + taskNum + '_if_' + param + '">\n';
+				taskFields = taskFields + ' <select name="t' + taskNum + '_if_' + param + '"' +
+					' onChange="changeTaskInheritFile(this, ' + taskNum + ', ' + param + ', \'' + pi.name + '\')">\n';
 				// this selector will be filled in dynamically by chooseInheritTask when the task is selected
 				taskFields = taskFields + ' </select></nobr>\n';
 			}
@@ -635,7 +669,8 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 			if (pi.description.length > 0) taskFields = taskFields + '<td valign="top">' + pi.description + '</td>';
 			taskFields = taskFields + '</tr></table>';
 		} else {
-			taskFields = taskFields + "	<select name='t" + taskNum + "_" + pi.name + "' onchange=\"javascript:this.form[\'t" + taskNum + "_prompt_" + param + "\'].checked=false;\">\n";
+			taskFields = taskFields + "	<select name='t" + taskNum + "_" + pi.name + 
+					"' onchange=\"changeChoice(this, taskNum, param)\">\n";
 			for (i in choices) {
 				var c = choices[i].split('=');
 				if (c.length == 1) c = new Array(c, c);
