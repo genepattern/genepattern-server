@@ -23,9 +23,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
@@ -34,14 +32,16 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import org.genepattern.webservice.*;
+
+import java.awt.dnd.DragGestureRecognizer;
+import java.awt.event.InputEvent;
+import org.genepattern.gpge.ui.graphics.draggable.TransferableTreePath;
 import org.jdesktop.swing.*;
 import org.jdesktop.swing.treetable.*;
-import org.genepattern.gpge.ui.tasks.*;
+
 
 /**
- *  Description of the Class
+ *  A tree table that supports sorting the columns
  *
  * @author    Joshua Gould
  */
@@ -56,32 +56,38 @@ public class SortableTreeTable extends JXTreeTable implements DragSourceListener
    private Point _ptOffset = new Point();// Where, in the drag image, the mouse was clicked
    private boolean inDrag = false;
    private List sortingColumns = new ArrayList();
-
    private static Directive EMPTY_DIRECTIVE = new Directive(-1, NOT_SORTED);
    SortTreeTableModel model;
+   DragSource dragSource;
    
    public SortableTreeTable(SortTreeTableModel m) {
       this(m, true);
    }
    
-   public SortableTreeTable(SortTreeTableModel m, boolean enableSorting) {
+   public SortableTreeTable(SortTreeTableModel m, boolean enableSort) {
       super(m);
       this.model = m;
       setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION); 
-      DragSource dragSource = DragSource.getDefaultDragSource();
-      dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
+     
       tree = (JTree) getDefaultRenderer(TreeTableModel.class);
+      
+      dragSource = DragSource.getDefaultDragSource();
+     
+      DragGestureRecognizer dgr = dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
+      dgr.setSourceActions(dgr.getSourceActions() & ~InputEvent.BUTTON3_MASK);
+       
       tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
       setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-      if(enableSorting) {
-         getTableHeader().setDefaultRenderer(
-                    new SortableHeaderRenderer(new JTable().getTableHeader().getDefaultRenderer())); // FIXME
-                    getTableHeader().addMouseListener(new MouseHandler());
+      if(enableSort) {
+         getTableHeader().setDefaultRenderer(new SortableHeaderRenderer(new JTable().getTableHeader().getDefaultRenderer())); 
+         getTableHeader().addMouseListener(new MouseHandler());
       }
+     
    }
 
 
    public final void dragGestureRecognized(final DragGestureEvent e) {
+      
       final Point ptDragOrigin = e.getDragOrigin();
       int row = this.getSelectedRow();
 
@@ -103,7 +109,7 @@ public class SortableTreeTable extends JXTreeTable implements DragSourceListener
 
       // Work out the offset of the drag point from the TreePath bounding rectangle origin
       final Rectangle raPath = tree.getPathBounds(path);
-      //_ptOffset.setLocation(ptDragOrigin.x-raPath.x, ptDragOrigin.y-raPath.y);
+     
       _ptOffset.setLocation(raPath.x - ptDragOrigin.x, raPath.y - ptDragOrigin.y);
 
       // Get the cell renderer (which is a JLabel) for the path being dragged
@@ -146,11 +152,9 @@ public class SortableTreeTable extends JXTreeTable implements DragSourceListener
       _pathSource = path;
 
       // We pass our drag image just in case it IS supported by the platform
-      //e.startDrag(null, _imgGhost, new Point(5,5), transferable, this);
-      //e.startDrag(null, _imgGhost, _ptOffset, transferable, this);
-      e.startDrag(java.awt.Cursor.getDefaultCursor(),
-            _imgGhost, _ptOffset, transferable, this);
-
+      
+      _ptOffset.y = 0;
+      e.startDrag(java.awt.Cursor.getDefaultCursor(), _imgGhost, _ptOffset, transferable, this);
    }
 
 
