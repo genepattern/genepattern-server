@@ -42,31 +42,28 @@ This will create a jar file with the pattern gp-XXXXXXXX.jar where the Xs will b
          <property name="cvsTag" value="This build was not tagged in CVS"/>
     </target>
 
-
-
     <target  name="init"  depends="setCvsTag">
         <echo message="gpge basedir: ${basedir}"/>
         <!-- Create the time stamp -->
         <tstamp/>
-        <property description="The name of the application file (.jar)" name="appfile" value="../gpge.jar"/>
-        <property description="All the directories that need to be compiled and whose .class files will be part of the appfile" name="inclds" value="org/genepattern/gpge/,edu/mit/broad/"/>
-        <property description="Set this to the location of the version property file." name="version_file" value="org/genepattern/gpge/resources/build.properties"/>
-        <property description="The manifest file" name="manifest" value="../gp.mf"/>
-        <property description="The initials for the version properties" name="initials" value="gpge"/>
-        <property description="The path to the ditribution dir for GenePattern Graphical Environment" name="gpge_dist_dir" value="../../gpge_distibution"/>
+        <property name="appfile" value="../gpge.jar" description="The name of the application file (.jar)" />
+        <property name="inclds" value="org/genepattern/gpge/,edu/mit/broad/" description="All the directories that need to be compiled and whose .class files will be part of the appfile" />
+        <property name="version_file" value="org/genepattern/gpge/resources/build.properties" description="Set this to the location of the version property file." />
+        <property name="manifest" value="../gp.mf" description="The manifest file" />
+        <property name="initials" value="gpge" description="The initials for the version properties" />
+        <property name="gpge_dist_dir" value="../../gpge_distibution" description="The path to the ditribution dir for GenePattern Graphical Environment" />
 	
-        <property description="All the directories that need to be compiled and whose .class files will be part of the appfile" name="task_inclds" value="org/genepattern/gpge/"/>
-        <property description="The path to the library" name="repos_root" value="../../.."/>
-        <property description="The path to the library" name="installer.dir" value="${repos_root}/build/Web_Installers"/>
-        <path description="defines the classpath based on the value of &apos;libpath&apos;." id="library.classpath">
+        <property name="task_inclds" value="org/genepattern/gpge/" description="All the directories that need to be compiled and whose .class files will be part of the appfile" />
+        <property  name="repos_root" value="../../.." description="The path to the library"/>
+        <path id="library.classpath" description="defines the classpath based on the value of &apos;libpath&apos;." >
 	                
             <fileset dir="${repos_root}/lib" id="base.libs">
                 <include name="*.jar"/>
                 <include name="*.zip"/>
             </fileset>
             
-            <filelist dir="${repos_root}/build/jars" files="analysis.jar" id="omni.client"/>
-            <filelist dir="${repos_root}/build" files="broad-cg.jar gp-common.jar gpclient.jar ui_support.jar, runMain.jar" id="build.jars"/>
+            <filelist dir="${repos_root}/build"  id="build.jars"
+            	files="gpwebservice.jar broad-cg.jar ui_support.jar, runMain.jar"/>
             <path id="props.path" path="${repos_root}/resources"/>
         </path>
         
@@ -76,7 +73,6 @@ This will create a jar file with the pattern gp-XXXXXXXX.jar where the Xs will b
             <fileset refid="base.libs"/>
             <pathelement path="."/>
             
-            <filelist refid="omni.client"/>
             <filelist refid="build.jars"/>
             <path refid="props.path"/>
         </path>
@@ -85,7 +81,7 @@ This will create a jar file with the pattern gp-XXXXXXXX.jar where the Xs will b
     
     
 
-    <target depends="compile,init" description="All jars are included. Compiles and creates the jar file" name="package">
+    <target name="package" depends="compile,init" description="All jars are included. Compiles and creates the jar file">
         <!-- use index="true" -->
         
         
@@ -94,23 +90,17 @@ This will create a jar file with the pattern gp-XXXXXXXX.jar where the Xs will b
             <fileset defaultexcludes="true" dir="${repos_root}/resources" excludes="**/*.java"/>
         </jar>
 
-	  <antcall target="package-client-jar"/>
+	 
     </target>
 
-    <target name="package-client-jar" depends="compile,init" >
-        <jar basedir="." defaultexcludes="true" excludes="**/*.java **/*.form **/.nbattrs **/.DS_Store" includes="org/genepattern/gpge/ui/analysis/**" jarfile="${repos_root}/build/jars/gpclient.jar" >
-            <fileset defaultexcludes="true" dir="${repos_root}/resources" excludes="**/*.java"/>
-        </jar>
-    </target>
-
-    <target depends="init, compile" description="All jars are included. Compiles and creates the jar file" name="package_jars">
+    <target name="package_jars" depends="init, compile" description="All jars are included. Compiles and creates the jar file" >
         <!-- use index="true" -->
         <jar basedir="." defaultexcludes="true" excludes="**/*.java **/*.form **/.nbattrs **/.DS_Store" includes="${inclds}" jarfile="${appfile}" manifest="${manifest}">
             <zipfileset refid="build.jars"/>
             <zipfileset refid="omniview.libs"/>
         </jar>
     </target>
-    <target depends="init, compile" description="Compiles and creates the jar file" name="package_AllAsOne">
+    <target name="package_AllAsOne" depends="init, compile" description="Compiles and creates the jar file" >
         <jar basedir="." defaultexcludes="true" excludes="**/*.java **/*.form **/.nbattrs **/.DS_Store" jarfile="${java.io.tmpdir}/tempjar.jar">
             <zipgroupfileset refid="build.jars"/>
             <zipgroupfileset refid="omniview.libs"/>
@@ -120,13 +110,13 @@ This will create a jar file with the pattern gp-XXXXXXXX.jar where the Xs will b
             
         </jar>
     </target>
-    <target description="Removes all the .class files" name="clean">
+    <target name="clean" description="Removes all the .class files" >
         <delete>
             <fileset dir="." includes="**/*.class"/>
         </delete>
     </target>
     
-    <target depends=" init" description="Compiles the .java files that have been modified or that don&apos;t have .class files" name="compile">
+    <target name="compile" depends=" init" description="Compiles the .java files that have been modified or that don&apos;t have .class files" >
         
         <javac debug="true" defaultexcludes="true" deprecation="true" destdir="." includes="${inclds}" optimize="false" proceed="false" srcdir=".">
 	    <classpath refid="library.classpath"/>
@@ -232,6 +222,7 @@ This will create a jar file with the pattern gp-XXXXXXXX.jar where the Xs will b
             <fileset dir="../languages"/>
         </copy>
     </target>
+
     <target depends="init" description="Creates the jar file without cleaning and compiles" name="just_package">
         <!-- use index="true" -->
         <jar basedir="." defaultexcludes="true" excludes="**/*.java, **/*.form, **/.nbattrs" includes="${inclds}" jarfile="${appfile}" manifest="${manifest}">
@@ -243,28 +234,7 @@ This will create a jar file with the pattern gp-XXXXXXXX.jar where the Xs will b
 	    <classpath refid="run.classpaths"/>
         </java>
     </target>
-    <target depends="init" description="Run the program assuming Java 1.4.1+ " name="run141">
-        <java classname="edu.mit.genome.gp.GenePattern" fork="true">
-	    <classpath refid="run.classpaths"/>
-            
-        </java>
-    </target>
+
     
     
-    <target depends="init" description="Run the program" name="JWhich">
-        <java args="javax/xml/bind/IdentifiableElement" classname="edu.mit.genome.debug.JWhich" fork="true">
-	    <classpath refid="run.classpaths"/>
-        </java>
-    </target>
-    <target depends="package, package-client-jar" description="Builds the installer using comman-line InstallAnywhere" name="installer">
-        
-        <exec dir="/Users/kohm/code/gp2/clients/JavaGE/installer" executable="/Applications/InstallAnywhere 5 Enterprise/build.command">
-            <arg line="/Users/kohm/code/gp2/clients/JavaGE/installer/GP_Product.iap_xml"/>
-        </exec>
-        
-        
-        <copy overwrite="true" todir="../../../build/Web_Installers/">
-            <fileset dir="../installer/GP_Product_Build_Output/Web_Installers"/>
-        </copy>
-    </target>
 </project>

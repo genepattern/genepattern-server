@@ -130,7 +130,7 @@
 	
 		<jar basedir="${genepattern.build}" defaultexcludes="true"  jarfile="${genepattern.build}/${gp-library-jarname}" includes="org/genepattern/client/**/*.class, org/genepattern/data/**, org/genepattern/io/**, org/genepattern/module/**">	
 		<manifest>
-				<attribute name="Class-Path" value="./lib/gpclient.jar ./lib/analysis.jar ./lib/activation.jar ./lib/mail.jar ./lib/axis.jar ./lib/log4j-1.2.4.jar ./lib/jaxrpc.jar ./lib/commons-discovery.jar ./lib/commons-logging.jar ./lib/saaj.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar" />
+				<attribute name="Class-Path" value="./lib/gpwebservice.jar ./lib/activation.jar ./lib/mail.jar ./lib/axis.jar ./lib/log4j-1.2.4.jar ./lib/jaxrpc.jar ./lib/commons-discovery.jar ./lib/commons-logging.jar ./lib/saaj.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar" />
 			</manifest> 
 		</jar>
 		
@@ -156,8 +156,7 @@
 			</zipfileset>
 			
 			<zipfileset dir="lib" prefix="lib">
-				<include name="gpclient.jar"/> 
-				<include name="analysis.jar"/>
+				<include name="gpwebservice.jar"/>
 				<include name="activation.jar"/>
 				<include name="mail.jar"/>
 				<include name="axis.jar"/> 
@@ -174,12 +173,6 @@
 			<zipfileset dir="build/doc" prefix="doc"/>
 		</zip> 
 		</target> 
-			
-		<target name="javaclient" depends="compile,init" >
-			    <jar basedir="." defaultexcludes="true" excludes="**/*.java **/*.form **/.nbattrs **/.DS_Store" includes="org/genepattern/client/**, org/genepattern/webservice/** org/genepattern/util/**" jarfile="${basedir}/build/gpclient.jar" >
-			         <fileset defaultexcludes="true" dir="${basedir}/resources" excludes="**/*.java"/>
-			    </jar>
-		</target>
 	
    <target depends="init,compile" name="common">
 <!-- Makes gp-common.jar -->
@@ -239,7 +232,7 @@
    </target>
 
    <target depends="init,compile" name="uisupport">
-     <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.java,**/*.form,**/*.nbattrs" includes="org/genepattern/server/ui/,org/genepattern/server/image/,org/genepattern/server/resources/" jarfile="${genepattern.build}/${uisupport-jarname}"/>
+     <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.java,**/*.form,**/*.nbattrs" includes="org/genepattern/modules/ui/,org/genepattern/module/" jarfile="${genepattern.build}/${uisupport-jarname}"/>
    </target>
    <target depends="common,compile,broad-cg,get_dependencies,init,runtask,uisupport" name="package">
    </target>
@@ -264,12 +257,11 @@
    </target>
 	
 	<target name="analysis" depends="init,common,broad-cg,runtask,uisupport">
-	    <jar jarfile="${build}/analysis.jar">
+	    <jar jarfile="${build}/gpwebservice.jar">
 	        <fileset dir="${build}">
 	            <include name="org/genepattern/webservice/**"/>
 	             <include name="org/genepattern/client/**"/>
 	            <include name="org/genepattern/util/**"/>
-	            <include name="org/genepattern/data/pipeline/**"/>
 	        </fileset>
 	    </jar>
 	</target>
@@ -300,7 +292,7 @@
      <ant antfile="post-compile.xml" dir="${genepattern.root}"/>
    </target>
    <!-- 	       classpathref="library.classpath" -->
-    <target depends="init,prepare-compile,common,analysis, javaclient, clients,makeKeystore" name="website">
+    <target depends="init,prepare-compile,common,analysis, clients,makeKeystore" name="website">
 	<mkdir dir="${genepattern.build}/website/classes"/>
 	<mkdir dir="${genepattern.build}/website/lib"/>
 	<ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB"/>
