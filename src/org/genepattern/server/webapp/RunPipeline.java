@@ -442,6 +442,28 @@ semantic_search_loop:
 		return false;
 	}
 
+	protected String getODFModelType(String filename)
+	{
+		String model="";
+		BufferedReader inputB;
+		try {
+			inputB = new BufferedReader(new FileReader(filename));
+			String modelLine;
+			for (int x=0; x<GPConstants.ODF_MODEL_LINE; x++){
+			   modelLine = inputB.readLine();
+			}
+
+			model = modelLine.substring(model.indexOf("=")+1);			
+			inputB.close();
+			return model.trim();
+		}
+		catch(Exception e)
+		{
+		   e.printStackTrace();
+		}
+		return model;
+	}
+
 	/**
 	 * submit a job based on a service and its parameters
 	 */

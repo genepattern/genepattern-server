@@ -321,6 +321,11 @@ public interface IGPConstants {
 
 	public final static String KW_IG = ";";
 
+	/**
+	 * ODF Model line number
+	 */
 	
+	public final static int ODF_MODEL_LINE= 2;
+
 	public static String UTF8 = "UTF-8";
 }
