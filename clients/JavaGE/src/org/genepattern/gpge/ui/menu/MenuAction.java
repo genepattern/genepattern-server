@@ -19,8 +19,7 @@ import javax.swing.event.*;
  */
 public class MenuAction extends AbstractAction {
    Object[] items;
-   int count = 0;
-
+   
      /**
     *  Constructs a new <code>MenuAction</code> which can be used to create a
     *  <code>JMenu</code> with the supplied string as its text
@@ -58,13 +57,6 @@ public class MenuAction extends AbstractAction {
       this.items = items;
    }
    
-   public int getItemCount() {
-      return count;
-   }
-   
-   public Object getMenuComponent(int i) {
-      return items[i];
-   }
 
    /**
     *  Convenience method to create a JMenuBar from an array of MenuActions.
@@ -116,9 +108,24 @@ public class MenuAction extends AbstractAction {
 
   
    public void insert(MenuItemAction action, int index) {
-      add(action); // FIXME  
+      Object oldData[] = items;
+      int size = oldData.length;
+      items = new Object[size+1];
+      System.arraycopy(oldData, 0, items, 0, size);
+      System.arraycopy(items, index, items, index + 1,
+			 size - index);
+      items[index] = action;
+      firePropertyChange("MenuAction.insert", null, new InsertPropertyChange(action, index));
    }
-
+  
+   public int getItemCount() {
+      return items.length;
+   }
+   
+   public Object getMenuComponent(int i) {
+      return items[i];
+   }
+ 
    /**
     *  Add an item to this MenuAction and all the JMenu instances that use it
     *
@@ -130,7 +137,6 @@ public class MenuAction extends AbstractAction {
       System.arraycopy(items, 0, newItems, 0, oldLength);
       items = newItems;
       items[oldLength] = action;
-
       firePropertyChange("MenuAction.addAction", null, action);
    }
 
@@ -141,16 +147,12 @@ public class MenuAction extends AbstractAction {
     */
    public void removeAll() {
       for(int i = 0; i < items.length; i++) {
-         if(items[i] instanceof MenuItemAction) {
-            remove((MenuItemAction) items[i]);
-         }
+         remove((MenuItemAction) items[i]);
       }   
    }
    
    public void remove(int i) {
-       if(items[i] instanceof MenuItemAction) {
-          remove((MenuItemAction) items[i]);
-       }
+      remove(items[i]);
    }
 
    /**
@@ -159,7 +161,7 @@ public class MenuAction extends AbstractAction {
     *
     * @param  action  Description of the Parameter
     */
-   public void remove(MenuItemAction action) {
+   public void remove(Object action) {
       // Find the index of this action
       // and remove based on index
       int index = -1;
@@ -260,8 +262,22 @@ public class MenuAction extends AbstractAction {
                getMenu().add(((MenuItemAction) e.getNewValue()).createMenuItem());
             } else if(e.getPropertyName().equals("MenuAction.remove")) {
                getMenu().remove(((Integer) e.getNewValue()).intValue());
+            } else if(e.getPropertyName().equals("MenuAction.insert")) {
+               InsertPropertyChange c = (InsertPropertyChange) e.getNewValue();
+               JMenuItem m = c.action.createMenuItem();
+               getMenu().insert(m, c.index);  
             }
          }
+      }
+   }
+   
+   static class InsertPropertyChange {
+      int index;
+      MenuItemAction action;
+      
+      InsertPropertyChange(MenuItemAction a, int i) {
+         action = a;
+         index = i;
       }
    }
    
@@ -292,6 +308,10 @@ public class MenuAction extends AbstractAction {
                getMenu().add(((MenuItemAction) e.getNewValue()).createMenuItem());
             } else if(e.getPropertyName().equals("MenuAction.remove")) {
                getMenu().remove(((Integer) e.getNewValue()).intValue());
+            } else if(e.getPropertyName().equals("MenuAction.insert")) {
+               InsertPropertyChange c = (InsertPropertyChange) e.getNewValue();
+               JMenuItem m = c.action.createMenuItem();
+               getMenu().insert(m, c.index);  
             }
          }
       }
