@@ -332,6 +332,7 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
             try {
                 conn = getConnection();
                 
+           
                 //Fetch from database
                 stat=conn.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id " +
                 "FROM analysis_job , job_status WHERE user_id = ? and analysis_job.status_id = job_status.status_id");
@@ -358,11 +359,12 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
         }
         
     public AnalysisJob[] getJobs(String username) throws OmnigeneException, RemoteException {
-           
+       java.util.List results = new java.util.ArrayList();
+       
             java.sql.Connection conn = null;
             PreparedStatement stat = null;
             ResultSet resultSet = null;
-            java.util.List results = new java.util.ArrayList();
+            
             try {
                 conn = getConnection();
                 
@@ -370,24 +372,24 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
                 stat=conn.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id, task_name, task_lsid FROM analysis_job, job_status WHERE user_id = ? and analysis_job.status_id = job_status.status_id");
                 stat.setString(1,username);
                 
-                resultSet=stat.executeQuery() ;
+               resultSet=stat.executeQuery() ;
                 
                 while(resultSet.next()) {
                     JobInfo ji = jobInfoFromResultSet(resultSet);
                     AnalysisJob job = new AnalysisJob(null, resultSet.getString("task_name"), ji);
                     job.setLSID(resultSet.getString("task_lsid"));
-                    results.add(ji);
+                    results.add(job);
                 }
                 
             } catch (Exception e) {
-                logger.error("AnalysisHypersonicDAO:getJobInfo failed " + e);
+                logger.error("AnalysisHypersonicDAO:getJobs failed " + e);
                 throw new OmnigeneException(e.getMessage());
             }
             finally {
                 closeConnection(resultSet, stat, conn);
             }
             
-            return (AnalysisJob[])results.toArray(new JobInfo[]{});
+            return (AnalysisJob[])results.toArray(new AnalysisJob[]{});
         } 
         /**
 	 * Fetches list of JobInfo based on completion date on or before a specified date
