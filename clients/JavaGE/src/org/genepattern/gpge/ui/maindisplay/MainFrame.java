@@ -638,7 +638,6 @@ public class MainFrame extends JFrame {
          });
 
       JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(projectDirTree), new JScrollPane(jobResultsTree));
-      leftPane.setDividerLocation(0.5);
 
       JPanel leftPanel = new JPanel(new BorderLayout());
       leftPanel.add(leftPane, BorderLayout.CENTER);
@@ -651,11 +650,14 @@ public class MainFrame extends JFrame {
 
       java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
       int width = (int) (screenSize.width * .9);
-      setSize(width, (int) (screenSize.height * .9));
+      int height = (int) (screenSize.height * .9);
+      setSize(width, height);
       setLocation((screenSize.width - getWidth()) / 2, 20);
       setTitle(BuildProperties.PROGRAM_NAME + ' ' + BuildProperties.FULL_VERSION + "  Build: " + BuildProperties.BUILD);
       splash.hide();
       splash.dispose();
+      leftPane.setDividerLocation((int)(height*0.4));
+
       splitPane.setDividerLocation((int)(width*0.4));
       show();
 
