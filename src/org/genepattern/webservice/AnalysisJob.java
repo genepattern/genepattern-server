@@ -7,6 +7,7 @@ import java.io.Serializable;
  * 
  * @author Hui Gong
  * @version $Revision 1.2 $
+ * @deprecated use JobInfo instead
  */
 
 public class AnalysisJob implements Serializable {
