@@ -156,9 +156,10 @@
 			</manifest> 
 		</jar>
 		
-	
 			<zip destfile="build/GenePattern.zip">
-         <include name="${gp-library-jarname}"/>
+         <zipfileset dir="build/">
+            <include name="${gp-library-jarname}"/>
+         </zipfileset>
          
 			<zipfileset dir="build/" prefix="lib">
 				<include name="gpwebservice.jar"/>
