@@ -23,6 +23,7 @@
 		 java.util.Map,
 		 java.util.StringTokenizer,
 		 java.util.TreeMap,
+		 java.io.PrintWriter,
 		 javax.mail.*,
 		 javax.mail.internet.MimeMessage,
 		 javax.mail.internet.InternetAddress,
@@ -179,8 +180,8 @@ try {
       String serializedModel = (String) taskInfo.getTaskInfoAttributes().get(GPConstants.SERIALIZED_MODEL);
       PipelineModel model = null;
       try {
-      model = PipelineModel
-         .toPipelineModel(serializedModel);
+      	model = PipelineModel.toPipelineModel(serializedModel);
+				
       } catch(Exception e) {
          out.println("An error occurred while attempting to run the pipeline.");
          return;
@@ -196,7 +197,20 @@ try {
       }
       String decorator = (String)requestParamsAndAttributes.get("decorator");		 
       Process process = RunPipelineForJsp.runPipeline( taskInfo,  name,  baseURL,  decorator,  userID, commandLineParams);
-                jobID =  RunPipelineForJsp.getJobID();
+            jobID =  RunPipelineForJsp.getJobID();
+
+// stuff to write view file
+		String jobDir = GenePatternAnalysisTask.getJobDir(""+jobID);
+		File jobDirFile = new File(jobDir);
+		jobDirFile.mkdirs(); 
+		
+		request.setAttribute("pipelineModel", model);
+		request.setAttribute("outputWriter", new java.io.FileWriter(new File(jobDirFile, "pipelineDescription.html")));
+		RequestDispatcher rd = request.getRequestDispatcher("/viewPipelineBody.jsp?hideButtons='true'&showLSID='true'&showParams='true'");
+        	rd.include(request, response);
+		
+		GenePatternAnalysisTask.updatePipelineStatus(jobID, -1, pipelineName, jobDirFile.getName() + File.separator + "pipelineDescription.html");
+
 		StringBuffer cc = new StringBuffer();
 		// create threads to read from the command's stdout and stderr streams
 		Thread stdoutReader = copyStream(process.getInputStream(), out, cc, DEBUG, false);

@@ -38,6 +38,7 @@ try {
 	File attachment;
 	String jobID = request.getParameter("jobID");
 	String[] attachmentNames = request.getParameterValues("dl");
+
 	String name = request.getParameter("name"); 
         boolean DEBUG = (request.getParameter("DEBUG") != null);
 	boolean isDelete = (request.getParameter("delete") != null);

@@ -96,6 +96,17 @@ public class RunPipelineHTMLDecorator implements RunPipelineOutputDecoratorIF {
 		out.println("<input type=\"hidden\" name=\"name\" value=\""+model.getName()+"\">");
 		out.println("<input type=\"hidden\" name=\"jobID\" value=\""+jobID+"\">");
 
+		String fileName = "pipelineDescription.html";
+		out.println("<p><input type=\"checkbox\" value=\"" + fileName +"=" + jobID +"/" + fileName+"\" name=\"dl\" checked>");
+
+		out.println("<a target=\"_blank\" href=\""+  URL+GET_TASK_FILE+"job="+jobID+"&filename="+fileName  +"\">" + fileName + "</a><p>");
+
+
+
+	//	out.println(fileName+"=" + jobID+ "/" +fileName);
+	//	out.println("\" name=\"dl\" checked><p>");
+		
+
 
 		// set up the table for task reporting
 		out.println("<table width=\"90%\"><tr><td><u>step</u></td><td><u>name and parameters</u></td></tr>");
@@ -211,11 +222,7 @@ public class RunPipelineHTMLDecorator implements RunPipelineOutputDecoratorIF {
 							
 			sbOut.append("<tr><td></td><td><input type=\"checkbox\" value=\"");
 			sbOut.append(name+"/"+fileName+"=" + jobInfo.getJobNumber()+ "/" +fileName);
-		
 			sbOut.append("\" name=\"dl\" ");
-	
-			//sbOut.append(TransposeDataset1/asdf.odf=temp\880\asdf.odf" name="dl" 
-
 			sbOut.append("checked><a target=\"_blank\" href=\"");
 
 			String outFileUrl = null;
