@@ -1,5 +1,0 @@
-#GenePattern properties
-#Wed Apr 23 19:39:44 EDT 2003
-gp.file.excludes=~$, \\.rin$, \\.stt$ \\.zip$ \\.tar$ \\.jar$ \\.gz$ \\.xls$ \\.doc$
-gp.project.dialog.show_files=true
-open.files.system.browser=false
