@@ -38,25 +38,6 @@ public class AnalysisWebServiceProxy {
       stub.setMaintainSession(maintainSession);
    }
 
-
-   /**
-    *  Submits a job to be processed.
-    *
-    * @param  taskID                   Description of the Parameter
-    * @param  parmInfo                 Description of the Parameter
-    * @param  file                     Description of the Parameter
-    * @return                          Description of the Return Value
-    * @exception  WebServiceException  Description of the Exception
-    */
-   public JobInfo submitJob(int taskID, ParameterInfo[] parmInfo, File file) throws WebServiceException {
-      try {
-         return stub.submitJob(taskID, parmInfo, new DataHandler(new FileDataSource(file)));
-      } catch(RemoteException re) {
-         throw new WebServiceException(re);
-      }
-   }
-
-
    /**
     *  Submits a job to be processed.
     *
@@ -150,22 +131,6 @@ public class AnalysisWebServiceProxy {
    public TaskInfo[] getTasks() throws WebServiceException {
       try {
          return stub.getTasks();
-      } catch(RemoteException re) {
-         throw new WebServiceException(re);
-      }
-   }
-
-
-   /**
-    *  Returns the results of a completed job.
-    *
-    * @param  jobID                    Description of the Parameter
-    * @return                          The results value
-    * @exception  WebServiceException  Description of the Exception
-    */
-   public DataHandler getResults(int jobID) throws WebServiceException {
-      try {
-         return stub.getResults(jobID);
       } catch(RemoteException re) {
          throw new WebServiceException(re);
       }

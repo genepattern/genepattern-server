@@ -54,20 +54,9 @@ public class RequestHandler {
         return _proxy.getTasks();
     }
 
-    public synchronized JobInfo submitJob(int id, ParameterInfo[] parmInfos, File file) throws WebServiceException{
-        debug("Sending request to submitJob");
-        return _proxy.submitJob(id, parmInfos, file);
-    }
-
-
     public synchronized JobInfo submitJob(int id, ParameterInfo[] parmInfos) throws WebServiceException{
         debug("Sending request to submitJob");
         return _proxy.submitJob(id, parmInfos);
-    }
-
-    public synchronized DataHandler getResults(int jobID) throws WebServiceException{
-        debug("Sending request for getResults()");
-        return _proxy.getResults(jobID);
     }
 
     public synchronized JobInfo checkStatus(int jobID) throws WebServiceException{
