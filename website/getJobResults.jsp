@@ -21,7 +21,7 @@ if (userID == null || userID.length() == 0) {
 
 String JOBID = "jobID";
 String jobID = request.getParameter(JOBID);
-String DOWNLOAD_URL = "zipJobResults.jsp?name=" + jobID;
+String DOWNLOAD_URL = "zipJobResults.jsp?download=&?name=" + jobID;
 AnalysisJobDataSource ds = BeanReference.getAnalysisJobDataSourceEJB();
 JobInfo jobInfo = null;
 ParameterInfo[] params = null;
