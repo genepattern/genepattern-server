@@ -12,7 +12,7 @@ import org.genepattern.io.*;
 import java.text.NumberFormat;
 
 /**
- * Description of the Class
+ * Displays information about a selected file
  * 
  * @author Joshua Gould
  */
@@ -25,14 +25,16 @@ public class FileInfoComponent extends JLabel {
 
 	public FileInfoComponent() {
       setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		setVisible(false);
 	}
 
 	public void select(File file) throws IOException {
 		if (file == null) {
 			setText("");
+			setVisible(false);
 			return;
 		}
-
+		setVisible(true);
 		String kind = null;
 		FileInputStream fis = null;
 		try {
