@@ -376,7 +376,7 @@
 	<antcall target="post-compile" inheritall="true" inheritrefs="true"/>
     </target>
 
-    <target depends="init,analysis,makeKeystore" name="quick-website">
+    <target depends="init,common,analysis,makeKeystore" name="quick-website">
 	<mkdir dir="${genepattern.build}/website/classes"/>
 	<javac destdir="${genepattern.build}/website/classes" srcdir="${genepattern.website}/WEB-INF/classes" 
 		classpathref="library.classpath"/>
