@@ -84,7 +84,7 @@ public class DefaultUIRenderer implements UIRenderer {
 	/**  executes the code in a safe environment */
 	private final SafeExecuter executer = new SafeExecuter(); 
     /** maps parameter names to the text field for a parameter */
-   private java.util.Map inputFileParameterNameToTextFieldMap = new java.util.TreeMap();
+   private java.util.Map inputFileParameterNameToTextFieldMap = new java.util.LinkedHashMap();
    
    
    public java.util.Iterator getInputFileParameterNames() {
