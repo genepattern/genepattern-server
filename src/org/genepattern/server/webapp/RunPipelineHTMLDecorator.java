@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.FileWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -28,7 +30,11 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
 
-
+/**
+ * This is the decorator for output from running a pipeline from the web environment.
+ * It should generate the html for the runPipeline.jsp page as it runs and also record a log file
+ * that will allow users to see when this pipeline was run, execution times and output files
+ */
 public class RunPipelineHTMLDecorator implements RunPipelineOutputDecoratorIF {
 	PrintStream out = System.out;
 	Properties omnigeneProps = null;
@@ -39,6 +45,7 @@ public class RunPipelineHTMLDecorator implements RunPipelineOutputDecoratorIF {
 	protected static String GET_JOB_JSP = "getJobResults.jsp?jobID=";
 	protected static String GET_TASK_JSP = "addTask.jsp?view=1&name=";
 	protected static String GET_TASK_FILE = "retrieveResults.jsp?";
+	
 	public static final String STDOUT = "stdout";
 	public static final String STDERR = "stderr";
 
@@ -95,18 +102,6 @@ public class RunPipelineHTMLDecorator implements RunPipelineOutputDecoratorIF {
 		out.println("<form name=\"results\" action=\""+URL+"zipJobResults.jsp\">");
 		out.println("<input type=\"hidden\" name=\"name\" value=\""+model.getName()+"\">");
 		out.println("<input type=\"hidden\" name=\"jobID\" value=\""+jobID+"\">");
-
-		String fileName = "pipelineDescription.html";
-		out.println("<p><input type=\"checkbox\" value=\"" + fileName +"=" + jobID +"/" + fileName+"\" name=\"dl\" checked>");
-
-		out.println("<a target=\"_blank\" href=\""+  URL+GET_TASK_FILE+"job="+jobID+"&filename="+fileName  +"\">" + fileName + "</a><p>");
-
-
-
-	//	out.println(fileName+"=" + jobID+ "/" +fileName);
-	//	out.println("\" name=\"dl\" checked><p>");
-		
-
 
 		// set up the table for task reporting
 		out.println("<table width=\"90%\"><tr><td><u>step</u></td><td><u>name and parameters</u></td></tr>");
@@ -247,7 +242,7 @@ public class RunPipelineHTMLDecorator implements RunPipelineOutputDecoratorIF {
 
 
 	public void afterPipelineRan(PipelineModel model){
-		out.println("</table>");
+		out.println("</table>"); // lead with this as the subclass expects it
 
 		out.println("<center><input type=\"submit\" name=\"download\" value=\"download selected results\">&nbsp;&nbsp;");
 		out.println("<a href=\"javascript:checkAll(this.form, true)\">check all</a> &nbsp;&nbsp;"); 

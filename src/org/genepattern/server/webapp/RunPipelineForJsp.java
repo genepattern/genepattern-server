@@ -318,7 +318,7 @@ public class RunPipelineForJsp {
         tempDir.mkdirs();
 
 
-        if (decorator == null) decorator = "org.genepattern.server.webapp.RunPipelineHTMLDecorator";
+        if (decorator == null) decorator = "org.genepattern.server.webapp.RunPipelineLoggingHTMLDecorator";
 
         boolean deleteDirAfterRun = RunPipelineForJsp.deletePipelineDirAfterRun(taskInfo.getName());   
 

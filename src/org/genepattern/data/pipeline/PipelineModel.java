@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -455,20 +456,32 @@ findTask:
 			}
 		}
 
-		// iterate over parameters
+		
+		//for (int p = 0; formalParameters != null && p < formalParameters.length; p++) {
+		if (taskInfo == null) {
+			formalParameters = null;
+		} else {
+			formalParameters = taskInfo.getParameterInfoArray();
+		}
+		ArrayList orderedParams = new ArrayList(); // to preserve order of formal params
+		for (int i=0; i < task.getLength(); i++) orderedParams.add(null);
+		
 		while (task.getLength() > 0) {
+			int idx = 0;
 			paramName = ((Attr)task.item(0)).getName();
 			if (taskInfo == null) {
-				formalParameters = null;
 				pi = new ParameterInfo(paramName, "", "");
 				pi.setAttributes(new HashMap());
+				idx = 0;
 			} else {
-				formalParameters = taskInfo.getParameterInfoArray();
 				for (int p = 0; formalParameters != null && p < formalParameters.length; p++) {
 					pi = formalParameters[p];
+					idx = p;
 					if (pi.getName().equals(paramName)) break;
 				}
 			}
+			
+				
 			try {
 				value = ((Attr)task.removeNamedItem(paramName)).getValue();
 				if (value.startsWith("'")) {
@@ -487,13 +500,17 @@ findTask:
 					}
 					//System.out.println(pi.getName() + "=" + pi.toString());
 					pi.setValue(value);
-					job.addParameter(pi);
+					//job.addParameter(pi);
+					orderedParams.set(idx,pi);
+					
 				} else {
 					// it's either an inherited input file or an input parameter substitution
 					if (value.startsWith("$")) {
 						//System.err.println("handle pipeline input parameter value for " + job.getName() + taskNumber + "'s " + paramName);
 						pi.setValue(value);
-						job.addParameter(pi);
+						//job.addParameter(pi);
+						orderedParams.set(idx,pi);
+						
 					} else {
 						// it's an inherited input file
 
@@ -507,14 +524,23 @@ findTask:
 						pi.getAttributes().put(INHERIT_TASKNAME, Integer.toString(inheritTaskNum));
 						pi.getAttributes().put(INHERIT_FILENAME, stInherit.nextToken());
 						//System.out.println("inherited parameter: " + pi);
-						job.addParameter(pi);
+						//job.addParameter(pi);
+						orderedParams.set(idx,pi);
+						
 					}
 				}
 			} catch (DOMException de) {
 				throw new Exception("Parameter " + paramName + " does not exist in pipeline definition for task " + taskName);
-			}
+			}		
+			
 		}
-
+		// add in the order of the formal params
+		for (int p = 0; p < orderedParams.size(); p++){
+			pi = (ParameterInfo)orderedParams.get(p);
+			if (pi != null) 	job.addParameter(pi);
+		}
+		
+		
 		int numParams = job.getParameters().size();
 		boolean runTimePrompt[] = new boolean[numParams];
 		for (int i = 0; i < numParams; i++) {

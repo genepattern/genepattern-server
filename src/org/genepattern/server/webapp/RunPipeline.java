@@ -136,6 +136,7 @@ protected static void runPipelineModel(PipelineModel model, Properties args) thr
 	int taskNum = 0;
 	JobInfo results[] = new JobInfo[vTasks.size()];
 	decorator.beforePipelineRuns(model);
+	try {
 	for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
 		jobSubmission = (JobSubmission)eTasks.nextElement();
 		try {
@@ -163,8 +164,9 @@ protected static void runPipelineModel(PipelineModel model, Properties args) thr
 			throw e;
 		}
 	}
-	decorator.afterPipelineRan(model);
-
+	} finally {
+		decorator.afterPipelineRan(model);
+	}
 	setStatus(JobStatus.JOB_FINISHED);
 }
 
@@ -175,7 +177,7 @@ protected static void runPipelineModel(PipelineModel model, Properties args) thr
 */
 protected static void notifyPipelineOfOutputFiles(JobInfo jobInfo, String taskName, int taskNum) throws Exception {
 
-	ParameterInfo[] jobParams = jobInfo.getParameterInfoArray();
+ParameterInfo[] jobParams = jobInfo.getParameterInfoArray();
 	URL stdout = null;
 	URL stderr = null;
 	for(int j=0; j<jobParams.length; j++){
