@@ -242,7 +242,7 @@ onclick="refillField(this);"> These Domains (comma delimited list)<br>
 	}
 %>
 </td></tr>
-<tr><td colspan='2' align='center'><a href="taskCatalog.jsp">Install/Update modules</a></td></tr>
+<tr><td colspan='2' align='center'><a href="taskCatalog.jsp">Install/Update tasks</a></td></tr>
 </table>
 </form>
 

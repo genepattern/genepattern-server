@@ -111,7 +111,7 @@ if (tmTasks.size() > 0) {
 
 
 <tr><td colspan="<%= 3 + taskDetailItems.length %>"><br><hr><br>
-<a href="taskCatalog.jsp">Get the catalog of new and updated modules from the GenePattern public website</a></td></tr>
+<a href="taskCatalog.jsp">Get the catalog of new and updated tasks from the GenePattern public website</a></td></tr>
 
 <tr><td colspan="<%= 3 + taskDetailItems.length %>"><br><hr><br>
 Or download the task from a website:</td></tr>

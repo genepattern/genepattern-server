@@ -81,8 +81,8 @@ The email address (GenePattern user ID) of the person creating the task.
 ConsensusClustering example: <span class="exampleLink">gp-help@broad.mit.edu</span>
 
 <h4>Privacy</h4>
-Modules may be marked as either public or private.  Public modules are accessible to everyone who uses the server
-on which it resides.  Private modules may be accessed only by the module's owner, which is the username that the user logged in with.  When a module is first created, the default is to mark it private.  Private modules are not visible to others building pipelines or running tasks.  You can update your module's privacy at any time.
+Tasks may be marked as either public or private.  Public tasks are accessible to everyone who uses the server
+on which it resides.  Private tasks may be accessed only by the module's owner, which is the username that the user logged in with.  When a module is first created, the default is to mark it private.  Private tasks are not visible to others building pipelines or running tasks.  You can update your module's privacy at any time.
 
 <br>
 <br>
@@ -145,7 +145,7 @@ the public GenePattern website.  Useful substitution properties include:<br><br>
 <tr><td valign="top"><span class="example">&lt;<i>filename</i>_basename&gt;</span></td><td>for each input file parameter, the filename without directory</td></tr>
 <tr><td valign="top"><span class="example">&lt;<i>filename</i>_extension&gt;</span></td><td>for each input file parameter, the extension without filename or directory</td></tr>
 <tr><td valign="top"><span class="example">&lt;<i>filename</i>_file&gt;</span></td><td>for each input file parameter, the input filename without directory</td></tr>
-<tr><td valign="top"><span class="example">&lt;path.separator&gt;</span></td><td>Java classpath delimiters (&#58; or &#59;), useful for specifying a classpath for Java-based modules</td></tr>
+<tr><td valign="top"><span class="example">&lt;path.separator&gt;</span></td><td>Java classpath delimiters (&#58; or &#59;), useful for specifying a classpath for Java-based tasks</td></tr>
 <tr><td valign="top"><span class="example">&lt;file.separator&gt;</span></td><td>/ or \ for directory delimiter</td></tr>
 <tr><td valign="top"><span class="example">&lt;line.separator&gt;</span></td><td>newline, carriage return, or both for line endings</td></tr>
 <tr><td valign="top"><span class="example">&lt;user.dir&gt;</span></td><td>current directory where the job is executing</td></tr>
