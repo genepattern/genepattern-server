@@ -492,7 +492,7 @@ public class AnalysisServicePanel extends JPanel {
 
 
    /**
-    *  handles getting the valuesfrom all the input components
+    *  handles getting the values from all the input components
     *
     * @author     jgould
     * @created    February 9, 2004
@@ -510,12 +510,13 @@ public class AnalysisServicePanel extends JPanel {
                   } catch(Throwable th) {
                      exception_handler.setError("Error:", "While submitting " + _selectedService.toString() + ':', th);
                   } finally {
-                     if(source != null && source.isDisplayable()) {
-                        source.setEnabled(true);
-                     }
+                     
                   }
                }
             }.start();
+        if(source != null && source.isDisplayable()) {
+           source.setEnabled(true);
+        }
       }
 
 
