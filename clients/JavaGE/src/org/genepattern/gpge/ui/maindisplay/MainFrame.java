@@ -840,6 +840,17 @@ public class MainFrame extends JFrame {
           });
       
          projectFilePopupMenu.add(revealInFinderMenuItem);
+      } else if(System.getProperty("os.name").startsWith("Windows")) {
+         JMenuItem revealInExplorerMenuItem = new JMenuItem("Show File Location");
+         revealInExplorerMenuItem.addActionListener(new ActionListener() {
+             public void actionPerformed(ActionEvent e) {
+                try {
+                   ProjectDirModel.FileNode fn = (ProjectDirModel.FileNode) selectedProjectDirNode;
+                   BrowserLauncher.openURL(fn.file.getParentFile().getCanonicalPath());  
+                } catch(IOException x){}
+             }
+          });
+         projectFilePopupMenu.add(revealInExplorerMenuItem);            
       }
       
 		projectDirPopupMenu = new JPopupMenu();
