@@ -222,6 +222,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		int jobStatus = JobStatus.JOB_ERROR;
 		String outDirName = getJobDir(Integer.toString(jobInfo.getJobNumber()));
       JobInfo parentJobInfo = null;
+      File taskLog = null;
+      
 		try {
 			/**
 			 * make directory to hold input and output files
@@ -488,7 +490,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			String[] commandTokens = null;
 			String firstToken;
 			String token;
-
+			File taskLof = null;
+			
 			// TODO: handle quoted arguments within the command line (eg. echo
 			// "<p1> <p2>" as a single token)
 
@@ -591,6 +594,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 				 */
 				jobStatus = JobStatus.JOB_ERROR;
 			} else {
+				taskLog = writeProvenanceFile(outDirName, jobInfo, formalParameters)	;//XXX
 				// run the task and wait for completion.
 				_cat.info(taskName + " command (job " + jobInfo.getJobNumber()
 						+ "): " + commandLine.toString());
@@ -752,12 +756,16 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			// reload jobInfo to pick up any output parameters were added by the
 			// job explicitly (eg. pipelines)
 			jobInfo = ds.getJobInfo(jobInfo.getJobNumber());
-
+			
+			// touch the taskLog file to make sure it is the oldest/last file
+			taskLog.setLastModified(System.currentTimeMillis()+500);
+			
+			
 			// any files that are left in outDir are output files
 			File[] outputFiles = new File(outDirName)
 					.listFiles(new FilenameFilter() {
 						public boolean accept(File dir, String name) {
-							return !name.equals(STDERR) && !name.equals(STDOUT);
+							return !name.equals(STDERR) && !name.equals(STDOUT) && !name.equals(TASKLOG);
 						}
 					});
 
@@ -781,13 +789,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
 				_cat.debug("adding output file to output parameters "
 						+ f.getName() + " from " + outDirName);
 				addFileToOutputParameters(jobInfo, f.getName(), f.getName(), parentJobInfo);
-
-				// XXX Deal with appending task information to the head of an ODF file 
-				if (f.getName().endsWith(".odf")){
-					addProvenanceToFile( f,  jobInfo, formalParameters)	;
-				}
+				
 			}
-
+			
 			if (stdout.length() > 0) {
 				//System.out.println("adding stdout");
 				outFile = writeStringToFile(outDirName, STDOUT, stdout
@@ -801,7 +805,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
 						.toString());
 				addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
 			}
-
+			if (taskLog != null){
+				addFileToOutputParameters(jobInfo, TASKLOG, TASKLOG, parentJobInfo);
+			}
+			
 			getDS().updateJob(jobInfo.getJobNumber(),
 					jobInfo.getParameterInfo(), jobStatus);
          if(parentJobInfo!=null) {
@@ -843,66 +850,56 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	}
 	
 	
-	protected static void addProvenanceToFile(File f, JobInfo jobInfo, ParameterInfo[] formalParameters){
+	protected static File writeProvenanceFile(String outDirName, JobInfo jobInfo, ParameterInfo[] formalParameters){
 
 		try {
-		String nom = f.getName();
-		File rf = new File(f.getParentFile(),"ODF_temp"+System.currentTimeMillis()+".odf");
-		boolean renamed = f.renameTo(rf );
-		if (!renamed) return; // no provenance is better than deleting the file as we will
-		BufferedReader br = new BufferedReader(new FileReader(rf));
-		File f2 = new File(f.getParentFile(), nom);
-		BufferedWriter bw = new BufferedWriter(new FileWriter(f2));
+		File outDir = new File(outDirName);
+		File f = new File(outDir, TASKLOG);
+		BufferedWriter bw = new BufferedWriter(new FileWriter(f));
 		String line = null;
 		int lineNum = 0;
-		while ((line = br.readLine())!= null){
-			if (lineNum == 1){
-				bw.write("# ========== Provenance for file: "+nom+" ==========");
-				bw.write("\n# Created: "+ new Date(f.lastModified())+" by " + jobInfo.getUserId());
-				bw.write("\n# Job: " + jobInfo.getJobNumber());
-				bw.write("    server:  http://");
-				bw.write(System.getProperty("lax.nl.env.computername") +":" + System.getProperty("GENEPATTERN_PORT") + "/gp");
-				bw.write("\n# Task: "+ jobInfo.getTaskName() + " " +jobInfo.getTaskLSID());
-				bw.write("\n# Parameters: ");
-				ParameterInfo pinfos[] = jobInfo.getParameterInfoArray();
-				for (int pi = 0; pi < pinfos.length; pi++){
-					ParameterInfo pinfo = pinfos[pi];
-					if (!pinfo.isOutputFile()){
-						String value = null;
-						if (pinfo.isInputFile()){
-							File ifn = new File(pinfo.getValue());
-							value = ifn.getName();
-							int idx = value.indexOf("axis_");
-							if (idx >= 0){
-								value = value.substring(idx+5);
-							}
-						} else {
-							ParameterInfo formalPinfo = null;
-							for (int fpidx = 0; fpidx < formalParameters.length; fpidx++){
-								if (formalParameters[fpidx].getName().equals(pinfo.getName())){
-									formalPinfo = formalParameters[fpidx];
-									break;
-								}
-							}
-							value = pinfo.getUIValue(formalPinfo);
-						}
-						bw.write("\n#    " + pinfo.getName() + " = " + value);
+		bw.write("# ");
+		bw.write("\n# Created: "+ new Date(f.lastModified())+" by " + jobInfo.getUserId());
+		bw.write("\n# Job: " + jobInfo.getJobNumber());
+		bw.write("    server:  http://");
+		bw.write(System.getProperty("lax.nl.env.computername") +":" + System.getProperty("GENEPATTERN_PORT") + "/gp");
+		bw.write("\n# Task: "+ jobInfo.getTaskName() + " " +jobInfo.getTaskLSID());
+		bw.write("\n# Parameters: ");
+		ParameterInfo pinfos[] = jobInfo.getParameterInfoArray();
+		for (int pi = 0; pi < pinfos.length; pi++){
+			ParameterInfo pinfo = pinfos[pi];
+			if (!pinfo.isOutputFile()){
+				String value = null;
+				if (pinfo.isInputFile()){
+					File ifn = new File(pinfo.getValue());
+					value = ifn.getName();
+					int idx = value.indexOf("axis_");
+					if (idx >= 0){
+						value = value.substring(idx+5);
 					}
-				}	
-				bw.write("\n# ========== End provenance data ==========" );
-				bw.write("\n");
-				bw.flush();
+				} else {
+					ParameterInfo formalPinfo = null;
+					for (int fpidx = 0; fpidx < formalParameters.length; fpidx++){
+						if (formalParameters[fpidx].getName().equals(pinfo.getName())){
+							formalPinfo = formalParameters[fpidx];
+							break;
+						}
+					}
+					value = pinfo.getUIValue(formalPinfo);
+				}
+				bw.write("\n#    " + pinfo.getName() + " = " + value);
 			}
-			bw.write(line);
-			bw.write("\n");
-			bw.flush();
-			lineNum++;
-		}
+		}	
+		bw.write("\n# " );
+		bw.write("\n");
+		bw.flush();
+		
+		
 		bw.close();
-		br.close();
-		rf.delete();
+		return f;
 		} catch (Exception e){
 			e.printStackTrace();
+			return null;
 		}
 	
 	}
@@ -3490,7 +3487,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	 *            String to write to file
 	 * @return File that was written
 	 * @author Jim Lerner
-	 *  
 	 */
 	protected File writeStringToFile(String dirName, String filename,
 			String outputString) {

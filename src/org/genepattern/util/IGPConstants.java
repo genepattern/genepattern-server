@@ -269,6 +269,12 @@ public interface IGPConstants {
 	 * output to the stderr stream of the process
 	 */
 	public static final String STDERR = "stderr.txt";
+
+	/**
+	 * filename of well-known file that may be output by a job, representing the
+	 * provenance data of the process
+	 */
+	public static final String TASKLOG = "gp_task_execution_log.txt";
 	
 	/**
 	 * fileextension of ODF
