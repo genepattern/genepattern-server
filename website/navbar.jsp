@@ -95,7 +95,8 @@ function changeTask() {
 		enableEdit = false;
 	}
 	document.forms['searchForm'].navbaredit.value = (enableEdit ? (create ? CREATE : EDIT) : VIEW);
-
+	document.forms['searchForm'].navbarrun.disabled = (sel.selectedIndex == 0);
+	document.forms['searchForm'].navbaredit.disabled = (sel.selectedIndex == 0);
 }
 
 function changePipeline() {
@@ -112,6 +113,8 @@ function changePipeline() {
 		enableEdit = false;
 	}
 	document.forms['searchForm'].navbaredit.value = (enableEdit ? (create ? CREATE : EDIT) : VIEW);
+	document.forms['searchForm'].navbarrun.disabled = (sel.selectedIndex == 0);
+	document.forms['searchForm'].navbaredit.disabled = (sel.selectedIndex == 0);
 }
 
 // add an item to either the task or pipeline dropdown list
