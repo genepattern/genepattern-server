@@ -764,15 +764,19 @@ public class MainFrame extends JFrame {
 					try {
 						HttpURLConnection connection = (HttpURLConnection) node
 								.getURL().openConnection();
-						if (connection.getResponseCode() == HttpURLConnection.HTTP_GONE) {
-							GenePattern.showMessageDialog(node.name
-									+ " has been deleted from the server.");
-							jobModel.remove(node);
-							fileSummaryComponent.select(null);
-                     return;
-						} else {
+						//if (connection.getResponseCode() == HttpURLConnection.HTTP_GONE) {
+                    // JobModel.JobNode jobNode = (JobModel.JobNode) node.getParent();
+                     
+                     //JobInfo jobFromServer = new AnalysisWebServiceProxy(server, username).checkStatus(jobNode.job.getJobInfo().getJobNumber());
+                     
+					//		GenePattern.showMessageDialog(node.name
+						//			+ " has been deleted from the server.");
+						//	jobModel.remove(node);
+						//	fileSummaryComponent.select(null);
+                   //  return;
+						//} else {
 							fileSummaryComponent.select(connection, node.name);
-						}
+						//}
 
 					} catch (IOException ioe) {
                   ioe.printStackTrace();
@@ -933,8 +937,6 @@ public class MainFrame extends JFrame {
 				selectedProjectDirNode = (DefaultMutableTreeNode) path
 						.getLastPathComponent();
 
-
-
 				if (!isPopupTrigger(e)) {
 					return;
 				}
@@ -954,6 +956,7 @@ public class MainFrame extends JFrame {
 
 						jobResultFileSendToMenu.removeAll();
 						projectFileSendToMenu.removeAll();
+                  
 
 						for (Iterator it = analysisServicePanel
 								.getInputFileParameterNames(); it.hasNext();) {
@@ -978,6 +981,12 @@ public class MainFrame extends JFrame {
 
 							projectFileSendToMenu.add(projectMenuItem);
 						}
+                  if(selectedJobNode instanceof JobModel.ServerFileNode) {
+                     jobResultFileSendToMenu.setEnabled(true);  
+                  }
+                  if(selectedProjectDirNode instanceof ProjectDirModel.FileNode) {
+                     projectFileSendToMenu.setEnabled(true);  
+                  }
 
 					}
 				});
