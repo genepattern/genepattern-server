@@ -147,6 +147,14 @@ public class ClassVector {
 		return assignments[index];
 	}
 
+   /**
+	 *  Allocates a new array containing the class assignments
+	 *
+	 * @return        The assignments
+	 */
+	public int[] getAssignments() {
+		return (int[]) assignments.clone();
+	}
 
 	/**
 	 *  Gets the indices in the assignments array that have the specified class
