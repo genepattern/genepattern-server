@@ -534,7 +534,12 @@ public class MainFrame extends JFrame {
 				server = "http://127.0.0.1:8080";
 			}
 		}
-
+      try {
+         new URL(server);
+      } catch(MalformedURLException mfe) {
+         server = "http://" + server;
+      }
+     
 		createMenuBar();
 		jobModel = JobModel.getInstance();      
      
