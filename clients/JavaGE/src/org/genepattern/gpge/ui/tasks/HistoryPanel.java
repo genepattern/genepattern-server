@@ -71,8 +71,7 @@ public class HistoryPanel extends JPanel implements Observer {
 			AnalysisJob j = (AnalysisJob) jobs.get(i);
 			String status = j.getJobInfo().getStatus();
 			if (!status.equals(JobStatus.FINISHED)
-					&& !status.equals(JobStatus.ERROR)
-					&& !status.equals(JobStatus.TIMEOUT)) {
+					&& !status.equals(JobStatus.ERROR)) {
 				jobs.remove(i);
 				i--;
 			}
@@ -88,8 +87,7 @@ public class HistoryPanel extends JPanel implements Observer {
 			final String status = jao.job.getJobInfo().getStatus();
 
 			if (status.equals(JobStatus.FINISHED)
-					|| status.equals(JobStatus.ERROR)
-					|| status.equals(JobStatus.TIMEOUT)) {
+					|| status.equals(JobStatus.ERROR)) {
 				Runnable r = new Runnable() {
 					public final void run() {
 						DataModel _dataModel = (DataModel) o;

@@ -1108,8 +1108,7 @@ public class DataObjectBrowser extends javax.swing.JPanel implements
 			this.message_textField.setText("Task: " + task_name + "  Status: "
 					+ status);
 			if (status.equals(JobStatus.FINISHED)
-					|| status.equals(JobStatus.ERROR)
-					|| status.equals(JobStatus.TIMEOUT)) {
+					|| status.equals(JobStatus.ERROR)) {
 				new Thread() {
 					public final void run() {
 						persistJobs();

@@ -147,8 +147,7 @@ public class DataModel extends Observable implements Serializable {
 			addResult(job);
 			this.setChanged();
 			this.notifyObservers(new JobAndObserver(job, this.OBSERVER_DATA));
-		} else if (status.equals(JobStatus.ERROR)
-				|| status.equals(JobStatus.TIMEOUT)) {
+		} else if (status.equals(JobStatus.ERROR)) {
 			//added for GP
 			updateHistory(job);
 			addResult(job);
