@@ -92,7 +92,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		URL url = null;	
       try {
 			   url = new URL(job.getServer() + "/gp/retrieveResults.jsp?job="
-						+ jobNumber + "&filename="
+						+ jobNumber + "&e=&filename="
 						+ URLEncoder.encode(fileName, "UTF-8"));
 			} catch (MalformedURLException x) {
 				throw new Error(x);
@@ -104,6 +104,12 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			InputStream is = null;
 			try {
 				URLConnection connection = url.openConnection();
+            if(connection instanceof HttpURLConnection) {
+               HttpURLConnection httpConn = (HttpURLConnection) connection;
+               if(httpConn.getResponseCode()==HttpURLConnection.HTTP_GONE) {
+                  throw new FileNotFoundException(fileName + " has been deleted");  
+               }
+            }
 				is = connection.getInputStream();
 				byte[] b = new byte[100000];
 				int bytesRead = 0;
@@ -502,7 +508,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		public URL getURL(String fileName) {
 			try {
 				return new URL(job.getServer() + "/gp/retrieveResults.jsp?job="
-						+ job.getJobInfo().getJobNumber() + "&filename="
+						+ job.getJobInfo().getJobNumber() + "&e=&filename="
 						+ URLEncoder.encode(fileName, "UTF-8"));
 			} catch (MalformedURLException x) {
 				throw new Error(x);
