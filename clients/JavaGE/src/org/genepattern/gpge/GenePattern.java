@@ -21,19 +21,14 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JWindow;
 
-import org.genepattern.data.DataModel;
-import org.genepattern.data.Dataset;
-import org.genepattern.data.Matrix;
-import org.genepattern.data.NamesPanel;
-import org.genepattern.data.SomProperties;
-import org.genepattern.data.Template;
+
 import org.genepattern.gpge.ui.infopanels.ReportPanel;
-import org.genepattern.gpge.ui.maindisplay.DataObjectBrowser;
 import org.genepattern.gpge.util.BuildProperties;
 import org.genepattern.util.AbstractReporter;
 import org.genepattern.util.Reporter; 
 import org.genepattern.util.ReporterWithGUI;
 import org.genepattern.util.StringUtils;
+import org.genepattern.gpge.ui.maindisplay.MainFrame;
 
 
 
@@ -44,82 +39,48 @@ import org.genepattern.util.StringUtils;
  */
 public final class GenePattern {
 	protected static Component dialogParent = null;
-	protected static DataObjectBrowser browser = null;
-    
-
-
+	static javax.swing.JFrame mainFrame;
     /** Creates a new instance of GenePattern */
+    
     public GenePattern() {
        try {
           javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
        } catch(Exception e) {}
-        // find dimensions of screen to calculate center of screen
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsConfiguration gc = ge.getScreenDevices()[0].getConfigurations()[0];
-        final Rectangle bounds = gc.getBounds();
-        // splash screen
-        final JWindow splash = showSplashScreen(bounds);
-        
-        // setup data models
-        DataModel model = Dataset.DATA_MODEL;
-        model = Matrix.DATA_MODEL;
-        model = NamesPanel.DATA_MODEL;
-        model = Template.DATA_MODEL;
-	model = SomProperties.DATA_MODEL;
-        // end models
         
         // display in a JFrame
-        javax.swing.JFrame frame = new javax.swing.JFrame(BuildProperties.PROGRAM_NAME+' '+BuildProperties.FULL_VERSION+"  Build: "+BuildProperties.BUILD);
-        //javax.swing.JFrame frame = new javax.swing.JFrame("GenePattern 0.9ea");
-        frame.addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(java.awt.event.WindowEvent evt) {
-                quit();
-            }
-            public void windowOpened(java.awt.event.WindowEvent evt) {
-                splash.hide();
-                splash.dispose();
-                
-            }
-        });
-        // startup main UI
-        browser = new DataObjectBrowser(frame);
-	  dialogParent = browser;
+        javax.swing.JFrame mainFrame = new MainFrame();
+       
+       
+       
+	  dialogParent = mainFrame;
 	 ((ReporterWithGUI)REPORTER).setDialogParent(dialogParent);
-
-
-        frame.setJMenuBar(browser.getMenuBar());
-        java.awt.Container container = frame.getContentPane();
-        container.add(browser);
-        frame.setSize(850, 500);
-        //frame.pack();
-        
-        frame.setLocation(bounds.x+(bounds.width-frame.getWidth())/2,  20);
-        
-        frame.show();
-        
+     
 
     }
     
 	public static Component getDialogParent(){
 		return dialogParent;
 	}
-	public static DataObjectBrowser getDataObjectBrowser(){
-		return browser;
-	}
-
+	
+   public static org.genepattern.gpge.ui.maindisplay.DataObjectBrowser getDataObjectBrowser() {
+      return null; // FIXME
+   }
 	
 
     /** shows the splash screen */
-    private static JWindow showSplashScreen(final Rectangle bounds) {
+    public static JWindow showSplashScreen() {
+       java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        
         final java.net.URL url = ClassLoader.getSystemResource("org/genepattern/gpge/resources/GenePattern_splash.png");
         final ImageIcon icon = new ImageIcon(url);
-        //System.out.println("icon="+icon);
+        
         final JWindow window = new JWindow();
         final Container contaner = window.getContentPane();
         contaner.add(new JLabel(icon));
-        window.setLocation(bounds.x+(bounds.width-icon.getIconWidth())/2,
-            bounds.y + (bounds.height - icon.getIconHeight())/2);
+        window.setLocation((screenSize.width-icon.getIconWidth())/2,
+           (screenSize.height - icon.getIconHeight())/2);
         window.pack();
+        //window.setSize(400,400);
         window.show();
         return window;
     }
@@ -133,6 +94,10 @@ public final class GenePattern {
     /** main  */
     public static final void main(String[] args) {
         final GenePattern gp = new GenePattern();
+    }
+    
+    public static void showErrorDialog(String message) {
+       javax.swing.JOptionPane.showMessageDialog(mainFrame, message, "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
     }
 
 
@@ -245,7 +210,7 @@ public final class GenePattern {
         // test java version
         try {
             final String version = System.getProperty("java.version");
-            System.out.println("java.version="+version);
+            
             final java.util.StringTokenizer tok = new java.util.StringTokenizer(version, ".");
             tok.hasMoreTokens();
             final int major = Integer.parseInt(tok.nextToken());
@@ -254,7 +219,7 @@ public final class GenePattern {
             tok.hasMoreTokens();
             final int revis = Integer.parseInt(tok.nextToken("._"));
 
-            System.out.println("major.minor.rev= "+major+'.'+minor+'.'+revis);
+            
             if( major == 1) {
                 if( minor < 3 ){
                     final String msg = "Error: The early Java version "+version
@@ -331,16 +296,15 @@ public final class GenePattern {
         // setup OmniGene properties
         if( System.getProperty("omnigene.conf") == null ) { // if it doesn't exist
             final String home = System.getProperty("user.home");
-            System.out.println("user.home="+home);
+            
             final String separator = java.io.File.separator;
             final String base = separator+"gp"+separator+"resources"+separator;
             final String conf_location = home+base;
-                System.out.println("Setting omnigene.conf='"+conf_location+"'");
+                
                 System.setProperty("omnigene.conf", conf_location);
                 // needed for GenePatternAnalysisTask
                 System.setProperty("log4j.configuration", conf_location+"log4j.properties");
-        } else
-            System.out.println("Already have the property set "+System.getProperty("omnigene.conf"));
+        } 
 
         
     }
