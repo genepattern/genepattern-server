@@ -39,17 +39,13 @@ import org.genepattern.webservice.TaskInfoAttributes;
  * @version
  */
 
-public class AnalysisHypersonicDAO implements AnalysisDAO,
+public class AnalysisHypersonicDAO implements 
 		AnalysisJobDataSource {
 
 	public static int JOB_WAITING_STATUS = 1;
 
 	public int PROCESSING_STATUS = 2;
 
-	//    private static Category logger =
-	// Category.getInstance(AnalysisHypersonicDAO.class.getName());
-	//    private static Logger logger =
-	// Logger.getLogger(AnalysisHypersonicDAO.class.getName());
 	private static Logger logger = Logger.getRootLogger();
 
 	public static final int UNPROCESSABLE_TASKID = -1; // taskID for tasks which
@@ -116,7 +112,7 @@ public class AnalysisHypersonicDAO implements AnalysisDAO,
 				taskID = resultSet.getInt(2);
 				parameter_info = resultSet.getString(3);
 
-				updateJob(jobNo, PROCESSING_STATUS, "");
+				updateJob(jobNo, PROCESSING_STATUS);
 
 				//Add waiting job info to vector, for AnalysisTask
 				ParameterInfo[] params = parameterFormatConverter
@@ -141,20 +137,51 @@ public class AnalysisHypersonicDAO implements AnalysisDAO,
 		return jobVector;
 
 	}
+   
+   public String getTemporaryPipelineName(int jobNumber) throws OmnigeneException, RemoteException {
+      java.sql.Connection conn = null;
+		PreparedStatement stat = null;
+		ResultSet resultSet = null;
+		try {
+			conn = getConnection();
+         stat = conn
+               .prepareStatement("SELECT task_name FROM analysis_job WHERE job_no=" + jobNumber);
+         
+         resultSet = stat.executeQuery();
+         if (!resultSet.next()) {
+            throw new OmnigeneException(
+                  "AnalysisHypersonicDAO:getTemporaryPipelineName " + jobNumber
+                        + " not found");
+         }
+         return resultSet.getString(1);
+      } catch(SQLException sqle) {
+         throw new OmnigeneException(sqle.getMessage()); 
+      } finally {
+			closeConnection(resultSet, stat, conn);
+		}
+   }
+   
 
+   public JobInfo addTemporaryPipeline(String user_id, String parameter_info, String pipelineName) throws OmnigeneException, RemoteException {
+      return addNewJob(UNPROCESSABLE_TASKID, user_id, parameter_info, pipelineName);
+   }
+   
+   public JobInfo addNewJob(int taskID, String user_id, String parameter_info) throws OmnigeneException, RemoteException {
+      return addNewJob(taskID, user_id, parameter_info, null);
+   }
+   
 	/**
 	 * Submit a new job
 	 * 
-	 * @param taskID
-	 * @param user_id
-	 * @param parameter_info
-	 * @param inputfile
+	 * @param taskID the task id or UNPROCESSABLE_TASKID if the task is a temporary pipeline
+	 * @param user_id the user id
+	 * @param parameter_info the parameter info
+    * @param taskName the task name if the task is a temporary pipeline
 	 * @throws OmnigeneException
 	 * @throws RemoteException
 	 * @return Job ID
 	 */
-	public JobInfo addNewJob(int taskID, String user_id, String parameter_info,
-			String inputfile) throws OmnigeneException, RemoteException {
+	private JobInfo addNewJob(int taskID, String user_id, String parameter_info, String taskName) throws OmnigeneException, RemoteException {
 		int updatedRecord = 0;
 		JobInfo jobInfo = null;
 
@@ -164,7 +191,6 @@ public class AnalysisHypersonicDAO implements AnalysisDAO,
 		int jobNo = 0;
 		try {
 			conn = getConnection();
-			String taskName = null;
 			String lsid = null;
 			//Check taskID is valid
 			if (taskID != UNPROCESSABLE_TASKID) {
@@ -180,14 +206,13 @@ public class AnalysisHypersonicDAO implements AnalysisDAO,
 				}
 				taskName = resultSet.getString(1);
 				lsid = resultSet.getString(2);
-
 			}
 			//Store submitted job
 			stat = conn
 					.prepareStatement("INSERT INTO analysis_job(task_id,status_id, "
 							+ "date_submitted, parameter_info,user_id, task_name, task_lsid)  VALUES (? , ?, current_timestamp,?,?, ?, ?)");
 
-			//stat.setInt(1,jobNo);
+		
 			stat.setInt(1, taskID);
 			stat.setInt(2, JOB_WAITING_STATUS);
 			stat.setString(3, parameter_info);
@@ -242,7 +267,7 @@ public class AnalysisHypersonicDAO implements AnalysisDAO,
 	 * @throws RemoteException
 	 * @return record count of updated records
 	 */
-	public int updateJob(int jobNo, int jobStatusID, String outputFilename)
+	public int updateJob(int jobNo, int jobStatusID)
 			throws OmnigeneException, RemoteException {
 		int updateRecord = 0;
 		java.sql.Connection conn = null;
@@ -316,8 +341,8 @@ public class AnalysisHypersonicDAO implements AnalysisDAO,
 
 			//Fetch from database
 			stat = conn
-					.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id "
-							+ "FROM analysis_job , job_status WHERE job_no = ? and analysis_job.status_id = job_status.status_id");
+					.prepareStatement(getJobInfoSelectClause()
+							+ " FROM analysis_job , job_status WHERE job_no = ? and analysis_job.status_id = job_status.status_id");
 			stat.setInt(1, jobNo);
 			resultSet = stat.executeQuery();
 			boolean recordFound = false;
@@ -369,8 +394,8 @@ public class AnalysisHypersonicDAO implements AnalysisDAO,
 
 			//Fetch from database
 			stat = conn
-					.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id "
-							+ "FROM analysis_job , job_status WHERE user_id = ? and analysis_job.status_id = job_status.status_id");
+					.prepareStatement(getJobInfoSelectClause()
+							+ " FROM analysis_job , job_status WHERE user_id = ? and analysis_job.status_id = job_status.status_id");
 			stat.setString(1, user_id);
 
 			resultSet = stat.executeQuery();
@@ -406,7 +431,7 @@ public class AnalysisHypersonicDAO implements AnalysisDAO,
 
 			//Fetch from database
 			stat = conn
-					.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id, task_name, task_lsid FROM analysis_job, job_status WHERE user_id = ? and analysis_job.status_id = job_status.status_id");
+					.prepareStatement(getJobInfoSelectClause() + ", task_name, task_lsid FROM analysis_job, job_status WHERE user_id = ? and analysis_job.status_id = job_status.status_id");
 			stat.setString(1, username);
 
 			resultSet = stat.executeQuery();
@@ -450,8 +475,8 @@ public class AnalysisHypersonicDAO implements AnalysisDAO,
 
 			//Fetch from database
 			stat = conn
-					.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id "
-							+ "FROM analysis_job , job_status WHERE date_completed <= ? and analysis_job.status_id = job_status.status_id");
+					.prepareStatement(getJobInfoSelectClause()
+							+ " FROM analysis_job, job_status WHERE date_completed <= ? and analysis_job.status_id = job_status.status_id");
 			stat.setTimestamp(1, new java.sql.Timestamp(date.getTime()));
 
 			resultSet = stat.executeQuery();
@@ -474,6 +499,15 @@ public class AnalysisHypersonicDAO implements AnalysisDAO,
 		return (JobInfo[]) jobVector.toArray(new JobInfo[] {});
 	}
 
+   /** 
+   * Gets the SELECT clause to use when retrieving a JobInfo obect with jobInfoFromResultSet
+   * @see #jobInfoFromResultSet
+   * @return the SELECT clause
+   */
+   private String getJobInfoSelectClause() {
+      return "SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id";   
+   }
+   
 	protected JobInfo jobInfoFromResultSet(ResultSet resultSet)
 			throws SQLException, OmnigeneException {
 		ParameterFormatConverter parameterFormatConverter = new ParameterFormatConverter();
@@ -499,17 +533,6 @@ public class AnalysisHypersonicDAO implements AnalysisDAO,
 		ResultSet resultSet = null;
 		boolean DEBUG = false;
 		JobInfo jobInfo = getJobInfo(jobID);
-
-		if (jobInfo.getInputFileName() != null) {
-			if (DEBUG)
-				System.out.println("deleting " + jobInfo.getInputFileName());
-			new File(jobInfo.getInputFileName()).delete();
-		}
-		if (jobInfo.getResultFileName() != null) {
-			if (DEBUG)
-				System.out.println("deleting " + jobInfo.getResultFileName());
-			new File(jobInfo.getResultFileName()).delete();
-		}
 
 		ParameterInfo[] pia = jobInfo.getParameterInfoArray();
 		if (pia != null) {
@@ -1100,16 +1123,6 @@ public class AnalysisHypersonicDAO implements AnalysisDAO,
 		analysisManager.startNewAnalysisTask(id);
 	}
 
-	/**
-	 * Stops the running thread of a task
-	 * 
-	 * @param classname
-	 *            analysis task name
-	 */
-	public void stopTask(String classname) throws RemoteException {
-		AnalysisManager analysisManager = AnalysisManager.getInstance();
-		analysisManager.stop(classname);
-	}
 
 	/**
 	 * Stops the running thread of a task
