@@ -1,3 +1,5 @@
+package org.genepattern.gpge.util;
+
 import java.io.*;
 import java.net.*;
 /**
@@ -37,6 +39,7 @@ public class MacOS {
                   new Class[]{String.class, String.class});
 
             String path = file.getCanonicalPath();
+            
             Object opened = selectFileMethod.invoke(NSWorkspace, new Object[]{path, path});
             if(opened instanceof Boolean) {
                return ((Boolean) opened).booleanValue();
