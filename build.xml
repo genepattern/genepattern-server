@@ -158,8 +158,9 @@
 		
 	
 			<zip destfile="build/GenePattern.zip">
+         <include name="${gp-library-jarname}"/>
+         
 			<zipfileset dir="build/" prefix="lib">
-				<include name="${gp-library-jarname}"/>
 				<include name="gpwebservice.jar"/>
 				<include name="broad-cg.jar"/>
 			</zipfileset>
