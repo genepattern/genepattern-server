@@ -48,12 +48,11 @@ public class AdminHSQLDAO implements AdminDAO {
 		String taskName = resultSet.getString("task_name");
 		String description = resultSet.getString("description");
 		String parameter_info = resultSet.getString("parameter_info");
-		String taskClassName = resultSet.getString("classname");
 		String taskInfoAttributes = resultSet.getString("taskInfoAttributes");
 		String userId = resultSet.getString("user_id");
 		int accessId = resultSet.getInt("access_id");
 		TaskInfo task = new TaskInfo(taskID, taskName, description,
-				parameter_info, taskClassName, TaskInfoAttributes
+				parameter_info, TaskInfoAttributes
 						.decode(taskInfoAttributes), userId, accessId);
 		return task;
 	}

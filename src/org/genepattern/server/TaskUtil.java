@@ -337,8 +337,7 @@ public class TaskUtil {
 			String value = props.getProperty(name);
 			tia.put(name, value);
 		}
-		TaskInfo task = new TaskInfo(-1, taskName, taskDescription, null,
-				GenePatternAnalysisTask.class.getName(), tia);
+		TaskInfo task = new TaskInfo(-1, taskName, taskDescription, null, tia, null, 0);
 		task.setParameterInfoArray(params);
 		return task;
 	}

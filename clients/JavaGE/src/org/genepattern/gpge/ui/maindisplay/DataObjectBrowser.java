@@ -347,8 +347,7 @@ public class DataObjectBrowser extends javax.swing.JPanel implements
 					errorMessage.toString());
 		}
 		TaskInfo taskCopy = new TaskInfo(task.getID(), task.getName(), task
-				.getDescription(), task.getParameterInfo(), task
-				.getTaskClassName(), task.giveTaskInfoAttributes(), task
+				.getDescription(), task.getParameterInfo(), task.giveTaskInfoAttributes(), task
 				.getUserId(), task.getAccessId());
 		taskCopy.setParameterInfoArray((ParameterInfo[]) actualParams
 				.toArray(new ParameterInfo[0]));
@@ -1209,15 +1208,7 @@ public class DataObjectBrowser extends javax.swing.JPanel implements
 	private final ServicesFilter services_filter = new ServicesFilter() {
 		/** returns the Vector with only the services of interest */
 		public java.util.Vector processServices(final java.util.Vector services) {
-			final String task_name = "GenePatternAnalysisTask";
-			final int limit = services.size();
-			for (int i = limit - 1; i >= 0; i--) { // rev. loop
-				final AnalysisService service = (AnalysisService) services
-						.get(i);
-				if (!service.getTaskInfo().getTaskClassName().endsWith(
-						task_name))
-					services.remove(i);
-			}
+			
 			java.util.Collections.sort(services, ServicesFilter.COMPARE);
 			return services;
 		}

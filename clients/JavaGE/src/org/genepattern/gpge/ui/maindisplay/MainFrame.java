@@ -322,9 +322,9 @@ public class MainFrame extends JFrame {
 					errorMessage.toString());
 		}
 		TaskInfo taskCopy = new TaskInfo(task.getID(), task.getName(), task
-				.getDescription(), task.getParameterInfo(), task
-				.getTaskClassName(), task.giveTaskInfoAttributes(), task
+				.getDescription(), task.getParameterInfo(), task.giveTaskInfoAttributes(), task
 				.getUserId(), task.getAccessId());
+           
 		taskCopy.setParameterInfoArray((ParameterInfo[]) actualParams
 				.toArray(new ParameterInfo[0]));
 		AnalysisService serviceCopy = new AnalysisService(service.getServer(),
