@@ -56,6 +56,19 @@ public interface AnalysisJobDataSource {
 	 */
 	public JobInfo addNewJob(int taskID, String user_id, String parameter_info) throws OmnigeneException, RemoteException;
    
+   /**
+	 * Submit a new child job
+	 * 
+	 * @param taskID
+	 * @param user_id
+	 * @param parameter_info
+    * @param parentJobNumber the parent job number
+	 * @throws OmnigeneException
+	 * @throws RemoteException
+	 * @return Job ID
+	 */
+	public JobInfo addNewJob(int taskID, String user_id, String parameter_info, int parentJobNumber) throws OmnigeneException, RemoteException;
+   
    
   /**
 	 * Creates an Omnigene database entry in the analysis_job table. Unlike
@@ -94,7 +107,6 @@ public interface AnalysisJobDataSource {
 	 *             if thrown by Omnigene
 	 */
    public JobInfo createPipeline(int taskId, String user_id, String parameter_info) throws OmnigeneException, RemoteException;
-
    
    /**
    * Gets the task name of a temporary (unsaved) pipeline
@@ -104,7 +116,29 @@ public interface AnalysisJobDataSource {
    *             if thrown by Omnigene
    * @return the temporary pipeline name
    */
-   public String getTemporaryPipelineName(int jobNumber) throws OmnigeneException, RemoteException;;
+   public String getTemporaryPipelineName(int jobNumber) throws OmnigeneException, RemoteException;
+   
+   /**
+   * Gets the child jobs for the given job number
+   * @param jobId the parent job id
+   * @throws OmnigeneException
+   *             if thrown by Omnigene
+   * @throws RemoteException
+   *             if thrown by Omnigene
+   * @return an array of children <tt>JobInfo</tt> objects 
+   */
+   public JobInfo[] getChildren(int jobId) throws OmnigeneException, RemoteException;
+   
+   /**
+   * Gets the parent job or <tt>null</tt> for the given job number
+   * @param jobId the job id
+   * @throws OmnigeneException
+   *             if thrown by Omnigene
+   * @throws RemoteException
+   *             if thrown by Omnigene
+   * @return the parent <tt>JobInfo</tt> object or <tt>null</tt> if no parent exists
+   */
+   public JobInfo getParent(int jobId) throws OmnigeneException, RemoteException;
    
 	/**
 	 * Update job information like status and resultfilename
@@ -118,15 +152,6 @@ public interface AnalysisJobDataSource {
 	public int updateJob(int jobNo, int jobStatusID)
 			throws OmnigeneException, RemoteException;
 
-   /**
-   * Sets the parent of the given job number
-   * @param childJobNo the child job number
-   * @param parentJobNo the parent job number
-   * @throws OmnigeneException
-   * @throws RemoteException
-   */
-   public void setParent(int childJobNo, int parentJobNo)
-         throws OmnigeneException, RemoteException;
 	/**
 	 * Update job info with paramter infos and status
 	 * 
