@@ -62,6 +62,8 @@ public class TaskLauncher {
 					.exec();
          JobInfo jobInfo = proxy.recordClientJob(svc.getTaskInfo().getID(), paramInfos);
          AnalysisJob job = new AnalysisJob(svc.getServer(), jobInfo, true);
+         job.getJobInfo().setDateCompleted(job.getJobInfo().getDateSubmitted());
+         job.getJobInfo().setStatus(JobStatus.FINISHED);
          JobModel.getInstance().add(job);
       } catch(Throwable t) {
          t.printStackTrace();
