@@ -345,9 +345,9 @@ public class JobModel extends AbstractSortableTreeTableModel {
       root.removeAllChildren();
       nodeStructureChanged(root);
       String server = AnalysisServiceManager.getInstance().getServer();
-      AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(AnalysisServiceManager.getInstance().getServer(),
-            AnalysisServiceManager.getInstance().getUsername());
-      JobInfo[] jobs = proxy.getJobs();
+      String username = AnalysisServiceManager.getInstance().getUsername();
+      AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(server, username);
+      JobInfo[] jobs = proxy.getJobs(username, false);
       Vector children = root.getChildren();
       children = new Vector();
 
