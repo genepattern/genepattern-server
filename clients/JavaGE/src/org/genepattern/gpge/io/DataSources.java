@@ -6,19 +6,16 @@
 
 package org.genepattern.gpge.io;
 
-import java.util.Iterator;
-
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.genepattern.data.DataObjector;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.io.UniversalDecoder;
-import org.genepattern.io.parsers.ClsDataParser;
 import org.genepattern.io.parsers.DataParser;
-import org.genepattern.io.parsers.GctParser;
-import org.genepattern.io.parsers.ResParser;
 import org.genepattern.util.ArrayUtils;
 import org.genepattern.util.PeriodicUpdater;
 import org.genepattern.util.Warning;
