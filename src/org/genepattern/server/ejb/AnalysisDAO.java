@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.util.Vector;
 
+import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.TaskInfo;
@@ -17,6 +18,7 @@ import org.genepattern.webservice.TaskInfo;
  */
 
 public interface AnalysisDAO {
+    
     
     /**
      * Used to get list of submitted job info
@@ -114,6 +116,12 @@ public interface AnalysisDAO {
      */
     public JobInfo[] getJobInfo(java.util.Date d) throws OmnigeneException,RemoteException ;
 
+    /**
+    * Gets the analysis jobs for the given user. The returned <tt>AnalysisJob</tt> instance will have its server attribute set to <tt>null</tt>.
+    * @param username the username
+    */
+    public AnalysisJob[] getJobs(String username) throws OmnigeneException,RemoteException;
+    
     /**
      * Deletes a JobInfo record and all related input and output files for the job, based on the job number
      * @param jobNo

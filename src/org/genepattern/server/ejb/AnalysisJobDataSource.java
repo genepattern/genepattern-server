@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.util.Vector;
 
+import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
@@ -209,7 +210,14 @@ public interface AnalysisJobDataSource {
      * @throws RemoteException
      * @return <CODE>JobInfo[]</CODE>
      */
-    public JobInfo[] getJobInfo(String user_id) throws OmnigeneException,RemoteException ;
+    public JobInfo[] getJobInfo(String user_id) throws OmnigeneException,RemoteException;
+    
+     /**
+    * Gets the analysis jobs for the given user. The returned <tt>AnalysisJob</tt> instance will have its server attribute set to <tt>null</tt>.
+    * @param username the username
+    */
+    public AnalysisJob[] getJobs(String username) throws OmnigeneException,RemoteException;
+    
     
     /**
      * Starts a running thread of a new task, this method could be called after creating a new task

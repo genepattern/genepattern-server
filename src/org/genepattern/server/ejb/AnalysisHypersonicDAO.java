@@ -24,6 +24,7 @@ import org.genepattern.server.webservice.server.dao.AdminDAOSysException;
 import org.genepattern.server.webservice.server.dao.AdminHSQLDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
@@ -148,19 +149,24 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
         int  jobNo = 0;
         try {
             conn = getConnection();
-
+        String taskName = null;
+        String lsid = null;    
             //Check taskID is valid
 	    if (taskID != UNPROCESSABLE_TASKID) {
-	            stat = conn.prepareStatement("SELECT task_id FROM task_master WHERE task_id = ? ");
+	            stat = conn.prepareStatement("SELECT task_Name, lsid FROM task_master WHERE task_id = ? ");
 	            stat.setInt(1,taskID);
 	            resultSet = stat.executeQuery();
-
-	            if (!resultSet.next())
+               
+	            if (!resultSet.next()) {
 	                throw new TaskIDNotFoundException("AnalysisHypersonicDAO:addNewJob TaskID " + taskID + " not a valid TaskID ");
-	    }
+               }
+               taskName = resultSet.getString(1);
+               lsid = resultSet.getString(2);
+               
+       }
             //Store submitted job
             stat=conn.prepareStatement("INSERT INTO analysis_job(task_id,status_id, " +
-            "date_submitted, parameter_info,input_filename,user_id)  VALUES (? , ?, current_timestamp,?,?,?)");
+            "date_submitted, parameter_info,input_filename,user_id, task_name, task_lsid)  VALUES (? , ?, current_timestamp,?,?,?, ?, ?)");
 
             //stat.setInt(1,jobNo);
             stat.setInt(1,taskID);
@@ -168,6 +174,8 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
             stat.setString(3,parameter_info);
             stat.setString(4,inputfile);
             stat.setString(5,user_id);
+            stat.setString(6,taskName);
+            stat.setString(7,lsid);
 
             updatedRecord=stat.executeUpdate() ;
             
@@ -351,7 +359,38 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
             return (JobInfo[])jobVector.toArray(new JobInfo[]{});
         }
         
-    
+    public AnalysisJob[] getJobs(String username) throws OmnigeneException, RemoteException {
+           
+            java.sql.Connection conn = null;
+            PreparedStatement stat = null;
+            ResultSet resultSet = null;
+            java.util.List results = new java.util.ArrayList();
+            try {
+                conn = getConnection();
+                
+                //Fetch from database
+                stat=conn.prepareStatement("SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,input_filename,result_filename,user_id, task_name, task_lsid FROM analysis_job, job_status WHERE user_id = ? and analysis_job.status_id = job_status.status_id");
+                stat.setString(1,username);
+                
+                resultSet=stat.executeQuery() ;
+                
+                while(resultSet.next()) {
+                    JobInfo ji = jobInfoFromResultSet(resultSet);
+                    AnalysisJob job = new AnalysisJob(null, resultSet.getString(10), ji);
+                    job.setLSID(resultSet.getString(11));
+                    results.add(ji);
+                }
+                
+            } catch (Exception e) {
+                logger.error("AnalysisHypersonicDAO:getJobInfo failed " + e);
+                throw new OmnigeneException(e.getMessage());
+            }
+            finally {
+                closeConnection(resultSet, stat, conn);
+            }
+            
+            return (AnalysisJob[])results.toArray(new JobInfo[]{});
+        } 
         /**
 	 * Fetches list of JobInfo based on completion date on or before a specified date
          * @param date
@@ -395,6 +434,7 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
         
     protected JobInfo jobInfoFromResultSet(ResultSet resultSet) throws SQLException, OmnigeneException {
 	ParameterFormatConverter parameterFormatConverter = new ParameterFormatConverter();
+   
 	JobInfo ji = new JobInfo(resultSet.getInt(1),
 		                resultSet.getInt(2),
 		                resultSet.getString(3),
@@ -407,6 +447,7 @@ public class AnalysisHypersonicDAO implements AnalysisDAO, AnalysisJobDataSource
 		                );
 	return ji;
     }
+    
     
     /**
      * Removes a job and all it's input and output files based on jobID
