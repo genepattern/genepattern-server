@@ -155,13 +155,12 @@ public abstract class AbstractPipelineCodeGenerator {
 
 		// System properties
 		commandLine
-				.append(" -Ddecorator=org.genepattern.server.webapp.RunPipelineNullDecorator");
+				.append(" -Ddecorator=<pipeline.decorator>");
 		commandLine.append(" -Dgenepattern.properties=<resources>");
-		commandLine.append(" -Domnigene.conf=<resources>");
 		commandLine.append(" -D" + GPConstants.LSID + "=<LSID>");
 
 		// class to run
-		commandLine.append(" org.genepattern.server.webapp.RunPipeline");
+		commandLine.append(" <pipeline.main>");
 
 		// script name
 		commandLine.append(" <GenePatternURL>getPipelineModel.jsp?");
