@@ -126,8 +126,13 @@ try {
 	TaskInfo task = GenePatternAnalysisTask.getTaskInfo(lsid, userID);
 
 	ParameterInfo[] parmInfos = task.getParameterInfoArray();
-	
-	for (int i=0; i < parmInfos.length; i++){
+	int nParams = 0;
+	if (parmInfos != null){ 
+		nParams = parmInfos.length;
+	} else {
+		parmInfos = new ParameterInfo[0];
+	}
+	for (int i=0; i < nParams; i++){
 		ParameterInfo pinfo = parmInfos[i];
 		String value;	
 		if (pinfo.isInputFile()){
@@ -137,6 +142,7 @@ try {
 		}
 		pinfo.setValue(value);
 	}
+
 	JobInfo job = analysisProxy.submitJob(task.getID(), parmInfos);
 	String jobID = ""+job.getJobNumber();
  
