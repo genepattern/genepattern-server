@@ -52,7 +52,7 @@ import org.genepattern.webservice.TaskInfo;
  *@author     kohm
  *@created    February 9, 2004
  */
-class DefaultUIRenderer implements UIRenderer {
+public class DefaultUIRenderer implements UIRenderer {
 
 	// fields
 	private GridBagConstraints gbc1 = new GridBagConstraints();

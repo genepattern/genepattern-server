@@ -12,7 +12,7 @@ import org.genepattern.util.AbstractReporter;
  *
  * @author  kohm
  */
-final class DefaultExceptionHandler implements org.genepattern.gpge.ui.tasks.OVExceptionHandler {
+public final class DefaultExceptionHandler implements org.genepattern.gpge.ui.tasks.OVExceptionHandler {
     
     /** Creates a new instance of DefaultExceptionHandler */
     private DefaultExceptionHandler() {
