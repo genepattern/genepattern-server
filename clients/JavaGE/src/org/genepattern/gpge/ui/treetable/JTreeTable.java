@@ -1,14 +1,3 @@
-package org.genepattern.gpge.ui.treetable;
-
-import java.awt.Component;
-
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-
-import java.awt.event.MouseEvent;
-
-import java.util.EventObject;
 /*
     @(#)JTreeTable.java	1.2 98/10/27
     Copyright 1997, 1998 by Sun Microsystems, Inc.,
@@ -20,6 +9,15 @@ import java.util.EventObject;
     it only in accordance with the terms of the license agreement
     you entered into with Sun.
   */
+  
+package org.genepattern.gpge.ui.treetable;
+
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.event.*;
+import java.util.EventObject;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
@@ -57,11 +55,10 @@ public class JTreeTable extends JTable {
             ListToTreeSelectionModelWrapper();
       tree.setSelectionModel(selectionWrapper);
       setSelectionModel(selectionWrapper.getListSelectionModel());
-
       // Install the tree editor tree and editor.
       setDefaultRenderer(TreeTableModel.class, tree);
       setDefaultEditor(TreeTableModel.class, new TreeTableCellEditor());
-
+      
       // No grid.
       setShowGrid(false);
 
@@ -73,6 +70,26 @@ public class JTreeTable extends JTable {
       if(tree.getRowHeight() < 1) {
          // Metal looks better like this.
          setRowHeight(18);
+      }
+      NoHighlightRenderer r = new NoHighlightRenderer();
+      defaultRenderersByColumnClass.put(String.class, r);
+      defaultRenderersByColumnClass.put(Object.class, r);
+    //  addMouseListener(new MouseAdapter() {
+      //   public void mouseClicked(MouseEvent e) {
+        //    expandOrCollapseNode(e);
+         //}
+      //});
+   }
+   
+   static class NoHighlightRenderer extends DefaultTableCellRenderer {
+        public Component getTableCellRendererComponent(JTable table,
+            Object value,
+            boolean isSelected, boolean hasFocus,
+            int r, int c) {
+        return super.getTableCellRendererComponent(table,
+             value,
+             isSelected, false,
+             r,  c);
       }
    }
 
@@ -115,7 +132,8 @@ public class JTreeTable extends JTable {
          // button).
          if(me.getModifiers() == 0 ||
                me.getModifiers() == java.awt.event.InputEvent.BUTTON1_MASK) {
-            final int count = getColumnCount();
+            int count = getColumnCount();
+           
             for(int i = count - 1; i >= 0; i--) {
                if(isHierarchical(i)) {
                   int savedHeight = tree.getRowHeight();
