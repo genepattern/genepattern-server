@@ -347,7 +347,9 @@ public class MainFrame extends JFrame {
 
 	public void changeServer(final String server, final String username) {
       analysisServiceManager = AnalysisServiceManager.getInstance();
+      
       analysisServiceManager.changeServer(server, username);
+      
       final boolean isLocalHost = analysisServiceManager.isLocalHost();
       
       Thread messageThread = new Thread() {
@@ -360,14 +362,13 @@ public class MainFrame extends JFrame {
             historyMenu.removeAll();
 			}
 		};
-		SwingUtilities.invokeLater(messageThread);
+      SwingUtilities.invokeLater(messageThread);
 
 		GPpropertiesManager.setProperty(PreferenceKeys.SERVER, server);
 		GPpropertiesManager.setProperty(PreferenceKeys.USER_NAME, username);
 		
       setChangeServerActionsEnabled(false);
-
-
+      
 		new Thread() {
 			public void run() {
 
@@ -591,7 +592,7 @@ public class MainFrame extends JFrame {
       JWindow splash = GenePattern.showSplashScreen();
 		splash.setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+      
 		String username = GPpropertiesManager
 				.getProperty(PreferenceKeys.USER_NAME);
 
@@ -626,6 +627,7 @@ public class MainFrame extends JFrame {
          server = "http://" + server;
       }
       jobModel = JobModel.getInstance();
+      
       jobResultsTree = new SortableTreeTable(jobModel);
       projectDirModel = ProjectDirModel.getInstance();
       projectDirTree = new SortableTreeTable(projectDirModel, false);
@@ -637,8 +639,7 @@ public class MainFrame extends JFrame {
       createProjectFileActions();
 
 		createMenus();
-
-
+      
 		jobModel.addJobListener(new JobListener() {
 			public void jobStatusChanged(JobEvent e) {
             
@@ -695,7 +696,9 @@ public class MainFrame extends JFrame {
 			}
 		});
 
+      
 		changeServer(server, username);
+      
 		analysisServicePanel = new AnalysisServiceDisplay();
 
 
@@ -1055,7 +1058,7 @@ public class MainFrame extends JFrame {
 		 }
 
          leftPanel.add(leftPane, BorderLayout.CENTER);
-		 leftPanel.add(fileSummaryComponent, BorderLayout.SOUTH);
+         leftPanel.add(fileSummaryComponent, BorderLayout.SOUTH);
          JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
 				leftPanel, analysisServicePanel);
          getContentPane().add(splitPane, BorderLayout.CENTER);
@@ -1184,6 +1187,7 @@ public class MainFrame extends JFrame {
 
       new Thread() {
          public void run() {
+            historyMenu.setEnabled(false);
             historyMenu.clear();
             String server = AnalysisServiceManager.getInstance().getServer();
             String username = AnalysisServiceManager.getInstance().getUsername();
@@ -1191,7 +1195,7 @@ public class MainFrame extends JFrame {
                AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(server, username);
                JobInfo[] jobs = proxy.getJobs(username, true);
                for(int i = 0; i < jobs.length; i++) {
-                  historyMenu.add(new AnalysisJob(server, jobs[i]));
+                  historyMenu.jobRetrievedFromServer(new AnalysisJob(server, jobs[i]));
                }
             } catch(WebServiceException wse) {
                wse.printStackTrace();
@@ -1204,6 +1208,7 @@ public class MainFrame extends JFrame {
                   }
                }
             }
+            historyMenu.setEnabled(true);
          }
       }.start();
 	}
@@ -1652,6 +1657,7 @@ public class MainFrame extends JFrame {
 		menuBar.add(pipelineMenu);
 
       historyMenu = new HistoryMenu();
+      historyMenu.setEnabled(false);
       menuBar.add(historyMenu);
 
       if(windowStyle==WINDOW_STYLE_MDI) {
@@ -1695,40 +1701,39 @@ public class MainFrame extends JFrame {
       HistoryTableModel historyTableModel = new HistoryTableModel();
       JDialog historyDialog;
       
-     class HistoryTableModel extends javax.swing.table.AbstractTableModel implements SortTableModel {
+     class HistoryTableModel extends javax.swing.table.AbstractTableModel implements SortTableModel, JobListener {
         private java.util.Comparator comparator = new JobModel.TaskNameComparator(false);
         
-        private int findJobNumber(AnalysisJob job) {
-           for(int i = 0; i < jobs.size(); i++) {
-              AnalysisJob j = (AnalysisJob) jobs.get(i);
-              if(j.getJobInfo().getJobNumber()==job.getJobInfo().getJobNumber()) {
-                 return i;  
-              }
-            }
-            return -1;   
+        void add(AnalysisJob job) {
+           int insertionIndex = Collections.binarySearch(jobs, job, comparator);
+
+           if (insertionIndex < 0) {
+               insertionIndex = -insertionIndex - 1;
+           }
+   
+           jobs.add(insertionIndex, job);
+           fireTableStructureChanged();
         }
         
         HistoryTableModel() {
-           jobModel.addJobListener(new JobListener() {
-               public void jobStatusChanged(JobEvent e) {
-                  fireTableStructureChanged();
-               }
-      
-               public void jobAdded(JobEvent e) {
-                   jobs.add(e.getJob());
-                   fireTableStructureChanged();
-               }
-      
-               public void jobCompleted(JobEvent e) {
-                  fireTableStructureChanged();
-               }
-           });
+           jobModel.addJobListener(this);
         }
         
+        public void jobStatusChanged(JobEvent e) {
+           fireTableStructureChanged();
+        }
+      
+        public void jobAdded(JobEvent e) {
+            add(e.getJob());
+            
+         }
 
+         public void jobCompleted(JobEvent e) {
+            fireTableStructureChanged();
+         }
         
             
-        public void sortOrderChanged(SortEvent e) {
+         public void sortOrderChanged(SortEvent e) {
             int column = e.getColumn();
             boolean ascending = e.isAscending();
             if (column == 0) {
@@ -1845,7 +1850,11 @@ public class MainFrame extends JFrame {
          add(historyMenuItem);
       }
 
-
+      public void jobRetrievedFromServer(AnalysisJob job) {
+         add(job);
+         historyTableModel.add(job);
+      }
+      
       public void add(AnalysisJob job) {
          int insertionIndex = Collections.binarySearch(jobsInMenu, job, jobNumberComparator);
 
