@@ -609,8 +609,6 @@ public class MainFrame extends JFrame {
 		analysisServicePanel = new AnalysisServiceDisplay();
 
 		projectDirModel = ProjectDirModel.getInstance();
-		projectDirTree = new SortableTreeTable(projectDirModel);
-
 		jobResultsTree = new SortableTreeTable(jobModel);
 
       
