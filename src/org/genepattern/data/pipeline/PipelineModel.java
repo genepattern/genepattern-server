@@ -23,7 +23,7 @@ import java.util.Vector;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;

@@ -18,7 +18,7 @@ import java.sql.Statement;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 
 
 /**

@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.genepattern.server.analysis.genepattern.TaskInstallationException;
+import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.OmnigeneException;
@@ -122,7 +122,7 @@ public class InstallTasksCollectionUtils {
 	// BUG: ? should this be LSID/TaskInfo pairs?
 	public Map getTasks() throws OmnigeneException, RemoteException {
 		try {
-			return new org.genepattern.server.analysis.webservice.server.local.LocalAdminClient(userID).getTaskCatalogByLSID();
+			return new org.genepattern.server.webservice.server.local.LocalAdminClient(userID).getTaskCatalogByLSID();
 		} catch(org.genepattern.webservice.WebServiceException e) {
 			throw new OmnigeneException(e.getMessage());
 		}

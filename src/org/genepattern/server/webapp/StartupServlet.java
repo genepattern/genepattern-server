@@ -25,9 +25,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.genepattern.server.analysis.AnalysisManager;
-import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.analysis.genepattern.IndexerDaemon;
+import org.genepattern.server.AnalysisManager;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.indexer.IndexerDaemon;
 import org.genepattern.server.process.CreateDatabase;
 import org.genepattern.server.process.JSPPrecompiler;
 import org.genepattern.server.process.JobPurger;

@@ -12,8 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.analysis.genepattern.TaskInstallationException;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;

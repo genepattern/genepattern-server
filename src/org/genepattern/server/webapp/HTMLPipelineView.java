@@ -16,7 +16,7 @@ import java.util.Vector;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.OmnigeneException;
@@ -58,7 +58,7 @@ public class HTMLPipelineView implements IPipelineView {
 		this.tmCatalog = tmCatalog;
 		tmTaskTypes = preprocessTaskInfo(tmCatalog);
 		try {
-			tmTasksByLSID = new org.genepattern.server.analysis.webservice.server.local.LocalAdminClient(userID).getTaskCatalogByLSID(tmCatalog);
+			tmTasksByLSID = new org.genepattern.server.webservice.server.local.LocalAdminClient(userID).getTaskCatalogByLSID(tmCatalog);
 		} catch (org.genepattern.webservice.WebServiceException re) {
 			System.err.println(re.getMessage() + " in HTMLPipelineView.init");
 			throw new RuntimeException(re);
@@ -159,7 +159,7 @@ public class HTMLPipelineView implements IPipelineView {
 
 				try {
 					
-					File[] docFiles = new org.genepattern.server.analysis.webservice.server.local.LocalTaskIntegratorClient(userID).getDocFiles(taskInfo);
+					File[] docFiles = new org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient(userID).getDocFiles(taskInfo);
 					for (int i = 0; i < docFiles.length; i++) {
 						if (i > 0) writer.write(",");
 						writer.write("\"" + docFiles[i].getName() + "\"");

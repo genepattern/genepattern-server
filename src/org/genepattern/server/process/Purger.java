@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.TimerTask;
 
-import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
-import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.analysis.genepattern.Indexer;
+import org.genepattern.server.ejb.AnalysisJobDataSource;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.indexer.Indexer;
 import org.genepattern.server.util.BeanReference;
 import org.genepattern.webservice.JobInfo;
 

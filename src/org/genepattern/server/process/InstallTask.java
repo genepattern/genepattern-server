@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
-import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.analysis.genepattern.TaskInstallationException;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.OmnigeneException;
