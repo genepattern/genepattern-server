@@ -49,7 +49,6 @@ String[] privacies = GPConstants.PRIVACY_LEVELS;
 
 int NUM_ATTACHMENTS = 5;
 int NUM_PARAMETERS = 5;
-int NUM_EXTRA_PARAMETERS = GPConstants.MAX_PARAMETERS - NUM_PARAMETERS;
 String DELETE = "delete";
 String CLONE = "clone";
 String RUN = "run";
@@ -177,42 +176,6 @@ function addNewTaskType() {
 	fld.options.selectedIndex = n;
 }
 
-function addNewFileType(name, desc){
-	var newDName = name;
-	var newDDesc = desc;
-	if (newDName == null || newDName== "" || newDDesc = null || newDDesc = "") return;
-	var fld = document.forms['task'].<%= GPConstants.FILE_FORMAT %>;
-	var n = fld.options.length;
-	var found = false;
-	for (i = 0; i < n; i++) {
-		if (fld.options[i].text == newDName) {
-			found = true;
-			fld.options.selectedIndex = i;
-			return;
-		}
-	}
-	fld.options[n] = new Option(newDName, newDDesc);
-	fld.options[n].selected = true;
-}
-
-function addNewDomainType(name, desc){
-	var newDName = name;
-	var newDDesc = desc;
-	if (newDName == null || newDName== "" || newDDesc = null || newDDesc = "") return;
-	var fld = document.forms['task'].<%= GPConstants.DOMAIN %>;
-	var n = fld.options.length;
-	var found = false;
-	for (i = 0; i < n; i++) {
-		if (fld.options[i].text == newDName) {
-			found = true;
-			fld.options.selectedIndex = i;
-			return;
-		}
-	}
-	fld.options[n] = new Option(newDName, newDDesc);
-	fld.options[n].selected = true;
-}
-
 function prototypeDoc() {
 	var frm = document.forms['task'];
 	var oldTarget = frm.target;
@@ -252,7 +215,6 @@ HashMap hmLSIDsWithoutVersions = new HashMap();
 Vector vVersions = new Vector();
 LSID l = null;
 String thisLSIDNoVersion = "";
-System.out.println("tia=" + tia);
 if (tia != null) {
 	try {
 		lsid = tia.get(GPConstants.LSID);
@@ -263,16 +225,18 @@ if (tia != null) {
 
 	String authorityType = null;
 
-	TreeMap tmDomains = new TreeMap();
-	TreeMap tmFileFormats = new TreeMap();
+	TreeMap tmFileFormats = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 	tmFileFormats.put("", "");
+	TreeMap tmDomains = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 	tmDomains.put("", "");
+/*
 	tmFileFormats.put("res", "res");
 	tmFileFormats.put("odf", "odf");
 	tmFileFormats.put("gct", "gct");
-	tmDomains.put("gene", "gene");
-	tmDomains.put("protien", "protien");
 
+	tmDomains.put("gene", "gene");
+	tmDomains.put("protein", "protein");
+*/
 	int DOMAIN_PARAM_OFFSET = -1;
 	for (int j = 0; j < GPConstants.PARAM_INFO_ATTRIBUTES.length; j++) {
 		if (GPConstants.PARAM_INFO_ATTRIBUTES[j] == GPConstants.PARAM_INFO_DOMAIN) {
@@ -287,6 +251,57 @@ if (tia != null) {
 			break;
 		}
 	}
+
+%>
+<script language="javascript">
+function addNewFileType(name, desc){
+	if (name == null || name == "") return;
+	if (desc == "") desc = name;
+	var frm = document.forms['task'];
+	var fld = frm.<%= GPConstants.FILE_FORMAT %>;
+	var n = fld.options.length;
+	var found = false;
+	for (i = 0; i < n; i++) {
+		if (fld.options[i].text == name) {
+			fld.options[i].selected = true;
+			found = true;
+			break;
+		}
+	}
+	if (!found) {
+		fld.options[n] = new Option(name, desc, true, true);
+		for (i = 0; i < <%= GPConstants.MAX_PARAMETERS %>; i++) {
+			fld = frm["p" + i + "_<%= GPConstants.FILE_FORMAT %>"];
+			fld.options[fld.options.length] = new Option(name, desc);
+		}
+	}
+}
+
+function addNewDomainType(name, desc){
+	if (name == null || name == "") return;
+	if (desc == "") desc = name;
+	var frm = document.forms['task'];
+	var fld = frm.<%= GPConstants.DOMAIN %>;
+	var n = fld.options.length;
+	var found = false;
+	for (i = 0; i < n; i++) {
+		if (fld.options[i].text == name) {
+			found = true;
+			fld.options[i].selected = true;
+			break;
+		}
+	}
+	if (!found) {
+		fld.options[n] = new Option(name, desc, true, true);
+		for (i = 0; i < <%= GPConstants.MAX_PARAMETERS %>; i++) {
+			fld = frm["p" + i + "_<%= GPConstants.DOMAIN %>"];
+			fld.options[fld.options.length] = new Option(name, desc);
+		}
+	}
+}
+</script>
+
+<%
 
 	for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 		TaskInfo ti = (TaskInfo)itTasks.next();
@@ -609,29 +624,68 @@ if (taskName != null) {
    </tr>
 
    <tr>
-   <td><b>output description</b></td>
+   <td align="right" valign="top"><b>output description:</b></td>
    <td>
 	<table>
 	<tr>
 	<td valign="top">
+		output file format(s):
+	</td>
+	<td valign="top">	
+<%
+		attributeValue = tia.get(GPConstants.FILE_FORMAT);
+		if (attributeValue == null) attributeValue = "";
+%>
+<% if (!viewOnly) { %>
+		<select multiple name="<%= GPConstants.FILE_FORMAT %>">
+<%
+	{
+		String[] file_formats = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+		String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[FILE_FORMAT_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
+		for(Iterator itChoices = tmFileFormats.values().iterator(); itChoices.hasNext(); ) {
+			String c = (String)itChoices.next();
+			boolean isSelected = false;
+			for (i = 0; i < file_formats.length; i++) {
+				if (c.equals(file_formats[i])) {
+					isSelected = true;
+					break;
+				}
+			}
+			out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + GenePatternAnalysisTask.htmlEncode(c) + "</option>");
+		}
+	}
+%>
+		</select>
+<% } else { %>
+		<%= attributeValue %>
+<% } %>
+	</td>
+  <% if (!viewOnly) { %>
+  	<td valign="top">         
+	 <input type="button" onclick="window.open('newFileType.html', 'newFileType', 'width=200,height=200').focus()" value="new..." class="little">
+  	</td>
+   <% }%>
+	<td valign="top">
 	domain(s):
 	</td>
 	<td valign="top">
+<%
+		attributeValue = tia.get(GPConstants.DOMAIN);
+		if (attributeValue == null) attributeValue = "";
+%>
+  <% if (!viewOnly) { %>
 	<select multiple name="<%= GPConstants.DOMAIN %>">
 <%
 	{
-		attributeValue = tia.get(GPConstants.DOMAIN);
-
-		if (attributeValue == null) attributeValue = "";
 		String[] taskDomains = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 		String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[DOMAIN_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
 		//the first (0) is a blank
 
-		System.out.println("domain offset: " + DOMAIN_PARAM_OFFSET);
+		//System.out.println("domain offset: " + DOMAIN_PARAM_OFFSET);
 		for(Iterator itChoices = tmDomains.values().iterator(); itChoices.hasNext(); ) {
 			String c = (String)itChoices.next();
 			boolean isSelected = false;
-			for (i = DOMAIN_PARAM_OFFSET; i < taskDomains.length; i++) {
+			for (i = 0; i < taskDomains.length; i++) {
 				if (c.equals(taskDomains[i])) {
 					isSelected = true;
 					break;
@@ -643,43 +697,15 @@ if (taskName != null) {
 	}
 %>
 	</select>
+<% } else { %>
+		<%= attributeValue %>
+<% } %>
 	</td>
   <% if (!viewOnly) { %>
   	<td valign="top">         
-	 <input type="button" onclick="window.open('newDomain.html', 'newDomain', 'width=200,height=200')"  value="new..." class="little">
+	 <input type="button" onclick="javascript:window.open('newDomain.html', 'newDomain', 'width=200,height=200').focus()"  value="new..." class="little">
   	</td>
   <% } %>
-	<td valign="top">
-		output file format(s):
-	</td>
-	<td valign="top">	
-		<select multiple name="<%= GPConstants.FILE_FORMAT %>">
-<%
-	{
-		attributeValue = tia.get(GPConstants.FILE_FORMAT);
-		if (attributeValue == null) attributeValue = "";
-		String[] file_formats = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-		String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[FILE_FORMAT_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
-		for (int choice = 1; choice < choices.length; choice++) { 
-			String c = choices[choice][1];
-			boolean isSelected = false;
-			for (i = 0; i < file_formats.length; i++) {
-				if (c.equals(file_formats[i])) {
-					isSelected = true;
-					break;
-				}
-			}
-			out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + GenePatternAnalysisTask.htmlEncode(choices[choice][0]) + "</option>");
-		}
-	}
-%>
-		</select>
-	</td>
-  <% if (!viewOnly) { %>
-  	<td valign="top">         
-	 <input type="button" onclick="window.open('newFileType.html', 'newFileType', , 'width=200,height=200')" value="new..." class="little">
-  	</td>
-   <% }%>
 	</tr>
 	</table>
 
@@ -778,7 +804,7 @@ if (taskName != null) {
 </td></tr>
 <div id="parameters" style="display: none">
 -->
-<%= createParameterEntries(NUM_PARAMETERS, NUM_EXTRA_PARAMETERS, parameterInfoArray, taskInfo, viewOnly) %>
+<%= createParameterEntries(NUM_PARAMETERS, GPConstants.MAX_PARAMETERS, parameterInfoArray, taskInfo, viewOnly) %>
 
 <tr><td></td></tr>
 <tr><td colspan="3" align="center">
@@ -925,15 +951,15 @@ for (int i = from; i < to; i++) {
 			choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
 			boolean multiple = (GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum].length > GPConstants.PARAM_INFO_CHOICE_TYPES_MULTIPLE_OFFSET);
 			if (!viewOnly) {
-				out.append("<select name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple size=\"1\"" : "") + ">\n");
+				out.append("<select name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple" : "") + ">\n");
 				for (int choice = 0; choice < choices.length; choice++) { 
-					out.append("<option value=\"" + choices[choice][1] + "\"" + (choices[choice][1].equals(attributeValue) ? " selected" : "") + ">" + GenePatternAnalysisTask.htmlEncode(choices[choice][0]) + "</option>\n");
+					out.append("<option value=\"" + choices[choice][PARAM_INFO_TYPE_OFFSET] + "\"" + (choices[choice][PARAM_INFO_TYPE_OFFSET].equals(attributeValue) ? " selected" : "") + ">" + GenePatternAnalysisTask.htmlEncode(choices[choice][0]) + "</option>\n");
 				}
 				out.append("</select>\n");
 			} else {
 				for (int choice = 0; choice < choices.length; choice++) { 
 				    if (choices[choice][1].equals(attributeValue)) {
-					out.append(GenePatternAnalysisTask.htmlEncode(choices[choice][0]));
+					out.append(GenePatternAnalysisTask.htmlEncode(choices[choice][PARAM_INFO_NAME_OFFSET]));
 				    }
 				}
 			}
