@@ -61,7 +61,7 @@ public class Analysis extends GenericWebService {
 			protected String getUserName() {
 				return getUsernameFromContext();
 			}
-		}.getLatestTasksByName();
+		}.getLatestTasks();
 	}
 
     /**
