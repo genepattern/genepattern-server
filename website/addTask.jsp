@@ -404,7 +404,7 @@ if (tia != null) {
 
 <form name="task" action="saveTask.jsp" method="post" ENCTYPE="multipart/form-data">
 <input type="hidden" name="<%= GPConstants.FORMER_NAME %>" value="<%= taskInfo != null ? taskInfo.getName() : "" %>">
-<input type="hidden" name="<%= GPConstants.CLASSNAME %>" value="<%= taskInfo != null ? taskInfo.getTaskClassName() : "org.genepattern.server.genepattern.GenePatternAnalysisTask" %>">
+
 
 Please enter the following information to submit a new or updated analysis task to GenePattern.
 &nbsp;&nbsp;<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="button">
