@@ -43,11 +43,10 @@ public class AddNewJobHandler extends RequestHandler {
 	 *            String
 	 */
 	public AddNewJobHandler(int taskID, String userID,
-			ParameterInfo[] parameterInfoArray, String inputFileName) {
+			ParameterInfo[] parameterInfoArray) {
 		this.taskID = taskID;
 		this.userID = userID;
 		this.parameterInfoArray = parameterInfoArray;
-		this.inputFileName = inputFileName;
 	}
 
 	/**
@@ -68,7 +67,7 @@ public class AddNewJobHandler extends RequestHandler {
 			AnalysisJobDataSource ds = BeanReference
 					.getAnalysisJobDataSourceEJB();
 			//Invoke EJB function
-			ji = ds.addNewJob(taskID, userID, parameter_info, inputFileName);
+			ji = ds.addNewJob(taskID, userID, parameter_info);
 			//Checking for null
 			if (ji == null)
 				throw new OmnigeneException(
@@ -95,22 +94,5 @@ public class AddNewJobHandler extends RequestHandler {
 
 		return ji;
 	}
-
-	public static void main(String args[]) {
-		ParameterInfo[] parameterArray = new ParameterInfo[] { new ParameterInfo(
-				"-p", "1000", "description") };
-		AddNewJobHandler arequest = new AddNewJobHandler(1, "omnigene_user",
-				parameterArray, "filename");
-		try {
-			JobInfo ji = arequest.executeRequest();
-
-			System.out.println("Execute Result " + ji.getJobNumber()
-					+ ji.getParameterInfo());
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 }
 
