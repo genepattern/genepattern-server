@@ -143,14 +143,16 @@ public class RunTask {
             }
             try {
                AnalysisWebServiceProxy serviceProxy = new AnalysisWebServiceProxy(server, username);
+               
                if (TaskLauncher.isVisualizer(analysisService)) {
                   TaskLauncher.submitVisualizer(analysisService,
-                        actualParams, username, serviceProxy);
+                        copyParameterInfo(actualParams), username, serviceProxy);
                } else {
                   TaskLauncher.submitAndWaitUntilCompletionInNewThread(
-                        actualParams, serviceProxy, analysisService);
+                        copyParameterInfo(actualParams), serviceProxy, analysisService);
                }
             } catch (WebServiceException wse) {
+               wse.printStackTrace();
                if(!GenePattern.disconnectedFromServer(wse, server)) {
                   GenePattern.showErrorDialog("An error occurred while running " +  analysisService.getTaskInfo().getName()); 
                }
@@ -176,5 +178,13 @@ public class RunTask {
 			
 		}
 	}
+   
+   private static ParameterInfo[] copyParameterInfo(ParameterInfo[] p) {
+      ParameterInfo[] c = new ParameterInfo[p.length];
+      for(int i = 0; i < p.length; i++) {
+         c[i] = org.genepattern.gpge.ui.maindisplay.MainFrame.copyParameterInfo(p[i]);  
+      }
+      return c;
+   }
 
 }
