@@ -18,11 +18,7 @@ public class JobInfo implements Serializable {
 
 	private String status = "";
 
-	private String inputFileName = "";
-
-	private ParameterInfo[] parameterInfoArray = null;
-
-	private String resultFileName = "";
+	private ParameterInfo[] parameterInfoArray = null;	
 
 	private Date submittedDate = null;
 
@@ -30,10 +26,12 @@ public class JobInfo implements Serializable {
 
 	private String userId = null;
 
+   
 	public JobInfo() {
 		parameterInfoArray = new ParameterInfo[0];
 	}
-
+   
+   
 	/**
 	 * @param jobNo
 	 * @param taskID
@@ -54,6 +52,21 @@ public class JobInfo implements Serializable {
 		this.parameterInfoArray = parameters;
 		this.userId = userId;
 	}
+   
+   /**
+	 * @param jobNo
+	 * @param taskID
+	 * @param parameters
+	 * @param user_id
+	 */
+	public JobInfo(int jobNo, int taskID, ParameterInfo[] parameters,
+			String user_id) {
+		this.jobNo = jobNo;
+		this.taskID = taskID;
+		this.parameterInfoArray = parameters;
+		this.userId = user_id;
+	}
+   
 
 	/**
 	 * Removes all parameters with the given name.
@@ -81,19 +94,6 @@ public class JobInfo implements Serializable {
 
 	}
 
-	/**
-	 * @param jobNo
-	 * @param taskID
-	 * @param parameters
-	 * @param user_id
-	 */
-	public JobInfo(int jobNo, int taskID, ParameterInfo[] parameters,
-			String user_id) {
-		this.jobNo = jobNo;
-		this.taskID = taskID;
-		this.parameterInfoArray = parameters;
-		this.userId = user_id;
-	}
 
 	/**
 	 * @return jobNo
@@ -166,22 +166,6 @@ public class JobInfo implements Serializable {
 	}
 
 	/**
-	 * @return inputFileName
-	 * @deprecated
-	 */
-	public String getInputFileName() {
-		return inputFileName;
-	}
-
-	/**
-	 * @param inputFileName
-	 * @deprecated
-	 */
-	public void setInputFileName(String inputFileName) {
-		this.inputFileName = inputFileName;
-	}
-
-	/**
 	 * get parameter info jaxb string
 	 * 
 	 * @return parameter_info
@@ -230,21 +214,6 @@ public class JobInfo implements Serializable {
 		this.parameterInfoArray = params;
 	}
 
-	/**
-	 * @return resultFileName
-	 * @deprecated
-	 */
-	public String getResultFileName() {
-		return resultFileName;
-	}
-
-	/**
-	 * @param resultFileName
-	 * @deprecated
-	 */
-	public void setResultFileName(String resultFileName) {
-		this.resultFileName = resultFileName;
-	}
 
 	/**
 	 * Checks to see if the JobInfo contains a input file parameter field
@@ -291,8 +260,7 @@ public class JobInfo implements Serializable {
 	/** standard method */
 	public String toString() {
 		return "JobInfo[jobNo=" + jobNo + " taskID=" + taskID + " status="
-				+ status + " inputFileName=" + inputFileName
-				+ " resultFileName=" + resultFileName + " submittedDate="
+				+ status +  " submittedDate="
 				+ submittedDate + " completedDate=" + completedDate
 				+ " userId=" + userId + " parameterInfoArray="
 				+ parameterInfoArray + "]";
