@@ -3190,7 +3190,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		}
 
 		if (jobStatus < JobStatus.JOB_NOT_STARTED)
-			jobStatus = ((Integer) JobStatus.statusHash
+			jobStatus = ((Integer) JobStatus.STATUS_MAP
 					.get(jobInfo.getStatus())).intValue();
 		ds.updateJob(jobNumber, jobInfo.getParameterInfo(), jobStatus);
 	}
