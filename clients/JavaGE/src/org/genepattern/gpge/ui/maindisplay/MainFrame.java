@@ -161,7 +161,7 @@ public class MainFrame extends JFrame {
 
 		Thread changeStatusThread = new Thread() {
 			public void run() {
-				messageLabel.setText("Connected to " + server + " as user "
+				messageLabel.setText("Server: " + server + " Username "
 						+ username);
 			}
 		};
@@ -341,11 +341,11 @@ public class MainFrame extends JFrame {
 		String username = GPpropertiesManager
 				.getProperty(PreferenceKeys.USER_NAME);
 
-		if (username == null) {
-			username = "";
+		if (username == null || username.trim().equals("")) {
+			username = "anonymous";
 		}
 		String server = GPpropertiesManager.getProperty(PreferenceKeys.SERVER);
-		if (server == null) {
+		if (server == null || server.equals("")) {
 			try {
 				Properties omnigeneProps = org.genepattern.util.PropertyFactory
 						.getInstance().getProperties("omnigene.properties");
