@@ -123,7 +123,7 @@
    </target>
 
 
-	<target name="gp-library" depends="website">
+	<target name="gp-library" depends="init">
 		<javac classpathref="library.classpath" debug="true" destdir="build" target="1.4">
 			<src path="src/org/genepattern/"/>
 			<include name="org/genepattern/client/**"/>
