@@ -620,7 +620,7 @@ public class MainFrame extends JFrame {
             if(params!=null) {
                for(int i = 0; i <  params.length; i++) {
                   if(params[i].isOutputFile()) {
-                     if(params[i].getValue().equals(jobNumber + "/stderr") || params[i].getValue().equals(jobNumber + "\\stderr")) {
+                     if(params[i].getValue().equals(jobNumber + "/stderr.txt") || params[i].getValue().equals(jobNumber + "\\stderr.txt")) {
                         stderrIndex = i;
                         break;  
                      }
@@ -630,7 +630,7 @@ public class MainFrame extends JFrame {
             if(stderrIndex >= 0) {
                File stderrFile = null;
                try {
-                  stderrFile = File.createTempFile("stderr", null);
+                  stderrFile = File.createTempFile("stderr.txt", null);
                   JobModel.downloadJobResultFile(job, stderrIndex, stderrFile);
                   GenePattern.showError(GenePattern.getDialogParent(), fileToString(stderrFile));  
                } catch(IOException ioe) {
