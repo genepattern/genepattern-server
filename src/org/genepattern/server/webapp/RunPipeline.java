@@ -395,14 +395,10 @@ semantic_search_loop:
 	// TODO: Nada's file analyzer gets integrated here.
 	public static boolean isFileType(String filename, String fileFormat) {
 		//ODF
-		if (filename.endsWith(GPConstants.ODF)) 
-		{	
-		String ODFModel = ODFModelType(filename);
-		if(ODFModel.equalsIgnoreCase(fileFormat))
-			return true;
+		if (filename.endsWith(GPConstants.ODF)) {	
+			return ODFModelType(filename).equalsIgnoreCase(fileFormat);
 		}
-		
-		return false;			
+		return filename.toLowerCase().endsWith("." + fileFormat.toLowerCase());
 
 	}
 
