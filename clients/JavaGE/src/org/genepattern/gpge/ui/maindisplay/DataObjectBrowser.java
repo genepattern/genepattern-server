@@ -157,7 +157,7 @@ try {
 				 String site_name = prop.getProperty("analysis.service.site.name");
 			 
 				 TaskInfo task = new org.genepattern.webservice.AdminProxy(site_name, username, false).getTask(lsidOrTaskName); // old servers don't have this method
-				 service = new AnalysisService(site_name, site_name + "/gp/servlet/AxisServlet", task);
+				 service = new AnalysisService(site_name, task);
 			 } catch(Throwable t){}
 		 }
 		 return service;
@@ -283,7 +283,7 @@ try {
 		}
 		TaskInfo taskCopy = new TaskInfo(task.getID(), task.getName(), task.getDescription(),task.getParameterInfo(),task.getTaskClassName(), task.giveTaskInfoAttributes(),task.getUserId(), task.getAccessId());
 		taskCopy.setParameterInfoArray((ParameterInfo[])actualParams.toArray(new ParameterInfo[0]));
-		AnalysisService serviceCopy = new AnalysisService(service.getName(), service.getURL(), taskCopy);
+		AnalysisService serviceCopy = new AnalysisService(service.getServer(), taskCopy);
 		myAnalysisPanel.loadTask(serviceCopy);	
 		card.show(server_panel, task_id);
 		System.out.println("actualParams " + actualParams);

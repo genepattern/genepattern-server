@@ -17,7 +17,6 @@ import org.genepattern.webservice.WebServiceException;
 public class AnalysisServiceManager {
    private String server;
    private String username;
-   private String axisServletURL;
    private Map lsidOrTaskName2AnalysisService;
 
 
@@ -30,7 +29,6 @@ public class AnalysisServiceManager {
     */
    public AnalysisServiceManager(String server, String username) {
       this.server = server;
-      this.axisServletURL = server + "/gp/servlet/AxisServlet";
       this.username = username;
    }
 
@@ -43,13 +41,18 @@ public class AnalysisServiceManager {
     */
    public void refresh() throws WebServiceException {
       lsidOrTaskName2AnalysisService = new HashMap();
-
-      TaskInfo[] tasks = new AnalysisWebServiceProxy(axisServletURL, username, "").getTasks();
-      for(int i = 0; i < tasks.length; i++) {
-         TaskInfo task = tasks[i];
-         String lsid = (String) task.getTaskInfoAttributes().get(GPConstants.LSID);
-         String lsidOrTaskName = lsid != null ? lsid : task.getName();
-         lsidOrTaskName2AnalysisService.put(lsidOrTaskName, new AnalysisService(server, axisServletURL, task));
+      try {
+         TaskInfo[] tasks = new AnalysisWebServiceProxy(server, username).getTasks();
+         for(int i = 0; i < tasks.length; i++) {
+            TaskInfo task = tasks[i];
+            String lsid = (String) task.getTaskInfoAttributes().get(GPConstants.LSID);
+            String lsidOrTaskName = lsid != null ? lsid : task.getName();
+            lsidOrTaskName2AnalysisService.put(lsidOrTaskName, new AnalysisService(server, task));
+         }
+      } catch(java.net.MalformedURLException me) {
+         throw new WebServiceException(me);
+      } catch(org.apache.axis.AxisFault af) {
+         throw new WebServiceException(af);
       }
 
    }
@@ -101,7 +104,7 @@ public class AnalysisServiceManager {
       if(service == null) {
          try {
             TaskInfo task = new org.genepattern.webservice.AdminProxy(server, username, false).getTask(lsidOrTaskName);// old servers don't have this method
-            service = new AnalysisService(server, axisServletURL, task);
+            service = new AnalysisService(server, task);
          } catch(Throwable t) {
             t.printStackTrace();
          }

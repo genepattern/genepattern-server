@@ -41,7 +41,7 @@ public class MatlabGPClient extends GPServer {
 					taskId = tasks[i].getName();
 				}
 
-				services.put(taskId, new AnalysisService(server, axisServletURL, tasks[i]));
+				services.put(taskId, new AnalysisService(server, tasks[i]));
 			}
 			return services;
 		} catch(Exception e) {
@@ -62,7 +62,7 @@ public class MatlabGPClient extends GPServer {
 				if(taskId==null) {
 					taskId = tasks[i].getName();
 				}
-				services.put(taskId, new AnalysisService(server, axisServletURL, tasks[i]));
+				services.put(taskId, new AnalysisService(server, tasks[i]));
 			}
 			return services;
 		} catch(Exception e) {
