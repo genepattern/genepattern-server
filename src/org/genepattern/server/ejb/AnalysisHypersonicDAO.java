@@ -502,10 +502,7 @@ public class AnalysisHypersonicDAO implements
 			closeConnection(null, stat, conn);
 		}
    }
-   	private static Logger _cat = Logger
-			.getLogger("edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask");
 
-         
 	public JobInfo[] getJobs(String username, int startIndex, int maxEntries, boolean allJobs) throws OmnigeneException,
 			RemoteException {
 		java.util.List results = new java.util.ArrayList();
@@ -521,7 +518,7 @@ public class AnalysisHypersonicDAO implements
             sql += " AND deleted IS FALSE";
          }
          sql += " ORDER BY date_completed";
-         _cat.info(sql);
+        
 			stat = conn
 					.prepareStatement(sql);
 
