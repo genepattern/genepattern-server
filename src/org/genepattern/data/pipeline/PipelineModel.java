@@ -551,12 +551,14 @@ public class PipelineModel implements Serializable {
 				taskInfo = GenePatternAnalysisTask.getTaskInfo(
 						(lsid.length() > 0 ? lsid : taskName), getUserID());
 			} catch (Throwable t) {
+
 			} // old pipelines don't have hsqldb.jar on classpath
 			if (taskInfo == null) {
 				//System.out.println("No such task: " + (lsid.length() > 0 ?
 				// lsid : taskName));
 				//throw new Exception("No such task: " + (lsid.length() > 0 ?
 				// lsid : taskName));
+
 			}
 		}
 
@@ -572,13 +574,18 @@ public class PipelineModel implements Serializable {
 		for (int i = 0; i < task.getLength(); i++)
 			orderedParams.add(null);
 
+
+		int idx = -1;
+
 		while (task.getLength() > 0) {
-			int idx = 0;
+				
 			paramName = ((Attr) task.item(0)).getName();
+
 			if (taskInfo == null) {
 				pi = new ParameterInfo(paramName, "", "");
 				pi.setAttributes(new HashMap());
-				idx = 0;
+				//idx = 0;
+				idx++;
 			} else {
 				for (int p = 0; formalParameters != null
 						&& p < formalParameters.length; p++) {
@@ -609,8 +616,8 @@ public class PipelineModel implements Serializable {
 							pi.getAttributes().remove(ParameterInfo.TYPE);
 						}
 					}
-					//System.out.println(pi.getName() + "=" + pi.toString());
 					pi.setValue(value);
+					//System.out.println("" + idx + ". " + pi.getName() + "=" + pi.toString());
 					//job.addParameter(pi);
 					orderedParams.set(idx, pi);
 
