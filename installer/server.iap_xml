@@ -10963,7 +10963,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>true</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[C:\projects\genepattern\build\Web_Installers]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$\build\Web_Installers]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
