@@ -22,6 +22,7 @@ import org.genepattern.gpge.ui.tasks.*;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.*;
 import org.genepattern.gpge.ui.treetable.*;
+import org.genepattern.gpge.ui.table.*;
 
 /**
  * Job model
@@ -38,7 +39,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 	RootNode root = new RootNode();
    
-   private Comparator comparator = new TaskNameComparator(false);
+   private Comparator comparator = new JobNodeComparatorWrapper("org.genepattern.gpge.ui.tasks.JobModel$TaskNameComparator", false);
    private int sortColumn = 0;
    
 	private JobModel() {
@@ -53,6 +54,10 @@ public class JobModel extends AbstractSortableTreeTableModel {
        return getJobCreationJobNumber(((JobNode)node.getParent()).job, node.index);
    }
     
+   public static boolean isComplete(AnalysisJob job) {
+       return job.getJobInfo().getStatus().equals(JobStatus.FINISHED) || job.getJobInfo().getStatus().equals(JobStatus.ERROR);   
+   }
+   
    public static String getJobResultFileName(AnalysisJob job, int parameterInfoIndex) {
        String fileName = job.getJobInfo().getParameterInfoArray()[parameterInfoIndex].getValue();
       int index1 = fileName.lastIndexOf('/');
@@ -275,9 +280,9 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		boolean ascending = e.isAscending();
 		sortColumn = column;
 		if (column == 0) {
-        comparator = new TaskNameComparator(ascending);
+        comparator = new JobNodeComparatorWrapper("org.genepattern.gpge.ui.tasks.JobModel$TaskNameComparator", ascending);
 		} else {
-         comparator = new TaskDateComparator(ascending);
+         comparator = new JobNodeComparatorWrapper("org.genepattern.gpge.ui.tasks.JobModel$TaskCompletedDateComparator", ascending);
 		}
       List children = root.getChildren();
       if (children != null) {
@@ -513,6 +518,11 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		}
 
 	}
+   
+   public static String jobToString(AnalysisJob job) {
+      return job.getTaskName() + " (" + job.getJobInfo().getJobNumber()
+					+ ")";
+   }
 
 	/**
 	 * Description of the Class
@@ -534,8 +544,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		}
 
 		public String toString() {
-			return job.getTaskName() + " (" + job.getJobInfo().getJobNumber()
-					+ ")";
+			return jobToString(job);
 		}
 
 		public int getOutputFiles() {
@@ -581,46 +590,92 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 	}
 
-	private static class TaskDateComparator implements Comparator {
+   private static class JobNodeComparatorWrapper implements Comparator {
+		
+      Comparator c;
+      
+		public JobNodeComparatorWrapper(String className, boolean ascending) {
+         try {
+            c = (Comparator) Class.forName(className).getDeclaredConstructor(new Class[]{boolean.class}).newInstance(new Object[]{new Boolean(ascending)});
+         } catch(Exception e) {
+            e.printStackTrace();  
+         }
+		}
+      
+     
+		public int compare(Object obj1, Object obj2) {
+         JobNode node1 = (JobNode) obj1;
+         JobNode node2 = (JobNode) obj2;
+         return c.compare(node1.job, node2.job);
+			
+		}
+			
+	}
+   
+   public static class TaskSubmittedDateComparator implements Comparator {
 		boolean ascending;
-
-		public TaskDateComparator(boolean ascending) {
+      
+		public TaskSubmittedDateComparator(boolean ascending) {
 			this.ascending = ascending;
 		}
-
+      
 		public int compare(Object obj1, Object obj2) {
-			JobNode node1 = null;
-			JobNode node2 = null;
+			AnalysisJob job1 = null;
+			AnalysisJob job2 = null;
 			if (ascending) {
-				node1 = (JobNode) obj1;
-				node2 = (JobNode) obj2;
+				job1 = (AnalysisJob) obj1;
+				job2 = (AnalysisJob) obj2;
 			} else {
-				node1 = (JobNode) obj2;
-				node2 = (JobNode) obj1;
+				job1 = (AnalysisJob) obj2;
+				job2 = (AnalysisJob) obj1;
 			}
 
-			if (!node1.complete && !node2.complete) {
-				return 0;//node1.job.getJobInfo().getDateSubmitted().compareTo(node2.job.getJobInfo().getDateSubmitted());
-			}
-			if (node1.complete && !node2.complete) {
-				return 1;
-			}
-			if (!node1.complete && node2.complete) {
-				return -1;
-			}
-			return node1.job.getJobInfo().getDateCompleted().compareTo(
-					node2.job.getJobInfo().getDateCompleted());
+			
+			return job1.getJobInfo().getDateSubmitted().compareTo(
+			   job2.getJobInfo().getDateSubmitted());
 		}
 
-		public boolean equals(Object obj1, Object obj2) {
-			JobNode node1 = (JobNode) obj1;
-			JobNode node2 = (JobNode) obj2;
-			return node1.job.getJobInfo().getDateCompleted().equals(
-					node2.job.getJobInfo().getDateCompleted());
+	}
+
+   
+	public static class TaskCompletedDateComparator implements Comparator {
+		boolean ascending;
+      
+		public TaskCompletedDateComparator(boolean ascending) {
+			this.ascending = ascending;
+		}
+      
+     
+		public int compare(Object obj1, Object obj2) {
+			AnalysisJob job1 = null;
+			AnalysisJob job2 = null;
+			if (ascending) {
+				job1 = (AnalysisJob) obj1;
+				job2 = (AnalysisJob) obj2;
+			} else {
+				job1 = (AnalysisJob) obj2;
+				job2 = (AnalysisJob) obj1;
+			}
+         boolean job1Complete = isComplete(job1);
+         boolean job2Complete = isComplete(job2);
+			if (!job1Complete && !job2Complete) {
+				return 0;//node1.job.getJobInfo().getDateSubmitted().compareTo(node2.job.getJobInfo().getDateSubmitted());
+			}
+			if (job1Complete && !job2Complete) {
+				return 1;
+			}
+			if (!job1Complete && job2Complete) {
+				return -1;
+			}
+			return job1.getJobInfo().getDateCompleted().compareTo(
+					job2.getJobInfo().getDateCompleted());
 		}
 	}
 
-	private static class TaskNameComparator implements Comparator {
+   
+      
+      
+	public static class TaskNameComparator implements Comparator {
 		boolean ascending;
 
 		public TaskNameComparator(boolean ascending) {
@@ -628,25 +683,18 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		}
 
 		public int compare(Object obj1, Object obj2) {
-         JobNode node1 = (JobNode) obj1;
-         JobNode node2 = (JobNode) obj2;
-         String job1 = node1.job.getTaskName();
-         String job2 = node2.job.getTaskName();
+         AnalysisJob ajob1 = (AnalysisJob) obj1;
+         AnalysisJob ajob2 = (AnalysisJob) obj2;
+         String job1 = ajob1.getTaskName();
+         String job2 = ajob2.getTaskName();
          if(job1.equals(job2)) {
-            Integer jobNumber1 = new Integer(node1.job.getJobInfo().getJobNumber());
-            Integer jobNumber2 = new Integer(node2.job.getJobInfo().getJobNumber());
+            Integer jobNumber1 = new Integer(ajob1.getJobInfo().getJobNumber());
+            Integer jobNumber2 = new Integer(ajob2.getJobInfo().getJobNumber());
             return ascending ? jobNumber1.compareTo(jobNumber2):jobNumber2.compareTo(jobNumber1);  
          }
 			return ascending ? job1.compareTo(job2): job2.compareTo(job1);
 		}
 
-		public boolean equals(Object obj1, Object obj2) {
-			JobNode node1 = (JobNode) obj1;
-			JobNode node2 = (JobNode) obj2;
-         String job1 = node1.toString();
-         String job2 = node2.toString();
-         return job1.equals(job2);
-		}
 	}
 
 	private static class RootNode extends DefaultMutableTreeNode {
