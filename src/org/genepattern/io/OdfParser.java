@@ -167,7 +167,9 @@ public class OdfParser {
 						.length());
 				key = key.trim();
 				value = value.trim();
-				handler.header(key, value);
+            if(handler!=null) {
+               handler.header(key, value);
+            }
 				if (key.equalsIgnoreCase("model")) {
 					modelFound = true;
 				}
