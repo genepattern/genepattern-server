@@ -189,6 +189,7 @@ public class RunPipeline {
 			return;
 		}
 
+		taskNum = 0;
 		JobInfo results[] = new JobInfo[vTasks.size()];
 		decorator.beforePipelineRuns(model);
 		try {
