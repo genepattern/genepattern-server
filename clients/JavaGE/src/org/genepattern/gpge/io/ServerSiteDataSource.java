@@ -71,10 +71,7 @@ public class ServerSiteDataSource extends GroupDataSource {
 							+ info.containsOutputFileParam());
 					System.out.println("Has input file "
 							+ info.containsInputFileParam());
-					System.out.println("result filename: \""
-							+ info.getResultFileName() + "\"");
-					System.out.println("input filename: \""
-							+ info.getInputFileName() + "\"");
+					
 					updateList();
 				}
 
