@@ -3164,11 +3164,11 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	 *             if thrown by Omnigene
 	 */
 	public static JobInfo createPipelineJob(String userID,
-			String parameter_info, String pipelineName)
+			String parameter_info, String pipelineName, String lsid)
 			throws OmnigeneException, RemoteException {
 		JobInfo jobInfo = getDS()
 				.createTemporaryPipeline(
-						userID, parameter_info, pipelineName);
+						userID, parameter_info, pipelineName, lsid);
 		return jobInfo;
 	}
 

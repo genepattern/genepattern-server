@@ -157,20 +157,20 @@ public class AnalysisHypersonicDAO implements
    }
 
    public JobInfo createPipeline(int pipelineTaskId, String user_id, String parameter_info) throws OmnigeneException, RemoteException {
-      return addNewJob(pipelineTaskId, user_id, parameter_info, null, null);
+      return addNewJob(pipelineTaskId, user_id, parameter_info, null, null, null);
    }
    
    
-   public JobInfo createTemporaryPipeline(String user_id, String parameter_info, String pipelineName) throws OmnigeneException, RemoteException {
-      return addNewJob(UNPROCESSABLE_TASKID, user_id, parameter_info, pipelineName, null);
+   public JobInfo createTemporaryPipeline(String user_id, String parameter_info, String pipelineName, String lsid) throws OmnigeneException, RemoteException {
+      return addNewJob(UNPROCESSABLE_TASKID, user_id, parameter_info, pipelineName, null, lsid);
    }
    
    public JobInfo addNewJob(int taskID, String user_id, String parameter_info) throws OmnigeneException, RemoteException {
-      return addNewJob(taskID, user_id, parameter_info, null, null);
+      return addNewJob(taskID, user_id, parameter_info, null, null, null);
    }
    
    public JobInfo addNewJob(int taskID, String user_id, String parameter_info, int parentJobNumber) throws OmnigeneException, RemoteException {
-      return addNewJob(taskID, user_id, parameter_info, null, new Integer(parentJobNumber));
+      return addNewJob(taskID, user_id, parameter_info, null, new Integer(parentJobNumber), null);
    }
    
 	/**
@@ -185,7 +185,7 @@ public class AnalysisHypersonicDAO implements
 	 * @throws RemoteException
 	 * @return Job ID
 	 */
-	private JobInfo addNewJob(int taskID, String user_id, String parameter_info, String taskName, Integer parentJobNumber) throws OmnigeneException, RemoteException {
+	private JobInfo addNewJob(int taskID, String user_id, String parameter_info, String taskName, Integer parentJobNumber, String task_lsid) throws OmnigeneException, RemoteException {
 		int updatedRecord = 0;
 		JobInfo jobInfo = null;
 
@@ -210,6 +210,8 @@ public class AnalysisHypersonicDAO implements
 				}
 				taskName = resultSet.getString(1);
 				lsid = resultSet.getString(2);
+			} else {
+				if (task_lsid != null) lsid = task_lsid;
 			}
 			//Store submitted job
 			stat = conn

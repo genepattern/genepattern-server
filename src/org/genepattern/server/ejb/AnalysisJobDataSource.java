@@ -87,7 +87,7 @@ public interface AnalysisJobDataSource {
 	 * @throws RemoteException
 	 *             if thrown by Omnigene
 	 */
-   public JobInfo createTemporaryPipeline(String user_id, String parameter_info, String pipelineName) throws OmnigeneException, RemoteException;
+   public JobInfo createTemporaryPipeline(String user_id, String parameter_info, String pipelineName, String lsid) throws OmnigeneException, RemoteException;
    
    
    /**

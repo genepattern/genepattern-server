@@ -357,9 +357,11 @@ public class RunPipelineForJsp {
 	public static Process runPipeline(TaskInfo taskInfo, String name,
 			String baseURL, String decorator, String userID,
 			HashMap commandLineParams) throws Exception {
+		Map tia = taskInfo.getTaskInfoAttributes();
+		String lsid = (String)tia.get(GPConstants.LSID);
 
 		JobInfo jobInfo = GenePatternAnalysisTask.createPipelineJob(userID, "",
-				taskInfo.getName());
+				taskInfo.getName(), lsid);
 		jobID = jobInfo.getJobNumber();
 
 		String pipelineShortName = taskInfo.getName();
