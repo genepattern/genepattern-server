@@ -71,8 +71,12 @@ public class AnalysisServiceUtil {
 			AnalysisService svc = (AnalysisService) it.next();
 			String category = (String) svc.getTaskInfo()
 					.getTaskInfoAttributes().get(GPConstants.TASK_TYPE);
-			category = Character.toUpperCase(category.charAt(0))
+         if(category!=null && !category.equals("")) {
+            category = Character.toUpperCase(category.charAt(0))
 					+ category.substring(1, category.length());
+         } else {
+            category = "Uncategorized";  
+         }
 			List services = (List) categories2Tasks.get(category);
 			if (services == null) {
 				services = new ArrayList();
