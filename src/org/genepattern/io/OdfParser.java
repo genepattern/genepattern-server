@@ -1,6 +1,8 @@
 package org.genepattern.io;
 
+import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
@@ -12,11 +14,10 @@ import java.util.List;
  */
 public class OdfParser {
 	IOdfHandler handler;
-
-	LineReader reader;
-
+	LineNumberReader reader;
 	int dataLines;
-
+   private final static String COMMENT = "#";
+   
 	final static List VERSIONS = Arrays.asList(new String[] { "ODF 1.0",
 			"SDF 1.0" });
 
@@ -37,21 +38,28 @@ public class OdfParser {
 	 * 
 	 * @param is
 	 *            The input stream
-	 * @exception IOException
-	 *                Description of the Exception
 	 * @throws ParseException -
 	 *             Any parse exception, possibly wrapping another exception.
-	 * @throws ParseException -
+	 * @throws IOException -
 	 *             An IO exception from the parser, possibly from a byte stream
 	 *             or character stream supplied by the application.
 	 */
 	public void parse(InputStream is) throws ParseException, IOException {
-		this.reader = new LineReader(is);
-		reader.setComment("#");
+		this.reader = new LineNumberReader(new InputStreamReader(is));
 		parseHeader();
 		parseData();
 	}
 
+   private String readLine() throws IOException {
+      String line = reader.readLine();
+      if(line!=null && line.trim().startsWith(COMMENT)) {
+         return readLine();  
+      } else if(line!=null && line.trim().equals("")) { // skip blank lines
+         return readLine();  
+      }
+      return line;
+   }
+   
 	/**
 	 * Returns <code>true</code> if this parser can claims to be able to
 	 * decode the given stream upon brief examination, <code>false</code>
@@ -65,9 +73,8 @@ public class OdfParser {
 	 */
 	public boolean canDecode(InputStream is) throws IOException {//delete this
 																 // method??
-		this.reader = new LineReader(is);
-		reader.setComment("#");
-		return isSupportedVersion(reader.readLine());
+		this.reader = new LineNumberReader(new InputStreamReader(is));
+		return isSupportedVersion(readLine());
 	}
 
 	void parseData() throws ParseException, IOException {
@@ -76,7 +83,7 @@ public class OdfParser {
 		}
 		// read the 1st line to get the number of columns. Check to make sure
 		// all rows in data block have the same number of rows
-		String line = reader.readLine().trim();// trim b/c old odf writer adds
+		String line = readLine().trim();// trim b/c old odf writer adds
 											   // an extra tab at the end of the
 											   // line
 		String[] tokens = line.split("\t");
@@ -91,7 +98,7 @@ public class OdfParser {
 		int i = 1;// already read 1st row above
 
 		for (; i < dataLines; i++) {
-			line = reader.readLine().trim();// trim b/c old odf writer adds an
+			line = readLine().trim();// trim b/c old odf writer adds an
 											// extra tab at the end of the line
 			if (line == null) {
 				int dataLinesRead = i + 1;
@@ -113,7 +120,7 @@ public class OdfParser {
 		}
 
 		// see if there are extra lines
-		for (String s = reader.readLine(); s != null; s = reader.readLine()) {
+		for (String s = readLine(); s != null; s = readLine()) {
 			if (!s.trim().equals("")) {
 				throw new ParseException("Extra data rows on line "
 						+ reader.getLineNumber() + ".");
@@ -122,7 +129,7 @@ public class OdfParser {
 	}
 
 	void parseHeader() throws ParseException, IOException {
-		String versionLine = reader.readLine();
+		String versionLine = readLine();
 
 		if (!isSupportedVersion(versionLine)) {
 			throw new ParseException("First line must be one of " + VERSIONS);
@@ -130,7 +137,7 @@ public class OdfParser {
 
 		int headerLines = 0;
 		try {
-			headerLines = getIntValue(reader.readLine());
+			headerLines = getIntValue(readLine());
 		} catch (NumberFormatException nfe) {
 			throw new ParseException("Header lines is not a number.");
 		}
@@ -138,7 +145,7 @@ public class OdfParser {
 		boolean dataLinesFound = false;
 
 		for (int i = 0; i < headerLines; i++) {
-			String line = reader.readLine();
+			String line = readLine();
 			int delimitterIndex = 0;
 			int equalsIndex = line.indexOf("=");
 			int semiIndex = line.indexOf(":");
