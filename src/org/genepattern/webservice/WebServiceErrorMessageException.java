@@ -1,7 +1,6 @@
-package org.genepattern.server.webservice;
+package org.genepattern.webservice;
 import java.util.Vector;
 
-import org.genepattern.webservice.WebServiceException;
 
 public class WebServiceErrorMessageException extends WebServiceException {
 	Vector errors;
