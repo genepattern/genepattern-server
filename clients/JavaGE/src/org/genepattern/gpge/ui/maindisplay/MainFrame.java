@@ -117,7 +117,9 @@ public class MainFrame extends JFrame {
 
 	FileMenu fileMenu;
    JMenu windowMenu;
-
+   
+   Map inputTypeToMenuItemsMap;
+   
 	final static int MENU_SHORTCUT_KEY_MASK = Toolkit.getDefaultToolkit()
 			.getMenuShortcutKeyMask();
 
@@ -136,27 +138,36 @@ public class MainFrame extends JFrame {
    public static short windowStyle = System.getProperty("mdi")!=null?WINDOW_STYLE_MDI:WINDOW_STYLE_ONE_FRAME;
    private JMenuBar menuBar;
    Color blue = new Color(51,0,204);
+   
+   // project file actions
    MenuAction projectFileSendToMenu;
    MenuAction projectFileOpenWithMenu;
-
+   MenuAction projectFileViewModulesMenu;
+   
    MenuItemAction projectFileDefaultAppMenuItem;
    MenuItemAction revealFileMenuItem;
+   
+   // project dir actions
    MenuItemAction refreshProjectMenuItem;
    MenuItemAction removeProjectMenuItem;
-
+   
+   // job result actions
    MenuItemAction reloadMenuItem;
    MenuItemAction deleteJobAction;
    MenuItemAction terminateJobAction;
    MenuAction viewCodeAction;
    
+   // job result file actions
    MenuAction jobResultFileSendToMenu;
    MenuAction saveServerFileMenu;
+   MenuAction jobResultFileViewModulesMenu;
    MenuItemAction saveToFileSystemMenuItem;
    MenuItemAction deleteFileMenuItem;
    MenuAction openWithMenu;
    MenuItemAction jobResultFileTextViewerMenuItem;
    MenuItemAction jobResultFileDefaultAppMenuItem;
    MenuItemAction deleteAllJobsAction;
+   
 
 	public static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone
@@ -737,13 +748,21 @@ public class MainFrame extends JFrame {
 
       jobResultsTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
          public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
+            if(!e.isAddedPath()) {
+               return;  
+            }
+            DefaultMutableTreeNode newSelection = null;
             TreePath path = jobResultsTree.getSelectionPath();
             if(path==null) {
-               selectedJobNode = null;
+               newSelection = null;
             } else {
-               selectedJobNode = (DefaultMutableTreeNode) path
+               newSelection = (DefaultMutableTreeNode) path
 						.getLastPathComponent();
             }
+            if(newSelection==null && selectedJobNode==null || ( newSelection!=null && newSelection.equals(selectedJobNode))) {
+               return;  
+            }
+            selectedJobNode = newSelection;
             boolean isJobNode = selectedJobNode instanceof JobModel.JobNode;
             boolean isJobResultFileNode = selectedJobNode instanceof JobModel.ServerFileNode;
 
@@ -751,6 +770,7 @@ public class MainFrame extends JFrame {
             terminateJobAction.setEnabled(isJobNode);
             viewCodeAction.setEnabled(isJobNode);
             reloadMenuItem.setEnabled(isJobNode);
+            jobResultFileViewModulesMenu.setEnabled(false);
             if(isJobNode) {
                JobModel.JobNode node = (JobModel.JobNode) selectedJobNode;
 					deleteJobAction.setEnabled(node.isComplete());
@@ -762,13 +782,22 @@ public class MainFrame extends JFrame {
             saveToFileSystemMenuItem.setEnabled(isJobResultFileNode);
             deleteFileMenuItem.setEnabled(isJobResultFileNode);
             openWithMenu.setEnabled(isJobResultFileNode);
-
+            jobResultFileViewModulesMenu.removeAll();
             if (selectedJobNode instanceof JobModel.ServerFileNode) {
 					JobModel.ServerFileNode node = (JobModel.ServerFileNode) selectedJobNode;
 
 					try {
 						HttpURLConnection connection = (HttpURLConnection) node
 								.getURL().openConnection();
+                  fileSummaryComponent.select(connection, node.name);
+                  MenuItemAction[] mi = (MenuItemAction[]) inputTypeToMenuItemsMap.get(fileSummaryComponent.getSemanticType());
+                  if(mi!=null) {
+                     for(int i = 0; i < mi.length; i++) {
+                        jobResultFileViewModulesMenu.add(mi[i]);
+                     }
+                  }
+                  jobResultFileViewModulesMenu.setEnabled(mi!=null && mi.length > 0);
+                  
 						//if (connection.getResponseCode() == HttpURLConnection.HTTP_GONE) {
                     // JobModel.JobNode jobNode = (JobModel.JobNode) node.getParent();
                      
@@ -780,7 +809,7 @@ public class MainFrame extends JFrame {
 						//	fileSummaryComponent.select(null);
                    //  return;
 						//} else {
-							fileSummaryComponent.select(connection, node.name);
+							
 						//}
 
 					} catch (IOException ioe) {
@@ -857,16 +886,31 @@ public class MainFrame extends JFrame {
 
       projectDirTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
          public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
+            if(!e.isAddedPath()) {
+               return;  
+            }
             TreePath path = projectDirTree.getSelectionPath();
+            
+            DefaultMutableTreeNode newSelection = null;
+            
             if(path==null) {
-               selectedProjectDirNode = null;
+               newSelection = null;
             } else {
-               selectedProjectDirNode = (DefaultMutableTreeNode) path
+               newSelection = (DefaultMutableTreeNode) path
                   .getLastPathComponent();
             }
+          
+            if(newSelection==null && selectedProjectDirNode==null || ( newSelection!=null && newSelection.equals(selectedProjectDirNode))) {
+               return;  
+            }
+            
+            selectedProjectDirNode = newSelection;
+            
             boolean projectNodeSelected = selectedProjectDirNode instanceof ProjectDirModel.ProjectDirNode;
             boolean projectFileSelected = selectedProjectDirNode instanceof ProjectDirModel.FileNode;
 
+            projectFileViewModulesMenu.setEnabled(false);
+            
             projectFileSendToMenu.setEnabled(projectFileSelected&& analysisServicePanel.isShowingAnalysisService());
 
             projectFileOpenWithMenu.setEnabled(projectFileSelected);
@@ -876,15 +920,25 @@ public class MainFrame extends JFrame {
             removeProjectMenuItem.setEnabled(projectNodeSelected);
 
 
-            if (selectedProjectDirNode instanceof ProjectDirModel.FileNode) {
+            if (projectFileSelected) {
 					ProjectDirModel.FileNode node = (ProjectDirModel.FileNode) selectedProjectDirNode;
 					ProjectDirModel.ProjectDirNode parent = (ProjectDirModel.ProjectDirNode) node
 							.getParent();
 					FileInputStream fis = null;
 					File f = null;
+               projectFileViewModulesMenu.removeAll();
 					try {
 						f = new File(parent.directory, node.file.getName());
-						fileSummaryComponent.select(f);
+                  fileSummaryComponent.select(f);
+                  
+                  MenuItemAction[] mi = (MenuItemAction[]) inputTypeToMenuItemsMap.get(fileSummaryComponent.getSemanticType());
+                  if(mi!=null) {
+                     for(int i = 0; i < mi.length; i++) {
+                        projectFileViewModulesMenu.add(mi[i]);
+                     }
+                  }
+                  projectFileViewModulesMenu.setEnabled(mi!=null && mi.length > 0);
+						
 					} catch (IOException ioe) {
                   ioe.printStackTrace();
 						if (!f.exists()) {
@@ -1006,9 +1060,6 @@ public class MainFrame extends JFrame {
 
 
       if(windowStyle==WINDOW_STYLE_ONE_FRAME) {
-
-         Border title =  BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(0,0,0,0), "Projects", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP);
-       //  projectSP.setBorder(title);
 
          JPanel temp = new JPanel(new BorderLayout());
          temp.setBackground(new Color(24,48,115));
@@ -1216,6 +1267,9 @@ public class MainFrame extends JFrame {
    private void createProjectFileActions() {
       projectFileSendToMenu = new MenuAction("Send To", IconManager.loadIcon(IconManager.SEND_TO_ICON));
       projectFileSendToMenu.setEnabled(false);
+      
+      projectFileViewModulesMenu = new MenuAction("Modules");
+      projectFileViewModulesMenu.setEnabled(false);
 
       projectFileOpenWithMenu = new MenuAction("Open With");
       MenuItemAction projectFileTextViewerMenuItem = new MenuItemAction("Text Viewer", IconManager.loadIcon(IconManager.TEXT_ICON)) {
@@ -1466,6 +1520,9 @@ public class MainFrame extends JFrame {
    }
          
    private void createJobResultFileActions() {
+      jobResultFileViewModulesMenu = new MenuAction("Modules");
+      jobResultFileViewModulesMenu.setEnabled(false);
+      
       jobResultFileSendToMenu = new MenuAction("Send To", IconManager.loadIcon(IconManager.SEND_TO_ICON));
       jobResultFileSendToMenu.setEnabled(false);
 
@@ -1592,8 +1649,9 @@ public class MainFrame extends JFrame {
 
 				final Collection latestTasks = analysisServiceManager
 						.getLatestAnalysisServices();
-
-				SwingUtilities.invokeLater(new Thread() {
+            Map inputTypeToModulesMap = SemanticUtil.getInputTypeToModulesMap(latestTasks);
+            inputTypeToMenuItemsMap = SemanticUtil.getInputTypeToMenuItemsMap(inputTypeToModulesMap, analysisServicePanel);
+            SwingUtilities.invokeLater(new Thread() {
 					public void run() {
 						analysisMenu.removeAll();
 						visualizerMenu.removeAll();
@@ -1634,14 +1692,14 @@ public class MainFrame extends JFrame {
       
       MenuAction projectsMenuAction = null;
       if(revealFileMenuItem!=null) {
-         projectsMenuAction = new MenuAction("Projects", new Object[]{refreshProjectMenuItem,  removeProjectMenuItem, new JSeparator(), projectFileSendToMenu, projectFileOpenWithMenu, revealFileMenuItem});
+         projectsMenuAction = new MenuAction("Projects", new Object[]{refreshProjectMenuItem,  removeProjectMenuItem, new JSeparator(), projectFileSendToMenu, projectFileOpenWithMenu, revealFileMenuItem, projectFileViewModulesMenu});
       } else {
-          projectsMenuAction = new MenuAction("Projects", new Object[]{refreshProjectMenuItem,  removeProjectMenuItem, new JSeparator(), projectFileSendToMenu, projectFileOpenWithMenu});
+          projectsMenuAction = new MenuAction("Projects", new Object[]{refreshProjectMenuItem,  removeProjectMenuItem, new JSeparator(), projectFileSendToMenu, projectFileOpenWithMenu, projectFileViewModulesMenu});
       }
 
       menuBar.add(projectsMenuAction.createMenu());
 
-      MenuAction jobResultsMenuAction = new MenuAction("Job Results", new Object[]{reloadMenuItem, deleteJobAction, deleteAllJobsAction, terminateJobAction, viewCodeAction, new JSeparator(), jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu});
+      MenuAction jobResultsMenuAction = new MenuAction("Job Results", new Object[]{reloadMenuItem, deleteJobAction, deleteAllJobsAction, terminateJobAction, viewCodeAction, new JSeparator(), jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu, jobResultFileViewModulesMenu});
 
       menuBar.add(jobResultsMenuAction.createMenu());
 
@@ -1677,13 +1735,13 @@ public class MainFrame extends JFrame {
       MenuAction jobPopupAction = new MenuAction("", new Object[]{reloadMenuItem, deleteJobAction, terminateJobAction, viewCodeAction});
       jobPopupMenu = jobPopupAction.createPopupMenu();
 
-      MenuAction jobResultFilePopupAction = new MenuAction("", new Object[]{jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu});
+      MenuAction jobResultFilePopupAction = new MenuAction("", new Object[]{jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu, jobResultFileViewModulesMenu});
       jobResultFilePopupMenu = jobResultFilePopupAction.createPopupMenu();
 
       MenuAction projectDirPopupMenuAction = new MenuAction("", new Object[]{refreshProjectMenuItem,  removeProjectMenuItem});
       projectDirPopupMenu = projectDirPopupMenuAction.createPopupMenu();
 
-      MenuAction projectFilePopupMenuAction = new MenuAction("", new Object[]{projectFileSendToMenu, projectFileOpenWithMenu, revealFileMenuItem});
+      MenuAction projectFilePopupMenuAction = new MenuAction("", new Object[]{projectFileSendToMenu, projectFileOpenWithMenu, revealFileMenuItem, projectFileViewModulesMenu});
       projectFilePopupMenu = projectFilePopupMenuAction.createPopupMenu();
 	}
 
