@@ -1,5 +1,6 @@
 <%@ page session="false" contentType="text/html" language="Java" 
 		import="java.util.*,
+		org.genepattern.server.util.PropertiesManager, 
 		java.io.*"
 %>
 <%
@@ -9,6 +10,11 @@
 
 	String allowedClients = null;
 	String clientMode= request.getParameter("clientMode");
+	String proxyHost= request.getParameter("proxyHost");
+	String proxyPort= request.getParameter("proxyPort");
+
+System.out.println("Here..." + clientMode + "=" + proxyHost + "=" + proxyPort);
+
 	String ANY= "Any computer";
 	String LOCAL = "This Computer";	
 
@@ -20,38 +26,30 @@
 		allowedClients  = request.getParameter("allowed.clients");
 	}
 
-
-
 	boolean storeSuccess = true;
 	if (allowedClients != null){
-		System.setProperty("gp.allowed.clients", allowedClients);
-	
-		String dir = System.getProperty("genepattern.properties");
-		File propFile = new File(dir, "genepattern.properties");
-		FileInputStream fis = null;
-		FileOutputStream fos = null;
-		Properties props = new Properties();
-		try {
-			fis = new FileInputStream(propFile);
-			props.load(fis);
-			fis.close();
-			fis = null;
-			props.setProperty("gp.allowed.clients", allowedClients);
-			fos = new FileOutputStream(propFile);
-			props.store(fos, "#Genepattern server updated allowed clients list");
-			fos.close();			
-			fos = null;
-		} catch (Exception e){
-			// XXX cannot load/save gp props
-			if (fis != null) fis.close();
-			if (fos != null) fos.close();
-			storeSuccess = false;
-
-		}
-
+		storeSuccess  = PropertiesManager.storeChange("gp.allowed.clients", allowedClients);
 	} 
 	allowedClients = System.getProperty("gp.allowed.clients" );
 	if (allowedClients == null) allowedClients = ANY;
+
+
+	if (proxyHost!= null){
+		storeSuccess  = PropertiesManager.storeChange("http.proxyHost", proxyHost);
+	} 
+	proxyHost= System.getProperty("http.proxyHost" );
+	if (proxyHost== null) proxyHost= "";
+
+
+	if (proxyPort!= null){
+		storeSuccess  = PropertiesManager.storeChange("http.proxyPort", proxyPort);
+	} 
+	proxyPort= System.getProperty("proxyPort" );
+	if (proxyPort== null) proxyPort= "";
+
+
+
+
 	
 
 %>
@@ -85,6 +83,10 @@ function refillField(obj) {
 
 function changeFields(obj){
 	obj.form.submit.disabled=(obj.form.allowed_clients.value == "<%=allowedClients%>")  
+}
+
+function changeProxyFields(obj){
+	obj.form.submitProxy.disabled=((obj.form.proxyHost.value == "<%=proxyHost%>")  && (obj.form.proxyPort.value == "<%=proxyPort%>")) 
 }
 
 </script>
@@ -163,12 +165,7 @@ onclick="refillField(this);"> These Domains <br>
 	if (!(ANY.equals(allowedClients) || LOCAL.equals(allowedClients)) ) displayVal = allowedClients;
 %>
 <input type="text"  name="allowed_clients" size="40" value="<%=displayVal%>" onkeyup="changeFields(this)" >
-<input type="button" name="submit" value="submit" class="button" onclick="this.form.submit()" disabled="true"><br>
-
-
-
-
-
+<input type="submit" name="submit" value="submit" class="button"  disabled="true"><br>
 
 </form>
 </td></tr>
@@ -183,12 +180,33 @@ onclick="refillField(this);"> These Domains <br>
 				<hr noshade size="1">
 			</td>
 		</tr>
+<tr>
+<td align='right'>
+<table>
+<tr><td align='right'>HTTP Proxy Host:</td></tr>
+<tr><td align='right'>HTTP Proxy Port:</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+
+<td>
+<form action="adminServer.jsp" name="proxySettingsForm" method="POST">
+<table>
+<tr><td><input type='text' size='40' name="proxyHost" value='<%=proxyHost%>' onkeyup="changeProxyFields(this)"/></td></tr>
+<tr><td><input type='text' size='40' name="proxyPort" value='<%=proxyPort%>' onkeyup="changeProxyFields(this)"/></td></tr>
+<tr><td><input type="submit" name="submitProxy" value="submit" class="button"  disabled="true"></td></tr>
+</table>
+</form>
+</td>
+</tr>
+<tr>
+			<td colspan="2">
+				<hr noshade size="1">
+			</td>
+		</tr>
 
 <tr>
 			<td valign="middle" al colspan="2">
-<table width="60%><tr><td align="right">
 				<a href="shutdownServer.jsp">Shutdown server</a>
-</td></tr></table>
 			</td>
 		</tr>
 
