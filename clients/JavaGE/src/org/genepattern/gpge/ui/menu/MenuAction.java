@@ -142,18 +142,29 @@ public class MenuAction extends AbstractAction {
 
    
    /**
-    *  Remove an item from this MenuAction and all the JMenu instances that use
-    *  it
+    *  Removes all items from this MenuAction and all the JMenu instances that use it
     */
    public void removeAll() {
       for(int i = 0; i < items.length; i++) {
-         remove((MenuItemAction) items[i]);
-      }   
+         items[i] = null;  
+      }
+      items = new Object[0];
       firePropertyChange("MenuAction.removeAll", null, null);
    }
    
-   public void remove(int i) {
-      remove(items[i]);
+   /**
+    *  Remove an item from this MenuAction and all the JMenu instances that use
+    *  it
+    */
+   public void remove(int index) {
+      int oldLength = items.length;
+      Object[] newItems = new Object[oldLength - 1];
+      System.arraycopy(items, 0, newItems, 0, index);
+      System.arraycopy(items, index + 1,
+            newItems, index,
+            oldLength - index - 1);
+      items = newItems;
+      firePropertyChange("MenuAction.remove", null, new Integer(index));
    }
 
    /**
