@@ -89,10 +89,10 @@ public class MainFrame extends JFrame {
 
 	FileInfoComponent fileSummaryComponent = new FileInfoComponent();
 
-   private static short STYLE_DIALOG = 0;
-   private static short STYLE_FRAME = 1;
-   private static short STYLE_MDI = 2;
-   private short style = STYLE_DIALOG;
+   private static short WINDOW_STYLE_DIALOG = 0;
+   private static short WINDOW_STYLE_FRAME = 1;
+   private static short WINDOW_STYLE_MDI = 2;
+   public short windowStyle = WINDOW_STYLE_MDI;
    
 	private static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone
@@ -1055,7 +1055,7 @@ public class MainFrame extends JFrame {
       int width = (int) (screenSize.width * .9);
       int height = (int) (screenSize.height * .9);
          
-      if(style==STYLE_FRAME) {
+      if(windowStyle==WINDOW_STYLE_FRAME) {
          projectSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Projects", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
          jobSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Jobs", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
          JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
@@ -1074,7 +1074,7 @@ public class MainFrame extends JFrame {
          leftPane.setDividerLocation((int) (height * 0.4));
          splitPane.setDividerLocation((int) (width * 0.4));
          
-      } else if(style==STYLE_DIALOG) {
+      } else if(windowStyle==WINDOW_STYLE_DIALOG) {
          JDialog projectDialog = new JDialog(this, "Projects");
          projectDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
          projectDialog.getContentPane().add(projectSP);
@@ -1101,6 +1101,36 @@ public class MainFrame extends JFrame {
          moduleDialog.setVisible(true);
          setSize(0,0);
          setLocation(-100,-100);
+      } else if(windowStyle==WINDOW_STYLE_MDI) {
+         JInternalFrame projectFrame = new JInternalFrame("Projects", true, false);
+         projectFrame.getContentPane().add(projectSP);
+         int w = (int)(width*0.3);
+         int h = (int)(height*.45);
+         projectFrame.setSize(w, h);
+         projectFrame.setVisible(true);
+         projectFrame.setLocation(10, 10);
+         
+         JInternalFrame jobDialog = new JInternalFrame("Job Results", true, false);
+         jobDialog.getContentPane().add(jobSP);
+         jobDialog.setSize(w, h);
+         jobDialog.setLocation(10, 10 + projectFrame.getHeight());
+         jobDialog.setVisible(true);
+         
+         JInternalFrame moduleDialog = new JInternalFrame("Task Launcher", true, false);
+         moduleDialog.getContentPane().add(analysisServicePanel);
+         w = (int)(width*0.6);
+         h = (int)(height*.9);
+         moduleDialog.setSize(w, h);
+         moduleDialog.setLocation(10 + projectFrame.getWidth(), 10);
+         moduleDialog.setVisible(true);
+         
+         JDesktopPane dp = new JDesktopPane();
+         dp.add(projectFrame);
+         dp.add(jobDialog);
+         dp.add(moduleDialog);
+         setContentPane(dp);
+         setSize(screenSize.width, screenSize.height);
+         setTitle(BuildProperties.PROGRAM_NAME);
       }
       
 		splash.dispose();
