@@ -104,6 +104,9 @@ public class AnalysisServiceManager {
       if(service == null) {
          try {
             TaskInfo task = new org.genepattern.webservice.AdminProxy(server, username, false).getTask(lsidOrTaskName);// old servers don't have this method
+            if(task==null) {
+               return null;  
+            }
             service = new AnalysisService(server, task);
          } catch(Throwable t) {
             t.printStackTrace();
