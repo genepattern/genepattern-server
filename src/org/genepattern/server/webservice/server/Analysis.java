@@ -287,6 +287,29 @@ public class Analysis extends GenericWebService
         return list;
     }
    
+   
+    /**
+    * Deletes the all the input and output files for the given job and removes the job from the stored history.
+    *
+    * @param jobId the job id
+    */
+    public void deleteJob(int jobId) throws WebServiceException {
+       try {
+          File jobDir = new File(org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String.valueOf(jobId)));
+          File[] files = jobDir.listFiles();
+          if(files!=null) {
+             for(int i = 0; i < files.length; i++) {
+                files[i].delete();
+                org.genepattern.server.indexer.Indexer.deleteJobFile(jobId, files[i].getName());
+             }
+          }
+          jobDir.delete();
+          org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference.getAnalysisJobDataSourceEJB();
+          ds.deleteJob(jobId);
+       } catch(Exception e) {
+          throw new WebServiceException(e);
+       }
+    }
     
     /**
     *
@@ -300,7 +323,10 @@ public class Analysis extends GenericWebService
        if (fileNames != null) {
 			for (int j = 0; j < fileNames.length; j++) {
 				String name = fileNames[j];
-				new File(jobDir, name).delete();
+				File file = new File(jobDir, name);
+            if(file.exists()) {
+               file.delete();
+            }
             try {
                 org.genepattern.server.indexer.Indexer.deleteJobFile(jobId, name);
             } catch (IOException ioe) {

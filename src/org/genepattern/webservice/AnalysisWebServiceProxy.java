@@ -337,6 +337,18 @@ public class AnalysisWebServiceProxy
     	}
     }
     
+    public void deleteJob(int jobId) throws WebServiceException {
+        call.setOperationName(new QName("Analysis","deleteJob") );
+        call.removeAllParameters();
+        try {
+    	   call.invoke(new Object[] { new Integer(jobId)});
+    	    
+    	}
+    	catch (java.rmi.RemoteException re) {
+    	    throw new WebServiceException(re.getMessage());
+    	}
+    }
+    
    
     /**
      * Pings the service to see if it's alive.
