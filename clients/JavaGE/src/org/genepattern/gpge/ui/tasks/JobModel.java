@@ -163,6 +163,26 @@ public class JobModel extends AbstractSortableTreeTableModel {
 				new Object[] { serverFile });
 
 	}
+   
+   /**
+	 * Deletes all the jobs from server
+	 * 
+	 */
+	public void deleteAll() throws WebServiceException {
+		List children = root.getChildren();
+      if(children!=null) {
+          AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(
+            AnalysisServiceManager.getInstance().getServer(), AnalysisServiceManager.getInstance().getUsername());
+            
+         for(int i = 0, size = children.size(); i < size; i++) {
+            JobNode node = (JobNode) children.remove(0);
+            JobInfo jobInfo = node.job.getJobInfo();
+            proxy.deleteJob(jobInfo.getJobNumber());
+         }
+      }
+      nodeStructureChanged(root);
+	}
+   
 
 	/**
 	 * Deletes the given file from the server
