@@ -76,6 +76,25 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
       }
    }
    
+   public String getPreferencesString() {
+      List children = root.getChildren();
+      if(children==null) {
+         return null;  
+      }
+      StringBuffer sb = new StringBuffer();
+      for(int i = 0; i < children.size(); i++) {
+         ProjectDirNode node = (ProjectDirNode) children.get(i);
+         if(i > 0) {
+            sb.append(";");  
+         }
+         try {
+            sb.append(node.directory.getCanonicalPath());
+         } catch(java.io.IOException ioe) {  
+         }
+      }
+      return sb.toString();
+   }
+   
    public boolean contains(File projectDir) {
        Vector children = root.getChildren();
        if(children==null) {
@@ -241,7 +260,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 
 
       public String toString() {
-         return directory.getName();
+         return directory.getName() + " (" + directory.getParentFile().getPath() + ")";
       }
 
 
