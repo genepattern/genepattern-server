@@ -4,7 +4,7 @@
 %
 
 % connect to a server
-gp = GenePatternServer('http://localhost:8080')
+gp = GenePatternServer('http://localhost:5050')
 
 %list its available method names
 listMethods(gp)
