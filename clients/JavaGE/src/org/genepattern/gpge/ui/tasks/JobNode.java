@@ -91,8 +91,8 @@ public class JobNode extends ResultTreeNode {
     private void displayResult(AnalysisJob job){
         try{
             if(this._fileCache==null){
-                DataHandler data = RequestHandlerFactory.getInstance(job.getJobInfo().getUserId(), null).getRequestHandler(job.getServer()).getResults(job.getJobInfo().getJobNumber());
-                this._fileCache = data.getName();
+                String[] fileNames = RequestHandlerFactory.getInstance(job.getJobInfo().getUserId(), null).getRequestHandler(job.getServer()).getResultFiles(job.getJobInfo().getJobNumber());
+                this._fileCache = fileNames[0];
             }
             BufferedReader in = new BufferedReader(new FileReader(this._fileCache));
             String line;
@@ -120,8 +120,8 @@ public class JobNode extends ResultTreeNode {
         if(file !=null && state==JFileChooser.APPROVE_OPTION){
             FileWriter writer = new FileWriter(file);
             if(this._fileCache==null){
-                DataHandler data = RequestHandlerFactory.getInstance(job.getJobInfo().getUserId(), null).getRequestHandler(job.getServer()).getResults(job.getJobInfo().getJobNumber());
-                this._fileCache = data.getName();
+                String[] fileNames = RequestHandlerFactory.getInstance(job.getJobInfo().getUserId(), null).getRequestHandler(job.getServer()).getResultFiles(job.getJobInfo().getJobNumber());
+                this._fileCache = fileNames[0];
             }
             BufferedReader reader = new BufferedReader(new FileReader(this._fileCache));
             String line;
