@@ -67,9 +67,6 @@ public interface IGPConstants {
 	/** TaskInfoAttributes task type key */
 	public static final String TASK_TYPE = "taskType";
 
-	/** TaskInfo.classname */
-	public static final String CLASSNAME = "className";
-
 	/** any */
 	public static final String ANY = "any";
 
@@ -168,7 +165,7 @@ public interface IGPConstants {
 	 * task submission)
 	 */
 	public static final String[] TASK_INFO_ATTRIBUTES = { COMMAND_LINE,
-			TASK_TYPE, CLASSNAME, CPU_TYPE, OS, JVM_LEVEL, LANGUAGE, VERSION,
+			TASK_TYPE, CPU_TYPE, OS, JVM_LEVEL, LANGUAGE, VERSION,
 			AUTHOR, USERID, PRIVACY, QUALITY, PIPELINE_SCRIPT, LSID,
 			SERIALIZED_MODEL, DOMAIN, FILE_FORMAT };
 
@@ -259,7 +256,7 @@ public interface IGPConstants {
 	public static final String[] RESERVED_PARAMETER_NAMES = { JOB_ID, TASK_ID,
 			LIBDIR, NAME };
 
-	public static final String[] UNREQUIRED_PARAMETER_NAMES = { CLASSNAME };
+	public static final String[] UNREQUIRED_PARAMETER_NAMES = { };
 
 	/**
 	 * filename of well-known file that may be output by a job, representing the
