@@ -249,20 +249,24 @@ public abstract class AbstractSortableTreeTableModel implements
 	 */
 	protected void fireTreeStructureChanged(Object source, Object[] path,
 			int[] childIndices, Object[] children) {
+      try {
 		// Guaranteed to return a non-null array
-		Object[] listeners = listenerList.getListenerList();
-		TreeModelEvent e = null;
-		// Process the listeners last to first, notifying
-		// those that are interested in this event
-		for (int i = listeners.length - 2; i >= 0; i -= 2) {
-			if (listeners[i] == TreeModelListener.class) {
-				// Lazily create the event:
-				if (e == null) {
-					e = new TreeModelEvent(source, path, childIndices, children);
-				}
-				((TreeModelListener) listeners[i + 1]).treeStructureChanged(e);
-			}
-		}
+         Object[] listeners = listenerList.getListenerList();
+         TreeModelEvent e = null;
+         // Process the listeners last to first, notifying
+         // those that are interested in this event
+         for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == TreeModelListener.class) {
+               // Lazily create the event:
+               if (e == null) {
+                  e = new TreeModelEvent(source, path, childIndices, children);
+               }
+               ((TreeModelListener) listeners[i + 1]).treeStructureChanged(e);
+            }
+         }
+      } catch(Throwable t) {
+         t.printStackTrace();
+      }
 	}
 
 	protected void fireTreeStructureChanged(Object source, Object[] path) {
