@@ -171,7 +171,7 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub {
         _operations[9] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("setParentJobStatus");
+        oper.setName("setJobStatus");
         oper.addParameter(new javax.xml.namespace.QName("", "parentJobId"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, org.apache.axis.description.ParameterDesc.IN, false, false);
         oper.addParameter(new javax.xml.namespace.QName("", "status"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
         oper.setReturnType(org.apache.axis.encoding.XMLType.AXIS_VOID);
@@ -627,7 +627,7 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub {
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "setParentJobStatus"));
+        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "setJobStatus"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
