@@ -53,7 +53,6 @@ if(isDownload) {
             // ignore
          }
          File attachment = new File(jobDir + File.separator + value);
-         out.println(attachment.getCanonicalPath());
          ZipEntry zipEntry = new ZipEntry(fileName);
          zipEntry.setTime(attachment.lastModified());
          zipEntry.setSize(attachment.length());
