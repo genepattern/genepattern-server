@@ -74,6 +74,9 @@ try {
 <%
 		String jobDir = System.getProperty("jobs");
 		if (jobDir.startsWith("./")) jobDir = jobDir.substring(2);
+		if (jobDir.startsWith("/")) jobDir = jobDir.substring(1);
+
+
 		if (attachmentNames != null) {
 			for (j = 0; j < attachmentNames.length; j++) {
 				attachmentName = attachmentNames[j];
@@ -226,10 +229,12 @@ try {
 				    String sourceJobID = f.getParent();
 				    sourceJobID = sourceJobID.substring(1+sourceJobID.lastIndexOf(File.separator));
 				    String sourceTaskName = p.getName().equals(baseName) ? rs.getString("task_name") : p.getName();
+
+
 				    try {
 				        buf.append("<input type=\"checkbox\" value=\"" + sourceTaskName + "/" + baseName + "=" + filename + "\" " +
 				    	       "name=\"dl\" checked><a href=\"retrieveResults.jsp?job=" + sourceJobID + "&filename=" + URLEncoder.encode(baseName, "utf-8") + "\" target=\"_blank\">" +
-					  (!p.getName().equals(baseName) ? (p.getName() + "/") : "") + GenePatternAnalysisTask.htmlEncode(URLDecoder.decode(baseName, "UTF-8")) + "</a>" +
+					  ((!p.getName().equals(baseName) && (p.getName().length()>0)) ? (p.getName() + "/") : "") + GenePatternAnalysisTask.htmlEncode(URLDecoder.decode(baseName, "UTF-8")) + "</a>" +
 					  (!sourceJobID.equals(rs.getString("job_no")) ? 
 					  	(" (job <a href=\"getJobResults.jsp?jobID=" + sourceJobID + "\">" + sourceJobID + "</a>, &nbsp;" + df.format(f.length()).toString() + " bytes)") : 
                                  (", &nbsp;" + df.format(f.length()).toString() + " bytes") +
