@@ -31,7 +31,7 @@ public class TaskLauncher {
             }
          }
 
-         new org.genepattern.gpge.ui.tasks.JavaGELocalTaskExecutor(null, svc.getTaskInfo(), substitutions, username, svc.getName()).exec();
+         new org.genepattern.gpge.ui.tasks.JavaGELocalTaskExecutor(null, svc.getTaskInfo(), substitutions, username, svc.getServer()).exec();
       } catch(Exception e1) {
          throw new RunTaskException(e1);
       }
@@ -66,7 +66,7 @@ public class TaskLauncher {
 
       TaskInfo tinfo = svc.getTaskInfo();
       final JobInfo jobInfo = serviceProxy.submitJob(tinfo.getID(), paramInfos);
-      final AnalysisJob job = new AnalysisJob(svc.getName(), svc.getTaskInfo().getName(), jobInfo);
+      final AnalysisJob job = new AnalysisJob(svc.getServer(), svc.getTaskInfo().getName(), jobInfo);
 
       JobModel.getInstance().add(job);
       String status = "";
