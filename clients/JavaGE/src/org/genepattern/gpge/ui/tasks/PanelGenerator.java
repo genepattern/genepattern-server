@@ -50,7 +50,7 @@ public class PanelGenerator {
 			  TaskInfo[] tasks = new org.genepattern.webservice.AdminProxy(siteName, username, false).getLatestTasks();
 			  services = new Vector();
 			  for(int i = 0; i < tasks.length; i++) {
-				  services.add(new AnalysisService(siteName, url, tasks[i]));
+				  services.add(new AnalysisService(siteName, tasks[i]));
 			  }
 			  services = filter.processServices(services);
 		  } catch(Throwable t) {
