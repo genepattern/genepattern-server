@@ -72,7 +72,7 @@ AnalysisJobDataSource ds = BeanReference.getAnalysisJobDataSourceEJB();
 StringBuffer sql = new StringBuffer();
 sql.append("select job_no, task_name, analysis_job.user_id, date_submitted, date_completed, status_id, status_name from analysis_job, task_master, job_status where analysis_job.task_id=task_master.task_id and analysis_job.status_id=job_status.status_id");
 if (!showAll) sql.append(" and analysis_job.user_id='" + userID + "'");
-sql.append(" union select job_no, ifnull(input_filename, 'pipeline - ' || user_id) as task_name, analysis_job.user_id, date_submitted, date_completed, status_id, status_name from analysis_job, job_status where analysis_job.task_id=-1 and analysis_job.status_id=job_status.status_id");
+sql.append(" union select job_no, ifnull(NULL, 'pipeline - ' || user_id) as task_name, analysis_job.user_id, date_submitted, date_completed, status_id, status_name from analysis_job, job_status where analysis_job.task_id=-1 and analysis_job.status_id=job_status.status_id");
 if (!showAll) sql.append(" and analysis_job.user_id='" + userID + "'");
 sql.append(" order by job_no");
 
