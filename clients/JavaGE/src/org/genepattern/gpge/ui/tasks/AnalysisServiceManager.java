@@ -59,22 +59,18 @@ public class AnalysisServiceManager {
 	 */
 	public void refresh() throws WebServiceException {
 		lsidOrTaskName2AnalysisService.clear();
-		try {
-			TaskInfo[] tasks = new AnalysisWebServiceProxy(server, username)
-					.getTasks();
-			for (int i = 0; i < tasks.length; i++) {
-				TaskInfo task = tasks[i];
-				String lsid = (String) task.getTaskInfoAttributes().get(
-						GPConstants.LSID);
-				String lsidOrTaskName = lsid != null ? lsid : task.getName();
-				lsidOrTaskName2AnalysisService.put(lsidOrTaskName,
-						new AnalysisService(server, task));
-			}
-		} catch (java.net.MalformedURLException me) {
-			throw new WebServiceException(me);
-		} catch (org.apache.axis.AxisFault af) {
-			throw new WebServiceException(af);
-		}
+		
+      TaskInfo[] tasks = new AnalysisWebServiceProxy(server, username)
+            .getTasks();
+      for (int i = 0; i < tasks.length; i++) {
+         TaskInfo task = tasks[i];
+         String lsid = (String) task.getTaskInfoAttributes().get(
+               GPConstants.LSID);
+         String lsidOrTaskName = lsid != null ? lsid : task.getName();
+         lsidOrTaskName2AnalysisService.put(lsidOrTaskName,
+               new AnalysisService(server, task));
+      }
+		
 
 	}
 
