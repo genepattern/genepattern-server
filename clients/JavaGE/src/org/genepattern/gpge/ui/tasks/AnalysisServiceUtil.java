@@ -2,6 +2,7 @@ package org.genepattern.gpge.ui.tasks;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -15,8 +16,29 @@ import org.genepattern.webservice.AnalysisService;
  * @author Joshua Gould
  */
 public class AnalysisServiceUtil {
+   /** Case insensitive comparator used to sort analysis services */
+   public static final Comparator CASE_INSENSITIVE_TASK_NAME_COMPARATOR;
+   
 	private AnalysisServiceUtil() {
 	}
+   
+   static {
+      CASE_INSENSITIVE_TASK_NAME_COMPARATOR = new Comparator() {
+         public int compare(Object obj1, Object obj2) {
+            AnalysisService svc1 = (AnalysisService) obj1;
+            AnalysisService svc2 = (AnalysisService) obj2;
+            return svc1.getTaskInfo().getName().compareTo(
+                  svc2.getTaskInfo().getName());
+         }
+
+         public boolean equals(Object obj1, Object obj2) {
+            AnalysisService svc1 = (AnalysisService) obj1;
+            AnalysisService svc2 = (AnalysisService) obj2;
+            return svc1.getTaskInfo().getName().equals(
+                  svc2.getTaskInfo().getName());
+         }
+      };
+   }
 
 	/**
 	 * Sorts the map of categories to analysis services as returned from
@@ -29,21 +51,7 @@ public class AnalysisServiceUtil {
 		for (Iterator values = categoryToAnalysisServicesMap.values()
 				.iterator(); values.hasNext();) {
 			List services = (List) values.next();
-			java.util.Collections.sort(services, new java.util.Comparator() {
-				public int compare(Object obj1, Object obj2) {
-					AnalysisService svc1 = (AnalysisService) obj1;
-					AnalysisService svc2 = (AnalysisService) obj2;
-					return svc1.getTaskInfo().getName().compareTo(
-							svc2.getTaskInfo().getName());
-				}
-
-				public boolean equals(Object obj1, Object obj2) {
-					AnalysisService svc1 = (AnalysisService) obj1;
-					AnalysisService svc2 = (AnalysisService) obj2;
-					return svc1.getTaskInfo().getName().equals(
-							svc2.getTaskInfo().getName());
-				}
-			});
+			java.util.Collections.sort(services, CASE_INSENSITIVE_TASK_NAME_COMPARATOR);
 
 		}
 	}
