@@ -1,6 +1,5 @@
 package org.genepattern.util;
 
-import gnu.trove.TDoubleArrayList;
 import gnu.trove.TFloatArrayList;
 import gnu.trove.TIntArrayList;
 
@@ -8,8 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
-import org.genepattern.data.Dir;
 
 /**
  * Native array related utilities.
@@ -395,154 +392,10 @@ public class ArrayUtils {
      * If num > data.length, it is truncated to data.length
      * If num is not even for the two tailed thing, it is made even.
      */
-    public final static int[] sub(int num, Dir dir, int[] data) {
-        if (num > data.length) num = data.length;
+    
+   
+    
 
-        if (dir == Dir.FORWARD) {
-            int[] ret = new int[num];
-            System.arraycopy(data, 0, ret, 0, num);
-            return ret;
-        }
-        /* This will get from bot2top but form n-x, to n
-        else if (dir == Dir.BOT2TOP) {
-            int[] ret = new int[num];
-            System.arraycopy(data, data.length-num, ret, 0, num);
-            return ret;
-        }
-        */
-        // This will get from reverse but from n to n-x
-        else if (dir == Dir.REVERSE) {
-            int[] ret = new int[num];
-            int cnt = data.length-1;
-            for (int i=0; i < num; i++) {
-                ret[i] = data[cnt--];
-            }
-            return ret;
-        }
-        else if (dir == Dir.TWOTAILED) {
-            if (! XMath.isEven(num)) num--; // make even, safely
-            TIntArrayList list = new TIntArrayList(num);
-            int[] top = new int[num/2];
-            System.arraycopy(data, 0, top, 0, num/2);
-            list.add(top);
-            for (int i=data.length-num/2; i < data.length; i++) {
-                list.add(data[i]);
-            }
-
-            return list.toNativeArray();
-        }
-        else throw new IllegalArgumentException("Unexpected dir: " + dir);
-    }
-
-    /**
-     * specified array is untouched
-     */
-    public final static double[] sub(int num, Dir dir, double[] data) {
-        if (num > data.length) num = data.length;
-
-        if (dir == Dir.FORWARD) {
-            double[] ret = new double[num];
-            System.arraycopy(data, 0, ret, 0, num);
-            return ret;
-        }
-        /* This will get from bot2top but form n-x, to n
-        else if (dir == Dir.BOT2TOP) {
-            int[] ret = new int[num];
-            System.arraycopy(data, data.length-num, ret, 0, num);
-            return ret;
-        }
-        */
-        // This will get from bot2top but from n to n-x
-        else if (dir == Dir.REVERSE) {
-            double[] ret = new double[num];
-            int cnt = data.length-1;
-            for (int i=0; i < num; i++) {
-                ret[i] = data[cnt--];
-            }
-            return ret;
-        }
-        else if (dir == Dir.TWOTAILED) {
-            if (! XMath.isEven(num)) num--; // make even, safely
-            TDoubleArrayList list = new TDoubleArrayList(num);
-
-            double[] top = new double[num/2];
-            System.arraycopy(data, 0, top, 0, num/2);
-            list.add(top);
-            for (int i=data.length-num/2; i < data.length; i++) {
-                list.add(data[i]);
-            }
-
-            return list.toNativeArray();
-        }
-        else throw new IllegalArgumentException("Unexpected dir: " + dir);
-    }
-
-    /**
-     * specified array is untouched
-     */
-    public final static float[] sub(int num, Dir dir, float[] data) {
-        if (num > data.length) num = data.length;
-
-        if (dir == Dir.FORWARD) {
-            float[] ret = new float[num];
-            System.arraycopy(data, 0, ret, 0, num);
-            return ret;
-        }
-        /* This will get from bot2top but form n-x, to n
-        else if (dir == Dir.BOT2TOP) {
-            int[] ret = new int[num];
-            System.arraycopy(data, data.length-num, ret, 0, num);
-            return ret;
-        }
-        */
-        // This will get from bot2top but from n to n-x
-        else if (dir == Dir.REVERSE) {
-            float[] ret = new float[num];
-            int cnt = data.length-1;
-            for (int i=0; i < num; i++) {
-                ret[i] = data[cnt--];
-            }
-            return ret;
-        }
-        else if (dir == Dir.TWOTAILED) {
-            if (! XMath.isEven(num)) num--; // make even, safely
-            TFloatArrayList list = new TFloatArrayList(num);
-
-            float[] top = new float[num/2];
-            System.arraycopy(data, 0, top, 0, num/2);
-            list.add(top);
-            for (int i=data.length-num/2; i < data.length; i++) {
-                list.add(data[i]);
-            }
-
-            return list.toNativeArray();
-        }
-        else throw new IllegalArgumentException("Unexpected dir: " + dir);
-    }
-
-    /**
-     * Two tailed subarray with the first nfromtop elements of the array
-     * first followed by the last nfrombottom elements.
-     *
-     * Any overlap that might exist is NOT gotten rid off
-     * Hence length of returned array is always top + bottom
-     */
-    public final static int[] sub(final int nfromtop, final int nfrombottom, final int[] data) {
-        int[] indices = new int[nfromtop + nfrombottom]; // any overlap that might exist is NOT gotten rid off
-
-        // first include the top genes
-        int cnt = 0;
-        for (int i=0; i < nfromtop; i++) {
-            indices[cnt++] = data[i];
-        }
-
-        // Then the from the bottom
-        for (int i= data.length - nfrombottom; i < data.length; i++) {
-            indices[cnt++] = data[i];
-        }
-
-        return indices;
-    }
     //
     // F L O A T    S O R T I N G 
     //
@@ -871,25 +724,6 @@ public class ArrayUtils {
 } // End ArrayUtils
 
 
-/**
-     * arg arr is untouched
-     */
-     /*
-    public static float[] subarray(float[] a, int numb, Dir dir) {
-        float[] res = new float[numb];
-        if (dir == BOT2TOP) {
-            System.arraycopy(a, 0, res, 0, numb);
-        }
-        else if (dir == TOP2BOT) {
-            System.arraycopy(a, a.length-numb, res, 0, numb);
-        }
-        else if (dir == TWOTAILED) {
-            if (!Dir.isEven(numb)) throw new IllegalArgumentException("Numb must be even for double sided");
-            System.arraycopy(a, 0, res, 0, numb/2);
-            System.arraycopy(a, a.length-numb, res, numb/2, numb/2);
-        }
-        return res;
-    }
-    */
+
 
 
