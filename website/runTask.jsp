@@ -44,7 +44,41 @@ if (username == null || username.length() == 0) {
 boolean bNoEnvelope = (request.getParameter("noEnvelope") != null);
 
 TaskInfo taskInfo = null;
-try { taskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, username); } catch (OmnigeneException oe) {}
+try { 
+	
+taskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, username); } catch (OmnigeneException oe) {}
+TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+ParameterInfo[] parameterInfoArray = null;
+try {
+        parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
+	if (parameterInfoArray == null) parameterInfoArray = new ParameterInfo[0];
+} catch (OmnigeneException oe) {
+}
+
+
+String taskType = tia.get("taskType");
+boolean isVisualizer = "visualizer".equalsIgnoreCase(taskType);
+boolean isPipeline = "pipeline".equalsIgnoreCase(taskType);
+
+String formAction = "runTaskPipeline.jsp";
+if (isVisualizer){
+	formAction = "preRunVisualizer.jsp";
+} else if (isPipeline){
+	formAction = "runPromptingPipeline.jsp";
+	int numParams = parameterInfoArray.length;
+	if (numParams == 0){
+try{
+		RequestDispatcher rd = request.getRequestDispatcher("runPipeline.jsp");
+		rd.forward(request, response);
+		return;
+} catch (Exception e){
+	e.printStackTrace();
+}
+
+	}
+	
+}
+
 
 if (!bNoEnvelope) { %>
 	<html>
@@ -73,13 +107,7 @@ if (taskInfo == null) {
 	return;
 }
 taskName = taskInfo.getName();
-TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-ParameterInfo[] parameterInfoArray = null;
-try {
-        parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
-	if (parameterInfoArray == null) parameterInfoArray = new ParameterInfo[0];
-} catch (OmnigeneException oe) {
-}
+
 %>
 <table width="100%" cols="2">
 <tr><td><b><font size="+1"><%= taskName %></font></b></td>
@@ -98,16 +126,7 @@ if (taskName != null) {
  	}
 }
 
-String taskType = tia.get("taskType");
-boolean isVisualizer = "visualizer".equalsIgnoreCase(taskType);
-boolean isPipeline = "pipeline".equalsIgnoreCase(taskType);
 
-String formAction = "runTaskPipeline.jsp";
-if (isVisualizer){
-	formAction = "preRunVisualizer.jsp";
-} else if (isPipeline){
-	formAction = "runPromptingPipeline.jsp";
-}
 
 %>
 </table>

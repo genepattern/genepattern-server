@@ -92,7 +92,7 @@ function ufocus(fld, focus, deflt ) {
 	}
     }
 }
-
+ 
 function jumpTo(btn) {
 	var task = document.forms['searchForm'].Task;
 	var pipeline = document.forms['searchForm'].Pipeline;
@@ -116,7 +116,7 @@ function jumpTo(btn) {
 		if (task.selectedIndex > 1) {
 			window.location = "runTask.jsp?<%= GPConstants.NAME %>=" + task.options[task.selectedIndex].value;
 		} else if (pipeline.selectedIndex > 1) {
-			window.location = "runPipeline.jsp?cmd=run&<%= GPConstants.NAME %>=" + pipeline.options[pipeline.selectedIndex].value;
+			window.location = "runTask.jsp?cmd=run&<%= GPConstants.NAME %>=" + pipeline.options[pipeline.selectedIndex].value;
 		}
 	}
 }
