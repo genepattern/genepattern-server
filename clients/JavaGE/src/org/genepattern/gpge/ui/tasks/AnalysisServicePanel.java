@@ -84,9 +84,6 @@ public class AnalysisServicePanel extends JPanel {
 
 	private AnalysisService _selectedService;
 
-	/** the error handler if one was supplied or null */
-	private final OVExceptionHandler exception_handler;
-
 	private static Category cat = Category
 			.getInstance(AnalysisServicePanel.class.getName());
 
@@ -165,11 +162,9 @@ public class AnalysisServicePanel extends JPanel {
 	 * @param serviceManager.getUsername()
 	 *            Description of the Parameter
 	 */
-	public AnalysisServicePanel(final OVExceptionHandler exception_handler,
-			AnalysisServiceManager serviceManager) {
+	public AnalysisServicePanel(AnalysisServiceManager serviceManager) {
 		this.serviceManager = serviceManager;
-		this.exception_handler = exception_handler;
-
+		
 		tasksLabel = new JLabel();
 
 		_servicePanel = new JPanel();
@@ -252,23 +247,14 @@ public class AnalysisServicePanel extends JPanel {
 	 *            Description of the Parameter
 	 */
 	protected void fireError(String title, String message, final Throwable ex) {
-		if (exception_handler == null) {
-			if (title == null) {
-				title = "Error: ";
-			}
-			if (message == null) {
-				message = "";
-			}
-			if (ex != null) {
-				ex.printStackTrace();
-				message = message + '\n' + ex.getMessage();
-			}
-			System.err.println(message);
-			JOptionPane.showMessageDialog(AnalysisServicePanel.this, message,
-					title, JOptionPane.ERROR_MESSAGE);
-		} else {
-			exception_handler.setError(title, message, ex);
-		}
+      if (message == null) {
+         message = "";
+      }
+      if (ex != null) {
+         message = message + '\n' + ex.getMessage();
+      }
+      GenePattern.showErrorDialog(title, message);
+		
 	}
 
 	/**
@@ -282,22 +268,13 @@ public class AnalysisServicePanel extends JPanel {
 	 *            Description of the Parameter
 	 */
 	protected void fireWarning(String title, String message, final Exception ex) {
-		if (exception_handler == null) {
-			if (title == null) {
-				title = "Error: ";
-			}
-			if (message == null) {
-				message = "";
-			}
-			if (ex != null) {
-				ex.printStackTrace();
-				message = message + '\n' + ex.getMessage();
-			}
-			JOptionPane.showMessageDialog(AnalysisServicePanel.this, message,
-					title, JOptionPane.WARNING_MESSAGE);
-		} else {
-			exception_handler.setWarning(title, message, ex);
-		}
+	   if (message == null) {
+         message = "";
+      }
+      if (ex != null) {
+         message = message + '\n' + ex.getMessage();
+      }
+      GenePattern.showMessageDialog(title, message);
 	}
 
 	/**
@@ -546,9 +523,7 @@ public class AnalysisServicePanel extends JPanel {
 					try {
 						submit(nameRetriever, selectedService);
 					} catch (Throwable th) {
-						exception_handler
-								.setError("Error:", "While submitting "
-										+ _selectedService.toString() + ':', th);
+						GenePattern.showErrorDialog("Error", "An error occurred while running " + selectedService.getTaskInfo().getName());
 					} finally {
 
 					}

@@ -571,8 +571,7 @@ public class MainFrame extends JFrame {
 		});
 
 		changeServer(server, username);
-		analysisServicePanel = new AnalysisServicePanel(DefaultExceptionHandler
-				.instance(), analysisServiceManager);
+		analysisServicePanel = new AnalysisServicePanel(analysisServiceManager);
 
 		projectDirModel = ProjectDirModel.getInstance();
 		projectDirTree = new SortableTreeTable(projectDirModel);
