@@ -39,4 +39,12 @@ public interface UIRenderer {
      * @return JComponent that is or contains some component like a submit button.
      */
     public JComponent createSubmitPanel(final AnalysisService service, final java.awt.event.ActionListener listener);
+    
+    /** creates a component that is or contains another component that the user
+     * can press (a JButton) to submit the job
+     * @param submitListener the listener for the submit button to be pressed
+     * @param resetListener the listener for the reset button to be pressed
+     * @return JComponent that is or contains some component like a submit button.
+     */
+    public JComponent createSubmitPanel(final AnalysisService service, final java.awt.event.ActionListener submitListener, java.awt.event.ActionListener resetListener);
 }

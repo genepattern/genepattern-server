@@ -406,7 +406,7 @@ public class AnalysisTasksPanel extends JPanel implements Observer {
 			if(last_renderer != null) {
 				top_pane.add(last_renderer.createTaskLabel(service));
 				//((FlowLayout)bottom_pane.getLayout()).setAlignment(FlowLayout.LEADING);
-				bottom_pane.add(last_renderer.createSubmitPanel(service, new SubmitActionListener()),
+				bottom_pane.add(last_renderer.createSubmitPanel(service, new SubmitActionListener(), new ResetActionListener()),
 						BorderLayout.CENTER);
 			}
 		} else {
@@ -902,6 +902,10 @@ public class AnalysisTasksPanel extends JPanel implements Observer {
 			submit.addActionListener(listener);
 			return submit;
 		}
+      
+      public JComponent createSubmitPanel(final AnalysisService service, final java.awt.event.ActionListener listener, java.awt.event.ActionListener resetListener) {
+			return createSubmitPanel(service, listener);
+		}
 
 
 		/**
@@ -953,6 +957,11 @@ public class AnalysisTasksPanel extends JPanel implements Observer {
 		}
 	}
 
+   private class ResetActionListener implements ActionListener {
+		public final void actionPerformed(ActionEvent ae) {
+         loadTask(_selectedService);
+      }
+   }
 
 	/**
 	 *  handles getting the valuesfrom all the input components

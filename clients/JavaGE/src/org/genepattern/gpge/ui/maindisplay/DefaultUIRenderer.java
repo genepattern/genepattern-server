@@ -759,6 +759,9 @@ class DefaultUIRenderer implements UIRenderer {
 		return this.bold_font;
 	}
 
+  public JComponent createSubmitPanel(final AnalysisService service, final java.awt.event.ActionListener listener) {
+     return createSubmitPanel(service, listener, null); 
+  }
 
 	/**
 	 *  creates a component that is or contains another component that the user can
@@ -768,7 +771,7 @@ class DefaultUIRenderer implements UIRenderer {
 	 *@param  listener  Description of the Parameter
 	 *@return           Description of the Return Value
 	 */
-	public JComponent createSubmitPanel(final AnalysisService service, final java.awt.event.ActionListener listener) {
+	public JComponent createSubmitPanel(final AnalysisService service, final java.awt.event.ActionListener listener, java.awt.event.ActionListener resetListener) {
 		final JPanel panel = new JPanel(new GridBagLayout());
 		final GridBagConstraints gbc = new GridBagConstraints();
 		gbc.weightx = gbc.weighty = 1.0;
@@ -776,6 +779,13 @@ class DefaultUIRenderer implements UIRenderer {
 		final JButton submit = new JButton(label);
 		submit.addActionListener(listener);
 		panel.add(submit, gbc);
+      
+      if(resetListener!=null) {
+         JButton reset = new JButton("Reset");
+         reset.addActionListener(resetListener);
+         panel.add(reset, gbc);
+      }
+      
 		if(help_listener != null) {
 			final JButton help = new JButton("Help");
 			help.addActionListener(help_listener);
