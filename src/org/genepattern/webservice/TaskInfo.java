@@ -196,4 +196,10 @@ public class TaskInfo implements Serializable {
 						&& other.getParameterInfo() != null && getParameterInfo()
 						.equals(other.getParameterInfo())));
 	}
+	
+	public int hashCode(){
+
+		return this.getTaskInfoAttributes().get("LSID").hashCode();
+	}
+
 }
