@@ -155,7 +155,8 @@ public class MainFrame extends JFrame {
    MenuAction openWithMenu;
    MenuItemAction jobResultFileTextViewerMenuItem;
    MenuItemAction jobResultFileDefaultAppMenuItem;
-      
+   MenuItemAction deleteAllJobsAction;
+   
 	public static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone
 				.getValue(), toClone.getDescription());
@@ -726,7 +727,8 @@ public class MainFrame extends JFrame {
 						.getLastPathComponent();
             }
             boolean isJobNode = selectedJobNode instanceof JobModel.JobNode;
-           
+            boolean isJobResultFileNode = selectedJobNode instanceof JobModel.ServerFileNode;
+            
             deleteJobAction.setEnabled(isJobNode);
             terminateJobAction.setEnabled(isJobNode);
             reloadMenuItem.setEnabled(isJobNode);
@@ -735,15 +737,12 @@ public class MainFrame extends JFrame {
 					 deleteJobAction.setEnabled(node.isComplete());
                terminateJobAction.setEnabled(!node.isComplete());
             }
-            
-            if(selectedJobNode==null) {
-               isJobNode = true;
-            }
-            jobResultFileSendToMenu.setEnabled(!isJobNode); // FIXME
-            saveServerFileMenu.setEnabled(!isJobNode);
-            saveToFileSystemMenuItem.setEnabled(!isJobNode);
-            deleteFileMenuItem.setEnabled(!isJobNode);
-            openWithMenu.setEnabled(!isJobNode);
+           
+            jobResultFileSendToMenu.setEnabled(isJobResultFileNode && analysisServicePanel.isShowingAnalysisService()); 
+            saveServerFileMenu.setEnabled(isJobResultFileNode);
+            saveToFileSystemMenuItem.setEnabled(isJobResultFileNode);
+            deleteFileMenuItem.setEnabled(isJobResultFileNode);
+            openWithMenu.setEnabled(isJobResultFileNode);
            
             if (selectedJobNode instanceof JobModel.ServerFileNode) {
 					JobModel.ServerFileNode node = (JobModel.ServerFileNode) selectedJobNode;
@@ -843,10 +842,12 @@ public class MainFrame extends JFrame {
                   .getLastPathComponent();
             }
             boolean projectNodeSelected = selectedProjectDirNode instanceof ProjectDirModel.ProjectDirNode;
+            boolean projectFileSelected = selectedProjectDirNode instanceof ProjectDirModel.FileNode;
             
-            projectFileSendToMenu.setEnabled(!projectNodeSelected);
-            projectFileOpenWithMenu.setEnabled(!projectNodeSelected);
-            revealFileMenuItem.setEnabled(!projectNodeSelected);
+            projectFileSendToMenu.setEnabled(projectFileSelected&& analysisServicePanel.isShowingAnalysisService());
+            
+            projectFileOpenWithMenu.setEnabled(projectFileSelected);
+            revealFileMenuItem.setEnabled(projectFileSelected);
              
             refreshProjectMenuItem.setEnabled(projectNodeSelected);
             removeProjectMenuItem.setEnabled(projectNodeSelected);
@@ -936,9 +937,7 @@ public class MainFrame extends JFrame {
 				.addAnalysisServiceSelectionListener(new AnalysisServiceSelectionListener() {
                
 					public void valueChanged(AnalysisServiceSelectionEvent e) {
-                  jobResultFileSendToMenu.setEnabled(true);
-                  projectFileSendToMenu.setEnabled(true);
-               
+                 
 						jobResultFileSendToMenu.removeAll();
 						projectFileSendToMenu.removeAll();
 
@@ -1256,6 +1255,26 @@ public class MainFrame extends JFrame {
             }
          }
       };
+      
+      deleteAllJobsAction = new MenuItemAction(
+      "Delete All Jobs") {
+         public void actionPerformed(ActionEvent e) {
+            try {
+              String message = "Are you sure you want to delete all jobs?";
+              if (JOptionPane.showOptionDialog(GenePattern.getDialogParent(),
+						message, null, JOptionPane.YES_NO_OPTION,
+						JOptionPane.WARNING_MESSAGE, null, new Object[] {
+                  "Yes", "No" }, "Yes")==JOptionPane.YES_OPTION) {
+                     jobModel.deleteAll();
+              }
+            } catch(WebServiceException wse) {
+               wse.printStackTrace();
+               if(!disconnectedFromServer(wse)) {
+                  GenePattern.showErrorDialog("An error occurred deleting all jobs. Please try again.");
+               }   
+            }
+         }
+      };
 		 
       terminateJobAction = new MenuItemAction("Terminate Job", IconManager.loadIcon(IconManager.STOP_ICON)) {
 			public void actionPerformed(ActionEvent e) {
@@ -1313,15 +1332,16 @@ public class MainFrame extends JFrame {
 								}.start();
 							}
 						};
-                 saveServerFileMenu.insert(menuItem, projectDirModel.indexOf(dir));
+                 saveServerFileMenu.insert(menuItem, projectDirModel.indexOf(dir)+1);
 					}
 
 					public void projectRemoved(ProjectEvent e) {
 						File dir = e.getDirectory();
 						for (int i = 0; i < saveServerFileMenu.getItemCount(); i++) {
-							JMenuItem m = (JMenuItem) saveServerFileMenu
+							MenuItemAction m = (MenuItemAction) saveServerFileMenu
 									.getMenuComponent(i);
-							if (m.getText().equals(dir.getPath())) {
+                     String text = (String) m.getValue(MenuItemAction.NAME);
+                     if (text.equals(dir.getPath())) {
 								saveServerFileMenu.remove(i);
 								break;
 							}
@@ -1424,6 +1444,20 @@ public class MainFrame extends JFrame {
 	   menuBar = new JMenuBar();
 		fileMenu = new FileMenu();
 		menuBar.add(fileMenu);
+      refreshProjectMenuItem.setEnabled(false);
+      removeProjectMenuItem.setEnabled(false);
+      projectFileSendToMenu.setEnabled(false);
+      projectFileOpenWithMenu.setEnabled(false);
+      if(revealFileMenuItem!=null) {
+         revealFileMenuItem.setEnabled(false);
+      }
+      reloadMenuItem.setEnabled(false);
+      deleteJobAction.setEnabled(false);
+      terminateJobAction.setEnabled(false);
+      jobResultFileSendToMenu.setEnabled(false);
+      saveServerFileMenu.setEnabled(false);
+      deleteFileMenuItem.setEnabled(false);
+      openWithMenu.setEnabled(false);
       
       MenuAction projectsMenuAction = null;
       if(revealFileMenuItem!=null) {
@@ -1431,9 +1465,11 @@ public class MainFrame extends JFrame {
       } else {
           projectsMenuAction = new MenuAction("Projects", new Object[]{refreshProjectMenuItem,  removeProjectMenuItem, new JSeparator(), projectFileSendToMenu, projectFileOpenWithMenu});  
       }
+      
       menuBar.add(projectsMenuAction.createMenu());
       
-      MenuAction jobResultsMenuAction = new MenuAction("Job Results", new Object[]{reloadMenuItem, deleteJobAction, terminateJobAction, new JSeparator(), jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu});
+      MenuAction jobResultsMenuAction = new MenuAction("Job Results", new Object[]{reloadMenuItem, deleteJobAction, deleteAllJobsAction, terminateJobAction, new JSeparator(), jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu});
+     
       menuBar.add(jobResultsMenuAction.createMenu());
       
 		analysisMenu = new AnalysisMenu(AnalysisMenu.DATA_ANALYZERS);
@@ -1641,7 +1677,7 @@ public class MainFrame extends JFrame {
          jobsInMenu.clear();
          super.removeAll();  
          
-         addSeparator();
+         add(new JSeparator());
          add(historyMenuItem);
       }
      
