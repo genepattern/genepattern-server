@@ -1343,7 +1343,7 @@ public class MainFrame extends JFrame {
       
       MenuItemAction viewJavaCodeAction = new MenuItemAction("Java") {
          public void actionPerformed(ActionEvent e) {
-            viewCode(new org.genepattern.codegenerator.JavaPipelineCodeGenerator());
+            viewCode(new org.genepattern.codegenerator.JavaPipelineCodeGenerator(), "Java");
          }
       };
 
@@ -1352,21 +1352,21 @@ public class MainFrame extends JFrame {
        
       MenuItemAction viewMATLABCodeAction = new MenuItemAction("MATLAB") {
          public void actionPerformed(ActionEvent e) {
-            viewCode(new org.genepattern.codegenerator.MATLABPipelineCodeGenerator());
+            viewCode(new org.genepattern.codegenerator.MATLABPipelineCodeGenerator(), "MATLAB");
          }
       };
       viewCodeAction.add(viewMATLABCodeAction);
       
        MenuItemAction viewRCodeAction = new MenuItemAction("R") {
          public void actionPerformed(ActionEvent e) {
-            viewCode(new org.genepattern.codegenerator.RPipelineCodeGenerator());
+            viewCode(new org.genepattern.codegenerator.RPipelineCodeGenerator(), "R");
          }
       };
       viewCodeAction.add(viewRCodeAction);
       
    }
 
-   private void viewCode(org.genepattern.codegenerator.TaskCodeGenerator codeGenerator) {
+   private void viewCode(org.genepattern.codegenerator.TaskCodeGenerator codeGenerator, final String language) {
       JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
       JobInfo jobInfo = jobNode.job.getJobInfo();
      
@@ -1397,7 +1397,56 @@ public class MainFrame extends JFrame {
          
       }
       
-      String code = codeGenerator.generateTask(jobInfo, (ParameterInfo[]) parameterInfoList.toArray(new ParameterInfo[0]));
+		AnalysisService svc = AnalysisServiceManager.getInstance().getAnalysisService(jobInfo.getTaskLSID());
+		String code = null;
+		if(svc!=null) {
+			TaskInfo taskInfo = svc.getTaskInfo();
+			try {
+				String serializedModel = (String) taskInfo.getTaskInfoAttributes().get("serializedModel");
+				if(serializedModel!=null && serializedModel.length()>0) {
+					Map runtimePrompts = new HashMap();
+					for(int i = 0; i < parameterInfoList.size(); i++) {
+						ParameterInfo p = (ParameterInfo) parameterInfoList.get(i);
+						if(!p.isOutputFile()) {
+							runtimePrompts.put(p.getName(), p);	
+						}
+					}
+					
+					org.genepattern.data.pipeline.PipelineModel model = org.genepattern.data.pipeline.PipelineModel.toPipelineModel((String)taskInfo.getTaskInfoAttributes().get("serializedModel"));
+					List taskInfos = new ArrayList();
+					List jobSubmissions = model.getTasks();
+					for(int i = 0; i < jobSubmissions.size(); i++) {
+						org.genepattern.data.pipeline.JobSubmission js = (org.genepattern.data.pipeline.JobSubmission) jobSubmissions.get(i);
+						java.util.Arrays.fill(js.getRuntimePrompt(), false);
+						List p = js.getParameters();
+						for(int j = 0; j < p.size(); j++) {
+							ParameterInfo pi = (ParameterInfo)p.get(j);
+							if(pi.getAttributes().get("runTimePrompt")!=null) {
+								String key = js.getName() + (i +1) +  "." + pi.getName();
+								ParameterInfo rt = (ParameterInfo) runtimePrompts.get(key);
+								p.set(j, rt);
+							}
+						}
+						model.setLsid((String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
+						model.setUserID(AnalysisServiceManager.getInstance().getUsername());
+						taskInfos.add(AnalysisServiceManager.getInstance().getAnalysisService(js.getLSID()).getTaskInfo());
+					}
+					code = org.genepattern.codegenerator.AbstractPipelineCodeGenerator.getCode(model, 
+						taskInfos, 
+						AnalysisServiceManager.getInstance().getServer(), 
+						language);
+
+				}
+			} catch(Exception e) {
+				e.printStackTrace();	
+			}
+		}
+		
+		
+		
+      if(code==null) {
+			code = codeGenerator.generateTask(jobInfo, (ParameterInfo[]) parameterInfoList.toArray(new ParameterInfo[0]));
+		}
       JDialog dialog = new JDialog(MainFrame.this);
       dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
       dialog.setTitle("Code for " + jobInfo.getTaskName() + ", job " + jobInfo.getJobNumber());
