@@ -304,12 +304,24 @@ out.println("<table cellspacing='0' width='100%' frame='box'>");
 					value = "<a href=\"" + value + "\">" + value + "</a>";
                
 				} catch(java.net.MalformedURLException x) { 
-               value = GenePatternAnalysisTask.htmlEncode(value);
-            }
+			               value = GenePatternAnalysisTask.htmlEncode(value);
+				}
 			}
 			
 		}  else {
-			value = GenePatternAnalysisTask.htmlEncode(informalParam.getValue());
+			String[] values = formalParam.getValue().split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+			String[] eachValue;
+			value = informalParam.getValue();
+			for (int v = 0; v < values.length; v++) {
+				eachValue = values[v].split(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
+				if (value.equals(eachValue[0])) {
+					if (eachValue.length == 2) {
+						value = eachValue[1];
+					}
+					break;
+				}
+			}
+			value = GenePatternAnalysisTask.htmlEncode(value);
 		}
       
 		paramName = paramName.replace('.', ' ');
