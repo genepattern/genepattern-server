@@ -149,6 +149,9 @@ public class ExpressionData implements IExpressionData {
     * @return    The row descriptions.
     */
    public String[] getRowDescriptions() {
+      if(rowDescriptions==null) {
+         return new String[getRowCount()];  
+      }
       return (String[]) rowDescriptions.clone();
    }
 
@@ -169,6 +172,9 @@ public class ExpressionData implements IExpressionData {
     * @return    The column descriptions.
     */
    public String[] getColumnDescriptions() {
+      if(columnDescriptions==null) {
+         return new String[getColumnCount()];  
+      }
       return (String[]) columnDescriptions.clone();
    }
 
