@@ -10,7 +10,6 @@ package org.genepattern.webservice;
 
 import java.util.Date;
 
-import org.genepattern.server.util.OmnigeneErrorCode;
 
 /**
  * <code>OmnigeneException</code> is the superclass of all Omnigene exceptions 

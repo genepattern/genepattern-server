@@ -1,5 +1,5 @@
 
-package org.genepattern.server.util;
+package org.genepattern.webservice;
 
 
 import java.util.Hashtable;

@@ -19,7 +19,6 @@
 
 package org.genepattern.webservice;
 
-import org.genepattern.server.util.OmnigeneErrorCode;
 
 
 /**
