@@ -117,6 +117,17 @@ if (userID == null || userID.length() == 0) {
 	return;
 }
 
+String stopTaskID = request.getParameter(STOP);
+if (stopTaskID != null) {
+	Process p = GenePatternAnalysisTask.terminatePipeline(stopTaskID);
+	if (p != null) {
+	    try {
+		GenePatternAnalysisTask.updatePipelineStatus(Integer.parseInt(stopTaskID), JobStatus.JOB_ERROR, null);
+	    } catch (Exception e) { /* ignore */ }
+	}
+}
+
+
 AnalysisJobDataSource ds = BeanReference.getAnalysisJobDataSourceEJB();
 
 String sql = "select job_no, task_name, analysis_job.user_id, date_submitted, date_completed, status_id, status_name, parameter_info, task_master.lsid from analysis_job, task_master, job_status where analysis_job.task_id=task_master.task_id and analysis_job.status_id=job_status.status_id and analysis_job.status_id != " + JobStatus.JOB_NOT_STARTED;
@@ -263,7 +274,7 @@ try {
 		}
 %>
 		<td><font color="<%= htColors.get(rs.getString("status_id")) %>"><%= rs.getString("status_name") %></font>
-		<%= (rs.getInt("status_id") == JobStatus.JOB_PROCESSING) ? " - <a href=\"getStatus.jsp?" + STOP + "=" + rs.getString("job_no") + (showAll ? "&showAll=1" : "") + "\"><font color=\"red\">stop</font></a>" : "" %>
+		<%= (rs.getInt("status_id") == JobStatus.JOB_PROCESSING) ? " - <a href=\"zipJobResults.jsp?" + STOP + "=" + rs.getString("job_no") + (showAll ? ("&" + SHOW_ALL + "=1") : "") + "\"><font color=\"red\">stop</font></a>" : "" %>
 		</td>
 	</tr>
 <%
