@@ -98,18 +98,21 @@ public class CommandLineAction {
 			createSchema(resourceDir, props);
 			if (!checkSchema(resourceDir, props)) {
 				System.err.println("schema didn't check after creating");
-/*
 				if (hadToStartDB) {
 					System.out.println("stopping database because I started it");
-					Connection conn = getConnection(props);
-					Statement stmt = conn.createStatement();
-					stmt.executeUpdate("SHUTDOWN COMPACT");
-					stmt.close();
-					conn.close();
+					try {
+						Connection conn = getConnection(props);
+						Statement stmt = conn.createStatement();
+						stmt.executeUpdate("SHUTDOWN COMPACT");
+						stmt.close();
+						conn.close();
+					} catch (SQLException se) {
+						// ignore
+					}
 				}
 				throw new IOException(
 						"unable to successfully create task_master table.  Other tables also suspect.");
-*/
+
 			}
 		}
 		return hadToStartDB;
@@ -219,27 +222,26 @@ public class CommandLineAction {
 	private boolean checkSchema(String resourceDir, Properties props) {
 		if (DEBUG) System.out.println("checking schema");
 		boolean upToDate = false;
+		String dbSchemaVersion = "";
+		String requiredSchemaVersion = props.getProperty("GenePatternVersion");
 		// check schemaVersion
 		try {
 			String sql = "select value from props where key='schemaVersion'";
 			Statement stmt = conn.createStatement();
 			ResultSet resultSet = stmt.executeQuery(sql);
 			if (resultSet.next()) {
-				String dbSchemaVersion = resultSet.getString(1);
-				props.setProperty("dbSchemaVersion", dbSchemaVersion);
-				String requiredSchemaVersion = props.getProperty("GenePatternVersion");
+				dbSchemaVersion = resultSet.getString(1);
 				upToDate = (requiredSchemaVersion.compareTo(dbSchemaVersion) <= 0);
-				if (!upToDate) System.out.println("DB schemaVersion=" + dbSchemaVersion + ", required version=" + requiredSchemaVersion);
 			} else {
-				props.setProperty("dbSchemaVersion", "");
+				dbSchemaVersion = "";
 				upToDate = false;
 			}
 			stmt.close();
 		} catch (SQLException se) {
 			// ignore
 		}
-
-		System.out.println("schema up-to-date: " + upToDate);
+		props.setProperty("dbSchemaVersion", dbSchemaVersion);
+		System.out.println("schema up-to-date: " + upToDate + ": " + requiredSchemaVersion + " required, " + dbSchemaVersion + " current");
 		return upToDate;
 	}
 
@@ -256,9 +258,9 @@ public class CommandLineAction {
 					File f1 = (File) o1;
 					File f2 = (File) o2;
 					String name1 = f1.getName();
-					String version1 = name1.substring(props.getProperty("DB.schema").length()+1, name1.length() - ".sql".length());
+					String version1 = name1.substring(props.getProperty("DB.schema").length(), name1.length() - ".sql".length());
 					String name2 = f2.getName();
-					String version2 = name2.substring(props.getProperty("DB.schema").length()+1, name2.length() - ".sql".length());
+					String version2 = name2.substring(props.getProperty("DB.schema").length(), name2.length() - ".sql".length());
 					return version1.compareToIgnoreCase(version2);
 					}
 			});
@@ -267,17 +269,17 @@ public class CommandLineAction {
 		for (int f = 0; f < schemaFiles.length; f++) {
 			File schemaFile = schemaFiles[f];
 			String name = schemaFile.getName();
-			String version = name.substring(props.getProperty("DB.schema").length()+1, name.length() - ".sql".length());
+			String version = name.substring(props.getProperty("DB.schema").length(), name.length() - ".sql".length());
 			if (version.compareTo(expectedSchemaVersion) <= 0 && version.compareTo(dbSchemaVersion) > 0) {
 				processSchemaFile(schemaFile);
 			} else {
-				if (DEBUG) System.out.println("skipping " + name);
+				if (DEBUG) System.out.println("skipping " + name + " (" + version + ")");
 			}
 		}
 	}
 	
 	protected void processSchemaFile(File schemaFile) throws SQLException, IOException {
-		if (DEBUG) System.out.println("updating database from schema " + schemaFile.getCanonicalPath());
+		System.out.println("updating database from schema " + schemaFile.getCanonicalPath());
 		String all = readFile(schemaFile);
 		Statement stmt = conn.createStatement();
 		while (!all.equals("")) {
