@@ -88,6 +88,7 @@ public class RunPipeline {
 		String userID = args[1];
 
 		setUp(userID);
+
 		runPipelineModel(getPipelineModel(pipelineFileName),
 				additionalArguments);
 
@@ -494,6 +495,7 @@ public class RunPipeline {
 			// get a new output decorator if one has been specified
 			if (System.getProperty("decorator") != null) {
 				String decoratorClass = System.getProperty("decorator");
+
 				decorator = (RunPipelineOutputDecoratorIF) (Class
 						.forName(decoratorClass)).newInstance();
 			}
@@ -527,7 +529,6 @@ public class RunPipeline {
 			 * classPath); System.out.println("classpath is " +
 			 * System.getProperty("java.class.path"));
 			 ******************************************************************/
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

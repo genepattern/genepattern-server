@@ -5,6 +5,7 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.server.webapp.RunPipelineOutputDecoratorIF;
+import org.genepattern.server.webapp.*;
 
 /**
  * Forwards all methods to
@@ -13,7 +14,7 @@ import org.genepattern.server.webapp.RunPipelineOutputDecoratorIF;
  * @author Joshua Gould
  */
 public class RunPipelineNullDecorator implements RunPipelineOutputDecoratorIF {
-	RunPipelineNullDecorator decorator = new RunPipelineNullDecorator();
+	org.genepattern.server.webapp.RunPipelineNullDecorator decorator = new org.genepattern.server.webapp.RunPipelineNullDecorator();
 
 	public void beforePipelineRuns(PipelineModel model) {
 		decorator.beforePipelineRuns(model);

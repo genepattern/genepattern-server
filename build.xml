@@ -198,8 +198,20 @@
     <jar basedir="${genepattern.build}" 
 		defaultexcludes="true" 
 		excludes="**/*.form,**/*.nbattrs" 
-		includes="org/**/*.class" 
+		includes="org/**/*.class, edu/mit/genome/gp/ui/analysis/*.class" 
 		jarfile="${genepattern.build}/${full-jarname}"/>
+
+    <jar basedir="${genepattern.build}" 
+		defaultexcludes="true" 
+		excludes="**/*.form,**/*.nbattrs" 
+		includes="edu/mit/genome/gp/ui/analysis/*.class" 
+		jarfile="${genepattern.build}/analysis.jar">
+
+		<manifest>
+            	<attribute name="Class-Path" value="${full-jarname} hsqldb.jar xalan.jar saaj.jar jaxrpc.jar jaxb-rt-1.0-ea.jar" />
+		</manifest>
+
+	</jar>
 
 
    </target>
