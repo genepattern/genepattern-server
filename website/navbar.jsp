@@ -294,7 +294,7 @@ function LSID(lsid) {
 <% } %>
 <%! private String _taskCatalog(Collection tmTasks, Vector recent, String selectorName, String onSelectURL, String type, String userID) {
 	String IGNORE = "dontJump";
-	String DIVIDER = "-----------";
+	String DIVIDER = "";
 	int maxNameWidth = 0; 
 	for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 		TaskInfo task = (TaskInfo)itTasks.next();
