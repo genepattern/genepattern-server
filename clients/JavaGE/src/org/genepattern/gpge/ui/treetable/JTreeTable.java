@@ -93,6 +93,13 @@ public class JTreeTable extends JTable {
    }
 
 
+   public void addTreeSelectionListener(javax.swing.event.TreeSelectionListener l) {
+      tree.addTreeSelectionListener(l);
+   }
+   
+   public TreePath getSelectionPath() {
+      return tree.getSelectionPath();
+   }
 
    public boolean editCellAt(int row, int column, EventObject e) {
       expandOrCollapseNode(e);// RG: Fix Issue 49!
