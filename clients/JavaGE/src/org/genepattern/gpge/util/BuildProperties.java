@@ -87,9 +87,9 @@ public class BuildProperties {
     /** The release type: alpha, beta, final etc. */
     public static final String RELEASE;
     /** The major version */
-    public static final int MAJOR_VERSION;
+    public static final String MAJOR_VERSION;
     /** The minor version */
-    public static final int MINOR_VERSION;
+    public static final String MINOR_VERSION;
     /** The revision */
     public static final int REVISION;
     /** The full version as a String */
@@ -98,9 +98,9 @@ public class BuildProperties {
     /** static initializer */
     static {
         long build = 0;
-        int count =0, major=0, minor=0,revision=0;
+        int count =0;
         String name="GenePattern",full = "0.0.0", release = "?", date = "The Past";
-        String buildTag = "";
+        String buildTag = "", major="", minor="", revision="";
 
         PROPERTIES = new Properties();
         try {
@@ -116,10 +116,10 @@ public class BuildProperties {
             name     = getValue("program.name");
             release  = getValue("release");
 	    buildTag = getValue("build.tag");
-            major    = (int)getLong("version.major");
-            minor    = (int)getLong("version.minor");
-            revision = (int)getLong("version.revision");
-            final String rev = ( revision > 0 ) ? "."+revision : "";
+            major    = getValue("version.major");
+            minor    = getValue("version.minor");
+            revision = getValue("version.revision");
+            final String rev = ( revision.length() > 0 ) ? "."+revision : "";
             full     = major+"."+minor+rev+release;
             
         } catch (java.io.IOException ex) {
