@@ -18,7 +18,7 @@
 			<include name="commons-discovery.jar"/>
 			<include name="commons-logging.jar"/>
 			<include name="jakarta-oro-2.0.8.jar"/>
-			<include name="jaxb-rt-1.0-ea.jar.jar"/>
+			<include name="jaxb-rt-1.0-ea.jar"/>
 			<include name="jaxrpc.jar"/>
 			<include name="log4j-1.2.4.jar"/>
 			<include name="mail.jar"/>
