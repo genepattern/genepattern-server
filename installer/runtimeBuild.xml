@@ -9,6 +9,10 @@
 		<mkdir dir="${downloadDir}"/>
 	</target>
 	
+	<target name="backupResources">
+		<copyfile src="${USER_INSTALL_DIR}/resources/genepattern.properties" dest="${USER_INSTALL_DIR}/resources/genepattern.properties.save"/>
+	</target>
+
 	<target name="create-zip" depends="init">
 		<zip basedir="${Rlib}" destfile="${zip-file}" whenempty="fail" update="true">
 			<include name="GenePattern/**"/>
