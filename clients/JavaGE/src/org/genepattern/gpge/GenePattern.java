@@ -37,7 +37,8 @@ import java.awt.Color;
  */
 public final class GenePattern {
 	protected static Component dialogParent = null;
-
+  
+   
 	static javax.swing.JFrame mainFrame;
 
 	/** Creates a new instance of GenePattern */
@@ -119,8 +120,13 @@ public final class GenePattern {
 	}
 
    public static void showMessageDialog(String title, String message) {
-      javax.swing.JOptionPane.showMessageDialog(mainFrame, message, title,
+      if(MainFrame.windowStyle==MainFrame.WINDOW_STYLE_MDI) {
+         javax.swing.JOptionPane.showInternalMessageDialog(mainFrame, message, title,
 				javax.swing.JOptionPane.INFORMATION_MESSAGE);
+      } else {
+          javax.swing.JOptionPane.showMessageDialog(mainFrame, message, title,
+				javax.swing.JOptionPane.INFORMATION_MESSAGE);
+      }
    }
    
    public static void showMessageDialog(String message) {
@@ -129,8 +135,13 @@ public final class GenePattern {
    
    
    public static void showErrorDialog(String title, String message) {
-		javax.swing.JOptionPane.showMessageDialog(mainFrame, message, "Error",
+      if(MainFrame.windowStyle==MainFrame.WINDOW_STYLE_MDI) {
+         javax.swing.JOptionPane.showInternalMessageDialog(mainFrame, message, "Error",
 				javax.swing.JOptionPane.ERROR_MESSAGE);
+      } else {
+         javax.swing.JOptionPane.showMessageDialog(mainFrame, message, "Error",
+				javax.swing.JOptionPane.ERROR_MESSAGE);
+      }
 	}
    
    public static boolean disconnectedFromServer(org.genepattern.webservice.WebServiceException wse, String server) {
