@@ -121,15 +121,15 @@ function addNavbarItem(name, lsid) {
 	var taskType = name.substr(-(".<%= GPConstants.TASK_TYPE_PIPELINE %>".length)) == ".<%= GPConstants.TASK_TYPE_PIPELINE %>" ? "Pipeline" : "Task";
 	var selector = document.forms['searchForm'][taskType];
 	var l = new LSID(lsid);
-	if (l.authorityType == "<%= LSIDUtil.AUTHORITY_FOREIGN %>") {
-		name = name + " (" + l.getAuthority() + ")";
-	}
 	for (i = 0; i < selector.options.length; i++) {
 		if (selector.options[i].text == name) return;
 	}
 	var newOption = new Option(name, lsid);
 	// set the class for this option to get the right coloring
 	newOption.className = "navbar-tasks-" + l.authorityType;
+//	if (l.authorityType == "<%= LSIDUtil.AUTHORITY_FOREIGN %>") {
+		newOption.setAttribute("title", l.getAuthority());
+/	}
 	selector.options[selector.options.length] = newOption;
 	selector.options[selector.options.length-1].selected = true; // highlight it
 	eval("change" + taskType + "()"); // call either changeTask() or changePipeline()
@@ -243,7 +243,7 @@ function LSID(lsid) {
 	sbCatalog.append("<select name=\"" + selectorName + "\" onchange=\"");
 	sbCatalog.append(onSelectURL);
 	sbCatalog.append("\" class=\"navbar\">\n");
-	sbCatalog.append("<option value=\"" + IGNORE + "\">" + (type == null ? "task" : type) + "</option>\n");
+	sbCatalog.append("<option value=\"" + IGNORE + "\" disabled>" + (type == null ? "task" : type) + "</option>\n");
 	sbCatalog.append("<option value=\"\">new " + (type == null ? "task" : type) + "</option>\n");
 	String name;
 	String shortName;
@@ -292,9 +292,9 @@ function LSID(lsid) {
 		}
 		if (isPublic || isMine) {
 			sbCatalog.append("<option value=\"" + (lsid != null ? l.toString() : name) +
-					 "\" class=\"navbar-tasks-" + authorityType + "\">" + taskInfo.getName() + 
-					 (authorityType.equals(LSIDUtil.AUTHORITY_FOREIGN) ? (" (" + l.getAuthority() + ")") : "") +
-					 "</option>\n");
+					 "\" class=\"navbar-tasks-" + authorityType + "\"" + 
+					 " title=\"" + GenePatternAnalysisTask.htmlEncode(description) + ", " + l.getAuthority() + "\"" +
+					 ">" + taskInfo.getName() + "</option>\n");
 		}
 	}
 

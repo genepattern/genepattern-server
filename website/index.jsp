@@ -542,8 +542,7 @@ taskSelect(document.forms['index'].task, 'task');
 		if (isPublic || isMine) {
 			sbCatalog.append("<option value=\"" + (lsid != null ? l.toStringNoVersion() : taskInfo.getName()) + 
 					 "\" class=\"tasks-" +  authorityType + "\"" +
-					 (authorityType == LSIDUtil.AUTHORITY_FOREIGN ? (" title=\"" + l.getAuthority() + "\"") : "") +
-					 ">" + display + "</option>\n");
+					 " title=\"" + GenePatternAnalysisTask.htmlEncode(description) + ", " + l.getAuthority() + "\"" + ">" + display + "</option>\n");
 		}
 	}
 	sbCatalog.append("</select>\n");
