@@ -432,7 +432,7 @@ public class AnalysisHypersonicDAO implements
       
 		try {
 			conn = getConnection();
-         String sql = "SELECT parent_job.job_no,parent_job.task_id, status_name, parent_job.date_submitted, parent_job.date_completed, parent_job.parameter_info, parent_job.user_id FROM analysis_job AS child_job, analysis_job AS parent_job, job_status WHERE child_job.job_no = " + jobId + " AND parent_job.job_no = child_job.parent AND parent_job.status_id = job_status.status_id";
+         String sql = "SELECT parent_job.job_no,parent_job.task_id, status_name, parent_job.date_submitted, parent_job.date_completed, parent_job.parameter_info, parent_job.user_id, parent_job.task_lsid FROM analysis_job AS child_job, analysis_job AS parent_job, job_status WHERE child_job.job_no = " + jobId + " AND parent_job.job_no = child_job.parent AND parent_job.status_id = job_status.status_id";
 			
 			stat = conn.createStatement();
          resultSet = stat.executeQuery(sql);
@@ -489,8 +489,8 @@ public class AnalysisHypersonicDAO implements
 			conn = getConnection();
 
 			//Fetch from database
-			stat = conn
-					.prepareStatement(getJobInfoSelectClause() + ", task_name, task_lsid FROM analysis_job, job_status WHERE analysis_job.status_id = job_status.status_id AND user_id = ? AND parent IS NULL");
+			stat = conn.prepareStatement(getJobInfoSelectClause() 
+				+ ", task_name, task_lsid FROM analysis_job, job_status WHERE analysis_job.status_id = job_status.status_id AND user_id = ? AND ((parent IS NULL) OR ((select task_lsid from analysis_job where job_no = parent  ) is NULL))");
 			stat.setString(1, username);
 
 			resultSet = stat.executeQuery();
