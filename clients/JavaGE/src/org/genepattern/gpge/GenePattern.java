@@ -128,6 +128,19 @@ public final class GenePattern {
 				javax.swing.JOptionPane.ERROR_MESSAGE);
 	}
    
+   public static boolean disconnectedFromServer(org.genepattern.webservice.WebServiceException wse, String server) {
+      if(wse.getRootCause() instanceof org.apache.axis.AxisFault) {
+         org.apache.axis.AxisFault af = (org.apache.axis.AxisFault) wse.getRootCause();
+         Throwable t = af.getCause();
+         if(t instanceof java.net.ConnectException || t instanceof java.net.UnknownHostException) {
+            showErrorDialog("Unable to connect to " + 
+                  server);
+            return true;
+         }
+      }  
+      return false;
+   }
+   
 	public static void showErrorDialog(String message) {
 		showErrorDialog("Error", message);
 	}
