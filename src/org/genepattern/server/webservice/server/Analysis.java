@@ -118,7 +118,7 @@ public class Analysis extends GenericWebService {
 
 		try {
 			AddNewJobHandler req = new AddNewJobHandler(taskID, username,
-					parameters, "");
+					parameters);
 			jobInfo = req.executeRequest();
 		} catch (org.genepattern.webservice.OmnigeneException oe) {
 			_cat.error(oe.getMessage());
