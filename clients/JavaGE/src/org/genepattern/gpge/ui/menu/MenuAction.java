@@ -149,6 +149,7 @@ public class MenuAction extends AbstractAction {
       for(int i = 0; i < items.length; i++) {
          remove((MenuItemAction) items[i]);
       }   
+      firePropertyChange("MenuAction.removeAll", null, null);
    }
    
    public void remove(int i) {
@@ -312,6 +313,8 @@ public class MenuAction extends AbstractAction {
                InsertPropertyChange c = (InsertPropertyChange) e.getNewValue();
                JMenuItem m = c.action.createMenuItem();
                getMenu().insert(m, c.index);  
+            } else if(e.getPropertyName().equals("MenuAction.removeAll")) {
+               getMenu().removeAll();  
             }
          }
       }
