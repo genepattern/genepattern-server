@@ -343,7 +343,7 @@ public class Analysis extends GenericWebService {
    
 	/**
 	 * 
-	 * Deletes the given output file for the given job and removes the output file from the parameter info array for the job. If jobId is a parent job id and value was created by a child job, the child will be updated as well.
+	 * Deletes the given output file for the given job and removes the output file from the parameter info array for the job. If <tt>jobId</tt> is a parent job and value was created by it's child, the child will be updated as well. Additionall, if <tt>jobId</tt> is a child job, the parent will be updated too.
 	 * 
 	 * @param jobId
 	 *            the job id
@@ -387,10 +387,15 @@ public class Analysis extends GenericWebService {
          
          ds.updateJob(jobInfo.getJobNumber(), jobInfo.getParameterInfo(), ((Integer)JobStatus.STATUS_MAP.get(jobInfo.getStatus())).intValue());
             
-         if(fileCreationJobNumber!=jobId) {
+         if(fileCreationJobNumber!=jobId) { // jobId is a parent job
             JobInfo childJob = ds.getJobInfo(fileCreationJobNumber);
             childJob.setParameterInfoArray(removeOutputFile(childJob, value));
             ds.updateJob(childJob.getJobNumber(), childJob.getParameterInfo(), ((Integer)JobStatus.STATUS_MAP.get(childJob.getStatus())).intValue());
+         } else {
+            JobInfo parent = ds.getParent(jobId);
+            if(parent!=null) { // jobId is a child job
+               parent.setParameterInfoArray(removeOutputFile(parent, value));
+            }
          }
           try {
              org.genepattern.server.indexer.Indexer.deleteJobFile(fileCreationJobNumber,
@@ -437,7 +442,7 @@ public class Analysis extends GenericWebService {
 	/**
 	 * 
 	 * Gets the jobs for the current user
-    * @param username the username to retrieve jobs for. If <tt>null</tt> the current username is used.
+    * @param username the username to retrieve jobs for. If <tt>null</tt> all available jobs are returned.
     * @param maxJobNumber the maximum job number to include in the returned jobs or -1, to start at the current maximum job number in the database
     * @param maxEntries the maximum number of jobs to return
     * @param allJobs if <tt>true</tt> return all jobs that the given user has run, otherwise return jobs that have not been deleted 
@@ -448,9 +453,6 @@ public class Analysis extends GenericWebService {
 		try {
 			org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
 					.getAnalysisJobDataSourceEJB();
-         if(username==null) {
-            username = getUsernameFromContext();  
-         }
 			return ds.getJobs(username, maxJobNumber, maxEntries, allJobs);
 		} catch (Exception e) {
 			throw new WebServiceException(e);
@@ -464,7 +466,7 @@ public class Analysis extends GenericWebService {
 	 * @return a String containing the username or an empty string if one not
 	 *         found.
 	 */
-	private String getUsernameFromContext() {
+	protected String getUsernameFromContext() {
 		// get the context then the username from the soap header
 		context = MessageContext.getCurrentContext();
 		String username = context.getUsername();

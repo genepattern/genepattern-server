@@ -499,7 +499,7 @@ public class AnalysisHypersonicDAO implements
          stat = conn.createStatement();
          stat.executeUpdate(sql);
       } catch (Exception e) {
-			logger.error("AnalysisHypersonicDAO:getJobs failed " + e);
+			logger.error("setJobDeleted failed " + e);
 			throw new OmnigeneException(e.getMessage());
 		} finally {
 			closeConnection(null, stat, conn);
@@ -511,12 +511,15 @@ public class AnalysisHypersonicDAO implements
 		java.util.List results = new java.util.ArrayList();
 
 		java.sql.Connection conn = null;
-		PreparedStatement stat = null;
+		Statement stat = null;
 		ResultSet resultSet = null;
 
 		try {
 			conn = getConnection();
-         String sql = "SELECT LIMIT 0 " +  maxEntries + " job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id, task_lsid, task_name FROM analysis_job, job_status WHERE analysis_job.status_id = job_status.status_id AND user_id = ? AND parent IS NULL";
+         String sql = "SELECT LIMIT 0 " +  maxEntries + " job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id, task_lsid, task_name FROM analysis_job, job_status WHERE analysis_job.status_id = job_status.status_id AND parent IS NULL";
+         if(username != null) {
+            sql += " AND user_id='" + username + "'";
+         }
          if(maxJobNumber != -1) {
               sql += " AND job_no <= " + maxJobNumber;  
          }
@@ -526,11 +529,10 @@ public class AnalysisHypersonicDAO implements
          sql += " ORDER BY job_no DESC";
         
 			stat = conn
-					.prepareStatement(sql);
+					.createStatement();
 
-			stat.setString(1, username);
-
-			resultSet = stat.executeQuery();
+			
+			resultSet = stat.executeQuery(sql);
 
 			while (resultSet.next()) {
 				JobInfo ji = jobInfoFromResultSet(resultSet);

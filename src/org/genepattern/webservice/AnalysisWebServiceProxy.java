@@ -242,14 +242,14 @@ public class AnalysisWebServiceProxy {
 		}
    }
 
-	public JobInfo[] getJobs() throws WebServiceException {
+	public JobInfo[] getJobs(String username, boolean getAll) throws WebServiceException {
 		try {
 			java.util.List results = new java.util.ArrayList();
          int maxJobNumber = -1;
          final int querySize = 100;
          int numRetrieved = querySize;
          while(numRetrieved==querySize) {
-            JobInfo[] jobs = stub.getJobs(null, maxJobNumber, querySize, false); 
+            JobInfo[] jobs = stub.getJobs(null, maxJobNumber, querySize, getAll); 
             numRetrieved = jobs.length;
             results.addAll(java.util.Arrays.asList(jobs));
             if(jobs.length > 1) {
@@ -271,4 +271,5 @@ public class AnalysisWebServiceProxy {
 			throw new WebServiceException(re);
 		}
 	}
+
 }
