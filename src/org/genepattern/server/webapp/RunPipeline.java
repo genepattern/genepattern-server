@@ -448,7 +448,7 @@ semantic_search_loop:
 		BufferedReader inputB;
 		try {
 			inputB = new BufferedReader(new FileReader(filename));
-			String modelLine;
+			String modelLine="";
 			for (int x=0; x<GPConstants.ODF_MODEL_LINE; x++){
 			   modelLine = inputB.readLine();
 			}
