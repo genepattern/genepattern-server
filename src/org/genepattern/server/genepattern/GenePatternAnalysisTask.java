@@ -963,7 +963,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 					}
 					String optionalPrefix = (String) hmAttributes
 							.get(PARAM_INFO_PREFIX[PARAM_INFO_NAME_OFFSET]);
-					if (optionalPrefix != null && optionalPrefix.length() > 0) {
+					if (replacement.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
 						replacement = optionalPrefix + replacement;
 					}
 				}
