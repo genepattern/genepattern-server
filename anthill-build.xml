@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!-- Ant build file to perform the nightly builds from ANTHILL -->
+
+
+<project basedir="." name="nightlyBuild" default="nightlyBuild">
+
+	<target name="init">
+		<property name="defaultInstallDir" value="c:\progra~1\genepatternserver" />
+	</target>
+
+	
+	<target name="loadModules" depends="">
+		<ant antfile="build.xml" dir="nightly_build" target="compile"/>
+		<ant antfile="build.xml" dir="nightly_build" target="uploadModulesFromDir"/>
+	</target>
+
+
+	<target name="checkForOldInstall" depends="init">
+		<available property="oldInstallpresent" value="true" 
+			file="${defaultInstallDir}" 	/>
+	</target>
+
+
+	<target name="uninstall" if="oldInstallpresent" depends="init, checkForOldInstall">
+
+		<!-- Stop the server (2 ways) -->
+		<exec dir="${defaultInstallDir}\" 
+					executable="${defaultInstallDir}\StopGenePatternServer.exe -i SILENT" 
+			failifexecutionfails="false" failonerror="false"/>
+		<antcall target="shutdownServer" inheritRefs="true"/>
+
+		<!-- uninstall the old one -->
+		<exec failifexecutionfails="false" 
+				dir="${defaultInstallDir}\UninstallerData" 
+				executable="${defaultInstallDir}\UninstallerData\uninst~1.exe">
+			<arg line="-i SILENT"/>
+		</exec>
+
+	</target>
+
+
+	<target name="installLocal" depends="init, uninstall">
+		
+		<!-- install the new one -->
+		<exec 
+				dir="." 
+				executable="${basedir}\installer\GP_server_Build_Output\Web_Installers\InstData\Windows\VM\GPServer">
+			<arg line="-i SILENT"/>
+		</exec>
+
+		
+	</target>
+
+
+	<target name="startServer" depends="init">
+		<get src="http://cpb67-896.broad.mit.edu:7080/gpinstalls/restartLocalhost8080.jsp" dest="logs/startup.log" ignoreerrors="true" />
+
+	</target>
+
+
+	<target name="nightlyBuild">
+		<antcall target="pruneOldDirs" inheritRefs="true"/>
+
+		<mkdir dir="logs"/>
+		<!-- checkout sandbox, build & install -->
+		<ant antfile="build.xml" dir="." target="nightlyrelease"/>
+
+		<mkdir dir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile"/>
+		<copy file="gp_war.zip" todir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile" />
+
+		<copy overwrite="true"
+			todir="e:/GPInstalls/Tomcat/webapps/gpinstalls/nightlybuild">
+			<fileset dir="installer/GP_server_Build_Output/Web_Installers"/>
+		</copy>
+
+	</target>
+
+
+	<target name="publishBuild">
+		
+		<ant antfile="anthill-build.xml" dir="${basedir}" target="installLocal" />
+		
+		<!-- load the modules since the installer doesn't - once we can start the server -->
+		<antcall target="startServer" inheritRefs="true"/>
+		<antcall target="loadModules" inheritRefs="true"/>
+
+		
+	</target>	
+
+
+	<target name="shutdownServer">
+		<!-- note this will generate an error as the server shuts down while connected -->
+		
+		<get src="http://127.0.0.1:8080/gp/shutdownServer.jsp" dest="logs/shutdown.log" ignoreerrors="true" />
+	</target>
+
+	<target name="pruneOldDirs">
+      	<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+		<commandline>
+        		<argument line="update -P"/>
+    		</commandline>	 
+	</cvs>
+	</target>
+
+	<target name="foo">
+		<ant antfile="build.xml" dir="." target="foo"/>
+		
+	</target>
+
+</project>

@@ -1,0 +1,69 @@
+
+<!-- =================================================================== -->
+<!-- Compile analysis source code                                                -->
+<!-- =================================================================== -->
+<target name="compileAnalysis" depends="prepareAnalysis">
+	<echo> src= ${src.dir} </echo> 
+
+   <javac srcdir="${src.dir}" destdir="${build.classes}" debug="true"
+      deprecation="false"
+	listfiles="false" 
+	excludes="org/genepattern/annotation/** org/genepattern/server/util/** org/genepattern/server/** org/genepattern/math/** org/genepattern/util/** org/genepattern/data/*.java org/genepattern/**"
+      classpathref="analysis.classpath"> 
+  </javac>
+</target>
+
+
+<!-- =================================================================== -->
+<!-- Create analysis service jars                                        -->
+<!-- =================================================================== -->    
+
+<target name="jar-analysis" depends="prepareAnalysis,compileAnalysis">
+    <jar jarfile="${build.jars}/analysis.jar">
+        <fileset dir="${build.classes}">
+            <include name="${analysis.app.package}/analysis/**"/>
+             <include name="${analysis.app.package}/webservice/**"/>
+            <include name="${analysis.app.package}/util/**"/>
+            <include name="${pipeline.package}/**"/>
+	    <include name="${utils}/**"/>
+	    <include name="${more.utils}/**"/>
+        </fileset>
+    </jar>
+   <ant target="post-compile"/>
+</target>
+
+<target name="create-analysis-jars"
+        depends="jar-analysis">
+</target>
+
+
+<target name="prepareAnalysis" >
+	<!-- Properties -->
+	<property name="src.dir" location="src"/>
+	<property name="lib.dir" location="./lib"/>
+	<property name="build.dir" location="build"/>
+	<property name="build.classes" location="${build.dir}/analysisclasses"/>
+	<property name="build.jars" location="build/jars"/>
+	<property name="analysis.app.package" value="org/genepattern/server" />
+	<property name="pipeline.package" value="org/genepattern/data/pipeline" />
+	<property name="utils" value="org/genepattern/util" />
+	<property name="more.utils" value="org/genepattern/server/util" />
+
+
+	<path id="analysis.classpath"> 
+	   <fileset dir="${lib.dir}" id="lib.dir.files">
+ 	      <include name="**/*.jar"/>
+  	     <include name="**/*.zip"/>
+ 	  </fileset>
+  	 <pathelement location="${build.classes}" />
+	</path>
+
+   <mkdir dir="${build.dir}"/>
+   <mkdir dir="${build.classes}"/>
+   <mkdir dir="${build.jars}"/>
+
+   <available property="post-compile.present" file="post-compile.xml" />
+    
+</target>
+
+ 
