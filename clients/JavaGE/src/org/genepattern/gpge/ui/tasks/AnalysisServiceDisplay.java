@@ -115,30 +115,33 @@ public class AnalysisServiceDisplay extends JPanel {
          Vector versionsCopy = new Vector();
          versionsCopy.add("");
          latestVersion = lsid.getVersion();
-         for(int i = 0; i < versions.size(); i++) {
-            String version = (String) versions.get(i);
-            if(version.compareTo(latestVersion) > 0) {
-               latestVersion = version;
+         if(versions!=null) {
+            for(int i = 0; i < versions.size(); i++) {
+               String version = (String) versions.get(i);
+               if(version.compareTo(latestVersion) > 0) {
+                  latestVersion = version;
+               }
             }
          }
-         
          if (lsid.getVersion().equals(latestVersion)) {
             taskDisplay += ", version " + lsid.getVersion() + " (latest)";
          } else {
             taskDisplay += ", version " + lsid.getVersion();
          }
          
-         for(int i = 0; i < versions.size(); i++) {
-            String version = (String) versions.get(i);
-            if(version.equals(lsid.getVersion())) {
-               continue;  
+         if(versions!=null) {
+            for(int i = 0; i < versions.size(); i++) {
+               String version = (String) versions.get(i);
+               if(version.equals(lsid.getVersion())) {
+                  continue;  
+               }
+               
+               if(version.equals(latestVersion)) {
+                  version += " (latest)";
+               }
+   
+               versionsCopy.add(version);
             }
-            
-            if(version.equals(latestVersion)) {
-               version += " (latest)";
-            }
-
-            versionsCopy.add(version);
          }
          Collections.sort(versionsCopy, String.CASE_INSENSITIVE_ORDER);
 
@@ -270,7 +273,7 @@ public class AnalysisServiceDisplay extends JPanel {
       
       setLayout(new BorderLayout());
       JPanel buttonPanel = createJPanel();
-      JButton submitButton = new JButton("Submit");
+      JButton submitButton = new JButton("Run");
       submitButton.addActionListener(new SubmitActionListener());
       getRootPane().setDefaultButton(submitButton);
       buttonPanel.add(submitButton);
@@ -612,9 +615,10 @@ public class AnalysisServiceDisplay extends JPanel {
                   Component c = (Component) parameterName2ComponentMap.get(formalParameters[i].getName());
                   String value = null;
                   ParameterInfo actualParameter = new ParameterInfo(formalParameters[i].getName(), "", "");
+                  actualParameter.setAttributes(new HashMap(2));
                   if(c instanceof ObjectTextField) {
                      try {
-                        actualParameter.setAttributes(new HashMap(2));
+                        
                         value = getValue(actualParameter, (ObjectTextField) c);
                         actualParameter.getAttributes().put(
                            GPConstants.PARAM_INFO_CLIENT_FILENAME[0],
@@ -644,7 +648,7 @@ public class AnalysisServiceDisplay extends JPanel {
                   actualParameters.add(actualParameter);
                }
             }
-            System.out.println(actualParameters);
+      
             final ParameterInfo[] actualParameterArray = (ParameterInfo[]) actualParameters.toArray(new ParameterInfo[0]);
             final AnalysisService _selectedService = selectedService;
             final String username = AnalysisServiceManager.getInstance().getUsername();
