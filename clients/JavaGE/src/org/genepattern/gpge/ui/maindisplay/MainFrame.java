@@ -248,8 +248,8 @@ public class MainFrame extends JFrame {
 					try {
 						node.download(outputFile);
 					} catch (Exception e) {
-						GenePattern.showError(GenePattern.getDialogParent(),
-								"Error saving file", e);
+						GenePattern.showErrorDialog(
+								"An error occurred while saving " + outputFile.getName());
 					}
 				}
 			}.start();
@@ -275,7 +275,6 @@ public class MainFrame extends JFrame {
 
 			}
 		}.start();
-		jobModel.removeAll();
 		new Thread() {
 			public void run() {
 				jobModel.getJobsFromServer(analysisServiceManager.getServer(),
@@ -624,21 +623,20 @@ public class MainFrame extends JFrame {
 					public void projectAdded(ProjectEvent e) {
 						final File dir = e.getDirectory();
 						JMenuItem menuItem = new JMenuItem(dir.getPath(), IconManager.loadIcon(IconManager.SAVE_ICON));
-						saveServerFileMenu.add(menuItem);
+                  
+						saveServerFileMenu.insert(menuItem, projectDirModel.indexOf(dir));
 						menuItem.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
 								new Thread() {
 									public void run() {
-										try {
-											JobModel.ServerFileNode node = (JobModel.ServerFileNode) selectedJobNode;
-											File outputFile = new File(dir,
+                             JobModel.ServerFileNode node = (JobModel.ServerFileNode) selectedJobNode;
+                             File outputFile = new File(dir,
 													node.name);
+										try {
 											node.download(outputFile);
 											projectDirModel.refresh(dir);
 										} catch (Exception e) {
-											GenePattern.showError(GenePattern
-													.getDialogParent(),
-													"Error saving file", e);
+											GenePattern.showErrorDialog("An error occurred while saving the file " + node.name);
 										}
 									}
 								}.start();
@@ -1023,7 +1021,6 @@ public class MainFrame extends JFrame {
 	public void refreshJobs() {
 		new Thread() {
 			public void run() {
-				jobModel.removeAll();
 				jobModel.getJobsFromServer(analysisServiceManager.getServer(),
 						analysisServiceManager.getUsername());
 			}
