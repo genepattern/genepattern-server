@@ -565,7 +565,7 @@ public class DefaultUIRenderer implements UIRenderer {
 					info.getAttributes().put(ParameterInfo.MODE,
 							ParameterInfo.CACHED_INPUT_MODE);
 					org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode node = (org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) obj;
-					return node.getServerName();
+					return node.getParameterValue();
 
 				} else if (obj instanceof java.io.File) {
 					info.setAsInputFile();
