@@ -81,10 +81,7 @@
 	       <include name="*.zip"/>
 	    </fileset>
  	   
-	    <fileset dir="${genepattern.root}/build/jars">
-	       <include name="analysis.jar"/>
-	    </fileset>
-	       <fileset dir="${genepattern.root}">
+	    <fileset dir="${genepattern.root}">
 	       <include name="*.jar"/>
 	       <include name="*.zip"/>
 	    </fileset>
@@ -98,10 +95,6 @@
         <fileset dir="website/" includes="**/*.class"/>
     </delete>
 	<ant antfile="../build.xml" dir="clients/JavaGE/src" inheritall="true" inheritrefs="true" target="clean"/>
-	<delete>
-       	<fileset dir="build/analysisclasses" includes="**/*.class"/>
-       	<fileset dir="build/jars" includes="**/*.jar"/>
-	</delete>   
  </target>
 
 
@@ -147,9 +140,7 @@
 			<fileset dir="lib">
 				<include name="**/*.jar"/>
 		  </fileset>
-		  <fileset dir="build/jars">
-				<include name="**/*.jar"/>
-		  </fileset>
+		  
 		</classpath>
 		<fileset dir="src" defaultexcludes="yes">
       		<include name="org/genepattern/data/**/*.java"/>
@@ -163,11 +154,10 @@
 			<zipfileset dir="build/">
 				<include name="${gp-library-jarname}"/>
 			</zipfileset>
-			<zipfileset dir="build/jars/" prefix="lib">
+			
+			<zipfileset dir="lib" prefix="lib">
 				<include name="gpclient.jar"/> 
 				<include name="analysis.jar"/>
-			</zipfileset>
-			<zipfileset dir="lib" prefix="lib">
 				<include name="activation.jar"/>
 				<include name="mail.jar"/>
 				<include name="axis.jar"/> 
