@@ -2174,9 +2174,8 @@ function(taskName, .commandLine, .libDir=null, .os="any", .cpuType="any", .downl
 	}
 
 	java <- gpFindJava()
-	commandLine <- paste(java, "-cp", 
+	commandLine <- paste(java, "-jar", 
 			     gpQuote(file.path(GPHome, "runVisualizer.jar")),
-			     "org.genepattern.visualizer.RunVisualizer", 
 			     taskName,
 			     gpQuote(.commandLine), 
 			     ifelse(showOutput, "true", "\"\""), 

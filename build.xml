@@ -337,8 +337,11 @@
 	<jar basedir="${genepattern.build}" 
 		defaultexcludes="true" 
 		includes="org/genepattern/visualizer/*.class" 
-		jarfile="${genepattern.build}/${runVisualizer-jarname}"/>
-
+		jarfile="${genepattern.build}/${runVisualizer-jarname}">
+			<manifest>
+				<attribute name="Main-Class" value="org.genepattern.visualizer.RunVisualizer"/>
+			</manifest>
+	</jar>
  	<signjar jar="${genepattern.build}/${runVisualizer-jarname}" alias="Genepattern" storepass="${signingKey}" keypass="${signingKey}" keystore="${keyStore}" />
 
 	<!-- copy the web sites jar files to build/web-site/lib -->
