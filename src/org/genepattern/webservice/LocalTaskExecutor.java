@@ -1,4 +1,4 @@
-package org.genepattern.client;
+package org.genepattern.webservice;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,10 +21,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskIntegratorProxy;
-import org.genepattern.webservice.WebServiceException;
 
 /**
  *@author     Joshua Gould
