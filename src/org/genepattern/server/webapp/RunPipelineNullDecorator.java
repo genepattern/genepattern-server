@@ -18,6 +18,8 @@ import org.genepattern.webservice.ParameterInfo;
 
 public class RunPipelineNullDecorator implements RunPipelineOutputDecoratorIF {
 	PipelineModel model = null;
+ 	RunPipelineExecutionLogger logger =  new RunPipelineExecutionLogger();
+
 
 	Properties genepatternProps = null;
 
@@ -32,6 +34,7 @@ public class RunPipelineNullDecorator implements RunPipelineOutputDecoratorIF {
 		} catch (Exception ioe) {
 			genepatternProps = new Properties();
 		}
+		logger.beforePipelineRuns(model);
 
 	}
 
@@ -59,13 +62,17 @@ public class RunPipelineNullDecorator implements RunPipelineOutputDecoratorIF {
 
 			}
 		}
+		logger.recordTaskExecution(jobSubmission, idx, numSteps);
+
 	}
 
 	public void recordTaskCompletion(JobInfo jobInfo, String name) {
+  		logger.recordTaskCompletion(jobInfo, name);
 
 	}
 
 	public void afterPipelineRan(PipelineModel model) {
+		logger.afterPipelineRan(model);
 
 	}
 

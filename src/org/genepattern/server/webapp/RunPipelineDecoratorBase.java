@@ -170,6 +170,7 @@ public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecor
 			PropertyFactory property = PropertyFactory.getInstance();
 			omnigeneProps = property.getProperties("omnigene.properties");
 			genepatternProps = property.getProperties("genepattern.properties");
+
 			URL = localizeURL(genepatternProps.getProperty("GenePatternURL"));
 
 		} catch (Exception ioe) {
@@ -185,14 +186,16 @@ public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecor
 		String GENEPATTERN_PORT = "GENEPATTERN_PORT";
 		String GENEPATTERN_URL = "GenePatternURL";
 		String port = genepatternProps.getProperty(GENEPATTERN_PORT);
+if (port == null) port = "PORT??";
 		original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER
 				+ GPConstants.LSID + GPConstants.RIGHT_DELIMITER, model
 				.getLsid());
 		original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER
 				+ GENEPATTERN_PORT + GPConstants.RIGHT_DELIMITER, port);
+String gpUrl = genepatternProps.getProperty("GenePatternURL");
+if (gpUrl == null) gpUrl = "unknown";
 		original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER
-				+ GENEPATTERN_URL + GPConstants.RIGHT_DELIMITER, System
-				.getProperty("GenePatternURL"));
+				+ GENEPATTERN_URL + GPConstants.RIGHT_DELIMITER, gpUrl );
 		try {
 			// one of ours?
 			if (!original.startsWith("http://localhost:" + port)

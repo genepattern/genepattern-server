@@ -173,11 +173,11 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 				// it can be referenced from anywhere (eg. visualizer on
 				// non-local client)
 				logWriter.print("<a href=\"");
-				logWriter.print(aParam.getValue());
+				logWriter.print(localizeURL(aParam.getValue()));
 				logWriter.print("\">");
 
 			}
-			logWriter.print(htmlEncode(aParam.getValue()));
+			logWriter.print(htmlEncode(localizeURL(aParam.getValue())));
 
 			if (isInputFile) {
 				logWriter.print("</a>");
