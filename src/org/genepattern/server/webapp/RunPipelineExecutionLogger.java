@@ -42,6 +42,8 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 
 	protected Date pipelineStart = null;
 
+   protected boolean notifyPipelineOfOutputFile = true;
+   
 	protected static SimpleDateFormat dateFormat = new SimpleDateFormat(
 			"HH:mm:ss dd-MM-yy");
 
@@ -55,6 +57,13 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 		// the execution logger ignores this call;
 	}
 
+   /**
+   * Sets whether to notify the pipeline of the log file this instance creates. Should be set to true if running from the web client and false if the pipeline was submitted from the java client. This method needs to be invoked before beforePipelineRuns is called to have any effect.
+   * @param b whether to notify the pipeline of execution log output file
+   */
+   public void setRegisterExecutionLog(boolean b) {
+      notifyPipelineOfOutputFile = b;
+   }
 
 	public void beforePipelineRuns(PipelineModel amodel) {
 		model = amodel;
@@ -106,14 +115,16 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 			logWriter.flush();
 
 			// register the execution log as an output file of the pipeline
-			String updateUrl = URL + "updatePipelineStatus.jsp?jobID="
+         if(notifyPipelineOfOutputFile) {
+            String updateUrl = URL + "updatePipelineStatus.jsp?jobID="
 					+ System.getProperty("jobID") + "&" + GPConstants.NAME
 					+ "=";
-			updateUrl += "&filename=" + jobDir.getName() + File.separator
+            updateUrl += "&filename=" + jobDir.getName() + File.separator
 					+ logFile.getName();
-			url = new URL(updateUrl);
-			uconn = (HttpURLConnection) url.openConnection();
-			int rc = uconn.getResponseCode();
+               url = new URL(updateUrl);
+			   uconn = (HttpURLConnection) url.openConnection();
+			   int rc = uconn.getResponseCode();
+         }
 
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -36,6 +36,7 @@ public class RunPipelineNullDecorator implements RunPipelineOutputDecoratorIF {
      	} catch(Exception e) {
      		genepatternProps = new Properties();
      	}
+      logger.setRegisterExecutionLog(false);
 		logger.beforePipelineRuns(model);
 
 	}
