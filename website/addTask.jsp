@@ -953,13 +953,13 @@ for (int i = from; i < to; i++) {
 			if (!viewOnly) {
 				out.append("<select name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple" : "") + ">\n");
 				for (int choice = 0; choice < choices.length; choice++) { 
-					out.append("<option value=\"" + choices[choice][PARAM_INFO_TYPE_OFFSET] + "\"" + (choices[choice][PARAM_INFO_TYPE_OFFSET].equals(attributeValue) ? " selected" : "") + ">" + GenePatternAnalysisTask.htmlEncode(choices[choice][0]) + "</option>\n");
+					out.append("<option value=\"" + choices[choice][GPConstants.PARAM_INFO_TYPE_OFFSET] + "\"" + (choices[choice][GPConstants.PARAM_INFO_TYPE_OFFSET].equals(attributeValue) ? " selected" : "") + ">" + GenePatternAnalysisTask.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]) + "</option>\n");
 				}
 				out.append("</select>\n");
 			} else {
 				for (int choice = 0; choice < choices.length; choice++) { 
 				    if (choices[choice][1].equals(attributeValue)) {
-					out.append(GenePatternAnalysisTask.htmlEncode(choices[choice][PARAM_INFO_NAME_OFFSET]));
+					out.append(GenePatternAnalysisTask.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]));
 				    }
 				}
 			}
