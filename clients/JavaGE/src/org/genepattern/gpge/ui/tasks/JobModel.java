@@ -258,13 +258,15 @@ public class JobModel extends AbstractSortableTreeTableModel {
       try {
          AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(server, username);
          AnalysisJob[] jobs = proxy.getJobs();
-         for(int i = 0; i < jobs.length; i++) {
-            JobNode node = new JobNode(jobs[i]);
-            node.getOutputFiles();
-            root.add(node);
+         if(jobs!=null) {
+            for(int i = 0; i < jobs.length; i++) {
+               JobNode node = new JobNode(jobs[i]);
+               node.getOutputFiles();
+               root.add(node);
+            }
+            nodeStructureChanged(root);
+            nodeStructureChanged(root); // FIXME
          }
-         nodeStructureChanged(root);
-         nodeStructureChanged(root); // FIXME
       } catch(Exception e) {
          e.printStackTrace();
       }
