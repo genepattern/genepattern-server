@@ -64,7 +64,8 @@ Collection tmTasks = new LocalAdminClient(userID).getTaskCatalog();
 .heading { font-family: Arial,Helvetica,sans-serif; background-color: #0E0166; color: white; font-size: 12pt; font-weight: 800; text-align: center; }
 .majorCell { border-width: 2; font-size: 10pt; }
 .button  { width: 50; }
-.wideButton  { width: 80; }
+.wideButton  { width: 100; }
+.wideBoldButton  { width: 100; font-weight: bold; }
 td { padding-left: 5; }
 </style>
 
@@ -191,6 +192,17 @@ function LSID(lsid) {
 
 <% } %> 
 
+<% if (tmTasks.size() == 0) { %>
+function blinkInstallModules() {
+	document.forms["index"].installButton.setAttribute("class", installModulesState ? "wideButton" : "wideBoldButton");
+	installModulesState = !installModulesState;	
+	setTimeout("blinkInstallModules()", 1000); // delay 1000 milliseconds
+}
+installModulesState = true;
+setTimeout("blinkInstallModules()", 1000); // delay 1000 milliseconds
+
+<% } %>
+
 </script>
 
 </head>
@@ -306,7 +318,7 @@ function LSID(lsid) {
 				Modules
 			</td>
 			<td valign="top" align="left">
-				<input type="button" value="install/update" class="wideButton" onclick="javascript:window.location='taskCatalog.jsp'"><br>
+				<input type="button" name="installButton" value="install/update" class="wideButton" onclick="javascript:window.location='taskCatalog.jsp'"><br>
 				<input type="button" value="delete" class="wideButton" onclick="javascript:window.location='deleteTask.jsp'"><br>
 			</td>
 		</tr>
@@ -529,9 +541,9 @@ taskSelect(document.forms['index'].task, 'task');
 		
 		if (isPublic || isMine) {
 			sbCatalog.append("<option value=\"" + (lsid != null ? l.toStringNoVersion() : taskInfo.getName()) + 
-					 "\" class=\"tasks-" +  authorityType + "\">" + display + 
-					 (authorityType == LSIDUtil.AUTHORITY_FOREIGN ? (" (" + l.getAuthority() + ")") : "") +
-					 "</option>\n");
+					 "\" class=\"tasks-" +  authorityType + "\"" +
+					 (authorityType == LSIDUtil.AUTHORITY_FOREIGN ? (" title=\"" + l.getAuthority() + "\"") : "") +
+					 ">" + display + "</option>\n");
 		}
 	}
 	sbCatalog.append("</select>\n");
