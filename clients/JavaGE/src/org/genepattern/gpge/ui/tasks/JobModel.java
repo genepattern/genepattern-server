@@ -35,7 +35,7 @@ import org.genepattern.gpge.ui.treetable.*;
  */
 public class JobModel extends AbstractSortableTreeTableModel {
    String[] columnNames = {"Name", "Completed"};
-   Class[] columnClasses = {TreeTableModel.class, String.class};
+   Class[] columnClasses = {org.jdesktop.swing.treetable.TreeTableModel.class, String.class};
    static JobModel instance = new JobModel();
    RootNode root = new RootNode();
 

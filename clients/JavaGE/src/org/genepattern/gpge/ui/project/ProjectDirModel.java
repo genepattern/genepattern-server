@@ -24,7 +24,7 @@ import org.genepattern.gpge.ui.treetable.*;
  */
 public class ProjectDirModel extends AbstractSortableTreeTableModel {
    String[] columnNames = {"Name"};
-   Class[] columnClasses = {TreeTableModel.class};
+   Class[] columnClasses = {org.jdesktop.swing.treetable.TreeTableModel.class};
    static ProjectDirModel instance = new ProjectDirModel();
    RootNode root = new RootNode();
    static final ProjectDirComparator PROJECT_DIR_COMPARATOR = new ProjectDirComparator();
