@@ -234,7 +234,7 @@ public class AnalysisWebServiceProxy {
 		}
    }
 
-	public AnalysisJob[] getJobs() throws WebServiceException {
+	public JobInfo[] getJobs() throws WebServiceException {
 		try {
 			return stub.getJobs();
 		} catch (RemoteException re) {

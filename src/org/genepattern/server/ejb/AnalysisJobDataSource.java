@@ -341,7 +341,7 @@ public interface AnalysisJobDataSource {
 	 * @param username
 	 *            the username
 	 */
-	public AnalysisJob[] getJobs(String username) throws OmnigeneException,
+	public JobInfo[] getJobs(String username) throws OmnigeneException,
 			RemoteException;
 
 	/**

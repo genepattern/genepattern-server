@@ -417,22 +417,11 @@ public class Analysis extends GenericWebService {
 	 * 
 	 * @return the jobs
 	 */
-	public AnalysisJob[] getJobs() throws WebServiceException {
+	public JobInfo[] getJobs() throws WebServiceException {
 		try {
 			org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
 					.getAnalysisJobDataSourceEJB();
-			AnalysisJob[] jobs = ds.getJobs(getUsernameFromContext());
-			String server = (String) MessageContext.getCurrentContext()
-					.getProperty("transport.url");
-
-			java.net.URL url = new java.net.URL(server);
-			server = url.getProtocol() + "://" + url.getHost() + ":"
-					+ url.getPort();
-
-			for (int i = 0; i < jobs.length; i++) {
-				jobs[i].setServer(server);
-			}
-			return jobs;
+			return ds.getJobs(getUsernameFromContext());
 		} catch (Exception e) {
 			throw new WebServiceException(e);
 		}

@@ -90,7 +90,7 @@ public class AnalysisHypersonicDAO implements
 
 			//Query job table for waiting job
 			stat = conn
-					.prepareStatement("SELECT job_no,analysis_job.task_id,analysis_job.parameter_info,analysis_job.user_id, analysis_job.task_lsid FROM analysis_job, task_master where analysis_job.task_id=task_master.task_id and  status_id = ? order by date_submitted");
+					.prepareStatement("SELECT job_no,analysis_job.task_id,analysis_job.parameter_info,analysis_job.user_id, analysis_job.task_lsid, analysis_job.task_name FROM analysis_job, task_master where analysis_job.task_id=task_master.task_id and  status_id = ? order by date_submitted");
 			stat.setInt(1, JOB_WAITING_STATUS);
 			resultSet = stat.executeQuery();
 
@@ -108,15 +108,17 @@ public class AnalysisHypersonicDAO implements
 				taskID = resultSet.getInt(2);
 				parameter_info = resultSet.getString(3);
 				lsid = resultSet.getString("task_lsid");
+            String taskName = resultSet.getString("task_name");
 
 				updateJob(jobNo, PROCESSING_STATUS);
 
 				//Add waiting job info to vector, for AnalysisTask
 				ParameterInfo[] params = parameterFormatConverter
 						.getParameterInfoArray(parameter_info);
-				JobInfo singleJobInfo = new JobInfo(jobNo, taskID, params,
-						resultSet.getString(4), lsid);
+				JobInfo singleJobInfo = new JobInfo(jobNo, taskID, null, null, null, params,
+						resultSet.getString(4), lsid, taskName);
 				jobVector.add(singleJobInfo);
+           
 				//break; // JL: only one job at a time, so that other threads
 				// can compete for same classname jobs
 			}
@@ -432,7 +434,7 @@ public class AnalysisHypersonicDAO implements
       
 		try {
 			conn = getConnection();
-         String sql = "SELECT parent_job.job_no,parent_job.task_id, status_name, parent_job.date_submitted, parent_job.date_completed, parent_job.parameter_info, parent_job.user_id, parent_job.task_lsid FROM analysis_job AS child_job, analysis_job AS parent_job, job_status WHERE child_job.job_no = " + jobId + " AND parent_job.job_no = child_job.parent AND parent_job.status_id = job_status.status_id";
+         String sql = "SELECT parent_job.job_no,parent_job.task_id, status_name, parent_job.date_submitted, parent_job.date_completed, parent_job.parameter_info, parent_job.user_id, parent_job.task_lsid, parent_job.task_name FROM analysis_job AS child_job, analysis_job AS parent_job, job_status WHERE child_job.job_no = " + jobId + " AND parent_job.job_no = child_job.parent AND parent_job.status_id = job_status.status_id";
 			
 			stat = conn.createStatement();
          resultSet = stat.executeQuery(sql);
@@ -477,7 +479,7 @@ public class AnalysisHypersonicDAO implements
 			     
    }
    
-	public AnalysisJob[] getJobs(String username) throws OmnigeneException,
+	public JobInfo[] getJobs(String username) throws OmnigeneException,
 			RemoteException {
 		java.util.List results = new java.util.ArrayList();
 
@@ -489,18 +491,17 @@ public class AnalysisHypersonicDAO implements
 			conn = getConnection();
 
 			//Fetch from database
-			stat = conn.prepareStatement(getJobInfoSelectClause() 
-				+ ", task_name, task_lsid FROM analysis_job, job_status WHERE analysis_job.status_id = job_status.status_id AND user_id = ? AND ((parent IS NULL) OR ((select task_lsid from analysis_job where job_no = parent  ) is NULL))");
+
+			stat = conn
+					.prepareStatement(getJobInfoSelectClause() + " FROM analysis_job, job_status WHERE analysis_job.status_id = job_status.status_id AND user_id = ? AND parent IS NULL");
+
 			stat.setString(1, username);
 
 			resultSet = stat.executeQuery();
 
 			while (resultSet.next()) {
 				JobInfo ji = jobInfoFromResultSet(resultSet);
-				AnalysisJob job = new AnalysisJob(null, resultSet
-						.getString("task_name"), ji);
-				job.setLSID(resultSet.getString("task_lsid"));
-				results.add(job);
+				results.add(ji);
 			}
 
 		} catch (Exception e) {
@@ -510,7 +511,7 @@ public class AnalysisHypersonicDAO implements
 			closeConnection(resultSet, stat, conn);
 		}
 
-		return (AnalysisJob[]) results.toArray(new AnalysisJob[] {});
+		return (JobInfo[]) results.toArray(new JobInfo[] {});
 	}
 
 	/**
@@ -564,7 +565,7 @@ public class AnalysisHypersonicDAO implements
    * @return the SELECT clause
    */
    private String getJobInfoSelectClause() {
-      return "SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id, task_lsid";   
+      return "SELECT job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id, task_lsid, task_name";   
    }
    
 	protected JobInfo jobInfoFromResultSet(ResultSet resultSet)
@@ -575,7 +576,7 @@ public class AnalysisHypersonicDAO implements
 				resultSet.getString(3), resultSet.getTimestamp(4), resultSet
 						.getTimestamp(5), parameterFormatConverter
 						.getParameterInfoArray(resultSet.getString(6)),
-				resultSet.getString(7), resultSet.getString("task_lsid"));
+				resultSet.getString(7), resultSet.getString(8), resultSet.getString(9));
 		return ji;
 	}
 
