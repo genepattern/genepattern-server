@@ -107,7 +107,10 @@ function changeFilter(fld) {
 	} catch (Exception e) {
 %>
 		Sorry, the GenePattern <a href="<%= System.getProperty("ModuleRepositoryURL") %>" target="_new">module repository</a> is not currently available.<br>
-		Reason: <code><%= e.getMessage() %></code><br>
+		<p>Reason: <code><%= e.getMessage() %></code><br>
+		<p>
+		<b>Try to correct this problem</b> by changing <a href="adminServer.jsp">web proxy settings</a> or <a href="adminServer.jsp">Module Repository URL.</a>
+
 		<jsp:include page="footer.jsp"></jsp:include>
 		</body>
 		</html>
