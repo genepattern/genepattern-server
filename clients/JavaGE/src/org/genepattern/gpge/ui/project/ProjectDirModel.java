@@ -35,6 +35,15 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 	public void addProjectDirectoryListener(ProjectDirectoryListener l) {
 		listenerList.add(ProjectDirectoryListener.class, l);
 	}
+   
+   /**
+   * Gets the index of the given project directory in this model's sorted list of project directories
+   * @return the index
+   */
+   public int indexOf(File projectDirectory) {
+      return Collections.binarySearch(root.getChildren(),
+				new ProjectDirNode(projectDirectory), PROJECT_DIR_COMPARATOR);
+   }
 
 	public void removeProjectDirectoryListener(ProjectDirectoryListener l) {
 		listenerList.remove(ProjectDirectoryListener.class, l);
