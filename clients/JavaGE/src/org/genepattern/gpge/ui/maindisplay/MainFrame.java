@@ -3,6 +3,7 @@ package org.genepattern.gpge.ui.maindisplay;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.*;
@@ -38,7 +39,7 @@ public class MainFrame extends JFrame {
 					.equals(
 							javax.swing.UIManager.getLookAndFeel().getClass()
 									.getName());
-
+       
 	AnalysisServicePanel analysisServicePanel;
 
 	JLabel messageLabel = new JLabel("", JLabel.CENTER);
@@ -53,6 +54,8 @@ public class MainFrame extends JFrame {
 	AnalysisMenu analysisMenu;
 
 	AnalysisMenu visualizerMenu;
+   
+   AnalysisMenu pipelineMenu;
 
 	JPopupMenu jobPopupMenu = new JPopupMenu();
 
@@ -99,7 +102,72 @@ public class MainFrame extends JFrame {
 	private static boolean isPopupTrigger(MouseEvent e) {
 		return (e.isPopupTrigger() || e.getModifiers() == MouseEvent.BUTTON3_MASK);
 	}
+   
+   private static String fileToString(File file) throws IOException {
+      StringBuffer sb = new StringBuffer();
+      BufferedReader br = null;
+      try {
+         br = new BufferedReader(new FileReader(file));
+         String s = null;
+         while((s=br.readLine())!=null) {
+            sb.append(s);
+            sb.append("\n");
+         }
+      } finally {
+         if(br!=null) {
+            try {
+               br.close();
+            } catch(IOException x){}
+         }
+      }
+      return sb.toString();
+   }
 
+   private void textViewer(TreeNode node) {
+      File file = null;
+      boolean deleteFile = false;
+      String title = null;
+      if(node instanceof JobModel.ServerFileNode) {
+         JobModel.ServerFileNode jobResult = (JobModel.ServerFileNode) node;
+         JobModel.JobNode jobNode = (JobModel.JobNode) jobResult.getParent();
+         try {
+            file = File.createTempFile("tmp", null);
+            deleteFile = true;
+            JobModel.downloadJobResultFile(jobNode.job, jobResult.index, file);
+            title = JobModel.getJobResultFileName(jobNode.job, jobResult.index) + " Job " + jobNode.job.getJobInfo().getJobNumber();
+         } catch(IOException ioe) {
+              GenePattern.showErrorDialog("An error occurred while downloading " + JobModel.getJobResultFileName(jobNode.job, jobResult.index));
+              return;
+         }
+      } else if(node instanceof ProjectDirModel.FileNode){
+         ProjectDirModel.FileNode fileNode = (ProjectDirModel.FileNode) node;
+         file = fileNode.file;
+         title = file.getPath();
+      }
+      if(file!=null) { 
+         String contents = null;
+         try {
+            contents = fileToString(file);
+         } catch(IOException ioe) {
+             GenePattern.showErrorDialog("An error occurred while viewing the file");
+             return;
+         }
+         if(deleteFile) {
+            file.delete();  
+         }
+         JDialog dialog = new JDialog(this);
+         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+         dialog.setTitle(title);
+         JTextArea textArea = new JTextArea(contents);
+         textArea.setEditable(false);
+         JScrollPane sp = new JScrollPane(textArea);
+         dialog.getContentPane().add(sp, BorderLayout.CENTER);
+         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+         dialog.setSize(screenSize.width/2, screenSize.height/2);
+         dialog.show();
+      }
+   }
+   
 	public void showSaveDialog(final JobModel.ServerFileNode node) {
 		final File initiallySelectedFile = new File(node.toString());
 		saveAsFileChooser.setSelectedFile(initiallySelectedFile);
@@ -161,7 +229,7 @@ public class MainFrame extends JFrame {
 
 		Thread changeStatusThread = new Thread() {
 			public void run() {
-				messageLabel.setText("Server: " + server + " Username "
+				messageLabel.setText("Server: " + server + "   Username: "
 						+ username);
 			}
 		};
@@ -332,6 +400,26 @@ public class MainFrame extends JFrame {
 		analysisServicePanel.loadTask(serviceCopy);
 
 	}
+   
+   public static List getOuputFileNames(AnalysisJob job) {
+      ParameterInfo[] jobParameterInfo = job.getJobInfo()
+					.getParameterInfoArray();
+      List filenames = new ArrayList();
+      for (int j = 0; j < jobParameterInfo.length; j++) {
+         if (jobParameterInfo[j].isOutputFile()) {
+            String fileName = jobParameterInfo[j].getValue();
+            int index1 = fileName.lastIndexOf('/');
+            int index2 = fileName.lastIndexOf('\\');
+            int index = (index1 > index2 ? index1 : index2);
+            if (index != -1) {
+               fileName = fileName.substring(index + 1, fileName
+                     .length());
+            }
+            filenames.add(fileName);
+         }
+      }
+      return filenames;
+   }
 
 	public MainFrame() {
 		JWindow splash = GenePattern.showSplashScreen();
@@ -397,6 +485,32 @@ public class MainFrame extends JFrame {
 				String taskName = job.getTaskName();
 				String status = job.getJobInfo().getStatus();
 				fileMenu.jobCompletedDialog.add(jobNumber, taskName, status);
+            ParameterInfo[] params = job.getJobInfo().getParameterInfoArray();
+            int stderrIndex = -1;
+            if(params!=null) {
+               for(int i = 0; i <  params.length; i++) {
+                  if(params[i].isOutputFile()) {
+                     if(params[i].getValue().equals(jobNumber + "/stderr") || params[i].getValue().equals(jobNumber + "\\stderr")) {
+                        stderrIndex = i;
+                        break;  
+                     }
+                  }
+               }
+            }
+            if(stderrIndex >= 0) {
+               File stderrFile = null;
+               try {
+                  stderrFile = File.createTempFile("stderr", null);
+                  JobModel.downloadJobResultFile(job, stderrIndex, stderrFile);
+                  GenePattern.showError(GenePattern.getDialogParent(), fileToString(stderrFile));  
+               } catch(IOException ioe) {
+                  ioe.printStackTrace();
+               } finally {
+                  if(stderrFile!=null) {
+                     stderrFile.delete();
+                  } 
+               }
+            }
 			}
 		});
 
@@ -497,7 +611,19 @@ public class MainFrame extends JFrame {
 				jobModel.delete((JobModel.ServerFileNode) selectedJobNode);
 			}
 		});
-
+      
+      JMenuItem jobResultFileTextViewerMenuItem = new JMenuItem("Text Viewer");
+      jobResultFileTextViewerMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+            new Thread() {
+               public void run() {
+                  textViewer(selectedJobNode);
+               }
+            }.start();
+			}
+		});
+      serverFilePopupMenu.add(jobResultFileTextViewerMenuItem);
+      
 		jobResultsTree.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() != 2 || isPopupTrigger(e)) {
@@ -630,6 +756,19 @@ public class MainFrame extends JFrame {
 		final JMenu projectFileSendToMenu = new JMenu("Send To");
 		projectFilePopupMenu.add(projectFileSendToMenu);
 
+      JMenuItem projectFileTextViewerMenuItem = new JMenuItem("Text Viewer");
+      projectFileTextViewerMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+            new Thread() {
+               public void run() {
+                  textViewer(selectedProjectDirNode);
+               }
+            }.start();
+			}
+		});
+      projectFilePopupMenu.add(projectFileTextViewerMenuItem);
+      
+      
 		projectDirPopupMenu = new JPopupMenu();
 		projectDirPopupMenu.add(new AbstractAction("Refresh") {
 			public void actionPerformed(ActionEvent e) {
@@ -637,6 +776,8 @@ public class MainFrame extends JFrame {
 						.refresh((ProjectDirModel.ProjectDirNode) selectedProjectDirNode);
 			}
 		});
+      
+    
 
 		projectDirPopupMenu.add(new AbstractAction("Remove") {
 			public void actionPerformed(ActionEvent e) {
@@ -647,6 +788,10 @@ public class MainFrame extends JFrame {
 			}
 		});
 
+      
+    
+      
+      
 		projectDirTree.addMouseListener(new MouseAdapter() {
 
 			public void mouseClicked(MouseEvent e) {
@@ -715,7 +860,8 @@ public class MainFrame extends JFrame {
 
 				} else {
 					try {
-						fileSummaryComponent.select(null);
+                  fileSummaryComponent.select(null);
+                           
 					} catch (IOException x) {
 					}
 				}
@@ -814,6 +960,7 @@ public class MainFrame extends JFrame {
 			public void run() {
 				analysisMenu.setEnabled(false);
 				visualizerMenu.setEnabled(false);
+            pipelineMenu.setEnabled(false);
 				fileMenu.changeServerActionsEnabled(false);
 			}
 		};
@@ -842,11 +989,16 @@ public class MainFrame extends JFrame {
 					public void run() {
 						analysisMenu.removeAll();
 						visualizerMenu.removeAll();
-						analysisMenu.init(latestTasks);
-						visualizerMenu.init(latestTasks);
+                  pipelineMenu.removeAll();
+                  Map categoryToAnalysisServices = AnalysisServiceUtil
+                  .getCategoryToAnalysisServicesMap(latestTasks);
+						analysisMenu.init(categoryToAnalysisServices);
+						visualizerMenu.init(categoryToAnalysisServices);
+                  pipelineMenu.init(categoryToAnalysisServices);
 						fileMenu.changeServerActionsEnabled(true);
 						analysisMenu.setEnabled(true);
 						visualizerMenu.setEnabled(true);
+                  pipelineMenu.setEnabled(true);
 					}
 				});
 
@@ -859,12 +1011,17 @@ public class MainFrame extends JFrame {
 		JMenuBar menuBar = new JMenuBar();
 		fileMenu = new FileMenu();
 		menuBar.add(fileMenu);
-		analysisMenu = new AnalysisMenu(false);
+		analysisMenu = new AnalysisMenu(AnalysisMenu.DATA_ANALYZERS);
 		analysisMenu.setEnabled(false);
 		menuBar.add(analysisMenu);
-		visualizerMenu = new AnalysisMenu(true);
+		visualizerMenu = new AnalysisMenu(AnalysisMenu.VISUALIZERS);
 		visualizerMenu.setEnabled(false);
 		menuBar.add(visualizerMenu);
+      
+      pipelineMenu = new AnalysisMenu(AnalysisMenu.PIPELINES);
+		pipelineMenu.setEnabled(false);
+		menuBar.add(pipelineMenu);
+      
 		JMenu helpMenu = new HelpMenu();
 
 		try {
@@ -876,17 +1033,26 @@ public class MainFrame extends JFrame {
 	}
 
 	class AnalysisMenu extends JMenu {
-		boolean visualizer;
-
+		int type;
+      static final int VISUALIZERS = 1;
+      static final int DATA_ANALYZERS = 2;
+      static final int PIPELINES = 3;
+      
+      
+         
 		ActionListener serviceSelectedListener;
 
-		public AnalysisMenu(boolean visualizer) {
-			if (visualizer) {
+		public AnalysisMenu(int type) {
+			if (type==VISUALIZERS) {
 				setText("Visualizers");
-			} else {
-				setText("Data Analysis");
-			}
-			this.visualizer = visualizer;
+			} else if(type==DATA_ANALYZERS) {
+				setText("Data Analyzers");
+			} else if(type==PIPELINES) {
+            setText("Pipelines");
+         } else {
+            throw new IllegalArgumentException("Unknown type");  
+         }
+			this.type = type;
 			serviceSelectedListener = new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					AnalysisMenuItem mi = (AnalysisMenuItem) e.getSource();
@@ -907,33 +1073,36 @@ public class MainFrame extends JFrame {
 			}
 		}
 
-		public void init(Collection tasks) {
-			Map categoryToAnalysisServices = AnalysisServiceUtil
-					.getCategoryToAnalysisServicesMap(tasks);
-
-			if (!visualizer) {
-
-				categoryToAnalysisServices
-						.remove(GPConstants.TASK_TYPE_VISUALIZER);
-				categoryToAnalysisServices.remove("Image Creators");
+		public void init(Map categoryToAnalysisServices) {
+			if(type==DATA_ANALYZERS) {
 				for (Iterator keys = categoryToAnalysisServices.keySet()
 						.iterator(); keys.hasNext();) {
 					String category = (String) keys.next();
+               if(category.equalsIgnoreCase(GPConstants.TASK_TYPE_VISUALIZER) || category.equalsIgnoreCase("Image Creators") || category.equalsIgnoreCase("Pipeline")) {
+                  continue;
+               }
 					List services = (List) categoryToAnalysisServices
 							.get(category);
 					JMenu menu = new JMenu(category);
 					add(menu, services);
 					this.add(menu);
 				}
-			} else {
+			} else if(type==VISUALIZERS){
 				List visualizers = (List) categoryToAnalysisServices
 						.get(GPConstants.TASK_TYPE_VISUALIZER);
-				add(this, visualizers);
-				addSeparator();
+				
 				List imageCreators = (List) categoryToAnalysisServices
 						.get("Image Creators");
-				add(this, imageCreators);
-			}
+            List all = new ArrayList();
+            all.addAll(visualizers);
+            all.addAll(imageCreators);
+            Collections.sort(all, AnalysisServiceUtil.CASE_INSENSITIVE_TASK_NAME_COMPARATOR);
+				add(this, all);
+			} else {
+            List pipelines = (List) categoryToAnalysisServices
+						.get("pipeline");
+            add(this, pipelines);
+         }
 
 		}
 
@@ -945,6 +1114,22 @@ public class MainFrame extends JFrame {
 		public AnalysisMenuItem(AnalysisService svc) {
 			super(svc.getTaskInfo().getName());
 			this.svc = svc;
+         String lsid = (String) svc.getTaskInfo().getTaskInfoAttributes().get(
+					GPConstants.LSID);
+         try { 
+           String authType = org.genepattern.util.LSIDUtil.getInstance()
+                     .getAuthorityType(new org.genepattern.util.LSID(lsid));
+   
+            if (authType
+                  .equals(org.genepattern.util.LSIDUtil.AUTHORITY_MINE)) {
+               setForeground(AUTHORITY_MINE_COLOR);
+            } else if (authType
+                  .equals(org.genepattern.util.LSIDUtil.AUTHORITY_FOREIGN)) {
+               setForeground(AUTHORITY_FOREIGN_COLOR);
+            }
+         } catch(MalformedURLException mfe) {
+            mfe.printStackTrace();
+         }
 		}
 	}
 
@@ -993,11 +1178,11 @@ public class MainFrame extends JFrame {
 				}
 			});
 
-			add(new AbstractAction("Warnings") {
-				public void actionPerformed(ActionEvent e) {
-					GenePattern.showWarnings();
-				}
-			});
+		//	add(new AbstractAction("Warnings") {
+		//		public void actionPerformed(ActionEvent e) {
+		//			GenePattern.showWarnings();
+		//		}
+		//	});
 		}
 	}
 
