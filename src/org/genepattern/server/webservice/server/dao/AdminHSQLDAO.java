@@ -272,18 +272,6 @@ public class AdminHSQLDAO implements AdminDAO {
 		}
 	}
 
-	public TaskInfo[] getAllTasksAllTypes() throws AdminDAOSysException {
-		String sql = "SELECT * FROM task_master";
-		return _getTasks(sql, false);
-	}
-
-	public TaskInfo[] getAllTasksAllTypes(String username)
-			throws AdminDAOSysException {
-		String sql = "SELECT * FROM task_master WHERE user_id='" + username
-				+ "' OR access_id = " + PUBLIC_ACCESS_ID;
-		return _getTasks(sql, false);
-	}
-
 	public TaskInfo[] getAllTasks() throws AdminDAOSysException {
 		String sql = "SELECT * FROM task_master where type_id="
 				+ TaskType.REGULAR;

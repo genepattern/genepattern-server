@@ -3,8 +3,7 @@ package org.genepattern.server.webservice.server.dao;
 import org.genepattern.webservice.TaskInfo;
 
 /**
- * Interface for adminstrative tasks. Unless otherwise specified, all methods
- * retrieve tasks only of type TaskType.REGULAR.
+ * Interface for adminstrative tasks. 
  * 
  * @author Joshua Gould
  */
@@ -119,24 +118,4 @@ public interface AdminDAO {
 	 */
 	public TaskInfo getTask(int taskId) throws AdminDAOSysException;
 
-	/**
-	 * Gets all visible tasks of any type for the given user.
-	 * 
-	 * @param username
-	 *            The username
-	 * @return all tasks
-	 * @exception AdminDAOSysException
-	 *                If an error occurs
-	 */
-	public TaskInfo[] getAllTasksAllTypes(String username)
-			throws AdminDAOSysException;
-
-	/**
-	 * Gets all tasks of any type.
-	 * 
-	 * @return all tasks
-	 * @exception AdminDAOSysException
-	 *                If an error occurs
-	 */
-	public TaskInfo[] getAllTasksAllTypes() throws AdminDAOSysException;
 }
