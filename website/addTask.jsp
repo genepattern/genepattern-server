@@ -550,9 +550,6 @@ if (taskName != null) {
  	}
 	if (isPipeline) {
 %>
-<!--		&nbsp;<a href="runPipeline.jsp?<%= GPConstants.NAME %>=<%= URLEncoder.encode(taskName) %>&description=<%= URLEncoder.encode(taskInfo.getDescription()) %>&cmd=<%= URLEncoder.encode("edit pipeline code") %>" target="_new">view/edit/run pipeline code</a> 
-&nbsp;&nbsp;
--->
 		<a href="pipelineDesigner.jsp?<%= GPConstants.NAME %>=<%= tia.get(GPConstants.LSID) %>">pipeline designer</a>
 		<input name="<%= PipelineModel.PIPELINE_MODEL %>" type="hidden" value="<%= GenePatternAnalysisTask.htmlEncode(tia.get(PipelineModel.PIPELINE_MODEL)) %>">
 <%
