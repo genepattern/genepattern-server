@@ -493,38 +493,15 @@ public class TaskIntegrator implements ITaskIntegrator {
 				} catch (MalformedURLException mue) {
 					throw new WebServiceException(mue.getMessage());
 				}
-				String language = "R";
-				AbstractPipelineCodeGenerator codeGenerator = null;
-				PipelineModel model = null;
-				model = PipelineModel.toPipelineModel((String) tia
+				PipelineModel model = PipelineModel.toPipelineModel((String) tia
 						.get(GPConstants.SERIALIZED_MODEL));
-				Class clsPipelineCodeGenerator = Class
-						.forName(AbstractPipelineCodeGenerator.class
-								.getPackage().getName()
-								+ "." + language + "PipelineCodeGenerator");
-				Constructor consAbstractPipelineCodeGenerator = clsPipelineCodeGenerator
-						.getConstructor(new Class[] { PipelineModel.class,
-								String.class, int.class, String.class,
-								Collection.class });
-				codeGenerator = (AbstractPipelineCodeGenerator) consAbstractPipelineCodeGenerator
-						.newInstance(new Object[] {
-								model,
-								request.getHost(),
-								new Integer(request.getPort()),
-								System.getProperty("GenePatternURL")
-										+ "makePipeline.jsp?"
-										+ request.getFile(), null });
+				
 				// update the pipeline model with the new name
 				model.setName(cloneName);
 				// update the task with the new model and command line
-				TaskInfoAttributes newTIA = codeGenerator
-						.getTaskInfoAttributes();
+				TaskInfoAttributes newTIA = AbstractPipelineCodeGenerator.getTaskInfoAttributes(model);
+						
 				tia.put(GPConstants.SERIALIZED_MODEL, model.toXML());
-				tia.put(language + GPConstants.INVOKE, codeGenerator.invoke()); // save
-																				// invocation
-																				// string
-																				// in
-																				// TaskInfoAttributes
 				tia.put(GPConstants.COMMAND_LINE, newTIA
 						.get(GPConstants.COMMAND_LINE));
 			}
