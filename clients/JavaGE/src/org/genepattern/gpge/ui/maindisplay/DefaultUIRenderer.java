@@ -37,7 +37,6 @@ import org.genepattern.gpge.io.AbstractDataSource;
 import org.genepattern.gpge.io.DataObjectProxy;
 import org.genepattern.gpge.io.DataSource;
 import org.genepattern.gpge.io.ServerFileDataSource;
-import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.tasks.ParamRetrievor;
 import org.genepattern.gpge.ui.tasks.UIRenderer;
 import org.genepattern.modules.ui.graphics.FloatField;
@@ -48,6 +47,11 @@ import org.genepattern.util.PropertyFactory;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.gpge.ui.graphics.draggable.TransferableTreePath;
+import org.genepattern.gpge.ui.maindisplay.VisualizerTaskSubmitter;
+import org.genepattern.gpge.ui.maindisplay.LSIDUtil;
+import org.genepattern.gpge.ui.project.ProjectDirModel;
+import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 /**
  *@author     kohm
  *@created    February 9, 2004
@@ -174,7 +178,6 @@ public class DefaultUIRenderer implements UIRenderer {
 //        System.out.println();
 //        // end debug stuff
 		if(param_name.equals("className")) {
-			System.out.println("have className='" + param_desc + "'");
 			task.getTaskInfoAttributes().put(param_name, param_desc);
 			return null;
 		}
@@ -469,7 +472,6 @@ public class DefaultUIRenderer implements UIRenderer {
 						//info.getAttributes().put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
 						//info.getAttributes().put(ParameterInfo.MODE, ParameterInfo.INPUT_MODE);
 						info.setAttributes(new HashMap(3));
-						System.out.println("internalGetValue(): have URL:\n" + obj);
 						// Note Exiting the method here!
 						return obj.toString();
 					} else {
@@ -501,13 +503,7 @@ public class DefaultUIRenderer implements UIRenderer {
 					if(obj == null) {
 						return false;
 					}
-					if(obj instanceof DataObjectProxy) {
-						final DataObjectProxy proxy = (DataObjectProxy) obj;
-						return (proxy.getDataSource() instanceof ServerFileDataSource);
-						//} else if( obj instanceof java.net.URL ) {
-						//    return false;
-					}
-					return false;
+					return(obj instanceof org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode);
 				}
 
 
@@ -523,45 +519,17 @@ public class DefaultUIRenderer implements UIRenderer {
 						info.getAttributes().put(ParameterInfo.MODE, ParameterInfo.CACHED_INPUT_MODE);
 						return obj.toString();
 					}
-					if(obj instanceof DataObjectProxy) {
-						final DataObjectProxy proxy = (DataObjectProxy) obj;
-						final DataSource source = proxy.getDataSource();
-						
-						if(source instanceof ServerFileDataSource) {
-                    info.getAttributes().put(ParameterInfo.TYPE, ParameterInfo.FILE_TYPE);
+               if(obj instanceof org.genepattern.gpge.ui.project.ProjectDirModel.FileNode) {
+                  info.setAsInputFile();
+                  ProjectDirModel.FileNode node = (ProjectDirModel.FileNode) obj;
+                  return node.file.getCanonicalPath();
+               } else if(obj instanceof org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) {
+						   info.getAttributes().put(ParameterInfo.TYPE, ParameterInfo.FILE_TYPE);
 							
 							info.getAttributes().put(ParameterInfo.MODE, ParameterInfo.CACHED_INPUT_MODE);
-							final ServerFileDataSource sfds = (ServerFileDataSource) source;
-							System.out.println("A server file... " + sfds.getRemoteFileNameFor(proxy));
-							return sfds.getRemoteFileNameFor(proxy);
-						} else {
-                    /*
-							    if( source instanceof AbstractDataSource ) // local file
-							 */
-							//info.getAttributes().put(ParameterInfo.MODE, ParameterInfo.INPUT_MODE);
-							info.setAsInputFile();
-                    return ((AbstractDataSource) source).getAsLocalFile(proxy).getCanonicalPath();
-						}
-//                    //FIXME this is very inefficient
-//                    // it should be possible to submit with either an
-//                    // InputStream (OK) or a URL/URI (Best) especilly since the source
-//                    // could be pointing to files already on the server!
-//                    // Also local files should not have to be duplicated!
-//                    final InputStream in = source.getRawInputStream(proxy);
-//                    final BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-//                    //final File tmp_file = org.genepattern.io.StorageUtils.createTempFile(fixName(proxy.getName())+'.'+source.getDataParser().getFileExtensions()[0]);
-//                    final File tmp_file = org.genepattern.io.StorageUtils.createTempFile(proxy.toString()+'.'+source.getDataParser().getFileExtensions()[0]);
-//                    final BufferedWriter writer = new BufferedWriter(new FileWriter(tmp_file));
-//
-//                    try {
-//                        for(String tmp_line = reader.readLine(); tmp_line != null; tmp_line = reader.readLine()){
-//                            writer.write(tmp_line);
-//                            writer.newLine();
-//                        }
-//                    } catch (EOFException ex) {System.err.println("Ignored exception "+ex); }
-//                    writer.close();
-//                    reader.close();
-//                    return tmp_file.getCanonicalPath();
+							org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode node = (org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) obj;
+							return node.getServerName();
+						
 					} else if(obj instanceof java.io.File) {
                  info.setAsInputFile(); 
 					//	info.getAttributes().put(ParameterInfo.MODE, ParameterInfo.INPUT_MODE);
@@ -588,7 +556,6 @@ public class DefaultUIRenderer implements UIRenderer {
 	protected final static String fixName(final String name) {
 		String better_name = name;
 		final int index = name.lastIndexOf('\\');
-		System.out.println("name=" + name);
 		if(index > 0) {
 			better_name = name.substring(index + 1);
 		}
@@ -602,7 +569,6 @@ public class DefaultUIRenderer implements UIRenderer {
 		if(sep_ind < 0) {
 			better_name = better_name.substring(sep_ind + seperator.length() + 2);
 		}
-		System.out.println("Fixed name: \"" + better_name + "\"");
 		return better_name;
 	}
 
@@ -694,12 +660,10 @@ public class DefaultUIRenderer implements UIRenderer {
 				final JLabel label = new JLabel();
 				label.setFont(fnt);
 				label_height = label.getUI().getPreferredSize(label).height;
-				System.out.println("try getting label_height from a Label=" + label_height);
 			}
 			if(label_height == 0) { // approximation
 				java.awt.FontMetrics metrics = component.getFontMetrics(fnt);
 				label_height = -(metrics.getHeight() + 5); // negative height value
-				System.out.println("Label height is estimated from FontMetrics=" + label_height);
 			}
 			if(scroll_top_inset < 0) {
 				final JScrollPane scroll = new JScrollPane();
@@ -707,11 +671,9 @@ public class DefaultUIRenderer implements UIRenderer {
 				if(top > 0) {
 					scroll_top_inset = top;
 				}
-				System.out.println("Scroll top inset =" + top);
 			}
 			final int height = MINIMUM_SCROLL_SIZE.height - ((label_height > 0) ? label_height : -(label_height))
 					 - ((scroll_top_inset > 0) ? scroll_top_inset : -(scroll_top_inset)) - 2;
-			System.out.println("Calc size: scroll height=" + MINIMUM_SCROLL_SIZE.height + " calced height = " + height);
 			fill_height = height;
 		}
 		return fill_height;
