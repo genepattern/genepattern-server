@@ -430,7 +430,7 @@ public class DefaultUIRenderer implements UIRenderer {
       inputFileParameterNameToTextFieldMap.put(param_name, field);
 		String defaultValue = (String) info.getAttributes().get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 		
-		if(defaultValue!=null) {
+		if(defaultValue!=null && !defaultValue.trim().equals("")) {
 			File f = new File(defaultValue);
 			if(f.exists()) {
 				field.setObject(f);
