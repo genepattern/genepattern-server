@@ -1,0 +1,82 @@
+<h1>Using GenePattern MATLAB File Support</h1>
+<h2>Introduction</h2>
+GenePattern File support for MATLAB is a set of MATLAB functions implemented 
+in m-code and Java that can be used to read and write expression data files 
+in the standard GenePattern formats including res, gct and odf.
+<p>
+It consists of two functions that you can use in your m-files,<p>
+<tab>loadGenePatternExpressionFile<br>
+<tab>writeGenePatternExpressionFile<br>
+<p>
+<h2>Installation</h2>
+<OL>
+<li>Download the GenePattern MATLAB file support zip file</li>
+<li>expand it into a directory (e.g. MATLAB7/toolbox)</li>
+<li>From within MATLAB, add this directory to your path. Either of the following
+MATLAB commands will accomplish this.
+<ul>
+	<li> >> addpath('&lt;full path to matlab&gt;/matlab7/toolbox/GenePattern');</li>
+	<li> >> rehash toolbox</li>
+</ul>
+where &lt;full path to matlab&gt; is replaced by the file system path on your computer.
+</li>
+</OL>
+<h2>Example Use</h2>
+The following example MATLAB m-file code will load a file called 'all_aml_test.res' that
+is in MATLAB's present working directory, reports the size of the data matrix, and then writes 
+the data back out in the odf format. MATLAB responses are shown in italics.
+<pre>
+>>all_aml_test = loadGenePatternExpressionFile('all_aml_test.res')
+
+<i>all_aml_test = 
+
+                  data: [7129x35 double]
+              rowNames: [7129x1 java.lang.String[]]
+           columnNames: [35x1 java.lang.String[]]
+       rowDescriptions: [7129x1 java.lang.String[]]
+    columnDescriptions: [35x1 java.lang.String[]]</i>
+
+>> size(all_aml_test.data)
+
+<i>ans =
+
+        7129          35</i>
+
+>> writeGenePatternExpressionFile('all_aml_test_fromMATLAB', 'odf',all_aml_test.data, \
+		all_aml_test.rowNames, all_aml_test.columnNames,all_aml_test.rowDescriptions);
+</pre>
+
+<h2>Function Definitions</h2>
+<pre>
+function expressionDataset=loadGenePatternExpressionFile(path)
+% Load a res, gct or odf file into a MATLAB structure
+%
+% Parameters
+%   path    - full path to a res, gct or odf format expression file 
+%
+% Return:  A MATLAB structure with the following elements
+%   data                - M by N matrix of doubles
+%   rowNames            - M*1 array of Strings
+%   columnNames         - N*1 array of Strings
+%   rowDescriptions     - M*1 array of strings
+%   columnDescriptions  - unless loading from a gct file
+%
+
+function writeGenePatternExpressionFile(path, format, data, rowNames, columnNames, rowDescriptions, colDescriptions, calls)
+% Write a res, gct, mage or odf file with data provided.
+%
+% Parameters
+%   path                - filename (incl path) to write to
+%   format              - One of res, gct, odf, mageml
+%   data                - M by N matrix of doubles
+%   rowNames            - M*1 array of Strings
+%   columnNames         - N*1 array of Strings
+%   rowDescriptions     - M*1 array of strings
+%   columnDescriptions  - unless loading from a gct filefrom a MATLAB
+%   matrix (if absent, columnNames will be used for this)
+%   calls               - M*N matrix of ints for A/P calls (res format only)
+% 
+% Return
+%   none.
+
+</pre>

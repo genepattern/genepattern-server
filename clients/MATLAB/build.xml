@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." name="GenePatternMatlab" default="create-zip">
+
+	
+<target name="create-zip" >
+	<zip destfile="../../build/${ant.project.name}.zip" whenempty="fail" defaultexcludes="true">
+		<fileset dir=".">
+		    	<exclude name="build.xml"/>
+			<exclude name="testGenePattern.m"/>
+			<exclude name="GenePattern/@GenePatternServerTest/**"/>
+			<exclude name="*.bak"/>
+		</fileset>
+	</zip>
+
+    
+       
+</target>
+
+</project>
