@@ -933,16 +933,19 @@ gpGetResults <-
 #
 function(jobID, server=defaultServer)
 {
-# get the results XML
-server <- gpNormalizeServer(server)
-content <- SOAPSendReceive(server, "getResultFiles", jobID=as.integer(jobID), action = "getResults", xmlns = c(ns1="Analysis"), nameSpaces = SOAPNameSpaces(version = "1.2"))
-if (is.null(content)) return (NULL);
-if (class(content) != "list") {
-	result <- new("result", success=FALSE, error=content, filenames=list(NULL), jobID=as.integer(jobID), server=server)
-	return (result)
-}
-result <- new("result", success=TRUE, filenames=content[["attachmentFilenames"]], jobID=as.integer(jobID), server=server)
-return(result)
+	server <- gpNormalizeServer(server)
+	status <- gpCheckStatus(jobID, server)
+	if (!status@hasOutput) {
+		result <- new("result", success=FALSE, error=status@error, filenames=list(NULL), jobID=as.integer(jobID), server=server)
+	} else {
+		for (i in 1:length(status@filenames)) { 
+			filename <- names(status@filenames[i]);
+			if (file.exists(filename)[1]) filename <- paste("job_", jobID, "_", filename, sep="", collapse="")
+			download.file(url=status@filenames[[i]], filename, quiet=TRUE, mode="wb", cacheOK=FALSE)
+		}
+		result <- new("result", success=TRUE, filenames=status@filenames, jobID=as.integer(jobID), server=server)
+	}
+	return(result)
 }
 
 gpSubmitJob <- 
