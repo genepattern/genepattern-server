@@ -1,13 +1,13 @@
 <%@ page import="org.genepattern.server.webapp.*,
 		 org.genepattern.data.pipeline.*,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
-		 org.genepattern.server.analysis.webservice.server.local.*,
-		 org.genepattern.analysis.TaskInfo,
-		 org.genepattern.analysis.ParameterInfo,
-		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.server.analysis.genepattern.LSIDManager,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.server.webservice.server.local.*,
+		 org.genepattern.webservice.TaskInfo,
+		 org.genepattern.webservice.ParameterInfo,
+		 org.genepattern.webservice.TaskInfoAttributes,
+		 org.genepattern.server.genepattern.LSIDManager,
 		 org.genepattern.data.pipeline.*,
-		 org.genepattern.server.analysis.*,
+		 org.genepattern.server.*,
          org.genepattern.server.webapp.RunPipelineForJsp,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.LSID,
@@ -29,7 +29,7 @@ if (pipelineName == null) {
 	return;
 }
 PipelineModel model = null;
-TaskInfo task = new org.genepattern.server.analysis.webservice.server.local.LocalAdminClient(userID).getTask(pipelineName);
+TaskInfo task = new org.genepattern.server.webservice.server.local.LocalAdminClient(userID).getTask(pipelineName);
 if (task != null) {
 	TaskInfoAttributes tia = task.giveTaskInfoAttributes();
 	if (tia != null) {

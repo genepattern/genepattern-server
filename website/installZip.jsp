@@ -3,16 +3,16 @@
 		 java.util.Properties,
 		 java.util.Vector,
 		 java.util.Enumeration,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.server.analysis.webservice.server.*,
-		 org.genepattern.server.analysis.*,
-		 org.genepattern.analysis.*,
-		 org.genepattern.server.analysis.handler.*,
+		 org.genepattern.server.webservice.server.*,
+		 org.genepattern.server.*,
+		 org.genepattern.webservice.*,
+		 org.genepattern.server.handler.*,
 		 org.genepattern.server.webservice.*,
 		 com.jspsmart.upload.*,
 		 org.genepattern.util.LSID,
-		 org.genepattern.server.analysis.webservice.server.local.*"
+		 org.genepattern.server.webservice.server.local.*"
 	session="false" contentType="text/html" language="Java" %>
 <%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control

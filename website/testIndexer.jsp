@@ -1,4 +1,4 @@
-<%@ page import="org.genepattern.server.analysis.genepattern.Indexer, 
+<%@ page import="org.genepattern.server.indexer.Indexer, 
 		 java.io.File,
 		 org.apache.lucene.index.IndexWriter,
 		 org.apache.lucene.index.IndexReader,

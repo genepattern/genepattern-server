@@ -14,14 +14,14 @@
 		 java.util.Vector,
 		 org.genepattern.server.webapp.AbstractPipelineCodeGenerator,
 		 org.genepattern.util.LSID,
-		 org.genepattern.server.analysis.genepattern.LSIDManager,
+		 org.genepattern.server.genepattern.LSIDManager,
 		 org.genepattern.util.LSIDUtil,
-		 org.genepattern.analysis.TaskInfo,
-		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
-		 org.genepattern.server.analysis.webservice.server.local.*,
+		 org.genepattern.webservice.TaskInfo,
+		 org.genepattern.webservice.TaskInfoAttributes,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.server.analysis.genepattern.Indexer"
+		 org.genepattern.server.indexer.Indexer"
 	session="false" contentType="text/html" language="Java" %>
 <%
 	// redirect to the fully-qualified host name to make sure that the one cookie that we are allowed to write is useful

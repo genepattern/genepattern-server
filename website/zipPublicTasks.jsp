@@ -1,7 +1,7 @@
-<%@ page import="org.genepattern.analysis.TaskInfo,
-		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.analysis.ParameterInfo,
-		 org.genepattern.analysis.ParameterFormatConverter,
+<%@ page import="org.genepattern.webservice.TaskInfo,
+		 org.genepattern.webservice.TaskInfoAttributes,
+		 org.genepattern.webservice.ParameterInfo,
+		 org.genepattern.webservice.ParameterFormatConverter,
 		 java.io.File,
 		 java.io.FilenameFilter,
 		 java.io.FileInputStream,
@@ -13,10 +13,10 @@
 		 java.util.HashMap,
 		 java.util.Vector,
 		 java.util.zip.*,
-		 org.genepattern.analysis.OmnigeneException,
+		 org.genepattern.webservice.OmnigeneException,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
-		 org.genepattern.server.analysis.webservice.server.local.*"
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.server.webservice.server.local.*"
 	session="false" contentType="text/html" language="Java" %>
 <%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control

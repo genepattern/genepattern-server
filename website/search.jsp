@@ -12,9 +12,9 @@
 		 java.text.DecimalFormat,
 		 java.util.Enumeration,
 		 java.util.Vector,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.server.analysis.genepattern.Indexer"
+		 org.genepattern.server.indexer.Indexer"
     session="false" language="Java" %><%
 
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control

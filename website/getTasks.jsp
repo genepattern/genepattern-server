@@ -1,10 +1,10 @@
 <%@ page import="java.util.Collection,
 		 java.util.Iterator,
-		 org.genepattern.analysis.TaskInfo,
-		 org.genepattern.analysis.TaskInfoAttributes,
+		 org.genepattern.webservice.TaskInfo,
+		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.LSID,
- 		 org.genepattern.server.analysis.webservice.server.local.*"
+ 		 org.genepattern.server.webservice.server.local.*"
 	session="false" contentType="text/plain" language="Java" %><%
 
 	// output a set of name value pairs: taskID/task name, taskID/LSID, and taskID/LSID-without-version-number

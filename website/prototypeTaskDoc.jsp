@@ -1,6 +1,6 @@
-<%@ page import="org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
+<%@ page import="org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.analysis.TaskInfo,
+		 org.genepattern.webservice.TaskInfo,
 		 java.io.File,
 		 java.io.FilenameFilter,
 		 com.jspsmart.upload.*" 

@@ -10,7 +10,7 @@
 		 java.util.jar.*,
 		 java.util.zip.*,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask" 
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask" 
 session="false" contentType="text/text" language="Java" %><%
 
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control

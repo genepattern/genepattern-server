@@ -6,9 +6,9 @@
 		 java.lang.StringBuffer,
 		 java.text.SimpleDateFormat,
 		 org.genepattern.server.util.BeanReference,
-		 org.genepattern.server.analysis.ejb.AnalysisJobDataSource,
-		 org.genepattern.analysis.JobStatus,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask"
+		 org.genepattern.server.ejb.AnalysisJobDataSource,
+		 org.genepattern.webservice.JobStatus,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
 	session="false" contentType="text/html" language="Java" %><%
 
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control

@@ -1,4 +1,4 @@
-<%@ page import="org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
+<%@ page import="org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 java.net.URLEncoder,
 		 java.text.DateFormat,

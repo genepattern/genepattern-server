@@ -6,11 +6,11 @@
 		 java.util.Hashtable,
 		 java.util.Iterator,
 		 com.jspsmart.upload.*,
-		 org.genepattern.analysis.TaskInfo,
-		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.server.analysis.webservice.server.local.*,
+		 org.genepattern.webservice.TaskInfo,
+		 org.genepattern.webservice.TaskInfoAttributes,
+		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask"
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
 	session="false" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><% 
 
 

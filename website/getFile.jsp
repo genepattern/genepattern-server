@@ -1,7 +1,7 @@
 <%@ page import="java.io.File,
 		 java.io.IOException,
 		 java.util.Hashtable,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.LSID,
 		 org.genepattern.util.GPConstants,
 		 com.jspsmart.upload.*"

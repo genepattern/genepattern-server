@@ -1,11 +1,11 @@
 <%@ page import="java.util.HashMap,
 		 java.util.TreeMap,
 		 java.util.Iterator, java.io.File, 
-		 org.genepattern.analysis.TaskInfo,
-		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.analysis.OmnigeneException,
+		 org.genepattern.webservice.TaskInfo,
+		 org.genepattern.webservice.TaskInfoAttributes,
+		 org.genepattern.webservice.OmnigeneException,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask"
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
 	session="false" contentType="text/text" language="Java" %><%
 
 	String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary

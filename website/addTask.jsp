@@ -1,11 +1,11 @@
-<%@ page import="org.genepattern.analysis.TaskInfo,
-		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.analysis.ParameterInfo,
-		 org.genepattern.analysis.ParameterFormatConverter,
-		 org.genepattern.analysis.OmnigeneException,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
-		 org.genepattern.server.analysis.genepattern.LSIDManager,
-		 org.genepattern.server.analysis.webservice.server.local.*,
+<%@ page import="org.genepattern.webservice.TaskInfo,
+		 org.genepattern.webservice.TaskInfoAttributes,
+		 org.genepattern.webservice.ParameterInfo,
+		 org.genepattern.webservice.ParameterFormatConverter,
+		 org.genepattern.webservice.OmnigeneException,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.server.genepattern.LSIDManager,
+		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.util.LSID,
 		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.util.GPConstants,
@@ -285,7 +285,7 @@ if (tia != null) {
 
 <form name="task" action="saveTask.jsp" method="post" ENCTYPE="multipart/form-data">
 <input type="hidden" name="<%= GPConstants.FORMER_NAME %>" value="<%= taskInfo != null ? taskInfo.getName() : "" %>">
-<input type="hidden" name="<%= GPConstants.CLASSNAME %>" value="<%= taskInfo != null ? taskInfo.getTaskClassName() : "org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask" %>">
+<input type="hidden" name="<%= GPConstants.CLASSNAME %>" value="<%= taskInfo != null ? taskInfo.getTaskClassName() : "org.genepattern.server.genepattern.GenePatternAnalysisTask" %>">
 
 Please enter the following information to submit a new or updated analysis task to GenePattern.
 &nbsp;&nbsp;<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="button">

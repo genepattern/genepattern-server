@@ -1,4 +1,4 @@
-<%@ page import="org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
+<%@ page import="org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.server.webapp.*, java.io.*, java.util.zip.*"
 	    session="false" language="Java" contentType="text/plain" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><%
@@ -14,7 +14,7 @@
 	String pipelineName = request.getParameter(GPConstants.NAME);
 	String language = (request.getParameter("language") != null ? request.getParameter("language") : "R");
 	boolean download = (request.getParameter("download") != null); // true to download, false to just get text in browser
-	org.genepattern.analysis.TaskInfo taskInfo = null;
+	org.genepattern.webservice.TaskInfo taskInfo = null;
 	try {
 		taskInfo = GenePatternAnalysisTask.getTaskInfo(pipelineName, userID);
 	} catch(Exception e) {

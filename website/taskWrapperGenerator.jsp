@@ -5,16 +5,16 @@
 		 java.util.HashMap,
 		 java.util.Iterator,
 		 java.util.StringTokenizer,
-		 org.genepattern.analysis.TaskInfo,
-		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.analysis.ParameterInfo,
-		 org.genepattern.analysis.ParameterFormatConverter,
-		 org.genepattern.analysis.OmnigeneException,
+		 org.genepattern.webservice.TaskInfo,
+		 org.genepattern.webservice.TaskInfoAttributes,
+		 org.genepattern.webservice.ParameterInfo,
+		 org.genepattern.webservice.ParameterFormatConverter,
+		 org.genepattern.webservice.OmnigeneException,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.server.analysis.webservice.server.local.*,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.server.webservice.server.local.*,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.LSID,
-		 org.genepattern.server.analysis.genepattern.LSIDManager"
+		 org.genepattern.server.genepattern.LSIDManager"
 	session="false" contentType="text/html" language="Java" %><%
 
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control

@@ -2,7 +2,7 @@
 		 java.io.FileInputStream,
 		 java.io.IOException,
 		 java.util.Hashtable,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 com.jspsmart.upload.*"
 

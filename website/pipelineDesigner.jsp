@@ -1,11 +1,11 @@
 <%@ page import="org.genepattern.server.webapp.*,
 		 org.genepattern.data.pipeline.*,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.LSID,
 		 org.genepattern.util.LSIDUtil,
-		 org.genepattern.server.analysis.genepattern.LSIDManager,
-		 org.genepattern.analysis.TaskInfo"
+		 org.genepattern.server.genepattern.LSIDManager,
+		 org.genepattern.webservice.TaskInfo"
 	session="false" contentType="text/html" language="Java" buffer="100kb" %>
 <%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control

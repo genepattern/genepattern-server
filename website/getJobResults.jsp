@@ -2,12 +2,12 @@
 		 java.net.URLEncoder,
 		 java.util.Date,
 		 org.genepattern.server.util.BeanReference,
-		 org.genepattern.server.analysis.ejb.AnalysisJobDataSource,
-		 org.genepattern.analysis.JobInfo,
-		 org.genepattern.analysis.JobStatus,
-		 org.genepattern.analysis.ParameterInfo,
-		 org.genepattern.analysis.TaskInfo,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask"
+		 org.genepattern.server.ejb.AnalysisJobDataSource,
+		 org.genepattern.webservice.JobInfo,
+		 org.genepattern.webservice.JobStatus,
+		 org.genepattern.webservice.ParameterInfo,
+		 org.genepattern.webservice.TaskInfo,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
 	session="false" contentType="text/html" language="Java" buffer="10kb" %><%
 
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control

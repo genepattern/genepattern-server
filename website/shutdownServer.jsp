@@ -1,4 +1,4 @@
-<%@ page import="org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
+<%@ page import="org.genepattern.server.genepattern.GenePatternAnalysisTask,
 
 		 java.util.Properties" session="false" contentType="text/html" language="Java" %>
 

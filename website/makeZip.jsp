@@ -1,6 +1,6 @@
-<%@ page import="org.genepattern.analysis.TaskInfo,
-		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.analysis.ParameterInfo,
+<%@ page import="org.genepattern.webservice.TaskInfo,
+		 org.genepattern.webservice.TaskInfoAttributes,
+		 org.genepattern.webservice.ParameterInfo,
          org.genepattern.server.process.ZipTask,
          org.genepattern.server.process.ZipTaskWithDependents,
 		 java.io.ByteArrayOutputStream,
@@ -13,8 +13,8 @@
 		 java.util.HashMap,
 		 java.util.Properties,
 		 java.util.zip.*,
-		 org.genepattern.analysis.OmnigeneException,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.webservice.OmnigeneException,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 com.jspsmart.upload.*"
 	session="false" contentType="text/html" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><% 
 

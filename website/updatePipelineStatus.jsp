@@ -1,4 +1,4 @@
-<%@ page import="org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask"
+<%@ page import="org.genepattern.server.genepattern.GenePatternAnalysisTask"
 	session="false" language="Java" %><% 
 
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control

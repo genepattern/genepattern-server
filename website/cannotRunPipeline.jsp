@@ -2,12 +2,12 @@
 		 java.util.StringTokenizer,
 		 java.util.Enumeration,
 		 java.util.HashMap,
-		 org.genepattern.analysis.TaskInfo,
-		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.analysis.ParameterFormatConverter,
-		 org.genepattern.analysis.ParameterInfo,
-		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
-		 org.genepattern.analysis.OmnigeneException,  com.jspsmart.upload.*,
+		 org.genepattern.webservice.TaskInfo,
+		 org.genepattern.webservice.TaskInfoAttributes,
+		 org.genepattern.webservice.ParameterFormatConverter,
+		 org.genepattern.webservice.ParameterInfo,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.webservice.OmnigeneException,  com.jspsmart.upload.*,
 		 org.genepattern.data.pipeline.PipelineModel"
 	session="false" contentType="text/html" language="Java" %>
 <jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" />
