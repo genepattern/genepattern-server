@@ -913,9 +913,13 @@ public class MainFrame extends JFrame {
 					}
 				});
 
+      JScrollPane projectSP = new JScrollPane(projectDirTree);
+      projectSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Projects", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
+      JScrollPane jobSP = new JScrollPane(jobResultsTree);
+      jobSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Jobs", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
+    
 		JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-				new JScrollPane(projectDirTree),
-				new JScrollPane(jobResultsTree));
+				projectSP, jobSP);
 
 		JPanel leftPanel = new JPanel(new BorderLayout());
 		leftPanel.add(leftPane, BorderLayout.CENTER);
@@ -1094,8 +1098,12 @@ public class MainFrame extends JFrame {
 				List imageCreators = (List) categoryToAnalysisServices
 						.get("Image Creators");
             List all = new ArrayList();
-            all.addAll(visualizers);
-            all.addAll(imageCreators);
+            if(visualizers!=null) {
+               all.addAll(visualizers);
+            }
+            if(imageCreators!=null) {
+               all.addAll(imageCreators);
+            }
             Collections.sort(all, AnalysisServiceUtil.CASE_INSENSITIVE_TASK_NAME_COMPARATOR);
 				add(this, all);
 			} else {
