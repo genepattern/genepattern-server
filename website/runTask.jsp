@@ -100,11 +100,13 @@ if (taskName != null) {
 
 String taskType = tia.get("taskType");
 boolean isVisualizer = "visualizer".equalsIgnoreCase(taskType);
+boolean isPipeline = "pipeline".equalsIgnoreCase(taskType);
 
 String formAction = "runTaskPipeline.jsp";
 if (isVisualizer){
-	System.out.println("\n\nVIZ");
 	formAction = "preRunVisualizer.jsp";
+} else if (isPipeline){
+	formAction = "runPromptingPipeline.jsp";
 }
 
 %>

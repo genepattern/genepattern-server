@@ -64,7 +64,8 @@
 	}
 
 	HashMap commandLineParams = new HashMap();
-	
+
+
     int UNDEFINED = -1;
     int jobID = UNDEFINED;
     try {
@@ -91,7 +92,7 @@
 
 	TaskInfo taskInfo = null;
 	String serverPort = System.getProperty("GENEPATTERN_PORT");
-//	System.out.println("RP isSaved" + isSaved);
+	System.out.println("RP isSaved" + isSaved + "   " + name);
 	if (!isSaved) {
 		description = (String)requestParamsAndAttributes.get("description");
 		taskInfo = (TaskInfo)requestParamsAndAttributes.get("taskInfo");
@@ -120,17 +121,21 @@ try {
 	/**
          * Collect the command line params from the request and see if they are all present
          */
-        ParameterInfo[] parameterInfoArray = taskInfo.getParameterInfoArray();
+	
+	   ParameterInfo[] parameterInfoArray = taskInfo.getParameterInfoArray();
         if (parameterInfoArray != null && parameterInfoArray.length > 0) {
             // the pipeline needs parameters.  If they are provided, set them 
             // into the correct place. 
             for (int i=0; i < parameterInfoArray.length; i++){
                 ParameterInfo param = parameterInfoArray[i];
                 String key = param.getName();
-                String val = (String)requestParamsAndAttributes.get(key); // get non-file param
-                if (val != null){
-                    commandLineParams.put(key, val);
-                } 
+		   
+	          Object val = requestParamsAndAttributes.get(key); // get non-file param
+
+      	    if (val != null){
+           	        commandLineParams.put(key, val);
+		    } 
+
             }   
         } 
 
@@ -199,18 +204,11 @@ try {
       Process process = RunPipelineForJsp.runPipeline( taskInfo,  name,  baseURL,  decorator,  userID, commandLineParams);
             jobID =  RunPipelineForJsp.getJobID();
 
-// stuff to write view file
+		// stuff to write view file
 		String jobDir = GenePatternAnalysisTask.getJobDir(""+jobID);
 		File jobDirFile = new File(jobDir);
 		jobDirFile.mkdirs(); 
 		
-		//request.setAttribute("pipelineModel", model);
-		//request.setAttribute("outputWriter", new java.io.FileWriter(new File(jobDirFile, "pipelineDescription.html")));
-		//RequestDispatcher rd = request.getRequestDispatcher("/viewPipelineBody.jsp?hideButtons='true'&showLSID='true'&showParams='true'");
-        	//rd.include(request, response);
-		
-		//GenePatternAnalysisTask.updatePipelineStatus(jobID, -1, pipelineName, jobDirFile.getName() + File.separator + "pipelineDescription.html");
-
 		StringBuffer cc = new StringBuffer();
 		// create threads to read from the command's stdout and stderr streams
 		Thread stdoutReader = copyStream(process.getInputStream(), out, cc, DEBUG, false);

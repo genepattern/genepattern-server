@@ -294,6 +294,7 @@ public class RunPipelineForJsp {
 		cmdLine.add(pipeFile.getName());
 		cmdLine.add(userID);
 
+
 		// add any command line parameters
 		// first saving the files locally
 		for (Iterator iter = commandLineParams.keySet().iterator(); iter
@@ -303,21 +304,27 @@ public class RunPipelineForJsp {
 
 			try {
 				val = (String) commandLineParams.get(key);
+
 			} catch (ClassCastException e) {
+
 				com.jspsmart.upload.File attachedFile = (com.jspsmart.upload.File) commandLineParams
 						.get(key);
 				java.io.File file = new java.io.File(tempDir, attachedFile
 						.getFilePathName());
 				attachedFile.saveAs(file.getAbsolutePath());
+
 				try {
-					val = baseURL + "retrieveResults.jsp?job="
-							+ URLEncoder.encode(jobID, "utf-8") + "&filename="
-							+ URLEncoder.encode(file.getName(), "utf-8");
+					val = baseURL + "getFile.jsp?task=&file="	+ URLEncoder.encode(tempDir.getName() + "/" + file.getName(), "utf-8");
 				} catch (UnsupportedEncodingException uee) {
 				}
+
+				//val = file.getName();
+
+
 			}
 			cmdLine.add(key + "=" + val);
 		}
+
 		return (String[]) cmdLine.toArray(new String[0]);
 	}
 
@@ -337,11 +344,18 @@ public class RunPipelineForJsp {
 			for (int i = 0; i < parameterInfoArray.length; i++) {
 				ParameterInfo param = parameterInfoArray[i];
 				String key = param.getName();
-				String val = (String) commandLineParams.get(key); // get
-																  // non-file
-																  // param
-				if (val != null) {
-					count--;
+
+				try {
+					String val = (String) commandLineParams.get(key); // get
+													// non-file											  // param
+					if (val != null) {
+						count--;
+					}
+				} catch (ClassCastException cce){
+					Object val = commandLineParams.get(key);
+					if (val != null) {
+						count--;
+					}
 				}
 			}
 			if (count == 0)

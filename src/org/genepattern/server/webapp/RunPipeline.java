@@ -432,7 +432,10 @@ semantic_search_loop:
          for(int i = 0; i < parmInfos.length; i++) {
             if(parmInfos[i].isInputFile()) {
                String file = parmInfos[i].getValue(); // bug 724
-               parmInfos[i].setValue(new File(file).toURI().toString());
+		   String val = file;
+		   if (!(file.startsWith("http:") || file.startsWith("ftp:") || file.startsWith("file:")))
+			val = new File(file).toURI().toString();
+               parmInfos[i].setValue(val);
                parmInfos[i].getAttributes().remove("TYPE");
                parmInfos[i].getAttributes().remove("MODE");
             }
