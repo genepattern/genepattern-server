@@ -57,6 +57,7 @@ com.jspsmart.upload.Request requestParameters = null;
 StringBuffer sbAttachments = new StringBuffer();
 TaskInfo previousTask = null;
 String taskName = null;
+String forward = null;
 
 try {
 
@@ -129,9 +130,8 @@ if ((requestParameters.getParameter("deleteFiles") != null || request.getParamet
 	String filename = requestParameters.getParameter("deleteFiles");
 	if (filename == null) filename = request.getParameter("deleteFiles");
 
-String forward = request.getParameter("forward");
-//System.out.println("FOR=" + forward);
-if (forward== null) forward = "addTask.jsp";
+	forward = request.getParameter("forward");
+	if (forward== null) forward = "addTask.jsp";
 
 
 	if (filename != null && !filename.equals("")) {
@@ -144,8 +144,9 @@ if (forward== null) forward = "addTask.jsp";
 			}
 			lsid = taskIntegratorClient.deleteFiles(lsid, new String[] { filename });
 			if (lsid != null) { 
-				response.sendRedirect(forward + "?" + GPConstants.NAME + "=" + lsid);
-				return;
+				forward = forward + "?" + GPConstants.NAME + "=" + lsid;
+				//response.sendRedirect(forward + "?" + GPConstants.NAME + "=" + lsid);
+				//return;
 			} else { %>
 				<jsp:include page="navbar.jsp"></jsp:include>
 				Unable to delete <%= filename %> from <%= taskName %> support files.<br>
@@ -464,6 +465,10 @@ timeMS dateTime loginId taskType moduleName  manifest supportFilesChanges URLToE
 //    	ti.deleteTask(formerName, null);
 //}
 
+	if (forward != null) {
+		response.sendRedirect(forward);
+		return;
+	}
 %>
     Installation of your <a href="addTask.jsp?<%= GPConstants.NAME %>=<%= URLEncoder.encode(lsid, "UTF-8") %>"><%= taskName %></a> task (version <%= new LSID(lsid).getVersion() %>) is complete.<br><br>
 
