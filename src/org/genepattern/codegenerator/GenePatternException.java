@@ -1,4 +1,4 @@
-package org.genepattern.server.webapp;
+package org.genepattern.codegenerator;
 
 import java.util.Enumeration;
 import java.util.Vector;

@@ -147,7 +147,8 @@ public class MainFrame extends JFrame {
    MenuItemAction reloadMenuItem;
    MenuItemAction deleteJobAction;
    MenuItemAction terminateJobAction;
-
+   MenuAction viewCodeAction;
+   
    MenuAction jobResultFileSendToMenu;
    MenuAction saveServerFileMenu;
    MenuItemAction saveToFileSystemMenuItem;
@@ -745,10 +746,11 @@ public class MainFrame extends JFrame {
 
             deleteJobAction.setEnabled(isJobNode);
             terminateJobAction.setEnabled(isJobNode);
+            viewCodeAction.setEnabled(isJobNode);
             reloadMenuItem.setEnabled(isJobNode);
             if(isJobNode) {
                JobModel.JobNode node = (JobModel.JobNode) selectedJobNode;
-					 deleteJobAction.setEnabled(node.isComplete());
+					deleteJobAction.setEnabled(node.isComplete());
                terminateJobAction.setEnabled(!node.isComplete());
             }
 
@@ -1335,6 +1337,49 @@ public class MainFrame extends JFrame {
             }
 			}
 		};
+      
+     
+      viewCodeAction = new MenuAction("View Code");
+      MenuItemAction viewJavaCodeAction = new MenuItemAction("Java") {
+			public void actionPerformed(ActionEvent e) {
+           
+            JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
+            JobInfo jobInfo = jobNode.job.getJobInfo();
+            List parameterInfoList = new ArrayList();
+            ParameterInfo[] params = jobInfo.getParameterInfoArray();
+            for(int i = 0; i < params.length; i++) {
+               if(!params[i].isOutputFile()) {
+                  if(params[i].isInputFile()) {
+                     if(params[i].getAttributes().get("client_filename")!=null) {
+                        String clientFile = (String) params[i].getAttributes().get("client_filename");
+                        parameterInfoList.add(new ParameterInfo(params[i].getName(), clientFile, ""));
+                     } else {
+                        parameterInfoList.add(params[i]);
+                     }
+                  } else {
+                     parameterInfoList.add(params[i]);
+                  }
+               }
+               
+            }
+            
+            org.genepattern.codegenerator.TaskCodeGenerator codeGenerator = new org.genepattern.codegenerator.JavaPipelineCodeGenerator();
+            String lsid = jobInfo.getTaskLSID();
+            String code = codeGenerator.generateTask(lsid, (ParameterInfo[]) parameterInfoList.toArray(new ParameterInfo[0]));
+            JDialog dialog = new JDialog(MainFrame.this);
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            dialog.setTitle("Code for " + jobInfo.getTaskName() + ", job " + jobInfo.getJobNumber());
+            JTextArea textArea = new JTextArea(code);
+            textArea.setLineWrap(true);
+            textArea.setEditable(false);
+            JScrollPane sp = new JScrollPane(textArea);
+            dialog.getContentPane().add(sp, BorderLayout.CENTER);
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            dialog.setSize(screenSize.width/2, screenSize.height/2);
+            dialog.show();
+         }
+		};
+      viewCodeAction.add(viewJavaCodeAction);
 
    }
 
@@ -1503,7 +1548,8 @@ public class MainFrame extends JFrame {
       saveServerFileMenu.setEnabled(false);
       deleteFileMenuItem.setEnabled(false);
       openWithMenu.setEnabled(false);
-
+      viewCodeAction.setEnabled(false);
+      
       MenuAction projectsMenuAction = null;
       if(revealFileMenuItem!=null) {
          projectsMenuAction = new MenuAction("Projects", new Object[]{refreshProjectMenuItem,  removeProjectMenuItem, new JSeparator(), projectFileSendToMenu, projectFileOpenWithMenu, revealFileMenuItem});
@@ -1513,7 +1559,7 @@ public class MainFrame extends JFrame {
 
       menuBar.add(projectsMenuAction.createMenu());
 
-      MenuAction jobResultsMenuAction = new MenuAction("Job Results", new Object[]{reloadMenuItem, deleteJobAction, deleteAllJobsAction, terminateJobAction, new JSeparator(), jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu});
+      MenuAction jobResultsMenuAction = new MenuAction("Job Results", new Object[]{reloadMenuItem, deleteJobAction, deleteAllJobsAction, terminateJobAction, viewCodeAction, new JSeparator(), jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu});
 
       menuBar.add(jobResultsMenuAction.createMenu());
 
@@ -1545,7 +1591,7 @@ public class MainFrame extends JFrame {
       }
 
 
-      MenuAction jobPopupAction = new MenuAction("", new Object[]{reloadMenuItem, deleteJobAction, terminateJobAction});
+      MenuAction jobPopupAction = new MenuAction("", new Object[]{reloadMenuItem, deleteJobAction, terminateJobAction, viewCodeAction});
       jobPopupMenu = jobPopupAction.createPopupMenu();
 
       MenuAction jobResultFilePopupAction = new MenuAction("", new Object[]{jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu});

@@ -14,6 +14,7 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
+import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 
 public class PipelineController {
 
@@ -79,12 +80,12 @@ public class PipelineController {
 		}
 	}
 
-	public String generateTask() throws TaskInstallationException {
+	/*public String generateTask() throws TaskInstallationException {
 		String lsid = codeGenerator.generateTask(codeGenerator
 				.giveParameterInfoArray());
 		model.setLsid(lsid);
 		return lsid;
-	}
+	}*/
 
 	public ParameterInfo[] giveParameterInfoArray() {
 		return codeGenerator.giveParameterInfoArray();

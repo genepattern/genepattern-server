@@ -26,7 +26,7 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
-
+import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 
 public class HTMLPipelineView implements IPipelineView {
