@@ -13,7 +13,7 @@ public class AnalysisServiceSelectionEvent extends java.util.EventObject {
 	private AnalysisService svc;
 
 	public AnalysisServiceSelectionEvent(Object source, AnalysisService svc) {
-		super(svc);
+		super(source);
 		this.svc = svc;
 	}
 
