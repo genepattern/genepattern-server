@@ -134,7 +134,7 @@ public class MainFrame extends JFrame {
    private JMenuBar menuBar;
    Color blue = new Color(51,0,204);
   
-	private static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
+	public static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone
 				.getValue(), toClone.getDescription());
 		HashMap attrs = toClone.getAttributes();
@@ -320,7 +320,7 @@ public class MainFrame extends JFrame {
 	public void changeServer(final String server, final String username) {
       Thread messageThread = new Thread() {
 			public void run() {
-				messageLabel.setText("Retrieving tasks and jobs from " + server + "...");
+				messageLabel.setText("Retrieving modules and jobs from " + server + "...");
             historyMenu.removeAll();
 			}
 		};
@@ -1267,7 +1267,7 @@ public class MainFrame extends JFrame {
 				} catch (WebServiceException wse) {
                wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred while retrieving the tasks from the server. Please try again.");
+                  GenePattern.showErrorDialog("An error occurred while retrieving the modules from the server. Please try again.");
                }   
 				}
 
@@ -1501,11 +1501,11 @@ public class MainFrame extends JFrame {
 					JPanel p = new JPanel();
 					p.setLayout(new GridLayout(3, 1));
 					JLabel colorKeyLabel = new JLabel("color key:");
-					JLabel yourTasksLabel = new JLabel("your tasks");
+					JLabel yourTasksLabel = new JLabel("your modules");
 					yourTasksLabel.setForeground(AUTHORITY_MINE_COLOR);
-					JLabel broadTasksLabel = new JLabel("Broad tasks");
+					JLabel broadTasksLabel = new JLabel("Broad modules");
 
-					JLabel otherTasksLabel = new JLabel("other tasks");
+					JLabel otherTasksLabel = new JLabel("other modules");
 					otherTasksLabel.setForeground(AUTHORITY_FOREIGN_COLOR);
 
 					p.add(yourTasksLabel);
@@ -1655,7 +1655,7 @@ public class MainFrame extends JFrame {
 
 			refreshMenu = new JMenu("Refresh");
 			add(refreshMenu);
-			refreshTasksMenuItem = new JMenuItem("Tasks");
+			refreshTasksMenuItem = new JMenuItem("Modules");
 			refreshTasksMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					refreshTasks();
