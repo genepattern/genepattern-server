@@ -2233,7 +2233,7 @@ function(taskName, .commandLine, .libDir=null, .os="any", .cpuType="any", .downl
 	java <- gpFindJava()
 	commandLine <- paste(java, "-cp", 
 			     gpQuote(file.path(GPHome, "runVisualizer.jar")),
-			     "edu.mit.genome.gp.visualizer.RunVisualizer", 
+			     "org.genepattern.visualizer.RunVisualizer", 
 			     taskName,
 			     gpQuote(.commandLine), 
 			     ifelse(showOutput, "true", "\"\""), 
