@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author Joshua Gould
- * @created May 3, 2004
+ *
  */
 public class LocalTaskExecutor extends TaskExecutor {
 	private final static String JAVA = "java";

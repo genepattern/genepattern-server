@@ -47,7 +47,7 @@ public class XmlSerializer implements ExceptionListener,
 	 * 
 	 * @param object
 	 *            DataModel for the analysis UI
-	 * @param fileName
+	 * @param file
 	 *            the xml file name
 	 * @throws IOException
 	 */

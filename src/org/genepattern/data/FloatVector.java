@@ -154,7 +154,7 @@ public class FloatVector implements org.genepattern.data.DataObjector,
 
 	/**
 	 * 
-	 * @todo check impl -its a little diff from mangelos
+	 * XXX check impl -its a little diff from mangelos
 	 */
 	public float median() {
 
@@ -179,7 +179,7 @@ public class FloatVector implements org.genepattern.data.DataObjector,
 	}
 
 	/**
-	 * @@todo needs review from pt
+	 * XXX needs review from pt
 	 */
 	public float sig(double level) {
 		float[] v1 = new float[elementCount];
@@ -194,8 +194,8 @@ public class FloatVector implements org.genepattern.data.DataObjector,
 	 * 
 	 * var = sum(x_i-mean)**2 / N
 	 *  {*
-	 * @link http://davidmlane.com/hyperstat/A16252.html} unbiased variance ->
-	 *       n-1 biased variance -> using n Most commonly used is unbiased.
+	 * @see <a href=\'http://davidmlane.com/hyperstat/A16252.html\'> this</a> unbiased variance ->
+	 *       n-1 biased variance using n Most commonly used is unbiased.
 	 * 
 	 * @return the variance of the vector unbiased (div by n-1) or biased(divide
 	 *         by n)
@@ -233,7 +233,7 @@ public class FloatVector implements org.genepattern.data.DataObjector,
 	/**
 	 * defined as stddev / mean
 	 * 
-	 * @see http://www.dchip.org/
+	 * @see <a href="http://www.dchip.org/">DChip</a>
 	 */
 	public double vard(boolean biased) {
 		computeset.variation = this.stddev(biased) / this.mean();
@@ -504,7 +504,7 @@ public class FloatVector implements org.genepattern.data.DataObjector,
 	 * data values will be lost. If the size is decreased, only those data
 	 * values whose vector positions were eliminated will be lost.
 	 * 
-	 * @param length
+	 * @param newSize
 	 *            number of desired elements in this vector
 	 */
 	public final void setSize(int newSize) {
@@ -788,13 +788,15 @@ public class FloatVector implements org.genepattern.data.DataObjector,
 	}
 
 	/**
-	 * PNormalizes this vector in place. min set to -1 and max set to +1
+	 * PNormalizes this vector in place. 
+	 * 
+	 * Min set to -1 and max set to +1
 	 * 
 	 * size of vect doeesnt matter:
 	 * 
 	 * 
 	 * 
-	 * @todo what is the correct terminology for this and how does it relate to
+	 * XXX what is the correct terminology for this and how does it relate to
 	 *       normalize?
 	 */
 	public void pnormalize() {

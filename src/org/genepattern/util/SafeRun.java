@@ -25,7 +25,6 @@ public abstract class SafeRun implements java.lang.Runnable {
 	 * here is where most everything happens This method is "final" so that the
 	 * subclasses cannot override it
 	 * 
-	 * @see doRun
 	 */
 	public final void run() {
 		try {

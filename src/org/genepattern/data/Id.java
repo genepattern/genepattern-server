@@ -16,7 +16,8 @@ public class Id implements javax.xml.bind.IdentifiableElement,
 	private String fId;
 
 	/**
-	 * Factory method for creating a new Id. Reasonably guaranteed to be unique
+	 * Factory method for creating a new Id. 
+	 * Reasonably guaranteed to be unique.
 	 * 
 	 * @see UUID
 	 */
@@ -25,7 +26,7 @@ public class Id implements javax.xml.bind.IdentifiableElement,
 	}
 
 	/**
-	 * privatized constructor -> use teh factroy metjod to create a new object
+	 * privatized constructor -> use the factroy metjod to create a new object
 	 * instead
 	 * 
 	 * NO - need it. Maybe change if pob is changed to id.
@@ -65,7 +66,7 @@ public class Id implements javax.xml.bind.IdentifiableElement,
 
 	/**
 	 * Ensures that this object does not violate any local structural
-	 * constraints. implementatioin onte: we could add some checks about
+	 * constraints. Implementatioin onte: we could add some checks about
 	 * uniqueness etc here, but as teh UUId mechanism is used to generate ids,
 	 * its failry safe and this method doesn nothing.
 	 */

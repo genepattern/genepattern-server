@@ -12,8 +12,9 @@ import java.util.Arrays;
 import java.util.Collections;
 
 /**
- * Represents a bunch of numbers that are not necessarily continuous. i.e. 1-3
- * 5, 7, 100
+ * Represents a bunch of numbers that are not necessarily continuous. 
+ * 
+ * i.e. 1-3, 5, 7, 100
  * 
  * @author kohm
  */
@@ -71,8 +72,8 @@ public class IntRanges {
 	//        
 	//    }
 	/**
-	 * Creates a new instance of IntRanges by parsing the parameter string. i.e.
-	 * "1-3,4 6, 7" where: two numbers seperated by a dash represents a range
+	 * Creates a new instance of IntRanges by parsing the parameter string. 
+	 * i.e. "1-3,4 6, 7" where: two numbers seperated by a dash represents a range
 	 * and single numbers represent a number. All numbers and ranges are
 	 * seperated by a comma or just white space
 	 */

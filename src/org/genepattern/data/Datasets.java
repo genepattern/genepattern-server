@@ -30,7 +30,7 @@ public class Datasets {
 	 * @param dataset
 	 *            is the original (this method could have been nonstatic and
 	 *            this would not be needed)
-	 * @param labels
+	 * @param labs
 	 *            has the new order defined by the order of the array of labels
 	 * @param panels
 	 *            some lists of data that needs the same ordering

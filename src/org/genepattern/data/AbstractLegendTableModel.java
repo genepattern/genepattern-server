@@ -15,7 +15,7 @@ package org.genepattern.data;
  * 
  * @author KOhm
  * @version 0.1
- * @see LegendTable
+ * @see LegendTableModel
  */
 public abstract class AbstractLegendTableModel extends
 		javax.swing.table.AbstractTableModel implements LegendTableModel {

@@ -422,7 +422,7 @@ public class MatrixMutable extends DefaultMatrix {
 	/**
 	 * Copy the values from the array into the specified column of this matrix.
 	 * 
-	 * @param row
+	 * @param col
 	 *            the column of this matrix into which the array values will be
 	 *            copied.
 	 * @param array
@@ -447,7 +447,7 @@ public class MatrixMutable extends DefaultMatrix {
 	/**
 	 * Copy the values from the array into the specified column of this matrix.
 	 * 
-	 * @param row
+	 * @param col
 	 *            the column of this matrix into which the vector values will be
 	 *            copied.
 	 * @param vector

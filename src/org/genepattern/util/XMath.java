@@ -152,7 +152,7 @@ public class XMath {
 	 * time, the rnd stays the same from jvm invoc to jvm invoc. See link below
 	 * for more. See http://mindprod.com/gotchas.html#RANDOM
 	 * 
-	 * {@link http://mindprod.com}
+	 * {@see <a href="http://www.mindprod.com">mindprod</a>}
 	 * 
 	 * @param num
 	 * @return int[] array of random ints

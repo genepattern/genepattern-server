@@ -246,7 +246,7 @@ public class DatasetPropertiesWrapper extends AbstractObject implements
 		/**
 		 * returns an object that represents the value at the index
 		 * 
-		 * @parram row the row index
+		 * @param row the row index
 		 */
 		public final Object get(final int row) {
 			this.value = dataset.getElement(row, column);
@@ -276,7 +276,7 @@ public class DatasetPropertiesWrapper extends AbstractObject implements
 		/**
 		 * returns the String at the index
 		 * 
-		 * @parram row the row index
+		 * @param row the row index
 		 */
 		public final Object get(final int row) {
 			return rows_panel.getName(row);
@@ -301,7 +301,7 @@ public class DatasetPropertiesWrapper extends AbstractObject implements
 		/**
 		 * returns the String at the index
 		 * 
-		 * @parram row the row index
+		 * @param row the row index
 		 */
 		public final Object get(final int row) {
 			return rows_panel.getAnnotation(row);

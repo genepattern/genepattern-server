@@ -65,9 +65,9 @@ public class DefaultMatrix implements Matrix, Serializable {
 	 * columnCount will be one larger than the maximum possible matrix index
 	 * values.
 	 * 
-	 * @param rowCount
+	 * @param nrows
 	 *            number of rows in this matrix.
-	 * @param columnCount
+	 * @param ncols
 	 *            number of columns in this matrix.
 	 */
 	protected DefaultMatrix(final int nrows, final int ncols,
@@ -91,9 +91,9 @@ public class DefaultMatrix implements Matrix, Serializable {
 	 * that even though row and column numbering begins with zero, RowCnt and
 	 * ColCnt will be one larger than the maximum possible matrix index values.
 	 * 
-	 * @param rowCount
+	 * @param nrows
 	 *            number of rows in this matrix.
-	 * @param columnCount
+	 * @param ncols
 	 *            number of columns in this matrix.
 	 * @param matrix
 	 *            a 1D array that specifies a matrix in row major fashion
@@ -935,7 +935,7 @@ public class DefaultMatrix implements Matrix, Serializable {
 	/**
 	 * Siginifcance by row
 	 * 
-	 * @todo signfic needs review by pt
+	 * XXX signfic needs review by pt
 	 */
 	public final FloatVector sigByRow(final double level) {
 		FloatVector v = new FloatVector(rowCount);

@@ -25,7 +25,7 @@ public class MutableFloat {
 		return false;
 	}
 
-	/** string rep. of this object */
+	/** string representation of this object */
 	public String toString() {
 		return String.valueOf(value);
 	}

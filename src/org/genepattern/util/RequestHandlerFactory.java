@@ -20,7 +20,6 @@ import org.genepattern.webservice.WebServiceException;
  * </p>
  * 
  * @author Hui Gong
- * @created May 4, 2004
  * @version $Revision 1.5 $
  * @deprecated use AnalysisWebServiceProxy instead
  */

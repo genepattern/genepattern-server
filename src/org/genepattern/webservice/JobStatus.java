@@ -5,7 +5,6 @@ import java.util.Hashtable;
 /**
  *  
  * Gets the parameters about Job status
- * </p>
  * 
  * @author Hui Gong
  * @version 1.0

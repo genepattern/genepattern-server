@@ -2,7 +2,6 @@ package org.genepattern.data;
 
 /**
  * 
- * @todo reasses - moved here for db0 tests A Mutable sept
  */
 public class MutableKlass extends Template.Klass {
 
