@@ -24,7 +24,6 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.StringUtils;
 import org.genepattern.util.GPConstants;
-import org.genepattern.util.PropertyFactory;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -55,18 +54,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
 	public void beforePipelineRuns(PipelineModel model) {
 		this.model = model;
-		init();
-
-		try {
-			PropertyFactory property = PropertyFactory.getInstance();
-			omnigeneProps = property.getProperties("omnigene.properties");
-			genepatternProps = property.getProperties("genepattern.properties");
-			URL = localizeURL(genepatternProps.getProperty("GenePatternURL"));
-
-		} catch (Exception ioe) {
-			omnigeneProps = new Properties();
-			genepatternProps = new Properties();
-		}
+		super.init();
 
 		String jobID = System.getProperty("jobID");
 		String isSaved = System.getProperty("savedPipeline");
