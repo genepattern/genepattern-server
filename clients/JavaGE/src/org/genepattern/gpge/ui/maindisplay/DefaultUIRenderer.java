@@ -95,12 +95,14 @@ public class DefaultUIRenderer implements UIRenderer {
 	/** the bold font to create some components with */
 	private java.awt.Font bold_font;
 
-	/** executes the code in a safe environment */
-	private final SafeExecuter executer = new SafeExecuter();
 
 	/** maps parameter names to the text field for a parameter */
 	private java.util.Map inputFileParameterNameToTextFieldMap = new java.util.LinkedHashMap();
-
+   
+   private AnalysisService service;
+   private java.util.List params_list;
+   private Map name_retriever;
+  
 	public java.util.Iterator getInputFileParameterNames() {
 		return inputFileParameterNameToTextFieldMap.keySet().iterator();
 	}
@@ -130,15 +132,15 @@ public class DefaultUIRenderer implements UIRenderer {
 			final java.util.List params_list, final Map name_retriever) {
 		inputFileParameterNameToTextFieldMap.clear();
 		this.pane = (JPanel) pane;
-		executer.service = service;
-		executer.params_list = params_list;
-		executer.name_retriever = name_retriever;
-		executer.run();
+		this.service = service;
+		this.params_list = params_list;
+		this.name_retriever = name_retriever;
+		addParameters(service, params_list, name_retriever);
 	}
 
-	private void safeExecution(final AnalysisService service,
+	private void addParameters(final AnalysisService service,
 			final java.util.List params_list, final Map name_retriever) {
-		setFont(pane.getFont()); // nothing happens if fonts are equal
+		setFont(pane.getFont()); 
 
 		final int fill_height = calcFillHeight(pane, getFont());
 		final int rel = GridBagConstraints.RELATIVE;
@@ -146,6 +148,7 @@ public class DefaultUIRenderer implements UIRenderer {
 		setGridBagConstraints(gbc1, rel, rel, 1, 1, 100, 1);
 		gbc1.anchor = gbc2.anchor = GridBagConstraints.WEST;
 		gbc1.insets = new Insets(0, 10, fill_height, 0);
+      
 		setGridBagConstraints(gbc2, rel, rel, 1, 1, 100, 1);
 		setGridBagConstraints(remainder, rel, rel, rem, 1, 100, 1);
 		gbc2.insets = new Insets(0, 0, fill_height, 0);
@@ -173,25 +176,14 @@ public class DefaultUIRenderer implements UIRenderer {
 		final String param_name = info.getName();
 
 		final String param_desc = info.getDescription();
-		//        // debug stuff
-		//        System.out.println("ParamInfos for the parameter "+param_name+":");
-		//        final HashMap attrs = info.getAttributes();
-		//        for(final java.util.Iterator iter = attrs.keySet().iterator();
-		// iter.hasNext(); ) {
-		//            final Object key = iter.next();
-		//            System.out.println("'"+key+"' -- '"+attrs.get(key)+"'");
-		//        }
-		//        System.out.println();
-		//        // end debug stuff
+		
 		if (param_name.equals("className")) {
 			task.getTaskInfoAttributes().put(param_name, param_desc);
 			return null;
 		}
 		final String param_label = info.getLabel();
 		final String param_value = info.getValue();
-		//cat.debug("name:"+param_name+" value:"+param_value+"
-		// desc:"+param_desc);
-
+		
 		//check the parameter value to decide which kind of JComponent to
 		// create
 		if (param_value == null || param_value.equals("")) {
@@ -447,6 +439,7 @@ public class DefaultUIRenderer implements UIRenderer {
 			final String label, final String descr, final ParameterInfo info,
 			final Map name_retriever) {
 		pane.add(createLabel(param_name, info), gbc1);
+      
 		final JScrollPane scroll = createObjectTextField(label);
 		final ObjectTextField field = (ObjectTextField) scroll.getViewport()
 				.getView();
@@ -849,30 +842,7 @@ public class DefaultUIRenderer implements UIRenderer {
 
 	// I N N E R C L A S S E S
 
-	/**
-	 * Safely executes the main code
-	 * 
-	 * @author jgould
-	 * @created February 9, 2004
-	 */
-	private final class SafeExecuter extends org.genepattern.util.RunLater {
-		AnalysisService service;
-
-		java.util.List params_list;
-
-		Map name_retriever;
-
-		/**
-		 * this is where the subclasses implement whatever code they want to be
-		 * run in a thread
-		 * 
-		 * @exception Throwable
-		 *                Description of the Exception
-		 */
-		protected void runIt() throws Throwable {
-			safeExecution(service, params_list, name_retriever);
-		}
-	}
+	
 
 	/**
 	 * Abstact implemtation for those non file ParamRetrievor implementations
@@ -880,8 +850,7 @@ public class DefaultUIRenderer implements UIRenderer {
 	 * @author jgould
 	 * @created February 9, 2004
 	 */
-	private abstract static class AbstractParamRetrievor extends
-			org.genepattern.util.RunLater implements ParamRetrievor {
+	private abstract static class AbstractParamRetrievor implements ParamRetrievor {
 
 		/** which method to call */
 		private String method;
@@ -920,7 +889,7 @@ public class DefaultUIRenderer implements UIRenderer {
 		 */
 		public final String getValue() throws java.io.IOException {
 			method = "getValue";
-			run(); // calls runIt()
+			runIt(); // calls runIt()
 			return (String) value;
 		}
 
@@ -932,9 +901,13 @@ public class DefaultUIRenderer implements UIRenderer {
 		protected abstract boolean internalIsFile();
 
 		public final boolean isFile() {
-			method = "isFile";
-			run(); // calls runIt()
-			return result;
+         try {
+            method = "isFile";
+            runIt(); // calls runIt()
+            return result;
+         } catch(IOException ioe) {
+            return false;
+         }
 		}
 
 		/**
@@ -945,9 +918,13 @@ public class DefaultUIRenderer implements UIRenderer {
 		protected abstract boolean internalIsServerFile();
 
 		public final boolean isServerFile() {
-			method = "isServerFile";
-			run(); // calls runIt()
-			return result;
+         try {
+            method = "isServerFile";
+            runIt(); // calls runIt()
+            return result;
+         } catch(IOException e) {
+            return false;  
+         }
 		}
 
 		/**
@@ -964,7 +941,7 @@ public class DefaultUIRenderer implements UIRenderer {
 
 		public final String getSourceName() throws java.io.IOException {
 			method = "getSourceName";
-			run(); // calls runIt()
+			runIt(); // calls runIt()
 			return (String) value;
 		}
 
@@ -1000,8 +977,7 @@ public class DefaultUIRenderer implements UIRenderer {
 	 * @author jgould
 	 * @created February 9, 2004
 	 */
-	private abstract static class NoFileParamRetrievor extends
-			org.genepattern.util.RunLater implements ParamRetrievor {
+	private abstract static class NoFileParamRetrievor implements ParamRetrievor {
 		private String value;
 
 		private final ParameterInfo paraminfo;
@@ -1027,7 +1003,7 @@ public class DefaultUIRenderer implements UIRenderer {
 		 *                Description of the Exception
 		 */
 		public final String getValue() throws java.io.IOException {
-			run(); // calls runIt()
+			runIt();
 			return value;
 		}
 
