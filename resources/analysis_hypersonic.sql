@@ -22,16 +22,16 @@ create table analysis_job(job_no int identity primary key, task_id int, status_i
 
 create index idx_job_lsid on analysis_job(lsid);
 create index idx_analysis_job_parent on analysis_job(parent);
+create index idx_analysis_job_no on analysis_job(job_no);
 
 --Job Status Info table
 create table Job_status(status_id int, status_name varchar(20));
 
 --Populate Job staus info table
-insert into job_status values(1,'Not Started');
+insert into job_status values(1,'Pending');
 insert into job_status values(2,'Processing');
 insert into job_status values(3,'Finished');
 insert into job_status values(4,'Error');
-insert into job_status values(5,'Timed Out');
 
 
 create unique index idx_status_id on job_status(status_id);
