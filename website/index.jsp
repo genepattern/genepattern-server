@@ -212,9 +212,11 @@ setTimeout("blinkInstallModules()", 1000); // delay 1000 milliseconds
 
 <% if (tmTasks.size() == 0) { %>
 <font size="+1" color="red">
+<br>
 There are currently no modules installed on this server.  
-You may select from and install modules from the <a href="taskCatalog.jsp">public Broad website</a> or from your own collection.
+You may select and install modules from the <a href="taskCatalog.jsp">Broad website</a> or from your own collection.
 <br><br>
+
 <% } %>
 
 </font>
