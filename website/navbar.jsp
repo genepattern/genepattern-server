@@ -243,7 +243,7 @@ function LSID(lsid) {
 	sbCatalog.append("<select name=\"" + selectorName + "\" onchange=\"");
 	sbCatalog.append(onSelectURL);
 	sbCatalog.append("\" class=\"navbar\">\n");
-	sbCatalog.append("<option value=\"" + IGNORE + "\" disabled>" + (type == null ? "task" : type) + "</option>\n");
+	sbCatalog.append("<option value=\"" + IGNORE + "\">" + (type == null ? "task" : type) + "</option>\n");
 	sbCatalog.append("<option value=\"\">new " + (type == null ? "task" : type) + "</option>\n");
 	String name;
 	String shortName;
