@@ -136,6 +136,9 @@ public class AnalysisServicePanel extends JPanel {
 	 * @return the input file names
 	 */
 	public java.util.Iterator getInputFileParameterNames() {
+      if(_selectedService==null) {
+         return java.util.Collections.EMPTY_LIST.iterator();  
+      }
 		return renderer.getInputFileParameterNames();
 	}
 
@@ -150,7 +153,9 @@ public class AnalysisServicePanel extends JPanel {
 	 */
 	public void setInputFile(String parameterName,
 			javax.swing.tree.TreeNode node) {
-		renderer.setInputFile(parameterName, node);
+      if(_selectedService!=null) {
+         renderer.setInputFile(parameterName, node);
+      }
 	}
 
 	/**
@@ -193,43 +198,67 @@ public class AnalysisServicePanel extends JPanel {
 			t.printStackTrace();
 		}
 	}
+   
+   /**
+   * Displays an image 
+   */
+   public void displayIntro() {
+      tasksLabel.setText("");
+		this._selectedService = null;
+		this.remove(_servicePanel);
+      
+      this._servicePanel = new JPanel();
+      javax.swing.Icon icon = new javax.swing.ImageIcon(ClassLoader
+         .getSystemResource("org/genepattern/gpge/resources/intro.gif"));
+      this._servicePanel.add(new JLabel(icon));
+      
+		this.add(this._servicePanel, BorderLayout.CENTER);
+		this.revalidate();
+		this.doLayout();  
+      notifyListeners();
+   }
 
+   /**
+   * Displays the given analysis service
+   * @param selectedServer the analysis service to display
+   */
 	public void loadTask(AnalysisService selectedService) {
 		latestVersion = null;
-		TaskInfo taskInfo = selectedService.getTaskInfo();
-		String taskDisplay = taskInfo.getName();
+      
+      TaskInfo taskInfo = selectedService.getTaskInfo();
+      String taskDisplay = taskInfo.getName();
 
-		try {
-			LSID lsid = new LSID((String) selectedService.getTaskInfo()
-					.getTaskInfoAttributes().get(GPConstants.LSID));
-			if (!org.genepattern.gpge.ui.maindisplay.LSIDUtil.isBroadTask(lsid)) {
-				String authority = lsid.getAuthority();
-				taskDisplay += " (" + authority + ")";
-			}
-			final String lsidNoVersion = lsid.toStringNoVersion();
-			List versions = (List) lsid2VersionsMap.get(lsidNoVersion);
-			String currentVersion = lsid.getVersion();
-			latestVersion = currentVersion;
-			for (int i = 0; i < versions.size(); i++) {
-				String version = (String) versions.get(i);
-				if (version.compareTo(latestVersion) > 0) {
-					latestVersion = version;
-				}
-			}
+      try {
+         LSID lsid = new LSID((String) selectedService.getTaskInfo()
+               .getTaskInfoAttributes().get(GPConstants.LSID));
+         if (!org.genepattern.gpge.ui.maindisplay.LSIDUtil.isBroadTask(lsid)) {
+            String authority = lsid.getAuthority();
+            taskDisplay += " (" + authority + ")";
+         }
+         final String lsidNoVersion = lsid.toStringNoVersion();
+         List versions = (List) lsid2VersionsMap.get(lsidNoVersion);
+         String currentVersion = lsid.getVersion();
+         latestVersion = currentVersion;
+         for (int i = 0; i < versions.size(); i++) {
+            String version = (String) versions.get(i);
+            if (version.compareTo(latestVersion) > 0) {
+               latestVersion = version;
+            }
+         }
 
-			if (lsid.getVersion().equals(latestVersion)) {
-				taskDisplay += ", " + lsid.getVersion() + " (latest)";
-			} else {
-				taskDisplay += ", " + lsid.getVersion();
-			}
+         if (lsid.getVersion().equals(latestVersion)) {
+            taskDisplay += ", " + lsid.getVersion() + " (latest)";
+         } else {
+            taskDisplay += ", " + lsid.getVersion();
+         }
 
-		} catch (Exception e) {
-		}
-
+      } catch (Exception e) {
+      }
 		tasksLabel.setText(taskDisplay);
 		this._selectedService = selectedService;
 		this.remove(_servicePanel);
-		this._servicePanel = createTaskPane(selectedService);
+      this._servicePanel = createTaskPane(selectedService);
+      
 		this.add(this._servicePanel, BorderLayout.CENTER);
 		this.revalidate();
 		this.doLayout();
