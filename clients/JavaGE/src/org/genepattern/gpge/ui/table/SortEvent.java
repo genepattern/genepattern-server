@@ -1,4 +1,4 @@
-package org.genepattern.gpge.ui.treetable;
+package org.genepattern.gpge.ui.table;
 
 public class SortEvent extends java.util.EventObject {
 	private int column;

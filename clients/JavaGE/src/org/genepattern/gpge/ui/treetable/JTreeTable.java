@@ -22,8 +22,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import javax.swing.tree.*;
-import org.jdesktop.swing.*;
-import org.jdesktop.swing.treetable.*;
+import org.jdesktop.swing.treetable.TreeTableModel;
 
 /**
  *  This example shows how to create a simple JTreeTable component, by using a
@@ -73,7 +72,7 @@ public class JTreeTable extends JTable {
       }
       NoHighlightRenderer r = new NoHighlightRenderer();
       defaultRenderersByColumnClass.put(String.class, r);
-      defaultRenderersByColumnClass.put(Object.class, r);
+     
     //  addMouseListener(new MouseAdapter() {
       //   public void mouseClicked(MouseEvent e) {
         //    expandOrCollapseNode(e);
@@ -81,7 +80,7 @@ public class JTreeTable extends JTable {
       //});
    }
    
-   static class NoHighlightRenderer extends DefaultTableCellRenderer {
+   public static class NoHighlightRenderer extends DefaultTableCellRenderer {
         public Component getTableCellRendererComponent(JTable table,
             Object value,
             boolean isSelected, boolean hasFocus,

@@ -9,6 +9,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.genepattern.gpge.ui.tasks.*;
 import org.genepattern.webservice.*;
+import org.genepattern.gpge.ui.table.*;
 
 /**
  *  Description of the Class
