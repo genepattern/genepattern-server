@@ -3,7 +3,7 @@ create user SA password "" ADMIN;
 
 --Task master table
 
-create table task_master(task_ID int identity primary key, task_Name longvarchar, description longvarchar, parameter_info longvarchar, type_id int, taskInfoAttributes longvarchar, user_id longvarchar, access_id int, isIndexed bit, lsid varchar(200));
+create table task_master(task_ID int identity primary key, task_Name longvarchar, description longvarchar, parameter_info longvarchar, taskInfoAttributes longvarchar, user_id longvarchar, access_id int, isIndexed bit, lsid varchar(200));
 
 create index idx_lsid on task_master(lsid);
 create index idx_is_indexed on task_master(isIndexed);
@@ -32,12 +32,6 @@ insert into job_status values(3,'Finished');
 insert into job_status values(4,'Error');
 insert into job_status values(5,'Timed Out');
 
---Task type table
-create table task_type(type_id int, type_name varchar(20));
-
---Populate task type table
-insert into task_type values(1, 'Regular');
-insert into task_type values(2, 'Repeat');
 
 create unique index idx_status_id on job_status(status_id);
 
