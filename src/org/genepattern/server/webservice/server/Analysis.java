@@ -64,6 +64,18 @@ public class Analysis extends GenericWebService {
 		}.getLatestTasksByName();
 	}
 
+    /**
+	 * Saves a record of a job that was executed on the client into the database
+	 * 
+	 * @param taskID
+	 *            the ID of the task to run.
+	 * @param parmInfo
+	 *            the parameters 
+    * @exception WebServiceException
+	 *                thrown if problems are encountered
+	 * @return the job information
+	 */
+    
    public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters) 	throws WebServiceException {
       try {
           org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
@@ -424,20 +436,20 @@ public class Analysis extends GenericWebService {
 	 * 
 	 * Gets the jobs for the current user
     * @param username the username to retrieve jobs for. If <tt>null</tt> the current username is used.
-    * @param startIndex the index, beginning at 0, to start retrieving jobs from
+    * @param maxJobNumber the maximum job number to include in the returned jobs or -1, to start at the current maximum job number in the database
     * @param maxEntries the maximum number of jobs to return
     * @param allJobs if <tt>true</tt> return all jobs that the given user has run, otherwise return jobs that have not been deleted 
 	 * 
 	 * @return the jobs
 	 */
-	public JobInfo[] getJobs(String username, int startIndex, int maxEntries, boolean allJobs) throws WebServiceException {
+	public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs) throws WebServiceException {
 		try {
 			org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
 					.getAnalysisJobDataSourceEJB();
          if(username==null) {
             username = getUsernameFromContext();  
          }
-			return ds.getJobs(username, startIndex, maxEntries, allJobs);
+			return ds.getJobs(username, maxJobNumber, maxEntries, allJobs);
 		} catch (Exception e) {
 			throw new WebServiceException(e);
 		}

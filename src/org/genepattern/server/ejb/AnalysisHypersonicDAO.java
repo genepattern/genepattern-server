@@ -511,7 +511,7 @@ public class AnalysisHypersonicDAO implements
 		}
    }
 
-	public JobInfo[] getJobs(String username, int startIndex, int maxEntries, boolean allJobs) throws OmnigeneException,
+	public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs) throws OmnigeneException,
 			RemoteException {
 		java.util.List results = new java.util.ArrayList();
 
@@ -521,11 +521,14 @@ public class AnalysisHypersonicDAO implements
 
 		try {
 			conn = getConnection();
-         String sql = "SELECT LIMIT " + startIndex + " " +  maxEntries + " job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id, task_lsid, task_name FROM analysis_job, job_status WHERE analysis_job.status_id = job_status.status_id AND user_id = ? AND parent IS NULL";
+         String sql = "SELECT LIMIT 0 " +  maxEntries + " job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id, task_lsid, task_name FROM analysis_job, job_status WHERE analysis_job.status_id = job_status.status_id AND user_id = ? AND parent IS NULL";
+         if(maxJobNumber != -1) {
+              sql += " AND job_no <= " + maxJobNumber;  
+         }
          if(!allJobs) {
             sql += " AND deleted IS FALSE";
          }
-         sql += " ORDER BY date_completed";
+         sql += " ORDER BY job_no DESC";
         
 			stat = conn
 					.prepareStatement(sql);

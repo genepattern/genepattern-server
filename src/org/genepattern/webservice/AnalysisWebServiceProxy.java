@@ -245,15 +245,16 @@ public class AnalysisWebServiceProxy {
 	public JobInfo[] getJobs() throws WebServiceException {
 		try {
 			java.util.List results = new java.util.ArrayList();
-         int startIndex = 0;
+         int maxJobNumber = -1;
          final int querySize = 100;
          int numRetrieved = querySize;
          while(numRetrieved==querySize) {
-            JobInfo[] jobs = stub.getJobs(null, startIndex, querySize, false); 
+            JobInfo[] jobs = stub.getJobs(null, maxJobNumber, querySize, false); 
             numRetrieved = jobs.length;
-            java.util.List t = java.util.Arrays.asList(jobs); 
-            results.addAll(t);
-            startIndex+=querySize;
+            results.addAll(java.util.Arrays.asList(jobs));
+            if(jobs.length > 1) {
+               maxJobNumber = jobs[jobs.length-1].getJobNumber()-1;
+            }
          }
          return (JobInfo[]) results.toArray(new JobInfo[0]);
 		} catch (RemoteException re) {

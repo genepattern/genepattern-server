@@ -273,10 +273,21 @@ public class MainFrame extends JFrame {
 	}
 
 	public void changeServer(final String server, final String username) {
+      Thread messageThread = new Thread() {
+			public void run() {
+				messageLabel.setText("Retrieving tasks and jobs from " + server + "...");
+            historyMenu.removeAll();
+			}
+		};
+		SwingUtilities.invokeLater(messageThread);
+      
 		GPpropertiesManager.setProperty(PreferenceKeys.SERVER, server);
 		GPpropertiesManager.setProperty(PreferenceKeys.USER_NAME, username);
 		analysisServiceManager = AnalysisServiceManager.getInstance();
       analysisServiceManager.changeServer(server, username);
+      setChangeServerActionsEnabled(false);
+      
+      
 		new Thread() {
 			public void run() {
 				try {
@@ -291,19 +302,18 @@ public class MainFrame extends JFrame {
                // ignore the exception here, the user will be alerted in refreshTasks
 				}
 				refreshTasks();
-            historyMenu.removeAll();
-
+            
+            Thread changeStatusThread = new Thread() {
+               public void run() {
+                  messageLabel.setText("Server: " + server + "   Username: "
+                        + username);
+               }
+            };
+            SwingUtilities.invokeLater(changeStatusThread);
 			}
 		}.start();
       
-		Thread changeStatusThread = new Thread() {
-			public void run() {
-				messageLabel.setText("Server: " + server + "   Username: "
-						+ username);
-            historyMenu.removeAll();
-			}
-		};
-		SwingUtilities.invokeLater(changeStatusThread);
+		
 	}
 
 	/**
@@ -1076,13 +1086,13 @@ public class MainFrame extends JFrame {
 		}.start();
 	}
 
-	public void refreshTasks() {
-		Thread disableActions = new Thread() {
+   private void setChangeServerActionsEnabled(final boolean b) {
+      Thread disableActions = new Thread() {
 			public void run() {
-				analysisMenu.setEnabled(false);
-				visualizerMenu.setEnabled(false);
-            pipelineMenu.setEnabled(false);
-				fileMenu.changeServerActionsEnabled(false);
+				analysisMenu.setEnabled(b);
+				visualizerMenu.setEnabled(b);
+            pipelineMenu.setEnabled(b);
+				fileMenu.changeServerActionsEnabled(b);
 			}
 		};
 		if (SwingUtilities.isEventDispatchThread()) {
@@ -1090,7 +1100,10 @@ public class MainFrame extends JFrame {
 		} else {
 			SwingUtilities.invokeLater(disableActions);
 		}
-
+   }
+   
+	public void refreshTasks() {
+		setChangeServerActionsEnabled(false);
 		new Thread() {
 			public void run() {
 				try {
@@ -1115,10 +1128,7 @@ public class MainFrame extends JFrame {
 						analysisMenu.init(categoryToAnalysisServices);
 						visualizerMenu.init(categoryToAnalysisServices);
                   pipelineMenu.init(categoryToAnalysisServices);
-						fileMenu.changeServerActionsEnabled(true);
-						analysisMenu.setEnabled(true);
-						visualizerMenu.setEnabled(true);
-                  pipelineMenu.setEnabled(true);
+						setChangeServerActionsEnabled(true);
 					}
 				});
 
