@@ -29,7 +29,7 @@ import org.genepattern.util.Reporter;
 import org.genepattern.util.ReporterWithGUI;
 import org.genepattern.util.StringUtils;
 import org.genepattern.gpge.ui.maindisplay.MainFrame;
-
+import java.awt.Color;
 
 
 /**
@@ -45,6 +45,17 @@ public final class GenePattern {
     public GenePattern() {
        try {
           javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+          if(!MainFrame.RUNNING_ON_MAC) {
+            javax.swing.UIDefaults uiDefaults = javax.swing.UIManager.getDefaults();  
+            uiDefaults.put("Panel.background", new javax.swing.plaf.ColorUIResource(Color.white));
+            uiDefaults.put("CheckBox.background", new javax.swing.plaf.ColorUIResource(Color.white));
+            uiDefaults.put("RadioButton.background", new javax.swing.plaf.ColorUIResource(Color.white));
+            uiDefaults.put("Tree.background", new javax.swing.plaf.ColorUIResource(Color.white));
+            uiDefaults.put("Table.background", new javax.swing.plaf.ColorUIResource(Color.white));
+            uiDefaults.put("ScrollPane.background", new javax.swing.plaf.ColorUIResource(Color.white));
+            uiDefaults.put("SplitPane.background", new javax.swing.plaf.ColorUIResource(Color.white));
+            uiDefaults.put("Viewport.background", new javax.swing.plaf.ColorUIResource(Color.white));
+         } 
        } catch(Exception e) {}
         
         // display in a JFrame
