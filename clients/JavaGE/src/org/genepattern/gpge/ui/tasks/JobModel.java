@@ -48,6 +48,10 @@ public class JobModel extends AbstractSortableTreeTableModel {
    public static String getJobResultFileName(ServerFileNode node) {
        return getJobResultFileName(((JobNode)node.getParent()).job, node.index);
    }
+   
+   private static int getJobCreationJobNumber(ServerFileNode node) {
+       return getJobCreationJobNumber(((JobNode)node.getParent()).job, node.index);
+   }
     
    public static String getJobResultFileName(AnalysisJob job, int parameterInfoIndex) {
        String fileName = job.getJobInfo().getParameterInfoArray()[parameterInfoIndex].getValue();
@@ -442,6 +446,29 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			this.name = name;
 			this.index = index;
 		}
+      
+      /**
+		 * Returns the url to download the file from
+		 * 
+		 * @return The url to retrieve the file from.
+		 */
+		public URL getURL() {
+         String fileName = getJobResultFileName(this);
+			try {
+            JobNode parent = (JobNode) getParent();
+            AnalysisJob job = parent.job;
+            int jobNumber = getJobCreationJobNumber(this);
+            
+				return new URL(job.getServer() + "/gp/retrieveResults.jsp?job="
+						+ jobNumber + "&e=&filename="
+						+ URLEncoder.encode(fileName, "UTF-8"));
+			} catch (MalformedURLException x) {
+				throw new Error(x);
+			} catch (java.io.UnsupportedEncodingException uee) {
+				throw new Error("Unable to encode " + fileName);
+			}
+		}
+      
 
 		public void download(File destination) throws IOException {
 			JobNode parent = (JobNode) getParent();
@@ -496,25 +523,6 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		public String toString() {
 			return job.getTaskName() + " (" + job.getJobInfo().getJobNumber()
 					+ ")";
-		}
-
-		/**
-		 * Returns the url to download the given file name.
-		 * 
-		 * @param fileName
-		 *            The file name.
-		 * @return The url to retrieve the file from.
-		 */
-		public URL getURL(String fileName) {
-			try {
-				return new URL(job.getServer() + "/gp/retrieveResults.jsp?job="
-						+ job.getJobInfo().getJobNumber() + "&e=&filename="
-						+ URLEncoder.encode(fileName, "UTF-8"));
-			} catch (MalformedURLException x) {
-				throw new Error(x);
-			} catch (java.io.UnsupportedEncodingException uee) {
-				throw new Error("Unable to encode " + fileName);
-			}
 		}
 
 		public int getOutputFiles() {

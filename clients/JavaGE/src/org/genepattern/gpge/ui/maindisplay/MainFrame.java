@@ -786,12 +786,9 @@ public class MainFrame extends JFrame {
 				if (selectedJobNode instanceof JobModel.ServerFileNode) {
 					JobModel.ServerFileNode node = (JobModel.ServerFileNode) selectedJobNode;
 
-					JobModel.JobNode parent = (JobModel.JobNode) node
-							.getParent();
-
 					try {
-						HttpURLConnection connection = (HttpURLConnection) parent
-								.getURL(node.name).openConnection();
+						HttpURLConnection connection = (HttpURLConnection) node
+								.getURL().openConnection();
 						if (connection.getResponseCode() == HttpURLConnection.HTTP_GONE) {
 							GenePattern.showMessageDialog(node.name
 									+ " has been deleted from the server.");
