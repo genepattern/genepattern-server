@@ -49,7 +49,7 @@ public final class GenePattern {
 			if (!MainFrame.RUNNING_ON_MAC) {
 				javax.swing.UIDefaults uiDefaults = javax.swing.UIManager
 						.getDefaults();
-				uiDefaults.put("Panel.background",
+				/*uiDefaults.put("Panel.background",
 						new javax.swing.plaf.ColorUIResource(Color.white));
 				uiDefaults.put("CheckBox.background",
 						new javax.swing.plaf.ColorUIResource(Color.white));
@@ -63,6 +63,7 @@ public final class GenePattern {
 						new javax.swing.plaf.ColorUIResource(Color.white));
 				uiDefaults.put("SplitPane.background",
 						new javax.swing.plaf.ColorUIResource(Color.white));
+                  */
 				uiDefaults.put("Viewport.background",
 						new javax.swing.plaf.ColorUIResource(Color.white));
 			}
