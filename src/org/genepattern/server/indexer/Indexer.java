@@ -262,10 +262,7 @@ public class Indexer {
 			int taskID = jobInfo.getTaskID();
 			int jobID = jobInfo.getJobNumber();
 			try {
-				if (taskID == -1) {
-					taskInfo = GenePatternAnalysisTask.getTaskInfo(jobInfo
-							.getInputFileName(), null);
-				} else {
+				if (taskID != -1) {
 					taskInfo = ds.getTask(taskID);
 				}
 			} catch (OmnigeneException oe) {
@@ -285,7 +282,7 @@ public class Indexer {
 				taskName = taskInfo.getName()
 						+ (lsid != null ? (" - " + lsid.getVersion()) : "");
 			} else {
-				taskName = jobInfo.getInputFileName();
+				taskName = ds.getTemporaryPipelineName(jobID);
 			}
 			boolean hasOutputFiles = false;
 
