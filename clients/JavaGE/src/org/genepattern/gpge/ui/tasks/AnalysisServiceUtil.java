@@ -1,4 +1,5 @@
 package org.genepattern.gpge.ui.tasks;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -9,67 +10,69 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AnalysisService;
 
 /**
- *  Utility class for organizing information about analysis services
- *
- * @author    Joshua Gould
+ * Utility class for organizing information about analysis services
+ * 
+ * @author Joshua Gould
  */
 public class AnalysisServiceUtil {
-   private AnalysisServiceUtil() { }
+	private AnalysisServiceUtil() {
+	}
 
+	/**
+	 * Sorts the map of categories to analysis services as returned from
+	 * getCategoryToAnalysisServicesMap
+	 * 
+	 * @param categoryToAnalysisServicesMap
+	 *            Description of the Parameter
+	 */
+	private static void sortAnalysisServices(Map categoryToAnalysisServicesMap) {
+		for (Iterator values = categoryToAnalysisServicesMap.values()
+				.iterator(); values.hasNext();) {
+			List services = (List) values.next();
+			java.util.Collections.sort(services, new java.util.Comparator() {
+				public int compare(Object obj1, Object obj2) {
+					AnalysisService svc1 = (AnalysisService) obj1;
+					AnalysisService svc2 = (AnalysisService) obj2;
+					return svc1.getTaskInfo().getName().compareTo(
+							svc2.getTaskInfo().getName());
+				}
 
-   /**
-    *  Sorts the map of categories to analysis services as returned from
-    *  getCategoryToAnalysisServicesMap
-    *
-    * @param  categoryToAnalysisServicesMap  Description of the Parameter
-    */
-   private static void sortAnalysisServices(Map categoryToAnalysisServicesMap) {
-      for(Iterator values = categoryToAnalysisServicesMap.values().iterator(); values.hasNext(); ) {
-         List services = (List) values.next();
-         java.util.Collections.sort(services,
-            new java.util.Comparator() {
-               public int compare(Object obj1, Object obj2) {
-                  AnalysisService svc1 = (AnalysisService) obj1;
-                  AnalysisService svc2 = (AnalysisService) obj2;
-                  return svc1.getTaskInfo().getName().compareTo(
-                        svc2.getTaskInfo().getName());
-               }
+				public boolean equals(Object obj1, Object obj2) {
+					AnalysisService svc1 = (AnalysisService) obj1;
+					AnalysisService svc2 = (AnalysisService) obj2;
+					return svc1.getTaskInfo().getName().equals(
+							svc2.getTaskInfo().getName());
+				}
+			});
 
+		}
+	}
 
-               public boolean equals(Object obj1, Object obj2) {
-                  AnalysisService svc1 = (AnalysisService) obj1;
-                  AnalysisService svc2 = (AnalysisService) obj2;
-                  return svc1.getTaskInfo().getName().equals(
-                        svc2.getTaskInfo().getName());
-               }
-            });
+	/**
+	 * Creates a map of task categories to a sorted list of analysis services
+	 * for a category
+	 * 
+	 * @param latestServices
+	 *            Description of the Parameter
+	 * @return the map
+	 */
 
-      }
-   }
-
-
-   /**
-    *  Creates a map of task categories to a sorted list of analysis services
-    *  for a category
-    *
-    * @param  latestServices  Description of the Parameter
-    * @return                 the map
-    */
-
-   public static Map getCategoryToAnalysisServicesMap(Collection latestServices) {
-      Map categories2Tasks = new TreeMap(String.CASE_INSENSITIVE_ORDER);
-      for(Iterator it = latestServices.iterator(); it.hasNext(); ) {
-         AnalysisService svc = (AnalysisService) it.next();
-         String category = (String) svc.getTaskInfo().getTaskInfoAttributes().get(GPConstants.TASK_TYPE);
-         category = Character.toUpperCase(category.charAt(0)) + category.substring(1, category.length());
-         List services = (List) categories2Tasks.get(category);
-         if(services == null) {
-            services = new ArrayList();
-            categories2Tasks.put(category, services);
-         }
-         services.add(svc);
-      }
-      sortAnalysisServices(categories2Tasks);
-      return categories2Tasks;
-   }
+	public static Map getCategoryToAnalysisServicesMap(Collection latestServices) {
+		Map categories2Tasks = new TreeMap(String.CASE_INSENSITIVE_ORDER);
+		for (Iterator it = latestServices.iterator(); it.hasNext();) {
+			AnalysisService svc = (AnalysisService) it.next();
+			String category = (String) svc.getTaskInfo()
+					.getTaskInfoAttributes().get(GPConstants.TASK_TYPE);
+			category = Character.toUpperCase(category.charAt(0))
+					+ category.substring(1, category.length());
+			List services = (List) categories2Tasks.get(category);
+			if (services == null) {
+				services = new ArrayList();
+				categories2Tasks.put(category, services);
+			}
+			services.add(svc);
+		}
+		sortAnalysisServices(categories2Tasks);
+		return categories2Tasks;
+	}
 }

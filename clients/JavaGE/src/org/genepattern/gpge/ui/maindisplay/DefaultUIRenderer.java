@@ -1,7 +1,7 @@
 /*
-    DefaultUIRenderer.java
-    Created on March 27, 2003, 5:35 PM
-  */
+ DefaultUIRenderer.java
+ Created on March 27, 2003, 5:35 PM
+ */
 package org.genepattern.gpge.ui.maindisplay;
 
 import java.awt.Font;
@@ -52,63 +52,83 @@ import org.genepattern.gpge.ui.maindisplay.VisualizerTaskSubmitter;
 import org.genepattern.gpge.ui.maindisplay.LSIDUtil;
 import org.genepattern.gpge.ui.project.ProjectDirModel;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
+
 /**
- *@author     kohm
- *@created    February 9, 2004
+ * @author kohm
+ * @created February 9, 2004
  */
 public class DefaultUIRenderer implements UIRenderer {
 
 	// fields
 	private GridBagConstraints gbc1 = new GridBagConstraints();
+
 	private GridBagConstraints gbc2 = new GridBagConstraints();
+
 	private GridBagConstraints remainder = new GridBagConstraints();
-	/**  listener for help button presses */
+
+	/** listener for help button presses */
 	private ActionListener help_listener;
+
 	private JPanel pane;
+
 	private int _gridy = 0;
-	/**  the min size of the text scroll panes */
-	private final static java.awt.Dimension MINIMUM_SCROLL_SIZE = new java.awt.Dimension(200, 50);
-	/**  the top inset value for a JScrollPane */
+
+	/** the min size of the text scroll panes */
+	private final static java.awt.Dimension MINIMUM_SCROLL_SIZE = new java.awt.Dimension(
+			200, 50);
+
+	/** the top inset value for a JScrollPane */
 	private int scroll_top_inset = -5;
+
 	/**
-	 *  the insets value for the bottom value so that the regular conponents are
-	 *  aligned to the top of the Description box
+	 * the insets value for the bottom value so that the regular conponents are
+	 * aligned to the top of the Description box
 	 */
 	private int fill_height;
-	/**  the actual or estimated height of a JLabel given the current font */
-	private int label_height;
-	/**  the font to create all components with */
-	private java.awt.Font font;
-	/**  the bold font to create some components with */
-	private java.awt.Font bold_font;
-	/**  executes the code in a safe environment */
-	private final SafeExecuter executer = new SafeExecuter(); 
-    /** maps parameter names to the text field for a parameter */
-   private java.util.Map inputFileParameterNameToTextFieldMap = new java.util.LinkedHashMap();
-   
-   
-   public java.util.Iterator getInputFileParameterNames() {
-      return inputFileParameterNameToTextFieldMap.keySet().iterator();
-   }
-   
-   public void setInputFile(String parameterName, javax.swing.tree.TreeNode node) {
-      ObjectTextField tf = (ObjectTextField) inputFileParameterNameToTextFieldMap.get(parameterName);
-      tf.setObject(node);
-   }
 
+	/** the actual or estimated height of a JLabel given the current font */
+	private int label_height;
+
+	/** the font to create all components with */
+	private java.awt.Font font;
+
+	/** the bold font to create some components with */
+	private java.awt.Font bold_font;
+
+	/** executes the code in a safe environment */
+	private final SafeExecuter executer = new SafeExecuter();
+
+	/** maps parameter names to the text field for a parameter */
+	private java.util.Map inputFileParameterNameToTextFieldMap = new java.util.LinkedHashMap();
+
+	public java.util.Iterator getInputFileParameterNames() {
+		return inputFileParameterNameToTextFieldMap.keySet().iterator();
+	}
+
+	public void setInputFile(String parameterName,
+			javax.swing.tree.TreeNode node) {
+		ObjectTextField tf = (ObjectTextField) inputFileParameterNameToTextFieldMap
+				.get(parameterName);
+		tf.setObject(node);
+	}
 
 	/**
-	 *  renders as many parameters as it can on the supplied JComponent The input
-	 *  List of ParameterInfo objects will contain those that were not processed.
-	 *  The specified Map will map parameter names to ParamRetrievor instances.
-	 *
-	 *@param  pane            Description of the Parameter
-	 *@param  service         Description of the Parameter
-	 *@param  params_list     Description of the Parameter
-	 *@param  name_retriever  Description of the Parameter
+	 * renders as many parameters as it can on the supplied JComponent The input
+	 * List of ParameterInfo objects will contain those that were not processed.
+	 * The specified Map will map parameter names to ParamRetrievor instances.
+	 * 
+	 * @param pane
+	 *            Description of the Parameter
+	 * @param service
+	 *            Description of the Parameter
+	 * @param params_list
+	 *            Description of the Parameter
+	 * @param name_retriever
+	 *            Description of the Parameter
 	 */
-	public void render(final JComponent pane, final AnalysisService service, final java.util.List params_list, final Map name_retriever) {
-      inputFileParameterNameToTextFieldMap.clear();
+	public void render(final JComponent pane, final AnalysisService service,
+			final java.util.List params_list, final Map name_retriever) {
+		inputFileParameterNameToTextFieldMap.clear();
 		this.pane = (JPanel) pane;
 		executer.service = service;
 		executer.params_list = params_list;
@@ -116,8 +136,8 @@ public class DefaultUIRenderer implements UIRenderer {
 		executer.run();
 	}
 
-
-	private void safeExecution(final AnalysisService service, final java.util.List params_list, final Map name_retriever) {
+	private void safeExecution(final AnalysisService service,
+			final java.util.List params_list, final Map name_retriever) {
 		setFont(pane.getFont()); // nothing happens if fonts are equal
 
 		final int fill_height = calcFillHeight(pane, getFont());
@@ -132,82 +152,92 @@ public class DefaultUIRenderer implements UIRenderer {
 		_gridy = 0;
 		gbc1.anchor = gbc2.anchor = GridBagConstraints.WEST;
 		final TaskInfo task = service.getTaskInfo();
-		if(task != null) {
-			final ParameterInfo[] params = (ParameterInfo[]) params_list.toArray(new ParameterInfo[params_list.size()]);
+		if (task != null) {
+			final ParameterInfo[] params = (ParameterInfo[]) params_list
+					.toArray(new ParameterInfo[params_list.size()]);
 			//loop through the parameters to create UI
 			int i;
 			final int length = (params != null) ? params.length : 0;
 			_gridy++;
-			for(i = 0; i < length; i++) {
+			for (i = 0; i < length; i++) {
 				ParameterInfo info = params[i];
 				createParamPanel(task, info, name_retriever);
 			}
-//            final JButton help_button = new JButton("Help");
-//            remainder.anchor = GridBagConstraints.EAST;
-//            pane.add(help_button, remainder);
-//            help_button.addActionListener(new ActionListener() {
-//                public final void actionPerformed(java.awt.event.ActionEvent ae) throws java.io.IOException{
-//                    edu.mit.genome.util.BrowserLauncher.openURL(DOC_URL + task.getName());
-//                }
-//            });
+			//            final JButton help_button = new JButton("Help");
+			//            remainder.anchor = GridBagConstraints.EAST;
+			//            pane.add(help_button, remainder);
+			//            help_button.addActionListener(new ActionListener() {
+			//                public final void actionPerformed(java.awt.event.ActionEvent ae)
+			// throws java.io.IOException{
+			//                    edu.mit.genome.util.BrowserLauncher.openURL(DOC_URL +
+			// task.getName());
+			//                }
+			//            });
 		}
-		help_listener =
-			new ActionListener() {
-				public final void actionPerformed(java.awt.event.ActionEvent ae) {
-					try {
-                  String server = executer.service.getServer();
-                  String docURL = server + "/gp/getTaskDoc.jsp?name=" + LSIDUtil.getTaskId(task) + "&"+GPConstants.USERID+"=GenePattern";
-						org.genepattern.util.BrowserLauncher.openURL(docURL); 
-					} catch(java.io.IOException ex) {
-						ExceptionHandler.handleException(ex);
-					}
+		help_listener = new ActionListener() {
+			public final void actionPerformed(java.awt.event.ActionEvent ae) {
+				try {
+					String server = executer.service.getServer();
+					String docURL = server + "/gp/getTaskDoc.jsp?name="
+							+ LSIDUtil.getTaskId(task) + "&"
+							+ GPConstants.USERID + "=GenePattern";
+					org.genepattern.util.BrowserLauncher.openURL(docURL);
+				} catch (java.io.IOException ex) {
+					ExceptionHandler.handleException(ex);
 				}
-			};
+			}
+		};
 		params_list.clear();
 	}
 
-
-	private JPanel createParamPanel(final TaskInfo task, final ParameterInfo info, final Map name_retriever) {
+	private JPanel createParamPanel(final TaskInfo task,
+			final ParameterInfo info, final Map name_retriever) {
 		final String param_name = info.getName();
-		
-		
-		
+
 		final String param_desc = info.getDescription();
-//        // debug stuff
-//        System.out.println("ParamInfos for the parameter "+param_name+":");
-//        final HashMap attrs = info.getAttributes();
-//        for(final java.util.Iterator iter = attrs.keySet().iterator(); iter.hasNext(); ) {
-//            final Object key = iter.next();
-//            System.out.println("'"+key+"' -- '"+attrs.get(key)+"'");
-//        }
-//        System.out.println();
-//        // end debug stuff
-		if(param_name.equals("className")) {
+		//        // debug stuff
+		//        System.out.println("ParamInfos for the parameter "+param_name+":");
+		//        final HashMap attrs = info.getAttributes();
+		//        for(final java.util.Iterator iter = attrs.keySet().iterator();
+		// iter.hasNext(); ) {
+		//            final Object key = iter.next();
+		//            System.out.println("'"+key+"' -- '"+attrs.get(key)+"'");
+		//        }
+		//        System.out.println();
+		//        // end debug stuff
+		if (param_name.equals("className")) {
 			task.getTaskInfoAttributes().put(param_name, param_desc);
 			return null;
 		}
 		final String param_label = info.getLabel();
 		final String param_value = info.getValue();
-		//cat.debug("name:"+param_name+" value:"+param_value+" desc:"+param_desc);
+		//cat.debug("name:"+param_name+" value:"+param_value+"
+		// desc:"+param_desc);
 
-		//check the parameter value to decide which kind of JComponent to create
-		if(param_value == null || param_value.equals("")) {
-			if(info.isInputFile()) {
-				createInputFileField(param_name, param_label, param_desc, info, name_retriever);
+		//check the parameter value to decide which kind of JComponent to
+		// create
+		if (param_value == null || param_value.equals("")) {
+			if (info.isInputFile()) {
+				createInputFileField(param_name, param_label, param_desc, info,
+						name_retriever);
 			} else {
-				createTextInput(param_name, param_label, param_desc, info, name_retriever);
+				createTextInput(param_name, param_label, param_desc, info,
+						name_retriever);
 			}
 		} else {
-			createComboBox(param_name, param_label, param_desc, param_value, info, name_retriever);
+			createComboBox(param_name, param_label, param_desc, param_value,
+					info, name_retriever);
 		}
 
 		return null; //panel;
 	}
 
-
-	private JComponent createComboBox(final String param_name, final String label, final String descr, final String param_value, final ParameterInfo info, final Map name_retriever) {
+	private JComponent createComboBox(final String param_name,
+			final String label, final String descr, final String param_value,
+			final ParameterInfo info, final Map name_retriever) {
 		// get default
-		final String default_val = ((String) info.getAttributes().get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0])).trim();
+		final String default_val = ((String) info.getAttributes().get(
+				GPConstants.PARAM_INFO_DEFAULT_VALUE[0])).trim();
 		final ChoiceItem default_item = createDefaultChoice(default_val);
 
 		pane.add(createLabel(param_name, info), gbc1);
@@ -215,171 +245,183 @@ public class DefaultUIRenderer implements UIRenderer {
 		final JComboBox list = new JComboBox();
 		list.setFont(getFont());
 		int selectIndex = -1;
-		for(int i = 0; tokenizer.hasMoreTokens(); i++) {
+		for (int i = 0; tokenizer.hasMoreTokens(); i++) {
 			final String token = tokenizer.nextToken();
 			final ChoiceItem item = createChoiceItem(token);
 			list.addItem(item);
-			if(selectIndex < 0 && item.hasToken(default_item)) {
+			if (selectIndex < 0 && item.hasToken(default_item)) {
 				selectIndex = i;
 			}
 		}
 
-		if(selectIndex >= 0) {
+		if (selectIndex >= 0) {
 			list.setSelectedIndex(selectIndex);
-		} else if(default_val != null && default_val.length() > 0) {
-			GenePattern.showWarning(null, "Default \"" + default_val + "\" does not match any values in "
-					 + "the drop-down menu for parameter " + param_name);
+		} else if (default_val != null && default_val.length() > 0) {
+			GenePattern.showWarning(null, "Default \"" + default_val
+					+ "\" does not match any values in "
+					+ "the drop-down menu for parameter " + param_name);
 		}
 		pane.add(list, gbc2);
 		addDescription(pane, descr);
 
-		name_retriever.put(param_name,
-			new NoFileParamRetrievor(info) {
-				/**
-				 *  returns the value
-				 *
-				 *@return    Description of the Return Value
-				 */
-				public final String internalGetValue() {
-					return (String) ((ChoiceItem) list.getSelectedItem()).getValue();
-				}
-			});
+		name_retriever.put(param_name, new NoFileParamRetrievor(info) {
+			/**
+			 * returns the value
+			 * 
+			 * @return Description of the Return Value
+			 */
+			public final String internalGetValue() {
+				return (String) ((ChoiceItem) list.getSelectedItem())
+						.getValue();
+			}
+		});
 		return null; //panel;
 	}
 
-
 	/**
-	 *  Parses the String and returns a ChoiceItem
-	 *
-	 *@param  string  Description of the Parameter
-	 *@return         Description of the Return Value
+	 * Parses the String and returns a ChoiceItem
+	 * 
+	 * @param string
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
 	 */
 	private ChoiceItem createChoiceItem(final String string) {
 		final int index = string.indexOf('=');
 		ChoiceItem choice = null;
-		if(index < 0) {
+		if (index < 0) {
 			choice = new ChoiceItem(string, string);
 		} else {
-			choice = new ChoiceItem(string.substring(index + 1), string.substring(0, index));
+			choice = new ChoiceItem(string.substring(index + 1), string
+					.substring(0, index));
 		}
 		//choice.setFont(getFont());
 		return choice;
 	}
 
-
 	/**
-	 *  creates the default <CODE>ChoiceItem</CODE> for the combo box
-	 *
-	 *@param  default_val  Description of the Parameter
-	 *@return              Description of the Return Value
+	 * creates the default <CODE>ChoiceItem</CODE> for the combo box
+	 * 
+	 * @param default_val
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
 	 */
 	private ChoiceItem createDefaultChoice(final String default_val) {
-		if(default_val != null && default_val.length() > 0) {
+		if (default_val != null && default_val.length() > 0) {
 			return createChoiceItem(default_val);
 		}
 		return null;
 	}
 
-
 	/**
-	 *  creates a JTextField
-	 *
-	 *@param  param_name      Description of the Parameter
-	 *@param  label           Description of the Parameter
-	 *@param  descr           Description of the Parameter
-	 *@param  info            Description of the Parameter
-	 *@param  name_retriever  Description of the Parameter
-	 *@return                 Description of the Return Value
+	 * creates a JTextField
+	 * 
+	 * @param param_name
+	 *            Description of the Parameter
+	 * @param label
+	 *            Description of the Parameter
+	 * @param descr
+	 *            Description of the Parameter
+	 * @param info
+	 *            Description of the Parameter
+	 * @param name_retriever
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
 	 */
-	private JComponent createTextInput(final String param_name, final String label, final String descr, final ParameterInfo info, final Map name_retriever) {
+	private JComponent createTextInput(final String param_name,
+			final String label, final String descr, final ParameterInfo info,
+			final Map name_retriever) {
 		//final JPanel panel = new JPanel();// FlowLayout
 		pane.add(createLabel(param_name, info), gbc1);
 		//final JTextField field = new JTextField(15);
 		final JTextField field = createProperTextField(info);
 		// set default
-		final String default_val = (String) info.getAttributes().get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
+		final String default_val = (String) info.getAttributes().get(
+				GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 
 		try {
-			if(default_val != null && default_val.trim().length() > 0) {
+			if (default_val != null && default_val.trim().length() > 0) {
 				field.setText(default_val);
 			} else {
 				// if optional value and no default, clear the field
-				if(isOptional(info)) {
+				if (isOptional(info)) {
 					field.setText(null);
 				}
 			}
-		} catch(NumberFormatException ex) {
-			GenePattern.getReporter().showWarning("Cannot set default value for parameter " + param_name + ":", ex);
+		} catch (NumberFormatException ex) {
+			GenePattern.getReporter().showWarning(
+					"Cannot set default value for parameter " + param_name
+							+ ":", ex);
 		}
 		field.setFont(getFont());
 		pane.add(field, gbc2);
 		addDescription(pane, descr);
-		name_retriever.put(param_name,
-			new NoFileParamRetrievor(info) {
-				/**
-				 *  returns the value
-				 *
-				 *@return    Description of the Return Value
-				 */
-				public final String internalGetValue() {
-					return field.getText();
-				}
-			});
+		name_retriever.put(param_name, new NoFileParamRetrievor(info) {
+			/**
+			 * returns the value
+			 * 
+			 * @return Description of the Return Value
+			 */
+			public final String internalGetValue() {
+				return field.getText();
+			}
+		});
 		return null; //panel;
 	}
 
-
 	/**
-	 *  determines if the parameter is optional
-	 *
-	 *@param  info  Description of the Parameter
-	 *@return       The optional
+	 * determines if the parameter is optional
+	 * 
+	 * @param info
+	 *            Description of the Parameter
+	 * @return The optional
 	 */
 	protected final boolean isOptional(final ParameterInfo info) {
 		final Object optional = info.getAttributes().get("optional");
 		return (optional != null && "on".equalsIgnoreCase(optional.toString()));
 	}
 
-
 	/**
-	 *  gets the proper input field object
-	 *
-	 *@param  info  Description of the Parameter
-	 *@return       Description of the Return Value
+	 * gets the proper input field object
+	 * 
+	 * @param info
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
 	 */
 	protected final JTextField createProperTextField(final ParameterInfo info) {
 		final int num_cols = 15;
 		JTextField field = null;
 		final Object value = info.getAttributes().get("type");
-		if(value == null || value.equals("java.lang.String")) {
+		if (value == null || value.equals("java.lang.String")) {
 			field = new JTextField(num_cols);
 			field.setToolTipText("Type in text");
-		} else if(value.equals("java.lang.Integer")) {
+		} else if (value.equals("java.lang.Integer")) {
 			field = new IntegerField(num_cols);
 			field.setToolTipText("Type in integer values");
-		} else if(value.equals("java.lang.Float")) {
+		} else if (value.equals("java.lang.Float")) {
 			field = new FloatField(num_cols);
 			field.setToolTipText("Type in floating point values");
 		} else {
-			org.genepattern.util.AbstractReporter.getInstance().showWarning("Don't have input field associated with " + value);
+			org.genepattern.util.AbstractReporter.getInstance().showWarning(
+					"Don't have input field associated with " + value);
 			field = new JTextField(num_cols);
 			field.setToolTipText("Type in text");
 		}
 		return field;
 	}
 
-
 	/**
-	 *  determines if the label needs a ':' and a space
-	 *
-	 *@param  desc  Description of the Parameter
-	 *@param  info  Description of the Parameter
-	 *@return       Description of the Return Value
+	 * determines if the label needs a ':' and a space
+	 * 
+	 * @param desc
+	 *            Description of the Parameter
+	 * @param info
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
 	 */
 	private JLabel createLabel(String desc, final ParameterInfo info) {
 		final String trimmed = desc.trim();
 		JLabel nameLabel = null;
-		if(trimmed.length() == 0) {
+		if (trimmed.length() == 0) {
 			nameLabel = new JLabel("Unlabeled:  ");
 			return fixLabel(nameLabel, info);
 		}
@@ -389,10 +431,10 @@ public class DefaultUIRenderer implements UIRenderer {
 		desc = org.genepattern.util.StringUtils.capitalize(desc);
 		final int colon_pos = desc.lastIndexOf(':');
 
-		if(colon_pos < 0) {
+		if (colon_pos < 0) {
 			nameLabel = createLabel(trimmed + ":  ", info);
 		} else {
-			if(colon_pos == desc.length() - 1) { // needs padding
+			if (colon_pos == desc.length() - 1) { // needs padding
 				nameLabel = new JLabel(desc + "  ");
 			} else {
 				nameLabel = new JLabel(desc);
@@ -401,17 +443,18 @@ public class DefaultUIRenderer implements UIRenderer {
 		return fixLabel(nameLabel, info);
 	}
 
-
 	/**
-	 *  fixes the Label with tooltip and bolded if a required parameter
-	 *
-	 *@param  label  Description of the Parameter
-	 *@param  info   Description of the Parameter
-	 *@return        Description of the Return Value
+	 * fixes the Label with tooltip and bolded if a required parameter
+	 * 
+	 * @param label
+	 *            Description of the Parameter
+	 * @param info
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
 	 */
 	private JLabel fixLabel(final JLabel label, final ParameterInfo info) {
 		final boolean optional = isOptional(info);
-		if(optional) {
+		if (optional) {
 			label.setToolTipText("Optional parameter can be left blank");
 			label.setFont(getFont());
 		} else {
@@ -422,27 +465,32 @@ public class DefaultUIRenderer implements UIRenderer {
 		return label;
 	}
 
-
-	private JComponent createInputFileField(final String param_name, final String label, final String descr, final ParameterInfo info, final Map name_retriever) {
+	private JComponent createInputFileField(final String param_name,
+			final String label, final String descr, final ParameterInfo info,
+			final Map name_retriever) {
 		pane.add(createLabel(param_name, info), gbc1);
 		final JScrollPane scroll = createObjectTextField(label);
-		final ObjectTextField field = (ObjectTextField) scroll.getViewport().getView();
-      inputFileParameterNameToTextFieldMap.put(param_name, field);
-		String defaultValue = (String) info.getAttributes().get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
-		
-		if(defaultValue!=null && !defaultValue.trim().equals("")) {
+		final ObjectTextField field = (ObjectTextField) scroll.getViewport()
+				.getView();
+		inputFileParameterNameToTextFieldMap.put(param_name, field);
+		String defaultValue = (String) info.getAttributes().get(
+				GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
+
+		if (defaultValue != null && !defaultValue.trim().equals("")) {
 			File f = new File(defaultValue);
-			if(f.exists()) {
+			if (f.exists()) {
 				field.setObject(f);
-			} else if (defaultValue.startsWith("http://") || defaultValue.startsWith("https://") ||
-				   defaultValue.startsWith("ftp:")) {
+			} else if (defaultValue.startsWith("http://")
+					|| defaultValue.startsWith("https://")
+					|| defaultValue.startsWith("ftp:")) {
 				try {
 					field.setObject(new URL(defaultValue));
 				} catch (MalformedURLException mue) {
-					System.err.println(mue + " while creating input field " + param_name + " for " + defaultValue);
+					System.err.println(mue + " while creating input field "
+							+ param_name + " for " + defaultValue);
 				}
-			} else{ // jgould added for reload of server file
-				field.setObject(defaultValue);	
+			} else { // jgould added for reload of server file
+				field.setObject(defaultValue);
 			}
 
 		}
@@ -450,136 +498,156 @@ public class DefaultUIRenderer implements UIRenderer {
 		pane.add(scroll, gbc2);
 		addDescription(pane, descr);
 
-		name_retriever.put(param_name,
-			new AbstractParamRetrievor(info) {
-				/**
-				 *  returns the value
-				 *
-				 *@return                  Description of the Return Value
-				 *@exception  IOException  Description of the Exception
-				 */
-				protected final String internalGetValue() throws IOException {
-					final Object obj = field.getObject();
-					if(obj == null) {
-						return null;
+		name_retriever.put(param_name, new AbstractParamRetrievor(info) {
+			/**
+			 * returns the value
+			 * 
+			 * @return Description of the Return Value
+			 * @exception IOException
+			 *                Description of the Exception
+			 */
+			protected final String internalGetValue() throws IOException {
+				final Object obj = field.getObject();
+				if (obj == null) {
+					return null;
+				}
+				InputStream in = null;
+				if (obj instanceof DataObjectProxy) {
+					final DataObjectProxy proxy = (DataObjectProxy) obj;
+					final DataSource source = proxy.getDataSource();
+					//FIXME this could be very inefficient
+					// if the source is pointing to files already on the server!
+					in = source.getRawInputStream(proxy);
+				} else if (obj instanceof java.io.File) {
+					final File file = (File) obj;
+					in = new FileInputStream(file);
+				} else if (obj instanceof java.net.URL) {
+					// even though it may not be a URL from the server this is
+					// needed
+					//info.getAttributes().put(ParameterInfo.MODE,
+					// ParameterInfo.URL_INPUT_MODE);
+					//info.getAttributes().put(ParameterInfo.MODE,
+					// ParameterInfo.INPUT_MODE);
+					info.setAttributes(new HashMap(3));
+					// Note Exiting the method here!
+					return obj.toString();
+				} else {
+					throw new IllegalStateException(
+							"Unknown object from ObjectTextField (name="
+									+ param_name + ", label=" + label + "): "
+									+ obj);
+				}
+				final BufferedReader reader = new BufferedReader(
+						new InputStreamReader(in));
+				final StringBuffer buff = new StringBuffer();
+				try {
+					final char NL = '\n';
+					for (String tmp_line = reader.readLine(); tmp_line != null; tmp_line = reader
+							.readLine()) {
+						buff.append(tmp_line);
+						buff.append(NL);
 					}
-					InputStream in = null;
-					if(obj instanceof DataObjectProxy) {
-						final DataObjectProxy proxy = (DataObjectProxy) obj;
-						final DataSource source = proxy.getDataSource();
-						//FIXME this could be very inefficient
-						// if the source is pointing to files already on the server!
-						in = source.getRawInputStream(proxy);
-					} else if(obj instanceof java.io.File) {
-						final File file = (File) obj;
-						in = new FileInputStream(file);
-					} else if(obj instanceof java.net.URL) {
-						// even though it may not be a URL from the server this is needed
-						//info.getAttributes().put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
-						//info.getAttributes().put(ParameterInfo.MODE, ParameterInfo.INPUT_MODE);
-						info.setAttributes(new HashMap(3));
-						// Note Exiting the method here!
-						return obj.toString();
-					} else {
-						throw new IllegalStateException("Unknown object from ObjectTextField (name=" + param_name + ", label=" + label + "): " + obj);
-					}
-					final BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-					final StringBuffer buff = new StringBuffer();
-					try {
-						final char NL = '\n';
-						for(String tmp_line = reader.readLine(); tmp_line != null; tmp_line = reader.readLine()) {
-							buff.append(tmp_line);
-							buff.append(NL);
-						}
-					} catch(EOFException ex) {}
-					return buff.toString();
+				} catch (EOFException ex) {
+				}
+				return buff.toString();
+			}
+
+			protected final boolean internalIsFile() {
+				return (!(field.getObject() instanceof java.net.URL));
+			}
+
+			/**
+			 * @return Description of the Return Value
+			 */
+			protected final boolean internalIsServerFile() {
+				final Object obj = field.getObject();
+				if (obj == null) {
+					return false;
+				}
+				return (obj instanceof org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode);
+			}
+
+			protected final String internalGetSourceName()
+					throws java.io.IOException {
+				final Object obj = field.getObject();
+				if (obj == null) {
+					return null;
 				}
 
+				if (obj instanceof String) { // reloaded job where input file is
+											 // on server
+					info.getAttributes().put(ParameterInfo.TYPE,
+							ParameterInfo.FILE_TYPE);
 
-				protected final boolean internalIsFile() {
-					return (!(field.getObject() instanceof java.net.URL));
+					info.getAttributes().put(ParameterInfo.MODE,
+							ParameterInfo.CACHED_INPUT_MODE);
+					return obj.toString();
 				}
+				if (obj instanceof org.genepattern.gpge.ui.project.ProjectDirModel.FileNode) {
+					info.setAsInputFile();
+					ProjectDirModel.FileNode node = (ProjectDirModel.FileNode) obj;
+					return node.file.getCanonicalPath();
+				} else if (obj instanceof org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) {
+					info.getAttributes().put(ParameterInfo.TYPE,
+							ParameterInfo.FILE_TYPE);
 
+					info.getAttributes().put(ParameterInfo.MODE,
+							ParameterInfo.CACHED_INPUT_MODE);
+					org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode node = (org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) obj;
+					return node.getServerName();
 
-				/**
-				 *@return    Description of the Return Value
-				 */
-				protected final boolean internalIsServerFile() {
-					final Object obj = field.getObject();
-					if(obj == null) {
-						return false;
-					}
-					return(obj instanceof org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode);
+				} else if (obj instanceof java.io.File) {
+					info.setAsInputFile();
+					//	info.getAttributes().put(ParameterInfo.MODE,
+					// ParameterInfo.INPUT_MODE);
+					final File drop_file = (File) obj;
+					return drop_file.getCanonicalPath();
+				} else if (obj instanceof java.net.URL) {
+					// even though it may not be a URL from the server this is
+					// needed
+					//info.getAttributes().put(ParameterInfo.MODE,
+					// ParameterInfo.URL_INPUT_MODE);
+					return obj.toString();
+				} else {
+					throw new IllegalStateException(
+							"Unknown object from ObjectTextField (name="
+									+ param_name + ", label=" + label + "): "
+									+ obj);
 				}
-
-
-				protected final String internalGetSourceName() throws java.io.IOException {
-              final Object obj = field.getObject();
-					if(obj == null) {
-						return null;
-					}
-				
-					if(obj instanceof String) { // reloaded job where input file is on server
-                 info.getAttributes().put(ParameterInfo.TYPE, ParameterInfo.FILE_TYPE);
-							
-						info.getAttributes().put(ParameterInfo.MODE, ParameterInfo.CACHED_INPUT_MODE);
-						return obj.toString();
-					}
-               if(obj instanceof org.genepattern.gpge.ui.project.ProjectDirModel.FileNode) {
-                  info.setAsInputFile();
-                  ProjectDirModel.FileNode node = (ProjectDirModel.FileNode) obj;
-                  return node.file.getCanonicalPath();
-               } else if(obj instanceof org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) {
-						   info.getAttributes().put(ParameterInfo.TYPE, ParameterInfo.FILE_TYPE);
-							
-							info.getAttributes().put(ParameterInfo.MODE, ParameterInfo.CACHED_INPUT_MODE);
-							org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode node = (org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) obj;
-							return node.getServerName();
-						
-					} else if(obj instanceof java.io.File) {
-                 info.setAsInputFile(); 
-					//	info.getAttributes().put(ParameterInfo.MODE, ParameterInfo.INPUT_MODE);
-						final File drop_file = (File) obj;
-						return drop_file.getCanonicalPath();
-					} else if(obj instanceof java.net.URL) {
-						// even though it may not be a URL from the server this is needed
-						//info.getAttributes().put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
-						return obj.toString();
-					} else {
-						throw new IllegalStateException("Unknown object from ObjectTextField (name=" + param_name + ", label=" + label + "): " + obj);
-					}
-				}
-			});
+			}
+		});
 
 		return null; //panel;
 	}
 
-
 	/**
-	 *@param  name  Description of the Parameter
-	 *@return       Description of the Return Value
+	 * @param name
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
 	 */
 	protected final static String fixName(final String name) {
 		String better_name = name;
 		final int index = name.lastIndexOf('\\');
-		if(index > 0) {
+		if (index > 0) {
 			better_name = name.substring(index + 1);
 		}
 
-		if(better_name.startsWith("Axis")) {
+		if (better_name.startsWith("Axis")) {
 			better_name = better_name.substring(better_name.indexOf('_') + 1);
 		}
 
 		final String seperator = org.genepattern.io.StorageUtils.TEMP_FILE_MARKER;
 		final int sep_ind = name.indexOf(seperator);
-		if(sep_ind < 0) {
-			better_name = better_name.substring(sep_ind + seperator.length() + 2);
+		if (sep_ind < 0) {
+			better_name = better_name.substring(sep_ind + seperator.length()
+					+ 2);
 		}
 		return better_name;
 	}
 
-
-	protected static void setGridBagConstraints(final GridBagConstraints gbc, final int gridx, final int gridy, final int gridw, final int gridh, final int weightx, final int weighty) {
+	protected static void setGridBagConstraints(final GridBagConstraints gbc,
+			final int gridx, final int gridy, final int gridw, final int gridh,
+			final int weightx, final int weighty) {
 		gbc.gridx = gridx;
 		gbc.gridy = gridy;
 		gbc.gridwidth = gridw;
@@ -588,12 +656,12 @@ public class DefaultUIRenderer implements UIRenderer {
 		gbc.weighty = weighty;
 	}
 
-
 	/**
-	 *  creates an ObjectTextField in a consistent way
-	 *
-	 *@param  type  Description of the Parameter
-	 *@return       Description of the Return Value
+	 * creates an ObjectTextField in a consistent way
+	 * 
+	 * @param type
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
 	 */
 	private JScrollPane createObjectTextField(final String type) {
 		final ObjectTextField field = new ObjectTextField(null, 20);
@@ -604,32 +672,32 @@ public class DefaultUIRenderer implements UIRenderer {
 		return scroll;
 	}
 
-
 	/**
-	 *  conditionaly creates the description
-	 *
-	 *@param  panel        The feature to be added to the Description attribute
-	 *@param  description  The feature to be added to the Description attribute
+	 * conditionaly creates the description
+	 * 
+	 * @param panel
+	 *            The feature to be added to the Description attribute
+	 * @param description
+	 *            The feature to be added to the Description attribute
 	 */
 	private void addDescription(final JPanel panel, final String description) {
 		String desc = "";
-		if(description != null) {
+		if (description != null) {
 			desc = description.trim();
 		}
 
-		if(desc.length() > 0) {
+		if (desc.length() > 0) {
 
-			final JEditorPane pane =
-				new JEditorPane("text/html", desc) {
-					/**
-					 *  keep this from getting the focus
-					 *
-					 *@return    The focusTraversable
-					 */
-					public boolean isFocusTraversable() {
-						return false;
-					}
-				};
+			final JEditorPane pane = new JEditorPane("text/html", desc) {
+				/**
+				 * keep this from getting the focus
+				 * 
+				 * @return The focusTraversable
+				 */
+				public boolean isFocusTraversable() {
+					return false;
+				}
+			};
 			pane.setEditable(false);
 			pane.setCaretPosition(0);
 			pane.setBackground(panel.getBackground());
@@ -651,55 +719,64 @@ public class DefaultUIRenderer implements UIRenderer {
 
 	}
 
-
 	/**
-	 *  figures the height of "regular" Swing components (JLabel JComboBox,
-	 *  JCheckBox, etc)
-	 *
-	 *@param  component  Description of the Parameter
-	 *@param  fnt        Description of the Parameter
-	 *@return            Description of the Return Value
+	 * figures the height of "regular" Swing components (JLabel JComboBox,
+	 * JCheckBox, etc)
+	 * 
+	 * @param component
+	 *            Description of the Parameter
+	 * @param fnt
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
 	 */
-	protected final int calcFillHeight(final JComponent component, final java.awt.Font fnt) {
-		if(fill_height <= 0) {
-			if(label_height <= 0) { // negative values are approximations and need redoing
+	protected final int calcFillHeight(final JComponent component,
+			final java.awt.Font fnt) {
+		if (fill_height <= 0) {
+			if (label_height <= 0) { // negative values are approximations and
+									 // need redoing
 				final JLabel label = new JLabel();
 				label.setFont(fnt);
 				label_height = label.getUI().getPreferredSize(label).height;
 			}
-			if(label_height == 0) { // approximation
+			if (label_height == 0) { // approximation
 				java.awt.FontMetrics metrics = component.getFontMetrics(fnt);
-				label_height = -(metrics.getHeight() + 5); // negative height value
+				label_height = -(metrics.getHeight() + 5); // negative height
+														   // value
 			}
-			if(scroll_top_inset < 0) {
+			if (scroll_top_inset < 0) {
 				final JScrollPane scroll = new JScrollPane();
 				final int top = scroll.getInsets().top;
-				if(top > 0) {
+				if (top > 0) {
 					scroll_top_inset = top;
 				}
 			}
-			final int height = MINIMUM_SCROLL_SIZE.height - ((label_height > 0) ? label_height : -(label_height))
-					 - ((scroll_top_inset > 0) ? scroll_top_inset : -(scroll_top_inset)) - 2;
+			final int height = MINIMUM_SCROLL_SIZE.height
+					- ((label_height > 0) ? label_height : -(label_height))
+					- ((scroll_top_inset > 0) ? scroll_top_inset
+							: -(scroll_top_inset)) - 2;
 			fill_height = height;
 		}
 		return fill_height;
 	}
+
 	// UI like methods
 
 	/**
-	 *  sets the current Font for all swing objects produced
-	 *
-	 *@param  new_font  The new font value
+	 * sets the current Font for all swing objects produced
+	 * 
+	 * @param new_font
+	 *            The new font value
 	 */
 	public void setFont(final Font new_font) {
-		if(new_font.equals(font)) {
+		if (new_font.equals(font)) {
 			return;
 		} // do nothing
 		//        if( new_font.getCharacterHeight() != old_character_height) {
 		this.fill_height = 0;
 		this.label_height = 0;
 		this.scroll_top_inset = -5;
-		//FIXME need to do something about the Preferred Size of the Description JScrollPane
+		//FIXME need to do something about the Preferred Size of the
+		// Description JScrollPane
 		// the height should be adjusted to represent the new font height
 		// MINIMUM_SCROLL_SIZE.height = some_calculation
 		//        }
@@ -707,54 +784,58 @@ public class DefaultUIRenderer implements UIRenderer {
 		this.bold_font = new Font(font.getName(), Font.BOLD, font.getSize());
 	}
 
-
 	/**
-	 *  returns the <CODE>Font</CODE> used when making swing components
-	 *
-	 *@return    The font
+	 * returns the <CODE>Font</CODE> used when making swing components
+	 * 
+	 * @return The font
 	 */
 	public Font getFont() {
 		return this.font;
 	}
 
-
 	/**
-	 *  returns the bolded <CODE>Font</CODE> used when making swing components
-	 *
-	 *@return    The boldFont
+	 * returns the bolded <CODE>Font</CODE> used when making swing components
+	 * 
+	 * @return The boldFont
 	 */
 	public Font getBoldFont() {
 		return this.bold_font;
 	}
 
-  public JComponent createSubmitPanel(final AnalysisService service, final java.awt.event.ActionListener listener) {
-     return createSubmitPanel(service, listener, null); 
-  }
+	public JComponent createSubmitPanel(final AnalysisService service,
+			final java.awt.event.ActionListener listener) {
+		return createSubmitPanel(service, listener, null);
+	}
 
 	/**
-	 *  creates a component that is or contains another component that the user can
-	 *  press (a JButton) to submit the job
-	 *
-	 *@param  service   Description of the Parameter
-	 *@param  listener  Description of the Parameter
-	 *@return           Description of the Return Value
+	 * creates a component that is or contains another component that the user
+	 * can press (a JButton) to submit the job
+	 * 
+	 * @param service
+	 *            Description of the Parameter
+	 * @param listener
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
 	 */
-	public JComponent createSubmitPanel(final AnalysisService service, final java.awt.event.ActionListener listener, java.awt.event.ActionListener resetListener) {
+	public JComponent createSubmitPanel(final AnalysisService service,
+			final java.awt.event.ActionListener listener,
+			java.awt.event.ActionListener resetListener) {
 		final JPanel panel = new JPanel(new GridBagLayout());
 		final GridBagConstraints gbc = new GridBagConstraints();
 		gbc.weightx = gbc.weighty = 1.0;
-		final String label = (VisualizerTaskSubmitter.isVisualizer(service)) ? "Show" : "Submit";
+		final String label = (VisualizerTaskSubmitter.isVisualizer(service)) ? "Show"
+				: "Submit";
 		final JButton submit = new JButton(label);
 		submit.addActionListener(listener);
 		panel.add(submit, gbc);
-      
-      if(resetListener!=null) {
-         JButton reset = new JButton("Reset");
-         reset.addActionListener(resetListener);
-         panel.add(reset, gbc);
-      }
-      
-		if(help_listener != null) {
+
+		if (resetListener != null) {
+			JButton reset = new JButton("Reset");
+			reset.addActionListener(resetListener);
+			panel.add(reset, gbc);
+		}
+
+		if (help_listener != null) {
 			final JButton help = new JButton("Help");
 			help.addActionListener(help_listener);
 			gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -764,12 +845,12 @@ public class DefaultUIRenderer implements UIRenderer {
 		return panel;
 	}
 
-
 	/**
-	 *  creates a component that is the label for the analysis service.
-	 *
-	 *@param  service  the analysis service that defines a task
-	 *@return          JComponent the label or name of this task
+	 * creates a component that is the label for the analysis service.
+	 * 
+	 * @param service
+	 *            the analysis service that defines a task
+	 * @return JComponent the label or name of this task
 	 */
 	public JComponent createTaskLabel(AnalysisService service) {
 		final String name = service.getTaskInfo().getDescription();
@@ -777,71 +858,76 @@ public class DefaultUIRenderer implements UIRenderer {
 		return new JLabel(name);
 	}
 
-	// I N N E R   C L A S S E S
+	// I N N E R C L A S S E S
 
 	/**
-	 *  Safely executes the main code
-	 *
-	 *@author     jgould
-	 *@created    February 9, 2004
+	 * Safely executes the main code
+	 * 
+	 * @author jgould
+	 * @created February 9, 2004
 	 */
 	private final class SafeExecuter extends org.genepattern.util.RunLater {
 		AnalysisService service;
+
 		java.util.List params_list;
+
 		Map name_retriever;
 
-
 		/**
-		 *  this is where the subclasses implement whatever code they want to be run
-		 *  in a thread
-		 *
-		 *@exception  Throwable  Description of the Exception
+		 * this is where the subclasses implement whatever code they want to be
+		 * run in a thread
+		 * 
+		 * @exception Throwable
+		 *                Description of the Exception
 		 */
 		protected void runIt() throws Throwable {
 			safeExecution(service, params_list, name_retriever);
 		}
 	}
 
-
 	/**
-	 *  Abstact implemtation for those non file ParamRetrievor implementations
-	 *
-	 *@author     jgould
-	 *@created    February 9, 2004
+	 * Abstact implemtation for those non file ParamRetrievor implementations
+	 * 
+	 * @author jgould
+	 * @created February 9, 2004
 	 */
-	private abstract static class AbstractParamRetrievor extends org.genepattern.util.RunLater implements ParamRetrievor {
+	private abstract static class AbstractParamRetrievor extends
+			org.genepattern.util.RunLater implements ParamRetrievor {
 
-		/**  which method to call */
+		/** which method to call */
 		private String method;
+
 		private Object value;
+
 		private boolean result;
+
 		private final ParameterInfo paraminfo;
 
-
 		/**
-		 *  constructor
-		 *
-		 *@param  info  Description of the Parameter
+		 * constructor
+		 * 
+		 * @param info
+		 *            Description of the Parameter
 		 */
 		protected AbstractParamRetrievor(final ParameterInfo info) {
 			paraminfo = info;
 		}
 
-
 		/**
-		 *  returns the value
-		 *
-		 *@return                          Description of the Return Value
-		 *@exception  java.io.IOException  Description of the Exception
+		 * returns the value
+		 * 
+		 * @return Description of the Return Value
+		 * @exception java.io.IOException
+		 *                Description of the Exception
 		 */
 		protected abstract String internalGetValue() throws java.io.IOException;
 
-
 		/**
-		 *  returns the value in an Exception-safe way
-		 *
-		 *@return                          The value
-		 *@exception  java.io.IOException  Description of the Exception
+		 * returns the value in an Exception-safe way
+		 * 
+		 * @return The value
+		 * @exception java.io.IOException
+		 *                Description of the Exception
 		 */
 		public final String getValue() throws java.io.IOException {
 			method = "getValue";
@@ -849,14 +935,12 @@ public class DefaultUIRenderer implements UIRenderer {
 			return (String) value;
 		}
 
-
 		/**
-		 *  returns true if the value should be in a file
-		 *
-		 *@return    Description of the Return Value
+		 * returns true if the value should be in a file
+		 * 
+		 * @return Description of the Return Value
 		 */
 		protected abstract boolean internalIsFile();
-
 
 		public final boolean isFile() {
 			method = "isFile";
@@ -864,14 +948,12 @@ public class DefaultUIRenderer implements UIRenderer {
 			return result;
 		}
 
-
 		/**
-		 *  returns true if the file exists on the server
-		 *
-		 *@return    Description of the Return Value
+		 * returns true if the file exists on the server
+		 * 
+		 * @return Description of the Return Value
 		 */
 		protected abstract boolean internalIsServerFile();
-
 
 		public final boolean isServerFile() {
 			method = "isServerFile";
@@ -879,17 +961,17 @@ public class DefaultUIRenderer implements UIRenderer {
 			return result;
 		}
 
-
 		/**
-		 *  returns the file name URI or null
-		 *
-		 *@return                          Description of the Return Value
-		 *@exception  java.io.IOException  Description of the Exception
+		 * returns the file name URI or null
+		 * 
+		 * @return Description of the Return Value
+		 * @exception java.io.IOException
+		 *                Description of the Exception
 		 */
 		protected String internalGetSourceName() throws java.io.IOException {
-			throw new UnsupportedOperationException("Not implemented! Param does not represent a file...");
+			throw new UnsupportedOperationException(
+					"Not implemented! Param does not represent a file...");
 		}
-
 
 		public final String getSourceName() throws java.io.IOException {
 			method = "getSourceName";
@@ -897,165 +979,161 @@ public class DefaultUIRenderer implements UIRenderer {
 			return (String) value;
 		}
 
-
 		/**
-		 *  gets the copy of the ParamInfo
-		 *
-		 *@return    The parameterInfo
+		 * gets the copy of the ParamInfo
+		 * 
+		 * @return The parameterInfo
 		 */
 		public final ParameterInfo getParameterInfo() {
 			return paraminfo;
 		}
 
-
 		/**
-		 *@exception  java.io.IOException  Description of the Exception
+		 * @exception java.io.IOException
+		 *                Description of the Exception
 		 */
 		public final void runIt() throws java.io.IOException {
-			if(method.equals("getValue")) {
+			if (method.equals("getValue")) {
 				value = internalGetValue();
-			} else if(method.equals("isFile")) {
+			} else if (method.equals("isFile")) {
 				result = internalIsFile();
-			} else if(method.equals("isServerFile")) {
+			} else if (method.equals("isServerFile")) {
 				result = internalIsServerFile();
-			} else if(method.equals("getSourceName")) {
+			} else if (method.equals("getSourceName")) {
 				value = internalGetSourceName();
 			}
 		}
 	}
 
-
 	/**
-	 *  Abstact implemtation for those non file ParamRetrievor implementations
-	 *
-	 *@author     jgould
-	 *@created    February 9, 2004
+	 * Abstact implemtation for those non file ParamRetrievor implementations
+	 * 
+	 * @author jgould
+	 * @created February 9, 2004
 	 */
-	private abstract static class NoFileParamRetrievor extends org.genepattern.util.RunLater implements ParamRetrievor {
+	private abstract static class NoFileParamRetrievor extends
+			org.genepattern.util.RunLater implements ParamRetrievor {
 		private String value;
-		private final ParameterInfo paraminfo;
 
+		private final ParameterInfo paraminfo;
 
 		protected NoFileParamRetrievor(ParameterInfo info) {
 			paraminfo = info;
 		}
 
-
 		/**
-		 *  returns the value
-		 *
-		 *@return                          Description of the Return Value
-		 *@exception  java.io.IOException  Description of the Exception
+		 * returns the value
+		 * 
+		 * @return Description of the Return Value
+		 * @exception java.io.IOException
+		 *                Description of the Exception
 		 */
 		public abstract String internalGetValue() throws java.io.IOException;
 
-
 		/**
-		 *  returns the value in an Exception-safe way
-		 *
-		 *@return                          The value
-		 *@exception  java.io.IOException  Description of the Exception
+		 * returns the value in an Exception-safe way
+		 * 
+		 * @return The value
+		 * @exception java.io.IOException
+		 *                Description of the Exception
 		 */
 		public final String getValue() throws java.io.IOException {
 			run(); // calls runIt()
 			return value;
 		}
 
-
 		/**
-		 *  returns true if the value should be in a file
-		 *
-		 *@return    The file
+		 * returns true if the value should be in a file
+		 * 
+		 * @return The file
 		 */
 		public final boolean isFile() {
 			return false;
 		}
 
-
 		/**
-		 *  returns the file name URI or null
-		 *
-		 *@return                          The sourceName
-		 *@exception  java.io.IOException  Description of the Exception
+		 * returns the file name URI or null
+		 * 
+		 * @return The sourceName
+		 * @exception java.io.IOException
+		 *                Description of the Exception
 		 */
 		public final String getSourceName() throws java.io.IOException {
-			throw new UnsupportedOperationException("Not implemented! Param does not represent a file...");
+			throw new UnsupportedOperationException(
+					"Not implemented! Param does not represent a file...");
 		}
 
-
 		/**
-		 *@exception  java.io.IOException  Description of the Exception
+		 * @exception java.io.IOException
+		 *                Description of the Exception
 		 */
 		public void runIt() throws java.io.IOException {
 			value = internalGetValue();
 		}
 
-
 		/**
-		 *  gets the cloned ParameterInfo
-		 *
-		 *@return    The parameterInfo
+		 * gets the cloned ParameterInfo
+		 * 
+		 * @return The parameterInfo
 		 */
 		public final ParameterInfo getParameterInfo() {
 			return paraminfo;
 		}
 	}
 
-
 	/**
-	 *  Helper class. Items can be displayed as one thing and return the value of
-	 *  another Useful for JComboBox item
-	 *
-	 *@author     jgould
-	 *@created    February 9, 2004
+	 * Helper class. Items can be displayed as one thing and return the value of
+	 * another Useful for JComboBox item
+	 * 
+	 * @author jgould
+	 * @created February 9, 2004
 	 */
 	private final class ChoiceItem {
 		// fields
-		/**  the text that represents this */
+		/** the text that represents this */
 		private final String text;
-		/**  the object that this is a wrapper for */
-		private final Object value;
 
+		/** the object that this is a wrapper for */
+		private final Object value;
 
 		ChoiceItem(final String text, final Object value) {
 			this.text = text.trim();
 			if (value instanceof String) {
-				this.value = ((String)value).trim();
+				this.value = ((String) value).trim();
 			} else {
 				this.value = value;
 			}
 		}
 
-
 		/**
-		 *  returns the value (which is not displayed)
-		 *
-		 *@return    The value
+		 * returns the value (which is not displayed)
+		 * 
+		 * @return The value
 		 */
 		public final Object getValue() {
 			return value;
 		}
 
-
 		/**
-		 *  overrides super... returns the supplied text
-		 *
-		 *@return    Description of the Return Value
+		 * overrides super... returns the supplied text
+		 * 
+		 * @return Description of the Return Value
 		 */
 		public final String toString() {
 			return text;
 		}
 
-
 		/**
-		 *  returns true if the <CODE>ChoiceItem</CODE>'s fields equal either the
-		 *  value or the text
-		 *
-		 *@param  item  Description of the Parameter
-		 *@return       Description of the Return Value
+		 * returns true if the <CODE>ChoiceItem</CODE>'s fields equal either
+		 * the value or the text
+		 * 
+		 * @param item
+		 *            Description of the Parameter
+		 * @return Description of the Return Value
 		 */
 		protected boolean hasToken(final ChoiceItem item) {
-			return (item != null && (text.equalsIgnoreCase(item.text) || item.value.toString().equalsIgnoreCase(value.toString())));
+			return (item != null && (text.equalsIgnoreCase(item.text) || item.value
+					.toString().equalsIgnoreCase(value.toString())));
 		}
 	}
 

@@ -6,9 +6,13 @@ import java.util.Vector;
 public class GenePatternException extends Exception {
 
 	protected String what = null;
+
 	protected Vector vItems = null;
+
 	protected Throwable underlyingThrowable = null;
+
 	protected boolean AS_STRING = true;
+
 	protected boolean AS_HTML = false;
 
 	public GenePatternException(String what) {
@@ -38,7 +42,8 @@ public class GenePatternException extends Exception {
 		String EOL = asString ? "\n" : "<br>\n";
 		s.append(what);
 		if (vItems.size() > 0) {
-			for (Enumeration eItems = vItems.elements(); eItems.hasMoreElements(); ) {
+			for (Enumeration eItems = vItems.elements(); eItems
+					.hasMoreElements();) {
 				s.append(EOL);
 				s.append(eItems.nextElement());
 			}
@@ -46,9 +51,11 @@ public class GenePatternException extends Exception {
 		if (underlyingThrowable != null) {
 			s.append(EOL);
 			s.append("underlying throwable: " + EOL);
-			if (!asString) s.append("<pre>");
+			if (!asString)
+				s.append("<pre>");
 			s.append(underlyingThrowable.toString());
-			if (!asString) s.append("</pre><br>\n");
+			if (!asString)
+				s.append("</pre><br>\n");
 		}
 		return s.toString();
 	}
@@ -56,7 +63,8 @@ public class GenePatternException extends Exception {
 	public static void main(String args[]) {
 		System.out.println("self-test for GenePatternException class");
 
-		GenePatternException gpe = new GenePatternException("simple exception without vector or throwable");
+		GenePatternException gpe = new GenePatternException(
+				"simple exception without vector or throwable");
 		System.out.println(gpe);
 		System.out.println("as HTML: " + gpe.toHTML());
 

@@ -1,4 +1,5 @@
 package org.genepattern.io;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -6,23 +7,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *  Feature list reader.
- *
- * @author    Joshua Gould
+ * Feature list reader.
+ * 
+ * @author Joshua Gould
  */
 public class FeatureListReader extends AbstractReader {
 
 	public FeatureListReader() {
-		super(new String[]{"grp"}, "grp");
+		super(new String[] { "grp" }, "grp");
 	}
 
-
 	/**
-	 *  Gets the list of features contained in the given file
-	 *
-	 * @param  fileName         The file path
-	 * @return                  The feature list
-	 * @exception  IOException  If an error occurs while reading the file
+	 * Gets the list of features contained in the given file
+	 * 
+	 * @param fileName
+	 *            The file path
+	 * @return The feature list
+	 * @exception IOException
+	 *                If an error occurs while reading the file
 	 */
 	public List read(String fileName) throws IOException {
 		BufferedReader br = null;
@@ -30,15 +32,15 @@ public class FeatureListReader extends AbstractReader {
 			br = new BufferedReader(new FileReader(fileName));
 			String s = null;
 			List probeList = new ArrayList();
-			while((s = br.readLine()) != null) {
+			while ((s = br.readLine()) != null) {
 				String feature = s.trim();
-				if(!feature.equals("")) {
+				if (!feature.equals("")) {
 					probeList.add(feature);
 				}
 			}
 			return probeList;
 		} finally {
-			if(br != null) {
+			if (br != null) {
 				br.close();
 			}
 		}

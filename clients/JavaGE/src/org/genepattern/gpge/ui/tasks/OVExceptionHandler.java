@@ -7,16 +7,21 @@
 package org.genepattern.gpge.ui.tasks;
 
 /**
- *
- * @author  kohm
+ * 
+ * @author kohm
  */
 public interface OVExceptionHandler {
-    /** sets the error 
-     *
-     */
-    public void setError(final String title, final String message, final Throwable thw);
-    /** sets the warning
-     */
-    public void setWarning(final String title, final String message, final Exception ex);
-    
+	/**
+	 * sets the error
+	 *  
+	 */
+	public void setError(final String title, final String message,
+			final Throwable thw);
+
+	/**
+	 * sets the warning
+	 */
+	public void setWarning(final String title, final String message,
+			final Exception ex);
+
 }

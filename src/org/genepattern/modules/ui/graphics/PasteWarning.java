@@ -9,19 +9,25 @@
 
 //package edu.mit.genome.expresso.ui.graphics;
 package org.genepattern.modules.ui.graphics;
-/**
- *
- * @author  kohm
- * @version 
- */
-public class PasteWarning extends org.genepattern.util.Warning /* used to extend Exception*/{
-   /**
-     * Constructs an <code>PasteException</code> with the specified detail message.
-     * @param msg the detail message.
-     */
-    public PasteWarning(String msg) {
-        super(msg);
-    }
-}
 
+/**
+ * 
+ * @author kohm
+ * @version
+ */
+public class PasteWarning extends org.genepattern.util.Warning /*
+															    * used to extend
+															    * Exception
+															    */{
+	/**
+	 * Constructs an <code>PasteException</code> with the specified detail
+	 * message.
+	 * 
+	 * @param msg
+	 *            the detail message.
+	 */
+	public PasteWarning(String msg) {
+		super(msg);
+	}
+}
 

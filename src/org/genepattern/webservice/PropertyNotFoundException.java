@@ -19,34 +19,30 @@
 
 package org.genepattern.webservice;
 
-
-
 /**
  * To throw property could not be located
+ * 
  * @author Rajesh Kuttan
  */
 
 public class PropertyNotFoundException extends OmnigeneException {
-    
-    
-    /**
-     * Default Constructor
-     */
-    public PropertyNotFoundException() {
-        super(OmnigeneErrorCode.E_PROPERTY_NOT_FOUND);
-    }
-    
-    
-    
-    /**
-     * Constructs PropertyNotFoundException with the specified detail message.
-     *
-     * @param     s     the detail message.
-     *
-     */
-    public PropertyNotFoundException(String s) {
-        super(OmnigeneErrorCode.E_PROPERTY_NOT_FOUND,s);
-    }
-    
-    
+
+	/**
+	 * Default Constructor
+	 */
+	public PropertyNotFoundException() {
+		super(OmnigeneErrorCode.E_PROPERTY_NOT_FOUND);
+	}
+
+	/**
+	 * Constructs PropertyNotFoundException with the specified detail message.
+	 * 
+	 * @param s
+	 *            the detail message.
+	 *  
+	 */
+	public PropertyNotFoundException(String s) {
+		super(OmnigeneErrorCode.E_PROPERTY_NOT_FOUND, s);
+	}
+
 }

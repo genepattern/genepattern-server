@@ -7,12 +7,13 @@
 package org.genepattern.data;
 
 /**
- *
- * @author  kohm
+ * 
+ * @author kohm
  */
 public interface LegendTableModel extends javax.swing.table.TableModel {
-    /** the description of the column */
-    public String getColumnDescription(int columnIndex);
-    /** returns true if there are column descriptions */
-    public boolean hasColumnDescriptions();
+	/** the description of the column */
+	public String getColumnDescription(int columnIndex);
+
+	/** returns true if there are column descriptions */
+	public boolean hasColumnDescriptions();
 }

@@ -1,33 +1,32 @@
 package org.genepattern.data;
 
 /**
- *
- * @todo reasses - moved here for db0 tests
- * A Mutable sept
+ * 
+ * @todo reasses - moved here for db0 tests A Mutable sept
  */
 public class MutableKlass extends Template.Klass {
 
-    /** Generated serialized version UID */
-    private static final long serialVersionUID = 3639907228371141927L;
+	/** Generated serialized version UID */
+	private static final long serialVersionUID = 3639907228371141927L;
 
-    /**
-     * Class constructor
-     */
-    public MutableKlass(String aName) {
-        super(aName, true/*mutable*/);
-    }
+	/**
+	 * Class constructor
+	 */
+	public MutableKlass(String aName) {
+		super(aName, true/* mutable */);
+	}
 
-//    // @todo check me - inserted for for db4 use
-//    public MutableKlass() { }
+	//    // @todo check me - inserted for for db4 use
+	//    public MutableKlass() { }
 
-    public void setName(String aName) {
-//        reset();
-        name = aName;
-    }
+	public void setName(String aName) {
+		//        reset();
+		name = aName;
+	}
 
-    public void add(Template.Item item) {
-//        reset();
-        items.add(item);
-    }
+	public void add(Template.Item item) {
+		//        reset();
+		items.add(item);
+	}
 
 } // End MutableClass

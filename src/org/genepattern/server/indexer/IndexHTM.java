@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class IndexHTM implements IDocumentCreator {
 
-    public Document index(File f) throws IOException, InterruptedException {
-	return HTMLDocument.Document(f);
-    }
+	public Document index(File f) throws IOException, InterruptedException {
+		return HTMLDocument.Document(f);
+	}
 }

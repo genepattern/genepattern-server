@@ -13,61 +13,67 @@ import java.util.Vector;
 
 /**
  * @author Liefeld
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * 
+ * TODO To change the template for this generated type comment go to Window -
+ * Preferences - Java - Code Style - Code Templates
  */
 public class AccessManager {
 	protected static Vector allowedClients = null;
+
 	/**
-	 * 
+	 *  
 	 */
-	public static boolean isAllowed(String host, String address){
-		
+	public static boolean isAllowed(String host, String address) {
+
 		Vector okClients = getAllowedClients();
 		String clientList = System.getProperty("gp.allowed.clients");
-		
-		if (okClients != null){
-			for (int i=0;i < okClients.size(); i++){
-				String validClient = (String)okClients.get(i);
-				if (host.indexOf(validClient)>= 0) return true;
-				if (address.indexOf(validClient)>= 0) return true;
+
+		if (okClients != null) {
+			for (int i = 0; i < okClients.size(); i++) {
+				String validClient = (String) okClients.get(i);
+				if (host.indexOf(validClient) >= 0)
+					return true;
+				if (address.indexOf(validClient) >= 0)
+					return true;
 			}
 			return false;
 		}
 		return true;
 	}
 
-	protected static Vector getAllowedClients(){
-		if (allowedClients == null){
+	protected static Vector getAllowedClients() {
+		if (allowedClients == null) {
 			String clientList = System.getProperty("gp.allowed.clients");
-			if (clientList != null){
-				allowedClients = new Vector();				
+			if (clientList != null) {
+				allowedClients = new Vector();
 				StringTokenizer strtok = new StringTokenizer(clientList, ",");
-				while (strtok.hasMoreTokens()){
+				while (strtok.hasMoreTokens()) {
 					String tok = strtok.nextToken();
 					allowedClients.add(tok);
 				}
-				allowedClients.add("127.0.0.1");// so that you can always get in locally
-				allowedClients.add("localhost");// so that you can always get in locally
-				
-				try{
-				InetAddress addr = InetAddress.getLocalHost();
+				allowedClients.add("127.0.0.1");// so that you can always get in
+												// locally
+				allowedClients.add("localhost");// so that you can always get in
+												// locally
+
+				try {
+					InetAddress addr = InetAddress.getLocalHost();
 					String host_address = addr.getCanonicalHostName();
 					String host_address2 = addr.getHostAddress();
-					allowedClients.add(host_address);// so that you can always get in locally
-					allowedClients.add(host_address2);// so that you can always get in locally
-					
-				} catch (UnknownHostException uke){
+					allowedClients.add(host_address);// so that you can always
+													 // get in locally
+					allowedClients.add(host_address2);// so that you can always
+													  // get in locally
+
+				} catch (UnknownHostException uke) {
 					// do nothing
 				}
-				
+
 			} else {// null indicates allow anyone
 				allowedClients = null;
 			}
 		}
 		return allowedClients;
 	}
-	
-	
+
 }

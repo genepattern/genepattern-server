@@ -7,18 +7,21 @@
 package org.genepattern.util;
 
 /**
- * long tasks should implement this interface so that a periodicProgressObjserver
- * can show it's progress
- *
- * @author  kohm
+ * long tasks should implement this interface so that a
+ * periodicProgressObjserver can show it's progress
+ * 
+ * @author kohm
  */
 public interface ProgressObservable {
-    /**
-     * @return int negative if not ready or non-negative when total has been calculated
-     */    
-    int getTotal();
-    /**
-     * @return int the current state of progress of the task relative to the total
-     */    
-    int getCurrent();
+	/**
+	 * @return int negative if not ready or non-negative when total has been
+	 *         calculated
+	 */
+	int getTotal();
+
+	/**
+	 * @return int the current state of progress of the task relative to the
+	 *         total
+	 */
+	int getCurrent();
 }

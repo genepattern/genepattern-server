@@ -1,4 +1,3 @@
-
 /*
  * Semaphore.java
  *
@@ -9,41 +8,40 @@ package org.genepattern.server;
 
 /**
  * Semaphore.java
- * @author  rajesh kuttan
+ * 
+ * @author rajesh kuttan
  * @version
  */
 
 public class Semaphore {
-    
-    private int count;
-    
-    /** Creates new Semaphore */
-    public Semaphore(int count) {
-        this.count = count;
-    }
-    
-    // Returns true if locking condition is true
-    public synchronized boolean isLocked() {
-        return count <= 0;
-    }
-    
-    public synchronized void acquire() {
-        try {
-            while(count <= 0) {
-                wait();
-            }
-            
-            count--;
-        }
-        catch(InterruptedException e) {
-            //do nothing
-        }
-    }
 
-     public synchronized void release() {
-        ++count;
-        notify();
-    }
-    
-    
+	private int count;
+
+	/** Creates new Semaphore */
+	public Semaphore(int count) {
+		this.count = count;
+	}
+
+	// Returns true if locking condition is true
+	public synchronized boolean isLocked() {
+		return count <= 0;
+	}
+
+	public synchronized void acquire() {
+		try {
+			while (count <= 0) {
+				wait();
+			}
+
+			count--;
+		} catch (InterruptedException e) {
+			//do nothing
+		}
+	}
+
+	public synchronized void release() {
+		++count;
+		notify();
+	}
+
 }

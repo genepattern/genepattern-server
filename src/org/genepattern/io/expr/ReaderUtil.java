@@ -1,19 +1,22 @@
 package org.genepattern.io.expr;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 
 import org.genepattern.io.ParseException;
+
 /**
- *  Utility class for expression data readers.
- *
- * @author    Joshua Gould
+ * Utility class for expression data readers.
+ * 
+ * @author Joshua Gould
  */
 public class ReaderUtil {
 
-	private ReaderUtil() { }
+	private ReaderUtil() {
+	}
 
-
-	public static Object read(IExpressionDataParser parser, String pathname, IExpressionDataCreator handler) throws IOException, ParseException {
+	public static Object read(IExpressionDataParser parser, String pathname,
+			IExpressionDataCreator handler) throws IOException, ParseException {
 		FileInputStream is = null;
 		try {
 			parser.setHandler(handler);
@@ -21,7 +24,7 @@ public class ReaderUtil {
 			parser.parse(is);
 			return handler.create();
 		} finally {
-			if(is != null) {
+			if (is != null) {
 				is.close();
 			}
 		}

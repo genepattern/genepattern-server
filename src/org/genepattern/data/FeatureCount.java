@@ -8,14 +8,14 @@ package org.genepattern.data;
 
 /**
  * Encapsulates the feature count
- * @author  kohm
+ * 
+ * @author kohm
  */
-public class FeatureCount extends InputValue{
-    
-    /** Creates a new instance of FeatureCount */
-    public FeatureCount(int count) {
-        super(count);
-    }
+public class FeatureCount extends InputValue {
 
-    
+	/** Creates a new instance of FeatureCount */
+	public FeatureCount(int count) {
+		super(count);
+	}
+
 }

@@ -1,4 +1,5 @@
 package org.genepattern.gpge.ui.preferences;
+
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
@@ -25,90 +26,97 @@ import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.tasks.AnalysisTasksPanel;
 
 /**
- *  Description of the Class
- *
- * @author    Joshua Gould
+ * Description of the Class
+ * 
+ * @author Joshua Gould
  */
 public class ChangeServerDialog extends JDialog {
-   private JLabel serverLabel, portLabel, usernameLabel;
-   private JTextField portTextField, serverTextField, usernameTextField;
+	private JLabel serverLabel, portLabel, usernameLabel;
 
-   public ChangeServerDialog(java.awt.Frame owner, boolean modal) {
-      super(owner, "Server Settings", modal);
-   }
-   
-   public ChangeServerDialog(java.awt.Frame owner) {
-      this(owner, false);
-   }
+	private JTextField portTextField, serverTextField, usernameTextField;
 
-   public void show(String server, String username, ActionListener okListener) {
-      
-      serverLabel = new JLabel("Server Name: ", javax.swing.SwingConstants.RIGHT);
-      serverTextField = new JTextField(20);
-      URL url = null;
-      try {
-         url = new URL(server);
-      } catch(Exception x){}
-      serverTextField.setText(url.getHost());
-      portLabel = new JLabel("Port: ", javax.swing.SwingConstants.RIGHT);
-      portTextField = new JTextField(10);
-      portTextField.setText("" + url.getPort());
+	public ChangeServerDialog(java.awt.Frame owner, boolean modal) {
+		super(owner, "Server Settings", modal);
+	}
 
-      usernameLabel = new JLabel("Username: ", javax.swing.SwingConstants.RIGHT);
-      usernameTextField = new JTextField(20);
-      usernameTextField.setText(username);
-      JButton okButton = new JButton("OK");
+	public ChangeServerDialog(java.awt.Frame owner) {
+		this(owner, false);
+	}
 
-      okButton.addActionListener(okListener);
-      
-         
-      JButton cancelButton = new JButton("Cancel");
+	public void show(String server, String username, ActionListener okListener) {
 
-      cancelButton.addActionListener(
-         new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-               dispose();
-            }
-         });
+		serverLabel = new JLabel("Server Name: ",
+				javax.swing.SwingConstants.RIGHT);
+		serverTextField = new JTextField(20);
+		URL url = null;
+		try {
+			url = new URL(server);
+		} catch (Exception x) {
+		}
+		serverTextField.setText(url.getHost());
+		portLabel = new JLabel("Port: ", javax.swing.SwingConstants.RIGHT);
+		portTextField = new JTextField(10);
+		portTextField.setText("" + url.getPort());
 
-      Container content = getContentPane();
-      content.setLayout(new GridBagLayout());
-      GBA gba = new GBA();
-      gba.add(content, serverLabel, 0, 0, 1, 1, 0, 0, GBA.NONE, GBA.C, new Insets(5, 5, 5, 5), 0, 0);
-      gba.add(content, serverTextField, 1, 0, 1, 1, 1, 0, GBA.H, GBA.C, new Insets(5, 5, 5, 5), 0, 0);
-      gba.add(content, portLabel, 0, 1, 1, 1, 0, 0, GBA.NONE, GBA.C, new Insets(5, 5, 5, 5), 0, 0);
-      gba.add(content, portTextField, 1, 1, 2, 1, 1, 0, GBA.H, GBA.C, new Insets(5, 5, 5, 5), 0, 0);
+		usernameLabel = new JLabel("Username: ",
+				javax.swing.SwingConstants.RIGHT);
+		usernameTextField = new JTextField(20);
+		usernameTextField.setText(username);
+		JButton okButton = new JButton("OK");
 
-      gba.add(content, usernameLabel, 0, 2, 1, 1, 0, 0, GBA.NONE, GBA.C, new Insets(5, 5, 5, 5), 0, 0);
-      gba.add(content, usernameTextField, 1, 2, 2, 1, 1, 0, GBA.H, GBA.C, new Insets(5, 5, 5, 5), 0, 0);
+		okButton.addActionListener(okListener);
 
-      gba.add(content, cancelButton, 0, 3, 1, 1, 0, 0, GBA.NONE, GBA.W, new Insets(5, 5, 5, 5), 0, 0);
-      gba.add(content, okButton, 1, 3, 1, 1, 0, 0, GBA.NONE, GBA.E, new Insets(5, 5, 5, 5), 0, 0);
-      //	setResizable(false);
-      serverTextField.grabFocus();
-      getRootPane().setDefaultButton(okButton);
-      pack();
-      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-      setLocation((screenSize.width - getSize().width) / 2, (screenSize.height - getSize().height) / 2);
-      show();
-   }
+		JButton cancelButton = new JButton("Cancel");
 
+		cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
 
-   public String getPort() {
-      return portTextField.getText();
-   }
+		Container content = getContentPane();
+		content.setLayout(new GridBagLayout());
+		GBA gba = new GBA();
+		gba.add(content, serverLabel, 0, 0, 1, 1, 0, 0, GBA.NONE, GBA.C,
+				new Insets(5, 5, 5, 5), 0, 0);
+		gba.add(content, serverTextField, 1, 0, 1, 1, 1, 0, GBA.H, GBA.C,
+				new Insets(5, 5, 5, 5), 0, 0);
+		gba.add(content, portLabel, 0, 1, 1, 1, 0, 0, GBA.NONE, GBA.C,
+				new Insets(5, 5, 5, 5), 0, 0);
+		gba.add(content, portTextField, 1, 1, 2, 1, 1, 0, GBA.H, GBA.C,
+				new Insets(5, 5, 5, 5), 0, 0);
 
+		gba.add(content, usernameLabel, 0, 2, 1, 1, 0, 0, GBA.NONE, GBA.C,
+				new Insets(5, 5, 5, 5), 0, 0);
+		gba.add(content, usernameTextField, 1, 2, 2, 1, 1, 0, GBA.H, GBA.C,
+				new Insets(5, 5, 5, 5), 0, 0);
 
-   public String getUsername() {
-      return usernameTextField.getText();
-   }
+		gba.add(content, cancelButton, 0, 3, 1, 1, 0, 0, GBA.NONE, GBA.W,
+				new Insets(5, 5, 5, 5), 0, 0);
+		gba.add(content, okButton, 1, 3, 1, 1, 0, 0, GBA.NONE, GBA.E,
+				new Insets(5, 5, 5, 5), 0, 0);
+		//	setResizable(false);
+		serverTextField.grabFocus();
+		getRootPane().setDefaultButton(okButton);
+		pack();
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		setLocation((screenSize.width - getSize().width) / 2,
+				(screenSize.height - getSize().height) / 2);
+		show();
+	}
 
+	public String getPort() {
+		return portTextField.getText();
+	}
 
-   public String getServer() {
+	public String getUsername() {
+		return usernameTextField.getText();
+	}
 
-      return serverTextField.getText();
-   }
+	public String getServer() {
 
+		return serverTextField.getText();
+	}
 
 }
 

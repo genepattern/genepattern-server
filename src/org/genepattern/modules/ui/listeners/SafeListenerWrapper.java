@@ -6,28 +6,31 @@
 
 package org.genepattern.modules.ui.listeners;
 
-
 import java.awt.AWTEvent;
 
 import org.genepattern.util.RunLater;
 
 /**
- *
- * @author  KOhm
- * @version 
+ * 
+ * @author KOhm
+ * @version
  */
 public abstract class SafeListenerWrapper extends RunLater {
-    protected AWTEvent event;
-    /** Creates new SafeListenerWrapper */
-    public SafeListenerWrapper () {
-    }
-    
-    public final void doIt(AWTEvent event) {
-        this.event = event;
-        run();
-    }
+	protected AWTEvent event;
 
-    /** this is where the subclasses implement whatever code they want to be run in a thread  */
-    abstract protected void runIt () throws Throwable;
-    
+	/** Creates new SafeListenerWrapper */
+	public SafeListenerWrapper() {
+	}
+
+	public final void doIt(AWTEvent event) {
+		this.event = event;
+		run();
+	}
+
+	/**
+	 * this is where the subclasses implement whatever code they want to be run
+	 * in a thread
+	 */
+	abstract protected void runIt() throws Throwable;
+
 }

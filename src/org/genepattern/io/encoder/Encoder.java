@@ -27,24 +27,41 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.genepattern.data.DataObjector;
-/** Interface that defines the methods for encoding a data object.
+
+/**
+ * Interface that defines the methods for encoding a data object.
+ * 
  * @author kohm
  */
 public interface Encoder {
-    /** encodes the data to the output stream
-     * @param data the data object
-     * @param out the output stream
-     * @throws IOException if a problem arises durring an I/O operation
-     */
-    public void write (final DataObjector data, final OutputStream out) throws IOException;
-    /** gets the file extension for the specified object or null if wrong type
-     * @param data the data object
-     * @return String the prefered file extension for this file format
-     */
-    public String getFileExtension(final DataObjector data);
-    /** returns true if this can handle encoding the specified DataObjector
-     * @param data the data object
-     * @return true if this can encode the data object
-     */
-    public boolean canEncode(final DataObjector data);
+	/**
+	 * encodes the data to the output stream
+	 * 
+	 * @param data
+	 *            the data object
+	 * @param out
+	 *            the output stream
+	 * @throws IOException
+	 *             if a problem arises durring an I/O operation
+	 */
+	public void write(final DataObjector data, final OutputStream out)
+			throws IOException;
+
+	/**
+	 * gets the file extension for the specified object or null if wrong type
+	 * 
+	 * @param data
+	 *            the data object
+	 * @return String the prefered file extension for this file format
+	 */
+	public String getFileExtension(final DataObjector data);
+
+	/**
+	 * returns true if this can handle encoding the specified DataObjector
+	 * 
+	 * @param data
+	 *            the data object
+	 * @return true if this can encode the data object
+	 */
+	public boolean canEncode(final DataObjector data);
 }

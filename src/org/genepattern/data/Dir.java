@@ -16,48 +16,54 @@ package org.genepattern.data;
  */
 public class Dir {
 
-    public static final Dir FORWARD = new Dir("Forward (top of list to bottom)");
+	public static final Dir FORWARD = new Dir("Forward (top of list to bottom)");
 
-    public static final Dir REVERSE = new Dir("Reverse (bottom of list to top)");
+	public static final Dir REVERSE = new Dir("Reverse (bottom of list to top)");
 
-    public static final Dir TWOTAILED = new Dir("Two Tailed");
+	public static final Dir TWOTAILED = new Dir("Two Tailed");
 
-    public static Dir[] DIR_OPTIONS = new Dir[]{FORWARD, REVERSE, TWOTAILED};
+	public static Dir[] DIR_OPTIONS = new Dir[] { FORWARD, REVERSE, TWOTAILED };
 
-    private String type;
+	private String type;
 
-    /**
-     * Privatized class constructor.
-     */
-    private Dir(String type) {
-        this.type = type;
-    }
+	/**
+	 * Privatized class constructor.
+	 */
+	private Dir(String type) {
+		this.type = type;
+	}
 
-    public String toString() {
-        return type;
-    }
+	public String toString() {
+		return type;
+	}
 
-    public boolean equals(Object obj) {
-        if (obj instanceof Dir) {
-            if (((Dir)obj).type.equals(this.type)) return true;
-        }
-        return false;
-    }
+	public boolean equals(Object obj) {
+		if (obj instanceof Dir) {
+			if (((Dir) obj).type.equals(this.type))
+				return true;
+		}
+		return false;
+	}
 
-    /**
-     *  a lookup metod for dir
-     */
-    public static Dir lookupDir(Object obj) {
-        if (obj == null) throw new NullPointerException("Null dir not allowed");
-        if (obj instanceof Dir) return (Dir)obj;
-        if (obj instanceof String) {
-            if (obj.toString().equals(FORWARD.toString())) return FORWARD;
-            else if (obj.toString().equals(REVERSE.toString())) return REVERSE;
-            else if (obj.toString().equals(TWOTAILED.toString())) return TWOTAILED;
-        }
+	/**
+	 * a lookup metod for dir
+	 */
+	public static Dir lookupDir(Object obj) {
+		if (obj == null)
+			throw new NullPointerException("Null dir not allowed");
+		if (obj instanceof Dir)
+			return (Dir) obj;
+		if (obj instanceof String) {
+			if (obj.toString().equals(FORWARD.toString()))
+				return FORWARD;
+			else if (obj.toString().equals(REVERSE.toString()))
+				return REVERSE;
+			else if (obj.toString().equals(TWOTAILED.toString()))
+				return TWOTAILED;
+		}
 
-        throw new IllegalArgumentException("Unable to resolve dir: " + obj);
+		throw new IllegalArgumentException("Unable to resolve dir: " + obj);
 
-    }
+	}
 
 } // End Dir

@@ -7,16 +7,15 @@
 package org.genepattern.gpge.ui.graphics.draggable;
 
 /**
- *
- * @author  kohm
+ * 
+ * @author kohm
  */
 public class PasteDropTarget {
-    
-    /** Creates a new instance of PastDropTarget */
-    public PasteDropTarget() {
-    }
-    
-    /** pastes an object into a target */
-    
-    
+
+	/** Creates a new instance of PastDropTarget */
+	public PasteDropTarget() {
+	}
+
+	/** pastes an object into a target */
+
 }

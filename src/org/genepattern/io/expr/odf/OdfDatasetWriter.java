@@ -7,18 +7,16 @@ import java.io.PrintWriter;
 import org.genepattern.data.expr.IExpressionData;
 import org.genepattern.io.expr.IExpressionDataWriter;
 
-
 /**
- *  Writer for odf datasets
- *
- * @author    Joshua Gould
+ * Writer for odf datasets
+ * 
+ * @author Joshua Gould
  */
 public class OdfDatasetWriter implements IExpressionDataWriter {
 	final static String FORMAT_NAME = "odf";
 
-
 	public String checkFileExtension(String filename) {
-		if(!filename.toLowerCase().endsWith(".odf")) {
+		if (!filename.toLowerCase().endsWith(".odf")) {
 			filename += ".odf";
 		}
 		return filename;
@@ -26,7 +24,8 @@ public class OdfDatasetWriter implements IExpressionDataWriter {
 
 	// note old odf parser requires row descriptions and column descriptions
 
-	public void write(IExpressionData expressionData, OutputStream os) throws IOException {
+	public void write(IExpressionData expressionData, OutputStream os)
+			throws IOException {
 		PrintWriter out = new PrintWriter(os);
 
 		int rows = expressionData.getRowCount();
@@ -38,7 +37,7 @@ public class OdfDatasetWriter implements IExpressionDataWriter {
 		out.println("HeaderLines=" + headerLines);
 		out.println("Model=Dataset");
 		out.print("COLUMN_NAMES:Name\tDescription\t");
-		for(int j = 0; j < columns - 1; j++) {
+		for (int j = 0; j < columns - 1; j++) {
 			out.print(expressionData.getColumnName(j));
 			out.print("\t");
 		}
@@ -47,27 +46,28 @@ public class OdfDatasetWriter implements IExpressionDataWriter {
 		out.print("COLUMN_TYPES:");
 		out.print("String\tString");
 
-		for(int j = 0; j < columns - 1; j++) {
+		for (int j = 0; j < columns - 1; j++) {
 			out.print("\tfloat");
 		}
 		out.println("\tfloat");
 
+		out
+				.print("COLUMN_DESCRIPTIONS:Name for each row\tDescription for each row\t");
 
-		out.print("COLUMN_DESCRIPTIONS:Name for each row\tDescription for each row\t");
-
-		for(int j = 0; j < columns-1; j++) {
+		for (int j = 0; j < columns - 1; j++) {
 			String columnDescription = expressionData.getColumnDescription(j);
-			if(columnDescription == null) {
+			if (columnDescription == null) {
 				columnDescription = "";
 			}
 			out.print(columnDescription);
 			out.print("\t");
 		}
-		String columnDescription = expressionData.getColumnDescription(columns - 1);
-		if(columnDescription == null) {
+		String columnDescription = expressionData
+				.getColumnDescription(columns - 1);
+		if (columnDescription == null) {
 			columnDescription = "";
 		}
-      
+
 		out.println(columnDescription);
 
 		out.println("RowNamesColumn=0");
@@ -76,17 +76,17 @@ public class OdfDatasetWriter implements IExpressionDataWriter {
 
 		out.print("DataLines=" + rows);
 
-		for(int i = 0; i < rows; i++) {
+		for (int i = 0; i < rows; i++) {
 			out.println();
 			out.print(expressionData.getRowName(i));
 			out.print("\t");
 			String rowDescription = expressionData.getRowDescription(i);
-			if(rowDescription == null) {
+			if (rowDescription == null) {
 				rowDescription = "";
 			}
 			out.print(rowDescription);
 
-			for(int j = 0; j < columns; j++) {
+			for (int j = 0; j < columns; j++) {
 				out.print("\t");
 				out.print(expressionData.getValueAsString(i, j));
 			}
@@ -94,7 +94,6 @@ public class OdfDatasetWriter implements IExpressionDataWriter {
 		out.flush();
 		out.close();
 	}
-
 
 	public String getFormatName() {
 		return FORMAT_NAME;

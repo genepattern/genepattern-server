@@ -1,6 +1,5 @@
 package org.genepattern.data.pipeline;
 
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Vector;
@@ -10,13 +9,20 @@ import org.genepattern.webservice.ParameterInfo;
 public class JobSubmission implements Serializable {
 
 	protected String taskName = null;
+
 	protected String taskDescription = null;
+
 	protected String lsid = null;
+
 	protected Vector pia = new Vector();
+
 	protected boolean runTimePrompt[] = null;
+
 	protected boolean isVisualizer = false;
-	
-	public JobSubmission(String taskName, String taskDescription, String lsid, ParameterInfo[] parameterInfoArray, boolean[] runTimePrompt, boolean isVisualizer) {
+
+	public JobSubmission(String taskName, String taskDescription, String lsid,
+			ParameterInfo[] parameterInfoArray, boolean[] runTimePrompt,
+			boolean isVisualizer) {
 		setName(taskName);
 		setDescription(taskDescription);
 		setLSID(lsid);
@@ -73,7 +79,7 @@ public class JobSubmission implements Serializable {
 	}
 
 	public ParameterInfo[] giveParameterInfoArray() {
-		return (ParameterInfo[])pia.toArray(new ParameterInfo[0]);
+		return (ParameterInfo[]) pia.toArray(new ParameterInfo[0]);
 	}
 
 	public void setRuntimePrompt(boolean[] runTimePrompt) {

@@ -25,32 +25,38 @@ import org.genepattern.server.util.AccessManager;
 
 /**
  * @author Liefeld
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * 
+ * TODO To change the template for this generated type comment go to Window -
+ * Preferences - Java - Code Style - Code Templates
  */
 public class JSPServlet extends JspServlet {
 
 	/**
-	 * 
+	 *  
 	 */
 	public JSPServlet() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-	 /**
-	  * Override the default JSP servlet to allow us to insert some control here over who gets to see what
-	  * 
-	  */
-	public void service(HttpServletRequest req, HttpServletResponse resp ) throws ServletException, IOException{
-		
-		boolean allowed = AccessManager.isAllowed(req.getRemoteHost(), req.getRemoteAddr());
-		
-		//System.out.println("allowed=" + allowed + " " + req.getRemoteHost() + " " + req.getRemoteAddr() +"\n=========================");
-		if (allowed) super.service(req, resp);
-		else resp.sendRedirect("notallowed.html");
 
-	
+	/**
+	 * Override the default JSP servlet to allow us to insert some control here
+	 * over who gets to see what
+	 *  
+	 */
+	public void service(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+
+		boolean allowed = AccessManager.isAllowed(req.getRemoteHost(), req
+				.getRemoteAddr());
+
+		//System.out.println("allowed=" + allowed + " " + req.getRemoteHost() +
+		// " " + req.getRemoteAddr() +"\n=========================");
+		if (allowed)
+			super.service(req, resp);
+		else
+			resp.sendRedirect("notallowed.html");
+
 	}
 
 }

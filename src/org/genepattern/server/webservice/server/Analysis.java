@@ -1,7 +1,5 @@
 package org.genepattern.server.webservice.server;
 
-
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,286 +26,304 @@ import org.genepattern.webservice.AnalysisJob;
 
 /**
  * Analysis Web Service.
- *
+ * 
  * @author David Turner, Hui Gong
  * @version 1.1
  */
 
-public class Analysis extends GenericWebService
-{
-    private MessageContext context = null;
-    private static Category _cat = Category.getInstance(Analysis.class.getName());
+public class Analysis extends GenericWebService {
+	private MessageContext context = null;
 
-    /**
-     * Default constructor.
-     * Constructs a <code>Analysis</code> web service object.
-     */
-    public Analysis()
-    {
-	Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are sometimes empty
-    }
+	private static Category _cat = Category.getInstance(Analysis.class
+			.getName());
 
-    /**
-    * Gets the latest versions of all tasks
-    * 
-    * @return The latest tasks
-    * @exception WebServiceException  If an error occurs
-    */
-    public TaskInfo[] getTasks() throws WebServiceException
-    {
-	Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are sometimes empty
+	/**
+	 * Default constructor. Constructs a <code>Analysis</code> web service
+	 * object.
+	 */
+	public Analysis() {
+		Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
+						// sometimes empty
+	}
+
+	/**
+	 * Gets the latest versions of all tasks
+	 * 
+	 * @return The latest tasks
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public TaskInfo[] getTasks() throws WebServiceException {
+		Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
+						// sometimes empty
 		return new AdminService() {
 			protected String getUserName() {
 				return getUsernameFromContext();
 			}
 		}.getLatestTasksByName();
-    }
+	}
 
+	/**
+	 * Submits an analysis job to be processed.
+	 * 
+	 * @param taskID
+	 *            the ID of the task to run.
+	 * @param parmInfo
+	 *            the parameters to process
+	 * @param files
+	 *            a HashMap of input files sent as attachments
+	 * @return the job information for this process
+	 * @exception is
+	 *                thrown if problems are encountered
+	 */
+	public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files)
+			throws WebServiceException {
+		Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
+						// sometimes empty
 
-    /**
-     * Submits an analysis job to be processed.
-     *
-     * @param taskID the ID of the task to run.
-     * @param parmInfo the parameters to process
-     * @param files a HashMap of input files sent as attachments
-     * @return the job information for this process
-     * @exception is thrown if problems are encountered
-     */
-    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files)
-    throws WebServiceException
-    {
-	Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are sometimes empty
+		// get the username
+		String username = getUsernameFromContext();
 
-        // get the username
-        String username = getUsernameFromContext();
-
-        JobInfo jobInfo = null;
-        // find any input files and concat axis name with original file name.
-	if (parameters != null)
-        for (int x = 0; x < parameters.length; x++) {
-    	    if (parameters[x].isInputFile() ) {
-        		String orgFilename = parameters[x].getValue();
-        		AttachmentPart ap = (AttachmentPart)files.get(orgFilename);
-        		DataHandler dataHandler = null;
-        		try {
-        		    dataHandler = ap.getDataHandler();
-        		}
-        		catch (SOAPException se) {
-        		    throw new WebServiceException("Error while processing files");
-        		}
-        		String newFilename = dataHandler.getName() + "_" + orgFilename;
-        		File f = new File(dataHandler.getName());
-			File newFile = new File(newFilename);
-        		boolean renamed = f.renameTo(newFile);
-        		//reset parameter's value with new filename
-        		if (renamed) {
-				parameters[x].setValue(newFilename);
-			} else {
-			    try {
-				parameters[x].setValue(f.getCanonicalPath());
-			    } catch (IOException ioe) {
-				throw new WebServiceException(ioe.getMessage());
-			    }
+		JobInfo jobInfo = null;
+		// find any input files and concat axis name with original file name.
+		if (parameters != null)
+			for (int x = 0; x < parameters.length; x++) {
+				if (parameters[x].isInputFile()) {
+					String orgFilename = parameters[x].getValue();
+					AttachmentPart ap = (AttachmentPart) files.get(orgFilename);
+					DataHandler dataHandler = null;
+					try {
+						dataHandler = ap.getDataHandler();
+					} catch (SOAPException se) {
+						throw new WebServiceException(
+								"Error while processing files");
+					}
+					String newFilename = dataHandler.getName() + "_"
+							+ orgFilename;
+					File f = new File(dataHandler.getName());
+					File newFile = new File(newFilename);
+					boolean renamed = f.renameTo(newFile);
+					//reset parameter's value with new filename
+					if (renamed) {
+						parameters[x].setValue(newFilename);
+					} else {
+						try {
+							parameters[x].setValue(f.getCanonicalPath());
+						} catch (IOException ioe) {
+							throw new WebServiceException(ioe.getMessage());
+						}
+					}
+				}
 			}
-    	    }
-    	}
-        
-        
-        try {
-            AddNewJobHandler req = new AddNewJobHandler(taskID, username, parameters, "");
-            jobInfo = req.executeRequest();
-        }
-        catch (org.genepattern.webservice.OmnigeneException oe) {
-            _cat.error(oe.getMessage());
-	    oe.printStackTrace();
-            throw new WebServiceException(oe.getMessage());
-        }
-        catch (Throwable t) {
-            _cat.error(t.getMessage());
-	    t.printStackTrace();
-            throw new WebServiceException(t.getMessage());
-        }
-        
-        return jobInfo;
-    }
 
-    /**
-     * Checks the status of a particular job.
-     *
-     * @param jobID the ID of the task to check
-     * @return the job information
-     * @exception is thrown if problems are encountered
-     */
-    public JobInfo checkStatus(int jobID) throws WebServiceException
-    {
-	Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are sometimes empty
+		try {
+			AddNewJobHandler req = new AddNewJobHandler(taskID, username,
+					parameters, "");
+			jobInfo = req.executeRequest();
+		} catch (org.genepattern.webservice.OmnigeneException oe) {
+			_cat.error(oe.getMessage());
+			oe.printStackTrace();
+			throw new WebServiceException(oe.getMessage());
+		} catch (Throwable t) {
+			_cat.error(t.getMessage());
+			t.printStackTrace();
+			throw new WebServiceException(t.getMessage());
+		}
 
-        JobInfo jobInfo = null;
+		return jobInfo;
+	}
 
-        try {
-            GetJobStatusHandler req = new GetJobStatusHandler(jobID);
-            jobInfo = req.executeRequest();
-        }
-        catch (org.genepattern.webservice.OmnigeneException oe) {
-            _cat.error(oe.getMessage());
-            throw new WebServiceException(oe.getMessage());
-        }
-        catch (Throwable t) {
-            _cat.error(t.getMessage());
-            t.printStackTrace();
-            throw new WebServiceException(t.getMessage());
-        }
+	/**
+	 * Checks the status of a particular job.
+	 * 
+	 * @param jobID
+	 *            the ID of the task to check
+	 * @return the job information
+	 * @exception is
+	 *                thrown if problems are encountered
+	 */
+	public JobInfo checkStatus(int jobID) throws WebServiceException {
+		Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
+						// sometimes empty
 
-        return jobInfo;
-    }
+		JobInfo jobInfo = null;
 
-    /**
-     * Returns the result files of a completed job.
-     *
-     * @param jobID the ID of the job that completed.
-     * @return the List of FileWrappers containing the results for this process
-     * @exception is thrown if problems are encountered
-     */
-    public List getResultFiles(int jobID) throws WebServiceException
-    {
-	Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are sometimes empty
+		try {
+			GetJobStatusHandler req = new GetJobStatusHandler(jobID);
+			jobInfo = req.executeRequest();
+		} catch (org.genepattern.webservice.OmnigeneException oe) {
+			_cat.error(oe.getMessage());
+			throw new WebServiceException(oe.getMessage());
+		} catch (Throwable t) {
+			_cat.error(t.getMessage());
+			t.printStackTrace();
+			throw new WebServiceException(t.getMessage());
+		}
 
-        JobInfo jobInfo = null;
-        ArrayList filenames = null;
-        
-        try {
-            GetJobStatusHandler req = new GetJobStatusHandler(jobID);
-            jobInfo = req.executeRequest();
-        }
-        catch (org.genepattern.webservice.OmnigeneException oe) {
-            _cat.error(oe.getMessage());
-            throw new WebServiceException(oe.getMessage());
-        }
-        catch (Throwable t) {
-            _cat.error(t.getMessage());
-            throw new WebServiceException(t.getMessage());
-        }
-              
-        if (jobInfo != null) {
-            ParameterInfo[] parameters = jobInfo.getParameterInfoArray();
-            if (parameters != null) {
-                for (int x = 0; x < parameters.length; x++) {
-                    if (parameters[x].isOutputFile() ) {
-                        if (filenames == null)
-                            filenames = new ArrayList();
-                        filenames.add(System.getProperty("jobs") + "/" + parameters[x].getValue());
-                    }
-                }
-            }
-        }
-        
-        
-        ArrayList list = null;
-        if (filenames != null) {
-            list = new ArrayList(filenames.size());
-        
-            for (Iterator iterator = filenames.iterator(); iterator.hasNext();) {
-                String fn = (String)iterator.next();
-		File f = new File(fn);
-                DataHandler dataHandler = new DataHandler(new FileDataSource(fn));
-                list.add(new FileWrapper(dataHandler.getName(), dataHandler, f.length(), f.lastModified()));
-            }
-        }
-                                
-        return list;
-    }
-   
-   
-    /**
-    * Deletes the all the input and output files for the given job and removes the job from the stored history.
-    *
-    * @param jobId the job id
-    */
-    public void deleteJob(int jobId) throws WebServiceException {
-       try {
-          File jobDir = new File(org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String.valueOf(jobId)));
-          File[] files = jobDir.listFiles();
-          if(files!=null) {
-             for(int i = 0; i < files.length; i++) {
-                files[i].delete();
-                org.genepattern.server.indexer.Indexer.deleteJobFile(jobId, files[i].getName());
-             }
-          }
-          jobDir.delete();
-          org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference.getAnalysisJobDataSourceEJB();
-          ds.deleteJob(jobId);
-       } catch(Exception e) {
-          throw new WebServiceException(e);
-       }
-    }
-    
-    /**
-    *
-    * Deletes the given output files for the given job
-    *
-    * @param jobId the job id
-    * @param fileNames the file names to delete
-    */
-    public void deleteJobOutputFiles(int jobId, String[] fileNames) {
-       String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String.valueOf(jobId));
-       if (fileNames != null) {
+		return jobInfo;
+	}
+
+	/**
+	 * Returns the result files of a completed job.
+	 * 
+	 * @param jobID
+	 *            the ID of the job that completed.
+	 * @return the List of FileWrappers containing the results for this process
+	 * @exception is
+	 *                thrown if problems are encountered
+	 */
+	public List getResultFiles(int jobID) throws WebServiceException {
+		Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
+						// sometimes empty
+
+		JobInfo jobInfo = null;
+		ArrayList filenames = null;
+
+		try {
+			GetJobStatusHandler req = new GetJobStatusHandler(jobID);
+			jobInfo = req.executeRequest();
+		} catch (org.genepattern.webservice.OmnigeneException oe) {
+			_cat.error(oe.getMessage());
+			throw new WebServiceException(oe.getMessage());
+		} catch (Throwable t) {
+			_cat.error(t.getMessage());
+			throw new WebServiceException(t.getMessage());
+		}
+
+		if (jobInfo != null) {
+			ParameterInfo[] parameters = jobInfo.getParameterInfoArray();
+			if (parameters != null) {
+				for (int x = 0; x < parameters.length; x++) {
+					if (parameters[x].isOutputFile()) {
+						if (filenames == null)
+							filenames = new ArrayList();
+						filenames.add(System.getProperty("jobs") + "/"
+								+ parameters[x].getValue());
+					}
+				}
+			}
+		}
+
+		ArrayList list = null;
+		if (filenames != null) {
+			list = new ArrayList(filenames.size());
+
+			for (Iterator iterator = filenames.iterator(); iterator.hasNext();) {
+				String fn = (String) iterator.next();
+				File f = new File(fn);
+				DataHandler dataHandler = new DataHandler(
+						new FileDataSource(fn));
+				list.add(new FileWrapper(dataHandler.getName(), dataHandler, f
+						.length(), f.lastModified()));
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * Deletes the all the input and output files for the given job and removes
+	 * the job from the stored history.
+	 * 
+	 * @param jobId
+	 *            the job id
+	 */
+	public void deleteJob(int jobId) throws WebServiceException {
+		try {
+			File jobDir = new File(
+					org.genepattern.server.genepattern.GenePatternAnalysisTask
+							.getJobDir(String.valueOf(jobId)));
+			File[] files = jobDir.listFiles();
+			if (files != null) {
+				for (int i = 0; i < files.length; i++) {
+					files[i].delete();
+					org.genepattern.server.indexer.Indexer.deleteJobFile(jobId,
+							files[i].getName());
+				}
+			}
+			jobDir.delete();
+			org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+					.getAnalysisJobDataSourceEJB();
+			ds.deleteJob(jobId);
+		} catch (Exception e) {
+			throw new WebServiceException(e);
+		}
+	}
+
+	/**
+	 * 
+	 * Deletes the given output files for the given job
+	 * 
+	 * @param jobId
+	 *            the job id
+	 * @param fileNames
+	 *            the file names to delete
+	 */
+	public void deleteJobOutputFiles(int jobId, String[] fileNames) {
+		String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask
+				.getJobDir(String.valueOf(jobId));
+		if (fileNames != null) {
 			for (int j = 0; j < fileNames.length; j++) {
 				String name = fileNames[j];
 				File file = new File(jobDir, name);
-            if(file.exists()) {
-               file.delete();
-            }
-            try {
-                org.genepattern.server.indexer.Indexer.deleteJobFile(jobId, name);
-            } catch (IOException ioe) {
-               // ignore Lucene Lock obtain timed out exceptions
-               _cat.debug(ioe + " while deleting search indices for job " + jobId);
-            }
-				
+				if (file.exists()) {
+					file.delete();
+				}
+				try {
+					org.genepattern.server.indexer.Indexer.deleteJobFile(jobId,
+							name);
+				} catch (IOException ioe) {
+					// ignore Lucene Lock obtain timed out exceptions
+					_cat.debug(ioe + " while deleting search indices for job "
+							+ jobId);
+				}
+
 			}
 		}
-    }
-    
-    /**
-    *
-    * Gets the jobs for the current user
-    *
-    * @return the jobs
-    */
-    public AnalysisJob[] getJobs() throws WebServiceException {
-       try {
-         org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference.getAnalysisJobDataSourceEJB();
-         AnalysisJob[] jobs = ds.getJobs(getUsernameFromContext());
-         String server = (String) MessageContext.getCurrentContext().getProperty("transport.url");
-        
-         java.net.URL url = new java.net.URL(server);
-         server = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();  
+	}
 
-         for(int i = 0; i < jobs.length; i++) {
-            jobs[i].setServer(server);
-         }
-         return jobs;
-       } catch(Exception e) {
-          throw new WebServiceException(e);  
-       }
-    }
+	/**
+	 * 
+	 * Gets the jobs for the current user
+	 * 
+	 * @return the jobs
+	 */
+	public AnalysisJob[] getJobs() throws WebServiceException {
+		try {
+			org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+					.getAnalysisJobDataSourceEJB();
+			AnalysisJob[] jobs = ds.getJobs(getUsernameFromContext());
+			String server = (String) MessageContext.getCurrentContext()
+					.getProperty("transport.url");
 
-    /**
-     * Returns the username trying to access this service.  The username is retrieved
-     * from the incoming soap header.
-     *
-     * @return a String containing the username or an empty string if one not found.
-     */
-    private String getUsernameFromContext()
-    {
-        // get the context then the username from the soap header
-	context = MessageContext.getCurrentContext();
-        String username = context.getUsername();
-        if (username == null)
-            username = "";
-        return username;
-    }
+			java.net.URL url = new java.net.URL(server);
+			server = url.getProtocol() + "://" + url.getHost() + ":"
+					+ url.getPort();
 
+			for (int i = 0; i < jobs.length; i++) {
+				jobs[i].setServer(server);
+			}
+			return jobs;
+		} catch (Exception e) {
+			throw new WebServiceException(e);
+		}
+	}
+
+	/**
+	 * Returns the username trying to access this service. The username is
+	 * retrieved from the incoming soap header.
+	 * 
+	 * @return a String containing the username or an empty string if one not
+	 *         found.
+	 */
+	private String getUsernameFromContext() {
+		// get the context then the username from the soap header
+		context = MessageContext.getCurrentContext();
+		String username = context.getUsername();
+		if (username == null)
+			username = "";
+		return username;
+	}
 
 }
 

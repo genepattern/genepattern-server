@@ -1,6 +1,5 @@
 package org.genepattern.server.webapp;
 
-
 import java.io.PrintStream;
 
 import org.genepattern.data.pipeline.JobSubmission;
@@ -13,7 +12,8 @@ public interface RunPipelineOutputDecoratorIF {
 
 	public void beforePipelineRuns(PipelineModel model);
 
-	public void recordTaskExecution(JobSubmission jobSubmission, int idx, int numSteps);	
+	public void recordTaskExecution(JobSubmission jobSubmission, int idx,
+			int numSteps);
 
 	public void recordTaskCompletion(JobInfo jobInfo, String name);
 

@@ -10,9 +10,9 @@ import java.io.IOException;
 
 public class IndexTXT implements IDocumentCreator {
 
-    public Document index(File f) throws IOException {
-        Document doc = new Document();
-        doc.add(Field.Text(Indexer.TASK_DOC, new FileReader(f)));
-	return doc;
-    }
+	public Document index(File f) throws IOException {
+		Document doc = new Document();
+		doc.add(Field.Text(Indexer.TASK_DOC, new FileReader(f)));
+		return doc;
+	}
 }

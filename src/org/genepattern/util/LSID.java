@@ -12,25 +12,32 @@ import java.util.StringTokenizer;
 public class LSID implements Comparable, Serializable {
 
 	String authority = "";
+
 	String namespace = "";
+
 	String identifier = "";
+
 	String version = "";
-	
+
 	protected boolean precomputed = false;
 
 	public static final String URN = "urn";
+
 	public static final String SCHEME = "lsid";
+
 	public static final String DELIMITER = ":";
+
 	public static final String VERSION_DELIMITER = ".";
 
 	// URN encoding constants
 
 	protected static final String encodable = "\\\"&<>[]^`{|}~%/?#";
+
 	protected static final String escape = "%";
+
 	protected static final String UTF8 = "utf-8";
 
-
-	// sample valid LSID: 
+	// sample valid LSID:
 	// urn:lsid:broad.mit.edu:genepatternmodule:123:2
 
 	public LSID(String lsid) throws MalformedURLException {
@@ -38,7 +45,9 @@ public class LSID implements Comparable, Serializable {
 			// empty initializer is okay, it will be set later
 			return;
 		}
-		String usage = lsid + " must be of the form " + URN + DELIMITER + SCHEME + DELIMITER + "authority" + DELIMITER + "namespace" + DELIMITER + "identifier" + DELIMITER + "version";
+		String usage = lsid + " must be of the form " + URN + DELIMITER
+				+ SCHEME + DELIMITER + "authority" + DELIMITER + "namespace"
+				+ DELIMITER + "identifier" + DELIMITER + "version";
 		StringTokenizer stLSID = new StringTokenizer(lsid, DELIMITER);
 		int numParts = stLSID.countTokens();
 		if (numParts != 5 && numParts != 6) {
@@ -58,7 +67,8 @@ public class LSID implements Comparable, Serializable {
 		}
 	}
 
-	public LSID(String authority, String namespace, String identifier, String version) throws MalformedURLException {
+	public LSID(String authority, String namespace, String identifier,
+			String version) throws MalformedURLException {
 		setAuthority(encode(authority));
 		setNamespace(encode(namespace));
 		setIdentifier(encode(identifier));
@@ -73,15 +83,14 @@ public class LSID implements Comparable, Serializable {
 			return false;
 		}
 	}
-	
+
 	public boolean hasVersion() {
 		return !getVersion().equals("");
 	}
 
 	public boolean matchingVersion(LSID other) {
-		return (getVersion().equals("") || 
-			other.getVersion().equals("") ||
-		        getVersion().equals(other.getVersion()));
+		return (getVersion().equals("") || other.getVersion().equals("") || getVersion()
+				.equals(other.getVersion()));
 	}
 
 	public String toString() {
@@ -116,17 +125,19 @@ public class LSID implements Comparable, Serializable {
 		if (!(o instanceof LSID)) {
 			throw new ClassCastException("Not an LSID");
 		}
-		LSID other = (LSID)o;
+		LSID other = (LSID) o;
 		if (!isSimilar(other)) {
-	  		String thisStr = this.toString().toLowerCase();		
-  			String otherStr = other.toString().toLowerCase();		
-  			return thisStr.compareTo(otherStr);
+			String thisStr = this.toString().toLowerCase();
+			String otherStr = other.toString().toLowerCase();
+			return thisStr.compareTo(otherStr);
 		} else {
 			// versions sort in inverse order
 
 			// crawl version string
-			StringTokenizer stThisVersion = new StringTokenizer(getVersion(), VERSION_DELIMITER);
-			StringTokenizer stOtherVersion = new StringTokenizer(other.getVersion(), VERSION_DELIMITER);
+			StringTokenizer stThisVersion = new StringTokenizer(getVersion(),
+					VERSION_DELIMITER);
+			StringTokenizer stOtherVersion = new StringTokenizer(other
+					.getVersion(), VERSION_DELIMITER);
 			String thisVersionMinor;
 			String otherVersionMinor;
 			int thisMinor;
@@ -135,8 +146,10 @@ public class LSID implements Comparable, Serializable {
 			while (stThisVersion.hasMoreTokens()) {
 				thisVersionMinor = stThisVersion.nextToken();
 				if (!stOtherVersion.hasMoreTokens()) {
-					// this version has more parts than other, but was equal until now
-					// That means that it has an extra minor level and is therefore later
+					// this version has more parts than other, but was equal
+					// until now
+					// That means that it has an extra minor level and is
+					// therefore later
 					return -1;
 				}
 				otherVersionMinor = stOtherVersion.nextToken();
@@ -144,13 +157,16 @@ public class LSID implements Comparable, Serializable {
 					thisMinor = df.parse(thisVersionMinor).intValue();
 				} catch (ParseException nfe) {
 					// what to do?
-					throw new ClassCastException("LSID: not a valid version number: " + getVersion());
+					throw new ClassCastException(
+							"LSID: not a valid version number: " + getVersion());
 				}
 				try {
 					otherMinor = df.parse(otherVersionMinor).intValue();
 				} catch (ParseException pe) {
 					// what to do?
-					throw new ClassCastException("LSID: not a valid version number: " + other.getVersion());
+					throw new ClassCastException(
+							"LSID: not a valid version number: "
+									+ other.getVersion());
 				}
 				if (thisMinor > otherMinor) {
 					return -1;
@@ -159,8 +175,10 @@ public class LSID implements Comparable, Serializable {
 				}
 			}
 			if (stOtherVersion.hasMoreTokens()) {
-				// other version has more parts than this, but was equal until now
-				// That means that it has an extra minor level and is therefore later
+				// other version has more parts than this, but was equal until
+				// now
+				// That means that it has an extra minor level and is therefore
+				// later
 				return 1;
 			}
 			// completely equal!
@@ -174,23 +192,24 @@ public class LSID implements Comparable, Serializable {
 
 	public boolean equals(Object other) {
 		try {
-			LSID l = (LSID)other;
+			LSID l = (LSID) other;
 			return isSimilar(l) && getVersion().equals(l.getVersion());
 		} catch (ClassCastException cce) {
 			return false;
 		}
 	}
 
-	// check if two LSIDs are equivalent.  Missing versions match each other.  But if both are specified, they must match.
+	// check if two LSIDs are equivalent. Missing versions match each other. But
+	// if both are specified, they must match.
 	public boolean isEquivalent(LSID other) {
-		return (isSameAuthority(other) && isSameNamespace(other) && 
-			isSameIdentifier(other) && matchingVersion(other));
+		return (isSameAuthority(other) && isSameNamespace(other)
+				&& isSameIdentifier(other) && matchingVersion(other));
 	}
 
 	// check if two LSIDs are equivalent except for version information.
 	public boolean isSimilar(LSID other) {
-		return ((other != null) && isSameAuthority(other) && isSameNamespace(other) && 
-			isSameIdentifier(other));
+		return ((other != null) && isSameAuthority(other)
+				&& isSameNamespace(other) && isSameIdentifier(other));
 	}
 
 	public boolean isSameAuthority(LSID other) {
@@ -243,8 +262,10 @@ public class LSID implements Comparable, Serializable {
 	}
 
 	public void setVersion(String version) throws MalformedURLException {
-		if (version == null) version = "";
-		StringTokenizer stVersion = new StringTokenizer(version, VERSION_DELIMITER);
+		if (version == null)
+			version = "";
+		StringTokenizer stVersion = new StringTokenizer(version,
+				VERSION_DELIMITER);
 		String versionMinor;
 		int minor;
 		while (stVersion.hasMoreTokens()) {
@@ -252,17 +273,19 @@ public class LSID implements Comparable, Serializable {
 			try {
 				minor = Integer.parseInt(versionMinor);
 			} catch (NumberFormatException nfe) {
-				throw new MalformedURLException("Invalid LSID version in " + toString() + DELIMITER + version);
+				throw new MalformedURLException("Invalid LSID version in "
+						+ toString() + DELIMITER + version);
 			}
 		}
 		this.version = version;
-	
+
 	}
 
-
-	// do whatever URI encoding is required (RFC 2141: http://www.faqs.org/rfcs/rfc2141.html)
+	// do whatever URI encoding is required (RFC 2141:
+	// http://www.faqs.org/rfcs/rfc2141.html)
 	protected String encode(String original) {
-		if (original == null) original = "";
+		if (original == null)
+			original = "";
 		try {
 			return URLEncoder.encode(original, UTF8);
 		} catch (UnsupportedEncodingException uce) {
@@ -271,7 +294,8 @@ public class LSID implements Comparable, Serializable {
 	}
 
 	protected String decode(String original) {
-		if (original == null) original = "";
+		if (original == null)
+			original = "";
 		try {
 			return URLDecoder.decode(original, UTF8);
 		} catch (UnsupportedEncodingException uce) {
@@ -282,14 +306,16 @@ public class LSID implements Comparable, Serializable {
 	public LSID copy() {
 		LSID lsid = null;
 		try {
-			lsid = new LSID(getAuthority(), getNamespace(), getIdentifier(), getVersion());
+			lsid = new LSID(getAuthority(), getNamespace(), getIdentifier(),
+					getVersion());
 		} catch (MalformedURLException mue) {
 		}
 		return lsid;
 	}
 
 	public String getIncrementedMinorVersion() {
-		StringTokenizer stVersion = new StringTokenizer(version, VERSION_DELIMITER);
+		StringTokenizer stVersion = new StringTokenizer(version,
+				VERSION_DELIMITER);
 		String versionMinor = "";
 		while (stVersion.hasMoreTokens()) {
 			versionMinor = stVersion.nextToken();
@@ -299,8 +325,10 @@ public class LSID implements Comparable, Serializable {
 			minor = Integer.parseInt(versionMinor);
 			minor++;
 		} catch (NumberFormatException nfe) {
-			System.err.println(version + " doesn't end in an integer minor number");
+			System.err.println(version
+					+ " doesn't end in an integer minor number");
 		}
-		return version.substring(0, version.length()-versionMinor.length()) + Integer.toString(minor);
+		return version.substring(0, version.length() - versionMinor.length())
+				+ Integer.toString(minor);
 	}
 }
