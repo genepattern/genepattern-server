@@ -364,7 +364,14 @@ public class PipelineModel implements Serializable {
 		return toPipelineModel(inputXML, false);
 	}
 
-	public static PipelineModel toPipelineModel(String inputXML, boolean verify)
+   public static PipelineModel toPipelineModel(String inputXML, boolean verify) throws IOException, SAXException, ParserConfigurationException,
+			IllegalArgumentException, IllegalAccessException,
+			InvocationTargetException, NoSuchMethodException,
+			SecurityException, OmnigeneException, Exception {
+      return toPipelineModel(new InputSource(new StringReader(inputXML)), verify);
+   }
+   
+	public static PipelineModel toPipelineModel(InputSource inputXMLSource, boolean verify)
 			throws IOException, SAXException, ParserConfigurationException,
 			IllegalArgumentException, IllegalAccessException,
 			InvocationTargetException, NoSuchMethodException,
@@ -374,8 +381,7 @@ public class PipelineModel implements Serializable {
 		//System.setProperty(DBF,
 		// "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
 		Document doc = DocumentBuilderFactory.newInstance()
-				.newDocumentBuilder().parse(
-						new InputSource(new StringReader(inputXML)));
+				.newDocumentBuilder().parse(inputXMLSource);
 		//if (oldDocumentBuilderFactory != null)
 		//	System.setProperty(DBF, oldDocumentBuilderFactory);
 		Element root = doc.getDocumentElement();
