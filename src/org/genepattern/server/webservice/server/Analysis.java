@@ -63,45 +63,6 @@ public class Analysis extends GenericWebService
 		}.getLatestTasksByName();
     }
 
-    /**
-     * Submits an analysis job to be processed.
-     *
-     * @param taskID the ID of the task to run.
-     * @param parmInfo the parameters to the process
-     * @return the job information for this process
-     * @exception is thrown if problems are encountered
-     */
-    public JobInfo submitJob(int taskID, ParameterInfo[] parmInfo, DataHandler dataHandler)
-    throws WebServiceException
-    {
-	Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are sometimes empty
-        // get the username
-        String username = getUsernameFromContext();
-        JobInfo jobInfo = null;
-        String dhFileName = null;
-        File inputFile = null;
-        String filename = "";
-        if (dataHandler != null) {
-            dhFileName = dataHandler.getName();
-            inputFile = new File(dhFileName);
-            filename = inputFile.getPath();
-            _cat.debug("File Name: " + inputFile.getName());
-            _cat.debug("File Path: " + inputFile.getPath());
-        }
-        try {
-            AddNewJobHandler req = new AddNewJobHandler(taskID, username, parmInfo, filename);
-            jobInfo = req.executeRequest();
-        }  catch (org.genepattern.webservice.OmnigeneException oe) {
-            _cat.error(oe.getMessage());
-            throw new WebServiceException(oe.getMessage());
-        }   catch (Throwable t) {
-             _cat.error(t.getMessage());
-            throw new WebServiceException(t.getMessage());
-        }
-        return jobInfo;
-    }
-    
- 
 
     /**
      * Submits an analysis job to be processed.
@@ -198,38 +159,6 @@ public class Analysis extends GenericWebService
         }
 
         return jobInfo;
-    }
-
-    /**
-     * Returns the results of a completed job.
-     *
-     * @param jobID the ID of the job that completed.
-     * @return the DataHandler containing the results for this process
-     * @exception is thrown if problems are encountered
-     */
-    public DataHandler getResults(int jobID) throws WebServiceException
-    {
-        JobInfo jobInfo = null;
-        DataHandler data = null;
-
-	Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are sometimes empty
-
-        try {
-            GetJobStatusHandler req = new GetJobStatusHandler(jobID);
-            jobInfo = req.executeRequest();
-            if(jobInfo!=null){
-                data = new DataHandler(new FileDataSource(new File(jobInfo.getResultFileName())));
-            }
-        }
-        catch (org.genepattern.webservice.OmnigeneException oe) {
-            _cat.error(oe.getMessage());
-            throw new WebServiceException(oe.getMessage());
-        }
-        catch (Throwable t) {
-            _cat.error(t.getMessage());
-            throw new WebServiceException(t.getMessage());
-        }
-        return data;
     }
 
     /**
@@ -348,20 +277,16 @@ public class Analysis extends GenericWebService
     public AnalysisJob[] getJobs() throws WebServiceException {
        try {
          org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference.getAnalysisJobDataSourceEJB();
-         JobInfo[] jobs = ds.getJobInfo(getUsernameFromContext());
+         AnalysisJob[] jobs = ds.getJobs(getUsernameFromContext());
          String server = (String) MessageContext.getCurrentContext().getProperty("transport.url");
         
          java.net.URL url = new java.net.URL(server);
          server = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();  
-         
-         AnalysisJob[] analysisJobs = new AnalysisJob[jobs.length];
+
          for(int i = 0; i < jobs.length; i++) {
-            String taskName = "TODO"; // FIXME
-            AnalysisJob analysisJob = new AnalysisJob(server, taskName, jobs[i]);
-            analysisJob.setLSID("TODO");
-            analysisJobs[i] = analysisJob;
+            jobs[i].setServer(server);
          }
-         return analysisJobs;
+         return jobs;
        } catch(Exception e) {
           throw new WebServiceException(e);  
        }
