@@ -31,9 +31,8 @@
   <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns3:ParmInfo" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.genepattern.webservice.ParameterInfo" xmlns:ns3="Analysis"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns4:ParmInfoArray" serializer="org.apache.axis.encoding.ser.ArraySerializerFactory" type="java:org.genepattern.webservice.ParameterInfo[]" xmlns:ns4="Analysis"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns5:JobInfo" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.genepattern.webservice.JobInfo" xmlns:ns5="Analysis"/>
- 
-  
-  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns8:FileWrapper" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.genepattern.webservice.FileWrapper" xmlns:ns8="Analysis"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns6:FileWrapper" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.genepattern.webservice.FileWrapper" xmlns:ns6="Analysis"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns7:AnalysisJob" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.genepattern.webservice.AnalysisJob" xmlns:ns7="Analysis"/>
  </service>
  
   <service name="Admin" provider="java:RPC">
