@@ -33,12 +33,23 @@ public class TaskLauncher {
 							.loadGPProperties());
 			for (int i = 0, length = paramInfos.length; i < length; i++) {
 				if (ParameterInfo.CACHED_INPUT_MODE.equals(paramInfos[i]
-						.getAttributes().get(ParameterInfo.MODE))) {// server
-																	// file
-					substitutions.put(paramInfos[i].getName(),
-							org.genepattern.gpge.io.ServerFileDataSource
-									.getFileDownloadURL(paramInfos[i]
-											.getValue()));
+						.getAttributes().get(ParameterInfo.MODE))) {// server file
+               String value = paramInfos[i].getValue();
+               int index1 = value.lastIndexOf('/');
+               int index2 = value.lastIndexOf('\\');
+               int index = (index1 > index2 ? index1 : index2);
+               if (index == -1) {
+                  GenePattern.showErrorDialog("An error occurred while running " + svc.getTaskInfo().getName());
+                  return;
+               }
+               
+               String jobNumber = value.substring(0, index);
+               String fileName = value.substring(index + 1, value
+                                 .length());
+               String downloadURL = svc.getServer() + "/gp/retrieveResults.jsp?job="
+                  + jobNumber + "&filename="
+                  + java.net.URLEncoder.encode(fileName, "UTF-8");
+               substitutions.put(paramInfos[i].getName(),downloadURL);		
 				} else {
 					substitutions.put(paramInfos[i].getName(), paramInfos[i]
 							.getValue());
