@@ -1044,7 +1044,7 @@ function sortSuggested(task1, task2) {
 				"Visualizer"
 				).toString();
 
-alert("comparing " + task1.name + " to " + task2.name);
+	// alert("comparing " + task1.name + " to " + task2.name);
 
 	var t1 = taskTypes.indexOf(task1.taskType);
 	var t2 = taskTypes.indexOf(task2.taskType);
