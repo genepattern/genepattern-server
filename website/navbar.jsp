@@ -305,7 +305,7 @@ function LSID(lsid) {
 		divBuff.append("-");
 	}
 	DIVIDER=divBuff.toString();
-System.out.println("   MAX=" + DIVIDER.length());
+
 
 	StringBuffer sbCatalog = new StringBuffer();
 	sbCatalog.append("<select name=\"" + selectorName + "\" onchange=\"");
