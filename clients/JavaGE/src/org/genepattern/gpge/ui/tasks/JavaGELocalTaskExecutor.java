@@ -74,7 +74,7 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 	public void exec() throws TaskExecException {
 		try {
 			super.exec();	
-			if(dataObjectBrowser.getMessage().endsWith(taskName)) {
+			if(dataObjectBrowser!=null && dataObjectBrowser.getMessage().endsWith(taskName)) {
 				dataObjectBrowser.setMessage(null);
 			}
 
