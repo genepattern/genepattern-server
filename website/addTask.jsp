@@ -1,5 +1,5 @@
-<%@ page import="org.genepattern.server.analysis.TaskInfo,
-		 org.genepattern.server.analysis.TaskInfoAttributes,
+<%@ page import="org.genepattern.analysis.TaskInfo,
+		 org.genepattern.analysis.TaskInfoAttributes,
 		 org.genepattern.server.analysis.ParameterInfo,
 		 org.genepattern.server.analysis.ParameterFormatConverter,
 		 org.genepattern.server.util.OmnigeneException,
@@ -7,6 +7,7 @@
 		 org.genepattern.server.analysis.genepattern.LSIDManager,
 		 org.genepattern.server.analysis.webservice.server.local.*,
 		 org.genepattern.util.LSID,
+		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.data.pipeline.PipelineModel,
 		 java.io.File,
@@ -68,7 +69,7 @@ if (taskName != null) {
 		        parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
 			tia = taskInfo.giveTaskInfoAttributes();
 			LSID lsid = new LSID((String)tia.get(GPConstants.LSID));
-			viewOnly |= !LSIDManager.getInstance().getAuthorityType(lsid).equals(LSIDManager.AUTHORITY_MINE);
+			viewOnly |= !LSIDManager.getInstance().getAuthorityType(lsid).equals(LSIDUtilAUTHORITY_MINE);
 		} else {
 %>
 <script language="javascript">
@@ -249,7 +250,7 @@ if (tia != null) {
 		sb.append("<option value=\"" + n + "\"" + (tia != null && n.equals((String)tia.get(GPConstants.LSID)) ? " selected" : "") + 
 				 " class=\"tasks-" + authorityType + "\">" + 
 				 (lsid != null ? ti.getName()  : name) + (!bMine ? owner : "") + 
-				 (authorityType.equals(LSIDManager.AUTHORITY_FOREIGN) ? (" (" + l.getAuthority() + ")") : "") +
+				 (authorityType.equals(LSIDUtil.AUTHORITY_FOREIGN) ? (" (" + l.getAuthority() + ")") : "") +
 				 "</option>\n");
 	}
 
@@ -288,7 +289,7 @@ if (tia != null) {
 
 Please enter the following information to submit a new or updated analysis task to GenePattern.
 &nbsp;&nbsp;<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="button">
-<% if (viewOnly && LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDManager.AUTHORITY_MINE)) { %><input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
+<% if (viewOnly && LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
 
 <br><br>
   <table cols="2" valign="top">

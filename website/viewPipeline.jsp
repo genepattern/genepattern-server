@@ -2,13 +2,14 @@
 		 org.genepattern.data.pipeline.*,
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.analysis.webservice.server.local.*,
-		 org.genepattern.server.analysis.TaskInfo,
+		 org.genepattern.analysis.TaskInfo,
 		 org.genepattern.server.analysis.genepattern.LSIDManager,
 		 org.genepattern.data.pipeline.*,
 		 org.genepattern.server.analysis.*,
        org.genepattern.server.webapp.RunPipelineForJsp,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.LSID,
+		 org.genepattern.util.LSIDUtil,
 		 java.util.Map,
 		 java.util.HashMap,
 		 java.util.*,
@@ -109,7 +110,7 @@ boolean showEdit = false;
 try {
 	LSIDManager manager = LSIDManager.getInstance();
 	String authority = manager.getAuthorityType(new org.genepattern.util.LSID(lsid));
-	if(authority.equals(LSIDManager.AUTHORITY_MINE)) {
+	if(authority.equals(LSIDUtil.AUTHORITY_MINE)) {
 		showEdit = task.getTaskInfoAttributes().get(GPConstants.PRIVACY).equals(GPConstants.PUBLIC) || task.getTaskInfoAttributes().get(GPConstants.USERID).equals(userID);
 	}
 } catch(Exception e){e.printStackTrace(System.out);}

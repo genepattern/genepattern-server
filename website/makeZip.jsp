@@ -1,5 +1,5 @@
-<%@ page import="org.genepattern.server.analysis.TaskInfo,
-		 org.genepattern.server.analysis.TaskInfoAttributes,
+<%@ page import="org.genepattern.analysis.TaskInfo,
+		 org.genepattern.analysis.TaskInfoAttributes,
 		 org.genepattern.server.analysis.ParameterInfo,
                  org.genepattern.server.process.ZipTask,
                  org.genepattern.server.process.ZipTaskWithDependents,

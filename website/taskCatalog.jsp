@@ -3,6 +3,7 @@
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.analysis.genepattern.TaskInstallationException,
 		 org.genepattern.server.analysis.genepattern.LSIDManager,
+		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.LSID,
 		 java.io.File,
@@ -557,7 +558,7 @@ Select from the following tasks from the GenePattern public access website to do
 <td valign="top" colspan="3">
 <span class="tasks-<%= lsidManager.getAuthorityType(lsid) %>">
 <b><%= fixupLinksInText((String)attributes.get(GPConstants.DESCRIPTION)) %></b>
-<% if (!authority.equals(lsidManager.BROAD_AUTHORITY)) { %>
+<% if (!authority.equals(LSIDUtil.BROAD_AUTHORITY)) { %>
 	<br>source: <%= GenePatternAnalysisTask.htmlEncode(authority) %>
 <% } %>
 </span>

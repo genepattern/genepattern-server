@@ -14,7 +14,7 @@
 	String pipelineName = request.getParameter(GPConstants.NAME);
 	String language = (request.getParameter("language") != null ? request.getParameter("language") : "R");
 	boolean download = (request.getParameter("download") != null); // true to download, false to just get text in browser
-	org.genepattern.server.analysis.TaskInfo taskInfo = null;
+	org.genepattern.analysis.TaskInfo taskInfo = null;
 	try {
 		taskInfo = GenePatternAnalysisTask.getTaskInfo(pipelineName, userID);
 	} catch(Exception e) {

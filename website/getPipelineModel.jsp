@@ -1,4 +1,4 @@
-<%@ page import="org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask, org.genepattern.server.analysis.TaskInfo,
+<%@ page import="org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask, org.genepattern.analysis.TaskInfo,
 		 org.genepattern.util.GPConstants,
 		 java.util.Map,
 		 org.genepattern.server.webapp.*"

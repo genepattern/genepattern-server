@@ -3,8 +3,9 @@
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.LSID,
+		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.server.analysis.genepattern.LSIDManager,
-		 org.genepattern.server.analysis.TaskInfo"
+		 org.genepattern.analysis.TaskInfo"
 	session="false" contentType="text/html" language="Java" buffer="100kb" %>
 <%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -13,7 +14,7 @@
 
 	String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
 	if (userID == null) return; // come back after login
-	if (request.getParameter(GenePatternAnalysisTask.NAME) != null && !request.getParameter(GenePatternAnalysisTask.NAME).equals("") && !LSIDManager.getInstance().getAuthorityType(new LSID(request.getParameter(GenePatternAnalysisTask.NAME))).equals(LSIDManager.AUTHORITY_MINE)) {
+	if (request.getParameter(GenePatternAnalysisTask.NAME) != null && !request.getParameter(GenePatternAnalysisTask.NAME).equals("") && !LSIDManager.getInstance().getAuthorityType(new LSID(request.getParameter(GenePatternAnalysisTask.NAME))).equals(LSIDUtil.AUTHORITY_MINE)) {
 		response.sendRedirect("viewPipeline.jsp?" + GenePatternAnalysisTask.NAME + "=" + request.getParameter(GenePatternAnalysisTask.NAME));
 	}
 %>
@@ -350,7 +351,7 @@ function LSID(lsid) {
 	this.namespace = tokens[3];
 	this.identifier = tokens[4];
 	this.version = tokens[5];
-	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>') ? 'mine' : (this.authority == '<%= LSIDManager.BROAD_AUTHORITY %>' ? 'broad' : 'foreign');
+	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>') ? 'mine' : (this.authority == '<%= LSIDUtil.BROAD_AUTHORITY %>' ? 'broad' : 'foreign');
 }
 
 // sort array of LSIDs alphabetically by name, then inverse by LSID (authority/namespace/identifier/version)

@@ -1,10 +1,11 @@
-<%@ page import="org.genepattern.server.analysis.TaskInfo,
-		 org.genepattern.server.analysis.TaskInfoAttributes,
+<%@ page import="org.genepattern.analysis.TaskInfo,
+		 org.genepattern.analysis.TaskInfoAttributes,
 		 org.genepattern.server.util.OmnigeneException,
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.analysis.webservice.server.local.*,
 		 org.genepattern.util.LSID,
 		 org.genepattern.server.analysis.genepattern.LSIDManager,
+		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.data.pipeline.PipelineModel,
 		 org.genepattern.server.webservice.WebServiceException,
@@ -173,9 +174,9 @@ for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 <!-- color key -->
 <tr>
 <td align="left" valign="top">
-color key: <b><span class="tasks-<%= LSIDManager.AUTHORITY_MINE %>">your tasks</span> |
-<span class="tasks-<%= LSIDManager.AUTHORITY_BROAD %>">Broad tasks</span> |
-<span class="tasks-<%= LSIDManager.AUTHORITY_FOREIGN %>">other tasks</span></b>
+color key: <b><span class="tasks-<%= LSIDUtil.AUTHORITY_MINE %>">your tasks</span> |
+<span class="tasks-<%= LSIDUtil.AUTHORITY_BROAD %>">Broad tasks</span> |
+<span class="tasks-<%= LSIDUtil.AUTHORITY_FOREIGN %>">other tasks</span></b>
 </td>
 <td align="left" colspan="2">
 	<input type="button" name="delete" value="delete selected modules" onclick="confirmDelete()">
@@ -238,7 +239,7 @@ for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 		<tr><td valign="top" rowspan="<%= numVersions %>">
 		<span class="tasks-<%= authorityType %>"><b><%= ti.getName() %></b></span>
 		<%= !bMine ? owner : "" %>
-		<%= authorityType.equals(LSIDManager.AUTHORITY_FOREIGN) ? (" (" + authority + ")") : "" %>
+		<%= authorityType.equals(LSIDUtil.AUTHORITY_FOREIGN) ? (" (" + authority + ")") : "" %>
 		<br><font size="1"><%= doDescription(ti.getDescription()) %></font>
 		</td>
 <%

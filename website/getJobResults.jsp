@@ -6,7 +6,7 @@
 		 org.genepattern.server.analysis.JobInfo,
 		 org.genepattern.server.analysis.JobStatus,
 		 org.genepattern.server.analysis.ParameterInfo,
-		 org.genepattern.server.analysis.TaskInfo,
+		 org.genepattern.analysis.TaskInfo,
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask"
 	session="false" contentType="text/html" language="Java" buffer="10kb" %><%
 

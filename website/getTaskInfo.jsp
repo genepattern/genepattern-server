@@ -1,8 +1,8 @@
 <%@ page import="java.util.HashMap,
 		 java.util.TreeMap,
 		 java.util.Iterator, java.io.File, 
-		 org.genepattern.server.analysis.TaskInfo,
-		 org.genepattern.server.analysis.TaskInfoAttributes,
+		 org.genepattern.analysis.TaskInfo,
+		 org.genepattern.analysis.TaskInfoAttributes,
 		 org.genepattern.server.util.OmnigeneException,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask"

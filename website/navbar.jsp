@@ -6,9 +6,10 @@
 		java.util.HashMap,
 		java.util.Set,
 		org.genepattern.server.analysis.genepattern.LSIDManager,
+		org.genepattern.util.LSIDUtil,
 		org.genepattern.util.LSID,
-		org.genepattern.server.analysis.TaskInfo,
-		org.genepattern.server.analysis.TaskInfoAttributes,
+		org.genepattern.analysis.TaskInfo,
+		org.genepattern.analysis.TaskInfoAttributes,
 		org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
 		org.genepattern.server.analysis.webservice.server.local.*,
 		org.genepattern.util.GPConstants,
@@ -105,7 +106,7 @@ function changeTask() {
 	var sel = document.forms['searchForm'].Task;
 	var taskLSID = sel[sel.selectedIndex].value;
 	var create = (sel.selectedIndex == 1);
-	if (new LSID(taskLSID).authorityType == '<%= LSIDManager.AUTHORITY_MINE %>' || create) {
+	if (new LSID(taskLSID).authorityType == '<%= LSIDUtil.AUTHORITY_MINE %>' || create) {
 		enableEdit = true;
 	} else {
 		enableEdit = false;
@@ -122,7 +123,7 @@ function changePipeline() {
 	var sel = document.forms['searchForm'].Pipeline;
 	var taskLSID = sel[sel.selectedIndex].value;
 	var create = (sel.selectedIndex == 1);
-	if (new LSID(taskLSID).authorityType == '<%= LSIDManager.AUTHORITY_MINE %>' || create) {
+	if (new LSID(taskLSID).authorityType == '<%= LSIDUtil.AUTHORITY_MINE %>' || create) {
 		enableEdit = true;
 	} else {
 		enableEdit = false;
@@ -137,7 +138,7 @@ function addNavbarItem(name, lsid) {
 	var taskType = name.substr(-(".<%= GPConstants.TASK_TYPE_PIPELINE %>".length)) == ".<%= GPConstants.TASK_TYPE_PIPELINE %>" ? "Pipeline" : "Task";
 	var selector = document.forms['searchForm'][taskType];
 	var l = new LSID(lsid);
-	if (l.authorityType == "<%= LSIDManager.AUTHORITY_FOREIGN %>") {
+	if (l.authorityType == "<%= LSIDUtil.AUTHORITY_FOREIGN %>") {
 		name = name + " (" + l.getAuthority() + ")";
 	}
 	for (i = 0; i < selector.options.length; i++) {
@@ -185,7 +186,7 @@ function LSID(lsid) {
 	this.namespace = tokens[3];
 	this.identifier = tokens[4];
 	this.version = tokens[5];
-	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>') ? '<%= LSIDManager.AUTHORITY_MINE %>' : (this.authority == '<%= LSIDManager.BROAD_AUTHORITY %>' ? '<%= LSIDManager.AUTHORITY_BROAD %>' : '<%= LSIDManager.AUTHORITY_FOREIGN %>');
+	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>') ? '<%= LSIDUtil.AUTHORITY_MINE %>' : (this.authority == '<%= LSIDUtil.BROAD_AUTHORITY %>' ? '<%= LSIDUtil.AUTHORITY_BROAD %>' : '<%= LSIDUtil.AUTHORITY_FOREIGN %>');
 }
 
 </script>
@@ -309,7 +310,7 @@ function LSID(lsid) {
 		if (isPublic || isMine) {
 			sbCatalog.append("<option value=\"" + (lsid != null ? l.toString() : name) +
 					 "\" class=\"navbar-tasks-" + authorityType + "\">" + taskInfo.getName() + 
-					 (authorityType.equals(LSIDManager.AUTHORITY_FOREIGN) ? (" (" + l.getAuthority() + ")") : "") +
+					 (authorityType.equals(LSIDUtil.AUTHORITY_FOREIGN) ? (" (" + l.getAuthority() + ")") : "") +
 					 "</option>\n");
 		}
 	}

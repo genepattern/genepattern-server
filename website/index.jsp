@@ -15,8 +15,9 @@
 		 org.genepattern.server.webapp.AbstractPipelineCodeGenerator,
 		 org.genepattern.util.LSID,
 		 org.genepattern.server.analysis.genepattern.LSIDManager,
-		 org.genepattern.server.analysis.TaskInfo,
-		 org.genepattern.server.analysis.TaskInfoAttributes,
+		 org.genepattern.util.LSIDUtil,
+		 org.genepattern.analysis.TaskInfo,
+		 org.genepattern.analysis.TaskInfoAttributes,
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.analysis.webservice.server.local.*,
 		 org.genepattern.util.GPConstants,
@@ -120,7 +121,7 @@ function taskSelect(selector, type) {
 	
 	// enable/disable the edit button for the task/pipeline depending on ownership
 	var enableEdit = true;
-	if (new LSID(lsidNoVersion).authorityType == '<%= LSIDManager.AUTHORITY_MINE %>') {
+	if (new LSID(lsidNoVersion).authorityType == '<%= LSIDUtil.AUTHORITY_MINE %>') {
 		enableEdit = true;
 	} else {
 		enableEdit = false;
@@ -185,7 +186,7 @@ function LSID(lsid) {
 	this.namespace = tokens[3];
 	this.identifier = tokens[4];
 	this.version = tokens[5];
-	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>') ? 'mine' : (this.authority == '<%= LSIDManager.BROAD_AUTHORITY %>' ? 'broad' : 'foreign');
+	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>') ? 'mine' : (this.authority == '<%= LSIDUtil.BROAD_AUTHORITY %>' ? 'broad' : 'foreign');
 }
 
 <% } %> 
@@ -535,7 +536,7 @@ taskSelect(document.forms['index'].task, 'task');
 		if (isPublic || isMine) {
 			sbCatalog.append("<option value=\"" + (lsid != null ? l.toStringNoVersion() : taskInfo.getName()) + 
 					 "\" class=\"tasks-" +  authorityType + "\">" + display + 
-					 (authorityType == LSIDManager.AUTHORITY_FOREIGN ? (" (" + l.getAuthority() + ")") : "") +
+					 (authorityType == LSIDUtil.AUTHORITY_FOREIGN ? (" (" + l.getAuthority() + ")") : "") +
 					 "</option>\n");
 		}
 	}

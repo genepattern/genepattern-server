@@ -6,8 +6,8 @@
 		 java.util.Hashtable,
 		 java.util.Iterator,
 		 com.jspsmart.upload.*,
-		 org.genepattern.server.analysis.TaskInfo,
-		 org.genepattern.server.analysis.TaskInfoAttributes,
+		 org.genepattern.analysis.TaskInfo,
+		 org.genepattern.analysis.TaskInfoAttributes,
 		 org.genepattern.server.analysis.webservice.server.local.*,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask"
