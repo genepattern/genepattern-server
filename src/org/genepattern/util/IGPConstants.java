@@ -125,9 +125,12 @@ public interface IGPConstants {
 
     public static final String LSID = "LSID";
     public static final String LSID_PROVENANCE = "LSID_PROVENANCE"; // lsid a task was derived from
+
+    public static final String DOMAIN = "domain";
+    public static final String FILE_FORMAT = "fileFormat";
    
     /** names of all expected TaskInfoAttributes from manifest file (or other new task submission) */
-    public static final String[] TASK_INFO_ATTRIBUTES = { COMMAND_LINE, TASK_TYPE, CLASSNAME, CPU_TYPE, OS, JVM_LEVEL, LANGUAGE, VERSION, AUTHOR, USERID, PRIVACY, QUALITY, PIPELINE_SCRIPT, LSID, SERIALIZED_MODEL };
+    public static final String[] TASK_INFO_ATTRIBUTES = { COMMAND_LINE, TASK_TYPE, CLASSNAME, CPU_TYPE, OS, JVM_LEVEL, LANGUAGE, VERSION, AUTHOR, USERID, PRIVACY, QUALITY, PIPELINE_SCRIPT, LSID, SERIALIZED_MODEL, DOMAIN, FILE_FORMAT };
     
     public static final char   PARAM_INFO_SPACER = '_'; // replace this character with a space for user presentation
     public static final String PARAM_INFO_TYPE_SEPARATOR = "=";
@@ -148,14 +151,18 @@ public interface IGPConstants {
     public static final int PARAM_INFO_NAME_OFFSET = 0; // offset into one of the following PARAM_INFO String arrays
     public static final int PARAM_INFO_TYPE_OFFSET = 1;
     public static final int PARAM_INFO_CHOICE_TYPES_OFFSET = 2;
+    public static final int PARAM_INFO_CHOICE_TYPES_MULTIPLE_OFFSET = 3;
+    public static final String MULTIPLE = "multiple";
     
     public static final String[] PARAM_INFO_CLIENT_FILENAME = { "client_filename", PARAM_INFO_STRING };
     public static final String[] PARAM_INFO_DEFAULT_VALUE = { "default_value", PARAM_INFO_STRING };
     public static final Object[] PARAM_INFO_TYPE = { "type", PARAM_INFO_CHOICE, PARAM_INFO_TYPES };
     public static final String[] PARAM_INFO_OPTIONAL = { "optional", PARAM_INFO_CHECKBOX };
     public static final String[] PARAM_INFO_PREFIX = { "prefix_when_specified", PARAM_INFO_STRING };
+    public static       Object[] PARAM_INFO_FILE_FORMAT = { "file_format", PARAM_INFO_CHOICE, null, MULTIPLE };
+    public static       Object[] PARAM_INFO_DOMAIN = { "domain", PARAM_INFO_CHOICE, null, MULTIPLE };
 
-    public static final Object[][] PARAM_INFO_ATTRIBUTES = { PARAM_INFO_DEFAULT_VALUE, PARAM_INFO_OPTIONAL, PARAM_INFO_PREFIX, PARAM_INFO_TYPE };
+    public static final Object[][] PARAM_INFO_ATTRIBUTES = { PARAM_INFO_DEFAULT_VALUE, PARAM_INFO_OPTIONAL, PARAM_INFO_PREFIX, PARAM_INFO_TYPE, PARAM_INFO_FILE_FORMAT, PARAM_INFO_DOMAIN };
 
     public static int MAX_PARAMETERS = 25;
     

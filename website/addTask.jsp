@@ -25,6 +25,7 @@
 		 java.util.List,
 		 java.util.Set,
 		 java.util.TreeSet,
+		 java.util.TreeMap,
 		 java.util.Vector"
 	session="false" contentType="text/html" language="Java" buffer="50kb" %>
 <%
@@ -50,7 +51,7 @@ int NUM_PARAMETERS = 5;
 int NUM_EXTRA_PARAMETERS = GPConstants.MAX_PARAMETERS - NUM_PARAMETERS;
 String DELETE = "delete";
 String CLONE = "clone";
-String RUN  = "run";
+String RUN = "run";
 String taskName = request.getParameter(GPConstants.NAME);
 String attributeName = null;
 String attributeValue = null;
@@ -156,7 +157,6 @@ function runTask() {
 	}
 }
 
-
 <% } %>
 
 function addNewTaskType() {
@@ -174,6 +174,42 @@ function addNewTaskType() {
 	}
 	fld.options[n] = new Option(newTaskType, newTaskType);
 	fld.options.selectedIndex = n;
+}
+
+function addNewFileType(name, desc){
+	var newDName = name;
+	var newDDesc = desc;
+	if (newDName == null || newDName== "" || newDDesc = null || newDDesc = "") return;
+	var fld = document.forms['task'].<%= GPConstants.FILE_FORMAT %>;
+	var n = fld.options.length;
+	var found = false;
+	for (i = 0; i < n; i++) {
+		if (fld.options[i].text == newDName) {
+			found = true;
+			fld.options.selectedIndex = i;
+			return;
+		}
+	}
+	fld.options[n] = new Option(newDName, newDDesc);
+	fld.options[n].selected = true;
+}
+
+function addNewDomainType(name, desc){
+	var newDName = name;
+	var newDDesc = desc;
+	if (newDName == null || newDName== "" || newDDesc = null || newDDesc = "") return;
+	var fld = document.forms['task'].<%= GPConstants.DOMAIN %>;
+	var n = fld.options.length;
+	var found = false;
+	for (i = 0; i < n; i++) {
+		if (fld.options[i].text == newDName) {
+			found = true;
+			fld.options.selectedIndex = i;
+			return;
+		}
+	}
+	fld.options[n] = new Option(newDName, newDDesc);
+	fld.options[n].selected = true;
 }
 
 function prototypeDoc() {
@@ -225,12 +261,63 @@ if (tia != null) {
 
 	String authorityType = null;
 
+	TreeMap tmDomains = new TreeMap();
+	TreeMap tmFileFormats = new TreeMap();
+	tmFileFormats.put("", "");
+	tmDomains.put("", "");
+	tmFileFormats.put("res", "res");
+	tmFileFormats.put("odf", "odf");
+	tmFileFormats.put("gct", "gct");
+	tmDomains.put("gene", "gene");
+	tmDomains.put("protien", "protien");
+
+	int DOMAIN_PARAM_OFFSET = -1;
+	for (int j = 0; j < GPConstants.PARAM_INFO_ATTRIBUTES.length; j++) {
+		if (GPConstants.PARAM_INFO_ATTRIBUTES[j] == GPConstants.PARAM_INFO_DOMAIN) {
+			DOMAIN_PARAM_OFFSET = j;
+			break;
+		}
+	}
+	int FILE_FORMAT_PARAM_OFFSET = -1;
+	for (int j = 0; j < GPConstants.PARAM_INFO_ATTRIBUTES.length; j++) {
+		if (GPConstants.PARAM_INFO_ATTRIBUTES[j] == GPConstants.PARAM_INFO_FILE_FORMAT) {
+			FILE_FORMAT_PARAM_OFFSET = j;
+			break;
+		}
+	}
+
 	for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 		TaskInfo ti = (TaskInfo)itTasks.next();
 		name = ti.getName();
 		description = ti.getDescription();
 		TaskInfoAttributes tia2 = ti.giveTaskInfoAttributes();
 		if (tia2 == null) continue;
+		
+		String domain = tia2.get(GPConstants.DOMAIN);
+		if (domain != null){
+			String[] domains = domain.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+			for(int x = 0; x<domains.length; x++){
+		 		tmDomains.put(domains[x], domains[x]);
+			}
+		}
+		String fileFormat = tia2.get(GPConstants.FILE_FORMAT);
+		if (fileFormat != null){
+		 	String [] fileFormats = fileFormat.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+			for (int y = 0; y< fileFormats.length; y++){
+			tmFileFormats.put(fileFormats[y], fileFormats[y]);
+			}
+		}	
+	        ParameterInfo[] pia = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
+		if (pia != null) {
+			for (int pNum = 0; pNum < pia.length; pNum++) {
+				HashMap pAttributes = pia[pNum].getAttributes();
+				domain = (String)pAttributes.get(GPConstants.DOMAIN);
+				if (domain != null) tmDomains.put(domain, domain);
+				fileFormat = (String)pAttributes.get(GPConstants.FILE_FORMAT);
+				if (fileFormat != null) tmFileFormats.put(fileFormat, fileFormat);
+			}
+		}
+
 		lsid = tia2.get(GPConstants.LSID);
 		try {
 			l = new LSID(lsid);
@@ -269,6 +356,22 @@ if (tia != null) {
 					return -(((String)v1).compareTo((String)v2));
 				}
 			});
+
+	String[][] fileFormats = new String[tmFileFormats.size()][2];
+	int i = 0;
+	for (Iterator itFileFormat = tmFileFormats.keySet().iterator(); itFileFormat.hasNext(); i++) {
+		String key = (String)itFileFormat.next();
+		fileFormats[i] = new String[] { key, key};
+	}
+	GPConstants.PARAM_INFO_ATTRIBUTES[FILE_FORMAT_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET] = fileFormats;
+
+	String[][] domains = new String[tmDomains.size()][2];
+	i = 0;
+	for (Iterator itDomain = tmDomains.keySet().iterator(); itDomain.hasNext(); i++) {
+		String key = (String)itDomain.next();
+		domains[i] = new String[] { key, key};
+	}
+	GPConstants.PARAM_INFO_ATTRIBUTES[DOMAIN_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET] = domains;
 
 	if (tia != null) {
 		lsid = tia.get(GPConstants.LSID);
@@ -318,8 +421,6 @@ Please enter the following information to submit a new or updated analysis task 
 <% if (taskInfo != null) { %>
   <input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
   <input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
-  
-
 <% } %>
 
    &nbsp;&nbsp;&nbsp;<select onchange="javascript:if (this.options[this.selectedIndex].value != '<%= DONT_JUMP %>') window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'">
@@ -420,7 +521,7 @@ if (taskName != null) {
 %><b>Documentation:</b></td><td width="*"><%
 	}
 	if (hasDoc) { 
- 		for (int i = 0; i < docFiles.length; i++) { %>
+ 		for (i = 0; i < docFiles.length; i++) { %>
 <a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= GenePatternAnalysisTask.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>" target="new"><%= GenePatternAnalysisTask.htmlEncode(docFiles[i].getName()) %></a> 
 <% 		} 
  	}
@@ -505,6 +606,84 @@ if (taskName != null) {
    </td>
    </tr>
 
+   <tr>
+   <td><b>output description</b></td>
+   <td>
+	<table>
+	<tr>
+	<td valign="top">
+	domain(s):
+	</td>
+	<td valign="top">
+	<select multiple name="<%= GPConstants.DOMAIN %>">
+<%
+	{
+		attributeValue = tia.get(GPConstants.DOMAIN);
+
+		if (attributeValue == null) attributeValue = "";
+		String[] taskDomains = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+		String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[DOMAIN_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
+		//the first (0) is a blank
+
+		System.out.println("domain offset: " + DOMAIN_PARAM_OFFSET);
+		for(Iterator itChoices = tmDomains.values().iterator(); itChoices.hasNext(); ) {
+			String c = (String)itChoices.next();
+			boolean isSelected = false;
+			for (i = DOMAIN_PARAM_OFFSET; i < taskDomains.length; i++) {
+				if (c.equals(taskDomains[i])) {
+					isSelected = true;
+					break;
+				}
+			}
+		
+			out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + GenePatternAnalysisTask.htmlEncode(c) + "</option>");
+		}
+	}
+%>
+	</select>
+	</td>
+  <% if (!viewOnly) { %>
+  	<td valign="top">         
+	 <input type="button" onclick="window.open('newDomain.html', 'newDomain', 'width=200,height=200')"  value="new..." class="little">
+  	</td>
+  <% } %>
+	<td valign="top">
+		output file format(s):
+	</td>
+	<td valign="top">	
+		<select multiple name="<%= GPConstants.FILE_FORMAT %>">
+<%
+	{
+		attributeValue = tia.get(GPConstants.FILE_FORMAT);
+		if (attributeValue == null) attributeValue = "";
+		String[] file_formats = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+		String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[FILE_FORMAT_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
+		for (int choice = 1; choice < choices.length; choice++) { 
+			String c = choices[choice][1];
+			boolean isSelected = false;
+			for (i = 0; i < file_formats.length; i++) {
+				if (c.equals(file_formats[i])) {
+					isSelected = true;
+					break;
+				}
+			}
+			out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + GenePatternAnalysisTask.htmlEncode(choices[choice][0]) + "</option>");
+		}
+	}
+%>
+		</select>
+	</td>
+  <% if (!viewOnly) { %>
+  	<td valign="top">         
+	 <input type="button" onclick="window.open('newFileType.html', 'newFileType', , 'width=200,height=200')" value="new..." class="little">
+  	</td>
+   <% }%>
+	</tr>
+	</table>
+
+   </td>
+   </tr>
+
   <% if (!viewOnly) { %>
    <tr>
   <td align="right" valign="top"><b>Support&nbsp;files:</b><br>(jar, dll, exe, pl, doc, etc.)<br>
@@ -514,7 +693,7 @@ if (taskName != null) {
   The actual program plus any required libraries will will be accessible to your command line as 
   &lt;<%= GPConstants.LIBDIR %>&gt;<file.separator><i>filename</i></font><br>
 
-<% for (int i = 1; i <= NUM_ATTACHMENTS; i++) { %>
+<% for (i = 1; i <= NUM_ATTACHMENTS; i++) { %>
   	<input type="file" name="file<%= i %>" size="70" class="little"><br>
 <% } %>
   </td>
@@ -528,7 +707,7 @@ if (taskName != null) {
    if (taskName != null) {
 	   File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
 	   
-	   for (int i = 0; i < allFiles.length; i++) { %>
+	   for (i = 0; i < allFiles.length; i++) { %>
 		<a href="getFile.jsp?task=<%= (String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%= URLEncoder.encode(allFiles[i].getName()) %>" target="new"><%= GenePatternAnalysisTask.htmlEncode(allFiles[i].getName()) %></a> 
 <%	   }  %>
 
@@ -536,7 +715,7 @@ if (taskName != null) {
 		   <br>
 		   <select name="deleteFiles">
 		   <option value="">delete support files...</option>
-<%		   for (int i = 0; i < allFiles.length; i++) { %>
+<%		   for (i = 0; i < allFiles.length; i++) { %>
 			<option value="<%= GenePatternAnalysisTask.htmlEncode(allFiles[i].getName()) %>"><%= allFiles[i].getName() %></option> 
 <%		   }  %>
 		   </select>
@@ -560,8 +739,11 @@ if (taskName != null) {
   <td width="20%" valign="bottom"><b>name</b></td>
   <td width="30%" valign="bottom"><b>description (optional)</b></td>
   <td width="20" valign="bottom"><b>choices</b><br><font size="-1">(optional semicolon-separated list of choices.)</font></td>
-<% for (int attribute = 0; attribute < GPConstants.PARAM_INFO_ATTRIBUTES.length; attribute++) { 
-		attributeName = ((String)GPConstants.PARAM_INFO_ATTRIBUTES[attribute][GPConstants.PARAM_INFO_NAME_OFFSET]).replace(GPConstants.PARAM_INFO_SPACER, ' ');
+<% 
+  for (int attribute = 0; attribute < GPConstants.PARAM_INFO_ATTRIBUTES.length; attribute++) { 
+		attributeName = ((String)GPConstants.PARAM_INFO_ATTRIBUTES[attribute][GPConstants.PARAM_INFO_NAME_OFFSET]);
+		if (attributeName != null) attributeName = attributeName.replace(GPConstants.PARAM_INFO_SPACER, ' ');
+
 %>
   <td valign="bottom"><b><%= attributeName %></b></td>
 <% } %>
@@ -612,7 +794,6 @@ if (taskName != null) {
 <%	} else { %>
 		<input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
 		<input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
- 		
 <% 	} 
   }
 %>
@@ -733,9 +914,11 @@ for (int i = from; i < to; i++) {
 			if (attributeValue == null) {
 				attributeValue = "";
 			}
-			String[][]choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
+			String[][]choices = null;
+			choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
+			boolean multiple = (GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum].length > GPConstants.PARAM_INFO_CHOICE_TYPES_MULTIPLE_OFFSET);
 			if (!viewOnly) {
-				out.append("<select name=\"p" + i + "_" + attributeName + "\">\n");
+				out.append("<select name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple size=\"1\"" : "") + ">\n");
 				for (int choice = 0; choice < choices.length; choice++) { 
 					out.append("<option value=\"" + choices[choice][1] + "\"" + (choices[choice][1].equals(attributeValue) ? " selected" : "") + ">" + GenePatternAnalysisTask.htmlEncode(choices[choice][0]) + "</option>\n");
 				}
@@ -767,3 +950,4 @@ for (int i = from; i < to; i++) {
  return out.toString();
 } // end of method
 %>
+

@@ -103,7 +103,6 @@ File dir = null;
 // delete task
 if (requestParameters.getParameter("delete") != null || request.getParameter("delete") != null) {
 	try {
-      out.println(lsid);
 		taskIntegratorClient.deleteTask(lsid);
 %>
 		<jsp:include page="navbar.jsp"></jsp:include>
@@ -146,8 +145,6 @@ if (forward== null) forward = "addTask.jsp";
 			if (lsid != null) { 
 				response.sendRedirect(forward + "?" + GPConstants.NAME + "=" + lsid);
 				return;
-
-
 			} else { %>
 				<jsp:include page="navbar.jsp"></jsp:include>
 				Unable to delete <%= filename %> from <%= taskName %> support files.<br>
@@ -282,8 +279,17 @@ for (i = 0; i < numParameterInfos; i++) {
 TaskInfoAttributes tia = new TaskInfoAttributes();
 for (i = 0; i < GPConstants.TASK_INFO_ATTRIBUTES.length; i++) {
 	key = GPConstants.TASK_INFO_ATTRIBUTES[i];
-	value = requestParameters.getParameter(key);
-//	if (value != null && value.length() > 0) out.println(key + "='" + GenePatternAnalysisTask.htmlEncode(value) + "'<br>");
+	String[] values = requestParameters.getParameterValues(key);
+
+	value = "";
+	
+	for (int x=0; values!=null && x < values.length ; x++){
+	 	if (x > 0) {
+			value = value + GPConstants.PARAM_INFO_CHOICE_DELIMITER;
+		}
+		value += values[x];
+	}
+	
 	tia.put(key, value);
 }
 
@@ -301,13 +307,14 @@ access_id = requestParameters.getParameter(GPConstants.PRIVACY).equals(GPConstan
 Vector vProblems = null;
 try {
 	// merge old support files with newly submitted ones!
-   javax.activation.DataHandler[] supportFiles = null;
-   String[] supportFileNames = null;
-   try {
-      supportFiles = taskIntegratorClient.getSupportFiles(lsid);
-      supportFileNames = taskIntegratorClient.getSupportFileNames(lsid);
-   } catch(WebServiceException wse) {
-   }
+
+	javax.activation.DataHandler[] supportFiles = null;
+	String[] supportFileNames = null;
+	try {
+	      supportFiles = taskIntegratorClient.getSupportFiles(lsid);
+	      supportFileNames = taskIntegratorClient.getSupportFileNames(lsid);
+	} catch(WebServiceException wse) {
+	}
    
 	lsid = (String)tia.get(GPConstants.LSID);
 	lsid = taskIntegratorClient.modifyTask(access_id, 
@@ -462,14 +469,14 @@ timeMS dateTime loginId taskType moduleName  manifest supportFilesChanges URLToE
 <% } catch (Exception e) { %>
 	install of <%= taskName %> task failed: <%= e.getMessage() %>
 	<br><pre>
-   <%
-   try {
-  java.io.PrintWriter pw = new java.io.PrintWriter(out);
-   
-	 e.printStackTrace(pw);
-    pw.close();
-    } catch(Throwable t){}
-    %>
+<%
+	try {
+		java.io.PrintWriter pw = new java.io.PrintWriter(out);
+	   
+		e.printStackTrace(pw);
+		pw.close();
+	} catch(Throwable t){}
+%>
 	</pre><br>
 	<a href="javascript:history.back()">back</a>
 <% } %>
