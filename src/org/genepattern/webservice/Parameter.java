@@ -1,4 +1,4 @@
-package org.genepattern.client;
+package org.genepattern.webservice;
 import java.io.File;
 import java.io.IOException;
 

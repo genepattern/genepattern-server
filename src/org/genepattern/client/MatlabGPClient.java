@@ -2,9 +2,10 @@ package org.genepattern.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.WebServiceException;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  *  This class is used to communicate with a GenePattern server.

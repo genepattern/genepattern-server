@@ -7,7 +7,7 @@ package org.genepattern.server.analysis;
  * @author Rajesh Kuttan
  * @version 1.0
  */
-import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.webservice.OmnigeneException;
 
 public class JobIDNotFoundException extends OmnigeneException {
 

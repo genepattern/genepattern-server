@@ -45,18 +45,18 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.genepattern.analysis.JobInfo;
-import org.genepattern.analysis.JobStatus;
-import org.genepattern.analysis.OmnigeneException;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.TaskInfoAttributes;
 import org.genepattern.server.analysis.AnalysisServiceException;
 import org.genepattern.server.analysis.dbloader.DBLoader;
 import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
 import org.genepattern.server.util.BeanReference;
 import org.genepattern.util.IGPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.JobStatus;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 
 /**
  * Enables definition, execution, and sharing of AnalysisTasks using extensive metadata descriptions and obviating programming
@@ -113,7 +113,7 @@ import org.genepattern.util.LSID;
  * @author Jim Lerner
  * @version 1.0
  * @see org.genepattern.server.analysis.AnalysisTask
- * @see org.genepattern.analysis.TaskInfoAttributes
+ * @see org.genepattern.webservice.TaskInfoAttributes
  */
 
 public class GenePatternAnalysisTask implements IGPConstants {
@@ -2418,7 +2418,7 @@ next_parameter:
      * @param additionalParams	array of ParameterInfo objects which represent additional output parameters from the pipeline job
      * @throws OmnigeneException if thrown by Omnigene
      * @throws RemoteException	if thrown by Omnigene
-     * @see org.genepattern.analysis.JobStatus
+     * @see org.genepattern.webservice.JobStatus
      * @author Jim Lerner
      */
     public static void updatePipelineStatus(int jobNumber, int jobStatus, ParameterInfo[] additionalParams) throws OmnigeneException,RemoteException {
@@ -2445,7 +2445,7 @@ next_parameter:
      * @param additionalFilename optional filename of output file for this job
      * @throws OmnigeneException if thrown by Omnigene
      * @throws RemoteException	if thrown by Omnigene
-     * @see org.genepattern.analysis.JobStatus
+     * @see org.genepattern.webservice.JobStatus
      * @author Jim Lerner
      */
     public static void updatePipelineStatus(int jobNumber, int jobStatus, String name, String additionalFilename) throws OmnigeneException,RemoteException {

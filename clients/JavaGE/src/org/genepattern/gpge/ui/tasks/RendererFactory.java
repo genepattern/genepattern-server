@@ -6,7 +6,7 @@
 
 package org.genepattern.gpge.ui.tasks;
 
-import org.genepattern.client.AnalysisService;
+import org.genepattern.webservice.AnalysisService;
 
 /**
  *

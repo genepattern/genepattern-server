@@ -15,8 +15,8 @@ import javax.swing.JTextArea;
 import javax.swing.tree.TreeModel;
 
 import org.apache.log4j.Category;
-import org.genepattern.analysis.WebServiceException;
-import org.genepattern.client.RequestHandlerFactory;
+import org.genepattern.webservice.RequestHandlerFactory;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * <p>Title: FileNode.java </p>

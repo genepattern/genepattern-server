@@ -31,7 +31,7 @@ public class ServerDataSource extends GroupDataSource implements java.util.Obser
      * This will be aware of the specified directory and all
      * data files there.
      */
-    public ServerDataSource(final org.genepattern.gpge.ui.tasks.DataModel analysis_model, final org.genepattern.gpge.ui.tasks.ResultsPanel analysis_results_panel, final DataParser[] parsers/*DataSource[] sources*/) throws java.io.IOException, org.genepattern.analysis.PropertyNotFoundException {
+    public ServerDataSource(final org.genepattern.gpge.ui.tasks.DataModel analysis_model, final org.genepattern.gpge.ui.tasks.ResultsPanel analysis_results_panel, final DataParser[] parsers/*DataSource[] sources*/) throws java.io.IOException, org.genepattern.webservice.PropertyNotFoundException {
         super(createSources(parsers), null, null, parsers);
         this.analysis_model = analysis_model;
         this.analysis_results_panel = analysis_results_panel;

@@ -15,14 +15,14 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.genepattern.analysis.JobInfo;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.client.AnalysisJob;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.io.UniversalDecoder;
 import org.genepattern.io.parsers.DataParser;
 import org.genepattern.io.parsers.TextParser;
 import org.genepattern.util.ArrayUtils;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
 
 /**
  *  Knows how to identify remote Jobs from the server and create ServerFileDataSource

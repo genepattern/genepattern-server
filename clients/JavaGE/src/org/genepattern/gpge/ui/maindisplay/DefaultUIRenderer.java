@@ -32,9 +32,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.client.AnalysisService;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.io.AbstractDataSource;
 import org.genepattern.gpge.io.DataObjectProxy;
@@ -48,6 +45,9 @@ import org.genepattern.modules.ui.graphics.IntegerField;
 import org.genepattern.util.ExceptionHandler;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.PropertyFactory;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 /**
  *@author     kohm
  *@created    February 9, 2004

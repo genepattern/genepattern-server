@@ -16,14 +16,14 @@ import javax.xml.soap.SOAPException;
 import org.apache.axis.MessageContext;
 import org.apache.axis.attachments.AttachmentPart;
 import org.apache.log4j.Category;
-import org.genepattern.analysis.FileWrapper;
-import org.genepattern.analysis.JobInfo;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.WebServiceException;
 import org.genepattern.server.analysis.handler.AddNewJobHandler;
 import org.genepattern.server.analysis.handler.GetJobStatusHandler;
 import org.genepattern.server.webservice.GenericWebService;
+import org.genepattern.webservice.FileWrapper;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * Analysis Web Service.
@@ -90,7 +90,7 @@ public class Analysis extends GenericWebService
         try {
             AddNewJobHandler req = new AddNewJobHandler(taskID, username, parmInfo, filename);
             jobInfo = req.executeRequest();
-        }  catch (org.genepattern.analysis.OmnigeneException oe) {
+        }  catch (org.genepattern.webservice.OmnigeneException oe) {
             _cat.error(oe.getMessage());
             throw new WebServiceException(oe.getMessage());
         }   catch (Throwable t) {
@@ -155,7 +155,7 @@ public class Analysis extends GenericWebService
             AddNewJobHandler req = new AddNewJobHandler(taskID, username, parameters, "");
             jobInfo = req.executeRequest();
         }
-        catch (org.genepattern.analysis.OmnigeneException oe) {
+        catch (org.genepattern.webservice.OmnigeneException oe) {
             _cat.error(oe.getMessage());
 	    oe.printStackTrace();
             throw new WebServiceException(oe.getMessage());
@@ -186,7 +186,7 @@ public class Analysis extends GenericWebService
             GetJobStatusHandler req = new GetJobStatusHandler(jobID);
             jobInfo = req.executeRequest();
         }
-        catch (org.genepattern.analysis.OmnigeneException oe) {
+        catch (org.genepattern.webservice.OmnigeneException oe) {
             _cat.error(oe.getMessage());
             throw new WebServiceException(oe.getMessage());
         }
@@ -220,7 +220,7 @@ public class Analysis extends GenericWebService
                 data = new DataHandler(new FileDataSource(new File(jobInfo.getResultFileName())));
             }
         }
-        catch (org.genepattern.analysis.OmnigeneException oe) {
+        catch (org.genepattern.webservice.OmnigeneException oe) {
             _cat.error(oe.getMessage());
             throw new WebServiceException(oe.getMessage());
         }
@@ -249,7 +249,7 @@ public class Analysis extends GenericWebService
             GetJobStatusHandler req = new GetJobStatusHandler(jobID);
             jobInfo = req.executeRequest();
         }
-        catch (org.genepattern.analysis.OmnigeneException oe) {
+        catch (org.genepattern.webservice.OmnigeneException oe) {
             _cat.error(oe.getMessage());
             throw new WebServiceException(oe.getMessage());
         }

@@ -2,8 +2,8 @@ package org.genepattern.server.analysis.webservice.server;
 
 import java.util.Map;
 
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.WebServiceException;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 
 /**

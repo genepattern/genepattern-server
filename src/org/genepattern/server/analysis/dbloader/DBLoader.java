@@ -2,13 +2,13 @@ package org.genepattern.server.analysis.dbloader;
 
 import java.rmi.RemoteException;
 
-import org.genepattern.analysis.OmnigeneException;
-import org.genepattern.analysis.ParameterFormatConverter;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfoAttributes;
 import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
 import org.genepattern.server.util.BeanReference;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterFormatConverter;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 
 /**
  * <p>Title: DBLoader.java </p>

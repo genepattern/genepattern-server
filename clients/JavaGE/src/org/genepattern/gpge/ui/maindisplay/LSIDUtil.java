@@ -1,7 +1,7 @@
 package org.genepattern.gpge.ui.maindisplay;
-import org.genepattern.analysis.TaskInfo;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.TaskInfo;
 
 /**
  *@author    Joshua Gould

@@ -5,7 +5,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Vector;
 
-import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.webservice.ParameterInfo;
 
 public class JobSubmission implements Serializable {
 

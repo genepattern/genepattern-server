@@ -10,11 +10,11 @@ import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Properties;
 
-import org.genepattern.analysis.TaskInfo;
 import org.genepattern.client.LocalTaskExecutor;
 import org.genepattern.client.RunTaskException;
 import org.genepattern.gpge.ui.maindisplay.DataObjectBrowser;
 import org.genepattern.io.StorageUtils;
+import org.genepattern.webservice.TaskInfo;
 
 /**
  *@author     Joshua Gould

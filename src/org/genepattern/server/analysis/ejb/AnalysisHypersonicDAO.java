@@ -15,12 +15,6 @@ import java.util.Vector;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.genepattern.analysis.JobInfo;
-import org.genepattern.analysis.OmnigeneException;
-import org.genepattern.analysis.ParameterFormatConverter;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.TaskInfoAttributes;
 import org.genepattern.server.analysis.AnalysisManager;
 import org.genepattern.server.analysis.JobIDNotFoundException;
 import org.genepattern.server.analysis.TaskIDNotFoundException;
@@ -30,6 +24,12 @@ import org.genepattern.server.analysis.webservice.server.dao.AdminDAOSysExceptio
 import org.genepattern.server.analysis.webservice.server.dao.AdminHSQLDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterFormatConverter;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 
 
 /**

@@ -151,14 +151,14 @@ public class DataHandlerOmniView implements ExceptionListener {
         }
         try {
             // JobInfo
-            makeTransient(org.genepattern.analysis.JobInfo.class, new String[]{"parameterInfo"});
+            makeTransient(org.genepattern.webservice.JobInfo.class, new String[]{"parameterInfo"});
         } catch (Throwable t) {
             //FIXME need to report error
             System.err.println(t);
         }
         // ParameterInfo
         try {
-            makeTransient(org.genepattern.analysis.ParameterInfo.class, 
+            makeTransient(org.genepattern.webservice.ParameterInfo.class, 
                 new String[]{"inputFile", "label", "outputFile", });
         } catch (Throwable t) {
             //FIXME need to report error
@@ -168,7 +168,7 @@ public class DataHandlerOmniView implements ExceptionListener {
         //AnalysisJob
         final Encoder encoder = new Encoder();
         encoder.setPersistenceDelegate(DataModel.class, new DataModelPersistenceDelegate());
-        encoder.setPersistenceDelegate(org.genepattern.client.AnalysisJob.class,
+        encoder.setPersistenceDelegate(org.genepattern.webservice.AnalysisJob.class,
                          new DefaultPersistenceDelegate(
                              new String[]{ "siteName",
                                            "taskName",

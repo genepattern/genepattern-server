@@ -8,13 +8,13 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.genepattern.analysis.JobInfo;
-import org.genepattern.analysis.ParameterInfo;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.StringUtils;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.PropertyFactory;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
 
 public class RunPipelineNullDecorator implements RunPipelineOutputDecoratorIF {
 	PipelineModel model = null;

@@ -23,11 +23,11 @@ import java.util.Vector;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.genepattern.analysis.OmnigeneException;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;

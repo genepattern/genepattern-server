@@ -2,10 +2,10 @@ package org.genepattern.client;
 
 import java.io.PrintStream;
 
-import org.genepattern.analysis.JobInfo;
-import org.genepattern.analysis.ParameterInfo;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
 
 public class RunPipelineBasicDecorator implements RunPipelineOutputDecoratorIF {
 	PrintStream out = System.out;

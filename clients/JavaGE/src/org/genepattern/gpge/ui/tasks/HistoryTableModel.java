@@ -5,7 +5,7 @@ import java.util.Vector;
 import javax.swing.table.AbstractTableModel;
 
 import org.apache.log4j.Category;
-import org.genepattern.client.AnalysisJob;
+import org.genepattern.webservice.AnalysisJob;
 
 /**
  * HistoryTableModel.java

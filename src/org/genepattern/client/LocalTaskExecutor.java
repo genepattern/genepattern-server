@@ -21,10 +21,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.TaskIntegratorProxy;
-import org.genepattern.analysis.WebServiceException;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskIntegratorProxy;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  *@author     Joshua Gould
@@ -260,7 +260,7 @@ public class LocalTaskExecutor extends TaskExecutor {
 	
 	 *@exception  IOException
 	 *      Description of the Exception
-	 *@exception  org.genepattern.analysis.WebServiceException
+	 *@exception  org.genepattern.webservice.WebServiceException
 	 *      Description of the Exception
 	 */
 	 

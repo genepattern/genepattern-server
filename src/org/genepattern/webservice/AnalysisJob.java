@@ -1,9 +1,8 @@
-package org.genepattern.client;
+package org.genepattern.webservice;
 
 
 import java.io.Serializable;
 
-import org.genepattern.analysis.JobInfo;
 
 /**
  * <p>Title: AnalysisJob.java</p>

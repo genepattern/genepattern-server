@@ -10,9 +10,9 @@ package org.genepattern.server.analysis;
 
 import java.rmi.RemoteException;
 
-import org.genepattern.analysis.OmnigeneException;
 import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
 import org.genepattern.server.util.BeanReference;
+import org.genepattern.webservice.OmnigeneException;
 
 public class AnalysisManager {
 

@@ -3,7 +3,7 @@ package org.genepattern.server.webapp;
 
 import java.util.Collection;
 
-import org.genepattern.analysis.TaskInfo;
+import org.genepattern.webservice.TaskInfo;
 
 public interface IPipelineView {
 	public void init(Collection tmTasks, String userID);

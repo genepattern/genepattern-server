@@ -6,10 +6,10 @@ import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.log4j.Category;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.WebServiceException;
-import org.genepattern.client.AnalysisService;
-import org.genepattern.client.RequestHandlerFactory;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.RequestHandlerFactory;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * PanelGenerator.java
@@ -47,7 +47,7 @@ public class PanelGenerator {
 			  Properties p = property.getProperties("omnigene.properties");
 			  String url = p.getProperty("analysis.service.URL");
 			  String siteName = p.getProperty("analysis.service.site.name", "Broad Institute");
-			  TaskInfo[] tasks = new org.genepattern.analysis.AdminProxy(siteName, username, false).getLatestTasks();
+			  TaskInfo[] tasks = new org.genepattern.webservice.AdminProxy(siteName, username, false).getLatestTasks();
 			  services = new Vector();
 			  for(int i = 0; i < tasks.length; i++) {
 				  services.add(new AnalysisService(siteName, url, tasks[i]));

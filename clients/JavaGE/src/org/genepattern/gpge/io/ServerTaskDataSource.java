@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.client.AnalysisJob;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.io.parsers.DataParser;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.ParameterInfo;
 
 /**
  *  Knows how to create ServerJobDataSource objects from the server

@@ -6,13 +6,13 @@ import java.util.Observer;
 import java.util.Vector;
 
 import org.apache.log4j.Category;
-import org.genepattern.analysis.JobInfo;
-import org.genepattern.analysis.JobStatus;
-import org.genepattern.analysis.WebServiceException;
-import org.genepattern.client.AnalysisJob;
-import org.genepattern.client.RequestHandler;
-import org.genepattern.client.RequestHandlerFactory;
 import org.genepattern.gpge.GenePattern;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.JobStatus;
+import org.genepattern.webservice.RequestHandler;
+import org.genepattern.webservice.RequestHandlerFactory;
+import org.genepattern.webservice.WebServiceException;
 
 
 /**

@@ -89,7 +89,7 @@ public class DataTree implements org.genepattern.gpge.io.DataSourceManager {
 					if(obj instanceof DefaultMutableTreeNode && ((DefaultMutableTreeNode)obj).getUserObject() instanceof org.genepattern.gpge.io.ServerJobDataSource ) {
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) obj;
 						org.genepattern.gpge.io.ServerJobDataSource ds = (org.genepattern.gpge.io.ServerJobDataSource) node.getUserObject();
-						org.genepattern.client.AnalysisJob job = ds.getJob();
+						org.genepattern.webservice.AnalysisJob job = ds.getJob();
 						
 						if(node.getChildCount()==0) { // job has no output files
 							if(node.getParent().getChildCount() == 1) { // remove task from tree
@@ -233,8 +233,8 @@ public class DataTree implements org.genepattern.gpge.io.DataSourceManager {
 
 							org.genepattern.gpge.io.ServerJobDataSource ds = (org.genepattern.gpge.io.ServerJobDataSource)jobNode.getUserObject();
 
-							org.genepattern.client.AnalysisJob job = ds.getJob();// get the job for this
-							org.genepattern.analysis.JobInfo jobInfo = job.getJobInfo();
+							org.genepattern.webservice.AnalysisJob job = ds.getJob();// get the job for this
+							org.genepattern.webservice.JobInfo jobInfo = job.getJobInfo();
 							jobInfo.removeParameterInfo(user_obj.toString());
 							DefaultMutableTreeNode dataTypeNode = (DefaultMutableTreeNode)node.getParent();
 							if(dataTypeNode.getChildCount() == 1) {
@@ -859,7 +859,7 @@ public class DataTree implements org.genepattern.gpge.io.DataSourceManager {
 								((DefaultTreeModel)data_tree.getModel()).removeNodeFromParent(selected_node);
 							} else {// remove job
 								org.genepattern.gpge.io.ServerJobDataSource ds = (org.genepattern.gpge.io.ServerJobDataSource)selected_node.getUserObject();
-								org.genepattern.client.AnalysisJob job = ds.getJob();
+								org.genepattern.webservice.AnalysisJob job = ds.getJob();
 								int choice = JOptionPane.showConfirmDialog(GenePattern.getDialogParent(),
 										"Do you want to remove job number "
 										 + job + " from your job results?",

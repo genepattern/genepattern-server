@@ -6,7 +6,7 @@
 
 package org.genepattern.gpge.ui.tasks;
  
-import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.webservice.ParameterInfo;
 
 /**
  * interface defines how to get entered parameter values.

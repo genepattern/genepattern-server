@@ -7,14 +7,14 @@ import java.util.Enumeration;
 import java.util.Vector;
 import java.util.zip.ZipOutputStream;
 
-import org.genepattern.analysis.OmnigeneException;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.TaskInfoAttributes;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 
        
 

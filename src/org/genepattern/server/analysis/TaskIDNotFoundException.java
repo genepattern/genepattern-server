@@ -2,7 +2,7 @@
 package org.genepattern.server.analysis;
 
 
-import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.webservice.OmnigeneException;
 /**
  * This Exception is used when Taskid is not found in analysis service
  *

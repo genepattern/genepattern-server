@@ -33,20 +33,20 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import org.apache.log4j.Category;
-import org.genepattern.analysis.JobInfo;
-import org.genepattern.analysis.OmnigeneException;
-import org.genepattern.analysis.ParameterFormatConverter;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.WebServiceException;
-import org.genepattern.client.AnalysisJob;
-import org.genepattern.client.AnalysisService;
-import org.genepattern.client.RequestHandler;
-import org.genepattern.client.RequestHandlerFactory;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.maindisplay.DataObjectBrowser;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterFormatConverter;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.RequestHandler;
+import org.genepattern.webservice.RequestHandlerFactory;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 /**
  *  <p>
  *
@@ -151,7 +151,7 @@ public class AnalysisTasksPanel extends JPanel implements Observer {
 	public void init(DataObjectBrowser browser, String server) {
 		try {
 			this.dataObjectBrowser = browser;
-			this.lsid2VersionsMap = new org.genepattern.analysis.AdminProxy(server, username).getLSIDToVersionsMap();
+			this.lsid2VersionsMap = new org.genepattern.webservice.AdminProxy(server, username).getLSIDToVersionsMap();
 		} catch(Throwable t){
 			t.printStackTrace();
 		}	

@@ -26,7 +26,7 @@ import java.util.Properties;
 import javax.naming.InitialContext;
 import javax.naming.NameAlreadyBoundException;
 
-import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.webservice.OmnigeneException;
 
 
 

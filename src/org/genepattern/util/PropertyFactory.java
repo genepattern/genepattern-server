@@ -9,7 +9,7 @@ import java.net.URL;
 import java.util.Hashtable;
 import java.util.Properties;
 
-import org.genepattern.analysis.PropertyNotFoundException;
+import org.genepattern.webservice.PropertyNotFoundException;
 
 /**
  * Class which loads properties files and returns values

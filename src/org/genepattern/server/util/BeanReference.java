@@ -4,9 +4,9 @@ package org.genepattern.server.util;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
-import org.genepattern.analysis.OmnigeneException;
 import org.genepattern.server.analysis.ejb.AnalysisHypersonicDAO;
 import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
+import org.genepattern.webservice.OmnigeneException;
 
 
 /**

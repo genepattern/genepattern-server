@@ -6,15 +6,15 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.genepattern.analysis.OmnigeneException;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.TaskInfoAttributes;
-import org.genepattern.analysis.WebServiceException;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.analysis.genepattern.TaskInstallationException;
 import org.genepattern.server.analysis.webservice.server.local.LocalAdminClient;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.WebServiceException;
 
 public class PipelineController {
 

@@ -21,10 +21,6 @@ import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
 import org.apache.axis.MessageContext;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.TaskInfoAttributes;
-import org.genepattern.analysis.WebServiceException;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.analysis.genepattern.LSIDManager;
@@ -34,6 +30,10 @@ import org.genepattern.server.webapp.AbstractPipelineCodeGenerator;
 import org.genepattern.server.webservice.WebServiceErrorMessageException;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.WebServiceException;
 
 
 /**

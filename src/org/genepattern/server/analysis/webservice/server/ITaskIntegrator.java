@@ -2,8 +2,8 @@ package org.genepattern.server.analysis.webservice.server;
 
 import javax.activation.DataHandler;
 
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.WebServiceException;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.WebServiceException;
 
 
 

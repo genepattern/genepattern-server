@@ -8,12 +8,17 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.genepattern.analysis.AdminProxy;
-import org.genepattern.analysis.JobInfo;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.WebServiceException;
+
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.AdminProxy;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.JobResult;
+import org.genepattern.webservice.Parameter;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.RequestHandler;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 
 
@@ -82,12 +87,12 @@ public class GPServer {
     * @param handler Description of the Parameter
     * @param tinfo Description of the Parameter
     * @return Description of the Return Value
-    * @exception org.genepattern.analysis.WebServiceException
+    * @exception org.genepattern.webservice.WebServiceException
     *            Description of the Exception
     */
    private AnalysisJob submitJob(RequestHandler handler, TaskInfo tinfo, 
                                  ParameterInfo[] parmInfos)
-      throws org.genepattern.analysis.WebServiceException {
+      throws org.genepattern.webservice.WebServiceException {
       final JobInfo job=handler.submitJob(tinfo.getID(), parmInfos);
       final AnalysisJob aJob=new AnalysisJob(server, tinfo.getName(), job);
       return aJob;
@@ -100,12 +105,12 @@ public class GPServer {
     * 
     * @param job Description of the Parameter
     * @param handler Description of the Parameter
-    * @exception org.genepattern.analysis.WebServiceException
+    * @exception org.genepattern.webservice.WebServiceException
     *            Description of the Exception
     */
    private static void waitForErrorOrCompletion(RequestHandler handler, 
                                                 AnalysisJob job)
-      throws org.genepattern.analysis.WebServiceException {
+      throws org.genepattern.webservice.WebServiceException {
       int maxtries=20;
       int sleep=1000;
       waitForErrorOrCompletion(handler, job, maxtries, sleep);
@@ -114,7 +119,7 @@ public class GPServer {
    private static void waitForErrorOrCompletion(RequestHandler handler, 
                                                 AnalysisJob job, int maxTries, 
                                                 int initialSleep)
-      throws org.genepattern.analysis.WebServiceException {
+      throws org.genepattern.webservice.WebServiceException {
       String status="";
       JobInfo info=null;
       int count=0;
@@ -218,7 +223,7 @@ public class GPServer {
          } catch(java.net.MalformedURLException mfe) {
             throw new Error(mfe);
          }
-      } catch(org.genepattern.analysis.WebServiceException wse) {
+      } catch(org.genepattern.webservice.WebServiceException wse) {
          throw new WebServiceException(wse.getMessage(), wse.getRootCause());
       }
    }

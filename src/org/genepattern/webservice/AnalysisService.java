@@ -1,6 +1,5 @@
-package org.genepattern.client;
+package org.genepattern.webservice;
 
-import org.genepattern.analysis.TaskInfo;
 
 /**
  * <p>Title: AnalysisService.java </p>

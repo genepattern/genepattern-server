@@ -4,11 +4,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeMap;
 
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.WebServiceException;
 import org.genepattern.server.analysis.webservice.server.AdminService;
 import org.genepattern.server.analysis.webservice.server.IAdminService;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 
 public class LocalAdminClient {

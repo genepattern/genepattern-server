@@ -4,10 +4,10 @@ import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.util.Vector;
 
-import org.genepattern.analysis.JobInfo;
-import org.genepattern.analysis.OmnigeneException;
-import org.genepattern.analysis.TaskInfo;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.TaskInfo;
 
 
 /**

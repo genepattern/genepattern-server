@@ -1,11 +1,10 @@
-package org.genepattern.client;
+package org.genepattern.webservice;
 
 
 import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.log4j.Category;
-import org.genepattern.analysis.WebServiceException;
 import org.genepattern.util.PropertyFactory;
 
 /**
@@ -38,7 +37,7 @@ public class RequestHandlerFactory {
 			this.siteName = p.getProperty("analysis.service.site.name", "Broad Institute");
 		} catch(java.io.IOException ioe) {
 			ioe.printStackTrace();	
-		} catch(org.genepattern.analysis.PropertyNotFoundException pnfe) {
+		} catch(org.genepattern.webservice.PropertyNotFoundException pnfe) {
 			pnfe.printStackTrace();	
 		}
 	}

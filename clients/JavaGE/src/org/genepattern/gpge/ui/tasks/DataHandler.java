@@ -17,15 +17,15 @@ import java.util.Vector;
 import javax.xml.bind.StructureValidationException;
 import javax.xml.bind.UnmarshalException;
 
-import org.genepattern.analysis.JobInfo;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.client.AnalysisJob;
 import org.genepattern.gpge.ui.analysis.jaxb.AnalysisData;
 import org.genepattern.gpge.ui.analysis.jaxb.Attribute;
 import org.genepattern.gpge.ui.analysis.jaxb.History;
 import org.genepattern.gpge.ui.analysis.jaxb.Job;
 import org.genepattern.gpge.ui.analysis.jaxb.Parameter;
 import org.genepattern.gpge.ui.analysis.jaxb.Result;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
 
 /**
  * <p>Title: DataHandler.java </p>

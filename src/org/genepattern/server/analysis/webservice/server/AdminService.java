@@ -15,13 +15,13 @@ import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
 import org.apache.axis.MessageContext;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.WebServiceException;
 import org.genepattern.server.analysis.webservice.server.dao.AdminDAO;
 import org.genepattern.server.analysis.webservice.server.dao.AdminDAOSysException;
 import org.genepattern.server.analysis.webservice.server.dao.AdminHSQLDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  *  AdminService Web Service. Do a Thread.yield at beginning of each method-

@@ -35,8 +35,8 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.apache.log4j.Category;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.client.AnalysisJob;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.ParameterInfo;
 
 /**
  * ResultsPanel.java

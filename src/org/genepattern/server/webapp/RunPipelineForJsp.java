@@ -8,17 +8,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.genepattern.analysis.JobInfo;
-import org.genepattern.analysis.JobStatus;
 
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.JobStatus;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 
 public class RunPipelineForJsp {
     public static int jobID = -1;

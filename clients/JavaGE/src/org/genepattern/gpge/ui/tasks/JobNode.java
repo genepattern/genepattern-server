@@ -18,9 +18,9 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 
 import org.apache.log4j.Category;
-import org.genepattern.analysis.WebServiceException;
-import org.genepattern.client.AnalysisJob;
-import org.genepattern.client.RequestHandlerFactory;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.RequestHandlerFactory;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * <p>Title: JobNode.java </p>

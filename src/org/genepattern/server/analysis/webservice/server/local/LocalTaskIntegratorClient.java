@@ -7,12 +7,12 @@ import java.io.File;
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.WebServiceException;
 import org.genepattern.server.analysis.webservice.server.ITaskIntegrator;
 import org.genepattern.server.analysis.webservice.server.TaskIntegrator;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 
 /**

@@ -9,8 +9,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 import org.apache.log4j.Category;
-import org.genepattern.analysis.JobStatus;
-import org.genepattern.client.AnalysisJob;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.JobStatus;
 
 /**
  * <p>Description: Displays the status of submitted jobs.</p>

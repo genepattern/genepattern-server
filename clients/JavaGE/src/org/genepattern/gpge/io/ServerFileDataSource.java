@@ -14,7 +14,6 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.genepattern.analysis.ParameterInfo;
 import org.genepattern.data.AbstractObject;
 import org.genepattern.data.DataObjector;
 import org.genepattern.gpge.GenePattern;
@@ -22,6 +21,7 @@ import org.genepattern.io.SummaryError;
 import org.genepattern.io.SummaryInfo;
 import org.genepattern.io.parsers.DataParser;
 import org.genepattern.util.StringUtils;
+import org.genepattern.webservice.ParameterInfo;
 
 
 

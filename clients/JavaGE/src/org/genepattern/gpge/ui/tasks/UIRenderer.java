@@ -11,7 +11,7 @@ import java.util.Map;
 
 import javax.swing.JComponent;
 
-import org.genepattern.client.AnalysisService;
+import org.genepattern.webservice.AnalysisService;
 
 /**
  * Defines methods for creating a UI for tasks.

@@ -5,12 +5,12 @@
  */
 package org.genepattern.gpge.ui.tasks;
 
-import org.genepattern.analysis.OmnigeneException;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.WebServiceException;
-import org.genepattern.client.AnalysisJob;
-import org.genepattern.client.AnalysisService;
-import org.genepattern.client.RequestHandler;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.RequestHandler;
+import org.genepattern.webservice.WebServiceException;
 
 
 /** defines a method that will submit the task and also a method that will

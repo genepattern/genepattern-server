@@ -1,4 +1,4 @@
-package org.genepattern.client;
+package org.genepattern.webservice;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -36,7 +36,7 @@ public class JobResult {
 	 *@param  parameters  The parameters that this job was run with.
 	 *@param  lsid        The LSID of the task that produced this job result.
 	 */
-	JobResult(URL server, int jobNumber, String[] fileNames, boolean stdout, boolean stderr, Parameter[] parameters, String lsid) {
+	public JobResult(URL server, int jobNumber, String[] fileNames, boolean stdout, boolean stderr, Parameter[] parameters, String lsid) {
 		this.server = server;
 		this.jobNumber = jobNumber;
 		this.fileNames = fileNames;

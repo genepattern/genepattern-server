@@ -10,15 +10,15 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.genepattern.analysis.OmnigeneException;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.TaskInfoAttributes;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.analysis.genepattern.TaskInstallationException;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 
 
 public abstract class AbstractPipelineCodeGenerator {

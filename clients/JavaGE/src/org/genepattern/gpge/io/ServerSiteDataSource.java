@@ -24,7 +24,7 @@ public class ServerSiteDataSource extends GroupDataSource {
      * This will be aware of the specified directory and all
      * data files there.
      */
-    public ServerSiteDataSource(final org.genepattern.gpge.ui.tasks.DataModel analysis_model, final String site_name, final DataParser[] parsers, final GroupDataSource parent, final DataSourceManager manager) throws java.io.IOException, org.genepattern.analysis.PropertyNotFoundException {
+    public ServerSiteDataSource(final org.genepattern.gpge.ui.tasks.DataModel analysis_model, final String site_name, final DataParser[] parsers, final GroupDataSource parent, final DataSourceManager manager) throws java.io.IOException, org.genepattern.webservice.PropertyNotFoundException {
         super(createSources(parsers), parent, manager, "Server ");
         this.analysis_model = analysis_model;
         if( site_name == null )
@@ -52,7 +52,7 @@ public class ServerSiteDataSource extends GroupDataSource {
                 if( obj instanceof org.genepattern.gpge.ui.tasks.DataModel.JobAndObserver ) {
                     final org.genepattern.gpge.ui.tasks.DataModel.JobAndObserver jao = (org.genepattern.gpge.ui.tasks.DataModel.JobAndObserver)obj;
                     System.out.println("JobAndObserver: "+jao);
-                    final org.genepattern.analysis.JobInfo info = jao.job.getJobInfo();
+                    final org.genepattern.webservice.JobInfo info = jao.job.getJobInfo();
                     System.out.println("JobInfo: "+info);
                     System.out.println("Has output file "+info.containsOutputFileParam());
                     System.out.println("Has input file "+info.containsInputFileParam());

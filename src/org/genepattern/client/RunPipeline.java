@@ -18,15 +18,19 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.genepattern.analysis.AdminProxy;
-import org.genepattern.analysis.JobInfo;
-import org.genepattern.analysis.JobStatus;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.PropertyFactory;
+import org.genepattern.webservice.AdminProxy;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.JobStatus;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.RequestHandler;
+import org.genepattern.webservice.RequestHandlerFactory;
+import org.genepattern.webservice.TaskInfo;
 
 
 public class RunPipeline {
@@ -305,7 +309,7 @@ public static ParameterInfo[] setJobParametersFromArgs(String name ,int taskNum,
 /**
 * return the file name for the previously run job by index or name
 */
-public  static String getOutputFileName(org.genepattern.analysis.JobInfo job, String fileStr){
+public  static String getOutputFileName(org.genepattern.webservice.JobInfo job, String fileStr){
 	String fileName = null;
 
 	try {

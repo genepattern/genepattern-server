@@ -14,16 +14,16 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 
-import org.genepattern.analysis.OmnigeneException;
-import org.genepattern.analysis.ParameterFormatConverter;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.TaskInfoAttributes;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterFormatConverter;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 
 public class HTMLPipelineView implements IPipelineView {
 
@@ -59,7 +59,7 @@ public class HTMLPipelineView implements IPipelineView {
 		tmTaskTypes = preprocessTaskInfo(tmCatalog);
 		try {
 			tmTasksByLSID = new org.genepattern.server.analysis.webservice.server.local.LocalAdminClient(userID).getTaskCatalogByLSID(tmCatalog);
-		} catch (org.genepattern.analysis.WebServiceException re) {
+		} catch (org.genepattern.webservice.WebServiceException re) {
 			System.err.println(re.getMessage() + " in HTMLPipelineView.init");
 			throw new RuntimeException(re);
 		}

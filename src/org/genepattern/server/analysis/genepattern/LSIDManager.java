@@ -3,11 +3,11 @@ package org.genepattern.server.analysis.genepattern;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 
-import org.genepattern.analysis.OmnigeneException;
 import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
 import org.genepattern.server.util.BeanReference;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
+import org.genepattern.webservice.OmnigeneException;
 
 
 /**

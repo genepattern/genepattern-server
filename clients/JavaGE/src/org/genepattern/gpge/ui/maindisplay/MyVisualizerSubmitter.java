@@ -5,16 +5,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.genepattern.analysis.OmnigeneException;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.WebServiceException;
-import org.genepattern.client.AnalysisJob;
-import org.genepattern.client.AnalysisService;
-import org.genepattern.client.RequestHandler;
 import org.genepattern.client.TaskExecutor;
 import org.genepattern.gpge.ui.tasks.JavaGELocalTaskExecutor;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.RequestHandler;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  *  Processes only Visualizers
@@ -45,16 +45,16 @@ public class MyVisualizerSubmitter implements org.genepattern.gpge.ui.tasks.Task
 	 *
 	 *@param  browser                                                 Description
 	 *      of the Parameter
-	 *@exception  org.genepattern.analysis.PropertyNotFoundException  Description
+	 *@exception  org.genepattern.webservice.PropertyNotFoundException  Description
 	 *      of the Exception
 	 */
-	public MyVisualizerSubmitter(final DataObjectBrowser browser) throws org.genepattern.analysis.PropertyNotFoundException {
+	public MyVisualizerSubmitter(final DataObjectBrowser browser) throws org.genepattern.webservice.PropertyNotFoundException {
 		this.dataObjectBrowser = browser;
 		try {
 			final Properties p = org.genepattern.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
 			final String url_string = p.getProperty("analysis.service.URL");
 			if(url_string == null) {
-				throw new org.genepattern.analysis.PropertyNotFoundException("Cannot get the analysis service URL");
+				throw new org.genepattern.webservice.PropertyNotFoundException("Cannot get the analysis service URL");
 			}
 			
 			server = p.getProperty("analysis.service.site.name");

@@ -37,11 +37,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.genepattern.analysis.JobStatus;
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.client.AnalysisJob;
-import org.genepattern.client.AnalysisService;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.io.AbstractDataSource;
 import org.genepattern.gpge.io.DataObjectProxy;
@@ -63,6 +58,11 @@ import org.genepattern.modules.ui.graphics.PeriodicProgressObserver;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.GPpropertiesManager;
 import org.genepattern.util.StringUtils;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.JobStatus;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 
 
 /**
@@ -156,7 +156,7 @@ try {
 				 Properties prop = org.genepattern.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
 				 String site_name = prop.getProperty("analysis.service.site.name");
 			 
-				 TaskInfo task = new org.genepattern.analysis.AdminProxy(site_name, username, false).getTask(lsidOrTaskName); // old servers don't have this method
+				 TaskInfo task = new org.genepattern.webservice.AdminProxy(site_name, username, false).getTask(lsidOrTaskName); // old servers don't have this method
 				 service = new AnalysisService(site_name, site_name + "/gp/servlet/AxisServlet", task);
 			 } catch(Throwable t){}
 		 }
@@ -193,7 +193,7 @@ try {
 		}
 	
 		TaskInfo task = service.getTaskInfo();
-		org.genepattern.analysis.JobInfo savedJobInfo = job.getJobInfo();
+		org.genepattern.webservice.JobInfo savedJobInfo = job.getJobInfo();
 		ParameterInfo[] savedParameters = savedJobInfo.getParameterInfoArray();
 								  
 		ParameterInfo[] formalParams =  task.getParameterInfoArray();
@@ -544,9 +544,9 @@ try {
                 // end loop		
 					} catch(IOException ioe) {
 						GenePattern.showError(DataObjectBrowser.this, ioe.getMessage());
-					} catch(org.genepattern.analysis.PropertyNotFoundException pnfe) {
+					} catch(org.genepattern.webservice.PropertyNotFoundException pnfe) {
 						GenePattern.showError(DataObjectBrowser.this, pnfe.getMessage());
-					} catch(org.genepattern.analysis.WebServiceException wse) {
+					} catch(org.genepattern.webservice.WebServiceException wse) {
 						Throwable rootCause = wse.getRootCause();
 
 						if(rootCause!=null && rootCause instanceof java.net.ConnectException) {
@@ -571,7 +571,7 @@ try {
     final ServerPanel _server_panel,
     final org.genepattern.gpge.ui.tasks.DataModel data_model,
     final LogDisplayAction log_action)
-    throws org.genepattern.analysis.PropertyNotFoundException, org.genepattern.analysis.WebServiceException{
+    throws org.genepattern.webservice.PropertyNotFoundException, org.genepattern.webservice.WebServiceException{
         final String log_id = "log";
         server_panel = _server_panel;
         card = (CardLayout)server_panel.getLayout();
@@ -607,7 +607,7 @@ try {
 					GPpropertiesManager.setProperty("gp.user.name", username);
 				}
             try {
-               String lsidAuthority = (String) new org.genepattern.analysis.AdminProxy(site_name, username, false).getServiceInfo().get("lsid.authority");
+               String lsidAuthority = (String) new org.genepattern.webservice.AdminProxy(site_name, username, false).getServiceInfo().get("lsid.authority");
                System.setProperty("lsid.authority", lsidAuthority);
             } catch(Throwable x){}
             

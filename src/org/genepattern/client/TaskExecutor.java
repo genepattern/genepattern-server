@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.genepattern.analysis.ParameterInfo;
-import org.genepattern.analysis.TaskInfo;
-import org.genepattern.analysis.TaskInfoAttributes;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 /**
  *@author     Joshua Gould
  *@created    May 3, 2004
