@@ -1,38 +1,58 @@
 package org.genepattern.webservice;
 
-
 /**
- * <p>Title: AnalysisService.java </p>
- * <p>Description: includes all the information about an analysis Service</p>
- * @author Hui Gong
- * @version $Revision 1.2 $
+ *  Holds a <tt>TaskInfo</tt> object and the server on which the task is
+ *  located.
+ *
+ * @author     Hui Gong
+ * @version    $Revision 1.2 $
  */
 
 public class AnalysisService {
-    private String _url;
-    private TaskInfo _task;
-    private String _name;
+   private String server;
+   private TaskInfo task;
 
-    public AnalysisService(String name, String url, TaskInfo task){
-        this._name = name;
-        this._url = url;
-        this._task = task;
-    }
 
-    public String toString(){
-        String display = this._task.getName()+" ( "+this._name+" )";
-        return display;
-    }
+   /**
+    *  Creates a new <tt>AnalysisService</tt> instance
+    *
+    * @param  server  the server, for example http://127.0.0.1:8080
+    * @param  task    the task info object for the service
+    */
+   public AnalysisService(String server, TaskInfo task) {
+      this.server = server;
+      this.task = task;
+   }
 
-    public String getURL(){
-        return this._url;
-    }
 
-    public TaskInfo getTaskInfo(){
-        return this._task;
-    }
+   /**
+    *  Returns a string representation of this <tt>AnalysisService</tt>
+    *  instance
+    *
+    * @return    the string representation
+    */
+   public String toString() {
+      return this.task.getName() + " (" + this.server + ")";
+   }
 
-    public String getName(){
-        return this._name;
-    }
+
+   /**
+    *  Gets the server on which this <tt>AnalysisService</tt> instance is
+    *  located.
+    *
+    * @return    The server
+    */
+   public String getServer() {
+      return this.server;
+   }
+
+
+   /**
+    *  Gets the <tt>TaskInfo</tt> object for this <tt>AnalysisService</tt> instance
+    *
+    * @return    The task info
+    */
+   public TaskInfo getTaskInfo() {
+      return this.task;
+   }
 }
