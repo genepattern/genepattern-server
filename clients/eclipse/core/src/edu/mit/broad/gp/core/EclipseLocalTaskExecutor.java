@@ -4,7 +4,7 @@ package edu.mit.broad.gp.core;
 
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.LocalTaskExecutor;
-import org.genepattern.webservice.RunTaskException;
+import org.genepattern.webservice.TaskExecException;
 import org.genepattern.io.StorageUtils;
 import java.io.BufferedReader;
 import java.io.File;
@@ -78,7 +78,7 @@ public class EclipseLocalTaskExecutor extends LocalTaskExecutor {
 	}
 
 
-	public void exec() throws RunTaskException {
+	public void exec() throws TaskExecException {
 		new Thread() {
 			public void run()  {
 			    try {

@@ -62,7 +62,7 @@ public class LocalTaskExecutor extends TaskExecutor {
 		this.taskIntegratorProxy = new TaskIntegratorProxy(server, userName, false);
 	}
 
-	public void beforeExec() throws RunTaskException {
+	public void beforeExec() throws TaskExecException {
 		try {
 			Map attr = taskInfo.getTaskInfoAttributes();
 			if(attr != null) {
@@ -104,7 +104,7 @@ public class LocalTaskExecutor extends TaskExecutor {
 			synchronizeTaskFiles();
 			downloadInputFiles(taskInfo, substitutions);
 		} catch(Throwable t) {
-			throw new RunTaskException(t);
+			throw new TaskExecException(t);
 		}
 	}
 

@@ -13,7 +13,7 @@ import java.util.Properties;
 import org.genepattern.gpge.ui.maindisplay.DataObjectBrowser;
 import org.genepattern.io.StorageUtils;
 import org.genepattern.webservice.LocalTaskExecutor;
-import org.genepattern.webservice.RunTaskException;
+import org.genepattern.webservice.TaskExecException;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -71,7 +71,7 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 	}
 
 
-	public void exec() throws RunTaskException {
+	public void exec() throws TaskExecException {
 		try {
 			super.exec();	
 			if(dataObjectBrowser.getMessage().endsWith(taskName)) {

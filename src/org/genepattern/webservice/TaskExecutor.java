@@ -120,25 +120,25 @@ public abstract class TaskExecutor {
 	}
 
 
-	public abstract void beforeExec() throws RunTaskException;
+	public abstract void beforeExec() throws TaskExecException;
 
 
-	public void exec() throws RunTaskException {
+	public void exec() throws TaskExecException {
 		beforeExec();
 		ParameterInfo[] parameterInfoArray = taskInfo.getParameterInfoArray();
 		TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
 		if(!validateOS(tia.get(GPConstants.OS))) {
-			throw new RunTaskException("Invalid OS");
+			throw new TaskExecException("Invalid OS");
 		}
 		if(!validateCPU(tia.get(GPConstants.CPU_TYPE))) {
-			throw new RunTaskException("Invalid CPU");
+			throw new TaskExecException("Invalid CPU");
 		}
 		String[] commandLine = null;
 
 		try {
 			commandLine = doCommandLineSubstitutions(taskInfo, substitutions);
 		} catch(java.io.IOException e) {
-			throw new RunTaskException(e);
+			throw new TaskExecException(e);
 		}
 		if(DEBUG) {
 			System.out.println(java.util.Arrays.asList(commandLine));
@@ -149,7 +149,7 @@ public abstract class TaskExecutor {
 		try {
 			doExec(commandLine);
 		} catch(Throwable t) {
-			throw new RunTaskException(t);
+			throw new TaskExecException(t);
 		}
 
 	}
