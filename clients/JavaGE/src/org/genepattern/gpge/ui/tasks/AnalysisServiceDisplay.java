@@ -49,10 +49,11 @@ public class AnalysisServiceDisplay extends JPanel {
    private String latestVersion;
    private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
    private Map parameterName2ComponentMap;
-  
+   private List inputFileParameterNames;
 
    public AnalysisServiceDisplay() {
       parameterName2ComponentMap = new HashMap();
+      inputFileParameterNames = new ArrayList();
       javax.swing.Icon icon = new javax.swing.ImageIcon(ClassLoader
 				.getSystemResource("org/genepattern/gpge/resources/intro.gif"));
 		 add(new JLabel(icon));
@@ -98,6 +99,7 @@ public class AnalysisServiceDisplay extends JPanel {
    public void loadTask(AnalysisService selectedService) {
       this.selectedService = selectedService;
       parameterName2ComponentMap.clear();
+      inputFileParameterNames.clear();
       latestVersion = null;
       TaskInfo taskInfo = selectedService.getTaskInfo();
       String taskDisplay = taskInfo.getName();
@@ -289,8 +291,7 @@ public class AnalysisServiceDisplay extends JPanel {
       setMinimumSize(new java.awt.Dimension(100, 100));
       revalidate();
       doLayout();
-      notifyListeners();
-     
+      notifyListeners(); 
    }
 
 
@@ -369,10 +370,8 @@ public class AnalysisServiceDisplay extends JPanel {
 
       if(selectIndex >= 0) {
          list.setSelectedIndex(selectIndex);
-      } else if(default_val != null && default_val.length() > 0) {
-         System.err.println("Default \"" + default_val
-                + "\" does not match any values in "
-                + "the drop-down menu for parameter " + info.getName());
+      } else {
+         list.setSelectedIndex(0);
       }
       return list;
    }
@@ -390,6 +389,7 @@ public class AnalysisServiceDisplay extends JPanel {
 
    private Component createInputFileField(ParameterInfo info) {
       ObjectTextField field = createObjectTextField();
+      inputFileParameterNames.add(info.getName());
       parameterName2ComponentMap.put(info.getName(), field);
       String defaultValue = (String) info.getAttributes().get(
             GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
@@ -521,17 +521,7 @@ public class AnalysisServiceDisplay extends JPanel {
     * @return    the input file names
     */
    public java.util.Iterator getInputFileParameterNames() {
-      if(selectedService == null) {
-         return java.util.Collections.EMPTY_LIST.iterator();
-      }
-      List inputFileParams = new ArrayList();
-      for(Iterator keys = parameterName2ComponentMap.keySet().iterator(); keys.hasNext(); ) {
-         String key = (String) keys.next();
-         if(parameterName2ComponentMap.get(key) instanceof ObjectTextField) {
-            inputFileParams.add(key);
-         }
-      }
-      return inputFileParams.iterator();
+      return inputFileParameterNames.iterator();
    }
 
 
@@ -617,6 +607,7 @@ public class AnalysisServiceDisplay extends JPanel {
                   String value = null;
                   ParameterInfo actualParameter = new ParameterInfo(formalParameters[i].getName(), "", "");
                   actualParameter.setAttributes(new HashMap(2));
+                  boolean isCheckBox = false;
                   if(c instanceof ObjectTextField) {
                      try {
                         
@@ -628,6 +619,7 @@ public class AnalysisServiceDisplay extends JPanel {
                         ioe.printStackTrace();  
                      }
                   } else if(c instanceof JComboBox) {
+                     isCheckBox = true;
                      ChoiceItem ci = (ChoiceItem) ((JComboBox)c).getSelectedItem();
                      value = ci.getValue();
                   } else if(c instanceof JTextField) {
@@ -638,7 +630,7 @@ public class AnalysisServiceDisplay extends JPanel {
                   }
                   actualParameter.setValue(value);
    
-                  if(formalParameters[i].getAttributes().get(
+                  if(!isCheckBox && formalParameters[i].getAttributes().get(
                         GPConstants.PARAM_INFO_OPTIONAL[0]) != null
                          && (value == null || value.equals(""))) {
                      GenePattern.showErrorDialog(
