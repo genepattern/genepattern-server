@@ -183,4 +183,20 @@ public class AnalysisWebServiceProxy {
 			throw new WebServiceException(re);
 		}
 	}
+   
+   public JobInfo addChildJob(int parent, JobInfo child) throws WebServiceException {
+		try {
+         return stub.addChildJob(parent, child);
+		} catch (RemoteException re) {
+			throw new WebServiceException(re);
+		}
+	}
+   
+   public void setJobStatus(int parentJobId, String status) throws WebServiceException {
+		try {
+         stub.setParentJobStatus(parentJobId, status);
+		} catch (RemoteException re) {
+			throw new WebServiceException(re);
+		}
+	}
 }
