@@ -319,18 +319,19 @@ public class JobModel extends AbstractSortableTreeTableModel {
 	public void getJobsFromServer() throws WebServiceException {
       root.removeAllChildren();
       nodeStructureChanged(root);
-      
+      String server = AnalysisServiceManager.getInstance().getServer();
       AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(AnalysisServiceManager.getInstance().getServer(),
             AnalysisServiceManager.getInstance().getUsername());
-      AnalysisJob[] jobs = proxy.getJobs();
+      JobInfo[] jobs = proxy.getJobs();
       Vector children = root.getChildren();
       children = new Vector();
 
       if (jobs != null) {
          for (int i = 0; i < jobs.length; i++) {
-            JobNode child = new JobNode(jobs[i]);
+            AnalysisJob job = new AnalysisJob(server, jobs[i]);
+            JobNode child = new JobNode(job);
             boolean waitUntilCompletion = false;
-            if(jobs[i].getJobInfo().getStatus().equals(JobStatus.FINISHED) || jobs[i].getJobInfo().getStatus().equals(JobStatus.ERROR)) {
+            if(job.getJobInfo().getStatus().equals(JobStatus.FINISHED) || job.getJobInfo().getStatus().equals(JobStatus.ERROR)) {
                child.getOutputFiles();
             } else {
                waitUntilCompletion = true;
@@ -345,7 +346,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
             
             root.insert(child, insertionIndex);
             if(waitUntilCompletion) {
-               TaskLauncher.waitUntilCompletionInNewThread(jobs[i]);  
+               TaskLauncher.waitUntilCompletionInNewThread(job);  
             }
          }
       }

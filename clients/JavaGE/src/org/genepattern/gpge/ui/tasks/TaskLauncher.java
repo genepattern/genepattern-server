@@ -106,8 +106,7 @@ public class TaskLauncher {
 		TaskInfo tinfo = svc.getTaskInfo();
 		final JobInfo jobInfo = serviceProxy.submitJob(tinfo.getID(),
 				paramInfos);
-		final AnalysisJob job = new AnalysisJob(svc.getServer(), svc
-				.getTaskInfo().getName(), jobInfo);
+		final AnalysisJob job = new AnalysisJob(svc.getServer(), jobInfo);
       JobModel.getInstance().add(job);
       return waitUntilCompletion(job, serviceProxy);
    }
