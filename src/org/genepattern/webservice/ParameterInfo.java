@@ -9,6 +9,7 @@ package org.genepattern.webservice;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import org.genepattern.util.GPConstants;
 
 public class ParameterInfo implements Serializable {
 
@@ -214,4 +215,33 @@ public class ParameterInfo implements Serializable {
 		String[] choices = value.split(delimiter, -1);
 		return choices;
 	}
+	
+	// where a chioce lhs=rhs is present, get the rhs of the choice based
+	// on the value of the parameter
+	public String getUIValue(ParameterInfo formalParam){
+		if (formalParam == null){
+			formalParam = this;
+		}
+		if (!formalParam.hasChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER)) return getValue();
+		String uiValue = getValue();
+	
+		String[] choices = formalParam.getChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER);//GPConstants.PARAM_INFO_CHOICE_DELIMITER
+		for (int i=0; i < choices.length; i++){
+			String[] subchoices = choices[i].split(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
+			if (subchoices.length > 1) {
+				
+				String lhs = subchoices[0];
+				String rhs = subchoices[1];
+				if (lhs.equals(getValue())) return rhs;
+				if (rhs.equals(getValue())) return rhs;
+				// if not a match, go on to the next choice option
+			} else {
+				// just RHS specified
+				
+				if (subchoices[0].equals(getValue())) return subchoices[0];
+			} 
+		}
+		return uiValue;
+	}
+	
 }

@@ -1,8 +1,10 @@
 package org.genepattern.server.genepattern;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -774,12 +776,16 @@ public class GenePatternAnalysisTask implements IGPConstants {
          
          
          parentJobInfo = getDS().getParent(jobInfo.getJobNumber());
-
 			for (i = 0; i < outputFiles.length; i++) {
 				File f = outputFiles[i];
 				_cat.debug("adding output file to output parameters "
 						+ f.getName() + " from " + outDirName);
 				addFileToOutputParameters(jobInfo, f.getName(), f.getName(), parentJobInfo);
+
+				// XXX Deal with appending task information to the head of an ODF file 
+				if (f.getName().endsWith(".odf")){
+					addProvenanceToFile( f,  jobInfo, formalParameters)	;
+				}
 			}
 
 			if (stdout.length() > 0) {
@@ -835,6 +841,73 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		}
 
 	}
+	
+	
+	protected static void addProvenanceToFile(File f, JobInfo jobInfo, ParameterInfo[] formalParameters){
+
+		try {
+		String nom = f.getName();
+		File rf = new File(f.getParentFile(),"ODF_temp"+System.currentTimeMillis()+".odf");
+		boolean renamed = f.renameTo(rf );
+		System.out.println("RENAMED=" + renamed);
+		BufferedReader br = new BufferedReader(new FileReader(rf));
+		File f2 = new File(f.getParentFile(), nom);
+		BufferedWriter bw = new BufferedWriter(new FileWriter(f2));
+		String line = null;
+		int lineNum = 0;
+		while ((line = br.readLine())!= null){
+			if (lineNum == 1){
+				bw.write("# ========== Provenance for file: "+nom+" ==========");
+				bw.write("\n# Created: "+ new Date(f.lastModified())+" by " + jobInfo.getUserId());
+				bw.write("\n# Job: " + jobInfo.getJobNumber());
+				bw.write("    server:  http://");
+				bw.write(System.getProperty("lax.nl.env.computername") +":" + System.getProperty("GENEPATTERN_PORT") + "/gp");
+				bw.write("\n# Task: "+ jobInfo.getTaskName() + " " +jobInfo.getTaskLSID());
+				bw.write("\n# Parameters: ");
+				ParameterInfo pinfos[] = jobInfo.getParameterInfoArray();
+				for (int pi = 0; pi < pinfos.length; pi++){
+					ParameterInfo pinfo = pinfos[pi];
+					if (!pinfo.isOutputFile()){
+						String value = null;
+						if (pinfo.isInputFile()){
+							File ifn = new File(pinfo.getValue());
+							value = ifn.getName();
+							int idx = value.indexOf("axis_");
+							if (idx >= 0){
+								value = value.substring(idx+5);
+							}
+						} else {
+							ParameterInfo formalPinfo = null;
+							for (int fpidx = 0; fpidx < formalParameters.length; fpidx++){
+								if (formalParameters[fpidx].getName().equals(pinfo.getName())){
+									formalPinfo = formalParameters[fpidx];
+									break;
+								}
+							}
+							value = pinfo.getUIValue(formalPinfo);
+						}
+						bw.write("\n#    " + pinfo.getName() + " = " + value);
+					}
+				}	
+				bw.write("\n# ========== End provenance data ==========" );
+				bw.write("\n");
+				bw.flush();
+			}
+			bw.write(line);
+			bw.write("\n");
+			bw.flush();
+			lineNum++;
+		}
+		bw.close();
+		br.close();
+		rf.delete();
+		//f.delete();
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+	
+	}
+	
 
 	protected static boolean validateCPU(String expected) throws Exception {
 		String actual = System.getProperty("os.arch");
