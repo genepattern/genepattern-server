@@ -1769,6 +1769,10 @@ public class MainFrame extends JFrame {
                   return null;
            }
         }
+        
+        public Class getColumnClass(int j) {
+            return String.class;  
+        }
 
         public int getRowCount() {
             return jobs.size();
@@ -1811,7 +1815,7 @@ public class MainFrame extends JFrame {
          historyDialog = new JDialog((java.awt.Frame)GenePattern.getDialogParent());
          historyDialog.setTitle("History");
          final JTable table = new JTable(historyTableModel);
-         
+         table.setDefaultRenderer(String.class, new AlternatingColorRenderer());
          JToolBar toolBar = new JToolBar();
          toolBar.setLayout(new java.awt.FlowLayout());
          toolBar.setFloatable(false);
