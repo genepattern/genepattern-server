@@ -47,19 +47,11 @@ import org.genepattern.webservice.WebServiceException;
 public class AnalysisServiceDisplay extends JPanel {
    private AnalysisService selectedService;
    private String latestVersion;
-   private Map lsid2VersionsMap;
    private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
    private Map parameterName2ComponentMap;
   
 
    public AnalysisServiceDisplay() {
-      try {
-         this.lsid2VersionsMap = new org.genepattern.webservice.AdminProxy(
-               AnalysisServiceManager.getInstance().getServer(), AnalysisServiceManager.getInstance().getUsername())
-               .getLSIDToVersionsMap();
-      } catch(WebServiceException wse) {
-         wse.printStackTrace();
-      }
       parameterName2ComponentMap = new HashMap();
       javax.swing.Icon icon = new javax.swing.ImageIcon(ClassLoader
 				.getSystemResource("org/genepattern/gpge/resources/intro.gif"));
@@ -67,7 +59,6 @@ public class AnalysisServiceDisplay extends JPanel {
        if(!MainFrame.RUNNING_ON_MAC) {
          this.setBackground(Color.white);
       } 
-      
    }
 
 
@@ -120,7 +111,7 @@ public class AnalysisServiceDisplay extends JPanel {
          }
 
          final String lsidNoVersion = lsid.toStringNoVersion();
-         List versions = (List) lsid2VersionsMap.get(lsidNoVersion);
+         List versions = (List) AnalysisServiceManager.getInstance().getLSIDToVersionsMap().get(lsidNoVersion);
          Vector versionsCopy = new Vector();
          versionsCopy.add("");
          latestVersion = lsid.getVersion();
@@ -501,7 +492,12 @@ public class AnalysisServiceDisplay extends JPanel {
 
 
    public static String getDisplayString(ParameterInfo p) {
-      return p.getName().replace('.', ' ');
+      return getDisplayString(p.getName());
+   }
+   
+   
+   public static String getDisplayString(String name) {
+      return name.replace('.', ' ');
    }
 
 
@@ -565,11 +561,10 @@ public class AnalysisServiceDisplay extends JPanel {
       } else if(obj instanceof   org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) {
          info.getAttributes().put(ParameterInfo.TYPE,
                ParameterInfo.FILE_TYPE);
-
          info.getAttributes().put(ParameterInfo.MODE,
                ParameterInfo.CACHED_INPUT_MODE);
          org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode node = (org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) obj;
-         return node.getServerName();
+         return node.getParameterValue();
       } else if(obj instanceof java.io.File) {
          info.setAsInputFile();
          final File drop_file = (File) obj;
