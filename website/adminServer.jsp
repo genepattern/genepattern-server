@@ -20,6 +20,7 @@
 	String reposDefault = request.getParameter("submitReposDefault");
 	String clearProxy = request.getParameter("submitClearProxy");
 	String defaultModuleRepository = System.getProperty("DefaultModuleRepositoryURL", moduleRepository);
+	String recentHistorySize = request.getParameter("historySize");
 	
 	if (reposDefault != null){
 		moduleRepository = defaultModuleRepository ;
@@ -69,10 +70,15 @@
 	if (moduleRepository != null){
 		storeSuccess  = PropertiesManager.storeChange("ModuleRepositoryURL", moduleRepository );
 	} 
-	moduleRepository = System.getProperty("ModuleRepositoryURL" );
-	if (moduleRepository == null) moduleRepository = "";
-
+	moduleRepository = System.getProperty("ModuleRepositoryURL","" );
 	
+
+	if (recentHistorySize != null){
+		storeSuccess  = PropertiesManager.storeChange("recentJobsToDisplay", recentHistorySize );
+	} 
+	recentHistorySize = System.getProperty("recentJobsToDisplay", "3" );
+	
+
 
 %>
 <html>
@@ -117,6 +123,17 @@ function changeReposFields(obj){
 	obj.form.submitRepos.disabled = (obj.form.moduleRepository.value == "<%=moduleRepository%>")
 	obj.form.submitReposDefault.disabled = (obj.form.moduleRepository.value == "<%=defaultModuleRepository%>")
 }
+
+function changeHistoryField(obj){
+
+	if ((obj.form.historySize.value != parseInt(obj.form.historySize.value)) || (obj.form.historySize.value == <%=recentHistorySize %>)) {
+		obj.form.submit.disabled=true;  
+	} else{
+		obj.form.submit.disabled=false;
+	} 
+}
+
+
 
 </script>
 </head>
@@ -213,7 +230,7 @@ onclick="refillField(this);"> These Domains <br>
 <tr><td class="heading" colspan='2'>Module Repository	</td></tr>
 <tr><td align='right'>Repository URL:</td><td><input type='text' size='40' name="moduleRepository" value='<%=moduleRepository%>' onkeyup="changeReposFields(this)"/>
 </td></tr>
-<tr><td colspan='2' ALIGN='CENTER'><input type="submit" name="submitRepos" value="change" class="button"  disabled="true"> 
+<tr><td colspan='2' ALIGN='CENTER'><input type="submit" name="submitRepos" value="submit" class="button"  disabled="true"> 
 <input type="submit" name="submitReposDefault" value="reset to default" 
 
 <%
@@ -261,7 +278,25 @@ onclick="refillField(this);"> These Domains <br>
 </form>
 </td>
 </tr>
+<tr>
+<td valign="top"  width='50%'>
+		<table class="majorCell" width='100%'>
+			<tr><td class="heading" colspan='2'>
+				History
+			</td></tr>
+			<tr><td valign="top" align='right'>
+			<form action="adminServer.jsp" name="recentHistoryForm" method="POST">
 
+			Remember this many recent jobs:</td><td><input name="historySize" value="<%=recentHistorySize %>" size='10' onkeyup="changeHistoryField(this)" />
+			<input type="submit" name="submit" value="submit" class="button" disabled="true">
+
+			</td>
+
+		</tr>
+		</table>
+		</td>
+
+</tr>
 <tr>
 			<td valign="middle" align='center' colspan="2">
 				<a href="shutdownServer.jsp">Shutdown server</a>
