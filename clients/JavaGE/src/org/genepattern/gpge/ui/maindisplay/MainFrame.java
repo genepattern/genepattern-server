@@ -89,10 +89,11 @@ public class MainFrame extends JFrame {
 
 	FileInfoComponent fileSummaryComponent = new FileInfoComponent();
 
-   private static short WINDOW_STYLE_DIALOG = 0;
-   private static short WINDOW_STYLE_FRAME = 1;
+   private static short WINDOW_STYLE_ONE_FRAME = 0;
+   private static short WINDOW_STYLE_FRAMES = 1;
    private static short WINDOW_STYLE_MDI = 2;
    public short windowStyle = WINDOW_STYLE_MDI;
+   private JMenuBar menuBar;
    
 	private static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone
@@ -1021,7 +1022,8 @@ public class MainFrame extends JFrame {
 						for (Iterator it = analysisServicePanel
 								.getInputFileParameterNames(); it.hasNext();) {
 							final String name = (String) it.next();
-							JMenuItem mi = new JMenuItem(name);
+                     final String displayName = AnalysisServiceDisplay.getDisplayString(name);
+							JMenuItem mi = new JMenuItem(displayName);
 							mi.addActionListener(new ActionListener() {
 								public void actionPerformed(ActionEvent e) {
 									analysisServicePanel.setInputFile(name,
@@ -1030,7 +1032,7 @@ public class MainFrame extends JFrame {
 							});
 							serverFileSendToMenu.add(mi);
 
-							JMenuItem projectMenuItem = new JMenuItem(name);
+							JMenuItem projectMenuItem = new JMenuItem(displayName);
 							projectMenuItem
 									.addActionListener(new ActionListener() {
 										public void actionPerformed(
@@ -1054,8 +1056,8 @@ public class MainFrame extends JFrame {
 				.getScreenSize();
       int width = (int) (screenSize.width * .9);
       int height = (int) (screenSize.height * .9);
-         
-      if(windowStyle==WINDOW_STYLE_FRAME) {
+      
+      if(windowStyle==WINDOW_STYLE_ONE_FRAME) {
          projectSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Projects", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
          jobSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Jobs", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
          JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
@@ -1073,10 +1075,11 @@ public class MainFrame extends JFrame {
          setTitle(BuildProperties.PROGRAM_NAME);
          leftPane.setDividerLocation((int) (height * 0.4));
          splitPane.setDividerLocation((int) (width * 0.4));
-         
-      } else if(windowStyle==WINDOW_STYLE_DIALOG) {
-         JDialog projectDialog = new JDialog(this, "Projects");
-         projectDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+         setJMenuBar(menuBar);
+      } else if(windowStyle==WINDOW_STYLE_FRAMES) {
+         JFrame projectDialog = new JFrame("Projects");
+         projectDialog.setJMenuBar(menuBar); // FIXME
+         projectDialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
          projectDialog.getContentPane().add(projectSP);
          int w = (int)(width*0.3);
          int h = (int)(height*.45);
@@ -1084,14 +1087,16 @@ public class MainFrame extends JFrame {
          projectDialog.setVisible(true);
          projectDialog.setLocation(10, 10);
          
-         JDialog jobDialog = new JDialog(this, "Job Results");
-         jobDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+         JFrame jobDialog = new JFrame("Job Results");
+         jobDialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
          jobDialog.getContentPane().add(jobSP);
          jobDialog.setSize(w, h);
          jobDialog.setLocation(10, 10 + projectDialog.getHeight());
          jobDialog.setVisible(true);
          
-         JDialog moduleDialog = new JDialog(this, "Task");
+         JFrame moduleDialog = new JFrame("Module");
+         
+         moduleDialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
          moduleDialog.getContentPane().add(analysisServicePanel);
          moduleDialog.pack();
          w = (int)(width*0.6);
@@ -1099,10 +1104,11 @@ public class MainFrame extends JFrame {
          moduleDialog.setSize(w, h);
          moduleDialog.setLocation(10 + projectDialog.getWidth(), 10);
          moduleDialog.setVisible(true);
-         setSize(0,0);
-         setLocation(-100,-100);
+
+         setTitle(BuildProperties.PROGRAM_NAME);
+          
       } else if(windowStyle==WINDOW_STYLE_MDI) {
-         JInternalFrame projectFrame = new JInternalFrame("Projects", true, false);
+         JInternalFrame projectFrame = new JInternalFrame("Projects", true, false, true, true);
          projectFrame.getContentPane().add(projectSP);
          int w = (int)(width*0.3);
          int h = (int)(height*.45);
@@ -1110,13 +1116,14 @@ public class MainFrame extends JFrame {
          projectFrame.setVisible(true);
          projectFrame.setLocation(10, 10);
          
-         JInternalFrame jobDialog = new JInternalFrame("Job Results", true, false);
+         JInternalFrame jobDialog = new JInternalFrame("Job Results", true, false, true, true);
          jobDialog.getContentPane().add(jobSP);
          jobDialog.setSize(w, h);
          jobDialog.setLocation(10, 10 + projectFrame.getHeight());
          jobDialog.setVisible(true);
          
-         JInternalFrame moduleDialog = new JInternalFrame("Task Launcher", true, false);
+         JInternalFrame moduleDialog = new JInternalFrame("Module", true, false, true, true);
+         
          moduleDialog.getContentPane().add(analysisServicePanel);
          w = (int)(width*0.6);
          h = (int)(height*.9);
@@ -1128,9 +1135,10 @@ public class MainFrame extends JFrame {
          dp.add(projectFrame);
          dp.add(jobDialog);
          dp.add(moduleDialog);
-         setContentPane(dp);
+         setContentPane(new JScrollPane(dp));
          setSize(screenSize.width, screenSize.height);
          setTitle(BuildProperties.PROGRAM_NAME);
+         setJMenuBar(menuBar);
       }
       
 		splash.dispose();
@@ -1203,8 +1211,9 @@ public class MainFrame extends JFrame {
 
 	}
 
+   
 	void createMenuBar() {
-		JMenuBar menuBar = new JMenuBar();
+	   menuBar = new JMenuBar();
 		fileMenu = new FileMenu();
 		menuBar.add(fileMenu);
 		analysisMenu = new AnalysisMenu(AnalysisMenu.DATA_ANALYZERS);
@@ -1224,7 +1233,6 @@ public class MainFrame extends JFrame {
 		JMenu helpMenu = new HelpMenu();
       menuBar.add(helpMenu);
 		
-		setJMenuBar(menuBar);
       if(RUNNING_ON_MAC) {
          macos.MacOSMenuHelper.registerHandlers();  
       }
