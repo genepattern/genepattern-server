@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE project [
-        <!ENTITY analysis_targets SYSTEM "file:./analysisTargets.xml">
-
         <!ENTITY release_targets SYSTEM "file:./releaseTargets.xml">
 ]>
 <project basedir="." default="targets" name="genepattern">
@@ -34,9 +32,6 @@
 
 <!-- bring in the release targets from their seperate file -->
    &release_targets;
-   &analysis_targets;
-
-
 
 <!-- Get all the files in the /lib directory and add them to the -->
 <!-- Classpath -->
@@ -159,7 +154,7 @@
 		<fileset dir="src" defaultexcludes="yes">
       		<include name="org/genepattern/data/**/*.java"/>
 			<include name="org/genepattern/client/**.java" />
-			<include name="org/genepattern/analysis/**.java" />
+			<include name="org/genepattern/webservice/**.java" />
 			<include name="org/genepattern/io/**/*.java"/>
 			<include name="org/genepattern/module/**/*.java"/>
 		</fileset>
@@ -191,7 +186,7 @@
 		</target> 
 			
 		<target name="javaclient" depends="compile,init" >
-			    <jar basedir="." defaultexcludes="true" excludes="**/*.java **/*.form **/.nbattrs **/.DS_Store" includes="org/genepattern/client/**, org/genepattern/analysis/** org/genepattern/util/**" jarfile="${basedir}/build/gpclient.jar" >
+			    <jar basedir="." defaultexcludes="true" excludes="**/*.java **/*.form **/.nbattrs **/.DS_Store" includes="org/genepattern/client/**, org/genepattern/webservice/** org/genepattern/util/**" jarfile="${basedir}/build/gpclient.jar" >
 			         <fileset defaultexcludes="true" dir="${basedir}/resources" excludes="**/*.java"/>
 			    </jar>
 		</target>
@@ -274,13 +269,20 @@
    </target>
    
    <target depends="init,common,broad-cg,runtask,uisupport,analysis" name="GPGE">
-        <ant dir="." inheritall="false" inheritrefs="false" target="jar-analysis"/>
+        <ant dir="." inheritall="false" inheritrefs="false" target="analysis"/>
         <ant antfile="../build.xml" dir="clients/JavaGE/src" target="package"/>
    </target>
-
-   <target depends="init" name="analysis">
-	<ant dir="." inheritall="true" inheritrefs="true" target="jar-analysis"/>
-   </target>
+	
+	<target name="analysis" depends="init,common,broad-cg,runtask,uisupport">
+	    <jar jarfile="${build}/analysis.jar">
+	        <fileset dir="${build}">
+	            <include name="org/genepattern/webservice/**"/>
+	             <include name="org/genepattern/client/**"/>
+	            <include name="org/genepattern/util/**"/>
+	            <include name="org/genepattern/data/pipeline/**"/>
+	        </fileset>
+	    </jar>
+	</target>
 
    	   
 <target name="GPGEinstaller">
