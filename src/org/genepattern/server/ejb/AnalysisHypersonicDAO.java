@@ -487,7 +487,26 @@ public class AnalysisHypersonicDAO implements
 			     
    }
    
-	public JobInfo[] getJobs(String username) throws OmnigeneException,
+   public void setJobDeleted(int jobNumber, boolean deleted) throws OmnigeneException {
+      java.sql.Connection conn = null;
+		Statement stat = null;
+		try {
+			conn = getConnection();
+         String sql = "UPDATE analysis_job SET deleted = " + deleted + " WHERE job_no=" + jobNumber;
+         stat = conn.createStatement();
+         stat.executeUpdate(sql);
+      } catch (Exception e) {
+			logger.error("AnalysisHypersonicDAO:getJobs failed " + e);
+			throw new OmnigeneException(e.getMessage());
+		} finally {
+			closeConnection(null, stat, conn);
+		}
+   }
+   	private static Logger _cat = Logger
+			.getLogger("edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask");
+
+         
+	public JobInfo[] getJobs(String username, int startIndex, int maxEntries, boolean allJobs) throws OmnigeneException,
 			RemoteException {
 		java.util.List results = new java.util.ArrayList();
 
@@ -497,11 +516,14 @@ public class AnalysisHypersonicDAO implements
 
 		try {
 			conn = getConnection();
-
-			//Fetch from database
-
+         String sql = "SELECT LIMIT " + startIndex + " " +  maxEntries + " job_no,task_id,status_name,date_submitted,date_completed,parameter_info,user_id, task_lsid, task_name FROM analysis_job, job_status WHERE analysis_job.status_id = job_status.status_id AND user_id = ? AND parent IS NULL";
+         if(!allJobs) {
+            sql += " AND deleted IS FALSE";
+         }
+         sql += " ORDER BY date_completed";
+         _cat.info(sql);
 			stat = conn
-					.prepareStatement(getJobInfoSelectClause() + " FROM analysis_job, job_status WHERE analysis_job.status_id = job_status.status_id AND user_id = ? AND parent IS NULL");
+					.prepareStatement(sql);
 
 			stat.setString(1, username);
 

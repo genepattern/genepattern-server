@@ -63,6 +63,10 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub {
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getJobs");
+        oper.addParameter(new javax.xml.namespace.QName("", "username"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "startIndex"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "maxEntries"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "allJobs"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, org.apache.axis.description.ParameterDesc.IN, false, false);
         oper.setReturnType(new javax.xml.namespace.QName("http://localhost:8080/gp/services/Analysis", "ArrayOf_tns1_JobInfo"));
         oper.setReturnClass(JobInfo[].class);
         oper.setReturnQName(new javax.xml.namespace.QName("", "getJobsReturn"));
@@ -312,6 +316,13 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub {
             cachedSerFactories.add(arraysf);
             cachedDeserFactories.add(arraydf);
 
+            qName = new javax.xml.namespace.QName("Analysis", "AnalysisJob");
+            cachedSerQNames.add(qName);
+            cls = AnalysisJob.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
             qName = new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException");
             cachedSerQNames.add(qName);
             cls = org.genepattern.webservice.WebServiceException.class;
@@ -454,7 +465,7 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub {
         extractAttachments(_call);
     }
 
-    public JobInfo[] getJobs() throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
+    public JobInfo[] getJobs(java.lang.String username, int startIndex, int maxEntries, boolean allJobs) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -467,7 +478,7 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub {
 
         setRequestHeaders(_call);
         setAttachments(_call);
-        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {});
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {username, new java.lang.Integer(startIndex), new java.lang.Integer(maxEntries), new java.lang.Boolean(allJobs)});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;

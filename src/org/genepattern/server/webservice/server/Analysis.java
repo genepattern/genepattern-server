@@ -118,7 +118,7 @@ public class Analysis extends GenericWebService {
 						try {
 							parameters[x].setValue(f.getCanonicalPath());
 						} catch (IOException ioe) {
-							throw new WebServiceException(ioe.getMessage());
+							throw new WebServiceException(ioe);
 						}
 					}
 				}
@@ -157,11 +157,11 @@ public class Analysis extends GenericWebService {
 		} catch (org.genepattern.webservice.OmnigeneException oe) {
 			_cat.error(oe.getMessage());
 			oe.printStackTrace();
-			throw new WebServiceException(oe.getMessage());
+			throw new WebServiceException(oe);
 		} catch (Throwable t) {
 			_cat.error(t.getMessage());
 			t.printStackTrace();
-			throw new WebServiceException(t.getMessage());
+			throw new WebServiceException(t);
 		}
 
 		return jobInfo;
@@ -187,11 +187,11 @@ public class Analysis extends GenericWebService {
 			jobInfo = req.executeRequest();
 		} catch (org.genepattern.webservice.OmnigeneException oe) {
 			_cat.error(oe.getMessage());
-			throw new WebServiceException(oe.getMessage());
+			throw new WebServiceException(oe);
 		} catch (Throwable t) {
 			_cat.error(t.getMessage());
 			t.printStackTrace();
-			throw new WebServiceException(t.getMessage());
+			throw new WebServiceException(t);
 		}
 
 		return jobInfo;
@@ -218,10 +218,10 @@ public class Analysis extends GenericWebService {
 			jobInfo = req.executeRequest();
 		} catch (org.genepattern.webservice.OmnigeneException oe) {
 			_cat.error(oe.getMessage());
-			throw new WebServiceException(oe.getMessage());
+			throw new WebServiceException(oe);
 		} catch (Throwable t) {
 			_cat.error(t.getMessage());
-			throw new WebServiceException(t.getMessage());
+			throw new WebServiceException(t);
 		}
 
 		if (jobInfo != null) {
@@ -295,7 +295,7 @@ public class Analysis extends GenericWebService {
 			jobDir.delete();
 			org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
 					.getAnalysisJobDataSourceEJB();
-			ds.deleteJob(jobId);
+			ds.setJobDeleted(jobId, true);
          JobInfo[] children = ds.getChildren(jobId);
          for(int i = 0; i < children.length; i++) {
             deleteJob(children[i].getJobNumber());  
@@ -414,14 +414,21 @@ public class Analysis extends GenericWebService {
 	/**
 	 * 
 	 * Gets the jobs for the current user
+    * @param username the username to retrieve jobs for. If <tt>null</tt> the current username is used.
+    * @param startIndex the index, beginning at 0, to start retrieving jobs from
+    * @param maxEntries the maximum number of jobs to return
+    * @param allJobs if <tt>true</tt> return all jobs that the given user has run, otherwise return jobs that have not been deleted 
 	 * 
 	 * @return the jobs
 	 */
-	public JobInfo[] getJobs() throws WebServiceException {
+	public JobInfo[] getJobs(String username, int startIndex, int maxEntries, boolean allJobs) throws WebServiceException {
 		try {
 			org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
 					.getAnalysisJobDataSourceEJB();
-			return ds.getJobs(getUsernameFromContext());
+         if(username==null) {
+            username = getUsernameFromContext();  
+         }
+			return ds.getJobs(username, startIndex, maxEntries, allJobs);
 		} catch (Exception e) {
 			throw new WebServiceException(e);
 		}

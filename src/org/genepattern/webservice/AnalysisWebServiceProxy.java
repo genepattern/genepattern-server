@@ -236,7 +236,18 @@ public class AnalysisWebServiceProxy {
 
 	public JobInfo[] getJobs() throws WebServiceException {
 		try {
-			return stub.getJobs();
+			java.util.List results = new java.util.ArrayList();
+         int startIndex = 0;
+         final int querySize = 100;
+         int numRetrieved = querySize;
+         while(numRetrieved==querySize) {
+            JobInfo[] jobs = stub.getJobs(null, startIndex, querySize, false); 
+            numRetrieved = jobs.length;
+            java.util.List t = java.util.Arrays.asList(jobs); 
+            results.addAll(t);
+            startIndex+=querySize;
+         }
+         return (JobInfo[]) results.toArray(new JobInfo[0]);
 		} catch (RemoteException re) {
 			throw new WebServiceException(re);
 		}

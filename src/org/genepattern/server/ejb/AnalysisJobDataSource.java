@@ -354,16 +354,24 @@ public interface AnalysisJobDataSource {
 			RemoteException;
 
 	/**
-	 * Gets the analysis jobs for the given user. The returned
-	 * <tt>AnalysisJob</tt> instance will have its server attribute set to
-	 * <tt>null</tt>.
 	 * 
-	 * @param username
-	 *            the username
+	 * Gets the jobs for the given user
+    * @param username the username to retrieve jobs for
+    * @param startIndex the index, beginning at 0, to start retrieving jobs from
+    * @param maxEntries the maximum number of jobs to return
+    * @param allJobs if <tt>true</tt> return all jobs that the given user has run, otherwise return jobs that have not been deleted 
+	 * 
+	 * @return the jobs
 	 */
-	public JobInfo[] getJobs(String username) throws OmnigeneException,
-			RemoteException;
+	public JobInfo[] getJobs(String username, int startIndex, int maxEntries, boolean allJobs) throws OmnigeneException, RemoteException;
 
+   /**
+   * Sets the deleted flag for the given job
+   * @param jobNumber the job number
+   * @param deleted the deleted flag
+   */
+   public void setJobDeleted(int jobNumber, boolean deleted) throws OmnigeneException, RemoteException;
+   
 	/**
 	 * Starts a running thread of a new task, this method could be called after
 	 * creating a new task
