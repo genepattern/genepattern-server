@@ -133,8 +133,8 @@ public class ReportPanel extends javax.swing.JPanel {
 
 		bugreport_button.setText("Create Bug Report");
 		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
+		gridBagConstraints.weightx = 0.3;
 		add(bugreport_button, gridBagConstraints);
 
 	}//GEN-END:initComponents
