@@ -836,8 +836,8 @@ function(jobID, server=defaultServer)
 				filename <- xmlValue(i[["value"]])
 				names(filename) <- paste(".server.", xmlValue(i[["name"]]), sep="", collapse="")
 				bName <- basename(filename)
-				if (bName == "stderr") stderr = filename
-				else if (bName == "stdout") stdout = filename
+				if (bName == "stderr.txt") stderr = filename
+				else if (bName == "stdout.txt") stdout = filename
 				else {
 					serverFilenames <- c(serverFilenames, filename)
 					filename <- paste("http://", server@host, ":", server@port, "/gp/retrieveResults.jsp?dirName=", dirname(filename), "&filename=", basename(filename), "&abs=1", sep="", collapse="")
@@ -908,8 +908,8 @@ function(jobID, retrieve=TRUE, server=defaultServer)
 			cat(paste("Error response for task ", jobID, ": ", 
 				status@error, "\n", 
 				ifelse(status@hasOutput, 
-					paste(gpReadFile(results@filenames[["stderr"]]), 
-					      gpReadFile(results@filenames[["stdout"]]), 
+					paste(gpReadFile(results@filenames[["stderr.txt"]]), 
+					      gpReadFile(results@filenames[["stdout.txt"]]), 
 					      sep="\n"),
 					status@error),
 				sep="", collapse=""), file=stderr())
@@ -1365,8 +1365,8 @@ function(server, method, ..., action, nameSpaces = SOAPNameSpaces(), xmlns = NUL
 			bName <- basename(originalNames[[contentID]])
 
 			names(attachmentFilename) <- bName
-			if (bName == "stderr") stderr = attachmentFilename
-			else if (bName == "stdout") stdout = attachmentFilename
+			if (bName == "stdout.txt") stdout = attachmentFilename
+			else if (bName == "stderr.txt") stderr = attachmentFilename
 			else content[["attachmentFilenames"]] <- c(content[["attachmentFilenames"]], attachmentFilename)
 			attachment <- file(attachmentFilename, ifelse(isBinary, "w+b", "w+b"), blocking=FALSE)
 
