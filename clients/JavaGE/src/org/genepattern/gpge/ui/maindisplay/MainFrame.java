@@ -1113,7 +1113,7 @@ public class MainFrame extends JFrame {
 			refreshMenu.add(refreshTasksMenuItem);
 
 			refreshJobsMenuItem = new JMenuItem("Jobs");
-			refreshTasksMenuItem.addActionListener(new ActionListener() {
+			refreshJobsMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					refreshJobs();
 				}
