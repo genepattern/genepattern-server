@@ -31,7 +31,7 @@ import org.genepattern.gpge.ui.infopanels.ReportPanel;
 import org.genepattern.gpge.ui.maindisplay.DataObjectBrowser;
 import org.genepattern.gpge.util.BuildProperties;
 import org.genepattern.util.AbstractReporter;
-import org.genepattern.util.Reporter;
+import org.genepattern.util.Reporter; 
 import org.genepattern.util.ReporterWithGUI;
 import org.genepattern.util.StringUtils;
 
@@ -196,7 +196,7 @@ public final class GenePattern {
     }
     /** shows the about dialog */
     public static final void showWarnings() {
-        java.net.URL url = ClassLoader.getSystemResource ("edu/mit/genome/gp/resources/Warning_preamble.html");
+        java.net.URL url = ClassLoader.getSystemResource ("org/genepattern/gpge/resources/Warning_preamble.html");
         try{
             ReportPanel warnings_panel = new ReportPanel(url, ((ReporterWithGUI)REPORTER).getWarnings());
             JOptionPane.showMessageDialog(getDialogParent(), warnings_panel, "All GenePattern Warnings", JOptionPane.WARNING_MESSAGE);
@@ -209,7 +209,7 @@ public final class GenePattern {
     }
         /** shows the about dialog */
     public static final void showErrors() {
-        java.net.URL url = ClassLoader.getSystemResource ("edu/mit/genome/gp/resources/Error_preamble.html");
+        java.net.URL url = ClassLoader.getSystemResource ("org/genepattern/gpge/resources/Error_preamble.html");
         try{
             ReportPanel errors_panel = new ReportPanel(url, ((ReporterWithGUI)REPORTER).getErrors());
             javax.swing.JOptionPane.showMessageDialog(getDialogParent(), errors_panel, "All GenePattern Errors", JOptionPane.ERROR_MESSAGE);
