@@ -46,9 +46,9 @@ public class MainFrame extends JFrame {
 
 	AnalysisServiceManager analysisServiceManager;
 
-	final static Color AUTHORITY_MINE_COLOR = java.awt.Color.decode("0xFF00FF");
+	public final static Color AUTHORITY_MINE_COLOR = java.awt.Color.decode("0xFF00FF");
 
-	final static Color AUTHORITY_FOREIGN_COLOR = java.awt.Color
+	public final static Color AUTHORITY_FOREIGN_COLOR = java.awt.Color
 			.decode("0x0000FF");
 
 	AnalysisMenu analysisMenu;
@@ -574,25 +574,7 @@ public class MainFrame extends JFrame {
 			}
 		});
       
-      final JMenuItem terminateJobMenuItem = new JMenuItem("Terminate Job", IconManager.loadIcon(IconManager.STOP_ICON));
-		terminateJobMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-            JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
-            try {
-               AnalysisWebServiceProxy p = new AnalysisWebServiceProxy(analysisServiceManager.getServer(), analysisServiceManager.getUsername(), false);
-               p.terminateJob(jobNode.job.getJobInfo().getJobNumber());
-            } catch(WebServiceException wse) {
-                if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred terminating job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
-                } 
-            }
-			}
-		});
-      
-     
-      jobPopupMenu.add(terminateJobMenuItem);
-      
-		final JMenuItem deleteJobMenuItem = new JMenuItem(
+      final JMenuItem deleteJobMenuItem = new JMenuItem(
 				"Delete Job", IconManager.loadIcon(IconManager.DELETE_ICON));
       deleteJobMenuItem.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e) {
@@ -607,6 +589,22 @@ public class MainFrame extends JFrame {
          }
       });
 		jobPopupMenu.add(deleteJobMenuItem);
+      
+      final JMenuItem terminateJobMenuItem = new JMenuItem("Terminate Job", IconManager.loadIcon(IconManager.STOP_ICON));
+		terminateJobMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+            JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
+            try {
+               AnalysisWebServiceProxy p = new AnalysisWebServiceProxy(analysisServiceManager.getServer(), analysisServiceManager.getUsername(), false);
+               p.terminateJob(jobNode.job.getJobInfo().getJobNumber());
+            } catch(WebServiceException wse) {
+                if(!disconnectedFromServer(wse)) {
+                  GenePattern.showErrorDialog("An error occurred terminating job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
+                } 
+            }
+			}
+		});      
+      jobPopupMenu.add(terminateJobMenuItem);
 
 		final JMenu saveServerFileMenu = new JMenu("Save To");
 		JMenuItem saveToFileSystemMenuItem = new JMenuItem("Other...", IconManager.loadIcon(IconManager.SAVE_AS_ICON));
@@ -662,6 +660,7 @@ public class MainFrame extends JFrame {
 		serverFilePopupMenu.add(saveServerFileMenu);
 
 		final JMenu serverFileSendToMenu = new JMenu("Send To");
+     
       serverFileSendToMenu.setIcon(IconManager.loadIcon(IconManager.SEND_TO_ICON));
 		serverFilePopupMenu.add(serverFileSendToMenu);
 
@@ -707,7 +706,7 @@ public class MainFrame extends JFrame {
       openWithMenu.add(jobResultFileDefaultAppMenuItem);
       serverFilePopupMenu.add(openWithMenu);
       
-      
+    
 		jobResultsTree.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() != 2 || isPopupTrigger(e)) {
@@ -727,16 +726,18 @@ public class MainFrame extends JFrame {
                }
             }.start();
 			}
+         
+         public void mousePressed(MouseEvent e) {
 
-			public void mousePressed(MouseEvent e) {
-
-				final TreePath path = jobResultsTree.getPathForLocation(e
-						.getX(), e.getY());
-				if (path == null) {
+            final TreePath path = jobResultsTree.getPathForLocation(e
+			      .getX(), e.getY());
+				
+            if (path == null) {
 					selectedJobNode = null;
 					return;
 				}
-
+            jobResultsTree.setSelectionPath(path);
+            
 				selectedJobNode = (DefaultMutableTreeNode) path
 						.getLastPathComponent();
 
@@ -784,6 +785,8 @@ public class MainFrame extends JFrame {
 							.getY());
 				}
 			}
+
+			
 		});
 		projectDirModel = ProjectDirModel.getInstance();
 
@@ -903,7 +906,8 @@ public class MainFrame extends JFrame {
 					selectedProjectDirNode = null;
 					return;
 				}
-
+            projectDirTree.setSelectionPath(path);
+            
 				selectedProjectDirNode = (DefaultMutableTreeNode) path
 						.getLastPathComponent();
 
