@@ -1,6 +1,8 @@
 <%@ page import="org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.codegenerator.*, org.genepattern.server.webapp.*, java.io.*, java.util.zip.*"
+		 org.genepattern.codegenerator.*, org.genepattern.server.webapp.*, org.genepattern.server.webservice.server.local.LocalAdminClient, 
+       org.genepattern.data.pipeline.*,
+       java.io.*, java.util.zip.*, java.util.*"
 	    session="false" language="Java" contentType="text/plain" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><%
 
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -41,7 +43,19 @@
 		return;
 	}
 	try {
-		String code = AbstractPipelineCodeGenerator.getCode(pipelineName, request, language, userID);
+      PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
+      model.setLsid((String)tia.get(GPConstants.LSID));
+      model.setUserID(userID);
+      String server = "http://" + request.getServerName() + ":" + request.getServerPort();
+      List pipelineTasks = new ArrayList();
+      List jobSubmissions = model.getTasks();
+      LocalAdminClient adminClient = new LocalAdminClient(userID);
+      for(int i = 0; i < jobSubmissions.size(); i++) {
+         JobSubmission js = (JobSubmission) jobSubmissions.get(i);
+         pipelineTasks.add(adminClient.getTask(js.getLSID()));
+      }  
+   
+		String code = AbstractPipelineCodeGenerator.getCode(model, pipelineTasks, server, language);
 		if (download) {
 			pipelineName = taskInfo.getName();
 			if("Java".equals(language)) {

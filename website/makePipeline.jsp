@@ -9,11 +9,13 @@
 		 java.io.IOException,
 		 java.lang.reflect.Constructor,
 		 java.net.URLEncoder,
+       java.util.ArrayList,
 		 java.util.Collection,
 		 java.util.Enumeration,
 		 java.util.HashMap,
 		 java.util.Hashtable,
 		 java.util.Iterator,
+       java.util.List,
 		 java.util.Map,
 		 java.util.StringTokenizer,
 		 java.util.TreeMap,
@@ -25,7 +27,10 @@
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.server.genepattern.TaskInstallationException,
+       org.genepattern.server.webservice.server.local.LocalAdminClient,
+       org.genepattern.data.pipeline.*,
 		 org.genepattern.util.GPConstants,
+       org.genepattern.codegenerator.*,
 		 com.jspsmart.upload.*,
 		 java.io.StringWriter"
 
@@ -162,8 +167,19 @@ try {
 	if (language == null) language = "R";
 	String version = requestParameters.getParameter(GPConstants.VERSION);
 	Class clsPipelineCodeGenerator = Class.forName(AbstractPipelineCodeGenerator.class.getPackage().getName() + "." + language + "PipelineCodeGenerator");
-	Constructor consAbstractPipelineCodeGenerator = clsPipelineCodeGenerator.getConstructor(new Class[] {PipelineModel.class, String.class, int.class, String.class, Collection.class});
-	AbstractPipelineCodeGenerator codeGenerator = (AbstractPipelineCodeGenerator)consAbstractPipelineCodeGenerator.newInstance(new Object[] {model, request.getServerName(), new Integer(serverPort), "http://" + request.getServerName() + ":" + serverPort + "/gp/makePipeline.jsp?" + request.getQueryString(), null });
+	Constructor consAbstractPipelineCodeGenerator = clsPipelineCodeGenerator.getConstructor(new Class[] {PipelineModel.class, String.class, java.util.List.class});
+   String server = "http://" + request.getServerName() + ":" + request.getServerPort();
+	List pipelineTasks = new ArrayList();
+   List jobSubmissions = model.getTasks();
+   LocalAdminClient adminClient = new LocalAdminClient(userID);
+   for(int i = 0; i < jobSubmissions.size(); i++) {
+      JobSubmission js = (JobSubmission) jobSubmissions.get(i);
+      pipelineTasks.add(adminClient.getTask(js.getLSID()));
+   }
+   
+   AbstractPipelineCodeGenerator codeGenerator = (AbstractPipelineCodeGenerator)consAbstractPipelineCodeGenerator.newInstance(new Object[] {model, server, pipelineTasks});
+   
+   
 	PipelineController controller = new PipelineController(codeGenerator, model);
 
 	JobSubmission jobSubmission = null;
