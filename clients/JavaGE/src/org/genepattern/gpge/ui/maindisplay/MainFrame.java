@@ -34,7 +34,7 @@ public class MainFrame extends JFrame {
    public static boolean RUNNING_ON_MAC = System.getProperty("mrj.version") != null && javax.swing.UIManager.getSystemLookAndFeelClassName().equals(javax.swing.UIManager.getLookAndFeel().getClass().getName());
    AnalysisServicePanel analysisServicePanel;
 
-   JLabel messageLabel = new JLabel();
+   JLabel messageLabel = new JLabel("", JLabel.CENTER);
    AnalysisServiceManager analysisServiceManager;
    final static Color AUTHORITY_MINE_COLOR = java.awt.Color.decode("0xFF00FF");
    final static Color AUTHORITY_FOREIGN_COLOR = java.awt.Color.decode("0x0000FF");
@@ -96,6 +96,36 @@ public class MainFrame extends JFrame {
 			}.start();
 		}
 	 }
+    
+    public void changeServer(final String server, final String username) {
+        GPpropertiesManager.setProperty(PreferenceKeys.SERVER, server);
+        GPpropertiesManager.setProperty(PreferenceKeys.USER_NAME, username);
+        analysisServiceManager = new AnalysisServiceManager(server, username);
+        new Thread() {
+            public void run() {
+               try {
+                  String lsidAuthority = (String) new org.genepattern.webservice.AdminProxy(analysisServiceManager.getServer(), analysisServiceManager.getUsername(), false).getServiceInfo().get("lsid.authority");
+                  System.setProperty("lsid.authority", lsidAuthority);
+               } catch(Throwable x) {}
+               refreshTasks();
+               
+            }
+        }.start();
+        jobModel.removeAll();
+        new Thread() {
+            public void run() {
+               jobModel.getJobsFromServer(analysisServiceManager.getServer(), analysisServiceManager.getUsername()); 
+            }
+        }.start();
+        
+        Thread changeStatusThread = new Thread() {
+           public void run() {
+              messageLabel.setText("Connected to " + server + " as user " + username);
+           }
+        };
+        SwingUtilities.invokeLater(changeStatusThread);
+    }
+    
    
    /**
 	*Loads a task with the parameters that were used in the specified job into the AnalysisTaskPanel 
@@ -116,7 +146,7 @@ public class MainFrame extends JFrame {
 				service = analysisServiceManager.getAnalysisService(taskName);
 			}
 			if(service==null) {
-				JOptionPane.showMessageDialog(GenePattern.getDialogParent(), taskName + " does not exist.");
+				JOptionPane.showMessageDialog(GenePattern.getDialogParent(), "The task " + taskName + " does not exist.");
 				return;
 			}
 		}
@@ -198,9 +228,9 @@ public class MainFrame extends JFrame {
 
 		
 		if(savedParamName2Param.size() > 1) { // whatever is left is an un-recycled parameter.  Let the user know.
-			errorMessage.append("Ignoring now-unused parameters ");	
+			errorMessage.append("Ignoring now unused parameters ");	
 		} else if(savedParamName2Param.size()==1) {
-			errorMessage.append("Ignoring now-unused parameter ");
+			errorMessage.append("Ignoring now unused parameter ");
 		}
 		
 		for (Iterator iUnused = savedParamName2Param.keySet().iterator(); iUnused.hasNext(); ) {
@@ -221,30 +251,26 @@ public class MainFrame extends JFrame {
       JWindow splash = GenePattern.showSplashScreen();
       splash.setVisible(true);
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      String server = null;
-      try {
-         Properties omnigeneProps = org.genepattern.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
-         server = "http://" + omnigeneProps.getProperty("analysis.service.site.name"); // omnigene properties are deprecated
-      } catch(Exception e) {
-      } 
-     
       
       String username = GPpropertiesManager.getProperty(PreferenceKeys.USER_NAME);
-      boolean showChangeServerDialog = false;
+      
       if(username==null) {
          username = ""; 
-         showChangeServerDialog = true;
       }
-      server = GPpropertiesManager.getProperty(PreferenceKeys.SERVER);
-      if(server==null) { 
-         server = "http://127.0.0.1:8080";
-         showChangeServerDialog = true;
+      String server = GPpropertiesManager.getProperty(PreferenceKeys.SERVER);
+      if(server==null ) { 
+         try {
+            Properties omnigeneProps = org.genepattern.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
+            String deprecatedServer = "http://" + omnigeneProps.getProperty("analysis.service.site.name"); // omnigene properties are deprecated
+            server = deprecatedServer;
+         } catch(Exception e) {
+         } 
+         if(server==null) {
+            server = "http://127.0.0.1:8080";
+         }
       }
-      GPpropertiesManager.setProperty(PreferenceKeys.SERVER, server);
-      GPpropertiesManager.setProperty(PreferenceKeys.USER_NAME, username);
-      if(showChangeServerDialog) {
-         // FIXME
-      }
+     
+      
     /*     ChangeServerDialog changeServerDialog = new ChangeServerDialog(this, true);
          
          ActionListener listener = new ActionListener() {
@@ -270,27 +296,10 @@ public class MainFrame extends JFrame {
       }
       */
       
-      analysisServiceManager = new AnalysisServiceManager(server, username);
+     
       createMenuBar();
-      new Thread() {
-            public void run() {
-               try {
-                  String lsidAuthority = (String) new org.genepattern.webservice.AdminProxy(analysisServiceManager.getServer(), analysisServiceManager.getUsername(), false).getServiceInfo().get("lsid.authority");
-                  System.setProperty("lsid.authority", lsidAuthority);
-               } catch(Throwable x) {}
-               refresh();
-               
-            }
-         }.start();
-         
-
-      analysisServicePanel = new AnalysisServicePanel(DefaultExceptionHandler.instance(), analysisServiceManager);
       jobModel = JobModel.getInstance();
-      new Thread() {
-            public void run() {
-               jobModel.getJobsFromServer(analysisServiceManager.getServer(), analysisServiceManager.getUsername()); 
-            }
-         }.start();
+      
       jobModel.addJobListener(new JobListener() {
          public void jobStatusChanged(JobEvent e){}
          public void jobAdded(JobEvent e){}
@@ -302,8 +311,12 @@ public class MainFrame extends JFrame {
             fileMenu.jobCompletedDialog.add(jobNumber, taskName, status);
          }
       });
+      
+      changeServer(server, username);
+      analysisServicePanel = new AnalysisServicePanel(DefaultExceptionHandler.instance(), analysisServiceManager);
+      
       projectDirModel = ProjectDirModel.getInstance();
-      projectDirTree = new SortableTreeTable(projectDirModel, false);
+      projectDirTree = new SortableTreeTable(projectDirModel);
       
       jobResultsTree = new SortableTreeTable(jobModel);
       
@@ -494,7 +507,7 @@ public class MainFrame extends JFrame {
             projectDirModel.add(new File(projectDirs[i]));
          }
       }
-      projectDirTree = new SortableTreeTable(projectDirModel);
+      projectDirTree = new SortableTreeTable(projectDirModel, false);
       projectFilePopupMenu = new JPopupMenu();
       final JMenu projectFileSendToMenu = new JMenu("Send To");
       projectFilePopupMenu.add(projectFileSendToMenu);
@@ -511,6 +524,7 @@ public class MainFrame extends JFrame {
          new AbstractAction("Remove") {
             public void actionPerformed(ActionEvent e) {
               projectDirModel.remove((ProjectDirModel.ProjectDirNode)selectedProjectDirNode);
+              GPpropertiesManager.setProperty(PreferenceKeys.PROJECT_DIRS, projectDirModel.getPreferencesString());
             }
          });
          
@@ -621,12 +635,15 @@ public class MainFrame extends JFrame {
          });
          
       JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(projectDirTree), new JScrollPane(jobResultsTree));
+      leftPane.setDividerLocation(0.5);
+      
       JPanel leftPanel = new JPanel(new BorderLayout());
       leftPanel.add(leftPane, BorderLayout.CENTER);
       leftPanel.add(fileSummaryComponent, BorderLayout.SOUTH);
       
       JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, analysisServicePanel);
       getContentPane().add(splitPane, BorderLayout.CENTER);
+     
       getContentPane().add(messageLabel, BorderLayout.SOUTH);
 
       java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
@@ -641,13 +658,21 @@ public class MainFrame extends JFrame {
      
    }
 
-
-   public void refresh() {
+   public void refreshJobs() {
+      new Thread() {
+         public void run() {
+           jobModel.removeAll();
+           jobModel.getJobsFromServer(analysisServiceManager.getServer(), analysisServiceManager.getUsername());
+         }
+      }.start();
+   }
+   
+   public void refreshTasks() {
       Thread disableActions = new Thread() {
          public void run() {
             analysisMenu.setEnabled(false);
             visualizerMenu.setEnabled(false);
-            fileMenu.setServerActionsEnabled(false);  
+            fileMenu.changeServerActionsEnabled(false);  
          }
       };
       if(SwingUtilities.isEventDispatchThread()) {
@@ -674,7 +699,7 @@ public class MainFrame extends JFrame {
                         visualizerMenu.removeAll();
                         analysisMenu.init(latestTasks);
                         visualizerMenu.init(latestTasks);
-                        fileMenu.setServerActionsEnabled(true);
+                        fileMenu.changeServerActionsEnabled(true);
                         analysisMenu.setEnabled(true);
                         visualizerMenu.setEnabled(true);
                      }
@@ -838,12 +863,16 @@ public class MainFrame extends JFrame {
    class FileMenu extends JMenu {
       JobCompletedDialog jobCompletedDialog;
       AbstractAction changeServerAction;
-      AbstractAction refreshAction;
+      JMenu refreshMenu;
+      JMenuItem refreshJobsMenuItem;
+      JMenuItem refreshTasksMenuItem;
       JFileChooser  projectDirFileChooser;
       
-      public void setServerActionsEnabled(boolean b) {
+      public void changeServerActionsEnabled(boolean b) {
          changeServerAction.setEnabled(b);
-         refreshAction.setEnabled(b);
+         refreshMenu.setEnabled(b);
+         refreshJobsMenuItem.setEnabled(b);
+         refreshTasksMenuItem.setEnabled(b);
       }
       
       public FileMenu() {
@@ -861,10 +890,14 @@ public class MainFrame extends JFrame {
                   }
                   if(projectDirFileChooser.showOpenDialog(GenePattern.getDialogParent())==JFileChooser.APPROVE_OPTION) {
                      File selectedFile = projectDirFileChooser.getSelectedFile();
+                     if(selectedFile==null) {
+                        JOptionPane.showMessageDialog(GenePattern.getDialogParent(), "No directory selected");
+                        return;
+                     }
                      if(!projectDirModel.contains(selectedFile)) {
                         projectDirModel.add(selectedFile);
+                        GPpropertiesManager.setProperty(PreferenceKeys.PROJECT_DIRS, projectDirModel.getPreferencesString());
                      }
-                     // FIXME persist changes
                   }
                }
          });
@@ -898,12 +931,8 @@ public class MainFrame extends JFrame {
                            if(!server.toLowerCase().startsWith("http://")) {
                               server = "http://" + server;
                            }
-                           analysisServiceManager = new AnalysisServiceManager(server, username);
-                           try {
-                              analysisServiceManager.refresh();
-                              jobModel.removeAll();
-                           } catch(WebServiceException wse) {
-                              JOptionPane.showMessageDialog(GenePattern.getDialogParent(), "Unable to connect to " + server);  
+                           if(!server.equals(analysisServiceManager.getServer()) ||!username.equals(analysisServiceManager.getUsername())) {
+                              changeServer(server, username);
                            }
                         } catch(NumberFormatException nfe) {
                            JOptionPane.showMessageDialog(GenePattern.getDialogParent(), "Invalid port. Please try again.");
@@ -915,13 +944,28 @@ public class MainFrame extends JFrame {
          };
          add(changeServerAction);
          changeServerAction.setEnabled(false);   
-         refreshAction = new javax.swing.AbstractAction("Refresh") {
+         
+         refreshMenu = new JMenu("Refresh");
+         add(refreshMenu);
+         refreshTasksMenuItem = new JMenuItem("Tasks");
+         refreshTasksMenuItem.addActionListener(new ActionListener() {
                public void actionPerformed(java.awt.event.ActionEvent e) {
-                  refresh();
+                  refreshTasks();
                }
-            };
-         refreshAction.setEnabled(false);   
-         add(refreshAction);
+         });
+         refreshTasksMenuItem.setEnabled(false);   
+         refreshMenu.add(refreshTasksMenuItem);
+         
+         
+         
+         refreshJobsMenuItem = new JMenuItem("Jobs");
+         refreshTasksMenuItem.addActionListener(new ActionListener() {
+               public void actionPerformed(java.awt.event.ActionEvent e) {
+                  refreshJobs();
+               }
+         });
+         refreshJobsMenuItem.setEnabled(false);   
+         refreshMenu.add(refreshJobsMenuItem);
        
          AbstractAction quitAction =
             new javax.swing.AbstractAction("Quit") {
