@@ -123,6 +123,11 @@ public final class GenePattern {
 				javax.swing.JOptionPane.INFORMATION_MESSAGE);
    }
    
+   public static void showMessageDialog(String message) {
+      showMessageDialog("GenePattern", message);
+   }
+   
+   
    public static void showErrorDialog(String title, String message) {
 		javax.swing.JOptionPane.showMessageDialog(mainFrame, message, "Error",
 				javax.swing.JOptionPane.ERROR_MESSAGE);
