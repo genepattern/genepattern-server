@@ -21,7 +21,6 @@ public interface AnalysisJobDataSource {
 	/**
 	 * Used to get list of submitted job info
 	 * 
-	 * @param classname
 	 * @param maxJobCount
 	 *            max. job count
 	 * @throws OmnigeneException
@@ -29,14 +28,13 @@ public interface AnalysisJobDataSource {
 	 * @return JobInfo Vector
 	 */
 
-	public Vector getWaitingJob(String classname, int maxJobCount)
+	public Vector getWaitingJob(int maxJobCount)
 			throws OmnigeneException, RemoteException;
 
 	/**
-	 * Get task id from task class name
+	 * Get task id from task name
 	 * 
-	 * @param className
-	 *            task class name
+	 * @param name the task name
 	 * @throws OmnigeneException
 	 *             Error in db
 	 * @throws RemoteException
@@ -206,13 +204,12 @@ public interface AnalysisJobDataSource {
 	 * @param access_id
 	 * @param description
 	 * @param parameter_info
-	 * @param className
 	 * @throws OmnigeneException
 	 * @throws RemoteException
 	 * @return task ID
 	 */
 	public int addNewTask(String taskName, String user_id, int access_id,
-			String description, String parameter_info, String className,
+			String description, String parameter_info,
 			String taskInfoAttributes) throws OmnigeneException,
 			RemoteException;
 

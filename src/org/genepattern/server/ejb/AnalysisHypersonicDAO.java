@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.AnalysisManager;
 import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.TaskIDNotFoundException;
-import org.genepattern.server.TaskType;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AdminDAOSysException;
 import org.genepattern.server.webservice.server.dao.AdminHSQLDAO;
@@ -63,14 +62,13 @@ public class AnalysisHypersonicDAO implements
 	/**
 	 * Used to get list of submitted job info
 	 * 
-	 * @param classname
 	 * @param maxJobCount
 	 *            max. job count
 	 * @throws OmnigeneException
 	 * @throws RemoteException
 	 * @return JobInfo Vector
 	 */
-	public Vector getWaitingJob(String classname, int maxJobCount)
+	public Vector getWaitingJob(int maxJobCount)
 			throws OmnigeneException, RemoteException {
 		Vector jobVector = new Vector();
 		java.sql.Connection conn = null;
@@ -92,10 +90,8 @@ public class AnalysisHypersonicDAO implements
 
 			//Query job table for waiting job
 			stat = conn
-					.prepareStatement("SELECT job_no,analysis_job.task_id,analysis_job.parameter_info,analysis_job.user_id FROM analysis_job, task_master where analysis_job.task_id=task_master.task_id and "
-							+ " classname = ? and  status_id = ? order by date_submitted");
-			stat.setString(1, classname);
-			stat.setInt(2, JOB_WAITING_STATUS);
+					.prepareStatement("SELECT job_no,analysis_job.task_id,analysis_job.parameter_info,analysis_job.user_id FROM analysis_job, task_master where analysis_job.task_id=task_master.task_id and  status_id = ? order by date_submitted");
+			stat.setInt(1, JOB_WAITING_STATUS);
 			resultSet = stat.executeQuery();
 
 			int jobNo = 0, taskID = 0;
@@ -125,8 +121,7 @@ public class AnalysisHypersonicDAO implements
 			}
 
 		} catch (Exception e) {
-			logger.error("AnalysisHypersonicDAO: getWaitingJob for "
-					+ classname + " failed " + e);
+			logger.error("AnalysisHypersonicDAO: getWaitingJob failed", e);
 			throw new OmnigeneException(e.getMessage());
 		}
 
@@ -590,7 +585,7 @@ public class AnalysisHypersonicDAO implements
 
 	public Vector getAllTypeTasks() throws OmnigeneException, RemoteException {
 		try {
-			return toVector(adminDAO.getAllTasksAllTypes());
+			return toVector(adminDAO.getAllTasks());
 		} catch (AdminDAOSysException e) {
 			throw new OmnigeneException(e.getMessage());
 		}
@@ -611,7 +606,7 @@ public class AnalysisHypersonicDAO implements
 	public Vector getAllTypeTasks(String user_id) throws OmnigeneException,
 			RemoteException {
 		try {
-			return toVector(adminDAO.getAllTasksAllTypes(user_id));
+			return toVector(adminDAO.getAllTasks(user_id));
 		} catch (AdminDAOSysException e) {
 			throw new OmnigeneException(e.getMessage());
 		}
@@ -644,13 +639,12 @@ public class AnalysisHypersonicDAO implements
 	 * @param access_id
 	 * @param description
 	 * @param parameter_info
-	 * @param className
 	 * @throws OmnigeneException
 	 * @throws RemoteException
 	 * @return task ID
 	 */
 	public int addNewTask(String taskName, String user_id, int access_id,
-			String description, String parameter_info, String className,
+			String description, String parameter_info, 
 			String taskInfoAttributes) throws OmnigeneException,
 			RemoteException {
 		int updatedRecord = 0;
@@ -673,23 +667,21 @@ public class AnalysisHypersonicDAO implements
 
 			//Add to task table
 			stat = conn
-					.prepareStatement("INSERT INTO task_master(task_name, description,classname,parameter_info,type_id, taskInfoAttributes,user_id,access_id, lsid)  VALUES (? , ?, ?,?,?,?,?,?,?)");
+					.prepareStatement("INSERT INTO task_master(task_name, description, parameter_info, taskInfoAttributes, user_id,access_id, lsid) VALUES (?,?,?,?,?,?,?)");
 
 			//stat.setInt(1,taskID);
 			stat.setString(1, taskName);
 			stat.setString(2, description);
-			stat.setString(3, className);
-			stat.setString(4, parameter_info);
-			stat.setInt(5, TaskType.REGULAR);
-			stat.setString(6, taskInfoAttributes);
-			stat.setString(7, user_id);
-			stat.setInt(8, access_id);
+			stat.setString(3, parameter_info);
+			stat.setString(4, taskInfoAttributes);
+			stat.setString(5, user_id);
+			stat.setInt(6, access_id);
 
 			if (sLSID != null && !sLSID.equals("")) {
 				LSID lsid = new LSID(sLSID);
-				stat.setString(9, lsid.toString());
+				stat.setString(7, lsid.toString());
 			} else {
-				stat.setString(9, null);
+				stat.setString(7, null);
 			}
 
 			updatedRecord = stat.executeUpdate();
