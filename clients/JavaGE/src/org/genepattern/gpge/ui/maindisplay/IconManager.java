@@ -9,7 +9,14 @@ import javax.swing.*;
  */
 public class IconManager {
    public final static String DELETE_ICON = "delete.gif";
-
+   public final static String REFRESH_ICON = "refresh.gif";
+   public final static String SAVE_ICON = "save.gif";
+   public final static String SAVE_AS_ICON = "save_as.gif";
+   public final static String STOP_ICON = "stop.gif";
+   public final static String NEW_PROJECT_ICON = "open.gif";
+   public final static String REMOVE_ICON = "remove.gif";
+   public final static String TEXT_ICON = "text.gif";
+   public final static String ERROR_ICON = "error.gif";
 
    private IconManager() { }
 

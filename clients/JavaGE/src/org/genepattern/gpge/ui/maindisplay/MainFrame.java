@@ -123,6 +123,62 @@ public class MainFrame extends JFrame {
       return sb.toString();
    }
 
+   private void defaultApplication(TreeNode node) {
+      if (node instanceof ProjectDirModel.FileNode) {
+         try {
+            ProjectDirModel.FileNode fn = (ProjectDirModel.FileNode) node;
+            String filePath = fn.file.getCanonicalPath();
+            if (RUNNING_ON_MAC) {
+               String[] args = new String[] { "/usr/bin/open",
+                     filePath };
+               Runtime.getRuntime().exec(args);
+            } else {
+               org.genepattern.util.BrowserLauncher
+                     .openURL(filePath);
+            }
+         } catch (IOException ioe) {
+         }
+      } else if (node instanceof JobModel.ServerFileNode) {
+         final JobModel.ServerFileNode sn = (JobModel.ServerFileNode) node;
+         
+         File downloadDir = new File("tmp");
+         if (!downloadDir.exists()) {
+            downloadDir.mkdir();
+         }
+         String name = sn.name;
+         int dotIndex = name.lastIndexOf(".");
+         String baseName = name;
+         String extension = "";
+         if (dotIndex > 0) {
+            baseName = name.substring(0, dotIndex);
+            extension = name.substring(dotIndex, name.length());
+         }
+         File download = new File(downloadDir, name);
+         int tries = 1;
+         while (download.exists()) {
+            String newName = baseName + "-" + tries + extension;
+            download = new File(downloadDir, newName);
+            tries++;
+         }
+         final File destination = download;
+         destination.deleteOnExit();
+         try {
+            sn.download(destination);
+            String filePath = destination
+                  .getCanonicalPath();
+            if (RUNNING_ON_MAC) {
+               String[] args = new String[] {
+                     "/usr/bin/open", filePath };
+               Runtime.getRuntime().exec(args);
+            } else {
+               org.genepattern.util.BrowserLauncher
+                     .openURL(filePath);
+            }
+         } catch (IOException ioe) {
+         }
+      }
+   }
+   
    private void textViewer(TreeNode node) {
       File file = null;
       boolean deleteFile = false;
@@ -524,13 +580,15 @@ public class MainFrame extends JFrame {
 		jobResultsTree = new SortableTreeTable(jobModel);
 
       
-		jobPopupMenu.add(new AbstractAction("Reload") {
+      JMenuItem reloadMenuItem = new JMenuItem("Reload");
+		jobPopupMenu.add(reloadMenuItem);
+      reloadMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				reload(((JobModel.JobNode) selectedJobNode).job);
 			}
 		});
       
-      final JMenuItem terminateJobMenuItem = new JMenuItem("Terminate Job");
+      final JMenuItem terminateJobMenuItem = new JMenuItem("Terminate Job", IconManager.loadIcon(IconManager.STOP_ICON));
 		terminateJobMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
             try {
@@ -546,16 +604,17 @@ public class MainFrame extends JFrame {
      
       jobPopupMenu.add(terminateJobMenuItem);
       
-		final AbstractAction deleteFilesAction = new AbstractAction(
-				"Delete Job") {
-			public void actionPerformed(ActionEvent e) {
-				jobModel.delete((JobModel.JobNode) selectedJobNode);
-			}
-		};
-		jobPopupMenu.add(deleteFilesAction);
+		final JMenuItem deleteJobMenuItem = new JMenuItem(
+				"Delete Job", IconManager.loadIcon(IconManager.DELETE_ICON));
+      deleteJobMenuItem.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+            jobModel.delete((JobModel.JobNode) selectedJobNode);
+         }
+      });
+		jobPopupMenu.add(deleteJobMenuItem);
 
 		final JMenu saveServerFileMenu = new JMenu("Save To");
-		JMenuItem saveToFileSystemMenuItem = new JMenuItem("Other...");
+		JMenuItem saveToFileSystemMenuItem = new JMenuItem("Other...", IconManager.loadIcon(IconManager.SAVE_AS_ICON));
 		saveToFileSystemMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				showSaveDialog((JobModel.ServerFileNode) selectedJobNode);
@@ -565,7 +624,7 @@ public class MainFrame extends JFrame {
 				.addProjectDirectoryListener(new ProjectDirectoryListener() {
 					public void projectAdded(ProjectEvent e) {
 						final File dir = e.getDirectory();
-						JMenuItem menuItem = new JMenuItem(dir.getPath());
+						JMenuItem menuItem = new JMenuItem(dir.getPath(), IconManager.loadIcon(IconManager.SAVE_ICON));
 						saveServerFileMenu.add(menuItem);
 						menuItem.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
@@ -606,13 +665,17 @@ public class MainFrame extends JFrame {
 		final JMenu serverFileSendToMenu = new JMenu("Send To");
 		serverFilePopupMenu.add(serverFileSendToMenu);
 
-		serverFilePopupMenu.add(new AbstractAction("Delete File") {
+      JMenuItem deleteFileMenuItem = new JMenuItem("Delete File", IconManager.loadIcon(IconManager.DELETE_ICON));
+		serverFilePopupMenu.add(deleteFileMenuItem);
+      deleteFileMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				jobModel.delete((JobModel.ServerFileNode) selectedJobNode);
 			}
 		});
       
-      JMenuItem jobResultFileTextViewerMenuItem = new JMenuItem("Text Viewer");
+      JMenu openWithMenu = new JMenu("Open With");
+      
+      JMenuItem jobResultFileTextViewerMenuItem = new JMenuItem("Text Viewer", IconManager.loadIcon(IconManager.TEXT_ICON));
       jobResultFileTextViewerMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
             new Thread() {
@@ -622,7 +685,21 @@ public class MainFrame extends JFrame {
             }.start();
 			}
 		});
-      serverFilePopupMenu.add(jobResultFileTextViewerMenuItem);
+      openWithMenu.add(jobResultFileTextViewerMenuItem);
+      
+      JMenuItem jobResultFileDefaultAppMenuItem = new JMenuItem("Default Application");
+      jobResultFileDefaultAppMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+            new Thread() {
+               public void run() {
+                  defaultApplication(selectedJobNode);
+               }
+            }.start();
+			}
+		});
+      openWithMenu.add(jobResultFileDefaultAppMenuItem);
+      serverFilePopupMenu.add(openWithMenu);
+      
       
 		jobResultsTree.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
@@ -636,52 +713,12 @@ public class MainFrame extends JFrame {
 					return;
 				}
 
-				TreeNode node = (TreeNode) path.getLastPathComponent();
-				if (node instanceof JobModel.ServerFileNode) {
-
-					final JobModel.ServerFileNode sn = (JobModel.ServerFileNode) node;
-
-					File downloadDir = new File("tmp");
-					if (!downloadDir.exists()) {
-						downloadDir.mkdir();
-					}
-					String name = sn.name;
-					int dotIndex = name.lastIndexOf(".");
-					String baseName = name;
-					String extension = "";
-					if (dotIndex > 0) {
-						baseName = name.substring(0, dotIndex);
-						extension = name.substring(dotIndex, name.length());
-					}
-					File download = new File(downloadDir, name);
-					int tries = 1;
-					while (download.exists()) {
-						String newName = baseName + "-" + tries + extension;
-						download = new File(downloadDir, newName);
-						tries++;
-					}
-					final File destination = download;
-					destination.deleteOnExit();
-					new Thread() {
-						public void run() {
-							try {
-								sn.download(destination);
-								String filePath = destination
-										.getCanonicalPath();
-								if (RUNNING_ON_MAC) {
-									String[] args = new String[] {
-											"/usr/bin/open", filePath };
-									Runtime.getRuntime().exec(args);
-								} else {
-									org.genepattern.util.BrowserLauncher
-											.openURL(filePath);
-								}
-							} catch (IOException ioe) {
-							}
-						}
-					}.start();
-
-				}
+				final TreeNode node = (TreeNode) path.getLastPathComponent();
+            new Thread() {
+               public void run() {
+                  defaultApplication(node);
+               }
+            }.start();
 			}
 
 			public void mousePressed(MouseEvent e) {
@@ -732,7 +769,7 @@ public class MainFrame extends JFrame {
 
 				if (selectedJobNode instanceof JobModel.JobNode) {
 					JobModel.JobNode node = (JobModel.JobNode) selectedJobNode;
-					deleteFilesAction.setEnabled(node.isComplete());
+					deleteJobMenuItem.setEnabled(node.isComplete());
                terminateJobMenuItem.setVisible(!node.isComplete());
 					jobPopupMenu.show(e.getComponent(), e.getX(), e.getY());
 				} else if (selectedJobNode instanceof JobModel.ServerFileNode) {
@@ -756,7 +793,8 @@ public class MainFrame extends JFrame {
 		final JMenu projectFileSendToMenu = new JMenu("Send To");
 		projectFilePopupMenu.add(projectFileSendToMenu);
 
-      JMenuItem projectFileTextViewerMenuItem = new JMenuItem("Text Viewer");
+      JMenu projectFileOpenWithMenu = new JMenu("Open With");
+      JMenuItem projectFileTextViewerMenuItem = new JMenuItem("Text Viewer", IconManager.loadIcon(IconManager.TEXT_ICON));
       projectFileTextViewerMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
             new Thread() {
@@ -766,11 +804,27 @@ public class MainFrame extends JFrame {
             }.start();
 			}
 		});
-      projectFilePopupMenu.add(projectFileTextViewerMenuItem);
+      projectFileOpenWithMenu.add(projectFileTextViewerMenuItem);
+      
+      JMenuItem projectFileDefaultAppMenuItem = new JMenuItem("Default Application");
+      projectFileDefaultAppMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+            new Thread() {
+               public void run() {
+                  defaultApplication(selectedProjectDirNode);
+               }
+            }.start();
+			}
+		});
+      projectFileOpenWithMenu.add(projectFileDefaultAppMenuItem);
+      
+      projectFilePopupMenu.add(projectFileOpenWithMenu);
       
       
 		projectDirPopupMenu = new JPopupMenu();
-		projectDirPopupMenu.add(new AbstractAction("Refresh") {
+      JMenuItem refreshProjectMenuItem = new JMenuItem("Refresh", IconManager.loadIcon(IconManager.REFRESH_ICON));
+		projectDirPopupMenu.add(refreshProjectMenuItem);
+      refreshProjectMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				projectDirModel
 						.refresh((ProjectDirModel.ProjectDirNode) selectedProjectDirNode);
@@ -778,8 +832,9 @@ public class MainFrame extends JFrame {
 		});
       
     
-
-		projectDirPopupMenu.add(new AbstractAction("Remove") {
+      JMenuItem removeProjectMenuItem = new JMenuItem("Remove", IconManager.loadIcon(IconManager.REMOVE_ICON));
+		projectDirPopupMenu.add(removeProjectMenuItem);
+      removeProjectMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				projectDirModel
 						.remove((ProjectDirModel.ProjectDirNode) selectedProjectDirNode);
@@ -806,21 +861,7 @@ public class MainFrame extends JFrame {
 				}
 
 				TreeNode node = (TreeNode) path.getLastPathComponent();
-				if (node instanceof ProjectDirModel.FileNode) {
-					try {
-						ProjectDirModel.FileNode fn = (ProjectDirModel.FileNode) node;
-						String filePath = fn.file.getCanonicalPath();
-						if (RUNNING_ON_MAC) {
-							String[] args = new String[] { "/usr/bin/open",
-									filePath };
-							Runtime.getRuntime().exec(args);
-						} else {
-							org.genepattern.util.BrowserLauncher
-									.openURL(filePath);
-						}
-					} catch (IOException ioe) {
-					}
-				}
+				defaultApplication(node);
 			}
 
 			public void mousePressed(MouseEvent e) {
@@ -1048,9 +1089,9 @@ public class MainFrame extends JFrame {
 
 		public AnalysisMenu(int type) {
 			if (type==VISUALIZERS) {
-				setText("Visualizers");
+				setText("Visualization");
 			} else if(type==DATA_ANALYZERS) {
-				setText("Data Analyzers");
+				setText("Analysis");
 			} else if(type==PIPELINES) {
             setText("Pipelines");
          } else {
@@ -1145,7 +1186,9 @@ public class MainFrame extends JFrame {
 		public HelpMenu() {
 			super("Help");
 
-			add(new AbstractAction("About") {
+         JMenuItem aboutMenuItem = new JMenuItem("About");
+			add(aboutMenuItem);
+         aboutMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					GenePattern.showAbout();
 				}
@@ -1180,24 +1223,21 @@ public class MainFrame extends JFrame {
 				}
 			});
 
-			add(new AbstractAction("Errors") {
+         JMenuItem errorsMenuItem = new JMenuItem("Errors", IconManager.loadIcon(IconManager.ERROR_ICON));
+         
+			add(errorsMenuItem);
+         errorsMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					GenePattern.showErrors();
 				}
 			});
-
-		//	add(new AbstractAction("Warnings") {
-		//		public void actionPerformed(ActionEvent e) {
-		//			GenePattern.showWarnings();
-		//		}
-		//	});
 		}
 	}
 
 	class FileMenu extends JMenu {
 		JobCompletedDialog jobCompletedDialog;
 
-		AbstractAction changeServerAction;
+		JMenuItem changeServerMenuItem;
 
 		JMenu refreshMenu;
 
@@ -1208,7 +1248,7 @@ public class MainFrame extends JFrame {
 		JFileChooser projectDirFileChooser;
 
 		public void changeServerActionsEnabled(boolean b) {
-			changeServerAction.setEnabled(b);
+			changeServerMenuItem.setEnabled(b);
 			refreshMenu.setEnabled(b);
 			refreshJobsMenuItem.setEnabled(b);
 			refreshTasksMenuItem.setEnabled(b);
@@ -1217,7 +1257,8 @@ public class MainFrame extends JFrame {
 		public FileMenu() {
 			super("File");
 			JMenuItem openProjectDirItem = new JMenuItem(
-					"Open Project Directory...");
+					"Open Project Directory...", IconManager.loadIcon(IconManager.NEW_PROJECT_ICON));
+               
 			openProjectDirItem.setAccelerator(KeyStroke.getKeyStroke('O',
 					MENU_SHORTCUT_KEY_MASK));
 			openProjectDirItem.addActionListener(new ActionListener() {
@@ -1270,7 +1311,8 @@ public class MainFrame extends JFrame {
 						}
 					});
 
-			changeServerAction = new javax.swing.AbstractAction("Server...") {
+			changeServerMenuItem = new JMenuItem("Server...");
+         changeServerMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 
 					final ChangeServerDialog dialog = new ChangeServerDialog(
@@ -1309,9 +1351,9 @@ public class MainFrame extends JFrame {
 							});
 
 				}
-			};
-			add(changeServerAction);
-			changeServerAction.setEnabled(false);
+			});
+			add(changeServerMenuItem);
+			changeServerMenuItem.setEnabled(false);
 
 			refreshMenu = new JMenu("Refresh");
 			add(refreshMenu);
