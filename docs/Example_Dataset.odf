@@ -1,0 +1,19 @@
+ODF 1.0
+HeaderLines=7
+Model=	Dataset
+COLUMN_NAMES:	Names	Description	Biopsy_1	Biopsy_2	Biopsy_4
+COLUMN_TYPES:	String	String	float	float	float
+COLUMN_DESCRIPTIONS:					
+RowNamesColumn=0
+RowDescriptionsColumn=1
+DataLines=	10
+1000_at	X60188 HSERK1 Human ERK1 mRNA for protein serine/threonine kinase	145.3	240.37823	158.66888	
+1001_at	X60957 HSTIEMR Human tie mRNA for putative receptor tyrosine kinase	20.5	31.139397	14.053186	
+1002_f_at	X65962 HSCP450 H.sapiens mRNA for cytochrome P-450	-9.6	118.06088	-8.287777	
+1003_s_at	X68149 HSBLR1A Homo sapiens BLR1 gene for Burkitt s lymphoma receptor 1	-71.6	-113.58039	-62.578716	
+1004_at	X68149 HSBLR1A Homo sapiens BLR1 gene for Burkitt s lymphoma receptor 1	7.5	-23.970615	8.047551	
+1005_at	X68277 HSCL100 H.sapiens CL 100 mRNA for protein tyrosine phosphatase	273.4	139.56723	50.447334	
+1006_at	X07820 HSSTROM2 Human mRNA for metalloproteinase stromelysin-2	3.8	38.532204	30.989077	
+1007_s_at	U48705 HSU48705 Human receptor tyrosine kinase DDR gene, complete cds	137.1	124.333565	135.60724	
+1008_f_at	U50648 HSIIPKR17 Human interferon-inducible RNA-dependent protein kinase (Pkr) gene, exon 17 and complete cds	2777.8	5956.5854	3211.934	
+1009_at	U51004 HSU51004 Homo sapiens protein kinase C inhibitor (PKCI-1) mRNA, complete cds	582.8	316.99457	672.8714	

@@ -1,0 +1,309 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+  <title>ODF format documentation</title>
+</head>
+<body>
+<div style="text-align: center;"><b>OmniSci Data Format (ODF) for files
+of Genes or Samples Properties</b><span style="font-weight: bold;">, </span><br>
+<span style="font-weight: bold;">formerly the </span><b> Self
+Documenting Format (SDF)</b><br>
+</div>
+<br>
+<br>
+Only the first two lines are initially expected by the parser:<br>
+<br>
+ODF 1.0<br>
+HeaderLines= int<br>
+DataLines= int<br>
+Model= String<br>
+<br>
+Where the first line identifies this file as a ODF file version 1.0.
+&nbsp; The
+second line indicates the number of other header lines that will
+immediately
+follow:
+<ol>
+  <li><b>ODF 1.0</b> &nbsp; &nbsp;(The magic string identifying this
+file as a OmniSci data format file version 1.0 Note: that SDF 1.0
+should also be expected and accepted by a parser)</li>
+  <li><b>HeaderLines= int&nbsp;</b> &nbsp; (The number of additional
+header lines that
+follow before the main data block)</li>
+  <li><span style="font-weight: bold;">DataLines= int&nbsp;&nbsp;&nbsp;
+    </span>(The
+number of lines of data in the table that follows the header lines.
+This
+must be present somewhere in the header even if it is zero)</li>
+  <li><span style="font-weight: bold;">Model= String</span>&nbsp;&nbsp;&nbsp;
+(This keyword is also required.&nbsp; It identifies what type of data
+object this file's content represents.) <br>
+  </li>
+  <li><b>KeyWord1=</b> Value1 (An assignment)<br>
+  </li>
+  <li><b>KEY_WORD: </b>Item one&nbsp;&nbsp; &nbsp; Item
+two&nbsp;&nbsp; &nbsp;Item three&nbsp;&nbsp; &nbsp;etc.&nbsp; (A
+delimited list of Strings that can represent other Objects such as
+numbers, dates,&nbsp; etc.)<br>
+  </li>
+  <li><span style="font-weight: bold;"># </span>Human-readable
+comments that are not parsed and not tallied in the
+header line count found on line two.</li>
+  <li><span style="font-weight: bold;">KeyWord3=</span> Value3<br>
+  </li>
+</ol>
+The first token of each header line will be a key word. &nbsp;The key
+word defines/describes
+what kind of meta data will be found on the rest of that line. We can
+define
+some basic key words initially but others may be introduced later
+without
+causing problems with current parsers. Internally the values on a line
+will
+be associated with the keyword. &nbsp;If the parser does not know the
+significance
+of a keyword a warning message be created, optional, but this will not
+be an error
+and parsing will continue.<br>
+<br>
+By convention, assignments will have only the first letter of a word or
+words
+in the key word capitalized and will be followed by an equals sign. For
+example <b>DataLines= 12626</b>. The key word is made from two words
+that are capitalized and concatinated together with out a space or
+other seperator.&nbsp; The key words that are followed by a list of
+delimited strings
+will be in all capitals then a colon. &nbsp;For example<b>
+COLUMN_NAMES: Colon cancer&nbsp;&nbsp;&nbsp; Brain
+cancer&nbsp;&nbsp;&nbsp; Colon normal&nbsp;&nbsp;&nbsp; Brain normal</b>.
+&nbsp;The parser will be more forgiving
+though, and will accept any case for the keywords and even white space
+characters
+between the key word and the equals or colon characters.&nbsp; The
+default delimiter will be a tab character (\t) see DELIMITER.<br>
+<br>
+<h2>Standard key words:</h2>
+<br>
+<b> COLUMN_NAMES: <br>
+</b>A delimited list of column names. Where the first column name will
+be
+assigned to the first column the second column name to the second
+column
+etc. &nbsp;See below for a full example.<br>
+<b><br>
+</b><b> COLUMN_</b><b>DESCRIPTIONS:<br>
+</b>A delimited list of column description strings. Where the first
+column&nbsp;description
+will be assigned to the first column the second column&nbsp;description
+to the
+second column etc. &nbsp;See below for a full example.<br>
+<b><br>
+</b><b> COLUMN_</b><b>TYPES:</b><br>
+This defines how the main data lines will be converted to an internal
+format.
+&nbsp;It also allows some verification of the integrity of the format
+of the data.
+&nbsp;For example if a column is defined to be of type <big><small><tt>int</tt>
+and the parser finds the value 2143658709</small></big> in that column
+it will be converted to a signed 4 byte integer value instead of a
+10 character String (20 bytes). &nbsp;So numerical data should take up
+much less
+space which will be important with large data files. This process also
+makes
+sure that the value represented really is a number. &nbsp;If this
+keyword is not
+present the parser will use the default String representation for each
+column.
+<br>
+<br>
+The following types will be initially supported:<br>
+<br>
+<table border="1" width="100%" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td><big><tt>byte</tt></big></td>
+      <td valign="top"><big><tt> </tt><small>signed </small></big>natural
+numbers<big><small> stored in a byte </small></big><big><small>which
+can
+represent values in the range</small></big><big><small> from -128 to 127</small></big><br>
+      </td>
+    </tr>
+    <tr>
+      <td><tt><big>short</big>&nbsp;</tt></td>
+      <td valign="top"><big><small>signed </small></big>natural numbers<big><small>
+stored in 2 bytes </small></big><big><small>which can represent values
+in
+the range</small></big><big><small> from</small></big><big><small>
+-32768
+to 32767</small></big><big><big><br>
+      </big></big></td>
+    </tr>
+    <tr>
+      <td><tt><big>int</big></tt></td>
+      <td valign="top"><big><small><big><small>signed </small></big>natural
+numbers<big><small> stored in 4 bytes </small></big><big><small>which
+can
+represent values in the range</small></big><big><small> from</small></big></small></big><big><small>
+-2147483648 to 2147483647</small></big><br>
+      </td>
+    </tr>
+    <tr>
+      <td><big><tt>long</tt>&nbsp;</big></td>
+      <td valign="top"><big><small><big><small>signed </small></big>natural
+numbers<big><small> stored in 8 bytes </small></big><big><small>which
+can
+represent values in the range</small></big><big><small> from</small></big></small></big><big><small>
+-9223372036854775808 to 9223372036854775807</small></big><br>
+      </td>
+    </tr>
+    <tr>
+      <td><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td><big><tt>float</tt></big></td>
+      <td valign="top">signed floating point numbers stored in 4 bytes
+which
+can represent values in the range from 1.4E-45 to 3.4028235E38<br>
+      </td>
+    </tr>
+    <tr>
+      <td><tt><big>double</big></tt></td>
+      <td valign="top">signed floating point numbers stored in 8 bytes
+which
+can represent values in the range from 4.9E-324 to
+1.7976931348623157E308<br>
+      </td>
+    </tr>
+    <tr>
+      <td><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td><tt><big>boolean</big></tt></td>
+      <td valign="top"> The <code>boolean</code> type has exactly two
+values: <code>true</code> and <code>false (case insensitive so
+"TRUE", "True", or even "tRuE" is ok)<br>
+      </code></td>
+    </tr>
+    <tr>
+      <td><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td><tt><big>char</big></tt></td>
+      <td valign="top">2 byte unsigned integer representing a Unicode
+character
+with values ranging from <code>'\u0000'</code> to <code>'\uffff'</code><br>
+      </td>
+    </tr>
+    <tr>
+      <td><tt><big>String</big></tt></td>
+      <td valign="top">Variable length array of characters &nbsp;see <tt>char</tt><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<b>Model=<br>
+</b>The identifier given to this set of data. &nbsp;For example the
+following
+are possible models "Prediction Results" or "Gene Properties" or
+"Dataset"
+(no quotes). <br>
+<br>
+Model = Prediction Results<br>
+<b><br>
+ROW_NAMES:<br>
+</b>A line that lists the names of the rows for a "Row Header" - the
+row
+version of the Column Header. &nbsp;See "RowNamesColumn= int" below.<br>
+<br>
+<b>ROW_DESCRIPTIONS:<br>
+</b>A line that lists the descriptions of the rows for a "Row Header" -
+the
+row version of the Column Header. &nbsp;See "RowDescriptionsColumn=
+int" below.<br>
+&nbsp; <br>
+<b>RowNamesColumn= int</b><br>
+The int value is the number of the column that will have names for each
+row.
+&nbsp;This is one way of defining the row names without putting them
+all on a
+single line. &nbsp;Instead each row will have its' name. See
+"ROW_NAMES:".<br>
+<br>
+<b>RowDescriptionsColumn= int</b><br>
+The int value is the number of the column that will have the
+descriptions
+for each row. &nbsp;This is one way of defining the row descriptions
+without putting
+them all on a single line. &nbsp;Instead each row will have its'
+description.&nbsp;
+See "ROW_DESCRIPTIONS:".<br>
+<br>
+<b>DELIMITER: </b>"delimiter string" "next delimiter string"<br>
+No<span style="font-style: italic;">te this feature is not implemented
+with the Java parser and only tabs are used as delimiters(the default).</span><br>
+If defined, it should be found on the third line. &nbsp;Otherwise the
+parser will
+use tabs, the default, in parsing the header lines until this line
+redefines
+the delimiter or delimiters. &nbsp;If not defined the default value is
+the tab
+character, "\t". It defines the delimiter string that will be used to
+separate
+data elements on a line that contains a list of items. &nbsp;There can
+be more
+than one delimiter defined. &nbsp;Use the Unix-like convention for
+defining control
+characters with a slash and then a letter (i.e. \t = tab \n= new line
+etc.).
+&nbsp;For example:<br>
+<small><br>
+</small>ODF 1.0<br>
+HeaderLines= 3 &nbsp;<br>
+# change the delimiters to include the string "&lt;&gt;" as well as the
+tab
+character - this is <u>not</u> equivalent to "&lt;&gt;\t"<br>
+DELIMITER: "\t" "&lt;&gt;"<br>
+Model= Prediction Results<br>
+COLUMN_NAMES: This one&nbsp;&nbsp;&nbsp; That one&nbsp;&nbsp;&nbsp; The
+third one<br>
+<br>
+<br>
+The DELIMITER: line defines that after the third line all data elements
+in
+a line with list data will be separated by either a tab or a open
+brackets
+- close brackets string. &nbsp;These delimiters will be applied to all
+subsequent
+lines in the file (header lines as well as main data lines).<br>
+<br>
+<b>DataLines= int</b><br>
+The integer value is the number of data lines. &nbsp;The data lines
+begin after
+the header lines and remarks. &nbsp;If the integer value is negative or
+if the
+DataLines assignment is absent then the number of data lines is unknown.<br>
+<br style="font-weight: bold;">
+<big style="font-weight: bold;">#</big><br style="font-weight: bold;">
+A remark is a human readable comment that is skipped by the parser.
+This
+line starts with the "#" character and can contain any type of text
+since
+it is not parsed. &nbsp; Note that remarks are not counted as header
+lines and
+the user can&nbsp; insert them "by hand".<br>
+<pre wrap=""><br><br><br></pre>
+</body>
+</html>

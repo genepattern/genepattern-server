@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+  <title>Dataset ODF Description</title>
+</head>
+<body>
+<h2 style="text-align: center;">Dataset ODF format</h2>
+<h3>Introduction:</h3>
+This document can only be understood in the context of the ODF Format
+documention.&nbsp; If you have not done so please read it first (<a
+ href="ODF_format_documentation.html">ODF Documentation</a>). <br>
+<br>
+The ODF format is supposed to be somewhat similar to the RES or GCT
+file formats for Datasets.&nbsp; The main difference is in the
+header.&nbsp; The body of data contains the expression level values for
+each gene in each sample. Thus the main data block (after the header
+lines) is a matrix of values.&nbsp; The matrices
+columns are defined by a name and optionally a description.&nbsp; The
+rows have a name (name of the gene for instance) and a description
+(description of the gene).&nbsp; The columns are the expression values
+for each gene in a sample.&nbsp; Each sample has expression values for
+the same named gene in a row.&nbsp; So if the first gene is a
+particular Tyrosine Kinase then each of the samples will have
+expressions values for that particular Tyrosine Kinase in the first
+row. See the <a href="Example_Dataset.odf">Example_Dataset.odf</a> for
+reference.<br>
+<h3>Typical ODF header for a Dataset</h3>
+<ol>
+  <li style="font-family: monospace;">ODF 1.0</li>
+  <li style="font-family: monospace;">HeaderLines=7</li>
+  <li style="font-family: monospace;">Model=&nbsp; Dataset</li>
+  <li style="font-family: monospace;">COLUMN_NAMES:&nbsp;&nbsp;
+Name&nbsp;&nbsp;&nbsp;
+Description&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Sample
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Biopsy_2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Biopsy_4 </li>
+  <li style="font-family: monospace;">COLUMN_DESCRIPTIONS:&nbsp;&nbsp;&nbsp;
+Sample from DFCI&nbsp; Sample from UK&nbsp;&nbsp; Sample from Children's</li>
+  <li style="font-family: monospace;">COLUMN_TYPES:&nbsp;&nbsp;
+String&nbsp; String&nbsp;
+float&nbsp; float&nbsp; float</li>
+  <li style="font-family: monospace;">RowNamesColumn=0</li>
+  <li style="font-family: monospace;">RowDescriptionsColumn=1</li>
+  <li style="font-family: monospace;">DataLines= 3<br>
+  </li>
+</ol>
+Lines 1 and 2 are the required first and second lines that signify that
+this is an ODF formatted file and how many header lines follow before
+the main data block.&nbsp; Line 3, required to be somewhere in the
+header of an ODF file, defines this ODF file as containing Dataset
+data.&nbsp; Line 4 is the tab delimited list of names of the columns.
+Line 5 is the tab delimited list of column descriptions for each
+column. Line 6, is required for any ODF file that has a main data
+block, defines the type of data in each column.&nbsp; Line 7 defines
+which column will have the row names.&nbsp; Line 8 defines which column
+will have the row descriptions.&nbsp; Line 9, is required for any ODF
+file that has a main data block, is the number of rows in the main data
+block.<br>
+<br>
+<span style="font-weight: bold;">Notes:</span><br>
+<br>
+The number of data lines can be quite large. For example, the U133A
+chip measures the expression values for about 20,000 human genes.&nbsp;
+A Dataset created from several samples using the U133A gene chip could
+have a large value for the DataLines tag.<br>
+<br>
+The COLUMN_NAMES:, COLUMN_DESCRIPTIONS:, and COLUMN_TYPES: lists
+must have the same number of elements.&nbsp; Also the number of
+elements must be equal to the number of columns in the main data block.<br>
+<br>
+The COLUMN_NAMES:, and&nbsp; COLUMN_DESCRIPTIONS: could be empty, that
+is with the proper number of tabs and no text.<br>
+<br>
+The row names and row descriptions could be defined as ROW_NAMES:, and
+ROW_DESCRIPTIONS: lists instead of having columns containing the row
+names and descriptions.&nbsp; This is like the COLUMN_NAMES:,
+COLUMN_DESCRIPTIONS: lists.&nbsp; Either ROW_NAMES: or RowNamesColumn=
+tags will be used, but
+not both. The same goes for using either ROW_DESCRIPTIONS: or
+RowDescriptionsColumn= but not both.<br>
+<br>
+General note about the header: It is possible that modified dataset
+files could exist that have additional tags not defined here.&nbsp; Any
+parser of a dataset should not fail if this is encountered but just
+keep track of the unknown attributes.&nbsp; Or at the very least ignore
+them.<br>
+<h3>Main Data Block (example first few lines)</h3>
+<span style="font-family: monospace;">1000_at&nbsp;&nbsp;&nbsp; X60188
+HSERK1 Human ERK1 mRNA&nbsp;&nbsp;&nbsp; 145.3&nbsp;&nbsp;
+240.37823&nbsp;&nbsp;&nbsp; 158.66888</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">1001_at&nbsp;&nbsp;&nbsp; X60957
+HSTIEMR Human tie mRNA&nbsp;&nbsp;&nbsp; 20.5&nbsp;&nbsp;&nbsp;
+31.139397&nbsp;&nbsp;&nbsp; 14.053186</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">1002_f_at&nbsp; X65962 HSCP450
+H.sapiens mRNA&nbsp;&nbsp;&nbsp; -9.6&nbsp;&nbsp;&nbsp;
+118.06088&nbsp;&nbsp;&nbsp; -8.287777</span><br>
+<br>
+The main data block is consistent with the header.&nbsp; The first
+COLUMN_NAMES element is "Name".&nbsp; This label is associated with the
+first&nbsp; column (values: 1000_at, 1001_at, and 1002_f_at).&nbsp; The
+second column's label is "Description" which is associated with the
+second column of the main data block.&nbsp; The next three columns are
+floating point numbers that represent the gene expression values for
+each of the samples.<br>
+<br>
+<span style="font-weight: bold;">Notes:</span><br>
+<br>
+The first two columns are just text data, and next three columns only
+contain floating point values.&nbsp; This is consistent with the
+String, String, float, float, float elements in the COLUMN_TYPES: list.<br>
+<br>
+<br>
+</body>
+</html>

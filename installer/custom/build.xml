@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="installer" name="customcode">
+
+    <target name="compile">
+
+		<javac debug="true" destdir="." 
+				target="1.3"
+				optimize="false" proceed="false" srcdir="src">
+
+	    		<classpath>
+				<filelist dir="." files="IAClasses.zip"/>
+            	</classpath>
+        	</javac>
+
+	</target>
+
+	<target name="package">
+
+ 		<jar basedir="." 
+			defaultexcludes="true" 
+			excludes="**/*.java **/*.zip **/.nbattrs **/.DS_Store" 
+			includes="**/*.class" 
+			jarfile="../gpcustom.jar" />
+
+	</target>
+
+</project>
+

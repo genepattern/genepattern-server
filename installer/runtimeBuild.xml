@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="post-install" name="post-install">
+	<target name="init">
+		<property name="output.dir" value="webapps/gp"/>
+		<property name="downloadDir" value="${output.dir}/downloads"/>
+		<property name="Rlib" value="${R}/library/"/> 
+		<property name="tar-file" value="${downloadDir}/GenePattern_0.1-0.tar.gz"/>
+		<property name="zip-file" value="${downloadDir}/GenePattern_0.1-0.zip"/>
+		<mkdir dir="${downloadDir}"/>
+	</target>
+	
+	<target name="create-zip" depends="init">
+		<zip basedir="${Rlib}" destfile="${zip-file}" whenempty="fail" update="true">
+			<include name="GenePattern/**"/>
+		</zip>
+	</target>
+	
+	<target name="create-tar" depends="init">
+		<tar basedir="${Rlib}" destfile="${tar-file}" compression="gzip" includes="GenePattern/**"/>
+	</target>
+	
+	<target name="create-tar-and-zip" depends="create-zip, create-tar" />
+
+	<target name="copyRSource" depends="init">
+		<copyfile src="${Rlib}GenePattern/R/GenePattern" dest="${output.dir}/GenePattern.R"/>
+	</target>
+
+	<target name="post-install" depends="create-tar-and-zip, copyRSource"/>
+
+	<target name="sleep5seconds">
+		<sleep seconds="5"/>
+	</target>
+
+	<target name="waitForStartup">	
+		<waitfor maxwait="30" maxwaitunit="second">
+		     <http url="http://127.0.0.1:${port}/gp/installFrame.html"/>
+		</waitfor>
+	</target>
+
+     
+	<target name="zip_old_tasks">
+		<delete file="${basedir}/../resources/GenePatternDB.lck"/>
+		<echo> BASE= ${basedir}</echo>
+		<java classname="edu.mit.genome.gp.server.ZipTask" fork="true">
+		    <jvmarg value="-Dgenepattern.properties=${basedir}/../resources"/>
+     		    <jvmarg value="-Dlog4j.configuration=${basedir}/webapps/gp/WEB-INF/classes/log4j.properties"/>
+     		    <arg value="${basedir}/../modules_pre_12"/> 
+        		 <classpath>
+			    	<fileset dir="${basedir}/webapps/gp/WEB-INF/lib">
+        				<include name="**/*.jar"/>
+    				</fileset>      
+ 		   		<pathelement location="${basedir}/webapps/gp/WEB-INF/classes"/>
+  			</classpath>
+       	</java>
+	</target>
+
+	<target name="load_old_custom_zipped_tasks">
+		
+		<java classname="edu.mit.genome.gp.server.InstallTasks" fork="true" output="${basedir}/install_old_custom_modules.out">
+		    <jvmarg value="-Dgenepattern.properties=${resourcedir}"/>
+     		    <jvmarg value="-DexcludeTasksFromLSIDAuthority=broad.mit.edu"/>
+     		    <jvmarg value="-Dlog4j.configuration=${basedir}/webapps/gp/WEB-INF/classes/log4j.properties"/>
+     		    <arg value="${oldTasksZipDir}"/> 
+        		 <classpath>
+			    	<fileset dir="${basedir}/webapps/gp/WEB-INF/lib">
+        				<include name="**/*.jar"/>
+    				</fileset>      
+ 		   		<pathelement location="${basedir}/webapps/gp/WEB-INF/classes"/>
+  			</classpath>
+       	</java>
+	</target>
+
+
+
+	<target name="create_database">
+		<java classname="edu.mit.genome.gp.server.CreateDatabase" fork="true">
+		    <jvmarg value="-Dgenepattern.properties=${basedir}/../resources"/>
+     		    <jvmarg value="-Dlog4j.configuration=${basedir}/webapps/gp/WEB-INF/classes/log4j.properties"/>
+     		    <arg value="${basedir}/../modules"/> 
+     		    <classpath>
+     		    	<fileset dir="${basedir}/webapps/gp/WEB-INF/lib">
+        			<include name="**/*.jar"/>
+    			</fileset>      
+ 		   	<pathelement location="${basedir}/webapps/gp/WEB-INF/classes"/>
+     		    </classpath>
+	       	</java>
+	</target>
+
+
+</project>
