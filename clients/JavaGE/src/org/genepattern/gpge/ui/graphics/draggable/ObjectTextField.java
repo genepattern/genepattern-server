@@ -21,6 +21,7 @@ import java.util.List;
 import javax.swing.border.EtchedBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
+import org.genepattern.gpge.ui.graphics.draggable.TransferableTreePath;
 /**
  *
  * @author  kohm
@@ -162,10 +163,10 @@ public class ObjectTextField extends javax.swing.JTextField {
                     if( flavor.isMimeTypeEqual(DataFlavor.javaJVMLocalObjectMimeType) ) {
                         final TreePath pathSource = (TreePath) transferable.getTransferData(flavor);
                         final Object last = pathSource.getLastPathComponent();
-                        System.out.println("DROPPING: "+last);
+               
                         if( last instanceof DefaultMutableTreeNode) {
                             final DefaultMutableTreeNode node = (DefaultMutableTreeNode)last;
-                            setObject(node.getUserObject());
+                            setObject(node);
                             dropComplete = true;
                             break;
                         } else if( last instanceof org.genepattern.gpge.ui.treetable.FileNode ) {
