@@ -78,6 +78,18 @@ public class TaskLauncher {
 		}.start();
 	}
 
+   public static void waitUntilCompletionInNewThread(final AnalysisJob job) {
+      new Thread() {
+         public void run() {
+            try {
+               waitUntilCompletion(job, null);  
+            } catch(Exception e) {
+               e.printStackTrace();  
+            }
+         }
+      }.start();
+   }
+   
 	static AnalysisJob submitAndWaitUntilCompletion(ParameterInfo[] paramInfos,
 			final AnalysisWebServiceProxy serviceProxy,
 			final AnalysisService svc) throws Exception {
@@ -87,11 +99,17 @@ public class TaskLauncher {
 				paramInfos);
 		final AnalysisJob job = new AnalysisJob(svc.getServer(), svc
 				.getTaskInfo().getName(), jobInfo);
-
-		JobModel.getInstance().add(job);
+      JobModel.getInstance().add(job);
+      return waitUntilCompletion(job, serviceProxy);
+   }
+   
+   static AnalysisJob waitUntilCompletion(AnalysisJob job, AnalysisWebServiceProxy serviceProxy) throws Exception {
+      
 		String status = "";
 		JobInfo info = null;
-
+      if(serviceProxy==null) {
+         serviceProxy = new AnalysisWebServiceProxy(job.getServer(), "GenePattern"); // FIXME  
+      }
 		int initialSleep = 100;
 		int sleep = initialSleep;
 		int tries = 0;

@@ -125,12 +125,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 				}
 			}
    }
-      
-	public void removeAll() {
-		root.removeAllChildren();
-		nodeStructureChanged(root);
-	}
-
+   
 	public void addJobListener(JobListener l) {
 		listenerList.add(JobListener.class, l);
 	}
@@ -317,6 +312,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 	public void getJobsFromServer(String server, String username) {
 		try {
+         root.removeAllChildren();
 			AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(server,
 					username);
 			AnalysisJob[] jobs = proxy.getJobs();
@@ -326,8 +322,13 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			if (jobs != null) {
 				for (int i = 0; i < jobs.length; i++) {
                JobNode child = new JobNode(jobs[i]);
-               child.getOutputFiles();
-               
+               boolean waitUntilCompletion = false;
+               if(jobs[i].getJobInfo().getStatus().equals(JobStatus.FINISHED) || jobs[i].getJobInfo().getStatus().equals(JobStatus.ERROR)) {
+                  child.getOutputFiles();
+               } else {
+                  waitUntilCompletion = true;
+               }
+
                int insertionIndex = Collections.binarySearch(children, child,
                         comparator);   
                
@@ -336,8 +337,12 @@ public class JobModel extends AbstractSortableTreeTableModel {
                }
                
                root.insert(child, insertionIndex);
+               if(waitUntilCompletion) {
+                  TaskLauncher.waitUntilCompletionInNewThread(jobs[i]);  
+               }
 				}
 			}
+         System.out.println("children " + root.getChildCount());
          nodeStructureChanged(root);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -381,7 +386,11 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			default:
 				JobInfo jobInfo = j.job.getJobInfo();
 				if (!j.complete) {
-					return jobInfo.getStatus();
+              String status = jobInfo.getStatus();
+              if(status.equals(JobStatus.NOT_STARTED)) {
+                  status = "Pending";  
+              }
+					return status;
 				}
 
 				Date d = jobInfo.getDateCompleted();
