@@ -140,7 +140,7 @@ public class FileInfoComponent extends JLabel {
 				throws IOException {
          OdfParser odfParser = new OdfParser();
          OdfSummaryHandler odfHandler = new OdfSummaryHandler();
-         
+         odfParser.setHandler(odfHandler);
 			int dotIndex = name.lastIndexOf(".");
 			String kind = "";
          String type = null;
