@@ -22,14 +22,13 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.PropertyFactory;
-import org.genepattern.util.RequestHandlerFactory;
 import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.RequestHandler;
+import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.TaskInfo;
 
 
@@ -40,7 +39,7 @@ public class RunPipeline {
 
    static String GP_URL = "";
    static RunPipelineOutputDecoratorIF decorator = new RunPipelineBasicDecorator();  
-   static RequestHandlerFactory rhFactory;
+   static AnalysisWebServiceProxy analysisProxy;
    static String analysisServiceURL;
    static String analysisServiceSiteName;
    static AdminProxy adminProxy;
@@ -246,7 +245,7 @@ protected static JobInfo executeTask(JobSubmission jobSubmission, ParameterInfo[
       System.exit(0);
    }
    
-   AnalysisService svc = new AnalysisService(analysisServiceSiteName, analysisServiceURL, task);
+   AnalysisService svc = new AnalysisService(analysisServiceSiteName, task);
 	AnalysisJob job = submitJob(svc, params);
 	JobInfo jobInfo = waitForErrorOrCompletion(job);
 	return jobInfo;
@@ -342,11 +341,9 @@ public  static String getOutputFileName(org.genepattern.webservice.JobInfo job, 
   * submit a job based on a service and its parameters
   */
 public static AnalysisJob submitJob(AnalysisService svc, ParameterInfo[] parmInfos) throws Exception{
-
 	TaskInfo tinfo = svc.getTaskInfo();
-	RequestHandler handler = rhFactory.getRequestHandler(svc.getName());
-	final JobInfo job = handler.submitJob(tinfo.getID(), parmInfos);
-	final AnalysisJob aJob = new AnalysisJob( svc.getName(), svc.getTaskInfo().getName(), job);
+	final JobInfo job = analysisProxy.submitJob(tinfo.getID(), parmInfos);
+	final AnalysisJob aJob = new AnalysisJob( svc.getServer(), tinfo.getName(), job);
 	return aJob;
 }
 
@@ -370,7 +367,7 @@ public static JobInfo waitForErrorOrCompletion(AnalysisJob job, int maxTries, in
 	while (!(status.equalsIgnoreCase("ERROR") || (status.equalsIgnoreCase("Finished")))) {
 	    count++;
 	    Thread.currentThread().sleep(sleep);
-	    info = rhFactory.getInstance().getRequestHandler(job.getSiteName()).checkStatus(job.getJobInfo().getJobNumber());
+	    info = analysisProxy.checkStatus(job.getJobInfo().getJobNumber());
 	    status = info.getStatus(); 
 	  //  if (count > maxTries) break;
 	    sleep = incrementSleep(initialSleep, maxTries, count);
@@ -427,8 +424,9 @@ protected static void setUp(String userID) {
       Properties omnigeneProperties = property.getProperties("omnigene.properties");
       analysisServiceURL  = omnigeneProperties.getProperty("analysis.service.URL");
 		analysisServiceSiteName = omnigeneProperties.getProperty("analysis.service.site.name", "Broad Institute");
-      rhFactory = RequestHandlerFactory.getInstance(userID, password);
-      adminProxy = new AdminProxy("http://" + InetAddress.getLocalHost().getCanonicalHostName() + ":" + genepatternProps.getProperty("GENEPATTERN_PORT"), userID);
+      String server = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + ":" + genepatternProps.getProperty("GENEPATTERN_PORT");
+      analysisProxy = new AnalysisWebServiceProxy(server,userID);
+      adminProxy = new AdminProxy(server, userID);
 /*******************
 		String classPath = System.getProperty("java.class.path");
 		System.out.println("classpath was " + classPath);
