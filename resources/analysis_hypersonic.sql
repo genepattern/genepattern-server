@@ -18,11 +18,12 @@ create index idx_lsid_version on lsids(lsid_version);
 
 --Job Info table
 
-create table analysis_job(job_no int identity primary key, task_id int, status_id int, date_submitted timestamp, date_completed timestamp, parameter_info longvarchar, user_id longvarchar, isIndexed bit, access_id int, job_name longvarchar, lsid varchar(200), task_lsid varchar(200), task_name longvarchar, parent int);
+create table analysis_job(job_no int identity primary key, task_id int, status_id int, date_submitted timestamp, date_completed timestamp, parameter_info longvarchar, user_id longvarchar, isIndexed bit, access_id int, job_name longvarchar, lsid varchar(200), task_lsid varchar(200), task_name longvarchar, parent int, deleted bit default false);
 
-create index idx_job_lsid on analysis_job(lsid);
+create index idx_analysis_job_lsid on analysis_job(lsid);
 create index idx_analysis_job_parent on analysis_job(parent);
-create index idx_analysis_job_no on analysis_job(job_no);
+create index idx_analysis_job_job_no on analysis_job(job_no);
+create index idx_analysis_job_deleted on analysis_job(deleted);
 
 --Job Status Info table
 create table Job_status(status_id int, status_name varchar(20));
