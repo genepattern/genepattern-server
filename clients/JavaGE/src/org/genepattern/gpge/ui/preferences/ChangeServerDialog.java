@@ -33,8 +33,12 @@ public class ChangeServerDialog extends JDialog {
    private JLabel serverLabel, portLabel, usernameLabel;
    private JTextField portTextField, serverTextField, usernameTextField;
 
+   public ChangeServerDialog(java.awt.Frame owner, boolean modal) {
+      super(owner, "Server Settings", modal);
+   }
+   
    public ChangeServerDialog(java.awt.Frame owner) {
-      super(owner, "Server Settings", false);
+      this(owner, false);
    }
 
    public void show(String server, String username, ActionListener okListener) {
