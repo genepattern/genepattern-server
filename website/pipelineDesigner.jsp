@@ -264,6 +264,37 @@ function isRSafe(varName) {
 	return ret;
 }
 
+function chooseInheritTask(taskNum, param) {
+	var frm = document.forms['pipeline'];
+	frm['t' + taskNum + '_shadow' + param].value="";
+	var ctl = frm['t' + taskNum + '_i_' + param];
+	var inheritFromTaskNum = ctl.options[ctl.options.selectedIndex].value;
+	var lsid = frm['t' + inheritFromTaskNum + '_taskLSID'].value;
+	var ti = TaskInfos[lsid];
+	var fileFormats = ti.fileFormats;
+	
+	ctl = frm['t' + taskNum + '_if_' + param];
+	// clear any previous entries in the file number selector
+	ctl.options.length = 0;
+
+	// semantic knowledge first!
+	ctl.options[ctl.options.length]  = new Option('Choose output file from ' + ti.name, 'NOT_SET');
+	for (f = 0; f < fileFormats.length; f++) {
+		var ff = fileFormats[f];
+		ctl.options[ctl.options.length]  = new Option(ff, ff);
+	}
+	if (fileFormats.length > 0) {
+		ctl.options[ctl.options.length]  = new Option('', 'NOT_SET');
+	}
+
+	ctl.options[ctl.options.length]  = new Option('1st output', '1');
+	ctl.options[ctl.options.length]  = new Option('stdout', 'stdout');
+	ctl.options[ctl.options.length]  = new Option('stderr', 'stderr');
+	ctl.options[ctl.options.length]  = new Option('2nd output', '2');
+	ctl.options[ctl.options.length]  = new Option('3rd output', '3');
+	ctl.options[ctl.options.length]  = new Option('4th output', '4');
+}
+
 function promptOnRunChecked(checkbox, taskNum, param, paramName) {
 	var frm = checkbox.form;
 	if (checkbox.checked) {
@@ -582,20 +613,14 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 				     '" type="text" readonly size="130" tabindex="-1" class="shadow" style="{ border-style: none; font-style: italic; font-size=9pt; background-color: transparent }">';
 			if (taskNum > 0) {
 				taskFields = taskFields + '<br><nobr>or use output from <select name="t' + taskNum + '_i_' + param + 
-							  '" onchange="javascript:document.forms[\'pipeline\'].t' + taskNum + '_shadow' + param + 
-							  '.value=\'\'; "><option value="NOT SET">Choose task</option>\n';
+							  '" onchange="chooseInheritTask(' + taskNum + ', ' + param + ')"><option value="NOT SET">Choose task</option>\n';
 				for (t = 0; t < taskNum; t++) {
 					taskFields = taskFields + '<option value="' + t + '">' + (t+1) + '.  ' + 
 						     document.forms['pipeline']['t' + t + '_taskName'].value + '</option>\n';
 				}
 				taskFields = taskFields + ' </select>\n';
 				taskFields = taskFields + ' <select name="t' + taskNum + '_if_' + param + '">\n';
-				taskFields = taskFields + '<option value="1">1st output</option>\n';
-				taskFields = taskFields + '<option value="stdout">stdout</option>\n';
-				taskFields = taskFields + '<option value="stderr">stderr</option>\n';
-				taskFields = taskFields + '<option value="2">2nd output</option>\n';
-				taskFields = taskFields + '<option value="3">3rd output</option>\n';
-				taskFields = taskFields + '<option value="4">4th output</option>\n';
+				// this selector will be filled in dynamically by chooseInheritTask when the task is selected
 				taskFields = taskFields + ' </select></nobr>\n';
 			}
 			if (pi.description.length > 0 && pi.description != pi.name.replace(/\./g,' ').replace(/\_/g,' ')) taskFields = taskFields + '<br>' + pi.description;
