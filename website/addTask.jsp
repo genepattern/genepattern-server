@@ -50,6 +50,7 @@ int NUM_PARAMETERS = 5;
 int NUM_EXTRA_PARAMETERS = GPConstants.MAX_PARAMETERS - NUM_PARAMETERS;
 String DELETE = "delete";
 String CLONE = "clone";
+String RUN  = "run";
 String taskName = request.getParameter(GPConstants.NAME);
 String attributeName = null;
 String attributeValue = null;
@@ -147,6 +148,15 @@ function cloneTask() {
 		break;
 	}
 }
+
+function runTask() {
+	while (true) {
+		window.location = "runTask.jsp?<%= GPConstants.NAME %>=<%= taskName %>&<%= GPConstants.LSID %>=<%= tia.get(GPConstants.LSID) %>&<%= GPConstants.USERID %>=<%= userID %>";
+		break;
+	}
+}
+
+
 <% } %>
 
 function addNewTaskType() {
@@ -306,7 +316,10 @@ Please enter the following information to submit a new or updated analysis task 
    onclick="if (window.confirm('Really delete the ' + document.forms['task'].<%= GPConstants.NAME %>.value + ' task?')) { window.location='saveTask.jsp?delete=1&<%= GPConstants.NAME %>=' + document.forms['task'].<%= GPConstants.NAME %>.value + '&<%= GPConstants.LSID %>=' + document.forms['task'].<%= GPConstants.LSID %>.value; }">
 <% } %>
 <% if (taskInfo != null) { %>
+  <input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
   <input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
+  
+
 <% } %>
 
    &nbsp;&nbsp;&nbsp;<select onchange="javascript:if (this.options[this.selectedIndex].value != '<%= DONT_JUMP %>') window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'">
@@ -597,7 +610,9 @@ if (taskName != null) {
 %>
 		<input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button">
 <%	} else { %>
+		<input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
 		<input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
+ 		
 <% 	} 
   }
 %>

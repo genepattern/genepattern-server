@@ -123,8 +123,10 @@ if(showEdit) {
 	out.println("  <input type=\"button\" value=\"edit\" name=\"edit\" class=\"little\" onclick=\"window.location='" + editURL + "'\"; />");
 }
 out.println("  <input type=\"button\" value=\"clone...\" name=\"clone\"       class=\"little\" onclick=\"cloneTask('"+displayName+"', '" + pipelineName + "', '" + userID + "')\"; />");
-out.println("  <input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runPipeline.jsp?cmd=run&name="+pipelineName + "')\"; />");
-				
+
+if (! RunPipelineForJsp.isMissingTasks(model, userID)){
+	out.println("  <input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runPipeline.jsp?cmd=run&name="+pipelineName + "')\"; />");
+}				
 out.println("&nbsp;&nbsp;<form name=\"form1\"><input name=\"togglecb\" type=\"checkbox\" onClick=toggle();>Show Input Parameters</input><input name=\"togglelsid\" type=\"checkbox\" onClick=toggleLSID();>Show LSIDs</input></form>");
 
 try {
@@ -163,7 +165,7 @@ for(int i = 0; i < tasks.size(); i++) {
    if(formalParams==null) {
       formalParams = new ParameterInfo[0];
    }
-	if(formalTask==null) {
+   if(formalTask==null) {
       out.print("<font color='red'>"+ js.getName()  + "</font></font> is not present on this server.");
       tia = new HashMap();
       formalParams = new ParameterInfo[0];
@@ -295,8 +297,10 @@ if (informalParam == null) {
    
 
 }out.println("<table cellspacing='0' width='100%' frame='box'>");
-out.println("<table width='100%'><tr><td align='center'><input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runPipeline.jsp?cmd=run&name="+pipelineName + "')\"; /></td></tr></table>");
+if (! RunPipelineForJsp.isMissingTasks(model, userID)){
 
+out.println("<table width='100%'><tr><td align='center'><input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runPipeline.jsp?cmd=run&name="+pipelineName + "')\"; /></td></tr></table>");
+}
 
 %>
 <jsp:include page="footer.jsp"></jsp:include>

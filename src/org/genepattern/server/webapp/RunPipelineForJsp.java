@@ -19,6 +19,7 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.OmnigeneException;
 
 public class RunPipelineForJsp {
     public static int jobID = -1;
@@ -58,13 +59,13 @@ public class RunPipelineForJsp {
          }
       }
 
-      if((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) {
+      if (((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) && (out != null)) {
          out.println("<font color='red' size=\"+1\"><b>Warning:</b></font><br>The following task versions do not exist on this server. Before running this pipeline you will need to edit the pipeline to use the available version or import them.");
          out.println("<table width='100%'  border='1'>");
          out.println("<tr bgcolor='#efefff'><td> Name </td><td> Required Version</td><td> Available Version</td><td>LSID</td></tr>");
 
       }
-      if((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) {
+      if(((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) && (out != null)) {
          out.println("<form method=\"post\" action=\"taskCatalog.jsp\">");
       }
 
@@ -100,7 +101,7 @@ public class RunPipelineForJsp {
          out.println("<tr bgcolor='#efefff'>");
          out.println("<td colspan='4' align='center' border = 'none'> <a href='addZip.jsp'>Import zip file </a>");
          out.println(" &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ");
-
+	out.println("<input type=\"hidden\" name=\"checkAll\" value=\"1\"  >");
          out.println("<input type=\"submit\" value=\"install/update from catalog\"  ></td></form>");
          out.println("</tr>");
 
@@ -109,7 +110,22 @@ public class RunPipelineForJsp {
       return isMissingTasks;
    }
 
-
+ public static boolean isMissingTasks(PipelineModel model, String userID) {
+      java.util.List tasks = 	model.getTasks();		
+	try {
+          for(int ii = 0; ii < tasks.size(); ii++) {
+             JobSubmission js = (JobSubmission) tasks.get(ii);
+             boolean unknownTask = !GenePatternAnalysisTask.taskExists(js.getLSID(), userID);
+             if(unknownTask) {
+                 return true;
+             }
+          }
+	} catch (OmnigeneException e){
+		return true; // be defensive about running if there is an exception
+	}
+	return false;
+    }
+      
 
     public static boolean deletePipelineDirAfterRun(String pipelineName){
         boolean deleteDirAfterRun = false;
