@@ -670,7 +670,16 @@ public class MainFrame extends JFrame {
 		serverFilePopupMenu.add(deleteFileMenuItem);
       deleteFileMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				jobModel.delete((JobModel.ServerFileNode) selectedJobNode);
+               JobModel.ServerFileNode serverFileNode = (JobModel.ServerFileNode) selectedJobNode;
+            try {
+               jobModel.delete(serverFileNode);
+            } catch(WebServiceException wse) {
+               if(wse.getRootCause() instanceof FileNotFoundException) {
+                  GenePattern.showMessageDialog("File deleted", "The file " + JobModel.getJobResultFileName(serverFileNode) + " has been deleted");  
+               } else {
+                  wse.printStackTrace();  
+               }
+            }
 			}
 		});
       
