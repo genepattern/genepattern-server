@@ -2,6 +2,7 @@ package org.genepattern.server.process;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -15,6 +16,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -94,8 +97,19 @@ public class CommandLineAction {
 		if (!checkSchema(resourceDir, props)) {
 			createSchema(resourceDir, props);
 			if (!checkSchema(resourceDir, props)) {
+				System.err.println("schema didn't check after creating");
+/*
+				if (hadToStartDB) {
+					System.out.println("stopping database because I started it");
+					Connection conn = getConnection(props);
+					Statement stmt = conn.createStatement();
+					stmt.executeUpdate("SHUTDOWN COMPACT");
+					stmt.close();
+					conn.close();
+				}
 				throw new IOException(
 						"unable to successfully create task_master table.  Other tables also suspect.");
+*/
 			}
 		}
 		return hadToStartDB;
@@ -202,35 +216,71 @@ public class CommandLineAction {
 		return props;
 	}
 
-	private boolean checkSchema(String resourceDir, Properties props)
-			throws SQLException, IOException {
-		if (DEBUG)
-			System.out.print("checking schema: ");
-		DatabaseMetaData dbmd = conn.getMetaData();
-		ResultSet rs = dbmd.getTables(null, null, null,
-				new String[] { "TABLE" });
-		boolean hasTaskMaster = false;
-		String tableName = null;
-		while (rs.next()) {
-			tableName = rs.getString("table_name");
-			if (DEBUG)
-				System.out.print(tableName + " ");
-			if (tableName.equalsIgnoreCase("TASK_MASTER"))
-				hasTaskMaster = true;
+	private boolean checkSchema(String resourceDir, Properties props) {
+		if (DEBUG) System.out.println("checking schema");
+		boolean upToDate = false;
+		// check schemaVersion
+		try {
+			String sql = "select value from props where key='schemaVersion'";
+			Statement stmt = conn.createStatement();
+			ResultSet resultSet = stmt.executeQuery(sql);
+			if (resultSet.next()) {
+				String dbSchemaVersion = resultSet.getString(1);
+				props.setProperty("dbSchemaVersion", dbSchemaVersion);
+				String requiredSchemaVersion = props.getProperty("GenePatternVersion");
+				upToDate = (requiredSchemaVersion.compareTo(dbSchemaVersion) <= 0);
+				if (!upToDate) System.out.println("DB schemaVersion=" + dbSchemaVersion + ", required version=" + requiredSchemaVersion);
+			} else {
+				upToDate = false;
+			}
+			stmt.close();
+		} catch (SQLException se) {
+			// ignore
 		}
-		rs.close();
-		if (DEBUG)
-			System.out.println("");
-		return hasTaskMaster;
+
+		System.out.println("schema up-to-date: " + upToDate);		
+		return upToDate;
 	}
 
 	private void createSchema(String resourceDir, Properties props)
 			throws SQLException, IOException {
-		String schemaFilename = resourceDir + File.separator
-				+ props.getProperty("DB.schema");
-		File schemaFile = new File(schemaFilename);
-		System.out.println("rebuilding database from schema "
-				+ schemaFile.getCanonicalPath());
+		File[] schemaFiles = new File(resourceDir).listFiles(new FilenameFilter() {
+				// INNER CLASS !!!
+				public boolean accept(File dir, String name) {
+					return name.endsWith(".sql") && name.indexOf("-") != -1;
+				}
+			});
+		Arrays.sort(schemaFiles, new Comparator() {
+				public int compare(Object o1, Object o2) {
+					int dash;
+					File f1 = (File) o1;
+					File f2 = (File) o2;
+					String name1 = f1.getName();
+					dash = name1.lastIndexOf("-");
+					String version1 = name1.substring(dash+1, name1.length() - ".sql".length());
+					String name2 = f2.getName();
+					dash = name2.lastIndexOf("-");
+					String version2 = name2.substring(dash+1, name2.length() - ".sql".length());
+					return version1.compareToIgnoreCase(version2);
+					}
+			});
+		String expectedSchemaVersion = props.getProperty("GenePatternVersion");
+		String dbSchemaVersion = (String)props.remove("dbSchemaVersion");
+		for (int f = 0; f < schemaFiles.length; f++) {
+			File schemaFile = schemaFiles[f];
+			String name = schemaFile.getName();
+			int dash = name.lastIndexOf("-");
+			String version = name.substring(dash+1, name.length() - ".sql".length());
+			if (version.compareTo(expectedSchemaVersion) <= 0 && version.compareTo(dbSchemaVersion) > 0) {
+				processSchemaFile(schemaFile);
+			} else {
+				if (DEBUG) System.out.println("skipping " + name);
+			}
+		}
+	}
+	
+	protected void processSchemaFile(File schemaFile) throws SQLException, IOException {
+		if (DEBUG) System.out.println("updating database from schema " + schemaFile.getCanonicalPath());
 		String all = readFile(schemaFile);
 		Statement stmt = conn.createStatement();
 		while (!all.equals("")) {
