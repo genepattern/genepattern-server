@@ -326,7 +326,7 @@ public class MainFrame extends JFrame {
 				service = analysisServiceManager.getAnalysisService(taskName);
 			}
 			if (service == null) {
-				JOptionPane.showMessageDialog(GenePattern.getDialogParent(),
+				GenePattern.showMessageDialog(
 						"The task " + taskName + " does not exist.");
 				return;
 			}
@@ -447,7 +447,7 @@ public class MainFrame extends JFrame {
 		}
 
 		if (errorMessage.length() > 0) {
-			JOptionPane.showMessageDialog(GenePattern.getDialogParent(),
+			GenePattern.showMessageDialog(
 					errorMessage.toString());
 		}
 		TaskInfo taskCopy = new TaskInfo(task.getID(), task.getName(), task
@@ -755,8 +755,7 @@ public class MainFrame extends JFrame {
 						HttpURLConnection connection = (HttpURLConnection) parent
 								.getURL(node.name).openConnection();
 						if (connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
-							JOptionPane.showMessageDialog(GenePattern
-									.getDialogParent(), node.name
+							GenePattern.showMessageDialog(node.name
 									+ " has been deleted from the server.");
 							jobModel.remove(node);
 							fileSummaryComponent.select(null);
@@ -1053,6 +1052,7 @@ public class MainFrame extends JFrame {
 				visualizerMenu.setEnabled(false);
             pipelineMenu.setEnabled(false);
 				fileMenu.changeServerActionsEnabled(false);
+            analysisServicePanel.displayIntro();
 			}
 		};
 		if (SwingUtilities.isEventDispatchThread()) {
@@ -1324,9 +1324,8 @@ public class MainFrame extends JFrame {
 						File selectedFile = projectDirFileChooser
 								.getSelectedFile();
 						if (selectedFile == null) {
-							JOptionPane
-									.showMessageDialog(GenePattern
-											.getDialogParent(),
+							GenePattern
+									.showMessageDialog(
 											"No directory selected");
 							return;
 						}
@@ -1386,9 +1385,8 @@ public class MainFrame extends JFrame {
 											changeServer(server, username);
 										}
 									} catch (NumberFormatException nfe) {
-										JOptionPane
-												.showMessageDialog(GenePattern
-														.getDialogParent(),
+										GenePattern
+												.showMessageDialog(
 														"Invalid port. Please try again.");
 									}
 								}
