@@ -6,16 +6,14 @@
 
 package org.genepattern.io.encoder;
 
-import java.util.Map;
 import java.util.Collections;
+import java.util.Map;
 
 import org.genepattern.data.AbstractObject;
 import org.genepattern.data.DataModel;
 import org.genepattern.data.Dataset;
 import org.genepattern.data.FeaturesetProperties;
 import org.genepattern.data.NamesPanel;
-
-import org.genepattern.io.*;
 
 /**
  * Adaptor class that makes a Dataset look like a FeaturesetProperties object.

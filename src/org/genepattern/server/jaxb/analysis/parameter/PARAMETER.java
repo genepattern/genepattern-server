@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import javax.xml.bind.ConversionException;
 import javax.xml.bind.Dispatcher;
 import javax.xml.bind.DuplicateAttributeException;
@@ -16,7 +17,6 @@ import javax.xml.bind.MarshallableObject;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.MissingAttributeException;
 import javax.xml.bind.PredicatedLists;
-import javax.xml.bind.PredicatedLists.Predicate;
 import javax.xml.bind.StructureValidationException;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;

@@ -16,9 +16,7 @@ package org.genepattern.gpge.ui.treetable;
 
 //import com.sun.java.swing.tree.TreeModel;
 
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.tree.*;
+import javax.swing.tree.TreeModel;
 
 /**
  * TreeTableModel is the model used by a JTreeTable. It extends TreeModel

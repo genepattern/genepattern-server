@@ -29,15 +29,12 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
-
 import java.util.Map;
 
 import org.genepattern.data.DataObjector;
 import org.genepattern.data.DefaultFeaturesetProperties;
 import org.genepattern.data.FeaturesetProperties;
 import org.genepattern.io.Remark;
-
-import org.genepattern.io.*;
 /**
  * Encodes the data in the Self Documenting Format (SDF) which is also called
  * OmniSci data format (ODF).  The older sdf file extension is deprecated since 
@@ -138,7 +135,7 @@ public class FeaturesetPropertiesEncoder implements Encoder {
      * @throws IOException if a problem arises durring an I/O operation
      */
     protected void writeHeaderCount(final PrintWriter out, final int cnt) throws IOException {
-        out.print(this.KW_HEADER_LINES);
+        out.print(FeaturesetPropertiesEncoder.KW_HEADER_LINES);
         out.println(cnt);
     }
     /** writes the headers and attributes

@@ -9,6 +9,9 @@
  */
 
 package org.genepattern.util;
+
+import java.util.NoSuchElementException;
+
 /**
  * The string tokenizer class allows an application to break a 
  * string into tokens. The tokenization method is much simpler than 

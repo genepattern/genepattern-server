@@ -10,8 +10,6 @@ import org.genepattern.data.AbstractObject;
 import org.genepattern.data.DataModel;
 import org.genepattern.data.DataObjector;
 
-import org.genepattern.data.*;
-
 /**
  * Wraps any object to look like a real DataObject
  * @author  kohm

@@ -18,14 +18,14 @@
 
 package org.genepattern.io.encoder;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.DataFormatException;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 import org.genepattern.data.DataObjector;
 import org.genepattern.data.Dataset;
-
-import org.genepattern.io.*;
 /**
  * Class to support writing Whitehead's .gct files
  */

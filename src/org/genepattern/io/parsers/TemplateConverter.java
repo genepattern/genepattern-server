@@ -8,13 +8,10 @@ package org.genepattern.io.parsers;
 
 import org.genepattern.data.DataModel;
 import org.genepattern.data.DataObjector;
-import org.genepattern.data.DefaultFeaturesetProperties;
 import org.genepattern.data.FeaturesetProperties;
 import org.genepattern.data.KlassTemplate;
 import org.genepattern.data.SampleLabel;
 import org.genepattern.data.Template;
-
-import org.genepattern.io.*;
 
 /**
  * Converts a FeaturesetProperties object with DataModel == Template into

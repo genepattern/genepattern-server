@@ -1,12 +1,26 @@
 package org.genepattern.gpge.ui.preferences;
-import java.awt.event.*;
-import java.awt.*;
-import javax.swing.*;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 import org.genepattern.gpge.GenePattern;
-
-import java.io.*;
-import java.util.*;
+import org.genepattern.gpge.ui.tasks.AnalysisTasksPanel;
 
 public class ChangeServerDialog extends JDialog {
 	private boolean result = false;
@@ -89,7 +103,7 @@ public class ChangeServerDialog extends JDialog {
 							String[] cmd = {executable.getCanonicalPath()};
 							Runtime.getRuntime().exec(cmd);	
 							System.exit(0);
-						} else if(org.genepattern.gpge.ui.analysis.AnalysisTasksPanel.RUNNING_ON_MAC) {
+						} else if(AnalysisTasksPanel.RUNNING_ON_MAC) {
 							String libPath = System.getProperty("java.library.path");
 							String firstLibPath = libPath.substring(0, libPath.indexOf(":"));
 							//firstLibPath = escapeSpaces(firstLibPath);

@@ -6,12 +6,16 @@
 
 package org.genepattern.modules.ui.graphics;
 
-import java.awt.*;
-import javax.swing.*;
-import org.genepattern.data.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
-import java.io.*;
-import java.util.*;
+import javax.swing.ImageIcon;
 
 /**
  *

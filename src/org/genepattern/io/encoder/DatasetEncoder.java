@@ -28,9 +28,6 @@ import java.io.OutputStream;
 
 import org.genepattern.data.DataObjector;
 import org.genepattern.data.Dataset;
-import org.genepattern.data.FeaturesetProperties;
-
-import org.genepattern.io.*;
 /** Converts a Dataset object to a FeaturesetProperties oject to encode it as a odf
  * file format.
  * @author kohm

@@ -1,7 +1,9 @@
 package org.genepattern.io.expr;
-import org.genepattern.data.expr.*;
-import org.genepattern.data.matrix.*;
-import org.genepattern.io.*;
+import org.genepattern.data.expr.ExpressionData;
+import org.genepattern.data.expr.ResExpressionData;
+import org.genepattern.data.matrix.DoubleMatrix2D;
+import org.genepattern.data.matrix.IntMatrix2D;
+import org.genepattern.io.ParseException;
 
 /**
  *  Expression data creator that creates an instance of

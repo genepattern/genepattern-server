@@ -1,21 +1,14 @@
 package org.genepattern.server.analysis.dbloader;
 
 import java.rmi.RemoteException;
-import java.sql.*;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.Vector;
 
-import java.net.MalformedURLException;
-
-import org.genepattern.server.analysis.*;
-import org.genepattern.server.analysis.ejb.*;
-import org.genepattern.server.jaxb.analysis.job.*;
-import org.genepattern.server.jaxb.analysis.parameter.*;
-import org.genepattern.server.util.*;
+import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.analysis.ParameterFormatConverter;
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.TaskInfoAttributes;
+import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
+import org.genepattern.server.util.BeanReference;
 import org.genepattern.util.GPConstants;
-import org.genepattern.util.LSID;
 
 /**
  * <p>Title: DBLoader.java </p>
@@ -245,13 +238,13 @@ public abstract class DBLoader {
      */
     public void run(int type) throws OmnigeneException {
         try {
-            if(type == this.CREATE){
+            if(type == DBLoader.CREATE){
                 create();
             }
-            else if(type == this.UPDATE){
+            else if(type == DBLoader.UPDATE){
                 update();
             }
-            else if(type == this.DELETE){
+            else if(type == DBLoader.DELETE){
                 delete();
             }
             else{

@@ -1,15 +1,15 @@
 package org.genepattern.gpge.ui.graphics.draggable;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.SystemColor;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
-import java.awt.Paint;
 import java.awt.RenderingHints;
-import java.awt.geom.*;
-import java.awt.image.*;
-import java.util.*;
+import java.awt.SystemColor;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**

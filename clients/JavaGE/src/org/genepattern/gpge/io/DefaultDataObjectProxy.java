@@ -6,6 +6,8 @@
 
 package org.genepattern.gpge.io;
 
+import java.io.IOException;
+
 import org.genepattern.data.AbstractObject;
 import org.genepattern.data.DataModel;
 import org.genepattern.data.DataObjector;

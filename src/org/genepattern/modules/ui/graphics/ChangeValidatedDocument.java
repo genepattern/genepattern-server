@@ -1,11 +1,12 @@
 package org.genepattern.modules.ui.graphics;
 
-import javax.swing.*;
-import javax.swing.text.*;
-
 import java.awt.Toolkit;
-import java.text.*;
-import java.util.Locale;
+import java.text.Format;
+import java.text.ParsePosition;
+
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.PlainDocument;
 /**
  * Only allows valid text to be entered or only allows removal of characters
  * if the result is still valid as determined by the Format. This only allows 

@@ -10,8 +10,8 @@ import java.rmi.RemoteException;
 import java.util.Map;
 
 import org.apache.axis.client.Service;
-import org.genepattern.server.analysis.ParameterInfo;
-import org.genepattern.server.webservice.WebServiceException;
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.WebServiceException;
 
 /**
  *@author    Joshua Gould

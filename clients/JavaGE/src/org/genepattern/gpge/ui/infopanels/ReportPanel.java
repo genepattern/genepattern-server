@@ -6,16 +6,13 @@
 
 package org.genepattern.gpge.ui.infopanels;
 
-import java.awt.GraphicsEnvironment;
-import java.awt.GraphicsConfiguration;
-import java.awt.Dimension;
 import java.net.URL;
 import java.util.Properties;
 
-import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
-import javax.mail.Transport;
 import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.swing.JOptionPane;
 

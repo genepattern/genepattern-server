@@ -1,36 +1,20 @@
 package org.genepattern.gpge.ui.maindisplay;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.InputStream;
-import java.io.FileInputStream;
-
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.genepattern.server.analysis.ParameterInfo;
-import org.genepattern.server.analysis.TaskInfo;
-import org.genepattern.server.analysis.webservice.client.*;
-import org.genepattern.server.util.OmnigeneException;
-import org.genepattern.server.webservice.WebServiceException;
-import org.genepattern.util.*;
-
-
-
-import org.genepattern.gpge.ui.analysis.AnalysisJob;
-import org.genepattern.gpge.ui.analysis.AnalysisService;
-import org.genepattern.gpge.ui.analysis.JavaGELocalTaskExecutor;
-import org.genepattern.gpge.ui.analysis.LocalTaskExecutor;
-import org.genepattern.gpge.ui.analysis.RequestHandler;
-import org.genepattern.gpge.ui.analysis.TaskExecutor;
-import org.genepattern.io.*;
+import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.TaskInfo;
+import org.genepattern.analysis.WebServiceException;
+import org.genepattern.client.AnalysisJob;
+import org.genepattern.client.AnalysisService;
+import org.genepattern.client.RequestHandler;
+import org.genepattern.client.TaskExecutor;
+import org.genepattern.gpge.ui.tasks.JavaGELocalTaskExecutor;
+import org.genepattern.util.GPConstants;
 
 /**
  *  Processes only Visualizers
@@ -38,7 +22,7 @@ import org.genepattern.io.*;
  *@author     kohm
  *@created    May 18, 2004
  */
-public class MyVisualizerSubmitter implements org.genepattern.gpge.ui.analysis.TaskSubmitter {
+public class MyVisualizerSubmitter implements org.genepattern.gpge.ui.tasks.TaskSubmitter {
 	
 	/**
 	 *  the GPConstants.TASK_TYPE should return a value of "visualizer"
@@ -61,16 +45,16 @@ public class MyVisualizerSubmitter implements org.genepattern.gpge.ui.analysis.T
 	 *
 	 *@param  browser                                                 Description
 	 *      of the Parameter
-	 *@exception  org.genepattern.server.util.PropertyNotFoundException  Description
+	 *@exception  org.genepattern.analysis.PropertyNotFoundException  Description
 	 *      of the Exception
 	 */
-	public MyVisualizerSubmitter(final DataObjectBrowser browser) throws org.genepattern.server.util.PropertyNotFoundException {
+	public MyVisualizerSubmitter(final DataObjectBrowser browser) throws org.genepattern.analysis.PropertyNotFoundException {
 		this.dataObjectBrowser = browser;
 		try {
-			final Properties p = org.genepattern.server.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
+			final Properties p = org.genepattern.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
 			final String url_string = p.getProperty("analysis.service.URL");
 			if(url_string == null) {
-				throw new org.genepattern.server.util.PropertyNotFoundException("Cannot get the analysis service URL");
+				throw new org.genepattern.analysis.PropertyNotFoundException("Cannot get the analysis service URL");
 			}
 			
 			server = p.getProperty("analysis.service.site.name");

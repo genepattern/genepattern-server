@@ -8,8 +8,8 @@ package org.genepattern.gpge.ui.graphics;
 
 import java.util.Enumeration;
 
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
 
 /**
  * 

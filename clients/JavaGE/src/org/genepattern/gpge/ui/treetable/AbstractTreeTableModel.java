@@ -14,10 +14,10 @@
 
 package org.genepattern.gpge.ui.treetable;
 
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.tree.*;
-import javax.swing.event.*;
+import javax.swing.event.EventListenerList;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreePath;
 //import com.sun.java.swing.tree.*;
 //import com.sun.java.swing.event.*;
  

@@ -1,6 +1,5 @@
 package org.genepattern.server.webservice;
 
-import java.io.File;
 import javax.activation.DataHandler;
 
 /**

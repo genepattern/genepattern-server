@@ -8,11 +8,11 @@ package org.genepattern.server.analysis;
  */
 
 
-import java.util.*;
 import java.rmi.RemoteException;
 
-import org.genepattern.server.analysis.ejb.*;
-import org.genepattern.server.util.*;
+import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
+import org.genepattern.server.util.BeanReference;
 
 public class AnalysisManager {
 

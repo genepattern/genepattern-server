@@ -2,6 +2,7 @@ package org.genepattern.gpge.ui.analysis.jaxb;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import javax.xml.bind.Dispatcher;
 import javax.xml.bind.DuplicateAttributeException;
 import javax.xml.bind.Element;

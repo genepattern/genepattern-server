@@ -6,10 +6,14 @@
 
 package org.genepattern.gpge.ui.maindisplay;
 
-import java.beans.*;
-import java.awt.*;
+import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
-import javax.swing.*;
+
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JList;
 
 /**
  *

@@ -6,20 +6,17 @@
 
 package org.genepattern.gpge.io.parsers;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
-import java.util.*;
- 
-import javax.imageio.ImageIO;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.genepattern.data.*;
+import org.genepattern.data.DataModel;
+import org.genepattern.data.DataObjector;
 import org.genepattern.io.DefaultSummaryInfo;
 import org.genepattern.io.SummaryInfo;
 import org.genepattern.io.parsers.DataParser;
-import org.genepattern.util.*;
-
-import org.genepattern.gpge.*;
-import org.genepattern.io.*;
 /** Can read in Image File formatted input streams.
  * @author kohm
  */

@@ -18,9 +18,6 @@
 
 package org.genepattern.modules.ui.graphics;
 
-import java.awt.*;
-
-import org.genepattern.modules.ui.graphics.*;
 
 
 public class WarningFrame extends MessageFrame{

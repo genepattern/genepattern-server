@@ -23,12 +23,10 @@
 
 package org.genepattern.io.encoder;
 
-import java.io.OutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.genepattern.data.DataObjector;
-
-import org.genepattern.io.*;
 /** Interface that defines the methods for encoding a data object.
  * @author kohm
  */

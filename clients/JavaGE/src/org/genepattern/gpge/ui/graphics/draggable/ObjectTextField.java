@@ -14,11 +14,9 @@ import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
-import java.io.*;
-import java.util.List;
-import java.io.InputStream;
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.File;
+import java.util.List;
 
 import javax.swing.border.EtchedBorder;
 import javax.swing.tree.DefaultMutableTreeNode;

@@ -1,17 +1,14 @@
 package org.genepattern.server.process;
 
-import java.io.*;
-import java.util.zip.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.sql.*;
-import java.util.*;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.Vector;
 
-import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.analysis.genepattern.TaskInstallationException;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
-import org.hsqldb.util.*;
 
 
 

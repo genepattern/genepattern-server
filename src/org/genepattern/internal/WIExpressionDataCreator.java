@@ -1,11 +1,7 @@
 package org.genepattern.internal;
 
-import java.util.*;
-
-import org.genepattern.data.*;
-import org.genepattern.data.expr.*;
-import org.genepattern.io.*;
-import org.genepattern.io.expr.*;
+import org.genepattern.io.ParseException;
+import org.genepattern.io.expr.IExpressionDataCreator;
 
 
 /**

@@ -1,14 +1,12 @@
 
 package org.genepattern.server.util;
 
-import java.io.*;
-import java.rmi.*;
+import java.io.IOException;
+import java.rmi.RemoteException;
 
-import java.util.*;
-
-import org.genepattern.server.analysis.AnalysisManager;
-import org.genepattern.server.analysis.ejb.*;
-import org.genepattern.server.util.*;
+import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.server.analysis.ejb.AnalysisHypersonicDAO;
+import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
 
 
 /**

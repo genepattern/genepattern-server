@@ -5,7 +5,6 @@
  */
 
 package org.genepattern.modules.ui.graphics;
-import javax.swing.table.*;
 /**
  *
  * @author  KOhm

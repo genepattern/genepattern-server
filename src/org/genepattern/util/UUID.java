@@ -28,8 +28,6 @@ import java.security.MessageDigest;
 import java.util.Date;
 import java.util.Random;
 
-import org.genepattern.util.XLogger;
-
 
 
 /**

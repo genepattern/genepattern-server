@@ -1,4 +1,6 @@
 package org.genepattern.io.expr;
+import java.io.IOException;
+
 import org.genepattern.data.expr.IExpressionData;
 
 /**

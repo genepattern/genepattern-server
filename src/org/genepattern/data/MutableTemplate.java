@@ -13,10 +13,6 @@ package org.genepattern.data;
 
 import java.util.ArrayList;
 
-import org.genepattern.data.*;
-//import edu.mit.genome.util.ImmutedException;
-import java.util.Random;
-
 import org.genepattern.math.XMath;
 /**
  * A Template object that is mutable i.e has add() methods.

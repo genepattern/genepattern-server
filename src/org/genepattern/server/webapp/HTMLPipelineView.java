@@ -1,37 +1,27 @@
 package org.genepattern.server.webapp;
 
-import org.genepattern.server.*;
 import java.io.File;
-import java.io.FilenameFilter;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
-import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.rmi.RemoteException;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.Vector;
 
+import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.analysis.ParameterFormatConverter;
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.TaskInfo;
+import org.genepattern.analysis.TaskInfoAttributes;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.analysis.JobInfo;
-import org.genepattern.server.analysis.ParameterFormatConverter;
-import org.genepattern.server.analysis.ParameterInfo;
-import org.genepattern.server.analysis.TaskInfo;
-import org.genepattern.server.analysis.TaskInfoAttributes;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.analysis.genepattern.LSIDManager;
-import org.genepattern.server.analysis.webservice.server.TaskIntegrator;
-import org.genepattern.server.util.OmnigeneException;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 
@@ -69,7 +59,7 @@ public class HTMLPipelineView implements IPipelineView {
 		tmTaskTypes = preprocessTaskInfo(tmCatalog);
 		try {
 			tmTasksByLSID = new org.genepattern.server.analysis.webservice.server.local.LocalAdminClient(userID).getTaskCatalogByLSID(tmCatalog);
-		} catch (org.genepattern.server.webservice.WebServiceException re) {
+		} catch (org.genepattern.analysis.WebServiceException re) {
 			System.err.println(re.getMessage() + " in HTMLPipelineView.init");
 			throw new RuntimeException(re);
 		}

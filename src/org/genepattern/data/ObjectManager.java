@@ -7,36 +7,12 @@
 package org.genepattern.data;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 import javax.swing.ListModel;
-import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
-
-
-import java.beans.*;
-import java.util.*;
-
-import java.awt.*;
-import java.awt.event.*;
-
-import java.io.Serializable;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
-import java.io.IOException;
-
-import javax.swing.event.*;
-import javax.swing.plaf.*;
-import javax.swing.border.*;
-
-import javax.accessibility.*;
-
-import org.genepattern.data.DataObjector;
-import org.genepattern.data.Dataset;
-import org.genepattern.data.Template;
 
 /**
  * Class will manage all data objects that are available to GP where ever they are...

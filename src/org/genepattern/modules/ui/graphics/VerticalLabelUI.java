@@ -2,19 +2,25 @@ package org.genepattern.modules.ui.graphics;
 /**
  * from http://www.jalice.net/vertical.htm *
  */
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Rectangle;
 
-import java.util.*;
-
-import java.awt.event.*;
-import javax.swing.JTabbedPane;
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+import javax.swing.border.EtchedBorder;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.basic.*;
+import javax.swing.plaf.basic.BasicHTML;
+import javax.swing.plaf.basic.BasicLabelUI;
 import javax.swing.text.View;
-
-import java.awt.geom.*;
 
 
 public class VerticalLabelUI extends BasicLabelUI {

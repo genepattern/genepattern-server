@@ -1,5 +1,5 @@
 package org.genepattern.gpge.ui.maindisplay;
-import org.genepattern.server.analysis.TaskInfo;
+import org.genepattern.analysis.TaskInfo;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 

@@ -1,7 +1,4 @@
 package org.genepattern.modules.ui.graphics;
-import java.io.*;
-import java.util.*;
-import java.net.*;
 
 /** Decodes uncompressed, multi-image TIFF files. */
 public class TiffDecoder {

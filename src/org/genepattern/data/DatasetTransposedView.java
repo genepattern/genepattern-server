@@ -6,13 +6,6 @@
 
 package org.genepattern.data;
 
-import java.util.*;
-
-import org.genepattern.data.annotation.AnnotationFactory;
-import org.genepattern.data.annotation.Annotator;
-
-import org.genepattern.data.*;
-import org.genepattern.data.*;
 
 /**
  * Implementation of a transposed dataset

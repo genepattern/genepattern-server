@@ -5,74 +5,64 @@
  */
 package org.genepattern.gpge.ui.maindisplay;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Container;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
-
+import java.awt.event.ActionListener;
 import java.io.File;
-
-import java.util.Properties;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import java.io.FileInputStream;
 import java.io.IOException;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTree;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridLayout;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTree;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.text.JTextComponent;
+import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.genepattern.modules.ui.browser.BrowserPanel;
-import org.genepattern.modules.ui.graphics.PeriodicProgressObserver;
-import org.genepattern.server.analysis.JobStatus;
-import org.genepattern.server.analysis.ParameterInfo;
-import org.genepattern.server.analysis.TaskInfo;
-import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
-import org.genepattern.util.GPConstants;
-import org.genepattern.util.GPpropertiesManager;
-import org.genepattern.util.StringUtils;
-
-import org.genepattern.gpge.ui.treetable.*;
-
+import org.genepattern.analysis.JobStatus;
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.TaskInfo;
+import org.genepattern.client.AnalysisJob;
+import org.genepattern.client.AnalysisService;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.io.AbstractDataSource;
 import org.genepattern.gpge.io.DataObjectProxy;
 import org.genepattern.gpge.io.DataSources;
 import org.genepattern.gpge.io.DefaultDataObjectProxy;
 import org.genepattern.gpge.io.ServerSiteDataSource;
-import org.genepattern.gpge.ui.analysis.AnalysisJob;
-import org.genepattern.gpge.ui.analysis.AnalysisService;
-import org.genepattern.gpge.ui.analysis.AnalysisTasksPanel;
-import org.genepattern.gpge.ui.analysis.DataModel;
-import org.genepattern.gpge.ui.analysis.ListTypeAdapter;
-import org.genepattern.gpge.ui.analysis.PanelGenerator;
-import org.genepattern.gpge.ui.analysis.RendererFactory;
-import org.genepattern.gpge.ui.analysis.ServicesFilter;
-import org.genepattern.gpge.ui.analysis.TaskSubmitter;
-import org.genepattern.gpge.ui.analysis.UIRenderer;
 import org.genepattern.gpge.ui.graphics.draggable.DnDTree;
 import org.genepattern.gpge.ui.preferences.PreferencesPanel;
-import org.genepattern.io.*;
-import org.genepattern.gpge.io.*;
-
-import org.genepattern.gpge.ui.analysis.*;
+import org.genepattern.gpge.ui.tasks.AnalysisTasksPanel;
+import org.genepattern.gpge.ui.tasks.DataModel;
+import org.genepattern.gpge.ui.tasks.ListTypeAdapter;
+import org.genepattern.gpge.ui.tasks.PanelGenerator;
+import org.genepattern.gpge.ui.tasks.RendererFactory;
+import org.genepattern.gpge.ui.tasks.ServicesFilter;
+import org.genepattern.gpge.ui.tasks.TaskSubmitter;
+import org.genepattern.gpge.ui.tasks.UIRenderer;
+import org.genepattern.modules.ui.browser.BrowserPanel;
+import org.genepattern.modules.ui.graphics.PeriodicProgressObserver;
+import org.genepattern.util.GPConstants;
+import org.genepattern.util.GPpropertiesManager;
+import org.genepattern.util.StringUtils;
 
 
 /**
@@ -142,7 +132,7 @@ try {
 		serverSiteDataSource = null;
 		System.out.println("Disconnected from server");
 
- 		Properties prop = org.genepattern.server.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
+ 		Properties prop = org.genepattern.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
             final String site_name = prop.getProperty("analysis.service.site.name");
 		analysis_menu.setEnabled(false);
 		visualizer_menu.setEnabled(false);
@@ -163,10 +153,10 @@ try {
 		 AnalysisService service = (AnalysisService) list_type.name_object.get(lsidOrTaskName);
 		 if(service==null) {
 			 try {
-				 Properties prop = org.genepattern.server.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
+				 Properties prop = org.genepattern.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
 				 String site_name = prop.getProperty("analysis.service.site.name");
 			 
-				 TaskInfo task = new org.genepattern.server.analysis.webservice.client.AdminProxy(site_name, username, false).getTask(lsidOrTaskName); // old servers don't have this method
+				 TaskInfo task = new org.genepattern.analysis.AdminProxy(site_name, username, false).getTask(lsidOrTaskName); // old servers don't have this method
 				 service = new AnalysisService(site_name, site_name + "/gp/servlet/AxisServlet", task);
 			 } catch(Throwable t){}
 		 }
@@ -203,7 +193,7 @@ try {
 		}
 	
 		TaskInfo task = service.getTaskInfo();
-		org.genepattern.server.analysis.JobInfo savedJobInfo = job.getJobInfo();
+		org.genepattern.analysis.JobInfo savedJobInfo = job.getJobInfo();
 		ParameterInfo[] savedParameters = savedJobInfo.getParameterInfoArray();
 								  
 		ParameterInfo[] formalParams =  task.getParameterInfoArray();
@@ -536,7 +526,7 @@ try {
         new Thread(new org.genepattern.util.RunLater() {
             public final void runIt()  {
 					try {
-                final Properties prop = org.genepattern.server.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
+                final Properties prop = org.genepattern.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
                 
                
                 int n = 0;
@@ -554,9 +544,9 @@ try {
                 // end loop		
 					} catch(IOException ioe) {
 						GenePattern.showError(DataObjectBrowser.this, ioe.getMessage());
-					} catch(org.genepattern.server.util.PropertyNotFoundException pnfe) {
+					} catch(org.genepattern.analysis.PropertyNotFoundException pnfe) {
 						GenePattern.showError(DataObjectBrowser.this, pnfe.getMessage());
-					} catch(org.genepattern.server.webservice.WebServiceException wse) {
+					} catch(org.genepattern.analysis.WebServiceException wse) {
 						Throwable rootCause = wse.getRootCause();
 
 						if(rootCause!=null && rootCause instanceof java.net.ConnectException) {
@@ -579,9 +569,9 @@ try {
      */
     protected final PanelGenerator connectTo(final String site_name,
     final ServerPanel _server_panel,
-    final org.genepattern.gpge.ui.analysis.DataModel data_model,
+    final org.genepattern.gpge.ui.tasks.DataModel data_model,
     final LogDisplayAction log_action)
-    throws org.genepattern.server.util.PropertyNotFoundException, org.genepattern.server.webservice.WebServiceException{
+    throws org.genepattern.analysis.PropertyNotFoundException, org.genepattern.analysis.WebServiceException{
         final String log_id = "log";
         server_panel = _server_panel;
         card = (CardLayout)server_panel.getLayout();
@@ -617,7 +607,7 @@ try {
 					GPpropertiesManager.setProperty("gp.user.name", username);
 				}
             try {
-               String lsidAuthority = (String) new org.genepattern.server.analysis.webservice.client.AdminProxy(site_name, username, false).getServiceInfo().get("lsid.authority");
+               String lsidAuthority = (String) new org.genepattern.analysis.AdminProxy(site_name, username, false).getServiceInfo().get("lsid.authority");
                System.setProperty("lsid.authority", lsidAuthority);
             } catch(Throwable x){}
             
@@ -658,7 +648,7 @@ try {
             
 				 
             //Connect the analysis data to the Data Source
-            final org.genepattern.gpge.ui.analysis.DataModel analysis_model = panel_gen.getDataModel();
+            final org.genepattern.gpge.ui.tasks.DataModel analysis_model = panel_gen.getDataModel();
             
             worked = true;
         } finally {
@@ -711,7 +701,7 @@ try {
     
     
     /** loads in the data model */
-    protected final org.genepattern.gpge.ui.analysis.DataModel loadData() {
+    protected final org.genepattern.gpge.ui.tasks.DataModel loadData() {
             // load the analysis jobs
             final String anal_data_file_name = GPpropertiesManager.getProperty("gp.analysis.jobs.file");
             File anal_data_file = null;
@@ -722,7 +712,7 @@ try {
                 anal_data_file = new File(anal_data_file_name);
             }
             final File analysis_data_file = anal_data_file;
-            org.genepattern.gpge.ui.analysis.DataModel dat_model = null;
+            org.genepattern.gpge.ui.tasks.DataModel dat_model = null;
             
             try{
                 if(anal_data_file.exists()){
@@ -741,7 +731,7 @@ try {
             }
             if( dat_model == null ) {
                 System.out.println("     DataModel NOT loaded!");
-                dat_model = new org.genepattern.gpge.ui.analysis.DataModel();
+                dat_model = new org.genepattern.gpge.ui.tasks.DataModel();
             }
             return dat_model;
     }
@@ -934,8 +924,8 @@ try {
     /** omniview.analysis.DataModel calls this whenever there is a change to the model */
     public void update(java.util.Observable observable, Object arg) {
         System.out.println("DataObjectBrowser was notified of an update from DataModel");
-        final org.genepattern.gpge.ui.analysis.DataModel analysis_model =
-        (org.genepattern.gpge.ui.analysis.DataModel)observable;
+        final org.genepattern.gpge.ui.tasks.DataModel analysis_model =
+        (org.genepattern.gpge.ui.tasks.DataModel)observable;
 		  
 		 	  
         if( arg != null )
@@ -1040,11 +1030,11 @@ try {
     private final ServicesFilter services_filter = new ServicesFilter() {
         /** returns the Vector with only the services of interest */
         public java.util.Vector processServices(final java.util.Vector services) {
-            final String task_name = GenePatternAnalysisTask.class.getName();
+            final String task_name = "GenePatternAnalysisTask";
             final int limit = services.size();
             for(int i = limit - 1; i >= 0; i--) { // rev. loop
                 final AnalysisService service = (AnalysisService)services.get(i);
-                if( !service.getTaskInfo().getTaskClassName().equals(task_name) )
+                if( !service.getTaskInfo().getTaskClassName().endsWith(task_name) )
                     services.remove(i);
             }
             java.util.Collections.sort(services, ServicesFilter.COMPARE);
@@ -1295,11 +1285,11 @@ try {
             JMenuItem menu_item = new TaskMenuItem(label, key);
             
             try {
-               String authType =  org.genepattern.server.analysis.genepattern.LSIDManager.getInstance().getAuthorityType(new org.genepattern.util.LSID(lsid));
+               String authType =  org.genepattern.util.LSIDUtil.getInstance().getAuthorityType(new org.genepattern.util.LSID(lsid));
                
-               if(authType.equals(org.genepattern.server.analysis.genepattern.LSIDManager.AUTHORITY_MINE)) {
+               if(authType.equals(org.genepattern.util.LSIDUtil.AUTHORITY_MINE)) {
                   menu_item.setForeground(AUTHORITY_MINE_COLOR);
-               }  else if(authType.equals(org.genepattern.server.analysis.genepattern.LSIDManager.AUTHORITY_FOREIGN)) {
+               }  else if(authType.equals(org.genepattern.util.LSIDUtil.AUTHORITY_FOREIGN)) {
                   menu_item.setForeground(AUTHORITY_FOREIGN_COLOR);
                }
             } catch(java.net.MalformedURLException x){}

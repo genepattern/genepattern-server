@@ -6,7 +6,6 @@
 
 package org.genepattern.data;
 
-import org.genepattern.data.*;
 /**
  * A collection of features (columns?)
  * @author  kohm

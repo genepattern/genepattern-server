@@ -1,6 +1,7 @@
 package org.genepattern.modules.ui.graphics;
-import java.io.*;
-import java.util.Properties;
+import java.io.InputStream;
+
+import javax.imageio.ImageWriter;
 
 /** 
  * This class consists of public fields that describe an image file.

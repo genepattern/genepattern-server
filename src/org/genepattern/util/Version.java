@@ -6,8 +6,8 @@
 
 package org.genepattern.util;
 
+import java.text.DateFormat;
 import java.util.Calendar;
-import java.text.*;
 /**
  *
  * @author  kohm

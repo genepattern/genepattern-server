@@ -11,11 +11,6 @@
 
 package org.genepattern.data;
 
-import java.util.List;
-
-import org.genepattern.data.DataModel;
-import org.genepattern.data.Id;
-import org.genepattern.data.annotation.Annotator;
 
 //import org.genepattern.data.Matrix.MatrixBean;
 /**

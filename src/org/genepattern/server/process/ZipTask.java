@@ -3,23 +3,23 @@ package org.genepattern.server.process;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.PrintWriter;
+import java.io.FilenameFilter;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.HashMap;
-import java.util.Properties;
-import java.util.zip.*;
-import java.util.Vector;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
-import org.genepattern.server.analysis.ParameterInfo;
-import org.genepattern.server.analysis.TaskInfo;
-import org.genepattern.server.analysis.TaskInfoAttributes;
+import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.TaskInfo;
+import org.genepattern.analysis.TaskInfoAttributes;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.util.OmnigeneException;
 import org.genepattern.util.GPConstants;
 
                  

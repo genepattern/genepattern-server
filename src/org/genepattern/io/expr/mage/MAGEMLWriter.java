@@ -4,18 +4,31 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
-import org.biomage.BioAssay.*;
-import org.biomage.BioAssayData.*;
-import org.biomage.BioSequence.*;
-import org.biomage.Common.*;
-import org.biomage.Description.*;
-import org.biomage.DesignElement.*;
-import org.biomage.Interface.HasDescriptions.*;
-import org.biomage.QuantitationType.*;
-import org.biomage.tools.xmlutils.*;
+
+import org.biomage.BioAssay.BioAssay;
+import org.biomage.BioAssay.BioAssay_package;
+import org.biomage.BioAssay.DerivedBioAssay;
+import org.biomage.BioAssayData.BioAssayData;
+import org.biomage.BioAssayData.BioAssayData_package;
+import org.biomage.BioAssayData.BioAssayDimension;
+import org.biomage.BioAssayData.BioDataCube;
+import org.biomage.BioAssayData.DataExternal;
+import org.biomage.BioAssayData.DataInternal;
+import org.biomage.BioAssayData.DerivedBioAssayData;
+import org.biomage.BioAssayData.QuantitationTypeDimension;
+import org.biomage.BioAssayData.ReporterDimension;
+import org.biomage.Common.MAGEJava;
+import org.biomage.Description.Description;
+import org.biomage.DesignElement.DesignElement_package;
+import org.biomage.DesignElement.Reporter;
+import org.biomage.Interface.HasDescriptions.Descriptions_list;
+import org.biomage.QuantitationType.DerivedSignal;
+import org.biomage.QuantitationType.PresentAbsent;
+import org.biomage.QuantitationType.QuantitationType_package;
+import org.biomage.tools.xmlutils.PCData;
 import org.genepattern.data.expr.IExpressionData;
 import org.genepattern.data.expr.IResExpressionData;
-import org.genepattern.io.expr.*;
+import org.genepattern.io.expr.IExpressionDataWriter;
 
 /**
  *  Writes MAGE-ML documents.

@@ -6,15 +6,12 @@
 
 package org.genepattern.io.parsers;
 
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.PushbackInputStream;
+import java.io.InputStream;
 import java.text.ParseException;
 
 import org.genepattern.data.DataObjector;
 import org.genepattern.io.SummaryInfo;
-
-import org.genepattern.io.*;
 /** Classes that implement this interface will be able to parse an input stream and
  * return an appropriate <CODE>DataObjector</CODE> instance or data object.
  *

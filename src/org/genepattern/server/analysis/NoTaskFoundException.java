@@ -7,7 +7,7 @@ package org.genepattern.server.analysis;
  * @author Rajesh Kuttan
  * @version 1.0
  */
-import org.genepattern.server.util.OmnigeneException;
+import org.genepattern.analysis.OmnigeneException;
 
 public class NoTaskFoundException extends OmnigeneException {
 

@@ -1,24 +1,18 @@
 package org.genepattern.server.webapp;
 
-import java.rmi.RemoteException;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Vector;
 
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.TaskInfo;
+import org.genepattern.analysis.TaskInfoAttributes;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.analysis.JobStatus;
-import org.genepattern.server.analysis.ParameterFormatConverter;
-import org.genepattern.server.analysis.ParameterInfo;
-import org.genepattern.server.analysis.TaskInfo;
-import org.genepattern.server.analysis.TaskInfoAttributes;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.util.OmnigeneException;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 

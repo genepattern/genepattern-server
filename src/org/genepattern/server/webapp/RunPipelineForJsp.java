@@ -1,17 +1,22 @@
 package org.genepattern.server.webapp;
 
-import java.io.*;
-import java.net.*;
-import java.text.*;
-import java.util.*;
+import java.io.BufferedWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
-import org.genepattern.data.pipeline.*;
-import org.genepattern.server.analysis.*;
+import org.genepattern.analysis.JobInfo;
+import org.genepattern.analysis.JobStatus;
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.TaskInfo;
+import org.genepattern.data.pipeline.JobSubmission;
+import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
-
-import com.jspsmart.upload.*;
 
 public class RunPipelineForJsp {
     public static int jobID = -1;

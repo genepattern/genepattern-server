@@ -1,16 +1,15 @@
 package org.genepattern.data.pipeline;
 
 
-import java.rmi.RemoteException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.io.StringReader;
-import java.lang.reflect.*;
+import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
@@ -20,17 +19,24 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.xml.sax.*;
-import org.genepattern.server.analysis.ParameterInfo;
-import org.genepattern.server.analysis.TaskInfo;
-import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
+
+import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.TaskInfo;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.util.BeanReference;
-import org.genepattern.server.util.OmnigeneException;
 import org.genepattern.util.GPConstants;
-import org.w3c.dom.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class PipelineModel implements Serializable {
 	public static final String INHERIT_TASKNAME = "inheritTaskname"; // should be in CONSTANTS
@@ -443,15 +449,6 @@ findTask:
          try {
             taskInfo = GenePatternAnalysisTask.getTaskInfo((lsid.length() > 0 ? lsid : taskName), getUserID());
          } catch(Throwable t){} // old pipelines don't have hsqldb.jar on classpath
-/****************************************************************
-			if (taskInfo == null) {
-				System.out.println("trying with new classloader");
-				ClassLoader cl = new PrivateClassLoader();
-				Class gp = Class.forName(GenePatternAnalysisTask.class.getName(), true, cl);
-				Method getTaskInfo = gp.getMethod("getTaskInfo", new Class[] { String.class, String.class });
-				taskInfo = (TaskInfo)getTaskInfo.invoke(null, new Object[] { (lsid.length() > 0 ? lsid : taskName), getUserID() });
-			}
-*****************************************************************/
 			if (taskInfo == null) {
 				//System.out.println("No such task: " + (lsid.length() > 0 ? lsid : taskName));
 				//throw new Exception("No such task: " + (lsid.length() > 0 ? lsid : taskName));

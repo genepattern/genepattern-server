@@ -6,19 +6,16 @@
 
 package org.genepattern.gpge.ui.preferences;
 
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
-
-import java.util.Properties;
 import java.util.List;
+import java.util.Properties;
 
 import javax.swing.JButton;
 import javax.swing.JTabbedPane;
 
 import org.genepattern.gpge.ui.propertyviewer.PropertyViewerPanel;
-import org.genepattern.util.GPpropertiesManager;
-
-import java.awt.event.ActionListener;
 
 
 /**
@@ -97,7 +94,7 @@ public class PreferencesPanel extends javax.swing.JPanel {
         final Properties[] props = new Properties[limit];
         for(int i = 0; i < limit; i++) {
             try {
-                props[i] = org.genepattern.server.util.PropertyFactory.getInstance().getProperties(names[i]);
+                props[i] = org.genepattern.util.PropertyFactory.getInstance().getProperties(names[i]);
             } catch (Exception ex) {
                 org.genepattern.gpge.GenePattern.showError(null, "Cannot get the properties for "+names[i], ex);
             }

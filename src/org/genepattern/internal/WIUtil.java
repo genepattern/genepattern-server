@@ -1,5 +1,6 @@
 package org.genepattern.internal;
-import org.genepattern.data.expr.*;
+import org.genepattern.data.expr.ExpressionData;
+import org.genepattern.data.expr.IExpressionData;
 /**
  * @author    Joshua Gould
  */

@@ -2,22 +2,20 @@ package org.genepattern.server.analysis.genepattern;
 
 //import org.pdfbox.searchengine.lucene.LucenePDFDocument;
 
-import org.pdfbox.pdfparser.PDFParser;
-import org.pdfbox.pdmodel.PDDocument;
-import org.pdfbox.pdmodel.PDDocumentInformation;
-import org.pdfbox.encryption.DocumentEncryption;
-import org.pdfbox.exceptions.CryptographyException;
-import org.pdfbox.exceptions.InvalidPasswordException;
-import org.pdfbox.util.PDFTextStripper;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.pdfbox.encryption.DocumentEncryption;
+import org.pdfbox.exceptions.CryptographyException;
+import org.pdfbox.exceptions.InvalidPasswordException;
+import org.pdfbox.pdfparser.PDFParser;
+import org.pdfbox.pdmodel.PDDocument;
+import org.pdfbox.util.PDFTextStripper;
 
 public class IndexPDF implements IDocumentCreator {
 

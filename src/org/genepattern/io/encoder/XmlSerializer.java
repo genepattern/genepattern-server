@@ -6,32 +6,21 @@
 
 package org.genepattern.io.encoder;
 
-import javax.beans.BeanInfo;
-import javax.beans.Encoder;
-import javax.beans.Expression;
-import javax.beans.ExceptionListener;
-import javax.beans.PersistenceDelegate;
-import javax.beans.DefaultPersistenceDelegate;
-import javax.beans.PropertyDescriptor;
-import javax.beans.Introspector;
-import javax.beans.IntrospectionException;
-import javax.beans.Statement;
-import javax.beans.XMLEncoder;
-
-import org.genepattern.data.DataObjector;
-
 import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import java.util.Hashtable;
-import java.util.Collections;
+import javax.beans.BeanInfo;
+import javax.beans.ExceptionListener;
+import javax.beans.IntrospectionException;
+import javax.beans.Introspector;
+import javax.beans.PropertyDescriptor;
+import javax.beans.XMLEncoder;
 
-import org.genepattern.io.*;
+import org.genepattern.data.DataObjector;
 /**
  *  Class for saving a Java Object to a file in XML format
  *

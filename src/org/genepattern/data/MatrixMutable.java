@@ -11,10 +11,6 @@
 
 package org.genepattern.data;
 
-import java.io.Serializable;
-import java.util.Arrays;
-
-import org.genepattern.util.ArrayUtils;
 import org.genepattern.util.XLogger;
 
 //import edu.mit.genome.util.ImmutedException;

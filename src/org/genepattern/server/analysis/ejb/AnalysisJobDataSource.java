@@ -1,11 +1,12 @@
 package org.genepattern.server.analysis.ejb;
 
-import java.sql.*;
-import java.util.*;
-import java.rmi.*;
+import java.rmi.RemoteException;
+import java.sql.ResultSet;
+import java.util.Vector;
 
-import org.genepattern.server.analysis.*;
-import org.genepattern.server.util.*;
+import org.genepattern.analysis.JobInfo;
+import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.analysis.TaskInfo;
 import org.genepattern.util.LSID;
 
 

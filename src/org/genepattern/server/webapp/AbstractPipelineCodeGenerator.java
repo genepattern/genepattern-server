@@ -1,30 +1,24 @@
 package org.genepattern.server.webapp;
 
 
-import java.lang.reflect.Constructor;
 import java.io.IOException;
-import java.io.File;
+import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
+
 import javax.servlet.http.HttpServletRequest;
 
+import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.TaskInfo;
+import org.genepattern.analysis.TaskInfoAttributes;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.analysis.ParameterFormatConverter;
-import org.genepattern.server.analysis.ParameterInfo;
-import org.genepattern.server.analysis.TaskInfo;
-import org.genepattern.server.analysis.TaskInfoAttributes;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.analysis.genepattern.TaskInstallationException;
-import org.genepattern.server.util.OmnigeneException;
 import org.genepattern.util.GPConstants;
-
-import java.net.URL;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 
 
 public abstract class AbstractPipelineCodeGenerator {

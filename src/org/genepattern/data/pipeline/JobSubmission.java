@@ -3,14 +3,9 @@ package org.genepattern.data.pipeline;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 
-import org.genepattern.server.analysis.ParameterInfo;
+import org.genepattern.analysis.ParameterInfo;
 
 public class JobSubmission implements Serializable {
 

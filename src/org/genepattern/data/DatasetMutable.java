@@ -11,12 +11,6 @@
 
 package org.genepattern.data;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.genepattern.data.Id;
-import org.genepattern.util.ArrayUtils;
 
 
 /**

@@ -4,52 +4,40 @@
  * Created on March 3, 2003, 12:48 PM
  */
 package org.genepattern.gpge.ui.maindisplay;
-
+ 
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.IOException;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Enumeration;
-import java.awt.event.*;
-import java.awt.*;
-import javax.swing.*;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
-import javax.swing.tree.MutableTreeNode;
+import javax.swing.SwingUtilities;
+import javax.swing.event.MouseInputListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.SwingUtilities;
-
-import java.awt.event.ActionListener;
-import javax.swing.event.MouseInputListener;
 
 import org.genepattern.data.DataModel;
-import org.genepattern.data.DataObjector;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.io.AbstractDataSource;
 import org.genepattern.gpge.io.DataObjectProxy;
-import org.genepattern.gpge.io.DataSource;
 import org.genepattern.gpge.io.DataSourceUpdateListener;
 import org.genepattern.gpge.io.DefaultDataObjectProxy;
 import org.genepattern.gpge.io.DirDataSource;
 import org.genepattern.gpge.io.GroupDataSource;
 import org.genepattern.gpge.ui.graphics.SortTreeModel;
-import org.genepattern.io.TextData;
 import org.genepattern.modules.ui.browser.BrowserPanel;
-import org.genepattern.server.analysis.JobInfo;
 import org.genepattern.util.ExceptionHandler;
 import org.genepattern.util.GPpropertiesManager;
 import org.genepattern.util.StringUtils;
@@ -101,7 +89,7 @@ public class DataTree implements org.genepattern.gpge.io.DataSourceManager {
 					if(obj instanceof DefaultMutableTreeNode && ((DefaultMutableTreeNode)obj).getUserObject() instanceof org.genepattern.gpge.io.ServerJobDataSource ) {
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) obj;
 						org.genepattern.gpge.io.ServerJobDataSource ds = (org.genepattern.gpge.io.ServerJobDataSource) node.getUserObject();
-						org.genepattern.gpge.ui.analysis.AnalysisJob job = ds.getJob();
+						org.genepattern.client.AnalysisJob job = ds.getJob();
 						
 						if(node.getChildCount()==0) { // job has no output files
 							if(node.getParent().getChildCount() == 1) { // remove task from tree
@@ -245,8 +233,8 @@ public class DataTree implements org.genepattern.gpge.io.DataSourceManager {
 
 							org.genepattern.gpge.io.ServerJobDataSource ds = (org.genepattern.gpge.io.ServerJobDataSource)jobNode.getUserObject();
 
-							org.genepattern.gpge.ui.analysis.AnalysisJob job = ds.getJob();// get the job for this
-							org.genepattern.server.analysis.JobInfo jobInfo = job.getJobInfo();
+							org.genepattern.client.AnalysisJob job = ds.getJob();// get the job for this
+							org.genepattern.analysis.JobInfo jobInfo = job.getJobInfo();
 							jobInfo.removeParameterInfo(user_obj.toString());
 							DefaultMutableTreeNode dataTypeNode = (DefaultMutableTreeNode)node.getParent();
 							if(dataTypeNode.getChildCount() == 1) {
@@ -871,7 +859,7 @@ public class DataTree implements org.genepattern.gpge.io.DataSourceManager {
 								((DefaultTreeModel)data_tree.getModel()).removeNodeFromParent(selected_node);
 							} else {// remove job
 								org.genepattern.gpge.io.ServerJobDataSource ds = (org.genepattern.gpge.io.ServerJobDataSource)selected_node.getUserObject();
-								org.genepattern.gpge.ui.analysis.AnalysisJob job = ds.getJob();
+								org.genepattern.client.AnalysisJob job = ds.getJob();
 								int choice = JOptionPane.showConfirmDialog(GenePattern.getDialogParent(),
 										"Do you want to remove job number "
 										 + job + " from your job results?",

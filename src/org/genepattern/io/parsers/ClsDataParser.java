@@ -6,9 +6,12 @@
 
 package org.genepattern.io.parsers;
 
-import java.io.*;
-import java.text.ParseException;
-import java.util.*;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.genepattern.data.DataObjector;
 import org.genepattern.data.KlassTemplate;
@@ -16,12 +19,6 @@ import org.genepattern.data.Template;
 import org.genepattern.io.DefaultSummaryInfo;
 import org.genepattern.io.SummaryError;
 import org.genepattern.io.SummaryInfo;
-import org.genepattern.util.*;
-
-import org.genepattern.server.*;
-import org.genepattern.io.*;
-import org.genepattern.data.*;
-import org.genepattern.io.*;
 /**
  * Can parse cls like input streams and creates a Template.
  * @author  kohm

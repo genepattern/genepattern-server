@@ -7,18 +7,11 @@
 package org.genepattern.io.parsers;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.text.ParseException;
+import java.io.InputStream;
 
 import org.genepattern.util.AbstractReporter;
 import org.genepattern.util.Reporter;
-
-import org.genepattern.io.*;
 
 /** Abstract implemetation of a DataParser
  * @author keith

@@ -6,17 +6,21 @@
 
 package org.genepattern.modules.ui.browser;
 
-import java.awt.*;
+import java.awt.Frame;
 import java.awt.event.ActionListener;
-import java.io.*;
-import java.net.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
-import javax.swing.*;
-import javax.swing.text.html.*;
-import javax.swing.event.*;
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLFrameHyperlinkEvent;
 
-import org.genepattern.modules.ui.browser.*;
-import org.genepattern.util.*;
+import org.genepattern.util.Messenger;
 
 //import java.awt.event.ActionListener;
 //import javax.swing.event.HyperlinkListener;

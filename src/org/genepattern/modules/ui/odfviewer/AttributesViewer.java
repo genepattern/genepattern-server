@@ -7,8 +7,6 @@
 package org.genepattern.modules.ui.odfviewer;
 
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;

@@ -3,11 +3,9 @@ package org.genepattern.io.expr.gct;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 
 import org.genepattern.data.expr.IExpressionData;
-import org.genepattern.data.matrix.DoubleMatrix2D;
-import org.genepattern.io.expr.*;
+import org.genepattern.io.expr.IExpressionDataWriter;
 
 
 /**

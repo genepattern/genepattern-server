@@ -6,11 +6,15 @@
 
 package org.genepattern.modules.ui.graphics;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
- 
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Frame;
+import java.awt.Window;
+
+import javax.swing.JDialog;
+import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 
 import org.genepattern.util.ProgressObservable;
 

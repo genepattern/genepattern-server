@@ -11,7 +11,8 @@ import java.util.List;
 
 import org.genepattern.data.expr.ResExpressionData;
 import org.genepattern.io.ParseException;
-import org.genepattern.io.expr.*;
+import org.genepattern.io.expr.IExpressionDataHandler;
+import org.genepattern.io.expr.IExpressionDataParser;
 
 
 /**

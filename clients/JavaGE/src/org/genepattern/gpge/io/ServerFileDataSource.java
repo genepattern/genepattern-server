@@ -6,34 +6,21 @@
 
 package org.genepattern.gpge.io;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.FileFilter;
-
-import java.net.URLEncoder;
-
-import java.text.ParseException;
-
+import org.genepattern.analysis.ParameterInfo;
 import org.genepattern.data.AbstractObject;
-import org.genepattern.data.DataModel;
 import org.genepattern.data.DataObjector;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.io.SummaryError;
 import org.genepattern.io.SummaryInfo;
-import org.genepattern.io.parsers.AbstractDataParser;
 import org.genepattern.io.parsers.DataParser;
-import org.genepattern.io.parsers.GctParser;
-import org.genepattern.server.analysis.ParameterInfo;
 import org.genepattern.util.StringUtils;
 
 
@@ -248,7 +235,7 @@ public class ServerFileDataSource extends AbstractDataSource {
     static {
         String source_url = null;
         try {
-            final java.util.Properties gp_props = org.genepattern.server.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
+            final java.util.Properties gp_props = org.genepattern.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
             source_url = gp_props.getProperty("retrieve.file");
         } catch (Exception ex) {
             org.genepattern.gpge.GenePattern.showError(null, "Cannot get the result file source URL", ex);

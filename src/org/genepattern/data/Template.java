@@ -11,15 +11,8 @@
 
 package org.genepattern.data;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Hashtable;
-
-import org.genepattern.data.FloatVector;
-import org.genepattern.util.XLogger;
 
 //import org.genepattern.io.DataFormat;
 //import org.genepattern.io.DataStore;

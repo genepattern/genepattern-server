@@ -6,32 +6,15 @@
 
 package org.genepattern.io;
 
-import javax.beans.BeanInfo;
-import javax.beans.Encoder;
-import javax.beans.Expression;
-import javax.beans.ExceptionListener;
-import javax.beans.PersistenceDelegate;
-import javax.beans.DefaultPersistenceDelegate;
-import javax.beans.PropertyDescriptor;
-import javax.beans.Introspector;
-import javax.beans.IntrospectionException;
-import javax.beans.Statement;
-import javax.beans.XMLDecoder;
-import javax.beans.XMLEncoder;
-
-import java.io.BufferedOutputStream;
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 
-import java.util.Hashtable;
-import java.util.Collections;
-import java.util.Vector;
+import javax.beans.ExceptionListener;
+import javax.beans.XMLDecoder;
 
 /**
  *  Class for deserializing java Objects saved in a XML format

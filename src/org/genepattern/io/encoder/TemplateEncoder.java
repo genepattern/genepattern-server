@@ -27,10 +27,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.genepattern.data.DataObjector;
-import org.genepattern.data.FeaturesetProperties;
 import org.genepattern.data.Template;
-
-import org.genepattern.io.*;
 /**
  * Encodes Template objects in odf format.
  * @author  kohm

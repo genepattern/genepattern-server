@@ -7,14 +7,6 @@
 package org.genepattern.gpge.ui.maindisplay;
 
 import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JTree;
-
-import javax.swing.JFileChooser;
-
-import org.genepattern.gpge.ui.treetable.*;
 
 /**
  *

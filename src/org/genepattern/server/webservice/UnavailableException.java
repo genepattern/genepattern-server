@@ -1,6 +1,8 @@
 
 package org.genepattern.server.webservice;
 
+import org.genepattern.analysis.WebServiceException;
+
 /**
  * Defines an exception that a web service throws to indicate that
  * it is permanently or temporarily unavailable.

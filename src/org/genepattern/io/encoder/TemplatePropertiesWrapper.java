@@ -7,14 +7,11 @@
 package org.genepattern.io.encoder;
 
 import java.util.Map;
-import java.util.Collections;
 
 import org.genepattern.data.AbstractObject;
 import org.genepattern.data.DataModel;
 import org.genepattern.data.FeaturesetProperties;
 import org.genepattern.data.Template;
-
-import org.genepattern.io.*;
 /**
  * Adaptor class that makes a Template look like a FeaturesetProperties object.
  * @author  kohm

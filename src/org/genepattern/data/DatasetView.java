@@ -6,10 +6,6 @@
 
 package org.genepattern.data;
 
-import org.genepattern.data.*;
-import org.genepattern.data.*;
-
-import java.util.*;
 
 /**
  * An immutable view of another dataset, requires an immutable Dataset.

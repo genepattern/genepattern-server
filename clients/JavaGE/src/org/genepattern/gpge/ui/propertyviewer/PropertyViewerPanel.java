@@ -6,13 +6,8 @@
 
 package org.genepattern.gpge.ui.propertyviewer;
 
-import java.util.Iterator;
 import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
 
-
-import javax.swing.table.DefaultTableModel;
 import javax.swing.CellEditor;
 
 /**

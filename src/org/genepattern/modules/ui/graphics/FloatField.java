@@ -1,12 +1,10 @@
 package org.genepattern.modules.ui.graphics;
 
-import javax.swing.*; 
-import javax.swing.text.*; 
-
 import java.awt.Toolkit;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.Locale;
+
+import javax.swing.JTextField;
 /** 
  * Allows the user to only enter a whole number.  This doesn't not need to be used 
  * in Java 1.4 or latter.  

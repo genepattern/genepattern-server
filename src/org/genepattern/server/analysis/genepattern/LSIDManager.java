@@ -1,16 +1,14 @@
 package org.genepattern.server.analysis.genepattern;
 
-import java.util.*;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import java.net.MalformedURLException;
+import java.rmi.RemoteException;
+
+import org.genepattern.analysis.OmnigeneException;
 import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
 import org.genepattern.server.util.BeanReference;
-import org.genepattern.server.util.OmnigeneException;
 import org.genepattern.util.LSID;
+import org.genepattern.util.LSIDUtil;
 
-import java.net.MalformedURLException;
-
-import java.rmi.RemoteException;
 
 /**
  * manage LSID creation and versioning (initially for the repository modules).
@@ -18,23 +16,14 @@ import java.rmi.RemoteException;
  * that a particular ID and version is never given out more than once
  */
 public class LSIDManager {
-	public static String AUTHORITY_MINE = "mine";
-	public static String AUTHORITY_BROAD = "broad"; 
-	public static String AUTHORITY_FOREIGN = "foreign";
-	public static String BROAD_AUTHORITY = "broad.mit.edu";
 
 	private static LSIDManager inst = null;
-	
-	private static String authority = "broad-cancer-genomics";
-	private static String namespace = "genepatternmodules";
+	private static LSIDUtil lsidUtil = LSIDUtil.getInstance();
 	private static String initialVersion = "1";
 
 
 	private LSIDManager(){
-		String auth = System.getProperty("lsid.authority");
-		if (auth != null) {
-			authority = auth;
-		}
+		
 	}
 
 
@@ -46,15 +35,15 @@ public class LSIDManager {
 	}	
 	
 	public String getAuthority(){
-		return authority;
+		return lsidUtil.getAuthority();
 	}
 	public String getNamespace(){
-		return namespace;
+		return lsidUtil.getNamespace();
 	}
 
 	public LSID createNewID() throws OmnigeneException, RemoteException {
 		try {
-			LSID newLSID = new LSID(authority, namespace, getNextID(), initialVersion);
+			LSID newLSID = new LSID(getAuthority(), getNamespace(), getNextID(), initialVersion);
 			return newLSID;		
 		} catch (MalformedURLException mue){
 			mue.printStackTrace();
@@ -95,59 +84,17 @@ public class LSIDManager {
 	}
 
 	public String getAuthorityType(LSID lsid) {
-		String authorityType;
-		if (lsid == null) {
-			authorityType = AUTHORITY_MINE;
-		} else {
-			String lsidAuthority = lsid.getAuthority();
-			if (lsidAuthority.equals(authority)) {
-				authorityType = AUTHORITY_MINE;
-			} else if (lsidAuthority.equals(BROAD_AUTHORITY)) {
-				authorityType = AUTHORITY_BROAD;
-			} else {
-				authorityType = AUTHORITY_FOREIGN;
-			}
-		}
-		return authorityType;
+		return lsidUtil.getAuthorityType(lsid);
 	}
 
 	// compare authority types: 1=lsid1 is closer, 0=equal, -1=lsid2 is closer
 	// closer is defined as mine > Broad > foreign
 	public int compareAuthorities(LSID lsid1, LSID lsid2) {
-		String at1 = getAuthorityType(lsid1);
-		String at2 = getAuthorityType(lsid2);
-		if (!at1.equals(at2)) {
-			if (at1.equals(AUTHORITY_MINE)) return 1;
-			if (at2.equals(AUTHORITY_MINE)) return -1;
-			if (at1.equals(AUTHORITY_BROAD)) return 1;
-			return -1;
-		} else {
-			return 0;
-		}
+		return lsidUtil.compareAuthorities(lsid1,lsid2);
 	}
 
 	public LSID getNearerLSID(LSID lsid1, LSID lsid2) {
-		int authorityComparison = compareAuthorities(lsid1, lsid2);
-		if (authorityComparison < 0) return lsid2;
-		if (authorityComparison > 0) {
-			// closer authority than lsid2.getAuthority()
-			return lsid1;
-		}
-		// same authority, check identifier
-		int identifierComparison = lsid1.getIdentifier().compareTo(lsid2.getIdentifier());
-		if (identifierComparison < 0) return lsid2;
-		if (identifierComparison > 0) {
-			// greater identifier than lsid2.getIdentifier()
-			return lsid1;
-		}
-		// same authority and identifier, check version
-		int versionComparison = lsid1.compareTo(lsid2);
-		if (versionComparison < 0) return lsid2;
-		if (versionComparison > 0) {
-			// later version than lsid2.getVersion()
-			return lsid1;
-		}
-		return lsid1; // equal???
+		return lsidUtil.getNearerLSID(lsid1,lsid2); // equal???
 	}
 
 

@@ -1,9 +1,5 @@
 package org.genepattern.stats;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-
 import org.genepattern.data.matrix.DoubleMatrix2D;
 /**
  * @author    Joshua Gould

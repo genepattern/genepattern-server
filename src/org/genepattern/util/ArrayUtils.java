@@ -1,15 +1,16 @@
 package org.genepattern.util;
 
-import java.util.Arrays;
+import gnu.trove.TDoubleArrayList;
+import gnu.trove.TFloatArrayList;
+import gnu.trove.TIntArrayList;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import org.genepattern.data.Dir;
 import org.genepattern.math.XMath;
-import org.genepattern.util.XLogger;
-
-import gnu.trove.*;
 
 /**
  * Native array related utilities.

@@ -16,9 +16,6 @@ import org.genepattern.data.DefaultNamesPanel;
 import org.genepattern.data.FeaturesetProperties;
 import org.genepattern.data.annotation.AnnotationFactory;
 import org.genepattern.data.annotation.PrimeAnnotationFactory;
-
-
-import org.genepattern.io.*;
 /**
  * Converts a FeaturesetProperties object with DataModel == Dataset into
  * a Dataset object.

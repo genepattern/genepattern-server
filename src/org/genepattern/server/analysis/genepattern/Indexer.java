@@ -3,54 +3,40 @@ package org.genepattern.server.analysis.genepattern;
 // Lucene comes from http://jakarta.apache.org/lucene
 // PDFBox comes from http://sourceforge.net/project/showfiles.php?group_id=78314 or http://www.pdfbox.org
 
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
-import org.apache.lucene.analysis.WhitespaceAnalyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.Lock;
-import org.genepattern.server.analysis.JobInfo;
-import org.genepattern.server.analysis.JobStatus;
-import org.genepattern.server.analysis.ParameterFormatConverter;
-import org.genepattern.server.analysis.ParameterInfo;
-import org.genepattern.server.analysis.TaskInfo;
-import org.genepattern.server.analysis.TaskInfoAttributes;
-import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
-import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.util.OmnigeneException;
-import org.genepattern.util.GPConstants;
-import org.genepattern.util.LSID;
-
-
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.store.FSDirectory;
+import org.genepattern.analysis.JobInfo;
+import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.analysis.ParameterFormatConverter;
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.TaskInfo;
+import org.genepattern.analysis.TaskInfoAttributes;
+import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
+import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
 
 public class Indexer {
 
@@ -93,11 +79,11 @@ public class Indexer {
     public static Analyzer GPAnalyzer = new PerFieldAnalyzerWrapper(new GPLuceneAnalyzer() /*WhitespaceAnalyzer() */);
 
     public Indexer(Writer out) {
-	this.out = new PrintWriter(out, true);
+    	Indexer.out = new PrintWriter(out, true);
     }
 
     public Indexer(OutputStream out) {
-	this.out = new PrintWriter(out, true);
+    	Indexer.out = new PrintWriter(out, true);
     }
 
     public Indexer() {
@@ -110,7 +96,7 @@ public class Indexer {
 		// wait until writer is not in use
 		while (reader != null) {
 		    try {
-			Thread.currentThread().sleep(100);
+		    	Thread.currentThread().sleep(100);
 		    } catch (InterruptedException ie) {
 			// ignore
 		    }
@@ -634,23 +620,23 @@ public class Indexer {
 			int numDeleted = 0;
 			if (cmd.equals("delete")) {
 				if (indexType.equals("task")) {
-					numDeleted = indexer.deleteTask(ID);
+					numDeleted = Indexer.deleteTask(ID);
 				} else if (indexType.equals("job")) {
-					numDeleted = indexer.deleteJob(ID);
+					numDeleted = Indexer.deleteJob(ID);
 				} else if (indexType.equals("file")) {
-					numDeleted = indexer.deleteJobFile(ID, filename);
+					numDeleted = Indexer.deleteJobFile(ID, filename);
 				}
 				System.out.println("deleted " + numDeleted + " documents from index");
 			} else if (cmd.equals("index")) {
 				if (indexType.equals("task")) {
 					writer = new IndexWriter(indexDir, GPAnalyzer, false);
-					indexer.indexTask(writer, Integer.parseInt(ID));
+					Indexer.indexTask(writer, Integer.parseInt(ID));
 				} else if (indexType.equals("job")) {
 					writer = new IndexWriter(indexDir, GPAnalyzer, false);
-					indexer.indexJob(writer, Integer.parseInt(ID));
+					Indexer.indexJob(writer, Integer.parseInt(ID));
 				} else if (indexType.equals("all")) {
 					Indexer.reset(indexDir);
-				        indexer.index(indexDir);
+					Indexer.index(indexDir);
 				}
 			} else if (cmd.equals("help") || cmd.equals("?")) {
 				System.err.println(help);

@@ -8,8 +8,6 @@ package org.genepattern.io.parsers;
 
 import org.genepattern.data.DataObjector;
 import org.genepattern.data.FeaturesetProperties;
-
-import org.genepattern.io.*;
 /**
  * Classes that implement this interface convert a FeaturesetProperties object 
  * to another DataObjector.

@@ -6,12 +6,10 @@
 
 package org.genepattern.io;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.genepattern.data.DataModel;
-
-import org.genepattern.data.*;
 
 /**
  * Default inplementation of SummaryInfo.

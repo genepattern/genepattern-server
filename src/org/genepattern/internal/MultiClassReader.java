@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.genepattern.data.expr.*;
-import org.genepattern.data.matrix.*;
-import org.genepattern.io.*;
+import org.genepattern.data.expr.ExpressionData;
+import org.genepattern.data.matrix.ClassVector;
+import org.genepattern.io.ParseException;
 
 
 /**

@@ -4,7 +4,10 @@
   */
 
 package org.genepattern.gpge.ui.preferences;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 
 public final class GBA {
 	public final static int B = GridBagConstraints.BOTH;

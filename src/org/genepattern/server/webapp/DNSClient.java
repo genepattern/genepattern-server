@@ -28,10 +28,12 @@
 
 package org.genepattern.server.webapp;
 
-import java.net.*;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.io.*;
-import java.util.*;
+import java.util.Iterator;
+import java.util.TreeMap;
 
 /**
  * The <code>DNSClient</code> class allows DNS (Domain Name System)

@@ -5,15 +5,16 @@
  */
 package org.genepattern.gpge;
 
-import java.awt.*;
-
-import java.util.Properties;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -26,11 +27,13 @@ import org.genepattern.data.Matrix;
 import org.genepattern.data.NamesPanel;
 import org.genepattern.data.SomProperties;
 import org.genepattern.data.Template;
-import org.genepattern.gpge.io.DataObjectProxy;
 import org.genepattern.gpge.ui.infopanels.ReportPanel;
 import org.genepattern.gpge.ui.maindisplay.DataObjectBrowser;
 import org.genepattern.gpge.util.BuildProperties;
-import org.genepattern.util.*;
+import org.genepattern.util.AbstractReporter;
+import org.genepattern.util.Reporter;
+import org.genepattern.util.ReporterWithGUI;
+import org.genepattern.util.StringUtils;
 
 
 

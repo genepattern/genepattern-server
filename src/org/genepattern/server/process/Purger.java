@@ -1,14 +1,11 @@
 package org.genepattern.server.process;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.TimerTask;
 
-
-import java.io.IOException;
-import java.io.File;
-import java.util.Date;
-
-import org.genepattern.server.analysis.JobInfo;
+import org.genepattern.analysis.JobInfo;
 import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.analysis.genepattern.Indexer;

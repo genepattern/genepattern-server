@@ -1,5 +1,4 @@
 package org.genepattern.server.analysis.webservice.server;
-import java.util.Vector;
 
 /**
  *@author     Joshua Gould

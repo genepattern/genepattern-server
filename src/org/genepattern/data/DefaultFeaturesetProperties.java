@@ -6,12 +6,10 @@
 
 package org.genepattern.data;
 
-import java.util.Map;
 import java.util.Collections;
+import java.util.Map;
 
-import javax.swing.table.*;
-import javax.swing.event.*;
-import javax.swing.*;
+import javax.swing.event.TableModelListener;
 
 import org.genepattern.util.ArrayOArrays;
 import org.genepattern.util.ArrayUtils;

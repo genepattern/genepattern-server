@@ -11,12 +11,12 @@
 
 package org.genepattern.math;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 import org.genepattern.data.Matrix;
-import org.genepattern.util.ArrayUtils;
-
-import org.genepattern.data.*;
 
 /**
  * Functionally extends java.lang.Math with additional math related methods.

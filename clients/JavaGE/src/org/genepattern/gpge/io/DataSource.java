@@ -6,9 +6,9 @@
 
 package org.genepattern.gpge.io;
 
-import java.text.ParseException;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
 import java.util.List;
 
 import org.genepattern.data.DataObjector;

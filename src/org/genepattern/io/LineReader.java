@@ -1,6 +1,5 @@
 package org.genepattern.io;
 import java.io.BufferedReader;
-
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -92,8 +91,7 @@ class LineReader {
              + (expected_row_count - numNonBlankLines) + " lines more!"));
          }
       }
-      current = current;
-
+     
       if(skipBlankLines && current.length() == 0) {// skip blank lines
          return readLine();
       }

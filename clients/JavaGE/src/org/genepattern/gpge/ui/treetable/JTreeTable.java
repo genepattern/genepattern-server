@@ -18,14 +18,15 @@ package org.genepattern.gpge.ui.treetable;
 //import com.sun.java.swing.tree.*;
 //import com.sun.java.swing.table.*;
 
-import java.awt.Dimension;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.tree.*;
-import javax.swing.event.*;
+import javax.swing.JTable;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.tree.DefaultTreeSelectionModel;
+import javax.swing.tree.TreeModel;
 
 /**
  * This example shows how to create a simple JTreeTable component, 

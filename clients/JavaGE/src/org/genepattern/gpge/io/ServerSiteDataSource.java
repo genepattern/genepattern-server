@@ -6,40 +6,14 @@
 
 package org.genepattern.gpge.io;
 
-import java.util.Arrays;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.io.FileFilter;
-
-import java.text.ParseException;
-
-import org.genepattern.data.DataModel;
-import org.genepattern.data.DataObjector;
-import org.genepattern.io.SummaryError;
-import org.genepattern.io.SummaryInfo;
-import org.genepattern.io.UniversalDecoder;
-import org.genepattern.io.parsers.AbstractDataParser;
 import org.genepattern.io.parsers.DataParser;
-import org.genepattern.io.parsers.GctParser;
-import org.genepattern.util.ArrayUtils;
-import org.genepattern.util.StringUtils;
-
-
-
-
-import org.genepattern.gpge.ui.analysis.*;
-
+ 
 /**
  *  Creates ServerTasksDataSource objects and updates them with jobs from server
  * @author  keith
@@ -50,13 +24,13 @@ public class ServerSiteDataSource extends GroupDataSource {
      * This will be aware of the specified directory and all
      * data files there.
      */
-    public ServerSiteDataSource(final org.genepattern.gpge.ui.analysis.DataModel analysis_model, final String site_name, final DataParser[] parsers, final GroupDataSource parent, final DataSourceManager manager) throws java.io.IOException, org.genepattern.server.util.PropertyNotFoundException {
+    public ServerSiteDataSource(final org.genepattern.gpge.ui.tasks.DataModel analysis_model, final String site_name, final DataParser[] parsers, final GroupDataSource parent, final DataSourceManager manager) throws java.io.IOException, org.genepattern.analysis.PropertyNotFoundException {
         super(createSources(parsers), parent, manager, "Server ");
         this.analysis_model = analysis_model;
         if( site_name == null )
             throw new NullPointerException("The site name must not be null");
         this.site_name = site_name;
-        final Properties p = org.genepattern.server.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
+        final Properties p = org.genepattern.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
         file_header_source_url = p.getProperty("result.file.header.source");
         if( file_header_source_url == null )
             throw new IllegalStateException("Cannot get the result file header source URL!");
@@ -75,10 +49,10 @@ public class ServerSiteDataSource extends GroupDataSource {
              */
             protected final void updateIt(java.util.Observable observable, Object obj) throws java.io.IOException{
                 System.out.println("updating observer ServerSiteDataSource obj ="+obj);
-                if( obj instanceof org.genepattern.gpge.ui.analysis.DataModel.JobAndObserver ) {
-                    final org.genepattern.gpge.ui.analysis.DataModel.JobAndObserver jao = (org.genepattern.gpge.ui.analysis.DataModel.JobAndObserver)obj;
+                if( obj instanceof org.genepattern.gpge.ui.tasks.DataModel.JobAndObserver ) {
+                    final org.genepattern.gpge.ui.tasks.DataModel.JobAndObserver jao = (org.genepattern.gpge.ui.tasks.DataModel.JobAndObserver)obj;
                     System.out.println("JobAndObserver: "+jao);
-                    final org.genepattern.server.analysis.JobInfo info = jao.job.getJobInfo();
+                    final org.genepattern.analysis.JobInfo info = jao.job.getJobInfo();
                     System.out.println("JobInfo: "+info);
                     System.out.println("Has output file "+info.containsOutputFileParam());
                     System.out.println("Has input file "+info.containsInputFileParam());
@@ -176,7 +150,7 @@ public class ServerSiteDataSource extends GroupDataSource {
     /** maps task name to the ServerTaskDataSource object */
     private final Map task_source;
     /** the edu....omniview.analysis package's DataModel */
-    protected final org.genepattern.gpge.ui.analysis.DataModel analysis_model;
+    protected final org.genepattern.gpge.ui.tasks.DataModel analysis_model;
     /** the URL of the header source jsp page */
     private final String file_header_source_url;
 }

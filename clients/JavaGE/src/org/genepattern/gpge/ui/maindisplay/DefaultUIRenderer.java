@@ -8,7 +8,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.*;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.File;
@@ -32,26 +32,22 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.TaskInfo;
+import org.genepattern.client.AnalysisService;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.io.AbstractDataSource;
 import org.genepattern.gpge.io.DataObjectProxy;
 import org.genepattern.gpge.io.DataSource;
 import org.genepattern.gpge.io.ServerFileDataSource;
-import org.genepattern.gpge.ui.analysis.AnalysisService;
-import org.genepattern.gpge.ui.analysis.ParamRetrievor;
-import org.genepattern.gpge.ui.analysis.UIRenderer;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
+import org.genepattern.gpge.ui.tasks.ParamRetrievor;
+import org.genepattern.gpge.ui.tasks.UIRenderer;
 import org.genepattern.modules.ui.graphics.FloatField;
 import org.genepattern.modules.ui.graphics.IntegerField;
-import org.genepattern.server.analysis.*;
-import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.ExceptionHandler;
 import org.genepattern.util.GPConstants;
-
-import java.awt.event.ActionListener;
-
-import org.genepattern.gpge.ui.analysis.*;
-
+import org.genepattern.util.PropertyFactory;
 /**
  *@author     kohm
  *@created    February 9, 2004
@@ -1088,7 +1084,7 @@ class DefaultUIRenderer implements UIRenderer {
 	static {
 		String doc_url = null;
 		try {
-			final Properties gp_props = org.genepattern.server.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
+			final Properties gp_props = PropertyFactory.getInstance().getProperties("omnigene.properties");
 			doc_url = gp_props.getProperty("task.documentation");
 		} catch(Exception ex) {
 			GenePattern.showError(null, "Cannot get the task documention url", ex);

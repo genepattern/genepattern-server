@@ -1,8 +1,5 @@
 package org.genepattern.io.expr;
-import java.util.*;
-
-import org.genepattern.data.expr.*;
-import org.genepattern.io.expr.*;
+import java.util.List;
 
 /**
  *  Interface for expression data readers.

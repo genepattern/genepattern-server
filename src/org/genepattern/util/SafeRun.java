@@ -10,7 +10,6 @@
 
 package org.genepattern.util;
 
-import org.genepattern.util.Warning;
 
 /**
  *

@@ -6,13 +6,6 @@
 
 package org.genepattern.data;
 
-import org.genepattern.data.*;
-import org.genepattern.data.*;
-
-import java.util.*;
-
-import org.genepattern.data.annotation.AnnotationFactory;
-import org.genepattern.data.annotation.Annotator;
 
 /**
  *  This class represents a mutable version of the DatasetView.

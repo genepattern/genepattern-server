@@ -6,43 +6,20 @@
 
 package org.genepattern.gpge.io;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.io.FileFilter;
-
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.text.ParseException;
+import java.util.Properties;
 
-import org.genepattern.data.DataModel;
-import org.genepattern.data.DataObjector;
-import org.genepattern.gpge.ui.analysis.FileNode;
-import org.genepattern.gpge.ui.analysis.ResultFile;
-import org.genepattern.gpge.ui.analysis.TreeNodeFactory;
+import org.genepattern.gpge.ui.tasks.FileNode;
+import org.genepattern.gpge.ui.tasks.ResultFile;
+import org.genepattern.gpge.ui.tasks.TreeNodeFactory;
 import org.genepattern.io.SummaryError;
 import org.genepattern.io.SummaryInfo;
 import org.genepattern.io.UniversalDecoder;
-import org.genepattern.io.parsers.AbstractDataParser;
 import org.genepattern.io.parsers.DataParser;
-import org.genepattern.io.parsers.GctParser;
-import org.genepattern.util.ArrayUtils;
 import org.genepattern.util.StringUtils;
-
-
-
-
-import org.genepattern.gpge.ui.analysis.*;
 
 /**
  *  Knows how to identify remote Data Object files on a server
@@ -54,13 +31,13 @@ public class ServerDataSource extends GroupDataSource implements java.util.Obser
      * This will be aware of the specified directory and all
      * data files there.
      */
-    public ServerDataSource(final org.genepattern.gpge.ui.analysis.DataModel analysis_model, final org.genepattern.gpge.ui.analysis.ResultsPanel analysis_results_panel, final DataParser[] parsers/*DataSource[] sources*/) throws java.io.IOException, org.genepattern.server.util.PropertyNotFoundException {
+    public ServerDataSource(final org.genepattern.gpge.ui.tasks.DataModel analysis_model, final org.genepattern.gpge.ui.tasks.ResultsPanel analysis_results_panel, final DataParser[] parsers/*DataSource[] sources*/) throws java.io.IOException, org.genepattern.analysis.PropertyNotFoundException {
         super(createSources(parsers), null, null, parsers);
         this.analysis_model = analysis_model;
         this.analysis_results_panel = analysis_results_panel;
         server_node = new javax.swing.tree.DefaultMutableTreeNode("Server (remote access)", true/*allows childern*/);
         
-        final Properties p = org.genepattern.server.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
+        final Properties p = org.genepattern.util.PropertyFactory.getInstance().getProperties("omnigene.properties");
         file_header_source_url = p.getProperty("result.file.header.source");
         if( file_header_source_url == null )
             throw new IllegalStateException("Cannot get the result file header source URL!");
@@ -116,11 +93,11 @@ public class ServerDataSource extends GroupDataSource implements java.util.Obser
     /** describes what this DataSource does */
     private static final String DESCRIPTION = "Retrives data from the server, \n";
     /** the edu....omniview.analysis package's DataModel */
-    protected final org.genepattern.gpge.ui.analysis.DataModel analysis_model;
+    protected final org.genepattern.gpge.ui.tasks.DataModel analysis_model;
     /** the tree model this should be deleted Kludge time... */
     protected javax.swing.tree.DefaultTreeModel tree_model;
     /** the edu....omniview.analysis package's ResultsPanel */
-    protected final org.genepattern.gpge.ui.analysis.ResultsPanel analysis_results_panel;
+    protected final org.genepattern.gpge.ui.tasks.ResultsPanel analysis_results_panel;
     /** the URL of the header source jsp page */
     private final String file_header_source_url;
     /** the stream type

@@ -22,7 +22,7 @@ import org.genepattern.io.parsers.ResParser;
 import org.genepattern.util.ArrayUtils;
 import org.genepattern.util.PeriodicUpdater;
 import org.genepattern.util.Warning;
-
+ 
 
 
 /**
@@ -114,7 +114,7 @@ public class DataSources extends AbstractDataSource implements DataSourceUpdateL
     }
     
    /** sets the server data source and creates the new ServerSiteDataSource */
-    public ServerSiteDataSource setAnalysisDataModel(final String site_name, final org.genepattern.gpge.ui.analysis.DataModel analysis_model, final DataSourceManager manager) throws java.io.IOException, org.genepattern.server.util.PropertyNotFoundException{
+    public ServerSiteDataSource setAnalysisDataModel(final String site_name, final org.genepattern.gpge.ui.tasks.DataModel analysis_model, final DataSourceManager manager) throws java.io.IOException, org.genepattern.analysis.PropertyNotFoundException{
         final DataParser[] parsers = (DataParser[])UniversalDecoder.PARSER_LIST.toArray(new DataParser[UniversalDecoder.PARSER_LIST.size()]);
         final ServerSiteDataSource server_datasource = new ServerSiteDataSource(analysis_model, site_name, parsers, null, manager);
         addDataSource(server_datasource);

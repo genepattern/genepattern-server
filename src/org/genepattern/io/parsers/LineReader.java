@@ -6,16 +6,14 @@
 
 package org.genepattern.io.parsers;
 
+import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileReader;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.text.ParseException;
-import org.genepattern.io.*;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * Keeps track of reading the lines, the total number and number of non blank lines

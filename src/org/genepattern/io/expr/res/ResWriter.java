@@ -5,8 +5,7 @@ import java.io.PrintWriter;
 
 import org.genepattern.data.expr.IExpressionData;
 import org.genepattern.data.expr.IResExpressionData;
-import org.genepattern.data.matrix.DoubleMatrix2D;
-import org.genepattern.io.expr.*;
+import org.genepattern.io.expr.IExpressionDataWriter;
 
 
 /**

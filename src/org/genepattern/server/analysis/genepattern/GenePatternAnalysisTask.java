@@ -4,12 +4,12 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
@@ -25,35 +25,38 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
-import java.util.zip.*;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-import org.genepattern.server.analysis.AnalysisServiceException;
-import org.genepattern.server.analysis.AnalysisTask;
-import org.genepattern.server.analysis.JobInfo;
-import org.genepattern.server.analysis.JobStatus;
-import org.genepattern.server.analysis.ParameterInfo;
-import org.genepattern.server.analysis.TaskInfo;
-import org.genepattern.server.analysis.TaskInfoAttributes;
-import org.genepattern.server.analysis.dbloader.DBLoader;
-import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
-import org.genepattern.server.util.BeanReference;
-import org.genepattern.server.util.OmnigeneException;
-import org.genepattern.util.IGPConstants;
-import org.genepattern.util.LSID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletContext;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.genepattern.analysis.JobInfo;
+import org.genepattern.analysis.JobStatus;
+import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.TaskInfo;
+import org.genepattern.analysis.TaskInfoAttributes;
+import org.genepattern.server.analysis.AnalysisServiceException;
+import org.genepattern.server.analysis.dbloader.DBLoader;
+import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
+import org.genepattern.server.util.BeanReference;
+import org.genepattern.util.IGPConstants;
+import org.genepattern.util.LSID;
 
 /**
  * Enables definition, execution, and sharing of AnalysisTasks using extensive metadata descriptions and obviating programming
@@ -110,7 +113,7 @@ import javax.servlet.ServletContext;
  * @author Jim Lerner
  * @version 1.0
  * @see org.genepattern.server.analysis.AnalysisTask
- * @see org.genepattern.server.analysis.TaskInfoAttributes
+ * @see org.genepattern.analysis.TaskInfoAttributes
  */
 
 public class GenePatternAnalysisTask implements IGPConstants {
@@ -1478,7 +1481,7 @@ next_parameter:
 	GenePatternAnalysisTask gp = new GenePatternAnalysisTask();
 	Vector vProblems = null;
 	try {
-		Properties props = gp.setupProps(taskName, 0, -1, tia, params, gp.getEnv(), params, null);
+		Properties props = gp.setupProps(taskName, 0, -1, tia, params, GenePatternAnalysisTask.getEnv(), params, null);
 	    	vProblems = gp.validateParameters(props, taskName, tia.get(COMMAND_LINE), params, params, false);
 	} catch (Exception e) {
 		vProblems = new Vector();
@@ -2415,7 +2418,7 @@ next_parameter:
      * @param additionalParams	array of ParameterInfo objects which represent additional output parameters from the pipeline job
      * @throws OmnigeneException if thrown by Omnigene
      * @throws RemoteException	if thrown by Omnigene
-     * @see org.genepattern.server.analysis.JobStatus
+     * @see org.genepattern.analysis.JobStatus
      * @author Jim Lerner
      */
     public static void updatePipelineStatus(int jobNumber, int jobStatus, ParameterInfo[] additionalParams) throws OmnigeneException,RemoteException {
@@ -2442,7 +2445,7 @@ next_parameter:
      * @param additionalFilename optional filename of output file for this job
      * @throws OmnigeneException if thrown by Omnigene
      * @throws RemoteException	if thrown by Omnigene
-     * @see org.genepattern.server.analysis.JobStatus
+     * @see org.genepattern.analysis.JobStatus
      * @author Jim Lerner
      */
     public static void updatePipelineStatus(int jobNumber, int jobStatus, String name, String additionalFilename) throws OmnigeneException,RemoteException {

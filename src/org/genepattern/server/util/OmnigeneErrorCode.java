@@ -2,7 +2,7 @@
 package org.genepattern.server.util;
 
 
-import java.util.*;
+import java.util.Hashtable;
 /**
  * OmnigeneErrorCodes
  *

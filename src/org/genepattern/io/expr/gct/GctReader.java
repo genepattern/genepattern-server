@@ -1,12 +1,11 @@
 package org.genepattern.io.expr.gct;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.genepattern.data.expr.ExpressionData;
-import org.genepattern.data.matrix.DoubleMatrix2D;
-import org.genepattern.io.*;
-import org.genepattern.io.expr.*;
+import org.genepattern.io.AbstractReader;
+import org.genepattern.io.expr.IExpressionDataCreator;
+import org.genepattern.io.expr.IExpressionDataReader;
+import org.genepattern.io.expr.ReaderUtil;
 
 
 /**

@@ -1,6 +1,7 @@
 package org.genepattern.server.jaxb.analysis.job;
 import java.io.IOException;
 import java.io.InputStream;
+
 import javax.xml.bind.ConversionException;
 import javax.xml.bind.Dispatcher;
 import javax.xml.bind.DuplicateAttributeException;

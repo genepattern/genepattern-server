@@ -18,22 +18,22 @@
 
 package org.genepattern.io.parsers;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
-import java.util.zip.*;
+import java.io.BufferedWriter;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.genepattern.data.Dataset;
 import org.genepattern.io.DefaultSummaryInfo;
 import org.genepattern.io.SummaryError;
 import org.genepattern.io.SummaryInfo;
-import org.genepattern.util.*;
-
-import org.genepattern.server.*;
-//import org.genepattern.io.LineReader;
-
-import org.genepattern.data.*;
-import org.genepattern.io.*;
 
 /**
  * Can parse gct input streams and creates a Dataset

@@ -1,30 +1,40 @@
 package org.genepattern.server.analysis.webservice.client;
 
 
-import org.apache.axis.AxisFault;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
+import javax.xml.namespace.QName;
+import javax.xml.rpc.ParameterMode;
+
 import org.apache.axis.client.Call;
 import org.apache.axis.client.Service;
 import org.apache.axis.encoding.XMLType;
-import org.apache.axis.encoding.ser.*;
-import org.apache.axis.utils.Options;
-
-import javax.xml.rpc.ParameterMode;
-import javax.xml.namespace.QName;
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
-import java.io.*;
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.util.*;
-
-
-
+import org.apache.axis.encoding.ser.ArrayDeserializerFactory;
+import org.apache.axis.encoding.ser.ArraySerializerFactory;
+import org.apache.axis.encoding.ser.BeanDeserializerFactory;
+import org.apache.axis.encoding.ser.BeanSerializerFactory;
+import org.apache.axis.encoding.ser.DateDeserializerFactory;
+import org.apache.axis.encoding.ser.DateSerializerFactory;
+import org.apache.axis.encoding.ser.JAFDataHandlerDeserializerFactory;
+import org.apache.axis.encoding.ser.JAFDataHandlerSerializerFactory;
+import org.apache.axis.encoding.ser.MapDeserializerFactory;
+import org.apache.axis.encoding.ser.MapSerializerFactory;
 import org.apache.log4j.Category;
-import org.genepattern.server.analysis.JobInfo;
-import org.genepattern.server.analysis.ParameterInfo;
-import org.genepattern.server.analysis.TaskInfo;
-import org.genepattern.server.analysis.TaskInfoAttributes;
-import org.genepattern.server.webservice.*;
+import org.genepattern.analysis.JobInfo;
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.TaskInfo;
+import org.genepattern.analysis.TaskInfoAttributes;
+import org.genepattern.analysis.WebServiceException;
+import org.genepattern.server.webservice.FileWrapper;
+import org.genepattern.server.webservice.UnavailableException;
 //import edu.mit.broad.gp.ws.*;
 
 /**

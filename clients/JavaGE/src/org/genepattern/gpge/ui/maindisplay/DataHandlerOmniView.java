@@ -6,35 +6,30 @@
 
 package org.genepattern.gpge.ui.maindisplay;
 
-import javax.beans.BeanInfo;  //1.3
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.util.Hashtable;
+import java.util.Vector;
+
+import javax.beans.BeanInfo;
+import javax.beans.DefaultPersistenceDelegate;
 import javax.beans.Encoder;
 import javax.beans.ExceptionListener;
-import javax.beans.DefaultPersistenceDelegate;
-import javax.beans.PropertyDescriptor;  //1.3
-import javax.beans.Introspector;  //1.3
-import javax.beans.IntrospectionException;  //1.3
+import javax.beans.IntrospectionException;
+import javax.beans.Introspector;
+import javax.beans.PropertyDescriptor;
 import javax.beans.Statement;
 
-import org.genepattern.gpge.ui.analysis.AnalysisJob;
-import org.genepattern.gpge.ui.analysis.DataModel;
+import org.genepattern.gpge.ui.tasks.DataModel;
 import org.genepattern.io.DeSerializer;
 import org.genepattern.io.encoder.XmlSerializer;
 import org.genepattern.util.StringUtils;
-
-import java.io.BufferedOutputStream;
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.*;
-
-
-import java.util.Hashtable;
-import java.util.Collections;
-import java.util.Vector;
 
 
 
@@ -107,7 +102,7 @@ public class DataHandlerOmniView implements ExceptionListener {
 	final String test_file_name = "c:/temp/old_ana_jobs.xml";
         System.out.println("loading in \""+test_file_name+"\"");
         final File file = new File(test_file_name);
-        final org.genepattern.gpge.ui.analysis.DataModel dat_model =
+        final org.genepattern.gpge.ui.tasks.DataModel dat_model =
         DataHandlerOmniView.loadData(file);
         
         System.out.println("saving results as XML..");
@@ -156,14 +151,14 @@ public class DataHandlerOmniView implements ExceptionListener {
         }
         try {
             // JobInfo
-            makeTransient(org.genepattern.server.analysis.JobInfo.class, new String[]{"parameterInfo"});
+            makeTransient(org.genepattern.analysis.JobInfo.class, new String[]{"parameterInfo"});
         } catch (Throwable t) {
             //FIXME need to report error
             System.err.println(t);
         }
         // ParameterInfo
         try {
-            makeTransient(org.genepattern.server.analysis.ParameterInfo.class, 
+            makeTransient(org.genepattern.analysis.ParameterInfo.class, 
                 new String[]{"inputFile", "label", "outputFile", });
         } catch (Throwable t) {
             //FIXME need to report error
@@ -173,7 +168,7 @@ public class DataHandlerOmniView implements ExceptionListener {
         //AnalysisJob
         final Encoder encoder = new Encoder();
         encoder.setPersistenceDelegate(DataModel.class, new DataModelPersistenceDelegate());
-        encoder.setPersistenceDelegate(org.genepattern.gpge.ui.analysis.AnalysisJob.class,
+        encoder.setPersistenceDelegate(org.genepattern.client.AnalysisJob.class,
                          new DefaultPersistenceDelegate(
                              new String[]{ "siteName",
                                            "taskName",

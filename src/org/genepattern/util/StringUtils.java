@@ -6,7 +6,6 @@
 
 package org.genepattern.util;
 
-import java.text.*;
 
 /**
  * Static methods for String manipulation
@@ -34,6 +33,8 @@ public class StringUtils {
         return sb.toString();
     }
 
+   
+    
     /** creates an array of Strings by parsing the input String using the delimiter */
     public static final String[] splitStrings(final String text, final char delim) {
         final int num = getNumOccurances(text, delim) + 1;

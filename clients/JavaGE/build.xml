@@ -66,7 +66,7 @@ This will create a jar file with the pattern gp-XXXXXXXX.jar where the Xs will b
             </fileset>
             
             <filelist dir="${repos_root}/build/jars" files="analysis.jar" id="omni.client"/>
-            <filelist dir="${repos_root}/build" files="file_support.jar gp-common.jar ui_support.jar, runMain.jar" id="build.jars"/>
+            <filelist dir="${repos_root}/build" files="broad-cg.jar gp-common.jar gpclient.jar ui_support.jar, runMain.jar" id="build.jars"/>
             <path id="props.path" path="${repos_root}/resources"/>
         </path>
         

@@ -23,9 +23,13 @@
 
 package org.genepattern.io.parsers;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.genepattern.data.DataModel;
 import org.genepattern.data.DataObjector;
@@ -34,22 +38,12 @@ import org.genepattern.data.DefaultFeaturesetProperties;
 import org.genepattern.data.FeaturesetProperties;
 import org.genepattern.data.SomProperties;
 import org.genepattern.data.Template;
-import org.genepattern.data.annotation.AnnotationFactory;
-import org.genepattern.data.annotation.PrimeAnnotationFactory;
 import org.genepattern.io.DefaultSummaryInfo;
 import org.genepattern.io.SummaryError;
 import org.genepattern.io.SummaryInfo;
 import org.genepattern.io.encoder.FeaturesetPropertiesEncoder;
-import org.genepattern.util.*;
-//import java.util.zip.*;
-
-import org.genepattern.server.*;
-
-
-import org.genepattern.data.*;
-import org.genepattern.data.*;
-//import edu.mit.genome.util.ReusableStringTokenizer;
-import org.genepattern.io.*;
+import org.genepattern.util.ArrayOArrays;
+import org.genepattern.util.ReusableStringTokenizer;
 
 /**
  * This can parse data that represents a FeaturesetProperties object.

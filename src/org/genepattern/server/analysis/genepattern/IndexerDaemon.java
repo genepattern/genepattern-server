@@ -1,16 +1,13 @@
 package org.genepattern.server.analysis.genepattern;
 
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.index.IndexWriter;
-import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
-import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.analysis.genepattern.Indexer;
-import org.genepattern.server.util.BeanReference;
-
-
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
+
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.store.FSDirectory;
+import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
+import org.genepattern.server.util.BeanReference;
 
 public class IndexerDaemon implements Runnable {
 

@@ -6,36 +6,25 @@
 
 package org.genepattern.gpge.io;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import java.text.ParseException;
-
-import org.genepattern.data.DataModel;
-import org.genepattern.data.DataObjector;
 import org.genepattern.gpge.GenePattern;
-import org.genepattern.io.SummaryError;
-import org.genepattern.io.SummaryInfo;
 import org.genepattern.io.UniversalDecoder;
-import org.genepattern.io.parsers.AbstractDataParser;
 import org.genepattern.io.parsers.DataParser;
-import org.genepattern.io.parsers.GctParser;
-import org.genepattern.util.ArrayUtils;
 import org.genepattern.util.GPpropertiesManager;
 import org.genepattern.util.StringUtils;
 
-import com.oroinc.text.regex.*;
+import com.oroinc.text.regex.Pattern;
+import com.oroinc.text.regex.PatternCompiler;
+import com.oroinc.text.regex.PatternMatcher;
+import com.oroinc.text.regex.Perl5Compiler;
+import com.oroinc.text.regex.Perl5Matcher;
 
 
 

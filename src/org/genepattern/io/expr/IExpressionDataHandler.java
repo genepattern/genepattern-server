@@ -1,5 +1,5 @@
 package org.genepattern.io.expr;
-import org.genepattern.io.*;
+import org.genepattern.io.ParseException;
 
 /**
  *  An interface for receiving notification of the content of a expression data

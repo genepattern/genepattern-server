@@ -7,9 +7,6 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
-import org.genepattern.visualizer.RunVisualizer;
-import org.genepattern.visualizer.RunVisualizerConstants;
-
 
 public class RunVisualizerApplet extends Applet {
 

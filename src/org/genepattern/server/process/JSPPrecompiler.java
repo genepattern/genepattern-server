@@ -3,12 +3,12 @@ package org.genepattern.server.process;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
-import java.io.InputStreamReader;
-import java.net.UnknownHostException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.util.Date;
 
 public class JSPPrecompiler implements Runnable {

@@ -9,14 +9,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.genepattern.data.expr.IExpressionData;
-import org.genepattern.data.matrix.*;
-import org.genepattern.io.IOdfHandler;
-import org.genepattern.io.ParseException;
-import org.genepattern.io.expr.*;
-import org.genepattern.io.expr.cls.*;
-import org.genepattern.io.expr.gct.*;
-import org.genepattern.io.expr.odf.*;
-import org.genepattern.io.expr.res.*;
+import org.genepattern.data.matrix.ClassVector;
+import org.genepattern.io.expr.IExpressionDataCreator;
+import org.genepattern.io.expr.IExpressionDataReader;
+import org.genepattern.io.expr.IExpressionDataWriter;
+import org.genepattern.io.expr.cls.ClsReader;
+import org.genepattern.io.expr.cls.ClsWriter;
+import org.genepattern.io.expr.gct.GctReader;
+import org.genepattern.io.expr.gct.GctWriter;
+import org.genepattern.io.expr.odf.OdfDatasetReader;
+import org.genepattern.io.expr.odf.OdfDatasetWriter;
+import org.genepattern.io.expr.res.ResReader;
+import org.genepattern.io.expr.res.ResWriter;
 
 
 /**

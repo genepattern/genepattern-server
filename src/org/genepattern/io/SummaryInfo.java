@@ -10,8 +10,6 @@ import java.util.Map;
 
 import org.genepattern.data.DataModel;
 
-import org.genepattern.data.*;
-
 /**
  * Provides some basic information about a DataObject without loading the object
  * into memory.  There will be implementations for each of the data object classes.

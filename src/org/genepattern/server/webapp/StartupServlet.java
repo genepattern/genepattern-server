@@ -1,9 +1,7 @@
 package org.genepattern.server.webapp;
 
-import org.genepattern.server.*;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -14,28 +12,31 @@ import java.net.URLClassLoader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.xml.parsers.*;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.genepattern.server.analysis.AnalysisManager;
-import org.genepattern.server.analysis.ejb.AnalysisJobDataSource;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.analysis.genepattern.IndexerDaemon;
-import org.genepattern.server.analysis.webservice.server.Analysis;
 import org.genepattern.server.process.CreateDatabase;
 import org.genepattern.server.process.JSPPrecompiler;
 import org.genepattern.server.process.JobPurger;
 import org.genepattern.server.util.BeanReference;
-import org.w3c.dom.*;
-import org.xml.sax.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /*
  * GenePattern startup servlet

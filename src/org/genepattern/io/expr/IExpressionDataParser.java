@@ -2,8 +2,6 @@ package org.genepattern.io.expr;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.genepattern.io.ParseException;
-
 /**
  *  Interface for reading expression data documents using callbacks.
  *

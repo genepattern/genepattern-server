@@ -6,10 +6,7 @@
 
 package org.genepattern.gpge.ui.propertyviewer;
 
-import java.util.Iterator;
 import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Thin wrapper for a Properties object.  Thus properties

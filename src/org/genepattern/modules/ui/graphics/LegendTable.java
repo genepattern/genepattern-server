@@ -6,12 +6,14 @@
 
 package org.genepattern.modules.ui.graphics;
 
-import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.JComponent;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 import org.genepattern.data.LegendTableModel;
-
-import org.genepattern.data.*;
 //import edu.mit.genome.gp.GenePattern;
 /**
  * This class together with the LegendTableModel allows the column headers 

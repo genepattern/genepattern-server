@@ -6,14 +6,11 @@
 
 package org.genepattern.data;
 
-import java.util.List;
+import gnu.trove.TObjectIntHashMap;
+
 import java.util.Iterator;
 
-import org.genepattern.data.DatasetView;
 import org.genepattern.util.AbstractReporter;
-import org.genepattern.util.GPpropertiesManager;
-
-import gnu.trove.TObjectIntHashMap;
 
 /**
  * Utility class that has static methods for minipulating

@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.genepattern.data.matrix.ClassVector;
-import org.genepattern.io.*;
+import org.genepattern.io.AbstractReader;
+import org.genepattern.io.ParseException;
 
 /**
  *  Class for reading cls documents.

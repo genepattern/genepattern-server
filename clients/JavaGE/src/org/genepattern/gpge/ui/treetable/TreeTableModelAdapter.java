@@ -20,10 +20,11 @@ package org.genepattern.gpge.ui.treetable;
 //import com.sun.java.swing.event.TreeExpansionEvent;
 //import com.sun.java.swing.event.TreeExpansionListener;
 
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.tree.*;
-import javax.swing.event.*;
+import javax.swing.JTree;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.tree.TreePath;
 
 /**
  * This is a wrapper class takes a TreeTableModel and implements 

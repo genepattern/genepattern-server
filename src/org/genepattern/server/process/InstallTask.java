@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -15,11 +14,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
-import org.genepattern.server.analysis.TaskInfo;
-import org.genepattern.server.analysis.TaskInfoAttributes;
+import org.genepattern.analysis.OmnigeneException;
+import org.genepattern.analysis.TaskInfo;
+import org.genepattern.analysis.TaskInfoAttributes;
 import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.analysis.genepattern.TaskInstallationException;
-import org.genepattern.server.util.OmnigeneException;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 

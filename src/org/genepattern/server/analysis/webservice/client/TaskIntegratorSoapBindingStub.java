@@ -6,7 +6,7 @@
  */
 
 package org.genepattern.server.analysis.webservice.client;
-import org.genepattern.server.analysis.ParameterInfo;
+import org.genepattern.analysis.ParameterInfo;
 
 public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
     private java.util.Vector cachedSerClasses = new java.util.Vector();
@@ -279,7 +279,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
 
             qName = new javax.xml.namespace.QName("http://webservice.framework.omnigene.wi.mit.edu", "WebServiceException");
             cachedSerQNames.add(qName);
-            cls = org.genepattern.server.webservice.WebServiceException.class;
+            cls = org.genepattern.analysis.WebServiceException.class;
             cachedSerClasses.add(cls);
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
@@ -370,7 +370,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
         }
     }
 
-    public void deleteTask(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.server.webservice.WebServiceException {
+    public void deleteTask(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.analysis.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -391,7 +391,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
         extractAttachments(_call);
     }
 
-    public java.lang.String deleteFiles(java.lang.String lsid, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.server.webservice.WebServiceException {
+    public java.lang.String deleteFiles(java.lang.String lsid, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.analysis.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -419,7 +419,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
         }
     }
 
-    public java.util.HashMap getServiceInfo() throws java.rmi.RemoteException, org.genepattern.server.webservice.WebServiceException {
+    public java.util.HashMap getServiceInfo() throws java.rmi.RemoteException, org.genepattern.analysis.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -447,7 +447,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
         }
     }
 
-    public javax.activation.DataHandler exportToZip(java.lang.String taskName) throws java.rmi.RemoteException, org.genepattern.server.webservice.WebServiceException {
+    public javax.activation.DataHandler exportToZip(java.lang.String taskName) throws java.rmi.RemoteException, org.genepattern.analysis.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -475,7 +475,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
         }
     }
 
-    public java.lang.String importZip(javax.activation.DataHandler handler, int privacy) throws java.rmi.RemoteException, org.genepattern.server.webservice.WebServiceException {
+    public java.lang.String importZip(javax.activation.DataHandler handler, int privacy) throws java.rmi.RemoteException, org.genepattern.analysis.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -503,7 +503,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
         }
     }
 
-    public java.lang.String importZipFromURL(java.lang.String url, int privacy) throws java.rmi.RemoteException, org.genepattern.server.webservice.WebServiceException {
+    public java.lang.String importZipFromURL(java.lang.String url, int privacy) throws java.rmi.RemoteException, org.genepattern.analysis.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -531,7 +531,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
         }
     }
 
-    public java.lang.String[] getSupportFileNames(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.server.webservice.WebServiceException {
+    public java.lang.String[] getSupportFileNames(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.analysis.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -559,7 +559,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
         }
     }
 
-    public javax.activation.DataHandler[] getSupportFiles(java.lang.String lsid, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.server.webservice.WebServiceException {
+    public javax.activation.DataHandler[] getSupportFiles(java.lang.String lsid, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.analysis.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -587,7 +587,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
         }
     }
 
-    public javax.activation.DataHandler[] getSupportFiles(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.server.webservice.WebServiceException {
+    public javax.activation.DataHandler[] getSupportFiles(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.analysis.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -615,7 +615,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
         }
     }
 
-    public long[] getLastModificationTimes(java.lang.String lsid, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.server.webservice.WebServiceException {
+    public long[] getLastModificationTimes(java.lang.String lsid, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.analysis.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -643,7 +643,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
         }
     }
 
-    public java.lang.String modifyTask(int accessId, java.lang.String taskName, java.lang.String description,ParameterInfo[] parameterInfoArray, java.util.HashMap taskAttributes, javax.activation.DataHandler[] dataHandlers, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.server.webservice.WebServiceException {
+    public java.lang.String modifyTask(int accessId, java.lang.String taskName, java.lang.String description,ParameterInfo[] parameterInfoArray, java.util.HashMap taskAttributes, javax.activation.DataHandler[] dataHandlers, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.analysis.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -671,7 +671,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
         }
     }
 
-    public java.lang.String cloneTask(java.lang.String taskName, java.lang.String cloneName) throws java.rmi.RemoteException, org.genepattern.server.webservice.WebServiceException {
+    public java.lang.String cloneTask(java.lang.String taskName, java.lang.String cloneName) throws java.rmi.RemoteException, org.genepattern.analysis.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -699,7 +699,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
         }
     }
 
-    public javax.activation.DataHandler[] getDocFiles(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.server.webservice.WebServiceException {
+    public javax.activation.DataHandler[] getDocFiles(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.analysis.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }

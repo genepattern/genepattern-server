@@ -23,10 +23,12 @@
 
 package org.genepattern.io.parsers;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
-import java.util.zip.*;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.genepattern.data.DataObjector;
 import org.genepattern.data.Dataset;
@@ -38,11 +40,9 @@ import org.genepattern.data.annotation.PrimeAnnotationFactory;
 import org.genepattern.io.DefaultSummaryInfo;
 import org.genepattern.io.SummaryError;
 import org.genepattern.io.SummaryInfo;
-import org.genepattern.util.*;
-
-
-import org.genepattern.data.*;
-import org.genepattern.io.*;
+import org.genepattern.util.GPpropertiesManager;
+import org.genepattern.util.ReusableStringTokenizer;
+import org.genepattern.util.StringUtils;
 /**
  * Subclasses can read res and gct files
  * Note that once instanciated the only public method of interest is getDataset()

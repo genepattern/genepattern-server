@@ -6,19 +6,23 @@
 
 package org.genepattern.io;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-
-import java.io.OutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.genepattern.data.DataModel;
 import org.genepattern.data.DataObjector;
 import org.genepattern.data.FeaturesetProperties;
-import org.genepattern.io.encoder.*;
+import org.genepattern.io.encoder.DatasetEncoder;
+import org.genepattern.io.encoder.Encoder;
+import org.genepattern.io.encoder.FeaturesetPropertiesEncoder;
+import org.genepattern.io.encoder.GctDatasetEncoder;
+import org.genepattern.io.encoder.TemplateEncoder;
+import org.genepattern.io.encoder.XmlSerializer;
 
 //import org.genepattern.io.encoder.Encoder;
 

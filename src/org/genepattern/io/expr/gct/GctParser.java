@@ -7,8 +7,8 @@ import java.io.LineNumberReader;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.genepattern.io.ParseException;
-import org.genepattern.io.expr.*;
+import org.genepattern.io.expr.IExpressionDataHandler;
+import org.genepattern.io.expr.IExpressionDataParser;
 
 
 /**

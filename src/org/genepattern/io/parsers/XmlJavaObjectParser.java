@@ -6,9 +6,11 @@
 
 package org.genepattern.io.parsers;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.genepattern.data.DataModel;
 import org.genepattern.data.DataObjector;
@@ -17,12 +19,8 @@ import org.genepattern.io.DeSerializer;
 import org.genepattern.io.DefaultSummaryInfo;
 import org.genepattern.io.SummaryError;
 import org.genepattern.io.SummaryInfo;
-import org.genepattern.util.*;
-
-import org.genepattern.server.*;
-import org.genepattern.io.*;
-import org.genepattern.data.*;
-import org.genepattern.io.*;
+import org.genepattern.util.AbstractReporter;
+import org.genepattern.util.Reporter;
 /**
  * Parses XML-serialized Java Object files to create Java Objects.
  * @author  kohm

@@ -1,26 +1,19 @@
 package org.genepattern.server.process;
 
 
-import java.rmi.RemoteException;
 import java.net.MalformedURLException;
+import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.AbstractList;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask;
+import org.genepattern.analysis.OmnigeneException;
 import org.genepattern.server.analysis.genepattern.TaskInstallationException;
-import org.genepattern.server.analysis.webservice.server.TaskIntegrator;
-import org.genepattern.server.process.InstallTask;
-import org.genepattern.server.util.OmnigeneException;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 
@@ -130,7 +123,7 @@ public class InstallTasksCollectionUtils {
 	public Map getTasks() throws OmnigeneException, RemoteException {
 		try {
 			return new org.genepattern.server.analysis.webservice.server.local.LocalAdminClient(userID).getTaskCatalogByLSID();
-		} catch(org.genepattern.server.webservice.WebServiceException e) {
+		} catch(org.genepattern.analysis.WebServiceException e) {
 			throw new OmnigeneException(e.getMessage());
 		}
 	}

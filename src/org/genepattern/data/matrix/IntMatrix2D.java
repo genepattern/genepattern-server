@@ -1,6 +1,4 @@
 package org.genepattern.data.matrix;
-import java.util.List;
-import Jama.Matrix;
 
 /**
  *  A dense 2-dimensional matrix holding int elements.

@@ -9,8 +9,6 @@ package org.genepattern.io;
 import org.genepattern.data.AbstractObject;
 import org.genepattern.data.DataModel;
 
-import org.genepattern.data.*;
-
 /**
  *
  * @author  kohm

@@ -6,13 +6,8 @@
 
 package org.genepattern.data;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.genepattern.data.annotation.AnnotationFactory;
 import org.genepattern.data.annotation.Annotator;
-import org.genepattern.util.ArrayUtils;
 
 /**
  * This represents either a row or a column.

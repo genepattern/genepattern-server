@@ -2,8 +2,7 @@ package org.genepattern.server.analysis.webservice.server.dao;
 
 
 
-import org.genepattern.server.analysis.*;
-import org.genepattern.server.util.*;
+import org.genepattern.analysis.TaskInfo;
 
 
 /**

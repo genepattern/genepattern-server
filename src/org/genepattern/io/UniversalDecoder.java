@@ -6,27 +6,24 @@
 
 package org.genepattern.io;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-
-import java.io.File;
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.PushbackInputStream;
-import java.text.ParseException;
 
 import org.genepattern.data.DataObjector;
-import org.genepattern.io.StorageUtils;
-import org.genepattern.io.SummaryInfo;
-import org.genepattern.io.encoder.Encoder;
-import org.genepattern.io.encoder.FeaturesetPropertiesEncoder;
-import org.genepattern.io.encoder.GctDatasetEncoder;
-
-
-import org.genepattern.io.parsers.*;
+import org.genepattern.io.parsers.AbstractDataParser;
+import org.genepattern.io.parsers.ClsDataParser;
+import org.genepattern.io.parsers.DataParser;
+import org.genepattern.io.parsers.FeaturesetPropertiesParser;
+import org.genepattern.io.parsers.GctParser;
+import org.genepattern.io.parsers.MyParser;
+import org.genepattern.io.parsers.ResParser;
 
 
 /**

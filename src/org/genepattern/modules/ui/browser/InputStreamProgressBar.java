@@ -6,11 +6,15 @@
 
 package org.genepattern.modules.ui.browser;
 
-import java.awt.event.*;
-import java.io.*;
-import javax.swing.*;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
 
-import org.genepattern.util.*;
+import javax.swing.AbstractButton;
+import javax.swing.JProgressBar;
+
+import org.genepattern.util.Messenger;
 
 
 /**

@@ -4,11 +4,14 @@ package org.genepattern.server.analysis.webservice.server.local;
 
 import java.io.File;
 
-import javax.activation.*;
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 
-import org.genepattern.server.analysis.*;
-import org.genepattern.server.analysis.webservice.server.*;
-import org.genepattern.server.webservice.WebServiceException;
+import org.genepattern.analysis.ParameterInfo;
+import org.genepattern.analysis.TaskInfo;
+import org.genepattern.analysis.WebServiceException;
+import org.genepattern.server.analysis.webservice.server.ITaskIntegrator;
+import org.genepattern.server.analysis.webservice.server.TaskIntegrator;
 import org.genepattern.util.GPConstants;
 
 
