@@ -1,11 +1,11 @@
 package edu.mit.broad.gp.core;
 
-import edu.mit.wi.omnigene.framework.analysis.TaskInfo;
-import edu.mit.wi.omnigene.framework.analysis.TaskInfoAttributes;
-import edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask;
-import edu.mit.wi.omnigene.util.OmnigeneException;
-import edu.mit.genome.util.GPConstants;
-import edu.mit.genome.gp.util.LSID;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
+//import edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -133,9 +133,9 @@ public class InstallTask {
 		// figure out which support files are documentation files
 		Vector vSupportFiles = new Vector();
 		for (int i = 0; supportFiles != null && i < supportFiles.length; i++) {
-			if (GenePatternAnalysisTask.isDocFile(supportFiles[i])) {
-				vSupportFiles.add(supportFiles[i]);
-			}
+		//	if (GenePatternAnalysisTask.isDocFile(supportFiles[i])) {
+		//		vSupportFiles.add(supportFiles[i]);
+		//	}
 		}
 		docFileURLs = (String[])vSupportFiles.toArray(new String[0]);
 		module.put(STATE, isAlreadyInstalled() ? (isNewer() ? UPDATED : UPTODATE) : NEW);
@@ -256,17 +256,18 @@ public class InstallTask {
 	// return Vector of error messages when attempting to install this Module
 	public Vector install(String username, int access_id) {
 		String filename = null;
-		Vector vProblems;
+		Vector vProblems = null;
 		String url = getURL();
 		try {
 			boolean isNew = isNewer();
 			boolean wasInstalled = isAlreadyInstalled();
-			filename = GenePatternAnalysisTask.downloadTask(url);
-			String taskName = GenePatternAnalysisTask.getTaskNameFromZipFile(filename);
-			vProblems = GenePatternAnalysisTask.installTask(filename, username, access_id);
+		//	filename = GenePatternAnalysisTask.downloadTask(url);
+		//	String taskName = GenePatternAnalysisTask.getTaskNameFromZipFile(filename);
+		//	vProblems = GenePatternAnalysisTask.installTask(filename, username, access_id);
+			
 			if (vProblems == null || vProblems.size() == 0) {
 				vProblems = new Vector();
-				vProblems.add((wasInstalled ? OVERWROTE : INSTALLED_NEW) + " " + taskName);
+			//	vProblems.add((wasInstalled ? OVERWROTE : INSTALLED_NEW) + " " + taskName);
 			}
 		} catch (Exception e) {
 			vProblems = new Vector();

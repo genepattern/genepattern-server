@@ -6,7 +6,7 @@ import org.xml.sax.*;
 import org.w3c.dom.*;
 
 import edu.mit.broad.gp.core.ServiceManager;
-import edu.mit.genome.gp.ui.analysis.AnalysisService;
+import org.genepattern.webservice.AnalysisService;
 
 import javax.xml.parsers.*;
 

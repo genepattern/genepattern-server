@@ -2,9 +2,9 @@
 package edu.mit.broad.gp.core;
 
 
-import edu.mit.wi.omnigene.framework.analysis.TaskInfo;
-import edu.mit.genome.gp.ui.analysis.LocalTaskExecutor;
-
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.LocalTaskExecutor;
+import org.genepattern.webservice.RunTaskException;
 import org.genepattern.io.StorageUtils;
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,8 +32,8 @@ public class EclipseLocalTaskExecutor extends LocalTaskExecutor {
 	private Shell parent;
 
 
-	public EclipseLocalTaskExecutor(Shell parent, TaskInfo taskInfo, Map paramName2ValueMap, URL gpURL) throws java.io.IOException, java.net.MalformedURLException {
-		super(taskInfo, paramName2ValueMap, true, gpURL);
+	public EclipseLocalTaskExecutor(Shell parent, TaskInfo taskInfo, Map paramName2ValueMap, String username, String gpURL) throws java.io.IOException, java.net.MalformedURLException {
+		super(taskInfo, paramName2ValueMap, username, gpURL);
 		this.parent = parent;
 	}
 
@@ -60,7 +60,7 @@ public class EclipseLocalTaskExecutor extends LocalTaskExecutor {
 
 	protected void startOutputStreamThread(Process proc) {
 		try {
-			outGobbler = new StreamGobbler(proc.getInputStream(), taskName + "-OUT");
+			outGobbler = new StreamGobbler(proc.getInputStream(), taskId + "-OUT");
 			outGobbler.start();
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
@@ -70,7 +70,7 @@ public class EclipseLocalTaskExecutor extends LocalTaskExecutor {
 
 	protected void startErrorStreamThread(Process proc) {
 		try {
-			errorGobbler = new StreamGobbler(proc.getErrorStream(), taskName + "-ERR");
+			errorGobbler = new StreamGobbler(proc.getErrorStream(), taskId + "-ERR");
 			errorGobbler.start();
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
@@ -78,7 +78,7 @@ public class EclipseLocalTaskExecutor extends LocalTaskExecutor {
 	}
 
 
-	public void exec() throws Exception {
+	public void exec() throws RunTaskException {
 		new Thread() {
 			public void run()  {
 			    try {
@@ -98,7 +98,7 @@ public class EclipseLocalTaskExecutor extends LocalTaskExecutor {
 			if(errorGobbler != null && errorGobbler.tmp_file != null && errorGobbler.tmp_file.length() > 0L) {
 				try {
 					final String error_text = StorageUtils.createStringFromContents(errorGobbler.tmp_file);
-					String message = taskName + " error:\n" + error_text;
+					String message = taskId + " error:\n" + error_text;
 					showErrorDialog(message);
 				}catch(IOException ioe) {
 					    ioe.printStackTrace();	
@@ -107,7 +107,7 @@ public class EclipseLocalTaskExecutor extends LocalTaskExecutor {
 			}
 		} catch(Exception e) {
 		    e.printStackTrace();
-			String message = "An error occurred while attempting to run " + taskName;
+			String message = "An error occurred while attempting to run " + taskId;
 			if(e.getMessage() != null) {
 				message += "\nCause: " + e.getMessage();
 				showErrorDialog(message);

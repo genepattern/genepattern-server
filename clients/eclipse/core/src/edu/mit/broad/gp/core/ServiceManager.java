@@ -11,11 +11,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 import java.io.File;
-
-import edu.mit.genome.gp.ui.analysis.AnalysisService;
-import edu.mit.wi.omnigene.framework.analysis.TaskInfo;
-import edu.mit.genome.gp.ui.analysis.RequestHandler;
-import edu.mit.wi.omnigene.framework.webservice.WebServiceException;
+import java.net.MalformedURLException;
+import org.apache.axis.AxisFault;
+import org.genepattern.webservice.TaskIntegratorProxy;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.RequestHandler;
+import org.genepattern.webservice.WebServiceException;
 import java.util.Set;
 
 
@@ -125,8 +127,8 @@ public class ServiceManager {
 		return "unknown";
 	}
 	
-	public edu.mit.wi.omnigene.framework.analysis.webservice.client.TaskIntegratorProxy getTaskIntegratorProxy() {
-	    return new edu.mit.wi.omnigene.framework.analysis.webservice.client.TaskIntegratorProxy(serverUrl, user, "");
+	public TaskIntegratorProxy getTaskIntegratorProxy() throws MalformedURLException, AxisFault {
+	    return new TaskIntegratorProxy(serverUrl, user);
 	}
 	
 	public RequestHandler getRequestHandler(){
