@@ -640,6 +640,7 @@ public class MainFrame extends JFrame {
 
 		jobModel.addJobListener(new JobListener() {
 			public void jobStatusChanged(JobEvent e) {
+            
 			}
 
 			public void jobAdded(JobEvent e) {
@@ -1561,10 +1562,40 @@ public class MainFrame extends JFrame {
       final int JOBS_IN_MENU = 10;
       HistoryTableModel historyTableModel = new HistoryTableModel();
       JDialog historyDialog;
-
+      
      class HistoryTableModel extends javax.swing.table.AbstractTableModel implements SortTableModel {
         private java.util.Comparator comparator = new JobModel.TaskNameComparator(false);
+        
+        private int findJobNumber(AnalysisJob job) {
+           for(int i = 0; i < jobs.size(); i++) {
+              AnalysisJob j = (AnalysisJob) jobs.get(i);
+              if(j.getJobInfo().getJobNumber()==job.getJobInfo().getJobNumber()) {
+                 return i;  
+              }
+            }
+            return -1;   
+        }
+        
+        HistoryTableModel() {
+           jobModel.addJobListener(new JobListener() {
+               public void jobStatusChanged(JobEvent e) {
+                  fireTableStructureChanged();
+               }
+      
+               public void jobAdded(JobEvent e) {
+                   jobs.add(e.getJob());
+                   fireTableStructureChanged();
+               }
+      
+               public void jobCompleted(JobEvent e) {
+                  fireTableStructureChanged();
+               }
+           });
+        }
+        
 
+        
+            
         public void sortOrderChanged(SortEvent e) {
             int column = e.getColumn();
             boolean ascending = e.isAscending();
@@ -1623,40 +1654,6 @@ public class MainFrame extends JFrame {
            }
         }
      }
-
-
-      /*class HistoryUpdateThread extends Thread {
-         Calendar now;
-
-
-         public HistoryUpdateThread() {
-            setDaemon(true);
-            now = Calendar.getInstance();
-         }
-
-         public void run() {
-            Calendar midnight = Calendar.getInstance();
-            midnight.set(Calendar.HOUR, 0);
-            midnight.set(Calendar.MINUTE, 0);
-            midnight.set(Calendar.SECOND, 0);
-            midnight.set(Calendar.MILLISECOND, 0);
-            long sleepTime = midnight.getTimeInMillis() - now.getTimeInMillis();
-            try {
-               Thread.sleep(sleepTime);
-            } catch(InterruptedException ie){}
-
-            historyUpdateThread = new HistoryUpdateThread();
-            historyUpdateThread.start();
-         }
-
-         int daysBefore(long otherMillis) {
-            long nowMillis = now.getTimeInMillis();
-            return (int)((otherMillis-nowMillis)/1000/60/60/24);
-         }
-
-      }*/
-
-
 
       public HistoryMenu() {
          super("Job History");
@@ -1735,10 +1732,6 @@ public class MainFrame extends JFrame {
             }
             jobsInMenu.add(insertionIndex, job);
          }
-
-         jobs.add(job);
-         historyTableModel.fireTableStructureChanged();
-        // clearHistoryMenuItem.setEnabled(true);
       }
    }
 
