@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
+import org.genepattern.util.GPConstants;
 
 /**
  * Encapsulates information about a job run on a GenePattern server.
@@ -212,13 +213,13 @@ public class JobResult {
 			}
 		}
 		if (stdout) {
-			File f = downloadFile("stdout", downloadDirectory, overwrite);
+			File f = downloadFile(GPConstants.STDOUT, downloadDirectory, overwrite);
 			if (f != null) {
 				files.add(f);
 			}
 		}
 		if (stderr) {
-			File f = downloadFile("stderr", downloadDirectory, overwrite);
+			File f = downloadFile(GPConstants.STDERR, downloadDirectory, overwrite);
 			if (f != null) {
 				files.add(f);
 			}

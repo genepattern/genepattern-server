@@ -262,13 +262,13 @@ public interface IGPConstants {
 	 * filename of well-known file that may be output by a job, representing the
 	 * output to the stdout stream of the process
 	 */
-	public static final String STDOUT = "stdout";
+	public static final String STDOUT = "stdout.txt";
 
 	/**
 	 * filename of well-known file that may be output by a job, representing the
 	 * output to the stderr stream of the process
 	 */
-	public static final String STDERR = "stderr";
+	public static final String STDERR = "stderr.txt";
 	
 	/**
 	 * fileextension of ODF

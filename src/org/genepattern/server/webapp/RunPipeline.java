@@ -34,9 +34,9 @@ import org.genepattern.webservice.TaskInfo;
 
 public class RunPipeline {
 
-	public static final String STDOUT = "stdout";
+	public static final String STDOUT = GPConstants.STDOUT;
 
-	public static final String STDERR = "stderr";
+	public static final String STDERR = GPConstants.STDERR;
 
    RunPipelineOutputDecoratorIF decorator;
    

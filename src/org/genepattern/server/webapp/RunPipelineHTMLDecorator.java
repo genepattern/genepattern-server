@@ -44,9 +44,9 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
 	protected static String GET_TASK_FILE = "retrieveResults.jsp?";
 
-	public static final String STDOUT = "stdout";
+	public static final String STDOUT = GPConstants.STDOUT;
 
-	public static final String STDERR = "stderr";
+	public static final String STDERR = GPConstants.STDERR;
 
 	public void setOutputStream(PrintStream outstr) {
 		out = outstr;

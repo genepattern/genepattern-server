@@ -219,9 +219,9 @@ public class GPServer {
 						fileName = fileName.substring(index + 1, fileName
 								.length());
 					}
-					if (fileName.equals("stdout")) {
+					if (fileName.equals(GPConstants.STDOUT)) {
 						stdout = true;
-					} else if (fileName.equals("stderr")) {
+					} else if (fileName.equals(GPConstants.STDERR)) {
 						stderr = true;
 					} else {
 						resultFiles.add(fileName);
