@@ -118,7 +118,7 @@ This will create a jar file with the pattern gp-XXXXXXXX.jar where the Xs will b
     
     <target name="compile" depends=" init" description="Compiles the .java files that have been modified or that don&apos;t have .class files" >
         
-        <javac debug="true" defaultexcludes="true" deprecation="true" destdir="." includes="${inclds}" optimize="false" proceed="false" srcdir=".">
+        <javac debug="true" defaultexcludes="true" deprecation="false" destdir="." includes="${inclds}" optimize="false" proceed="false" srcdir=".">
 	    <classpath refid="library.classpath"/>
           <!-- sourcepath path="${repos_root}/resources"/ -->
             
