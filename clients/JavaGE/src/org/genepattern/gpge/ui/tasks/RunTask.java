@@ -103,10 +103,15 @@ public class RunTask {
        //  new RunPipeline(analysisService, directoryInputs, paramName2ActualParam, username);
         // return;
      // }
-      String server = analysisService.getURL();
-      final AnalysisWebServiceProxy serviceProxy = new AnalysisWebServiceProxy(server, username, "");
-
-
+      String server = analysisService.getServer();
+      AnalysisWebServiceProxy _serviceProxy = null;
+      try {
+         _serviceProxy = new AnalysisWebServiceProxy(server, username);
+      } catch(Exception e) {
+         throw new RunTaskException(e);  
+      }
+      final AnalysisWebServiceProxy serviceProxy = _serviceProxy;
+      
       if(directoryInputs.size() > 0) {
          ParameterInfo directoryParam = (ParameterInfo) directoryInputs.get(0);
          File dir = new File(directoryParam.getValue());
