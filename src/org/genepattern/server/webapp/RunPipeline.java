@@ -365,8 +365,10 @@ public class RunPipeline {
 		// For now, just match on filename extension
 		for (j = 0; j < jobParams.length; j++) {
 			if (jobParams[j].isOutputFile()) {
-				fn = jobParams[j].getValue();
+				fn = jobParams[j].getValue(); // get the filename
+				
 				if (fn.endsWith("." + fileStr)) {
+					// if there's match with the extension, then we've found it (for now)
 					fileName = fn;
 					break;
 				}
