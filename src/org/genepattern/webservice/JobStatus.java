@@ -1,6 +1,8 @@
 package org.genepattern.webservice;
 
-import java.util.Hashtable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *  
@@ -31,13 +33,17 @@ public class JobStatus {
 
 	public static String TIMEOUT = "Time Out";
 
-	public static Hashtable statusHash = new Hashtable();
+   /** an unmodifiable map that maps a string representation of the status to the numberic representation */
+	public static final Map STATUS_MAP;
+   
 	static {
+      Map statusHash = new HashMap();
 		statusHash.put(NOT_STARTED, new Integer(JOB_NOT_STARTED));
 		statusHash.put(PROCESSING, new Integer(JOB_PROCESSING));
 		statusHash.put(FINISHED, new Integer(JOB_FINISHED));
 		statusHash.put(ERROR, new Integer(JOB_ERROR));
 		statusHash.put(TIMEOUT, new Integer(JOB_TIMEOUT));
+      STATUS_MAP = Collections.unmodifiableMap(statusHash);
 	}
 
 }
