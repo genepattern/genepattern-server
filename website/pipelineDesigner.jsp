@@ -1068,11 +1068,9 @@ function newTaskHTML(taskNum) {
 	var newTask = '';
 	newTask = newTask + '<hr>\n';
 	newTask = newTask + '<a name="' + (taskNum+1) + '">\n'; // anchor for each task
-	newTask = newTask + '<table cols="3" width="1"><tr><td valign="top" colspan="3">';
+	newTask = newTask + '<table cols="3" width="1">\n';
 
 	// build a list of tasks whose input file formats potentially match the output formats of tasks already in the pipeline
-	newTask = newTask + '<select onchange="chgTask(this, ' + taskNum + ')">\n';
-	newTask = newTask + '<option value="' + NOT_SET + '">proto-semantic suggestions</option>\n';
 
 	// make a list of all possible output formats for the current stages of the pipeline
 	var outputFormats = new Array();
@@ -1108,7 +1106,6 @@ nextTask:
 					}
 //alert("adding " + task.name);
 					suggestedTasks[task.lsid] = task;
-					//newTask = newTask + '<option value="' + task.lsid + '">' + task.name + ' (' + task.taskType + ')</option>\n';
 					break nextTask;
 				}
 			}
@@ -1116,14 +1113,22 @@ nextTask:
 	}
 
 	// sort by something useful!
-	suggestedTasks.sort(sortSuggested);
+	//suggestedTasks.sort(sortSuggested);
 
+	var first = true;
 	for (t in suggestedTasks) {
 		var task = suggestedTasks[t];
+		if (first) {
+			newTask = newTask + '<tr><td valign="top" colspan="3">';
+			newTask = newTask + '<select onchange="chgTask(this, ' + taskNum + ')">\n';
+			newTask = newTask + '<option value="' + NOT_SET + 
+					    '">proto-semantic suggestions</option>\n';
+			first = false;
+		}
 		newTask = newTask + '<option value="' + task.lsid + '">' + task.name +
 				    ' (' + task.taskType + ')</option>\n';
 	}
-	newTask = newTask + '</select></td></tr>\n';
+	if (!first) newTask = newTask + '</select></td></tr>\n';
 
 	newTask = newTask + '<tr><td valign="top">\n';
 	newTask = newTask + '<select onchange="changeTaskType(this, ' + taskNum + ')" name="notused" size="' + (TaskTypesList.length+1) + '">\n';
