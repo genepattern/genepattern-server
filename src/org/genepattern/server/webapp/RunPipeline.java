@@ -437,6 +437,16 @@ semantic_search_loop:
 	 */
 	protected AnalysisJob submitJob(AnalysisService svc,
 			ParameterInfo[] parmInfos) throws Exception {
+      if(parmInfos!=null) {
+         for(int i = 0; i < parmInfos.length; i++) {
+            if(parmInfos[i].isInputFile()) {
+               String file = parmInfos[i].getValue(); // bug 724
+               parmInfos[i].setValue(new File(file).toURI().toString());
+               parmInfos[i].getAttributes().remove("TYPE");
+               parmInfos[i].getAttributes().remove("MODE");
+            }
+         }
+      }
 		TaskInfo tinfo = svc.getTaskInfo();
 		final JobInfo job = analysisProxy.submitJob(tinfo.getID(), parmInfos, jobId);
 		final AnalysisJob aJob = new AnalysisJob(svc.getServer(), tinfo
