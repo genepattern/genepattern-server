@@ -15,7 +15,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 import org.genepattern.data.DataModel;
-import org.genepattern.math.XMath;
+import org.genepattern.util.XMath;
 
 /**
  * Lots of code and ideas copied form GVector.

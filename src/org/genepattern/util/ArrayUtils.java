@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.genepattern.data.Dir;
-import org.genepattern.math.XMath;
 
 /**
  * Native array related utilities.

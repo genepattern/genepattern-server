@@ -13,7 +13,7 @@ package org.genepattern.data;
 
 import java.util.ArrayList;
 
-import org.genepattern.math.XMath;
+import org.genepattern.util.XMath;
 /**
  * A Template object that is mutable i.e has add() methods.
  * Generally used only by classes and methods that make new Templates.
