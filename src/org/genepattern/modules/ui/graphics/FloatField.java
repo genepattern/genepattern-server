@@ -17,21 +17,19 @@ import javax.swing.JTextField;
 
 public class FloatField extends JTextField {
     /** constructor */
-    public FloatField(final Number value, final int columns) {
-        this(value.floatValue(), columns);
-    }
+    
+     public FloatField(final int columns) {
+        this(columns, NumberFormat.getNumberInstance());
+     }
+     
     /** constructor */
-    public FloatField(final float value, final int columns) {
-        this(value, columns, NumberFormat.getNumberInstance());
-    }
-    /** constructor */
-    public FloatField(final float value, final int columns, final NumberFormat format) {
+    private FloatField(final int columns, NumberFormat format) {
         super(new ChangeValidatedDocument(format), null, columns);
         floatFormatter = format;
         format.setParseIntegerOnly(false);
         format.setGroupingUsed(false);
-        setFloat(value);
     }
+     
     /** gets the float value */
     public final float getFloat() {
         float retVal = 0;
@@ -40,7 +38,7 @@ public class FloatField extends JTextField {
         } catch (ParseException e) {
             // This should never happen because insertString allows
             // only properly formatted data to get in the field.
-            toolkit.beep();
+            Toolkit.getDefaultToolkit().beep();
             throw new IllegalStateException("Somehow the value is not a number: '"+super.getText()+"'");
         }
         return retVal;
@@ -80,9 +78,7 @@ public class FloatField extends JTextField {
             
     }
         
-    // fields
-    /** needed to make a "beep" */
-    private final Toolkit toolkit = Toolkit.getDefaultToolkit();
+
     /** number formatter */
     private final NumberFormat floatFormatter;
     

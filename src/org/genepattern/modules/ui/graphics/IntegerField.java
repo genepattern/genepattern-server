@@ -16,22 +16,20 @@ import javax.swing.JTextField;
 
 
 public class IntegerField extends JTextField {
-    /** constructor */
-    public IntegerField(final Number value, final int columns) {
-        this(value.intValue(), columns);
+   
+   /** constructor */
+    public IntegerField(final int columns) {
+       this(columns, NumberFormat.getNumberInstance());
     }
+    
     /** constructor */
-    public IntegerField(final int value, final int columns) {
-        this(value, columns, NumberFormat.getNumberInstance());
-    }
-    /** constructor */
-    public IntegerField(final int value, final int columns, final NumberFormat format) {
+    private IntegerField(final int columns, NumberFormat format) {
         super(new ChangeValidatedDocument(format), null, columns);
         integerFormatter = format;
         format.setParseIntegerOnly(true);
         format.setGroupingUsed(false);
-        setInt(value);
     }
+    
     /** gets the int value */
     public final int getInt() {
         int retVal = 0;
@@ -40,7 +38,7 @@ public class IntegerField extends JTextField {
         } catch (ParseException e) {
             // This should never happen because insertString allows
             // only properly formatted data to get in the field.
-            toolkit.beep();
+            Toolkit.getDefaultToolkit().beep();
             throw new IllegalStateException("Somehow the value is not a number: '"+getText()+"'");
         }
         return retVal;
@@ -80,9 +78,6 @@ public class IntegerField extends JTextField {
 //            super.setText("0");
     }
         
-    // fields
-    /** needed to make a "beep" */
-    private final Toolkit toolkit = Toolkit.getDefaultToolkit();
     /** number formatter */
     private final NumberFormat integerFormatter;
     
