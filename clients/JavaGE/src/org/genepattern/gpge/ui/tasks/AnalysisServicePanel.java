@@ -42,8 +42,6 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.RequestHandler;
-import org.genepattern.webservice.RequestHandlerFactory;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 import org.genepattern.gpge.ui.tasks.*;
