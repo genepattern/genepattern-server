@@ -505,6 +505,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00038=2 ConvertToMAGEML.zip"/>
+	</commandline>
+</cvs>
+<copy file="ConvertToMAGEML.zip" tofile="catalogregen/ConvertToMAGEML.2.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00042=0 GEOImporter.zip"/>
 	</commandline>
 </cvs>
@@ -516,6 +523,13 @@
 	</commandline>
 </cvs>
 <copy file="GeneCruiser.zip" tofile="catalogregen/GeneCruiser.3.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00054=8 ImputeMissingValues.zip"/>
+	</commandline>
+</cvs>
+<copy file="ImputeMissingValues.zip" tofile="catalogregen/ImputeMissingValues.KNN.zip" />
 
 </target>
 </project>

@@ -69,5 +69,7 @@ WeightedVotingXValidation.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepatte
 WeightedVotingXValidation.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00028=1
 all_aml_methodology_pipeline.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00001=0
 ConvertToMAGEML.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00038=1
+ConvertToMAGEML.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00038=2
 GEOImporter.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00042=0
 GeneCruiser.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00037=3
+ImputeMissingValues.KNN.8.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00054=8
