@@ -89,6 +89,11 @@ public class MainFrame extends JFrame {
 
 	FileInfoComponent fileSummaryComponent = new FileInfoComponent();
 
+   private static short STYLE_DIALOG = 0;
+   private static short STYLE_FRAME = 1;
+   private static short STYLE_MDI = 2;
+   private short style = STYLE_DIALOG;
+   
 	private static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone
 				.getValue(), toClone.getDescription());
@@ -1042,38 +1047,64 @@ public class MainFrame extends JFrame {
 					}
 				});
 
+      
       JScrollPane projectSP = new JScrollPane(projectDirTree);
-      projectSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Projects", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
       JScrollPane jobSP = new JScrollPane(jobResultsTree);
-      jobSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Jobs", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
-    
-		JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-				projectSP, jobSP);
-
-		JPanel leftPanel = new JPanel(new BorderLayout());
-		leftPanel.add(leftPane, BorderLayout.CENTER);
-		leftPanel.add(fileSummaryComponent, BorderLayout.SOUTH);
-
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-				leftPanel, analysisServicePanel);
-		getContentPane().add(splitPane, BorderLayout.CENTER);
-
-		getContentPane().add(messageLabel, BorderLayout.SOUTH);
-
-		java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit()
+      java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit()
 				.getScreenSize();
-		int width = (int) (screenSize.width * .9);
-		int height = (int) (screenSize.height * .9);
-		setSize(width, height);
-		setLocation((screenSize.width - getWidth()) / 2, 20);
-		setTitle(BuildProperties.PROGRAM_NAME);
-		splash.hide();
+      int width = (int) (screenSize.width * .9);
+      int height = (int) (screenSize.height * .9);
+         
+      if(style==STYLE_FRAME) {
+         projectSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Projects", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
+         jobSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Jobs", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
+         JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+				projectSP, jobSP);
+         JPanel leftPanel = new JPanel(new BorderLayout());
+         leftPanel.add(leftPane, BorderLayout.CENTER);
+         leftPanel.add(fileSummaryComponent, BorderLayout.SOUTH);
+         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+				leftPanel, analysisServicePanel);
+         getContentPane().add(splitPane, BorderLayout.CENTER);
+         getContentPane().add(messageLabel, BorderLayout.SOUTH);
+        
+         setSize(width, height);
+         setLocation((screenSize.width - getWidth()) / 2, 20);
+         setTitle(BuildProperties.PROGRAM_NAME);
+         leftPane.setDividerLocation((int) (height * 0.4));
+         splitPane.setDividerLocation((int) (width * 0.4));
+         
+      } else if(style==STYLE_DIALOG) {
+         JDialog projectDialog = new JDialog(this, "Projects");
+         projectDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+         projectDialog.getContentPane().add(projectSP);
+         int w = (int)(width*0.3);
+         int h = (int)(height*.45);
+         projectDialog.setSize(w, h);
+         projectDialog.setVisible(true);
+         projectDialog.setLocation(10, 10);
+         
+         JDialog jobDialog = new JDialog(this, "Job Results");
+         jobDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+         jobDialog.getContentPane().add(jobSP);
+         jobDialog.setSize(w, h);
+         jobDialog.setLocation(10, 10 + projectDialog.getHeight());
+         jobDialog.setVisible(true);
+         
+         JDialog moduleDialog = new JDialog(this, "Task");
+         moduleDialog.getContentPane().add(analysisServicePanel);
+         moduleDialog.pack();
+         w = (int)(width*0.6);
+         h = (int)(height*.9);
+         moduleDialog.setSize(w, h);
+         moduleDialog.setLocation(10 + projectDialog.getWidth(), 10);
+         moduleDialog.setVisible(true);
+         setSize(0,0);
+         setLocation(-100,-100);
+      }
+      
 		splash.dispose();
-		leftPane.setDividerLocation((int) (height * 0.4));
-
-		splitPane.setDividerLocation((int) (width * 0.4));
-		show();
-
+      show();
 	}
 
 	public void refreshJobs() {
