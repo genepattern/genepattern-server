@@ -140,7 +140,7 @@ public class JTreeTable extends JTable {
                me.getModifiers() == java.awt.event.InputEvent.BUTTON1_MASK) {
             int count = getColumnCount();
            
-            for(int i = count - 1; i >= 0; i--) {
+            for(int i = 0; i < count; i++) {
                if(isHierarchical(i)) {
                   int savedHeight = tree.getRowHeight();
                   tree.setRowHeight(getRowHeight());
