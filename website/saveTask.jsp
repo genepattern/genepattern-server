@@ -124,7 +124,8 @@ if (requestParameters.getParameter("delete") != null || request.getParameter("de
 }
 
 // delete support file
-if (requestParameters.getParameter("deleteFiles") != null || request.getParameter("deleteFiles") != null) {
+if ((requestParameters.getParameter("deleteFiles") != null || request.getParameter("deleteFiles") != null) &&
+    (requestParameters.getParameter("deleteSupportFiles") != null || request.getParameter("deleteSupportFiles") != null)) {
 	String filename = requestParameters.getParameter("deleteFiles");
 	if (filename == null) filename = request.getParameter("deleteFiles");
 
