@@ -861,8 +861,9 @@ function setFileInheritance(thisTaskNum, thisParamNum, fromTaskNum, fromFileNum)
 			", file #" + fromFileNum + ", which is currently not defined.");
 	}
 
-	setSelector('t' + thisTaskNum + '_if_' + thisParamNum, fromFileNum);
 	setSelector('t' + thisTaskNum + '_i_' + thisParamNum, fromTaskNum);
+	chooseInheritTask(thisTaskNum, thisParamNum);
+	setSelector('t' + thisTaskNum + '_if_' + thisParamNum, fromFileNum);
 }
 
 // set an input file's settings (currently just the inheritance information due to inability to restore file selection choice in HTML or Javascript)
