@@ -51,6 +51,8 @@
 
 	} 
 	allowedClients = System.getProperty("gp.allowed.clients" );
+	if (allowedClients == null) allowedClients = ANY;
+	
 
 %>
 <html>
