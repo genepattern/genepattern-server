@@ -7,7 +7,7 @@
 		 java.text.SimpleDateFormat,
 		 org.genepattern.server.util.BeanReference,
 		 org.genepattern.server.analysis.ejb.AnalysisJobDataSource,
-		 org.genepattern.server.analysis.JobStatus,
+		 org.genepattern.analysis.JobStatus,
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask"
 	session="false" contentType="text/html" language="Java" %><%
 

@@ -7,6 +7,7 @@
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.server.analysis.webservice.server.*,
 		 org.genepattern.server.analysis.*,
+		 org.genepattern.analysis.*,
 		 org.genepattern.server.analysis.handler.*,
 		 org.genepattern.server.webservice.*,
 		 com.jspsmart.upload.*,

@@ -1,7 +1,7 @@
 <%@ page import="org.genepattern.analysis.TaskInfo,
 		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.server.analysis.ParameterInfo,
-		 org.genepattern.server.analysis.ParameterFormatConverter,
+		 org.genepattern.analysis.ParameterInfo,
+		 org.genepattern.analysis.ParameterFormatConverter,
 		 java.io.File,
 		 java.io.FilenameFilter,
 		 java.io.FileInputStream,
@@ -13,7 +13,7 @@
 		 java.util.HashMap,
 		 java.util.Vector,
 		 java.util.zip.*,
-		 org.genepattern.server.util.OmnigeneException,
+		 org.genepattern.analysis.OmnigeneException,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.analysis.webservice.server.local.*"

@@ -1,8 +1,8 @@
 <%@ page import="org.genepattern.analysis.TaskInfo,
 		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.server.analysis.ParameterInfo,
-                 org.genepattern.server.process.ZipTask,
-                 org.genepattern.server.process.ZipTaskWithDependents,
+		 org.genepattern.analysis.ParameterInfo,
+         org.genepattern.server.process.ZipTask,
+         org.genepattern.server.process.ZipTaskWithDependents,
 		 java.io.ByteArrayOutputStream,
 		 java.io.File,
 		 java.io.FilenameFilter,
@@ -13,7 +13,7 @@
 		 java.util.HashMap,
 		 java.util.Properties,
 		 java.util.zip.*,
-		 org.genepattern.server.util.OmnigeneException,
+		 org.genepattern.analysis.OmnigeneException,
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
 		 com.jspsmart.upload.*"
 	session="false" contentType="text/html" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><% 

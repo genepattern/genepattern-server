@@ -2,8 +2,8 @@
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.analysis.TaskInfo,
 		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.server.analysis.ParameterInfo,
-		 org.genepattern.server.analysis.ParameterFormatConverter,
+		 org.genepattern.analysis.ParameterInfo,
+		 org.genepattern.analysis.ParameterFormatConverter,
 		 org.genepattern.visualizer.RunVisualizerConstants,
 		 org.genepattern.util.GPConstants,
 		 java.io.File" 

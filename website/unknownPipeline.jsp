@@ -4,10 +4,10 @@
 		 java.util.HashMap,
 		 org.genepattern.analysis.TaskInfo,
 		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.server.analysis.ParameterFormatConverter,
-		 org.genepattern.server.analysis.ParameterInfo,
+		 org.genepattern.analysis.ParameterFormatConverter,
+		 org.genepattern.analysis.ParameterInfo,
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
-		 org.genepattern.server.util.OmnigeneException,  com.jspsmart.upload.*,
+		 org.genepattern.analysis.OmnigeneException,  com.jspsmart.upload.*,
 		 org.genepattern.data.pipeline.PipelineModel"
 	session="false" contentType="text/html" language="Java" %>
 <jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" />

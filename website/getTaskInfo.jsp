@@ -3,7 +3,7 @@
 		 java.util.Iterator, java.io.File, 
 		 org.genepattern.analysis.TaskInfo,
 		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.server.util.OmnigeneException,
+		 org.genepattern.analysis.OmnigeneException,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask"
 	session="false" contentType="text/text" language="Java" %><%

@@ -3,9 +3,9 @@
 		 java.util.Date,
 		 org.genepattern.server.util.BeanReference,
 		 org.genepattern.server.analysis.ejb.AnalysisJobDataSource,
-		 org.genepattern.server.analysis.JobInfo,
-		 org.genepattern.server.analysis.JobStatus,
-		 org.genepattern.server.analysis.ParameterInfo,
+		 org.genepattern.analysis.JobInfo,
+		 org.genepattern.analysis.JobStatus,
+		 org.genepattern.analysis.ParameterInfo,
 		 org.genepattern.analysis.TaskInfo,
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask"
 	session="false" contentType="text/html" language="Java" buffer="10kb" %><%

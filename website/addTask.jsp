@@ -1,8 +1,8 @@
 <%@ page import="org.genepattern.analysis.TaskInfo,
 		 org.genepattern.analysis.TaskInfoAttributes,
-		 org.genepattern.server.analysis.ParameterInfo,
-		 org.genepattern.server.analysis.ParameterFormatConverter,
-		 org.genepattern.server.util.OmnigeneException,
+		 org.genepattern.analysis.ParameterInfo,
+		 org.genepattern.analysis.ParameterFormatConverter,
+		 org.genepattern.analysis.OmnigeneException,
 		 org.genepattern.server.analysis.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.analysis.genepattern.LSIDManager,
 		 org.genepattern.server.analysis.webservice.server.local.*,
@@ -69,7 +69,7 @@ if (taskName != null) {
 		        parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
 			tia = taskInfo.giveTaskInfoAttributes();
 			LSID lsid = new LSID((String)tia.get(GPConstants.LSID));
-			viewOnly |= !LSIDManager.getInstance().getAuthorityType(lsid).equals(LSIDUtilAUTHORITY_MINE);
+			viewOnly |= !LSIDManager.getInstance().getAuthorityType(lsid).equals(LSIDUtil.AUTHORITY_MINE);
 		} else {
 %>
 <script language="javascript">
