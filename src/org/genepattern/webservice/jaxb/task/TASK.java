@@ -27,8 +27,6 @@ public class TASK extends MarshallableObject implements Element {
 
 	private String _DESCRIPTION;
 
-	private String _CLASSNAME;
-
 	private String _ANALYSISPARAMETERS;
 
 	public String getId() {
@@ -64,16 +62,6 @@ public class TASK extends MarshallableObject implements Element {
 		}
 	}
 
-	public String getCLASSNAME() {
-		return _CLASSNAME;
-	}
-
-	public void setCLASSNAME(String _CLASSNAME) {
-		this._CLASSNAME = _CLASSNAME;
-		if (_CLASSNAME == null) {
-			invalidate();
-		}
-	}
 
 	public String getANALYSISPARAMETERS() {
 		return _ANALYSISPARAMETERS;
@@ -104,9 +92,6 @@ public class TASK extends MarshallableObject implements Element {
 		}
 		if (_DESCRIPTION != null) {
 			w.leaf("DESCRIPTION", _DESCRIPTION.toString());
-		}
-		if (_CLASSNAME != null) {
-			w.leaf("CLASSNAME", _CLASSNAME.toString());
 		}
 		if (_ANALYSISPARAMETERS != null) {
 			w.leaf("ANALYSISPARAMETERS", _ANALYSISPARAMETERS.toString());
@@ -158,21 +143,6 @@ public class TASK extends MarshallableObject implements Element {
 				throw new ConversionException("DESCRIPTION", x);
 			}
 			xs.takeEnd("DESCRIPTION");
-		}
-		if (xs.atStart("CLASSNAME")) {
-			xs.takeStart("CLASSNAME");
-			String s;
-			if (xs.atChars(XMLScanner.WS_COLLAPSE)) {
-				s = xs.takeChars(XMLScanner.WS_COLLAPSE);
-			} else {
-				s = "";
-			}
-			try {
-				_CLASSNAME = String.valueOf(s);
-			} catch (Exception x) {
-				throw new ConversionException("CLASSNAME", x);
-			}
-			xs.takeEnd("CLASSNAME");
 		}
 		if (xs.atStart("ANALYSISPARAMETERS")) {
 			xs.takeStart("ANALYSISPARAMETERS");
@@ -249,18 +219,6 @@ public class TASK extends MarshallableObject implements Element {
 				return false;
 			}
 		}
-		if (_CLASSNAME != null) {
-			if (tob._CLASSNAME == null) {
-				return false;
-			}
-			if (!_CLASSNAME.equals(tob._CLASSNAME)) {
-				return false;
-			}
-		} else {
-			if (tob._CLASSNAME != null) {
-				return false;
-			}
-		}
 		if (_ANALYSISPARAMETERS != null) {
 			if (tob._ANALYSISPARAMETERS == null) {
 				return false;
@@ -281,7 +239,6 @@ public class TASK extends MarshallableObject implements Element {
 		h = ((127 * h) + ((_Id != null) ? _Id.hashCode() : 0));
 		h = ((127 * h) + ((_NAME != null) ? _NAME.hashCode() : 0));
 		h = ((127 * h) + ((_DESCRIPTION != null) ? _DESCRIPTION.hashCode() : 0));
-		h = ((127 * h) + ((_CLASSNAME != null) ? _CLASSNAME.hashCode() : 0));
 		h = ((127 * h) + ((_ANALYSISPARAMETERS != null) ? _ANALYSISPARAMETERS
 				.hashCode() : 0));
 		return h;
@@ -300,10 +257,6 @@ public class TASK extends MarshallableObject implements Element {
 		if (_DESCRIPTION != null) {
 			sb.append(" DESCRIPTION=");
 			sb.append(_DESCRIPTION.toString());
-		}
-		if (_CLASSNAME != null) {
-			sb.append(" CLASSNAME=");
-			sb.append(_CLASSNAME.toString());
 		}
 		if (_ANALYSISPARAMETERS != null) {
 			sb.append(" ANALYSISPARAMETERS=");
