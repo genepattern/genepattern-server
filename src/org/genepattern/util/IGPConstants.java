@@ -207,15 +207,9 @@ public interface IGPConstants {
 			{ "input file", PARAM_INFO_TYPE_INPUT_FILE } };
 
 	// well-known ParameterInfo attributes
-	public static final int PARAM_INFO_NAME_OFFSET = 0; // offset into one of
-														// the following
-														// PARAM_INFO String
-														// arrays
-
+	public static final int PARAM_INFO_NAME_OFFSET = 0; // offset into one of arrays
 	public static final int PARAM_INFO_TYPE_OFFSET = 1;
-
 	public static final int PARAM_INFO_CHOICE_TYPES_OFFSET = 2;
-
 	public static final int PARAM_INFO_CHOICE_TYPES_MULTIPLE_OFFSET = 3;
 
 	public static final String MULTIPLE = "multiple";
@@ -245,7 +239,7 @@ public interface IGPConstants {
 			PARAM_INFO_DEFAULT_VALUE, PARAM_INFO_OPTIONAL, PARAM_INFO_PREFIX,
 			PARAM_INFO_TYPE, PARAM_INFO_FILE_FORMAT, PARAM_INFO_DOMAIN };
 
-	public static int MAX_PARAMETERS = 25;
+	public static int MAX_PARAMETERS = 20;
 
 	/** parameter delimiters for commandLine and output_filename contents */
 	public static final String LEFT_DELIMITER = "<";

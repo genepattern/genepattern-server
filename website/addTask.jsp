@@ -29,6 +29,7 @@
 		 java.util.Vector"
 	session="false" contentType="text/html" language="Java" buffer="50kb" %>
 <%
+try {
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
@@ -251,6 +252,7 @@ HashMap hmLSIDsWithoutVersions = new HashMap();
 Vector vVersions = new Vector();
 LSID l = null;
 String thisLSIDNoVersion = "";
+System.out.println("tia=" + tia);
 if (tia != null) {
 	try {
 		lsid = tia.get(GPConstants.LSID);
@@ -814,6 +816,11 @@ if (taskName != null) {
 <jsp:include page="footer.jsp"></jsp:include>
 </body>
 </html>
+<% } catch (Throwable t) {
+	t.printStackTrace();
+	t.printStackTrace(new java.io.PrintWriter(out));
+   }
+%>
 <%! public String createSelection(TaskInfoAttributes tia, String name, String[] values, String eventHandlers, boolean viewOnly) {
 	StringBuffer sbOut = new StringBuffer();
 	String value = (tia != null ? tia.get(name) : "");
