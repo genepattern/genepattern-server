@@ -12,6 +12,7 @@ import java.util.Vector;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -34,7 +35,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
  * @author Ted Liefeld
  * @created Sept 26, 2004
  */
-public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator {
+public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator implements TaskCodeGenerator {
 	int numPrompts = 0;
 
 	int numNonVisualizersSeen = 0;
@@ -59,6 +60,8 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator {
 			int serverPort, String invokingURL, Collection tmTasks) {
 		super(model, serverName, serverPort, invokingURL, tmTasks);
 	}
+   
+   public MATLABPipelineCodeGenerator(){}
 
 	public String emitUserInstructions() {
 		return model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE
@@ -178,6 +181,20 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator {
 		return prolog.toString();
 	}
 
+   public String generateTask(JobInfo jobInfo, ParameterInfo[] params) {
+      String taskName = jobInfo.getTaskName();
+      String lsid = jobInfo.getTaskLSID();
+      StringBuffer sb = new StringBuffer();
+      sb.append("params = getMethodParameters(gpServer,'" + lsid + "');\n");
+      if(params!=null) {
+         for(int i = 0; i < params.length; i++) {
+            sb.append("params." + matlabEncodeName(params[i].getName()) + " = '" + params[i].getValue() + "';\n");  
+         }
+      }
+      sb.append("results = runAnalysis(gpServer,'" + taskName + "', params, '" + lsid + "');");  
+      return sb.toString();
+   }
+   
 	/**
 	 * generate Java code for a particular task to execute within the pipeline,
 	 * including a bit of documentation for the task. Generate file input
