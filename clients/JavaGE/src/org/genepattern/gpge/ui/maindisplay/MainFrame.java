@@ -135,7 +135,8 @@ public class MainFrame extends JFrame {
 	public void changeServer(final String server, final String username) {
 		GPpropertiesManager.setProperty(PreferenceKeys.SERVER, server);
 		GPpropertiesManager.setProperty(PreferenceKeys.USER_NAME, username);
-		analysisServiceManager = new AnalysisServiceManager(server, username);
+		analysisServiceManager = AnalysisServiceManager.getInstance();
+      analysisServiceManager.changeServer(server, username);
 		new Thread() {
 			public void run() {
 				try {

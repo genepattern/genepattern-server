@@ -20,20 +20,35 @@ public class AnalysisServiceManager {
 
 	private String username;
 
-	private Map lsidOrTaskName2AnalysisService;
-
+	private Map lsidOrTaskName2AnalysisService = new HashMap();
+   
+   private static AnalysisServiceManager instance = new AnalysisServiceManager();
+   
+   
+   private AnalysisServiceManager(){}
+   
+   /**
+   * Gets the <tt>AnalysisServiceManager</tt> instance
+   * @return the instance 
+   */
+   public static AnalysisServiceManager getInstance() {
+      return instance;
+   }
+   
 	/**
-	 * Creates a new instance
+	 * Sets the server that this <tt>AnalysisServiceManager</tt> connects to. Clears the internal cache of analysis services.
 	 * 
 	 * @param server
 	 *            A server URL, for example http://127.0.0.1:8080
 	 * @param username
 	 *            The username
 	 */
-	public AnalysisServiceManager(String server, String username) {
+	public void changeServer(String server, String username) {
 		this.server = server;
 		this.username = username;
+      lsidOrTaskName2AnalysisService.clear();
 	}
+   
 
 	/**
 	 * Retrieves the latest versions of all analysis services from the server
@@ -43,7 +58,7 @@ public class AnalysisServiceManager {
 	 *                Description of the Exception
 	 */
 	public void refresh() throws WebServiceException {
-		lsidOrTaskName2AnalysisService = new HashMap();
+		lsidOrTaskName2AnalysisService.clear();
 		try {
 			TaskInfo[] tasks = new AnalysisWebServiceProxy(server, username)
 					.getTasks();
