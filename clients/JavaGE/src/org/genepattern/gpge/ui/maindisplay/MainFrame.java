@@ -130,10 +130,10 @@ public class MainFrame extends JFrame {
    private static short WINDOW_STYLE_ONE_FRAME = 0;
    public static short WINDOW_STYLE_FRAMES = 1;
    public static short WINDOW_STYLE_MDI = 2;
-   public static short windowStyle = WINDOW_STYLE_ONE_FRAME;
+   public static short windowStyle = System.getProperty("mdi")!=null?WINDOW_STYLE_MDI:WINDOW_STYLE_ONE_FRAME;
    private JMenuBar menuBar;
    Color blue = new Color(51,0,204);
-   
+  
 	private static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone
 				.getValue(), toClone.getDescription());
@@ -1098,18 +1098,26 @@ public class MainFrame extends JFrame {
       if(windowStyle==WINDOW_STYLE_ONE_FRAME) {
          
          Border title =  BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(0,0,0,0), "Projects", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP);
-         //projectSP.setBorder(title);
+       //  projectSP.setBorder(title);
          
          JPanel temp = new JPanel(new BorderLayout());
-         temp.setBackground(blue);
+         temp.setBackground(new Color(24,48,115));
          temp.add(projectSP, BorderLayout.CENTER);
-         temp.add(new JLabel("Projects", JLabel.CENTER), BorderLayout.NORTH);
+         
+         
+         JLabel l = new JLabel("Projects", JLabel.CENTER);
+         l.setForeground(Color.white);
+         l.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 14));
+         temp.add(l, BorderLayout.NORTH);
          
          //jobSP.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(0,0,0,0), "Job Results", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.TOP));
          JPanel temp2 = new JPanel(new BorderLayout());
-         temp2.setBackground(blue);
+         temp2.setBackground(new Color(24,48,115));
          temp2.add(jobSP, BorderLayout.CENTER);
-         temp2.add(new JLabel("Job Results", JLabel.CENTER), BorderLayout.NORTH);
+         JLabel l2 = new JLabel("Job Results", JLabel.CENTER);
+         l2.setForeground(Color.white);
+         l2.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 14));
+         temp2.add(l2, BorderLayout.NORTH);
          
          JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 				temp, temp2);
