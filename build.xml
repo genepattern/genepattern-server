@@ -15,12 +15,10 @@
    <property name="classpath" value="${lib}/archiver.jar:${lib}/crimson.jar:${lib}/dom.jar:${lib}/ejb.jar:${lib}/genepattern.properties:${lib}/jaxb-rt-1.0-ea.jar:${lib}/jaxp-api.jar:${lib}/log4j-1.2.4.jar:${lib}/omnigene.jar:${lib}/oromatcher.jar:${lib}/runtask.jar:${lib}/sax.jar:${lib}/trove.jar:${lib}/xalan.jar:${lib}/xercesImpl.jar:${lib}/xsltc.jar:${lib}/image.jar:${lib}/colt.jar"/>
 
    <property name="common-manifest" value="gp-common.mf"/>
-   <property name="filesupport-manifest" value="file_support.mf"/>
    <property name="uisupport-manifest" value="ui_support.mf"/>
    <property name="common-jarname" value="gp-common.jar"/>
    <property name="broad-cg-jarname" value="broad-cg.jar"/>
    <property name="full-jarname" value="gp-full.jar"/>
-   <property name="filesupport-jarname" value="file_support.jar"/>
    <property name="uisupport-jarname" value="ui_support.jar"/>
    <property name="runtask-jarname" value="runMain.jar"/>
 	 <property name="gp-library-jarname" value="GenePattern.jar"/>
@@ -50,7 +48,6 @@
      <echo/>
 	  <echo>broad-cg:           builds broad-cg.jar</echo>
      <echo>common:           builds gp-common.jar</echo>
-     <echo>filesupport:      builds file_support.jar</echo>
      <echo>uisupport:        builds ui_support.jar</echo>
      <echo>modules:          builds all the modules</echo>
      <echo>analysis:         builds omnigene (&quot;analysis&quot;)</echo>
@@ -59,7 +56,6 @@
    </target>
 
    <target depends="version_updater" name="init">
-	<tstamp/>
 	<mkdir dir="${build}"/>
 	<mkdir dir="${build}/jars"/>
 	<property name="genepattern.root" value="${basedir}"/>
@@ -67,15 +63,13 @@
 	<property name="genepattern.clients" value="${genepattern.root}/clients"/>
 	<property name="genepattern.common" value="${genepattern.root}"/>
 	<property name="genepattern.graphical.environment" value="${genepattern.clients}/JavaGE"/>
-	<property name="genepattern.modules" value="${genepattern.root}/modules"/>
 	<property name="genepattern.build" value="${genepattern.root}/build"/>
 
 	<property name="genepattern.installer" value="${genepattern.root}/installer"/>
 	<property name="genepattern.gpge.installer" value="${genepattern.graphical.environment}/installer"/>
 
 	<property name="genepattern.package" value="org/genepattern"/>
-	<property name="omniview.package" value="org/genepattern/server"/>
-
+	
 	<tstamp>
 		<format pattern="yyyy-MM-dd HH:mm" property="build.number"/>
 	</tstamp>
@@ -86,7 +80,7 @@
 	<available file="post-compile.xml" property="post-compile.present"/>
 	<available file="${keyStore}" property="keyStore.present"/>
        
-        <path id="library.classpath">
+    <path id="library.classpath">
 	    <fileset dir="${genepattern.common}/lib">
 	       <include name="*.jar"/>
 	       <include name="*.zip"/>
@@ -106,8 +100,8 @@
      <delete>
        	<fileset dir="src/" includes="**/*.class"/>
        	<fileset dir="build/" includes="**/*"/>
-        	<fileset dir="website/" includes="**/*.class"/>
-        </delete>
+        <fileset dir="website/" includes="**/*.class"/>
+    </delete>
 	<ant antfile="../build.xml" dir="clients/JavaGE/src" inheritall="true" inheritrefs="true" target="clean"/>
 	<delete>
        	<fileset dir="build/analysisclasses" includes="**/*.class"/>
@@ -139,20 +133,19 @@
 
 	<target name="gp-library" depends="website">
 		<javac classpathref="library.classpath" debug="true" destdir="build" target="1.4">
-			<src path="clients/JavaGE/src/"/>
-			<include name="edu/mit/broad/gp/ws/**"/>
 			<src path="src/org/genepattern/"/>
+			<include name="org/genepattern/client/**"/>
 			<include name="org/genepattern/data/**"/>
 			<include name="org/genepattern/io/**"/>
 			<include name="org/genepattern/module/**"/>
 		</javac>
 	
-		<jar basedir="${genepattern.build}" defaultexcludes="true"  jarfile="${genepattern.build}/${gp-library-jarname}" includes="edu/mit/broad/gp/ws/**/*.class, org/genepattern/data/**, org/genepattern/io/**, org/genepattern/module/**">	
+		<jar basedir="${genepattern.build}" defaultexcludes="true"  jarfile="${genepattern.build}/${gp-library-jarname}" includes="org/genepattern/client/**/*.class, org/genepattern/data/**, org/genepattern/io/**, org/genepattern/module/**">	
 		<manifest>
 				<attribute name="Class-Path" value="./lib/gpclient.jar ./lib/analysis.jar ./lib/activation.jar ./lib/mail.jar ./lib/axis.jar ./lib/log4j-1.2.4.jar ./lib/jaxrpc.jar ./lib/commons-discovery.jar ./lib/commons-logging.jar ./lib/saaj.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar" />
 			</manifest> 
 		</jar>
-	
+		
 	
 	<javadoc destdir="build/doc" Author="no" Public="true" Verbose="no">
 		<classpath>
@@ -163,15 +156,10 @@
 				<include name="**/*.jar"/>
 		  </fileset>
 		</classpath>
-		<fileset dir="clients/JavaGE/src">
-      	<include name="edu/mit/broad/gp/ws/GPServer.java" />
-			<include name="edu/mit/broad/gp/ws/JobResult.java" />
-			<include name="edu/mit/broad/gp/ws/Util.java" />
-			<include name="edu/mit/broad/gp/ws/WebServiceException.java" />
-			<include name="edu/mit/broad/gp/ws/Parameter.java" />
-		</fileset>
 		<fileset dir="src" defaultexcludes="yes">
-      	<include name="org/genepattern/data/**/*.java"/>
+      		<include name="org/genepattern/data/**/*.java"/>
+			<include name="org/genepattern/client/**.java" />
+			<include name="org/genepattern/analysis/**.java" />
 			<include name="org/genepattern/io/**/*.java"/>
 			<include name="org/genepattern/module/**/*.java"/>
 		</fileset>
@@ -200,13 +188,19 @@
 			
 			<zipfileset dir="build/doc" prefix="doc"/>
 		</zip> 
-	</target>
+		</target> 
+			
+		<target name="javaclient" depends="compile,init" >
+			    <jar basedir="." defaultexcludes="true" excludes="**/*.java **/*.form **/.nbattrs **/.DS_Store" includes="org/genepattern/client/**, org/genepattern/analysis/** org/genepattern/util/**" jarfile="${basedir}/build/gpclient.jar" >
+			         <fileset defaultexcludes="true" dir="${basedir}/resources" excludes="**/*.java"/>
+			    </jar>
+		</target>
 	
    <target depends="init,compile" name="common">
 <!-- Makes gp-common.jar -->
      <jar basedir="${genepattern.build}" 
 		defaultexcludes="true" 
-		excludes="org/genepattern/util/RunGenePatternTaskMain.class org/genepattern/util/GenePatternNetworkClassLoader.class edu/mit/genepattern/**,edu/mit/genome/gp/server/**,edu/mit/wi/**, edu/mit/genome/gp/image/**,edu/mit/genome/gp/io/**,edu/mit/genome/gp/ui/**,,edu/mit/genome/gp/resources/**,**/*.java,**/*.form,**/*.nbattrs" 
+		excludes="org/genepattern/util/RunGenePatternTaskMain.class org/genepattern/util/GenePatternNetworkClassLoader.class,org/genepattern/server/**,org/genepattern/resources/**,**/*.java,**/*.form,**/*.nbattrs" 
 		includes="org/**/*.class" 
 		jarfile="${genepattern.build}/${common-jarname}"/>
  
@@ -228,7 +222,7 @@
 	<!-- Makes broad-cg.jar -->
      <jar basedir="${genepattern.build}" 
 		defaultexcludes="true" 
-		includes="org/genepattern/**/*.class" 
+		includes="org/genepattern/data/**/*.class, org/genepattern/io/**/*.class" 
 		jarfile="${genepattern.build}/${broad-cg-jarname}"/>
    </target>
 	
@@ -247,7 +241,7 @@
 		destdir="${genepattern.build}" 
 		srcdir="${src}"
 		target="1.3"
-		includes="org/genepattern/util/RunGenePatternTaskMain.java org/genepattern/util/GenePatternNetworkClassLoader.java"
+		includes="org/genepattern/util/RunGenePatternTaskMain.java"
 		/>
 
 
@@ -259,14 +253,10 @@
         </jar>
    </target>
 
-   <target depends="init,compile" name="filesupport">
-     <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.java,**/*.form,**/*.nbattrs" includes="org/genepattern/io/" jarfile="${genepattern.build}/${filesupport-jarname}"/>
-   </target>
-
    <target depends="init,compile" name="uisupport">
      <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.java,**/*.form,**/*.nbattrs" includes="org/genepattern/server/ui/,org/genepattern/server/image/,org/genepattern/server/resources/" jarfile="${genepattern.build}/${uisupport-jarname}"/>
    </target>
-   <target depends="common,compile,filesupport,get_dependencies,init,runtask,uisupport" name="package">
+   <target depends="common,compile,broad-cg,get_dependencies,init,runtask,uisupport" name="package">
    </target>
 
    <target depends="init" name="jwhich">
@@ -277,13 +267,13 @@
    <target depends="init" name="prepare-compile" unless="prepare.disable">
      <mkdir dir="${genepattern.build}"/>
    </target>
-   <target depends="R-client,GPGE" name="clients">
+   		<target depends="R-client,GPGE" name="clients">
    </target>
 
    <target depends="init" name="R-client">
    </target>
    
-   <target depends="init,common,filesupport,runtask,uisupport,analysis" name="GPGE">
+   <target depends="init,common,broad-cg,runtask,uisupport,analysis" name="GPGE">
         <ant dir="." inheritall="false" inheritrefs="false" target="jar-analysis"/>
         <ant antfile="../build.xml" dir="clients/JavaGE/src" target="package"/>
    </target>
@@ -292,10 +282,7 @@
 	<ant dir="." inheritall="true" inheritrefs="true" target="jar-analysis"/>
    </target>
 
-   <target depends="init, common, filesupport, runtask, uisupport, analysis" name="modules">
-	<ant dir="${genepattern.modules}" inheritall="true" inheritrefs="true" target="create-zips"/>
-   </target>
-	   
+   	   
 <target name="GPGEinstaller">
 	<ant dir="${genepattern.gpge.installer}" 
                      inheritall="true"
@@ -321,7 +308,7 @@
      <ant antfile="post-compile.xml" dir="${genepattern.root}"/>
    </target>
    <!-- 	       classpathref="library.classpath" -->
-    <target depends="init,prepare-compile,common,analysis,clients,makeKeystore" name="website">
+    <target depends="init,prepare-compile,common,analysis, javaclient, clients,makeKeystore" name="website">
 	<mkdir dir="${genepattern.build}/website/classes"/>
 	<mkdir dir="${genepattern.build}/website/lib"/>
 	<ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB"/>
