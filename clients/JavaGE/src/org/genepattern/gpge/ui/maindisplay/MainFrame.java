@@ -34,6 +34,7 @@ import org.genepattern.webservice.*;
  * @author Joshua Gould
  */
 public class MainFrame extends JFrame {
+         
 	public static boolean RUNNING_ON_MAC = System.getProperty("mrj.version") != null
 			&& javax.swing.UIManager.getSystemLookAndFeelClassName()
 					.equals(
@@ -57,6 +58,8 @@ public class MainFrame extends JFrame {
    
    AnalysisMenu pipelineMenu;
 
+   HistoryMenu historyMenu;
+   
 	JPopupMenu jobPopupMenu = new JPopupMenu();
 
 	JPopupMenu projectDirPopupMenu;
@@ -181,6 +184,7 @@ public class MainFrame extends JFrame {
                      .openURL(filePath);
             }
          } catch (IOException ioe) {
+            ioe.printStackTrace();
          }
       }
    }
@@ -198,8 +202,9 @@ public class MainFrame extends JFrame {
             JobModel.downloadJobResultFile(jobNode.job, jobResult.index, file);
             title = JobModel.getJobResultFileName(jobNode.job, jobResult.index) + " Job " + jobNode.job.getJobInfo().getJobNumber();
          } catch(IOException ioe) {
-              GenePattern.showErrorDialog("An error occurred while downloading " + JobModel.getJobResultFileName(jobNode.job, jobResult.index));
-              return;
+            ioe.printStackTrace();
+            GenePattern.showErrorDialog("An error occurred while downloading " + JobModel.getJobResultFileName(jobNode.job, jobResult.index));
+            return;
          }
       } else if(node instanceof ProjectDirModel.FileNode){
          ProjectDirModel.FileNode fileNode = (ProjectDirModel.FileNode) node;
@@ -211,8 +216,9 @@ public class MainFrame extends JFrame {
          try {
             contents = fileToString(file);
          } catch(IOException ioe) {
-             GenePattern.showErrorDialog("An error occurred while viewing the file");
-             return;
+            ioe.printStackTrace();
+            GenePattern.showErrorDialog("An error occurred while viewing the file");
+            return;
          }
          if(deleteFile) {
             file.delete();  
@@ -258,6 +264,7 @@ public class MainFrame extends JFrame {
                  //    GenePattern.showErrorDialog("An error occurred while saving " + outputFile.getName() + ". Please try again.");
                  // }
 					} catch(IOException ioe) {
+                  ioe.printStackTrace();
                   GenePattern.showErrorDialog("An error occurred while saving " + outputFile.getName() + ". Please try again.");
                }
 				}
@@ -284,6 +291,7 @@ public class MainFrame extends JFrame {
                // ignore the exception here, the user will be alerted in refreshTasks
 				}
 				refreshTasks();
+            historyMenu.removeAll();
 
 			}
 		}.start();
@@ -292,6 +300,7 @@ public class MainFrame extends JFrame {
 			public void run() {
 				messageLabel.setText("Server: " + server + "   Username: "
 						+ username);
+            historyMenu.removeAll();
 			}
 		};
 		SwingUtilities.invokeLater(changeStatusThread);
@@ -509,6 +518,7 @@ public class MainFrame extends JFrame {
 																			// deprecated
 				server = deprecatedServer;
 			} catch (Exception e) {
+            e.printStackTrace();
 			}
 			if (server == null) {
 				server = "http://127.0.0.1:8080";
@@ -516,13 +526,27 @@ public class MainFrame extends JFrame {
 		}
 
 		createMenuBar();
-		jobModel = JobModel.getInstance();
-
+		jobModel = JobModel.getInstance();      
+     
+      
 		jobModel.addJobListener(new JobListener() {
 			public void jobStatusChanged(JobEvent e) {
 			}
 
 			public void jobAdded(JobEvent e) {
+            // add to history
+            final AnalysisJob job = e.getJob();
+            
+            Runnable doInsert = new Thread() {
+               public void run() {
+                  historyMenu.add(job);
+               }
+            };
+            if(SwingUtilities.isEventDispatchThread()) {
+               doInsert.run();  
+            } else {
+               SwingUtilities.invokeLater(doInsert);
+            }
 			}
 
 			public void jobCompleted(JobEvent e) {
@@ -585,6 +609,7 @@ public class MainFrame extends JFrame {
             try {
                jobModel.delete(jobNode);
             } catch(WebServiceException wse) {
+               wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
                   GenePattern.showErrorDialog("An error occurred deleting job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
                }   
@@ -601,6 +626,7 @@ public class MainFrame extends JFrame {
                AnalysisWebServiceProxy p = new AnalysisWebServiceProxy(analysisServiceManager.getServer(), analysisServiceManager.getUsername(), false);
                p.terminateJob(jobNode.job.getJobInfo().getJobNumber());
             } catch(WebServiceException wse) {
+                wse.printStackTrace();
                 if(!disconnectedFromServer(wse)) {
                   GenePattern.showErrorDialog("An error occurred terminating job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
                 } 
@@ -634,7 +660,8 @@ public class MainFrame extends JFrame {
 											node.download(outputFile);
 											projectDirModel.refresh(dir);
                               } catch(IOException ioe) {
-                                  GenePattern.showErrorDialog("An error occurred while saving the file " + node.name  + ". Please try again.");
+                                 ioe.printStackTrace();
+                                 GenePattern.showErrorDialog("An error occurred while saving the file " + node.name  + ". Please try again.");
                               }
                              //	} catch (WebServiceException wse) {
                             //      if(!disconnectedFromServer(wse)) {
@@ -676,6 +703,7 @@ public class MainFrame extends JFrame {
             try {
                jobModel.delete(serverFileNode);
             } catch(WebServiceException wse) {
+               wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
                   GenePattern.showErrorDialog("An error occurred while deleting the file " + JobModel.getJobResultFileName(serverFileNode) + ". Please try again.");
                }  
@@ -764,14 +792,13 @@ public class MainFrame extends JFrame {
 						}
 
 					} catch (IOException ioe) {
-
+                  ioe.printStackTrace();
 					}
 
 				} else {
 					try {
 						fileSummaryComponent.select(null);
-					} catch (IOException x) {
-					}
+					} catch (IOException x) {}
 				}
 
 				if (!isPopupTrigger(e)) {
@@ -852,7 +879,9 @@ public class MainFrame extends JFrame {
                 try {
                    ProjectDirModel.FileNode fn = (ProjectDirModel.FileNode) selectedProjectDirNode;
                    BrowserLauncher.openURL(fn.file.getParentFile().getCanonicalPath());  
-                } catch(IOException x){}
+                } catch(IOException x){
+                   x.printStackTrace();
+                }
              }
           });
          projectFilePopupMenu.add(revealInExplorerMenuItem);            
@@ -925,6 +954,7 @@ public class MainFrame extends JFrame {
 						f = new File(parent.directory, node.file.getName());
 						fileSummaryComponent.select(f);
 					} catch (IOException ioe) {
+                  ioe.printStackTrace();
 						if (!f.exists()) {
 							projectDirModel.refresh(parent);
 						}
@@ -1037,6 +1067,7 @@ public class MainFrame extends JFrame {
             try {
                jobModel.getJobsFromServer();
             } catch(WebServiceException wse) {
+               wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
                   GenePattern.showErrorDialog("An error occurred while retrieving your jobs. Please try again.");
                }   
@@ -1052,7 +1083,6 @@ public class MainFrame extends JFrame {
 				visualizerMenu.setEnabled(false);
             pipelineMenu.setEnabled(false);
 				fileMenu.changeServerActionsEnabled(false);
-            analysisServicePanel.displayIntro();
 			}
 		};
 		if (SwingUtilities.isEventDispatchThread()) {
@@ -1066,6 +1096,7 @@ public class MainFrame extends JFrame {
 				try {
 					analysisServiceManager.refresh();
 				} catch (WebServiceException wse) {
+               wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
                   GenePattern.showErrorDialog("An error occurred while retrieving the tasks from the server. Please try again.");
                }   
@@ -1111,8 +1142,11 @@ public class MainFrame extends JFrame {
 		pipelineMenu.setEnabled(false);
 		menuBar.add(pipelineMenu);
       
+      historyMenu = new HistoryMenu();
+      menuBar.add(historyMenu);
+      
 		JMenu helpMenu = new HelpMenu();
-
+      
 		try {
 			menuBar.setHelpMenu(helpMenu);
 		} catch (Throwable ex) {// setHelpMenu is not implemented on
@@ -1121,6 +1155,54 @@ public class MainFrame extends JFrame {
 		setJMenuBar(menuBar);
 	}
 
+   class HistoryMenu extends JMenu {
+      final ActionListener historyMenuItemActionListener;
+      JMenuItem clearHistoryMenuItem = new JMenuItem("Clear History");
+      
+      public HistoryMenu() {
+         super("History");
+         historyMenuItemActionListener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+               AnalysisJobMenuItem menuItem = (AnalysisJobMenuItem) e.getSource();
+               AnalysisJob job = menuItem.job;
+               reload(job);
+            }
+         }; 
+         removeAll();
+      }
+      
+      public void removeAll() {
+         super.removeAll();  
+         addSeparator();
+         ActionListener clearHistoryListener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+               removeAll();
+            }
+         };
+         clearHistoryMenuItem.addActionListener(clearHistoryListener);
+         add(clearHistoryMenuItem);
+         clearHistoryMenuItem.setEnabled(false);
+      }
+      
+      public void add(AnalysisJob job) {
+         AnalysisJobMenuItem menuItem = new AnalysisJobMenuItem(job);
+         menuItem.setToolTipText(job.getJobInfo().getTaskLSID());
+         menuItem.addActionListener(historyMenuItemActionListener);
+         historyMenu.insert(menuItem, 0);
+         clearHistoryMenuItem.setEnabled(true);
+      }
+   }
+   
+   static class AnalysisJobMenuItem extends JMenuItem {
+         AnalysisJob job;
+         
+         public AnalysisJobMenuItem(AnalysisJob job) {
+            super(job.getJobInfo().getTaskName() + " (" + job.getJobInfo().getJobNumber() + ")");
+            this.job = job;  
+         }
+   }   
+      
+   
 	class AnalysisMenu extends JMenu {
 		int type;
       static final int VISUALIZERS = 1;
