@@ -8,6 +8,10 @@ import java.net.*;
  * @author    Joshua Gould
  */
 public class MacOS {
+   private static java.lang.reflect.Method selectFileMethod;
+   private static Object NSWorkspace;
+
+
    private MacOS() { }
 
 
@@ -23,23 +27,8 @@ public class MacOS {
    public static boolean showFileInFinder(File file) {
       try {
          if(file.exists()) {
-            Class NSWorkspaceClass = null;
-            if(new File("/System/Library/Java/com/apple/cocoa/application/NSWorkspace.class").exists()) {
-               ClassLoader classLoader = new URLClassLoader(new URL[]{new File("/System/Library/Java").toURL()});
-               NSWorkspaceClass = Class.forName("com.apple.cocoa.application.NSWorkspace", true, classLoader);
-            } else {
-               NSWorkspaceClass = Class.forName("com.apple.cocoa.application.NSWorkspace");
-            }
-
-            java.lang.reflect.Method sharedWorkspaceMethod = NSWorkspaceClass.getMethod("sharedWorkspace",
-                  null);
-            Object NSWorkspace = sharedWorkspaceMethod.invoke(null, null);
-
-            java.lang.reflect.Method selectFileMethod = NSWorkspace.getClass().getMethod("selectFile",
-                  new Class[]{String.class, String.class});
-
             String path = file.getCanonicalPath();
-            
+
             Object opened = selectFileMethod.invoke(NSWorkspace, new Object[]{path, path});
             if(opened instanceof Boolean) {
                return ((Boolean) opened).booleanValue();
@@ -48,6 +37,27 @@ public class MacOS {
          return false;
       } catch(Throwable t) {
          return false;
+      }
+   }
+
+   static {
+      try {
+         Class NSWorkspaceClass = null;
+         if(new File("/System/Library/Java/com/apple/cocoa/application/NSWorkspace.class").exists()) {
+            ClassLoader classLoader = new URLClassLoader(new URL[]{new File("/System/Library/Java").toURL()});
+            NSWorkspaceClass = Class.forName("com.apple.cocoa.application.NSWorkspace", true, classLoader);
+         } else {
+            NSWorkspaceClass = Class.forName("com.apple.cocoa.application.NSWorkspace");
+         }
+
+         java.lang.reflect.Method sharedWorkspaceMethod = NSWorkspaceClass.getMethod("sharedWorkspace",
+               null);
+         NSWorkspace = sharedWorkspaceMethod.invoke(null, null);
+
+         selectFileMethod = NSWorkspace.getClass().getMethod("selectFile",
+               new Class[]{String.class, String.class});
+      } catch(Throwable t) {
+
       }
    }
 }
