@@ -26,11 +26,20 @@ public class JobCompletedDialog {
 	JTable table;
 	MyTableModel tableModel = new MyTableModel();
 	
-	public static final String SHOW_DIALOG_PROPERTY = "show.job.completed.dialog";
+	private static final String SHOW_DIALOG_PROPERTY = "show.job.completed.dialog";
 
 	public void setShowDialog(boolean showDialog) {
 		org.genepattern.util.GPpropertiesManager.setProperty(SHOW_DIALOG_PROPERTY, String.valueOf(showDialog));
 	}
+   
+   /**
+   * Returns <code>true</code> if the dialog will show when a job completes, <code>false</code> otherwise.
+   * @return whether the dialog shows when a job completes
+   */
+   public boolean isShowingDialog() {
+      final boolean showDialog = Boolean.valueOf(org.genepattern.util.GPpropertiesManager.getProperty(SHOW_DIALOG_PROPERTY)).booleanValue();
+		return showDialog;
+   }
 	
 	public JobCompletedDialog() {
 		dialog = new JFrame();
