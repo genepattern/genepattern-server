@@ -231,6 +231,7 @@ public class CommandLineAction {
 				upToDate = (requiredSchemaVersion.compareTo(dbSchemaVersion) <= 0);
 				if (!upToDate) System.out.println("DB schemaVersion=" + dbSchemaVersion + ", required version=" + requiredSchemaVersion);
 			} else {
+				props.setProperty("dbSchemaVersion", "");
 				upToDate = false;
 			}
 			stmt.close();
