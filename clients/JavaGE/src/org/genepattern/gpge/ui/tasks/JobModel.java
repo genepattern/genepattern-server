@@ -228,7 +228,14 @@ public class JobModel extends AbstractSortableTreeTableModel {
 	}
 
    private boolean isSameServerAndUsername(AnalysisJob job) {
-      return job.getServer().equals(AnalysisServiceManager.getInstance().getServer()) && job.getJobInfo().getUserId().equals(AnalysisServiceManager.getInstance().getUsername());
+      String server = AnalysisServiceManager.getInstance().getServer();
+      String jobServer = job.getServer();
+      String username = AnalysisServiceManager.getInstance().getUsername();
+      if(job.getJobInfo()==null) {
+         return false;  
+      }
+      String jobUsername = job.getJobInfo().getUserId();
+      return server.equals(jobServer) && username.equals(jobUsername);
    }
    
 	public void jobCompleted(AnalysisJob job) {
