@@ -609,8 +609,8 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		public int compare(Object obj1, Object obj2) {
          JobNode node1 = (JobNode) obj1;
          JobNode node2 = (JobNode) obj2;
-         String job1 = node1.job.getTaskName();
-         String job2 = node2.job.getTaskName();
+         String job1 = node1.toString();
+         String job2 = node2.toString();
 			if (ascending) {
 				return job1.compareTo(job2);
 			}
@@ -620,8 +620,8 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		public boolean equals(Object obj1, Object obj2) {
 			JobNode node1 = (JobNode) obj1;
 			JobNode node2 = (JobNode) obj2;
-         String job1 = node1.job.getTaskName();
-         String job2 = node2.job.getTaskName();
+         String job1 = node1.toString();
+         String job2 = node2.toString();
          return job1.equals(job2);
 		}
 	}
