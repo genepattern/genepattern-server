@@ -208,8 +208,8 @@ function LSID(lsid) {
 			<%= _taskCatalog(tmTasks, "Task", "changeTask();", null, userID) %>
 			<%= _taskCatalog(tmTasks, "Pipeline", "changePipeline();", GPConstants.TASK_TYPE_PIPELINE, userID) %>
 			<nobr>
-				<input type="button" value="run" name="navbarrun" onclick="jumpTo(this)"> 
-				<input type="button" value="edit" name="navbaredit" onclick="jumpTo(this)">
+				<input type="button" value="run" name="navbarrun" onclick="jumpTo(this)" disabled> 
+				<input type="button" value="edit" name="navbaredit" onclick="jumpTo(this)" disabled>
 			</nobr>
 		<% } %>
 	</td>
