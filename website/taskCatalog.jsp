@@ -509,7 +509,7 @@ Select from the following tasks from the GenePattern public access website to do
 				ver = "";
 			}
 %>
-			<option value="<%= GenePatternAnalysisTask.htmlEncode(tasks[module].getLSID()) %>"<%= selected ? " selected" : ""%> title="<%= tasks[module].getLSID() %>"><%= (!tasks[module].getLSIDVersion().equals("") ? (GenePatternAnalysisTask.htmlEncode(tasks[module].getLSIDVersion())) : "") %><%= (!ver.equals("") ? (" - " + GenePatternAnalysisTask.htmlEncode(ver)) : "") %></option>
+			<option value="<%= GenePatternAnalysisTask.htmlEncode(tasks[module].getLSID()) %>"<%= selected ? " selected" : ""%> title="<%= GenePatternAnalysisTask.htmlEncode(ver) + " - " + tasks[module].getLSID() %>"><%= (!tasks[module].getLSIDVersion().equals("") ? (GenePatternAnalysisTask.htmlEncode(tasks[module].getLSIDVersion())) : "") %><%= (!ver.equals("") ? (" - " + GenePatternAnalysisTask.htmlEncode(ver.substring(0, Math.min(ver.length(), 50)))) : "") %></option>
 <%
 			// see if there are more modules of the same name but different LSID version number
 			if ((module+1) == tasks.length) break;
@@ -520,14 +520,6 @@ Select from the following tasks from the GenePattern public access website to do
 %>
 		</select>
 		</nobr>
-		</td>
-<%
-		String installedVersion = null;
-		if (task.getInstalledTaskInfoAttributes() != null) installedVersion = (String)task.getInstalledTaskInfoAttributes().get(GPConstants.VERSION);
-		if (installedVersion == null) installedVersion = "";
-%>
-		<td valign="top" height="1">
-		<%= (String)attributes.get(InstallTask.STATE) %> <%= !installedVersion.equals("") && !InstallTask.UPTODATE.equals((String)attributes.get(InstallTask.STATE))? ("<br>(<a href=\"addTask.jsp?" + GPConstants.NAME + "=" + attributes.get(GPConstants.NAME) + "&view=1\" target=\"_blank\">previously version " + GenePatternAnalysisTask.htmlEncode(installedVersion) + "</a>)") : "" %>
 		</td>
 
 		<td valign="top" height="1">
