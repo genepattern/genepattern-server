@@ -945,9 +945,9 @@ for (int i = from; i < to; i++) {
 			}
 			String[][]choices = null;
 			choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
+			boolean multiple = (GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum].length > GPConstants.PARAM_INFO_CHOICE_TYPES_MULTIPLE_OFFSET);
 			
 			if (!viewOnly) {
-				boolean multiple = (GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum].length > GPConstants.PARAM_INFO_CHOICE_TYPES_MULTIPLE_OFFSET);
 			 	String [] items = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 
 				out.append("<select name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple" : "") + ">\n");
@@ -969,10 +969,14 @@ for (int i = from; i < to; i++) {
 				}
 				out.append("</select>\n");
 			} else {
-				for (int choice = 0; choice < choices.length; choice++) { 
-				    if (choices[choice][1].equals(attributeValue)) {
-					out.append(GenePatternAnalysisTask.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]));
-				    }
+				if (!multiple) {
+					for (int choice = 0; choice < choices.length; choice++) { 
+					    if (choices[choice][1].equals(attributeValue)) {
+						out.append(GenePatternAnalysisTask.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]));
+					    }
+					}
+				} else {
+					out.append(GenePatternAnalysisTask.htmlEncode(attributeValue));
 				}
 			}
 
