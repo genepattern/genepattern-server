@@ -5,11 +5,10 @@ import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.log4j.Category;
+import org.genepattern.util.PropertyFactory;
 import org.genepattern.webservice.AnalysisService;
-import org.genepattern.webservice.PropertyNotFoundException;
 import org.genepattern.webservice.RequestHandler;
 import org.genepattern.webservice.WebServiceException;
-
 /**
  *  <p>
  *
@@ -21,6 +20,7 @@ import org.genepattern.webservice.WebServiceException;
  *@author     Hui Gong
  *@created    May 4, 2004
  *@version    $Revision 1.5 $
+ *@deprecated use AnalysisWebServiceProxy instead
  */
 
 public class RequestHandlerFactory {
@@ -65,7 +65,7 @@ public class RequestHandlerFactory {
 	private RequestHandler createRequestHandler() {
 		//get all analysis web services from uddi
 		//needs to change after the look up service is done.
-		return new RequestHandler(siteName, url, userName, password);
+		return new RequestHandler(siteName, userName);
 	}
 
 
