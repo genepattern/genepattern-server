@@ -136,7 +136,7 @@ AnalysisJobDataSource ds = BeanReference.getAnalysisJobDataSourceEJB();
 String sql = "select job_no, task_name, analysis_job.user_id, date_submitted, date_completed, status_id, status_name, parameter_info, task_master.lsid from analysis_job, task_master, job_status where analysis_job.task_id=task_master.task_id and analysis_job.status_id=job_status.status_id and analysis_job.status_id != " + JobStatus.JOB_NOT_STARTED;
 if (!showAll) sql = sql + " and analysis_job.user_id = '" + userID + "'";
 //sql = sql + " order by job_no";
-sql = sql + " union select job_no, ifnull(NULL, 'pipeline - ' || user_id) as task_name, analysis_job.user_id, date_submitted, date_completed, status_id, status_name, parameter_info, user_id as lsid from analysis_job, job_status where analysis_job.task_id=-1 and analysis_job.status_id=job_status.status_id and analysis_job.status_id != " + JobStatus.JOB_NOT_STARTED;
+sql = sql + " union select job_no, ifnull(task_name, 'pipeline - ' || user_id) as task_name, analysis_job.user_id, date_submitted, date_completed, status_id, status_name, parameter_info, ifnull(task_lsid, user_id) as lsid from analysis_job, job_status where analysis_job.task_id=-1 and analysis_job.status_id=job_status.status_id and analysis_job.status_id != " + JobStatus.JOB_NOT_STARTED;
 if (!showAll) sql = sql + " and analysis_job.user_id = '" + userID + "'";
 sql = sql + " order by job_no";
 
@@ -171,7 +171,6 @@ try {
 <%
 	if (rs.last())
 	do {
-//	while (rs.next()) {
 		if (isFirst) {
 			isFirst = false;
 %>
@@ -227,6 +226,8 @@ try {
 				    anyExists = true;
 				    String sourceJobID = f.getParent();
 				    sourceJobID = sourceJobID.substring(1+sourceJobID.lastIndexOf(File.separator));
+
+
 				    String sourceTaskName = p.getName().equals(baseName) ? rs.getString("task_name") : p.getName();
 
 

@@ -3171,7 +3171,15 @@ public class GenePatternAnalysisTask implements IGPConstants {
 						userID, parameter_info, pipelineName, lsid);
 		return jobInfo;
 	}
-
+	
+	public static JobInfo createVisualizerJob(String userID,
+			String parameter_info, String visualizerName, String lsid)
+			throws OmnigeneException, RemoteException {
+		JobInfo jobInfo = getDS()
+				.createVisualizerJobRecord(
+						userID, parameter_info, visualizerName, lsid);
+		return jobInfo;
+	}
 	/**
 	 * Changes the JobStatus of a pipeline job, and appends zero or more output
 	 * parameters (output filenames) to the JobInfo ParameterInfo array for

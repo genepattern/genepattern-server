@@ -152,7 +152,7 @@ try {
 
 	RequestDispatcher rd = request.getRequestDispatcher("runVisualizer.jsp");
 	rd.include(request, response);
-
+	GenePatternAnalysisTask.createVisualizerJob(userID, ParameterFormatConverter.getJaxbString(parmInfos) , taskName, lsid);
 %>
 
 <table width='100%' cellpadding='10'>
