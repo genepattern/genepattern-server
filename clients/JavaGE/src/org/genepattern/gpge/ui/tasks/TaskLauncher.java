@@ -32,8 +32,9 @@ public class TaskLauncher {
 					.putAll(org.genepattern.gpge.ui.tasks.JavaGELocalTaskExecutor
 							.loadGPProperties());
 			for (int i = 0, length = paramInfos.length; i < length; i++) {
-				if (ParameterInfo.CACHED_INPUT_MODE.equals(paramInfos[i]
-						.getAttributes().get(ParameterInfo.MODE))) {// server file
+            Map attributes = paramInfos[i]
+						.getAttributes();
+				if (attributes!=null && ParameterInfo.CACHED_INPUT_MODE.equals(attributes.get(ParameterInfo.MODE))) {// server file
                String value = paramInfos[i].getValue();
                int index1 = value.lastIndexOf('/');
                int index2 = value.lastIndexOf('\\');
@@ -63,7 +64,8 @@ public class TaskLauncher {
          AnalysisJob job = new AnalysisJob(svc.getServer(), jobInfo, true);
          JobModel.getInstance().add(job);
       } catch(Throwable t) {
-          GenePattern.showErrorDialog("An error occurred while running " + svc.getTaskInfo().getName());
+         t.printStackTrace();
+         GenePattern.showErrorDialog("An error occurred while running " + svc.getTaskInfo().getName());
       }
 		
 	}
