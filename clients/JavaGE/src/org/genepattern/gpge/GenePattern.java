@@ -238,7 +238,7 @@ public final class GenePattern {
 			ReportPanel errors_panel = new ReportPanel(url,
 					((ReporterWithGUI) REPORTER).getErrors());
 			javax.swing.JOptionPane.showMessageDialog(getDialogParent(),
-					errors_panel, "All GenePattern Errors",
+					errors_panel, "GenePattern Analysis Module Errors",
 					JOptionPane.ERROR_MESSAGE);
 		} catch (java.io.IOException ex) {
 			showWarning(null, "Could not display errors!\nGenePattern\n"
@@ -268,8 +268,8 @@ public final class GenePattern {
 		// one that all modeles use
 		final String handler = System.getProperty(AWT_EXCEPTION_HANDLER_KEY);
 		if (handler == null || handler.trim().length() == 0)
-			System.setProperty(AWT_EXCEPTION_HANDLER_KEY,
-					"edu.mit.genome.util.ExceptionHandler");
+		//	System.setProperty(AWT_EXCEPTION_HANDLER_KEY,
+			//		"edu.mit.genome.util.ExceptionHandler");
 		// end handler
 
 		// test java version
