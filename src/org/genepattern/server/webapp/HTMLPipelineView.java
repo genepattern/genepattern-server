@@ -244,7 +244,7 @@ public class HTMLPipelineView implements IPipelineView {
 
 				writer.write(", new Array("); // create array of file formats
 				String fileFormats = tia.get(GPConstants.FILE_FORMAT);
-				if (fileFormats == null) {
+				if (fileFormats == null || fileFormats.length() == 0) {
 					fileFormats = "";
 				} else {
 					fileFormats = "\"" + fileFormats.replaceAll(GPConstants.PARAM_INFO_CHOICE_DELIMITER, "\", \"") + "\"";
@@ -254,7 +254,7 @@ public class HTMLPipelineView implements IPipelineView {
 				
 				writer.write(", new Array("); // create array of domains
 				String domain = tia.get(GPConstants.DOMAIN);
-				if (domain == null) {
+				if (domain == null || domain.length() == 0) {
 					domain = "";
 				} else {
 					domain = "\"" + domain.replaceAll(GPConstants.PARAM_INFO_CHOICE_DELIMITER, "\", \"") + "\"";
