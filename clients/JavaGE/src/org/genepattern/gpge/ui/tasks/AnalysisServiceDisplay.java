@@ -629,15 +629,6 @@ public class AnalysisServiceDisplay extends JPanel {
                      value = value.trim();
                   }
                   actualParameter.setValue(value);
-   
-                  if(!isCheckBox && formalParameters[i].getAttributes().get(
-                        GPConstants.PARAM_INFO_OPTIONAL[0]) != null
-                         && (value == null || value.equals(""))) {
-                     GenePattern.showErrorDialog(
-                           "Missing value for required parameter "
-                            + getDisplayString(formalParameters[i]));
-                     return;
-                  }
                   actualParameters.add(actualParameter);
                }
             }
