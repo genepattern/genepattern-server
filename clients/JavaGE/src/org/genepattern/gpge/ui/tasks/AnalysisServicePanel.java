@@ -73,8 +73,8 @@ public class AnalysisServicePanel extends JPanel {
 
    /**  contains the mappings of parameter names to ParamRetrievor instances */
    private final Map name_retriever = new HashMap();
-   /**  the list of RendererFactory objects */
-   private final java.util.List renderer_factories = new ArrayList();
+  
+   org.genepattern.gpge.ui.maindisplay.DefaultUIRenderer renderer = new org.genepattern.gpge.ui.maindisplay.DefaultUIRenderer();
 
    private int _id;
    private AnalysisService _selectedService;
@@ -82,7 +82,61 @@ public class AnalysisServicePanel extends JPanel {
    private final OVExceptionHandler exception_handler;
 
    private static Category cat = Category.getInstance(AnalysisServicePanel.class.getName());
+   private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
 
+   public void addAnalysisServiceSelectionListener(AnalysisServiceSelectionListener l) {
+      listenerList.add(AnalysisServiceSelectionListener.class, l);
+   }
+   
+   public void removeAnalysisServiceSelectionListener(AnalysisServiceSelectionListener l) {
+      listenerList.remove(AnalysisServiceSelectionListener.class, l);
+   }
+   
+   protected void notifyListeners() {
+      Object[] listeners = listenerList.getListenerList();
+      AnalysisServiceSelectionEvent e = null;
+      // Process the listeners last to first, notifying
+      // those that are interested in this event
+      for(int i = listeners.length - 2; i >= 0; i -= 2) {
+         if(listeners[i] == AnalysisServiceSelectionListener.class) {
+            // Lazily create the event:
+            if(e == null) {
+               e = new AnalysisServiceSelectionEvent(this, _selectedService);
+            }
+
+            ((AnalysisServiceSelectionListener) listeners[i + 1]).valueChanged(e);
+         }
+      }
+   }
+   
+   /**
+   * 
+   * Returns <tt>true</tt> of this panel is showing an <tt>AnalysisService</tt>
+   * @return whether this panel is showing an <tt>AnalysisService</tt>
+   */
+   public boolean isShowingAnalysisService() {
+      return _selectedService!=null;
+   }
+   
+   /**
+   *
+   * Gets a sorted collection of input file parameter names
+   * @return the input file names
+   */
+   public java.util.Iterator getInputFileParameterNames() {
+      return renderer.getInputFileParameterNames();
+   }
+
+   /**
+   *
+   * Sets the value of the given parameter to the given node
+   * @param parameterName the parmeter name
+   * @param node a tree node
+   */
+   public void setInputFile(String parameterName, javax.swing.tree.TreeNode node) {
+        renderer.setInputFile(parameterName, node);
+   }
+   
 
    /**
     *  Constructs a new AnalysisServicePanel with a wrapper for a type of list
@@ -108,15 +162,7 @@ public class AnalysisServicePanel extends JPanel {
          listPanel.setBackground(java.awt.Color.white);
          versionPanel.setBackground(java.awt.Color.white);
       }
-     
-      final RendererFactory factory =
-         new RendererFactory() {
-         
-            public UIRenderer createRenderer(final AnalysisService service, java.util.List params) {
-               return new org.genepattern.gpge.ui.maindisplay.DefaultUIRenderer();
-            }
-         };
-      addRendererFactory(factory);
+    
 
       this.add(listPanel, BorderLayout.NORTH);
       this.add(_servicePanel, BorderLayout.CENTER);
@@ -166,19 +212,9 @@ public class AnalysisServicePanel extends JPanel {
       this.add(this._servicePanel, BorderLayout.CENTER);
       this.revalidate();
       this.doLayout();
+      notifyListeners();
    }
 
-
-
-   /**
-    *  add additional RendererFactory objects last ones added are the first ones
-    *  tried
-    *
-    * @param  factory  The feature to be added to the RendererFactory attribute
-    */
-   public void addRendererFactory(final RendererFactory factory) {
-      this.renderer_factories.add(factory);
-   }
 
 
    /**
@@ -326,8 +362,7 @@ public class AnalysisServicePanel extends JPanel {
       final TaskInfo task = service.getTaskInfo();
       // last renderer will get the chance to create the task panel header label
       // and create the submit button
-      UIRenderer last_renderer = null;
-
+     
       if(task != null && task.getParameterInfoArray() != null && task.getParameterInfoArray().length > 0) {
          _id = task.getID();
 
@@ -356,17 +391,8 @@ public class AnalysisServicePanel extends JPanel {
 
          //loop through the parameters to create UI
          final java.util.List param_list = new ArrayList(java.util.Arrays.asList(params));
-         // get the last added RendererFactory objects first
-         final int num_factories = renderer_factories.size();
-
-         for(int i = num_factories - 1; i >= 0 && param_list.size() > 0; i--) {// rev. loop
-            final RendererFactory factory = (RendererFactory) renderer_factories.get(i);
-            final UIRenderer renderer = factory.createRenderer(service, param_list);
-            if(renderer != null) {
-               last_renderer = renderer;
-               renderer.render(pane, service, param_list, name_retriever);
-            }
-         }
+         renderer.render(pane, service, param_list, name_retriever);
+         
          final int num_left_over = param_list.size();
          if(num_left_over > 0) {
             if(num_left_over == num_params) {
@@ -381,10 +407,10 @@ public class AnalysisServicePanel extends JPanel {
          }
 
          //add bottom panel for submit button
-         if(last_renderer != null) {
-            top_pane.add(last_renderer.createTaskLabel(service));
+         if(renderer != null) {
+            top_pane.add(renderer.createTaskLabel(service));
             //((FlowLayout)bottom_pane.getLayout()).setAlignment(FlowLayout.LEADING);
-            bottom_pane.add(last_renderer.createSubmitPanel(service, new SubmitActionListener(), new ResetActionListener()),
+            bottom_pane.add(renderer.createSubmitPanel(service, new SubmitActionListener(), new ResetActionListener()),
                   BorderLayout.CENTER);
          }
       } else {

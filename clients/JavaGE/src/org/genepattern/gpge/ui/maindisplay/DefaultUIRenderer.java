@@ -82,9 +82,19 @@ public class DefaultUIRenderer implements UIRenderer {
 	/**  the bold font to create some components with */
 	private java.awt.Font bold_font;
 	/**  executes the code in a safe environment */
-	private final SafeExecuter executer = new SafeExecuter();
-	/**  the url of the jsp page for getting the doc */
-	protected final static String DOC_URL;
+	private final SafeExecuter executer = new SafeExecuter(); 
+    /** maps parameter names to the text field for a parameter */
+   private java.util.Map inputFileParameterNameToTextFieldMap = new java.util.TreeMap();
+   
+   
+   public java.util.Iterator getInputFileParameterNames() {
+      return inputFileParameterNameToTextFieldMap.keySet().iterator();
+   }
+   
+   public void setInputFile(String parameterName, javax.swing.tree.TreeNode node) {
+      ObjectTextField tf = (ObjectTextField) inputFileParameterNameToTextFieldMap.get(parameterName);
+      tf.setObject(node);
+   }
 
 
 	/**
@@ -98,6 +108,7 @@ public class DefaultUIRenderer implements UIRenderer {
 	 *@param  name_retriever  Description of the Parameter
 	 */
 	public void render(final JComponent pane, final AnalysisService service, final java.util.List params_list, final Map name_retriever) {
+      inputFileParameterNameToTextFieldMap.clear();
 		this.pane = (JPanel) pane;
 		executer.service = service;
 		executer.params_list = params_list;
@@ -416,6 +427,7 @@ public class DefaultUIRenderer implements UIRenderer {
 		pane.add(createLabel(param_name, info), gbc1);
 		final JScrollPane scroll = createObjectTextField(label);
 		final ObjectTextField field = (ObjectTextField) scroll.getViewport().getView();
+      inputFileParameterNameToTextFieldMap.put(param_name, field);
 		String defaultValue = (String) info.getAttributes().get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 		
 		if(defaultValue!=null) {
@@ -1047,17 +1059,4 @@ public class DefaultUIRenderer implements UIRenderer {
 		}
 	}
 
-	static {
-		String doc_url = null;
-		try {
-			final Properties gp_props = PropertyFactory.getInstance().getProperties("omnigene.properties");
-			doc_url = gp_props.getProperty("task.documentation");
-		} catch(Exception ex) {
-			GenePattern.showError(null, "Cannot get the task documention url", ex);
-		}
-		DOC_URL = doc_url;
-		if(doc_url == null) {
-			throw new IllegalStateException("Cannot get the task documention url");
-		}
-	}
 }
