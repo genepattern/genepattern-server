@@ -71,7 +71,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
       return fileName;
     }
     
-   private static int getJobCreationJobNumber(AnalysisJob job, int parameterInfoIndex) {
+   public static int getJobCreationJobNumber(AnalysisJob job, int parameterInfoIndex) {
       int jobNumber = job.getJobInfo().getJobNumber();
       String fileName = job.getJobInfo().getParameterInfoArray()[parameterInfoIndex].getValue();
       int index1 = fileName.lastIndexOf('/');
@@ -84,6 +84,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
       return jobNumber;
     }
 
+  
    public static void downloadJobResultFile(AnalysisJob job, int parameterInfoIndex, File destination) throws IOException {
       String jobNumber = String.valueOf(job.getJobInfo().getJobNumber());
      
