@@ -19,8 +19,8 @@
 	String moduleRepository = request.getParameter("moduleRepository");
 	String reposDefault = request.getParameter("submitReposDefault");
 	String clearProxy = request.getParameter("submitClearProxy");
-	String defaultModuleRepository = System.getProperty("DefaultModuleRepositoryURL");
-
+	String defaultModuleRepository = System.getProperty("DefaultModuleRepositoryURL", moduleRepository);
+	
 	if (reposDefault != null){
 		moduleRepository = defaultModuleRepository ;
 	}
@@ -147,7 +147,6 @@ function changeReposFields(obj){
 
 
 
-
 <table cellpadding="0" cellspacing="0" border="0">
 <tr><td colspan="2">
 <form action="adminServer.jsp" name="allowedClientForm" method="POST">
@@ -169,6 +168,7 @@ if (!(ANY.equals(allowedClients) || LOCAL.equals(allowedClients)) ) out.print(" 
 %>
 onclick="refillField(this);"> These Domains <br>
 		
+
 
 
 <% 
@@ -204,7 +204,7 @@ onclick="refillField(this);"> These Domains <br>
 		</td>
 </tr>
 
-	
+
 <tr>
 <td width='50%' valign='top' align='center'>
 <form action="adminServer.jsp" name="moduleRepositoryForm" method="POST">
@@ -215,6 +215,7 @@ onclick="refillField(this);"> These Domains <br>
 </td></tr>
 <tr><td colspan='2' ALIGN='CENTER'><input type="submit" name="submitRepos" value="change" class="button"  disabled="true"> 
 <input type="submit" name="submitReposDefault" value="reset to default" 
+
 <%
 	if (defaultModuleRepository.equals(moduleRepository)){
 %>
@@ -225,8 +226,9 @@ onclick="refillField(this);"> These Domains <br>
 <tr><td colspan='2' align='center'><a href="taskCatalog.jsp">Install/Update modules</a></td></tr>
 </table>
 </form>
-</td>
 
+
+</td>
 
 
 <td colspan=2>
@@ -268,8 +270,6 @@ onclick="refillField(this);"> These Domains <br>
 
 
 	</table> <!-- end admin cell -->
-
-
 
 
 
