@@ -38,7 +38,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 	RootNode root = new RootNode();
    
-   private Comparator comparator = new TaskNameComparator(false);
+   private Comparator comparator = new TaskNameComparator(true);
    private int sortColumn = 0;
    
 	private JobModel() {
