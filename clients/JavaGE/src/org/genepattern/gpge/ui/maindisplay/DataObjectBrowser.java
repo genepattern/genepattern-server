@@ -449,10 +449,10 @@ try {
         
         // read our gp properties and load in the Project Directories
         jobCompletedDialog = new JobCompletedDialog();
-		  String showCompletedJobsDialog = GPpropertiesManager.getProperty(JobCompletedDialog.SHOW_DIALOG_PROPERTY);
+		  /*String showCompletedJobsDialog = GPpropertiesManager.getProperty(JobCompletedDialog.SHOW_DIALOG_PROPERTY);
 		  if(showCompletedJobsDialog==null) {
 			  GPpropertiesManager.setProperty(JobCompletedDialog.SHOW_DIALOG_PROPERTY, "true");
-		  }
+		  }*/
 		  
 		  
         final String directories = GPpropertiesManager.getProperty("gp.project.dirs");
@@ -750,12 +750,17 @@ try {
         
         fileMenu.add(new OpenAction());
         
-        fileMenu.add(new PreferencesAction());
-        
+        final javax.swing.JCheckBoxMenuItem showJobCompletedDialogMenuItem = new javax.swing.JCheckBoxMenuItem("Alert On Job Completion");
+        showJobCompletedDialogMenuItem.setSelected(jobCompletedDialog.isShowingDialog());
+        fileMenu.add(showJobCompletedDialogMenuItem);
+        showJobCompletedDialogMenuItem.addActionListener(new ActionListener() {
+           public void actionPerformed(ActionEvent e) {
+              jobCompletedDialog.setShowDialog(showJobCompletedDialogMenuItem.isSelected());
+           }
+        });
         fileMenu.add(new javax.swing.AbstractAction("Server...") {
             public void actionPerformed(java.awt.event.ActionEvent e) {
 			javax.swing.JFrame f = (javax.swing.JFrame) getTopLevelAncestor();
-				
                 new org.genepattern.gpge.ui.preferences.ChangeServerDialog(f);
                 
             }
@@ -1105,6 +1110,7 @@ try {
             javax.swing.JFrame frame = new javax.swing.JFrame("Preferences");
             final PreferencesPanel prefs = GenePattern.createGpPreferencesPanel();
             frame.getContentPane().add(prefs);
+            
             frame.pack();
             frame.show();
         }
