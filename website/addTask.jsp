@@ -85,9 +85,7 @@ if (taskName != null) {
 }
 
 	TreeMap tmFileFormats = new TreeMap(String.CASE_INSENSITIVE_ORDER);
-	//tmFileFormats.put("", "");
 	TreeMap tmDomains = new TreeMap(String.CASE_INSENSITIVE_ORDER);
-	//tmDomains.put("", "");
 
 	int DOMAIN_PARAM_OFFSET = -1;
 	for (int j = 0; j < GPConstants.PARAM_INFO_ATTRIBUTES.length; j++) {
@@ -313,14 +311,24 @@ if (tia != null) {
 				tmFileFormats.put(fileFormats[y], fileFormats[y]);
 			}
 		}	
-	        ParameterInfo[] pia = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
+	        ParameterInfo[] pia = new ParameterFormatConverter().getParameterInfoArray(ti.getParameterInfo());
 		if (pia != null) {
 			for (int pNum = 0; pNum < pia.length; pNum++) {
 				HashMap pAttributes = pia[pNum].getAttributes();
 				domain = (String)pAttributes.get(GPConstants.DOMAIN);
-				if (domain != null && domain.length() > 0) tmDomains.put(domain, domain);
+				if (domain != null && domain.length() > 0) {
+					String[] domains = domain.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+					for(int x = 0; x<domains.length; x++){
+				 		tmDomains.put(domains[x], domains[x]);
+					}
+				}
 				fileFormat = (String)pAttributes.get(GPConstants.FILE_FORMAT);
-				if (fileFormat != null && fileFormat.length() > 0) tmFileFormats.put(fileFormat, fileFormat);
+				if (fileFormat != null && fileFormat.length() > 0) {
+				 	String [] fileFormats = fileFormat.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+					for (int y = 0; y< fileFormats.length; y++){
+						tmFileFormats.put(fileFormats[y], fileFormats[y]);
+					}
+				}
 			}
 		}
 
@@ -622,7 +630,7 @@ if (taskName != null) {
 	</td>
 	<td valign="top">	
 <%
-		attributeValue = tia.get(GPConstants.FILE_FORMAT);
+		attributeValue = (tia != null ? tia.get(GPConstants.FILE_FORMAT) : "");
 		if (attributeValue == null) attributeValue = "";
 %>
 <% if (!viewOnly) { %>
@@ -659,7 +667,7 @@ if (taskName != null) {
 	</td>
 	<td valign="top">
 <%
-		attributeValue = tia.get(GPConstants.DOMAIN);
+		attributeValue = (tia != null ? tia.get(GPConstants.DOMAIN) : "");
 		if (attributeValue == null) attributeValue = "";
 %>
   <% if (!viewOnly) { %>
@@ -937,11 +945,27 @@ for (int i = from; i < to; i++) {
 			}
 			String[][]choices = null;
 			choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
-			boolean multiple = (GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum].length > GPConstants.PARAM_INFO_CHOICE_TYPES_MULTIPLE_OFFSET);
+			
 			if (!viewOnly) {
+				boolean multiple = (GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum].length > GPConstants.PARAM_INFO_CHOICE_TYPES_MULTIPLE_OFFSET);
+			 	String [] items = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+
 				out.append("<select name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple" : "") + ">\n");
+
 				for (int choice = 0; choice < choices.length; choice++) { 
-					out.append("<option value=\"" + choices[choice][GPConstants.PARAM_INFO_TYPE_OFFSET] + "\"" + (choices[choice][GPConstants.PARAM_INFO_TYPE_OFFSET].equals(attributeValue) ? " selected" : "") + ">" + GenePatternAnalysisTask.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]) + "</option>\n");
+					boolean selected = false;
+					for (int sel = 0; sel < items.length; sel++) {
+
+						if (choices[choice][GPConstants.PARAM_INFO_TYPE_OFFSET].equals(items[sel])) {
+							selected = true;
+							break;
+						}
+					}
+					out.append("<option value=\"" + 
+						    choices[choice][GPConstants.PARAM_INFO_TYPE_OFFSET] + "\"" + 
+						    (selected ? " selected" : "") + ">" + 
+						    GenePatternAnalysisTask.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]) +
+						    "</option>\n");
 				}
 				out.append("</select>\n");
 			} else {

@@ -129,7 +129,7 @@ if (requestParameters.getParameter("deleteFiles") != null || request.getParamete
 	if (filename == null) filename = request.getParameter("deleteFiles");
 
 String forward = request.getParameter("forward");
-System.out.println("FOR=" + forward);
+//System.out.println("FOR=" + forward);
 if (forward== null) forward = "addTask.jsp";
 
 
@@ -251,6 +251,7 @@ if (formerName != null && formerName.length() > 0 && !formerName.equals(taskName
 int numParameterInfos;
 String key = null;
 String value = null;
+String[] values = null;
 for (numParameterInfos = 0; ; numParameterInfos++) {
 	key = "p" + numParameterInfos + "_name";
 	value = requestParameters.getParameter(key);
@@ -266,7 +267,16 @@ for (i = 0; i < numParameterInfos; i++) {
 		HashMap attributes = new HashMap();
 		for (int attributeNum = 0; attributeNum < GPConstants.PARAM_INFO_ATTRIBUTES.length; attributeNum++) {
 			String attributeName = (String)GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum][GPConstants.PARAM_INFO_NAME_OFFSET];
-			attributes.put(attributeName, requestParameters.getParameter("p" + i + "_" + attributeName));
+			values = requestParameters.getParameterValues("p" + i + "_" + attributeName);
+			value = "";
+			for (int x=0; values!=null && x < values.length ; x++){
+			 	if (x > 0) {
+					value = value + GPConstants.PARAM_INFO_CHOICE_DELIMITER;
+				}
+				value += values[x];
+			}
+	
+			attributes.put(attributeName, value);
 		}
 		pi.setAttributes(attributes);
 		if (pi.getName().indexOf("filename") != -1) {
@@ -276,13 +286,12 @@ for (i = 0; i < numParameterInfos; i++) {
 	}
 	params[i] = pi;
 }
+
 TaskInfoAttributes tia = new TaskInfoAttributes();
 for (i = 0; i < GPConstants.TASK_INFO_ATTRIBUTES.length; i++) {
 	key = GPConstants.TASK_INFO_ATTRIBUTES[i];
-	String[] values = requestParameters.getParameterValues(key);
-
+	values = requestParameters.getParameterValues(key);
 	value = "";
-	
 	for (int x=0; values!=null && x < values.length ; x++){
 	 	if (x > 0) {
 			value = value + GPConstants.PARAM_INFO_CHOICE_DELIMITER;
