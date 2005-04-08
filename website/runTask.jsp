@@ -145,7 +145,7 @@ function showJob(job) {
 
 <tr><td  valign='top' height='100%'>
 
-<table class="majorCell"  frame=border width='100%' height='100%' bgcolor='#EFEFFF' valign='top'>
+<table class="majorCell"  frame=border width='100%' height='100%' bgcolor='#EFEFFF'  valign='top'>
 
 <tr><td class="heading" colspan=3><span class="heading">Recent Jobs</span></td></tr><tr>
 
@@ -177,7 +177,7 @@ for(int i = 0; i < jobs.length; i++) {
   
    if(!job.getStatus().equals(JobStatus.FINISHED) ) continue;
   
-   out.print("<tr><td align=\"right\">" + job.getJobNumber() + "");
+   out.print("<tr><td align=\"right\" >" + job.getJobNumber() + "");
    rowsDisplayed++;
    ParameterInfo[] params = job.getParameterInfoArray();
    String log = "execution log unavailable for job " + job.getJobNumber();
@@ -226,7 +226,7 @@ for(int i = 0; i < jobs.length; i++) {
   out.println("</script>");
 
 
-   out.print("<td valign='top'><span name='"+job.getJobNumber()+"'onmouseover='showJob("+job.getJobNumber()+")'>" + job.getTaskName()+"&nbsp;<img src='info_obj.gif'></span>");
+   out.print("<td valign='center'><span name='"+job.getJobNumber()+"'onmouseover='showJob("+job.getJobNumber()+")'>" + job.getTaskName()+"&nbsp;<img src='info_obj.gif'></span>");
    
    Date completed = job.getDateCompleted();
    DateFormat formatter =  completed.after(midnight.getTime()) ? shortDateFormat : dateFormat;
@@ -255,7 +255,7 @@ for(int i = 0; i < jobs.length; i++) {
            String fileName = value.substring(index + 1, value.length());
                  
 	     if (!GPConstants.TASKLOG.equals(fileName)){ 
-           		out.println("<tr><td></td><td colspan=\"3\">");
+           		out.println("<tr><td></td><td valign='top' colspan=\"3\">");
            		out.println("<a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\">" + fileName + "</a>");
    	     		rowsDisplayed++;
 		}
