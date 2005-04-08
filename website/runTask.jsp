@@ -1,8 +1,15 @@
 <%@ page import="java.io.IOException,
 		 java.util.Enumeration,
 		 java.util.HashMap,
-		 java.io.File,
+		 java.io.*,
+		 java.util.*,
+ 		 java.text.*,
  		 java.net.URLEncoder,
+		org.genepattern.webservice.JobInfo,
+		 org.genepattern.webservice.JobStatus,
+		 org.genepattern.webservice.ParameterInfo,
+		 org.genepattern.webservice.WebServiceException,
+       	org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient , 
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
@@ -86,6 +93,14 @@ if (!bNoEnvelope) { %>
 	<link href="stylesheet.css" rel="stylesheet" type="text/css">
 	<link rel="SHORTCUT ICON" href="favicon.ico" >
 	<title>run <%= taskInfo != null ? taskInfo.getName() : "GenePattern task" %></title>
+<style>
+.heading { font-family: Arial,Helvetica,sans-serif; background-color: #0E0166; color: white; font-size: 12pt; font-weight: 800; text-align: center; }
+.majorCell { border-width: 2; font-size: 10pt; }
+.button  { width: 50; }
+.wideButton  { width: 100; }
+.wideBoldButton  { width: 100; font-weight: bold; color: red }
+td { padding-left: 5; }
+</style>
 	</head>
 	<body>	
 	<jsp:include page="navbar.jsp"></jsp:include>
@@ -108,8 +123,162 @@ if (taskInfo == null) {
 }
 taskName = taskInfo.getName();
 
+
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 %>
-<table width="100%" cols="2">
+<script language="JavaScript">
+
+var logFileContents = new Array(); 
+
+function showJob(job) {
+	execLogArea = document.execLogForm.execLogArea;	
+	execLogArea.value = logFileContents[job];
+}
+
+
+</script>
+
+
+<table   width='80%' cols=2  cellpadding=20 >
+<col align="left" valign='top' width="45%"><col align="left" width="*">
+
+<tr><td  valign='top' height='100%'>
+
+<table class="majorCell"  frame=border width='100%' height='100%' bgcolor='#EFEFFF' valign='top'>
+
+<tr><td class="heading" colspan=3><span class="heading">Recent Jobs</span></td></tr><tr>
+
+<%
+String userID = GenePatternAnalysisTask.getUserID(request, null); // get userID but don't force login if not defined
+
+SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss");
+SimpleDateFormat shortDateFormat = new SimpleDateFormat("HH:mm:ss");
+Calendar midnight = Calendar.getInstance();
+midnight.set(Calendar.HOUR_OF_DAY, 0);
+midnight.set(Calendar.MINUTE, 0);
+midnight.set(Calendar.SECOND, 0);
+midnight.set(Calendar.MILLISECOND, 0);
+
+JobInfo[] jobs = null;
+LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
+try {
+      jobs = analysisClient.getJobs(userID, -1, Integer.MAX_VALUE, false);
+} catch(WebServiceException wse) {
+	wse.printStackTrace();
+}
+
+int numRowsToDisplay = 15; 
+int rowsDisplayed = 0; // increment for each <tr> in this table
+
+//// GET THE EXECUTION LOG FOR WRITING TO THE TEXTAREA
+for(int i = 0; i < jobs.length; i++) {
+   JobInfo job = jobs[i];
+  
+   if(!job.getStatus().equals(JobStatus.FINISHED) ) continue;
+  
+   out.print("<tr><td align=\"right\">" + job.getJobNumber() + "");
+   rowsDisplayed++;
+   ParameterInfo[] params = job.getParameterInfoArray();
+   String log = "execution log unavailable for job " + job.getJobNumber();
+
+   if(params!=null && params.length > 0) {    
+      for(int j = 0; j < params.length; j++) {
+         ParameterInfo parameterInfo = params[j];
+         if(parameterInfo.isOutputFile()) {
+		String value = parameterInfo.getValue();
+           	int index = value.lastIndexOf(File.separator);
+	     	String altSeperator = "/";
+	     	if (index == -1) index = value.lastIndexOf(altSeperator);
+		String jobNumber = value.substring(0, index);
+            String fileName = value.substring(index + 1, value.length());
+           
+            boolean upToParams = false;      
+	     	if (GPConstants.TASKLOG.equals(fileName)){
+			StringBuffer buff = new StringBuffer();
+			System.out.println("VAL=" + value);
+			File logFile = new File("temp/"+value);
+			BufferedReader reader = new BufferedReader(new FileReader(logFile));
+			String line = null;
+			while ((line = reader.readLine()) != null){
+				if (!upToParams){
+					int idx = line.indexOf("# Parameters");
+					if (idx >= 0) upToParams = true;
+					continue;
+				} 
+				String trimline = line.substring(1).trim(); // remove hash and spaces
+				
+
+				buff.append(trimline);
+				buff.append("\\n");
+			}	
+			log = buff.toString();
+		}
+			
+	   }
+	}
+   }
+  // END OF GETTING THE EXECUTION LOG
+  out.println("<script language='javascript'>");
+
+  out.println("logFileContents["+job.getJobNumber()+"]='" + log+ "';");
+
+  out.println("</script>");
+
+
+   out.print("<td><span name='"+job.getJobNumber()+"'onmouseover='showJob("+job.getJobNumber()+")'>" + job.getTaskName() + "</span>");
+   
+   Date completed = job.getDateCompleted();
+   DateFormat formatter =  completed.after(midnight.getTime()) ? shortDateFormat : dateFormat;
+   
+   out.print("<td>" + formatter.format(completed)+"</td>");
+   
+   if(params!=null && params.length > 0) {
+    
+      boolean firstOutputFile = true;  
+      boolean hasOutputFiles = false;
+      for(int j = 0; j < params.length; j++) {
+         ParameterInfo parameterInfo = params[j];
+ 
+         if(parameterInfo.isOutputFile()) {
+
+            if(firstOutputFile) {
+               firstOutputFile = false;
+               hasOutputFiles = true;
+            }
+           String value = parameterInfo.getValue();
+           int index = value.lastIndexOf(File.separator);
+	     String altSeperator = "/";
+	     if (index == -1) index = value.lastIndexOf(altSeperator);
+
+           String jobNumber = value.substring(0, index);
+           String fileName = value.substring(index + 1, value.length());
+                 
+	     if (!GPConstants.TASKLOG.equals(fileName)){ 
+           		out.println("<tr><td></td><td colspan=\"3\">");
+           		out.println("<a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\">" + fileName + "</a>");
+   	     		rowsDisplayed++;
+		}
+           }
+      }
+   }
+
+// System.out
+   if (rowsDisplayed >= numRowsToDisplay) break;
+}
+out.println("</td></tr><tr><td colspan=3><form name='execLogForm'><TEXTAREA name='execLogArea' rows='5' readonly wrap='soft' bgcolor='#EFEFFF'></textarea></form></td></tr>");
+
+
+out.println("</table>");
+
+
+
+
+%>
+</td>
+<td valign='top' align='left'>
+
+<table width="100%" cols="2" >
 <tr><td><b><font size="+1"><%= taskName %></font></b></td>
 <%
 if (taskName != null) {
@@ -122,38 +291,39 @@ if (taskName != null) {
  		for (int i = 0; i < docFiles.length; i++) { %>
 			<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= GenePatternAnalysisTask.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>" target="new"><%= GenePatternAnalysisTask.htmlEncode(docFiles[i].getName()) %></a><% 
  		} 
-		%></td><%
+		%></td></tr><%
  	}
 }
 
-
+// XXXXXXXXXXXXXXXXXXXXXXXXX
 
 %>
 </table>
+
 
 	<form name="pipeline" action="<%=formAction%>" method="post" ENCTYPE="multipart/form-data">
 	<input type="hidden" name="taskName" value="<%= taskName %>">
 	<input type="hidden" name="taskLSID" value="<%= tia.get(GPConstants.LSID) %>">
 	<input type="hidden" name="<%= GPConstants.USERID %>" value="<%= username %>">
 	<input type="hidden" name="taskName" value="<%= taskName %>">
-	<table cols="2" valign="top" width="100%">
-	<col align="right" width="10%"><col align="left" width="*">
+
+	<table  valign="top"  >
+	
 
 <%	
 	int numParams = parameterInfoArray.length;
 
 	if (numParams > 0) { %>
-		<tr><td align='left' colspan='2'><b>&nbsp;&nbsp;</b></td><td></td></tr>
+		<tr><td align='left' colspan='2'><b>&nbsp;&nbsp;</b></td></tr>
 <%	} else { %>
-		<tr><td align='left' colspan='2'><i>has no input parameters</i></td><td></td></tr>
-<%	} %>
-			<% 	
+		<tr><td align='left' colspan='2'><i>has no input parameters</i></td></tr>
+<%	} 
+ 	
 
 	String prefix = "";
 	for (int param = 0; param < parameterInfoArray.length; param++) {
-out.flush();
+		out.flush();
 		ParameterInfo pi = parameterInfoArray[param];
-//		if (pi.getName().equals("server") && taskName.endsWith("." + GPConstants.TASK_TYPE_PIPELINE)) continue; // skip server parameter
 		HashMap pia = pi.getAttributes();
 		String[] choices = null;
 		String[] stChoices = pi.getChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
@@ -162,10 +332,13 @@ out.flush();
 		if (defaultValue != null) defaultValue = defaultValue.trim();
 		String description = pi.getDescription();
 %>
+
 		<tr>
-     		<td align="right" width="10%" valign="top"><nobr><%= pi.getName().replace('.',' ') %>:</nobr></td>
-		<td valign="top">
+     		<td align="right"  valign="top"><nobr><%= pi.getName().replace('.',' ') %>:</nobr></td>
+		<td valign="top" align='left'>
+
 <% 		if (pi.isInputFile()) { %>
+
 			<input	type="file" 
 				name="<%= pi.getName() %>" 
 				size="60" 
@@ -173,14 +346,16 @@ out.flush();
 				onblur="javascript:if (this.value.length > 0) { this.form.shadow<%= param %>.value=this.value; }" 
 				ondrop="this.form.shadow<%= param %>.value=this.value;" 
 				class="little">
-			<br><input name="shadow<%= param %>" 
+			<br>
+			<input name="shadow<%= param %>" 
 			 	   type="text" 
 				   value="<%= defaultValue == null ? "" : defaultValue %>"
 				   readonly 
-				   size="130" 
+				   size="90" 
 				   tabindex="-1" 
 				   class="shadow" 
 				   style="{ border-style: none; font-style: italic; font-size=9pt; background-color: transparent }">
+
 <%
 			if (description.length() > 0 && !description.equals(pi.getName().replace('.',' '))) {
 				out.println("<br>" + GenePatternAnalysisTask.htmlEncode(description));
@@ -232,8 +407,11 @@ out.flush();
 	</table>
 	</form>
 
+	
+
 <% if (!bNoEnvelope) { %>
-	<jsp:include page="footer.jsp"></jsp:include>
+	</td></tr></table>
+      <jsp:include page="footer.jsp"></jsp:include>
 	</body>
 	</html>
 <% } %>
