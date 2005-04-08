@@ -226,7 +226,7 @@ for(int i = 0; i < jobs.length; i++) {
   out.println("</script>");
 
 
-   out.print("<td><span name='"+job.getJobNumber()+"'onmouseover='showJob("+job.getJobNumber()+")'>" + job.getTaskName() + "</span>");
+   out.print("<td valign='top'><span name='"+job.getJobNumber()+"'onmouseover='showJob("+job.getJobNumber()+")'>" + job.getTaskName()+"&nbsp;<img src='info_obj.gif'></span>");
    
    Date completed = job.getDateCompleted();
    DateFormat formatter =  completed.after(midnight.getTime()) ? shortDateFormat : dateFormat;
@@ -266,7 +266,7 @@ for(int i = 0; i < jobs.length; i++) {
 // System.out
    if (rowsDisplayed >= numRowsToDisplay) break;
 }
-out.println("</td></tr><tr><td colspan=3><form name='execLogForm'><TEXTAREA name='execLogArea' rows='5' readonly wrap='soft' bgcolor='#EFEFFF'></textarea></form></td></tr>");
+out.println("</td></tr><tr><td colspan=3><form name='execLogForm'><TEXTAREA name='execLogArea' style=\"font-size:9px;font-family: arial, helvetica, sans-serif;\" rows='5' cols='35' readonly wrap='soft' bgcolor='#EFEFFF'></textarea></form></td></tr>");
 
 
 out.println("</table>");
