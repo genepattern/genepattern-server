@@ -91,6 +91,7 @@ try {
 				if (DEBUG) System.out.println("makePipeline: " + fieldName + " -> " + fullName);
 				if (fullName.startsWith("http:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
 				// don't bother trying to save a file that is a URL, retrieve it at execution time instead
+
 					htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
 					continue;
 				}
@@ -137,6 +138,11 @@ try {
 		String value;	
 		if (pinfo.isInputFile()){
 			value = (String)htFilenames.get(pinfo.getName());
+			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
+				HashMap attrs = pinfo.getAttributes();
+				attrs.put(pinfo.MODE , pinfo.URL_INPUT_MODE);
+				attrs.remove(pinfo.TYPE);
+			}
 		} else {
 			value = requestParameters.getParameter(pinfo.getName());
 		}
