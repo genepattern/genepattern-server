@@ -116,7 +116,9 @@ try {
 				}
 						
 				attachedFile.saveAs(attachmentName);
-				htFilenames.put(fieldName, tmpDirName + "/" + attachment.getName() ); // map between form field name and filesystem name
+				String encodedName = URLEncoder.encode(attachment.getName(), "utf-8");
+System.out.println("EN=" + encodedName);
+				htFilenames.put(fieldName, tmpDirName + "/" + encodedName  ); // map between form field name and filesystem name
 				
 				if (DEBUG) System.out.println(fieldName + "=" + fullName + " (" + attachedFile.getSize() + " bytes) in " + htFilenames.get(fieldName) + "<br>");
 			} catch (SmartUploadException sue) {
@@ -141,7 +143,13 @@ try {
 		String value;	
 		if (pinfo.isInputFile()){
 			value = (String)htFilenames.get(pinfo.getName());
-			value = server + "/gp/getFile.jsp?task=&file="+ value;
+			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
+				HashMap attrs = pinfo.getAttributes();
+				attrs.put(pinfo.MODE , pinfo.URL_INPUT_MODE);
+				attrs.remove(pinfo.TYPE);
+			} else {
+				value = server + "/gp/getFile.jsp?task=&file="+ value;
+			}
 		} else {
 			value = requestParameters.getParameter(pinfo.getName());
 		}
