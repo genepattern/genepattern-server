@@ -1872,8 +1872,7 @@ public class MainFrame extends JFrame {
          clear();
          historyDialog = new JDialog((java.awt.Frame)GenePattern.getDialogParent());
          historyDialog.setTitle("History");
-         final JTable table = new JTable(historyTableModel);
-         table.setDefaultRenderer(String.class, new AlternatingColorRenderer());
+         final JTable table = new AlternatingColorTable(historyTableModel);
          JToolBar toolBar = new JToolBar();
          toolBar.setLayout(new java.awt.FlowLayout());
          toolBar.setFloatable(false);
