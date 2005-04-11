@@ -156,14 +156,14 @@ public class ResParser implements IExpressionDataParser {
 			String[] tokens = sampleIdLine.split("\t");
 			String desc = tokens[0];// Description
 			if (!DESCRIPTION.equalsIgnoreCase(desc)) {
-				System.out
-						.println("Warning: First line should start with 'Description'");
+				// System.out
+					//	.println("Warning: First line should start with 'Description'");
 			}
 
 			String acc = tokens[1];// Accession
 			if (!ACCESSION.equalsIgnoreCase(acc)) {
-				System.out
-						.println("Warning: First line second token should be 'Accession'");
+				//System.out
+					//	.println("Warning: First line second token should be 'Accession'");
 			}
 
 			int sampleIndex = 2;
@@ -171,9 +171,7 @@ public class ResParser implements IExpressionDataParser {
 				String sampleName = tokens[sampleIndex].trim();
 				if (sampleNamesSet.contains(sampleName)) {
 					sampleNamesList.add(sampleName);
-					throw new ParseException("Duplicate sample id at column "
-							+ j + ". Duplicate: '" + sampleName
-							+ "', sample names: " + sampleNamesList);
+               throw new ParseException("Duplicate column name " + sampleName + " at column " + j + " on line " + reader.getLineNumber() + ".");
 				}
 				sampleNamesSet.add(sampleName);
 				sampleNamesList.add(sampleName);
@@ -183,11 +181,11 @@ public class ResParser implements IExpressionDataParser {
 					sampleNamesList.add(tokens[i]);
 				}
 				throw new ParseException(
-						"Line 1 does not contain the correct number of tabs. Sample names: "
+						"Line 1 does not contain the correct number of tabs. Column names: "
 								+ sampleNamesList);
 			}
 		} else {
-			throw new ParseException("Missing sample names on line "
+			throw new ParseException("Missing column names on line "
 					+ reader.getLineNumber());
 		}
 
@@ -211,7 +209,7 @@ public class ResParser implements IExpressionDataParser {
 			if (sampleDescriptionsTokens.length != expectedTokens) {
 				int tokens = (int) Math
 						.ceil(sampleDescriptionsTokens.length / 2.0);
-				System.out
+				/*System.out
 						.println("Warning: Incorrect number of sample descriptions on line "
 								+ reader.getLineNumber()
 								+ ". Expected "
@@ -219,6 +217,7 @@ public class ResParser implements IExpressionDataParser {
 								+ " descriptions, got "
 								+ tokens
 								+ " descriptions.");// warn user
+                        */
 			}
 
 			int index = 0;

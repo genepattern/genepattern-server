@@ -165,15 +165,15 @@ public class GctParser implements IExpressionDataParser {
 		int expectedColumns = columns + 2;
 		if (columnNames.length != expectedColumns) {
 			throw new org.genepattern.io.ParseException("Expected "
-					+ expectedColumns + " tokens got " + columnNames.length
-					+ " tokens on line " + reader.getLineNumber() + ".");
+					+ (expectedColumns-2) + " column names, but read " + (columnNames.length-2)
+					+ " column names on line " + reader.getLineNumber() + ".");
 		}
 		Collection columnNamesSet = new HashSet(columns);
 		for (int j = 0; j < columns; j++) {
 			String columnName = columnNames[j + 2];
 			if (columnNamesSet.contains(columnName)) {
 				throw new org.genepattern.io.ParseException(
-						"Duplicate column name " + columnName);
+						"Duplicate column name " + columnName + " on line " + reader.getLineNumber() + ".");
 			}
 			columnNamesSet.add(columnName);
 			if (handler != null) {

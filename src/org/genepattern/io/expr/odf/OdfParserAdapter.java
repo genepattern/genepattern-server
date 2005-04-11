@@ -142,7 +142,7 @@ class OdfParserAdapter implements IExpressionDataParser {
 
 			if (columnNames.length != columnTypes.length) {
 				throw new org.genepattern.io.ParseException(
-						"Length of column names not equal to length of column types.");
+						"Length of column names is not equal to the length of column types.");
 			}
 
 			if (!rowDescriptionsColumnSpecified && rowDescriptions == null) {
@@ -169,7 +169,7 @@ class OdfParserAdapter implements IExpressionDataParser {
 
 			if (rowNamesColumnSpecified && rowNamesColumn != 0) {
 				throw new org.genepattern.io.ParseException(
-						"RowNamesColumn must be  column 0.");
+						"RowNamesColumn must be column 0.");
 			}
 
 			if (rowDescriptionsColumnSpecified && rowDescriptionsColumn != 1) {

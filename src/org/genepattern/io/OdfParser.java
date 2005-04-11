@@ -150,7 +150,7 @@ public class OdfParser {
 			int equalsIndex = line.indexOf("=");
 			int semiIndex = line.indexOf(":");
 			if (equalsIndex == -1 && semiIndex == -1) {
-				throw new ParseException("Invalid header " + line);
+				throw new ParseException("Invalid header: " + line + " on line " + reader.getLineNumber());
 			}
 
 			if (semiIndex == -1) {
@@ -195,7 +195,7 @@ public class OdfParser {
 					handler.header(key, tokens);
 				}
 			} else {
-				throw new ParseException("Invalid header " + line);
+				throw new ParseException("Invalid header " + line + " on line " + reader.getLineNumber());
 			}
 
 		}
