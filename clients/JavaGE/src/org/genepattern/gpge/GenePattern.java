@@ -8,10 +8,8 @@ package org.genepattern.gpge;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
-import java.awt.Rectangle;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -191,21 +189,30 @@ public final class GenePattern {
 		//java.net.URL url = ClassLoader.getSystemResource
 		// ("edu/mit/genome/gp/resources/About_GenePattern.html");
 		String contents = null;
+		InputStream in = null;
 		try {
-			final InputStream in = ClassLoader
+			in = ClassLoader
 					.getSystemResourceAsStream("org/genepattern/gpge/resources/About_GenePattern.html");
-			contents = org.genepattern.io.StorageUtils
-					.createStringFromReader(new InputStreamReader(in));
-			in.close();
-			//contents =
-			// org.genepattern.io.StorageUtils.createStringFromContents(new
-			// File(url.getFile()));
+		   StringBuffer sb = new StringBuffer();
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String s = null;
+			while((s=br.readLine())!=null) {
+				sb.append(s);
+				sb.append("\n");
+			}
+			contents = sb.toString();
 		} catch (IOException ex) {
 			REPORTER.logWarning(
 					"Couldn't get the about text for this application", ex);
 			contents = BuildProperties.PROGRAM_NAME + ' '
 					+ BuildProperties.FULL_VERSION + " Build "
 					+ BuildProperties.BUILD;
+		} finally {
+			try {
+				if(in!=null) {
+					in.close();
+				}
+			} catch(IOException x){}
 		}
 		// change the markers to the real property values
 		// System.out.println("Before contents="+contents);
