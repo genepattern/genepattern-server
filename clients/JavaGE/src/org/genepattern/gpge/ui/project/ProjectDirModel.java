@@ -232,13 +232,18 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 		}
 
 		public void refresh() {
-			File[] files = directory.listFiles(new FileFilter() {
-				public boolean accept(File f) {
-					String name = f.getName();
-					return !f.isDirectory() && !name.endsWith("~")
-							&& !name.startsWith(".");
-				}
-			});
+			File[] files = null;
+			if(directory.exists() && directory.isDirectory()) {
+				try {
+					files = directory.listFiles(new FileFilter() {
+						public boolean accept(File f) {
+							String name = f.getName();
+							return !f.isDirectory() && !name.endsWith("~")
+									&& !name.startsWith(".");
+						}
+					});
+				} catch(SecurityException se){}
+			}
 			if (files != null) {
 				for (int i = 0; i < files.length; i++) {
 					add(new FileNode(files[i]));
@@ -247,8 +252,9 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 		}
 
 		public String toString() {
-			return directory.getName() + " ("
-					+ directory.getParentFile().getPath() + ")";
+			String name = directory.getName();
+			File parent = directory.getParentFile();
+			return parent!=null?name + " (" + parent.getPath() + ")":name;
 		}
 
 		public boolean getAllowsChildren() {
