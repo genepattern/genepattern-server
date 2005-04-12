@@ -57,7 +57,7 @@ public class TaskLauncher {
 				}
          }
 
-         new org.genepattern.gpge.ui.tasks.JavaGELocalTaskExecutor(null, svc
+         new org.genepattern.gpge.ui.tasks.JavaGELocalTaskExecutor(svc
 					.getTaskInfo(), substitutions, username, svc.getServer())
 					.exec();
          JobInfo jobInfo = proxy.recordClientJob(svc.getTaskInfo().getID(), paramInfos);

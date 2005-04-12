@@ -11,8 +11,6 @@ import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Properties;
 
-import org.genepattern.gpge.ui.maindisplay.DataObjectBrowser;
-import org.genepattern.io.StorageUtils;
 import org.genepattern.webservice.LocalTaskExecutor;
 import org.genepattern.webservice.TaskExecException;
 import org.genepattern.webservice.TaskInfo;
@@ -24,17 +22,13 @@ import org.genepattern.webservice.WebServiceException;
  */
 public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 	private StreamGobbler errorGobbler;
-
-	private DataObjectBrowser dataObjectBrowser;
-
 	private String taskName;
 
-	public JavaGELocalTaskExecutor(DataObjectBrowser dataObjectBrowser,
+	public JavaGELocalTaskExecutor(
 			TaskInfo taskInfo, Map paramName2ValueMap, String userName,
 			String server) throws java.io.IOException,
 			WebServiceException {
 		super(taskInfo, paramName2ValueMap, userName, server);
-		this.dataObjectBrowser = dataObjectBrowser;
 		this.taskName = taskInfo.getName();
 	}
 
@@ -79,10 +73,6 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 	public void exec() throws TaskExecException {
 		try {
 			super.exec();
-			if (dataObjectBrowser != null
-					&& dataObjectBrowser.getMessage().endsWith(taskName)) {
-				dataObjectBrowser.setMessage(null);
-			}
 		} catch (Exception e) {
 			String message = "An error occurred while attempting to run "
 					+ taskName;

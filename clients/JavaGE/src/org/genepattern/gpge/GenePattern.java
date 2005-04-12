@@ -83,9 +83,6 @@ public final class GenePattern {
 		return dialogParent;
 	}
 
-	public static org.genepattern.gpge.ui.maindisplay.DataObjectBrowser getDataObjectBrowser() {
-		return null; // FIXME
-	}
 
 	/** shows the splash screen */
 	public static JWindow showSplashScreen() {
@@ -187,11 +184,6 @@ public final class GenePattern {
 
 	public static final Reporter getReporter() {
 		return REPORTER;
-	}
-
-	/** creates a GenePattern Properties loaded PreferencesPanel */
-	public static final org.genepattern.gpge.ui.preferences.PreferencesPanel createGpPreferencesPanel() {
-		return new org.genepattern.gpge.ui.preferences.PreferencesPanel();
 	}
 
 	/** shows the about dialog */

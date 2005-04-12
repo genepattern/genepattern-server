@@ -23,7 +23,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import org.genepattern.gpge.GenePattern;
-import org.genepattern.gpge.ui.tasks.AnalysisTasksPanel;
 
 /**
  * Description of the Class
