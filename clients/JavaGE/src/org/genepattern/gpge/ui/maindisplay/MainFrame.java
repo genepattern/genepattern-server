@@ -878,7 +878,9 @@ public class MainFrame extends JFrame {
 		if (projectDirsString != null) {
 			String[] projectDirs = projectDirsString.split(";");
 			for (int i = 0; i < projectDirs.length; i++) {
-				projectDirModel.add(new File(projectDirs[i]));
+            if(projectDirs[i]!=null && !projectDirs[i].trim().equals("")) {
+               projectDirModel.add(new File(projectDirs[i]));
+            }
 			}
 		}
 
