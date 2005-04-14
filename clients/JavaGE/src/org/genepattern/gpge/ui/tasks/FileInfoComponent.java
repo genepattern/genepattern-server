@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.awt.GridLayout;
 import javax.swing.BorderFactory;
+import javax.swing.JPanel;
 import javax.swing.JLabel;
 import org.genepattern.io.*;
 import java.text.NumberFormat;
@@ -16,12 +18,10 @@ import java.text.NumberFormat;
  * 
  * @author Joshua Gould
  */
-public class FileInfoComponent extends JLabel {
-	static String NAME = "Name";
-
-	static String KIND = "Kind";
-
-	static String SIZE = "Size";
+public class FileInfoComponent extends JPanel {
+	JLabel nameLabel = new JLabel("   ");
+   JLabel kindLabel = new JLabel("   ");
+   JLabel sizeLabel = new JLabel("   ");
 
    private String semanticType;
    private String kind;
@@ -36,16 +36,20 @@ public class FileInfoComponent extends JLabel {
    
 	public FileInfoComponent() {
       setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		setVisible(false);
+      setLayout(new GridLayout(3, 1));
+      add(nameLabel);
+      add(kindLabel);
+      add(sizeLabel);
+      java.awt.Dimension size = getPreferredSize();
+      size.height += 10;
+      setPreferredSize(size);
 	}
 
 	public void select(File file) throws IOException {
 		if (file == null) {
-			setText("");
-			setVisible(false);
+			emptySelection();
 			return;
 		}
-		setVisible(true);
 		kind = null;
 		FileInputStream fis = null;
 		try {
@@ -62,25 +66,24 @@ public class FileInfoComponent extends JLabel {
 				}
 			}
 		}
-		StringBuffer text = new StringBuffer();
-		text.append("<html>");
-		text.append("<p>Name: ");
-		text.append(file.getName());
-		text.append("<p>Kind: ");
-		text.append(kind);
-		text.append("<p>Size: ");
-		text.append(FileSummaryReader.getSize(file.length()));
-		setText(text.toString());
+		
+		nameLabel.setText("Name: " + file.getName());
+		kindLabel.setText("Kind: " + kind);
+		sizeLabel.setText("Size: " + FileSummaryReader.getSize(file.length()));
 	}
 
+   private void emptySelection() {
+      nameLabel.setText("");
+		kindLabel.setText("");
+		sizeLabel.setText("");
+   }
+   
 	public void select(java.net.URLConnection conn, String name)
 			throws IOException {
 		if (conn == null) {
-			setVisible(false);
-			setText("");
+			emptySelection();
 			return;
 		}
-		setVisible(true);
 		kind = null;
 		InputStream is = null;
 		try {
@@ -98,15 +101,10 @@ public class FileInfoComponent extends JLabel {
 		}
 
 		StringBuffer text = new StringBuffer();
-		text.append("<html>");
-		text.append("<p>Name: ");
-		text.append(name);
-
-		text.append("<p>Kind: ");
-		text.append(kind);
-		text.append("<p>Size: ");
-		text.append(FileSummaryReader.getSize(conn.getContentLength()));
-		setText(text.toString());
+		nameLabel.setText("Name: " + name);
+		kindLabel.setText("Kind: " + kind);
+		sizeLabel.setText("Size: " + FileSummaryReader.getSize(conn.getContentLength()));
+		
 	}
 
 	static class OdfSummaryHandler implements IOdfHandler {
