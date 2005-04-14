@@ -61,6 +61,16 @@ public class AnalysisServiceDisplay extends JPanel {
       } 
    }
 
+   public void showGettingStarted() {
+      removeAll();
+      javax.swing.Icon icon = new javax.swing.ImageIcon(ClassLoader
+				.getSystemResource("org/genepattern/gpge/resources/intro.gif"));
+		 add(new JLabel(icon));
+       invalidate();
+       validate();
+       selectedService = null;
+       notifyListeners();
+   }
 
 
    public void addAnalysisServiceSelectionListener(
