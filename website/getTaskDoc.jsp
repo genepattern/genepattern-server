@@ -60,7 +60,7 @@ for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 	boolean isPipeline = taskType.equals(GPConstants.TASK_TYPE_PIPELINE);
 %>
 	<tr>
-	<td valign="top"><a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipelineDesigner.jsp" %>?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><%= ti.getName() %> (<%= lsid.getVersion() %>)<a/></td>
+	<td valign="top"><a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipelineDesigner.jsp" %>?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><nobr><%= ti.getName() %> (<%= lsid.getVersion() %>)</nobr><a/></td>
 	<td valign="top"><%= GenePatternAnalysisTask.htmlEncode(description) %>
 	<br>
 <%
