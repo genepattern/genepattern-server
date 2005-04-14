@@ -226,7 +226,7 @@ for(int i = 0; i < jobs.length; i++) {
   out.println("</script>");
 
 
-   out.print("<td valign='center'><span name='"+job.getJobNumber()+"'onmouseover='showJob("+job.getJobNumber()+")'>" + job.getTaskName()+"&nbsp;<img src='info_obj.gif'></span>");
+   out.print("<td valign='center'><span name='"+job.getJobNumber()+"'onmouseover='showJob("+job.getJobNumber()+")'><nobr>" + job.getTaskName()+"&nbsp;<img src='info_obj.gif'></nobr></span>");
    
    Date completed = job.getDateCompleted();
    DateFormat formatter =  completed.after(midnight.getTime()) ? shortDateFormat : dateFormat;
