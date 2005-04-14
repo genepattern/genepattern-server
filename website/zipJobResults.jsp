@@ -42,10 +42,10 @@ if(isDownload) {
        String jobDir = System.getProperty("jobs");
        for(int i = 0; i < attachmentNames.length; i++) {
          String value = attachmentNames[i];
-System.out.println("AN=" + attachmentNames[i]);
+         int index = value.lastIndexOf("=");
+	 value = value.substring(index+1);
+         index = value.lastIndexOf("/");
 
-         int index = value.lastIndexOf(File.separator);
-	   if (index == -1) index = value.lastIndexOf("/");
          String jobNumber = value.substring(0, index);
          String fileName = value.substring(index + 1, value
                      .length());
