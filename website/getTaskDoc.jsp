@@ -6,6 +6,7 @@
 		 java.util.Hashtable,
 		 java.util.Iterator,
 		 com.jspsmart.upload.*,
+		 org.genepattern.util.LSID,
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.server.webservice.server.local.*,
@@ -47,19 +48,19 @@ if (name == null) {
 
 Collection tmTasks = adminClient.getTaskCatalog();
 String description;
-String lsid;
+LSID lsid;
 String taskType;
 for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 	ti = (TaskInfo)itTasks.next();
 	tia = ti.giveTaskInfoAttributes();
-	lsid = tia.get(GPConstants.LSID);
+	lsid = new LSID(tia.get(GPConstants.LSID));
 	taskType = tia.get(GPConstants.TASK_TYPE);
 	description = ti.getDescription();
 	if (description == null || description.length() == 0) description = "[no description]";
 	boolean isPipeline = taskType.equals(GPConstants.TASK_TYPE_PIPELINE);
 %>
 	<tr>
-	<td valign="top"><a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipelineDesigner.jsp" %>?<%= GPConstants.NAME %>=<%= lsid %>&view=1"><%= ti.getName() %><a/></td>
+	<td valign="top"><a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipelineDesigner.jsp" %>?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><%= ti.getName() %> (<%= lsid.getVersion() %>)<a/></td>
 	<td valign="top"><%= GenePatternAnalysisTask.htmlEncode(description) %>
 	<br>
 <%
