@@ -227,6 +227,32 @@ function LSID(lsid) {
 	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>') ? '<%= LSIDUtil.AUTHORITY_MINE %>' : (this.authority == '<%= LSIDUtil.BROAD_AUTHORITY %>' ? '<%= LSIDUtil.AUTHORITY_BROAD %>' : '<%= LSIDUtil.AUTHORITY_FOREIGN %>');
 }
 
+function checkEnableNavbar() {
+       if (<%= userUnknown%>) return; // no selections
+	var enableEdit = false;
+	var frm = document.forms['searchForm'];
+	var sel = frm['Task'];
+	for (option=0; option < sel.length; option++) {
+		if (sel.options[option].selected) {
+			enableEdit = true;
+			break;
+		}
+	}
+	if (!enableEdit) {
+		sel = frm['Pipeline'];
+		for (option=0; option < sel.length; option++) {
+			if (sel.options[option].selected) {
+				enableEdit = true;
+				break;
+			}
+		}
+	}
+	var create = (sel.selectedIndex == 1);
+	document.forms['searchForm'].navbaredit.value = (enableEdit ? (create ? CREATE : EDIT) : VIEW);
+	document.forms['searchForm'].navbarrun.disabled = (sel.selectedIndex == 0);
+	document.forms['searchForm'].navbaredit.disabled = (sel.selectedIndex == 0);
+}
+
 </script>
 
 <div id="navbar" class="navbar">
@@ -266,6 +292,9 @@ function LSID(lsid) {
 				<input type="button" value="run" name="navbarrun" onclick="jumpTo(this)" disabled> 
 				<input type="button" value="edit" name="navbaredit" onclick="jumpTo(this)" disabled>
 			</nobr>
+			<script language="Javascript">
+				checkEnableNavbar();
+			</script>
 		<% } %>
 	</td>
 	<td align="right" valign="top" class="navbar">
@@ -311,10 +340,10 @@ function LSID(lsid) {
 	sbCatalog.append("<select name=\"" + selectorName + "\" onchange=\"");
 	sbCatalog.append(onSelectURL);
 	sbCatalog.append("\" class=\"navbar\">\n");
-	sbCatalog.append("<option value=\"" + IGNORE + "\">" + (type == null ? "task" : type) + "</option>\n");
+	sbCatalog.append("<option value=\"" + IGNORE + "\" disabled>" + (type == null ? "task" : type) + "</option>\n");
 	sbCatalog.append("<option value=\"\">new " + (type == null ? "task" : type) + "</option>\n");
 
-	sbCatalog.append("<option value=\"" + IGNORE + "\">" + DIVIDER + "</option>\n");
+	sbCatalog.append("<option value=\"" + IGNORE + "\" disabled>" + DIVIDER + "</option>\n");
 
 	String name;
 	String shortName;
