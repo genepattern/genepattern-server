@@ -260,8 +260,8 @@ function LSID(lsid) {
 	<tr>
 	<td class="navbar" valign="top">
 		<% if (!userUnknown) { %>
-			<%= _taskCatalog(tmTasks, recentTasks, "Task", "changeTask();", null, userID) %>
-			<%= _taskCatalog(tmTasks, recentPipes, "Pipeline", "changePipeline();", GPConstants.TASK_TYPE_PIPELINE, userID) %>
+			<%= _taskCatalog(tmTasks, recentTasks, "Task", "changeTask();", null, userID, request.getParameter(GPConstants.NAME)) %>
+			<%= _taskCatalog(tmTasks, recentPipes, "Pipeline", "changePipeline();", GPConstants.TASK_TYPE_PIPELINE, userID, request.getParameter(GPConstants.NAME)) %>
 			<nobr>
 				<input type="button" value="run" name="navbarrun" onclick="jumpTo(this)" disabled> 
 				<input type="button" value="edit" name="navbaredit" onclick="jumpTo(this)" disabled>
@@ -292,7 +292,7 @@ function LSID(lsid) {
 <% request.setAttribute("navbar", "already set"); %>
 <% } %>
 <% } %>
-<%! private String _taskCatalog(Collection tmTasks, Vector recent, String selectorName, String onSelectURL, String type, String userID) {
+<%! private String _taskCatalog(Collection tmTasks, Vector recent, String selectorName, String onSelectURL, String type, String userID, String requestedName) {
 	String IGNORE = "dontJump";
 	String DIVIDER = "";
 	int maxNameWidth = 0; 
@@ -312,7 +312,7 @@ function LSID(lsid) {
 	sbCatalog.append(onSelectURL);
 	sbCatalog.append("\" class=\"navbar\">\n");
 	sbCatalog.append("<option value=\"" + IGNORE + "\">" + (type == null ? "task" : type) + "</option>\n");
-	sbCatalog.append("<option select value=\"\">new " + (type == null ? "task" : type) + "</option>\n");
+	sbCatalog.append("<option value=\"\">new " + (type == null ? "task" : type) + "</option>\n");
 
 	sbCatalog.append("<option value=\"" + IGNORE + "\">" + DIVIDER + "</option>\n");
 
@@ -329,6 +329,7 @@ function LSID(lsid) {
 	LSID l = null;
 	String authority;
 	String versionlessLSID;
+	boolean selected = false;
 
 	String authorityType = null;
 
@@ -354,15 +355,17 @@ function LSID(lsid) {
 		} catch (MalformedURLException mue) {
 			continue; // don't list if it doesn't have an LSID
 		}
+		selected = requestedName != null && (name.equals(requestedName) || requestedName.startsWith(versionlessLSID + ":"));
 		sbCatalog.append("<option value=\"" + (lsid != null ? l.toString() : name) +
 			 "\" class=\"navbar-tasks-" + authorityType + "\"" + 
 			 " title=\"" + GenePatternAnalysisTask.htmlEncode(description) + ", " + l.getAuthority() + "\"" +
+			 (selected ? " selected" : "") +
 			 "><i>" + name + "</i></option>\n");
 		
 	}
 
 	if (recent.size() > 0){
-		sbCatalog.append("<option value=\"" + IGNORE + "\">" + DIVIDER  + "</option>\n");
+		sbCatalog.append("<option value=\"" + IGNORE + "\" disabled>" + DIVIDER  + "</option>\n");
 	}
 	
 	// put public and my tasks into list first
@@ -380,24 +383,26 @@ function LSID(lsid) {
 		description = taskInfo.getDescription();
 		isPublic = tia.get(GPConstants.PRIVACY).equals(GPConstants.PUBLIC);
 		isMine = tia.get(GPConstants.USERID).equals(userID);
-		lsid = tia.get(GPConstants.LSID);
-		try {
-			l = new LSID(lsid);
-			versionlessLSID = l.toStringNoVersion();
-			String key = versionlessLSID+"."+name;			
-			if (hmLSIDsWithoutVersions.containsKey(key) &&
-			    ((TaskInfo)hmLSIDsWithoutVersions.get(key)).getName().equals(name)) {
-				continue;
-			}
-			hmLSIDsWithoutVersions.put(key, taskInfo);
-			authorityType = LSIDManager.getInstance().getAuthorityType(l);
-		} catch (MalformedURLException mue) {
-			continue; // don't list if it doesn't have an LSID
-		}
 		if (isPublic || isMine) {
+			lsid = tia.get(GPConstants.LSID);
+			try {
+				l = new LSID(lsid);
+				versionlessLSID = l.toStringNoVersion();
+				String key = versionlessLSID+"."+name;			
+				if (hmLSIDsWithoutVersions.containsKey(key) &&
+				    ((TaskInfo)hmLSIDsWithoutVersions.get(key)).getName().equals(name)) {
+					continue;
+				}
+				hmLSIDsWithoutVersions.put(key, taskInfo);
+				authorityType = LSIDManager.getInstance().getAuthorityType(l);
+			} catch (MalformedURLException mue) {
+				continue; // don't list if it doesn't have an LSID
+			}
+			selected = requestedName != null && (name.equals(requestedName) || requestedName.startsWith(versionlessLSID + ":"));
 			sbCatalog.append("<option value=\"" + (lsid != null ? l.toString() : name) +
 					 "\" class=\"navbar-tasks-" + authorityType + "\"" + 
 					 " title=\"" + GenePatternAnalysisTask.htmlEncode(description) + ", " + l.getAuthority() + "\"" +
+					 (selected ? " selected" : "") +
 					 ">" + taskInfo.getName() + "</option>\n");
 		}
 	}
