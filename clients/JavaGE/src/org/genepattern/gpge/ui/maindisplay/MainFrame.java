@@ -9,6 +9,8 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Toolkit;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -74,15 +76,20 @@ public class MainFrame extends JFrame {
 
 	AnalysisServiceDisplay analysisServicePanel;
 
-	JLabel messageLabel = new JLabel("", JLabel.CENTER);
+	JLabel messageLabel;;
 
 	AnalysisServiceManager analysisServiceManager;
 
-	public final static Color AUTHORITY_MINE_COLOR = java.awt.Color.decode("0xFF00FF");
+   Color lightBlue = new Color(239, 239, 255);
+	private final static Color DEFAULT_AUTHORITY_MINE_COLOR = java.awt.Color.decode("0xFF00FF");
 
-	public final static Color AUTHORITY_FOREIGN_COLOR = java.awt.Color
+	private final static Color DEFAULT_AUTHORITY_FOREIGN_COLOR = java.awt.Color
 			.decode("0x0000FF");
-
+         
+   private final static Color DEFAULT_AUTHORITY_BROAD_COLOR = Color.black;
+   
+   static Color authorityMineColor, authorityForeignColor, authorityBroadColor;
+      
 	AnalysisMenu analysisMenu;
 
 	AnalysisMenu visualizerMenu;
@@ -324,17 +331,8 @@ public class MainFrame extends JFrame {
 
 		if (saveAsFileChooser.showSaveDialog(GenePattern.getDialogParent()) == JFileChooser.APPROVE_OPTION) {
 			final File outputFile = saveAsFileChooser.getSelectedFile();
-			if (outputFile.exists()) {
-				String message = "An item named "
-						+ outputFile.getName()
-						+ " already exists in this location. Do you want to replace it with the one that you are saving?";
-				if (JOptionPane.showOptionDialog(GenePattern.getDialogParent(),
-						message, null, JOptionPane.YES_NO_OPTION,
-						JOptionPane.WARNING_MESSAGE, null, new Object[] {
-								"Replace", "Cancel" }, "Cancel") != JOptionPane.YES_OPTION) {
-					return;
-				}
-
+			if (!overwriteFile(outputFile)) {
+				return;
 			}
 
 			new Thread() {
@@ -597,6 +595,30 @@ public class MainFrame extends JFrame {
       return filenames;
    }
 
+   private Color decodeColorFromProperties(String prop) {
+      if(prop==null) {
+         return null;  
+      }
+      String[] rgbString = prop.split(",");
+      int[] rgb = new int[3];
+      int rgbIndex = 0;
+      for(int i = 0; i < rgbString.length; i++) {
+         if("".equals(rgbString[i])) {
+            continue;  
+         }
+         try {
+            rgb[rgbIndex] = Integer.parseInt(rgbString[i]);
+            if(rgb[rgbIndex] < 0 || rgbIndex > 255) {
+               return null;
+            }
+            rgbIndex++;
+         } catch(Exception e) {
+            return null;  
+         }
+      }
+      return new Color(rgb[0], rgb[1], rgb[2]);
+      
+   }
 	public MainFrame() {
       JWindow splash = GenePattern.showSplashScreen();
 		splash.setVisible(true);
@@ -635,7 +657,26 @@ public class MainFrame extends JFrame {
       } catch(MalformedURLException mfe) {
          server = "http://" + server;
       }
+      authorityMineColor = decodeColorFromProperties(GPpropertiesManager.getProperty(PreferenceKeys.AUTHORITY_MINE_COLOR));
+      if(authorityMineColor==null) {
+         authorityMineColor = DEFAULT_AUTHORITY_MINE_COLOR;
+      }
+      
+      authorityForeignColor = decodeColorFromProperties(GPpropertiesManager.getProperty(PreferenceKeys.AUTHORITY_FOREIGN_COLOR));
+      if(authorityForeignColor==null) {
+         authorityForeignColor = DEFAULT_AUTHORITY_FOREIGN_COLOR;
+      }
+      
+      authorityBroadColor = decodeColorFromProperties(GPpropertiesManager.getProperty(PreferenceKeys.AUTHORITY_BROAD_COLOR));
+      if(authorityBroadColor==null) {
+         authorityBroadColor = DEFAULT_AUTHORITY_BROAD_COLOR;
+      }
+     
+
       jobModel = JobModel.getInstance();
+      
+      messageLabel = new JLabel("", JLabel.CENTER);
+      messageLabel.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 16));
       
       jobResultsTree = new SortableTreeTable(jobModel);
       projectDirModel = ProjectDirModel.getInstance();
@@ -788,7 +829,10 @@ public class MainFrame extends JFrame {
 						HttpURLConnection connection = (HttpURLConnection) node
 								.getURL().openConnection();
                   fileSummaryComponent.select(connection, node.name);
-                  MenuItemAction[] mi = (MenuItemAction[]) inputTypeToMenuItemsMap.get(fileSummaryComponent.getSemanticType());
+                  MenuItemAction[] mi = null;
+                  if(inputTypeToMenuItemsMap!=null) {
+                     mi = (MenuItemAction[]) inputTypeToMenuItemsMap.get(fileSummaryComponent.getSemanticType());
+                  }
                   if(mi!=null) {
                      for(int i = 0; i < mi.length; i++) {
                         jobResultFileViewModulesMenu.add(mi[i]);
@@ -931,7 +975,10 @@ public class MainFrame extends JFrame {
 						f = new File(parent.directory, node.file.getName());
                   fileSummaryComponent.select(f);
                   
-                  MenuItemAction[] mi = (MenuItemAction[]) inputTypeToMenuItemsMap.get(fileSummaryComponent.getSemanticType());
+                  MenuItemAction[] mi = null;
+                  if(inputTypeToMenuItemsMap!=null) {
+                     mi = (MenuItemAction[]) inputTypeToMenuItemsMap.get(fileSummaryComponent.getSemanticType());
+                  }
                   if(mi!=null) {
                      for(int i = 0; i < mi.length; i++) {
                         projectFileViewModulesMenu.add(mi[i]);
@@ -1016,7 +1063,12 @@ public class MainFrame extends JFrame {
 						jobResultFileSendToMenu.removeAll();
 						projectFileSendToMenu.removeAll();
                   
-
+                  if(!analysisServicePanel.isShowingAnalysisService()) {
+                     jobResultFileSendToMenu.setEnabled(false);
+                     projectFileSendToMenu.setEnabled(false);
+                     return;
+                  }
+                  
 						for (Iterator it = analysisServicePanel
 								.getInputFileParameterNames(); it.hasNext();) {
 						  final String name = (String) it.next();
@@ -1058,147 +1110,94 @@ public class MainFrame extends JFrame {
       int width = (int) (screenSize.width * .9);
       int height = (int) (screenSize.height * .9);
 
-
-      if(windowStyle==WINDOW_STYLE_ONE_FRAME) {
-
-         JPanel temp = new JPanel(new BorderLayout());
-         temp.setBackground(new Color(24,48,115));
-         temp.add(projectSP, BorderLayout.CENTER);
-         if(RUNNING_ON_WINDOWS) {
-            projectSP.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
-            jobSP.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
-         }
-
-         JLabel l = new JLabel("Projects", JLabel.CENTER);
-         l.setForeground(Color.white);
-         l.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 14));
-         temp.add(l, BorderLayout.NORTH);
-
-         JPanel temp2 = new JPanel(new BorderLayout());
-         temp2.setBackground(new Color(24,48,115));
-         temp2.add(jobSP, BorderLayout.CENTER);
-         JLabel l2 = new JLabel("Job Results", JLabel.CENTER);
-         l2.setForeground(Color.white);
-         l2.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 14));
-         temp2.add(l2, BorderLayout.NORTH);
-
-         JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-				temp, temp2);
-         if(RUNNING_ON_MAC) {
-            leftPane.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
-         }
-
-         JPanel leftPanel = new JPanel(new BorderLayout());
-         if(!RUNNING_ON_MAC) {
-			 leftPanel.setBackground(Color.white);
-			 final Border scrollBorder = UIManager.getBorder("ScrollPane.border");
-			 Border b = new Border() {
-				public Insets getBorderInsets(Component c) {
-					return new Insets(10,10,10,10);
-				}
-
-				public boolean isBorderOpaque() {
-					return scrollBorder.isBorderOpaque();
-				}
-
-				public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
-					scrollBorder.paintBorder(c,g,x,y,w,h);
-				}
-			 };
-			 fileSummaryComponent.setBorder(b);
-		 }
-
-         leftPanel.add(leftPane, BorderLayout.CENTER);
-         leftPanel.add(fileSummaryComponent, BorderLayout.SOUTH);
-         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-				leftPanel, analysisServicePanel);
-         getContentPane().add(splitPane, BorderLayout.CENTER);
-         if(!RUNNING_ON_MAC) {
-			getContentPane().setBackground(Color.white);
-		 }
-         getContentPane().add(messageLabel, BorderLayout.SOUTH);
-
-         setSize(width, height);
-         setLocation((screenSize.width - getWidth()) / 2, 20);
-         setTitle(BuildProperties.PROGRAM_NAME);
-         leftPane.setDividerLocation((int) (height * 0.4));
-         splitPane.setDividerLocation((int) (width * 0.4));
-         setJMenuBar(menuBar);
-      } else if(windowStyle==WINDOW_STYLE_FRAMES) {
-         JFrame projectDialog = new JFrame("Projects");
-         projectDialog.setJMenuBar(menuBar); // FIXME
-         projectDialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-         projectDialog.getContentPane().add(projectSP);
-         int w = (int)(width*0.3);
-         int h = (int)(height*.45);
-         projectDialog.setSize(w, h);
-         projectDialog.setVisible(true);
-         projectDialog.setLocation(10, 10);
-
-         JFrame jobDialog = new JFrame("Job Results");
-         jobDialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-         jobDialog.getContentPane().add(jobSP);
-         jobDialog.setSize(w, h);
-         jobDialog.setLocation(10, 10 + projectDialog.getHeight());
-         jobDialog.setVisible(true);
-
-         JFrame moduleDialog = new JFrame("Module");
-
-         moduleDialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-         moduleDialog.getContentPane().add(analysisServicePanel);
-         moduleDialog.pack();
-         w = (int)(width*0.6);
-         h = (int)(height*.9);
-         moduleDialog.setSize(w, h);
-         moduleDialog.setLocation(10 + projectDialog.getWidth(), 10);
-         moduleDialog.setVisible(true);
-
-         setTitle(BuildProperties.PROGRAM_NAME);
-
-      } else if(windowStyle==WINDOW_STYLE_MDI) {
-         JInternalFrame projectsInternalFrame = new JInternalFrame("Projects", true, false, true, true);
-         projectsInternalFrame.getContentPane().add(projectSP);
-         int w = (int)(width*0.3);
-         int h = (int)(height*.45);
-         projectsInternalFrame.setSize(w, h);
-         projectsInternalFrame.setVisible(true);
-         projectsInternalFrame.setLocation(10, 10);
-
-         JInternalFrame jobResultsInternalFrame = new JInternalFrame("Job Results", true, false, true, true);
-         jobResultsInternalFrame.getContentPane().add(jobSP);
-         jobResultsInternalFrame.setSize(w, h);
-         jobResultsInternalFrame.setLocation(10, 10 + projectsInternalFrame.getHeight());
-         jobResultsInternalFrame.setVisible(true);
-
-         JInternalFrame moduleInternalFrame = new JInternalFrame("Module", true, false, true, true);
-
-         moduleInternalFrame.getContentPane().add(analysisServicePanel);
-         w = (int)(width*0.6);
-         h = (int)(height*.9);
-         moduleInternalFrame.setSize(w, h);
-         moduleInternalFrame.setLocation(10 + projectsInternalFrame.getWidth(), 10);
-         moduleInternalFrame.setVisible(true);
-
-         JDesktopPane dp = new JDesktopPane();
-         dp.setBackground(new Color(139, 139, 139));
-         dp.add(projectsInternalFrame);
-         dp.add(jobResultsInternalFrame);
-         dp.add(moduleInternalFrame);
-         setContentPane(new JScrollPane(dp));
-         setSize(screenSize.width, screenSize.height);
-         setTitle(BuildProperties.PROGRAM_NAME);
-
-         addToWindowMenu("Job Results", jobResultsInternalFrame);
-         addToWindowMenu("Module", moduleInternalFrame);
-         addToWindowMenu("Projects", projectsInternalFrame);
-         setJMenuBar(menuBar);
-
+      JPanel projectPanel = new JPanel(new BorderLayout());
+      projectPanel.setMinimumSize(new Dimension(200, 200));
+      projectPanel.setBackground(new Color(24,48,115));
+      projectPanel.add(projectSP, BorderLayout.CENTER);
+      if(RUNNING_ON_WINDOWS) {
+         projectSP.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
+         jobSP.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
       }
 
+      JLabel l = new JLabel("Projects", JLabel.CENTER);
+      l.setForeground(Color.white);
+      l.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 14));
+      projectPanel.add(l, BorderLayout.NORTH);
+
+      
+      JPanel jobPanel = new JPanel(new BorderLayout());
+      jobPanel.setMinimumSize(new Dimension(200, 200));
+      jobPanel.setBackground(new Color(24,48,115));
+      jobPanel.add(jobSP, BorderLayout.CENTER);
+      JLabel l2 = new JLabel("Results", JLabel.CENTER);
+      l2.setForeground(Color.white);
+      l2.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 14));
+      jobPanel.add(l2, BorderLayout.NORTH);
+
+      JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+         projectPanel, jobPanel);
+      leftPane.setResizeWeight(0.5);
+      if(RUNNING_ON_MAC) {
+         leftPane.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
+      }
+
+      JPanel leftPanel = new JPanel(new BorderLayout());
+      if(!RUNNING_ON_MAC) {
+       leftPanel.setBackground(Color.white);
+       final Border scrollBorder = UIManager.getBorder("ScrollPane.border");
+       Border b = new Border() {
+         public Insets getBorderInsets(Component c) {
+            return new Insets(10,10,10,10);
+         }
+
+         public boolean isBorderOpaque() {
+            return scrollBorder.isBorderOpaque();
+         }
+
+         public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
+            scrollBorder.paintBorder(c,g,x,y,w,h);
+         }
+       };
+       fileSummaryComponent.setBorder(b);
+    }
+
+      leftPanel.add(leftPane, BorderLayout.CENTER);
+      leftPanel.add(fileSummaryComponent, BorderLayout.SOUTH);
+     
+      analysisServicePanel.setMinimumSize(new Dimension(200, 200));
+      JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+         leftPanel, analysisServicePanel);
+      splitPane.setResizeWeight(0.5);
+      splitPane.setMinimumSize(new Dimension(400,400));
+      getContentPane().add(splitPane, BorderLayout.CENTER);
+      if(!RUNNING_ON_MAC) {
+         getContentPane().setBackground(Color.white);
+      }
+      JPanel messagePanel = new JPanel();
+      messagePanel.setBackground(lightBlue);
+      messagePanel.add(messageLabel);
+      getContentPane().add(messagePanel, BorderLayout.SOUTH);
+
+      setSize(width, height);
+      setLocation((screenSize.width - getWidth()) / 2, 20);
+      setTitle(BuildProperties.PROGRAM_NAME);
+      leftPane.setDividerLocation((int) (height * 0.4));
+      splitPane.setDividerLocation((int) (width * 0.4));
+      setJMenuBar(menuBar);
 		splash.dispose();
       show();
-	}
+      addComponentListener(new ComponentAdapter() {
+         public void componentResized(ComponentEvent event) {
+            setSize(
+            Math.max(100, getWidth()),
+            Math.max(100, getHeight()));
+         }
+      });
 
+	}
+   
+ 
+   
    void addToWindowMenu(String name, final java.awt.Component c) {
       JMenuItem mi = new JMenuItem(name);
       mi.addActionListener(new ActionListener() {
@@ -1253,7 +1252,7 @@ public class MainFrame extends JFrame {
                synchronized(errors) {
                   if(errors.size()==0) {
                      if(!disconnectedFromServer(wse)) {
-                        GenePattern.showErrorDialog("An error occurred while retrieving your job history. Please try again.");
+                        GenePattern.showErrorDialog("An error occurred while retrieving your history. Please try again.");
                      }
                      errors.add(new Object());
                   }
@@ -1519,6 +1518,17 @@ public class MainFrame extends JFrame {
       dialog.show();
    }
          
+   private boolean overwriteFile(File f) {
+      if(!f.exists()) {
+         return true;
+      }
+      String message = "An item named " + f.getName() + " already exists in this location. Do you want to replace it with the one that you are saving?";
+      if(JOptionPane.showOptionDialog(this, message, null, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[]{"Replace", "Cancel"}, "Cancel") != JOptionPane.YES_OPTION) {
+         return false;
+      }
+      return true;
+   }
+   
    private void createJobResultFileActions() {
       jobResultFileViewModulesMenu = new MenuAction("Modules");
       jobResultFileViewModulesMenu.setEnabled(false);
@@ -1546,8 +1556,10 @@ public class MainFrame extends JFrame {
                              File outputFile = new File(dir,
 													node.name);
 										try {
-											node.download(outputFile);
-											projectDirModel.refresh(dir);
+                                 if(overwriteFile(outputFile)) {
+                                    node.download(outputFile);
+                                    projectDirModel.refresh(dir);
+                                 }
                               } catch(IOException ioe) {
                                  ioe.printStackTrace();
                                  GenePattern.showErrorDialog("An error occurred while saving the file " + node.name  + ". Please try again.");
@@ -1699,7 +1711,7 @@ public class MainFrame extends JFrame {
 
       menuBar.add(projectsMenuAction.createMenu());
 
-      MenuAction jobResultsMenuAction = new MenuAction("Job Results", new Object[]{reloadMenuItem, deleteJobAction, deleteAllJobsAction, terminateJobAction, viewCodeAction, new JSeparator(), jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu, jobResultFileViewModulesMenu});
+      MenuAction jobResultsMenuAction = new MenuAction("Results", new Object[]{reloadMenuItem, deleteJobAction, deleteAllJobsAction, terminateJobAction, viewCodeAction, new JSeparator(), jobResultFileSendToMenu, saveServerFileMenu, deleteFileMenuItem, openWithMenu, jobResultFileViewModulesMenu});
 
       menuBar.add(jobResultsMenuAction.createMenu());
 
@@ -1855,7 +1867,7 @@ public class MainFrame extends JFrame {
      }
 
       public HistoryMenu() {
-         super("Job History");
+         super("History");
          reloadJobActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                AnalysisJobMenuItem menuItem = (AnalysisJobMenuItem) e.getSource();
@@ -1990,7 +2002,6 @@ public class MainFrame extends JFrame {
 
          if(insertionIndex < JOBS_IN_MENU) {
             AnalysisJobMenuItem menuItem = new AnalysisJobMenuItem(job);
-            menuItem.setToolTipText(job.getJobInfo().getTaskLSID());
             menuItem.addActionListener(reloadJobActionListener);
             insert(menuItem, insertionIndex);
             if(getItemCount()==(JOBS_IN_MENU+3)) {
@@ -2117,10 +2128,12 @@ public class MainFrame extends JFrame {
 
             if (authType
                   .equals(org.genepattern.util.LSIDUtil.AUTHORITY_MINE)) {
-               setForeground(AUTHORITY_MINE_COLOR);
+               setForeground(authorityMineColor);
             } else if (authType
                   .equals(org.genepattern.util.LSIDUtil.AUTHORITY_FOREIGN)) {
-               setForeground(AUTHORITY_FOREIGN_COLOR);
+               setForeground(authorityForeignColor);
+            } else { // Broad task
+                setForeground(authorityBroadColor);     
             }
          } catch(MalformedURLException mfe) {
             mfe.printStackTrace();
@@ -2142,6 +2155,14 @@ public class MainFrame extends JFrame {
             });
          }
 
+         JMenuItem gettingStartedMenuItem = new JMenuItem("Getting Started");
+			add(gettingStartedMenuItem);
+			gettingStartedMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+               analysisServicePanel.showGettingStarted();
+            }
+         });
+               
 			JMenuItem moduleColorKeyMenuItem = new JMenuItem("Module Color Key");
 			add(moduleColorKeyMenuItem);
 			moduleColorKeyMenuItem.addActionListener(new ActionListener() {
@@ -2150,11 +2171,12 @@ public class MainFrame extends JFrame {
 					p.setLayout(new GridLayout(3, 1));
 					JLabel colorKeyLabel = new JLabel("color key:");
 					JLabel yourTasksLabel = new JLabel("your modules");
-					yourTasksLabel.setForeground(AUTHORITY_MINE_COLOR);
+					yourTasksLabel.setForeground(authorityMineColor);
 					JLabel broadTasksLabel = new JLabel("Broad modules");
-
+               broadTasksLabel.setForeground(authorityBroadColor);
+               
 					JLabel otherTasksLabel = new JLabel("other modules");
-					otherTasksLabel.setForeground(AUTHORITY_FOREIGN_COLOR);
+					otherTasksLabel.setForeground(authorityForeignColor);
 
 					p.add(yourTasksLabel);
 					p.add(broadTasksLabel);
