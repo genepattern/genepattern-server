@@ -594,7 +594,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 				 */
 				jobStatus = JobStatus.JOB_ERROR;
 			} else {
-				taskLog = writeProvenanceFile(outDirName, jobInfo, formalParameters)	;//XXX
+				taskLog = writeProvenanceFile(outDirName, jobInfo, formalParameters, params)	;//XXX
 				// run the task and wait for completion.
 				_cat.info(taskName + " command (job " + jobInfo.getJobNumber()
 						+ "): " + commandLine.toString());
@@ -849,8 +849,15 @@ public class GenePatternAnalysisTask implements IGPConstants {
 
 	}
 	
+	protected static ParameterInfo getParam(String name, ParameterInfo[] params){
+		for (int i=0; i < params.length; i++){
+			if ((params[i].getName()).equals(name)) return params[i];
+		}
+		return null;
+	}
+
 	
-	protected static File writeProvenanceFile(String outDirName, JobInfo jobInfo, ParameterInfo[] formalParameters){
+	protected static File writeProvenanceFile(String outDirName, JobInfo jobInfo, ParameterInfo[] formalParameters, ParameterInfo[] actualParams){
 
 		try {
 		File outDir = new File(outDirName);
@@ -865,8 +872,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		
 		InetAddress addr = InetAddress.getLocalHost();
 		String host_address = addr.getCanonicalHostName();
-
-		bw.write( host_address+":" + System.getProperty("GENEPATTERN_PORT") + "/gp");
+		String GP_URL = "http://" + host_address+":" + System.getProperty("GENEPATTERN_PORT") + "/gp";
+		bw.write( GP_URL);
 		bw.write("\n# Task: "+ jobInfo.getTaskName() + " " +jobInfo.getTaskLSID());
 		bw.write("\n# Parameters: ");
 		ParameterInfo pinfos[] = jobInfo.getParameterInfoArray();
@@ -876,11 +883,27 @@ public class GenePatternAnalysisTask implements IGPConstants {
 				String value = null;
 				if (pinfo.isInputFile()){
 					File ifn = new File(pinfo.getValue());
+
+					ParameterInfo actp = getParam(pinfo.getName(), actualParams);
+					String origFullPath = (String)actp.getAttributes().get(ORIGINAL_PATH);
+
 					value = ifn.getName();
 					int idx = value.indexOf("axis_");
 					if (idx >= 0){
 						value = value.substring(idx+5);
 					}
+
+					// follow the input filename with the URL to fetch it if available
+					if ((origFullPath!= null) && (origFullPath.length() > 0)){
+						// expect something that looks like this;
+						// C:\Program Files\GenePatternServer\Tomcat\..\temp\attachments\Axis39088axis_all_aml_500.gct
+						// we want ecverything from ..\temp on
+						String substr = ".." + File.separator + "temp" + File.separator + "attachments";
+						int fidx = origFullPath.indexOf(substr);
+						String urlpath = "../" + ((origFullPath.substring(fidx)).replace('\\' ,'/')) ;
+						value = value + "    " + GP_URL + "/getFile.jsp?task=&file=" + urlpath;
+					}
+
 				} else {
 					ParameterInfo formalPinfo = null;
 					for (int fpidx = 0; fpidx < formalParameters.length; fpidx++){
