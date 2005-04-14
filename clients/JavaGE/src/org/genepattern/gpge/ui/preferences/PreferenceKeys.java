@@ -18,6 +18,12 @@ public class PreferenceKeys {
 	public final static String MAIL_HELP_ADDRESS = "gp.mail.helpAddress";
 
 	public final static String MAIL_HOST = "gp.mail.host";
+   
+   
+   public final static String AUTHORITY_MINE_COLOR = "authority.mine.color";
+   public final static String AUTHORITY_FOREIGN_COLOR =
+      "authority.foreign.color";
+   public final static String AUTHORITY_BROAD_COLOR = "authority.broad.color";
 
 	private PreferenceKeys() {
 	}
