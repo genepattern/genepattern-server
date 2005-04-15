@@ -309,7 +309,7 @@ public class MainFrame extends JFrame {
          if(deleteFile) {
             file.delete();
          }
-         JDialog dialog = new JDialog(this);
+         JDialog dialog = new CenteredDialog(this);
          dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
          dialog.setTitle(title);
          JTextArea textArea = new JTextArea(contents);
@@ -318,7 +318,7 @@ public class MainFrame extends JFrame {
          dialog.getContentPane().add(sp, BorderLayout.CENTER);
          Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
          dialog.setSize(screenSize.width/2, screenSize.height/2);
-         dialog.show();
+         dialog.setVisible(true);
       }
    }
 
@@ -1163,7 +1163,7 @@ public class MainFrame extends JFrame {
 
       setSize(width, height);
       setLocation((screenSize.width - getWidth()) / 2, 20);
-      setTitle(BuildProperties.PROGRAM_NAME);
+      setTitle("GPGE");
       leftPane.setDividerLocation((int) (height * 0.4));
       splitPane.setDividerLocation((int) (width * 0.4));
       setJMenuBar(menuBar);
@@ -1347,7 +1347,11 @@ public class MainFrame extends JFrame {
    }
 
    private boolean showConfirmDialog(String message) {
-        if (JOptionPane.showOptionDialog(GenePattern.getDialogParent(),
+      return showConfirmDialog(this, message);     
+   }
+   
+   private boolean showConfirmDialog(java.awt.Component parent, String message) {
+        if (JOptionPane.showOptionDialog(parent,
             message, null, JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE, null, new Object[] {
             "Yes", "No" }, "Yes")==JOptionPane.YES_OPTION) {
@@ -1522,7 +1526,7 @@ public class MainFrame extends JFrame {
       if(code==null) {
 			code = codeGenerator.generateTask(jobInfo, (ParameterInfo[]) parameterInfoList.toArray(new ParameterInfo[0]));
 		}
-      JDialog dialog = new JDialog(MainFrame.this);
+      JDialog dialog = new CenteredDialog(MainFrame.this);
       dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
       dialog.setTitle("Code for " + jobInfo.getTaskName() + ", job " + jobInfo.getJobNumber());
       JTextArea textArea = new JTextArea(code);
@@ -1925,12 +1929,10 @@ public class MainFrame extends JFrame {
             }
          });
          clear();
-         historyDialog = new JDialog((java.awt.Frame)GenePattern.getDialogParent());
+         historyDialog = new CenteredDialog((java.awt.Frame)GenePattern.getDialogParent());
          historyDialog.setTitle("History");
          final JTable table = new AlternatingColorTable(historyTableModel);
-         JToolBar toolBar = new JToolBar();
-         toolBar.setLayout(new java.awt.FlowLayout());
-         toolBar.setFloatable(false);
+         JPanel toolBar = new JPanel();
          JButton reload = new JButton("Reload");
          reload.setToolTipText("Reload the job");
          reload.addActionListener(new ActionListener() {
@@ -1953,6 +1955,10 @@ public class MainFrame extends JFrame {
                   return;
                }
                AnalysisJob job = (AnalysisJob) jobs.get(row);
+               String message = "Are you sure you want to purge job number " + job.getJobInfo().getJobNumber() + "?";
+               if(!showConfirmDialog(historyDialog, message)) {
+                  return;
+               }
                try {
                   AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(AnalysisServiceManager.getInstance().getServer(), AnalysisServiceManager.getInstance().getUsername());
                   proxy.purgeJob(job.getJobInfo().getJobNumber());
