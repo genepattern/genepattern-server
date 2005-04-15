@@ -1,15 +1,15 @@
 package org.genepattern.gpge.ui.tasks;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Insets;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,24 +23,23 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.UIManager;
-
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import com.jgoodies.forms.builder.*;
 import com.jgoodies.forms.layout.*;
-
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.MainFrame;
 import org.genepattern.gpge.ui.project.ProjectDirModel;
-import org.genepattern.util.*;
 import org.genepattern.modules.ui.graphics.*;
+import org.genepattern.util.*;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import javax.swing.text.html.*;
 /**
  *  Displays an <tt>AnalysisService</tt>
  *
@@ -67,9 +66,25 @@ public class AnalysisServiceDisplay extends JPanel {
 		 java.net.URL url = ClassLoader.getSystemResource
 		 ("org/genepattern/gpge/resources/getting_started.html");
 		 
-		 JTextPane pane = new JTextPane();
+		 final JTextPane pane = new JTextPane();
 		 pane.setContentType("text/html");
-								
+		 pane.addHyperlinkListener(new HyperlinkListener() {
+         public void hyperlinkUpdate(HyperlinkEvent evt)
+         {
+            if(evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
+            {
+               URL url = evt.getURL();
+               try  {
+                  BrowserLauncher.openURL(url.toString());
+               } catch(Exception e){}
+            } else if (evt.getEventType() == HyperlinkEvent.EventType.ENTERED) {
+               pane.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            } else if (evt.getEventType() == HyperlinkEvent.EventType.EXITED) {
+               pane.setCursor(Cursor.getDefaultCursor());
+            }
+         } 
+       });
+   
 		 try {
 			 pane.setPage(url);
 		 } catch(Exception e){
