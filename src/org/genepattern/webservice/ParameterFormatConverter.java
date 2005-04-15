@@ -80,7 +80,9 @@ public class ParameterFormatConverter {
 					turning spaces into pluses.  The reverse operation is performed when they
 					are unmarshalled.
 				 */
-				jxbParameter.setValue(URLEncoder.encode(parameterInfo.getValue(), GPConstants.UTF8));
+				String val = parameterInfo.getValue();
+				if (val == null) val = "";
+				jxbParameter.setValue(URLEncoder.encode(val, GPConstants.UTF8));
 				jxbParameter.setDESCRIPTION(parameterInfo.getDescription());
 				parameterList.add(jxbParameter);
 
