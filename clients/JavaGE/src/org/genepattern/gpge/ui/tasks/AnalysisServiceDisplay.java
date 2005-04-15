@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
@@ -38,6 +40,7 @@ import org.genepattern.modules.ui.graphics.*;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import javax.swing.text.html.*;
 /**
  *  Displays an <tt>AnalysisService</tt>
  *
@@ -53,19 +56,33 @@ public class AnalysisServiceDisplay extends JPanel {
    public AnalysisServiceDisplay() {
       parameterName2ComponentMap = new HashMap();
       inputFileParameterNames = new ArrayList();
-      javax.swing.Icon icon = new javax.swing.ImageIcon(ClassLoader
-				.getSystemResource("org/genepattern/gpge/resources/intro.gif"));
-		 add(new JLabel(icon));
+      
        if(!MainFrame.RUNNING_ON_MAC) {
          this.setBackground(Color.white);
       } 
+		showGettingStarted();
    }
 
    public void showGettingStarted() {
-      removeAll();
-      javax.swing.Icon icon = new javax.swing.ImageIcon(ClassLoader
-				.getSystemResource("org/genepattern/gpge/resources/intro.gif"));
-		 add(new JLabel(icon));
+		 java.net.URL url = ClassLoader.getSystemResource
+		 ("org/genepattern/gpge/resources/getting_started.html");
+		 
+		 JTextPane pane = new JTextPane();
+		 pane.setContentType("text/html");
+								
+		 try {
+			 pane.setPage(url);
+		 } catch(Exception e){
+			 e.printStackTrace();
+		 }
+		 pane.setMargin(new Insets(5, 5, 5, 5));
+		 pane.setEditable(false);
+		 pane.setBackground(Color.white);
+		 JScrollPane sp = new JScrollPane(pane);
+		 sp.setBackground(Color.white);
+		 setBackground(Color.white);
+		 removeAll();
+		 add(sp);
        invalidate();
        validate();
        selectedService = null;
