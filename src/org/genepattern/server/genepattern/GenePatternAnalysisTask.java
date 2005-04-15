@@ -758,7 +758,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			jobInfo = ds.getJobInfo(jobInfo.getJobNumber());
 			
 			// touch the taskLog file to make sure it is the oldest/last file
-			taskLog.setLastModified(System.currentTimeMillis()+500);
+			if (taskLog != null) {
+				taskLog.setLastModified(System.currentTimeMillis()+500);
+			}
 			
 			
 			// any files that are left in outDir are output files
