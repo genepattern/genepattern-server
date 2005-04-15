@@ -138,6 +138,11 @@ try {
 		String value;	
 		if (pinfo.isInputFile()){
 			value = (String)htFilenames.get(pinfo.getName());
+			if (value == null) {
+				System.err.println("no input file specified for " + task.getName() + "'s " + pinfo.getName());
+				value = "";
+				pinfo.getAttributes().put(ParameterInfo.TYPE, "");
+			}
 			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
 				HashMap attrs = pinfo.getAttributes();
 				attrs.put(pinfo.MODE , pinfo.URL_INPUT_MODE);
