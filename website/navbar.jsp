@@ -141,7 +141,7 @@ function changeTask() {
 		enableEdit = false;
 	}
 	document.forms['searchForm'].navbaredit.value = (enableEdit ? (create ? CREATE : EDIT) : VIEW);
-	document.forms['searchForm'].navbarrun.disabled = (sel.selectedIndex == 0);
+	document.forms['searchForm'].navbarrun.disabled = (sel.selectedIndex == 0 || create);
 	document.forms['searchForm'].navbaredit.disabled = (sel.selectedIndex == 0);
 }
 
@@ -340,7 +340,7 @@ function checkEnableNavbar() {
 	sbCatalog.append("<select name=\"" + selectorName + "\" onchange=\"");
 	sbCatalog.append(onSelectURL);
 	sbCatalog.append("\" class=\"navbar\">\n");
-	sbCatalog.append("<option value=\"" + IGNORE + "\" disabled>" + (type == null ? "task" : type) + "</option>\n");
+	sbCatalog.append("<option value=\"" + IGNORE + "\">" + (type == null ? "task" : type) + "</option>\n");
 	sbCatalog.append("<option value=\"\">new " + (type == null ? "task" : type) + "</option>\n");
 
 	sbCatalog.append("<option value=\"" + IGNORE + "\" disabled>" + DIVIDER + "</option>\n");
