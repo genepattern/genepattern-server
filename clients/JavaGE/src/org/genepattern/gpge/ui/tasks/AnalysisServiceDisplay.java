@@ -78,11 +78,9 @@ public class AnalysisServiceDisplay extends JPanel {
 		 pane.setMargin(new Insets(5, 5, 5, 5));
 		 pane.setEditable(false);
 		 pane.setBackground(Color.white);
-		 JScrollPane sp = new JScrollPane(pane);
-		 sp.setBackground(Color.white);
-		 setBackground(Color.white);
 		 removeAll();
-		 add(sp);
+		 setLayout(new BorderLayout());
+		 add(pane, BorderLayout.CENTER);
        invalidate();
        validate();
        selectedService = null;
