@@ -80,8 +80,8 @@ public class MainFrame extends JFrame {
 
 	AnalysisServiceManager analysisServiceManager;
 
-   Color lightBlue = new Color(239, 239, 255);
-	private final static Color DEFAULT_AUTHORITY_MINE_COLOR = java.awt.Color.decode("0xFF00FF");
+   private final static Color lightBlue = new Color(239, 239, 255);
+	private final static Color DEFAULT_AUTHORITY_MINE_COLOR = Color.green;
 
 	private final static Color DEFAULT_AUTHORITY_FOREIGN_COLOR = java.awt.Color
 			.decode("0x0000FF");
@@ -385,30 +385,40 @@ public class MainFrame extends JFrame {
 							analysisServiceManager.getUsername(), false)
 							.getServiceInfo().get("lsid.authority");
 					System.setProperty("lsid.authority", lsidAuthority);
-               refreshJobs();
+               refreshJobs(false, true);
 				} catch (WebServiceException wse) {
                wse.printStackTrace();
-               // ignore the exception here, the user will be alerted in refreshTasks
+               // ignore the exception here, the user will be alerted in refreshModules
 				}
-				refreshTasks();
-            
-            Thread changeStatusThread = new Thread() {
-               public void run() {
-                  if(isLocalHost) {
-                     messageLabel.setText("Server: Local   Username: "
-                        + username);
-                  } else {
-                     messageLabel.setText("Server: " + server + "   Username: "
-                        + username);
-                  }
-               }
-            };
-            SwingUtilities.invokeLater(changeStatusThread);
+				refreshModules(false, true);
+            displayServerStatus();
 			}
 		}.start();
 
 
 	}
+   
+   private String getServer() {
+      final boolean isLocalHost = analysisServiceManager.isLocalHost();
+      if(isLocalHost) {
+         return "Local";  
+      }
+      return analysisServiceManager.getServer();
+   }
+   
+   private void displayServerStatus() {
+      final String server = getServer();
+      final String username = analysisServiceManager.getUsername();
+     
+      Thread changeStatusThread = new Thread() {
+         public void run() {
+            messageLabel.setText("Server: " + server + "      Username: "
+                  + username);
+          
+         }
+      };
+      SwingUtilities.invokeLater(changeStatusThread);  
+   }
  
 	/**
 	 * Loads a task with the parameters that were used in the specified job into
@@ -1215,9 +1225,22 @@ public class MainFrame extends JFrame {
       windowMenu.add(mi);
    }
 
-	public void refreshJobs() {
+	public void refreshJobs(boolean displayMessage, boolean waitUntilCompletion) {
+      if(displayMessage) {
+         Thread updateMessageThread = new Thread() {
+            public void run() {
+               messageLabel.setText("Retrieving jobs...");
+            }
+         };
+         if(SwingUtilities.isEventDispatchThread()) {
+            updateMessageThread.run();
+         } else {
+            SwingUtilities.invokeLater(updateMessageThread);   
+         }
+      }
       final List errors = new ArrayList();
-		new Thread() {
+      
+		Thread updateJobs = new Thread() {
 			public void run() {
             try {
                jobModel.getJobsFromServer();
@@ -1233,9 +1256,10 @@ public class MainFrame extends JFrame {
                }
             }
 			}
-		}.start();
-
-      new Thread() {
+		};
+      updateJobs.start();
+      
+      Thread updateHistory = new Thread() {
          public void run() {
             historyMenu.setEnabled(false);
             historyMenu.clear();
@@ -1260,7 +1284,17 @@ public class MainFrame extends JFrame {
             }
             historyMenu.setEnabled(true);
          }
-      }.start();
+      };
+      updateHistory.start();
+      if(waitUntilCompletion) {
+         try {
+            updateJobs.join();
+            updateHistory.join();
+         } catch(InterruptedException x){}
+      }
+      if(displayMessage) {
+         displayServerStatus();  
+      }
 	}
 
    private void createProjectFileActions() {
@@ -1646,39 +1680,61 @@ public class MainFrame extends JFrame {
 		}
    }
 
-	public void refreshTasks() {
+   
+	public void refreshModules(boolean displayMessage, boolean waitUntilCompletion) {
+      if(displayMessage) {
+         Thread updateMessageThread = new Thread() {
+            public void run() {
+               messageLabel.setText("Retrieving modules...");
+            }
+         };
+         if(SwingUtilities.isEventDispatchThread()) {
+            updateMessageThread.run();
+         } else {
+            SwingUtilities.invokeLater(updateMessageThread);   
+         }
+      }
+      
 		setChangeServerActionsEnabled(false);
-		new Thread() {
-			public void run() {
-				try {
-					analysisServiceManager.refresh();
-				} catch (WebServiceException wse) {
+      Thread thread = new Thread() {
+         public void run() {
+            try {
+               analysisServiceManager.refresh();
+            } catch (WebServiceException wse) {
                wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
                   GenePattern.showErrorDialog("An error occurred while retrieving the modules from the server. Please try again.");
                }
-				}
-
-				final Collection latestTasks = analysisServiceManager
-						.getLatestAnalysisServices();
+            }
+      
+            final Collection latestTasks = analysisServiceManager
+                  .getLatestAnalysisServices();
             Map inputTypeToModulesMap = SemanticUtil.getInputTypeToModulesMap(latestTasks);
             inputTypeToMenuItemsMap = SemanticUtil.getInputTypeToMenuItemsMap(inputTypeToModulesMap, analysisServicePanel);
             SwingUtilities.invokeLater(new Thread() {
-					public void run() {
-						analysisMenu.removeAll();
-						visualizerMenu.removeAll();
+               public void run() {
+                  analysisMenu.removeAll();
+                  visualizerMenu.removeAll();
                   pipelineMenu.removeAll();
                   Map categoryToAnalysisServices = AnalysisServiceUtil
                   .getCategoryToAnalysisServicesMap(latestTasks);
-						analysisMenu.init(categoryToAnalysisServices);
-						visualizerMenu.init(categoryToAnalysisServices);
+                  analysisMenu.init(categoryToAnalysisServices);
+                  visualizerMenu.init(categoryToAnalysisServices);
                   pipelineMenu.init(categoryToAnalysisServices);
-						setChangeServerActionsEnabled(true);
-					}
-				});
-
-			}
-		}.start();
+                  setChangeServerActionsEnabled(true);
+               }
+            });
+         }
+      };
+      thread.start();
+      if(waitUntilCompletion) {
+         try {
+            thread.join();  
+         } catch(InterruptedException x){}
+      }
+      if(displayMessage) {
+         displayServerStatus();  
+      }
 	}
 
 
@@ -2213,7 +2269,7 @@ public class MainFrame extends JFrame {
 
 		JMenuItem refreshJobsMenuItem;
 
-		JMenuItem refreshTasksMenuItem;
+		JMenuItem refreshModulesMenuItem;
 
 		JFileChooser projectDirFileChooser;
 
@@ -2221,7 +2277,7 @@ public class MainFrame extends JFrame {
 			changeServerMenuItem.setEnabled(b);
 			refreshMenu.setEnabled(b);
 			refreshJobsMenuItem.setEnabled(b);
-			refreshTasksMenuItem.setEnabled(b);
+			refreshModulesMenuItem.setEnabled(b);
 		}
 
 		public FileMenu() {
@@ -2325,19 +2381,27 @@ public class MainFrame extends JFrame {
 
 			refreshMenu = new JMenu("Refresh");
 			add(refreshMenu);
-			refreshTasksMenuItem = new JMenuItem("Modules");
-			refreshTasksMenuItem.addActionListener(new ActionListener() {
+			refreshModulesMenuItem = new JMenuItem("Modules");
+			refreshModulesMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
-					refreshTasks();
+               new Thread() {
+                  public void run() {
+                     refreshModules(true, true);
+                  }
+               }.start();
 				}
 			});
-			refreshTasksMenuItem.setEnabled(false);
-			refreshMenu.add(refreshTasksMenuItem);
+			refreshModulesMenuItem.setEnabled(false);
+			refreshMenu.add(refreshModulesMenuItem);
 
 			refreshJobsMenuItem = new JMenuItem("Jobs");
 			refreshJobsMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
-					refreshJobs();
+               new Thread() {
+                  public void run() {
+                     refreshJobs(true, true);
+                  }
+               }.start();
 				}
 			});
 			refreshJobsMenuItem.setEnabled(false);
