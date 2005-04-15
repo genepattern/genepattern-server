@@ -18,16 +18,6 @@ public interface IExpressionData {
 	 */
 	public String getValueAsString(int row, int column);
 
-	/**
-	 * Gets the expression value at the given row and column as a double.
-	 * 
-	 * @param row
-	 *            The row
-	 * @param column
-	 *            The column
-	 * @return The expression value
-	 */
-	public double getValue(int row, int column);
 
 	/**
 	 * Gets the row name at the given row
