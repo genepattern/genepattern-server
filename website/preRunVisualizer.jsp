@@ -61,7 +61,11 @@ try {
 	// mySmartUpload is from http://www.jspsmart.com/
 	// Initialization
 	mySmartUpload.initialize(pageContext);
-	mySmartUpload.upload();
+	try {
+		mySmartUpload.upload();
+	} catch (NegativeArraySizeException nase) {
+		// ???
+	}
 	requestParameters = mySmartUpload.getRequest();
 	userID = requestParameters.getParameter(GPConstants.USERID);
 	String RUN = "run";
@@ -143,6 +147,12 @@ System.out.println("EN=" + encodedName);
 		String value;	
 		if (pinfo.isInputFile()){
 			value = (String)htFilenames.get(pinfo.getName());
+			if (value == null) {
+				System.err.println("preRunVisualizer.jsp: no input file specified for " + task.getName() + "'s " + pinfo.getName());
+				HashMap attrs = pinfo.getAttributes();
+				attrs.put(pinfo.MODE , pinfo.URL_INPUT_MODE);
+				attrs.remove(pinfo.TYPE);
+			} else
 			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
 				HashMap attrs = pinfo.getAttributes();
 				attrs.put(pinfo.MODE , pinfo.URL_INPUT_MODE);
