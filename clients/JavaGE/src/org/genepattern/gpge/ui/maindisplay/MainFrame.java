@@ -761,38 +761,18 @@ public class MainFrame extends JFrame {
       
 		analysisServicePanel = new AnalysisServiceDisplay();
 
-
-
       jobResultsTree.setFocusable(true);
       jobResultsTree.addKeyListener(new java.awt.event.KeyAdapter() {
          public void keyPressed(java.awt.event.KeyEvent e) {
             if(e.getKeyCode()==java.awt.event.KeyEvent.VK_BACK_SPACE) {
                if(selectedJobNode instanceof JobModel.JobNode) {
-                  JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
-                  try {
-                     jobModel.delete(jobNode);
-                  } catch(WebServiceException wse) {
-                     wse.printStackTrace();
-                     if(!disconnectedFromServer(wse)) {
-                        GenePattern.showErrorDialog("An error occurred deleting job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
-                     }
-                  }
+                  deleteJobAction.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
                } else if(selectedJobNode instanceof JobModel.ServerFileNode) {
-                  JobModel.ServerFileNode serverFileNode = (JobModel.ServerFileNode) selectedJobNode;
-                  try {
-                     jobModel.delete(serverFileNode);
-                  } catch(WebServiceException wse) {
-                     wse.printStackTrace();
-                     if(!disconnectedFromServer(wse)) {
-                        GenePattern.showErrorDialog("An error occurred while deleting the file " + JobModel.getJobResultFileName(serverFileNode) + ". Please try again.");
-                     }
-                  }
+                  deleteFileMenuItem.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
                }
             }
          }
       });
-
-
 
 
       jobResultsTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
@@ -1373,6 +1353,16 @@ public class MainFrame extends JFrame {
 
    }
 
+   private boolean showConfirmDialog(String message) {
+        if (JOptionPane.showOptionDialog(GenePattern.getDialogParent(),
+            message, null, JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE, null, new Object[] {
+            "Yes", "No" }, "Yes")==JOptionPane.YES_OPTION) {
+               return true;
+        }   
+        return false;
+   }
+   
    private void createJobActions() {
       reloadMenuItem = new MenuItemAction("Reload") {
 			public void actionPerformed(ActionEvent e) {
@@ -1385,7 +1375,10 @@ public class MainFrame extends JFrame {
          public void actionPerformed(ActionEvent e) {
             JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
             try {
-               jobModel.delete(jobNode);
+               String message = "Are you sure you want to delete job number " + jobNode.job.getJobInfo().getJobNumber();
+               if(showConfirmDialog(message)) {
+                  jobModel.delete(jobNode);
+               }
             } catch(WebServiceException wse) {
                wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
@@ -1400,10 +1393,7 @@ public class MainFrame extends JFrame {
          public void actionPerformed(ActionEvent e) {
             try {
               String message = "Are you sure you want to delete all jobs?";
-              if (JOptionPane.showOptionDialog(GenePattern.getDialogParent(),
-						message, null, JOptionPane.YES_NO_OPTION,
-						JOptionPane.WARNING_MESSAGE, null, new Object[] {
-                  "Yes", "No" }, "Yes")==JOptionPane.YES_OPTION) {
+              if(showConfirmDialog(message)) {
                      jobModel.deleteAll();
               }
             } catch(WebServiceException wse) {
@@ -1628,8 +1618,11 @@ public class MainFrame extends JFrame {
       deleteFileMenuItem = new MenuItemAction("Delete File", IconManager.loadIcon(IconManager.DELETE_ICON)) {
          public void actionPerformed(ActionEvent e) {
             JobModel.ServerFileNode serverFileNode = (JobModel.ServerFileNode) selectedJobNode;
+            String message = "Are you sure you want to delete " + serverFileNode.toString() + "?";
             try {
-               jobModel.delete(serverFileNode);
+               if(showConfirmDialog(message)) {
+                  jobModel.delete(serverFileNode);
+               }
             } catch(WebServiceException wse) {
                wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
