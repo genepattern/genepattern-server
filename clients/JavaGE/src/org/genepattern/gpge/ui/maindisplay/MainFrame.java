@@ -777,9 +777,6 @@ public class MainFrame extends JFrame {
 
       jobResultsTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
          public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
-            if(!e.isAddedPath()) {
-               return;  
-            }
             DefaultMutableTreeNode newSelection = null;
             TreePath path = jobResultsTree.getSelectionPath();
             if(path==null) {
@@ -904,7 +901,6 @@ public class MainFrame extends JFrame {
          }
 			}
 
-
 		});
 
 		String projectDirsString = GPpropertiesManager
@@ -920,9 +916,6 @@ public class MainFrame extends JFrame {
 
       projectDirTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
          public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
-            if(!e.isAddedPath()) {
-               return;  
-            }
             TreePath path = projectDirTree.getSelectionPath();
             
             DefaultMutableTreeNode newSelection = null;
@@ -1814,6 +1807,7 @@ public class MainFrame extends JFrame {
       final ActionListener reloadJobActionListener;
       List jobs = new ArrayList();
       List jobsInMenu = new ArrayList();
+      
       JobNumberComparator jobNumberComparator = new JobNumberComparator();
       JMenuItem historyMenuItem = new JMenuItem("View All");
       final int JOBS_IN_MENU = 10;
