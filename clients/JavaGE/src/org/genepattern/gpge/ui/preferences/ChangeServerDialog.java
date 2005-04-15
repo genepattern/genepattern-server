@@ -1,45 +1,35 @@
 package org.genepattern.gpge.ui.preferences;
 
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Component;
+import org.genepattern.gpge.ui.maindisplay.CenteredDialog;
+
+import java.awt.BorderLayout;
 import java.net.URL;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Properties;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.genepattern.gpge.GenePattern;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.CellConstraints;
+
 
 /**
  * Description of the Class
  * 
  * @author Joshua Gould
  */
-public class ChangeServerDialog extends JDialog {
+public class ChangeServerDialog extends CenteredDialog {
 	private JLabel serverLabel, portLabel, usernameLabel;
 
 	private JTextField portTextField, serverTextField, usernameTextField;
 
-	public ChangeServerDialog(java.awt.Frame owner, boolean modal) {
-		super(owner, "Server Settings", modal);
-	}
-
 	public ChangeServerDialog(java.awt.Frame owner) {
-		this(owner, false);
+		super(owner);
+      setTitle("Server Settings");
+      setModal(false);
 	}
 
 	public void show(String server, String username, ActionListener okListener) {
@@ -75,36 +65,31 @@ public class ChangeServerDialog extends JDialog {
 				dispose();
 			}
 		});
-
-		Container content = getContentPane();
-		content.setLayout(new GridBagLayout());
-		GBA gba = new GBA();
-		gba.add(content, serverLabel, 0, 0, 1, 1, 0, 0, GBA.NONE, GBA.C,
-				new Insets(5, 5, 5, 5), 0, 0);
-		gba.add(content, serverTextField, 1, 0, 1, 1, 1, 0, GBA.H, GBA.C,
-				new Insets(5, 5, 5, 5), 0, 0);
-		gba.add(content, portLabel, 0, 1, 1, 1, 0, 0, GBA.NONE, GBA.C,
-				new Insets(5, 5, 5, 5), 0, 0);
-		gba.add(content, portTextField, 1, 1, 2, 1, 1, 0, GBA.H, GBA.C,
-				new Insets(5, 5, 5, 5), 0, 0);
-
-		gba.add(content, usernameLabel, 0, 2, 1, 1, 0, 0, GBA.NONE, GBA.C,
-				new Insets(5, 5, 5, 5), 0, 0);
-		gba.add(content, usernameTextField, 1, 2, 2, 1, 1, 0, GBA.H, GBA.C,
-				new Insets(5, 5, 5, 5), 0, 0);
-
-		gba.add(content, cancelButton, 0, 3, 1, 1, 0, 0, GBA.NONE, GBA.W,
-				new Insets(5, 5, 5, 5), 0, 0);
-		gba.add(content, okButton, 1, 3, 1, 1, 0, 0, GBA.NONE, GBA.E,
-				new Insets(5, 5, 5, 5), 0, 0);
-		//	setResizable(false);
+      FormLayout formLayout = new FormLayout(
+               "right:pref:none, 6px, left:pref:none, 6px",
+               "6px, pref, 6px, pref, 6px, pref, 6px");
+       
+      JPanel inputPanel = new JPanel(formLayout);
+      CellConstraints cc = new CellConstraints();
+      inputPanel.add(serverLabel, cc.xy(1, 2));
+      inputPanel.add(serverTextField, cc.xy(3, 2));
+      
+      inputPanel.add(portLabel, cc.xy(1, 4));
+      inputPanel.add(portTextField, cc.xy(3, 4));
+      
+      inputPanel.add(usernameLabel, cc.xy(1, 6));
+      inputPanel.add(usernameTextField, cc.xy(3, 6));
+      
+      JPanel buttonPanel = new JPanel();
+      buttonPanel.add(cancelButton);
+      buttonPanel.add(okButton);
+      getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+      getContentPane().add(inputPanel, BorderLayout.CENTER);
 		serverTextField.grabFocus();
 		getRootPane().setDefaultButton(okButton);
 		pack();
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		setLocation((screenSize.width - getSize().width) / 2,
-				(screenSize.height - getSize().height) / 2);
-		show();
+      setResizable(false);
+		setVisible(true);
 	}
 
 	public String getPort() {
