@@ -366,7 +366,7 @@ public class MainFrame extends JFrame {
             } else {
                messageLabel.setText("Retrieving modules and jobs from " + server + "...");
             }
-            historyMenu.removeAll();
+            historyMenu.clear();
 			}
 		};
       SwingUtilities.invokeLater(messageThread);
@@ -706,19 +706,7 @@ public class MainFrame extends JFrame {
 			}
 
 			public void jobAdded(JobEvent e) {
-            // add to history
-            final AnalysisJob job = e.getJob();
-
-            Runnable doInsert = new Thread() {
-               public void run() {
-                  historyMenu.add(job);
-               }
-            };
-            if(SwingUtilities.isEventDispatchThread()) {
-               doInsert.run();
-            } else {
-               SwingUtilities.invokeLater(doInsert);
-            }
+         
 			}
 
 			public void jobCompleted(JobEvent e) {
@@ -1118,7 +1106,7 @@ public class MainFrame extends JFrame {
       jobPanel.add(l2, BorderLayout.NORTH);
 
       JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-         projectPanel, jobPanel);
+		projectPanel, jobPanel);
       leftPane.setResizeWeight(0.5);
       if(RUNNING_ON_MAC) {
          leftPane.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
@@ -1242,7 +1230,7 @@ public class MainFrame extends JFrame {
                AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(server, username);
                JobInfo[] jobs = proxy.getJobs(username, true);
                for(int i = 0; i < jobs.length; i++) {
-                  historyMenu.jobRetrievedFromServer(new AnalysisJob(server, jobs[i]));
+                  historyMenu.add(new AnalysisJob(server, jobs[i]));
                }
             } catch(WebServiceException wse) {
                wse.printStackTrace();
@@ -1803,267 +1791,8 @@ public class MainFrame extends JFrame {
       projectFilePopupMenu = projectFilePopupMenuAction.createPopupMenu();
 	}
 
-
-
-
-
-   class HistoryMenu extends JMenu {
-      final ActionListener reloadJobActionListener;
-      List jobs = new ArrayList();
-      List jobsInMenu = new ArrayList();
-      
-      JobNumberComparator jobNumberComparator = new JobNumberComparator();
-      JMenuItem historyMenuItem = new JMenuItem("View All");
-      final int JOBS_IN_MENU = 10;
-      HistoryTableModel historyTableModel = new HistoryTableModel();
-      JDialog historyDialog;
-      
-     class HistoryTableModel extends javax.swing.table.AbstractTableModel implements SortTableModel, JobListener {
-        private java.util.Comparator comparator = new JobModel.TaskNameComparator(false);
-        
-        void add(AnalysisJob job) {
-           int insertionIndex = Collections.binarySearch(jobs, job, comparator);
-
-           if (insertionIndex < 0) {
-               insertionIndex = -insertionIndex - 1;
-           }
    
-           jobs.add(insertionIndex, job);
-           fireTableStructureChanged();
-        }
-        
-        HistoryTableModel() {
-           jobModel.addJobListener(this);
-        }
-        
-        public void jobStatusChanged(JobEvent e) {
-           fireTableStructureChanged();
-        }
-      
-        public void jobAdded(JobEvent e) {
-            add(e.getJob());
-            
-         }
-
-         public void jobCompleted(JobEvent e) {
-            fireTableStructureChanged();
-         }
-        
-            
-         public void sortOrderChanged(SortEvent e) {
-            int column = e.getColumn();
-            boolean ascending = e.isAscending();
-            if (column == 0) {
-               comparator = new JobModel.TaskNameComparator(ascending);
-            } else if(column==1) {
-               comparator = new JobModel.TaskCompletedDateComparator(ascending);
-            } else {
-               comparator = new JobModel.TaskSubmittedDateComparator(ascending);
-            }
-            Collections.sort(jobs, comparator);
-            fireTableStructureChanged();
-        }
-
-        public Object getValueAt(int r, int c) {
-           AnalysisJob job = (AnalysisJob) jobs.get(r);
-           JobInfo jobInfo = job.getJobInfo();
-           boolean complete = JobModel.isComplete(job);
-           switch(c) {
-              case 0:
-                  return JobModel.jobToString(job);
-              case 1:
-                  if(!complete) {
-                     return jobInfo.getStatus();
-                  }
-                  return java.text.DateFormat.getDateTimeInstance(
-						   java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
-                     .format(jobInfo.getDateCompleted());
-              case 2:
-                  return java.text.DateFormat.getDateTimeInstance(
-						   java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
-                     .format(jobInfo.getDateSubmitted());
-              default:
-                  return null;
-           }
-        }
-        
-        public Class getColumnClass(int j) {
-            return String.class;  
-        }
-
-        public int getRowCount() {
-            return jobs.size();
-        }
-
-        public int getColumnCount() {
-            return 3;
-        }
-
-        public String getColumnName(int c) {
-           switch(c) {
-              case 0:
-                  return "Name";
-              case 1:
-                  return "Completed";
-              case 2:
-                  return "Submitted";
-              default:
-                  return null;
-           }
-        }
-     }
-
-      public HistoryMenu() {
-         super("History");
-         reloadJobActionListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-               AnalysisJobMenuItem menuItem = (AnalysisJobMenuItem) e.getSource();
-               AnalysisJob job = menuItem.job;
-               reload(job);
-            }
-         };
-
-         historyMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-               historyDialog.setVisible(true);
-            }
-         });
-         clear();
-         historyDialog = new CenteredDialog((java.awt.Frame)GenePattern.getDialogParent());
-         historyDialog.setTitle("History");
-         final JTable table = new AlternatingColorTable(historyTableModel);
-         JPanel toolBar = new JPanel();
-         JButton reload = new JButton("Reload");
-         reload.setToolTipText("Reload the job");
-         reload.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-               int row = table.getSelectedRow();
-               if(row==-1) {
-                  return;
-               }
-               AnalysisJob job = (AnalysisJob) jobs.get(row);
-               reload(job);
-            }
-         });
-         
-         JButton clear = new JButton("Purge");
-         clear.setToolTipText("Purge the job from your history");
-         clear.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-               int row = table.getSelectedRow();
-               if(row==-1) {
-                  return;
-               }
-               AnalysisJob job = (AnalysisJob) jobs.get(row);
-               String message = "Are you sure you want to purge job number " + job.getJobInfo().getJobNumber() + "?";
-               if(!showConfirmDialog(historyDialog, message)) {
-                  return;
-               }
-               try {
-                  AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(AnalysisServiceManager.getInstance().getServer(), AnalysisServiceManager.getInstance().getUsername());
-                  proxy.purgeJob(job.getJobInfo().getJobNumber());
-                  jobs.remove(row);
-                  historyTableModel.fireTableRowsDeleted(row, row);
-               } catch(WebServiceException wse) {
-                  wse.printStackTrace();
-                  if(!disconnectedFromServer(wse)) {
-                     GenePattern.showErrorDialog("An error occurred while removing job number " +  job.getJobInfo().getJobNumber());
-                  }
-               }
-            }
-         });
-         
-        
-      /*   JButton clearAll = new JButton("Remove All");
-         clearAll.setToolTipText("Remove all jobs from your history");
-         clearAll.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-               int row = table.getSelectedRow();
-               AnalysisJob job = (AnalysisJob) jobs.get(row);
-               
-            }
-         });
-         */
-         
-         toolBar.add(reload);
-         toolBar.add(clear);
-      //   toolBar.add(clearAll);
-         
-         
-         table.setShowGrid(true);
-         table.setShowVerticalLines(true);
-         table.setShowHorizontalLines(false);
-         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-         table.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-               if(e.getClickCount()==2 && !e.isPopupTrigger()) {
-                  int row = table.getSelectedRow();
-                  if(row==-1) {
-                     return;
-                  }
-                  AnalysisJob job = (AnalysisJob) jobs.get(row);
-                  reload(job);
-               }
-            }
-         });
-         SortableHeaderRenderer r = new SortableHeaderRenderer(table, historyTableModel);
-         historyDialog.getContentPane().add(toolBar, BorderLayout.NORTH);
-         historyDialog.getContentPane().add(new JScrollPane(table), BorderLayout.CENTER);
-         historyDialog.pack();
-         historyDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-      }
-
-     // public void removeAll() {
-     //    super.removeAll();
-        // addSeparator();
-       //  clearHistoryMenuItem = new JMenuItem("Clear History");
-       //  ActionListener clearHistoryListener = new ActionListener() {
-       //     public void actionPerformed(ActionEvent e) {
-       //        removeAll();
-       //     }
-       //  };
-       //  clearHistoryMenuItem.addActionListener(clearHistoryListener);
-       //  add(clearHistoryMenuItem);
-       //  clearHistoryMenuItem.setEnabled(false);
-      //}
-
-      public void clear() {
-         jobs.clear();
-         jobsInMenu.clear();
-         super.removeAll();
-
-         add(new JSeparator());
-         add(historyMenuItem);
-      }
-
-      public void jobRetrievedFromServer(AnalysisJob job) {
-         add(job);
-         historyTableModel.add(job);
-      }
-      
-      public void add(AnalysisJob job) {
-         int insertionIndex = Collections.binarySearch(jobsInMenu, job, jobNumberComparator);
-
-         if (insertionIndex < 0) {
-            insertionIndex = -insertionIndex - 1;
-         }
-
-         if(insertionIndex < JOBS_IN_MENU) {
-            AnalysisJobMenuItem menuItem = new AnalysisJobMenuItem(job);
-            menuItem.addActionListener(reloadJobActionListener);
-            insert(menuItem, insertionIndex);
-            if(getItemCount()==(JOBS_IN_MENU+3)) {
-               remove(JOBS_IN_MENU-1); // separator is at JOBS_IN_MENU index
-               jobsInMenu.remove(jobsInMenu.size()-1);
-            }
-            jobsInMenu.add(insertionIndex, job);
-         }
-      }
-   }
-
-
-   static class JobNumberComparator implements java.util.Comparator {
+   public static class JobNumberComparator implements java.util.Comparator {
       public int compare(Object obj1, Object obj2) {
          Integer job1Number = new Integer(((AnalysisJob)obj1).getJobInfo().getJobNumber());
          Integer job2Number = new Integer(((AnalysisJob)obj2).getJobInfo().getJobNumber());
@@ -2072,7 +1801,7 @@ public class MainFrame extends JFrame {
       }
    }
 
-   static class AnalysisJobMenuItem extends JMenuItem {
+   public static class AnalysisJobMenuItem extends JMenuItem {
          AnalysisJob job;
 
          public AnalysisJobMenuItem(AnalysisJob job) {
@@ -2081,6 +1810,282 @@ public class MainFrame extends JFrame {
          }
 
    }
+	
+	
+
+	class HistoryMenu extends JMenu {
+		ActionListener reloadJobActionListener;
+		/**
+		 *  list of AnalyisJobs, sorted by JobNumberComparator, the menu displays the
+		 *  first JOBS_IN_MENU jobs in the list
+		 */
+		List jobs = new ArrayList();
+		
+		/** list of AnalysisJobs, sorted by one of several options */
+		List sortedJobs = new ArrayList();
+		/** current comparator */
+		java.util.Comparator comparator;
+		
+		JobNumberComparator jobNumberComparator = new JobNumberComparator();
+		JMenuItem historyMenuItem = new JMenuItem("View All");
+		static final int JOBS_IN_MENU = 10;
+		HistoryTableModel historyTableModel = new HistoryTableModel();
+		JDialog historyDialog;
+		
+		private void addToMenu(int insertionIndex) {
+			
+			if (insertionIndex < JOBS_IN_MENU) {
+				AnalysisJob job = (AnalysisJob) jobs.get(insertionIndex);
+				AnalysisJobMenuItem menuItem = new AnalysisJobMenuItem(job);
+				menuItem.addActionListener(reloadJobActionListener);
+				insert(menuItem, insertionIndex);
+				if (getItemCount() == (JOBS_IN_MENU + 3)) {
+					remove(JOBS_IN_MENU - 1);
+					// separator is at JOBS_IN_MENU index
+				}
+			}
+		}
+		
+		private void removeFromMenu(int deletionIndex) {
+			
+			if (deletionIndex < JOBS_IN_MENU) {
+				remove(deletionIndex);
+				AnalysisJob job = (AnalysisJob) jobs.get(JOBS_IN_MENU-1);
+				AnalysisJobMenuItem menuItem = new AnalysisJobMenuItem(job);
+				menuItem.addActionListener(reloadJobActionListener);
+				add(menuItem, JOBS_IN_MENU-1);
+			}
+		}
+	
+		public void clear() {
+			super.removeAll();
+			add(new JSeparator());
+			add(historyMenuItem);
+		}
+	
+		public void add(AnalysisJob job) {
+			int insertionIndex = Collections.binarySearch(jobs, job, jobNumberComparator);
+	
+			if (insertionIndex < 0) {
+				insertionIndex = -insertionIndex - 1;
+			}
+	
+			jobs.add(insertionIndex, job);
+			addToMenu(insertionIndex);
+			
+			
+			insertionIndex = Collections.binarySearch(sortedJobs, job, comparator);
+	
+			if (insertionIndex < 0) {
+				insertionIndex = -insertionIndex - 1;
+			}
+	
+			sortedJobs.add(insertionIndex, job);
+	
+			historyTableModel.fireTableRowsInserted(insertionIndex, insertionIndex);
+		}
+	
+	
+		private void purge(int row) {
+			AnalysisJob job = (AnalysisJob) sortedJobs.get(row);
+			String message = "Are you sure you want to purge job number " + job.getJobInfo().getJobNumber() + "?";
+			if (!showConfirmDialog(historyDialog, message)) {
+				return;
+			}
+			try {
+				AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(AnalysisServiceManager.getInstance().getServer(), AnalysisServiceManager.getInstance().getUsername());
+				proxy.purgeJob(job.getJobInfo().getJobNumber());
+				sortedJobs.remove(row);
+				historyTableModel.fireTableRowsDeleted(row, row);
+				
+				int index = Collections.binarySearch(jobs, job, jobNumberComparator);
+				jobs.remove(index);
+				removeFromMenu(index);
+				
+			} catch (WebServiceException wse) {
+				wse.printStackTrace();
+				if (!disconnectedFromServer(wse)) {
+					GenePattern.showErrorDialog("An error occurred while removing job number " + job.getJobInfo().getJobNumber());
+				}
+			}
+		}
+	
+	
+		public HistoryMenu() {
+			super("History");
+			clear();
+	
+			reloadJobActionListener =
+				new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						AnalysisJobMenuItem menuItem = (AnalysisJobMenuItem) e.getSource();
+						AnalysisJob job = menuItem.job;
+						reload(job);
+					}
+				};
+	
+			historyMenuItem.addActionListener(
+				new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						historyDialog.setVisible(true);
+					}
+				});
+	
+			historyDialog = new CenteredDialog((java.awt.Frame) GenePattern.getDialogParent());
+			historyDialog.setTitle("History");
+			final JTable table = new AlternatingColorTable(historyTableModel);
+			JPanel toolBar = new JPanel();
+			JButton reloadButton = new JButton("Reload");
+			reloadButton.setToolTipText("Reload the job");
+			reloadButton.addActionListener(
+				new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						int row = table.getSelectedRow();
+						if (row == -1) {
+							return;
+						}
+						AnalysisJob job = (AnalysisJob) sortedJobs.get(row);
+						reload(job);
+					}
+				});
+	
+			JButton purgeButton = new JButton("Purge");
+			purgeButton.setToolTipText("Purge the job from your history");
+			purgeButton.addActionListener(
+				new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						int row = table.getSelectedRow();
+						if (row == -1) {
+							return;
+						}
+						purge(row);
+					}
+				});
+	
+			toolBar.add(reloadButton);
+			toolBar.add(purgeButton);
+			table.setShowGrid(true);
+			table.setShowVerticalLines(true);
+			table.setShowHorizontalLines(false);
+			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			table.addMouseListener(
+				new MouseAdapter() {
+					public void mouseClicked(MouseEvent e) {
+						if (e.getClickCount() == 2 && !e.isPopupTrigger()) {
+							int row = table.getSelectedRow();
+							if (row == -1) {
+								return;
+							}
+							AnalysisJob job = (AnalysisJob) jobs.get(row);
+							reload(job);
+						}
+					}
+				});
+			SortableHeaderRenderer r = new SortableHeaderRenderer(table, historyTableModel);
+			historyDialog.getContentPane().add(toolBar, BorderLayout.NORTH);
+			historyDialog.getContentPane().add(new JScrollPane(table), BorderLayout.CENTER);
+			historyDialog.pack();
+			historyDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	
+		}
+	
+	
+		class HistoryTableModel extends javax.swing.table.AbstractTableModel implements SortTableModel, JobListener {
+	
+			public HistoryTableModel() {
+				JobModel.getInstance().addJobListener(this);
+			}
+	
+			public void jobStatusChanged(JobEvent e) {
+				fireTableStructureChanged();
+			}
+	
+			public void jobAdded(JobEvent e) {
+				add(e.getJob());
+			}
+	
+	
+			public void jobRetrievedFromServer(AnalysisJob job) {
+				add(job);
+			}
+	
+			public void jobCompleted(JobEvent e) {
+				fireTableStructureChanged();
+			}
+	
+			public void sortOrderChanged(SortEvent e) {
+				int column = e.getColumn();
+				boolean ascending = e.isAscending();
+				if (column == 0) {
+					comparator = new JobModel.TaskNameComparator(ascending);
+				} else if (column == 1) {
+					comparator = new JobModel.TaskCompletedDateComparator(ascending);
+				} else {
+					comparator = new JobModel.TaskSubmittedDateComparator(ascending);
+				}
+	
+				Collections.sort(sortedJobs, comparator);
+				fireTableStructureChanged();
+			}
+	
+	
+			public Object getValueAt(int r, int c) {
+				AnalysisJob job = (AnalysisJob) sortedJobs.get(r);
+				JobInfo jobInfo = job.getJobInfo();
+				boolean complete = JobModel.isComplete(job);
+				switch (c) {
+					case 0:
+						return JobModel.jobToString(job);
+					case 1:
+						if (!complete) {
+							return jobInfo.getStatus();
+						}
+						return java.text.DateFormat.getDateTimeInstance(
+								java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
+								.format(jobInfo.getDateCompleted());
+					case 2:
+						return java.text.DateFormat.getDateTimeInstance(
+								java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
+								.format(jobInfo.getDateSubmitted());
+					default:
+						return null;
+				}
+			}
+	
+	
+			public Class getColumnClass(int j) {
+				return String.class;
+			}
+	
+	
+			public int getRowCount() {
+				return sortedJobs.size();
+			}
+	
+	
+			public int getColumnCount() {
+				return 3;
+			}
+	
+	
+			public String getColumnName(int c) {
+				switch (c) {
+								case 0:
+									return "Name";
+								case 1:
+									return "Completed";
+								case 2:
+									return "Submitted";
+								default:
+									return null;
+				}
+			}
+		}
+	
+	
+	}
+
+
 
 
 	class AnalysisMenu extends JMenu {
