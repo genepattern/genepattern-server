@@ -76,8 +76,6 @@ public class MainFrame extends JFrame {
 
 	AnalysisServiceDisplay analysisServicePanel;
 
-	JLabel messageLabel;;
-
 	AnalysisServiceManager analysisServiceManager;
 
    private final static Color lightBlue = new Color(239, 239, 255);
@@ -143,7 +141,7 @@ public class MainFrame extends JFrame {
    public static short windowStyle = System.getProperty("mdi")!=null?WINDOW_STYLE_MDI:WINDOW_STYLE_ONE_FRAME;
    private JMenuBar menuBar;
    Color blue = new Color(51,0,204);
-   
+    
    // project file actions
    MenuAction projectFileSendToMenu;
    MenuAction projectFileOpenWithMenu;
@@ -173,7 +171,8 @@ public class MainFrame extends JFrame {
    MenuItemAction jobResultFileDefaultAppMenuItem;
    MenuItemAction deleteAllJobsAction;
    
-
+   
+   
 	public static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone
 				.getValue(), toClone.getDescription());
@@ -358,19 +357,13 @@ public class MainFrame extends JFrame {
       analysisServiceManager.changeServer(server, username);
       
       final boolean isLocalHost = analysisServiceManager.isLocalHost();
-      
-      Thread messageThread = new Thread() {
-			public void run() {
-            if(isLocalHost) {
-                messageLabel.setText("Retrieving modules and jobs from local GenePattern server...");
-            } else {
-               messageLabel.setText("Retrieving modules and jobs from " + server + "...");
-            }
-            historyMenu.clear();
-			}
-		};
-      SwingUtilities.invokeLater(messageThread);
-
+      if(isLocalHost) {
+         MessageDialog.getInstance().setText("Retrieving modules and jobs from local GenePattern server...");
+      } else {
+         MessageDialog.getInstance().setText("Retrieving modules and jobs from " + server + "...");
+      }
+    
+	   historyMenu.clear();
 		GPpropertiesManager.setProperty(PreferenceKeys.SERVER, server);
 		GPpropertiesManager.setProperty(PreferenceKeys.USER_NAME, username);
 		
@@ -385,13 +378,14 @@ public class MainFrame extends JFrame {
 							analysisServiceManager.getUsername(), false)
 							.getServiceInfo().get("lsid.authority");
 					System.setProperty("lsid.authority", lsidAuthority);
-               refreshJobs(false, true);
+               refreshJobs(false);
 				} catch (WebServiceException wse) {
                wse.printStackTrace();
                // ignore the exception here, the user will be alerted in refreshModules
 				}
-				refreshModules(false, true);
+				refreshModules(false);
             displayServerStatus();
+            MessageDialog.getInstance().setVisible(false);
 			}
 		}.start();
 
@@ -412,8 +406,8 @@ public class MainFrame extends JFrame {
      
       Thread changeStatusThread = new Thread() {
          public void run() {
-            messageLabel.setText("Server: " + server + "      Username: "
-                  + username);
+            setTitle("GPGE - Server: " + server + ",  Username: "
+               + username);
           
          }
       };
@@ -633,7 +627,7 @@ public class MainFrame extends JFrame {
       JWindow splash = GenePattern.showSplashScreen();
 		splash.setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      
+      MessageDialog.init(this);
 		String username = GPpropertiesManager
 				.getProperty(PreferenceKeys.USER_NAME);
 
@@ -682,12 +676,13 @@ public class MainFrame extends JFrame {
          authorityBroadColor = DEFAULT_AUTHORITY_BROAD_COLOR;
       }
      
-
+      String showParameterDescriptions = GPpropertiesManager.getProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS);
+      if(showParameterDescriptions==null) {
+         GPpropertiesManager.setProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS, "true");
+      }
+      
       jobModel = JobModel.getInstance();
-      
-      messageLabel = new JLabel("", JLabel.CENTER);
-      messageLabel.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 16));
-      
+          
       jobResultsTree = new SortableTreeTable(jobModel);
       projectDirModel = ProjectDirModel.getInstance();
       projectDirTree = new SortableTreeTable(projectDirModel, false);
@@ -1144,14 +1139,10 @@ public class MainFrame extends JFrame {
       if(!RUNNING_ON_MAC) {
          getContentPane().setBackground(Color.white);
       }
-      JPanel messagePanel = new JPanel();
-      messagePanel.setBackground(lightBlue);
-      messagePanel.add(messageLabel);
-      getContentPane().add(messagePanel, BorderLayout.SOUTH);
-
+ 
       setSize(width, height);
       setLocation((screenSize.width - getWidth()) / 2, 20);
-      setTitle("GPGE");
+      displayServerStatus();
       leftPane.setDividerLocation((int) (height * 0.4));
       splitPane.setDividerLocation((int) (width * 0.4));
       setJMenuBar(menuBar);
@@ -1186,18 +1177,48 @@ public class MainFrame extends JFrame {
       windowMenu.add(mi);
    }
 
-	public void refreshJobs(boolean displayMessage, boolean waitUntilCompletion) {
-      if(displayMessage) {
-         Thread updateMessageThread = new Thread() {
+   static class MessageDialog extends CenteredDialog {
+      private static MessageDialog instance;
+      private JLabel label = new JLabel("      ");
+      private JProgressBar progressBar = new JProgressBar();
+      
+      public static void init(java.awt.Frame parent) {
+         instance = new MessageDialog(parent);
+      }
+      
+      public static MessageDialog getInstance() {
+         return instance;
+      }
+      
+      private MessageDialog(java.awt.Frame parent) {
+         super(parent);
+         progressBar.setIndeterminate(true);
+         label.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 14));
+         setTitle("GenePattern");
+         getContentPane().add(label);
+         getContentPane().add(progressBar, BorderLayout.SOUTH);
+         pack();
+      }
+      
+      public void setText(final String s) {
+         Thread thread = new Thread() {
             public void run() {
-               messageLabel.setText("Retrieving jobs...");
+               label.setText(s);
+               pack();
+               setVisible(true);
             }
          };
          if(SwingUtilities.isEventDispatchThread()) {
-            updateMessageThread.run();
+            thread.run();
          } else {
-            SwingUtilities.invokeLater(updateMessageThread);   
-         }
+            SwingUtilities.invokeLater(thread);   
+         } 
+      }
+   }
+   
+	public void refreshJobs(boolean displayMessage) {
+      if(displayMessage) {
+         MessageDialog.getInstance().setText("Retrieving your jobs.");
       }
       final List errors = new ArrayList();
       
@@ -1247,14 +1268,14 @@ public class MainFrame extends JFrame {
          }
       };
       updateHistory.start();
-      if(waitUntilCompletion) {
-         try {
-            updateJobs.join();
-            updateHistory.join();
-         } catch(InterruptedException x){}
-      }
+      
+      try {
+         updateJobs.join();
+         updateHistory.join();
+         
+      } catch(InterruptedException x){}
       if(displayMessage) {
-         displayServerStatus();  
+         MessageDialog.getInstance().setVisible(false);
       }
 	}
 
@@ -1659,20 +1680,11 @@ public class MainFrame extends JFrame {
    }
 
    
-	public void refreshModules(boolean displayMessage, boolean waitUntilCompletion) {
+	public void refreshModules(boolean displayMessage) {
       if(displayMessage) {
-         Thread updateMessageThread = new Thread() {
-            public void run() {
-               messageLabel.setText("Retrieving modules...");
-            }
-         };
-         if(SwingUtilities.isEventDispatchThread()) {
-            updateMessageThread.run();
-         } else {
-            SwingUtilities.invokeLater(updateMessageThread);   
-         }
+         MessageDialog.getInstance().setText("Retrieving modules...");
       }
-      
+     
 		setChangeServerActionsEnabled(false);
       Thread thread = new Thread() {
          public void run() {
@@ -1705,13 +1717,11 @@ public class MainFrame extends JFrame {
          }
       };
       thread.start();
-      if(waitUntilCompletion) {
-         try {
-            thread.join();  
-         } catch(InterruptedException x){}
-      }
+      try {
+         thread.join();  
+      } catch(InterruptedException x){}
       if(displayMessage) {
-         displayServerStatus();  
+         MessageDialog.getInstance().setVisible(false);
       }
 	}
 
@@ -2384,7 +2394,7 @@ public class MainFrame extends JFrame {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
                new Thread() {
                   public void run() {
-                     refreshModules(true, true);
+                     refreshModules(true);
                   }
                }.start();
 				}
@@ -2397,7 +2407,7 @@ public class MainFrame extends JFrame {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
                new Thread() {
                   public void run() {
-                     refreshJobs(true, true);
+                     refreshJobs(true);
                   }
                }.start();
 				}
