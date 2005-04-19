@@ -142,19 +142,24 @@ public class AnalysisServiceDisplay extends JPanel {
     *
     * @param  selectedService  Description of the Parameter
     */
-   public void loadTask(AnalysisService selectedService) {
-      this.selectedService = selectedService;
+   public void loadTask(AnalysisService _selectedService) {
+      this.selectedService = _selectedService;
       hasDocumentation = true;
       if(selectedService!=null) {
-         try {
-            String username = AnalysisServiceManager.getInstance().getUsername();
-            String server = selectedService.getServer();
-            String lsid = LSIDUtil.getTaskId(selectedService.getTaskInfo());
-            String[] supportFileNames = new TaskIntegratorProxy(server, username).getSupportFileNames(lsid);
-            hasDocumentation = supportFileNames!=null && supportFileNames.length > 0;
-         } catch(WebServiceException wse) {
-            wse.printStackTrace();  
-         }
+         new Thread() {
+            public void run() {
+               try {
+                  
+                  String username = AnalysisServiceManager.getInstance().getUsername();
+                  String server = selectedService.getServer();
+                  String lsid = LSIDUtil.getTaskId(selectedService.getTaskInfo());
+                  String[] supportFileNames = new TaskIntegratorProxy(server, username).getSupportFileNames(lsid);
+                  hasDocumentation = supportFileNames!=null && supportFileNames.length > 0;
+               } catch(WebServiceException wse) {
+                  wse.printStackTrace();  
+               }
+            }
+         }.start();
       }
             
       parameterName2ComponentMap.clear();
