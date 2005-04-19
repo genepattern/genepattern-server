@@ -66,10 +66,7 @@ public class AnalysisServiceDisplay extends JPanel {
       parameterName2ComponentMap = new HashMap();
       inputFileParameterNames = new ArrayList();
       parameterDescriptions = new ArrayList();
-      
-      if(!MainFrame.RUNNING_ON_MAC) {
-         this.setBackground(Color.white);
-      } 
+      this.setBackground(Color.white);
 		showGettingStarted();
    }
 
@@ -125,21 +122,6 @@ public class AnalysisServiceDisplay extends JPanel {
       listenerList.remove(AnalysisServiceSelectionListener.class, l);
    }
 
-   private JPanel createJPanel() {
-      JPanel p = new JPanel();
-      if(!MainFrame.RUNNING_ON_MAC) {
-         p.setBackground(Color.white);
-      }
-      return p;
-   }
-   
-    private JPanel createJPanel(java.awt.LayoutManager l) {
-      JPanel p = new JPanel(l);
-      if(!MainFrame.RUNNING_ON_MAC) {
-         p.setBackground(Color.white);
-      }
-      return p;
-   }
    
    private Border createBorder(final Border b, final int left, final int top, final int right, final int bottom) {
       return new javax.swing.border.Border() {
@@ -291,7 +273,9 @@ public class AnalysisServiceDisplay extends JPanel {
       }
 
       ParameterInfo[] params = taskInfo.getParameterInfoArray();
-      JPanel parameterPanel = createJPanel();
+      JPanel parameterPanel = new JPanel();
+      parameterPanel.setBackground(Color.white);
+      
       parameterPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
       boolean showDescriptions = Boolean.valueOf(GPpropertiesManager
 				.getProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS)).booleanValue();
@@ -349,6 +333,9 @@ public class AnalysisServiceDisplay extends JPanel {
 
       Component taskNameComponent = new JLabel(taskName);
       taskNameComponent.setFont(taskNameComponent.getFont().deriveFont(java.awt.Font.BOLD));
+      
+      JLabel taskVersionLabel = new JLabel(taskVersionDisplay);
+      
       Component description = createWrappedLabel(selectedService.getTaskInfo().getDescription());
       
       JPanel topPanel = null;
@@ -367,22 +354,24 @@ public class AnalysisServiceDisplay extends JPanel {
          }
       });
       if(versionComboBox != null) {
-         JPanel temp = new JPanel(new FormLayout("left:pref:none, 12px, left:pref:none, 6px, left:pref:none, right:pref:g", "pref, 6px")); // title, version label, version combo box, parameter check box   
+         JPanel temp = new JPanel(new FormLayout("left:pref:none, left:pref:none, 12px, left:pref:none, 6px, left:pref:none, right:pref:g", "pref, 6px")); // title, task version, version label, version combo box, show parameter desc checkbox   
          CellConstraints cc = new CellConstraints();
          JLabel versionLabel = new JLabel("Choose Version:");
          temp.add(taskNameComponent, cc.xy(1, 1));
-         temp.add(versionLabel, cc.xy(3, 1));
-         temp.add(versionComboBox, cc.xy(5, 1));
-         temp.add(showDescriptionsCheckBox, cc.xy(6, 1));
+         temp.add(taskVersionLabel, cc.xy(2, 1));
+         temp.add(versionLabel, cc.xy(4, 1));
+         temp.add(versionComboBox, cc.xy(6, 1));
+         temp.add(showDescriptionsCheckBox, cc.xy(7, 1));
          topPanel = new JPanel(new BorderLayout()); 
          topPanel.add(temp, BorderLayout.NORTH);
          topPanel.add(description, BorderLayout.SOUTH);
       } else {
          CellConstraints cc = new CellConstraints();
-         JPanel temp = new JPanel(new FormLayout("left:pref:none, right:pref:g", "pref, 6px")); // title, parameter checkbox 
+         JPanel temp = new JPanel(new FormLayout("left:pref:none, left:pref:none, right:pref:g", "pref, 6px")); // title, task version, show parameter desc checkbox 
          
          temp.add(taskNameComponent, cc.xy(1, 1));
-         temp.add(showDescriptionsCheckBox, cc.xy(2, 1));
+         temp.add(taskVersionLabel, cc.xy(2, 1));
+         temp.add(showDescriptionsCheckBox, cc.xy(3, 1));
          topPanel = new JPanel(new BorderLayout()); 
          topPanel.add(temp, BorderLayout.NORTH);
          topPanel.add(description, BorderLayout.SOUTH);
@@ -390,10 +379,9 @@ public class AnalysisServiceDisplay extends JPanel {
       topPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
       
       setLayout(new BorderLayout());
-      JPanel buttonPanel = new JPanel(); //createJPanel();
+      JPanel buttonPanel = new JPanel();
       JButton submitButton = new JButton("Run");
       submitButton.addActionListener(new SubmitActionListener());
-     // getRootPane().setDefaultButton(submitButton);
       buttonPanel.add(submitButton);
       
       JButton resetButton = new JButton("Reset");
@@ -479,6 +467,7 @@ public class AnalysisServiceDisplay extends JPanel {
       final ChoiceItem default_item = createDefaultChoice(default_val);
       final StringTokenizer tokenizer = new StringTokenizer(info.getValue(), ";");
       final JComboBox list = new JComboBox();
+      list.setBackground(Color.white);
       list.setFont(getFont());
       int selectIndex = -1;
       for(int i = 0; tokenizer.hasMoreTokens(); i++) {
