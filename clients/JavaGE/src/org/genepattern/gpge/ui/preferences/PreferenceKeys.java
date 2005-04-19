@@ -25,6 +25,8 @@ public class PreferenceKeys {
       "authority.foreign.color";
    public final static String AUTHORITY_BROAD_COLOR = "authority.broad.color";
 
+   public final static String SHOW_PARAMETER_DESCRIPTIONS = "show.parameter.descriptions";
+   
 	private PreferenceKeys() {
 	}
 
