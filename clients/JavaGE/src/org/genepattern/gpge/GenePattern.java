@@ -8,6 +8,7 @@ package org.genepattern.gpge;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Frame;
 import java.awt.Insets;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,10 +35,7 @@ import java.awt.Color;
  * @author kohm
  */
 public final class GenePattern {
-	protected static Component dialogParent = null;
-  
-   
-	static javax.swing.JFrame mainFrame;
+  	static javax.swing.JFrame mainFrame;
 
 	/** Creates a new instance of GenePattern */
 
@@ -68,17 +66,13 @@ public final class GenePattern {
 			}
 		} catch (Exception e) {
 		}
-
-		// display in a JFrame
-		javax.swing.JFrame mainFrame = new MainFrame();
-
-		dialogParent = mainFrame;
-		((ReporterWithGUI) REPORTER).setDialogParent(dialogParent);
+	   mainFrame = new MainFrame();
+		((ReporterWithGUI) REPORTER).setDialogParent(mainFrame);
 
 	}
 
-	public static Component getDialogParent() {
-		return dialogParent;
+	public static java.awt.Frame getDialogParent() {
+		return mainFrame;
 	}
 
 
