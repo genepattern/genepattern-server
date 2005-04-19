@@ -44,14 +44,6 @@ public class TaskIntegratorProxy {
       }
 	}
 
-	public Map getServiceInfo() throws WebServiceException {
-      try {
-         return stub.getServiceInfo();
-      } catch(RemoteException re) {
-         throw new WebServiceException(re);  
-      }
-	}
-
 	public String importZipFromURL(String url, int privacy)
 			throws WebServiceException {
       try {
@@ -171,6 +163,15 @@ public class TaskIntegratorProxy {
 			throws WebServiceException {
       try {
          return stub.getSupportFileNames(lsid);
+      } catch(RemoteException re) {
+         throw new WebServiceException(re);  
+      }
+	}
+   
+   public String[] getDocFileNames(String lsid)
+			throws WebServiceException {
+      try {
+         return stub.getDocFileNames(lsid);
       } catch(RemoteException re) {
          throw new WebServiceException(re);  
       }

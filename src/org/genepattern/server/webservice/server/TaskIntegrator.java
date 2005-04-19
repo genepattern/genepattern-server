@@ -518,6 +518,28 @@ public class TaskIntegrator implements ITaskIntegrator {
 		}
 	}
 
+    public String[] getDocFileNames(String lsid) throws WebServiceException {
+		if (lsid == null || lsid.equals("")) {
+			throw new WebServiceException("Invalid LSID");
+		}
+		try {
+			Thread.yield();
+			String taskLibDir = GenePatternAnalysisTask.getTaskLibDir(lsid);
+			String[] docFiles = new File(taskLibDir).list(new FilenameFilter() {
+			public boolean accept(File dir, String name) {
+				return GenePatternAnalysisTask.isDocFile(name)
+						&& !name.equals("version.txt");
+			   }
+         });
+         if(docFiles==null) {
+            docFiles = new String[0];  
+         }
+			return docFiles;
+		} catch (Exception e) {
+			throw new WebServiceException("while getting doc filenames", e);
+		}
+	}
+   
 	public DataHandler[] getDocFiles(String lsid) throws WebServiceException {
 
 		String userID = getUserName();
