@@ -40,13 +40,20 @@ import org.genepattern.util.*;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskIntegratorProxy;
+import org.genepattern.gpge.ui.maindisplay.LSIDUtil;
+import org.genepattern.webservice.WebServiceException;
+
 /**
  *  Displays an <tt>AnalysisService</tt>
  *
  * @author    Joshua Gould
  */
 public class AnalysisServiceDisplay extends JPanel {
+   /** the currently displayed <tt>AnalysisService</tt> */
    private AnalysisService selectedService;
+   /** whether the <tt>selectedService</tt> has documentation */
+   private volatile boolean hasDocumentation;
    private String latestVersion;
    private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
    private Map parameterName2ComponentMap;
@@ -137,6 +144,19 @@ public class AnalysisServiceDisplay extends JPanel {
     */
    public void loadTask(AnalysisService selectedService) {
       this.selectedService = selectedService;
+      hasDocumentation = true;
+      if(selectedService!=null) {
+         try {
+            String username = AnalysisServiceManager.getInstance().getUsername();
+            String server = selectedService.getServer();
+            String lsid = LSIDUtil.getTaskId(selectedService.getTaskInfo());
+            String[] supportFileNames = new TaskIntegratorProxy(server, username).getSupportFileNames(lsid);
+            hasDocumentation = supportFileNames!=null && supportFileNames.length > 0;
+         } catch(WebServiceException wse) {
+            wse.printStackTrace();  
+         }
+      }
+            
       parameterName2ComponentMap.clear();
       inputFileParameterNames.clear();
       latestVersion = null;
@@ -638,12 +658,18 @@ public class AnalysisServiceDisplay extends JPanel {
    private class HelpActionListener implements ActionListener {
       public final void actionPerformed(java.awt.event.ActionEvent ae) {
          try {
-            String server = selectedService.getServer();
             String username = AnalysisServiceManager.getInstance().getUsername();
-            String docURL = server + "/gp/getTaskDoc.jsp?name="
-                   + org.genepattern.gpge.ui.maindisplay.LSIDUtil.getTaskId(selectedService.getTaskInfo()) + "&"
+            String server = selectedService.getServer();
+            String lsid = LSIDUtil.getTaskId(selectedService.getTaskInfo());
+       
+            if(hasDocumentation) {
+               String docURL = server + "/gp/getTaskDoc.jsp?name="
+                   + lsid + "&"
                    + GPConstants.USERID + "="+java.net.URLEncoder.encode(username, "UTF-8");
-            org.genepattern.util.BrowserLauncher.openURL(docURL);
+               org.genepattern.util.BrowserLauncher.openURL(docURL);
+            } else {
+               GenePattern.showMessageDialog( selectedService.getTaskInfo().getName() + "has no documentation");  
+            }
          } catch(java.io.IOException ex) {
             System.err.println(ex);
          }
