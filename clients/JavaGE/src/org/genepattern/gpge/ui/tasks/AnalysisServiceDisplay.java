@@ -17,8 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import javax.swing.border.Border;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -27,6 +29,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
+import javax.swing.UIDefaults;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import com.jgoodies.forms.builder.*;
@@ -43,7 +46,7 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskIntegratorProxy;
 import org.genepattern.gpge.ui.maindisplay.LSIDUtil;
 import org.genepattern.webservice.WebServiceException;
-
+import org.genepattern.gpge.ui.preferences.PreferenceKeys;
 /**
  *  Displays an <tt>AnalysisService</tt>
  *
@@ -58,12 +61,13 @@ public class AnalysisServiceDisplay extends JPanel {
    private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
    private Map parameterName2ComponentMap;
    private List inputFileParameterNames;
-
+   private List parameterDescriptions;
    public AnalysisServiceDisplay() {
       parameterName2ComponentMap = new HashMap();
       inputFileParameterNames = new ArrayList();
+      parameterDescriptions = new ArrayList();
       
-       if(!MainFrame.RUNNING_ON_MAC) {
+      if(!MainFrame.RUNNING_ON_MAC) {
          this.setBackground(Color.white);
       } 
 		showGettingStarted();
@@ -136,6 +140,37 @@ public class AnalysisServiceDisplay extends JPanel {
       }
       return p;
    }
+   
+   private Border createBorder(final Border b, final int left, final int top, final int right, final int bottom) {
+      return new javax.swing.border.Border() {
+			public Insets getBorderInsets(java.awt.Component c) {
+				Insets i = b.getBorderInsets(c);
+				if(left >= 0) {
+               i.left = left;
+            } 
+            if(top >= 0) {
+               i.top = top;  
+            }
+            if(right >= 0) {
+               i.right = right;  
+            }
+            if(bottom >= 0) {
+               i.bottom = bottom;  
+            }
+            
+				return i;
+			}
+			
+			public boolean isBorderOpaque() {
+				return b.isBorderOpaque();
+			}
+			
+			public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+				b.paintBorder(c, g, x, y, width, height);
+			}
+
+		};  
+   }
 
    /**
     *  Displays the given analysis service
@@ -164,16 +199,18 @@ public class AnalysisServiceDisplay extends JPanel {
             
       parameterName2ComponentMap.clear();
       inputFileParameterNames.clear();
+      parameterDescriptions.clear();
       latestVersion = null;
       TaskInfo taskInfo = selectedService.getTaskInfo();
-      String taskDisplay = taskInfo.getName();
+      String taskName = taskInfo.getName();
+      String taskVersionDisplay = "";
       JComboBox versionComboBox = null;
       try {
          final LSID lsid = new LSID((String) selectedService.getTaskInfo()
                .getTaskInfoAttributes().get(GPConstants.LSID));
          if(!org.genepattern.gpge.ui.maindisplay.LSIDUtil.isBroadTask(lsid)) {
             String authority = lsid.getAuthority();
-            taskDisplay += " (" + authority + ")";
+            taskVersionDisplay += " (" + authority + ")";
          }
 
          final String lsidNoVersion = lsid.toStringNoVersion();
@@ -190,9 +227,9 @@ public class AnalysisServiceDisplay extends JPanel {
             }
          }
          if (lsid.getVersion().equals(latestVersion)) {
-            taskDisplay += ", version " + lsid.getVersion() + " (latest)";
+            taskVersionDisplay += ", version " + lsid.getVersion() + " (latest)";
          } else {
-            taskDisplay += ", version " + lsid.getVersion();
+            taskVersionDisplay += ", version " + lsid.getVersion();
          }
          
          if(versions!=null) {
@@ -256,7 +293,9 @@ public class AnalysisServiceDisplay extends JPanel {
       ParameterInfo[] params = taskInfo.getParameterInfoArray();
       JPanel parameterPanel = createJPanel();
       parameterPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-     
+      boolean showDescriptions = Boolean.valueOf(GPpropertiesManager
+				.getProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS)).booleanValue();
+            
       if(params == null || params.length == 0) {
          parameterPanel.add(new JLabel(selectedService.getTaskInfo().getName() + " has no input parameters"));
       } else {
@@ -299,6 +338,8 @@ public class AnalysisServiceDisplay extends JPanel {
             JLabel description = new JLabel(info.getDescription());
             parameterPanel.add(input, cc.xy(3, row));
             cc.hAlign = CellConstraints.FILL;
+            description.setVisible(showDescriptions);
+            parameterDescriptions.add(description);
             parameterPanel.add(description, cc.xy(3, row + 1));
             parameterName2ComponentMap.put(info.getName(), input);
          }
@@ -306,43 +347,55 @@ public class AnalysisServiceDisplay extends JPanel {
 
       removeAll();
 
-      Component title = new JLabel(taskDisplay);
+      Component taskNameComponent = new JLabel(taskName);
+      taskNameComponent.setFont(taskNameComponent.getFont().deriveFont(java.awt.Font.BOLD));
       Component description = createWrappedLabel(selectedService.getTaskInfo().getDescription());
       
       JPanel topPanel = null;
-      
-      if(versionComboBox != null) {
-         JPanel temp = createJPanel(new FormLayout("left:pref:none, 12px, left:pref:none, 6px, left:pref:none", "pref, 12px"));
-         if(!MainFrame.RUNNING_ON_MAC) {
-            temp.setBackground(Color.white);
+      final JCheckBox showDescriptionsCheckBox = new JCheckBox("Show Parameter Descriptions");
+     
+      showDescriptionsCheckBox.setSelected(showDescriptions);
+      showDescriptionsCheckBox.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+            boolean showDescriptions = showDescriptionsCheckBox.isSelected();
+            GPpropertiesManager
+				.setProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS, String.valueOf(showDescriptions));
+            for(int i = 0; i < parameterDescriptions.size(); i++) {
+               Component c = (Component) parameterDescriptions.get(i);
+               c.setVisible(showDescriptions);
+            }
          }
+      });
+      if(versionComboBox != null) {
+         JPanel temp = new JPanel(new FormLayout("left:pref:none, 12px, left:pref:none, 6px, left:pref:none, right:pref:g", "pref, 6px")); // title, version label, version combo box, parameter check box   
          CellConstraints cc = new CellConstraints();
          JLabel versionLabel = new JLabel("Choose Version:");
-         temp.add(title, cc.xy(1, 1));
+         temp.add(taskNameComponent, cc.xy(1, 1));
          temp.add(versionLabel, cc.xy(3, 1));
          temp.add(versionComboBox, cc.xy(5, 1));
-         topPanel = createJPanel(new BorderLayout());
+         temp.add(showDescriptionsCheckBox, cc.xy(6, 1));
+         topPanel = new JPanel(new BorderLayout()); 
          topPanel.add(temp, BorderLayout.NORTH);
          topPanel.add(description, BorderLayout.SOUTH);
       } else {
          CellConstraints cc = new CellConstraints();
-         JPanel temp = createJPanel(new FormLayout("left:pref:none", "pref, 12px"));
-         if(!MainFrame.RUNNING_ON_MAC) {
-            temp.setBackground(Color.white);
-         }
-         temp.add(title, cc.xy(1, 1));
-         topPanel = createJPanel(new BorderLayout());
+         JPanel temp = new JPanel(new FormLayout("left:pref:none, right:pref:g", "pref, 6px")); // title, parameter checkbox 
+         
+         temp.add(taskNameComponent, cc.xy(1, 1));
+         temp.add(showDescriptionsCheckBox, cc.xy(2, 1));
+         topPanel = new JPanel(new BorderLayout()); 
          topPanel.add(temp, BorderLayout.NORTH);
          topPanel.add(description, BorderLayout.SOUTH);
       }
       topPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
       
       setLayout(new BorderLayout());
-      JPanel buttonPanel = createJPanel();
+      JPanel buttonPanel = new JPanel(); //createJPanel();
       JButton submitButton = new JButton("Run");
       submitButton.addActionListener(new SubmitActionListener());
      // getRootPane().setDefaultButton(submitButton);
       buttonPanel.add(submitButton);
+      
       JButton resetButton = new JButton("Reset");
       resetButton.addActionListener(new ResetActionListener());
       buttonPanel.add(resetButton);
@@ -353,22 +406,8 @@ public class AnalysisServiceDisplay extends JPanel {
      
 		JScrollPane sp = new JScrollPane(parameterPanel);
       final javax.swing.border.Border b = sp.getBorder();
-      sp.setBorder(new javax.swing.border.Border() {
-			public Insets getBorderInsets(java.awt.Component c) {
-				Insets i = b.getBorderInsets(c);
-				i.left = 0;
-				return i;
-			}
-			
-			public boolean isBorderOpaque() {
-				return b.isBorderOpaque();
-			}
-			
-			public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-				b.paintBorder(c, g, x, y, width, height);
-			}
-
-		});
+      sp.setBorder(createBorder(b, 0, -1, -1, -1));
+      buttonPanel.setBorder(createBorder(UIManager.getLookAndFeelDefaults().getBorder("ScrollPane.border"), 0, 0, 0, 2));
 	   add(sp, BorderLayout.CENTER);
       add(buttonPanel, BorderLayout.SOUTH);
       setMinimumSize(new java.awt.Dimension(100, 100));
