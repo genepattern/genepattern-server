@@ -2459,10 +2459,13 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			// redirect to the fully-qualified host name to make sure that the
 			// one cookie that we are allowed to write is useful
 			try {
-				String fqHostName = InetAddress.getLocalHost()
-						.getCanonicalHostName();
-				if (fqHostName.equals("localhost"))
-					fqHostName = "127.0.0.1";
+				String fqHostName = System.getProperty("fqHostName");
+				if (fqHostName == null) {
+					fqHostName = InetAddress.getLocalHost()
+							.getCanonicalHostName();
+					if (fqHostName.equals("localhost"))
+						fqHostName = "127.0.0.1";
+				}
 				String serverName = request.getServerName();
 				if (!fqHostName.equalsIgnoreCase(serverName)) {
 					String URL = request.getRequestURI();
