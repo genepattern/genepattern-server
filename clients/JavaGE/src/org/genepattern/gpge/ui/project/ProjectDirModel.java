@@ -234,7 +234,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
             }
          }
       } else {
-         PROJECT_DIR_COMPARATOR.setAscending(true);
+         PROJECT_DIR_COMPARATOR.setAscending(ascending); 
          if (children != null) {
             Collections.sort(children, PROJECT_DIR_COMPARATOR);
             FILE_KIND_COMPARATOR.setAscending(ascending);
