@@ -369,6 +369,10 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
             fileInfo = new FileInfoUtil.FileInfo();
          }
 		}
+      
+      public FileInfoUtil.FileInfo getFileInfo() {
+         return fileInfo;  
+      }
 
 		public String toString() {
 			return file.getName();
