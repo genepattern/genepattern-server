@@ -277,9 +277,14 @@ out.println("</table>");
 %>
 </td>
 <td valign='top' align='left'>
+<%
+	int veridx = ((String)tia.get(GPConstants.LSID)).lastIndexOf(":");
+	String taskLsidVersion = ((String)tia.get(GPConstants.LSID)).substring(veridx+1);
+
+%>
 
 <table width="100%" cols="2" >
-<tr><td><b><font size="+1"><%= taskName %></font></b></td>
+<tr><td><b><font size="+1"><%= taskName %></font></b> version <%= taskLsidVersion%></td>
 <%
 if (taskName != null) {
 	LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
