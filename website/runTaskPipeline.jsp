@@ -193,7 +193,7 @@ function checkAll(frm, bChecked) {
 
 <table width='100%' cellpadding='10'>
 <tr><td>
-Running <a href="addTask.jsp?view=1&name=<%=requestParameters.getParameter("taskName")%>"><%=requestParameters.getParameter("taskName")%></a> as job # <a href="getJobResults.jsp?jobID=<%=job.getJobNumber() %>"><%=job.getJobNumber() %></a> on <%=new Date()%> 
+Running <a href="addTask.jsp?view=1&name=<%=requestParameters.getParameter("taskLSID")%>"><%=requestParameters.getParameter("taskName")%></a> as job # <a href="getJobResults.jsp?jobID=<%=job.getJobNumber() %>"><%=job.getJobNumber() %></a> on <%=new Date()%> 
 				
 </tr></td>
 <tr><td>
