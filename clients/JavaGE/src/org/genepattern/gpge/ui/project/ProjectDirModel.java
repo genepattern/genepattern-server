@@ -13,23 +13,32 @@ import org.genepattern.gpge.ui.tasks.*;
 import org.genepattern.webservice.*;
 import org.genepattern.gpge.ui.treetable.*;
 import org.genepattern.gpge.ui.table.*;
-
+import org.genepattern.gpge.ui.maindisplay.FileInfoUtil;
 /**
  * Project directory model
  * 
  * @author Joshua Gould
  */
 public class ProjectDirModel extends AbstractSortableTreeTableModel {
-	String[] columnNames = { "Name" };
+	String[] columnNames = { "Name", "Kind" };
 
-	Class[] columnClasses = { org.jdesktop.swing.treetable.TreeTableModel.class };
+	Class[] columnClasses = { org.jdesktop.swing.treetable.TreeTableModel.class, String.class};
 
 	static ProjectDirModel instance = new ProjectDirModel();
 
 	RootNode root = new RootNode();
 
+   
 	static final ProjectDirComparator PROJECT_DIR_COMPARATOR = new ProjectDirComparator();
 
+   static final FileNameComparator FILE_NAME_COMPARATOR = new FileNameComparator();
+   
+    static final FileKindComparator FILE_KIND_COMPARATOR = new FileKindComparator();
+   
+   
+   /** current comparator for sorting files */
+   private Comparator fileComparator = FILE_NAME_COMPARATOR;
+   
 	private ProjectDirModel() {
 	}
 
@@ -141,16 +150,51 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 	}
 
 	private static class ProjectDirComparator implements Comparator {
+      boolean ascending = true;
+      
+      public void setAscending(boolean b) {
+         ascending = b;
+      }
+      
 		public int compare(Object obj1, Object obj2) {
 			ProjectDirNode n1 = (ProjectDirNode) obj1;
 			ProjectDirNode n2 = (ProjectDirNode) obj2;
-			return n1.directory.compareTo(n2.directory);
+         return ascending ? n1.directory.compareTo(n2.directory): n2.directory.compareTo(n1.directory);
 		}
 
-		public boolean equals(Object obj1, Object obj2) {
-			ProjectDirNode n1 = (ProjectDirNode) obj1;
-			ProjectDirNode n2 = (ProjectDirNode) obj2;
-			return n1.directory.equals(n2.directory);
+	}
+   
+   private static class FileNameComparator implements Comparator {
+      boolean ascending = true;
+      
+      public void setAscending(boolean b) {
+         ascending = b;
+      }
+      
+		public int compare(Object obj1, Object obj2) {
+			FileNode n1 = (FileNode) obj1;
+			FileNode n2 = (FileNode) obj2;
+         int result = ascending ? n1.file.getName().compareTo(n2.file.getName()): n2.file.getName().compareTo(n1.file.getName());
+         return result;
+		}
+	}
+   
+   private static class FileKindComparator implements Comparator {
+      boolean ascending = true;
+      
+      public void setAscending(boolean b) {
+         ascending = b;
+         FILE_NAME_COMPARATOR.setAscending(b);
+      }
+      
+		public int compare(Object obj1, Object obj2) {
+			FileNode n1 = (FileNode) obj1;
+			FileNode n2 = (FileNode) obj2;
+         int result = ascending ? n1.fileInfo.getKind().compareTo(n2.fileInfo.getKind()): n2.fileInfo.getKind().compareTo(n1.fileInfo.getKind());
+         if(result==0) {
+            return FILE_NAME_COMPARATOR.compare(n1, n2);
+         }
+         return result;
 		}
 	}
 
@@ -173,8 +217,41 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 	}
 
 	public void sortOrderChanged(SortEvent e) {
-
+      int column = e.getColumn();
+		boolean ascending = e.isAscending();
+      List children = root.getChildren();
+		if (column == 0) {
+         PROJECT_DIR_COMPARATOR.setAscending(ascending);
+         if (children != null) {
+            Collections.sort(children, PROJECT_DIR_COMPARATOR);
+            FILE_NAME_COMPARATOR.setAscending(ascending);
+            fileComparator = FILE_NAME_COMPARATOR;
+            for(int i = 0; i < children.size(); i++) {
+               ProjectDirNode node = (ProjectDirNode) children.get(i);  
+               if(node.getChildren()!=null) {
+                  Collections.sort(node.getChildren(), fileComparator);
+               }
+            }
+         }
+      } else {
+         PROJECT_DIR_COMPARATOR.setAscending(true);
+         if (children != null) {
+            Collections.sort(children, PROJECT_DIR_COMPARATOR);
+            FILE_KIND_COMPARATOR.setAscending(ascending);
+            fileComparator = FILE_KIND_COMPARATOR;
+            for(int i = 0; i < children.size(); i++) {
+               ProjectDirNode node = (ProjectDirNode) children.get(i);  
+               if(node.getChildren()!=null) {
+                  Collections.sort(node.getChildren(), fileComparator);
+               }
+            }
+         }
+         
+      }
+      nodeStructureChanged(root);;
 	}
+   
+   
 
 	public Class getColumnClass(int column) {
 		return columnClasses[column];
@@ -202,6 +279,8 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 			switch (column) {
 			case 0:
 				return p.toString();
+         case 1:
+            return "Project";
 			default:
 				return null;
 			}
@@ -210,6 +289,8 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 			switch (column) {
 			case 0:
 				return f.toString();
+         case 1:
+            return f.fileInfo.getKind();
 			default:
 				return null;
 			}
@@ -226,6 +307,10 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 
 		public final File directory;
 
+      public Vector getChildren() {
+			return children;
+		}
+      
 		public ProjectDirNode(File directory) {
 			this.directory = directory;
 			refresh();
@@ -275,10 +360,14 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 	public static class FileNode extends DefaultMutableTreeNode {
 
 		public final File file;
+      private FileInfoUtil.FileInfo fileInfo;
 
 		public FileNode(File file) {
 			this.file = file;
-
+         this.fileInfo = FileInfoUtil.getInfo(file);
+         if(fileInfo==null) {
+            fileInfo = new FileInfoUtil.FileInfo();
+         }
 		}
 
 		public String toString() {
