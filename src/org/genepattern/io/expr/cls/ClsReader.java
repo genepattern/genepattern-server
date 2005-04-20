@@ -19,19 +19,23 @@ public class ClsReader extends AbstractReader {
 		super(new String[] { "cls" }, "cls");
 	}
 
-	public ClassVector read(String pathname) throws IOException, ParseException {
-		ClsParser parser = new ClsParser();
-		MyHandler handler = new MyHandler();
-		parser.setHandler(handler);
+   public ClassVector read(String pathname) throws IOException, ParseException {
 		FileInputStream fis = null;
 		try {
 			fis = new FileInputStream(pathname);
-			parser.parse(fis);
+			return read(fis);
 		} finally {
 			if (fis != null) {
 				fis.close();
 			}
 		}
+	}
+   
+	public ClassVector read(InputStream is) throws IOException, ParseException {
+		ClsParser parser = new ClsParser();
+		MyHandler handler = new MyHandler();
+		parser.setHandler(handler);
+      parser.parse(is);
 		return new ClassVector(handler.x);
 	}
 
