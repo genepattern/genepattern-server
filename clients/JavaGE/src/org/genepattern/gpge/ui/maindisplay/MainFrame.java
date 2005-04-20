@@ -685,7 +685,7 @@ public class MainFrame extends JFrame {
           
       jobResultsTree = new SortableTreeTable(jobModel);
       projectDirModel = ProjectDirModel.getInstance();
-      projectDirTree = new SortableTreeTable(projectDirModel, false);
+      projectDirTree = new SortableTreeTable(projectDirModel);
 
 
       createJobActions();
