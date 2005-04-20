@@ -171,7 +171,7 @@ public class ClsParser {
 	}
 
 	private String[] processClassifier(String classifierLine, int num_classes)
-			throws IOException {
+			throws org.genepattern.io.ParseException {
 		// optional: class label line, otherwise the data line
 		// # Breast Colon Pancreas ...
 
@@ -180,7 +180,7 @@ public class ClsParser {
 				.substring(classifierLine.indexOf('#') + 1);
 		StringTokenizer st = new StringTokenizer(classifierLine);
 		if (st.countTokens() != num_classes) {
-			throw new IOException("First line specifies " + num_classes
+			throw new org.genepattern.io.ParseException("First line specifies " + num_classes
 					+ " classes, but found " + (st.countTokens()) + ".");
 		}
 		String[] names = new String[num_classes];
@@ -254,7 +254,7 @@ public class ClsParser {
 			}
 			return assignments;
 		} catch (NumberFormatException ex) {
-			throw new NumberFormatException(
+			throw new org.genepattern.io.ParseException(
 					"All data on the data line(s) (3rd and subsequent lines) "
 							+ "must be numbers!");
 		}
