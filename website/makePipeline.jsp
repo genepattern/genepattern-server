@@ -167,18 +167,11 @@ try {
 	if (language == null) language = "R";
 	String version = requestParameters.getParameter(GPConstants.VERSION);
 	Class clsPipelineCodeGenerator = Class.forName(AbstractPipelineCodeGenerator.class.getPackage().getName() + "." + language + "PipelineCodeGenerator");
-	Constructor consAbstractPipelineCodeGenerator = clsPipelineCodeGenerator.getConstructor(new Class[] {PipelineModel.class, String.class, java.util.List.class});
-   String server = "http://" + request.getServerName() + ":" + request.getServerPort();
-	List pipelineTasks = new ArrayList();
-   List jobSubmissions = model.getTasks();
-   LocalAdminClient adminClient = new LocalAdminClient(userID);
-   for(int i = 0; i < jobSubmissions.size(); i++) {
-      JobSubmission js = (JobSubmission) jobSubmissions.get(i);
-      pipelineTasks.add(adminClient.getTask(js.getLSID()));
-   }
+	Constructor consAbstractPipelineCodeGenerator = clsPipelineCodeGenerator.getConstructor(new Class[] {PipelineModel.class, String.class});
+	String server = "http://" + request.getServerName() + ":" + request.getServerPort();
+	LocalAdminClient adminClient = new LocalAdminClient(userID);
    
-   AbstractPipelineCodeGenerator codeGenerator = (AbstractPipelineCodeGenerator)consAbstractPipelineCodeGenerator.newInstance(new Object[] {model, server, pipelineTasks});
-   
+	AbstractPipelineCodeGenerator codeGenerator = (AbstractPipelineCodeGenerator)consAbstractPipelineCodeGenerator.newInstance(new Object[] {model, server});
    
 	PipelineController controller = new PipelineController(codeGenerator, model);
 
@@ -363,7 +356,7 @@ try {
                 
                 
 		boolean isVisualizer = ((String)mTia.get(GPConstants.TASK_TYPE)).equals(GPConstants.TASK_TYPE_VISUALIZER);
-		jobSubmission = new JobSubmission(taskName, mTaskInfo.getDescription(), taskLSID, params, runTimePrompt, isVisualizer);
+		jobSubmission = new JobSubmission(taskName, mTaskInfo.getDescription(), taskLSID, params, runTimePrompt, isVisualizer, mTaskInfo);
 
 		controller.addTask(jobSubmission);
 	}

@@ -561,6 +561,7 @@ public class PipelineModel implements Serializable {
 
 			}
 		}
+		job.setTaskInfo(taskInfo);
 
 		//for (int p = 0; formalParameters != null && p <
 		// formalParameters.length; p++) {

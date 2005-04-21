@@ -24,8 +24,6 @@ public abstract class AbstractPipelineCodeGenerator {
 
 	protected String server = null;
 
-	protected List jobSubmissionTaskInfos = null;
-
 	public static final String INHERIT_TASKNAME = "inheritTaskname";
 
 	public static final String INHERIT_FILENAME = "inheritFilename";
@@ -34,13 +32,9 @@ public abstract class AbstractPipelineCodeGenerator {
 
    protected AbstractPipelineCodeGenerator(){}
    
-	public AbstractPipelineCodeGenerator(PipelineModel model,
-			String server,
-			List jobSubmissionTaskInfos) {
+	public AbstractPipelineCodeGenerator(PipelineModel model, String server) {
 		this.model = model;
 		this.server = server;
-		this.jobSubmissionTaskInfos = jobSubmissionTaskInfos;
-		
 	}
 
 	public String generateCode() throws Exception {
@@ -54,7 +48,7 @@ public abstract class AbstractPipelineCodeGenerator {
 			JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
 			try {
 				
-				TaskInfo taskInfo = (TaskInfo) jobSubmissionTaskInfos.get(taskNum);
+				TaskInfo taskInfo = jobSubmission.getTaskInfo();
 				
 				parameterInfo = jobSubmission.giveParameterInfoArray();
 
@@ -191,7 +185,7 @@ public abstract class AbstractPipelineCodeGenerator {
 	* @param language the language to generate the code in
 	* 
 	*/
-	public static String getCode(PipelineModel model, List pipelineTaskInfos, String server, String language) throws Exception {
+	public static String getCode(PipelineModel model, String server, String language) throws Exception {
 		
 		Class clsPipelineCodeGenerator = Class
 				.forName(AbstractPipelineCodeGenerator.class.getPackage()
@@ -199,11 +193,11 @@ public abstract class AbstractPipelineCodeGenerator {
 						+ "." + language + "PipelineCodeGenerator");
 		Constructor consAbstractPipelineCodeGenerator = clsPipelineCodeGenerator
 				.getConstructor(new Class[] { PipelineModel.class,
-						String.class, List.class });
+						String.class });
 		AbstractPipelineCodeGenerator codeGenerator = (AbstractPipelineCodeGenerator) consAbstractPipelineCodeGenerator
 				.newInstance(new Object[] {
 						model,
-						server, pipelineTaskInfos });
+						server });
 		return codeGenerator.generateCode(); // R (or some other language)
 
 	}

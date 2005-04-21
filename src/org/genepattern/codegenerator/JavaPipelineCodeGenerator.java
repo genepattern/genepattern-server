@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Vector;
-import java.util.List;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
@@ -43,10 +42,8 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
 
    java.util.Map taskNum2ResultsArrayIndex = new java.util.HashMap();
 
-   public JavaPipelineCodeGenerator(PipelineModel model,
-			String server,
-			List jobSubmissionTaskInfos) {
-      super(model, server, jobSubmissionTaskInfos);
+   public JavaPipelineCodeGenerator(PipelineModel model, String server) {
+      super(model, server);
    }
 
    public JavaPipelineCodeGenerator() {

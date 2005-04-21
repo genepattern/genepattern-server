@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Vector;
 
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 
 public class JobSubmission implements Serializable {
 
@@ -20,15 +21,18 @@ public class JobSubmission implements Serializable {
 
 	protected boolean isVisualizer = false;
 
+	protected TaskInfo taskInfo = null;
+
 	public JobSubmission(String taskName, String taskDescription, String lsid,
 			ParameterInfo[] parameterInfoArray, boolean[] runTimePrompt,
-			boolean isVisualizer) {
+			boolean isVisualizer, TaskInfo taskInfo) {
 		setName(taskName);
 		setDescription(taskDescription);
 		setLSID(lsid);
 		setParameters(parameterInfoArray);
 		setRuntimePrompt(runTimePrompt);
 		setVisualizer(isVisualizer);
+		setTaskInfo(taskInfo);
 	}
 
 	public JobSubmission() {
@@ -96,5 +100,13 @@ public class JobSubmission implements Serializable {
 
 	public boolean isVisualizer() {
 		return isVisualizer;
+	}
+
+	public void setTaskInfo(TaskInfo taskInfo) {
+		this.taskInfo = taskInfo;
+	}
+
+	public TaskInfo getTaskInfo() {
+		return taskInfo;
 	}
 }
