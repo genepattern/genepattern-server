@@ -319,6 +319,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			TASK_NAME_COMPARATOR.setAscending(ascending);
 			jobComparator = TASK_NAME_COMPARATOR;
 			 
+         FILE_NAME_COMPARATOR.setAscending(ascending); // file name is used in case of tie when comparing by kind
          FILE_KIND_COMPARATOR.setAscending(ascending);
 			fileComparator = FILE_KIND_COMPARATOR;
 		   
@@ -641,20 +642,19 @@ public class JobModel extends AbstractSortableTreeTableModel {
               // if(paramJobNumber != jobNumber) {
                //   displayString = jobParameterInfo[j].getValue(); will prefix fileName with jobNumber/
                // }
-               int insertionIndex = 0;
+               
                ServerFileNode child = new ServerFileNode(displayString, fileName, j);
-               if (children != null) {
-                  insertionIndex = Collections.binarySearch(children, child,
-                        JobModel.getInstance().fileComparator);
-               }
-               if (insertionIndex < 0) {
-                  insertionIndex = -insertionIndex - 1;
-               }
-					insert(child, insertionIndex); 
+               
+					this.add(child); 
                child.updateFileInfo();
 					count++;
 				}
 			}
+         if(children!=null) {
+            Collections.sort(children,
+               JobModel.getInstance().fileComparator);
+         }
+         
 			return count;
 		}
 
@@ -692,9 +692,15 @@ public class JobModel extends AbstractSortableTreeTableModel {
 				sfn2 = (ServerFileNode) obj1;
 			}
 			String kind1 = sfn1.getFileInfo()!=null?sfn1.getFileInfo().getKind():"";
-			String kind2 = sfn2.getFileInfo()!=null?sfn2.getFileInfo().getKind():"";
 			
-			return kind1.compareTo(kind2);
+         String kind2 = sfn2.getFileInfo()!=null?sfn2.getFileInfo().getKind():"";
+			
+         
+			int result =  kind1.compareTo(kind2);
+         if(result==0) {
+            return FILE_NAME_COMPARATOR.compare(obj1, obj2); 
+         }
+         return result;
 		}
 
 	}
