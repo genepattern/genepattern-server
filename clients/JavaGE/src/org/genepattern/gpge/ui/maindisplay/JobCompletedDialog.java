@@ -21,6 +21,8 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
+import org.genepattern.gpge.ui.table.*;
+
 public class JobCompletedDialog {
 	JDialog dialog;
 
@@ -51,7 +53,7 @@ public class JobCompletedDialog {
 	public JobCompletedDialog(Frame parent) {
 		dialog = new CenteredDialog(parent);
 		dialog.setTitle("Recently Completed Jobs");
-		table = new JTable(tableModel);
+		table = new AlternatingColorTable(tableModel);
 		Container contentPane = dialog.getContentPane();
 		contentPane.setLayout(new BorderLayout());
 		contentPane.add(new JScrollPane(table), BorderLayout.CENTER);
