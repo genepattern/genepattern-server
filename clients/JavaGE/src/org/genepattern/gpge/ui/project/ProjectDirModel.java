@@ -31,30 +31,31 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 	RootNode root = new RootNode();
 
    
-	static final ProjectDirComparator PROJECT_NAME_COMPARATOR = new ProjectDirComparator();
+	final ProjectDirComparator PROJECT_NAME_COMPARATOR = new ProjectDirComparator();
 
-	static final ProjectDateComparator PROJECT_DATE_COMPARATOR = new ProjectDateComparator();
+	final ProjectDateComparator PROJECT_DATE_COMPARATOR = new ProjectDateComparator();
 	
 	private ProjectComparator projectComparator = PROJECT_NAME_COMPARATOR;
 	
 	
-   static final FileNameComparator FILE_NAME_COMPARATOR = new FileNameComparator();
    
-	static final FileKindComparator FILE_KIND_COMPARATOR = new FileKindComparator();
+   final FileNameComparator FILE_NAME_COMPARATOR = new FileNameComparator();
+   
+	final FileKindComparator FILE_KIND_COMPARATOR = new FileKindComparator();
 	
-	static final FileDateComparator FILE_DATE_COMPARATOR = new FileDateComparator();
+	final FileDateComparator FILE_DATE_COMPARATOR = new FileDateComparator();
 	
 	 /** current comparator for sorting files */
    private FileComparator fileComparator = FILE_NAME_COMPARATOR;
   
-	
-	
+
 	private java.text.DateFormat dateFormat = java.text.DateFormat.getDateTimeInstance(
 						java.text.DateFormat.SHORT, java.text.DateFormat.SHORT);
 					
    
    
 	private ProjectDirModel() {
+      
 	}
 
 	public void addProjectDirectoryListener(ProjectDirectoryListener l) {
@@ -216,7 +217,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
       
       public void setAscending(boolean b) {
          ascending = b;
-         FILE_NAME_COMPARATOR.setAscending(b);
+         ProjectDirModel.getInstance().FILE_NAME_COMPARATOR.setAscending(b);
       }
       
 		public int compare(Object obj1, Object obj2) {
@@ -224,7 +225,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 			FileNode n2 = (FileNode) obj2;
          int result = ascending ? n1.fileInfo.getKind().compareTo(n2.fileInfo.getKind()): n2.fileInfo.getKind().compareTo(n1.fileInfo.getKind());
          if(result==0) {
-            return FILE_NAME_COMPARATOR.compare(n1, n2);
+            return ProjectDirModel.getInstance().FILE_NAME_COMPARATOR.compare(n1, n2);
          }
          return result;
 		}
@@ -235,7 +236,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
       
       public void setAscending(boolean b) {
          ascending = b;
-         FILE_NAME_COMPARATOR.setAscending(b);
+         ProjectDirModel.getInstance().FILE_NAME_COMPARATOR.setAscending(b);
       }
       
 		public int compare(Object obj1, Object obj2) {
@@ -246,7 +247,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 			
          int result = ascending ? d1.compareTo(d2): d2.compareTo(d1);
          if(result==0) {
-            return FILE_NAME_COMPARATOR.compare(n1, n2);
+            return ProjectDirModel.getInstance().FILE_NAME_COMPARATOR.compare(n1, n2);
          }
          return result;
 		}
@@ -294,7 +295,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 			PROJECT_DATE_COMPARATOR.setAscending(ascending);
 			projectComparator = PROJECT_DATE_COMPARATOR;
       }
-		
+     
 		if (children != null) {
 			Collections.sort(children, projectComparator);
             
@@ -392,13 +393,19 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 					});
 				} catch(SecurityException se){}
 			}
+        
+         
 			if (files != null) {
+            
+           
+            FileComparator c = ProjectDirModel.getInstance().fileComparator;
+           
 				for (int i = 0; i < files.length; i++) {
-               int insertionIndex = 0;
+               
                FileNode child = new FileNode(files[i]);
-               if (children != null) {
-                  insertionIndex = Collections.binarySearch(children, child,
-                        ProjectDirModel.getInstance().fileComparator);
+               int insertionIndex = 0;
+               if(children!=null) {
+                  insertionIndex = Collections.binarySearch(children, child, c); 
                }
                if (insertionIndex < 0) {
                   insertionIndex = -insertionIndex - 1;
@@ -406,6 +413,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
       
 					insert(child, insertionIndex);
 				}
+            
 			}
 		}
 

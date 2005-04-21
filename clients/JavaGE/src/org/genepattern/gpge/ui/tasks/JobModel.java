@@ -42,12 +42,12 @@ public class JobModel extends AbstractSortableTreeTableModel {
    
    private int sortColumn = 0;
    
-   private final static JobNodeComparator TASK_NAME_COMPARATOR = new JobNodeComparator("org.genepattern.gpge.ui.tasks.JobModel$TaskNameComparator", false);
-   private final static JobNodeComparator TASK_DATE_COMPARATOR = new JobNodeComparator("org.genepattern.gpge.ui.tasks.JobModel$TaskCompletedDateComparator", false);
+   private final JobNodeComparator TASK_NAME_COMPARATOR = new JobNodeComparator("org.genepattern.gpge.ui.tasks.JobModel$TaskNameComparator", false);
+   private final JobNodeComparator TASK_DATE_COMPARATOR = new JobNodeComparator("org.genepattern.gpge.ui.tasks.JobModel$TaskCompletedDateComparator", false);
    private JobNodeComparator jobComparator = TASK_NAME_COMPARATOR;
 	
-	private final static FileComparator FILE_NAME_COMPARATOR = new ServerFileNameComparator(false);
-	private final static FileComparator FILE_KIND_COMPARATOR = new ServerFileKindComparator(false);	
+	private final FileComparator FILE_NAME_COMPARATOR = new ServerFileNameComparator(false);
+	private final FileComparator FILE_KIND_COMPARATOR = new ServerFileKindComparator(false);	
 	private FileComparator fileComparator = FILE_NAME_COMPARATOR;
         
 	private JobModel() {
@@ -698,7 +698,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
          
 			int result =  kind1.compareTo(kind2);
          if(result==0) {
-            return FILE_NAME_COMPARATOR.compare(obj1, obj2); 
+            return JobModel.getInstance().FILE_NAME_COMPARATOR.compare(obj1, obj2); 
          }
          return result;
 		}
