@@ -148,7 +148,7 @@ public class ClsParser {
 			}
 		} catch (NumberFormatException e) {
 			throw new org.genepattern.io.ParseException("Header line element '"
-					+ e.getMessage() + "' is not a number!");
+					+ e.getMessage() + "' is not a number");
 		}
 
 		if (hdrInts[0] <= 0) {
@@ -256,7 +256,7 @@ public class ClsParser {
 		} catch (NumberFormatException ex) {
 			throw new org.genepattern.io.ParseException(
 					"All data on the data line(s) (3rd and subsequent lines) "
-							+ "must be numbers!");
+							+ "must be numbers");
 		}
 	}
 
