@@ -6,15 +6,14 @@
 package org.genepattern.gpge;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
-import java.awt.Frame;
 import java.awt.Insets;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -36,11 +35,18 @@ import java.awt.Color;
  */
 public final class GenePattern {
   	static javax.swing.JFrame mainFrame;
+	static Icon icon;
 
 	/** Creates a new instance of GenePattern */
 
 	public GenePattern() {
+		java.net.URL imgURL = ClassLoader.getSystemResource("org/genepattern/gpge/resources/GPGE_small.jpg");
+      if(imgURL != null) {
+         icon = new ImageIcon(imgURL);
+		}
+			
 		try {
+			
 			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager
 					.getSystemLookAndFeelClassName());
 			if (!MainFrame.RUNNING_ON_MAC) {
@@ -109,13 +115,9 @@ public final class GenePattern {
 	}
 
    public static void showMessageDialog(String title, String message) {
-      if(MainFrame.windowStyle==MainFrame.WINDOW_STYLE_MDI) {
-         javax.swing.JOptionPane.showInternalMessageDialog(mainFrame, message, title,
+		javax.swing.JOptionPane.showMessageDialog(mainFrame, message, title,
 				javax.swing.JOptionPane.INFORMATION_MESSAGE);
-      } else {
-          javax.swing.JOptionPane.showMessageDialog(mainFrame, message, title,
-				javax.swing.JOptionPane.INFORMATION_MESSAGE);
-      }
+      
    }
    
    public static void showMessageDialog(String message) {
@@ -124,13 +126,9 @@ public final class GenePattern {
    
    
    public static void showErrorDialog(String title, String message) {
-      if(MainFrame.windowStyle==MainFrame.WINDOW_STYLE_MDI) {
-         javax.swing.JOptionPane.showInternalMessageDialog(mainFrame, message, "Error",
+		javax.swing.JOptionPane.showMessageDialog(mainFrame, message, "Error",
 				javax.swing.JOptionPane.ERROR_MESSAGE);
-      } else {
-         javax.swing.JOptionPane.showMessageDialog(mainFrame, message, "Error",
-				javax.swing.JOptionPane.ERROR_MESSAGE);
-      }
+      
 	}
    
    public static boolean disconnectedFromServer(org.genepattern.webservice.WebServiceException wse, String server) {
@@ -232,7 +230,7 @@ public final class GenePattern {
 				notes);
 		javax.swing.JOptionPane.showMessageDialog(getDialogParent(),
 				scroll_pane, "About GenePattern",
-				JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.INFORMATION_MESSAGE, icon);
 
 	}
 
@@ -244,7 +242,7 @@ public final class GenePattern {
 			ReportPanel warnings_panel = new ReportPanel(url,
 					((ReporterWithGUI) REPORTER).getWarnings());
 			JOptionPane.showMessageDialog(getDialogParent(), warnings_panel,
-					"All GenePattern Warnings", JOptionPane.WARNING_MESSAGE);
+					"All GenePattern Warnings", JOptionPane.WARNING_MESSAGE, icon);
 		} catch (java.io.IOException ex) {
 			showWarning(null, "Could not display warnings!\nGenePattern\n"
 					+ "Whitehead Institute Center for Genome Research\n"
@@ -262,7 +260,7 @@ public final class GenePattern {
 					((ReporterWithGUI) REPORTER).getErrors());
 			javax.swing.JOptionPane.showMessageDialog(getDialogParent(),
 					errors_panel, "GenePattern Analysis Module Errors",
-					JOptionPane.ERROR_MESSAGE);
+					JOptionPane.ERROR_MESSAGE, icon);
 		} catch (java.io.IOException ex) {
 			showWarning(null, "Could not display errors!\nGenePattern\n"
 					+ "Whitehead Institute Center for Genome Research\n"
