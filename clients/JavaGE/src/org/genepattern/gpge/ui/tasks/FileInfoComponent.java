@@ -24,6 +24,7 @@ public class FileInfoComponent extends JPanel {
       setLayout(new GridLayout(3, 1));
       add(nameLabel);
       add(sizeLabel);
+      add(extraLabel);
       java.awt.Dimension size = getPreferredSize();
       size.height += 10;
       setPreferredSize(size);
@@ -33,7 +34,12 @@ public class FileInfoComponent extends JPanel {
       nameLabel.setText("Name: " + name);
       if(fileInfo!=null) { 
          sizeLabel.setText("Size: " + fileInfo.getSize());
-         extraLabel.setText("");
+         if(fileInfo.getAnnotation()!=null) {
+            extraLabel.setText(fileInfo.getAnnotation() + "");
+         } else {
+            extraLabel.setText("");
+         }
+        
       } else {
           sizeLabel.setText("Size: ");
           extraLabel.setText("");
