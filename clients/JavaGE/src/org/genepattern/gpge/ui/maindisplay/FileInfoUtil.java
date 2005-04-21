@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -128,14 +129,14 @@ public class FileInfoUtil {
    }
 
 
-   public static FileInfo getInfo(java.net.URLConnection conn, String name) {
-      if(conn == null) {
+   public static FileInfo getInfo(URL url, String name) {
+      if(url == null) {
          return null;
       }
 
       InputStream is = null;
       try {
-         is = conn.getInputStream();
+         is = url.openConnection().getInputStream();
          String size = getSize(is.available());
          FileInfo fileInfo = _getInfo(name, is);
          fileInfo.setSize(size);
