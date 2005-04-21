@@ -47,8 +47,15 @@
       model.setLsid((String)tia.get(GPConstants.LSID));
       model.setUserID(userID);
       String server = "http://" + request.getServerName() + ":" + request.getServerPort();
+      List pipelineTasks = new ArrayList();
+      List jobSubmissions = model.getTasks();
+      LocalAdminClient adminClient = new LocalAdminClient(userID);
+      for(int i = 0; i < jobSubmissions.size(); i++) {
+         JobSubmission js = (JobSubmission) jobSubmissions.get(i);
+         pipelineTasks.add(adminClient.getTask(js.getLSID()));
+      }  
    
-		String code = AbstractPipelineCodeGenerator.getCode(model, server, language);
+		String code = AbstractPipelineCodeGenerator.getCode(model, pipelineTasks, server, language);
 		if (download) {
 			pipelineName = taskInfo.getName();
 			if("Java".equals(language)) {
