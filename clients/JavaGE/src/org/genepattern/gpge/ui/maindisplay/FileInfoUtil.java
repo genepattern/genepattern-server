@@ -311,7 +311,7 @@ public class FileInfoUtil {
            int total = Integer.parseInt(numCorrect) + Integer.parseInt(numErrors);
            return new KeyValuePair("Accuracy", numCorrect + "/" + total + " correct");
         } else if("Prediction Features".equals(model)) {
-           return new KeyValuePair("NumFeatures", numFeatures);
+           return new KeyValuePair("Features", numFeatures);
         }
         return null;
       }
