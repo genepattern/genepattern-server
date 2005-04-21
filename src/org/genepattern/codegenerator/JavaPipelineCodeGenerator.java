@@ -60,11 +60,6 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
    }
 
 
-   public String invoke() {
-      return "";
-   }
-
-
    /**
     *  generate the R source code that documents the pipeline, prompts for
     *  runtime parameter inputs, and offers download of output results

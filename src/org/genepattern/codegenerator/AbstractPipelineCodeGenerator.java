@@ -147,7 +147,7 @@ public abstract class AbstractPipelineCodeGenerator {
 	 * @author Jim Lerner
 	 *  
 	 */
-	private static ParameterInfo[] giveParameterInfoArray(PipelineModel model) {
+	public static ParameterInfo[] giveParameterInfoArray(PipelineModel model) {
 			Vector vParams = new Vector();
 			int taskNum = 1;
 			for (Enumeration eTasks = model.getTasks().elements(); eTasks
@@ -260,7 +260,6 @@ public abstract class AbstractPipelineCodeGenerator {
 		return "";
 	}
 
-	public abstract String invoke();
 
 	public abstract String getLanguage();
 }

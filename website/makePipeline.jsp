@@ -166,15 +166,7 @@ try {
 	String language = requestParameters.getParameter(GPConstants.LANGUAGE);
 	if (language == null) language = "R";
 	String version = requestParameters.getParameter(GPConstants.VERSION);
-	Class clsPipelineCodeGenerator = Class.forName(AbstractPipelineCodeGenerator.class.getPackage().getName() + "." + language + "PipelineCodeGenerator");
-	Constructor consAbstractPipelineCodeGenerator = clsPipelineCodeGenerator.getConstructor(new Class[] {PipelineModel.class, String.class});
-	String server = "http://" + request.getServerName() + ":" + request.getServerPort();
-	LocalAdminClient adminClient = new LocalAdminClient(userID);
-   
-	AbstractPipelineCodeGenerator codeGenerator = (AbstractPipelineCodeGenerator)consAbstractPipelineCodeGenerator.newInstance(new Object[] {model, server});
-   
-	PipelineController controller = new PipelineController(codeGenerator, model);
-
+	
 	JobSubmission jobSubmission = null;
 	String paramName = null;
 	String modelName = pipelineName;
@@ -358,7 +350,7 @@ try {
 		boolean isVisualizer = ((String)mTia.get(GPConstants.TASK_TYPE)).equals(GPConstants.TASK_TYPE_VISUALIZER);
 		jobSubmission = new JobSubmission(taskName, mTaskInfo.getDescription(), taskLSID, params, runTimePrompt, isVisualizer, mTaskInfo);
 
-		controller.addTask(jobSubmission);
+		model.addTask(jobSubmission);
 	}
 
 	if ((!bRun && !bClone) || vProblems.size() > 0) {
@@ -374,7 +366,8 @@ try {
 		<jsp:include page="navbar.jsp"></jsp:include>
 <%
 	}
-	String code = null;
+   PipelineController controller = new PipelineController(model);
+
 	//lsid = null;
 	if (vProblems.size() == 0) {
 		String oldLSID = lsid;
@@ -392,8 +385,6 @@ try {
 			model.setLsid("");
 		}
 
-		// then call code generator
-		code = controller.generateCode();
 		
 		if (!bRun) {
 			// save the task to the database
@@ -463,18 +454,17 @@ try {
 
 		// run immediately, without saving?
 		if (bRun) {
-                        
-			request.setAttribute("code", code);
 			request.setAttribute("cmd", "run");
 			request.setAttribute("name", pipelineName + (pipelineName.endsWith(GPConstants.TASK_TYPE_PIPELINE) ? "" : ("." + GPConstants.TASK_TYPE_PIPELINE)));
-			//request.setAttribute("R" + GPConstants.INVOKE, controller.invoke());
+			
 			request.setAttribute("saved", Boolean.FALSE);
+         
 			pTia = controller.giveTaskInfoAttributes();
                         pTaskInfo.setTaskInfoAttributes(pTia);
                         pTaskInfo.setParameterInfoArray(controller.giveParameterInfoArray());
 			pTaskInfo.setName(pipelineName + "." + GPConstants.TASK_TYPE_PIPELINE);
 			pTia.put(GPConstants.COMMAND_LINE, GPConstants.LEFT_DELIMITER + GPConstants.R + GPConstants.RIGHT_DELIMITER + " scriptNameNotUsed.r " + pipelineName + "." + GPConstants.TASK_TYPE_PIPELINE);
-			pTia.put(language + GPConstants.INVOKE, controller.invoke());	// save invocation string in TaskInfoAttributes
+			
 			pTia.put(GPConstants.CPU_TYPE, GPConstants.ANY);
 			pTia.put(GPConstants.OS, GPConstants.ANY);
 			pTia.put(GPConstants.LANGUAGE, language);

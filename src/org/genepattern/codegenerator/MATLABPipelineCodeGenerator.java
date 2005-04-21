@@ -56,10 +56,6 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator i
 				+ " has been saved as a pipeline task on " + server + ".";
 	}
 
-	public String invoke() {
-		return "";
-	}
-
 	/**
 	 * generate the R source code that documents the pipeline, prompts for
 	 * runtime parameter inputs, and offers download of output results

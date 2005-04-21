@@ -25,8 +25,6 @@ public class PipelineController {
 
 	PipelineModel model = null;
 
-	AbstractPipelineCodeGenerator codeGenerator = null;
-
 	// transient means: don't persist!!
 	transient Collection tmTasks = null; // collection of TaskInfo objects
 
@@ -35,22 +33,8 @@ public class PipelineController {
 		this.model = model;
 	}
 
-	public PipelineController(AbstractPipelineCodeGenerator codeGenerator,
-			PipelineModel model) {
-		this.codeGenerator = codeGenerator;
+	public PipelineController(PipelineModel model) {
 		this.model = model;
-	}
-
-	public void addTask(JobSubmission jobSubmission) {
-		model.addTask(jobSubmission);
-	}
-
-	public String generateUserInstructions() {
-		return codeGenerator.emitUserInstructions();
-	}
-
-	public String generateCode() throws Exception {
-		return codeGenerator.generateCode();
 	}
 
 	public void init() throws OmnigeneException, RemoteException {
@@ -71,10 +55,6 @@ public class PipelineController {
 		viewer.generateTask(ti);
 	}
 
-	public String invoke() {
-		return codeGenerator.invoke();
-	}
-
 	public void displayTasks() throws OmnigeneException, RemoteException {
 		TaskInfo ti = null;
 		for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext();) {
@@ -84,8 +64,8 @@ public class PipelineController {
 	}
 
    public String generateTask() throws TaskInstallationException {
-		String lsid = generateTask(codeGenerator
-				.giveParameterInfoArray());
+		String lsid = generateTask(AbstractPipelineCodeGenerator
+				.giveParameterInfoArray(model));
 		model.setLsid(lsid);
 		return lsid;
 	}
@@ -94,11 +74,8 @@ public class PipelineController {
 	public String generateTask(ParameterInfo[] params)
 			throws TaskInstallationException {
 		try {
-			TaskInfoAttributes tia = codeGenerator.getTaskInfoAttributes();
-			tia.put(codeGenerator.getLanguage() + GPConstants.INVOKE, codeGenerator.invoke()); // save
-																   // invocation
-																   // string in
-																   // TaskInfoAttributes
+			TaskInfoAttributes tia = AbstractPipelineCodeGenerator.getTaskInfoAttributes(model);
+			
 			tia.put(GPConstants.CPU_TYPE, GPConstants.ANY);
 			tia.put(GPConstants.OS, GPConstants.ANY);
 			tia.put(GPConstants.LANGUAGE, "Java");
@@ -133,11 +110,11 @@ public class PipelineController {
 	} 
 
 	public ParameterInfo[] giveParameterInfoArray() {
-		return codeGenerator.giveParameterInfoArray();
+		return AbstractPipelineCodeGenerator.giveParameterInfoArray(model);
 	}
 
 	public TaskInfoAttributes giveTaskInfoAttributes() {
-		return codeGenerator.getTaskInfoAttributes();
+		return AbstractPipelineCodeGenerator.getTaskInfoAttributes(model);
 	}
 
 	public Collection getCatalog() throws OmnigeneException, RemoteException {

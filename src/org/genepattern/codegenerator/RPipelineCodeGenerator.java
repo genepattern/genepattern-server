@@ -453,51 +453,6 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
 		return out.toString();
 	}
 
-	/**
-	 * Creates a String of R code that invokes the pipeline as an R method (like
-	 * any task would in R)
-	 * 
-	 * @return String R code that invokes the pipeline
-	 * @author Jim Lerner
-	 *  
-	 */
-	public String invoke() {
-		StringBuffer out = new StringBuffer();
-		out.append("results <- "
-				+ rEncode(model.getName() + "."
-						+ GPConstants.TASK_TYPE_PIPELINE) + "(");
-		boolean first = true;
-		int taskNum = 1;
-		ParameterInfo[] parameterInfo = null;
-		for (Enumeration eTasks = model.getTasks().elements(); eTasks
-				.hasMoreElements(); taskNum++) {
-			JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
-			String taskName = jobSubmission.getName();
-			String tName = taskName.replace('-', '.').replace('_', '.')
-					.replace(' ', '.');
-			String paramName = null;
-			parameterInfo = jobSubmission.giveParameterInfoArray();
-			if (parameterInfo != null) {
-				for (int i = 0; i < parameterInfo.length; i++) {
-					if (jobSubmission.getRuntimePrompt()[i]
-							&& !parameterInfo[i].isOutputFile()) {
-						if (!first) {
-							out.append(", ");
-						}
-						first = false;
-						paramName = tName + taskNum + "."
-								+ parameterInfo[i].getName().replace('_', '.');
-						out.append(paramName);
-					}
-				}
-			}
-		}
-		/*
-		 * if (!first) { out.append(", "); } out.append("server=defaultServer");
-		 */
-		out.append(")\n");
-		return out.toString();
-	}
 
 	/**
 	 * concrete method for AbstractPipelineCodeGenerator answering: "what
