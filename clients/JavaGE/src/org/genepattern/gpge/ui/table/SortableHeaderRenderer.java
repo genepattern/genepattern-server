@@ -244,7 +244,7 @@ public class SortableHeaderRenderer implements TableCellRenderer {
 
             switch (status) {
              case NOT_SORTED:
-                status = DESCENDING;
+                status = ASCENDING;
                 break;
              case ASCENDING:
                 status = DESCENDING;
