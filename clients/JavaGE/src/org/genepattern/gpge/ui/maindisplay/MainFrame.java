@@ -630,6 +630,7 @@ public class MainFrame extends JFrame {
       java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit()
 				.getScreenSize();
       if(RUNNING_ON_MAC) {
+         setSize(0,0);
          setLocation(screenSize.width/2, screenSize.height/2);     
          show(); // on Mac OSX the dialog won't stay on top unless the parent frame is visible when the dialog is created
       }
