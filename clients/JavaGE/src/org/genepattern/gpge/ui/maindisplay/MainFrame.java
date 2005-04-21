@@ -627,7 +627,9 @@ public class MainFrame extends JFrame {
       JWindow splash = GenePattern.showSplashScreen();
 		splash.setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		show(); // on Mac OSX the dialog won't stay on top unless the parent frame is visible when the dialog is created
       MessageDialog.init(this);
+		setVisible(false); 
 		String username = GPpropertiesManager
 				.getProperty(PreferenceKeys.USER_NAME);
 
@@ -739,7 +741,7 @@ public class MainFrame extends JFrame {
 			}
 		});
 
-      
+     
 		changeServer(server, username);
       
 		analysisServicePanel = new AnalysisServiceDisplay();
@@ -1197,6 +1199,7 @@ public class MainFrame extends JFrame {
          setTitle("GenePattern");
          getContentPane().add(label);
          getContentPane().add(progressBar, BorderLayout.SOUTH);
+			setResizable(false);
          pack();
       }
       
@@ -2026,12 +2029,19 @@ public class MainFrame extends JFrame {
 			public void sortOrderChanged(SortEvent e) {
 				int column = e.getColumn();
 				boolean ascending = e.isAscending();
+			
 				if (column == 0) {
-					comparator = new JobModel.TaskNameComparator(ascending);
+					JobModel.TaskNameComparator c = new JobModel.TaskNameComparator();
+					c.setAscending(ascending);
+					comparator = c;
 				} else if (column == 1) {
-					comparator = new JobModel.TaskCompletedDateComparator(ascending);
+					JobModel.TaskCompletedDateComparator c = new JobModel.TaskCompletedDateComparator();
+					c.setAscending(ascending);
+					comparator = c;
 				} else {
-					comparator = new JobModel.TaskSubmittedDateComparator(ascending);
+					JobModel.TaskSubmittedDateComparator c = new JobModel.TaskSubmittedDateComparator();
+					c.setAscending(ascending);
+					comparator = c;
 				}
 	
 				Collections.sort(sortedJobs, comparator);
@@ -2046,17 +2056,13 @@ public class MainFrame extends JFrame {
 				switch (c) {
 					case 0:
 						return JobModel.jobToString(job);
-					case 1:
+					case 2:
 						if (!complete) {
 							return jobInfo.getStatus();
 						}
 						return java.text.DateFormat.getDateTimeInstance(
 								java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
 								.format(jobInfo.getDateCompleted());
-					case 2:
-						return java.text.DateFormat.getDateTimeInstance(
-								java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
-								.format(jobInfo.getDateSubmitted());
 					default:
 						return null;
 				}
