@@ -84,7 +84,32 @@ public class SortableTreeTable extends JTreeTable implements
 				TreeSelectionModel.SINGLE_TREE_SELECTION);
 		setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		if(enableSort) {
-         new SortableHeaderRenderer(this, m);  
+         new SortableHeaderRenderer(this, m) {
+            public void setSortingStatus(int column, int status) {
+               
+               try {
+                  TreePath selectionPath = tree.getSelectionPath();
+                  List expandedPaths = new ArrayList();
+                  
+                  int rc = tree.getRowCount();
+                  for(int i = 0; i < rc; i++) {
+                     if(tree.isExpanded(i)) {
+                        expandedPaths.add(tree.getPathForRow(i));
+                     }
+                  }
+                     
+                  super.setSortingStatus(column,  status);
+                  for(int i = 0; i < expandedPaths.size(); i++) {
+                     TreePath path = (TreePath) expandedPaths.get(i);
+                     tree.expandPath(path);
+                  }
+                  if(selectionPath!=null) {
+                     tree.setSelectionPath(selectionPath);  
+                  }
+               } catch(Throwable t){}
+               
+            } 
+         };
       }
 
 	}
