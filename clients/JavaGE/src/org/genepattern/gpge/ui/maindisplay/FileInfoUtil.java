@@ -75,27 +75,27 @@ public class FileInfoUtil {
             ((IExpressionDataParser) parser).parse(is);
            
          } else if(parser instanceof ClsReader) {
-            List keyValuePairs = new ArrayList();
+           
             ClsReader clsReader = (ClsReader) parser;
             ClassVector cv = clsReader.read(is);
-            keyValuePairs.add(new KeyValuePair("Data Points", String.valueOf(cv.size())));
-            keyValuePairs.add(new KeyValuePair("Number of Classes", String.valueOf(cv.getClassCount())));
-            fileInfo.setAnnotations(keyValuePairs);
+            
+           // keyValuePairs.add(new KeyValuePair("Number of Classes", String.valueOf(cv.getClassCount())));
+            fileInfo.setAnnotation(new KeyValuePair("Data Points", String.valueOf(cv.size())));
          } else if(parser instanceof OdfParser) {
             ((OdfParser) parser).parse(is);
              
          }
       } catch(EndParseException epe) {// ignore
          if(parser instanceof IExpressionDataParser) {
-            fileInfo.setAnnotations(expressionDataHandler.getKeyValuePairs());
+            fileInfo.setAnnotation(expressionDataHandler.getKeyValuePair());
          } else if(parser instanceof OdfParser) {
             fileInfo.setKind(odfSummaryHandler.getModel());
-            fileInfo.setAnnotations(odfSummaryHandler.getKeyValuePairs());
+            fileInfo.setAnnotation(odfSummaryHandler.getKeyValuePair());
          }
       } catch(ParseException pe) {
          pe.printStackTrace();
          String message = pe.getMessage();
-         fileInfo.addAnnotation(new KeyValuePair("Error", message));
+         fileInfo.setAnnotation(new KeyValuePair("Error", message));
       } catch(IOException ioe) {
          ioe.printStackTrace();
       }
@@ -199,8 +199,8 @@ public class FileInfoUtil {
    public static class FileInfo {
       private String kind ="";
       private String size = "";
-      private List annotations = Collections.EMPTY_LIST;
-
+      private KeyValuePair annotation = null;
+      
       public String getSize() {
          return size;
       }
@@ -223,22 +223,12 @@ public class FileInfoUtil {
          }
       }
       
-      public List getAnnotations() {
-         if(annotations == null) {
-            return Collections.EMPTY_LIST;
-         }
-         return annotations;
+      public KeyValuePair getAnnotation() {
+         return annotation;
       }
       
-      public void setAnnotations(List list) {
-         annotations = list;
-      }
-      
-      void addAnnotation(KeyValuePair pair) {
-         if(annotations == Collections.EMPTY_LIST) {
-            annotations = new ArrayList();
-         }
-         annotations.add(pair);
+      public void setAnnotation(KeyValuePair s) {
+         annotation = s;
       }
       
       public String toString() {
@@ -251,10 +241,9 @@ public class FileInfoUtil {
       int rows, columns;
 
 
-      public List getKeyValuePairs() {
-         List list = new ArrayList();
-         list.add(new KeyValuePair("Dimensions", String.valueOf(rows) + "rows x " + String.valueOf(columns) + "columns"));
-         return list;
+      public KeyValuePair getKeyValuePair() {
+         return new KeyValuePair("Dimensions", String.valueOf(rows) + " rows x " + String.valueOf(columns) + " columns");
+       
       }
 
 
@@ -262,7 +251,7 @@ public class FileInfoUtil {
             boolean hasColumnDescriptions, boolean hasCalls)
              throws ParseException {
          this.rows = rows;
-         this.columns = columns;
+         this.columns = cols;
          throw new EndParseException();
       }
 
@@ -308,28 +297,23 @@ public class FileInfoUtil {
    private static class OdfSummaryHandler implements IOdfHandler {
       String model;
       String rows, columns;
-      List values;
-      static Set keys;
-
+      String numFeatures, numErrors, numCorrect;
 
       public OdfSummaryHandler() {
-         values = new ArrayList();
       }
 
-      static {
-         keys = new HashSet();
-         keys.add("NumFeatures");
-         keys.add("GeneName");
-         keys.add("NumErrors");
-         keys.add("NumCorrect");
-      }
+     
 
-
-      public List getKeyValuePairs() {
+      public KeyValuePair getKeyValuePair() {
         if("Dataset".equals(model)) {
-            values.add(new KeyValuePair("Dimensions", rows + "rows x " + columns + "columns"));
-         }
-         return values;
+            return new KeyValuePair("Dimensions", rows + " rows x " + columns + " columns");
+        } else if("Prediction Results".equals(model)) {
+           int total = Integer.parseInt(numCorrect) + Integer.parseInt(numErrors);
+           return new KeyValuePair("Accuracy", numCorrect + "/" + total + " correct");
+        } else if("Prediction Features".equals(model)) {
+           return new KeyValuePair("NumFeatures", numFeatures);
+        }
+        return null;
       }
 
       public void endHeader() throws ParseException {
@@ -354,9 +338,14 @@ public class FileInfoUtil {
             model = value;
          } else if(key.equalsIgnoreCase("DataLines")) {
             rows = value;
-         } else if(keys.contains(key)) {
-            values.add(new KeyValuePair(key, value));
-         }
+         } else if(key.equalsIgnoreCase("NumFeatures")) {
+            numFeatures = value;
+         } else if(key.equalsIgnoreCase("NumErrors")) {
+            numErrors = value;
+         } else if(key.equalsIgnoreCase("NumCorrect")) {
+            numCorrect = value;
+         } 
+        
       }
 
 
