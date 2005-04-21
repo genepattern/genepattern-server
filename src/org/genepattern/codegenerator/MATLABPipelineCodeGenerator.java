@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -42,9 +43,11 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator i
 
 	java.util.Map taskNum2ResultsArrayIndex = new java.util.HashMap();
 
-	public MATLABPipelineCodeGenerator(PipelineModel model, String server) {
-	      super(model, server);
-	}
+	public MATLABPipelineCodeGenerator(PipelineModel model,
+			String server,
+			List jobSubmissionTaskInfos) {
+      super(model, server, jobSubmissionTaskInfos);
+   }
    
    public MATLABPipelineCodeGenerator(){}
 
