@@ -37,8 +37,11 @@ public final class GenePattern {
   	static javax.swing.JFrame mainFrame;
 	static Icon icon;
 
-	/** Creates a new instance of GenePattern */
-
+	
+   public static Icon getIcon() {
+      return icon;   
+   }
+   
 	public GenePattern() {
 		java.net.URL imgURL = ClassLoader.getSystemResource("org/genepattern/gpge/resources/GPGE_small.jpg");
       if(imgURL != null) {
