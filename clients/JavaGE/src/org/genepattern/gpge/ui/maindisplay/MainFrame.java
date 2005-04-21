@@ -358,9 +358,9 @@ public class MainFrame extends JFrame {
       
       final boolean isLocalHost = analysisServiceManager.isLocalHost();
       if(isLocalHost) {
-         MessageDialog.getInstance().setText("Retrieving modules and jobs from local GenePattern server...");
+         MessageDialog.getInstance().setText("Retrieving modules and jobs from local GenePattern server");
       } else {
-         MessageDialog.getInstance().setText("Retrieving modules and jobs from " + server + "...");
+         MessageDialog.getInstance().setText("Retrieving modules and jobs from " + server);
       }
     
 	   historyMenu.clear();
@@ -627,7 +627,12 @@ public class MainFrame extends JFrame {
       JWindow splash = GenePattern.showSplashScreen();
 		splash.setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		show(); // on Mac OSX the dialog won't stay on top unless the parent frame is visible when the dialog is created
+      java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit()
+				.getScreenSize();
+      if(RUNNING_ON_MAC) {
+         setLocation(screenSize.width/2, screenSize.height/2);     
+         show(); // on Mac OSX the dialog won't stay on top unless the parent frame is visible when the dialog is created
+      }
       MessageDialog.init(this);
 		setVisible(false); 
 		String username = GPpropertiesManager
@@ -741,9 +746,9 @@ public class MainFrame extends JFrame {
 			}
 		});
 
-     
-		changeServer(server, username);
       
+		changeServer(server, username);
+      splash.dispose();
 		analysisServicePanel = new AnalysisServiceDisplay();
 
       jobResultsTree.setFocusable(true);
@@ -1056,8 +1061,6 @@ public class MainFrame extends JFrame {
 
       JScrollPane projectSP = new JScrollPane(projectDirTree);
       JScrollPane jobSP = new JScrollPane(jobResultsTree);
-      java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit()
-				.getScreenSize();
       int width = (int) (screenSize.width * .9);
       int height = (int) (screenSize.height * .9);
 
@@ -1131,7 +1134,6 @@ public class MainFrame extends JFrame {
       leftPane.setDividerLocation((int) (height * 0.4));
       splitPane.setDividerLocation((int) (width * 0.4));
       setJMenuBar(menuBar);
-		splash.dispose();
       show();
       addComponentListener(new ComponentAdapter() {
          public void componentResized(ComponentEvent event) {
@@ -1179,7 +1181,8 @@ public class MainFrame extends JFrame {
          super(parent);
          progressBar.setIndeterminate(true);
          label.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 14));
-         setTitle("GenePattern");
+         label.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+         setTitle("");
          getContentPane().add(label);
          getContentPane().add(progressBar, BorderLayout.SOUTH);
 			setResizable(false);
@@ -1348,7 +1351,7 @@ public class MainFrame extends JFrame {
    private boolean showConfirmDialog(java.awt.Component parent, String message) {
         if (JOptionPane.showOptionDialog(parent,
             message, null, JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE, null, new Object[] {
+            JOptionPane.WARNING_MESSAGE, GenePattern.getIcon(), new Object[] {
             "Yes", "No" }, "Yes")==JOptionPane.YES_OPTION) {
                return true;
         }   
@@ -1539,7 +1542,7 @@ public class MainFrame extends JFrame {
          return true;
       }
       String message = "An item named " + f.getName() + " already exists in this location. Do you want to replace it with the one that you are saving?";
-      if(JOptionPane.showOptionDialog(this, message, null, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[]{"Replace", "Cancel"}, "Cancel") != JOptionPane.YES_OPTION) {
+      if(JOptionPane.showOptionDialog(this, message, null, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, GenePattern.getIcon(), new Object[]{"Replace", "Cancel"}, "Cancel") != JOptionPane.YES_OPTION) {
          return false;
       }
       return true;
@@ -1668,7 +1671,7 @@ public class MainFrame extends JFrame {
    
 	public void refreshModules(boolean displayMessage) {
       if(displayMessage) {
-         MessageDialog.getInstance().setText("Retrieving modules...");
+         MessageDialog.getInstance().setText("Retrieving modules");
       }
      
 		setChangeServerActionsEnabled(false);
@@ -2242,7 +2245,7 @@ public class MainFrame extends JFrame {
 					javax.swing.JScrollPane sp = new javax.swing.JScrollPane(c);
 					javax.swing.JOptionPane.showMessageDialog(GenePattern
 							.getDialogParent(), sp, "Module Color Key",
-							JOptionPane.INFORMATION_MESSAGE);
+							JOptionPane.INFORMATION_MESSAGE, GenePattern.getIcon());
 				}
 			});
 
