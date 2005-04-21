@@ -15,6 +15,7 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import java.util.List;
 /**
  * Generate R code to form a pipeline of GenePatternAnalysis tasks, complete
  * with
@@ -42,9 +43,11 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
 	/** number of tasks in the pipeline */
 	int numTasks = 0;
 
-	public RPipelineCodeGenerator(PipelineModel model, String server) {
-		super(model, server);
-	}
+	public RPipelineCodeGenerator(PipelineModel model,
+			String server,
+			List jobSubmissionTaskInfos) {
+      super(model, server, jobSubmissionTaskInfos);
+   }
 
    public RPipelineCodeGenerator(){}
    
