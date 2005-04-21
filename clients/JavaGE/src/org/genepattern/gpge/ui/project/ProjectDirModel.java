@@ -394,7 +394,17 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 			}
 			if (files != null) {
 				for (int i = 0; i < files.length; i++) {
-					add(new FileNode(files[i]));
+               int insertionIndex = 0;
+               FileNode child = new FileNode(files[i]);
+               if (children != null) {
+                  insertionIndex = Collections.binarySearch(children, child,
+                        ProjectDirModel.getInstance().fileComparator);
+               }
+               if (insertionIndex < 0) {
+                  insertionIndex = -insertionIndex - 1;
+               }
+      
+					insert(child, insertionIndex);
 				}
 			}
 		}
