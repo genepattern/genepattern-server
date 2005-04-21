@@ -797,13 +797,11 @@ public class MainFrame extends JFrame {
             if (selectedJobNode instanceof JobModel.ServerFileNode) {
 					JobModel.ServerFileNode node = (JobModel.ServerFileNode) selectedJobNode;
 
-					try {
-						HttpURLConnection connection = (HttpURLConnection) node
-								.getURL().openConnection();
-                  fileSummaryComponent.select(connection, node.name);
+					
+                  fileSummaryComponent.setText(node.name, node.getFileInfo());
                   MenuItemAction[] mi = null;
                   if(inputTypeToMenuItemsMap!=null) {
-                     mi = (MenuItemAction[]) inputTypeToMenuItemsMap.get(fileSummaryComponent.getSemanticType());
+                     mi = (MenuItemAction[]) inputTypeToMenuItemsMap.get(node.getFileInfo().getKind());
                   }
                   if(mi!=null) {
                      for(int i = 0; i < mi.length; i++) {
@@ -826,14 +824,11 @@ public class MainFrame extends JFrame {
 							
 						//}
 
-					} catch (IOException ioe) {
-                  ioe.printStackTrace();
-					}
+					
 
 				} else {
-					try {
-						fileSummaryComponent.select(null);
-					} catch (IOException x) {}
+               fileSummaryComponent.clear();
+					
 				}
          }
       });
@@ -939,41 +934,29 @@ public class MainFrame extends JFrame {
 					FileInputStream fis = null;
 					File f = null;
                projectFileViewModulesMenu.removeAll();
-					try {
-						f = new File(parent.directory, node.file.getName());
-                  fileSummaryComponent.select(f);
-                  
-                  MenuItemAction[] mi = null;
-                  if(inputTypeToMenuItemsMap!=null) {
-                     mi = (MenuItemAction[]) inputTypeToMenuItemsMap.get(fileSummaryComponent.getSemanticType());
+					
+               if(!new File(parent.directory, node.file.getName()).exists()) {
+                  projectDirModel.refresh(parent);
+                  fileSummaryComponent.clear();
+                  return;
+               }
+               
+               fileSummaryComponent.setText(node.file.getName(), node.getFileInfo());
+               
+               MenuItemAction[] mi = null;
+               if(inputTypeToMenuItemsMap!=null) {
+                  mi = (MenuItemAction[]) inputTypeToMenuItemsMap.get(node.getFileInfo().getKind());
+               }
+               if(mi!=null) {
+                  for(int i = 0; i < mi.length; i++) {
+                     projectFileViewModulesMenu.add(mi[i]);
                   }
-                  if(mi!=null) {
-                     for(int i = 0; i < mi.length; i++) {
-                        projectFileViewModulesMenu.add(mi[i]);
-                     }
-                  }
-                  projectFileViewModulesMenu.setEnabled(mi!=null && mi.length > 0);
-						
-					} catch (IOException ioe) {
-                  ioe.printStackTrace();
-						if (!f.exists()) {
-							projectDirModel.refresh(parent);
-						}
-					} finally {
-						if (fis != null) {
-							try {
-								fis.close();
-							} catch (IOException x) {
-							}
-						}
-					}
+               }
+               projectFileViewModulesMenu.setEnabled(mi!=null && mi.length > 0);
 
 				} else {
-					try {
-                  fileSummaryComponent.select(null);
+               fileSummaryComponent.clear();
 
-					} catch (IOException x) {
-					}
 				}
 
          }
