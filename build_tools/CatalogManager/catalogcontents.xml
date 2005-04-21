@@ -162,6 +162,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00032=3 HeatMapImage.zip"/>
+	</commandline>
+</cvs>
+<copy file="HeatMapImage.zip" tofile="catalogregen/HeatMapImage.3.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00010=0 HeatMapViewer.zip"/>
 	</commandline>
 </cvs>
@@ -351,6 +358,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00023=2 SOMClusterViewer.zip"/>
+	</commandline>
+</cvs>
+<copy file="SOMClusterViewer.zip" tofile="catalogregen/SOMClusterViewer.2.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00025=0 SVM.zip"/>
 	</commandline>
 </cvs>
@@ -449,6 +463,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00026=3 TransposeDataset.zip"/>
+	</commandline>
+</cvs>
+<copy file="TransposeDataset.zip" tofile="catalogregen/TransposeDataset.3.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00036=0 VariationFilter.zip"/>
 	</commandline>
 </cvs>
@@ -530,6 +551,27 @@
 	</commandline>
 </cvs>
 <copy file="ImputeMissingValues.zip" tofile="catalogregen/ImputeMissingValues.KNN.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00044=1 ComparativeMarkerSelection.zip"/>
+	</commandline>
+</cvs>
+<copy file="ComparativeMarkerSelection.zip" tofile="catalogregen/ComparativeMarkerSelection.1.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00046=1 ExtractComparativeMarkerResults.zip"/>
+	</commandline>
+</cvs>
+<copy file="ExtractComparativeMarkerResults.zip" tofile="catalogregen/ExtractComparativeMarkerResults.1.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00045=1 ComparativeMarkerSelectionViewer.zip"/>
+	</commandline>
+</cvs>
+<copy file="ComparativeMarkerSelectionViewer.zip" tofile="catalogregen/ComparativeMarkerSelectionViewer.1.zip" />
 
 </target>
 </project>
