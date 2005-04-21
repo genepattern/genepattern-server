@@ -96,8 +96,12 @@ public class TreeTableModelAdapter extends AbstractTableModel {
       SwingUtilities.invokeLater(
          new Runnable() {
             public void run() {
+               TreePath selectionPath = tree.getSelectionPath();
                fireTableDataChanged();
                tree.updateUI();
+               if(selectionPath!=null) {
+                  tree.setSelectionPath(selectionPath);  
+               }
             }
          });
    }
