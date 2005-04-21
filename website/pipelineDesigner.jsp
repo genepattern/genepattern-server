@@ -502,26 +502,39 @@ function chgLSIDVer(oldTaskNum, selector) {
 
    	for (param in task.parameterInfoArray) {
 		var pi = task.parameterInfoArray[param];
+		var oldParam;
+	   	for (oldParam in oldTask.parameterInfoArray) {
+			if (oldTask.parameterInfoArray[oldParam].name == pi.name) break;
+		}
+		if (oldTask.parameterInfoArray[oldParam].name != pi.name) {
+			//alert("unable to find " + pi.name + " in old task");
+			continue;
+		}
+		//if (param != oldParam) alert(pi.name + " was in slot " + oldParam + " but now in " + param);
 
 		// cannot assume that all old variables are present in new task
 		if (document.forms["pipeline"]['t' + oldTaskNum + '_' + pi.name]==null) {
-			alert(pi.name + ' is in the new task but not the old one');
+			alert(pi.name + ' is in the current version but not the previous one');
+			continue;
+		}
+		if (document.forms["pipeline"]['t' + newTaskNum + '_' + pi.name]==null) {
+			alert(pi.name + ' is in the previous version but not the current one');
 			continue;
 		}
 
 		if (pi.isInputFile) {
-			if (document.forms["pipeline"]['t' + oldTaskNum + '_shadow' + param].value != '') {
-				setParameter(newTaskNum, 'shadow' + param, document.forms["pipeline"]['t' + oldTaskNum + '_shadow' + param].value);
+			if (document.forms["pipeline"]['t' + oldTaskNum + '_shadow' + oldParam].value != '') {
+				setParameter(newTaskNum, 'shadow' + param, document.forms["pipeline"]['t' + oldTaskNum + '_shadow' + oldParam].value);
 			}
 			if (oldTaskNum == 0) continue; // first task can't inherit from anywhere
-			var inheritsFromTaskNum = document.forms["pipeline"]['t' + oldTaskNum + '_i_' + param].selectedIndex - 1;
+			var inheritsFromTaskNum = document.forms["pipeline"]['t' + oldTaskNum + '_i_' + oldParam].selectedIndex - 1;
 			if (inheritsFromTaskNum < 0) continue;
 			if (inheritsFromTaskNum >= newTaskNum) {
 				inheritsFromTaskNum++;
 			} else {
 			}
 			if (oldTaskNum > 0) {
-				setFileInheritance(newTaskNum, param, inheritsFromTaskNum, getSelectorValues(document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param]));
+				setFileInheritance(newTaskNum, param, inheritsFromTaskNum, getSelectorValues(document.forms["pipeline"]['t' + oldTaskNum + '_if_' + oldParam]));
 			}
 			else { 
 				//alert('not setting file inheritance');
