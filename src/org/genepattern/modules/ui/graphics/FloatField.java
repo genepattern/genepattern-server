@@ -36,9 +36,6 @@ public class FloatField extends JTextField {
 		try {
 			retVal = floatFormatter.parse(super.getText()).floatValue();
 		} catch (ParseException e) {
-			// This should never happen because insertString allows
-			// only properly formatted data to get in the field.
-			Toolkit.getDefaultToolkit().beep();
 			throw new IllegalStateException(
 					"Somehow the value is not a number: '" + super.getText()
 							+ "'");
@@ -46,10 +43,6 @@ public class FloatField extends JTextField {
 		return retVal;
 	}
 
-	/** gets the text without any formatting */
-	public String getText() {
-		return String.valueOf(getFloat());
-	}
 
 	/** get the Number object */
 	public final Number getValue() {

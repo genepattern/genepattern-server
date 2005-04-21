@@ -38,7 +38,6 @@ public class IntegerField extends JTextField {
 		} catch (ParseException e) {
 			// This should never happen because insertString allows
 			// only properly formatted data to get in the field.
-			Toolkit.getDefaultToolkit().beep();
 			throw new IllegalStateException(
 					"Somehow the value is not a number: '" + getText() + "'");
 		}

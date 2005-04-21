@@ -79,7 +79,6 @@ public class ChangeValidatedDocument extends PlainDocument {
 				&& status.getIndex() == proposedResult.length() && status
 				.getErrorIndex() < 0);
 		if (!ok) {
-			Toolkit.getDefaultToolkit().beep();
 			System.err.println("insertString: could not parse: "
 					+ proposedResult);
 		}
