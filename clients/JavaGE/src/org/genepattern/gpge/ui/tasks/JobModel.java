@@ -319,8 +319,9 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			TASK_NAME_COMPARATOR.setAscending(ascending);
 			jobComparator = TASK_NAME_COMPARATOR;
 			 
+         FILE_KIND_COMPARATOR.setAscending(ascending);
 			fileComparator = FILE_KIND_COMPARATOR;
-		   FILE_KIND_COMPARATOR.setAscending(ascending);
+		   
          
       } else if(column==2){ // date
          TASK_DATE_COMPARATOR.setAscending(ascending);
@@ -340,11 +341,8 @@ public class JobModel extends AbstractSortableTreeTableModel {
       	}
 			nodeStructureChanged(root);
 		}  
-		  
-      
-			
-		
 	}
+   
 
 	protected void notifyJobAdded(AnalysisJob job) {
 		Object[] listeners = listenerList.getListenerList();
@@ -643,15 +641,20 @@ public class JobModel extends AbstractSortableTreeTableModel {
               // if(paramJobNumber != jobNumber) {
                //   displayString = jobParameterInfo[j].getValue(); will prefix fileName with jobNumber/
                // }
-               ServerFileNode sfn = new ServerFileNode(displayString, fileName, j);
-					add(sfn);
-               sfn.updateFileInfo();
+               int insertionIndex = 0;
+               ServerFileNode child = new ServerFileNode(displayString, fileName, j);
+               if (children != null) {
+                  insertionIndex = Collections.binarySearch(children, child,
+                        JobModel.getInstance().fileComparator);
+               }
+               if (insertionIndex < 0) {
+                  insertionIndex = -insertionIndex - 1;
+               }
+					insert(child, insertionIndex); 
+               child.updateFileInfo();
 					count++;
 				}
 			}
-         if(children!=null) {
-            Collections.sort(children);// sort files alphabetically
-         }
 			return count;
 		}
 
