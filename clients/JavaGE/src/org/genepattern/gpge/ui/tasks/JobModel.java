@@ -23,25 +23,33 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.*;
 import org.genepattern.gpge.ui.treetable.*;
 import org.genepattern.gpge.ui.table.*;
-
+import org.genepattern.gpge.ui.maindisplay.FileInfoUtil;
+import org.genepattern.gpge.ui.maindisplay.AscendingComparator;
 /**
  * Job model
  * 
  * @author Joshua Gould
  */
 public class JobModel extends AbstractSortableTreeTableModel {
-	String[] columnNames = { "Name", "Completed" };
+	String[] columnNames = { "Name", "Kind", "Completed" };
 
 	Class[] columnClasses = {
-			org.jdesktop.swing.treetable.TreeTableModel.class, String.class };
+			org.jdesktop.swing.treetable.TreeTableModel.class, String.class, String.class };
 
 	static JobModel instance = new JobModel();
 
 	RootNode root = new RootNode();
    
-   private Comparator comparator = new JobNodeComparatorWrapper("org.genepattern.gpge.ui.tasks.JobModel$TaskNameComparator", false);
    private int sortColumn = 0;
    
+   private final static JobNodeComparator TASK_NAME_COMPARATOR = new JobNodeComparator("org.genepattern.gpge.ui.tasks.JobModel$TaskNameComparator", false);
+   private final static JobNodeComparator TASK_DATE_COMPARATOR = new JobNodeComparator("org.genepattern.gpge.ui.tasks.JobModel$TaskCompletedDateComparator", false);
+   private JobNodeComparator jobComparator = TASK_NAME_COMPARATOR;
+	
+	private final static FileComparator FILE_NAME_COMPARATOR = new ServerFileNameComparator(false);
+	private final static FileComparator FILE_KIND_COMPARATOR = new ServerFileKindComparator(false);	
+	private FileComparator fileComparator = FILE_NAME_COMPARATOR;
+        
 	private JobModel() {
 	}
    
@@ -237,7 +245,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
          List children = root.getChildren();
          if (children != null) {
             insertionIndex = Collections.binarySearch(children, child,
-                  comparator);   
+                  jobComparator);   
          }
          if (insertionIndex < 0) {
             insertionIndex = -insertionIndex - 1;
@@ -292,21 +300,50 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		nodeChanged(jobNode);
 		notifyJobStatusChanged(job);
 	}
-
+	
 	public void sortOrderChanged(SortEvent e) {
 		int column = e.getColumn();
 		boolean ascending = e.isAscending();
 		sortColumn = column;
-		if (column == 0) {
-        comparator = new JobNodeComparatorWrapper("org.genepattern.gpge.ui.tasks.JobModel$TaskNameComparator", ascending);
-		} else {
-         comparator = new JobNodeComparatorWrapper("org.genepattern.gpge.ui.tasks.JobModel$TaskCompletedDateComparator", ascending);
-		}
       List children = root.getChildren();
-      if (children != null) {
-         Collections.sort(children, comparator);
-			 nodeStructureChanged(root);;
+         
+		if (column == 0) {
+        
+        TASK_NAME_COMPARATOR.setAscending(ascending);
+		  jobComparator = TASK_NAME_COMPARATOR;
+		  
+		  FILE_NAME_COMPARATOR.setAscending(ascending);
+        fileComparator = FILE_NAME_COMPARATOR;
+			  
+		} else if(column==1) { // kind
+			TASK_NAME_COMPARATOR.setAscending(ascending);
+			jobComparator = TASK_NAME_COMPARATOR;
+			 
+			fileComparator = FILE_KIND_COMPARATOR;
+		   FILE_KIND_COMPARATOR.setAscending(ascending);
+         
+      } else if(column==2){ // date
+         TASK_DATE_COMPARATOR.setAscending(ascending);
+			jobComparator = TASK_DATE_COMPARATOR;
+			 
+			FILE_NAME_COMPARATOR.setAscending(ascending);
+			fileComparator = FILE_NAME_COMPARATOR;
 		}
+   
+		if (children != null) {
+			Collections.sort(children, jobComparator);
+      	for(int i = 0; i < children.size(); i++) {
+				JobNode node = (JobNode) children.get(i);  
+				if(node.getChildren()!=null) {
+					Collections.sort(node.getChildren(), fileComparator);
+         	}
+      	}
+			nodeStructureChanged(root);
+		}  
+		  
+      
+			
+		
 	}
 
 	protected void notifyJobAdded(AnalysisJob job) {
@@ -392,7 +429,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
             }
 
             int insertionIndex = Collections.binarySearch(children, child,
-                     comparator);   
+                     jobComparator);   
             
             if (insertionIndex < 0) {
                insertionIndex = -insertionIndex - 1;
@@ -433,6 +470,8 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			switch (column) {
 			case 0:
 				return f.name;
+		   case 1:
+				return f.getFileInfo()!=null?f.getFileInfo().getKind():"";
 			default:
 				return null;
 			}
@@ -441,7 +480,9 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			switch (column) {
 			case 0:
 				return j.toString();
-			default:
+		   case 1:
+				return "Job";
+			case 2:
 				JobInfo jobInfo = j.job.getJobInfo();
 				if (!j.complete) {
               String status = jobInfo.getStatus();
@@ -475,12 +516,22 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
       /** The index in the <tt>ParameterInfo</tt> array of this job result file */
 		public final int index;
-
+      
+      private FileInfoUtil.FileInfo fileInfo;
+      
 		public ServerFileNode(String displayString, String name, int index) {
          this.displayString = displayString;
 			this.name = name;
-			this.index = index;
+			this.index = index; 
 		}
+      
+      void updateFileInfo() {
+         fileInfo = FileInfoUtil.getInfo(getURL(), displayString);  
+      }
+      
+      public FileInfoUtil.FileInfo getFileInfo() {
+         return fileInfo;   
+      }
       
       public String getParameterValue() {
           JobNode parent = (JobNode) getParent();
@@ -553,6 +604,10 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 		boolean complete = false;
 
+		Vector getChildren() {
+			return children;	
+		}
+		
 		public boolean isComplete() {
 			return complete;
 		}
@@ -588,7 +643,9 @@ public class JobModel extends AbstractSortableTreeTableModel {
               // if(paramJobNumber != jobNumber) {
                //   displayString = jobParameterInfo[j].getValue(); will prefix fileName with jobNumber/
                // }
-					add(new ServerFileNode(displayString, fileName, j));
+               ServerFileNode sfn = new ServerFileNode(displayString, fileName, j);
+					add(sfn);
+               sfn.updateFileInfo();
 					count++;
 				}
 			}
@@ -607,14 +664,80 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		}
 
 	}
-
-   private static class JobNodeComparatorWrapper implements Comparator {
-		
-      Comparator c;
+   
+	
+	
+	private static class ServerFileKindComparator implements FileComparator {
+		boolean ascending;
       
-		public JobNodeComparatorWrapper(String className, boolean ascending) {
+		public ServerFileKindComparator(boolean ascending) {
+			this.ascending = ascending;
+		}
+		
+		public void setAscending(boolean ascending) {
+			this.ascending = ascending;
+		}
+      
+		public int compare(Object obj1, Object obj2) {
+			ServerFileNode sfn1 = null;
+			ServerFileNode sfn2 = null;
+			if (ascending) {
+				sfn1 = (ServerFileNode) obj1;
+				sfn2 = (ServerFileNode) obj2;
+			} else {
+				sfn1 = (ServerFileNode) obj2;
+				sfn2 = (ServerFileNode) obj1;
+			}
+			String kind1 = sfn1.getFileInfo()!=null?sfn1.getFileInfo().getKind():"";
+			String kind2 = sfn2.getFileInfo()!=null?sfn2.getFileInfo().getKind():"";
+			
+			return kind1.compareTo(kind2);
+		}
+
+	}
+	
+	
+	
+   private static class ServerFileNameComparator implements FileComparator {
+		boolean ascending;
+      
+		public ServerFileNameComparator(boolean ascending) {
+			this.ascending = ascending;
+		}
+		
+		public void setAscending(boolean ascending) {
+			this.ascending = ascending;
+		}
+      
+		public int compare(Object obj1, Object obj2) {
+			ServerFileNode sfn1 = null;
+			ServerFileNode sfn2 = null;
+			if (ascending) {
+				sfn1 = (ServerFileNode) obj1;
+				sfn2 = (ServerFileNode) obj2;
+			} else {
+				sfn1 = (ServerFileNode) obj2;
+				sfn2 = (ServerFileNode) obj1;
+			}
+			return sfn1.toString().compareTo(
+			   sfn2.toString());
+		}
+
+	}
+
+   private static class JobNodeComparator implements AscendingComparator {
+		
+      AscendingComparator c;
+      
+      
+      public void setAscending(boolean ascending) {
+			c.setAscending(ascending);
+		}
+      
+		public JobNodeComparator(String className, boolean ascending) {
          try {
-            c = (Comparator) Class.forName(className).getDeclaredConstructor(new Class[]{boolean.class}).newInstance(new Object[]{new Boolean(ascending)});
+            c = (AscendingComparator) Class.forName(className).newInstance();
+            c.setAscending(ascending);
          } catch(Exception e) {
             e.printStackTrace();  
          }
@@ -630,10 +753,10 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			
 	}
    
-   public static class TaskSubmittedDateComparator implements Comparator {
+   public static class TaskSubmittedDateComparator implements JobComparator {
 		boolean ascending;
       
-		public TaskSubmittedDateComparator(boolean ascending) {
+		public void setAscending(boolean ascending) {
 			this.ascending = ascending;
 		}
       
@@ -654,12 +777,11 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		}
 
 	}
-
-   
-	public static class TaskCompletedDateComparator implements Comparator {
+ 
+	public static class TaskCompletedDateComparator implements JobComparator {
 		boolean ascending;
       
-		public TaskCompletedDateComparator(boolean ascending) {
+		public void setAscending(boolean ascending) {
 			this.ascending = ascending;
 		}
       
@@ -693,10 +815,10 @@ public class JobModel extends AbstractSortableTreeTableModel {
    
       
       
-	public static class TaskNameComparator implements Comparator {
+	public static class TaskNameComparator implements JobComparator {
 		boolean ascending;
 
-		public TaskNameComparator(boolean ascending) {
+		public void setAscending(boolean ascending) {
 			this.ascending = ascending;
 		}
 
@@ -720,5 +842,9 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			return children;
 		}
 	}
+	
+	private static interface FileComparator extends AscendingComparator{}
+	
+	private static interface JobComparator extends AscendingComparator{}
 
 }
