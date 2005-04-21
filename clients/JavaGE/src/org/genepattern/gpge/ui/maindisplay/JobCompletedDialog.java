@@ -3,6 +3,7 @@ package org.genepattern.gpge.ui.maindisplay;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -21,7 +22,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
 public class JobCompletedDialog {
-	JFrame dialog;
+	JDialog dialog;
 
 	JTable table;
 
@@ -47,8 +48,8 @@ public class JobCompletedDialog {
 		return showDialog;
 	}
 
-	public JobCompletedDialog() {
-		dialog = new JFrame();
+	public JobCompletedDialog(Frame parent) {
+		dialog = new CenteredDialog(parent);
 		dialog.setTitle("Recently Completed Jobs");
 		table = new JTable(tableModel);
 		Container contentPane = dialog.getContentPane();

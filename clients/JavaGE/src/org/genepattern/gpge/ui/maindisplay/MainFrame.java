@@ -2335,7 +2335,7 @@ public class MainFrame extends JFrame {
 				}
 			});
 			add(openProjectDirItem);
-			jobCompletedDialog = new JobCompletedDialog();
+			jobCompletedDialog = new JobCompletedDialog(MainFrame.this);
 			final javax.swing.JCheckBoxMenuItem showJobCompletedDialogMenuItem = new javax.swing.JCheckBoxMenuItem(
 					"Alert On Job Completion");
 			showJobCompletedDialogMenuItem.setSelected(jobCompletedDialog
