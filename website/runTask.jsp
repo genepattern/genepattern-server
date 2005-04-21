@@ -333,13 +333,14 @@ if (taskName != null) {
 		String[] choices = null;
 		String[] stChoices = pi.getChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 		String val = pi.getValue();
+		boolean isOptional = ((String)pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET])).length() > 0;
 		String defaultValue = (request.getParameter(pi.getName()) != null ? request.getParameter(pi.getName()) : (String)pia.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]));
 		if (defaultValue != null) defaultValue = defaultValue.trim();
 		String description = pi.getDescription();
 %>
 
 		<tr>
-     		<td align="right"  valign="top"><nobr><%= pi.getName().replace('.',' ') %>:</nobr></td>
+     		<td align="right"  valign="top"><nobr><%= !isOptional ? "<b>" : "" %><%= pi.getName().replace('.',' ') %>:<%= !isOptional ? "<span style=\"font-size: medium;\"> *</span></b>" : "" %></nobr></td>
 		<td valign="top" align='left'>
 
 <% 		if (pi.isInputFile()) { %>
