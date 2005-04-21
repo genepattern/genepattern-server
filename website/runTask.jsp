@@ -171,6 +171,7 @@ try {
 int numRowsToDisplay = 15; 
 int rowsDisplayed = 0; // increment for each <tr> in this table
 
+
 //// GET THE EXECUTION LOG FOR WRITING TO THE TEXTAREA
 for(int i = 0; i < jobs.length; i++) {
    JobInfo job = jobs[i];
@@ -266,6 +267,12 @@ for(int i = 0; i < jobs.length; i++) {
 // System.out
    if (rowsDisplayed >= numRowsToDisplay) break;
 }
+
+if (rowsDisplayed == 0){
+ out.print("<tr><td colspan=3 align=\"right\" >No completed jobs available to display</td></tr>");
+
+}
+
 out.println("</td></tr><tr><td colspan=3><form name='execLogForm'><TEXTAREA name='execLogArea' style=\"font-size:9px;font-family: arial, helvetica, sans-serif;width: 100%;\" rows='5'  readonly wrap='soft' bgcolor='#EFEFFF'></textarea></form></td></tr>");
 
 
