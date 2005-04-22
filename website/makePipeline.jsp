@@ -9,13 +9,13 @@
 		 java.io.IOException,
 		 java.lang.reflect.Constructor,
 		 java.net.URLEncoder,
-       java.util.ArrayList,
+		 java.util.ArrayList,
 		 java.util.Collection,
 		 java.util.Enumeration,
 		 java.util.HashMap,
 		 java.util.Hashtable,
 		 java.util.Iterator,
-       java.util.List,
+		 java.util.List,
 		 java.util.Map,
 		 java.util.StringTokenizer,
 		 java.util.TreeMap,
@@ -27,10 +27,10 @@
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.server.genepattern.TaskInstallationException,
-       org.genepattern.server.webservice.server.local.LocalAdminClient,
-       org.genepattern.data.pipeline.*,
+		 org.genepattern.server.webservice.server.local.LocalAdminClient,
+		 org.genepattern.data.pipeline.*,
 		 org.genepattern.util.GPConstants,
-       org.genepattern.codegenerator.*,
+		 org.genepattern.codegenerator.*,
 		 com.jspsmart.upload.*,
 		 java.io.StringWriter"
 
@@ -538,9 +538,6 @@ try {
 		addNavbarItem("<%= model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE %>", "<%= model.getLsid() %>");
 		</script>
 <%
-		// tell the user what they are going to do with the generated code	
-		out.println(controller.generateUserInstructions());
-
 		// delete the legacy R file for the pipeline, if it exists
 		pipelineName = model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE;
 		String dir = GenePatternAnalysisTask.getTaskLibDir(pipelineName, lsid, userID);
