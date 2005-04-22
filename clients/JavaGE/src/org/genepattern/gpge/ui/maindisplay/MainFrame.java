@@ -79,7 +79,7 @@ public class MainFrame extends JFrame {
 	AnalysisServiceManager analysisServiceManager;
 
    private final static Color lightBlue = new Color(239, 239, 255);
-	private final static Color DEFAULT_AUTHORITY_MINE_COLOR = Color.green;
+	private final static Color DEFAULT_AUTHORITY_MINE_COLOR = Color.MAGENTA;
 
 	private final static Color DEFAULT_AUTHORITY_FOREIGN_COLOR = java.awt.Color
 			.decode("0x0000FF");
@@ -1252,9 +1252,10 @@ public class MainFrame extends JFrame {
                      }
                      errors.add(new Object());
                   }
-               }
+                }
+            } finally {
+            	historyMenu.setEnabled(true);
             }
-            historyMenu.setEnabled(true);
          }
       };
       updateHistory.start();
@@ -1660,6 +1661,7 @@ public class MainFrame extends JFrame {
 				visualizerMenu.setEnabled(b);
             pipelineMenu.setEnabled(b);
 				fileMenu.changeServerActionsEnabled(b);
+				historyMenu.setEnabled(b);
 			}
 		};
 		if (SwingUtilities.isEventDispatchThread()) {
@@ -1861,6 +1863,8 @@ public class MainFrame extends JFrame {
 			super.removeAll();
 			add(new JSeparator());
 			add(historyMenuItem);
+			jobs.clear();
+			sortedJobs.clear();
 		}
 	
 		public void add(AnalysisJob job) {
