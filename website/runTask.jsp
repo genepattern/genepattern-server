@@ -197,7 +197,6 @@ for(int i = 0; i < jobs.length; i++) {
             boolean upToParams = false;      
 	     	if (GPConstants.TASKLOG.equals(fileName)){
 			StringBuffer buff = new StringBuffer();
-			System.out.println("VAL=" + value);
 			File logFile = new File("temp/"+value);
 			BufferedReader reader = new BufferedReader(new FileReader(logFile));
 			String line = null;
