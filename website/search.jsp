@@ -24,8 +24,10 @@ response.setDateHeader("Expires", 0);
 
 boolean DEBUG = (request.getParameter("DEBUG") != null);
 //DEBUG = true;
-String[] searchTypes = new String[] { Indexer.TASK, Indexer.TASK_DOC, Indexer.TASK_SCRIPTS, Indexer.JOB_PARAMETERS, Indexer.JOB_OUTPUT /*, Indexer.MANUAL */};
-String[] searchTypeNames = new String[] { "tasks", "task documentation", "task support files", "job parameters", "job output files" /*, "manual" */};
+String[] searchTypes = new String[] { Indexer.TASK, Indexer.TASK_DOC, Indexer.TASK_SCRIPTS, Indexer.JOB_PARAMETERS, Indexer.JOB_OUTPUT, Indexer.MANUAL };
+String[] searchTypeNames = new String[] { "tasks", "task documentation", "task support files", "job parameters", "job output files", "manual"};
+String SEARCH = "search";
+String q = request.getParameter(SEARCH);
 
 %>
 <html>
@@ -52,18 +54,31 @@ function changeTypes(fld) {
 </head>
 <body onload="document.forms['find'].search.focus();">
 <jsp:include page="navbar.jsp"></jsp:include>
+
+<% if (q != null && q.length() > 0 && request.getParameter(Indexer.MANUAL) != null) { %>
+	<form name="google" target="_blank" action="http://www.google.com/search">
+		<input type="hidden" name="q" value="<%= q %> site:www.broad.mit.edu inurl:cancer/software/genepattern">
+		<input type="hidden" name="btnG" value="Search">
+		<input type="hidden" name="hl" value="en">
+		<input type="hidden" name="lr", value="">
+		<input type="hidden" name="as_qdr" value="all">
+	</form>
+
+	<script language="Javascript">
+		document.google.submit();
+	</script>
+<% } %>
+
 <form name="find">
 
 <%
 
-String SEARCH = "search";
 String GPResources = System.getProperty("index");
 if (GPResources == null) throw new Exception("genepattern.properties environment variable not set");
 File indexDir = new File(GPResources);
 Hits hits = null;
 Directory fsDir = null;
 IndexSearcher is = null;
-String q = request.getParameter(SEARCH);
 
 if (q != null && q.length() > 0) {
     fsDir = FSDirectory.getDirectory(indexDir, false);
@@ -72,6 +87,8 @@ if (q != null && q.length() > 0) {
     vFieldsToQuery.add(Indexer.TASKNAME);
     vFieldsToQuery.add(Indexer.FILENAME);
     for (int i = 0; i < searchTypes.length; i++) {
+    	if (searchTypes[i].equals(Indexer.MANUAL)) continue; // handle with Google, not Lucene
+
 	if (request.getParameter(searchTypes[i]) != null) {
 		vFieldsToQuery.add(searchTypes[i]);
 		if (DEBUG) {
