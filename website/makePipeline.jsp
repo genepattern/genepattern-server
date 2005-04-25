@@ -541,6 +541,7 @@ try {
 		// delete the legacy R file for the pipeline, if it exists
 		pipelineName = model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE;
 		String dir = GenePatternAnalysisTask.getTaskLibDir(pipelineName, lsid, userID);
+      out.println(model.getName() + " version " + new org.genepattern.util.LSID(model.getLsid()).getVersion()  + " has been saved.");
 		new File(dir, model.getName() + ".r").delete();
 
 		if (requestParameters.getParameter("cmd").equals(CLONE)) {
