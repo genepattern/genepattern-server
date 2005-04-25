@@ -175,7 +175,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 		public int compare(Object obj1, Object obj2) {
 			ProjectDirNode n1 = (ProjectDirNode) obj1;
 			ProjectDirNode n2 = (ProjectDirNode) obj2;
-         return ascending ? n1.directory.compareTo(n2.directory): n2.directory.compareTo(n1.directory);
+         return ascending ? n1.directory.getName().compareToIgnoreCase(n2.directory.getName()): n2.directory.getName().compareToIgnoreCase(n1.directory.getName());
 		}
 
 	}
@@ -207,7 +207,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 		public int compare(Object obj1, Object obj2) {
 			FileNode n1 = (FileNode) obj1;
 			FileNode n2 = (FileNode) obj2;
-         int result = ascending ? n1.file.getName().compareTo(n2.file.getName()): n2.file.getName().compareTo(n1.file.getName());
+         int result = ascending ? n1.file.getName().compareToIgnoreCase(n2.file.getName()): n2.file.getName().compareToIgnoreCase(n1.file.getName());
          return result;
 		}
 	}
@@ -223,7 +223,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 		public int compare(Object obj1, Object obj2) {
 			FileNode n1 = (FileNode) obj1;
 			FileNode n2 = (FileNode) obj2;
-         int result = ascending ? n1.fileInfo.getKind().compareTo(n2.fileInfo.getKind()): n2.fileInfo.getKind().compareTo(n1.fileInfo.getKind());
+         int result = ascending ? n1.fileInfo.getKind().compareToIgnoreCase(n2.fileInfo.getKind()): n2.fileInfo.getKind().compareToIgnoreCase(n1.fileInfo.getKind());
          if(result==0) {
             return ProjectDirModel.getInstance().FILE_NAME_COMPARATOR.compare(n1, n2);
          }

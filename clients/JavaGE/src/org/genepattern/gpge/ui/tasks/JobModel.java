@@ -574,7 +574,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 		public int compareTo(Object other) {
 			ServerFileNode node = (ServerFileNode) other;
-			return this.name.compareTo(node.name);
+			return this.name.compareToIgnoreCase(node.name);
 		}
       
 		public boolean getAllowsChildren() {
@@ -696,7 +696,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
          String kind2 = sfn2.getFileInfo()!=null?sfn2.getFileInfo().getKind():"";
 			
          
-			int result =  kind1.compareTo(kind2);
+			int result =  kind1.compareToIgnoreCase(kind2);
          if(result==0) {
             return JobModel.getInstance().FILE_NAME_COMPARATOR.compare(obj1, obj2); 
          }
@@ -728,7 +728,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 				sfn1 = (ServerFileNode) obj2;
 				sfn2 = (ServerFileNode) obj1;
 			}
-			return sfn1.toString().compareTo(
+			return sfn1.toString().compareToIgnoreCase(
 			   sfn2.toString());
 		}
 
@@ -841,7 +841,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
             Integer jobNumber2 = new Integer(ajob2.getJobInfo().getJobNumber());
             return ascending ? jobNumber1.compareTo(jobNumber2):jobNumber2.compareTo(jobNumber1);  
          }
-			return ascending ? job1.compareTo(job2): job2.compareTo(job1);
+			return ascending ? job1.compareToIgnoreCase(job2): job2.compareToIgnoreCase(job1);
 		}
 
 	}
