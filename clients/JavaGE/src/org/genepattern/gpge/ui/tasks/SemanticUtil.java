@@ -83,16 +83,25 @@ public class SemanticUtil {
    }
    
   
-   
-   public static Map getInputTypeToMenuItemsMap(Map inputTypeToModulesMap, final AnalysisServiceDisplay analysisServiceDisplay) {
+   public static Map getInputTypeToMenuItemsMap(Collection analysisServices, 
+		final AnalysisServiceDisplay analysisServiceDisplay) {
+		Map inputTypeToModulesMap = 
+			SemanticUtil.getInputTypeToModulesMap(analysisServices);
+		return SemanticUtil._getInputTypeToMenuItemsMap(inputTypeToModulesMap, 
+			analysisServiceDisplay);
+	}
+
+   private static Map _getInputTypeToMenuItemsMap(Map inputTypeToModulesMap, final AnalysisServiceDisplay analysisServiceDisplay) {
       Map inputTypeToMenuItemMap = new HashMap();
       for(Iterator it = inputTypeToModulesMap.keySet().iterator(); it.hasNext(); ) {
          String type = (String) it.next();
-         List modules = (List) inputTypeToModulesMap.get(type);
+         List modules = (List) inputTypeToModulesMap.get(type); 
+			
          if(modules==null) {
             continue;  
          }
          MenuItemAction[] m = new MenuItemAction[modules.size()];
+			java.util.Collections.sort(modules, AnalysisServiceUtil.CASE_INSENSITIVE_TASK_NAME_COMPARATOR);
          for(int i = 0; i < modules.size(); i++) {
             final AnalysisService svc = (AnalysisService) modules.get(i);
             m[i] = new MenuItemAction(svc.getTaskInfo().getName()) {
@@ -109,7 +118,7 @@ public class SemanticUtil {
    /**
    * Gets a map which maps the input type as a string to a list of analysis services that take that input type as an input parameter
    */
-    public static Map getInputTypeToModulesMap(Collection analysisServices) {
+    private static Map getInputTypeToModulesMap(Collection analysisServices) {
        Map map = new HashMap();
        for(Iterator it = analysisServices.iterator(); it.hasNext(); ) {
           AnalysisService svc = (AnalysisService) it.next();

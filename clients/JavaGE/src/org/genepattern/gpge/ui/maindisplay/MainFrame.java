@@ -1691,8 +1691,8 @@ public class MainFrame extends JFrame {
       
             final Collection latestTasks = analysisServiceManager
                   .getLatestAnalysisServices();
-            Map inputTypeToModulesMap = SemanticUtil.getInputTypeToModulesMap(latestTasks);
-            inputTypeToMenuItemsMap = SemanticUtil.getInputTypeToMenuItemsMap(inputTypeToModulesMap, analysisServicePanel);
+            
+            inputTypeToMenuItemsMap = SemanticUtil.getInputTypeToMenuItemsMap(latestTasks, analysisServicePanel);
             SwingUtilities.invokeLater(new Thread() {
                public void run() {
                   analysisMenu.removeAll();
