@@ -2246,6 +2246,7 @@ public class MainFrame extends JFrame {
 		public HelpMenu() {
 			super("Help");
 
+         
          if(!RUNNING_ON_MAC) {
             JMenuItem aboutMenuItem = new JMenuItem("About");
             add(aboutMenuItem);
@@ -2255,6 +2256,17 @@ public class MainFrame extends JFrame {
                }
             });
          }
+         
+         JMenuItem genePatternWebSiteMenuItem = new JMenuItem("GenePattern Web Site");
+			add(genePatternWebSiteMenuItem);
+			genePatternWebSiteMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+               try {
+                  BrowserLauncher.openURL("http://www.genepattern.org");
+               } catch(IOException ioe){}
+            }
+         });
+         
 
          JMenuItem gettingStartedMenuItem = new JMenuItem("Getting Started");
 			add(gettingStartedMenuItem);
