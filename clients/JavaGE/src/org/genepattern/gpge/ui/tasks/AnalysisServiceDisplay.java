@@ -60,11 +60,11 @@ public class AnalysisServiceDisplay extends JPanel {
    private String latestVersion;
    private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
    private Map parameterName2ComponentMap;
-   private List inputFileParameterNames;
+   private List inputFileParameters;
    private List parameterDescriptions;
    public AnalysisServiceDisplay() {
       parameterName2ComponentMap = new HashMap();
-      inputFileParameterNames = new ArrayList();
+      inputFileParameters = new ArrayList();
       parameterDescriptions = new ArrayList();
       this.setBackground(Color.white);
 		showGettingStarted();
@@ -180,7 +180,7 @@ public class AnalysisServiceDisplay extends JPanel {
       }
             
       parameterName2ComponentMap.clear();
-      inputFileParameterNames.clear();
+      inputFileParameters.clear();
       parameterDescriptions.clear();
       latestVersion = null;
       TaskInfo taskInfo = selectedService.getTaskInfo();
@@ -500,7 +500,7 @@ public class AnalysisServiceDisplay extends JPanel {
 
    private Component createInputFileField(ParameterInfo info) {
       ObjectTextField field = createObjectTextField();
-      inputFileParameterNames.add(info.getName());
+      inputFileParameters.add(info);
       parameterName2ComponentMap.put(info.getName(), field);
       String defaultValue = (String) info.getAttributes().get(
             GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
@@ -627,12 +627,12 @@ public class AnalysisServiceDisplay extends JPanel {
 
 
    /**
-    *  Gets a sorted collection of input file parameter names
+    *  Gets a collection of input file parameters
     *
     * @return    the input file names
     */
-   public java.util.Iterator getInputFileParameterNames() {
-      return inputFileParameterNames.iterator();
+   public java.util.Iterator getInputFileParameters() {
+      return inputFileParameters.iterator();
    }
 
 

@@ -135,12 +135,11 @@ public class MainFrame extends JFrame {
 									.getName());
    public static boolean RUNNING_ON_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("windows");
 
-   private static short WINDOW_STYLE_ONE_FRAME = 0;
-   public static short WINDOW_STYLE_FRAMES = 1;
-   public static short WINDOW_STYLE_MDI = 2;
-   public static short windowStyle = System.getProperty("mdi")!=null?WINDOW_STYLE_MDI:WINDOW_STYLE_ONE_FRAME;
    private JMenuBar menuBar;
    Color blue = new Color(51,0,204);
+	/** The key used for the parameter name for a 'send to' action */
+	private static String PARAMETER_NAME = "PARAMETER_NAME";
+	
     
    // project file actions
    MenuAction projectFileSendToMenu;
@@ -815,6 +814,15 @@ public class MainFrame extends JFrame {
                      }
                   }
                   jobResultFileViewModulesMenu.setEnabled(mi!=null && mi.length > 0);
+						
+						for(int i = 0, length = jobResultFileSendToMenu.getItemCount(); i < length; i++) {
+							Object obj = jobResultFileSendToMenu.getMenuComponent(i);
+							if(obj instanceof SendToMenuItemAction) {
+								SendToMenuItemAction mia = (SendToMenuItemAction) obj;
+								String kind = node.getFileInfo().getKind();
+								mia.setEnabled(mia.isCorrectKind(kind));
+							}
+						}
                   
 						//if (connection.getResponseCode() == HttpURLConnection.HTTP_GONE) {
                     // JobModel.JobNode jobNode = (JobModel.JobNode) node.getParent();
@@ -919,6 +927,7 @@ public class MainFrame extends JFrame {
             
             selectedProjectDirNode = newSelection;
             
+				
             boolean projectNodeSelected = selectedProjectDirNode instanceof ProjectDirModel.ProjectDirNode;
             boolean projectFileSelected = selectedProjectDirNode instanceof ProjectDirModel.FileNode;
 
@@ -937,8 +946,7 @@ public class MainFrame extends JFrame {
 					ProjectDirModel.FileNode node = (ProjectDirModel.FileNode) selectedProjectDirNode;
 					ProjectDirModel.ProjectDirNode parent = (ProjectDirModel.ProjectDirNode) node
 							.getParent();
-					FileInputStream fis = null;
-					File f = null;
+					
                projectFileViewModulesMenu.removeAll();
 					
                if(!new File(parent.directory, node.file.getName()).exists()) {
@@ -959,6 +967,16 @@ public class MainFrame extends JFrame {
                   }
                }
                projectFileViewModulesMenu.setEnabled(mi!=null && mi.length > 0);
+					
+					for(int i = 0, length = projectFileSendToMenu.getItemCount(); i < length; i++) {
+						Object obj = projectFileSendToMenu.getMenuComponent(i);
+						if(obj instanceof SendToMenuItemAction) {
+							SendToMenuItemAction mia = (SendToMenuItemAction) obj;
+							String kind = node.getFileInfo().getKind();
+							mia.setEnabled(mia.isCorrectKind(kind));
+						}
+					}
+					
 
 				} else {
                fileSummaryComponent.clear();
@@ -1027,18 +1045,20 @@ public class MainFrame extends JFrame {
                   }
                   
 						for (Iterator it = analysisServicePanel
-								.getInputFileParameterNames(); it.hasNext();) {
-						  final String name = (String) it.next();
+								.getInputFileParameters(); it.hasNext();) {
+						  final ParameterInfo pi = (ParameterInfo) it.next();
+						  final String name = pi.getName();
                     final String displayName = AnalysisServiceDisplay.getDisplayString(name);
-							MenuItemAction mi = new MenuItemAction(displayName) {
+						  MenuItemAction jobResultFileSendToMenuItem = new SendToMenuItemAction(displayName, pi) {
 								public void actionPerformed(ActionEvent e) {
 									analysisServicePanel.setInputFile(name,
 											selectedJobNode);
 								}
 							};
-							jobResultFileSendToMenu.add(mi);
+							jobResultFileSendToMenu.add(jobResultFileSendToMenuItem);
 
-							MenuItemAction projectMenuItem = new MenuItemAction(displayName) {
+
+							MenuItemAction projectMenuItem = new SendToMenuItemAction(displayName, pi) {
                         public void actionPerformed(
                               ActionEvent e) {
                            analysisServicePanel.setInputFile(
@@ -1046,7 +1066,7 @@ public class MainFrame extends JFrame {
                                  selectedProjectDirNode);
                         }
 							};
-
+							projectMenuItem.putValue(MainFrame.PARAMETER_NAME, name);
 							projectFileSendToMenu.add(projectMenuItem);
 						}
                   if(selectedJobNode instanceof JobModel.ServerFileNode) {
@@ -1165,6 +1185,30 @@ public class MainFrame extends JFrame {
       windowMenu.add(mi);
    }
 
+	static class SendToMenuItemAction extends MenuItemAction {
+		List fileFormats;
+		
+		public SendToMenuItemAction(String text, ParameterInfo info) {
+			super(text);
+			String fileFormatsString = (String) info.getAttributes().get(GPConstants.FILE_FORMAT);
+			fileFormats = new ArrayList();
+			if(fileFormatsString==null || fileFormatsString.equals("")) {
+				return;
+			}
+			java.util.StringTokenizer st = new java.util.StringTokenizer(fileFormatsString, GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+			while(st.hasMoreTokens()) {
+				fileFormats.add(st.nextToken().toLowerCase());
+			}
+		}
+		
+		public boolean isCorrectKind(String kind) {
+			if(fileFormats.size()==0 || kind==null || kind.equals("")) {
+				return true;	
+			}
+			return fileFormats.contains(kind.toLowerCase());
+		}
+	}
+	
    static class MessageDialog extends CenteredDialog {
       private static MessageDialog instance;
       private JLabel label = new JLabel("      ");
@@ -1205,7 +1249,7 @@ public class MainFrame extends JFrame {
          } 
       }
    }
-   
+	
 	public void refreshJobs(boolean displayMessage) {
       if(displayMessage) {
          MessageDialog.getInstance().setText("Retrieving your jobs.");
@@ -1766,10 +1810,6 @@ public class MainFrame extends JFrame {
       historyMenu.setEnabled(false);
       menuBar.add(historyMenu);
 
-      if(windowStyle==WINDOW_STYLE_MDI) {
-         windowMenu = new JMenu("Window");
-         menuBar.add(windowMenu);
-      }
 
 		JMenu helpMenu = new HelpMenu();
       menuBar.add(helpMenu);
