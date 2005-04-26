@@ -1117,6 +1117,7 @@ public class MainFrame extends JFrame {
       }
 
       JPanel leftPanel = new JPanel(new BorderLayout());
+      leftPanel.setMinimumSize(new Dimension(200, 200));
       if(!RUNNING_ON_MAC) {
        leftPanel.setBackground(Color.white);
        final Border scrollBorder = UIManager.getBorder("ScrollPane.border");
@@ -2263,6 +2264,17 @@ public class MainFrame extends JFrame {
 				public void actionPerformed(ActionEvent e) {
                try {
                   BrowserLauncher.openURL("http://www.genepattern.org");
+               } catch(IOException ioe){}
+            }
+         });
+         
+         
+         JMenuItem genePatternTutorialMenuItem = new JMenuItem("GenePattern Tutorial");
+			add(genePatternTutorialMenuItem);
+			genePatternTutorialMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+               try {
+                  BrowserLauncher.openURL("http://www.genepattern.org/tutorial");
                } catch(IOException ioe){}
             }
          });
