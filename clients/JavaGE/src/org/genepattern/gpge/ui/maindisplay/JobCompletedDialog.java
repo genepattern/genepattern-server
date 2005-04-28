@@ -22,6 +22,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
 import org.genepattern.gpge.ui.table.*;
+import org.genepattern.gpge.ui.preferences.PreferenceKeys;
 
 public class JobCompletedDialog {
 	JDialog dialog;
@@ -30,11 +31,9 @@ public class JobCompletedDialog {
 
 	MyTableModel tableModel = new MyTableModel();
 
-	private static final String SHOW_DIALOG_PROPERTY = "show.job.completed.dialog";
-
 	public void setShowDialog(boolean showDialog) {
 		org.genepattern.util.GPpropertiesManager.setProperty(
-				SHOW_DIALOG_PROPERTY, String.valueOf(showDialog));
+				PreferenceKeys.SHOW_JOB_COMPLETED_DIALOG, String.valueOf(showDialog));
 	}
 
 	/**
@@ -46,7 +45,7 @@ public class JobCompletedDialog {
 	public boolean isShowingDialog() {
 		final boolean showDialog = Boolean.valueOf(
 				org.genepattern.util.GPpropertiesManager
-						.getProperty(SHOW_DIALOG_PROPERTY)).booleanValue();
+						.getProperty(PreferenceKeys.SHOW_JOB_COMPLETED_DIALOG)).booleanValue();
 		return showDialog;
 	}
 
@@ -101,7 +100,7 @@ public class JobCompletedDialog {
 			final String status) {
 		final boolean showDialog = Boolean.valueOf(
 				org.genepattern.util.GPpropertiesManager
-						.getProperty(SHOW_DIALOG_PROPERTY)).booleanValue();
+						.getProperty(PreferenceKeys.SHOW_JOB_COMPLETED_DIALOG)).booleanValue();
 		if (!showDialog) {
 			return;
 		}
