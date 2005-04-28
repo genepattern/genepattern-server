@@ -622,6 +622,14 @@ public class MainFrame extends JFrame {
       return new Color(rgb[0], rgb[1], rgb[2]);
       
    }
+   
+   private String encodeColorToProperty(Color c) {
+      if(c==null) {
+         return null;  
+      }
+      return c.getRed() + "," + c.getGreen() + "," + c.getBlue(); 
+   }
+   
 	public MainFrame() {
       JWindow splash = GenePattern.showSplashScreen();
 		splash.setVisible(true);
@@ -683,9 +691,18 @@ public class MainFrame extends JFrame {
          authorityBroadColor = DEFAULT_AUTHORITY_BROAD_COLOR;
       }
      
+      GPpropertiesManager.setProperty(PreferenceKeys.AUTHORITY_BROAD_COLOR, encodeColorToProperty(authorityBroadColor));
+      GPpropertiesManager.setProperty(PreferenceKeys.AUTHORITY_FOREIGN_COLOR, encodeColorToProperty(authorityForeignColor));
+      GPpropertiesManager.setProperty(PreferenceKeys.AUTHORITY_MINE_COLOR, encodeColorToProperty(authorityMineColor));
+      
       String showParameterDescriptions = GPpropertiesManager.getProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS);
       if(showParameterDescriptions==null) {
          GPpropertiesManager.setProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS, "true");
+      }
+      
+      String alertOnJobDescription = GPpropertiesManager.getProperty(PreferenceKeys.SHOW_JOB_COMPLETED_DIALOG);
+      if(alertOnJobDescription==null) {
+         GPpropertiesManager.setProperty(PreferenceKeys.SHOW_JOB_COMPLETED_DIALOG, "true");
       }
       
       jobModel = JobModel.getInstance();
