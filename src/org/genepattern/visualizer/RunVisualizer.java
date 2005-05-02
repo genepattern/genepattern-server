@@ -78,7 +78,7 @@ public class RunVisualizer {
 	public void run() throws IOException, Exception {
 		DEBUG = (params.get("DEBUG") != null);
 		if (DEBUG)
-			System.out.println("runVisualizer: starting");
+			System.out.println("runVisualizer: " + (String)params.get(RunVisualizerConstants.NAME) + " starting");
 
 		// download all of the files locally, preferably checking against a
 		// cache
@@ -109,7 +109,7 @@ public class RunVisualizer {
 		runCommand(commandLine);
 
 		if (DEBUG)
-			System.out.println("runVisualizer: done");
+			System.out.println("runVisualizer: " + (String)params.get(RunVisualizerConstants.NAME) + " done");
 	}
 
 	// TODO: report unused parameters
