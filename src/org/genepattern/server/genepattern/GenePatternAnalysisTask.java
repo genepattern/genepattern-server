@@ -894,16 +894,24 @@ public class GenePatternAnalysisTask implements IGPConstants {
 					if (idx >= 0){
 						value = value.substring(idx+5);
 					}
+//System.out.println("OFP=" + origFullPath);
 
 					// follow the input filename with the URL to fetch it if available
 					if ((origFullPath!= null) && (origFullPath.length() > 0)){
 						// expect something that looks like this;
 						// C:\Program Files\GenePatternServer\Tomcat\..\temp\attachments\Axis39088axis_all_aml_500.gct
 						// we want ecverything from ..\temp on
+
 						String substr = ".." + File.separator + "temp" + File.separator + "attachments";
 						int fidx = origFullPath.indexOf(substr);
-						String urlpath = "../" + ((origFullPath.substring(fidx)).replace('\\' ,'/')) ;
-						value = value + "    " + GP_URL + "/getFile.jsp?task=&file=" + urlpath;
+						String inputfilename = origFullPath.substring(fidx + 20);
+						//String urlpath = "../" + ((origFullPath.substring(fidx)).replace('\\' ,'/')) ;
+
+
+						// value = value + "    " + GP_URL + "/getInputFile.jsp?file=" + urlpath;
+						value = value + "    " + GP_URL + "/getInputFile.jsp?file=" + inputfilename;
+				
+
 					}
 
 				} else {
@@ -914,7 +922,17 @@ public class GenePatternAnalysisTask implements IGPConstants {
 							break;
 						}
 					}
-					value = pinfo.getUIValue(formalPinfo);
+
+					ParameterInfo actp = getParam(pinfo.getName(), actualParams);
+					
+					String origFullPath = (String)actp.getAttributes().get(ORIGINAL_PATH);
+//System.out.println("OFP  22=" + actp.getValue() + "  " + origFullPath );
+
+					if (origFullPath != null){
+						value = origFullPath;
+					} else {
+						value = pinfo.getUIValue(formalPinfo);
+					}
 				}
 				bw.write("\n#    " + pinfo.getName() + " = " + value);
 			}
