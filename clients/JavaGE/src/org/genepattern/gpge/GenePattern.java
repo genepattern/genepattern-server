@@ -21,9 +21,7 @@ import javax.swing.JWindow;
 
 import org.genepattern.gpge.ui.infopanels.ReportPanel;
 import org.genepattern.gpge.util.BuildProperties;
-import org.genepattern.util.AbstractReporter;
-import org.genepattern.util.Reporter;
-import org.genepattern.util.ReporterWithGUI;
+import  org.genepattern.gpge.ui.util.*;
 import org.genepattern.util.StringUtils;
 import org.genepattern.gpge.ui.maindisplay.MainFrame;
 import java.awt.Color;
@@ -36,7 +34,8 @@ import java.awt.Color;
 public final class GenePattern {
   	static javax.swing.JFrame mainFrame;
 	static Icon icon;
-
+   /** where the module error messages go */
+	private static ReporterWithGUI REPORTER;
 	
    public static Icon getIcon() {
       return icon;   
@@ -47,7 +46,8 @@ public final class GenePattern {
       if(imgURL != null) {
          icon = new ImageIcon(imgURL);
 		}
-			
+		
+      
 		try {
 			
 			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager
@@ -76,7 +76,7 @@ public final class GenePattern {
 		} catch (Exception e) {
 		}
 	   mainFrame = new MainFrame();
-		((ReporterWithGUI) REPORTER).setDialogParent(mainFrame);
+      REPORTER = new ReporterWithGUI(mainFrame);
 
 	}
 
@@ -151,33 +151,10 @@ public final class GenePattern {
 		showErrorDialog("Error", message);
 	}
 
-	public static final void showError(final java.awt.Component parent,
-			final String message) {
-		REPORTER.showError(message);
+	public static final void showModuleErrorDialog(String title, String message) {
+		REPORTER.showError(title, message);
 	}
 
-	public static final void showError(final java.awt.Component parent,
-			final String message, final Throwable t) {
-		REPORTER.showError(message, t);
-	}
-
-	public static final void showWarning(final java.awt.Component parent,
-			final String message) {
-		REPORTER.showWarning(message);
-	}
-
-	public static final void logWarning(final String warning) {
-		REPORTER.logWarning(warning);
-	}
-
-	/** logs that an exception was ignored */
-	public static final void ignoredException(Throwable th) {
-		// not implemented
-	}
-
-	public static final Reporter getReporter() {
-		return REPORTER;
-	}
 
 	/** shows the about dialog */
 	public static final void showAbout() {
@@ -197,8 +174,8 @@ public final class GenePattern {
 			}
 			contents = sb.toString();
 		} catch (IOException ex) {
-			REPORTER.logWarning(
-					"Couldn't get the about text for this application", ex);
+			System.err.println(
+					"Couldn't get the about text for this application");
 			contents = BuildProperties.PROGRAM_NAME + ' '
 					+ BuildProperties.FULL_VERSION + " Build "
 					+ BuildProperties.BUILD;
@@ -238,184 +215,24 @@ public final class GenePattern {
 	}
 
 	/** shows the about dialog */
-	public static final void showWarnings() {
-		java.net.URL url = ClassLoader
-				.getSystemResource("org/genepattern/gpge/resources/Warning_preamble.html");
-		try {
-			ReportPanel warnings_panel = new ReportPanel(url,
-					((ReporterWithGUI) REPORTER).getWarnings());
-			JOptionPane.showMessageDialog(getDialogParent(), warnings_panel,
-					"All GenePattern Warnings", JOptionPane.WARNING_MESSAGE, icon);
-		} catch (java.io.IOException ex) {
-			showWarning(null, "Could not display warnings!\nGenePattern\n"
-					+ "Whitehead Institute Center for Genome Research\n"
-					+ "genepattern@broad.mit.edu");
-		}
-
-	}
-
-	/** shows the about dialog */
 	public static final void showErrors() {
 		java.net.URL url = ClassLoader
 				.getSystemResource("org/genepattern/gpge/resources/Error_preamble.html");
 		try {
 			ReportPanel errors_panel = new ReportPanel(url,
-					((ReporterWithGUI) REPORTER).getErrors());
+					REPORTER.getErrors());
 			javax.swing.JOptionPane.showMessageDialog(getDialogParent(),
 					errors_panel, "GenePattern Analysis Module Errors",
 					JOptionPane.ERROR_MESSAGE, icon);
 		} catch (java.io.IOException ex) {
-			showWarning(null, "Could not display errors!\nGenePattern\n"
-					+ "Whitehead Institute Center for Genome Research\n"
-					+ "genepattern@broad.mit.edu");
+			System.err.println( "Could not display errors");
 		}
 
 	}
 
-	/** where the error/warning/info messages go */
-	private static Reporter REPORTER;
+
 
 	/** the java 1.4.1 AWT exception handler property key */
-	public static final String AWT_EXCEPTION_HANDLER_KEY = "sun.awt.exception.handler";
-	/** static initializer */
-	static {
-		// This is a graphical client error messages should be shown in dialogs
-		// and
-		// let other windows know that gp doen't want the JVM to be shutdown
-		System.setProperty("gp.graphical", "True");
+	//public static final String AWT_EXCEPTION_HANDLER_KEY = "sun.awt.exception.handler";
 
-		REPORTER = AbstractReporter.getInstance();
-
-		// need to catch all exceptions created durring any event and display
-		// them to the user
-		//FIXME this code snippet should be moved to a more promenent class
-		// one that all modeles use
-		final String handler = System.getProperty(AWT_EXCEPTION_HANDLER_KEY);
-		if (handler == null || handler.trim().length() == 0)
-		//	System.setProperty(AWT_EXCEPTION_HANDLER_KEY,
-			//		"edu.mit.genome.util.ExceptionHandler");
-		// end handler
-
-		// test java version
-		try {
-			final String version = System.getProperty("java.version");
-
-			final java.util.StringTokenizer tok = new java.util.StringTokenizer(
-					version, ".");
-			tok.hasMoreTokens();
-			final int major = Integer.parseInt(tok.nextToken());
-			tok.hasMoreTokens();
-			final int minor = Integer.parseInt(tok.nextToken());
-			tok.hasMoreTokens();
-			final int revis = Integer.parseInt(tok.nextToken("._"));
-
-			if (major == 1) {
-				if (minor < 3) {
-					final String msg = "Error: The early Java version "
-							+ version
-							+ " is not supported.\n"
-							+ "GenePattern will not run with this version of Java!\n"
-							+ "Please upgrade by installing Java 1.3.1"
-							+ " or 1.4.1 or greater!";
-					logWarning(msg);
-					final java.awt.TextArea text_area = new java.awt.TextArea(
-							msg, 4, -1, java.awt.TextArea.SCROLLBARS_NONE);
-					text_area.setEditable(false);
-					final java.awt.Button ok_button = new java.awt.Button("OK");
-					final java.awt.Dialog dialog = new java.awt.Dialog(
-							new java.awt.Frame(), "Error: Java verision wrong",
-							true);
-					dialog.add(text_area, BorderLayout.CENTER);
-					dialog.add(ok_button, BorderLayout.SOUTH);
-					ok_button
-							.addActionListener(new java.awt.event.ActionListener() {
-								public final void actionPerformed(
-										java.awt.event.ActionEvent event) {
-									ok_button.removeActionListener(this);
-									dialog.hide();
-									dialog.dispose();
-								}
-							});
-					dialog.pack();
-					dialog.show();
-
-				} else if (minor == 3 && revis == 0) {
-					showWarning(
-							null,
-							"Warning: Java version 1.3.0 "
-									+ "is not supported!\n"
-									+ "GenePattern will not run properly with Java 1.3.0\n"
-									+ "Please upgrade by installing Java 1.3.1 or 1.4.1 or greater.");
-				} else if (minor == 4 && revis == 0) {
-					showWarning(null, "Warning: Java version 1.4.0 "
-							+ "is not supported!\n"
-							+ "GenePattern will behave badly with java 1.4.0\n"
-							+ "Please install Java 1.3.1 or 1.4.1 or greater.");
-				}
-			} else if (major > 1) {
-				final Integer ok_major_min = Integer
-						.getInteger("gp.java.major.min");
-				final Integer ok_major_max = Integer
-						.getInteger("gp.java.major.max");
-				if (!((ok_major_max != null && major < ok_major_max.intValue()) || (ok_major_min != null && major < ok_major_min
-						.intValue()))) {
-					showWarning(
-							null,
-							"Warning: Java version "
-									+ version
-									+ " is not supported!\n"
-									+ "GenePattern may not work properly with this later version of Java.\n"
-									+ "Look for updates from the GenePattern web site.");
-				}
-			} else { // major == 0 !!!
-				System.err.println("Cannot be Java 0.x");
-				final String msg = "Error: The impossibly early Java version "
-						+ version
-						+ " is not supported.\n"
-						+ "GenePattern will not run with this version of Java!\n"
-						+ "Please upgrade by installing Java 1.3.1"
-						+ " or 1.4.1 or greater!";
-				logWarning(msg);
-				final java.awt.TextArea text_area = new java.awt.TextArea(msg,
-						4, -1, java.awt.TextArea.SCROLLBARS_NONE);
-				text_area.setEditable(false);
-				final java.awt.Button ok_button = new java.awt.Button("OK");
-				final java.awt.Dialog dialog = new java.awt.Dialog(
-						new java.awt.Frame(), "Error: Java verision wrong",
-						true);
-				dialog.add(text_area, BorderLayout.CENTER);
-				dialog.add(ok_button, BorderLayout.SOUTH);
-				ok_button
-						.addActionListener(new java.awt.event.ActionListener() {
-							public final void actionPerformed(
-									java.awt.event.ActionEvent event) {
-								ok_button.removeActionListener(this);
-								dialog.hide();
-								dialog.dispose();
-							}
-						});
-				dialog.pack();
-				dialog.show();
-			}
-		} catch (NumberFormatException ex) {
-			logWarning("While parsing java version " + ex);
-		}
-
-		// setup OmniGene properties
-		if (System.getProperty("omnigene.conf") == null) { // if it doesn't
-														   // exist
-			final String home = System.getProperty("user.home");
-
-			final String separator = java.io.File.separator;
-			final String base = separator + "gp" + separator + "resources"
-					+ separator;
-			final String conf_location = home + base;
-
-			System.setProperty("omnigene.conf", conf_location);
-			// needed for GenePatternAnalysisTask
-			System.setProperty("log4j.configuration", conf_location
-					+ "log4j.properties");
-		}
-
-	}
 }

@@ -226,9 +226,8 @@ public class GPpropertiesManager {
 			}
 		} catch (IOException ioe) {
 			exception = ioe;
-			AbstractReporter.getInstance().showError(
-					"Problems reading or creating the properties file:\n"
-							+ ioe.getMessage());
+			System.err.println(
+					"Problems reading or creating the properties file");
 		}
 		GP_HOME = (home != null) ? home : new File(System
 				.getProperty("user.home")

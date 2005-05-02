@@ -82,7 +82,7 @@ public class JobCompletedDialog {
 
 		contentPane.add(tempPanel, BorderLayout.SOUTH);
 		dialog.setSize(400, 200);
-
+      dialog.getRootPane().setDefaultButton(closeButton);
 		dialog.addWindowListener(new WindowAdapter() {
 
 			public void windowClosing(WindowEvent we) {

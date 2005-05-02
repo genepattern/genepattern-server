@@ -9,7 +9,6 @@ package org.genepattern.gpge.util;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.genepattern.util.AbstractReporter;
 
 //import java.util.Date;
 
@@ -38,11 +37,7 @@ public class BuildProperties {
 			value = getValue(key);
 			return Long.parseLong(value);
 		} catch (NumberFormatException ex) {
-			AbstractReporter.getInstance()
-					.logWarning(
-							"While trying to parse the build.properties key "
-									+ key + " returned value id not a number '"
-									+ value + "'", ex);
+			ex.printStackTrace();
 			return -1;
 		}
 	}
@@ -143,7 +138,6 @@ public class BuildProperties {
 			final String msg = "Internal Error: Could not load the"
 					+ " build.properties file";
 			System.err.println(msg);
-			AbstractReporter.getInstance().showError(msg, ex);
 			ex.printStackTrace();
 		} finally {
 			BUILD = build;

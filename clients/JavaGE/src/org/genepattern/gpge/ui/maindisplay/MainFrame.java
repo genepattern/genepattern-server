@@ -751,7 +751,7 @@ public class MainFrame extends JFrame {
                try {
                   stderrFile = File.createTempFile("stderr.txt", null);
                   JobModel.downloadJobResultFile(job, stderrIndex, stderrFile);
-                  GenePattern.showError(GenePattern.getDialogParent(), fileToString(stderrFile));
+                  GenePattern.showModuleErrorDialog("Job " + jobNumber + " Error", fileToString(stderrFile));
                } catch(IOException ioe) {
                   ioe.printStackTrace();
                } finally {
