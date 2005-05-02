@@ -639,12 +639,12 @@ if (taskName != null) {
 		attributeValue = (tia != null ? tia.get(GPConstants.FILE_FORMAT) : "");
 		if (attributeValue == null) attributeValue = "";
 %>
-<% if (!viewOnly) { %>
-		<select multiple name="<%= GPConstants.FILE_FORMAT %>">
-<%
-	{
+<% if (!viewOnly) { 
 		String[] file_formats = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 		String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[FILE_FORMAT_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
+%>
+		<select multiple name="<%= GPConstants.FILE_FORMAT %>" size="<%= Math.min(3, tmFileFormats.size()) %>">
+<%
 		for(Iterator itChoices = tmFileFormats.values().iterator(); itChoices.hasNext(); ) {
 			String c = (String)itChoices.next();
 			boolean isSelected = false;
@@ -656,7 +656,6 @@ if (taskName != null) {
 			}
 			out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + GenePatternAnalysisTask.htmlEncode(c) + "</option>");
 		}
-	}
 %>
 		</select>
 <% } else { %>
@@ -957,7 +956,7 @@ for (int i = from; i < to; i++) {
 			if (!viewOnly) {
 			 	String [] items = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 
-				out.append("<select name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple" : "") + ">\n");
+				out.append("<select name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple size=\"" + Math.min(3, choices.length) + "\"" : "") + ">\n");
 
 				for (int choice = 0; choice < choices.length; choice++) { 
 					boolean selected = false;
