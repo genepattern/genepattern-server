@@ -56,17 +56,18 @@ public class SortableTreeTable extends JTreeTable implements
 	private Point _ptOffset = new Point();// Where, in the drag image, the mouse
 										  // was clicked
 
+	SortableHeaderRenderer sortableHeaderRenderer;						
+	public static int ASCENDING = SortableHeaderRenderer.ASCENDING;
+	public static int DESCENDING = SortableHeaderRenderer.DESCENDING;
+	
 	private boolean inDrag = false;
 
 	SortTreeTableModel model;
 
 	DragSource dragSource;
 
-	public SortableTreeTable(SortTreeTableModel m) {
-		this(m, true);
-	}
 
-	public SortableTreeTable(SortTreeTableModel m, boolean enableSort) {
+	public SortableTreeTable(SortTreeTableModel m) {
 		super(m);
 		this.model = m;
 		setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
@@ -83,37 +84,41 @@ public class SortableTreeTable extends JTreeTable implements
 		tree.getSelectionModel().setSelectionMode(
 				TreeSelectionModel.SINGLE_TREE_SELECTION);
 		setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		if(enableSort) {
-         new SortableHeaderRenderer(this, m) {
-            public void setSortingStatus(int column, int status) {
-               
-               try {
-                  TreePath selectionPath = tree.getSelectionPath();
-                  List expandedPaths = new ArrayList();
-                  
-                  int rc = tree.getRowCount();
-                  for(int i = 0; i < rc; i++) {
-                     if(tree.isExpanded(i)) {
-                        expandedPaths.add(tree.getPathForRow(i));
-                     }
-                  }
-                     
-                  super.setSortingStatus(column,  status);
-                  for(int i = 0; i < expandedPaths.size(); i++) {
-                     TreePath path = (TreePath) expandedPaths.get(i);
-                     tree.expandPath(path);
-                  }
-                  if(selectionPath!=null) {
-                     tree.setSelectionPath(selectionPath);  
-                  }
-               } catch(Throwable t){}
-               
-            } 
-         }.setSortingStatus(0, SortableHeaderRenderer.ASCENDING);
-      }
-
+		
+		sortableHeaderRenderer = new SortableHeaderRenderer(this, m) {
+			public void setSortingStatus(int column, int status) {
+				try {
+					TreePath selectionPath = tree.getSelectionPath();
+					List expandedPaths = new ArrayList();
+					
+					int rc = tree.getRowCount();
+					for(int i = 0; i < rc; i++) {
+						if(tree.isExpanded(i)) {
+							expandedPaths.add(tree.getPathForRow(i));
+						}
+					}
+						
+					super.setSortingStatus(column,  status);
+					for(int i = 0; i < expandedPaths.size(); i++) {
+						TreePath path = (TreePath) expandedPaths.get(i);
+						tree.expandPath(path);
+					}
+					if(selectionPath!=null) {
+						tree.setSelectionPath(selectionPath);  
+					}
+				} catch(Throwable t){}
+			} 
+		};
+		sortableHeaderRenderer.setSortingStatus(0, SortableHeaderRenderer.ASCENDING);
 	}
    
+	public void setSortingStatus(int column, int status) {
+		if(status!=ASCENDING && status!=DESCENDING) {
+			throw new IllegalArgumentException("Invalid sort order");
+		}
+		sortableHeaderRenderer.setSortingStatus(column, status);
+	}
+	
    public Object getValueAt(int row, int column) {
       try {
          return super.getValueAt(row, column);
