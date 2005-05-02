@@ -226,7 +226,6 @@ public class SortableHeaderRenderer implements TableCellRenderer {
 
    private class MouseHandler extends MouseAdapter {
       public MouseHandler() {
-         setSortingStatus(0, ASCENDING);
       }
 
 
