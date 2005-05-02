@@ -485,7 +485,7 @@ timeMS dateTime loginId taskType moduleName  manifest supportFilesChanges URLToE
 <hr><h4>Try running <%= taskName %> now!</h4>
 
 <jsp:include page="runTask.jsp" flush="true">
-	<jsp:param name="name" value="<%= taskName %>"/>
+	<jsp:param name="name" value="<%= lsid %>"/>
 	<jsp:param name="noEnvelope" value="1"/>
 </jsp:include>
 
