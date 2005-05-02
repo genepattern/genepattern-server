@@ -148,7 +148,7 @@ System.out.println("EN=" + encodedName);
 		if (pinfo.isInputFile()){
 			value = (String)htFilenames.get(pinfo.getName());
 			if (value == null) {
-				System.err.println("preRunVisualizer.jsp: no input file specified for " + task.getName() + "'s " + pinfo.getName());
+				//System.err.println("preRunVisualizer.jsp: no input file specified for " + task.getName() + "'s " + pinfo.getName());
 				HashMap attrs = pinfo.getAttributes();
 				attrs.put(pinfo.MODE , pinfo.URL_INPUT_MODE);
 				attrs.remove(pinfo.TYPE);
