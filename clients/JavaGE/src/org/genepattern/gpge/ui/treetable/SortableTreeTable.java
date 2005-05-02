@@ -109,7 +109,7 @@ public class SortableTreeTable extends JTreeTable implements
                } catch(Throwable t){}
                
             } 
-         };
+         }.setSortingStatus(0, SortableHeaderRenderer.ASCENDING);
       }
 
 	}
