@@ -631,6 +631,8 @@ public class MainFrame extends JFrame {
    }
    
 	public MainFrame() {
+		
+		
       JWindow splash = GenePattern.showSplashScreen();
 		splash.setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -705,6 +707,7 @@ public class MainFrame extends JFrame {
          GPpropertiesManager.setProperty(PreferenceKeys.SHOW_JOB_COMPLETED_DIALOG, "true");
       }
       
+		
       jobModel = JobModel.getInstance();
           
       jobResultsTree = new SortableTreeTable(jobModel);
@@ -1126,7 +1129,7 @@ public class MainFrame extends JFrame {
       l2.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 14));
       jobPanel.add(l2, BorderLayout.NORTH);
 
-      JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+      final JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 		projectPanel, jobPanel);
       leftPane.setResizeWeight(0.5);
       if(RUNNING_ON_MAC) {
@@ -1158,7 +1161,7 @@ public class MainFrame extends JFrame {
       leftPanel.add(fileSummaryComponent, BorderLayout.SOUTH);
      
       analysisServicePanel.setMinimumSize(new Dimension(200, 200));
-      JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+      final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
          leftPanel, analysisServicePanel);
       splitPane.setResizeWeight(0.5);
       splitPane.setMinimumSize(new Dimension(400,400));
@@ -1166,12 +1169,35 @@ public class MainFrame extends JFrame {
       if(!RUNNING_ON_MAC) {
          getContentPane().setBackground(Color.white);
       }
- 
+		int x = 0;
+		int y = 0;
+		int leftPaneDividerLocation = 0;
+		int splitPaneDividerLocation = 0;
+		boolean savedLayout = true;
+		try {
+			String[] tokens = GPpropertiesManager.getProperty(PreferenceKeys.WINDOW_LAYOUT).split(",");
+			width = Integer.parseInt(tokens[0]);
+			height = Integer.parseInt(tokens[1]);
+			x = Integer.parseInt(tokens[2]);
+			y = Integer.parseInt(tokens[3]);
+			leftPaneDividerLocation = Integer.parseInt(tokens[4]);
+			splitPaneDividerLocation = Integer.parseInt(tokens[5]);
+		} catch(Exception e){
+			e.printStackTrace();
+			savedLayout = false;
+		}
+		if(!savedLayout) {
+			x = (screenSize.width - width) / 2;
+			y = 20;	
+			leftPaneDividerLocation = (int) (height * 0.4);
+			splitPaneDividerLocation = (int) (width * 0.4);
+		}
+		
       setSize(width, height);
-      setLocation((screenSize.width - getWidth()) / 2, 20);
+      setLocation(x, y);
       displayServerStatus();
-      leftPane.setDividerLocation((int) (height * 0.4));
-      splitPane.setDividerLocation((int) (width * 0.4));
+      leftPane.setDividerLocation(leftPaneDividerLocation);
+      splitPane.setDividerLocation(splitPaneDividerLocation);
       setJMenuBar(menuBar);
       show();
       addComponentListener(new ComponentAdapter() {
@@ -1181,6 +1207,23 @@ public class MainFrame extends JFrame {
             Math.max(100, getHeight()));
          }
       });
+		
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			public final void run() {
+				try {
+					GPpropertiesManager.setProperty(PreferenceKeys.WINDOW_LAYOUT, 
+						getWidth() + "," + getHeight() + "," + getLocation().x + "," 
+						+ getLocation().y + "," + 
+						leftPane.getDividerLocation() + "," + 
+						splitPane.getDividerLocation());
+					GPpropertiesManager.saveGenePatternProperties();
+				} catch (IOException ioe) {
+					ioe.printStackTrace();
+				}
+			}
+		});
+		
+		
 
 	}
    

@@ -19,6 +19,7 @@ public class PreferenceKeys {
 
 	public final static String MAIL_HOST = "gp.mail.host";
    
+	public final static String WINDOW_LAYOUT = "window.layout";
    
    public final static String AUTHORITY_MINE_COLOR = "authority.mine.color";
    public final static String AUTHORITY_FOREIGN_COLOR =
