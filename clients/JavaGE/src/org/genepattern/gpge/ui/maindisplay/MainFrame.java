@@ -1883,10 +1883,12 @@ public class MainFrame extends JFrame {
 		
 		/** list of AnalysisJobs, sorted by one of several options */
 		List sortedJobs = new ArrayList();
-		/** current comparator */
-		java.util.Comparator comparator;
+		
 		
 		JobNumberComparator jobNumberComparator = new JobNumberComparator();
+      /** current comparator */
+		java.util.Comparator comparator = jobNumberComparator;
+      
 		JMenuItem historyMenuItem = new JMenuItem("View All");
 		static final int JOBS_IN_MENU = 10;
 		HistoryTableModel historyTableModel = new HistoryTableModel();
