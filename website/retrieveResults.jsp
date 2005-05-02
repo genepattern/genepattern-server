@@ -104,6 +104,7 @@ if (bGridded) {
 	</html>
 <%
 } else {
+/*
 	mySmartUpload.initialize(pageContext);
 	try {
 		mySmartUpload.downloadFile(in.getPath(), contentType, in.getName());
@@ -112,6 +113,23 @@ if (bGridded) {
 			throw e;
 		}
 	} 
+*/
+	response.setContentType(contentType);
+        FileInputStream ins = new java.io.FileInputStream(in);
+	byte[] buf = new byte[100000];
+	int i;
+	String s;
+	i = ins.read(buf);
+	while (i > -1) {
+		s = new String(buf, 0, i);
+		out.print(s); // copy input file to response
+		i = ins.read(buf);
+	}
+	ins.close();
+	ins = null;
+	return;
+%>
+
 }
 return;
 %>
