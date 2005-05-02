@@ -62,7 +62,6 @@ try {
 } catch (OmnigeneException oe) {
 }
 
-
 String taskType = tia.get("taskType");
 boolean isVisualizer = "visualizer".equalsIgnoreCase(taskType);
 boolean isPipeline = "pipeline".equalsIgnoreCase(taskType);
@@ -192,14 +191,15 @@ for(int i = 0; i < jobs.length; i++) {
 	     	String altSeperator = "/";
 	     	if (index == -1) index = value.lastIndexOf(altSeperator);
 		String jobNumber = value.substring(0, index);
-            String fileName = value.substring(index + 1, value.length());
+		String fileName = value.substring(index + 1, value.length());
            
-            boolean upToParams = false;      
+		boolean upToParams = false;      
 	     	if (GPConstants.TASKLOG.equals(fileName)){
-			StringBuffer buff = new StringBuffer();
 			File logFile = new File("temp/"+value);
+			if (!logFile.exists()) continue;
 			BufferedReader reader = new BufferedReader(new FileReader(logFile));
 			String line = null;
+			StringBuffer buff = new StringBuffer();
 			while ((line = reader.readLine()) != null){
 				if (!upToParams){
 					int idx = line.indexOf("# Parameters");
@@ -273,12 +273,7 @@ if (rowsDisplayed == 0){
 }
 
 out.println("</td></tr><tr><td colspan=3><form name='execLogForm'><TEXTAREA name='execLogArea' style=\"font-size:9px;font-family: arial, helvetica, sans-serif;width: 100%;\" rows='5'  readonly wrap='soft' bgcolor='#EFEFFF'></textarea></form></td></tr>");
-
-
 out.println("</table>");
-
-
-
 
 %>
 </td>
