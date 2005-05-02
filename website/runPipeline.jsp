@@ -92,7 +92,6 @@
 
 	TaskInfo taskInfo = null;
 	String serverPort = System.getProperty("GENEPATTERN_PORT");
-	System.out.println("RP isSaved" + isSaved + "   " + name);
 	if (!isSaved) {
 		description = (String)requestParamsAndAttributes.get("description");
 		taskInfo = (TaskInfo)requestParamsAndAttributes.get("taskInfo");

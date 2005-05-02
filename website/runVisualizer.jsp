@@ -27,7 +27,6 @@
 		String key = (String) enum.nextElement();
 		params.put(key, (String)request.getAttribute(key));
 	}
-	System.out.println("Params+Attributes="+params);
 
 
 	String name = params.getProperty(GPConstants.NAME);
