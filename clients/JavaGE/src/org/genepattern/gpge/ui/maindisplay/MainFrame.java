@@ -1997,7 +1997,9 @@ public class MainFrame extends JFrame {
 	
 			historyDialog = new CenteredDialog((java.awt.Frame) GenePattern.getDialogParent());
 			historyDialog.setTitle("History");
-			final JTable table = new AlternatingColorTable(historyTableModel);
+			final AlternatingColorTable table = new AlternatingColorTable(historyTableModel);
+         table.setShowCellFocus(false);
+          
 			JPanel toolBar = new JPanel();
 			JButton reloadButton = new JButton("Reload");
 			reloadButton.setToolTipText("Reload the job");

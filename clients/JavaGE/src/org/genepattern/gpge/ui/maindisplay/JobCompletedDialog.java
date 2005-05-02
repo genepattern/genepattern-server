@@ -27,7 +27,7 @@ import org.genepattern.gpge.ui.preferences.PreferenceKeys;
 public class JobCompletedDialog {
 	JDialog dialog;
 
-	JTable table;
+	AlternatingColorTable table;
 
 	MyTableModel tableModel = new MyTableModel();
 
@@ -53,6 +53,7 @@ public class JobCompletedDialog {
 		dialog = new CenteredDialog(parent);
 		dialog.setTitle("Recently Completed Jobs");
 		table = new AlternatingColorTable(tableModel);
+      table.setShowCellFocus(false);
 		Container contentPane = dialog.getContentPane();
 		contentPane.setLayout(new BorderLayout());
 		contentPane.add(new JScrollPane(table), BorderLayout.CENTER);

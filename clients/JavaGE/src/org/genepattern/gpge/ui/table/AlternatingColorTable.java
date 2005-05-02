@@ -15,10 +15,15 @@ import javax.swing.table.TableCellRenderer;
 public class AlternatingColorTable extends JTable {
 	private static final Color ODD_COLOR = new Color(239, 239, 255);
 	private static final Color EVEN_COLOR = Color.white;
-	
+	private boolean showCellSelection = true;
+   
 	public AlternatingColorTable(TableModel m) {
 		super(m);	
 	}
+   
+   public void setShowCellFocus(boolean b) {
+      showCellSelection = b;
+   }
 	
 	public Component prepareRenderer(TableCellRenderer renderer,
 			int row, int column) {
@@ -33,7 +38,7 @@ public class AlternatingColorTable extends JTable {
 		Component r = renderer.getTableCellRendererComponent(this,
 				value,
 				isSelected,
-				hasFocus,
+				showCellSelection&&hasFocus,
 				row, column);
 
 		Color odd = ODD_COLOR;
