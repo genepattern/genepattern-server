@@ -24,14 +24,14 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
-import javax.swing.JLabel;
+import javax.swing.*;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import javax.swing.tree.TreePath;
+import javax.swing.tree.*;
 import javax.swing.tree.TreeSelectionModel;
 
 import java.awt.dnd.DragGestureRecognizer;
@@ -73,6 +73,7 @@ public class SortableTreeTable extends JTreeTable implements
 		setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
 		tree = (JTree) getDefaultRenderer(org.jdesktop.swing.treetable.TreeTableModel.class);
+		tree.setCellRenderer(new ClippedTreeCellRenderer());
 
 		dragSource = DragSource.getDefaultDragSource();
 
@@ -259,6 +260,38 @@ public class SortableTreeTable extends JTreeTable implements
 	}
 
 	
+	private class ClippedTreeCellRenderer extends DefaultTreeCellRenderer {
+            public void paint(Graphics g) {
+                String fullText = super.getText();
+                // getText() calls tree.convertValueToText();
+                // tree.convertValueToText() should call treeModel.convertValueToText(), if possible
+
+                String shortText = SwingUtilities.layoutCompoundLabel(
+                    this, g.getFontMetrics(), fullText, getIcon(),
+                    getVerticalAlignment(), getHorizontalAlignment(),
+                    getVerticalTextPosition(), getHorizontalTextPosition(),
+                    getItemRect(itemRect), iconRect, textRect,
+                    getIconTextGap());
+
+               
+                setText(shortText); // temporarily truncate text
+                super.paint(g);
+                setText(fullText); // restore full text
+            }
+
+            private Rectangle getItemRect(Rectangle itemRect) {
+                getBounds(itemRect);
+                itemRect.width = tree.getWidth() - itemRect.x;
+                return itemRect;
+            }
+
+            // Rectangles filled in by SwingUtilities.layoutCompoundLabel();
+            private final Rectangle iconRect = new Rectangle();
+            private final Rectangle textRect = new Rectangle();
+            // Rectangle filled in by this.getItemRect();
+            private final Rectangle itemRect = new Rectangle();
+        }
+		  
 	private boolean isRootPath(TreePath path) {
 		return tree.isRootVisible() && tree.getRowForPath(path) == 0;
 	}
