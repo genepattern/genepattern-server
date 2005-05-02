@@ -2107,13 +2107,18 @@ public class MainFrame extends JFrame {
 				switch (c) {
 					case 0:
 						return JobModel.jobToString(job);
-					case 2:
+               
+					case 1:
 						if (!complete) {
 							return jobInfo.getStatus();
 						}
 						return java.text.DateFormat.getDateTimeInstance(
 								java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
 								.format(jobInfo.getDateCompleted());
+               case 2:
+                  return java.text.DateFormat.getDateTimeInstance(
+								java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
+								.format(jobInfo.getDateSubmitted());
 					default:
 						return null;
 				}
