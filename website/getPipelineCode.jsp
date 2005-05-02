@@ -55,7 +55,9 @@
          pipelineTasks.add(adminClient.getTask(js.getLSID()));
       }  
    
+		boolean windowsClient = request.getHeader("user-agent").indexOf("Windows") != -1;
 		String code = AbstractPipelineCodeGenerator.getCode(model, pipelineTasks, server, language);
+		if (windowsClient) code = code.replaceAll("\n", "\r\n");
 		if (download) {
 			pipelineName = taskInfo.getName();
 			if("Java".equals(language)) {
