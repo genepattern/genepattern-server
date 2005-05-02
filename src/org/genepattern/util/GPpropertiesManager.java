@@ -18,9 +18,9 @@ import java.util.Properties;
  * @author kohm
  */
 public class GPpropertiesManager {
-
+	
 	/** private access prevents instantiation of GPpropertiesManager */
-	protected GPpropertiesManager() {
+	private GPpropertiesManager() {
 	}
 
 	/** gets the property if it exists otherwise sets the property to null */
@@ -203,7 +203,7 @@ public class GPpropertiesManager {
 	public static final File GP_HOME;
 	/** static initializer */
 	static {
-		Exception exception = null;
+		
 		PROPERTIES = new java.util.Properties();
 		File home = null;
 		//boolean got_gp = false;
@@ -225,26 +225,14 @@ public class GPpropertiesManager {
 				props_file.createNewFile();
 			}
 		} catch (IOException ioe) {
-			exception = ioe;
+			
 			System.err.println(
 					"Problems reading or creating the properties file");
 		}
 		GP_HOME = (home != null) ? home : new File(System
 				.getProperty("user.home")
 				+ File.separator + "gp");
-		// save gp props just before shutdown
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			public final void run() {
-				try {
-					saveGenePatternProperties();
-				} catch (IOException ioe) {
-					System.err.println("While trying to save gp properties:\n"
-							+ ioe);
-				}
-			}
-		});
-		if (exception != null) {
-			throw new IllegalStateException(exception.getMessage());
-		}
+		
+		
 	}
 }
