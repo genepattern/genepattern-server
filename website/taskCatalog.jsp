@@ -443,11 +443,21 @@ Select from the following tasks from the GenePattern public access website to do
 %>
 
 <br>
+<table>
+<tr>
+<td width="80%">
 <font size="+1"><b><%= numRefreshable %> of <%= numUniqueTasks %> tasks are new or updated</b></font>
+</td>
+<td>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</td>
+<td>
 <input type="submit" name="<%= INSTALL_BUTTON %>" value="install checked"> &nbsp;&nbsp;
-<a href="javascript:checkAll(this.form, true)">check all</a> &nbsp;&nbsp;
-<a href="javascript:checkAll(this.form, false)">uncheck all</a>
+<nobr><a href="javascript:checkAll(this.form, true)">check all</a> &nbsp;&nbsp;
+<a href="javascript:checkAll(this.form, false)">uncheck all</a></nobr>
+</td>
+</tr>
+</table>
 
 <table cellspacing="5">
 
