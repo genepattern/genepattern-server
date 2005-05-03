@@ -119,17 +119,17 @@ if (bGridded) {
 	byte[] buf = new byte[100000];
 	int i;
 	String s;
+	boolean isWindows = request.getHeader("user-agent").indexOf("Windows") != -1;
 	i = ins.read(buf);
 	while (i > -1) {
 		s = new String(buf, 0, i);
+		if (isWindows) s = s.replaceAll("\n", "\n\r");
 		out.print(s); // copy input file to response
 		i = ins.read(buf);
 	}
 	ins.close();
 	ins = null;
 	return;
-%>
-
 }
 return;
 %>
