@@ -4174,7 +4174,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	}
 
 	public static String[] getLanguages() {
-		return new String[] { ANY, "C", "C++", "Java", "Perl", "Python", "R" };
+		return new String[] { ANY, "C", "C++", "Java", "MATLAB", "Perl", "Python", "R" };
 	}
 
 } // end GenePatternAnalysisTask class
