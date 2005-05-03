@@ -53,7 +53,9 @@ boolean bNoEnvelope = (request.getParameter("noEnvelope") != null);
 TaskInfo taskInfo = null;
 try { 
 	
-taskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, username); } catch (OmnigeneException oe) {}
+String lsid = request.getParameter(GPConstants.LSID);
+if (lsid == null ) lsid = taskName;
+taskInfo = GenePatternAnalysisTask.getTaskInfo(lsid, username); } catch (OmnigeneException oe) {}
 TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
 ParameterInfo[] parameterInfoArray = null;
 try {
