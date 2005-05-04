@@ -88,9 +88,7 @@ public class ClassVector {
 
 	public ClassVector slice(int[] order) {
 		int[] newAssignments = new int[order.length];
-		Map newClassNumber2IndicesMap = new HashMap();
-		Map newClassNumber2LabelMap = new HashMap();
-		int numClasses = 0;
+		Map newClassNumber2IndicesMap = new HashMap();             
 		for (int i = 0, length = order.length; i < length; i++) {
 			newAssignments[i] = this.assignments[order[i]];
 			List newIndices = (List) newClassNumber2IndicesMap.get(new Integer(
@@ -99,14 +97,12 @@ public class ClassVector {
 				newIndices = new ArrayList();
 				newClassNumber2IndicesMap.put(new Integer(newAssignments[i]),
 						newIndices);
-				numClasses++;
-				newClassNumber2LabelMap.put(new Integer(newAssignments[i]),
-						getClassName(this.assignments[order[i]]));
+				
 			}
 			newIndices.add(new Integer(i));
 		}
 		return new ClassVector(newClassNumber2IndicesMap, newAssignments,
-				newClassNumber2LabelMap, numClasses);
+				classNumber2LabelMap, classCount);
 	}
 
 	public String toString() {
@@ -121,7 +117,8 @@ public class ClassVector {
 	}
 
 	/**
-	 * Gets the number of different values taken by the class assignments.
+	 * Gets the number of different possible values taken by the class assignments. Note that this can be greater than the actual number of classes
+    * contained in this class vector.
 	 * 
 	 * @return The number of classes.
 	 */
