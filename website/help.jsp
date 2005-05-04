@@ -14,33 +14,33 @@
 <jsp:include page="navbar.jsp"></jsp:include>
 <h2>GenePattern add/update analysis task help</h2>
 
-<h4>Adding a new module to the GenePattern server</h4>
+<h4>Adding a new task to the GenePattern server</h4>
 
 If you have an algorithm or utility that you would like to add to GenePattern,
 you'll need to upload it to the GenePattern server, along with descriptive information that the clients (graphical client, web browser, R, Java) will use to display and run it.  It takes just a few minutes to enter the
-necessary information.  Once you have done so, you can run the module immediately and can
+necessary information.  Once you have done so, you can run the task immediately and can
 share it with others.  You'll be able to decide which parameters from the algorithm to
 expose to the user, and can replace command line parameter names that are hard to remember
 with some that are self-explanatory.  You can also create drop-down list choices for
-parameters, further reducing the ability to invoke a module with bad inputs when the choices
+parameters, further reducing the ability to invoke a task with bad inputs when the choices
 are constrained.<br><br>
 
 When you save a task, the information about it that you have typed in is valdated to make sure of the following:
 <ul><li> Every parameter you haven't marked as optional must be listed in the command line.</li>
 <li> Every command line parameter must be either a parameter, environment variable, or system property.</li>
-<li> The module name and parameter names must be legal - in general, you should avoid punctuation marks and other special characters. </li>
+<li> The task name and parameter names must be legal - in general, you should avoid punctuation marks and other special characters. </li>
 </ul>
  If everything checks out, the uploaded files are saved in the GenePattern task library and the task registered in the task database.  The task and its uploaded files are indexed in the background so that they are immediately available for searching.<br><br>
 
 Each input field in the <a href="addTask.jsp">addTask.jsp</a> page (accessed from the <a href="index.jsp">GenePattern home page</a> or the edit task list on the navigation bar) is explained in detail below.  There are three sections to the form:
 <ol>
 <li><b>Authorship Information.</b> A name, description, and other <a href="#taskLevelAttributes">task-level attributes</a>.</li>
-<li><b>Support Files. </b><a href="#supportFiles">Support files</a> are your module plus any accompanying applications, scripts, libraries, documentation, configuration files, etc.</li>
+<li><b>Support Files. </b><a href="#supportFiles">Support files</a> are your task plus any accompanying applications, scripts, libraries, documentation, configuration files, etc.</li>
 <li><b>Parameter Information.</b> Descriptions of each <a href="#inputParameters">input parameter</a> (name, datatype, description, etc.).
 </li>
 </ol>
 
-An example for each field is given based on the Consensus Clustering module, which may be
+An example for each field is given based on the Consensus Clustering task, which may be
 uploaded from the
 <a href="taskCatalog.jsp?taskType=Clustering&state=new&state=updated&state=up%20to%20date&name=ConsensusClustering"><nobr>GenePattern public website</nobr></a> if you haven't already installed it.
 <br>
@@ -48,12 +48,12 @@ uploaded from the
 <h2><a name="taskLevelAttributes">Entering task-level attributes</a></h2>
 
 <h4>Name</h4>
-The name of the module will be used in the drop-down task catalog lists and as a directory name on the server with
+The name of the task will be used in the drop-down task catalog lists and as a directory name on the server with
 this name.  It should be a short but descriptive name, without spaces or punctuation, and may be mixed
 upper- and lower-case.<br><br> ConsensusClustering example: <span class="example">ConsensusClustering</span>
 
 <h4>Task catalog</h4>
-This is a drop-down list of the tasks currently installed. You can use this to view or edit the parameters for a currently installed module.
+This is a drop-down list of the tasks currently installed. You can use this to view or edit the parameters for a currently installed task.
 The "delete..." button gives you the option of deleting the selected task (after confirmation).
 The "clone..." button allows you to copy a task to a new name prior to editing it.  The suggested name
 for a cloned task is copyOf<i>original</i>.<br><br>
@@ -63,12 +63,12 @@ The description is where to explain what your task does, and why someone would w
 It can be anywhere from a sentence to a short paragraph in length.
 The description, sometimes in abridged form, is displayed in the pipeline designer task choice list,
 in generated code when creating scripts from pipelines, and in the graphical client.
-It's a very good way for you to document succinctly why your module exists.<br><br>
+It's a very good way for you to document succinctly why your task exists.<br><br>
 
 ConsensusClustering example: <span class="example">Resampling-based clustering method</span>
 
 <h4>Author</h4>
-Enter the author&apos;s name and affiliation (company or academic institution).  If you share this module
+Enter the author&apos;s name and affiliation (company or academic institution).  If you share this task
 with others, they will know how to give the author credit and whom to contact with questions, suggestions,
 or enhancement ideas.<br><br>
 
@@ -82,7 +82,7 @@ ConsensusClustering example: <span class="exampleLink">gp-help@broad.mit.edu</sp
 
 <h4>Privacy</h4>
 Tasks may be marked as either public or private.  Public tasks are accessible to everyone who uses the server
-on which it resides.  Private tasks may be accessed only by the module's owner, which is the username that the user logged in with.  When a module is first created, the default is to mark it private.  Private tasks are not visible to others building pipelines or running tasks.  You can update your module's privacy at any time.
+on which it resides.  Private tasks may be accessed only by the task's owner, which is the username that the user logged in with.  When a task is first created, the default is to mark it private.  Private tasks are not visible to others building pipelines or running tasks.  You can update your task's privacy at any time.
 
 <br>
 <br>
@@ -90,19 +90,19 @@ ConsensusClustering example: <span class="example">public</span>
 
 <h4>Quality level</h4>
 The quality level is a simple three-level classification that lets the user know what level of confidence the
-author has in the robustness of the module.  The three levels have no strict definitions.  In increasing order of
+author has in the robustness of the task.  The three levels have no strict definitions.  In increasing order of
 quality expectations, they are: are &quot;development&quot;, &quot;preproduction&quot;, and &quot;production&quot;.
 <br>
 <br>
 ConsensusClustering example: <span class="example">development</span>
 
 <h4>Documentation</h4>
-Module authors should document their work to help make it more accessible to other users.  When you upload
-documentation files, the documentation is made available in conjunction with the module itself. When the module
+Task authors should document their work to help make it more accessible to other users.  When you upload
+documentation files, the documentation is made available in conjunction with the task itself. When the task
 is zipped and shared, the documentation will travel with it.  GenePattern doesn't require any specific formats, but
 we suggest that you consider generating your documentation in either PDF or HTML format for maximum portability. In general, the GenePattern server will recognize as documentation files that have standard extensions: .doc, .pdf, .txt, .html, .rdf. You can add to or change these extensions by modifying the files.doc property in the GenePatternServer/resources/genepattern.properties file.<br><br>
 
-A good document file for a module gives a detailed description of each input parameter, what the output file format
+A good document file for a task gives a detailed description of each input parameter, what the output file format
 and content are, and explains the algorithm sufficiently for the reader to either immediately comprehend it, or
 at least to have a reference to a paper, journal, or book where it is explained.
 <br>
@@ -110,15 +110,15 @@ at least to have a reference to a paper, journal, or book where it is explained.
 ConsensusClustering example: <span class="exampleLink" ><a href="docs/help/ConsensusClustering.pdf">ConsensusClustering.pdf</a></span>
 
 <h4>Command line</h4>
-The crux of adding a module to the GenePattern server is to provide the command line that will be used to
+The crux of adding a task to the GenePattern server is to provide the command line that will be used to
 launch the task, including substitutions for settings that will be specified differently for each invocation.
 In the command line field of the form, you will provide a combination of the fixed text and the dynamically-changed
-text which together constitute the command line for an invocation of the module.<br><br>
+text which together constitute the command line for an invocation of the task.<br><br>
 
 Perhaps the trickiest thing about specifying a command line is making it truly platform-independent.  Sure, it works fine
 for your computer, right now.  But if you zip it and send it to an associate, are they running a Mac?  Windows?  Unix?
 You may not know, and you shouldn't need to care.  By carefully describing the command line using substitution variables,
-you can pretty well ensure that your module will run anywhere.<br><br>
+you can pretty well ensure that your task will run anywhere.<br><br>
 
 Parameters that require substitution should be enclosed in brackets (ie. &lt;filename&gt;).
 All parameters listed in the parameters section must be mentioned in the command line
@@ -139,9 +139,9 @@ the public GenePattern website.  Useful substitution properties include:<br><br>
 <tr><td valign="top"><span class="example">&lt;perl&gt;</span></td><td>path to Perl, installed with GenePattern server on Windows, otherwise the one already installed on your system</td></tr>
 <tr><td valign="top"><span class="example">&lt;R&gt;</span></td><td>path to a program that runs R and takes as input a script of R commands.  R is installed with GenePattern server on Windows and MacOS</td></tr>
 <tr><td valign="top"><span class="example">&lt;java_flags&gt;</span></td><td>memory size and other Java JVM settings from the GenePatternServer/resources/genepattern.properties file</td></tr>
-<tr><td valign="top"><span class="example">&lt;libdir&gt;</span></td><td>directory where the module's support files are stored</td></tr>
+<tr><td valign="top"><span class="example">&lt;libdir&gt;</span></td><td>directory where the task's support files are stored</td></tr>
 <tr><td valign="top"><span class="example">&lt;job_id&gt;</span></td><td>job number</td></tr>
-<tr><td valign="top"><span class="example">&lt;name&gt;</span></td><td>name of the module being run</td></tr>
+<tr><td valign="top"><span class="example">&lt;name&gt;</span></td><td>name of the task being run</td></tr>
 <tr><td valign="top"><span class="example">&lt;<i>filename</i>_basename&gt;</span></td><td>for each input file parameter, the filename without directory</td></tr>
 <tr><td valign="top"><span class="example">&lt;<i>filename</i>_extension&gt;</span></td><td>for each input file parameter, the extension without filename or directory</td></tr>
 <tr><td valign="top"><span class="example">&lt;<i>filename</i>_file&gt;</span></td><td>for each input file parameter, the input filename without directory</td></tr>
@@ -164,7 +164,7 @@ Here's the Consensus Clustering command line (actually all on one line): <br><sp
 
 <h4>Task type</h4>
 The task type helps someone who is building a pipeline by creating an organizing theme around the types of tasks.
-If the task type for a new module doesn't fit well within the existing list, click the &quot;new...&quot;
+If the task type for a new task doesn't fit well within the existing list, click the &quot;new...&quot;
  button and add a new task type
 entry.  The list of task types is created dynamically based upon the task types of all of the installed tasks.
 If the last task of a given type is deleted, that task type will be removed from the task type list.<br><br>
@@ -173,26 +173,26 @@ ConsensusClustering example: <span class="example">Clustering</span>
 
 <h4>CPU type</h4>
 If your task is compiled for a specific platform (Intel, Alpha, PowerPC, etc.), please indicate that here.
-CPU requirements are enforced when the module is run.<br><br>
+CPU requirements are enforced when the task is run.<br><br>
 
 ConsensusClustering example: <span class="example">any</span>
 
 <h4>Operating system </h4>
 If your task requires a specific operating system (Windows, Linux, MacOS, etc.), please indicate that here.
-Operating system requirements are enforced when the module is run.<br><br>
+Operating system requirements are enforced when the task is run.<br><br>
 
 ConsensusClustering example: <span class="example">any</span>
 
 <h4>Language</h4>
 There is no specific language support or requirement enforcement at this time.  However, by describing the
-primary language that a module is implemented in, you give some hints to the prospective user about their
+primary language that a task is implemented in, you give some hints to the prospective user about their
 system requirements.<br><br>
 
 ConsensusClustering example: <span class="example">Java</span>
 
 <h4>min. language level</h4>
-If your module requires at least a certain revision of the language runtime environment, please indicate which (eg.
-<span class="example">1.3.1_07</span>) to use.  This is not currently enforced, but provides useful information to the prospective module
+If your task requires at least a certain revision of the language runtime environment, please indicate which (eg.
+<span class="example">1.3.1_07</span>) to use.  This is not currently enforced, but provides useful information to the prospective task
 user.<br><br>
 
 ConsensusClustering example: <span class="example"><i>none specified</i></span>
@@ -222,7 +222,7 @@ ConsensusClustering example: <span class="example">Current files: </span> <span 
 <h2><a name="inputParameters">Input parameters</a></h2>
 
 The input parameters section of the addTask form appears perhaps to be the most daunting.  And yet there is
-little that is required to make a working module declaration.  Each parameter in the command line that comes from a
+little that is required to make a working task declaration.  Each parameter in the command line that comes from a
 user input must have a an entry in this section.  Otherwise the clients would know nothing about how to
 prompt the user for input nor could they explain to the user what type of input is expected.<br>
 
@@ -241,7 +241,7 @@ file, rather than just the name of the file.<br><br>
 ConsensusClustering examples: <span class="example">kmax</span>, <span class="example">input.filename</span>
 
 <h4>Description</h4>
-The description field is optional, but is very useful.  It allows the module author to provide a more detailed description
+The description field is optional, but is very useful.  It allows the task author to provide a more detailed description
 than the name itself.  What is the &quot;kmax&quot; parameter used for?  Does it interact with any other parameters?
 Do you have any advice about what is a reasonable range of settings for it?  The description is displayed by the
 clients when they prompt for input for each field.<br><br>
@@ -277,10 +277,10 @@ which would create a drop-down list that looks like this:</td>
 
 <h4>Default value</h4>
 
-Some parameters should have a default value which will be supplied on the module's command line if no setting
-is supplied by the user when invoking the module.  This is not the same as the module's own internal defaults.
-Instead, this allows the GenePattern module declaration author to create a default, even when none exists internally
-within the module.<br><br>
+Some parameters should have a default value which will be supplied on the task's command line if no setting
+is supplied by the user when invoking the task.  This is not the same as the task's own internal defaults.
+Instead, this allows the GenePattern task declaration author to create a default, even when none exists internally
+within the task.<br><br>
 
 Default values for parameters that have a choice list must be either blank, or one of the values from the choice list.
 Any other setting will result in an error message.  If no default for a choice list is provided, the first entry
@@ -295,7 +295,7 @@ ConsensusClustering examples: <span class="example">NMF</span>, <span class="exa
 
 <h4>Optional</h4>
 
-Some parameters are not required on the command line.  These parameters, when left blank by the user when the module
+Some parameters are not required on the command line.  These parameters, when left blank by the user when the task
 is invoked, result in nothing being added to the command line for that parameter.
 <br><br>
 
