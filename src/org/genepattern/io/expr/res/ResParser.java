@@ -154,12 +154,16 @@ public class ResParser implements IExpressionDataParser {
 												  // sample names
 		if (sampleIdLine != null && sampleIdLine.length() > 0) {
 			String[] tokens = sampleIdLine.split("\t");
+         if(tokens == null || tokens.length==0 || tokens.length==1) {
+            throw new ParseException("Unable to parse line 1");  
+         }
+         
 			String desc = tokens[0];// Description
 			if (!DESCRIPTION.equalsIgnoreCase(desc)) {
 				// System.out
 					//	.println("Warning: First line should start with 'Description'");
 			}
-
+         
 			String acc = tokens[1];// Accession
 			if (!ACCESSION.equalsIgnoreCase(acc)) {
 				//System.out
