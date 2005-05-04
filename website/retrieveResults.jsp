@@ -123,7 +123,9 @@ if (bGridded) {
 	i = ins.read(buf);
 	while (i > -1) {
 		s = new String(buf, 0, i);
-		if (isWindows) s = s.replaceAll("\n", "\n\r");
+		if (isWindows) {
+//			s = s.replaceAll("\n", "\n\r");
+		}
 		out.print(s); // copy input file to response
 		i = ins.read(buf);
 	}
