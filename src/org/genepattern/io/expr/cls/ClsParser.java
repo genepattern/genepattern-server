@@ -230,7 +230,7 @@ public class ClsParser {
 										+ "that is too "
 										+ (classNumber < 0 ? "small" : "large")
 										+ "."
-										+ "All data x for this file must be in the range 0-"
+										+ " All data for this file must be in the range 0-"
 										+ (num_classes - 1) + ".");
 					}
 					String name = (String) classNumber2ClassNameMap
