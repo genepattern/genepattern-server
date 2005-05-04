@@ -285,7 +285,7 @@ public class IOUtil {
 	 * @return a IExpressionDataWriter that can encode in the specified format
 	 *         or <codee>null</code> if no such IExpressionDataWriter exists.
 	 */
-	private static IExpressionDataWriter getWriterByFormatName(String formatName) {
+	public static IExpressionDataWriter getExpressionWriterByFormatName(String formatName) {
 		return (IExpressionDataWriter) formatNameToExpressionWriterMap
 				.get(formatName);
 	}
