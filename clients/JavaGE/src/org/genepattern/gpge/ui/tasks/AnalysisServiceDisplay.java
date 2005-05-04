@@ -427,7 +427,7 @@ public class AnalysisServiceDisplay extends JPanel {
 
 
    protected final JTextField createProperTextField(final ParameterInfo info) {
-      final int num_cols = 15;
+      final int num_cols = 20;
       JTextField field = null;
       final Object value = info.getAttributes().get("type");
       if(value == null || value.equals("java.lang.String")) {
