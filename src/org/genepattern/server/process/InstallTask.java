@@ -233,16 +233,18 @@ public class InstallTask {
 	public boolean matchesAttributes(Map attributes) {
 		for (Iterator itAttr = attributes.keySet().iterator(); itAttr.hasNext();) {
 			String name = (String) itAttr.next();
+			String value = (String)module.get(name);
+			if (value != null && value.equals(GPConstants.ANY)) return true;
 			Object oChoices = attributes.get(name);
 			if (oChoices instanceof String) {
 				if (!attributes.containsKey(name)
-						|| !attributes.get(name).equals(module.get(name))) {
+						|| !attributes.get(name).equals(value)) {
 					return false;
 				}
 			} else {
 				// vChoices is a Vector of possible settings. Any one is okay
 				Vector vChoices = (Vector) oChoices;
-				if (!vChoices.contains(module.get(name))) {
+				if (!vChoices.contains(value)) {
 					return false;
 				}
 			}
