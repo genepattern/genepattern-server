@@ -98,6 +98,10 @@ public class FileInfoUtil {
          fileInfo.setAnnotation(new KeyValuePair("Error", message));
       } catch(IOException ioe) {
          ioe.printStackTrace();
+         fileInfo.setAnnotation(new KeyValuePair("Error", "Unable to parse file"));
+      } catch(Throwable t) {
+         t.printStackTrace();
+         fileInfo.setAnnotation(new KeyValuePair("Error", "Unable to parse file"));
       }
       return fileInfo;
    }
