@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 
 import org.genepattern.data.expr.IExpressionData;
 import org.genepattern.io.expr.IExpressionDataWriter;
+import org.genepattern.io.OdfWriter;
 
 /**
  * Writer for odf datasets
@@ -14,20 +15,24 @@ import org.genepattern.io.expr.IExpressionDataWriter;
  */
 public class OdfDatasetWriter implements IExpressionDataWriter {
 	final static String FORMAT_NAME = "odf";
-
-	public String checkFileExtension(String filename) {
+   private boolean prependExecutionLog = false;
+	
+   public String checkFileExtension(String filename) {
 		if (!filename.toLowerCase().endsWith(".odf")) {
 			filename += ".odf";
 		}
 		return filename;
 	}
 
+   public void setPrependExecutionLog(boolean b) {
+      prependExecutionLog = b;
+   }
+   
 	// note old odf parser requires row descriptions and column descriptions
 
 	public void write(IExpressionData expressionData, OutputStream os)
 			throws IOException {
-		PrintWriter out = new PrintWriter(os);
-
+		PrintWriter out = new OdfWriter(os, prependExecutionLog);
 		int rows = expressionData.getRowCount();
 		int columns = expressionData.getColumnCount();
 
