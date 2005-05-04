@@ -870,11 +870,11 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		bw.write("# ");
 		bw.write("\n# Created: "+ new Date(f.lastModified())+" by " + jobInfo.getUserId());
 		bw.write("\n# Job: " + jobInfo.getJobNumber());
-		bw.write("    server:  http://");
+		bw.write("    server:  ");
 		
 		InetAddress addr = InetAddress.getLocalHost();
 		String host_address = addr.getCanonicalHostName();
-		String GP_URL =  host_address+":" + System.getProperty("GENEPATTERN_PORT") + "/gp";
+		String GP_URL =  "http://" + host_address+":" + System.getProperty("GENEPATTERN_PORT") + "/gp";
 		bw.write( GP_URL);
 		bw.write("\n# Task: "+ jobInfo.getTaskName() + " " +jobInfo.getTaskLSID());
 		bw.write("\n# Parameters: ");
