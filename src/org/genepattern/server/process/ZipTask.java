@@ -102,6 +102,8 @@ public class ZipTask extends CommandLineAction {
 	public void zipTaskFile(ZipOutputStream zos, File f, String comment)
 			throws Exception {
 		try {
+			if (f.isDirectory()) return;
+
 			ZipEntry zipEntry = null;
 			FileInputStream is = null;
 			String value = null;
