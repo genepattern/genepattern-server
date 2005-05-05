@@ -1,4 +1,4 @@
-<%@ page contentType="text/html" language="Java" %>
+<%@ page contentType="text/html" language="Java" session="false" %>
 <% { %>
 <!-- begin footer.jsp -->
 <br>

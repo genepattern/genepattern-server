@@ -1,4 +1,4 @@
-<%@ page contentType="text/html" language="Java" 
+<%@ page contentType="text/html" language="Java" session="false"
 	import="java.net.MalformedURLException,
 		java.util.Collection,
 		java.util.Iterator,
