@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using Zero G's InstallAnywhere 6.1 Enterprise, Build 2325
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Wed Mar 23 12:09:21 EST 2005 -->
-<InstallAnywhere_Deployment_Project increments="5193">
+     DATE:   Thu May 05 09:00:12 EDT 2005 -->
+<InstallAnywhere_Deployment_Project increments="5196">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
 		<versionID major="6" minor="1" revision="-1"/>
@@ -10,7 +10,7 @@
 		<scriptID>12,42,11,90,81,55,51,50,54,57,71,70,78,52,69,53</scriptID>
 		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,51,46,49,95,48,56,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,83,59,32,67,112,49,50,53,50</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,0,-45,101,-64,48,80,112,116,103,88,98,113,97,113,65,65,88,74,65,72,71,70,69,64,69,66,69,48,79,87,5,2,4,2,51,96,2,1,0,0</authorizationID>
+		<authorizationID>1,0,0,0,-93,-11,16,-48,80,112,116,103,88,98,113,97,113,65,65,88,74,65,72,71,70,69,64,69,66,69,48,79,87,5,2,7,11,49,108,3,1,0,0</authorizationID>
 	</essentialScriptInfo>
 	<installationObjects uniqueObjects="420">
 		<object class="com.zerog.ia.installer.Installer" objectID="7daeb2feafa5">
@@ -121,19 +121,6 @@ Relative paths are relative to the launcher.]]></string>
 								</object>
 							</method>
 							<method name="addElement">
-								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="7e4dd08dafec">
-									<property name="propertyValue">
-										<string><![CDATA[$CMD_LINE_ARGUMENTS$]]></string>
-									</property>
-									<property name="propertyName">
-										<string><![CDATA[lax.command.line.args]]></string>
-									</property>
-									<property name="propertyComment">
-										<string><![CDATA[what will be passed to the main method -- be sure to quote arguments with spaces in them]]></string>
-									</property>
-								</object>
-							</method>
-							<method name="addElement">
 								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1d780265afc0">
 									<property name="propertyValue">
 										<string><![CDATA[true]]></string>
@@ -143,6 +130,19 @@ Relative paths are relative to the launcher.]]></string>
 									</property>
 									<property name="propertyComment">
 										<string><![CDATA[Indicates that the client will display graphics]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="7e4dd08dafec">
+									<property name="propertyValue">
+										<string><![CDATA[$CMD_LINE_ARGUMENTS$]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.command.line.args]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[what will be passed to the main method -- be sure to quote arguments with spaces in them]]></string>
 									</property>
 								</object>
 							</method>
@@ -202,19 +202,6 @@ it will search for ones in this list]]></string>
 								</object>
 							</method>
 							<method name="addElement">
-								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="e3e4868ca7c7">
-									<property name="propertyValue">
-										<string><![CDATA[org.genepattern.gpge.GenePattern]]></string>
-									</property>
-									<property name="propertyName">
-										<string><![CDATA[lax.main.class]]></string>
-									</property>
-									<property name="propertyComment">
-										<string><![CDATA[the class that contains the main method for the application]]></string>
-									</property>
-								</object>
-							</method>
-							<method name="addElement">
 								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="ebe843eda34f">
 									<property name="propertyValue">
 										<string><![CDATA[128m]]></string>
@@ -224,6 +211,19 @@ it will search for ones in this list]]></string>
 									</property>
 									<property name="propertyComment">
 										<string><![CDATA[initial heap memory size]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="c06b3993902f">
+									<property name="propertyValue">
+										<string><![CDATA[org.genepattern.gpge.GenePattern]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.main.class]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[the class that contains the main method for the application]]></string>
 									</property>
 								</object>
 							</method>
@@ -392,7 +392,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[broad-cg.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>287128</long>
+								<long>287319</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1074,7 +1074,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[ui_support.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>48580</long>
+								<long>48353</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1105,7 +1105,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[gpwebservice.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>163632</long>
+								<long>187714</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1136,7 +1136,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[jdnc-0_6-all.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>353686</long>
+								<long>353663</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1167,7 +1167,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[macos.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>157318</long>
+								<long>1542</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1198,7 +1198,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[forms-1.0.5.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>157318</long>
+								<long>85502</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -5695,7 +5695,9 @@ GenePatternServer=$GenePatternServer$
 					<method name="addElement">
 						<object class="com.zerog.ia.installer.actions.ASCIIFileManipulator" objectID="b90e8428bb5e">
 							<property name="additionalText">
-								<string><![CDATA[gp.project.dirs=$gp.project.dirs$]]></string>
+								<string><![CDATA[gp.project.dirs=$gp.project.dirs$
+gp.user.name=$gp.user.name$
+]]></string>
 							</property>
 							<property name="fileTargetType">
 								<int>1</int>
@@ -5941,7 +5943,7 @@ Please see the installation log for details.  Press ""Done"" to quit the install
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.build.last.date]]></string>
-						<string><![CDATA[March 21, 2005 1:44:53 PM EST]]></string>
+						<string><![CDATA[May 5, 2005 9:00:11 AM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.windows.vm]]></string>
@@ -6001,7 +6003,7 @@ Please see the installation log for details.  Press ""Done"" to quit the install
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[March 23, 2005 12:09:20 PM EST]]></string>
+						<string><![CDATA[May 5, 2005 9:00:11 AM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
@@ -6034,6 +6036,10 @@ Please see the installation log for details.  Press ""Done"" to quit the install
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.java.novm]]></string>
 						<string><![CDATA[false]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.vmpack.aix.path]]></string>
+						<string><![CDATA[IBMJRE141AIX_ca1411-20030930.vm]]></string>
 					</method>
 				</object>
 			</property>
@@ -7041,7 +7047,7 @@ and any path to a file to read from that file]]></string>
 												<string><![CDATA[build.properties]]></string>
 											</property>
 											<property name="fileSize">
-												<long>304</long>
+												<long>303</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
