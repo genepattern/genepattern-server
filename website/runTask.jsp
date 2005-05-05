@@ -172,17 +172,18 @@ try {
 int numRowsToDisplay = 15; 
 int rowsDisplayed = 0; // increment for each <tr> in this table
 
+boolean[] hasLog = new boolean[jobs.length];
 
 //// GET THE EXECUTION LOG FOR WRITING TO THE TEXTAREA
 for(int i = 0; i < jobs.length; i++) {
    JobInfo job = jobs[i];
-  
+   hasLog[i] = false;
    if(!job.getStatus().equals(JobStatus.FINISHED) ) continue;
   
    out.print("<tr><td align=\"right\" >" + job.getJobNumber() + "");
    rowsDisplayed++;
    ParameterInfo[] params = job.getParameterInfoArray();
-   String log = "execution log unavailable for job " + job.getJobNumber();
+      String log = "execution log unavailable for job " + job.getJobNumber();
 
    if(params!=null && params.length > 0) {    
       for(int j = 0; j < params.length; j++) {
@@ -215,6 +216,7 @@ for(int i = 0; i < jobs.length; i++) {
 				buff.append("\\n");
 			}	
 			log = buff.toString();
+			hasLog[i] = true;
 		}
 			
 	   }
@@ -228,8 +230,14 @@ for(int i = 0; i < jobs.length; i++) {
   out.println("</script>");
 
 
-   out.print("<td valign='center'><span name='"+job.getJobNumber()+"'onmouseover='showJob("+job.getJobNumber()+")'><nobr>" + job.getTaskName()+"&nbsp;<img src='info_obj.gif'></nobr></span>");
-   
+   out.print("<td valign='center'><span name='"+job.getJobNumber()+"'onmouseover='showJob("+job.getJobNumber()+")'><nobr>" + job.getTaskName());
+
+   out.print("&nbsp;");
+   if (hasLog[i])
+	out.print("<img src='info_obj.gif'>");
+    out.print( "  </nobr></span>");
+
+
    Date completed = job.getDateCompleted();
    DateFormat formatter =  completed.after(midnight.getTime()) ? shortDateFormat : dateFormat;
    
