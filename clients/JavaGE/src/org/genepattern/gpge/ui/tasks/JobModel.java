@@ -42,12 +42,12 @@ public class JobModel extends AbstractSortableTreeTableModel {
    
    private int sortColumn = 0;
    
-   private final JobNodeComparator TASK_NAME_COMPARATOR = new JobNodeComparator("org.genepattern.gpge.ui.tasks.JobModel$TaskNameComparator", false);
-   private final JobNodeComparator TASK_DATE_COMPARATOR = new JobNodeComparator("org.genepattern.gpge.ui.tasks.JobModel$TaskCompletedDateComparator", false);
+   private final JobNodeComparator TASK_NAME_COMPARATOR = new JobNodeComparator("org.genepattern.gpge.ui.tasks.JobModel$TaskNameComparator", true);
+   private final JobNodeComparator TASK_DATE_COMPARATOR = new JobNodeComparator("org.genepattern.gpge.ui.tasks.JobModel$TaskCompletedDateComparator", true);
    private JobNodeComparator jobComparator = TASK_NAME_COMPARATOR;
 	
-	private final FileComparator FILE_NAME_COMPARATOR = new ServerFileNameComparator(false);
-	private final FileComparator FILE_KIND_COMPARATOR = new ServerFileKindComparator(false);	
+	private final FileComparator FILE_NAME_COMPARATOR = new ServerFileNameComparator(true);
+	private final FileComparator FILE_KIND_COMPARATOR = new ServerFileKindComparator(true);	
 	private FileComparator fileComparator = FILE_NAME_COMPARATOR;
         
 	private JobModel() {
@@ -232,6 +232,8 @@ public class JobModel extends AbstractSortableTreeTableModel {
 	}
 
    
+  
+   
    /**
    * Invoked when job is initially submiited
    */
@@ -252,10 +254,14 @@ public class JobModel extends AbstractSortableTreeTableModel {
          }
          
          root.insert(child, insertionIndex);
+   
          nodesWereInserted(root, new int[] { insertionIndex });
+      
         
       }
+     
       notifyJobAdded(job);
+    
 	}
 
    private boolean isSameServerAndUsername(AnalysisJob job) {
@@ -341,7 +347,8 @@ public class JobModel extends AbstractSortableTreeTableModel {
          	}
       	}
 			nodeStructureChanged(root);
-		}  
+		}
+
 	}
    
 
@@ -413,9 +420,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
       String username = AnalysisServiceManager.getInstance().getUsername();
       AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(server, username);
       JobInfo[] jobs = proxy.getJobs(username, false);
-      Vector children = root.getChildren();
-      children = new Vector();
-
+     
       if (jobs != null) {
          for (int i = 0; i < jobs.length; i++) {
             AnalysisJob job = new AnalysisJob(server, jobs[i]);
@@ -427,18 +432,24 @@ public class JobModel extends AbstractSortableTreeTableModel {
                waitUntilCompletion = true;
             }
 
-            int insertionIndex = Collections.binarySearch(children, child,
-                     jobComparator);   
-            
+            int insertionIndex = 0;
+            List children = root.getChildren();
+            if (children != null) {
+               insertionIndex = Collections.binarySearch(children, child,
+                  jobComparator);   
+            }
             if (insertionIndex < 0) {
                insertionIndex = -insertionIndex - 1;
             }
-            
+         
             root.insert(child, insertionIndex);
+         
             if(waitUntilCompletion) {
                TaskLauncher.waitUntilCompletionInNewThread(job);  
             }
          }
+         
+            
       }
       nodeStructureChanged(root);	
 	}
@@ -681,6 +692,10 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			this.ascending = ascending;
 		}
       
+      public String toString() {
+         return "File Kind " +  ascending;  
+      }
+      
 		public int compare(Object obj1, Object obj2) {
 			ServerFileNode sfn1 = null;
 			ServerFileNode sfn2 = null;
@@ -714,6 +729,10 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			this.ascending = ascending;
 		}
 		
+      public String toString() {
+         return "File Name " +  ascending;  
+      }
+      
 		public void setAscending(boolean ascending) {
 			this.ascending = ascending;
 		}
@@ -759,11 +778,19 @@ public class JobModel extends AbstractSortableTreeTableModel {
          return c.compare(node1.job, node2.job);
 			
 		}
+      
+      public String toString() {
+         return c.toString(); 
+      }
 			
 	}
    
    public static class TaskSubmittedDateComparator implements JobComparator {
 		boolean ascending;
+      
+      public String toString() {
+         return "Date Submitted " +  ascending;  
+      }
       
 		public void setAscending(boolean ascending) {
 			this.ascending = ascending;
@@ -794,6 +821,9 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			this.ascending = ascending;
 		}
       
+      public String toString() {
+         return "Date Completed " +  ascending;  
+      }
      
 		public int compare(Object obj1, Object obj2) {
 			AnalysisJob job1 = null;
@@ -830,12 +860,17 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		public void setAscending(boolean ascending) {
 			this.ascending = ascending;
 		}
+      
+      public String toString() {
+         return "Task Name " +  ascending;  
+      }
 
 		public int compare(Object obj1, Object obj2) {
          AnalysisJob ajob1 = (AnalysisJob) obj1;
          AnalysisJob ajob2 = (AnalysisJob) obj2;
          String job1 = ajob1.getTaskName();
          String job2 = ajob2.getTaskName();
+         
          if(job1.equals(job2)) {
             Integer jobNumber1 = new Integer(ajob1.getJobInfo().getJobNumber());
             Integer jobNumber2 = new Integer(ajob2.getJobInfo().getJobNumber());
