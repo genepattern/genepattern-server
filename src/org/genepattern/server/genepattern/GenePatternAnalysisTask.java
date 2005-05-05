@@ -3296,10 +3296,15 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	public static JobInfo createVisualizerJob(String userID,
 			String parameter_info, String visualizerName, String lsid)
 			throws OmnigeneException, RemoteException {
-		JobInfo jobInfo = getDS()
-				.createVisualizerJobRecord(
-						userID, parameter_info, visualizerName, lsid);
-		return jobInfo;
+      try {
+         int taskId = new org.genepattern.server.webservice.server.local.LocalAdminClient(userID).getTask(lsid).getID();
+         JobInfo jobInfo = getDS()
+               .recordClientJob(
+                     taskId, userID, parameter_info);
+         return jobInfo;
+      } catch(org.genepattern.webservice.WebServiceException wse) {
+         throw new  OmnigeneException("Unable to record job"); 
+      }
 	}
 	/**
 	 * Changes the JobStatus of a pipeline job, and appends zero or more output

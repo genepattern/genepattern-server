@@ -171,16 +171,23 @@ public class AnalysisHypersonicDAO implements
    
    
    public JobInfo recordClientJob(int taskID, String user_id, String parameter_info) throws OmnigeneException, RemoteException {
-       JobInfo job = addNewJob(taskID, user_id, parameter_info, null, null, null);
-       updateJob(job.getJobNumber(), JobStatus.JOB_FINISHED);
-       setJobDeleted(job.getJobNumber(), true);
-       return job;
-   }
-   
-   public JobInfo createVisualizerJobRecord(String user_id, String parameter_info, String visualizerName, String lsid) throws OmnigeneException, RemoteException {
-    	JobInfo job = addNewJob(UNPROCESSABLE_TASKID, user_id, parameter_info, visualizerName, null, lsid);
-    	updateJob(job.getJobNumber(), JobStatus.JOB_FINISHED);
-    	return job;
+      JobInfo job = null;
+      try {
+         job = addNewJob(taskID, user_id, parameter_info, null, null, null);
+         updateJob(job.getJobNumber(), JobStatus.JOB_FINISHED);
+         setJobDeleted(job.getJobNumber(), true);
+         return job;
+      } catch(OmnigeneException e) {
+         if(job!=null) {
+            deleteJob(job.getJobNumber()); 
+         }
+         throw e;
+      } catch(RemoteException re) {
+         if(job!=null) {
+            deleteJob(job.getJobNumber()); 
+         }
+         throw re;
+      }
    }
    
  

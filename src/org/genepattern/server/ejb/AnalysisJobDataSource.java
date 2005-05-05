@@ -103,26 +103,7 @@ public interface AnalysisJobDataSource {
 	 */
    public JobInfo createTemporaryPipeline(String user_id, String parameter_info, String pipelineName, String lsid) throws OmnigeneException, RemoteException;
    
-   /**
-	 * Creates an database entry in the analysis_job table. Unlike
-	 * other entries and like temporary pipelines, this one is not dispatchable to any known analysis task
-	 * because it has a bogus taskID. Since it is a visualizer, it is actually
-	 * being invoked by a separate process, but is
-	 * using the rest of the infrastructure to get input files, store output
-	 * files, and retrieve status and result files.
-
-	
-	 * @param userID user who owns this pipeline data instance
-	 * @param parameterInfo ParameterInfo array containing pipeline data file output entries
-     * @param visualizerName a name for the temporary pipeline
-     * @param lsid lsid of the visualizer
-	 * @throws OmnigeneException
-	 *             if thrown by Omnigene
-	 * @throws RemoteException
-	 *             if thrown by Omnigene
-	 */
-   public JobInfo createVisualizerJobRecord(String user_id, String parameter_info, String visualizerName, String lsid) throws OmnigeneException, RemoteException;
-    
+  
    /**
 	 * Creates an Omnigene database entry in the analysis_job table. This
 	 * entry is dispatchable to a known analysis task (pipeline)
