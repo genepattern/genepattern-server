@@ -21,6 +21,7 @@
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
+		 org.genepattern.util.LSID,
 		 org.genepattern.webservice.OmnigeneException,
 		 org.genepattern.webservice.AnalysisWebServiceProxy,
 		 org.genepattern.webservice.TaskInfo,
@@ -175,7 +176,7 @@ System.out.println("EN=" + encodedName);
 
 <table width='100%' cellpadding='10'>
 <tr><td>
-Running <a href="addTask.jsp?view=1&name=<%=requestParameters.getParameter("taskName")%>"><%=requestParameters.getParameter("taskName")%></a> on <%=new Date()%> 
+Running <a href="addTask.jsp?view=1&name=<%= lsid %>"><%=requestParameters.getParameter("taskName")%></a> version <%= new LSID(lsid).getVersion() %> on <%=new Date()%> 
 				
 </tr></td>
 <tr><td>
