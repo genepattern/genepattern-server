@@ -1,6 +1,7 @@
 package org.genepattern.server.webservice.server.local;
 
 import java.io.File;
+import java.util.Vector;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -55,11 +56,15 @@ public class LocalTaskIntegratorClient {
 			taskId = task.getName();
 		}
 		DataHandler[] dh = service.getSupportFiles(taskId);
-		File[] files = new File[dh.length];
+
+		Vector vFiles = new Vector();
 		for (int i = 0, length = dh.length; i < length; i++) {
 			FileDataSource ds = (FileDataSource) dh[i].getDataSource();
-			files[i] = ds.getFile();
+			File file =  ds.getFile();
+			if (!file.isDirectory()) vFiles.add(file);
 		}
+		File[] files = (File[])vFiles.toArray(new File[vFiles.size()]);
+		
 		return files;
 	}
 

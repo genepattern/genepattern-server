@@ -347,7 +347,12 @@ public class TaskIntegrator implements ITaskIntegrator {
 					: 0; i < length; i++) {
 				DataHandler dataHandler = dataHandlers[i];
 				File f = getFile(dataHandler);
+
+				if (f.isDirectory()) continue;
+
 				File newFile = new File(dir, fileNames[i]);
+
+				
 				if (!f.getParentFile().getParent().equals(dir.getParent())) {
 					System.out.println("TaskIntegrator.modifyTask: renaming "
 							+ f.getCanonicalPath() + " to "
