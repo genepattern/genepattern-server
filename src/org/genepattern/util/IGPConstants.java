@@ -41,6 +41,8 @@ public interface IGPConstants {
 	public static final String R_HOME = "R_HOME";
 
 	public static final String TOMCAT = "tomcat";
+	
+	public static final String ANT = "ant";
 
 	public static final String COMMAND_PREFIX = "commandPrefix"; // eg. LSF
 																 // prefix: bsub
@@ -81,6 +83,11 @@ public interface IGPConstants {
 
 	/** TaskInfoAttributes language key */
 	public static final String LANGUAGE = "language";
+	
+	public static final String REQUIRED_PATCH_LSIDS = "requiredPatchLSIDs";
+	public static final String REQUIRED_PATCH_URLS = "requiredPatchURLs";
+	public static final String INSTALLED_PATCH_LSIDS = "installedPatchLSIDs";
+	public static final String DEFAULT_PATCH_URL = "DefaultPatchRepositoryURL";
 
 	/**
 	 * TaskInfoAttributes pipeline invocation key (prefixed by language, eg.

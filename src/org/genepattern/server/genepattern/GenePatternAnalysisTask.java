@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -265,7 +266,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			validateOS(taskInfoAttributes.get(OS)); // eg. "Windows", "linux",
 													// "Mac OS X", "OSF1",
 													// "Solaris"
-
+			validatePatches(taskInfo);
+			
 			// get environment variables
 			Hashtable env = getEnv();
 
@@ -998,6 +1000,200 @@ public class GenePatternAnalysisTask implements IGPConstants {
 				+ expected + " operating system, but this server is running "
 				+ actual);
 	}
+	
+	protected static boolean validatePatches(TaskInfo taskInfo) throws Exception {
+		TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+		String requiredPatchLSID = tia.get(REQUIRED_PATCH_LSIDS);
+		// no patches required?
+		if (requiredPatchLSID == null || requiredPatchLSID.length() == 0) return true;
+
+		// some patches required, check which are already installed
+		String[] requiredPatchLSIDs = requiredPatchLSID.split(",");
+		String requiredPatchURL = tia.get(REQUIRED_PATCH_URLS);
+		String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
+		String[] installedPatchLSIDs = new String[0];
+		if (installedPatches != null) {
+			installedPatchLSIDs = installedPatches.split(",");
+		}
+
+		String[] patchURLs = (requiredPatchURL != null && requiredPatchURL.length() > 0 ? requiredPatchURL.split(",") : new String[installedPatchLSIDs.length]);
+		if (patchURLs != null && patchURLs.length != requiredPatchLSIDs.length) {
+			throw new Exception(taskInfo.getName() + " has " + requiredPatchLSIDs.length + " patch LSIDs but " + patchURLs.length + " URLs");
+		}
+
+eachRequiredPatch:
+		for (int requiredPatchNum = 0; requiredPatchNum < requiredPatchLSIDs.length; requiredPatchNum++) {
+			requiredPatchLSID = requiredPatchLSIDs[requiredPatchNum];
+			System.out.println("Checking whether " + requiredPatchLSID + " is already installed...");
+			for (int p = 0; p < installedPatchLSIDs.length; p++) {
+				if (installedPatchLSIDs[p].equals(requiredPatchLSID)) {
+					// there are installed patches, and there is an LSID match to this one
+					System.out.println(requiredPatchLSID + " is already installed");
+					continue eachRequiredPatch;
+				}
+			}
+
+
+			LSID patchLSID = new LSID(requiredPatchLSID);
+			// need to download and install this patch		
+			requiredPatchURL = patchURLs[requiredPatchNum];
+			if (requiredPatchURL == null) {
+				requiredPatchURL = System.getProperty(DEFAULT_PATCH_URL) + "?" + LSID + "=" + requiredPatchLSID +
+						   "&" + OS + "=" + System.getProperty("os.name") + 
+						   "&" + CPU_TYPE + "=" + System.getProperty("os.arch") +
+						   "&" + LANGUAGE + "=" + tia.get(LANGUAGE) +
+						   "&" + VERSION + "=" + tia.get(JVM_LEVEL);
+			}
+			System.out.println("downloading patch " + requiredPatchLSID + " from " + requiredPatchURL);
+			String zipFilename = downloadTask(requiredPatchURL);
+
+			ZipFile zipFile = new ZipFile(zipFilename);
+			InputStream is = null;
+			LSID taskLSID = new LSID(tia.get(LSID));
+			File patchDirectory = new File(System.getProperty("patches"), taskInfo.getName() + "." + taskLSID.getIdentifier() + "." + taskLSID.getVersion() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion());
+			patchDirectory.mkdirs();
+
+			// clean out existing directory
+			File[] old = patchDirectory.listFiles();
+			for (i = 0; old != null && i < old.length; i++) {
+				old[i].delete();
+			}
+
+			System.out.println("Download complete.  Installing patch from " + zipFilename + " to " + patchDirectory.getAbsolutePath() + ".");
+			for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
+				ZipEntry zipEntry = (ZipEntry) eEntries.nextElement();
+				File outFile = new File(patchDirectory, zipEntry.getName());
+				if (zipEntry.isDirectory()) {
+					System.out.println("Creating subdirectory " + outFile.getAbsolutePath());
+					outFile.mkdirs();
+					continue;
+				}
+				is = zipFile.getInputStream(zipEntry);
+				OutputStream os = new FileOutputStream(outFile);
+				long fileLength = zipEntry.getSize();
+				System.out.println("extracting " + zipEntry.getName() + ", " + fileLength + " bytes");
+				long numRead = 0;
+				byte[] buf = new byte[100000];
+				int i;
+				while ((i = is.read(buf, 0, buf.length)) > 0) {
+					os.write(buf, 0, i);
+					numRead += i;
+				}
+				os.close();
+				os = null;
+				if (numRead != fileLength) {
+					throw new Exception("only read " + numRead + " of " + fileLength + " bytes in " + zipFile.getName() + "'s " + zipEntry.getName());
+				}
+				is.close();
+			} // end of loop for each file in zip file
+			zipFile.close();
+			new File(zipFilename).delete();
+			
+			// entire zip file has been exploded, now load the manifest, get the command line, and execute it
+			File manifestFile = new File(patchDirectory, MANIFEST_FILENAME);
+			if (!manifestFile.exists()) {
+				throw new IOException(MANIFEST_FILENAME + " isn't part of zip file " + requiredPatchURL);
+			}
+			Properties props = new Properties();
+			FileInputStream manifest = new FileInputStream(manifestFile);
+			props.load(manifest);
+			manifest.close();
+			
+			String commandLine = props.getProperty(COMMAND_LINE);
+			if (commandLine == null || commandLine.length() == 0) {
+				throw new Exception("No command line defined in " + MANIFEST_FILENAME);
+			}
+
+			// command line substitutions for <ant>, etc.
+			commandLine = substitute(commandLine, System.getProperties(), null);
+			commandLine = substitute(commandLine, System.getProperties(), null);
+			System.out.println("Running " + commandLine + " in " + patchDirectory.getAbsolutePath());
+
+			// spawn the command
+			Process process = Runtime.getRuntime().exec(commandLine, null, patchDirectory);
+
+			// BUG: there is race condition during a tiny time window between
+			// the exec and the close
+			// (the lines above and below this comment) during which it is
+			// possible for an application
+			// to imagine that there might be useful input coming from stdin.
+			// This seemed to be
+			// the case for Perl 5.0.1 on Wilkins, and might be a problem in
+			// other applications as well.
+
+			process.getOutputStream().close(); // there is no stdin to feed to
+							   // the program. So if it asks,
+							   // let it see EOF!
+
+			// create threads to read from the command's stdout and stderr
+			// streams
+
+			Thread outputReader = streamCopier(process.getInputStream(), System.out);
+			Thread errorReader = streamCopier(process.getErrorStream(), System.err);
+
+			// drain the output and error streams
+			outputReader.start();
+			errorReader.start();
+
+			// wait for all output
+			outputReader.join();
+			errorReader.join();
+
+			// the process will be dead by now
+			process.waitFor();
+			int exitValue = process.exitValue();
+			
+			System.out.println("patch install complete, exit code " + exitValue);
+			
+			// now add this LSID to the installed patches repository
+			if (installedPatches == null) {
+				installedPatches = "";
+			} else {
+				installedPatches = installedPatches + ",";
+			}
+			installedPatches = installedPatches + patchLSID;
+			System.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
+			System.out.println("adding to installed patch list: " + installedPatches);
+
+			System.out.println("updating genepattern.properties");
+			File gpPropertiesFile = new File(System.getProperty("resources"), "genepattern.properties");
+			FileReader fr = new FileReader(gpPropertiesFile);
+			char buf[] = new char[(int)gpPropertiesFile.length()];
+			int len = fr.read(buf, 0, buf.length);
+			fr.close();
+			String properties = new String(buf, 0, len);
+			int ipStart = properties.indexOf(INSTALLED_PATCH_LSIDS + "=");
+			if (ipStart == -1) {
+				properties = properties + System.getProperty("line.separator") + INSTALLED_PATCH_LSIDS + "=" + installedPatches + System.getProperty("line.separator");
+			} else {
+				int ipEnd = properties.indexOf(System.getProperty("line.separator"));
+				if (ipEnd == -1) ipEnd = properties.length() ;
+				properties = properties.substring(0, ipStart) + installedPatches + properties.substring(ipEnd);
+			}
+			FileWriter fw = new FileWriter(gpPropertiesFile);
+			fw.write(properties);
+			fw.close();
+			System.out.println("Added " + patchLSID + " to installed patch list");
+		} // end of loop for each patch LSID for the task
+		return true;
+	}
+
+	    public static Thread streamCopier(final InputStream is, final PrintStream ps) throws IOException {
+		    // create thread to read from the a process' output or error stream
+		    return new Thread(new Runnable(){
+		    	public void run() {
+		            BufferedReader in = new BufferedReader(new InputStreamReader(is));
+		            String line;
+			    try {
+				while((line = in.readLine())!=null){
+					ps.println(line);
+				}
+			    } catch (IOException ioe) {
+			    	System.err.println(ioe + " while reading from process stream");
+		            }
+		    	}
+		    });
+	    }
 
 	/**
 	 * Performs substitutions of parameters within the commandLine string where
@@ -1019,7 +1215,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	 * @return String command line with all substitutions made
 	 */
 
-	public String substitute(String commandLine, Properties props,
+	public static String substitute(String commandLine, Properties props,
 			ParameterInfo[] params) {
 		if (commandLine == null)
 			return null;
@@ -2150,7 +2346,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	 * @author Jim Lerner
 	 *  
 	 */
-	public static Vector validateInputs(String taskName,
+	public static Vector validateInputs(TaskInfo taskInfo, String taskName,
 			TaskInfoAttributes tia, ParameterInfo[] params) {
 		GenePatternAnalysisTask gp = new GenePatternAnalysisTask();
 		Vector vProblems = null;
@@ -2264,8 +2460,20 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			TaskInfoAttributes taskInfoAttributes, String username,
 			int access_id) throws OmnigeneException, RemoteException {
 		String originalUsername = username;
-		Vector vProblems = GenePatternAnalysisTask.validateInputs(name,
+		TaskInfo taskInfo = new TaskInfo();
+		taskInfo.setName(name);
+		taskInfo.setDescription(description);
+		taskInfo.setUserId(username);
+		taskInfo.setTaskInfoAttributes(taskInfoAttributes);
+		taskInfo.setParameterInfoArray(params);
+		Vector vProblems = GenePatternAnalysisTask.validateInputs(taskInfo, name,
 				taskInfoAttributes, params);
+		try {
+			validatePatches(taskInfo);
+		} catch (Exception e) {
+			vProblems.add(e.getMessage());
+		}
+
 		if (vProblems.size() > 0)
 			return vProblems;
 
@@ -3102,18 +3310,26 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	 *  
 	 */
 	public static String downloadTask(String zipURL) throws IOException {
-		File zipFile = File.createTempFile("gpz", ".zip");
+	    File zipFile = null;
+	    try {
+		zipFile = File.createTempFile("gpz", ".zip");
 		zipFile.deleteOnExit();
 		FileOutputStream os = new FileOutputStream(zipFile);
 		InputStream is = new URL(zipURL).openStream();
-		byte[] buf = new byte[30000];
+		byte[] buf = new byte[100000];
 		int i;
 		while ((i = is.read(buf, 0, buf.length)) > 0) {
 			os.write(buf, 0, i);
+			System.out.print(".");
 		}
 		is.close();
 		os.close();
+		System.out.println();
 		return zipFile.getPath();
+	    } catch (IOException ioe) {
+	    	zipFile.delete();
+	    	throw ioe;
+	    }
 	}
 
 	/**
