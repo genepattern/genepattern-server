@@ -1050,12 +1050,12 @@ eachRequiredPatch:
 			ZipFile zipFile = new ZipFile(zipFilename);
 			InputStream is = null;
 			LSID taskLSID = new LSID(tia.get(LSID));
-			File patchDirectory = new File(System.getProperty("patches"), taskInfo.getName() + "." + taskLSID.getIdentifier() + "." + taskLSID.getVersion() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion());
+			File patchDirectory = new File(System.getProperty("patches"), patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion());
 			patchDirectory.mkdirs();
 
 			// clean out existing directory
 			File[] old = patchDirectory.listFiles();
-			for (i = 0; old != null && i < old.length; i++) {
+			for (int i = 0; old != null && i < old.length; i++) {
 				old[i].delete();
 			}
 
