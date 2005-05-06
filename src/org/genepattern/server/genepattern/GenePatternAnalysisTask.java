@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -1044,7 +1045,7 @@ eachRequiredPatch:
 						   "&" + LANGUAGE + "=" + tia.get(LANGUAGE) +
 						   "&" + VERSION + "=" + tia.get(JVM_LEVEL);
 			}
-			System.out.println("downloading patch " + requiredPatchLSID + " from " + requiredPatchURL);
+			System.out.println("Downloading patch " + requiredPatchLSID + " from " + requiredPatchURL);
 			String zipFilename = downloadTask(requiredPatchURL);
 
 			ZipFile zipFile = new ZipFile(zipFilename);
@@ -3315,16 +3316,31 @@ eachRequiredPatch:
 		zipFile = File.createTempFile("gpz", ".zip");
 		zipFile.deleteOnExit();
 		FileOutputStream os = new FileOutputStream(zipFile);
-		InputStream is = new URL(zipURL).openStream();
+		URLConnection uc = new URL(zipURL).openConnection();
+		long downloadSize = -1;
+		if (uc instanceof HttpURLConnection) {
+			downloadSize = ((HttpURLConnection)uc).getHeaderFieldInt("Content-Length", -1);
+			System.out.println("Download length: " + (long)downloadSize + " bytes."); //  Each dot represents 100KB.");
+		}
+		InputStream is = uc.getInputStream();
 		byte[] buf = new byte[100000];
 		int i;
+		long downloadedBytes = 0;
+		long lastPercent = 0;
 		while ((i = is.read(buf, 0, buf.length)) > 0) {
+			downloadedBytes += i;
 			os.write(buf, 0, i);
-			System.out.print(".");
+			if (downloadSize > -1) {
+				long pctComplete = 100 * downloadedBytes / downloadSize;
+				if (lastPercent != pctComplete) {
+					System.out.print("\r" + pctComplete + "% complete");
+					lastPercent = pctComplete;
+				}
+			}
 		}
 		is.close();
 		os.close();
-		System.out.println();
+		System.out.println("\r100% complete");
 		return zipFile.getPath();
 	    } catch (IOException ioe) {
 	    	zipFile.delete();
