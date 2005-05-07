@@ -871,8 +871,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		BufferedWriter bw = new BufferedWriter(new FileWriter(f));
 		String line = null;
 		int lineNum = 0;
-		bw.write("# ");
-		bw.write("\n# Created: "+ new Date(f.lastModified())+" by " + jobInfo.getUserId());
+		bw.write("# Created: "+ new Date(f.lastModified())+" by " + jobInfo.getUserId());
 		bw.write("\n# Job: " + jobInfo.getJobNumber());
 		bw.write("    server:  ");
 		
@@ -883,7 +882,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		bw.write("\n# Task: "+ jobInfo.getTaskName() + " " +jobInfo.getTaskLSID());
 		bw.write("\n# Parameters: ");
 		ParameterInfo pinfos[] = jobInfo.getParameterInfoArray();
-		for (int pi = 0; pi < pinfos.length; pi++){
+		for (int pi = 0; pinfos != null && pi < pinfos.length; pi++){
 			ParameterInfo pinfo = pinfos[pi];
 			if (!pinfo.isOutputFile()){
 				String value = null;
@@ -941,8 +940,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 				bw.write("\n#    " + pinfo.getName() + " = " + value);
 			}
 		}	
-		bw.write("\n# " );
-		bw.write("\n");
+		bw.write("\n#" );
 		bw.flush();
 		
 		
@@ -1122,13 +1120,24 @@ eachRequiredPatch:
 		// entire zip file has been exploded, now load the manifest, get the command line, and execute it
 		Properties props = loadManifest(patchDirectory);		
 		String commandLine = props.getProperty(COMMAND_LINE);
+		Properties systemProps = new Properties(System.getProperties());
+
+		if (System.getProperty(JAVA, null) == null)
+			systemProps.put(JAVA, System.getProperty("java.home")
+					+ System.getProperty("file.separator") + "bin"
+					+ System.getProperty("file.separator") + "java");
+		else
+			systemProps.put(JAVA, System.getProperty(JAVA)
+					+ System.getProperty("file.separator") + "bin"
+					+ System.getProperty("file.separator") + "java");
+
 		if (commandLine == null || commandLine.length() == 0) {
 			throw new Exception("No command line defined in " + MANIFEST_FILENAME);
 		}
 
 		// command line substitutions for <ant>, etc.
-		commandLine = substitute(commandLine, System.getProperties(), null);
-		commandLine = substitute(commandLine, System.getProperties(), null);
+		commandLine = substitute(commandLine, systemProps, null);
+		commandLine = substitute(commandLine, systemProps, null);
 		return commandLine;
 	}
 	
