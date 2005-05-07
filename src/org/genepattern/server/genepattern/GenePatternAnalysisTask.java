@@ -830,7 +830,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			IndexerDaemon.notifyJobComplete(jobInfo.getJobNumber());
 
 		} catch (Throwable e) {
-			//System.err.println(taskName + " error: " + e);
+			if (e.getCause() != null) e = e.getCause();
+			System.err.println(taskName + " error: " + e);
 			_cat.error(taskName + " error: " + e);
 			e.printStackTrace();
 			try {
@@ -1011,19 +1012,20 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		// some patches required, check which are already installed
 		String[] requiredPatchLSIDs = requiredPatchLSID.split(",");
 		String requiredPatchURL = tia.get(REQUIRED_PATCH_URLS);
-		String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
-		String[] installedPatchLSIDs = new String[0];
-		if (installedPatches != null) {
-			installedPatchLSIDs = installedPatches.split(",");
-		}
 
-		String[] patchURLs = (requiredPatchURL != null && requiredPatchURL.length() > 0 ? requiredPatchURL.split(",") : new String[installedPatchLSIDs.length]);
+		String[] patchURLs = (requiredPatchURL != null && requiredPatchURL.length() > 0 ? requiredPatchURL.split(",") : new String[requiredPatchLSIDs.length]);
 		if (patchURLs != null && patchURLs.length != requiredPatchLSIDs.length) {
 			throw new Exception(taskInfo.getName() + " has " + requiredPatchLSIDs.length + " patch LSIDs but " + patchURLs.length + " URLs");
 		}
 
 eachRequiredPatch:
 		for (int requiredPatchNum = 0; requiredPatchNum < requiredPatchLSIDs.length; requiredPatchNum++) {
+			String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
+			String[] installedPatchLSIDs = new String[0];
+			if (installedPatches != null) {
+				installedPatchLSIDs = installedPatches.split(",");
+			}
+
 			requiredPatchLSID = requiredPatchLSIDs[requiredPatchNum];
 			System.out.println("Checking whether " + requiredPatchLSID + " is already installed...");
 			for (int p = 0; p < installedPatchLSIDs.length; p++) {
@@ -1035,7 +1037,6 @@ eachRequiredPatch:
 			}
 
 
-			LSID patchLSID = new LSID(requiredPatchLSID);
 			// need to download and install this patch		
 			requiredPatchURL = patchURLs[requiredPatchNum];
 			if (requiredPatchURL == null) {
@@ -1045,138 +1046,174 @@ eachRequiredPatch:
 						   "&" + LANGUAGE + "=" + tia.get(LANGUAGE) +
 						   "&" + VERSION + "=" + tia.get(JVM_LEVEL);
 			}
-			System.out.println("Downloading patch " + requiredPatchLSID + " from " + requiredPatchURL);
-			String zipFilename = downloadTask(requiredPatchURL);
-
-			ZipFile zipFile = new ZipFile(zipFilename);
-			InputStream is = null;
-			LSID taskLSID = new LSID(tia.get(LSID));
-			File patchDirectory = new File(System.getProperty("patches"), patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion());
-			patchDirectory.mkdirs();
-
-			// clean out existing directory
-			File[] old = patchDirectory.listFiles();
-			for (int i = 0; old != null && i < old.length; i++) {
-				old[i].delete();
-			}
-
-			System.out.println("Download complete.  Installing patch from " + zipFilename + " to " + patchDirectory.getAbsolutePath() + ".");
-			for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
-				ZipEntry zipEntry = (ZipEntry) eEntries.nextElement();
-				File outFile = new File(patchDirectory, zipEntry.getName());
-				if (zipEntry.isDirectory()) {
-					System.out.println("Creating subdirectory " + outFile.getAbsolutePath());
-					outFile.mkdirs();
-					continue;
-				}
-				is = zipFile.getInputStream(zipEntry);
-				OutputStream os = new FileOutputStream(outFile);
-				long fileLength = zipEntry.getSize();
-				System.out.println("extracting " + zipEntry.getName() + ", " + fileLength + " bytes");
-				long numRead = 0;
-				byte[] buf = new byte[100000];
-				int i;
-				while ((i = is.read(buf, 0, buf.length)) > 0) {
-					os.write(buf, 0, i);
-					numRead += i;
-				}
-				os.close();
-				os = null;
-				if (numRead != fileLength) {
-					throw new Exception("only read " + numRead + " of " + fileLength + " bytes in " + zipFile.getName() + "'s " + zipEntry.getName());
-				}
-				is.close();
-			} // end of loop for each file in zip file
-			zipFile.close();
-			new File(zipFilename).delete();
-			
-			// entire zip file has been exploded, now load the manifest, get the command line, and execute it
-			File manifestFile = new File(patchDirectory, MANIFEST_FILENAME);
-			if (!manifestFile.exists()) {
-				throw new IOException(MANIFEST_FILENAME + " isn't part of zip file " + requiredPatchURL);
-			}
-			Properties props = new Properties();
-			FileInputStream manifest = new FileInputStream(manifestFile);
-			props.load(manifest);
-			manifest.close();
-			
-			String commandLine = props.getProperty(COMMAND_LINE);
-			if (commandLine == null || commandLine.length() == 0) {
-				throw new Exception("No command line defined in " + MANIFEST_FILENAME);
-			}
-
-			// command line substitutions for <ant>, etc.
-			commandLine = substitute(commandLine, System.getProperties(), null);
-			commandLine = substitute(commandLine, System.getProperties(), null);
-			System.out.println("Running " + commandLine + " in " + patchDirectory.getAbsolutePath());
-
-			// spawn the command
-			Process process = Runtime.getRuntime().exec(commandLine, null, patchDirectory);
-
-			// BUG: there is race condition during a tiny time window between
-			// the exec and the close
-			// (the lines above and below this comment) during which it is
-			// possible for an application
-			// to imagine that there might be useful input coming from stdin.
-			// This seemed to be
-			// the case for Perl 5.0.1 on Wilkins, and might be a problem in
-			// other applications as well.
-
-			process.getOutputStream().close(); // there is no stdin to feed to
-							   // the program. So if it asks,
-							   // let it see EOF!
-
-			// create threads to read from the command's stdout and stderr
-			// streams
-
-			Thread outputReader = streamCopier(process.getInputStream(), System.out);
-			Thread errorReader = streamCopier(process.getErrorStream(), System.err);
-
-			// drain the output and error streams
-			outputReader.start();
-			errorReader.start();
-
-			// wait for all output
-			outputReader.join();
-			errorReader.join();
-
-			// the process will be dead by now
-			process.waitFor();
-			int exitValue = process.exitValue();
-			
-			System.out.println("patch install complete, exit code " + exitValue);
-			
-			// now add this LSID to the installed patches repository
-			if (installedPatches == null) {
-				installedPatches = "";
-			} else {
-				installedPatches = installedPatches + ",";
-			}
-			installedPatches = installedPatches + patchLSID;
-			System.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
-			System.out.println("adding to installed patch list: " + installedPatches);
-
-			System.out.println("updating genepattern.properties");
-			File gpPropertiesFile = new File(System.getProperty("resources"), "genepattern.properties");
-			FileReader fr = new FileReader(gpPropertiesFile);
-			char buf[] = new char[(int)gpPropertiesFile.length()];
-			int len = fr.read(buf, 0, buf.length);
-			fr.close();
-			String properties = new String(buf, 0, len);
-			int ipStart = properties.indexOf(INSTALLED_PATCH_LSIDS + "=");
-			if (ipStart == -1) {
-				properties = properties + System.getProperty("line.separator") + INSTALLED_PATCH_LSIDS + "=" + installedPatches + System.getProperty("line.separator");
-			} else {
-				int ipEnd = properties.indexOf(System.getProperty("line.separator"));
-				if (ipEnd == -1) ipEnd = properties.length() ;
-				properties = properties.substring(0, ipStart) + installedPatches + properties.substring(ipEnd);
-			}
-			FileWriter fw = new FileWriter(gpPropertiesFile);
-			fw.write(properties);
-			fw.close();
-			System.out.println("Added " + patchLSID + " to installed patch list");
+			installPatch(requiredPatchLSID, requiredPatchURL);
 		} // end of loop for each patch LSID for the task
 		return true;
+	}
+	
+	public static void installPatch(String requiredPatchLSID, String requiredPatchURL) throws Exception {
+		System.out.println("Downloading patch " + requiredPatchLSID + " from " + requiredPatchURL);
+		String zipFilename = downloadPatch(requiredPatchURL);
+
+		LSID patchLSID = new LSID(requiredPatchLSID);
+		File patchDirectory = new File(System.getProperty("patches"), patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion());
+		System.out.println("Download complete.  Installing patch from " + zipFilename + " to " + patchDirectory.getAbsolutePath() + ".");
+		explodePatch(zipFilename, patchDirectory);
+		
+		String commandLine = getPatchCommandLine(patchDirectory);
+		System.out.println("Running " + commandLine + " in " + patchDirectory.getAbsolutePath());
+
+		int exitValue = executePatch(commandLine, patchDirectory);
+		System.out.println("patch install complete, exit code " + exitValue);
+		recordPatch(requiredPatchLSID);
+	}
+	
+	protected static String downloadPatch(String url) throws IOException {
+		try {
+			return downloadTask(url);
+		} catch (IOException ioe) {
+			if (ioe.getCause() != null) ioe = (IOException)ioe.getCause();
+			throw new IOException(ioe.getMessage() + " while downloading " + url);
+		}
+	}
+	
+	protected static void explodePatch(String zipFilename, File patchDirectory) throws IOException {
+		ZipFile zipFile = new ZipFile(zipFilename);
+		InputStream is = null;
+		patchDirectory.mkdirs();
+
+		// clean out existing directory
+		File[] old = patchDirectory.listFiles();
+		for (int i = 0; old != null && i < old.length; i++) {
+			old[i].delete();
+		}
+
+		for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
+			ZipEntry zipEntry = (ZipEntry) eEntries.nextElement();
+			File outFile = new File(patchDirectory, zipEntry.getName());
+			if (zipEntry.isDirectory()) {
+				System.out.println("Creating subdirectory " + outFile.getAbsolutePath());
+				outFile.mkdirs();
+				continue;
+			}
+			is = zipFile.getInputStream(zipEntry);
+			OutputStream os = new FileOutputStream(outFile);
+			long fileLength = zipEntry.getSize();
+			System.out.println("extracting " + zipEntry.getName() + ", " + fileLength + " bytes");
+			long numRead = 0;
+			byte[] buf = new byte[100000];
+			int i;
+			while ((i = is.read(buf, 0, buf.length)) > 0) {
+				os.write(buf, 0, i);
+				numRead += i;
+			}
+			os.close();
+			os = null;
+			if (numRead != fileLength) {
+				throw new IOException("only read " + numRead + " of " + fileLength + " bytes in " + zipFile.getName() + "'s " + zipEntry.getName());
+			}
+			is.close();
+		} // end of loop for each file in zip file
+		zipFile.close();
+		new File(zipFilename).delete();
+	}
+		
+	protected static String getPatchCommandLine(File patchDirectory) throws Exception {
+		// entire zip file has been exploded, now load the manifest, get the command line, and execute it
+		Properties props = loadManifest(patchDirectory);		
+		String commandLine = props.getProperty(COMMAND_LINE);
+		if (commandLine == null || commandLine.length() == 0) {
+			throw new Exception("No command line defined in " + MANIFEST_FILENAME);
+		}
+
+		// command line substitutions for <ant>, etc.
+		commandLine = substitute(commandLine, System.getProperties(), null);
+		commandLine = substitute(commandLine, System.getProperties(), null);
+		return commandLine;
+	}
+	
+	protected static Properties loadManifest(File patchDirectory) throws IOException {
+		File manifestFile = new File(patchDirectory, MANIFEST_FILENAME);
+		if (!manifestFile.exists()) {
+			throw new IOException(MANIFEST_FILENAME + " missing from patch " + patchDirectory.getName());
+		}
+		Properties props = new Properties();
+		FileInputStream manifest = new FileInputStream(manifestFile);
+		props.load(manifest);
+		manifest.close();
+		return props;
+	}
+	
+
+	protected static int executePatch(String commandLine, File patchDirectory) throws Exception {
+		// spawn the command
+		Process process = Runtime.getRuntime().exec(commandLine, null, patchDirectory);
+
+		// BUG: there is race condition during a tiny time window between
+		// the exec and the close
+		// (the lines above and below this comment) during which it is
+		// possible for an application
+		// to imagine that there might be useful input coming from stdin.
+		// This seemed to be
+		// the case for Perl 5.0.1 on Wilkins, and might be a problem in
+		// other applications as well.
+
+		process.getOutputStream().close(); // there is no stdin to feed to
+						   // the program. So if it asks,
+						   // let it see EOF!
+
+		// create threads to read from the command's stdout and stderr
+		// streams
+
+		Thread outputReader = streamCopier(process.getInputStream(), System.out);
+		Thread errorReader = streamCopier(process.getErrorStream(), System.err);
+
+		// drain the output and error streams
+		outputReader.start();
+		errorReader.start();
+
+		// wait for all output
+		outputReader.join();
+		errorReader.join();
+
+		// the process will be dead by now
+		process.waitFor();
+		int exitValue = process.exitValue();
+		return exitValue;
+	}
+		
+
+	public static void recordPatch(String patchLSID) throws IOException {		
+		// add this LSID to the installed patches repository
+		String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
+		if (installedPatches == null) {
+			installedPatches = "";
+		} else {
+			installedPatches = installedPatches + ",";
+		}
+		installedPatches = installedPatches + patchLSID;
+		System.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
+		System.out.println("adding to installed patch list: " + installedPatches);
+
+		System.out.println("updating genepattern.properties");
+		File gpPropertiesFile = new File(System.getProperty("resources"), "genepattern.properties");
+		FileReader fr = new FileReader(gpPropertiesFile);
+		char buf[] = new char[(int)gpPropertiesFile.length()];
+		int len = fr.read(buf, 0, buf.length);
+		fr.close();
+		String properties = new String(buf, 0, len);
+		int ipStart = properties.indexOf(INSTALLED_PATCH_LSIDS + "=");
+		if (ipStart == -1) {
+			properties = properties + System.getProperty("line.separator") + INSTALLED_PATCH_LSIDS + "=" + installedPatches + System.getProperty("line.separator");
+		} else {
+			int ipEnd = properties.indexOf(System.getProperty("line.separator"));
+			if (ipEnd == -1) ipEnd = properties.length() ;
+			properties = properties.substring(0, ipStart) + installedPatches + properties.substring(ipEnd);
+		}
+		FileWriter fw = new FileWriter(gpPropertiesFile);
+		fw.write(properties);
+		fw.close();
+		System.out.println("Added " + patchLSID + " to installed patch list");
 	}
 
 	    public static Thread streamCopier(final InputStream is, final PrintStream ps) throws IOException {
@@ -2471,8 +2508,10 @@ eachRequiredPatch:
 				taskInfoAttributes, params);
 		try {
 			validatePatches(taskInfo);
-		} catch (Exception e) {
-			vProblems.add(e.getMessage());
+		} catch (Throwable e) {
+			if (e.getCause() != null) e = e.getCause();
+			System.err.println(e.toString() + " while installing " + name);
+			vProblems.add(e.toString());
 		}
 
 		if (vProblems.size() > 0)
