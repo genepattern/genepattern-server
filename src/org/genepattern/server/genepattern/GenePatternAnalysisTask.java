@@ -1001,6 +1001,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
 				+ actual);
 	}
 	
+	// check that each patch listed in  the TaskInfoAttributes for this task is installed.
+	// if not, download and install it.
+	// For any problems, throw an exception
 	protected static boolean validatePatches(TaskInfo taskInfo) throws Exception {
 		TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
 		String requiredPatchLSID = tia.get(REQUIRED_PATCH_LSIDS);
@@ -1048,24 +1051,30 @@ eachRequiredPatch:
 		} // end of loop for each patch LSID for the task
 		return true;
 	}
-	
+
+	// install a specific patch, downloading a zip file with a manifest containing a command line, 
+	// running that command line after substitutions, and recording the result in the genepattern.properties patch registry
 	public static void installPatch(String requiredPatchLSID, String requiredPatchURL) throws Exception {
 		System.out.println("Downloading patch " + requiredPatchLSID + " from " + requiredPatchURL);
 		String zipFilename = downloadPatch(requiredPatchURL);
 
 		LSID patchLSID = new LSID(requiredPatchLSID);
-		File patchDirectory = new File(System.getProperty("patches"), patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion());
+		String patchName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion();
+		File patchDirectory = new File(System.getProperty("patches"), patchName);
 		System.out.println("Download complete.  Installing patch from " + zipFilename + " to " + patchDirectory.getAbsolutePath() + ".");
 		explodePatch(zipFilename, patchDirectory);
+		new File(zipFilename).delete();
 		
 		String commandLine = getPatchCommandLine(patchDirectory);
 		System.out.println("Running " + commandLine + " in " + patchDirectory.getAbsolutePath());
 
 		int exitValue = executePatch(commandLine, patchDirectory);
-		System.out.println("patch install complete, exit code " + exitValue);
+		System.out.println("patch installed, exit code " + exitValue);
 		recordPatch(requiredPatchLSID);
+		System.out.println("patch LSID recorded");
 	}
 	
+	// download the patch zip file from a URL
 	protected static String downloadPatch(String url) throws IOException {
 		try {
 			return downloadTask(url);
@@ -1075,6 +1084,7 @@ eachRequiredPatch:
 		}
 	}
 	
+	// unzip the patch files into their own directory
 	protected static void explodePatch(String zipFilename, File patchDirectory) throws IOException {
 		ZipFile zipFile = new ZipFile(zipFilename);
 		InputStream is = null;
@@ -1113,9 +1123,9 @@ eachRequiredPatch:
 			is.close();
 		} // end of loop for each file in zip file
 		zipFile.close();
-		new File(zipFilename).delete();
 	}
-		
+
+	// retrieve the command line from the patch manifest file and perform <substitutions>		
 	protected static String getPatchCommandLine(File patchDirectory) throws Exception {
 		// entire zip file has been exploded, now load the manifest, get the command line, and execute it
 		Properties props = loadManifest(patchDirectory);		
@@ -1140,7 +1150,8 @@ eachRequiredPatch:
 		commandLine = substitute(commandLine, systemProps, null);
 		return commandLine;
 	}
-	
+
+	// load the patch manifest file into a Properties object	
 	protected static Properties loadManifest(File patchDirectory) throws IOException {
 		File manifestFile = new File(patchDirectory, MANIFEST_FILENAME);
 		if (!manifestFile.exists()) {
@@ -1153,7 +1164,7 @@ eachRequiredPatch:
 		return props;
 	}
 	
-
+	// run the patch command line in the patch directory, returning the exit code from the executable
 	protected static int executePatch(String commandLine, File patchDirectory) throws Exception {
 		// spawn the command
 		Process process = Runtime.getRuntime().exec(commandLine, null, patchDirectory);
@@ -1190,9 +1201,9 @@ eachRequiredPatch:
 		int exitValue = process.exitValue();
 		return exitValue;
 	}
-		
 
-	public static void recordPatch(String patchLSID) throws IOException {		
+	// record the patch LSID in the genepattern.properties file
+	public static synchronized void recordPatch(String patchLSID) throws IOException {		
 		// add this LSID to the installed patches repository
 		String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
 		if (installedPatches == null) {
@@ -1201,31 +1212,46 @@ eachRequiredPatch:
 			installedPatches = installedPatches + ",";
 		}
 		installedPatches = installedPatches + patchLSID;
+		String properties = readGenePatternProperties();
+		properties = addProperty(properties, INSTALLED_PATCH_LSIDS, installedPatches);
+		writeGenePatternProperties(properties);
 		System.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
-		System.out.println("adding to installed patch list: " + installedPatches);
-
-		System.out.println("updating genepattern.properties");
+	}
+	
+	// read the genepattern.properties file into a String (preserving comments!)
+	public static String readGenePatternProperties() throws IOException {
 		File gpPropertiesFile = new File(System.getProperty("resources"), "genepattern.properties");
 		FileReader fr = new FileReader(gpPropertiesFile);
 		char buf[] = new char[(int)gpPropertiesFile.length()];
 		int len = fr.read(buf, 0, buf.length);
 		fr.close();
 		String properties = new String(buf, 0, len);
-		int ipStart = properties.indexOf(INSTALLED_PATCH_LSIDS + "=");
-		if (ipStart == -1) {
-			properties = properties + System.getProperty("line.separator") + INSTALLED_PATCH_LSIDS + "=" + installedPatches + System.getProperty("line.separator");
-		} else {
-			int ipEnd = properties.indexOf(System.getProperty("line.separator"));
-			if (ipEnd == -1) ipEnd = properties.length() ;
-			properties = properties.substring(0, ipStart) + installedPatches + properties.substring(ipEnd);
-		}
+		return properties;
+	}
+	
+	// write a String as a genepattern.properties file (preserving comments)
+	public static void writeGenePatternProperties(String properties) throws IOException {
+		File gpPropertiesFile = new File(System.getProperty("resources"), "genepattern.properties");
 		FileWriter fw = new FileWriter(gpPropertiesFile);
 		fw.write(properties);
 		fw.close();
-		System.out.println("Added " + patchLSID + " to installed patch list");
 	}
 
-	    public static Thread streamCopier(final InputStream is, final PrintStream ps) throws IOException {
+	// add or set the value of a particular key in the String representation of a properties file	
+	public static String addProperty(String properties, String key, String value) {
+		int ipStart = properties.indexOf(key + "=");
+		if (ipStart == -1) {
+			properties = properties + System.getProperty("line.separator") + key + "=" + value + System.getProperty("line.separator");
+		} else {
+			int ipEnd = properties.indexOf(System.getProperty("line.separator"));
+			if (ipEnd == -1) ipEnd = properties.length() ;
+			properties = properties.substring(0, ipStart) + value + properties.substring(ipEnd);
+		}
+		return properties;
+	}
+
+	// copy an InputStream to a PrintStream until EOF
+	public static Thread streamCopier(final InputStream is, final PrintStream ps) throws IOException {
 		    // create thread to read from the a process' output or error stream
 		    return new Thread(new Runnable(){
 		    	public void run() {
@@ -1240,7 +1266,7 @@ eachRequiredPatch:
 		            }
 		    	}
 		    });
-	    }
+	}
 
 	/**
 	 * Performs substitutions of parameters within the commandLine string where
