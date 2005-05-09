@@ -31,6 +31,8 @@ import java.util.Properties;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.beans.*;
+
 import javax.swing.*;
 import javax.swing.JDesktopPane;
 import javax.swing.JDialog;
@@ -343,7 +345,7 @@ public class MainFrame extends JFrame {
                  // }
 					} catch(IOException ioe) {
                   ioe.printStackTrace();
-                  GenePattern.showErrorDialog("An error occurred while saving " + outputFile.getName() + ". Please try again.");
+                  GenePattern.showErrorDialog("An error occurred while saving " + outputFile.getName() + ".");
                }
 				}
 			}.start();
@@ -836,13 +838,15 @@ public class MainFrame extends JFrame {
 
 					
                   fileSummaryComponent.setText(node.name, node.getFileInfo());
-                  MenuItemAction[] mi = null;
+                  SemanticUtil.ModuleMenuItemAction[] mi = null;
                   if(inputTypeToMenuItemsMap!=null) {
-                     mi = (MenuItemAction[]) inputTypeToMenuItemsMap.get(node.getFileInfo().getKind());
+                     mi = (SemanticUtil.ModuleMenuItemAction[]) inputTypeToMenuItemsMap.get(node.getFileInfo().getKind());
                   }
                   if(mi!=null) {
                      for(int i = 0; i < mi.length; i++) {
+                        mi[i].setTreeNode(node);
                         jobResultFileViewModulesMenu.add(mi[i]);
+                        
                      }
                   }
                   jobResultFileViewModulesMenu.setEnabled(mi!=null && mi.length > 0);
@@ -988,12 +992,13 @@ public class MainFrame extends JFrame {
                
                fileSummaryComponent.setText(node.file.getName(), node.getFileInfo());
                
-               MenuItemAction[] mi = null;
+               SemanticUtil.ModuleMenuItemAction[] mi = null;
                if(inputTypeToMenuItemsMap!=null) {
-                  mi = (MenuItemAction[]) inputTypeToMenuItemsMap.get(node.getFileInfo().getKind());
+                  mi = (SemanticUtil.ModuleMenuItemAction[]) inputTypeToMenuItemsMap.get(node.getFileInfo().getKind());
                }
                if(mi!=null) {
                   for(int i = 0; i < mi.length; i++) {
+                     mi[i].setTreeNode(node);
                      projectFileViewModulesMenu.add(mi[i]);
                   }
                }
@@ -1061,8 +1066,7 @@ public class MainFrame extends JFrame {
 
 						jobResultFileSendToMenu.removeAll();
 						projectFileSendToMenu.removeAll();
-                  
-                  
+
                
                   if(!analysisServicePanel.isShowingAnalysisService()) {
                      jobResultFileSendToMenu.setEnabled(false);
@@ -1337,7 +1341,7 @@ public class MainFrame extends JFrame {
                synchronized(errors) {
                   if(errors.size()==0) {
                      if(!disconnectedFromServer(wse)) {
-                        GenePattern.showErrorDialog("An error occurred while retrieving your jobs. Please try again.");
+                        GenePattern.showErrorDialog("An error occurred while retrieving your jobs.");
                      }
                      errors.add(new Object());
                   }
@@ -1364,7 +1368,7 @@ public class MainFrame extends JFrame {
                synchronized(errors) {
                   if(errors.size()==0) {
                      if(!disconnectedFromServer(wse)) {
-                        GenePattern.showErrorDialog("An error occurred while retrieving your history. Please try again.");
+                        GenePattern.showErrorDialog("An error occurred while retrieving your history.");
                      }
                      errors.add(new Object());
                   }
@@ -1488,14 +1492,14 @@ public class MainFrame extends JFrame {
          public void actionPerformed(ActionEvent e) {
             JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
             try {
-               String message = "Are you sure you want to delete job number " + jobNode.job.getJobInfo().getJobNumber();
+               String message = "Are you sure you want to delete job number " + jobNode.job.getJobInfo().getJobNumber() + "?";
                if(showConfirmDialog(message)) {
                   jobModel.delete(jobNode);
                }
             } catch(WebServiceException wse) {
                wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred deleting job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
+                  GenePattern.showErrorDialog("An error occurred deleting job number " + jobNode.job.getJobInfo().getJobNumber() + .");
                }
             }
          }
@@ -1512,7 +1516,7 @@ public class MainFrame extends JFrame {
             } catch(WebServiceException wse) {
                wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred deleting all jobs. Please try again.");
+                  GenePattern.showErrorDialog("An error occurred deleting all jobs.");
                }
             }
          }
@@ -1527,7 +1531,7 @@ public class MainFrame extends JFrame {
             } catch(WebServiceException wse) {
                 wse.printStackTrace();
                 if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred terminating job number " + jobNode.job.getJobInfo().getJobNumber() + ". Please try again.");
+                  GenePattern.showErrorDialog("An error occurred terminating job number " + jobNode.job.getJobInfo().getJobNumber() + ".");
                 }
             }
 			}
@@ -1699,7 +1703,7 @@ public class MainFrame extends JFrame {
                                  }
                               } catch(IOException ioe) {
                                  ioe.printStackTrace();
-                                 GenePattern.showErrorDialog("An error occurred while saving the file " + node.name  + ". Please try again.");
+                                 GenePattern.showErrorDialog("An error occurred while saving the file " + node.name  + ".");
                               }
                              //	} catch (WebServiceException wse) {
                             //      if(!disconnectedFromServer(wse)) {
@@ -1739,7 +1743,7 @@ public class MainFrame extends JFrame {
             } catch(WebServiceException wse) {
                wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred while deleting the file " + JobModel.getJobResultFileName(serverFileNode) + ". Please try again.");
+                  GenePattern.showErrorDialog("An error occurred while deleting the file " + JobModel.getJobResultFileName(serverFileNode) + ".");
                }
             }
 			}
@@ -1801,7 +1805,7 @@ public class MainFrame extends JFrame {
             } catch (WebServiceException wse) {
                wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred while retrieving the modules from the server. Please try again.");
+                  GenePattern.showErrorDialog("An error occurred while retrieving the modules from the server.");
                }
             }
       

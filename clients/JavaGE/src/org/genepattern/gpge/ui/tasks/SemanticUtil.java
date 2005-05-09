@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Map;
 import java.util.StringTokenizer;
+import javax.swing.tree.TreeNode;
+
 import org.genepattern.gpge.ui.menu.*;
 import org.genepattern.io.*;
 import org.genepattern.webservice.*;
@@ -25,6 +27,19 @@ import org.genepattern.util.GPConstants;
 public class SemanticUtil {
 
   
+   public static class ModuleMenuItemAction extends MenuItemAction {
+      TreeNode node;
+      
+      public ModuleMenuItemAction(String name) {
+         super(name);   
+      }
+      
+      public void setTreeNode(TreeNode node) {
+         this.node = node;
+      }
+      
+   }
+   
    private SemanticUtil() { }
    
    public static String getType(File file) {
@@ -100,13 +115,21 @@ public class SemanticUtil {
          if(modules==null) {
             continue;  
          }
-         MenuItemAction[] m = new MenuItemAction[modules.size()];
+         ModuleMenuItemAction[] m = new ModuleMenuItemAction[modules.size()];
 			java.util.Collections.sort(modules, AnalysisServiceUtil.CASE_INSENSITIVE_TASK_NAME_COMPARATOR);
          for(int i = 0; i < modules.size(); i++) {
             final AnalysisService svc = (AnalysisService) modules.get(i);
-            m[i] = new MenuItemAction(svc.getTaskInfo().getName()) {
+            m[i] = new ModuleMenuItemAction(svc.getTaskInfo().getName()) {
                public void actionPerformed(ActionEvent e) {
-                  analysisServiceDisplay.loadTask(svc);     
+                  analysisServiceDisplay.loadTask(svc); 
+                  ParameterInfo parameterInfo = null;
+                  int parameterCount = 0;
+                  for(Iterator it = analysisServiceDisplay.getInputFileParameters(); parameterCount < 2 && it.hasNext(); parameterCount++) {
+                     parameterInfo = (ParameterInfo) it.next();
+                  }
+                  if(parameterCount==1) {
+                     analysisServiceDisplay.setInputFile(parameterInfo.getName(), node); 
+                  }
                }
             };
          }
@@ -114,6 +137,8 @@ public class SemanticUtil {
       }
       return inputTypeToMenuItemMap;
    }
+   
+   
    
    /**
    * Gets a map which maps the input type as a string to a list of analysis services that take that input type as an input parameter
