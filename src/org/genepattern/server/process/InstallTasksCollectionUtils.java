@@ -95,7 +95,7 @@ public class InstallTasksCollectionUtils {
 		for (int t = 0; t < tasks.length; t++) {
 			try {
 				returnValues
-						.add((tasks[t].install(userID, access_id) ? "installed"
+						.add((tasks[t].install(userID, access_id, null) ? "installed"
 								: "overwrote")
 								+ " " + tasks[t].getName());
 			} catch (TaskInstallationException tie) {

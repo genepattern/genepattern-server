@@ -85,7 +85,7 @@ public class InstallTasks extends CommandLineAction implements FilenameFilter {
 				module = moduleList[i];
 				System.out.println("Installing " + module.getName());
 				String lsid = gp.installNewTask(module.getCanonicalPath(),
-						"GenePattern", GPConstants.ACCESS_PUBLIC);
+						"GenePattern", GPConstants.ACCESS_PUBLIC, null);
 			}
 
 		} catch (TaskInstallationException tie) {

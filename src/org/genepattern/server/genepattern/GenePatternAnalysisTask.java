@@ -55,6 +55,7 @@ import org.genepattern.server.ejb.AnalysisJobDataSource;
 import org.genepattern.server.indexer.Indexer;
 import org.genepattern.server.indexer.IndexerDaemon;
 import org.genepattern.server.util.BeanReference;
+import org.genepattern.server.webservice.server.ITaskIntegrator;
 import org.genepattern.util.IGPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.JobInfo;
@@ -267,7 +268,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			validateOS(taskInfoAttributes.get(OS)); // eg. "Windows", "linux",
 													// "Mac OS X", "OSF1",
 													// "Solaris"
-			validatePatches(taskInfo);
+			validatePatches(taskInfo, null);
 			
 			// get environment variables
 			Hashtable env = getEnv();
@@ -1004,7 +1005,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	// check that each patch listed in  the TaskInfoAttributes for this task is installed.
 	// if not, download and install it.
 	// For any problems, throw an exception
-	protected static boolean validatePatches(TaskInfo taskInfo) throws Exception {
+	protected static boolean validatePatches(TaskInfo taskInfo, ITaskIntegrator taskIntegrator) throws Exception {
 		TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
 		String requiredPatchLSID = tia.get(REQUIRED_PATCH_LSIDS);
 		// no patches required?
@@ -1041,12 +1042,13 @@ eachRequiredPatch:
 			// need to download and install this patch		
 			requiredPatchURL = patchURLs[requiredPatchNum];
 			if (requiredPatchURL == null) {
-				requiredPatchURL = System.getProperty(DEFAULT_PATCH_URL) + "?" + LSID + "=" + requiredPatchLSID +
+				requiredPatchURL = System.getProperty(DEFAULT_PATCH_URL) + "?" + LSID + "=" + requiredPatchLSID;
+			}
+			requiredPatchURL = requiredPatchURL + 
 						   "&" + OS + "=" + System.getProperty("os.name") + 
 						   "&" + CPU_TYPE + "=" + System.getProperty("os.arch") +
 						   "&" + LANGUAGE + "=" + tia.get(LANGUAGE) +
 						   "&" + VERSION + "=" + tia.get(JVM_LEVEL);
-			}
 			installPatch(requiredPatchLSID, requiredPatchURL);
 		} // end of loop for each patch LSID for the task
 		return true;
@@ -1065,13 +1067,20 @@ eachRequiredPatch:
 		explodePatch(zipFilename, patchDirectory);
 		new File(zipFilename).delete();
 		
-		String commandLine = getPatchCommandLine(patchDirectory);
+		// entire zip file has been exploded, now load the manifest, get the command line, and execute it
+		Properties props = loadManifest(patchDirectory);		
+		String commandLine = getPatchCommandLine(props);
 		System.out.println("Running " + commandLine + " in " + patchDirectory.getAbsolutePath());
 
-		int exitValue = executePatch(commandLine, patchDirectory);
-		System.out.println("patch installed, exit code " + exitValue);
-		recordPatch(requiredPatchLSID);
-		System.out.println("patch LSID recorded");
+		String exitValue = "" + executePatch(commandLine, patchDirectory);
+		System.out.println("Patch installed, exit code " + exitValue);
+
+		String goodExitValue = props.getProperty("successExitValue", "0");
+		String failureExitValue = props.getProperty("failureExitValue", "");
+		if (exitValue.equals(goodExitValue) || !exitValue.equals(failureExitValue)) {
+			recordPatch(requiredPatchLSID);
+			System.out.println("Patch LSID recorded");
+		}
 	}
 	
 	// download the patch zip file from a URL
@@ -1080,7 +1089,7 @@ eachRequiredPatch:
 			return downloadTask(url);
 		} catch (IOException ioe) {
 			if (ioe.getCause() != null) ioe = (IOException)ioe.getCause();
-			throw new IOException(ioe.getMessage() + " while downloading " + url);
+			throw new IOException(ioe.toString() + " while downloading " + url);
 		}
 	}
 	
@@ -1126,9 +1135,7 @@ eachRequiredPatch:
 	}
 
 	// retrieve the command line from the patch manifest file and perform <substitutions>		
-	protected static String getPatchCommandLine(File patchDirectory) throws Exception {
-		// entire zip file has been exploded, now load the manifest, get the command line, and execute it
-		Properties props = loadManifest(patchDirectory);		
+	protected static String getPatchCommandLine(Properties props) throws Exception {
 		String commandLine = props.getProperty(COMMAND_LINE);
 		Properties systemProps = new Properties(System.getProperties());
 
@@ -2531,7 +2538,7 @@ eachRequiredPatch:
 	 */
 	protected static Vector installTask(String name, String description, ParameterInfo[] params,
 			TaskInfoAttributes taskInfoAttributes, String username,
-			int access_id) throws OmnigeneException, RemoteException {
+			int access_id, ITaskIntegrator taskIntegrator) throws OmnigeneException, RemoteException {
 		String originalUsername = username;
 		TaskInfo taskInfo = new TaskInfo();
 		taskInfo.setName(name);
@@ -2542,7 +2549,7 @@ eachRequiredPatch:
 		Vector vProblems = GenePatternAnalysisTask.validateInputs(taskInfo, name,
 				taskInfoAttributes, params);
 		try {
-			validatePatches(taskInfo);
+			validatePatches(taskInfo, taskIntegrator);
 		} catch (Throwable e) {
 			if (e.getCause() != null) e = e.getCause();
 			System.err.println(e.toString() + " while installing " + name);
@@ -2610,7 +2617,7 @@ eachRequiredPatch:
 	 */
 	public static String installNewTask(String name, String description, ParameterInfo[] params,
 			TaskInfoAttributes taskInfoAttributes, String username,
-			int access_id) throws OmnigeneException, RemoteException,
+			int access_id, ITaskIntegrator taskIntegrator) throws OmnigeneException, RemoteException,
 			TaskInstallationException {
 		LSID taskLSID = null;
 		String requestedLSID = taskInfoAttributes.get(LSID);
@@ -2635,7 +2642,7 @@ eachRequiredPatch:
 		// taskLSID.toString());
 
 		Vector probs = installTask(name, description, params,
-				taskInfoAttributes, username, access_id);
+				taskInfoAttributes, username, access_id, taskIntegrator);
 		if ((probs != null) && (probs.size() > 0)) {
 			throw new TaskInstallationException(probs);
 		}
@@ -2697,7 +2704,7 @@ eachRequiredPatch:
 		}
 
 		Vector probs = installTask(name, description, params,
-				taskInfoAttributes, username, access_id);
+				taskInfoAttributes, username, access_id, null);
 
 		if ((probs != null) && (probs.size() > 0)) {
 			throw new TaskInstallationException(probs);
@@ -3085,7 +3092,7 @@ eachRequiredPatch:
 	 *  
 	 */
 	public static String installNewTask(String zipFilename, String username,
-			int access_id, boolean recursive) throws TaskInstallationException {
+			int access_id, boolean recursive, ITaskIntegrator taskIntegrator) throws TaskInstallationException {
 		Vector vProblems = new Vector();
 		int i;
 		ZipFile zipFile = null;
@@ -3146,7 +3153,7 @@ eachRequiredPatch:
 					is.close();
 					_cat.info("installing " + outFile.getAbsolutePath());
 					lsid = installNewTask(outFile.getAbsolutePath(), username,
-							access_id);
+							access_id, taskIntegrator);
 					_cat.info("installed " + lsid);
 					if (firstLSID == null)
 						firstLSID = lsid;
@@ -3247,7 +3254,7 @@ eachRequiredPatch:
 			if (vProblems.size() == 0) {
 				_cat.info("installing " + taskName + " into database");
 				vProblems = GenePatternAnalysisTask.installTask(taskName,
-						taskDescription, params, tia, username, access_id);
+						taskDescription, params, tia, username, access_id, null);
 				// get the newly assigned LSID
 				lsid = (String) tia.get(IGPConstants.LSID);
 
@@ -3367,8 +3374,8 @@ eachRequiredPatch:
 	}
 
 	public static String installNewTask(String zipFilename, String username,
-			int access_id) throws TaskInstallationException {
-		return installNewTask(zipFilename, username, access_id, true);
+			int access_id, ITaskIntegrator taskIntegrator) throws TaskInstallationException {
+		return installNewTask(zipFilename, username, access_id, true, taskIntegrator);
 	}
 
 	/**
@@ -4154,7 +4161,7 @@ eachRequiredPatch:
 			} else if (args.length == 0) {
 				GenePatternAnalysisTask.test();
 				GenePatternAnalysisTask.installNewTask("c:/temp/echo.zip",
-						"jlerner@broad.mit.edu", 1);
+						"jlerner@broad.mit.edu", 1, null);
 			} else {
 				System.err
 						.println("GenePatternAnalysisTask: Don't know what input arguments mean");
@@ -4193,7 +4200,7 @@ eachRequiredPatch:
 				"echo",
 				"echo input",
 				new ParameterInfo[] { /* no input parameters */}, tia,
-				"jlerner@broad.mit.edu", 1);
+				"jlerner@broad.mit.edu", 1, null);
 		if (vProblems != null) {
 			for (eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
 				_cat.error(eProblems.nextElement());
@@ -4212,7 +4219,7 @@ eachRequiredPatch:
 				"Transpose",
 				"transpose a res or gct file",
 				new ParameterInfo[] { /* no input parameters */}, tia,
-				"jlerner@broad.mit.edu", 1);
+				"jlerner@broad.mit.edu", 1, null);
 		if (vProblems != null) {
 			for (eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
 				_cat.error(eProblems.nextElement());
@@ -4236,7 +4243,7 @@ eachRequiredPatch:
 						new ParameterInfo("min_fold", null, "minimum fold"),
 						new ParameterInfo("min_difference", null,
 								"minimum difference") }, tia,
-				"jlerner@broad.mit.edu", 1);
+				"jlerner@broad.mit.edu", 1, null);
 		if (vProblems != null) {
 			for (eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
 				_cat.error(eProblems.nextElement());
@@ -4257,7 +4264,7 @@ eachRequiredPatch:
 				new ParameterInfo[] {
 						new ParameterInfo("min", null, "minimum"),
 						new ParameterInfo("max", null, "maximum") }, tia,
-				"jlerner@broad.mit.edu", 1);
+				"jlerner@broad.mit.edu", 1, null);
 		if (vProblems != null) {
 			for (eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
 				_cat.error(eProblems.nextElement());
@@ -4276,7 +4283,7 @@ eachRequiredPatch:
 				"BluePinkOGram",
 				"display a BPOG of a RES or GCT file",
 				new ParameterInfo[] { /* no input parameters */}, tia,
-				"jlerner@broad.mit.edu", 1);
+				"jlerner@broad.mit.edu", 1, null);
 		if (vProblems != null) {
 			for (eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
 				_cat.error(eProblems.nextElement());

@@ -24,6 +24,26 @@ public class LocalTaskIntegratorClient {
 			protected String getUserName() {
 				return userName;
 			}
+
+			public void statusMessage(String message) {
+				System.out.println("statusMessage: " + message);
+			}
+
+			public void errorMessage(String message) {
+				System.out.println("errorMessage: " + message);
+			}
+
+			public void beginProgress(String message) {
+				System.out.println("beginProgress: " + message);
+			}
+
+			public void continueProgress(int percentComplete) {
+				System.out.println("continueProgress: " + percentComplete);
+			}
+
+			public void endProgress(String message) {
+				System.out.println("endProgress: " + message);
+			}
 		};
 	}
 

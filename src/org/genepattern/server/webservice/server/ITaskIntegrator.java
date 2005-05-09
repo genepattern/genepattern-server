@@ -197,4 +197,10 @@ public interface ITaskIntegrator {
 	 */
 	public javax.activation.DataHandler exportToZip(String lsid)
 			throws WebServiceException;
+			
+	public void statusMessage(String message);
+	public void errorMessage(String message);
+	public void beginProgress(String message);
+	public void continueProgress(int percentComplete);
+	public void endProgress(String message);
 }

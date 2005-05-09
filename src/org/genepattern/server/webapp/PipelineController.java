@@ -96,7 +96,7 @@ public class PipelineController {
 						+ "." + GPConstants.TASK_TYPE_PIPELINE, ""
 						+ model.getDescription(), params, tia, model.getUserID(), model
 						.isPrivate() ? GPConstants.ACCESS_PRIVATE
-						: GPConstants.ACCESS_PUBLIC);
+						: GPConstants.ACCESS_PUBLIC, null);
 			}
 			return lsid;
 		} catch (TaskInstallationException tie) {

@@ -85,12 +85,15 @@ public class TaskIntegrator implements ITaskIntegrator {
 		return new File(dh.getName());
 	}
 
-	public String importZip(DataHandler handler, int privacy)
-			throws WebServiceException {
+	public String importZip(DataHandler handler, int privacy) throws WebServiceException {
 		return importZip(handler, privacy, true);
 	}
 
-	public String importZip(DataHandler handler, int privacy, boolean recursive)
+	public String importZip(DataHandler handler, int privacy, boolean recursive) throws WebServiceException {
+		return importZip(handler, privacy, recursive, null);
+	}
+
+	public String importZip(DataHandler handler, int privacy, boolean recursive, ITaskIntegrator taskIntegrator)
 			throws WebServiceException {
 		Vector vProblems = null;
 		String lsid = null;
@@ -105,7 +108,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 			// with a local one
 			try {
 				lsid = GenePatternAnalysisTask.installNewTask(path, username,
-						privacy, recursive);
+						privacy, recursive, taskIntegrator);
 			} catch (TaskInstallationException tie) {
 				vProblems = tie.getErrors();
 			}
@@ -118,8 +121,11 @@ public class TaskIntegrator implements ITaskIntegrator {
 		return lsid;
 	}
 
-	public String importZipFromURL(String url, int privacy, boolean recursive)
-			throws WebServiceException {
+	public String importZipFromURL(String url, int privacy, boolean recursive) throws WebServiceException {
+		return 	importZipFromURL(url, privacy, recursive, null);
+	}
+
+	public String importZipFromURL(String url, int privacy, boolean recursive, ITaskIntegrator taskIntegrator) throws WebServiceException {
 		File zipFile = null;
 		FileOutputStream os = null;
 		InputStream is = null;
@@ -147,7 +153,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 			// replace task, do not version lsid or replace the lsid in the zip
 			// with a local one
 			lsid = GenePatternAnalysisTask.installNewTask(path, username,
-					privacy, recursive);
+					privacy, recursive, taskIntegrator);
 		} catch (TaskInstallationException tie) {
 			throw new WebServiceErrorMessageException(tie.getErrors());
 		} catch (IOException ioe) {
@@ -173,9 +179,12 @@ public class TaskIntegrator implements ITaskIntegrator {
 		return lsid;
 	}
 
-	public String importZipFromURL(String url, int privacy)
-			throws WebServiceException {
-		return importZipFromURL(url, privacy, true);
+	public String importZipFromURL(String url, int privacy) throws WebServiceException {
+		return importZipFromURL(url, privacy, true, null);
+	}
+
+	public String importZipFromURL(String url, int privacy, ITaskIntegrator taskIntegrator) throws WebServiceException {
+		return importZipFromURL(url, privacy, true, taskIntegrator);
 	}
 
 	public String[] getSupportFileNames(String lsid) throws WebServiceException {
@@ -335,7 +344,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 								description,								
 								parameterInfoArray, // FIXME
 								new TaskInfoAttributes(taskAttributes),
-								username, accessId);
+								username, accessId, null);
 			}
 			taskAttributes.put(GPConstants.LSID, lsid); // update so that upon
 														// return, the LSID is
@@ -582,4 +591,20 @@ public class TaskIntegrator implements ITaskIntegrator {
 		}
 		return dh;
 	}
+
+	public void statusMessage(String message) {
+	}
+
+	public void errorMessage(String message) {
+	}
+
+	public void beginProgress(String message) {
+	}
+
+	public void continueProgress(int percentComplete) {
+	}
+
+	public void endProgress(String message) {
+	}
+
 }

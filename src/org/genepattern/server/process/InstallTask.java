@@ -16,6 +16,7 @@ import java.util.Vector;
 
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.TaskInstallationException;
+import org.genepattern.server.webservice.server.ITaskIntegrator;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.OmnigeneException;
@@ -234,17 +235,17 @@ public class InstallTask {
 		for (Iterator itAttr = attributes.keySet().iterator(); itAttr.hasNext();) {
 			String name = (String) itAttr.next();
 			String value = (String)module.get(name);
-			if (value != null && value.equals(GPConstants.ANY)) return true;
+			//if (value != null && value.equals(GPConstants.ANY)) return true;
 			Object oChoices = attributes.get(name);
 			if (oChoices instanceof String) {
-				if (!attributes.containsKey(name)
-						|| !attributes.get(name).equals(value)) {
+				if (!attributes.containsKey(name) ||
+				    (!attributes.get(name).equals(value) && !value.equals(GPConstants.ANY))) {
 					return false;
 				}
 			} else {
 				// vChoices is a Vector of possible settings. Any one is okay
 				Vector vChoices = (Vector) oChoices;
-				if (!vChoices.contains(value)) {
+				if (!vChoices.contains(value) && !value.equals(GPConstants.ANY)) {
 					return false;
 				}
 			}
@@ -307,7 +308,7 @@ public class InstallTask {
 	}
 
 	// return Vector of error messages when attempting to install this Module
-	public boolean install(String username, int access_id)
+	public boolean install(String username, int access_id, ITaskIntegrator taskIntegrator)
 			throws TaskInstallationException {
 		String filename = null;
 		Vector vProblems = new Vector();
@@ -325,7 +326,7 @@ public class InstallTask {
 			String taskName = GenePatternAnalysisTask
 					.getTaskNameFromZipFile(filename);
 			lsid = GenePatternAnalysisTask.installNewTask(filename, username,
-					access_id);
+					access_id, taskIntegrator);
 			return wasInstalled;
 		} catch (TaskInstallationException tie) {
 			throw tie;
@@ -407,7 +408,7 @@ public class InstallTask {
 								+ task.matchesAttributes(match) + "\n");
 
 				out.append("installing...\n");
-				if (task.install(userID, GPConstants.ACCESS_PUBLIC)) {
+				if (task.install(userID, GPConstants.ACCESS_PUBLIC, null)) {
 					out.append("overwrote");
 				} else {
 					out.append("installed");
