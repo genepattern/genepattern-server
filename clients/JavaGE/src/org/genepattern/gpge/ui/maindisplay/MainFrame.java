@@ -630,6 +630,18 @@ public class MainFrame extends JFrame {
       return c.getRed() + "," + c.getGreen() + "," + c.getBlue(); 
    }
    
+   
+   // String kind = node.getFileInfo().getKind();
+   void enableSendToMenus(MenuAction sendToMenu, String kind) {
+      for(int i = 0, length = sendToMenu.getItemCount(); i < length; i++) {
+         Object obj = sendToMenu.getMenuComponent(i);
+         if(obj instanceof SendToMenuItemAction) {
+            SendToMenuItemAction mia = (SendToMenuItemAction) obj;
+            mia.setEnabled(mia.isCorrectKind(kind));
+         }
+      }   
+   }
+   
 	public MainFrame() {
 		
 		
@@ -931,7 +943,6 @@ public class MainFrame extends JFrame {
       projectDirTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
          public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
             TreePath path = projectDirTree.getSelectionPath();
-            
             DefaultMutableTreeNode newSelection = null;
             
             if(path==null) {
@@ -988,15 +999,8 @@ public class MainFrame extends JFrame {
                }
                projectFileViewModulesMenu.setEnabled(mi!=null && mi.length > 0);
 					
-					for(int i = 0, length = projectFileSendToMenu.getItemCount(); i < length; i++) {
-						Object obj = projectFileSendToMenu.getMenuComponent(i);
-						if(obj instanceof SendToMenuItemAction) {
-							SendToMenuItemAction mia = (SendToMenuItemAction) obj;
-							String kind = node.getFileInfo().getKind();
-							mia.setEnabled(mia.isCorrectKind(kind));
-						}
-					}
-					
+				   String kind = node.getFileInfo().getKind();
+               enableSendToMenus(projectFileSendToMenu,  kind);
 
 				} else {
                fileSummaryComponent.clear();
@@ -1058,6 +1062,8 @@ public class MainFrame extends JFrame {
 						jobResultFileSendToMenu.removeAll();
 						projectFileSendToMenu.removeAll();
                   
+                  
+               
                   if(!analysisServicePanel.isShowingAnalysisService()) {
                      jobResultFileSendToMenu.setEnabled(false);
                      projectFileSendToMenu.setEnabled(false);
@@ -1091,9 +1097,14 @@ public class MainFrame extends JFrame {
 						}
                   if(selectedJobNode instanceof JobModel.ServerFileNode) {
                      jobResultFileSendToMenu.setEnabled(true);  
+                     String kind = ((JobModel.ServerFileNode)selectedJobNode).getFileInfo().getKind();
+                     enableSendToMenus(jobResultFileSendToMenu,  kind);
                   }
                   if(selectedProjectDirNode instanceof ProjectDirModel.FileNode) {
                      projectFileSendToMenu.setEnabled(true);  
+                    
+                     String kind = ((ProjectDirModel.FileNode)selectedProjectDirNode).getFileInfo().getKind();
+                     enableSendToMenus(projectFileSendToMenu,  kind);
                   }
 
 					}
