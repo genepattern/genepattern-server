@@ -174,7 +174,8 @@ public interface IGPConstants {
 	public static final String[] TASK_INFO_ATTRIBUTES = { COMMAND_LINE,
 			TASK_TYPE, CPU_TYPE, OS, JVM_LEVEL, LANGUAGE, VERSION,
 			AUTHOR, USERID, PRIVACY, QUALITY, PIPELINE_SCRIPT, LSID,
-			SERIALIZED_MODEL, DOMAIN, FILE_FORMAT };
+			SERIALIZED_MODEL, DOMAIN, FILE_FORMAT, 	REQUIRED_PATCH_LSIDS, 
+			REQUIRED_PATCH_URLS };
 
 	public static final char PARAM_INFO_SPACER = '_'; // replace this character
 													  // with a space for user
