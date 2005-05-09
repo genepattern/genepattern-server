@@ -1499,7 +1499,7 @@ public class MainFrame extends JFrame {
             } catch(WebServiceException wse) {
                wse.printStackTrace();
                if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred deleting job number " + jobNode.job.getJobInfo().getJobNumber() + .");
+                  GenePattern.showErrorDialog("An error occurred deleting job number " + jobNode.job.getJobInfo().getJobNumber() + ".");
                }
             }
          }
