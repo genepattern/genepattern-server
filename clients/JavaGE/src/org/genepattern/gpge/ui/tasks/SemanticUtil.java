@@ -147,7 +147,10 @@ public class SemanticUtil {
                      modules = new ArrayList();
                      map.put(type, modules);
                   }
-                  modules.add(svc);
+                  if(!modules.contains(svc)) {
+                      modules.add(svc);
+                  }
+                 
                }
             }
          }
