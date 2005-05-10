@@ -3,6 +3,7 @@
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.genepattern.TaskInstallationException,
 		 org.genepattern.server.genepattern.LSIDManager,
+		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient,
 		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.LSID,
@@ -96,6 +97,7 @@ function changeFilter(fld) {
 	out.flush();
 	InstallTasksCollectionUtils collection = null;
 	InstallTask[] tasks = null;
+	LocalTaskIntegratorClient taskIntegrator = new LocalTaskIntegratorClient(userID, out);
 
 	try {
 		collection = new InstallTasksCollectionUtils(userID, initialInstall);
@@ -182,7 +184,7 @@ function changeFilter(fld) {
 			installTask = (InstallTask)eTasks.next();
 			numSelected++;
 			try {
-				boolean wasInstalled = installTask.install(userID, GPConstants.ACCESS_PUBLIC);
+				boolean wasInstalled = installTask.install(userID, GPConstants.ACCESS_PUBLIC, taskIntegrator);
 %>
 				<%= wasInstalled ? "Overwrote" : "Installed" %> <a href="addTask.jsp?name=<%= installTask.getLSID() %>"><%= installTask.getName() %></a> version <%= new LSID(installTask.getLSID()).getVersion() %><br>
 				<script language="Javascript">
