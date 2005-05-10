@@ -28,14 +28,18 @@ public class SemanticUtil {
 
   
    public static class ModuleMenuItemAction extends MenuItemAction {
+      /** Currently selected node */
       TreeNode node;
+      /** Kind of selected node */
+      String kind;
       
       public ModuleMenuItemAction(String name) {
          super(name);   
       }
       
-      public void setTreeNode(TreeNode node) {
+      public void setTreeNode(TreeNode node, String kind) {
          this.node = node;
+         this.kind = kind;
       }
       
    }
@@ -106,6 +110,24 @@ public class SemanticUtil {
 			analysisServiceDisplay);
 	}
 
+   /** Returns <code>true</code> if the given kind is an acceptable input file format for the given input parameter
+   */
+   public static boolean isCorrectKind(ParameterInfo info, String kind) {
+		String fileFormatsString = (String) info.getAttributes().get(GPConstants.FILE_FORMAT);
+		List fileFormats = new ArrayList();
+      if(fileFormatsString==null || fileFormatsString.equals("")) {
+         return false;
+      }
+      java.util.StringTokenizer st = new java.util.StringTokenizer(fileFormatsString, GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+      while(st.hasMoreTokens()) {
+         fileFormats.add(st.nextToken().toLowerCase());
+      }	
+      if(fileFormats.size()==0 || kind==null || kind.equals("")) {
+				return true;	
+      }
+      return fileFormats.contains(kind.toLowerCase());
+   }
+      
    private static Map _getInputTypeToMenuItemsMap(Map inputTypeToModulesMap, final AnalysisServiceDisplay analysisServiceDisplay) {
       Map inputTypeToMenuItemMap = new HashMap();
       for(Iterator it = inputTypeToModulesMap.keySet().iterator(); it.hasNext(); ) {
@@ -122,13 +144,22 @@ public class SemanticUtil {
             m[i] = new ModuleMenuItemAction(svc.getTaskInfo().getName()) {
                public void actionPerformed(ActionEvent e) {
                   analysisServiceDisplay.loadTask(svc); 
-                  ParameterInfo parameterInfo = null;
-                  int parameterCount = 0;
-                  for(Iterator it = analysisServiceDisplay.getInputFileParameters(); parameterCount < 2 && it.hasNext(); parameterCount++) {
-                     parameterInfo = (ParameterInfo) it.next();
+                  ParameterInfo inputParameter = null;
+                  
+                  boolean uniqueSendTo = true;
+                 
+                  for(Iterator it = analysisServiceDisplay.getInputFileParameters(); it.hasNext(); ) {
+                     ParameterInfo parameterInfo = (ParameterInfo) it.next();
+                     if(isCorrectKind(parameterInfo, kind)) {
+                        if(inputParameter!=null) {
+                           uniqueSendTo = false;
+                           break;
+                        }
+                        inputParameter = parameterInfo;
+                     }
                   }
-                  if(parameterCount==1) {
-                     analysisServiceDisplay.setInputFile(parameterInfo.getName(), node); 
+                  if(uniqueSendTo && inputParameter!=null) {
+                     analysisServiceDisplay.setInputFile(inputParameter.getName(), node); 
                   }
                }
             };

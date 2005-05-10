@@ -844,7 +844,7 @@ public class MainFrame extends JFrame {
                   }
                   if(mi!=null) {
                      for(int i = 0; i < mi.length; i++) {
-                        mi[i].setTreeNode(node);
+                        mi[i].setTreeNode(node, node.getFileInfo().getKind());
                         jobResultFileViewModulesMenu.add(mi[i]);
                         
                      }
@@ -998,7 +998,7 @@ public class MainFrame extends JFrame {
                }
                if(mi!=null) {
                   for(int i = 0; i < mi.length; i++) {
-                     mi[i].setTreeNode(node);
+                     mi[i].setTreeNode(node, node.getFileInfo().getKind());
                      projectFileViewModulesMenu.add(mi[i]);
                   }
                }
