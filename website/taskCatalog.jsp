@@ -199,6 +199,8 @@ function changeFilter(fld) {
 			} catch (Exception e) {
 				out.println(e.getMessage() + "<br>");
 			}
+			for (int i = 0; i < 8*1024; i++) out.print(" ");
+			out.println();
 			out.flush();
 		}
 		if (numSelected == 0) {

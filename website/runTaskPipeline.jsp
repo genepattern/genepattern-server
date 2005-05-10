@@ -226,6 +226,9 @@ for (int i=0; i < parmInfos.length; i++){
 
 
 <%
+	for (int i = 0; i < 8*1024; i++) out.print(" ");
+	out.println();
+	out.flush();
 
 	String status = "started";
 	while (!(status.equalsIgnoreCase("ERROR") || (status
