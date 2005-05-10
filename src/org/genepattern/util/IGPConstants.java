@@ -88,6 +88,8 @@ public interface IGPConstants {
 	public static final String REQUIRED_PATCH_URLS = "requiredPatchURLs";
 	public static final String INSTALLED_PATCH_LSIDS = "installedPatchLSIDs";
 	public static final String DEFAULT_PATCH_URL = "DefaultPatchRepositoryURL";
+	public static final String PATCH_SUCCESS_EXIT_VALUE = "successExitValue";
+	public static final String PATCH_ERROR_EXIT_VALUE = "failureExitValue";
 
 	/**
 	 * TaskInfoAttributes pipeline invocation key (prefixed by language, eg.

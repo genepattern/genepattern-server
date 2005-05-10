@@ -44,7 +44,7 @@ String name = request.getParameter(GPConstants.NAME);
 LSID lsid;
 String sLSID;
 if (name == null || name.length() == 0) {
-	Collection tmTasks = new LocalAdminClient(userID).getTaskCatalog();
+	Collection tmTasks = new LocalAdminClient(userID, out).getTaskCatalog();
 %>
 	Generate a wrapper for: <br><br><ul>
 <%
@@ -274,7 +274,7 @@ You may regenerate this code anytime with the following URL:
 <nobr>http://<%= request.getServerName() %>:<%= request.getServerPort() %>/gp/taskWrapperGenerator.jsp?<%= GPConstants.NAME %>=<%= GenePatternAnalysisTask.htmlEncode(request.getParameter(GPConstants.NAME)) %></nobr></a><br>
 
 <% 
-File[] docFiles = new LocalTaskIntegratorClient(userID).getDocFiles(taskInfo);
+File[] docFiles = new LocalTaskIntegratorClient(userID).getDocFiles(taskInfo, response);
 if (docFiles != null && docFiles.length > 0) { %>
 <br>Read <%= name %> documentation: 
 <% for (int i = 0; i < docFiles.length; i++) { %>

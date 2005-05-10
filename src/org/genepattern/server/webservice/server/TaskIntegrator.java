@@ -593,18 +593,23 @@ public class TaskIntegrator implements ITaskIntegrator {
 	}
 
 	public void statusMessage(String message) {
+		System.out.println("statusMessage: " + message);
 	}
 
 	public void errorMessage(String message) {
+		System.out.println("errorMessage: " + message);
 	}
 
 	public void beginProgress(String message) {
+		System.out.println("beginProgress: " + message);
 	}
 
 	public void continueProgress(int percentComplete) {
+		System.out.println("continueProgress: " + percentComplete);
 	}
 
-	public void endProgress(String message) {
+	public void endProgress() {
+		System.out.println("endProgress");
 	}
 
 }

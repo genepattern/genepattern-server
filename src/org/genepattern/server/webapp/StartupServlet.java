@@ -307,19 +307,24 @@ public class StartupServlet extends HttpServlet {
 	//		resources/genepattern.properties
 	//		resources/build.properties
 	protected void loadProperties(ServletConfig config) throws ServletException {
-		for (Enumeration eConfigProps = config.getInitParameterNames(); eConfigProps
-				.hasMoreElements();) {
-			String propName = (String) eConfigProps.nextElement();
-			String propValue = config.getInitParameter(propName);
-			System.setProperty(propName, propValue);
-		}
-
-		Properties sysProps = System.getProperties();
-		String dir = sysProps.getProperty("genepattern.properties");
-		File propFile = new File(dir, "genepattern.properties");
+		File propFile = null;
 		FileInputStream fis = null;
-		Properties props = new Properties();
 		try {
+			for (Enumeration eConfigProps = config.getInitParameterNames(); eConfigProps
+					.hasMoreElements();) {
+				String propName = (String) eConfigProps.nextElement();
+				String propValue = config.getInitParameter(propName);
+				if (propValue.startsWith(".")) {
+					propValue = new File(propValue).getCanonicalPath();
+				}
+				System.setProperty(propName, propValue);
+			}
+
+			Properties sysProps = System.getProperties();
+			String dir = sysProps.getProperty("genepattern.properties");
+			propFile = new File(dir, "genepattern.properties");
+			Properties props = new Properties();
+
 			fis = new FileInputStream(propFile);
 			props.load(fis);
 			log("loaded GP properties from " + propFile.getCanonicalPath());
@@ -327,6 +332,9 @@ public class StartupServlet extends HttpServlet {
 			for (Iterator iter = props.keySet().iterator(); iter.hasNext();) {
 				String key = (String) iter.next();
 				String val = (String) props.getProperty(key);
+				if (val.startsWith(".")) {
+					val = new File(val).getAbsolutePath();
+				}
 				sysProps.setProperty(key, val);
 			}
 
@@ -339,6 +347,9 @@ public class StartupServlet extends HttpServlet {
 			for (Iterator iter = props.keySet().iterator(); iter.hasNext();) {
 				String key = (String) iter.next();
 				String val = (String) props.getProperty(key);
+				if (val.startsWith(".")) {
+					val = new File(val).getCanonicalPath();
+				}
 				sysProps.setProperty(key, val);
 			}
 

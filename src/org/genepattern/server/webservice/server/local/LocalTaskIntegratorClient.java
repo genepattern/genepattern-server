@@ -1,6 +1,8 @@
 package org.genepattern.server.webservice.server.local;
 
 import java.io.File;
+import java.io.IOException;
+import javax.servlet.jsp.JspWriter;
 import java.util.Vector;
 
 import javax.activation.DataHandler;
@@ -16,33 +18,17 @@ import org.genepattern.webservice.WebServiceException;
 /**
  * @author Joshua Gould
  */
-public class LocalTaskIntegratorClient {
+public class LocalTaskIntegratorClient implements ITaskIntegrator {
 	ITaskIntegrator service;
+	String progressMessage = "";
+	JspWriter out = null;
 
-	public LocalTaskIntegratorClient(final String userName) {
+	public LocalTaskIntegratorClient(final String userName, final JspWriter out) {
+		this.out = out;
 		service = new TaskIntegrator() {
+			
 			protected String getUserName() {
 				return userName;
-			}
-
-			public void statusMessage(String message) {
-				System.out.println("statusMessage: " + message);
-			}
-
-			public void errorMessage(String message) {
-				System.out.println("errorMessage: " + message);
-			}
-
-			public void beginProgress(String message) {
-				System.out.println("beginProgress: " + message);
-			}
-
-			public void continueProgress(int percentComplete) {
-				System.out.println("continueProgress: " + percentComplete);
-			}
-
-			public void endProgress(String message) {
-				System.out.println("endProgress: " + message);
 			}
 		};
 	}
@@ -114,14 +100,44 @@ public class LocalTaskIntegratorClient {
 
 	public String importZipFromURL(String url, int privacy)
 			throws WebServiceException {
-		return service.importZipFromURL(url, privacy, true);
+		return service.importZipFromURL(url, privacy, true, this);
 	}
 
 	public String importZipFromURL(String url, int privacy, boolean recursive)
 			throws WebServiceException {
-		return service.importZipFromURL(url, privacy, recursive);
+		return service.importZipFromURL(url, privacy, recursive, this);
+	}
+	
+	public String importZipFromURL(String url, int privacy, boolean recursive, ITaskIntegrator taskIntegrator)
+			throws WebServiceException {
+		return service.importZipFromURL(url, privacy, recursive, taskIntegrator);
+	}
+	
+	public String importZip(DataHandler handler, int privacy) throws WebServiceException {
+		return service.importZip(handler, privacy);
+	}
+	
+	public DataHandler exportToZip(String taskName) throws WebServiceException {
+		return service.exportToZip(taskName, false);
 	}
 
+	public DataHandler exportToZip(String taskName, boolean recursive) throws WebServiceException {
+		return service.exportToZip(taskName, recursive);
+	}
+
+	public long[] getLastModificationTimes(String lsid, String[] fileNames) throws WebServiceException {
+		return service.getLastModificationTimes(lsid, fileNames);
+	}
+
+	public DataHandler[] getSupportFiles(String lsid, String[] fileNames)
+			throws WebServiceException {
+		return service.getSupportFiles(lsid, fileNames);
+	}
+	
+	public DataHandler[] getDocFiles(String lsid) throws WebServiceException {
+		return service.getDocFiles(lsid);
+	}
+	
 	public boolean isZipOfZips(String url) throws WebServiceException {
 		File file = null;
 		java.io.OutputStream os = null;
@@ -169,5 +185,56 @@ public class LocalTaskIntegratorClient {
 				file.delete();
 			}
 		}
+	}
+
+	public void statusMessage(String message) {
+		System.out.println(message);
+		try { 
+			out.println(message + "<br>");
+			flush();
+		} catch (IOException ioe) {
+			// ignore
+		}
+	}
+
+	public void errorMessage(String message) {
+		System.out.println(message);
+		try { 
+			out.println(message + "<br>");
+			flush();
+		} catch (IOException ioe) {
+			// ignore
+		}
+	}
+
+	public void beginProgress(String message) {
+		progressMessage = message;
+		try {
+			out.print(message + " <span id=\""  + message.hashCode() + "\">0</span>% complete<br>");
+			flush();
+		} catch (IOException ioe) {
+			// ignore
+		}
+	}
+
+	public void continueProgress(int percentComplete) {
+		System.out.print("\rcontinueProgress: " + progressMessage + " " + percentComplete + "% complete");
+		try { 
+			out.println("<script language=\"Javascript\">writeToLayer('" + progressMessage.hashCode() + "', " + percentComplete + ");</script>");
+			//out.println(progressMessage + " " + percentComplete + "% complete<br>");
+			flush();
+		} catch (IOException ioe) {
+			// ignore
+		}
+	}
+
+	public void endProgress() {
+		System.out.println("\r" + progressMessage + " complete     ");
+	}
+
+	protected void flush() throws IOException {
+		for (int i = 0; i < 8*1024; i++) out.print(" ");
+		out.println();
+		out.flush();
 	}
 }

@@ -23,7 +23,7 @@ response.setDateHeader("Expires", 0);
 
 String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
 if (userID == null) return; // come back after login
-LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID);
+LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 String DELETE_LSID = "del";
 
 %>

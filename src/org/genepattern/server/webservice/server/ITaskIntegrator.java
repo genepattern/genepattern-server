@@ -66,6 +66,9 @@ public interface ITaskIntegrator {
 	public String importZipFromURL(String url, int privacy, boolean recursive)
 			throws WebServiceException;
 
+	public String importZipFromURL(String url, int privacy, boolean recursive, ITaskIntegrator taskIntegrator)
+			throws WebServiceException;
+
 	/**
 	 * Installs the zip file overwriting anything already there.
 	 * 
@@ -198,9 +201,12 @@ public interface ITaskIntegrator {
 	public javax.activation.DataHandler exportToZip(String lsid)
 			throws WebServiceException;
 			
+	public javax.activation.DataHandler exportToZip(String lsid, boolean recursive)
+			throws WebServiceException;
+			
 	public void statusMessage(String message);
 	public void errorMessage(String message);
 	public void beginProgress(String message);
 	public void continueProgress(int percentComplete);
-	public void endProgress(String message);
+	public void endProgress();
 }

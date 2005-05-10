@@ -36,7 +36,7 @@ response.setDateHeader("Expires", 0);
 
 String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
 if (userID == null) return; // come back after login
-LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID);
+LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 LocalAdminClient adminClient = new LocalAdminClient(userID);
 // drop-down selection lists
 String[] taskTypes = GenePatternAnalysisTask.getTaskTypes();

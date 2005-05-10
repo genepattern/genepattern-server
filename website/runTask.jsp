@@ -298,7 +298,7 @@ out.println("</table>");
 <tr><td><b><font size="+1"><%= taskName %></font></b> version <%= taskLsidVersion%></td>
 <%
 if (taskName != null) {
-	LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
+	LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username, out);
 
 	File[] docFiles = taskIntegratorClient.getDocFiles(taskInfo);
 	boolean hasDoc = docFiles != null && docFiles.length > 0;

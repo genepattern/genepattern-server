@@ -46,6 +46,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.jsp.JspWriter;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -1044,49 +1045,60 @@ eachRequiredPatch:
 			if (requiredPatchURL == null) {
 				requiredPatchURL = System.getProperty(DEFAULT_PATCH_URL) + "?" + LSID + "=" + requiredPatchLSID;
 			}
-			requiredPatchURL = requiredPatchURL + 
-						   "&" + OS + "=" + System.getProperty("os.name") + 
-						   "&" + CPU_TYPE + "=" + System.getProperty("os.arch") +
-						   "&" + LANGUAGE + "=" + tia.get(LANGUAGE) +
-						   "&" + VERSION + "=" + tia.get(JVM_LEVEL);
-			installPatch(requiredPatchLSID, requiredPatchURL);
+			if (requiredPatchURL.startsWith("http")) {
+				if (requiredPatchURL.indexOf("?") == -1) requiredPatchURL = requiredPatchURL + "?";
+				String []patchQualifiers = System.getProperty("patchQualifiers", "").split(",");
+				for (int p = 0; p < patchQualifiers.length; p++) {
+					requiredPatchURL = requiredPatchURL + "&" + URLEncoder.encode(patchQualifiers[p], UTF8) + "=" + URLEncoder.encode(System.getProperty(patchQualifiers[p], ""), UTF8);
+				}
+			}
+			installPatch(requiredPatchLSID, requiredPatchURL, taskIntegrator);
 		} // end of loop for each patch LSID for the task
 		return true;
 	}
 
 	// install a specific patch, downloading a zip file with a manifest containing a command line, 
 	// running that command line after substitutions, and recording the result in the genepattern.properties patch registry
-	public static void installPatch(String requiredPatchLSID, String requiredPatchURL) throws Exception {
-		System.out.println("Downloading patch " + requiredPatchLSID + " from " + requiredPatchURL);
-		String zipFilename = downloadPatch(requiredPatchURL);
+	public static void installPatch(String requiredPatchLSID, String requiredPatchURL, ITaskIntegrator taskIntegrator) throws Exception {
+		System.out.println("installPatch: taskIntegrator is " + (taskIntegrator == null ? "not" : "") + " specified");
+		if (taskIntegrator != null) taskIntegrator.statusMessage("Downloading patch " + requiredPatchLSID + " from " + requiredPatchURL);
+		String zipFilename = downloadPatch(requiredPatchURL, taskIntegrator);
 
 		LSID patchLSID = new LSID(requiredPatchLSID);
 		String patchName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion();
 		File patchDirectory = new File(System.getProperty("patches"), patchName);
-		System.out.println("Download complete.  Installing patch from " + zipFilename + " to " + patchDirectory.getAbsolutePath() + ".");
-		explodePatch(zipFilename, patchDirectory);
+		if (taskIntegrator != null) taskIntegrator.statusMessage("Download complete.  Installing patch from " + zipFilename + " to " + patchDirectory.getAbsolutePath() + ".");
+		explodePatch(zipFilename, patchDirectory, taskIntegrator);
 		new File(zipFilename).delete();
 		
 		// entire zip file has been exploded, now load the manifest, get the command line, and execute it
 		Properties props = loadManifest(patchDirectory);		
 		String commandLine = getPatchCommandLine(props);
-		System.out.println("Running " + commandLine + " in " + patchDirectory.getAbsolutePath());
+		if (taskIntegrator != null) taskIntegrator.statusMessage("Running " + commandLine + " in " + patchDirectory.getAbsolutePath());
 
-		String exitValue = "" + executePatch(commandLine, patchDirectory);
-		System.out.println("Patch installed, exit code " + exitValue);
+		String exitValue = "" + executePatch(commandLine, patchDirectory, taskIntegrator);
+		if (taskIntegrator != null) taskIntegrator.statusMessage("Patch installed, exit code " + exitValue);
 
-		String goodExitValue = props.getProperty("successExitValue", "0");
-		String failureExitValue = props.getProperty("failureExitValue", "");
+		String goodExitValue = props.getProperty(PATCH_SUCCESS_EXIT_VALUE, "0");
+		String failureExitValue = props.getProperty(PATCH_ERROR_EXIT_VALUE, "");
 		if (exitValue.equals(goodExitValue) || !exitValue.equals(failureExitValue)) {
 			recordPatch(requiredPatchLSID);
-			System.out.println("Patch LSID recorded");
+			if (taskIntegrator != null) taskIntegrator.statusMessage("Patch LSID recorded");
+		} else {
+			if (taskIntegrator != null) taskIntegrator.statusMessage("Deleting patch directory after installation failure");
+			// delete patch directory
+			File[] old = patchDirectory.listFiles();
+			for (int i = 0; old != null && i < old.length; i++) {
+				old[i].delete();
+			}
+			patchDirectory.delete();
 		}
 	}
 	
 	// download the patch zip file from a URL
-	protected static String downloadPatch(String url) throws IOException {
+	protected static String downloadPatch(String url, ITaskIntegrator taskIntegrator) throws IOException {
 		try {
-			return downloadTask(url);
+			return downloadTask(url, taskIntegrator);
 		} catch (IOException ioe) {
 			if (ioe.getCause() != null) ioe = (IOException)ioe.getCause();
 			throw new IOException(ioe.toString() + " while downloading " + url);
@@ -1094,7 +1106,7 @@ eachRequiredPatch:
 	}
 	
 	// unzip the patch files into their own directory
-	protected static void explodePatch(String zipFilename, File patchDirectory) throws IOException {
+	protected static void explodePatch(String zipFilename, File patchDirectory, ITaskIntegrator taskIntegrator) throws IOException {
 		ZipFile zipFile = new ZipFile(zipFilename);
 		InputStream is = null;
 		patchDirectory.mkdirs();
@@ -1109,14 +1121,14 @@ eachRequiredPatch:
 			ZipEntry zipEntry = (ZipEntry) eEntries.nextElement();
 			File outFile = new File(patchDirectory, zipEntry.getName());
 			if (zipEntry.isDirectory()) {
-				System.out.println("Creating subdirectory " + outFile.getAbsolutePath());
+				if (taskIntegrator != null) taskIntegrator.statusMessage("Creating subdirectory " + outFile.getAbsolutePath());
 				outFile.mkdirs();
 				continue;
 			}
 			is = zipFile.getInputStream(zipEntry);
 			OutputStream os = new FileOutputStream(outFile);
 			long fileLength = zipEntry.getSize();
-			System.out.println("extracting " + zipEntry.getName() + ", " + fileLength + " bytes");
+			if (taskIntegrator != null) taskIntegrator.statusMessage("Extracting " + zipEntry.getName() + ", " + fileLength + " bytes");
 			long numRead = 0;
 			byte[] buf = new byte[100000];
 			int i;
@@ -1172,7 +1184,7 @@ eachRequiredPatch:
 	}
 	
 	// run the patch command line in the patch directory, returning the exit code from the executable
-	protected static int executePatch(String commandLine, File patchDirectory) throws Exception {
+	protected static int executePatch(String commandLine, File patchDirectory, ITaskIntegrator taskIntegrator) throws Exception {
 		// spawn the command
 		Process process = Runtime.getRuntime().exec(commandLine, null, patchDirectory);
 
@@ -1192,8 +1204,8 @@ eachRequiredPatch:
 		// create threads to read from the command's stdout and stderr
 		// streams
 
-		Thread outputReader = streamCopier(process.getInputStream(), System.out);
-		Thread errorReader = streamCopier(process.getErrorStream(), System.err);
+		Thread outputReader = (taskIntegrator != null) ? streamCopier(process.getInputStream(),  taskIntegrator) : streamCopier(process.getInputStream(), System.out);
+		Thread errorReader = (taskIntegrator != null) ? streamCopier(process.getErrorStream(), taskIntegrator) : streamCopier(process.getInputStream(), System.err);
 
 		// drain the output and error streams
 		outputReader.start();
@@ -1267,6 +1279,24 @@ eachRequiredPatch:
 			    try {
 				while((line = in.readLine())!=null){
 					ps.println(line);
+				}
+			    } catch (IOException ioe) {
+			    	System.err.println(ioe + " while reading from process stream");
+		            }
+		    	}
+		    });
+	}
+
+	// copy an InputStream to a PrintStream until EOF
+	public static Thread streamCopier(final InputStream is, final ITaskIntegrator taskIntegrator) throws IOException {
+		    // create thread to read from the a process' output or error stream
+		    return new Thread(new Runnable(){
+		    	public void run() {
+		            BufferedReader in = new BufferedReader(new InputStreamReader(is));
+		            String line;
+			    try {
+				while((line = in.readLine())!=null){
+					if (taskIntegrator != null) taskIntegrator.statusMessage(line);
 				}
 			    } catch (IOException ioe) {
 			    	System.err.println(ioe + " while reading from process stream");
@@ -3254,7 +3284,7 @@ eachRequiredPatch:
 			if (vProblems.size() == 0) {
 				_cat.info("installing " + taskName + " into database");
 				vProblems = GenePatternAnalysisTask.installTask(taskName,
-						taskDescription, params, tia, username, access_id, null);
+						taskDescription, params, tia, username, access_id, taskIntegrator);
 				// get the newly assigned LSID
 				lsid = (String) tia.get(IGPConstants.LSID);
 
@@ -3378,6 +3408,10 @@ eachRequiredPatch:
 		return installNewTask(zipFilename, username, access_id, true, taskIntegrator);
 	}
 
+	public static String downloadTask(String zipURL) throws IOException {
+		return downloadTask(zipURL, null);
+	}
+
 	/**
 	 * downloads a file from a URL and returns the path to the local file to the
 	 * caller.
@@ -3391,7 +3425,7 @@ eachRequiredPatch:
 	 *             storing it locally
 	 *  
 	 */
-	public static String downloadTask(String zipURL) throws IOException {
+	public static String downloadTask(String zipURL, ITaskIntegrator taskIntegrator) throws IOException {
 	    File zipFile = null;
 	    try {
 		zipFile = File.createTempFile("gpz", ".zip");
@@ -3401,8 +3435,9 @@ eachRequiredPatch:
 		long downloadSize = -1;
 		if (uc instanceof HttpURLConnection) {
 			downloadSize = ((HttpURLConnection)uc).getHeaderFieldInt("Content-Length", -1);
-			System.out.println("Download length: " + (long)downloadSize + " bytes."); //  Each dot represents 100KB.");
+			if (taskIntegrator != null) taskIntegrator.statusMessage("Download length: " + (long)downloadSize + " bytes."); //  Each dot represents 100KB.");
 		}
+		if (taskIntegrator != null) taskIntegrator.beginProgress("download");
 		InputStream is = uc.getInputStream();
 		byte[] buf = new byte[100000];
 		int i;
@@ -3414,18 +3449,19 @@ eachRequiredPatch:
 			if (downloadSize > -1) {
 				long pctComplete = 100 * downloadedBytes / downloadSize;
 				if (lastPercent != pctComplete) {
-					System.out.print("\r" + pctComplete + "% complete");
+					if (taskIntegrator != null) taskIntegrator.continueProgress((int)pctComplete);
 					lastPercent = pctComplete;
 				}
 			}
 		}
 		is.close();
 		os.close();
-		System.out.println("\r100% complete");
 		return zipFile.getPath();
 	    } catch (IOException ioe) {
 	    	zipFile.delete();
 	    	throw ioe;
+	    } finally {
+		if (taskIntegrator != null) taskIntegrator.endProgress();
 	    }
 	}
 

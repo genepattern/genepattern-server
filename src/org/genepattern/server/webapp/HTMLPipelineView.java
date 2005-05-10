@@ -231,7 +231,7 @@ public class HTMLPipelineView implements IPipelineView {
 
 				try {
 
-					File[] docFiles = new LocalTaskIntegratorClient(userID)
+					File[] docFiles = new LocalTaskIntegratorClient(userID, null)
 							.getDocFiles(taskInfo);
 					for (int i = 0; i < docFiles.length; i++) {
 						if (i > 0)
@@ -458,7 +458,7 @@ public class HTMLPipelineView implements IPipelineView {
 			writer.write("<tr><td valign='top'>Documentation:</td><td>");
 			TaskInfo task = new LocalAdminClient(userID).getTask(pipelineName);
 			LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(
-					userID);
+					userID, null);
 			File[] docFiles = taskIntegratorClient.getDocFiles(task);
 
 			if (docFiles != null) {

@@ -31,7 +31,7 @@ if (pipelineName == null) {
 	return;
 }
 PipelineModel model = null;
-TaskInfo task = new org.genepattern.server.webservice.server.local.LocalAdminClient(userID).getTask(pipelineName);
+TaskInfo task = new org.genepattern.server.webservice.server.local.LocalAdminClient(userID, out).getTask(pipelineName);
 String version = "";
 if (task != null) {
 	TaskInfoAttributes tia = task.giveTaskInfoAttributes();
@@ -150,7 +150,7 @@ if ((descrip != null) && (descrip.length() > 0))
 out.println("<br>Owner: " + task.getUserId());
 		
 
-LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID);
+LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, response);
 File[] docFiles = taskIntegratorClient.getDocFiles(task);
 if (docFiles != null){
 	if (docFiles.length > 0){
