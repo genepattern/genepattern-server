@@ -1663,7 +1663,7 @@ public class MainFrame extends JFrame {
       if(!f.exists()) {
          return true;
       }
-      String message = "An item named " + f.getName() + " already exists in this location. Do you want to replace it with the one that you are saving?";
+      String message = "An item named " + f.getName() + " already exists in this location.\nDo you want to replace it with the one that you are saving?";
       if(JOptionPane.showOptionDialog(this, message, null, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, GenePattern.getIcon(), new Object[]{"Replace", "Cancel"}, "Cancel") != JOptionPane.YES_OPTION) {
          return false;
       }
