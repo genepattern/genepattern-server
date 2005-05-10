@@ -1225,7 +1225,7 @@ eachRequiredPatch:
 	public static synchronized void recordPatch(String patchLSID) throws IOException {		
 		// add this LSID to the installed patches repository
 		String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
-		if (installedPatches == null) {
+		if (installedPatches == null || installedPatches.length() == 0) {
 			installedPatches = "";
 		} else {
 			installedPatches = installedPatches + ",";
@@ -1251,7 +1251,7 @@ eachRequiredPatch:
 	// write a String as a genepattern.properties file (preserving comments)
 	public static void writeGenePatternProperties(String properties) throws IOException {
 		File gpPropertiesFile = new File(System.getProperty("resources"), "genepattern.properties");
-		FileWriter fw = new FileWriter(gpPropertiesFile);
+		FileWriter fw = new FileWriter(gpPropertiesFile, false);
 		fw.write(properties);
 		fw.close();
 	}
@@ -1262,9 +1262,9 @@ eachRequiredPatch:
 		if (ipStart == -1) {
 			properties = properties + System.getProperty("line.separator") + key + "=" + value + System.getProperty("line.separator");
 		} else {
-			int ipEnd = properties.indexOf(System.getProperty("line.separator"));
-			if (ipEnd == -1) ipEnd = properties.length() ;
-			properties = properties.substring(0, ipStart) + value + properties.substring(ipEnd);
+			int ipEnd = properties.indexOf(System.getProperty("line.separator"), ipStart);
+			properties = properties.substring(0, ipStart + key.length() + "=".length()) + value;
+			if (ipEnd != -1) properties = properties + properties.substring(ipEnd);
 		}
 		return properties;
 	}
