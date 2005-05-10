@@ -38,7 +38,9 @@ public class InstallTasksCollectionUtils {
 	public InstallTask[] getAvailableModules() throws Exception {
 		String repositoryURL = System.getProperty("ModuleRepositoryURL");
 		if (initialInstall) {
-			repositoryURL = repositoryURL + "?initialInstall=1";
+			repositoryURL = repositoryURL + "?initialInstall=1&GenePatternVersion=" + System.getProperty("GenePatternVersion");;
+		} else {
+			repositoryURL = repositoryURL + "?GenePatternVersion=" + System.getProperty("GenePatternVersion");
 		}
 
 		Vector modules = new Vector();
