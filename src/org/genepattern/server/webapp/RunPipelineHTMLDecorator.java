@@ -154,11 +154,12 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 			if (i != (parameterInfo.length - 1))
 				out.print(", ");
 		}
-		out.print(")");
+		out.println(")");
 		if (jobSubmission.isVisualizer())
 			writeVisualizerAppletTag(jobSubmission);
 
 		out.print("</td></tr>");
+		out.println(); // trigger output flush in runPipeline.jsp
 		out.flush();
 	}
 
