@@ -566,12 +566,12 @@ public class RunPipelineForJsp {
 			outstr
 					.println("&nbsp;&nbsp;<form name=\"form1\"><input name=\"togglecb\" type=\"checkbox\" ");
 			if (showParams) {
-				outstr.println("checked='true'");
+				outstr.println("checked");
 			}
 			outstr.println(" onClick=toggle();>Show Input Parameters</input>");
 			outstr.println("<input name=\"togglelsid\" type=\"checkbox\" ");
 			if (showLSID) {
-				outstr.println("checked='true'");
+				outstr.println("checked");
 			}
 			outstr.println("onClick=toggleLSID();>Show LSIDs</input></form>");
 
