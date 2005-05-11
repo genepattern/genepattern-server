@@ -1,15 +1,15 @@
 <%@ page import="java.io.File,
 		 java.util.zip.*,
 		 java.io.*,
-       java.text.*,
-       java.util.*,
-       java.net.*,
+	       java.text.*,
+	       java.util.*,
+	       java.net.*,
 		 org.genepattern.webservice.JobInfo,
 		 org.genepattern.webservice.JobStatus,
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.webservice.WebServiceException,
-       org.genepattern.server.webservice.server.local.*,
-       org.genepattern.server.genepattern.GenePatternAnalysisTask,
+	       org.genepattern.server.webservice.server.local.*,
+	       org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 com.jspsmart.upload.*"
 	session="false" contentType="text/html" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><% 
 
@@ -43,12 +43,13 @@ if(isDownload) {
        for(int i = 0; i < attachmentNames.length; i++) {
          String value = attachmentNames[i];
          int index = value.lastIndexOf("=");
+
 	 value = value.substring(index+1);
          index = value.lastIndexOf("/");
+         if (index == -1) index = value.lastIndexOf("\\");
 
          String jobNumber = value.substring(0, index);
-         String fileName = value.substring(index + 1, value
-                     .length());
+         String fileName = value.substring(index + 1, value.length());
          
          try {
             fileName = URLDecoder.decode(fileName, "UTF-8");
@@ -56,7 +57,7 @@ if(isDownload) {
             // ignore
          }
          File attachment = new File(jobDir + File.separator + value);
-         ZipEntry zipEntry = new ZipEntry(fileName);
+         ZipEntry zipEntry = new ZipEntry((jobNumber.equals(jobID) ? "" : (jobNumber + "/")) + fileName);
          zipEntry.setTime(attachment.lastModified());
          zipEntry.setSize(attachment.length());
          zos.putNextEntry(zipEntry);
@@ -75,7 +76,7 @@ if(isDownload) {
          zos.closeEntry();          
        }
      } catch(IOException ioe) {
-     
+ioe.printStackTrace();
      } finally {
          if(zos!=null) {
             try {
@@ -100,6 +101,52 @@ if (isDelete || !isDownload) {
    <link href="stylesheet.css" rel="stylesheet" type="text/css">
    <link href="favicon.ico" rel="shortcut icon">
    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+   <script language="javascript">
+
+	function checkAll(bChecked) {
+		for (f = 0; f < document.forms.length; f++) {
+			var frm = document.forms[f];
+			for (i = 0; i < frm.elements.length; i++) {
+				if (frm.elements[i].type != "checkbox") continue;
+				if (frm.elements[i].name != "deleteJobID") continue;
+				frm.elements[i].checked = bChecked;
+			}
+		}
+	}
+
+	function deleteJobs() {
+		// iterate through all forms in document
+		// for each form, iterate over all controls
+		// if controlName==deleteJobID && checked
+		// add to list of jobs to delete
+
+		var deleteIDs = "";
+		var url = "";
+		var numDeleted = 0;
+		for (f = 0; f < document.forms.length; f++) {
+			var frm = document.forms[f];
+			for (i = 0; i < frm.elements.length; i++) {
+				if (frm.elements[i].type != "checkbox") continue;
+				if (frm.elements[i].name != "deleteJobID") continue;
+				if (frm.elements[i].checked) {
+					if (numDeleted > 0) {
+						url = url + "&";
+						deleteIDs = deleteIDs + ", ";
+					}
+					url = url + "deleteJob=" + frm.elements[i].value;
+					deleteIDs = deleteIDs + frm.elements[i].value;
+					numDeleted++;
+				}
+			}
+		}
+
+		// confirm deletion
+		if (numDeleted > 0 && window.confirm('Really delete jobs ' + deleteIDs + '?')) {
+			// call self with URL to delete all selected jobs
+			window.location = "zipJobResults.jsp?" + url;
+		}
+	}
+   </script>
 <%
 }
 
@@ -180,53 +227,6 @@ htColors.put(JobStatus.ERROR, "red");
 if (!isDelete) {
 %>
    <title>job results</title>
-   <script language="javascript">
-	function deleteJobs() {
-		// iterate through all forms in document
-		// for each form, iterate over all controls
-		// if controlName==deleteJobID && checked
-		// add to list of jobs to delete
-
-		var deleteIDs = "";
-		var url = "";
-		var numDeleted = 0;
-		for (f = 0; f < document.forms.length; f++) {
-			var frm = document.forms[f];
-			for (i = 0; i < frm.elements.length; i++) {
-				if (frm.elements[i].type != "checkbox") continue;
-				if (frm.elements[i].name != "deleteJobID") continue;
-				if (frm.elements[i].checked) {
-					if (numDeleted > 0) {
-						url = url + "&";
-						deleteIDs = deleteIDs + ", ";
-					}
-					url = url + "deleteJob=" + frm.elements[i].value;
-					deleteIDs = deleteIDs + frm.elements[i].value;
-					numDeleted++;
-				}
-			}
-		}
-
-		// confirm deletion
-		if (numDeleted > 0 && window.confirm('Really delete jobs ' + deleteIDs + '?')) {
-			// call self with URL to delete all selected jobs
-			window.location = "zipJobResults.jsp?" + url;
-		}
-	}
-
-	function checkAll(bChecked) {
-		for (f = 0; f < document.forms.length; f++) {
-			var frm = document.forms[f];
-			for (i = 0; i < frm.elements.length; i++) {
-				if (frm.elements[i].type != "checkbox") continue;
-				if (frm.elements[i].name != "deleteJobID") continue;
-				frm.elements[i].checked = bChecked;
-			}
-		}
-	}
-
-   </script>
-
    </head>
    <body>
    <jsp:include page="navbar.jsp"></jsp:include>
@@ -300,7 +300,7 @@ System.out.println("status=" + status + ", FINISHED=" + JobStatus.FINISHED);
          if(parameterInfo.isOutputFile()) {
 
             if(firstOutputFile) {
-                out.println("<form>");
+                out.println("<form method=\"post\">");
                 out.println("<input type=\"hidden\" name=\"jobID\" value=\"" + job.getJobNumber() + "\"/>");
                 if (showAll) {
                 	out.println("<input type=\"hidden\" name=\"" + SHOW_ALL + "\" value=\"1\"/>");
@@ -317,7 +317,7 @@ System.out.println("status=" + status + ", FINISHED=" + JobStatus.FINISHED);
            String fileName = value.substring(index + 1, value.length());
                   
            out.println("<tr><td></td><td colspan=\"4\">");
-           out.println("<input type=checkbox name=dl value=\"" + value + "\" checked='true' /><a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\">" + fileName + "</a>");
+           out.println("<input type=\"checkbox\" name=\"dl\" value=\"" + value + "\" checked><a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\">" + fileName + "</a>");
    
         if(showAll) {
                out.println(GenePatternAnalysisTask.htmlEncode(" " + job.getUserId()));
