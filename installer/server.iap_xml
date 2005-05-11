@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using Zero G's InstallAnywhere 6.1 Enterprise, Build 2325
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Wed May 11 09:15:05 EDT 2005 -->
-<InstallAnywhere_Deployment_Project increments="8227">
+     DATE:   Wed May 11 11:22:38 EDT 2005 -->
+<InstallAnywhere_Deployment_Project increments="8173">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
 		<versionID major="6" minor="1" revision="-1"/>
@@ -10,7 +10,7 @@
 		<scriptID>12,42,11,90,81,55,51,50,54,57,71,70,78,52,69,53</scriptID>
 		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,51,46,49,95,48,56,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,83,59,32,67,112,49,50,53,50</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,0,-61,-22,-32,-32,80,112,116,103,88,98,113,97,113,65,65,88,74,65,72,71,70,69,64,69,66,69,48,79,87,5,2,8,5,68,107,3,1,0,0</authorizationID>
+		<authorizationID>1,0,0,0,-61,89,-96,-112,80,112,116,103,88,98,113,97,113,65,65,88,74,65,72,71,70,69,64,69,66,69,48,79,87,5,2,7,10,73,108,3,1,0,0</authorizationID>
 	</essentialScriptInfo>
 	<installationObjects uniqueObjects="430">
 		<object class="com.zerog.ia.installer.Installer" objectID="72a1c4b4b1bf">
@@ -4273,9 +4273,6 @@ chmod -R 775 $R$$/$..$/$..$/$Contents$/$
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
-												<string><![CDATA[Mac OS X]]></string>
-											</method>
-											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
 											</method>
 											<method name="addElement">
@@ -4323,6 +4320,9 @@ chmod -R 775 $R$$/$..$/$..$/$Contents$/$
 										<object class="java.util.Vector">
 											<method name="addElement">
 												<string><![CDATA[Linux]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Mac OS X]]></string>
 											</method>
 										</object>
 									</property>
@@ -4784,7 +4784,7 @@ Press "Done" to quit the installer.]]></string>
 				<object class="java.util.Properties">
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[May 11, 2005 9:15:05 AM EDT]]></string>
+						<string><![CDATA[May 11, 2005 11:22:37 AM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.merge]]></string>
@@ -4820,7 +4820,7 @@ Press "Done" to quit the installer.]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.installer.options.platform.macosx.vm.version]]></string>
-						<string><![CDATA[1.4*]]></string>
+						<string><![CDATA[1.3*]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.vmpack.solaris.path]]></string>
@@ -7268,107 +7268,6 @@ and any path to a file to read from that file]]></string>
 												<int>0</int>
 											</property>
 										</object>
-										<object class="com.zerog.ia.installer.actions.CreateShortcut" objectID="0ecd4dcba2f6">
-											<property name="useInstalledFile">
-												<boolean>false</boolean>
-											</property>
-											<property name="existingFilePath">
-												<string><![CDATA[$USER_MAGIC_FOLDER_1$/StartR.app]]></string>
-											</property>
-											<property name="workingDir">
-												<string><![CDATA[]]></string>
-											</property>
-											<property name="shouldUninstall">
-												<boolean>true</boolean>
-											</property>
-											<property name="destinationName">
-												<string><![CDATA[R]]></string>
-											</property>
-											<property name="args">
-												<string><![CDATA[]]></string>
-											</property>
-											<rules logicalOperation="AND">
-												<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="0ecdf229a2f6">
-													<property name="installOnPlatformList">
-														<object class="java.util.Vector">
-															<method name="addElement">
-																<string><![CDATA[Mac OS X]]></string>
-															</method>
-														</object>
-													</property>
-													<property name="doNotInstallOnPlatformList">
-														<object class="java.util.Vector">
-															<method name="addElement">
-																<string><![CDATA[Windows 95]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[Windows 98]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[Windows NT]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[Windows Me]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[Windows 2000]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[Windows XP]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[Windows 2003]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[OS/2]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[AIX]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[Irix]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[Rhapsody]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[NetWare]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[z/OS]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[OS/390]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[Unlisted Platforms]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[Solaris]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[SunOS]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[HP-UX]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[Linux]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[DG-UX]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[Compaq's Digital UNIX]]></string>
-															</method>
-															<method name="addElement">
-																<string><![CDATA[FreeBSD]]></string>
-															</method>
-														</object>
-													</property>
-												</object>
-											</rules>
-										</object>
 										<object class="com.zerog.ia.installer.actions.Comment" objectID="0ed2fb49a1df">
 											<property name="commentStr">
 												<string><![CDATA[/usr/bin/perl is built-in to MacOS]]></string>
@@ -8435,15 +8334,12 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435ac9b995">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435acab995">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[./temp]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
-															</property>
-															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[java.io.tmpdir]]></string>
 															</property>
 														</object>
 													</method>
@@ -8462,12 +8358,15 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435acab995">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435ac9b995">
 															<property name="propertyValue">
-																<string><![CDATA[./temp]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[java.io.tmpdir]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+															</property>
+															<property name="propertyComment">
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -8806,6 +8705,22 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 											</property>
 											<property name="workingDir">
 												<string><![CDATA[]]></string>
+											</property>
+											<property name="shortcutIcon">
+												<object class="com.zerog.ia.installer.util.BindingWin32" objectID="dfcdd33e93ae">
+													<property name="smallIconName">
+														<string><![CDATA[start32.gif]]></string>
+													</property>
+													<property name="largeIconName">
+														<string><![CDATA[start32.gif]]></string>
+													</property>
+													<property name="smallIconPath">
+														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+													</property>
+													<property name="largeIconPath">
+														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+													</property>
+												</object>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -9193,6 +9108,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 											</property>
 											<property name="workingDir">
 												<string><![CDATA[]]></string>
+											</property>
+											<property name="shortcutIcon">
+												<object class="com.zerog.ia.installer.util.BindingWin32" objectID="dfce2f9393ae"/>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -10600,7 +10518,6 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 						<object refID="1f05a5bba3e1"/>
 						<object refID="ab3e464b8fb3"/>
 						<object refID="1e6cee84a1fb"/>
-						<object refID="0ecd4dcba2f6"/>
 						<object refID="a6a9e2578cce"/>
 						<object refID="ab0f6a91a55f"/>
 					</visualChildren>
