@@ -399,6 +399,8 @@ function suppressEnterKey(evt) {
 				bNeedsBreak = (line.length() > 0 && (line.indexOf("<") == -1 || line.indexOf("<-") != -1) && line.indexOf(">") == -1);
 				out.print(line);
 				if (bNeedsBreak) out.println("<br>");
+				for (int i = 0; i < 8*1024; i++) out.print(" ");
+				out.println();
 				out.flush();
 				cc.append(line);
 				if (bNeedsBreak) cc.append("<br>\n");
