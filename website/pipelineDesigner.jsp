@@ -754,7 +754,6 @@ function setSelector(selector, findValue) {
 		taskName = document.forms['pipeline']['t' + taskNum + '_taskName'].value;
 		if (taskName == NOT_SET) return;
 	}
-	var vals = '';
 	var fld = document.forms['pipeline'][selector];
 	if (fld == null) { 
 		var paramName = selector.substring(selector.indexOf("_") + 1);
@@ -781,7 +780,6 @@ function setSelector(selector, findValue) {
 				break;
 			}
 		}
-		if (!found) vals = vals + "'" + fld.options[f].value + "'" + '=' + fld.options[f].text + '\n';
 	}
 	if (numFound == findValues.length) return;
 
@@ -789,6 +787,10 @@ function setSelector(selector, findValue) {
 	var taskNum = fld.name.substring(1, i);
 	var taskName = document.forms['pipeline']['t' + t + '_taskName'].value;
 	var userFieldName = fld.name.substring(i+1);
+	var vals = '';
+	for (f = 0; f < fld.options.length; f++) {
+		val = vals + fld.options[f].value + "=" + fld.options[f].text + "\n";
+	}
 	alert('setSelector: could not find ' + findValue + ' among ' + fld.options.length +
 	      ' items in ' + taskName + ' (task ' + (parseInt(taskNum)+1) + ') field ' + 
 	      userFieldName + '.  Values are:\n' + vals);
