@@ -433,9 +433,9 @@ public class AnalysisServiceDisplay extends JPanel {
       if(value == null || value.equals("java.lang.String")) {
          field = new JTextField(num_cols);
       } else if(value.equals("java.lang.Integer")) {
-         field = new IntegerField(num_cols);
+         field = new JTextField(num_cols);
       } else if(value.equals("java.lang.Float")) {
-         field = new FloatField(num_cols);
+         field = new JTextField(num_cols);
       } else {
          field = new JTextField(num_cols);
          System.err.println("Unknown type");
