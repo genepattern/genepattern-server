@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -345,20 +346,17 @@ public class RunPipeline {
 		String fn = null;
 		int j;
 		ParameterInfo[] jobParams = job.getParameterInfoArray();
-
+		String jobDir = System.getProperty("jobs");
 		// try semantic match on output files first
 
 		// For now, just match on filename extension
-	 	String [] fileFormats = fileStr.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 semantic_search_loop:
 		for (j = 0; j < jobParams.length; j++) {
 			if (jobParams[j].isOutputFile()) {
 				fn = jobParams[j].getValue(); // get the filename
-				for (int ff = 0; ff < fileFormats.length; ff++) {
-					if (isFileType(fn, fileFormats[ff])) {
-						fileName = fn;
-						break semantic_search_loop;
-					}
+				if (isFileType(new File(jobDir, fn), fileStr)) {
+					fileName = fn;
+					break semantic_search_loop;
 				}
 			}
 		}
@@ -399,43 +397,61 @@ semantic_search_loop:
 			}
 		}
 		if (fileName == null) {
-			throw new FileNotFoundException("Unable to find output files from job " + job.getJobNumber() + " that match " + fileStr);
+/*
+			System.err.println("output files from job " + job.getJobNumber() + ":");
+			for (j = 0; j < jobParams.length; j++) {
+				if (jobParams[j].isOutputFile()) {
+					fn = jobParams[j].getValue(); // get the filename
+					File f = new File(jobDir, fn);
+					try {
+						System.err.println(f.getCanonicalPath() + " is a " + getFileType(f));
+					} catch (IOException ioe) {
+						ioe.printStackTrace();
+					}
+				}
+			}
+*/
+			throw new FileNotFoundException("Unable to find output file from job " + job.getJobNumber() + " that matches " + fileStr);
 		}
 		return fileName;
 	}
 
 	// TODO: Nada's file analyzer gets integrated here.
-	public static boolean isFileType(String filename, String fileFormat) {
-		//ODF
-		if (filename.endsWith(GPConstants.ODF)) {	
-			return ODFModelType(filename).equalsIgnoreCase(fileFormat);
-		}
-		return filename.toLowerCase().endsWith("." + fileFormat.toLowerCase());
-
+	public static boolean isFileType(File file, String fileFormat) {
+		String fileType = getFileType(file);
+		return fileType.equalsIgnoreCase(fileFormat);
 	}
 
-	public static String ODFModelType(String filename)
+	public static String getFileType(File file) {
+		//ODF
+		if (file.getName().toLowerCase().endsWith("." + GPConstants.ODF.toLowerCase())) {	
+			return ODFModelType(file);
+		} else {
+			String filename = file.getName();
+			return filename.substring(filename.lastIndexOf(".")+1);
+		}
+	}
+
+	public static String ODFModelType(File file)
 	{
 		String model="";
 		BufferedReader inputB;
 		try {
-			inputB = new BufferedReader(new FileReader(filename));
+			if (!file.exists()) {
+				System.err.println("Can't find " + file.getCanonicalPath());
+			}
+			System.out.println(file.getCanonicalPath());
+			inputB = new BufferedReader(new FileReader(file));
 			String modelLine=inputB.readLine();
-			while(!modelLine.startsWith("Model") || modelLine!=null){
-			   modelLine = inputB.readLine();
+			while(modelLine != null && !modelLine.startsWith("Model")){
+				modelLine = inputB.readLine();
 			}
-			if (modelLine!=null){
-			model = modelLine.substring(model.indexOf("=")+1);			
 			inputB.close();
-			return model.trim();
+			if (modelLine!=null){
+				model = modelLine.substring(modelLine.indexOf("=")+1).trim();
 			}
-			else{
-			   return model;
-			}
-		}
-		catch(Exception e)
-		{
-		   e.printStackTrace();
+		} catch(Exception e) {
+			e.printStackTrace();
 		}
 		return model;
 	}
