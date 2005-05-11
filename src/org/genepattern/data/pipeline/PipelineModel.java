@@ -642,16 +642,21 @@ public class PipelineModel implements Serializable {
 						// parse something like gpUseResult(taskNum,
 						// inheritedFilename);
 						StringTokenizer stInherit = new StringTokenizer(value,
-								"(,')");
+								"(, )");
 						stInherit.nextToken(); // skip "gpUseResult" and the
 											   // open paren delimiter
 						int inheritTaskNum = Integer.parseInt(stInherit
 								.nextToken()) - 1;
 						pi.getAttributes().put(INHERIT_TASKNAME,
 								Integer.toString(inheritTaskNum));
-						stInherit.nextToken(); // skip space after the comma
-						pi.getAttributes().put(INHERIT_FILENAME,
-								stInherit.nextToken());
+						String inheritFilename = stInherit.nextToken();
+						while (inheritFilename.startsWith("'") && !inheritFilename.endsWith("'")) {
+							inheritFilename = inheritFilename + " " + stInherit.nextToken();
+						}
+						if (inheritFilename.startsWith("'") && inheritFilename.endsWith("'")) {
+							inheritFilename = inheritFilename.substring(1, inheritFilename.length()-1);
+						}
+						pi.getAttributes().put(INHERIT_FILENAME, inheritFilename);
 						//System.out.println("inherited parameter: " + pi);
 						//job.addParameter(pi);
 						orderedParams.set(idx, pi);
