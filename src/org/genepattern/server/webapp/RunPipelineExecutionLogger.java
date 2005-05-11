@@ -71,7 +71,7 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 			            String updateUrl = URL + "updatePipelineStatus.jsp?jobID="
 								+ System.getProperty("jobID") + "&" + GPConstants.NAME
 								+ "=";
-			            updateUrl += "&filename=" + jobDir.getName() + File.separator
+			            updateUrl += "&filename=" + jobDir.getName() + "/"
 								+ logFile.getName();
 			            URL url = new URL(updateUrl);
 				    HttpURLConnection uconn = (HttpURLConnection) url.openConnection();
@@ -99,7 +99,7 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 			            String updateUrl = URL + "updatePipelineStatus.jsp?jobID="
 								+ System.getProperty("jobID") + "&" + GPConstants.NAME
 								+ "=";
-			            updateUrl += "&filename=" + jobDir.getName() + File.separator
+			            updateUrl += "&filename=" + jobDir.getName() + "/"
 								+ logFile.getName();
 			            URL url = new URL(updateUrl);
 				    HttpURLConnection uconn = (HttpURLConnection) url.openConnection();
