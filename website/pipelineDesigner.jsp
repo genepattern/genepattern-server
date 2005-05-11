@@ -1135,7 +1135,7 @@ nextTask:
 
 	if (numSuggested > 0) {
 		newTask = newTask + '<tr><td valign="top" colspan="3">';
-		newTask = newTask + '<select onchange="chgTask(this, ' + taskNum + ')" size="' + (numSuggested+1) + '">\n';
+		newTask = newTask + '<select onchange="chgTask(this, ' + taskNum + ')" size="' + Math.min(numSuggested+1, Math.max(5, numSuggested+1)) + '">\n';
 		newTask = newTask + '<option value="' + NOT_SET + 
 				    '" selected style="font-weight: bold">proto-semantic suggestions</option>\n';
 	}
