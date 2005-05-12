@@ -133,17 +133,6 @@ public class InstallTasksCollectionUtils {
 		return (String[]) tsValues.toArray(new String[0]);
 	}
 
-	// return a TreeMap of taskName/TaskInfo pairs
-	// BUG: ? should this be LSID/TaskInfo pairs?
-	public Map getTasks() throws OmnigeneException, RemoteException {
-		try {
-			return new org.genepattern.server.webservice.server.local.LocalAdminClient(
-					userID).getTaskCatalogByLSID();
-		} catch (org.genepattern.webservice.WebServiceException e) {
-			throw new OmnigeneException(e.getMessage());
-		}
-	}
-
 	public String[] getAttributeNames() {
 		return InstallTask.getAttributeNames();
 	}
