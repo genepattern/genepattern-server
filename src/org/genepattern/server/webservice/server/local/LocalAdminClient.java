@@ -40,7 +40,7 @@ public class LocalAdminClient {
 	}
 
 	public TreeMap getTaskCatalogByLSID() throws WebServiceException {
-		return getTaskCatalogByLSID(Arrays.asList(service.getLatestTasks()));
+		return getTaskCatalogByLSID(Arrays.asList(service.getAllTasks()));
 	}
 
 	public Collection getTaskCatalog() throws WebServiceException {
