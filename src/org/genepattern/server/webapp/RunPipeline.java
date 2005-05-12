@@ -440,7 +440,7 @@ semantic_search_loop:
 			if (!file.exists()) {
 				System.err.println("Can't find " + file.getCanonicalPath());
 			}
-			System.out.println(file.getCanonicalPath());
+			//System.out.println(file.getCanonicalPath());
 			inputB = new BufferedReader(new FileReader(file));
 			String modelLine=inputB.readLine();
 			while(modelLine != null && !modelLine.startsWith("Model")){
