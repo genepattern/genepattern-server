@@ -49,6 +49,7 @@ ReorderByClass.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_a
 SOMClusterViewer.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00023=0
 SOMClusterViewer.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00023=1
 SOMClusterViewer.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00023=2
+SOMClusterViewer.4.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00023=4
 SVM.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00025=0
 SVM.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00025=1
 SOMClustering.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00029=0

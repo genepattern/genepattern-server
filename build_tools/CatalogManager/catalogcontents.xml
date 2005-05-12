@@ -365,6 +365,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00023=4 SOMClusterViewer.zip"/>
+	</commandline>
+</cvs>
+<copy file="SOMClusterViewer.zip" tofile="catalogregen/SOMClusterViewer.4.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00025=0 SVM.zip"/>
 	</commandline>
 </cvs>
