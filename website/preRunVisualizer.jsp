@@ -122,7 +122,6 @@ try {
 						
 				attachedFile.saveAs(attachmentName);
 				String encodedName = URLEncoder.encode(attachment.getName(), "utf-8");
-System.out.println("EN=" + encodedName);
 				htFilenames.put(fieldName, tmpDirName + "/" + encodedName  ); // map between form field name and filesystem name
 				
 				if (DEBUG) System.out.println(fieldName + "=" + fullName + " (" + attachedFile.getSize() + " bytes) in " + htFilenames.get(fieldName) + "<br>");
