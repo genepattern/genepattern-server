@@ -142,6 +142,8 @@ function changeFilter(fld) {
 		<br>
 		<hr>
 <%
+		for (int ii = 0; ii < 8*1024; ii++) out.print(" ");
+		out.println();
 		out.flush();
 	}
 	// build HashMap of associations between LSIDs and InstallTask objects
