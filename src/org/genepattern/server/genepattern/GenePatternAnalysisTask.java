@@ -942,7 +942,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 				bw.write("\n#    " + pinfo.getName() + " = " + value);
 			}
 		}	
-		bw.write("\n#" );
+		bw.write("\n" );
 		bw.flush();
 		
 		
