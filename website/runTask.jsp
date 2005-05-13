@@ -216,9 +216,8 @@ if (taskName != null) {
 				onblur="javascript:if (this.value.length > 0) { this.form.shadow<%= param %>.value=this.value; }" 
 				ondrop="this.form.shadow<%= param %>.value=this.value;" 
 				class="little">
-			<br>
 			<input name="shadow<%= param %>" 
-			 	   type="text" 
+			 	   type="hidden" 
 				   value="<%= defaultValue == null ? "" : defaultValue %>"
 				   readonly 
 				   size="90" 
