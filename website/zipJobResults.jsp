@@ -182,13 +182,13 @@ wse.printStackTrace();
    }
 }
 
+LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
 if (stopTaskID != null) {
-   LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
    try {
       analysisClient.terminateJob(Integer.parseInt(stopTaskID));
    } catch(WebServiceException wse) {
-wse.printStackTrace();
-	}
+	wse.printStackTrace();
+   }
 }
  
 
@@ -201,7 +201,6 @@ midnight.set(Calendar.SECOND, 0);
 midnight.set(Calendar.MILLISECOND, 0);
 
 JobInfo[] jobs = null;
-LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
 try {
    if(showAll) {
       jobs = analysisClient.getJobs(null, -1, Integer.MAX_VALUE, false);
@@ -278,7 +277,9 @@ for(int i = 0; i < jobs.length; i++) {
    String status = job.getStatus();
    
    if(status.equals(JobStatus.PROCESSING)) {
-	out.print("<td><font color=" + htColors.get(status)  +">" + status + "</font></td>" +
+	out.print("<td><font color=" + htColors.get(status)  +">" + status + 
+		"</font> - <a href=\"zipJobResults.jsp?" + STOP + "=" + job.getJobNumber() + 
+		(showAll ? ("&" + SHOW_ALL + "=1") : "") + "\">stop</a></td>" +
 		"<td><form><input type=\"checkbox\" name=\"deleteJobID\" value=\"" + job.getJobNumber() + "\"></form>");
    } else if(!status.equals(JobStatus.NOT_STARTED)) {
 	out.print("<td><font color=" + htColors.get(status)  +">" + status + "</font></td><td><form><input type=\"checkbox\" name=\"deleteJobID\" value=\"" + job.getJobNumber() + "\"></form>");
