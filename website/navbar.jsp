@@ -286,8 +286,8 @@ function checkEnableNavbar() {
 	<tr>
 	<td class="navbar" valign="top">
 		<% if (!userUnknown) { %>
-			<%= _taskCatalog(tmTasks, recentTasks, "Task", "changeTask();", null, userID, request.getParameter(GPConstants.NAME)) %>
 			<%= _taskCatalog(tmTasks, recentPipes, "Pipeline", "changePipeline();", GPConstants.TASK_TYPE_PIPELINE, userID, request.getParameter(GPConstants.NAME)) %>
+			<%= _taskCatalog(tmTasks, recentTasks, "Task", "changeTask();", null, userID, request.getParameter(GPConstants.NAME)) %>
 			<nobr>
 				<input type="button" value="run" name="navbarrun" onclick="jumpTo(this)" disabled> 
 				<input type="button" value="edit" name="navbaredit" onclick="jumpTo(this)" disabled>
