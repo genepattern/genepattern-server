@@ -119,6 +119,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
          
 			FileOutputStream fos = null;
 			InputStream is = null;
+	    		long lastModifiedDate = System.currentTimeMillis();
 			try {
 				URLConnection connection = url.openConnection();
             if(connection instanceof HttpURLConnection) {
@@ -127,6 +128,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
                   throw new FileNotFoundException(fileName + " has been deleted");  
                }
             }
+				lastModifiedDate = connection.getHeaderFieldDate("X-lastModified", lastModifiedDate);
 				is = connection.getInputStream();
 				byte[] b = new byte[100000];
 				int bytesRead = 0;
@@ -144,6 +146,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 				if (fos != null) {
 					try {
 						fos.close();
+						destination.setLastModified(lastModifiedDate);
 					} catch (IOException x) {
 					}
 				}

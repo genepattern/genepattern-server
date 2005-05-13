@@ -296,6 +296,7 @@ public class JobResult {
 			fileName = "job_" + jobNumber + "_" + fileName;
 			file = new File(dir, fileName);
 		}
+		long lastModifiedDate = System.currentTimeMillis();
 		try {
 			HttpURLConnection connection = (HttpURLConnection) getURL(fileName)
 					.openConnection();
@@ -303,6 +304,7 @@ public class JobResult {
 				return null;
 			}
 
+			lastModifiedDate = connection.getHeaderFieldDate("X-lastModified", lastModifiedDate);
 			is = connection.getInputStream();
 			byte[] b = new byte[100000];
 			int bytesRead = 0;
@@ -320,6 +322,7 @@ public class JobResult {
 			if (fos != null) {
 				try {
 					fos.close();
+					file.setLastModified(lastModifiedDate);
 				} catch (IOException x) {
 				}
 			}
