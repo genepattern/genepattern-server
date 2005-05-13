@@ -38,9 +38,21 @@ if (name == null) {
 <body>
 <jsp:include page="navbar.jsp"></jsp:include>
 <table>
+<tr>
+<td valign="top">
+Note: most documentation is in Adobe's PDF format and requires Acrobat Reader for viewing.  If you don't have it, 
+you can download it at no cost from the Adobe website.
+</td>
+<td valign="top">
+<a href="http://www.adobe.com/products/acrobat/readstep2.html" target="_blank"><img src="http://www.adobe.com/images/getacro.gif" border="0"></a>
+</td>
+</tr>
+</table>
+<br>
+<table>
 <thead>
 <tr>
-<td><b>name</b></td><td><b>description</b></td>
+<td><b>name (version)</b></td><td><b>description</b></td>
 </tr>
 </thead>
 <tbody>
