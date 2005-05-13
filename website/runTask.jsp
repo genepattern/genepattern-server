@@ -128,173 +128,26 @@ taskName = taskInfo.getName();
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 %>
-<script language="JavaScript">
-
-var logFileContents = new Array(); 
-
-function showJob(job) {
-	execLogArea = document.execLogForm.execLogArea;	
-	execLogArea.value = logFileContents[job];
-}
-
-
-</script>
-
-
-<table   width='80%' cols=2  cellpadding=20 >
-<col align="left" valign='top' width="45%"><col align="left" width="*">
+<table>
 
 <tr><td  valign='top' height='100%'>
+<iframe frameborder="0" scrolling="yes" marginwidth="1" src="getRecentJobs.jsp" style="width: 100%; height: 500px" name="iframe" id="iframeid">
+No &lt;iframes&gt; support  :(
+</iframe>
 
-<table class="majorCell"  frame=border width='100%' height='100%' bgcolor='#EFEFFF'  valign='top'>
+<form name='execLogForm'>
+<TEXTAREA name='execLogArea' style="font-size:9px; font-family: arial, helvetica, sans-serif; width: 100%;" rows='5'  readonly wrap='soft' bgcolor='#EFEFFF'></textarea>
+</form>
 
-<tr><td class="heading" colspan=3><span class="heading">Recent Jobs</span></td></tr><tr>
-
-<%
-String userID = GenePatternAnalysisTask.getUserID(request, null); // get userID but don't force login if not defined
-
-SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss");
-SimpleDateFormat shortDateFormat = new SimpleDateFormat("HH:mm:ss");
-Calendar midnight = Calendar.getInstance();
-midnight.set(Calendar.HOUR_OF_DAY, 0);
-midnight.set(Calendar.MINUTE, 0);
-midnight.set(Calendar.SECOND, 0);
-midnight.set(Calendar.MILLISECOND, 0);
-
-JobInfo[] jobs = null;
-LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
-try {
-      jobs = analysisClient.getJobs(userID, -1, Integer.MAX_VALUE, false);
-} catch(WebServiceException wse) {
-	wse.printStackTrace();
-}
-
-int numRowsToDisplay = 15; 
-int rowsDisplayed = 0; // increment for each <tr> in this table
-
-boolean[] hasLog = new boolean[jobs.length];
-
-//// GET THE EXECUTION LOG FOR WRITING TO THE TEXTAREA
-for(int i = 0; i < jobs.length; i++) {
-   JobInfo job = jobs[i];
-   hasLog[i] = false;
-   if(!job.getStatus().equals(JobStatus.FINISHED) ) continue;
-  
-   out.print("<tr><td align=\"right\" >" + job.getJobNumber() + "");
-   rowsDisplayed++;
-   ParameterInfo[] params = job.getParameterInfoArray();
-      String log = "execution log unavailable for job " + job.getJobNumber();
-
-   if(params!=null && params.length > 0) {    
-      for(int j = 0; j < params.length; j++) {
-         ParameterInfo parameterInfo = params[j];
-         if(parameterInfo.isOutputFile()) {
-		String value = parameterInfo.getValue();
-           	int index = value.lastIndexOf(File.separator);
-	     	String altSeperator = "/";
-	     	if (index == -1) index = value.lastIndexOf(altSeperator);
-		String jobNumber = value.substring(0, index);
-		String fileName = value.substring(index + 1, value.length());
-           
-		boolean upToParams = false;      
-	     	if (GPConstants.TASKLOG.equals(fileName)){
-			File logFile = new File("temp/"+value);
-			if (!logFile.exists()) continue;
-			BufferedReader reader = new BufferedReader(new FileReader(logFile));
-			String line = null;
-			StringBuffer buff = new StringBuffer();
-			while ((line = reader.readLine()) != null){
-				if (!upToParams){
-					int idx = line.indexOf("# Parameters");
-					if (idx >= 0) upToParams = true;
-					continue;
-				} 
-				String trimline = line.substring(1).trim(); // remove hash and spaces
-				
-
-				buff.append(trimline);
-				buff.append("\\n");
-			}	
-			log = buff.toString();
-			hasLog[i] = true;
-		}
-			
-	   }
-	}
-   }
-  // END OF GETTING THE EXECUTION LOG
-  out.println("<script language='javascript'>");
-
-  out.println("logFileContents["+job.getJobNumber()+"]='" + log+ "';");
-
-  out.println("</script>");
-
-
-   out.print("<td valign='center'><span name='"+job.getJobNumber()+"'onmouseover='showJob("+job.getJobNumber()+")'><nobr>" + job.getTaskName());
-
-   out.print("&nbsp;");
-   if (hasLog[i])
-	out.print("<img src='info_obj.gif'>");
-    out.print( "  </nobr></span>");
-
-
-   Date completed = job.getDateCompleted();
-   DateFormat formatter =  completed.after(midnight.getTime()) ? shortDateFormat : dateFormat;
-   
-   out.print("<td>" + formatter.format(completed)+"</td>");
-   
-   if(params!=null && params.length > 0) {
-    
-      boolean firstOutputFile = true;  
-      boolean hasOutputFiles = false;
-      for(int j = 0; j < params.length; j++) {
-         ParameterInfo parameterInfo = params[j];
- 
-         if(parameterInfo.isOutputFile()) {
-
-            if(firstOutputFile) {
-               firstOutputFile = false;
-               hasOutputFiles = true;
-            }
-           String value = parameterInfo.getValue();
-           int index = value.lastIndexOf(File.separator);
-	     String altSeperator = "/";
-	     if (index == -1) index = value.lastIndexOf(altSeperator);
-
-           String jobNumber = value.substring(0, index);
-           String fileName = value.substring(index + 1, value.length());
-                 
-	     if (!GPConstants.TASKLOG.equals(fileName)){ 
-           		out.println("<tr><td></td><td valign='top' colspan=\"3\">");
-           		out.println("<a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\">" + fileName + "</a>");
-   	     		rowsDisplayed++;
-		}
-           }
-      }
-   }
-
-// System.out
-   if (rowsDisplayed >= numRowsToDisplay) break;
-}
-
-if (rowsDisplayed == 0){
- out.print("<tr><td colspan=3 align=\"right\" >No completed jobs available to display</td></tr>");
-
-}
-
-out.println("</td></tr><tr><td colspan=3><form name='execLogForm'><TEXTAREA name='execLogArea' style=\"font-size:9px;font-family: arial, helvetica, sans-serif;width: 100%;\" rows='5'  readonly wrap='soft' bgcolor='#EFEFFF'></textarea></form></td></tr>");
-out.println("</table>");
-
-%>
 </td>
-<td valign='top' align='left'>
+<td valign='top'>
 <%
 	int veridx = ((String)tia.get(GPConstants.LSID)).lastIndexOf(":");
 	String taskLsidVersion = ((String)tia.get(GPConstants.LSID)).substring(veridx+1);
 
 %>
 
-<table width="100%" cols="2" >
+<table>
 <tr><td><b><font size="+1"><%= taskName %></font></b> version <%= taskLsidVersion%></td>
 <%
 if (taskName != null) {
@@ -323,7 +176,7 @@ if (taskName != null) {
 	<input type="hidden" name="<%= GPConstants.USERID %>" value="<%= username %>">
 	<input type="hidden" name="taskName" value="<%= taskName %>">
 
-	<table  valign="top"  >
+	<table  valign="top">
 	
 
 <%	
