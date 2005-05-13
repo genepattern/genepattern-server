@@ -451,6 +451,11 @@ semantic_search_loop:
 				model = modelLine.substring(modelLine.indexOf("=")+1).trim();
 			}
 		} catch(Exception e) {
+			try {
+				System.err.println("file=" + file.getCanonicalPath());
+			} catch (IOException ioe) {
+				// ignore
+			}
 			e.printStackTrace();
 		}
 		return model;
