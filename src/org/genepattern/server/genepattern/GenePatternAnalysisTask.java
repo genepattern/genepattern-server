@@ -1030,37 +1030,58 @@ eachRequiredPatch:
 			}
 
 			requiredPatchLSID = requiredPatchLSIDs[requiredPatchNum];
-			System.out.println("Checking whether " + requiredPatchLSID + " is already installed...");
+			LSID requiredLSID = new LSID(requiredPatchLSID);
+			//System.out.println("Checking whether " + requiredPatchLSID + " is already installed...");
 			for (int p = 0; p < installedPatchLSIDs.length; p++) {
-				if (installedPatchLSIDs[p].equals(requiredPatchLSID)) {
+				LSID installedLSID = new LSID(installedPatchLSIDs[p]);
+				if (installedLSID.isEquivalent(requiredLSID)) {
 					// there are installed patches, and there is an LSID match to this one
-					System.out.println(requiredPatchLSID + " is already installed");
+					System.out.println(requiredLSID.toString() + " is already installed");
 					continue eachRequiredPatch;
 				}
 			}
 
-
-			// need to download and install this patch		
-			requiredPatchURL = patchURLs[requiredPatchNum];
-			if (requiredPatchURL == null) {
-				requiredPatchURL = System.getProperty(DEFAULT_PATCH_URL) + "?" + LSID + "=" + requiredPatchLSID;
-			}
-			if (requiredPatchURL.startsWith("http")) {
-				if (requiredPatchURL.indexOf("?") == -1) requiredPatchURL = requiredPatchURL + "?";
-				String []patchQualifiers = System.getProperty("patchQualifiers", "").split(",");
-				for (int p = 0; p < patchQualifiers.length; p++) {
-					requiredPatchURL = requiredPatchURL + "&" + URLEncoder.encode(patchQualifiers[p], UTF8) + "=" + URLEncoder.encode(System.getProperty(patchQualifiers[p], ""), UTF8);
-				}
-			}
-			installPatch(requiredPatchLSID, requiredPatchURL, taskIntegrator);
+			// download and install this patch		
+			installPatch(requiredPatchLSIDs[requiredPatchNum], patchURLs[requiredPatchNum], taskIntegrator);
 		} // end of loop for each patch LSID for the task
 		return true;
+	}
+
+	public static void installPatch(String requiredPatchLSID, String requiredPatchURL) throws Exception {
+		String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
+		String[] installedPatchLSIDs = new String[0];
+		if (installedPatches != null) {
+			installedPatchLSIDs = installedPatches.split(",");
+		}
+
+		LSID requiredLSID = new LSID(requiredPatchLSID);
+		//System.out.println("Checking whether " + requiredPatchLSID + " is already installed...");
+		for (int p = 0; p < installedPatchLSIDs.length; p++) {
+			LSID installedLSID = new LSID(installedPatchLSIDs[p]);
+			if (installedLSID.isEquivalent(requiredLSID)) {
+				// there are installed patches, and there is an LSID match to this one
+				System.out.println(requiredLSID.toString() + " is already installed");
+				return;
+			}
+		}
+		installPatch(requiredPatchLSID, requiredPatchURL, null);
 	}
 
 	// install a specific patch, downloading a zip file with a manifest containing a command line, 
 	// running that command line after substitutions, and recording the result in the genepattern.properties patch registry
 	public static void installPatch(String requiredPatchLSID, String requiredPatchURL, ITaskIntegrator taskIntegrator) throws Exception {
-		System.out.println("installPatch: taskIntegrator is " + (taskIntegrator == null ? "not" : "") + " specified");
+		if (requiredPatchURL == null) {
+			requiredPatchURL = System.getProperty(DEFAULT_PATCH_URL) + "?" + LSID + "=" + requiredPatchLSID;
+		}
+
+		if (requiredPatchURL.startsWith("http")) {
+			if (requiredPatchURL.indexOf("?") == -1) requiredPatchURL = requiredPatchURL + "?";
+			String []patchQualifiers = System.getProperty("patchQualifiers", "").split(",");
+			for (int p = 0; p < patchQualifiers.length; p++) {
+				requiredPatchURL = requiredPatchURL + "&" + URLEncoder.encode(patchQualifiers[p], UTF8) + "=" + URLEncoder.encode(System.getProperty(patchQualifiers[p], ""), UTF8);
+			}
+		}
+
 		if (taskIntegrator != null) taskIntegrator.statusMessage("Downloading patch " + requiredPatchLSID + " from " + requiredPatchURL);
 		String zipFilename = downloadPatch(requiredPatchURL, taskIntegrator);
 
@@ -1084,6 +1105,18 @@ eachRequiredPatch:
 		if (exitValue.equals(goodExitValue) || !exitValue.equals(failureExitValue)) {
 			recordPatch(requiredPatchLSID);
 			if (taskIntegrator != null) taskIntegrator.statusMessage("Patch LSID recorded");
+
+			// keep the manifest file around for future reference
+			if (!new File(patchDirectory, MANIFEST_FILENAME).exists()) {
+				explodePatch(zipFilename, patchDirectory, null, MANIFEST_FILENAME);
+				if (props.getProperty(REQUIRED_PATCH_URLS, null) == null) {
+					File f = new File(patchDirectory, MANIFEST_FILENAME);
+					String properties = readPropertiesFile(f);
+					properties = addProperty(properties, REQUIRED_PATCH_URLS, requiredPatchURL);
+					writePropertiesFile(f, properties);
+				}
+			}
+
 		} else {
 			if (taskIntegrator != null) taskIntegrator.statusMessage("Deleting patch directory after installation failure");
 			// delete patch directory
@@ -1107,18 +1140,26 @@ eachRequiredPatch:
 	
 	// unzip the patch files into their own directory
 	protected static void explodePatch(String zipFilename, File patchDirectory, ITaskIntegrator taskIntegrator) throws IOException {
+		explodePatch(zipFilename, patchDirectory, taskIntegrator, null);
+	}
+
+	// unzip the patch files into their own directory
+	protected static void explodePatch(String zipFilename, File patchDirectory, ITaskIntegrator taskIntegrator, String zipEntryName) throws IOException {
 		ZipFile zipFile = new ZipFile(zipFilename);
 		InputStream is = null;
 		patchDirectory.mkdirs();
 
-		// clean out existing directory
-		File[] old = patchDirectory.listFiles();
-		for (int i = 0; old != null && i < old.length; i++) {
-			old[i].delete();
+		if (zipEntryName == null) {
+			// clean out existing directory
+			File[] old = patchDirectory.listFiles();
+			for (int i = 0; old != null && i < old.length; i++) {
+				old[i].delete();
+			}
 		}
 
 		for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
 			ZipEntry zipEntry = (ZipEntry) eEntries.nextElement();
+			if (zipEntryName != null && !zipEntryName.equals(zipEntry.getName())) continue;
 			File outFile = new File(patchDirectory, zipEntry.getName());
 			if (zipEntry.isDirectory()) {
 				if (taskIntegrator != null) taskIntegrator.statusMessage("Creating subdirectory " + outFile.getAbsolutePath());
@@ -1240,8 +1281,13 @@ eachRequiredPatch:
 	// read the genepattern.properties file into a String (preserving comments!)
 	public static String readGenePatternProperties() throws IOException {
 		File gpPropertiesFile = new File(System.getProperty("resources"), "genepattern.properties");
-		FileReader fr = new FileReader(gpPropertiesFile);
-		char buf[] = new char[(int)gpPropertiesFile.length()];
+		return readPropertiesFile(gpPropertiesFile);
+	}
+	
+	// read the genepattern.properties file into a String (preserving comments!)
+	protected static String readPropertiesFile(File propertiesFile) throws IOException {
+		FileReader fr = new FileReader(propertiesFile);
+		char buf[] = new char[(int)propertiesFile.length()];
 		int len = fr.read(buf, 0, buf.length);
 		fr.close();
 		String properties = new String(buf, 0, len);
@@ -1251,7 +1297,11 @@ eachRequiredPatch:
 	// write a String as a genepattern.properties file (preserving comments)
 	public static void writeGenePatternProperties(String properties) throws IOException {
 		File gpPropertiesFile = new File(System.getProperty("resources"), "genepattern.properties");
-		FileWriter fw = new FileWriter(gpPropertiesFile, false);
+		writePropertiesFile(gpPropertiesFile, properties);
+	}
+
+	protected static void writePropertiesFile(File propertiesFile, String properties) throws IOException {
+		FileWriter fw = new FileWriter(propertiesFile, false);
 		fw.write(properties);
 		fw.close();
 	}
