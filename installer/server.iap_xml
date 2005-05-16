@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using Zero G's InstallAnywhere 6.1 Enterprise, Build 2325
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Wed May 11 12:51:05 EDT 2005 -->
-<InstallAnywhere_Deployment_Project increments="8173">
+     DATE:   Mon May 16 09:48:32 EDT 2005 -->
+<InstallAnywhere_Deployment_Project increments="8255">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
 		<versionID major="6" minor="1" revision="-1"/>
@@ -10,9 +10,9 @@
 		<scriptID>12,42,11,90,81,55,51,50,54,57,71,70,78,52,69,53</scriptID>
 		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,51,46,49,95,48,56,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,83,59,32,67,112,49,50,53,50</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,0,-61,-87,-96,-112,80,112,116,103,88,98,113,97,113,65,65,88,74,65,72,71,70,69,64,69,66,69,48,79,87,5,2,14,5,74,108,3,1,0,0</authorizationID>
+		<authorizationID>1,0,0,0,-29,-55,80,64,80,112,116,103,88,98,113,97,113,65,65,88,74,65,72,71,70,69,64,69,66,69,48,79,87,5,2,9,2,67,101,3,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="430">
+	<installationObjects uniqueObjects="434">
 		<object class="com.zerog.ia.installer.Installer" objectID="72a1c4b4b1bf">
 			<property name="classpath">
 				<object class="java.util.Vector"/>
@@ -4576,16 +4576,14 @@ chmod -R 775 $R$$/$..$/$..$/$Contents$/$
 								<boolean>true</boolean>
 							</property>
 							<property name="installSuccessMessage">
-								<string><![CDATA[Congratulations! $PRODUCT_NAME$ version  $version.major$.$version.minor$ has been successfully installed to:
+								<string><![CDATA[Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:
      $USER_INSTALL_DIR$
 A web page to complete the installation which will open following the installer.  Press "Done" to quit the installer.]]></string>
 							</property>
 							<property name="installWarningMessage">
-								<string><![CDATA[Congratulations! $PRODUCT_NAME$ $version.major$.$version.minor$ has been successfully installed to:
+								<string><![CDATA[Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:
      $USER_INSTALL_DIR$
-Some warnings were generated during the install. The install log will be opened for your review  when the installer is closed.
-
-Press "Done" to quit the installer.]]></string>
+Some warnings were generated during the install. The install log will be opened for your review  when the installer is closed. Press "Done" to quit the installer.]]></string>
 							</property>
 							<property name="installErrorMessage">
 								<string><![CDATA[The installation of $PRODUCT_NAME$ $version.major$.$version.minor$  is finished, but some errors occurred during the install.   The install log will be opened for your review  when the installer is closed.]]></string>
@@ -4658,6 +4656,31 @@ Press "Done" to quit the installer.]]></string>
 						</object>
 					</method>
 					<method name="addElement">
+						<object class="com.zerog.ia.installer.actions.CustomAction" objectID="f919e62a9b43">
+							<property name="showPleaseWaitPanel">
+								<boolean>true</boolean>
+							</property>
+							<property name="showIndeterminateDialog">
+								<boolean>false</boolean>
+							</property>
+							<property name="dialogLabel">
+								<string><![CDATA[Executing Custom Code...]]></string>
+							</property>
+							<property name="clientClassFullName">
+								<string><![CDATA[custom.URLCaller]]></string>
+							</property>
+							<property name="resourcePath">
+								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+							</property>
+							<property name="resourceName">
+								<string><![CDATA[gpcustom.jar]]></string>
+							</property>
+							<property name="runsAfterFileDeletesNotBefore">
+								<boolean>false</boolean>
+							</property>
+						</object>
+					</method>
+					<method name="addElement">
 						<object class="com.zerog.ia.installer.actions.LaunchDefaultBrowser" objectID="9bf31d129263">
 							<property name="useActionTarget">
 								<boolean>false</boolean>
@@ -4668,6 +4691,45 @@ Press "Done" to quit the installer.]]></string>
 							<property name="showPleaseWaitPanel">
 								<boolean>false</boolean>
 							</property>
+							<rules logicalOperation="AND">
+								<object class="com.zerog.ia.installer.rules.CompareVariable" objectID="f91bb8e19b49">
+									<property name="operation">
+										<string><![CDATA[ends with]]></string>
+									</property>
+									<property name="operandOne">
+										<string><![CDATA[$GENEPATTERN_RUNNING_TEST$]]></string>
+									</property>
+									<property name="operandTwo">
+										<string><![CDATA[true]]></string>
+									</property>
+								</object>
+							</rules>
+						</object>
+					</method>
+					<method name="addElement">
+						<object class="com.zerog.ia.installer.actions.LaunchDefaultBrowser" objectID="f91c36419b49">
+							<property name="useActionTarget">
+								<boolean>false</boolean>
+							</property>
+							<property name="urlPath">
+								<string><![CDATA[file://$USER_INSTALL_DIR$/GenePattern_InstallLog.log]]></string>
+							</property>
+							<property name="showPleaseWaitPanel">
+								<boolean>true</boolean>
+							</property>
+							<rules logicalOperation="AND">
+								<object class="com.zerog.ia.installer.rules.CompareVariable" objectID="f91c36429b49">
+									<property name="operation">
+										<string><![CDATA[does not equal]]></string>
+									</property>
+									<property name="operandOne">
+										<string><![CDATA[$GENEPATTERN_RUNNING_TEST$]]></string>
+									</property>
+									<property name="operandTwo">
+										<string><![CDATA[true]]></string>
+									</property>
+								</object>
+							</rules>
 						</object>
 					</method>
 				</object>
@@ -4784,7 +4846,7 @@ Press "Done" to quit the installer.]]></string>
 				<object class="java.util.Properties">
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[May 11, 2005 12:51:05 PM EDT]]></string>
+						<string><![CDATA[May 16, 2005 9:48:32 AM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.merge]]></string>
@@ -4844,7 +4906,7 @@ Press "Done" to quit the installer.]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.build.last.date]]></string>
-						<string><![CDATA[May 11, 2005 12:51:05 PM EDT]]></string>
+						<string><![CDATA[May 16, 2005 9:42:19 AM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.installer.options.stderr.redirect]]></string>
@@ -5622,7 +5684,7 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="df4d840e91ed">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="f91939bb9ae0">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -5760,15 +5822,12 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="72b27ca9b6db">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="73b3cce6b4f3">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[./temp]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
-															</property>
-															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[java.io.tmpdir]]></string>
 															</property>
 														</object>
 													</method>
@@ -5787,12 +5846,15 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="73b3cce6b4f3">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="72b27ca9b6db">
 															<property name="propertyValue">
-																<string><![CDATA[./temp]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[java.io.tmpdir]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+															</property>
+															<property name="propertyComment">
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -6639,7 +6701,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="totalSize">
-												<long>849993</long>
+												<long>846604</long>
 											</property>
 											<property name="unixPermissions">
 												<string><![CDATA[775]]></string>
@@ -7392,16 +7454,6 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfad">
-															<property name="propertyValue">
-																<string><![CDATA[webapps/gp/resources]]></string>
-															</property>
-															<property name="propertyName">
-																<string><![CDATA[omnigene.conf]]></string>
-															</property>
-														</object>
-													</method>
-													<method name="addElement">
 														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="a761ea68af75">
 															<property name="propertyValue">
 																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$;$$IA_CLASSPATH$$;$$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar$;$$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
@@ -7412,6 +7464,16 @@ Relative paths are relative to the launcher.]]></string>
 															<property name="propertyComment">
 																<string><![CDATA[the Java classpath necessary to run this application
 Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+															</property>
+														</object>
+													</method>
+													<method name="addElement">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfad">
+															<property name="propertyValue">
+																<string><![CDATA[webapps/gp/resources]]></string>
+															</property>
+															<property name="propertyName">
+																<string><![CDATA[omnigene.conf]]></string>
 															</property>
 														</object>
 													</method>
@@ -7464,7 +7526,17 @@ it will search for ones in this list]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="df4d844a9223">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfa9">
+															<property name="propertyValue">
+																<string><![CDATA[./temp]]></string>
+															</property>
+															<property name="propertyName">
+																<string><![CDATA[java.io.tmpdir]]></string>
+															</property>
+														</object>
+													</method>
+													<method name="addElement">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="f91939ee9b14">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -7473,16 +7545,6 @@ it will search for ones in this list]]></string>
 															</property>
 															<property name="propertyComment">
 																<string><![CDATA[the class that contains the main method for the application]]></string>
-															</property>
-														</object>
-													</method>
-													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfa9">
-															<property name="propertyValue">
-																<string><![CDATA[./temp]]></string>
-															</property>
-															<property name="propertyName">
-																<string><![CDATA[java.io.tmpdir]]></string>
 															</property>
 														</object>
 													</method>
@@ -8196,7 +8258,7 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="df4d84699234">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="f9193a0c9b26">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -8334,12 +8396,15 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435acab995">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435ac9b995">
 															<property name="propertyValue">
-																<string><![CDATA[./temp]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[java.io.tmpdir]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+															</property>
+															<property name="propertyComment">
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -8358,15 +8423,12 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435ac9b995">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435acab995">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[./temp]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
-															</property>
-															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[java.io.tmpdir]]></string>
 															</property>
 														</object>
 													</method>
@@ -8909,7 +8971,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[gp-full.jar]]></string>
 											</property>
 											<property name="fileSize">
-												<long>834557</long>
+												<long>844658</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -9998,7 +10060,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="totalSize">
-												<long>74953361</long>
+												<long>0</long>
 											</property>
 											<property name="unixPermissions">
 												<string><![CDATA[775]]></string>
