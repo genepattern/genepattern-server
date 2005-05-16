@@ -52,12 +52,32 @@ public class GetHostName extends CustomCodeAction {
 		//String host_address = addr.getHostName();
 		String host_address2 = addr.getHostAddress();
 		 String domain = "";
-		if (host_address.startsWith(host)){
+
+		/**
+		 * Deal with platform differences.
+		 * mac includes hostname in domain
+		 * linux hostname = domain
+		 * pc host and address are not overlapping
+		 */
+		if (host_address.equals(host)){
+			int idx = host.indexOf(".");
+
+			if (idx >= 0){
+				domain = host.substring(idx+1);
+				host = host.substring(0, idx);
+			}
+		} else if (host_address.startsWith(host)){
 			domain = host_address.substring(host.length()+1);
 		} else {
 			domain = host_address;
 		}
-     
+
+     		System.out.println("host="+host);
+		System.out.println("user="+user);
+		System.out.println("host_address="+host_address);
+		System.out.println("host_address2="+host_address2);
+
+
 	        ip.setVariable("HOST_NAME",  host);
 		  ip.setVariable("USERNAME",  user);
 	        ip.setVariable("HOST_ADDRESS",  host_address);
@@ -77,5 +97,6 @@ public class GetHostName extends CustomCodeAction {
     // do nothing on uninstall
     
     }
+
     
 }
