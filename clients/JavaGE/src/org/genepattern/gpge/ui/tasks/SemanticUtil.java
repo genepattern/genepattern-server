@@ -1,6 +1,7 @@
 package org.genepattern.gpge.ui.tasks;
 
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,13 +12,20 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Map;
 import java.util.StringTokenizer;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JTable;
 import javax.swing.tree.TreeNode;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 
 import org.genepattern.gpge.ui.menu.*;
 import org.genepattern.io.*;
 import org.genepattern.webservice.*;
 import org.genepattern.util.GPConstants;
-
+import org.genepattern.gpge.ui.table.*;
+import org.genepattern.gpge.ui.maindisplay.*;
+import org.genepattern.gpge.GenePattern;
 
 /**
  *  Utility methods for semantic information
@@ -144,23 +152,67 @@ public class SemanticUtil {
             m[i] = new ModuleMenuItemAction(svc.getTaskInfo().getName()) {
                public void actionPerformed(ActionEvent e) {
                   analysisServiceDisplay.loadTask(svc); 
-                  ParameterInfo inputParameter = null;
-                  
+                   
                   boolean uniqueSendTo = true;
-                 
+						final List matchingInputParameters = new ArrayList();
                   for(Iterator it = analysisServiceDisplay.getInputFileParameters(); it.hasNext(); ) {
                      ParameterInfo parameterInfo = (ParameterInfo) it.next();
                      if(isCorrectKind(parameterInfo, kind)) {
-                        if(inputParameter!=null) {
-                           uniqueSendTo = false;
-                           break;
-                        }
-                        inputParameter = parameterInfo;
+								matchingInputParameters.add(parameterInfo);
                      }
                   }
-                  if(uniqueSendTo && inputParameter!=null) {
+                  if(matchingInputParameters.size()==1) {
+							ParameterInfo inputParameter = (ParameterInfo) matchingInputParameters.get(0);
                      analysisServiceDisplay.setInputFile(inputParameter.getName(), node); 
-                  }
+                  } else if(matchingInputParameters.size() > 1) {
+							final JDialog d = new CenteredDialog(GenePattern.getDialogParent());
+							TableModel model = new AbstractTableModel() {
+								public int getColumnCount() {
+									return 1;	
+								}
+								
+								public int getRowCount() {
+									return matchingInputParameters.size();
+								}
+								
+								public String getColumnName(int j) {
+									return "Parameter";
+								}
+								
+								public Class getColumnClass(int j) {
+									return String.class;
+								}
+								
+								public Object getValueAt(int r, int c) {
+									ParameterInfo p = (ParameterInfo) matchingInputParameters.get(r);
+									return p.getName();
+								}
+							};
+							final JTable t = new AlternatingColorTable(model);
+							d.setTitle("Send " + node.toString() + " To");
+							d.getContentPane().add(t);
+							final JButton ok = new JButton("OK");
+							final JButton cancel = new JButton("Cancel");
+							ActionListener listener = new ActionListener() {
+								public void actionPerformed(ActionEvent e) {
+									if(e.getSource()==ok) {
+										int row = t.getSelectedRow();
+										if(row < 0) {
+											return;
+										}
+										ParameterInfo inputParameter = 
+											(ParameterInfo) matchingInputParameters.get(row);
+										analysisServiceDisplay.setInputFile(inputParameter.getName(), node); 
+									} 
+									d.dispose();
+								}
+							};
+							com.jgoodies.forms.factories.ButtonBarFactory.
+								buildOKCancelBar(ok,cancel);
+							d.setSize(300, 200);
+							d.setVisible(true);
+							d.requestFocus();
+						}
                }
             };
          }
