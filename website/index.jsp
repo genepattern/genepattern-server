@@ -379,7 +379,7 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 		<tr><td height="3"></td></tr>
 		<tr>
 			<td valign="top" align="left">
-				<a href="Web_Installers/install.htm?server=<%= URLEncoder.encode("http://" + request.getServerName() + ":" + request.getServerPort()) %>">Install</a> graphical client<br><br>
+				<a href="<%= System.getProperty("JavaGEInstallerURL") %>?version=<%= System.getProperty("GenePatternVersion") %>&server=<%= URLEncoder.encode("http://" + request.getServerName() + ":" + request.getServerPort()) %>">Install</a> graphical client<br><br>
 				<a href="mailto:gp-users-join@broad.mit.edu?body=Just send this!">Subscribe to gp-users mailing list</a><br><br>
 				<a href="mailto:gp-help@broad.mit.edu">Report bugs</a><br><br>
 				<a href="http://www.broad.mit.edu/cancer/software/genepattern/forum/">User Forum</a>

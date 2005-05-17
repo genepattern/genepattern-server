@@ -6,7 +6,7 @@
 <title>GenePattern configuration</title>
 </head>
 <frameset cols="30%,*">
-	<frame name="menu" scrolling="auto" src="installNav.htm">
+	<frame name="menu" scrolling="auto" src="installNav.jsp">
 	<frame name="aStep" scrolling="auto" src="installLog.jsp">
 </frameset>
 </html>
