@@ -87,7 +87,8 @@ public interface IGPConstants {
 	public static final String REQUIRED_PATCH_LSIDS = "requiredPatchLSIDs";
 	public static final String REQUIRED_PATCH_URLS = "requiredPatchURLs";
 	public static final String INSTALLED_PATCH_LSIDS = "installedPatchLSIDs";
-	public static final String DEFAULT_PATCH_URL = "DefaultPatchRepositoryURL";
+	public static final String DEFAULT_PATCH_URL = "DefaultPatchURL";
+	public static final String DEFAULT_PATCH_REPOSITORY_URL = "DefaultPatchRepositoryURL";
 	public static final String PATCH_SUCCESS_EXIT_VALUE = "successExitValue";
 	public static final String PATCH_ERROR_EXIT_VALUE = "failureExitValue";
 
