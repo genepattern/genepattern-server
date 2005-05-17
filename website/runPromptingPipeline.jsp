@@ -138,30 +138,16 @@ try {
  	}
 
 
-	/* for (int i=0; i < parmInfos.length; i++){
-		ParameterInfo pinfo = parmInfos[i];
-		String value;	
-		if (pinfo.isInputFile()){
-			com.jspsmart.upload.File file = (com.jspsmart.upload.File)htFilenames.get(pinfo.getName());
-			pinfo.setValue(file.getFilePathName());
-			HashMap pia = pinfo.getAttributes();
-			pia.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
-			request.setAttribute(pinfo.getName(), file);
-
-		} else {
-			value = requestParameters.getParameter(pinfo.getName());
-			pinfo.setValue(value);
-			request.setAttribute(pinfo.getName(), requestParameters.getParameter(pinfo.getName()));
-
-		}
-	}*/
-
 	 for (int i=0; i < parmInfos.length; i++){
 		ParameterInfo pinfo = parmInfos[i];
 		String value;	
 		if (pinfo.isInputFile()){
 			value = (String)htFilenames.get(pinfo.getName());
-			value = server + "/gp/getFile.jsp?task=&file="+ value;
+			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
+				value = value;
+			} else {
+				value = server + "/gp/getFile.jsp?task=&file="+ value;
+			}
 			HashMap pia = pinfo.getAttributes();
 			pia.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
 
@@ -173,6 +159,9 @@ try {
 		pinfo.setValue(value);
 
 	}
+	
+
+
 
 	request.setAttribute("PipelineParameterInfo", parmInfos);
 
