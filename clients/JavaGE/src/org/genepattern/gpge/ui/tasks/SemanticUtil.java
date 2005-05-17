@@ -1,31 +1,33 @@
 package org.genepattern.gpge.ui.tasks;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import javax.swing.JButton;
+import javax.swing.ListSelectionModel;
 import javax.swing.JDialog;
+import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.tree.TreeNode;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
-
-import org.genepattern.gpge.ui.menu.*;
-import org.genepattern.io.*;
-import org.genepattern.webservice.*;
-import org.genepattern.util.GPConstants;
-import org.genepattern.gpge.ui.table.*;
-import org.genepattern.gpge.ui.maindisplay.*;
+import javax.swing.tree.TreeNode;
 import org.genepattern.gpge.GenePattern;
+import org.genepattern.gpge.ui.maindisplay.*;
+import org.genepattern.gpge.ui.menu.*;
+import org.genepattern.gpge.ui.table.*;
+import org.genepattern.io.*;
+import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.*;
 
 /**
  *  Utility methods for semantic information
@@ -189,6 +191,8 @@ public class SemanticUtil {
 								}
 							};
 							final JTable t = new AlternatingColorTable(model);
+							t.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+							t.setRowSelectionInterval(0, 0);
 							d.setTitle("Send " + node.toString() + " To");
 							d.getContentPane().add(t);
 							final JButton ok = new JButton("OK");
@@ -207,8 +211,13 @@ public class SemanticUtil {
 									d.dispose();
 								}
 							};
-							com.jgoodies.forms.factories.ButtonBarFactory.
-								buildOKCancelBar(ok,cancel);
+							ok.addActionListener(listener);
+							cancel.addActionListener(listener);
+							JPanel buttonPanel = new JPanel();
+							buttonPanel.add(cancel);
+							buttonPanel.add(ok);
+							d.getRootPane().setDefaultButton(ok);
+							d.getContentPane().add(BorderLayout.SOUTH, buttonPanel);
 							d.setSize(300, 200);
 							d.setVisible(true);
 							d.requestFocus();
