@@ -3,6 +3,8 @@ package org.genepattern.gpge.ui.tasks;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -191,14 +193,16 @@ public class SemanticUtil {
 									return AnalysisServiceDisplay.getDisplayString(p);
 								}
 							};
+                     final JButton ok = new JButton("OK");
+							final JButton cancel = new JButton("Cancel");
 							final JTable t = new AlternatingColorTable(model);
+                     
 							t.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 							t.setRowSelectionInterval(0, 0);
 							d.setTitle("Send " + node.toString() + " To");
 							d.getContentPane().add(new JScrollPane(t));
-							final JButton ok = new JButton("OK");
-							final JButton cancel = new JButton("Cancel");
-							ActionListener listener = new ActionListener() {
+							
+							final ActionListener listener = new ActionListener() {
 								public void actionPerformed(ActionEvent e) {
 									if(e.getSource()==ok) {
 										int row = t.getSelectedRow();
@@ -212,6 +216,13 @@ public class SemanticUtil {
 									d.dispose();
 								}
 							};
+                     t.addMouseListener(new MouseAdapter() {
+                        public void mouseClicked(MouseEvent e) {
+                           if(e.getClickCount()==2) {
+                              listener.actionPerformed(new ActionEvent(ok, ActionEvent.ACTION_PERFORMED, ""));
+                           }
+                        }
+                     });
 							ok.addActionListener(listener);
 							cancel.addActionListener(listener);
 							JPanel buttonPanel = new JPanel();
