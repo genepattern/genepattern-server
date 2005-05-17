@@ -1,3 +1,4 @@
+<%@ page contentType="text/html" language="Java" import="java.net.URLEncoder" %>
 <html>
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
