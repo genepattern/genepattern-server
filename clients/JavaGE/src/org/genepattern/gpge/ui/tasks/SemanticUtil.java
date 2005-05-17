@@ -16,6 +16,7 @@ import java.util.StringTokenizer;
 import javax.swing.JButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.JDialog;
+import javax.swing.JScrollPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
@@ -187,14 +188,14 @@ public class SemanticUtil {
 								
 								public Object getValueAt(int r, int c) {
 									ParameterInfo p = (ParameterInfo) matchingInputParameters.get(r);
-									return p.getName();
+									return AnalysisServiceDisplay.getDisplayString(p);
 								}
 							};
 							final JTable t = new AlternatingColorTable(model);
 							t.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 							t.setRowSelectionInterval(0, 0);
 							d.setTitle("Send " + node.toString() + " To");
-							d.getContentPane().add(t);
+							d.getContentPane().add(new JScrollPane(t));
 							final JButton ok = new JButton("OK");
 							final JButton cancel = new JButton("Cancel");
 							ActionListener listener = new ActionListener() {
@@ -219,8 +220,7 @@ public class SemanticUtil {
 							d.getRootPane().setDefaultButton(ok);
 							d.getContentPane().add(BorderLayout.SOUTH, buttonPanel);
 							d.setSize(300, 200);
-							d.setVisible(true);
-							d.requestFocus();
+							d.show();
 						}
                }
             };
