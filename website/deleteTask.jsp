@@ -188,7 +188,7 @@ color key: <b><span class="tasks-<%= LSIDUtil.AUTHORITY_MINE %>">your tasks</spa
 <td>
 task name
 </td>
-<td align="left" width="1">
+<td align="left">
 version
 </td>
 <td align="left">
@@ -254,11 +254,11 @@ for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 	boolean inUse = hmLSIDsUsedByPipelines.containsKey(l.toString());
 	if (!inUse) n++;
 %>
-	<td valign="top" width="1"><nobr>
+	<td valign="top"><nobr>
 	<input type="checkbox" name="<%= DELETE_LSID %>" value="<%= l.toString() %>" displayName="<%=name %> (<%=l.getVersion() %>)"<%= inUse ? " disabled" : "" %>><a href="<%= name.endsWith(GPConstants.TASK_TYPE_PIPELINE) ? "viewPipeline.jsp" : "addTask.jsp" %>?<%= GPConstants.NAME %>=<%= l.toString() %>&view=1" name="<%= l.toString() %>"><%= l.getVersion() %></a></nobr>
+	<%= reason %>
 	</td>
 	<td valign="top" align="left">
-	<%= reason %>
 <%	if (inUse) {
 		//out.print(" used by ");
 		vTaskInfo = (Vector)hmLSIDsUsedByPipelines.get(l.toString());
