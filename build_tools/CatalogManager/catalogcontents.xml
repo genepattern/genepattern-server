@@ -442,6 +442,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00024=2 SplitDatasetTrainTest.zip"/>
+	</commandline>
+</cvs>
+<copy file="SplitDatasetTrainTest.zip" tofile="catalogregen/SplitDatasetTrainTest.2.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00035=0 ThresholdDataset.zip"/>
 	</commandline>
 </cvs>
