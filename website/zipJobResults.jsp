@@ -141,7 +141,7 @@ if (isDelete || !isDownload) {
 		}
 
 		// confirm deletion
-		if (numDeleted > 0 && window.confirm('Really delete jobs ' + deleteIDs + '?')) {
+		if (numDeleted > 0 && window.confirm('Really delete job' + (numDeleted > 1 ? 's' : '') + ' ' + deleteIDs + '?')) {
 			// call self with URL to delete all selected jobs
 			window.location = "zipJobResults.jsp?" + url;
 		}
