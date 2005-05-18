@@ -1038,7 +1038,12 @@ function deleteDocFiles() {
 	}
 	if (selection == null || selection == "") return;
 	if (window.confirm('Really delete ' + selection + ' from support files?\nThis will discard other pipeline changes since the last save.')) { 
-		window.location='saveTask.jsp?deleteFiles=' + selection + '&<%= GPConstants.NAME %>=' + document.forms['pipeline'].pipeline_name.value + '&<%= GPConstants.LSID %>=' + document.forms['pipeline']['LSID'].value +'&forward=pipelineDesigner.jsp';
+		window.location='saveTask.jsp?deleteFiles=' + selection + 
+			'&deleteSupportFiles=' + selection + 
+			'&<%= GPConstants.NAME %>=' + document.forms['pipeline'].pipeline_name.value +
+			'&<%= GPConstants.LSID %>=' + document.forms['pipeline']['LSID'].value +
+			'&forward=pipelineDesigner.jsp' +
+			'&<%= GPConstants.PRIVACY %>=<%= GPConstants.ACCESS_PRIVATE %>';
 	}
 }
 
