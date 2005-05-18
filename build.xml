@@ -301,12 +301,16 @@
                      target="installer"/>
 </target>
 
-<target name="publishGPGEinstallerToWWWDev" depends="GPGE,installers">
+<target name="setDefaultFTPUser" unless="user" >
+	<property name="user" value="liefeld"/>
+</target>
+
+<target name="publishGPGEinstallerToWWWDev" depends="GPGE,installers, setDefaultFTPUser, version_updater">
 	
 <ftp server="iftp.broad.mit.edu"
-       remotedir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/1.4.0/"
-       userid="liefeld"
-       password="f00bar"
+       remotedir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/${version.major}.${version.minor}/"
+       userid="${user}"
+       password="${pass}"
        depends="yes"
        binary="yes" >
 
@@ -315,6 +319,10 @@
     </fileset>
   </ftp>
 
+</target>
+
+<target name="test" depends="version_updater">
+	<echo>${version.major}.${version.minor}</echo>
 </target>
 
 
@@ -438,11 +446,14 @@
 
     <target description="Sets the program&apos;s version, build,
 	release and etc. properties" name="version_updater" depends="setCvsTag">
+
+		<property file="build.versionNumbers"/>
+
         <propertyfile comment="Created by ANT; defines the build version, date etc." file="resources/build.properties">
             <entry key="build" operation="=" pattern="yyyyMMdd" type="date" value="now"/>
             <entry key="date" pattern="EEE, MMM d yyyy" type="date" value="now"/>
-            <entry key="version.major" operation="=" type="int" value="1"/>
-            <entry key="version.minor" operation="=" type="string" value="4.0"/>
+            <entry key="version.major" operation="=" type="int" value="${version.major}"/>
+            <entry key="version.minor" operation="=" type="string" value="${version.minor}"/>
             <entry default="-1" key="version.revision" operation="=" type="int" value="0"/>
             <entry default="0" key="count" operation="+" type="int"/>
             <entry key="release" operation="=" type="string" value=""/>
