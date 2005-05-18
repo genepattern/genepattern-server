@@ -102,15 +102,21 @@ function addAnother(taskNum, scrollTo) {
 		deleteTask(MAX_TASKS-1);
 	}
 
+	if (taskNum < numTasks && document.forms["pipeline"]['t' + taskNum + '_taskName'].value == NOT_SET) {
+		// don't enter a blank task twice at the same spot
+		//alert("skipping double new task");
+		return;
+	}
+
 	// create task again, at the new location, and copy all of the parameters with their old values
 	for (oldTaskNum = numTasks-1; oldTaskNum >= taskNum; oldTaskNum--) {
 		var newTaskNum = (oldTaskNum+1);
 	   	var taskName = document.forms["pipeline"]['t' + oldTaskNum + '_taskName'].value;
-	   	var taskLSID = document.forms["pipeline"]['t' + oldTaskNum + '_taskLSID'].value;
 		if (taskName == NOT_SET) {
 			writeToLayer(newTaskNum, newTaskHTML(newTaskNum));
 			continue;
 		}
+	   	var taskLSID = document.forms["pipeline"]['t' + oldTaskNum + '_taskLSID'].value;
 	   	var task = TaskInfos[taskLSID];
 		writeToLayer(newTaskNum, changeTaskHTML(taskLSID, newTaskNum, true));
 	   	for (param in task.parameterInfoArray) {
