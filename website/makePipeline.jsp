@@ -341,7 +341,7 @@ try {
 				}
 
 				if (!inherited && !runTimePrompt[i] && (p.getValue() == null || p.getValue().equals("")) && !isOptional) {
-					vProblems.add("Step " + (taskNum+1) + ", " + taskName + " is missing required parameter " + p.getName());
+					vProblems.add("Step " + (taskNum+1) + ", " + taskName + ", is missing required parameter " + p.getName());
 				}
 			}
 		}
