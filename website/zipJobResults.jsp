@@ -284,7 +284,6 @@ for(int i = 0; i < jobs.length; i++) {
    } else if(!status.equals(JobStatus.NOT_STARTED)) {
 	out.print("<td><font color=" + htColors.get(status)  +">" + status + "</font></td><td><form><input type=\"checkbox\" name=\"deleteJobID\" value=\"" + job.getJobNumber() + "\"></form>");
    } else {
-System.out.println("status=" + status + ", FINISHED=" + JobStatus.FINISHED);
 	out.print("<td><font color=" + htColors.get(status)  +">" + status);
 	if (status.equals(JobStatus.FINISHED)) {
 		out.print("</td><td><form><input type=\"checkbox\" name=\"deleteJobID\" value=\"" + job.getJobNumber() + "\"></form>");	}
