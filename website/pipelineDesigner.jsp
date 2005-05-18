@@ -37,7 +37,8 @@ var NOT_SET = "[task not yet selected]";
 var stopLoading = false;
 var MAX_TASK_DESCRIPTION_LENGTH = 70;
 var myAuthority = '<%= LSIDManager.getInstance().getAuthority() %>';
-var broadAuthority = 'broad.mit.edu';
+var broadAuthority = '<%= LSIDUtil.BROAD_AUTHORITY %>';
+var suggested = "suggested";
 
 function scriptError(message, url, lineNumber) {
 	if (stopLoading) return true;
@@ -404,7 +405,7 @@ function LSID(lsid) {
 	this.namespace = tokens[3];
 	this.identifier = tokens[4];
 	this.version = tokens[5];
-	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>') ? 'mine' : (this.authority == '<%= LSIDUtil.BROAD_AUTHORITY %>' ? 'broad' : 'foreign');
+	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>') ? 'mine' : (this.authority == broadAuthority ? 'broad' : 'foreign');
 }
 
 // sort array of LSIDs alphabetically by name, then inverse by LSID (authority/namespace/identifier/version)
@@ -1167,11 +1168,9 @@ nextTask:
 		}
 	}
 
-	// TODO: sort by something useful!
-	//suggestedTasks.sort(sortSuggested);
-
 	// remove all but latest LSID from each entry
 	var LSIDsWithoutVersions = new Array();
+	TaskTypes[suggested] = new Array();
 	for (t in suggestedTasks) {
 		var task = suggestedTasks[t];
 		if (LSIDsWithoutVersions[task.lsidNoVersion] != undefined) {
@@ -1180,31 +1179,23 @@ nextTask:
 			continue;
 		}
 		LSIDsWithoutVersions[task.lsidNoVersion] = task.lsidNoVersion;
+		TaskTypes[suggested][TaskTypes[suggested].length] = task.lsid;	
 	}
-
-	if (numSuggested > 0) {
-		newTask = newTask + '<select onchange="chgTask(this, ' + taskNum + ')" size="' + Math.min(numSuggested+1, Math.max(5, numSuggested+1)) + '">\n';
-		newTask = newTask + '<option value="' + NOT_SET + 
-				    '" selected style="font-weight: bold">suggested tasks</option>\n';
-	}
-	for (t in suggestedTasks) {
-		var task = suggestedTasks[t];
-		if (task == undefined) continue;
-		var description = task.description;
-		if (description.length > MAX_TASK_DESCRIPTION_LENGTH) {
-			description = description.substring(0,MAX_TASK_DESCRIPTION_LENGTH) + "..."
-		}
-
-		newTask = newTask + '<option value="' + task.lsid + '" title="' + task.description + '">' + 
-			  task.taskType + ": " + task.name + ' - ' + description;
-		newTask = newTask + '</option>\n';
-	}
-	if (numSuggested > 0) newTask = newTask + '</select>\n';
+	// TODO: sort by something useful!
+	TaskTypes[suggested].sort(sortTaskTypesByName);
 
 	newTask = newTask + '<table>\n';
 	newTask = newTask + '<tr><td valign="top">\n';
 	newTask = newTask + '<select onchange="changeTaskType(this, ' + taskNum + ')" name="notused" size="' + (TaskTypesList.length+1) + '">\n';
 	newTask = newTask + '<option value="" selected style="font-weight: bold">task types</option>\n';
+
+	if (numSuggested > 0) {
+		// TODO: sort by something useful!
+		//suggestedTasks.sort(sortSuggested);
+
+		newTask = newTask + '<option value="' + suggested + '">' + suggested + '</option>\n';
+	}
+
 	for (taskType in TaskTypesList) {
 		var name = TaskTypesList[taskType];
 		name = name.substring(0,1).toUpperCase() + name.substring(1);
