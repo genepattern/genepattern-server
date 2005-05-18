@@ -40,12 +40,18 @@ public class SetRVariablePath extends CustomCodeAction {
 
     public void install(com.zerog.ia.api.pub.InstallerProxy ip) throws com.zerog.ia.api.pub.InstallException {
 	try {
-		 String R_Orig =  (String)ip.getVariable("HOST_ADDRESS");
-		 String R_new = ip.substitute("$R$");
-
- 		ip.setVariable("R",  R_new + "/resources");
-
 		
+		String R_new = ip.substitute("$R$");
+
+		String os = System.getProperty("os.name");
+
+		if (os.indexOf("mac") >= 0){
+	 		ip.setVariable("Rbin",  R_new + "/resources");
+			ip.setVariable("Rbase",  R_new);
+		} else {
+	 		ip.setVariable("Rbin",  R_new);
+			ip.setVariable("Rbase",  R_new);
+		}
 
         
        } catch (Exception e){

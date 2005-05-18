@@ -14,12 +14,14 @@
 	</target>
 
 	<target name="create-zip" depends="init">
+		<echo> Zipping up ${Rlib} </echo>
 		<zip basedir="${Rlib}" destfile="${zip-file}" whenempty="fail" update="true">
 			<include name="GenePattern/**"/>
 		</zip>
 	</target>
 	
 	<target name="create-tar" depends="init">
+		<echo> Tarring up ${Rlib} </echo>
 		<tar basedir="${Rlib}" destfile="${tar-file}" compression="gzip" includes="GenePattern/**"/>
 	</target>
 	
