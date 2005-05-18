@@ -1181,7 +1181,7 @@ nextTask:
 		LSIDsWithoutVersions[task.lsidNoVersion] = task.lsidNoVersion;
 		TaskTypes[suggested][TaskTypes[suggested].length] = task.lsid;	
 	}
-	// TODO: sort by something useful!
+	// sort by name (case-insensitive, then by LSID descending)!
 	TaskTypes[suggested].sort(sortTaskTypesByName);
 
 	newTask = newTask + '<table>\n';
@@ -1190,9 +1190,6 @@ nextTask:
 	newTask = newTask + '<option value="" selected style="font-weight: bold">task types</option>\n';
 
 	if (numSuggested > 0) {
-		// TODO: sort by something useful!
-		//suggestedTasks.sort(sortSuggested);
-
 		newTask = newTask + '<option value="' + suggested + '">' + suggested + '</option>\n';
 	}
 
