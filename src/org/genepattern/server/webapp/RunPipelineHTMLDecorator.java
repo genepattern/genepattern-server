@@ -133,7 +133,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 			}
 			isInputFile = (aParam.getName().indexOf("filename") != -1);
 
-			out.print(aParam.getName());
+			out.print(aParam.getName().replace('.',' '));
 			out.print("=");
 			if (isInputFile) {
 				// convert from "localhost" to the actual host name so that
