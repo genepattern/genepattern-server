@@ -71,7 +71,7 @@ try { 	mySmartUpload.upload();
     }
 requestParameters = mySmartUpload.getRequest();
 
-
+/*
 out.println("request parameters:<br>");
 for (java.util.Enumeration eNames = requestParameters.getParameterNames(); eNames.hasMoreElements(); ) {
 	String n = (String)eNames.nextElement();
@@ -82,7 +82,7 @@ for (java.util.Enumeration eNames = request.getParameterNames(); eNames.hasMoreE
 	out.println(n + "='" + GenePatternAnalysisTask.htmlEncode(request.getParameter(n)) + "'<br>");
 }
 out.println("<hr><br>");
-
+*/
 
 taskName = requestParameters.getParameter(GPConstants.NAME);
 if (taskName == null ) taskName = request.getParameter(GPConstants.NAME);
