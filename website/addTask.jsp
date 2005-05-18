@@ -712,8 +712,8 @@ if (taskName != null) {
 
    </td>
    </tr>
-   <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_LSIDS %>" value="<%= tia.get(GPConstants.REQUIRED_PATCH_LSIDS) %>">
-   <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_URLS %>" value="<%= tia.get(GPConstants.REQUIRED_PATCH_URLS) %>">
+   <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_LSIDS %>" value="<%= tia != null ? tia.get(GPConstants.REQUIRED_PATCH_LSIDS) : "" %>">
+   <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_URLS %>" value="<%= tia != null ? tia.get(GPConstants.REQUIRED_PATCH_URLS) : "" %>">
    
   <% if (!viewOnly) { %>
    <tr>
