@@ -202,7 +202,7 @@ Running <a href="addTask.jsp?view=1&name=<%=requestParameters.getParameter("task
 for (int i=0; i < parmInfos.length; i++){
 		ParameterInfo pinfo = parmInfos[i];
 		String value = pinfo.getValue();	
-		out.println(pinfo.getName());
+		out.println(pinfo.getName().replace('.',' '));
 		out.println("=");
 		if (pinfo.isInputFile()) {
 			String htmlValue = GenePatternAnalysisTask.htmlEncode(pinfo.getValue());		
