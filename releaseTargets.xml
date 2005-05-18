@@ -54,7 +54,7 @@
 
 <target name="release" depends="getBuildNumber, website,gp-library, broad-cg, GPGE,installers" />
 
-<target name="nightlyrelease" depends="nightlyLabel, website, gp-library, broad-cg, GPGE,installers, createWar" />
+<target name="nightlyrelease" depends="nightlyLabel, website, gp-library, broad-cg, GPGE,installers, publishGPGEinstallerToWWWDev, createWar" />
 
 
 <!-- Create a war file to use for platforms without an installer -->
