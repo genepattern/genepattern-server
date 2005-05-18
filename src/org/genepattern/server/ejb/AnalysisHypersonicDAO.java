@@ -785,8 +785,7 @@ public class AnalysisHypersonicDAO implements
 			stat.setInt(6, access_id);
 
 			if (sLSID != null && !sLSID.equals("")) {
-				LSID lsid = new LSID(sLSID);
-				stat.setString(7, lsid.toString());
+				stat.setString(7, sLSID.toString());
 			} else {
 				stat.setString(7, null);
 			}
