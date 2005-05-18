@@ -1123,7 +1123,6 @@ function newTaskHTML(taskNum) {
 	var newTask = '';
 	newTask = newTask + '<hr>\n';
 	newTask = newTask + '<a name="' + (taskNum+1) + '">\n'; // anchor for each task
-	newTask = newTask + '<table cols="3" width="1">\n';
 
 	// build a list of tasks whose input file formats potentially match the output formats of tasks already in the pipeline
 
@@ -1176,7 +1175,7 @@ nextTask:
 	for (t in suggestedTasks) {
 		var task = suggestedTasks[t];
 		if (LSIDsWithoutVersions[task.lsidNoVersion] != undefined) {
-			suggestedTasks.splice(t, 1); // delete duplicate item
+			suggestedTasks[t] = undefined; // delete duplicate item
 			numSuggested--;
 			continue;
 		}
@@ -1184,20 +1183,25 @@ nextTask:
 	}
 
 	if (numSuggested > 0) {
-		newTask = newTask + '<tr><td valign="top" colspan="3">';
 		newTask = newTask + '<select onchange="chgTask(this, ' + taskNum + ')" size="' + Math.min(numSuggested+1, Math.max(5, numSuggested+1)) + '">\n';
 		newTask = newTask + '<option value="' + NOT_SET + 
 				    '" selected style="font-weight: bold">suggested tasks</option>\n';
 	}
 	for (t in suggestedTasks) {
 		var task = suggestedTasks[t];
-		newTask = newTask + '<option value="' + task.lsid + '" title="' + task.taskType + '">' + 
-			  task.name + ' - ' + task.description
-		
+		if (task == undefined) continue;
+		var description = task.description;
+		if (description.length > MAX_TASK_DESCRIPTION_LENGTH) {
+			description = description.substring(0,MAX_TASK_DESCRIPTION_LENGTH) + "..."
+		}
+
+		newTask = newTask + '<option value="' + task.lsid + '" title="' + task.description + '">' + 
+			  task.taskType + ": " + task.name + ' - ' + description;
 		newTask = newTask + '</option>\n';
 	}
-	if (numSuggested > 0) newTask = newTask + '</select></td></tr>\n';
+	if (numSuggested > 0) newTask = newTask + '</select>\n';
 
+	newTask = newTask + '<table>\n';
 	newTask = newTask + '<tr><td valign="top">\n';
 	newTask = newTask + '<select onchange="changeTaskType(this, ' + taskNum + ')" name="notused" size="' + (TaskTypesList.length+1) + '">\n';
 	newTask = newTask + '<option value="" selected style="font-weight: bold">task types</option>\n';
@@ -1208,7 +1212,7 @@ nextTask:
 	}
 	newTask = newTask + '</select></td>\n';
 	newTask = newTask + '<td valign="top"><font size="+3">&#8594;</font></td>';
-	newTask = newTask + '<td align="left" valign="top"><select name="t' + taskNum + '" onchange="chgTask(this, ' + taskNum + ')">\n';
+	newTask = newTask + '<td valign="top"><select name="t' + taskNum + '" onchange="chgTask(this, ' + taskNum + ')">\n';
 	newTask = newTask + '</select></td></tr></table>\n';
 	newTask = newTask + '<input type="hidden" name="t' + taskNum + '_taskName" value="' + NOT_SET + '">';
 	if (taskNum > 0) {
