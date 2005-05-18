@@ -199,21 +199,47 @@ Running <a href="addTask.jsp?view=1&name=<%=requestParameters.getParameter("task
 <tr><td>
 <%=requestParameters.getParameter("taskName")%> ( 
 <%
+
+//XXXXXXXXXXX
+TaskInfoAttributes tia = task.giveTaskInfoAttributes();
+ParameterInfo[] formalParameterInfoArray = null;
+try {
+        formalParameterInfoArray  = new ParameterFormatConverter().getParameterInfoArray(task.getParameterInfo());
+	if (formalParameterInfoArray == null) formalParameterInfoArray = new ParameterInfo[0];
+} catch (OmnigeneException oe) {
+}
+//XXXXXXXXXXXXXXXXX
+
+
 for (int i=0; i < parmInfos.length; i++){
+
 		ParameterInfo pinfo = parmInfos[i];
+		ParameterInfo formalPinfo = pinfo;
+		for (int j=0; j < formalParameterInfoArray.length; j++){
+			ParameterInfo pi = formalParameterInfoArray[j];
+			if (pi.getName().equals(pinfo.getName())){
+				formalPinfo = pi;
+				break;
+			}
+		}
+
 		String value = pinfo.getValue();	
 		out.println(pinfo.getName().replace('.',' '));
 		out.println("=");
 		if (pinfo.isInputFile()) {
-			String htmlValue = GenePatternAnalysisTask.htmlEncode(pinfo.getValue());		
+			String htmlValue = GenePatternAnalysisTask.htmlEncode(pinfo.getValue().trim());		
 			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
 				out.println("<a href='"+ htmlValue + "'>"+htmlValue +"</a>");
 			} else {
 				out.println("<a href='getFile.jsp?task=&file="+ URLEncoder.encode(tmpDirName +"/" + value)+"'>"+htmlValue +"</a>");
 	
 			}
+		} else if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
+			out.println("<a href='"+ value + "'>"+value +"</a>");
+
 		} else {
-			out.println(GenePatternAnalysisTask.htmlEncode(pinfo.getValue()));
+			String display = pinfo.getUIValue(formalPinfo);
+			out.println(GenePatternAnalysisTask.htmlEncode(display));
 		}
 		if (i != (parmInfos.length -1))out.println(", ");
 	}
