@@ -99,11 +99,11 @@ public class LSID implements Comparable, Serializable {
 		lsid.append(DELIMITER);
 		lsid.append(SCHEME);
 		lsid.append(DELIMITER);
-		lsid.append(getAuthority());
+		lsid.append(decode(getAuthority()));
 		lsid.append(DELIMITER);
-		lsid.append(getNamespace());
+		lsid.append(decode(getNamespace()));
 		lsid.append(DELIMITER);
-		lsid.append(getIdentifier());
+		lsid.append(decode(getIdentifier()));
 		if (!(getVersion().equals(""))) {
 			lsid.append(DELIMITER);
 			lsid.append(getVersion());
