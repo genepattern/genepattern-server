@@ -301,6 +301,23 @@
                      target="installer"/>
 </target>
 
+<target name="publishGPGEinstallerToDev">
+	
+<ftp server="iftp.broad.mit.edu"
+       remotedir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/1.4.0/"
+       userid="liefeld"
+       password="f00bar"
+       depends="yes"
+       binary="yes"
+  >
+    <fileset dir="build/Web_Installers">
+      <include name="**/*"/>
+    </fileset>
+  </ftp>
+
+</target>
+
+
    <target depends="website, GPGEinstaller" name="installers">
 
 	<ant dir="${genepattern.installer}" 
