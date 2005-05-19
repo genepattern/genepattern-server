@@ -790,7 +790,9 @@ public class MainFrame extends JFrame {
          public void keyPressed(java.awt.event.KeyEvent e) {
             if(e.getKeyCode()==java.awt.event.KeyEvent.VK_BACK_SPACE) {
                if(selectedJobNode instanceof JobModel.JobNode) {
-                  deleteJobAction.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
+						if(deleteJobAction.isEnabled()) {
+							deleteJobAction.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
+						}
                } else if(selectedJobNode instanceof JobModel.ServerFileNode) {
                   deleteFileMenuItem.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
                }
@@ -1490,18 +1492,24 @@ public class MainFrame extends JFrame {
       deleteJobAction = new MenuItemAction(
       "Delete Job", IconManager.loadIcon(IconManager.DELETE_ICON)) {
          public void actionPerformed(ActionEvent e) {
-            JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
-            try {
-               String message = "Are you sure you want to delete job number " + jobNode.job.getJobInfo().getJobNumber() + "?";
-               if(showConfirmDialog(message)) {
-                  jobModel.delete(jobNode);
-               }
-            } catch(WebServiceException wse) {
-               wse.printStackTrace();
-               if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred deleting job number " + jobNode.job.getJobInfo().getJobNumber() + ".");
-               }
-            }
+            final JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
+            
+				String message = "Are you sure you want to delete job number " + jobNode.job.getJobInfo().getJobNumber() + "?";
+				if(showConfirmDialog(message)) {
+					new Thread() {
+						public void run() {
+							try {
+								jobModel.delete(jobNode);
+							} catch(WebServiceException wse) {
+								wse.printStackTrace();
+								if(!disconnectedFromServer(wse)) {
+									GenePattern.showErrorDialog("An error occurred deleting job number " + jobNode.job.getJobInfo().getJobNumber() + ".");
+								}
+							}
+						}
+					}.start();
+				}
+            
          }
       };
 
