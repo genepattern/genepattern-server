@@ -303,6 +303,8 @@
 
 <target name="setDefaultFTPUser" unless="user" >
 	<property name="user" value="liefeld"/>
+	<property name="pass" value="f00bar"/>
+
 </target>
 
 <target name="publishGPGEinstallerToWWWDev" depends="GPGE,installers, setDefaultFTPUser, version_updater">
