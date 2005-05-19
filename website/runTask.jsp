@@ -128,7 +128,7 @@ taskName = taskInfo.getName();
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 %>
-<table>
+<table cols="2">
 
 <tr><td  valign='top' height='100%'>
 <iframe frameborder="0" scrolling="yes" marginwidth="1" src="getRecentJobs.jsp" style="width: 100%; height: 500px" name="iframe" id="iframeid">
