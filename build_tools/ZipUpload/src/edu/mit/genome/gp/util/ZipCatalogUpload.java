@@ -20,10 +20,10 @@ public class ZipCatalogUpload {
 
 	// get url (base only) and file or dir to upload
 	//
-	if (args.length != 3) {
-	    System.out.println ("Usage: java ZipCatalogUpload url [prod|dev] fileOrDir");
+	if (args.length != 4) {
+	    System.out.println ("Usage: java ZipCatalogUpload url [module|patch] [prod|dev] fileOrDir\n\n");
 	    System.out.println ("To load all zips in a directory");
-	    System.out.println ("e.g. java ZipCatalogUpload http://iwww.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_publish_module.cgi dev ./gp2/modules/build  ");
+	    System.out.println ("e.g. java ZipCatalogUpload http://iwww.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_publish_module.cgi module dev ./gp2/modules/build  ");
 	    System.out.println ("To load just one zip");
 	    System.out.println ("e.g. java ZipCatalogUpload http://iwww.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_publish_module.cgi dev ./gp2/modules/build/TransposeDataset.zip");
 	    System.exit(999);
@@ -33,9 +33,10 @@ public class ZipCatalogUpload {
 	String targetURL = args[0];
 	//MultipartPostMethod filePost =  new MultipartPostMethod(targetURL);
 
-	String environment = args[1];
+	String type = args[1];
+	String environment = args[2];
 
-	String fileOrDirName = args[2];
+	String fileOrDirName = args[3];
 	File aFile = new File(fileOrDirName);
 	if (!aFile.exists()) {
 	    System.out.println("File does not exist:" + aFile.getAbsolutePath());
@@ -56,18 +57,20 @@ public class ZipCatalogUpload {
 	    for (int i=0; i < children.length; i++){
 		MultipartPostMethod filePost =  new MultipartPostMethod(targetURL);
 		File targetFile = children[i];
-		uploadFile(filePost, environment, targetFile);
+		uploadFile(filePost, type, environment, targetFile);
 
 	    }
 
 	} else {
 	    MultipartPostMethod filePost =  new MultipartPostMethod(targetURL);
 	    File targetFile = aFile;
-	    uploadFile(filePost, environment, targetFile);
+	    uploadFile(filePost, type, environment, targetFile);
 	}
     } 
 
-    public static void uploadFile(MultipartPostMethod filePost, String environment, File targetFile) throws Exception {
+    public static void uploadFile(MultipartPostMethod filePost, String type, String environment, File targetFile) throws Exception {
+	boolean DEBUG = Boolean.getBoolean("DEBUG");
+	filePost.addParameter("repos", type);
 	filePost.addParameter("location", environment);
 	filePost.addParameter("zipfilename", targetFile);
 	HttpClient client = new HttpClient();
@@ -81,7 +84,7 @@ public class ZipCatalogUpload {
 	if (status == HttpStatus.SC_OK) {
 	    System.out.println("\t Upload complete " + status);
 	    // to see the whole response uncomment the following line
-	   // System.out.println("Upload complete, response=" + filePost.getResponseBodyAsString() );
+	   if (DEBUG) System.out.println("Upload complete, response=" + filePost.getResponseBodyAsString() );
 	} else {
 	    System.out.println("\t Upload failed, response=" + HttpStatus.getStatusText(status) );
 	}
