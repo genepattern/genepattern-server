@@ -405,7 +405,7 @@ function LSID(lsid) {
 	this.namespace = tokens[3];
 	this.identifier = tokens[4];
 	this.version = tokens[5];
-	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>') ? 'mine' : (this.authority == broadAuthority ? 'broad' : 'foreign');
+	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>'.replace(" ", "+")) ? '<%= LSIDUtil.AUTHORITY_MINE %>' : (this.authority == '<%= LSIDUtil.BROAD_AUTHORITY %>' ? '<%= LSIDUtil.AUTHORITY_BROAD %>' : '<%= LSIDUtil.AUTHORITY_FOREIGN %>');
 }
 
 // sort array of LSIDs alphabetically by name, then inverse by LSID (authority/namespace/identifier/version)

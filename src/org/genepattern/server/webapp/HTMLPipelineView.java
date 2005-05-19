@@ -58,6 +58,7 @@ public class HTMLPipelineView implements IPipelineView {
 		this.writer = writer;
 		this.submitURL = submitURL;
 		this.userAgent = userAgent;
+		if (LSID.isLSID(pipelineName)) pipelineName = new LSID(pipelineName).toString();
 		this.pipelineName = pipelineName;
 
 		if (userAgent.indexOf("Mozilla/4") > -1
@@ -630,11 +631,9 @@ public class HTMLPipelineView implements IPipelineView {
 						}
 					}
 
-					//System.out.println("HTMLPipelineView.end: task for " +
-					// pipelineName + "=" + task);
+					//System.out.println("HTMLPipelineView.end: task for " + pipelineName + "=" + task);
 					if (task != null) {
-						//System.out.println("HTMLPipelineView.end: tia for " +
-						// pipelineName + "=" + tia);
+						//System.out.println("HTMLPipelineView.end: tia for " + pipelineName + "=" + tia);
 						if (tia != null) {
 							// generate the Javascript that recapitulates the
 							// pipeline design

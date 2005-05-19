@@ -78,7 +78,7 @@ function jmp(button, url, selector, versionSelector) {
 	if (selector.selectedIndex != 0) {
 		var lsidNoVersion = selector.options[selector.selectedIndex].value;
 		var lsidVersion = versionSelector.options[versionSelector.selectedIndex].value;
-		window.location= url + lsidNoVersion + '<%= LSID.DELIMITER %>' + lsidVersion;
+		window.location = url + lsidNoVersion + '<%= LSID.DELIMITER %>' + lsidVersion;
 	} else {
 		window.alert('Please select a ' + selector.name + ' to ' + button.value + '.');
 	}
@@ -187,7 +187,7 @@ function LSID(lsid) {
 	this.namespace = tokens[3];
 	this.identifier = tokens[4];
 	this.version = tokens[5];
-	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>') ? 'mine' : (this.authority == '<%= LSIDUtil.BROAD_AUTHORITY %>' ? 'broad' : 'foreign');
+	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>'.replace(" ", "+")) ? '<%= LSIDUtil.AUTHORITY_MINE %>' : (this.authority == '<%= LSIDUtil.BROAD_AUTHORITY %>' ? '<%= LSIDUtil.AUTHORITY_BROAD %>' : '<%= LSIDUtil.AUTHORITY_FOREIGN %>');
 }
 
 <% } %> 
