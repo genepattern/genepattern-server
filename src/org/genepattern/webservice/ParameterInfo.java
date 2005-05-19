@@ -235,10 +235,6 @@ public class ParameterInfo implements Serializable {
 				if (lhs.equals(getValue())) return rhs;
 				if (rhs.equals(getValue())) return rhs;
 				// if not a match, go on to the next choice option
-			} else {
-				// just RHS specified
-				
-				if (subchoices[0].equals(getValue())) return subchoices[0];
 			} 
 		}
 		return uiValue;
