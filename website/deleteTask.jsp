@@ -9,6 +9,7 @@
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.data.pipeline.PipelineModel,
 		 org.genepattern.webservice.WebServiceException,
+		 java.io.PrintWriter,
 		 java.net.MalformedURLException,
 		 java.util.Collection,
 		 java.util.HashMap,
@@ -25,6 +26,8 @@ String userID = GenePatternAnalysisTask.getUserID(request, response); // will fo
 if (userID == null) return; // come back after login
 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 String DELETE_LSID = "del";
+
+try {
 
 %>
 <html>
@@ -261,17 +264,27 @@ for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 	<td valign="top" align="left">
 <%	if (inUse) {
 		//out.print(" used by ");
-		vTaskInfo = (Vector)hmLSIDsUsedByPipelines.get(l.toString());
 		boolean multi = false;
-		for (Iterator itPipelines = vTaskInfo.iterator(); itPipelines.hasNext(); ) {
-			TaskInfo t = (TaskInfo)itPipelines.next();
-			LSID l2 = new LSID(t.giveTaskInfoAttributes().get(GPConstants.LSID));
-			if (multi) out.print(", ");
-			//out.print("<a href=\"" + (name.endsWith(GPConstants.TASK_TYPE_PIPELINE) ? "pipelineDesigner.jsp" : "addTask.jsp") + "?" + GPConstants.NAME + "=" + l2.toString() + "&view=1\">");
-			out.print("<a href=\"#" + l2.toString() + "\">");
-			out.print(t.getName() + " ver. " + l2.getVersion());
-			out.print("</a>");
-			multi = true;
+		vTaskInfo = (Vector)hmLSIDsUsedByPipelines.get(l.toString());
+		if (vTaskInfo == null) {
+			System.out.println(l.toString() + " used by " + lsid + " -> " + vTaskInfo);
+		} else {
+			for (Iterator itPipelines = vTaskInfo.iterator(); itPipelines.hasNext(); ) {
+				TaskInfo t = (TaskInfo)itPipelines.next();
+				if (t == null) {
+					System.err.println("deleteTask: unable to load entry from " + l.toString() + " pipeline");
+					continue;
+				}
+				tia = t.giveTaskInfoAttributes();
+				String lsid2 = tia.get(GPConstants.LSID);
+				LSID l2 = new LSID(lsid2);
+				if (multi) out.print(", ");
+				//out.print("<a href=\"" + (name.endsWith(GPConstants.TASK_TYPE_PIPELINE) ? "pipelineDesigner.jsp" : "addTask.jsp") + "?" + GPConstants.NAME + "=" + l2.toString() + "&view=1\">");
+				out.print("<a href=\"#" + l2.toString() + "\">");
+				out.print(t.getName() + " ver. " + l2.getVersion());
+				out.print("</a>");
+				multi = true;
+			}
 		}
 	}
 	if (n == 1 && numVersions > 1) {
@@ -281,6 +294,7 @@ for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 	</td>
 	</tr>
 <%
+	out.flush();
 } // end of loop for all tasks
 %>
 
@@ -298,6 +312,10 @@ for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 
 </body>
 </html>
+<% } catch (Throwable t) {
+	t.printStackTrace(new PrintWriter(out));
+   }
+%>
 <%! public String doCheckers(String lastLSIDNoVersion, int numVersions) {
 	StringBuffer sb = new StringBuffer();
 	if (numVersions > 0) {
