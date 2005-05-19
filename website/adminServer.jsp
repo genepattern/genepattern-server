@@ -289,8 +289,10 @@ onclick="refillField(this);"> These Domains (comma delimited list)<br>
 			<tr><td valign="top" align='right'>
 			<form action="adminServer.jsp" name="recentHistoryForm" method="POST">
 
-			Remember this many recent jobs:</td><td><input name="historySize" value="<%=recentHistorySize %>" size='10' onkeyup="changeHistoryField(this)" />
+			Display this many recent jobs:</td><td><input name="historySize" value="<%=recentHistorySize %>" size='10' onkeyup="changeHistoryField(this)" />
 			<input type="submit" name="submit" value="submit" class="button" disabled="true">
+			<input type="button" name="historyHelp" value="Help" class="button" onclick="alert('The recent history size sets the maximum number of\n recent jobs that will be displayed in the task and \npipeline dropdowns at the top of the page.')">
+
 
 			</td>
 
