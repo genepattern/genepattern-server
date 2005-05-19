@@ -147,7 +147,7 @@ for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 	}
 }
 
-HashMap hmNumVersions = new HashMap(); // key = LSID without version, value = Integer(numVersions)
+HashMap hmNumVersions = new HashMap(); // key = LSID without version+taskName, value = Integer(numVersions)
 // compute number of versions for each LSID
 for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 	ti = (TaskInfo)itTasks.next();
@@ -159,13 +159,13 @@ for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 		continue;
 	}
 	String versionLess = l.toStringNoVersion();
-	Integer i = (Integer)hmNumVersions.get(versionLess);
+	Integer i = (Integer)hmNumVersions.get(versionLess+"-"+ti.getName());
 	if (i == null) {
 		i = new Integer(1);
 	} else {
 		i = new Integer(i.intValue() + 1);
 	}
-	hmNumVersions.put(versionLess, i);
+	hmNumVersions.put(versionLess+"-"+ti.getName(), i);
 }
 
 %>
@@ -237,7 +237,7 @@ for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 		if (owner != null && owner.indexOf("@") != -1) owner = " (" + owner.substring(0, owner.indexOf("@")) + ")";
 		authority = (l == null ? "" : l.getAuthority());
 		authorityType = lsidManager.getAuthorityType(l);
-		numVersions = ((Integer)hmNumVersions.get(l.toStringNoVersion())).intValue();
+		numVersions = ((Integer)hmNumVersions.get(l.toStringNoVersion()+"-"+ti.getName())).intValue();
 %>
 		<tr><td valign="top" rowspan="<%= numVersions %>">
 		<span class="tasks-<%= authorityType %>"><b><%= ti.getName() %></b></span>
