@@ -59,9 +59,9 @@ public class LSID implements Comparable, Serializable {
 		if (!stLSID.nextToken().equals(SCHEME)) {
 			throw new MalformedURLException("Bad or missing SCHEME: " + usage);
 		}
-		setAuthority(encode(stLSID.nextToken()));
-		setNamespace(encode(stLSID.nextToken()));
-		setIdentifier(encode(stLSID.nextToken()));
+		setAuthority(decode(stLSID.nextToken()));
+		setNamespace(decode(stLSID.nextToken()));
+		setIdentifier(decode(stLSID.nextToken()));
 		if (numParts == 6) {
 			setVersion(stLSID.nextToken());
 		}
@@ -69,10 +69,10 @@ public class LSID implements Comparable, Serializable {
 
 	public LSID(String authority, String namespace, String identifier,
 			String version) throws MalformedURLException {
-		setAuthority(encode(authority));
-		setNamespace(encode(namespace));
-		setIdentifier(encode(identifier));
-		setVersion(encode(version));
+		setAuthority(decode(authority));
+		setNamespace(decode(namespace));
+		setIdentifier(decode(identifier));
+		setVersion(decode(version));
 	}
 
 	public static boolean isLSID(String lsid) {
@@ -99,11 +99,11 @@ public class LSID implements Comparable, Serializable {
 		lsid.append(DELIMITER);
 		lsid.append(SCHEME);
 		lsid.append(DELIMITER);
-		lsid.append(decode(getAuthority()));
+		lsid.append(encode(getAuthority()));
 		lsid.append(DELIMITER);
-		lsid.append(decode(getNamespace()));
+		lsid.append(encode(getNamespace()));
 		lsid.append(DELIMITER);
-		lsid.append(decode(getIdentifier()));
+		lsid.append(encode(getIdentifier()));
 		if (!(getVersion().equals(""))) {
 			lsid.append(DELIMITER);
 			lsid.append(getVersion());

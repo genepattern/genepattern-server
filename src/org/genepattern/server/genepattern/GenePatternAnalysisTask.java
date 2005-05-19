@@ -1577,6 +1577,8 @@ eachRequiredPatch:
 			int taskID = -1;
 			AnalysisJobDataSource ds = getDS();
 			try {
+				if (org.genepattern.util.LSID.isLSID(taskName)) taskName = new LSID(taskName).toString();
+
 				// search for an existing task with the same name
 				GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(
 						taskName, null, null, null, username, 0);
