@@ -288,6 +288,9 @@ public class JobModel extends AbstractSortableTreeTableModel {
          add(job);
          jobNode = findJobNode(job);
       }
+		if(jobComparator==TASK_DATE_COMPARATOR) {
+			// FIXME fix position	
+		}
 		int outputFiles = jobNode.getOutputFiles();
 		int[] newIndexs = new int[outputFiles];
 		for (int i = 0; i < outputFiles; i++) {
@@ -414,6 +417,13 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			}
 		}
 		return null;
+		//List children = root.getChildren();
+		//int index = -1;
+   	//if (children != null) {
+			//index = Collections.binarySearch(children, new JobNode(job),
+        		//jobComparator);   
+     	//}
+			
 	}
 
 	public void getJobsFromServer() throws WebServiceException {
@@ -497,12 +507,12 @@ public class JobModel extends AbstractSortableTreeTableModel {
 				return "Job";
 			case 2:
 				JobInfo jobInfo = j.job.getJobInfo();
-				if (!j.complete) {
+				if (!j.isComplete()) {
               String status = jobInfo.getStatus();
               if(status.equals(JobStatus.NOT_STARTED)) {
                   status = "Pending";  
               }
-					return status;
+				  return status;
 				}
 
 				Date d = jobInfo.getDateCompleted();
@@ -615,14 +625,12 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 		public final AnalysisJob job;
 
-		boolean complete = false;
-
 		Vector getChildren() {
 			return children;	
 		}
 		
 		public boolean isComplete() {
-			return complete;
+			return JobModel.isComplete(job);
 		}
 
 		public JobNode(AnalysisJob job) {
@@ -634,7 +642,6 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		}
 
 		public int getOutputFiles() {
-			complete = true;
 			int count = 0;
 			ParameterInfo[] jobParameterInfo = job.getJobInfo()
 					.getParameterInfoArray();
@@ -802,6 +809,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		public int compare(Object obj1, Object obj2) {
 			AnalysisJob job1 = null;
 			AnalysisJob job2 = null;
+			
 			if (ascending) {
 				job1 = (AnalysisJob) obj1;
 				job2 = (AnalysisJob) obj2;
