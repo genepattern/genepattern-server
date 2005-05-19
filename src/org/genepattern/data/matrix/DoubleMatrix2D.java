@@ -22,6 +22,24 @@ public class DoubleMatrix2D {
 	/**
 	 * Creates a new matrix
 	 * 
+	 * @param data The data.
+	 */
+	public DoubleMatrix2D(double[][] data) {
+		int rows = data.length;
+		int columns = data[0].length;
+		matrix = new Matrix(data);
+		rowNameToRowIndexMap = new ObjectIntMap(rows);
+		columnNameToColumnIndexMap = new ObjectIntMap(columns);
+		this.rowNames = new String[rows];
+		this.columnNames = new String[columns];
+		fillInRows(0);
+		fillInColumns(0);
+	}
+		
+		
+	/**
+	 * Creates a new matrix
+	 * 
 	 * @param rows
 	 *            The number of rows.
 	 * @param columns
