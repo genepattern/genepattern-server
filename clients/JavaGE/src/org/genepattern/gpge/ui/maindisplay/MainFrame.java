@@ -1158,7 +1158,7 @@ public class MainFrame extends JFrame {
 
       JPanel leftPanel = new JPanel(new BorderLayout());
       leftPanel.setMinimumSize(new Dimension(200, 200));
-      if(!RUNNING_ON_MAC) {
+      if(RUNNING_ON_WINDOWS) {
        leftPanel.setBackground(Color.white);
        final Border scrollBorder = UIManager.getBorder("ScrollPane.border");
        Border b = new Border() {
