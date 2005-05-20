@@ -369,6 +369,9 @@ public class MainFrame extends JFrame {
 		GPpropertiesManager.setProperty(PreferenceKeys.USER_NAME, username);
 		
       setChangeServerActionsEnabled(false);
+		if(analysisServicePanel!= null && analysisServicePanel.isShowingAnalysisService()) {
+			analysisServicePanel.showGettingStarted();
+		}
       
 		new Thread() {
 			public void run() {
