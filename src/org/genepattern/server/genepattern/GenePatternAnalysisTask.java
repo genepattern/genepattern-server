@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -47,6 +49,14 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.JspWriter;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -1031,12 +1041,12 @@ eachRequiredPatch:
 
 			requiredPatchLSID = requiredPatchLSIDs[requiredPatchNum];
 			LSID requiredLSID = new LSID(requiredPatchLSID);
-			//System.out.println("Checking whether " + requiredPatchLSID + " is already installed...");
+			_cat.debug("Checking whether " + requiredPatchLSID + " is already installed...");
 			for (int p = 0; p < installedPatchLSIDs.length; p++) {
 				LSID installedLSID = new LSID(installedPatchLSIDs[p]);
 				if (installedLSID.isEquivalent(requiredLSID)) {
 					// there are installed patches, and there is an LSID match to this one
-					System.out.println(requiredLSID.toString() + " is already installed");
+					_cat.info(requiredLSID.toString() + " is already installed");
 					continue eachRequiredPatch;
 				}
 			}
@@ -1055,12 +1065,12 @@ eachRequiredPatch:
 		}
 
 		LSID requiredLSID = new LSID(requiredPatchLSID);
-		//System.out.println("Checking whether " + requiredPatchLSID + " is already installed...");
+		_cat.debug("Checking whether " + requiredPatchLSID + " is already installed...");
 		for (int p = 0; p < installedPatchLSIDs.length; p++) {
 			LSID installedLSID = new LSID(installedPatchLSIDs[p]);
 			if (installedLSID.isEquivalent(requiredLSID)) {
 				// there are installed patches, and there is an LSID match to this one
-				System.out.println(requiredLSID.toString() + " is already installed");
+				_cat.info(requiredLSID.toString() + " is already installed");
 				return;
 			}
 		}
@@ -1070,22 +1080,49 @@ eachRequiredPatch:
 	// install a specific patch, downloading a zip file with a manifest containing a command line, 
 	// running that command line after substitutions, and recording the result in the genepattern.properties patch registry
 	public static void installPatch(String requiredPatchLSID, String requiredPatchURL, ITaskIntegrator taskIntegrator) throws Exception {
-		if (requiredPatchURL == null) {
-			requiredPatchURL = System.getProperty(DEFAULT_PATCH_URL) + "?" + LSID + "=" + requiredPatchLSID;
+		LSID patchLSID = new LSID(requiredPatchLSID);
+
+		boolean wasNullURL = (requiredPatchURL == null || requiredPatchURL.length() == 0);
+		if (wasNullURL) {
+			requiredPatchURL = System.getProperty(DEFAULT_PATCH_URL);
 		}
 
-		if (requiredPatchURL.startsWith("http")) {
-			if (requiredPatchURL.indexOf("?") == -1) requiredPatchURL = requiredPatchURL + "?";
-			String []patchQualifiers = System.getProperty("patchQualifiers", "").split(",");
-			for (int p = 0; p < patchQualifiers.length; p++) {
-				requiredPatchURL = requiredPatchURL + "&" + URLEncoder.encode(patchQualifiers[p], UTF8) + "=" + URLEncoder.encode(System.getProperty(patchQualifiers[p], ""), UTF8);
+		HashMap hmProps = new HashMap();
+		if (wasNullURL) {
+			taskIntegrator.statusMessage("Fetching patch information from " + requiredPatchURL);
+			URL url = new URL(requiredPatchURL);
+			URLConnection connection = url.openConnection();
+			connection.setUseCaches(false);
+
+			if (connection instanceof HttpURLConnection) {
+				connection.setDoOutput(true);
+				PrintWriter pw = new PrintWriter(connection.getOutputStream());
+				String []patchQualifiers = System.getProperty("patchQualifiers", "").split(",");
+
+ 				pw.print("patch");
+				pw.print("=");
+				pw.print(URLEncoder.encode(requiredPatchLSID, UTF8));
+
+ 				for (int p = 0; p < patchQualifiers.length; p++) {
+					pw.print("&");
+					pw.print(URLEncoder.encode(patchQualifiers[p], UTF8));
+					pw.print("=");
+					pw.print(URLEncoder.encode(System.getProperty(patchQualifiers[p], ""), UTF8));
+				}
+				pw.close();
 			}
+
+			Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(connection.getInputStream());
+			Element root = doc.getDocumentElement();
+			processNode(root, hmProps);
+			String result = (String)hmProps.get("result");
+			if (!result.equals("Success")) throw new Exception("Error requesting patch: " + result + " in request for " + requiredPatchURL);
+			requiredPatchURL = (String)hmProps.get("site_module.url");
 		}
 
 		if (taskIntegrator != null) taskIntegrator.statusMessage("Downloading patch " + requiredPatchLSID + " from " + requiredPatchURL);
-		String zipFilename = downloadPatch(requiredPatchURL, taskIntegrator);
+		String zipFilename = downloadPatch(requiredPatchURL, taskIntegrator, (String)hmProps.get("site_module.zipfilesize"));
 
-		LSID patchLSID = new LSID(requiredPatchLSID);
 		String patchName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion();
 		File patchDirectory = new File(System.getProperty("patches"), patchName);
 		if (taskIntegrator != null) taskIntegrator.statusMessage("Download complete.  Installing patch from " + zipFilename + " to " + patchDirectory.getAbsolutePath() + ".");
@@ -1129,9 +1166,17 @@ eachRequiredPatch:
 	}
 	
 	// download the patch zip file from a URL
-	protected static String downloadPatch(String url, ITaskIntegrator taskIntegrator) throws IOException {
+	protected static String downloadPatch(String url, ITaskIntegrator taskIntegrator, String contentLength) throws IOException {
 		try {
-			return downloadTask(url, taskIntegrator);
+			long len = -1;
+			try {
+				len = Long.parseLong(contentLength);
+			} catch (NullPointerException npe) {
+				// ignore
+			} catch (NumberFormatException nfe) {
+				// ignore
+			}
+			return downloadTask(url, taskIntegrator, len);
 		} catch (IOException ioe) {
 			if (ioe.getCause() != null) ioe = (IOException)ioe.getCause();
 			throw new IOException(ioe.toString() + " while downloading " + url);
@@ -1314,9 +1359,34 @@ eachRequiredPatch:
 		} else {
 			int ipEnd = properties.indexOf(System.getProperty("line.separator"), ipStart);
 			properties = properties.substring(0, ipStart + key.length() + "=".length()) + value;
-			if (ipEnd != -1) properties = properties + properties.substring(ipEnd);
+			if (ipEnd != -1) properties = properties + "," + properties.substring(ipEnd);
 		}
 		return properties;
+	}
+
+	protected static void processNode(Node node, HashMap hmProps) {
+		if (node.getNodeType() == Node.ELEMENT_NODE) {
+			Element c_elt = (Element) node;
+			String nodeValue = c_elt.getFirstChild().getNodeValue();
+			_cat.debug("GPAT.processNode: adding " + c_elt.getTagName() + "=" + nodeValue);
+			hmProps.put(c_elt.getTagName(), nodeValue);
+			NamedNodeMap attributes = c_elt.getAttributes();
+			if (attributes != null) {
+				for (int i = 0; i < attributes.getLength(); i++) {
+					String attrName = ((Attr) attributes.item(i)).getName();
+					String attrValue = ((Attr)attributes.item(i)).getValue();
+					_cat.debug("GPAT.processNode: adding " + c_elt.getTagName()+"."+attrName + "=" + attrValue);
+					hmProps.put(c_elt.getTagName()+"."+attrName, attrValue);
+				}
+			}
+			
+		} else {
+			_cat.debug("non-Element node: " + node.getNodeName() + "=" + node.getNodeValue());
+		}
+		NodeList childNodes = node.getChildNodes();
+		for (int i = 0; i < childNodes.getLength(); i++) {
+			processNode(childNodes.item(i), hmProps);
+		}
 	}
 
 	// copy an InputStream to a PrintStream until EOF
@@ -3337,99 +3407,102 @@ eachRequiredPatch:
 				_cat.info("installing " + taskName + " into database");
 				vProblems = GenePatternAnalysisTask.installTask(taskName,
 						taskDescription, params, tia, username, access_id, taskIntegrator);
-				// get the newly assigned LSID
-				lsid = (String) tia.get(IGPConstants.LSID);
+				if (vProblems == null) vProblems = new Vector();
+				if (vProblems.size() == 0) {
+					// get the newly assigned LSID
+					lsid = (String) tia.get(IGPConstants.LSID);
 
-				// extract files from zip file
-				String taskDir = GenePatternAnalysisTask
-						.getTaskLibDir((String) tia.get(IGPConstants.LSID));
-				File dir = new File(taskDir);
+					// extract files from zip file
+					String taskDir = GenePatternAnalysisTask
+							.getTaskLibDir((String) tia.get(IGPConstants.LSID));
+					File dir = new File(taskDir);
 
-				// if there are any existing files from a previous installation
-				// of this task,
-				// clean them out so there is no interference
-				File[] fileList = dir.listFiles();
-				for (i = 0; i < fileList.length; i++) {
-					fileList[i].delete();
-				}
-
-				String folder = null;
-				for (Enumeration eEntries = zipFile.entries(); eEntries
-						.hasMoreElements();) {
-					zipEntry = (ZipEntry) eEntries.nextElement();
-					if (zipEntry.getName().equals(MANIFEST_FILENAME)) {
-						continue;
-					}
-					is = zipFile.getInputStream(zipEntry);
-					name = zipEntry.getName();
-					if (zipEntry.isDirectory() || name.indexOf("/") != -1
-							|| name.indexOf("\\") != -1) {
-						// TODO: mkdirs()
-						_cat
-								.warn("installTask: skipping hierarchically-entered name: "
-										+ name);
-						continue;
+					// if there are any existing files from a previous installation
+					// of this task,
+					// clean them out so there is no interference
+					File[] fileList = dir.listFiles();
+					for (i = 0; i < fileList.length; i++) {
+						fileList[i].delete();
 					}
 
-					// copy attachments to the taskLib BEFORE installing the
-					// task, so that there is no time window when
-					// the task is installed in Omnigene's database but the
-					// files aren't decoded and so the task can't yet
-					// be properly invoked
+					String folder = null;
+					for (Enumeration eEntries = zipFile.entries(); eEntries
+							.hasMoreElements();) {
+						zipEntry = (ZipEntry) eEntries.nextElement();
+						if (zipEntry.getName().equals(MANIFEST_FILENAME)) {
+							continue;
+						}
+						is = zipFile.getInputStream(zipEntry);
+						name = zipEntry.getName();
+						if (zipEntry.isDirectory() || name.indexOf("/") != -1
+								|| name.indexOf("\\") != -1) {
+							// TODO: mkdirs()
+							_cat
+									.warn("installTask: skipping hierarchically-entered name: "
+											+ name);
+							continue;
+						}
 
-					// TODO: allow names to have paths, so long as they are
-					// below the current point and not above or a peer
-					// strip absolute or ../relative path names from zip entry
-					// name so that they dump into the tasklib directory only
-					i = name.lastIndexOf("/");
-					if (i != -1)
-						name = name.substring(i + 1);
-					i = name.lastIndexOf("\\");
-					if (i != -1)
-						name = name.substring(i + 1);
+						// copy attachments to the taskLib BEFORE installing the
+						// task, so that there is no time window when
+						// the task is installed in Omnigene's database but the
+						// files aren't decoded and so the task can't yet
+						// be properly invoked
 
-					try {
-						// TODO: support directory structure within zip file
-						outFile = new File(taskDir, name);
-						if (outFile.exists()) {
-							File oldVersion = new File(taskDir, name + ".old");
-							_cat.warn("replacing " + name + " ("
-									+ outFile.length() + " bytes) in "
-									+ taskDir + ".  Renaming old one to "
-									+ oldVersion.getName());
-							oldVersion.delete(); // delete the previous .old
-												 // file
-							boolean renamed = rename(outFile, oldVersion, true);
-							if (!renamed)
-								_cat.error("failed to rename "
-										+ outFile.getCanonicalPath() + " to "
-										+ oldVersion.getCanonicalPath());
+						// TODO: allow names to have paths, so long as they are
+						// below the current point and not above or a peer
+						// strip absolute or ../relative path names from zip entry
+						// name so that they dump into the tasklib directory only
+						i = name.lastIndexOf("/");
+						if (i != -1)
+							name = name.substring(i + 1);
+						i = name.lastIndexOf("\\");
+						if (i != -1)
+							name = name.substring(i + 1);
+
+						try {
+							// TODO: support directory structure within zip file
+							outFile = new File(taskDir, name);
+							if (outFile.exists()) {
+								File oldVersion = new File(taskDir, name + ".old");
+								_cat.warn("replacing " + name + " ("
+										+ outFile.length() + " bytes) in "
+										+ taskDir + ".  Renaming old one to "
+										+ oldVersion.getName());
+								oldVersion.delete(); // delete the previous .old
+													 // file
+								boolean renamed = rename(outFile, oldVersion, true);
+								if (!renamed)
+									_cat.error("failed to rename "
+											+ outFile.getCanonicalPath() + " to "
+											+ oldVersion.getCanonicalPath());
+							}
+							os = new FileOutputStream(outFile);
+							fileLength = zipEntry.getSize();
+							numRead = 0;
+							byte[] buf = new byte[100000];
+							while ((i = is.read(buf, 0, buf.length)) > 0) {
+								os.write(buf, 0, i);
+								numRead += i;
+							}
+							os.close();
+							os = null;
+							outFile.setLastModified(zipEntry.getTime());
+							if (numRead != fileLength) {
+								vProblems.add("only read " + numRead + " of "
+										+ fileLength + " bytes in " + zipFilename
+										+ "'s " + zipEntry.getName());
+							}
+						} catch (IOException ioe) {
+							String msg = "error unzipping file " + name + " from "
+									+ zipFilename + ": " + ioe.getMessage();
+							vProblems.add(msg);
 						}
-						os = new FileOutputStream(outFile);
-						fileLength = zipEntry.getSize();
-						numRead = 0;
-						byte[] buf = new byte[100000];
-						while ((i = is.read(buf, 0, buf.length)) > 0) {
-							os.write(buf, 0, i);
-							numRead += i;
+						is.close();
+						if (os != null) {
+							os.close();
+							os = null;
 						}
-						os.close();
-						os = null;
-						outFile.setLastModified(zipEntry.getTime());
-						if (numRead != fileLength) {
-							vProblems.add("only read " + numRead + " of "
-									+ fileLength + " bytes in " + zipFilename
-									+ "'s " + zipEntry.getName());
-						}
-					} catch (IOException ioe) {
-						String msg = "error unzipping file " + name + " from "
-								+ zipFilename + ": " + ioe.getMessage();
-						vProblems.add(msg);
-					}
-					is.close();
-					if (os != null) {
-						os.close();
-						os = null;
 					}
 				}
 			}
@@ -3461,7 +3534,7 @@ eachRequiredPatch:
 	}
 
 	public static String downloadTask(String zipURL) throws IOException {
-		return downloadTask(zipURL, null);
+		return downloadTask(zipURL, null, -1);
 	}
 
 	/**
@@ -3477,27 +3550,36 @@ eachRequiredPatch:
 	 *             storing it locally
 	 *  
 	 */
-	public static String downloadTask(String zipURL, ITaskIntegrator taskIntegrator) throws IOException {
+	public static String downloadTask(String zipURL, ITaskIntegrator taskIntegrator, long expectedLength) throws IOException {
 	    File zipFile = null;
+	    long downloadedBytes = 0;
 	    try {
 		zipFile = File.createTempFile("gpz", ".zip");
 		zipFile.deleteOnExit();
 		FileOutputStream os = new FileOutputStream(zipFile);
 		URLConnection uc = new URL(zipURL).openConnection();
 		long downloadSize = -1;
+		Map headerFields = uc.getHeaderFields();
+		for (Iterator itHeaders = headerFields.keySet().iterator(); itHeaders.hasNext(); ) {
+			String name = (String)itHeaders.next();
+			String value = uc.getHeaderField(name);
+			System.out.println(name + "=" + value);
+		}
 		if (uc instanceof HttpURLConnection) {
 			downloadSize = ((HttpURLConnection)uc).getHeaderFieldInt("Content-Length", -1);
-			if (taskIntegrator != null) taskIntegrator.statusMessage("Download length: " + (long)downloadSize + " bytes."); //  Each dot represents 100KB.");
+		} else {
+			downloadSize = expectedLength;
 		}
+		if (taskIntegrator != null && downloadSize != -1) taskIntegrator.statusMessage("Download length: " + (long)downloadSize + " bytes."); //  Each dot represents 100KB.");
 		if (taskIntegrator != null) taskIntegrator.beginProgress("download");
 		InputStream is = uc.getInputStream();
 		byte[] buf = new byte[100000];
 		int i;
-		long downloadedBytes = 0;
 		long lastPercent = 0;
 		while ((i = is.read(buf, 0, buf.length)) > 0) {
 			downloadedBytes += i;
 			os.write(buf, 0, i);
+			//System.out.print(new String(buf, 0, i));
 			if (downloadSize > -1) {
 				long pctComplete = 100 * downloadedBytes / downloadSize;
 				if (lastPercent != pctComplete) {
@@ -3508,12 +3590,17 @@ eachRequiredPatch:
 		}
 		is.close();
 		os.close();
+		if (downloadedBytes == 0) throw new IOException("Nothing downloaded from " + zipURL);
 		return zipFile.getPath();
 	    } catch (IOException ioe) {
 	    	zipFile.delete();
 	    	throw ioe;
 	    } finally {
-		if (taskIntegrator != null) taskIntegrator.endProgress();
+		System.out.println("downloaded " + downloadedBytes + " bytes");
+		if (taskIntegrator != null) {
+			taskIntegrator.endProgress();
+			taskIntegrator.statusMessage("downloaded " + downloadedBytes + " bytes");
+		}
 	    }
 	}
 
