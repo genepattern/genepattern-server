@@ -308,7 +308,7 @@
 <target name="publishGPGEinstallerToWWWDev" depends="setDefaultFTPUser, version_updater">
 	
 <ftp server="iftp.broad.mit.edu"
-       remotedir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/${version.major}.${version.minor}/"
+       remotedir="${version.major}.${version.minor}/"
        userid="${user}"
        password="${pass}"
        depends="yes"
