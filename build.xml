@@ -302,9 +302,7 @@
 </target>
 
 <target name="setDefaultFTPUser" unless="user" >
-	<property name="user" value="liefeld"/>
-	<property name="pass" value="f00bar"/>
-
+	<property name="user" value="genepattern"/>
 </target>
 
 <target name="publishGPGEinstallerToWWWDev" depends="setDefaultFTPUser, version_updater">
