@@ -600,7 +600,9 @@ public class AnalysisServiceDisplay extends JPanel {
          javax.swing.tree.TreeNode node) {
       if(selectedService != null) {
          ObjectTextField tf = (ObjectTextField) parameterName2ComponentMap.get(parameterName);
-         tf.setObject(node);
+         if(tf!=null) {
+            tf.setObject(node);
+         }
       }
    }
 
