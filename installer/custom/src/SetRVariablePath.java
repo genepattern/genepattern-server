@@ -46,7 +46,7 @@ public class SetRVariablePath extends CustomCodeAction {
 		String os = System.getProperty("os.name");
 
 		if (os.indexOf("mac") >= 0){
-	 		ip.setVariable("Rbin",  R_new + "/resources");
+	 		ip.setVariable("Rbin",  R_new + "/Resources");
 			ip.setVariable("Rbase",  R_new);
 		} else {
 	 		ip.setVariable("Rbin",  R_new);
