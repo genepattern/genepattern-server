@@ -287,9 +287,27 @@ public class JobModel extends AbstractSortableTreeTableModel {
       if(jobNode==null) {
          add(job);
          jobNode = findJobNode(job);
-      }
-		if(jobComparator==TASK_DATE_COMPARATOR) {
-			// FIXME fix position	
+      } else if(jobComparator==TASK_DATE_COMPARATOR) {
+			int insertionIndex = 0;
+			int removedNodeIndex = 0;
+			List children = root.getChildren();
+			if (children != null) {
+				removedNodeIndex = children.indexOf(jobNode);
+				root.remove(removedNodeIndex);
+            insertionIndex = Collections.binarySearch(children, jobNode,
+                  jobComparator);   
+         }
+			
+         if (insertionIndex < 0) {
+            insertionIndex = -insertionIndex - 1;
+         }
+         root.insert(jobNode, insertionIndex);
+			try {
+				nodesWereRemoved(root, new int[] { removedNodeIndex }, new Object[]{jobNode});
+				nodesWereInserted(root, new int[] { insertionIndex });
+			} catch(Throwable t) {
+				t.printStackTrace();	
+			}
 		}
 		int outputFiles = jobNode.getOutputFiles();
 		int[] newIndexs = new int[outputFiles];
