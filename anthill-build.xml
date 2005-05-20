@@ -68,15 +68,15 @@
 		<mkdir dir="logs"/>
 		<!-- checkout sandbox, build & install -->
 		<ant antfile="build.xml" dir="." target="nightlyrelease"/>
-		<ant antfile="build.xml" dir="." target="publishGPGEinstallerToWWWDev"/>
-
-		<mkdir dir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile"/>
+				<mkdir dir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile"/>
 		<copy file="gp_war.zip" todir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile" />
 
 		<copy overwrite="true"
 			todir="e:/GPInstalls/Tomcat/webapps/gpinstalls/nightlybuild">
 			<fileset dir="installer/GP_server_Build_Output/Web_Installers"/>
 		</copy>
+		<ant antfile="build.xml" dir="." target="publishGPGEinstallerToWWWDev"/>
+
 
 	</target>
 
