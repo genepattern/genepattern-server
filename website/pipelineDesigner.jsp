@@ -175,7 +175,7 @@ function addAnother(taskNum, scrollTo) {
 	   	}
 	}
 	numTasks++;
-	if (scrollTo) window.location.hash = taskNum; // scroll to the new task
+	if (scrollTo && navigator.userAgent.indexOf("Safari") == -1) window.location.hash = taskNum; // scroll to the new task 
 }
 
 function deleteTask(taskNum) {
@@ -1213,13 +1213,13 @@ nextTask:
 </script>
 <%
       String userAgent = request.getHeader("User-Agent");
-      if (userAgent.indexOf("Safari/") != -1 ||
+      if (
           userAgent.indexOf("MSIE") != -1 && userAgent.indexOf("Mac_PowerPC") != -1) {
 %>
               </head>
               <body>
               <jsp:include page="navbar.jsp"></jsp:include>
-              Sorry, Safari and Internet Explorer for Mac don't work right on this page.
+              Sorry, Internet Explorer for Mac doesn't work right on this page.
               We recommend Netscape Navigator 7.1 or later for Macs, which you 
 	      can download from the
               <a href="http://channels.netscape.com/ns/browsers/download.jsp">Netscape.com download page</a>.
