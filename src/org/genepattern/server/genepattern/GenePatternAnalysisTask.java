@@ -433,8 +433,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
 							if (j == 0)
 								baseName = baseName.substring(baseName
 										.indexOf("_") + 1);
-							if (baseName.length() == 0)
-								baseName = "indexPage";
+							if (baseName.length() == 0) {
+								params[i].setValue("");
+								continue;
+							}
 							baseName = URLDecoder.decode(baseName, UTF8);
 
 							outFile = new File(outDirName, baseName);
