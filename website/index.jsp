@@ -364,7 +364,8 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 				Release notes (<a href="relNotes.html">local</a>/<a href="http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/">public website</a>)<br><br>
 				<a href="http://www.broad.mit.edu/cancer/software/genepattern/faq/">FAQ</a><br><br>
 				<a href="http://www.broad.mit.edu/cancer/software/genepattern/datasets/">Public datasets</a><br><br>
-				<a href="getTaskDoc.jsp">Task documentation</a>
+				<a href="getTaskDoc.jsp">Task documentation</a><br><br>
+				<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_fileformats.html" target="_new">Common file formats</a>
 			</td>
 
 		</tr>
