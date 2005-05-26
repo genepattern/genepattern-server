@@ -449,6 +449,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00022=2 SelectFeaturesRows.zip"/>
+	</commandline>
+</cvs>
+<copy file="SelectFeaturesRows.zip" tofile="catalogregen/SelectFeaturesRows.2.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00024=0 SplitDatasetTrainTest.zip"/>
 	</commandline>
 </cvs>
