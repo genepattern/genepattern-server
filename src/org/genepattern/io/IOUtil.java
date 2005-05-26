@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.genepattern.data.expr.IExpressionData;
 import org.genepattern.data.matrix.ClassVector;
+import org.genepattern.io.expr.ExpressionDataCreator;
 import org.genepattern.io.expr.IExpressionDataCreator;
 import org.genepattern.io.expr.IExpressionDataReader;
 import org.genepattern.io.expr.IExpressionDataWriter;
@@ -90,6 +91,23 @@ public class IOUtil {
 			ParseException {
 		IExpressionDataReader reader = getExpressionReader(pathname);
 		return reader.read(pathname, expressionDataCreator);
+	}
+   
+   /**
+	 * Reads the expression data at the given pathname and returns a new 
+    * <tt>ExpressionData</tt> instance.
+	 * 
+	 * @param pathname
+	 *            The file pathname
+	 * @return An <tt>ExpressionData</tt> instance
+	 * @exception IOException
+	 *                If an error occurs while reading from the file
+	 * @exception ParseException
+	 *                If there is a problem with the data
+	 */
+	public static Object readExpressionData(String pathname) throws IOException,
+			ParseException {
+      return readExpressionData(pathname, new ExpressionDataCreator());
 	}
 
 	/**
