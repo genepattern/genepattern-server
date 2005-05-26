@@ -99,10 +99,16 @@ public class ClassVector {
 	 *@return                         the new class vector
 	 */
 	public ClassVector slice(int[] order, boolean includeSlicedClassOnly) {
+      if(includeSlicedClassOnly) {
+         String[] x = new String[order.length];
+         for (int i = 0, length = order.length; i < length; i++) {
+            x[i] = this.getClassName(this.assignments[order[i]]);
+         }
+         return new ClassVector(x);
+      }
+      
 		int[] newAssignments = new int[order.length];
 		Map newClassNumber2IndicesMap = new HashMap();
-		Map newClassNumber2LabelMap = new HashMap();
-		int newClassCount = 0;
 		for (int i = 0, length = order.length; i < length; i++) {
 			newAssignments[i] = this.assignments[order[i]];
 			Integer assignment = new Integer(newAssignments[i]);
@@ -111,14 +117,12 @@ public class ClassVector {
 				newIndices = new ArrayList();
 				newClassNumber2IndicesMap.put(assignment,
 						newIndices);
-				newClassCount++;
-				newClassNumber2LabelMap.put(assignment, classNumber2LabelMap.get(assignment));
 
 			}
 			newIndices.add(new Integer(i));
 		}
 		return new ClassVector(newClassNumber2IndicesMap, newAssignments,
-				includeSlicedClassOnly ? newClassNumber2LabelMap : classNumber2LabelMap, includeSlicedClassOnly ? newClassCount : classCount);
+				 classNumber2LabelMap, classCount);
 	}
 
 
