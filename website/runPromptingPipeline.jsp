@@ -84,6 +84,11 @@ try {
 		String attachmentDir = null;
 		File dir = null;
 		String attachmentName = null;
+		dir = new File(System.getProperty("java.io.tmpdir"));
+		// create a bogus dir under this for the input files
+		tmpDirName = taskName + "_" + userID + "_" + System.currentTimeMillis();			
+		dir = new File(dir, tmpDirName );
+		dir.mkdir();
 
 		com.jspsmart.upload.File attachedFile = null;
 		for (int i=0;i<mySmartUpload.getFiles().getCount();i++){
@@ -101,12 +106,7 @@ try {
 					continue;
 				}
 					
-				dir = new File(System.getProperty("java.io.tmpdir"));
-				// create a bogus dir under this for the input files
-				tmpDirName = taskName + "_" + userID + "_" + System.currentTimeMillis();			
-				dir = new File(dir, tmpDirName );
-				dir.mkdir();
-				attachmentName = dir.getPath() + File.separator + attachmentName;
+								attachmentName = dir.getPath() + File.separator + attachmentName;
 				File attachment = new File(attachmentName);
 				if (attachment.exists()) {
 					attachment.delete();

@@ -78,6 +78,11 @@ try {
 		String attachmentDir = null;
 		File dir = null;
 		String attachmentName = null;
+		dir = new File(System.getProperty("java.io.tmpdir"));
+		// create a bogus dir under this for the input files
+		tmpDirName = taskName + "_" + userID + "_" + System.currentTimeMillis();			
+		dir = new File(dir, tmpDirName );
+		dir.mkdir();
 
 		com.jspsmart.upload.File attachedFile = null;
 		for (int i=0;i<mySmartUpload.getFiles().getCount();i++){
@@ -96,12 +101,7 @@ try {
 					continue;
 				}
 					
-				dir = new File(System.getProperty("java.io.tmpdir"));
-				// create a bogus dir under this for the input files
-				tmpDirName = taskName + "_" + userID + "_" + System.currentTimeMillis();			
-				dir = new File(dir, tmpDirName );
-				dir.mkdir();
-				attachmentName = dir.getPath() + File.separator + attachmentName;
+								attachmentName = dir.getPath() + File.separator + attachmentName;
 
 				File attachment = new File(attachmentName);
 				if (attachment.exists()) {
@@ -109,6 +109,7 @@ try {
 				}
 						
 				attachedFile.saveAs(attachmentName);
+				
 				htFilenames.put(fieldName, attachmentName ); // map between form field name and filesystem name
 				
 				if (DEBUG) System.out.println(fieldName + "=" + fullName + " (" + attachedFile.getSize() + " bytes) in " + htFilenames.get(fieldName) + "<br>");
@@ -231,6 +232,8 @@ for (int i=0; i < parmInfos.length; i++){
 			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
 				out.println("<a href='"+ htmlValue + "'>"+htmlValue +"</a>");
 			} else {
+				File f = new File(tmpDirName +"/" + value);
+
 				out.println("<a href='getFile.jsp?task=&file="+ URLEncoder.encode(tmpDirName +"/" + value)+"'>"+htmlValue +"</a>");
 	
 			}
