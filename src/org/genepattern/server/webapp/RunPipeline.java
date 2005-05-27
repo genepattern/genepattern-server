@@ -349,12 +349,23 @@ public class RunPipeline {
 		String jobDir = System.getProperty("jobs");
 		// try semantic match on output files first
 
+try {
+	} catch (Exception e){}
+
 		// For now, just match on filename extension
 semantic_search_loop:
 		for (j = 0; j < jobParams.length; j++) {
 			if (jobParams[j].isOutputFile()) {
 				fn = jobParams[j].getValue(); // get the filename
-				if (isFileType(new File(jobDir, fn), fileStr)) {
+				File aFile = new File(fn);
+				if (!aFile.exists()){
+					aFile = new File("../", fn);
+				}
+				if (!aFile.exists()){
+					aFile = new File("../"+jobDir+"/", fn);
+				}
+
+				if (isFileType(aFile, fileStr)) {
 					fileName = fn;
 					break semantic_search_loop;
 				}
