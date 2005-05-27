@@ -1,6 +1,8 @@
 package org.genepattern.io;
 
 import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -70,6 +72,32 @@ public class IOUtil {
 	 */
 	public static List readFeatureList(String pathname) throws IOException {
 		return featureListReader.read(pathname);
+	}
+   
+  /**
+	 * Writes the given feature list to a file
+	 * 
+	 * @param features
+	 *            The features
+	 * @param pathname
+	 *            A pathname string
+	 * @exception IOException
+	 *                If an error occurs while saving the data
+	 */
+	public static void writeFeatureList(String[] features, String pathname) throws IOException {
+		PrintWriter pw = null;
+      try {
+         pw = new PrintWriter(new FileWriter(pathname));
+         for(int i = 0; i < features.length; i++) {
+            pw.println(features[i]);  
+         }
+         
+      } finally {
+         if(pw!=null) {
+            pw.close();
+         }
+      }
+     
 	}
 
 	/**
