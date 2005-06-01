@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using Zero G's InstallAnywhere 6.1 Enterprise, Build 2325
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Fri May 20 09:57:08 EDT 2005 -->
-<InstallAnywhere_Deployment_Project increments="8689">
+     DATE:   Wed Jun 01 09:02:36 EDT 2005 -->
+<InstallAnywhere_Deployment_Project increments="8687">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
 		<versionID major="6" minor="1" revision="-1"/>
@@ -10,7 +10,7 @@
 		<scriptID>12,42,11,90,81,55,51,50,54,57,71,70,78,52,69,53</scriptID>
 		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,51,46,49,95,48,56,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,83,59,32,67,112,49,50,53,50</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,0,-13,105,-112,-112,80,112,116,103,88,98,113,97,113,65,65,88,74,65,72,71,70,69,64,69,66,69,48,79,87,5,2,4,15,68,106,3,1,0,0</authorizationID>
+		<authorizationID>1,0,0,0,51,-7,0,80,80,112,116,103,88,98,113,97,113,65,65,88,74,65,72,71,70,69,64,69,66,69,48,79,87,5,2,15,3,79,103,4,1,0,0</authorizationID>
 	</essentialScriptInfo>
 	<installationObjects uniqueObjects="449">
 		<object class="com.zerog.ia.installer.Installer" objectID="72a1c4b4b1bf">
@@ -73,9 +73,6 @@
 					</method>
 					<method name="addElement">
 						<string><![CDATA[Install Complete]]></string>
-					</method>
-					<method name="addElement">
-						<string><![CDATA[Could not launch browser]]></string>
 					</method>
 				</object>
 			</property>
@@ -4890,7 +4887,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 								<int>2</int>
 							</property>
 							<property name="labelIndex">
-								<int>13</int>
+								<int>12</int>
 							</property>
 							<property name="help">
 								<object class="com.zerog.ia.installer.util.Help" objectID="fedc084abcbd">
@@ -5053,7 +5050,7 @@ Please review this and try to install again or contact gp-help@broad.mit.edu.]]>
 								<int>2</int>
 							</property>
 							<property name="labelIndex">
-								<int>13</int>
+								<int>12</int>
 							</property>
 							<property name="help">
 								<object class="com.zerog.ia.installer.util.Help" objectID="fee2229abcc3">
@@ -5302,7 +5299,7 @@ Please review this and try to install again or contact gp-help@broad.mit.edu.]]>
 				<object class="java.util.Properties">
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[May 20, 2005 9:57:07 AM EDT]]></string>
+						<string><![CDATA[June 1, 2005 9:02:36 AM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.merge]]></string>
@@ -5346,7 +5343,7 @@ Please review this and try to install again or contact gp-help@broad.mit.edu.]]>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.auto-populate.labels]]></string>
-						<string><![CDATA[true]]></string>
+						<string><![CDATA[false]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.webpage.language]]></string>
@@ -5362,7 +5359,7 @@ Please review this and try to install again or contact gp-help@broad.mit.edu.]]>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.build.last.date]]></string>
-						<string><![CDATA[May 20, 2005 9:42:37 AM EDT]]></string>
+						<string><![CDATA[June 1, 2005 9:02:36 AM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.installer.options.stderr.redirect]]></string>
