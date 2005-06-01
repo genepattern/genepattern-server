@@ -1,10 +1,11 @@
 Package: GenePattern
-Version: 1.4-0
-Date: 2005-03-24
-Title: GenePattern services (wrappers) and framework supporting SOAP messaging, GP data file reading, visualization, and writing.
-Author: Jim Lerner, Broad Institute of MIT and Harvard
-Maintainer: GenePattern Team <gp-help@broad.mit.edu>
-Depends: methods, XML
+Version: 0.1-0
+License: BSD (see BSD-License and Whitehead-License)
 Description: GenePattern web service library
-License: BSD
-URL: http://www.genepattern.org
+Title: GenePattern
+Author: Jim Lerner, Center for Genomics Research, Broad Institute, Massachusetts Institute of Technology
+Maintainer: GenePattern Team <gp-help@genome.wi.mit.edu>
+URL: http://www.broad.mit.edu/cancer/software/genepattern
+Depends: XML, methods
+Date: 2003-06-02
+Built: R 1.6.1; ; Thu Jun 12 10:10:16 EDT 2003
