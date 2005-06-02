@@ -667,18 +667,18 @@ if (taskName != null) {
 	 <input type="button" onclick="window.open('newFileType.html', 'newFileType', 'width=200,height=200').focus()" value="new..." class="little">
   	</td>
    <% }%>
-	<td valign="top">
+<!--	 <td valign="top">
 	domain(s):
-	</td>
-	<td valign="top">
+	</td> 
+	<td valign="top"> 
 <%
-		attributeValue = (tia != null ? tia.get(GPConstants.DOMAIN) : "");
-		if (attributeValue == null) attributeValue = "";
+		//attributeValue = (tia != null ? tia.get(GPConstants.DOMAIN) : "");
+		//if (attributeValue == null) attributeValue = "";
 %>
-  <% if (!viewOnly) { %>
-	<select multiple name="<%= GPConstants.DOMAIN %>">
+  <% //if (!viewOnly) { %>
+	//<select multiple name="<%= GPConstants.DOMAIN %>">
 <%
-	{
+	/*{
 		String[] taskDomains = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 		String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[DOMAIN_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
 
@@ -695,18 +695,18 @@ if (taskName != null) {
 		
 			out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + GenePatternAnalysisTask.htmlEncode(c) + "</option>");
 		}
-	}
+	}*/
 %>
 	</select>
-<% } else { %>
-		<%= attributeValue %>
-<% } %>
-	</td>
-  <% if (!viewOnly) { %>
-  	<td valign="top">         
+<% //} else { %>
+	//	<%= attributeValue %>
+<% //} %>
+<!--	</td> -->
+  <% //if (!viewOnly) { %>
+  <!--	<td valign="top">         
 	 <input type="button" onclick="javascript:window.open('newDomain.html', 'newDomain', 'width=200,height=200').focus()"  value="new..." class="little">
-  	</td>
-  <% } %>
+  	</td> -->
+  <%// } %>
 	</tr>
 	</table>
 
