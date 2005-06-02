@@ -5,7 +5,7 @@
 <title>Add New File Format</title>
 <SCRIPT LANGUAGE="JavaScript">
 function sendData(){
-	window.opener.addNewFileType(document.data.name.value, document.data.desc.value);	
+	window.opener.addNewFileType(document.data.name.value, document.data.name.value);	
 	self.close();
 }
 </SCRIPT>
@@ -14,13 +14,10 @@ function sendData(){
 <form name="data">
 <table>
 <tr>
-<td align="right"><nobr>File Format Name:</nobr></td>
+<td align="right"><nobr>File Format:</nobr></td>
 <td><input type="text" name="name" value="" size="10"></td>
 </tr>
-<tr>
-<td align="right"><nobr>Description:</nobr></td>
-<td><input type="text" name="desc" value="" size="10"></td>
-</tr>
+
 </table>
 <center><input type="button" onclick="sendData()" value="add" class="little"></center>
 </form>
