@@ -261,7 +261,8 @@ if(jobs.length==0) {
 
 for(int i = 0; i < jobs.length; i++) {
    JobInfo job = jobs[i];
-  
+   boolean myJob = userID.equals(job.getUserId());
+
    out.print("<tr><td align=\"right\"><a href=\"getJobResults.jsp?jobID=" + job.getJobNumber() + "\">" + job.getJobNumber() + "</a>");
    
    out.print("<td><a href=\"addTask.jsp?view=1&name=" + job.getTaskLSID() + "\">" + job.getTaskName() + "</a>");
@@ -282,7 +283,15 @@ for(int i = 0; i < jobs.length; i++) {
 		(showAll ? ("&" + SHOW_ALL + "=1") : "") + "\">stop</a></td>" +
 		"<td><form><input type=\"checkbox\" name=\"deleteJobID\" value=\"" + job.getJobNumber() + "\"></form>");
    } else if(!status.equals(JobStatus.NOT_STARTED)) {
-	out.print("<td><font color=" + htColors.get(status)  +">" + status + "</font></td><td><form><input type=\"checkbox\" name=\"deleteJobID\" value=\"" + job.getJobNumber() + "\"></form>");
+	//out.print("<td><font color=" + htColors.get(status)  +">" + status + "</font></td><td><form><input type=\"checkbox\" name=\"deleteJobID\" value=\"" + job.getJobNumber() + "\"></form>");
+
+out.print("<td><font color=" + htColors.get(status)  +">" + status + "</font></td>");
+		if (myJob){ 
+			out.print("<td><form><input type=\"checkbox\" name=\"deleteJobID\" value=\"" + job.getJobNumber() + "\"></form>");
+		} else {
+			out.print("<td>&nbsp;");
+		}
+
    } else {
 	out.print("<td><font color=" + htColors.get(status)  +">" + status);
 	if (status.equals(JobStatus.FINISHED)) {
@@ -326,8 +335,11 @@ for(int i = 0; i < jobs.length; i++) {
       }
       if(hasOutputFiles) {
          out.println("<tr><td></td><td colspan=\"4\">");
-         out.println("<input type=\"submit\" name=\"delete\" value=\"delete\" class=\"little\">");
-         out.println("<input type=\"submit\" name=\"download\" value=\"download\" class=\"little\">");
+         out.println("<input type=\"submit\" name=\"delete\" value=\"delete\" class=\"little\"");
+	   if (!myJob){
+	 	out.println("disabled=\"true\" ");
+	   }
+         out.println("><input type=\"submit\" name=\"download\" value=\"download\" class=\"little\">");
          out.println("</form>");
       }
 
