@@ -22,7 +22,7 @@ if (filename == null)  {
 	return;
 }
 int i = filename.lastIndexOf(File.separator);
-if (i != -1) filename = filename.substring(i+1); // disallow absolute paths
+if ((i != -1) && (taskName.trim().length() != 0)) filename = filename.substring(i+1); // disallow absolute paths
 
 String contentType = new File(filename).toURL().openConnection().getFileNameMap().getContentTypeFor(filename);
 if (contentType == null) {
