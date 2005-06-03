@@ -108,11 +108,6 @@
 
   	</copy>
 
-	<copy todir="wartemp">
-    		<fileset dir="build">
-			<include name="Web_Installers/**"/>
-		</fileset>
-  	</copy>
 
 	<copy todir="wartemp/downloads">
     		<fileset dir="build">
