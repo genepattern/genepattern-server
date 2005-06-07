@@ -498,10 +498,10 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
-		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00029=1_2 SOMClustering.zip"/>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00029=2 SOMClustering.zip"/>
 	</commandline>
 </cvs>
-<copy file="SOMClustering.zip" tofile="catalogregen/SOMClustering.1.zip" />
+<copy file="SOMClustering.zip" tofile="catalogregen/SOMClustering.2.zip" />
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
