@@ -60,8 +60,8 @@ public class TestGPServer extends TestWebService {
 
    public void testMissingOptionalParameter() {
       JobResult r = runPreprocess(new Parameter[]{new Parameter("input.filename", ALL_AML_TRAIN)});
-      assertTrue(r.hasStandardError() == false);
-      assertTrue(r.getOutputFileNames().length == 1);
+      assertTrue( ""+r.getJobNumber(), r.hasStandardError() == false);
+      assertTrue(r.getOutputFileNames().length == 2);
    }
 
 
