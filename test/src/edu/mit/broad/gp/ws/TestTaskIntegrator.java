@@ -1,13 +1,11 @@
 package edu.mit.broad.gp.ws;
-import java.io.*;
+import java.io.File;
 
-import java.util.*;
-
-import edu.mit.genome.gp.util.LSID;
-import edu.mit.genome.util.GPConstants;
-import edu.mit.wi.omnigene.framework.analysis.*;
-import edu.mit.wi.omnigene.framework.analysis.webservice.client.*;
-import edu.mit.wi.omnigene.framework.webservice.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import org.genepattern.webservice.*;
+import org.genepattern.util.GPConstants;
 import junit.framework.*;
 
 /**

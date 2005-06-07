@@ -1,18 +1,12 @@
 package edu.mit.broad.gp.ws;
 
 import java.io.File;
-import java.io.FileFilter;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import org.genepattern.data.pipeline.*;
-
-import edu.mit.wi.omnigene.framework.analysis.*;
-import edu.mit.wi.omnigene.framework.analysis.webservice.client.*;
-import edu.mit.wi.omnigene.framework.webservice.*;
-import edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask;
-
+import org.genepattern.webservice.*;
+import org.genepattern.server.*;
+import org.genepattern.server.genepattern.*;
 import junit.framework.*;
 
 /**

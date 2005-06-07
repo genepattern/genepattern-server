@@ -1,6 +1,6 @@
 package edu.mit.broad.gp.ws;
 import junit.framework.*;
-
+import org.genepattern.webservice.*;
 /**
  *  Test the GPServer class
  *
