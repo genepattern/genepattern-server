@@ -148,6 +148,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00005=2 FeatureSummaryViewer.zip"/>
+	</commandline>
+</cvs>
+<copy file="FeatureSummaryViewer.zip" tofile="catalogregen/FeatureSummaryViewer.2.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00042=0 GEOImporter.zip"/>
 	</commandline>
 </cvs>
@@ -180,6 +187,13 @@
 	</commandline>
 </cvs>
 <copy file="GeneListSignificanceViewer.zip" tofile="catalogregen/GeneListSignificanceViewer.2.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00006=3 GeneListSignificanceViewer.zip"/>
+	</commandline>
+</cvs>
+<copy file="GeneListSignificanceViewer.zip" tofile="catalogregen/GeneListSignificanceViewer.3.zip" />
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
@@ -243,6 +257,13 @@
 	</commandline>
 </cvs>
 <copy file="HeatMapViewer.zip" tofile="catalogregen/HeatMapViewer.1.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00010=2 HeatMapViewer.zip"/>
+	</commandline>
+</cvs>
+<copy file="HeatMapViewer.zip" tofile="catalogregen/HeatMapViewer.2.zip" />
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
@@ -393,6 +414,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00017=2 PCA.zip"/>
+	</commandline>
+</cvs>
+<copy file="PCA.zip" tofile="catalogregen/PCA.2.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00018=0 PCAViewer.zip"/>
 	</commandline>
 </cvs>
@@ -491,6 +519,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00023=5 SOMClusterViewer.zip"/>
+	</commandline>
+</cvs>
+<copy file="SOMClusterViewer.zip" tofile="catalogregen/SOMClusterViewer.5.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00029=0 SOMClustering.zip"/>
 	</commandline>
 </cvs>
@@ -537,6 +572,13 @@
 	</commandline>
 </cvs>
 <copy file="SelectFeaturesColumns.zip" tofile="catalogregen/SelectFeaturesColumns.1.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00021=2 SelectFeaturesColumns.zip"/>
+	</commandline>
+</cvs>
+<copy file="SelectFeaturesColumns.zip" tofile="catalogregen/SelectFeaturesColumns.2.zip" />
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
@@ -670,6 +712,13 @@
 	</commandline>
 </cvs>
 <copy file="all_aml_methodology_pipeline.zip" tofile="catalogregen/all_aml_methodology_pipeline.0.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00001=1 Golub.zip"/>
+	</commandline>
+</cvs>
+<copy file="Golub.zip" tofile="catalogregen/Golub.Slonim.zip" />
 
 </target>
 </project>
