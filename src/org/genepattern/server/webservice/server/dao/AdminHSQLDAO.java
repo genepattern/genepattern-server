@@ -329,7 +329,7 @@ public class AdminHSQLDAO implements AdminDAO {
 				+ "' OR access_id="
 				+ GPConstants.ACCESS_PUBLIC
 				+ ") GROUP BY lsid_no_version) WHERE task_master.lsid=CONCAT(CONCAT(no_version, ':'), max_version)";
-		return _getTasks(sql, false);
+		return _getTasks(sql, true);
 	}
 
 	public TaskInfo getTask(int taskId) throws AdminDAOSysException {
