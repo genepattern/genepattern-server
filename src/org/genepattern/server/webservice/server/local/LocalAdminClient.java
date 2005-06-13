@@ -46,6 +46,10 @@ public class LocalAdminClient {
 	public Collection getTaskCatalog() throws WebServiceException {
 		return Arrays.asList(service.getAllTasks());
 	}
+	public Collection getLatestTasks() throws WebServiceException {
+		return Arrays.asList(service.getLatestTasks());
+	}
+
 
 	public TaskInfo getTask(String lsid) throws WebServiceException {
 		return service.getTask(lsid);
