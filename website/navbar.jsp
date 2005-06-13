@@ -34,8 +34,15 @@ Vector recentPipes = new Vector();
 
 try { 
 	LocalAdminClient adminClient = new LocalAdminClient(userID);
-	tmTasks = adminClient.getTaskCatalog();
-	
+	tmTasks = adminClient.getLatestTasks();
+	//tmTasks = adminClient.getTaskCatalog();
+	int iii = 1;
+	for (Iterator iter = tmTasks.iterator(); iter.hasNext(); ){
+		TaskInfo ati = (TaskInfo)iter.next();
+		System.out.println(" " + (iii++) + "  " + ati.getName());
+	}	
+
+
 	LinkedHashSet recentTasksSet = new LinkedHashSet();
 	LinkedHashSet recentPipesSet = new LinkedHashSet();
 	LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
