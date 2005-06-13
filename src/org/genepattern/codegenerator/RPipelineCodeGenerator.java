@@ -11,6 +11,7 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -239,11 +240,17 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
 		return prolog.toString();
 	}
    
-   public String generateTask(JobInfo jobInfo, ParameterInfo[] params) {
+   public String generateTask(AnalysisJob analysisJob, ParameterInfo[] params) {
+      JobInfo jobInfo = analysisJob.getJobInfo();
+      boolean visualizer = analysisJob.isClientJob();
       String taskName = rEncode(jobInfo.getTaskName());
       String lsid = jobInfo.getTaskLSID();
       StringBuffer sb = new StringBuffer();
-      sb.append("results <- " + taskName + "(");
+      if(!visualizer) {
+         sb.append("results <- ");
+      }
+      sb.append(taskName + "(");
+         
       if(params!=null) {
          for(int i = 0; i < params.length; i++) {
             if(i > 0) {

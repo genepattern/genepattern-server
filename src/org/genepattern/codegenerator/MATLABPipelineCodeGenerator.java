@@ -13,6 +13,7 @@ import java.util.Vector;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -161,7 +162,9 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator i
 		return prolog.toString();
 	}
 
-   public String generateTask(JobInfo jobInfo, ParameterInfo[] params) {
+   public String generateTask(AnalysisJob analysisJob, ParameterInfo[] params) {
+      JobInfo jobInfo = analysisJob.getJobInfo();
+      boolean visualizer = analysisJob.isClientJob();
       String taskName = jobInfo.getTaskName();
       String lsid = jobInfo.getTaskLSID();
       StringBuffer sb = new StringBuffer();
@@ -171,7 +174,10 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator i
             sb.append("params." + matlabEncodeName(params[i].getName()) + " = '" + params[i].getValue() + "';\n");  
          }
       }
-      sb.append("results = runAnalysis(gpServer,'" + taskName + "', params, '" + lsid + "');");  
+      if(!visualizer) {
+         sb.append("results = ");
+      }
+      sb.append("runAnalysis(gpServer,'" + taskName + "', params, '" + lsid + "');");  
       return sb.toString();
    }
    

@@ -10,7 +10,7 @@ import org.genepattern.webservice.*;
  */
 public interface TaskCodeGenerator {
 
-   public String generateTask(JobInfo job,
+   public String generateTask(AnalysisJob job,
          ParameterInfo[] params);
      
 
