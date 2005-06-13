@@ -1045,6 +1045,8 @@ eachRequiredPatch:
 			LSID requiredLSID = new LSID(requiredPatchLSID);
 			_cat.debug("Checking whether " + requiredPatchLSID + " is already installed...");
 			for (int p = 0; p < installedPatchLSIDs.length; p++) {
+
+
 				LSID installedLSID = new LSID(installedPatchLSIDs[p]);
 				if (installedLSID.isEquivalent(requiredLSID)) {
 					// there are installed patches, and there is an LSID match to this one
@@ -1122,19 +1124,24 @@ eachRequiredPatch:
 			requiredPatchURL = (String)hmProps.get("site_module.url");
 		}
 
-		if (taskIntegrator != null) taskIntegrator.statusMessage("Downloading patch " + requiredPatchLSID + " from " + requiredPatchURL);
+		if (taskIntegrator != null) taskIntegrator.statusMessage("Downloading required patch from " + requiredPatchURL);
 		String zipFilename = downloadPatch(requiredPatchURL, taskIntegrator, (String)hmProps.get("site_module.zipfilesize"));
 
 		String patchName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion();
 		File patchDirectory = new File(System.getProperty("patches"), patchName);
-		if (taskIntegrator != null) taskIntegrator.statusMessage("Download complete.  Installing patch from " + zipFilename + " to " + patchDirectory.getAbsolutePath() + ".");
+		//if (taskIntegrator != null) taskIntegrator.statusMessage("Download complete.  Installing patch from " + zipFilename + " to " + patchDirectory.getAbsolutePath() + ".");
+		if (taskIntegrator != null) taskIntegrator.statusMessage("Installing patch from " + patchDirectory.getPath() + ".");
 		explodePatch(zipFilename, patchDirectory, taskIntegrator);
 		new File(zipFilename).delete();
 		
 		// entire zip file has been exploded, now load the manifest, get the command line, and execute it
-		Properties props = loadManifest(patchDirectory);		
+		Properties props = loadManifest(patchDirectory);	
+		String nomDePatch = props.getProperty("name");	
 		String commandLine = getPatchCommandLine(props);
-		if (taskIntegrator != null) taskIntegrator.statusMessage("Running " + commandLine + " in " + patchDirectory.getAbsolutePath());
+		//if (taskIntegrator != null) taskIntegrator.statusMessage("Running " + commandLine + " in " + patchDirectory.getAbsolutePath());
+
+		if (taskIntegrator != null) taskIntegrator.statusMessage("Running " + nomDePatch + " Installer.<br> ");
+
 
 		String exitValue = "" + executePatch(commandLine, patchDirectory, taskIntegrator);
 		if (taskIntegrator != null) taskIntegrator.statusMessage("Patch installed, exit code " + exitValue);
@@ -1164,6 +1171,7 @@ eachRequiredPatch:
 				old[i].delete();
 			}
 			patchDirectory.delete();
+			throw new Exception("Could not install required patch: " + props.get("name") + "  "+ props.get("LSID"));
 		}
 	}
 	
@@ -1178,7 +1186,8 @@ eachRequiredPatch:
 			} catch (NumberFormatException nfe) {
 				// ignore
 			}
-			return downloadTask(url, taskIntegrator, len);
+			//return downloadTask(url, taskIntegrator, len);
+			return downloadTask(url, null, len); // null task integrator to suppress output
 		} catch (IOException ioe) {
 			if (ioe.getCause() != null) ioe = (IOException)ioe.getCause();
 			throw new IOException(ioe.toString() + " while downloading " + url);
@@ -1216,7 +1225,7 @@ eachRequiredPatch:
 			is = zipFile.getInputStream(zipEntry);
 			OutputStream os = new FileOutputStream(outFile);
 			long fileLength = zipEntry.getSize();
-			if (taskIntegrator != null) taskIntegrator.statusMessage("Extracting " + zipEntry.getName() + ", " + fileLength + " bytes");
+			// if (taskIntegrator != null) taskIntegrator.statusMessage("Extracting " + zipEntry.getName() + ", " + fileLength + " bytes");
 			long numRead = 0;
 			byte[] buf = new byte[100000];
 			int i;
@@ -1291,10 +1300,10 @@ eachRequiredPatch:
 
 		// create threads to read from the command's stdout and stderr
 		// streams
-
-		Thread outputReader = (taskIntegrator != null) ? streamCopier(process.getInputStream(),  taskIntegrator) : streamCopier(process.getInputStream(), System.out);
-		Thread errorReader = (taskIntegrator != null) ? streamCopier(process.getErrorStream(), taskIntegrator) : streamCopier(process.getInputStream(), System.err);
-
+		if (taskIntegrator != null) taskIntegrator.statusMessage("<p><table width='80%' align='center' border=1><tr bgcolor='#DDDDFF' ><td>");
+		Thread outputReader = (taskIntegrator != null) ? antStreamCopier(process.getInputStream(),  taskIntegrator) : streamCopier(process.getInputStream(), System.out);
+		Thread errorReader = (taskIntegrator != null) ? antStreamCopier(process.getErrorStream(), taskIntegrator) : streamCopier(process.getInputStream(), System.err);
+		
 		// drain the output and error streams
 		outputReader.start();
 		errorReader.start();
@@ -1302,7 +1311,8 @@ eachRequiredPatch:
 		// wait for all output
 		outputReader.join();
 		errorReader.join();
-
+if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></table>");
+		
 		// the process will be dead by now
 		process.waitFor();
 		int exitValue = process.exitValue();
@@ -1418,6 +1428,28 @@ eachRequiredPatch:
 		            String line;
 			    try {
 				while((line = in.readLine())!=null){
+					if (taskIntegrator != null) taskIntegrator.statusMessage(line);
+				}
+			    } catch (IOException ioe) {
+			    	System.err.println(ioe + " while reading from process stream");
+		            }
+		    	}
+		    });
+	}
+
+	// copy an InputStream to a PrintStream until EOF
+	public static Thread antStreamCopier(final InputStream is, final ITaskIntegrator taskIntegrator) throws IOException {
+		    // create thread to read from the a process' output or error stream
+		    return new Thread(new Runnable(){
+		    	public void run() {
+		            BufferedReader in = new BufferedReader(new InputStreamReader(is));
+		            String line;
+			    try {
+				while((line = in.readLine())!=null){
+					int idx = 0;
+					if ((idx = line.indexOf("[echo]")) >= 0){
+					 	line = line.substring(idx+6);
+					}
 					if (taskIntegrator != null) taskIntegrator.statusMessage(line);
 				}
 			    } catch (IOException ioe) {
