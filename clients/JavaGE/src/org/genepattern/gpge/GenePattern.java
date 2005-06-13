@@ -25,6 +25,7 @@ import  org.genepattern.gpge.ui.util.*;
 import org.genepattern.util.StringUtils;
 import org.genepattern.gpge.ui.maindisplay.MainFrame;
 import java.awt.Color;
+import javax.swing.SwingUtilities;
 
 /**
  * Main program class
@@ -117,10 +118,18 @@ public final class GenePattern {
 		final GenePattern gp = new GenePattern();
 	}
 
-   public static void showMessageDialog(String title, String message) {
-		javax.swing.JOptionPane.showMessageDialog(mainFrame, message, title,
-				javax.swing.JOptionPane.INFORMATION_MESSAGE);
-      
+   public static void showMessageDialog(final String title, final String message) {
+       Runnable runnable = new Runnable() {
+         public void run() {
+            javax.swing.JOptionPane.showMessageDialog(mainFrame, message, title,
+				javax.swing.JOptionPane.INFORMATION_MESSAGE);  
+         }
+      };
+      if(SwingUtilities.isEventDispatchThread()) {
+         runnable.run();
+      } else {
+         SwingUtilities.invokeLater(runnable);
+      }
    }
    
    public static void showMessageDialog(String message) {
@@ -128,19 +137,34 @@ public final class GenePattern {
    }
    
    
-   public static void showErrorDialog(String title, String message) {
-		javax.swing.JOptionPane.showMessageDialog(mainFrame, message, "Error",
-				javax.swing.JOptionPane.ERROR_MESSAGE);
-      
+   public static void showErrorDialog(final String title, final String message) {
+      Runnable runnable = new Runnable() {
+         public void run() {
+             javax.swing.JOptionPane.showMessageDialog(mainFrame, message, "Error",
+				javax.swing.JOptionPane.ERROR_MESSAGE);  
+         }
+      };
+      if(SwingUtilities.isEventDispatchThread()) {
+         runnable.run();
+      } else {
+         SwingUtilities.invokeLater(runnable);
+      }
 	}
    
+   /**
+   * Returns <tt>true</tt> if the exception indicates that the client is
+   * disconnected from the server, <tt>false</tt> otherwise. If <tt>true</tt> 
+   * pops open a dialog to alert the user.
+   */
    public static boolean disconnectedFromServer(org.genepattern.webservice.WebServiceException wse, String server) {
       if(wse.getRootCause() instanceof org.apache.axis.AxisFault) {
          org.apache.axis.AxisFault af = (org.apache.axis.AxisFault) wse.getRootCause();
          Throwable t = af.getCause();
          if(t instanceof java.net.ConnectException || t instanceof java.net.UnknownHostException) {
-            showErrorDialog("Unable to connect to " + 
-                  server);
+            String message = "Unable to connect to " + 
+                  server;
+             javax.swing.JOptionPane.showMessageDialog(mainFrame, message, "Error",
+				javax.swing.JOptionPane.ERROR_MESSAGE);  
             return true;
          }
       }  
