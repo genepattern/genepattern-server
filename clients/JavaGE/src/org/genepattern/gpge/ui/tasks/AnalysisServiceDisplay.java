@@ -40,13 +40,13 @@ import org.genepattern.gpge.ui.maindisplay.MainFrame;
 import org.genepattern.gpge.ui.project.ProjectDirModel;
 import org.genepattern.modules.ui.graphics.*;
 import org.genepattern.util.*;
-import org.genepattern.webservice.AnalysisService;
-import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.*;
 import org.genepattern.webservice.TaskIntegratorProxy;
 import org.genepattern.gpge.ui.maindisplay.LSIDUtil;
 import org.genepattern.webservice.WebServiceException;
 import org.genepattern.gpge.ui.preferences.PreferenceKeys;
+import org.genepattern.gpge.ui.tasks.TaskLauncher;
+import org.genepattern.codegenerator.*;
 /**
  *  Displays an <tt>AnalysisService</tt>
  *
@@ -390,6 +390,36 @@ public class AnalysisServiceDisplay extends JPanel {
       JButton helpButton = new JButton("Help");
       helpButton.addActionListener(new HelpActionListener());
       buttonPanel.add(helpButton);
+      
+      final JComboBox viewCodeComboBox = new JComboBox(new Object[]{"View Code", "Java", "MATLAB", "R"});
+      buttonPanel.add(viewCodeComboBox);
+       
+      viewCodeComboBox.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+            String item = (String) viewCodeComboBox.getSelectedItem();
+            if("View Code".equals(item)) {
+               return;
+            }
+            String language = item;
+            TaskCodeGenerator codeGenerator = null;
+            if("Java".equals(language)) {
+               codeGenerator = new JavaPipelineCodeGenerator();
+            } else if("MATLAB".equals(language)) {
+               codeGenerator = new MATLABPipelineCodeGenerator();
+            } else if("R".equals(language)) {
+               codeGenerator = new RPipelineCodeGenerator();
+            } else {
+               throw new IllegalArgumentException("Unknown language");
+            }  
+            String lsid = (String) selectedService.getTaskInfo()
+               .getTaskInfoAttributes().get(GPConstants.LSID);
+               
+            JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, getParameterInfoArray(), AnalysisServiceManager.getInstance().getUsername(), lsid, selectedService.getTaskInfo().getName());
+            AnalysisJob job = new AnalysisJob(selectedService.getServer(), jobInfo, TaskLauncher.isVisualizer(selectedService));
+            org.genepattern.gpge.ui.code.Util.viewCode(codeGenerator, job, "Java");
+         }
+      });
+      
       add(topPanel, BorderLayout.NORTH);
      
 		JScrollPane sp = new JScrollPane(parameterPanel);
@@ -712,47 +742,55 @@ public class AnalysisServiceDisplay extends JPanel {
    }
 
 
+   /**
+   * Gets the parameter info array for the current values of parameters
+   */
+   public ParameterInfo[] getParameterInfoArray() {
+      List actualParameters = new ArrayList();
+      ParameterInfo[] formalParameters = selectedService.getTaskInfo().getParameterInfoArray();
+      
+      if(formalParameters != null) {
+         for(int i = 0; i < formalParameters.length; i++) {
+            Component c = (Component) parameterName2ComponentMap.get(formalParameters[i].getName());
+            String value = null;
+            ParameterInfo actualParameter = new ParameterInfo(formalParameters[i].getName(), "", "");
+            actualParameter.setAttributes(new HashMap(2));
+            boolean isCheckBox = false;
+            if(c instanceof ObjectTextField) {
+               try {
+                  
+                  value = getValue(actualParameter, (ObjectTextField) c);
+                  actualParameter.getAttributes().put(
+                     GPConstants.PARAM_INFO_CLIENT_FILENAME[0],
+                     value);
+               } catch(java.io.IOException ioe) {
+                  ioe.printStackTrace();  
+               }
+            } else if(c instanceof JComboBox) {
+               isCheckBox = true;
+               ChoiceItem ci = (ChoiceItem) ((JComboBox)c).getSelectedItem();
+               value = ci.getValue();
+            } else if(c instanceof JTextField) {
+               value = ((JTextField) c).getText();
+            }
+            if(value != null) {
+               value = value.trim();
+            }
+            actualParameter.setValue(value);
+            actualParameters.add(actualParameter);
+         }
+      }
+
+      final ParameterInfo[] actualParameterArray = (ParameterInfo[]) actualParameters.toArray(new ParameterInfo[0]);
+      return actualParameterArray;
+   }
+   
    private class SubmitActionListener implements ActionListener {
       public final void actionPerformed(ActionEvent ae) {
          final JButton source = (JButton) ae.getSource();
          try {
             source.setEnabled(false);
-            List actualParameters = new ArrayList();
-            ParameterInfo[] formalParameters = selectedService.getTaskInfo().getParameterInfoArray();
-            
-            if(formalParameters != null) {
-               for(int i = 0; i < formalParameters.length; i++) {
-                  Component c = (Component) parameterName2ComponentMap.get(formalParameters[i].getName());
-                  String value = null;
-                  ParameterInfo actualParameter = new ParameterInfo(formalParameters[i].getName(), "", "");
-                  actualParameter.setAttributes(new HashMap(2));
-                  boolean isCheckBox = false;
-                  if(c instanceof ObjectTextField) {
-                     try {
-                        
-                        value = getValue(actualParameter, (ObjectTextField) c);
-                        actualParameter.getAttributes().put(
-                           GPConstants.PARAM_INFO_CLIENT_FILENAME[0],
-                           value);
-                     } catch(java.io.IOException ioe) {
-                        ioe.printStackTrace();  
-                     }
-                  } else if(c instanceof JComboBox) {
-                     isCheckBox = true;
-                     ChoiceItem ci = (ChoiceItem) ((JComboBox)c).getSelectedItem();
-                     value = ci.getValue();
-                  } else if(c instanceof JTextField) {
-                     value = ((JTextField) c).getText();
-                  }
-                  if(value != null) {
-                     value = value.trim();
-                  }
-                  actualParameter.setValue(value);
-                  actualParameters.add(actualParameter);
-               }
-            }
-      
-            final ParameterInfo[] actualParameterArray = (ParameterInfo[]) actualParameters.toArray(new ParameterInfo[0]);
+            final ParameterInfo[] actualParameterArray = getParameterInfoArray();
             final AnalysisService _selectedService = selectedService;
             final String username = AnalysisServiceManager.getInstance().getUsername();
                new Thread() {

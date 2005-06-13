@@ -1581,99 +1581,15 @@ public class MainFrame extends JFrame {
       
    }
 
+   /**
+   * Generates code for the selected job node
+   */
    private void viewCode(org.genepattern.codegenerator.TaskCodeGenerator codeGenerator, final String language) {
-      JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
-      JobInfo jobInfo = jobNode.job.getJobInfo();
-     
-      List parameterInfoList = new ArrayList();
-      ParameterInfo[] params = jobInfo.getParameterInfoArray();
-      for(int i = 0; i < params.length; i++) {
-         if(!params[i].isOutputFile()) {
-            Object mode = params[i].getAttributes().get(ParameterInfo.MODE);
-            if(mode!=null && mode.equals(ParameterInfo.CACHED_INPUT_MODE)) {
-               String name = JobModel.getJobResultFileName(jobNode.job, i);
-               int jobNumber = JobModel.getJobCreationJobNumber(jobNode.job, i);
-               try {
-                  String url = jobNode.job.getServer() + "/gp/retrieveResults.jsp?job=" + jobNumber + "&filename=" + java.net.URLEncoder.encode(name, "UTF-8");
-            
-                  parameterInfoList.add(new ParameterInfo(params[i].getName(), url , ""));
-               } catch(java.io.UnsupportedEncodingException x) {
-                  x.printStackTrace();  
-               }
-            }
-            else if(params[i].getAttributes().get("client_filename")!=null) {
-               String clientFile = (String) params[i].getAttributes().get("client_filename");
-               parameterInfoList.add(new ParameterInfo(params[i].getName(), clientFile, ""));
-            } else {
-               parameterInfoList.add(params[i]);
-            }
-            
-         }
-         
-      }
-      
-		AnalysisService svc = AnalysisServiceManager.getInstance().getAnalysisService(jobInfo.getTaskLSID());
-		String code = null;
-		if(svc!=null) {
-			TaskInfo taskInfo = svc.getTaskInfo();
-			try {
-				String serializedModel = (String) taskInfo.getTaskInfoAttributes().get("serializedModel");
-				if(serializedModel!=null && serializedModel.length()>0) {
-					Map runtimePrompts = new HashMap();
-					for(int i = 0; i < parameterInfoList.size(); i++) {
-						ParameterInfo p = (ParameterInfo) parameterInfoList.get(i);
-						if(!p.isOutputFile()) {
-							runtimePrompts.put(p.getName(), p);	
-						}
-					}
-					
-					org.genepattern.data.pipeline.PipelineModel model = org.genepattern.data.pipeline.PipelineModel.toPipelineModel((String)taskInfo.getTaskInfoAttributes().get("serializedModel"));
-					List taskInfos = new ArrayList();
-					List jobSubmissions = model.getTasks();
-					for(int i = 0; i < jobSubmissions.size(); i++) {
-						org.genepattern.data.pipeline.JobSubmission js = (org.genepattern.data.pipeline.JobSubmission) jobSubmissions.get(i);
-						java.util.Arrays.fill(js.getRuntimePrompt(), false);
-						List p = js.getParameters();
-						for(int j = 0; j < p.size(); j++) {
-							ParameterInfo pi = (ParameterInfo)p.get(j);
-							if(pi.getAttributes().get("runTimePrompt")!=null) {
-								String key = js.getName() + (i +1) +  "." + pi.getName();
-								ParameterInfo rt = (ParameterInfo) runtimePrompts.get(key);
-								p.set(j, rt);
-							}
-						}
-						model.setLsid((String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
-						model.setUserID(AnalysisServiceManager.getInstance().getUsername());
-						taskInfos.add(AnalysisServiceManager.getInstance().getAnalysisService(js.getLSID()).getTaskInfo());
-					}
-					code = org.genepattern.codegenerator.AbstractPipelineCodeGenerator.getCode(model, 
-						taskInfos, 
-						AnalysisServiceManager.getInstance().getServer(), 
-						language);
-
-				}
-			} catch(Exception e) {
-				e.printStackTrace();	
-			}
-		}
-		
-		
-		
-      if(code==null) {
-			code = codeGenerator.generateTask(jobInfo, (ParameterInfo[]) parameterInfoList.toArray(new ParameterInfo[0]));
-		}
-      JDialog dialog = new CenteredDialog(MainFrame.this);
-      dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-      dialog.setTitle("Code for " + jobInfo.getTaskName() + ", job " + jobInfo.getJobNumber());
-      JTextArea textArea = new JTextArea(code);
-      textArea.setLineWrap(true);
-      textArea.setEditable(false);
-      JScrollPane sp = new JScrollPane(textArea);
-      dialog.getContentPane().add(sp, BorderLayout.CENTER);
-      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-      dialog.setSize(screenSize.width/2, screenSize.height/2);
-      dialog.show();
+      JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode; 
+      org.genepattern.gpge.ui.code.Util.viewCode(codeGenerator, jobNode.job, language);
    }
+   
+   
          
    private boolean overwriteFile(File f) {
       if(!f.exists()) {
