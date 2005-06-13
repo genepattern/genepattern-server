@@ -1519,17 +1519,22 @@ public class MainFrame extends JFrame {
       deleteAllJobsAction = new MenuItemAction(
       "Delete All Jobs") {
          public void actionPerformed(ActionEvent e) {
-            try {
+           
               String message = "Are you sure you want to delete all jobs?";
               if(showConfirmDialog(message)) {
-                     jobModel.deleteAll();
+                 new Thread() {
+                    public void run() {
+                       try {
+                          jobModel.deleteAll();
+                       } catch(WebServiceException wse) {
+                          wse.printStackTrace();
+                          if(!disconnectedFromServer(wse)) {
+                             GenePattern.showErrorDialog("An error occurred while deleting all jobs.");
+                          }
+                       }
+                    }
+                 }.start();   
               }
-            } catch(WebServiceException wse) {
-               wse.printStackTrace();
-               if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred deleting all jobs.");
-               }
-            }
          }
       };
 
