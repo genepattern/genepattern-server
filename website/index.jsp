@@ -52,7 +52,17 @@
 try {
 String userID = GenePatternAnalysisTask.getUserID(request, response); // get userID but don't force login if not defined
 boolean userIDKnown = !(userID == null || userID.length() == 0);
-Collection tmTasks = new LocalAdminClient(userID).getTaskCatalog();
+LocalAdminClient adminClient = new LocalAdminClient(userID);
+Collection tmTasks = adminClient.getTaskCatalog();
+Collection latestTmTasks = adminClient.getLatestTasks();
+
+HashMap latestTaskMap = new HashMap();
+for (Iterator itTasks = latestTmTasks.iterator(); itTasks.hasNext(); ) {
+	TaskInfo taskInfo = (TaskInfo)itTasks.next();
+	TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+	String versionlessLSID = (new LSID(tia.get(GPConstants.LSID))).toStringNoVersion();
+	latestTaskMap.put(versionlessLSID, taskInfo); 
+}
 
 %>
 <html>
@@ -233,7 +243,7 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 		<tr>
 
 			<td valign="top" align="right">
-			<%= taskCatalog(tmTasks, "pipeline", "pipeline catalog", GPConstants.TASK_TYPE_PIPELINE, userID, true) %>
+			<%= taskCatalog(tmTasks, latestTaskMap, "pipeline", "pipeline catalog", GPConstants.TASK_TYPE_PIPELINE, userID, true) %>
 			<nobr>version <select name="pipelineVersion"></select></nobr>
 			</td>
 
@@ -271,7 +281,7 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 		<tr>
 
 			<td valign="top" align="right">
-			<%= taskCatalog(tmTasks, "task", "task catalog", null, userID, false) %>
+			<%= taskCatalog(tmTasks, latestTaskMap, "task", "task catalog", null, userID, false) %>
 			<nobr>version <select name="taskVersion"></select></nobr>
 			</td>
 
@@ -453,7 +463,7 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 			<td valign="top" align="left" colspan="2">
 					<hr noshade size="1">
 					Download pipeline code:<br>
-					<%= taskCatalog(tmTasks, "code", "pipeline", GPConstants.TASK_TYPE_PIPELINE, userID, true) %>
+					<%= taskCatalog(tmTasks, latestTaskMap, "code", "pipeline", GPConstants.TASK_TYPE_PIPELINE, userID, true) %>
 					<br>
 					version: <select name="codeVersion">
 					</select>
@@ -495,7 +505,7 @@ taskSelect(document.forms['index'].task, 'task');
 	t.printStackTrace();
    }
 %>
-<%! public String taskCatalog(Collection tmTasks, String selectName, String caption, String type, String userID, boolean bIncludePipelines) {
+<%! public String taskCatalog(Collection tmTasks, HashMap latestTaskMap, String selectName, String caption, String type, String userID, boolean bIncludePipelines) {
 	StringBuffer sbCatalog = new StringBuffer();
 	sbCatalog.append("<select name=\"" + selectName + "\" onchange=\"taskSelect(this, '" + selectName + "')\">\n");
 	sbCatalog.append("<option value=\"\">" + caption + "</option>\n");
@@ -521,29 +531,31 @@ taskSelect(document.forms['index'].task, 'task');
 	for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 		taskInfo = (TaskInfo)itTasks.next();
 		tia = taskInfo.giveTaskInfoAttributes();
-		taskType = tia.get(GPConstants.TASK_TYPE);
+		lsid = tia.get(GPConstants.LSID);
+		try {
+			l = new LSID(lsid);	
+		versionlessLSID = l.toStringNoVersion();
+
+		TaskInfo latestTaskInfo = (TaskInfo)latestTaskMap.get(versionlessLSID);
+		TaskInfoAttributes latestTia = latestTaskInfo.giveTaskInfoAttributes();
+
+		taskType = latestTia.get(GPConstants.TASK_TYPE);
 		if (type != null && !taskType.equals(type)) continue;
 		if (!bIncludePipelines && taskType.equals(GPConstants.TASK_TYPE_PIPELINE)) continue;
-		display = taskInfo.getName();
+		display = latestTaskInfo.getName();
 		if (taskType.equals(GPConstants.TASK_TYPE_PIPELINE)) {
 			String dotPipeline = "." + GPConstants.TASK_TYPE_PIPELINE;
 			if (display.endsWith(dotPipeline)) {
 				display = display.substring(0, display.length() - dotPipeline.length());
 			}
 		}
-		description = taskInfo.getDescription();
-		isPublic = tia.get(GPConstants.PRIVACY).equals(GPConstants.PUBLIC);
-		isMine = tia.get(GPConstants.USERID).equals(userID);
-		name = taskInfo.getName();
-		lsid = tia.get(GPConstants.LSID);
-
-		try {
-			l = new LSID(lsid);
-
-			versionlessLSID = l.toStringNoVersion();
-			String key = versionlessLSID+"."+name;			
-			if (hmLSIDsWithoutVersions.containsKey(key) &&
-			    ((TaskInfo)hmLSIDsWithoutVersions.get(key)).getName().equals(name)) {
+		description = latestTaskInfo.getDescription();
+		isPublic = latestTia.get(GPConstants.PRIVACY).equals(GPConstants.PUBLIC);
+		isMine = latestTia.get(GPConstants.USERID).equals(userID);
+		name = latestTaskInfo.getName();
+		
+					String key = versionlessLSID;			
+			if (hmLSIDsWithoutVersions.containsKey(key) ) {
 				continue;
 			}
 			hmLSIDsWithoutVersions.put(key, taskInfo);
@@ -555,6 +567,8 @@ taskSelect(document.forms['index'].task, 'task');
 
 		
 		if (isPublic || isMine) {
+			// get the name of the last version of this LSID
+
 			sbCatalog.append("<option value=\"" + (lsid != null ? l.toStringNoVersion() : taskInfo.getName()) + 
 					 "\" class=\"tasks-" +  authorityType + "\"" +
 					 " title=\"" + GenePatternAnalysisTask.htmlEncode(description) + ", " + l.getAuthority() + "\"" + ">" + display + "</option>\n");
