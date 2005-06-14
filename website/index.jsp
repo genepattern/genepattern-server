@@ -430,7 +430,7 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 			</td>
 			<td valign="top" align="left">
 				<a href="downloads/GenePattern.zip">.zip</a>
-				<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_tutorial_prog_java.html" target="_blank">doc</a>
+				<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_prog_java.html" target="_blank">doc</a>
 			</td>
 
 		</tr>
@@ -444,7 +444,7 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 				<a href="downloads/GenePattern_0.1-0.zip">.zip</a> &nbsp;
 				<a href="downloads/GenePattern_0.1-0.tar.gz">.tar.gz</a> &nbsp;
 				<a href="GenePattern.R">source</a>
-				<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_tutorial_prog_R.html" target="_blank">doc</a>
+				<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_prog_R.html" target="_blank">doc</a>
 			</td>
 		</tr>
 		<tr>
@@ -453,7 +453,7 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 			</td>
 			<td valign="top" align="left">
 				<a href="downloads/GenePatternMatlab.zip">.zip</a>
-				<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_tutorial_prog_MATLAB.html" target="_blank">doc</a>
+				<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_prog_MATLAB.html" target="_blank">doc</a>
 			</td>
 
 		</tr>
