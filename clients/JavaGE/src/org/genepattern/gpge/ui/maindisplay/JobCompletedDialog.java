@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -23,6 +24,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.genepattern.gpge.ui.table.*;
 import org.genepattern.gpge.ui.preferences.PreferenceKeys;
+import org.genepattern.gpge.PropertyManager;
 
 public class JobCompletedDialog {
 	JDialog dialog;
@@ -30,10 +32,15 @@ public class JobCompletedDialog {
 	AlternatingColorTable table;
 
 	MyTableModel tableModel = new MyTableModel();
-
+   JMenuItem menuItem;
+   JCheckBox alertOnJobCompletionCheckBox; 
+   
 	public void setShowDialog(boolean showDialog) {
-		org.genepattern.util.GPpropertiesManager.setProperty(
+      PropertyManager.setProperty(
 				PreferenceKeys.SHOW_JOB_COMPLETED_DIALOG, String.valueOf(showDialog));
+      
+      menuItem.setSelected(showDialog);
+      alertOnJobCompletionCheckBox.setSelected(showDialog);
 	}
 
 	/**
@@ -44,13 +51,14 @@ public class JobCompletedDialog {
 	 */
 	public boolean isShowingDialog() {
 		final boolean showDialog = Boolean.valueOf(
-				org.genepattern.util.GPpropertiesManager
+		PropertyManager
 						.getProperty(PreferenceKeys.SHOW_JOB_COMPLETED_DIALOG)).booleanValue();
 		return showDialog;
 	}
 
-	public JobCompletedDialog(Frame parent) {
+	public JobCompletedDialog(Frame parent, JMenuItem _menuItem) {
 		dialog = new CenteredDialog(parent);
+      this.menuItem = _menuItem;
 		dialog.setTitle("Recently Completed Jobs");
 		table = new AlternatingColorTable(tableModel);
       table.setShowCellFocus(false);
@@ -58,12 +66,15 @@ public class JobCompletedDialog {
 		contentPane.setLayout(new BorderLayout());
 		contentPane.add(new JScrollPane(table), BorderLayout.CENTER);
 
-		JCheckBox checkBox = new JCheckBox(
+		alertOnJobCompletionCheckBox = new JCheckBox(
 				"Show this dialog when a job completes");
-		checkBox.setSelected(true);
-		checkBox.addItemListener(new ItemListener() {
+		alertOnJobCompletionCheckBox.setSelected(true);
+		alertOnJobCompletionCheckBox.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				setShowDialog(e.getStateChange() == ItemEvent.SELECTED);
+            boolean showDialog = alertOnJobCompletionCheckBox.isSelected();
+				PropertyManager.setProperty(
+				PreferenceKeys.SHOW_JOB_COMPLETED_DIALOG, String.valueOf(showDialog));
+            menuItem.setSelected(showDialog);
 			}
 		});
 
@@ -72,7 +83,7 @@ public class JobCompletedDialog {
 				return new Dimension(400, 20);
 			}
 		};
-		tempPanel.add(checkBox);
+		tempPanel.add(alertOnJobCompletionCheckBox);
 		JButton closeButton = new JButton("Close");
 		closeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -100,7 +111,7 @@ public class JobCompletedDialog {
 	public void add(final int jobNumber, final String taskName,
 			final String status) {
 		final boolean showDialog = Boolean.valueOf(
-				org.genepattern.util.GPpropertiesManager
+		   PropertyManager
 						.getProperty(PreferenceKeys.SHOW_JOB_COMPLETED_DIALOG)).booleanValue();
 		if (!showDialog) {
 			return;

@@ -18,7 +18,7 @@ import javax.swing.JOptionPane;
 
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.util.BuildProperties;
-import org.genepattern.util.GPpropertiesManager;
+import org.genepattern.gpge.PropertyManager;
 
 /**
  * 
@@ -201,11 +201,11 @@ public class ReportPanel extends javax.swing.JPanel {
 		boolean sent = false;
 
 		try {
-			String host = GPpropertiesManager.getProperty("gp.mail.host");
+			String host = PropertyManager.getProperty("gp.mail.host");
 			if (host == null || host.trim().length() == 0) {
 				host = DEFAULT_MAIL_HOST;
 			}
-			String address = GPpropertiesManager
+			String address = PropertyManager
 					.getProperty("gp.mail.helpAddress");
 			if (address == null || address.trim().length() == 0) {
 				address = DEFAULT_MAIL_HELP_ADDRESS;

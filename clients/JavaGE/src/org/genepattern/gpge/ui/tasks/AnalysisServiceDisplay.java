@@ -47,6 +47,8 @@ import org.genepattern.webservice.WebServiceException;
 import org.genepattern.gpge.ui.preferences.PreferenceKeys;
 import org.genepattern.gpge.ui.tasks.TaskLauncher;
 import org.genepattern.codegenerator.*;
+import org.genepattern.gpge.PropertyManager;
+
 /**
  *  Displays an <tt>AnalysisService</tt>
  *
@@ -277,7 +279,7 @@ public class AnalysisServiceDisplay extends JPanel {
       parameterPanel.setBackground(Color.white);
       
       parameterPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-      boolean showDescriptions = Boolean.valueOf(GPpropertiesManager
+      boolean showDescriptions = Boolean.valueOf(PropertyManager
 				.getProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS)).booleanValue();
             
       if(params == null || params.length == 0) {
@@ -345,7 +347,7 @@ public class AnalysisServiceDisplay extends JPanel {
       showDescriptionsCheckBox.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e) {
             boolean showDescriptions = showDescriptionsCheckBox.isSelected();
-            GPpropertiesManager
+            PropertyManager
 				.setProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS, String.valueOf(showDescriptions));
             for(int i = 0; i < parameterDescriptions.size(); i++) {
                Component c = (Component) parameterDescriptions.get(i);

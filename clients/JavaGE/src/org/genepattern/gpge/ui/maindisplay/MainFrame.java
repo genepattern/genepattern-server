@@ -68,6 +68,7 @@ import org.genepattern.util.*;
 import org.genepattern.gpge.ui.table.*;
 import org.genepattern.webservice.*;
 import org.genepattern.gpge.ui.menu.*;
+import org.genepattern.gpge.PropertyManager;
 
 /**
  * Description of the Class
@@ -365,8 +366,8 @@ public class MainFrame extends JFrame {
       }
     
 	   historyMenu.clear();
-		GPpropertiesManager.setProperty(PreferenceKeys.SERVER, server);
-		GPpropertiesManager.setProperty(PreferenceKeys.USER_NAME, username);
+		PropertyManager.setProperty(PreferenceKeys.SERVER, server);
+		PropertyManager.setProperty(PreferenceKeys.USER_NAME, username);
 		
       setChangeServerActionsEnabled(false);
 		if(analysisServicePanel!= null && analysisServicePanel.isShowingAnalysisService()) {
@@ -662,7 +663,7 @@ public class MainFrame extends JFrame {
       }
       MessageDialog.init(this);
 		setVisible(false); 
-		String username = GPpropertiesManager
+		String username = PropertyManager
 				.getProperty(PreferenceKeys.USER_NAME);
 
 		if (username == null || username.trim().equals("")) {
@@ -671,7 +672,7 @@ public class MainFrame extends JFrame {
             username = "anonymous";
          }
 		}
-		String server = GPpropertiesManager.getProperty(PreferenceKeys.SERVER);
+		String server = PropertyManager.getProperty(PreferenceKeys.SERVER);
 		if (server == null || server.equals("")) {
 			try {
 				Properties omnigeneProps = org.genepattern.util.PropertyFactory
@@ -695,33 +696,33 @@ public class MainFrame extends JFrame {
       } catch(MalformedURLException mfe) {
          server = "http://" + server;
       }
-      authorityMineColor = decodeColorFromProperties(GPpropertiesManager.getProperty(PreferenceKeys.AUTHORITY_MINE_COLOR));
+      authorityMineColor = decodeColorFromProperties(PropertyManager.getProperty(PreferenceKeys.AUTHORITY_MINE_COLOR));
       if(authorityMineColor==null) {
          authorityMineColor = DEFAULT_AUTHORITY_MINE_COLOR;
       }
       
-      authorityForeignColor = decodeColorFromProperties(GPpropertiesManager.getProperty(PreferenceKeys.AUTHORITY_FOREIGN_COLOR));
+      authorityForeignColor = decodeColorFromProperties(PropertyManager.getProperty(PreferenceKeys.AUTHORITY_FOREIGN_COLOR));
       if(authorityForeignColor==null) {
          authorityForeignColor = DEFAULT_AUTHORITY_FOREIGN_COLOR;
       }
       
-      authorityBroadColor = decodeColorFromProperties(GPpropertiesManager.getProperty(PreferenceKeys.AUTHORITY_BROAD_COLOR));
+      authorityBroadColor = decodeColorFromProperties(PropertyManager.getProperty(PreferenceKeys.AUTHORITY_BROAD_COLOR));
       if(authorityBroadColor==null) {
          authorityBroadColor = DEFAULT_AUTHORITY_BROAD_COLOR;
       }
      
-      GPpropertiesManager.setProperty(PreferenceKeys.AUTHORITY_BROAD_COLOR, encodeColorToProperty(authorityBroadColor));
-      GPpropertiesManager.setProperty(PreferenceKeys.AUTHORITY_FOREIGN_COLOR, encodeColorToProperty(authorityForeignColor));
-      GPpropertiesManager.setProperty(PreferenceKeys.AUTHORITY_MINE_COLOR, encodeColorToProperty(authorityMineColor));
+      PropertyManager.setProperty(PreferenceKeys.AUTHORITY_BROAD_COLOR, encodeColorToProperty(authorityBroadColor));
+      PropertyManager.setProperty(PreferenceKeys.AUTHORITY_FOREIGN_COLOR, encodeColorToProperty(authorityForeignColor));
+      PropertyManager.setProperty(PreferenceKeys.AUTHORITY_MINE_COLOR, encodeColorToProperty(authorityMineColor));
       
-      String showParameterDescriptions = GPpropertiesManager.getProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS);
+      String showParameterDescriptions = PropertyManager.getProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS);
       if(showParameterDescriptions==null) {
-         GPpropertiesManager.setProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS, "true");
+         PropertyManager.setProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS, "true");
       }
       
-      String alertOnJobDescription = GPpropertiesManager.getProperty(PreferenceKeys.SHOW_JOB_COMPLETED_DIALOG);
+      String alertOnJobDescription = PropertyManager.getProperty(PreferenceKeys.SHOW_JOB_COMPLETED_DIALOG);
       if(alertOnJobDescription==null) {
-         GPpropertiesManager.setProperty(PreferenceKeys.SHOW_JOB_COMPLETED_DIALOG, "true");
+         PropertyManager.setProperty(PreferenceKeys.SHOW_JOB_COMPLETED_DIALOG, "true");
       }
       
 		
@@ -938,7 +939,7 @@ public class MainFrame extends JFrame {
 
 		});
 
-		String projectDirsString = GPpropertiesManager
+		String projectDirsString = PropertyManager
 				.getProperty(PreferenceKeys.PROJECT_DIRS);
 		if (projectDirsString != null) {
 			String[] projectDirs = projectDirsString.split(";");
@@ -1195,7 +1196,7 @@ public class MainFrame extends JFrame {
 		int splitPaneDividerLocation = 0;
 		boolean savedLayout = true;
 		try {
-			String[] tokens = GPpropertiesManager.getProperty(PreferenceKeys.WINDOW_LAYOUT).split(",");
+			String[] tokens = PropertyManager.getProperty(PreferenceKeys.WINDOW_LAYOUT).split(",");
 			width = Integer.parseInt(tokens[0]);
 			height = Integer.parseInt(tokens[1]);
 			x = Integer.parseInt(tokens[2]);
@@ -1231,20 +1232,17 @@ public class MainFrame extends JFrame {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public final void run() {
 				try {
-					GPpropertiesManager.setProperty(PreferenceKeys.WINDOW_LAYOUT, 
+					PropertyManager.setProperty(PreferenceKeys.WINDOW_LAYOUT, 
 						getWidth() + "," + getHeight() + "," + getLocation().x + "," 
 						+ getLocation().y + "," + 
 						leftPane.getDividerLocation() + "," + 
 						splitPane.getDividerLocation());
-					GPpropertiesManager.saveGenePatternProperties();
+					PropertyManager.saveProperties();
 				} catch (IOException ioe) {
 					ioe.printStackTrace();
 				}
 			}
 		});
-		
-		
-
 	}
    
  
@@ -1463,7 +1461,7 @@ public class MainFrame extends JFrame {
          public void actionPerformed(ActionEvent e) {
 				projectDirModel
 						.remove((ProjectDirModel.ProjectDirNode) selectedProjectDirNode);
-				GPpropertiesManager.setProperty(PreferenceKeys.PROJECT_DIRS,
+				PropertyManager.setProperty(PreferenceKeys.PROJECT_DIRS,
 						projectDirModel.getPreferencesString());
 			}
 		};
@@ -2398,7 +2396,7 @@ public class MainFrame extends JFrame {
 						}
 						if (!projectDirModel.contains(selectedFile)) {
 							projectDirModel.add(selectedFile);
-							GPpropertiesManager.setProperty(
+							PropertyManager.setProperty(
 									PreferenceKeys.PROJECT_DIRS,
 									projectDirModel.getPreferencesString());
 						}
@@ -2406,9 +2404,10 @@ public class MainFrame extends JFrame {
 				}
 			});
 			add(openProjectDirItem);
-			jobCompletedDialog = new JobCompletedDialog(MainFrame.this);
+			
 			final javax.swing.JCheckBoxMenuItem showJobCompletedDialogMenuItem = new javax.swing.JCheckBoxMenuItem(
 					"Alert On Job Completion");
+         jobCompletedDialog = new JobCompletedDialog(MainFrame.this, showJobCompletedDialogMenuItem);
 			showJobCompletedDialogMenuItem.setSelected(jobCompletedDialog
 					.isShowingDialog());
 			add(showJobCompletedDialogMenuItem);
