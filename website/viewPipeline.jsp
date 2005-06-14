@@ -108,13 +108,13 @@ function runpipeline( url) {
 	
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
-<title><%=model.getName()%></title>
+<title><%=task.getName()%></title>
 
 </head>
 <body>
 <jsp:include page="navbar.jsp"></jsp:include>
 <%
-String displayName = model.getName();
+String displayName = task.getName();
 if(displayName.endsWith(".pipeline")) {
 	displayName = displayName.substring(0, displayName.length()-".pipeline".length());
 }
