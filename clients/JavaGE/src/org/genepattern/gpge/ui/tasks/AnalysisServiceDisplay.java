@@ -3,6 +3,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -29,14 +30,13 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
-import javax.swing.UIDefaults;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import com.jgoodies.forms.builder.*;
-import com.jgoodies.forms.layout.*;
+
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.MainFrame;
+import org.genepattern.gpge.ui.maindisplay.TogglePanel;
 import org.genepattern.gpge.ui.project.ProjectDirModel;
 import org.genepattern.modules.ui.graphics.*;
 import org.genepattern.util.*;
@@ -48,6 +48,9 @@ import org.genepattern.gpge.ui.preferences.PreferenceKeys;
 import org.genepattern.gpge.ui.tasks.TaskLauncher;
 import org.genepattern.codegenerator.*;
 import org.genepattern.gpge.PropertyManager;
+
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 /**
  *  Displays an <tt>AnalysisService</tt>
@@ -64,6 +67,9 @@ public class AnalysisServiceDisplay extends JPanel {
    private Map parameterName2ComponentMap;
    private List inputFileParameters;
    private List parameterDescriptions;
+   private boolean advancedGroupExpanded = false;
+   private TogglePanel togglePanel;
+   
    public AnalysisServiceDisplay() {
       parameterName2ComponentMap = new HashMap();
       inputFileParameters = new ArrayList();
@@ -164,6 +170,9 @@ public class AnalysisServiceDisplay extends JPanel {
    public void loadTask(AnalysisService _selectedService) {
       this.selectedService = _selectedService;
       hasDocumentation = true;
+      if(togglePanel!=null) {
+          advancedGroupExpanded = togglePanel.isExpanded();
+      }
       if(selectedService!=null) {
          new Thread() {
             public void run() {
@@ -393,9 +402,26 @@ public class AnalysisServiceDisplay extends JPanel {
       helpButton.addActionListener(new HelpActionListener());
       buttonPanel.add(helpButton);
       
+      JPanel viewCodePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+      
       final JComboBox viewCodeComboBox = new JComboBox(new Object[]{"View Code", "Java", "MATLAB", "R"});
-      buttonPanel.add(viewCodeComboBox);
-       
+      JButton btn = new JButton("Code");
+      viewCodePanel.add(viewCodeComboBox);
+      
+      togglePanel = new TogglePanel("Advanced", viewCodePanel);
+      togglePanel.setExpanded(advancedGroupExpanded);
+      /*JTaskPaneGroup group = new JTaskPaneGroup();
+      group.setText("Advanced Options");
+      JTaskPane tp = new JTaskPane();
+      group.add(viewCodePanel);
+      tp.add(group);*/
+      
+      JPanel bottomPanel = new JPanel(new BorderLayout());
+	  bottomPanel.setBorder(createBorder(UIManager.getLookAndFeelDefaults().getBorder("ScrollPane.border"), 0, 0, 0, 2));
+		
+	  bottomPanel.add(buttonPanel, BorderLayout.CENTER);
+	  bottomPanel.add(togglePanel, BorderLayout.SOUTH);
+	  
       viewCodeComboBox.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e) {
             String item = (String) viewCodeComboBox.getSelectedItem();
@@ -427,9 +453,9 @@ public class AnalysisServiceDisplay extends JPanel {
 		JScrollPane sp = new JScrollPane(parameterPanel);
       final javax.swing.border.Border b = sp.getBorder();
       sp.setBorder(createBorder(b, 0, -1, -1, -1));
-      buttonPanel.setBorder(createBorder(UIManager.getLookAndFeelDefaults().getBorder("ScrollPane.border"), 0, 0, 0, 2));
-	   add(sp, BorderLayout.CENTER);
-      add(buttonPanel, BorderLayout.SOUTH);
+        add(sp, BorderLayout.CENTER);
+	  
+      add(bottomPanel, BorderLayout.SOUTH);
       setMinimumSize(new java.awt.Dimension(100, 100));
       revalidate();
       doLayout();
