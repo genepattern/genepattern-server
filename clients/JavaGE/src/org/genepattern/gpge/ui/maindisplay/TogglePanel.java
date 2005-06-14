@@ -10,8 +10,8 @@ public class TogglePanel extends JPanel {
     public TogglePanel(String text, JComponent c) {
         setLayout(new BorderLayout());
         ToggleLabel label = new ToggleLabel(text, c);
-        add(label, BorderLayout.CENTER);
-        add(c, BorderLayout.SOUTH);
+        add(label, BorderLayout.NORTH);
+        add(c, BorderLayout.CENTER);
     }
 
     private static class ToggleLabel extends JLabel {
