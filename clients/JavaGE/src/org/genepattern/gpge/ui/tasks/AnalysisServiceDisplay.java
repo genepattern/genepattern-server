@@ -404,8 +404,9 @@ public class AnalysisServiceDisplay extends JPanel {
       
       JPanel viewCodePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
       
-      final JComboBox viewCodeComboBox = new JComboBox(new Object[]{"View Code", "Java", "MATLAB", "R"});
-      JButton btn = new JButton("Code");
+      JLabel viewCodeLabel = new JLabel("View Code:");
+      final JComboBox viewCodeComboBox = new JComboBox(new Object[]{"Java", "MATLAB", "R"});
+      viewCodePanel.add(viewCodeLabel);
       viewCodePanel.add(viewCodeComboBox);
       
       togglePanel = new TogglePanel("Advanced", viewCodePanel);
