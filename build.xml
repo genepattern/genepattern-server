@@ -37,7 +37,10 @@
 <!-- Classpath -->
 
   
-
+   <target name="run-GPGE">
+		<java fork="true" jar="clients/JavaGE/gpge.jar" />
+	</target>
+	
    <target name="targets">
      <echo>You probably want to use the following targets:</echo>
      <echo/>
