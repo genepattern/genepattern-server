@@ -1156,10 +1156,20 @@ eachRequiredPatch:
 			if (!new File(patchDirectory, MANIFEST_FILENAME).exists()) {
 				explodePatch(zipFilename, patchDirectory, null, MANIFEST_FILENAME);
 				if (props.getProperty(REQUIRED_PATCH_URLS, null) == null) {
-					File f = new File(patchDirectory, MANIFEST_FILENAME);
-					String properties = readPropertiesFile(f);
-					properties = addProperty(properties, REQUIRED_PATCH_URLS, requiredPatchURL);
-					writePropertiesFile(f, properties);
+
+					try {
+						File f = new File(patchDirectory, MANIFEST_FILENAME);
+						Properties mprops = new Properties();
+						mprops.load(new FileInputStream(f));
+						mprops.setProperty(REQUIRED_PATCH_URLS, requiredPatchURL);
+						mprops.store(new FileOutputStream(f), "added required patch");
+					} catch (IOException ioe){
+						ioe.printStackTrace();
+					}
+
+					//Properties properties = readPropertiesFile(f);
+					//properties = addProperty(properties, REQUIRED_PATCH_URLS, requiredPatchURL);
+					//writePropertiesFile(f, properties);
 				}
 			}
 
@@ -1329,12 +1339,22 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 			installedPatches = installedPatches + ",";
 		}
 		installedPatches = installedPatches + patchLSID;
-		String properties = readGenePatternProperties();
-		properties = addProperty(properties, INSTALLED_PATCH_LSIDS, installedPatches);
-		writeGenePatternProperties(properties);
+		//String properties = readGenePatternProperties();
+		//properties = addProperty(properties, INSTALLED_PATCH_LSIDS, installedPatches);
+		//writeGenePatternProperties(properties);
 		System.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
+
+		Properties props = new Properties();
+		props.load(new FileInputStream(new File(System.getProperty("resources"), "genepattern.properties")));
+		props.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
+		props.store(new FileOutputStream(new File(System.getProperty("resources"), "genepattern.properties")), "added installed patch LSID");
+
+
 	}
-	
+
+
+
+/**	
 	// read the genepattern.properties file into a String (preserving comments!)
 	public static String readGenePatternProperties() throws IOException {
 		File gpPropertiesFile = new File(System.getProperty("resources"), "genepattern.properties");
@@ -1375,6 +1395,8 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 		}
 		return properties;
 	}
+
+**/
 
 	protected static void processNode(Node node, HashMap hmProps) {
 		if (node.getNodeType() == Node.ELEMENT_NODE) {
