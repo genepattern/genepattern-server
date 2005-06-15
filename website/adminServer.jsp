@@ -16,6 +16,13 @@
 	String proxyUser= request.getParameter("proxyUser");
 	String proxyPass= request.getParameter("proxyPass");
 
+	String purgeJobsAfter = request.getParameter("purgeJobsAfter");
+	String purgeTime = request.getParameter("purgeTime");
+
+String java_flags = request.getParameter("java_flags");
+
+
+
 	String moduleRepository = request.getParameter("moduleRepository");
 	String reposDefault = request.getParameter("submitReposDefault");
 	String clearProxy = request.getParameter("submitClearProxy");
@@ -78,6 +85,21 @@
 	} 
 	recentHistorySize = System.getProperty("recentJobsToDisplay", "3" );
 	
+	if (purgeJobsAfter != null){
+		storeSuccess  = PropertiesManager.storeChange("purgeJobsAfter", purgeJobsAfter );
+	} 
+	purgeJobsAfter = System.getProperty("purgeJobsAfter" );
+
+	if (purgeTime != null){
+		storeSuccess  = PropertiesManager.storeChange("purgeTime", purgeTime );
+	} 
+	purgeTime = System.getProperty("purgeTime" );
+
+	if (java_flags != null){
+		storeSuccess  = PropertiesManager.storeChange("java_flags", java_flags );
+	} 
+	java_flags= System.getProperty("java_flags" );
+
 
 
 %>
@@ -119,6 +141,15 @@ function changeProxyFields(obj){
 	obj.form.submitProxy.disabled=((obj.form.proxyHost.value == "<%=proxyHost%>")  && (obj.form.proxyPort.value == "<%=proxyPort%>")) 
 
 	obj.form.submitClearProxy.disabled = ((obj.form.proxyHost.value.length + obj.form.proxyPort.value.length ) == 0)  
+}
+function changePurgeFields(obj){
+	obj.form.submitPurge.disabled=((obj.form.purgeJobsAfter.value == "<%=purgeJobsAfter%>")  && (obj.form.purgeTime.value == "<%=purgeTime%>")) 
+
+}
+
+function changeJavaFlagFields(obj){
+	obj.form.submitJavaFlags.disabled=(obj.form.java_flags.value == "<%=java_flags%>") 
+
 }
 
 function changeReposFields(obj){
@@ -223,6 +254,50 @@ onclick="refillField(this);"> These Domains (comma delimited list)<br>
 		</td>
 </tr>
 
+<tr>
+<% /****************************************************** SECOND ROW *************************************************************/ %>
+
+<td width='50%' valign='top' align='center'>
+<form action="adminServer.jsp" name="purgeSettingsForm" method="POST">
+
+<table width='100%'>
+<tr><td class="heading" colspan='2'>File Purge Settings</td></tr>
+
+<tr><td align='right'>Purge Jobs After:</td><td><input type='text' size='40' name="purgeJobsAfter" value='<%=purgeJobsAfter%>' onkeyup="changePurgeFields(this)"/> days</td></tr>
+
+<tr><td align='right'>Purge Time:</td><td><input type='text' size='40' name="purgeTime" value='<%=purgeTime%>' onkeyup="changePurgeFields(this)"/></td></tr>
+
+<tr><td>&nbsp;</td></tr>
+
+<tr><td colspan=2 align='center'><input type="submit" name="submitPurge" value="submit" class="button"  disabled="true">
+<input type="button" name="purgeHelp" value="Help" class="button" onclick="alert('File purge settings define how often and, at what time of day, intermediate result files created on the server are deleted (purged). To never delete files set the purge frequency to -1. Note that this could result in large amounts of hard drive space being used over time.')">
+
+</td></tr>
+</table>
+</form>
+
+</td>
+<td valign="top"  width='50%'>
+<form action="adminServer.jsp" name="javaFlagSettingsForm" method="POST">
+
+<table width='100%'>
+<tr><td class="heading" colspan='2'>Java Flag Settings</td></tr>
+
+<tr><td align='right'>Java Flags:</td><td><input type='text' size='40' name="java_flags" value='<%=java_flags%>' onkeyup="changeJavaFlagFields(this)"/> </td></tr>
+
+<tr><td>&nbsp;</td></tr>
+
+<tr><td colspan=2 align='center'><input type="submit" name="submitJavaFlags" value="submit" class="button"  disabled="true">
+<input type="button" name="javaFlagHelp" value="Help" class="button" onclick="alert('Java flags are passed to the VM of most Java language tasks.  You can use these flags to increase the amount of memory alotted to a Java language module if you are experiencing OutOfMemory errors.\n\nFor details of potential java flags run\n&nbsp;&nbsp;&nbsp;&nbsp;java -X\n   at a command line .')">
+
+</td></tr>
+</table>
+</form>
+
+</td>
+
+</tr>
+<% /****************************************************** THIRD ROW *************************************************************/ %>
 
 <tr>
 <td width='50%' valign='top' align='center'>
@@ -250,7 +325,31 @@ onclick="refillField(this);"> These Domains (comma delimited list)<br>
 </td>
 
 
-<td colspan=2>
+<td valign="top">
+		<table class="majorCell" width='100%'>
+			<tr><td class="heading" colspan='2'>
+				History
+			</td></tr>
+			<tr><td valign="top" align='right'>
+			<form action="adminServer.jsp" name="recentHistoryForm" method="POST">
+
+			Display this many recent jobs:</td><td><input name="historySize" value="<%=recentHistorySize %>" size='10' onkeyup="changeHistoryField(this)" />
+			<input type="submit" name="submit" value="submit" class="button" disabled="true">
+			<input type="button" name="historyHelp" value="Help" class="button" onclick="alert('The recent history size sets the maximum number of\n recent jobs that will be displayed in the task and \npipeline dropdowns at the top of the page.')">
+
+
+			</td>
+
+		</tr>
+		</table>
+</td>
+</tr>
+
+<% /****************************************************** FOURTH ROW *************************************************************/ %>
+
+<tr>
+<td valign="top"  width='50%'>
+
 <form action="adminServer.jsp" name="proxySettingsForm" method="POST">
 
 <table width='100%'>
@@ -278,27 +377,9 @@ onclick="refillField(this);"> These Domains (comma delimited list)<br>
 </td></tr>
 </table>
 </form>
-</td>
-</tr>
-<tr>
-<td valign="top"  width='50%'>
-		<table class="majorCell" width='100%'>
-			<tr><td class="heading" colspan='2'>
-				History
-			</td></tr>
-			<tr><td valign="top" align='right'>
-			<form action="adminServer.jsp" name="recentHistoryForm" method="POST">
 
-			Display this many recent jobs:</td><td><input name="historySize" value="<%=recentHistorySize %>" size='10' onkeyup="changeHistoryField(this)" />
-			<input type="submit" name="submit" value="submit" class="button" disabled="true">
-			<input type="button" name="historyHelp" value="Help" class="button" onclick="alert('The recent history size sets the maximum number of\n recent jobs that will be displayed in the task and \npipeline dropdowns at the top of the page.')">
-
-
-			</td>
-
-		</tr>
-		</table>
 		</td>
+
 
 </tr>
 <tr>
