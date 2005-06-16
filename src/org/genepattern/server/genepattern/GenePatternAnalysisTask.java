@@ -3614,6 +3614,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 	public static String downloadTask(String zipURL, ITaskIntegrator taskIntegrator, long expectedLength, boolean verbose) throws IOException {
 	    File zipFile = null;
 	    long downloadedBytes = 0;
+
 	    try {
 		zipFile = File.createTempFile("gpz", ".zip");
 		zipFile.deleteOnExit();
@@ -3628,8 +3629,12 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 		}
 		if (uc instanceof HttpURLConnection) {
 			downloadSize = ((HttpURLConnection)uc).getHeaderFieldInt("Content-Length", -1);
+		} else if (expectedLength == -1){
+			downloadSize = uc.getContentLength();
+//			downloadSize = expectedLength;
 		} else {
 			downloadSize = expectedLength;
+
 		}
 		if ((taskIntegrator != null) && (downloadSize != -1) && verbose ) taskIntegrator.statusMessage("Download length: " + (long)downloadSize + " bytes."); //  Each dot represents 100KB.");
 		if ((taskIntegrator != null) ) taskIntegrator.beginProgress("download");
@@ -3637,12 +3642,13 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 		byte[] buf = new byte[100000];
 		int i;
 		long lastPercent = 0;
-		while ((i = is.read(buf, 0, buf.length)) > 0) {
+		while ((i = is.read(buf, 0, buf.length)) > 0) {			
 			downloadedBytes += i;
 			os.write(buf, 0, i);
 			//System.out.print(new String(buf, 0, i));
 			if (downloadSize > -1) {
 				long pctComplete = 100 * downloadedBytes / downloadSize;
+
 				if (lastPercent != pctComplete) {
 					if (taskIntegrator != null) taskIntegrator.continueProgress((int)pctComplete);
 					lastPercent = pctComplete;

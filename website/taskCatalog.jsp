@@ -59,6 +59,29 @@ td { font-size: 8pt }
 </style>
 
 <script language="Javascript">
+var ie4 = (document.all) ? true : false;
+var ns4 = (document.layers) ? true : false;
+var ns6 = (document.getElementById && !document.all) ? true : false;
+
+function writeToLayer(lay,txt) {
+	if (ns6) {
+		over = document.getElementById([lay]);
+		range = document.createRange();
+		range.setStartBefore(over);
+		domfrag = range.createContextualFragment(txt);
+		while (over.hasChildNodes()) {
+			over.removeChild(over.lastChild);
+		}
+		over.appendChild(domfrag);
+	} else if (ns4) {
+		var l = document['id'+lay];
+		l.document.write(txt);
+		l.document.close();
+	} else if (ie4) {
+		document.all(lay).innerHTML = txt;
+	}
+
+}
 
 function checkAll(frm, bChecked) {
 	frm = document.forms['install'];
