@@ -245,11 +245,11 @@ function changeFilter(fld) {
 
 	// HashMap of filters. key=filter name, value=Vector of settings
 	HashMap hmFilter = new HashMap();
-
+	
 	String[]columns1 = InstallTask.getAttributeNames();
 	int col;
 	for (col = 0; col < columns1.length; col++) {
-
+		
 		String[] filterValues = request.getParameterValues(columns1[col]);
 		if (filterValues != null && filterValues.length > 0) {
 			Vector vCol = new Vector(filterValues.length);
@@ -257,9 +257,41 @@ function changeFilter(fld) {
 				vCol.add(filterValues[i]);
 			}
 			hmFilter.put(columns1[col], vCol);
+			
 		}
 	}
-
+	
+	Vector osFilter = (Vector) hmFilter.get(GPConstants.OS);
+	boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
+	boolean isMac = System.getProperty("mrj.version") != null;
+	boolean isLinux = System.getProperty("os.name").toLowerCase().startsWith("linux");
+	Map osAttributeMap = new HashMap();
+	Vector choices = new Vector();
+	choices.add("any");
+	osAttributeMap.put(GPConstants.OS, choices); 
+	
+		if(isWindows) {
+			choices.add("Windows"); 
+		} else if(isMac) {
+			choices.add("Mac OS X"); 
+		} else if(isLinux) {
+			choices.add("Linux"); 
+		} 
+	
+	if(osFilter==null) { // user did not select a field for OS, set the default
+		osFilter = new Vector();
+		hmFilter.put(GPConstants.OS, osFilter);
+		if(isWindows) { // remove all tasks that are not windows or any
+			osFilter.add("Windows");
+		} else if(isMac) {
+			osFilter.add("Mac OS X");
+		} else if(isLinux) {
+			osFilter.add("Linux");
+		} else {
+			osFilter.add("any");
+		}
+	} 
+	
 	Vector vState = (Vector)hmFilter.get(InstallTask.STATE);
 	if (vState == null || vState.size() == 0) {
 		vState = new Vector(2);
@@ -291,8 +323,10 @@ function changeFilter(fld) {
 		GPConstants.LANGUAGE,
 		GPConstants.JVM_LEVEL
 	};
+	
 %>
 
+	
         <script language="Javascript">
         var columns = new Array( <%
         	for (col = 0; col < columns.length; col++) {
@@ -312,8 +346,8 @@ Select from the following tasks from the GenePattern public access website to do
 <td valign="top">
 <%
 	for (col = 0; col < columns.length; col++) {
-		Vector vCol = (Vector)hmFilter.get(columns[col]);
-		String[]values = collection.getUniqueValues(columns[col]);
+		Vector vCol = (Vector)hmFilter.get(columns[col]); // user requested choices
+		String[]values = collection.getUniqueValues(columns[col]); // choices for select
 		if (columns[col].equals(InstallTask.STATE)) {
 			values = new String[] { InstallTask.NEW, InstallTask.UPDATED, InstallTask.UPTODATE };
 		}
@@ -323,8 +357,9 @@ Select from the following tasks from the GenePattern public access website to do
 <%
 
 		for (int val = 0; val < values.length; val++) {
-%>
-			<option value="<%= GenePatternAnalysisTask.htmlEncode(values[val]) %>"<%= (vCol == null || vCol.size() == 0 || vCol.contains(values[val])) ? " selected" : ""%>><%= GenePatternAnalysisTask.htmlEncode(values[val]) %></option>
+			boolean selected = vCol == null || vCol.size() == 0 || vCol.contains(values[val]);
+%>			
+			<option value="<%= GenePatternAnalysisTask.htmlEncode(values[val]) %>"<%= selected ? " selected" : ""%>><%= GenePatternAnalysisTask.htmlEncode(values[val]) %></option>
 <%
 			}
 %>
@@ -558,7 +593,19 @@ Select from the following tasks from the GenePattern public access website to do
 		    }
 %>
 		</select>
+		
 		</nobr>
+		
+		<%
+		
+		if(!task.matchesAttributes(osAttributeMap)) {
+			%><br />
+			<font color="red">
+				Warning:This task is not compatible with your operating system.
+			</font><%
+		}
+		
+		%>
 		</td>
 
 		<td valign="top" height="1">
