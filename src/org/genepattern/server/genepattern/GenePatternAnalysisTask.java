@@ -1196,8 +1196,8 @@ eachRequiredPatch:
 			} catch (NumberFormatException nfe) {
 				// ignore
 			}
-			//return downloadTask(url, taskIntegrator, len);
-			return downloadTask(url, null, len); // null task integrator to suppress output
+			return downloadTask(url, taskIntegrator, len, false);
+			//return downloadTask(url, null, len); // null task integrator to suppress output
 		} catch (IOException ioe) {
 			if (ioe.getCause() != null) ioe = (IOException)ioe.getCause();
 			throw new IOException(ioe.toString() + " while downloading " + url);
@@ -1433,6 +1433,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 			    try {
 				while((line = in.readLine())!=null){
 					ps.println(line);
+					ps.flush();
 				}
 			    } catch (IOException ioe) {
 			    	System.err.println(ioe + " while reading from process stream");
@@ -3607,6 +3608,10 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 	 *  
 	 */
 	public static String downloadTask(String zipURL, ITaskIntegrator taskIntegrator, long expectedLength) throws IOException {
+		return downloadTask(zipURL, taskIntegrator, expectedLength, true);
+	}
+
+	public static String downloadTask(String zipURL, ITaskIntegrator taskIntegrator, long expectedLength, boolean verbose) throws IOException {
 	    File zipFile = null;
 	    long downloadedBytes = 0;
 	    try {
@@ -3626,8 +3631,8 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 		} else {
 			downloadSize = expectedLength;
 		}
-		if (taskIntegrator != null && downloadSize != -1) taskIntegrator.statusMessage("Download length: " + (long)downloadSize + " bytes."); //  Each dot represents 100KB.");
-		if (taskIntegrator != null) taskIntegrator.beginProgress("download");
+		if ((taskIntegrator != null) && (downloadSize != -1) && verbose ) taskIntegrator.statusMessage("Download length: " + (long)downloadSize + " bytes."); //  Each dot represents 100KB.");
+		if ((taskIntegrator != null) ) taskIntegrator.beginProgress("download");
 		InputStream is = uc.getInputStream();
 		byte[] buf = new byte[100000];
 		int i;
@@ -3655,7 +3660,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 		System.out.println("downloaded " + downloadedBytes + " bytes");
 		if (taskIntegrator != null) {
 			taskIntegrator.endProgress();
-			taskIntegrator.statusMessage("downloaded " + downloadedBytes + " bytes");
+			if (verbose) taskIntegrator.statusMessage("downloaded " + downloadedBytes + " bytes");
 		}
 	    }
 	}
