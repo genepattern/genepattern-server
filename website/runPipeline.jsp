@@ -89,7 +89,6 @@
 	if (command == null) command = RUN;
   	String description = null;
 	boolean isSaved = (requestParamsAndAttributes.get("saved") == null);
-
 	TaskInfo taskInfo = null;
 	String serverPort = System.getProperty("GENEPATTERN_PORT");
 	if (!isSaved) {
@@ -100,6 +99,7 @@
              taskInfo = GenePatternAnalysisTask.getTaskInfo(name, userID);               
         }
         String pipelineName = (name == null ? ("unnamed" + DOT_PIPELINE) : taskInfo.getName());
+
 
 
 	String baseURL = "http://" + request.getServerName() + ":" + serverPort + request.getRequestURI();
@@ -154,7 +154,12 @@ try {
         
 	if (isSaved) {
 		try {
-                    taskInfo = GenePatternAnalysisTask.getTaskInfo(pipelineName, userID);
+			if ((name != null) && (!(name.trim().length() == 0))){
+                    taskInfo = GenePatternAnalysisTask.getTaskInfo(name, userID);
+			} else {
+    				taskInfo = GenePatternAnalysisTask.getTaskInfo(pipelineName, userID);
+			
+			}
 		} catch (Exception e) {}
 		if (taskInfo == null) {
                     request.setAttribute("name", pipelineName );
