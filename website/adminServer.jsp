@@ -53,8 +53,14 @@ String java_flags = request.getParameter("java_flags");
 
 	if ((proxyHost!= null) || (proxyPort!= null)){
 		Properties p = new Properties();
-		if (proxyPort!= null) p.setProperty("http.proxyPort", proxyPort);
-		if (proxyHost!= null) p.setProperty("http.proxyHost", proxyHost);
+		if (proxyPort!= null) {
+         p.setProperty("http.proxyPort", proxyPort);
+         p.setProperty("ftp.proxyPort", proxyPort);
+      }
+		if (proxyHost!= null) {
+         p.setProperty("http.proxyHost", proxyHost);
+         p.setProperty("ftp.proxyHost", proxyHost);
+      }
 
 		storeSuccess  = PropertiesManager.storeChanges(p);
 	} 
@@ -65,6 +71,9 @@ String java_flags = request.getParameter("java_flags");
 		vec.add("http.proxyHost");
 		vec.add("http.proxyUser");
 		vec.add("http.proxyPassword");
+      
+      vec.add("ftp.proxyPort");
+		vec.add("ftp.proxyHost");
 
 		storeSuccess  = PropertiesManager.removeProperties(vec);
 	}
@@ -353,7 +362,7 @@ onclick="refillField(this);"> These Domains (comma delimited list)<br>
 <form action="adminServer.jsp" name="proxySettingsForm" method="POST">
 
 <table width='100%'>
-<tr><td class="heading" colspan='2'>HTTP Proxy Settings</td></tr>
+<tr><td class="heading" colspan='2'>Proxy Settings</td></tr>
 
 <tr><td align='right'>Proxy Host:</td><td><input type='text' size='40' name="proxyHost" value='<%=proxyHost%>' onkeyup="changeProxyFields(this)"/></td></tr>
 
@@ -372,7 +381,7 @@ onclick="refillField(this);"> These Domains (comma delimited list)<br>
 <%
 	}
 %>
-><input type="button" name="proxyHelp" value="Help" class="button" onclick="alert('HTTP proxy settings are needed only to connect to the Module Repository, and only if your organization has a web proxy between you and the internet. \nUsername and password are required only if your proxy requires authentication. \nThe username and password values will not be saved to the config file for security reasons and need to be re-entered after a server restart.')">
+><input type="button" name="proxyHelp" value="Help" class="button" onclick="alert('Proxy settings are needed only to connect to the Module Repository, and only if your organization has a web proxy between you and the internet. \nUsername and password are required only if your proxy requires authentication. \nThe username and password values will not be saved to the config file for security reasons and need to be re-entered after a server restart.')">
 
 </td></tr>
 </table>
