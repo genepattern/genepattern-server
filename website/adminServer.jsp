@@ -20,7 +20,7 @@
 	String purgeJobsAfter = request.getParameter("purgeJobsAfter");
 	String purgeTime = request.getParameter("purgeTime");
 
-String java_flags = request.getParameter("java_flags");
+   String java_flags = request.getParameter("java_flags");
 
 
 
@@ -50,7 +50,15 @@ String java_flags = request.getParameter("java_flags");
 	} 
 	allowedClients = System.getProperty("gp.allowed.clients" );
 	if (allowedClients == null) allowedClients = ANY;
-
+   
+  
+   if(proxyUser!=null || proxyPass!=null) {
+      System.setProperty("http.proxyUser", proxyUser);
+      System.setProperty("ftp.proxyUser", proxyUser);
+      System.setProperty("http.proxyPassword", proxyPass);
+      System.setProperty("ftp.proxyPassword", proxyPass);
+   }
+   
 
 	if ((proxyHost!= null) || (proxyPort!= null)){
 		Properties p = new Properties();
@@ -65,7 +73,7 @@ String java_flags = request.getParameter("java_flags");
 
 		storeSuccess  = PropertiesManager.storeChanges(p);
 	} 
-
+  
 	if (clearProxy != null){
 		Vector vec = new Vector();
 		vec.add("http.proxyPort");
@@ -75,9 +83,17 @@ String java_flags = request.getParameter("java_flags");
       
       vec.add("ftp.proxyPort");
 		vec.add("ftp.proxyHost");
+      vec.add("ftp.proxyUser");
+		vec.add("ftp.proxyPassword");
 
 		storeSuccess  = PropertiesManager.removeProperties(vec);
 	}
+   
+   proxyUser = System.getProperty("http.proxyUser");
+   if (proxyUser== null) proxyUser= "";
+   proxyPass = System.getProperty("http.proxyPassword");
+   if (proxyPass== null) proxyPass= "";
+   
 	proxyHost= System.getProperty("http.proxyHost" );
 	if (proxyHost== null) proxyHost= "";
 	proxyPort= System.getProperty("http.proxyPort" );
@@ -150,7 +166,8 @@ function changeFields(obj){
 }
 
 function changeProxyFields(obj){
-	obj.form.submitProxy.disabled=((obj.form.proxyHost.value == "<%=proxyHost%>")  && (obj.form.proxyPort.value == "<%=proxyPort%>")) 
+	obj.form.submitProxy.disabled=((obj.form.proxyHost.value == "<%=proxyHost%>")  && (obj.form.proxyPort.value == "<%=proxyPort%>") 
+      && (obj.form.proxyUser.value == "<%=proxyUser%>") && (obj.form.proxyPass.value == "<%=proxyPass%>")) 
 
 	obj.form.submitClearProxy.disabled = ((obj.form.proxyHost.value.length + obj.form.proxyPort.value.length ) == 0)  
 }
