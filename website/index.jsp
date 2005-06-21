@@ -168,8 +168,19 @@ var LSIDs = new Array();
 			v = (Vector)tmNoVersions.get(l.toStringNoVersion());
 			if (v == null) {
 				v = new Vector();
+				v.add(l.getVersion());
+
+			} else {
+				String highestVersion = (String)v.firstElement();
+				String curVersion = l.getVersion();
+
+				if ((curVersion.compareTo(highestVersion)) > 0){
+					v.add(0, l.getVersion());
+
+				} else {
+					v.add(l.getVersion());
+				}
 			}
-			v.add(l.getVersion());
 			tmNoVersions.put(l.toStringNoVersion(), v);
 		} catch (MalformedURLException mue) {
 			// don't display tasks with bad LSIDs
@@ -538,7 +549,8 @@ taskSelect(document.forms['index'].task, 'task');
 
 		TaskInfo latestTaskInfo = (TaskInfo)latestTaskMap.get(versionlessLSID);
 		TaskInfoAttributes latestTia = latestTaskInfo.giveTaskInfoAttributes();
-
+		lsid = latestTia.get(GPConstants.LSID);
+		
 		taskType = latestTia.get(GPConstants.TASK_TYPE);
 		if (type != null && !taskType.equals(type)) continue;
 		if (!bIncludePipelines && taskType.equals(GPConstants.TASK_TYPE_PIPELINE)) continue;
@@ -558,7 +570,7 @@ taskSelect(document.forms['index'].task, 'task');
 			if (hmLSIDsWithoutVersions.containsKey(key) ) {
 				continue;
 			}
-			hmLSIDsWithoutVersions.put(key, taskInfo);
+			hmLSIDsWithoutVersions.put(key, latestTaskInfo);
 			authorityType = LSIDManager.getInstance().getAuthorityType(l);
 		} catch (MalformedURLException mue) {
 			System.out.println("index.jsp: skipping " + mue.getMessage() + " in " + lsid);
