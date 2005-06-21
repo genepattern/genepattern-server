@@ -30,10 +30,17 @@ if (pipelineName == null) {
 <%
 	return;
 }
+System.out.println("HERE " + userID + "  " + pipelineName);
+
 PipelineModel model = null;
+
+if (LSID.isLSID(pipelineName)) pipelineName = new LSID(pipelineName).toString();
+		
 TaskInfo task = new org.genepattern.server.webservice.server.local.LocalAdminClient(userID).getTask(pipelineName);
 String version = "";
 if (task != null) {
+	System.out.println("Task NOT NULL");
+
 	TaskInfoAttributes tia = task.giveTaskInfoAttributes();
 	if (tia != null) {
 		 String serializedModel = (String)tia.get(GenePatternAnalysisTask.SERIALIZED_MODEL);
@@ -41,18 +48,24 @@ if (task != null) {
 			 try {
 			 	 model = PipelineModel.toPipelineModel(serializedModel);
 			} catch (Throwable x) {
+				System.out.println("exception loading serialized model " + x);
+
 				x.printStackTrace(System.out);
 			}
 		}
+		System.out.println("model is "+ model);
 		String lsidStr = tia.get("LSID");
 		LSID pipeLSID = new LSID(lsidStr);
 		version = pipeLSID.getVersion();
 	}
+} else {
+	System.out.println("Task is NULL");
 }
 %>
 <html>
 <head>
 <script language="JavaScript">
+System.out.println("Model2 = " + model);
 var numTasks = <% out.print(model.getTasks().size()); %>
 function toggle() {
 	for(var i = 0; i < numTasks; i++) {
