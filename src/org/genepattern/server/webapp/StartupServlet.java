@@ -52,7 +52,7 @@ public class StartupServlet extends HttpServlet {
 	SimpleDateFormat dateTimeFormat = new SimpleDateFormat(
 			"yyyy-MM-dd HH:mm:ss");
 
-	Vector vThreads = new Vector();
+	public static Vector vThreads = new Vector();
 
 	boolean DEBUG = false;
 
@@ -92,21 +92,19 @@ public class StartupServlet extends HttpServlet {
 	}
 
 	protected void startJobPurger(Properties props) {
-		String purgeJobsAfter = props.getProperty("purgeJobsAfter", "-1");
-		String purgeTime = props.getProperty("purgeTime", "23:00");
-
-		String daemonName = "JobPurger";
-		if (!findThreadByName("JobPurger")) {
-			log("starting " + daemonName + " to purge jobs older than "
-					+ purgeJobsAfter + " days at " + purgeTime);
-			Thread tJobPurger = new Thread(new JobPurger(purgeJobsAfter,
-					purgeTime), daemonName);
-			tJobPurger.setPriority(Thread.MIN_PRIORITY);
-			tJobPurger.setDaemon(true);
-			tJobPurger.start();
-			vThreads.add(tJobPurger);
-		}
+		Thread tJobPurger= JobPurger.startJobPurger(props);
+		addDaemonThread(tJobPurger);
 	}
+
+	public  static void startJobPurger() {
+		Thread tJobPurger= JobPurger.startJobPurger(System.getProperties());
+		addDaemonThread(tJobPurger);
+	}
+
+	protected static void addDaemonThread(Thread t){
+		vThreads.add(t);
+	}
+
 
 	protected void startIndexerDaemon(Properties props) throws ServletException {
 		String daemonName = "IndexerDaemon";
@@ -118,7 +116,7 @@ public class StartupServlet extends HttpServlet {
 				tIndexerDaemon.setPriority(Thread.NORM_PRIORITY - 2);
 				tIndexerDaemon.setDaemon(true);
 				tIndexerDaemon.start();
-				vThreads.add(tIndexerDaemon);
+				addDaemonThread(tIndexerDaemon);
 			} catch (IOException ioe) {
 				throw new ServletException(ioe.getMessage()
 						+ " while starting " + daemonName);
@@ -136,7 +134,7 @@ public class StartupServlet extends HttpServlet {
 		jspPrecompiler.setPriority(Thread.MIN_PRIORITY + 1);
 		jspPrecompiler.setDaemon(true);
 		jspPrecompiler.start();
-		vThreads.add(jspPrecompiler);
+		addDaemonThread(jspPrecompiler);
 	}
 
 	protected void announceReady(Properties props) {

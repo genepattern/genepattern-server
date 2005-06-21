@@ -1,5 +1,6 @@
 <%@ page session="false" contentType="text/html" language="Java" 
 		import="java.util.*,
+		org.genepattern.server.webapp.StartupServlet,
 		org.genepattern.server.util.PropertiesManager, 
 		java.io.*"
 %>
@@ -94,14 +95,16 @@ String java_flags = request.getParameter("java_flags");
 	} 
 	recentHistorySize = System.getProperty("recentJobsToDisplay", "3" );
 	
-	if (purgeJobsAfter != null){
-		storeSuccess  = PropertiesManager.storeChange("purgeJobsAfter", purgeJobsAfter );
+	if ((purgeJobsAfter != null) || (purgeTime != null)){
+		if (purgeTime != null){
+			storeSuccess  = PropertiesManager.storeChange("purgeTime", purgeTime );
+		} 
+		if (purgeJobsAfter != null){
+			storeSuccess  = PropertiesManager.storeChange("purgeJobsAfter", purgeJobsAfter );
+		}
+		StartupServlet.startJobPurger();		
 	} 
 	purgeJobsAfter = System.getProperty("purgeJobsAfter" );
-
-	if (purgeTime != null){
-		storeSuccess  = PropertiesManager.storeChange("purgeTime", purgeTime );
-	} 
 	purgeTime = System.getProperty("purgeTime" );
 
 	if (java_flags != null){

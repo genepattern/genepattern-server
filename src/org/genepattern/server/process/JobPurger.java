@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Timer;
+import java.util.Properties;
 
 public class JobPurger implements Runnable {
 
@@ -16,13 +17,47 @@ public class JobPurger implements Runnable {
 
 	protected int purgeInterval = -1;
 
-	Timer timer = new Timer(true);
-
-	Purger purger = null;
+	public Timer timer = new Timer(true);
+		Purger purger = null;
 
 	boolean DEBUG = false;
 
+	static JobPurger instance = null; 
+	static Thread purgerThread = null;
+
+
+	
+	public  static Thread startJobPurger(Properties props) {
+
+		if (instance != null) instance.timer.cancel();
+
+	
+		String purgeJobsAfter = props.getProperty("purgeJobsAfter", "-1");
+		String purgeTime = props.getProperty("purgeTime", "23:00");
+
+		String daemonName = "JobPurger";
+		System.out.println("starting " + daemonName + " to purge jobs older than "
+				+ purgeJobsAfter + " days at " + purgeTime);
+		purgerThread= new Thread(new JobPurger(purgeJobsAfter,
+				purgeTime), daemonName);
+		purgerThread.setPriority(Thread.MIN_PRIORITY);
+		purgerThread.setDaemon(true);
+		purgerThread.start();
+		return purgerThread;
+	}
+
+
+	public JobPurger(){
+		String pi = System.getProperty("purgeJobsAfter", "-1");
+		String pt = System.getProperty("purgeTime", "23:00");
+		init(pi, pt); 
+	}
+
 	public JobPurger(String purgeInterval, String purgeTime) {
+		init(purgeInterval, purgeTime);
+	}
+
+	public void init(String purgeInterval, String purgeTime) {
 		GregorianCalendar nextPurgeTime = new GregorianCalendar();
 		GregorianCalendar purgeTOD = new GregorianCalendar();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
@@ -55,7 +90,11 @@ public class JobPurger implements Runnable {
 		purger = new Purger(this.purgeInterval);
 		timer.scheduleAtFixedRate(purger, nextPurgeTime.getTime(),
 				MILLISECONDS_IN_A_DAY);
+		instance = this;
+
 	}
+
+
 
 	public void run() {
 		try {
