@@ -87,13 +87,13 @@ if (taskName != null) {
 	TreeMap tmFileFormats = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 	TreeMap tmDomains = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 
-	int DOMAIN_PARAM_OFFSET = -1;
+/*	int DOMAIN_PARAM_OFFSET = -1;
 	for (int j = 0; j < GPConstants.PARAM_INFO_ATTRIBUTES.length; j++) {
 		if (GPConstants.PARAM_INFO_ATTRIBUTES[j] == GPConstants.PARAM_INFO_DOMAIN) {
 			DOMAIN_PARAM_OFFSET = j;
 			break;
 		}
-	}
+	}*/
 	int FILE_FORMAT_PARAM_OFFSET = -1;
 	for (int j = 0; j < GPConstants.PARAM_INFO_ATTRIBUTES.length; j++) {
 		if (GPConstants.PARAM_INFO_ATTRIBUTES[j] == GPConstants.PARAM_INFO_FILE_FORMAT) {
@@ -394,7 +394,7 @@ if (tia != null) {
 		String key = (String)itDomain.next();
 		domains[i] = new String[] { key, key};
 	}
-	GPConstants.PARAM_INFO_ATTRIBUTES[DOMAIN_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET] = domains;
+	//GPConstants.PARAM_INFO_ATTRIBUTES[DOMAIN_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET] = domains;
 
 	if (tia != null) {
 		lsid = tia.get(GPConstants.LSID);
