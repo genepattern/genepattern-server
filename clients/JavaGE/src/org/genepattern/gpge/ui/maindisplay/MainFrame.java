@@ -1953,7 +1953,7 @@ public class MainFrame extends JFrame {
 				int index = Collections.binarySearch(jobs, job, jobNumberComparator);
 				jobs.remove(index);
 				removeFromMenu(index);
-				
+            JobModel.getInstance().remove(job.getJobInfo().getJobNumber());
 			} catch (WebServiceException wse) {
 				wse.printStackTrace();
 				if (!disconnectedFromServer(wse)) {

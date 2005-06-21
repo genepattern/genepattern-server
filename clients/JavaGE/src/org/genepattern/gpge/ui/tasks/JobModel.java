@@ -233,6 +233,21 @@ public class JobModel extends AbstractSortableTreeTableModel {
       root.remove(index);
       nodesWereRemoved(root, new int[] { index }, new Object[] { node });
 	}
+   
+   /**
+	 * Removes the job from the model
+	 * 
+	 * @param jobNumber
+	 *            the job number to remove
+	 */
+	public void remove(int jobNumber) throws WebServiceException {
+      JobNode node = findJobNode(jobNumber);
+      if(node!=null) {
+         int index = root.getIndex(node);
+         root.remove(index);
+         nodesWereRemoved(root, new int[] { index }, new Object[] { node });
+      }
+	}
 
    
   
@@ -427,6 +442,17 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		}
 	}
 
+   private JobNode findJobNode(int jobNumber) {
+		for (int i = 0, size = root.getChildCount(); i < size; i++) {
+			JobNode n = (JobNode) root.getChildAt(i);
+			if (n.job.getJobInfo().getJobNumber() == jobNumber) {
+				return n;
+			}
+		}
+		return null;
+	}
+
+   
 	private JobNode findJobNode(AnalysisJob job) {
 		for (int i = 0, size = root.getChildCount(); i < size; i++) {
 			JobNode n = (JobNode) root.getChildAt(i);
