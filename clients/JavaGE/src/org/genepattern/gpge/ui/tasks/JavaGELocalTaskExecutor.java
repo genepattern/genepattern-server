@@ -97,9 +97,11 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 	static class StreamGobbler extends Thread {
 		private final InputStream is;   
 		private PrintStream ps;
+		
 	StreamGobbler(final InputStream is, PrintStream ps)
 				throws IOException {
 			this.is = is;
+			this.ps = ps;
 		}
 
 		public void run() {
@@ -107,6 +109,7 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 				BufferedReader br = new BufferedReader(new InputStreamReader(is));
 				for (String line = br.readLine(); line != null; line = br
 						.readLine()) {
+				    System.out.println("here");
 				    ps.println(line);
 				}
 			} catch (IOException ioe) {
