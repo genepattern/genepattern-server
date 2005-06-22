@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Properties;
@@ -55,7 +56,7 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 
 	protected void startOutputStreamThread(Process proc) {
       try {
-			new StreamGobbler(proc.getInputStream()).start();
+			new StreamGobbler(proc.getInputStream(), System.out).start();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
@@ -63,7 +64,7 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 
 	protected void startErrorStreamThread(Process proc) {
 	try {
-			errorGobbler = new StreamGobbler(proc.getErrorStream());
+			errorGobbler = new StreamGobbler(proc.getErrorStream(), System.err);
 			errorGobbler.start();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
@@ -95,8 +96,8 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 	 */
 	static class StreamGobbler extends Thread {
 		private final InputStream is;   
-      
-	StreamGobbler(final InputStream is)
+		private PrintStream ps;
+	StreamGobbler(final InputStream is, PrintStream ps)
 				throws IOException {
 			this.is = is;
 		}
@@ -106,6 +107,7 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 				BufferedReader br = new BufferedReader(new InputStreamReader(is));
 				for (String line = br.readLine(); line != null; line = br
 						.readLine()) {
+				    ps.println(line);
 				}
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
