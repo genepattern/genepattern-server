@@ -109,7 +109,6 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 				BufferedReader br = new BufferedReader(new InputStreamReader(is));
 				for (String line = br.readLine(); line != null; line = br
 						.readLine()) {
-				    System.out.println("here");
 				    ps.println(line);
 				}
 			} catch (IOException ioe) {
