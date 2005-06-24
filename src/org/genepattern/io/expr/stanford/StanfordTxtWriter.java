@@ -32,7 +32,7 @@ public class StanfordTxtWriter
         int columns = expressionData.getColumnCount();
         out.print("ID");
         out.print("\t");
-        out.print("Name");
+        out.print("NAME");
         for (int j = 0; j < columns; j++) {
             out.print("\t");
             out.print(expressionData.getColumnName(j));
