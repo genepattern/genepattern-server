@@ -515,11 +515,13 @@ Please enter the following information to submit a new or updated analysis task 
   	if(!viewOnly) { %>
    <input name="<%= GPConstants.USERID %>" size="50" class="hideable"
 	       value="<%= owner %>" 
-	       <%= (tia == null || owner.equals("") || userID.equals(owner)) ? "" : "readonly" %>>
+		
+	       <%= (tia == null || owner.equals("") || userID.equals(owner) || userID.equals(taskInfo.getUserId())) ? "" : "readonly" %>>
 	       (email address)
-   <%} else {
-      out.print(owner);
-   }
+   <%
+	} else {
+      	out.print(owner);
+   	}
    %>
   </td>
   </tr>
