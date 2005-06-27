@@ -269,7 +269,7 @@ function deleteTask(taskNum) {
 pipelineInstruction = 'Pipeline names are composed of letters, digits, and period, and must start with a letter.';
 
 function isRSafe(varName) {
-	var invalidCharacters = '[^a-zA-Z0-9\.]';
+	var invalidCharacters = '[^a-zA-Z0-9\._]';
 	var reservedNames = new Array('if', 'else', 'repeat', 'while', 'function', 'for', 'in', 'next', 'break', 'true', 'false', 'null', 'na', 'inf', 'nan');
 	var ret =   varName.length > 0 && 				// the name is not empty
 		    varName.search(invalidCharacters) == -1 && 		// it consists of only letters, digits, and periods

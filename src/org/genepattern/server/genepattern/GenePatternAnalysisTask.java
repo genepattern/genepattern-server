@@ -2677,7 +2677,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 	public static boolean isRSafe(String varName) {
 		// anything but letters, digits, and period is an invalid R identifier
 		// that must be quoted
-		String validCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.";
+		String validCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._";
 		String[] reservedNames = new String[] { "if", "else", "repeat",
 				"while", "function", "for", "in", "next", "break", "true",
 				"false", "null", "na", "inf", "nan" };
