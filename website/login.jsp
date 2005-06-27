@@ -68,15 +68,20 @@ if (origin == null) origin = "";
 <title>GenePattern sign-in</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 </head>
-<body onload="javascript:document.forms['login'].<%= GPConstants.USERID %>.focus()">
+<body onload=sf()>
 <jsp:include page="navbar.jsp"></jsp:include>
-<form name="login" target="_top">
+<form name=loginForm target="_top">
 Please enter your username to identify task ownership.  We recommend using your email address to ensure uniqueness, memorability, and consistency.<br>
-Username: <input name="<%= GPConstants.USERID %>" size="50">
+Username: <input name=<%= GPConstants.USERID %> size="50">
 <input type="hidden" name="<%= REFERRER %>" value="<%= origin %>">
 <input type="submit" name="submit" value="sign in" class="little">
 
 </form>
+<script type="text/javascript">
+function sf(){document.loginForm.userid.focus();}
+
+</script>
+
 <jsp:include page="footer.jsp"></jsp:include>
 </body>
 </html>
