@@ -1,10 +1,17 @@
 package org.genepattern.gpge.ui.tasks;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.*;
+import org.genepattern.data.pipeline.JobSubmission;
+import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.gpge.GenePattern;
+import org.xml.sax.SAXException;
 
 /**
  * Runs tasks for the GPGE
@@ -90,7 +97,26 @@ public class TaskLauncher {
 		new Thread() {
 			public void run() {
 				try {
-					submitAndWaitUntilCompletion(paramInfos, serviceProxy, svc);
+				    Map taskInfoAttributes = svc.getTaskInfo().getTaskInfoAttributes();
+				    String xml = (String) taskInfoAttributes.get(GPConstants.SERIALIZED_MODEL);
+				    Map visualizerTaskNumber2LSID = new HashMap();
+				    if(xml!=null && !xml.equals("")) {
+				        try {
+                            PipelineModel model = PipelineModel.toPipelineModel(xml);
+                            List tasks = model.getTasks();
+                            
+                            for(int i = 0; i < tasks.size(); i++) {
+                                JobSubmission js = (JobSubmission) tasks.get(i);
+                                if(js.isVisualizer()) {
+                                    visualizerTaskNumber2LSID.put(new Integer(i), js.getLSID());
+                                } 
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+				        
+				    }
+					submitAndWaitUntilCompletion(paramInfos, serviceProxy, svc, visualizerTaskNumber2LSID);
 				} catch (WebServiceException wse) {
 					if(!GenePattern.disconnectedFromServer(wse, svc.getServer())) {
                   GenePattern.showErrorDialog("An error occurred while running " + svc.getTaskInfo().getName());
@@ -107,7 +133,7 @@ public class TaskLauncher {
       new Thread() {
          public void run() {
             try {
-               waitUntilCompletion(job, null);  
+               waitUntilCompletion(job, null, null);  
             } catch(WebServiceException wse) {
                //if(!GenePattern.disconnectedFromServer(wse, svc.getServer())) {
                   GenePattern.showErrorDialog("An error occurred while running " + job.getTaskName());
@@ -119,49 +145,69 @@ public class TaskLauncher {
    
 	private static AnalysisJob submitAndWaitUntilCompletion(ParameterInfo[] paramInfos,
 			final AnalysisWebServiceProxy serviceProxy,
-			final AnalysisService svc) throws WebServiceException {
+			final AnalysisService svc, Map visualizerTaskNumber2LSID) throws WebServiceException {
 
 		TaskInfo tinfo = svc.getTaskInfo();
 		final JobInfo jobInfo = serviceProxy.submitJob(tinfo.getID(),
 				paramInfos);
 		final AnalysisJob job = new AnalysisJob(svc.getServer(), jobInfo);
       JobModel.getInstance().add(job);
-      return waitUntilCompletion(job, serviceProxy);
+      return waitUntilCompletion(job, serviceProxy, visualizerTaskNumber2LSID);
    }
    
-   private static AnalysisJob waitUntilCompletion(AnalysisJob job, AnalysisWebServiceProxy serviceProxy) throws WebServiceException {
-      
-		String status = "";
-		JobInfo info = null;
-      if(serviceProxy==null) {
-         serviceProxy = new AnalysisWebServiceProxy(job.getServer(), job.getJobInfo().getUserId());
-      }
-		int initialSleep = 100;
-		int sleep = initialSleep;
-		int tries = 0;
-		int maxTries = 20;
-		while (!(status.equalsIgnoreCase("ERROR") || (status
-				.equalsIgnoreCase("Finished")))) {
-			tries++;
-			try {
-				Thread.currentThread().sleep(sleep);
-			} catch (InterruptedException ie) {
-			}
 	
-         info = serviceProxy
-               .checkStatus(job.getJobInfo().getJobNumber());
-         job.setJobInfo(info);
-         String currentStatus = info.getStatus();
-         if (!(status.equals(currentStatus))) {
-            JobModel.getInstance().jobStatusChanged(job);
-         }
-         status = currentStatus;
-			
-			sleep = incrementSleep(initialSleep, tries, maxTries);
+   private static AnalysisJob waitUntilCompletion(AnalysisJob job, AnalysisWebServiceProxy serviceProxy, Map visualizerTaskNumber2LSID) throws WebServiceException {
+    
+        String status = "";
 
-		}
-		JobModel.getInstance().jobCompleted(job);
-		return job;
+        if (serviceProxy == null) {
+            serviceProxy = new AnalysisWebServiceProxy(job.getServer(), job
+                    .getJobInfo().getUserId());
+        }
+        int initialSleep = 100;
+        int sleep = initialSleep;
+        int tries = 0;
+        int maxTries = 20;
+       
+        while (!(status.equalsIgnoreCase("ERROR") || (status
+                .equalsIgnoreCase("Finished")))) {
+            tries++;
+            try {
+                Thread.sleep(sleep);
+            } catch (InterruptedException ie) {
+            }
+
+            JobInfo info = serviceProxy.checkStatus(job.getJobInfo()
+                    .getJobNumber());
+            job.setJobInfo(info);
+            String currentStatus = info.getStatus();
+            if (!(status.equals(currentStatus))) {
+                JobModel.getInstance().jobStatusChanged(job);
+            }
+            if (visualizerTaskNumber2LSID!=null && visualizerTaskNumber2LSID.size() > 0) {
+                int[] children = serviceProxy.getChildren(info.getJobNumber());
+               
+                for (int i = 0; i < children.length; i++) {
+                    if (visualizerTaskNumber2LSID.containsKey(new Integer(i))) {
+                        String lsid = (String) visualizerTaskNumber2LSID
+                                .remove(new Integer(i));
+                        
+                        ParameterInfo[] params = serviceProxy.checkStatus(children[i]).getParameterInfoArray();
+                       System.out.println(java.util.Arrays.asList(params));
+                        submitVisualizer(AnalysisServiceManager.getInstance()
+                                .getAnalysisService(lsid), params, job
+                                .getJobInfo().getUserId(),
+                                serviceProxy);
+                    }
+                }
+
+            }
+            status = currentStatus;
+            sleep = incrementSleep(initialSleep, tries, maxTries);
+
+        }
+        JobModel.getInstance().jobCompleted(job);
+        return job;
 	}
 
 	/**
