@@ -32,6 +32,7 @@ import org.genepattern.webservice.JobStatus;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 public class RunPipeline {
 
@@ -241,10 +242,29 @@ public class RunPipeline {
 	      analysisProxy.setJobStatus(jobId, status);
 	}
 
-   protected JobInfo executeVisualizer(AnalysisService svc, ParameterInfo[] params) {
-      return new JobInfo(); // note: visualizers not checked to see if
-								  // found on server
-   }
+   protected JobInfo executeVisualizer(AnalysisService svc,
+            ParameterInfo[] params) {
+        try {
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    String val = params[i].getValue();
+                    if (val.startsWith("<GenePatternURL>")) {
+                        val = val.replaceAll("<GenePatternURL>", server
+                                + "/gp/");
+
+                        params[i].setValue(val);
+                    }
+
+                }
+            }
+            analysisProxy.recordClientJob(svc.getTaskInfo().getID(), params,
+                    jobId);
+        } catch (WebServiceException e) {
+            e.printStackTrace();
+        }
+        return new JobInfo();
+    }
+   
    
 	/**
 	 * submit the job and wait for it to complete
@@ -478,18 +498,19 @@ semantic_search_loop:
 	protected AnalysisJob submitJob(AnalysisService svc, ParameterInfo[] parmInfos) throws Exception {
 	      if(parmInfos!=null) {
 	         for(int i = 0; i < parmInfos.length; i++) {
-	            if(parmInfos[i].isInputFile()) {
-			String file = parmInfos[i].getValue(); // bug 724
-			String val = file;
-			if (!(file.startsWith("http:") || file.startsWith("ftp:") || file.startsWith("file:"))) {
-				val = new File(file).toURI().toString();
-			}
-			parmInfos[i].setValue(val);
-			parmInfos[i].getAttributes().remove("TYPE");
-			parmInfos[i].getAttributes().remove("MODE");
-	            }
-	         }
-	      }
+	            if (parmInfos[i].isInputFile()) {
+                    String file = parmInfos[i].getValue(); // bug 724
+                    String val = file;
+                    if (!(file.startsWith("http:") || file.startsWith("ftp:") || file
+                            .startsWith("file:"))) {
+                        val = new File(file).toURI().toString();
+                    }
+                    parmInfos[i].setValue(val);
+                    parmInfos[i].getAttributes().remove("TYPE");
+                    parmInfos[i].getAttributes().remove("MODE");
+                }
+            }
+        }
 		TaskInfo tinfo = svc.getTaskInfo();
 		final JobInfo job = analysisProxy.submitJob(tinfo.getID(), parmInfos, jobId);
 		final AnalysisJob aJob = new AnalysisJob(svc.getServer(), job);
