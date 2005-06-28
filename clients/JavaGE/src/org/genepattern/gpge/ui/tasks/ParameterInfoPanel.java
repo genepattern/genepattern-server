@@ -151,8 +151,9 @@ public class ParameterInfoPanel extends JPanel {
     }
 
     public ParameterInfoPanel(String taskName, ParameterInfo[] params) {
-        parameterName2ComponentMap = new HashMap(params.length);
-        parameterDescriptions = new ArrayList(params.length);
+        int numParams = params!=null?params.length:0;
+        parameterName2ComponentMap = new HashMap(numParams);
+        parameterDescriptions = new ArrayList(numParams);
         inputFileParameters = new ArrayList();
 
         this.setBackground(Color.white);
