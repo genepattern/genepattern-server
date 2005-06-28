@@ -88,6 +88,46 @@ public class Analysis extends GenericWebService {
       }
    }
    
+   /**
+	 * Saves a record of a job that was executed on the client into the database
+	 * 
+	 * @param taskID
+	 *            the ID of the task to run.
+	 * @param parmInfo
+	 *            the parameters 
+   * @exception WebServiceException
+	 *                thrown if problems are encountered
+	 * @return the job information
+	 */
+   
+  public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters, int parentJobNumber) 	throws WebServiceException {
+     try {
+         org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+                    .getAnalysisJobDataSourceEJB();   
+        return ds.recordClientJob(taskID, getUsernameFromContext(), org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters), parentJobNumber);
+     } catch(Exception e) {
+        throw new WebServiceException(e);  
+     }
+  }
+   
+   
+   public int[] getChildren(int jobId) throws WebServiceException {
+       
+        try {
+            org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+            .getAnalysisJobDataSourceEJB();
+            JobInfo[] children = ds.getChildren(jobId);
+
+            int[] jobs = new int[children.length];
+            for (int i = 0; i < children.length; i++) {
+                jobs[i] = children[i].getJobNumber();
+            }
+            return jobs;
+        } catch (Exception e) {
+            throw new WebServiceException(e);
+        }
+   }
+ 
    
    /**
 	 * Submits an analysis job to be processed. The job is a child job of the supplied parent job.

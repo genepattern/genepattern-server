@@ -53,6 +53,14 @@ public class AnalysisWebServiceProxy {
 		}
    }
    
+   public JobInfo recordClientJob(int taskID, ParameterInfo[] params, int parentJobNumber) throws WebServiceException {
+       try {
+          return stub.recordClientJob(taskID, params, parentJobNumber);
+ 		} catch (RemoteException re) {
+ 			throw new WebServiceException(re);
+ 		}
+    }
+   
    
    /**
 	 * Submits a job to be processed. The job is a child job of the supplied parent job.
@@ -279,5 +287,13 @@ public class AnalysisWebServiceProxy {
 			throw new WebServiceException(re);
 		}
 	}
+   
+   public int[] getChildren(int jobNumber) throws WebServiceException {
+       try {
+           return stub.getChildren(jobNumber);
+  		} catch (RemoteException re) {
+  			throw new WebServiceException(re);
+  		}
+   }
 
 }

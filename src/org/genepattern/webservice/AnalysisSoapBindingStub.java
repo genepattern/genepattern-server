@@ -16,7 +16,7 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub {
     static org.apache.axis.description.OperationDesc [] _operations;
 
     static {
-        _operations = new org.apache.axis.description.OperationDesc[18];
+        _operations = new org.apache.axis.description.OperationDesc[20];
         org.apache.axis.description.OperationDesc oper;
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getTasks");
@@ -256,6 +256,29 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub {
         oper.setStyle(org.apache.axis.enum.Style.RPC);
         oper.setUse(org.apache.axis.enum.Use.ENCODED);
         _operations[17] = oper;
+        
+        oper = new org.apache.axis.description.OperationDesc();
+        oper.setName("getChildren");
+        oper.addParameter(new javax.xml.namespace.QName("", "jobNumber"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "ArrayOf_xsd_int"));
+        oper.setReturnClass(int[].class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "getChildren"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+       
+        _operations[18] = oper;
+        
+        oper = new org.apache.axis.description.OperationDesc();
+        oper.setName("recordClientJob");
+        oper.addParameter(new javax.xml.namespace.QName("", "taskID"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "parameters"), new javax.xml.namespace.QName("Analysis", "ParmInfoArray"), ParameterInfo[].class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "parentJobNumber"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("Analysis", "JobInfo"));
+        oper.setReturnClass(JobInfo.class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "recordClientJobReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        _operations[19] = oper;
 
     }
 
@@ -726,6 +749,34 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub {
         }
     }
 
+    public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters, int parentJobNumber) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[19]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("");
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "recordClientJob"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {new java.lang.Integer(taskID), parameters, new Integer(parentJobNumber)});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        else {
+            extractAttachments(_call);
+            try {
+                return (JobInfo) _resp;
+            } catch (java.lang.Exception _exception) {
+                return (JobInfo) org.apache.axis.utils.JavaUtils.convert(_resp, JobInfo.class);
+            }
+        }
+    }
+    
     public java.lang.String getWebServiceName() throws java.rmi.RemoteException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
@@ -905,6 +956,32 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub {
             } catch (java.lang.Exception _exception) {
                 return (java.lang.String) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String.class);
             }
+        }
+    }
+    
+    public int[] getChildren(int job) throws java.rmi.RemoteException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[18]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("");
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("http://webservice.server.genepattern.org", "getChildren"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {new java.lang.Integer(job)});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        extractAttachments(_call);
+        try {
+            return (int[]) _resp;
+        } catch (java.lang.Exception _exception) {
+            return (int[]) org.apache.axis.utils.JavaUtils.convert(_resp, int[].class);
         }
     }
 

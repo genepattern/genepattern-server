@@ -171,9 +171,18 @@ public class AnalysisHypersonicDAO implements
    
    
    public JobInfo recordClientJob(int taskID, String user_id, String parameter_info) throws OmnigeneException, RemoteException {
+       return  recordClientJob( taskID,  user_id,  parameter_info, -1);
+   }
+       
+   public JobInfo recordClientJob(int taskID, String user_id, String parameter_info, int parentJobNumber) throws OmnigeneException, RemoteException {
       JobInfo job = null;
       try {
-         job = addNewJob(taskID, user_id, parameter_info, null, null, null);
+          
+         Integer parent = null;
+         if(parentJobNumber!=-1) {
+             parent = new Integer(parentJobNumber);
+         }
+         job = addNewJob(taskID, user_id, parameter_info, null, parent, null);
          updateJob(job.getJobNumber(), JobStatus.JOB_FINISHED);
          setJobDeleted(job.getJobNumber(), true);
          return job;
