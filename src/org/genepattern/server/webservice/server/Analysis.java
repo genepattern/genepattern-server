@@ -2,6 +2,7 @@ package org.genepattern.server.webservice.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.genepattern.server.webservice.GenericWebService;
 import org.genepattern.webservice.FileWrapper;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
+import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -85,7 +87,7 @@ public class Analysis extends GenericWebService {
          throw new WebServiceException(e);  
       }
    }
-  
+   
    
    /**
 	 * Submits an analysis job to be processed. The job is a child job of the supplied parent job.
@@ -286,6 +288,12 @@ public class Analysis extends GenericWebService {
          Process p = org.genepattern.server.genepattern.GenePatternAnalysisTask.terminatePipeline("" + jobId);
          if (p != null) {
             setJobStatus(jobId, JobStatus.ERROR);
+         }
+         org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+			.getAnalysisJobDataSourceEJB();
+         JobInfo[] children = ds.getChildren(jobId);
+         for(int i = 0; i < children.length; i++) { // terminate all child jobs
+             terminateJob(children[i].getJobNumber());  
          }
       } catch(Exception e) {
          throw new WebServiceException(e);  
