@@ -3,22 +3,18 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.Vector;
-import javax.swing.border.Border;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -27,27 +23,33 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import org.genepattern.codegenerator.JavaPipelineCodeGenerator;
+import org.genepattern.codegenerator.MATLABPipelineCodeGenerator;
+import org.genepattern.codegenerator.RPipelineCodeGenerator;
+import org.genepattern.codegenerator.TaskCodeGenerator;
 import org.genepattern.gpge.GenePattern;
+import org.genepattern.gpge.PropertyManager;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
+import org.genepattern.gpge.ui.maindisplay.LSIDUtil;
 import org.genepattern.gpge.ui.maindisplay.MainFrame;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel;
-import org.genepattern.gpge.ui.project.ProjectDirModel;
-import org.genepattern.modules.ui.graphics.*;
-import org.genepattern.util.*;
-import org.genepattern.webservice.*;
-import org.genepattern.webservice.TaskIntegratorProxy;
-import org.genepattern.gpge.ui.maindisplay.LSIDUtil;
-import org.genepattern.webservice.WebServiceException;
 import org.genepattern.gpge.ui.preferences.PreferenceKeys;
-import org.genepattern.gpge.ui.tasks.TaskLauncher;
-import org.genepattern.codegenerator.*;
-import org.genepattern.gpge.PropertyManager;
+import org.genepattern.util.BrowserLauncher;
+import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskIntegratorProxy;
+import org.genepattern.webservice.WebServiceException;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -342,10 +344,12 @@ public class AnalysisServiceDisplay extends JPanel {
       helpButton.addActionListener(new HelpActionListener());
       buttonPanel.add(helpButton);
       
+      
       JPanel viewCodePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
       
       JLabel viewCodeLabel = new JLabel("View Code:");
       final JComboBox viewCodeComboBox = new JComboBox(new Object[]{"Java", "MATLAB", "R"});
+      
       viewCodePanel.add(viewCodeLabel);
       viewCodePanel.add(viewCodeComboBox);
       
@@ -363,13 +367,9 @@ public class AnalysisServiceDisplay extends JPanel {
 	  bottomPanel.add(buttonPanel, BorderLayout.CENTER);
 	  bottomPanel.add(togglePanel, BorderLayout.SOUTH);
 	  
-      viewCodeComboBox.addActionListener(new ActionListener() {
+	  viewCodeComboBox.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e) {
-            String item = (String) viewCodeComboBox.getSelectedItem();
-            if("View Code".equals(item)) {
-               return;
-            }
-            String language = item;
+            String language = (String) viewCodeComboBox.getSelectedItem();
             TaskCodeGenerator codeGenerator = null;
             if("Java".equals(language)) {
                codeGenerator = new JavaPipelineCodeGenerator();
@@ -385,7 +385,7 @@ public class AnalysisServiceDisplay extends JPanel {
                
             JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, parameterInfoPanel.getParameterInfoArray(), AnalysisServiceManager.getInstance().getUsername(), lsid, selectedService.getTaskInfo().getName());
             AnalysisJob job = new AnalysisJob(selectedService.getServer(), jobInfo, TaskLauncher.isVisualizer(selectedService));
-            org.genepattern.gpge.ui.code.Util.viewCode(codeGenerator, job, "Java");
+            org.genepattern.gpge.ui.code.Util.viewCode(codeGenerator, job, language);
          }
       });
       
