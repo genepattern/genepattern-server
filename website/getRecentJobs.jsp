@@ -15,7 +15,7 @@
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.webservice.ParameterFormatConverter,
 		 org.genepattern.webservice.ParameterInfo,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.util.LSID,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.webservice.OmnigeneException, 
@@ -48,7 +48,7 @@ function showJob(job) {
 <tr><td class="heading" colspan=3><span class="heading">Recent Jobs</span></td></tr><tr>
 
 <%
-String userID = GenePatternAnalysisTask.getUserID(request, null); // get userID but don't force login if not defined
+String userID = AccessManager.getUserID(request, null); // get userID but don't force login if not defined
 
 SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss");
 SimpleDateFormat shortDateFormat = new SimpleDateFormat("HH:mm:ss");

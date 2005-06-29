@@ -13,6 +13,7 @@
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.util.LSID,
 		 org.genepattern.server.genepattern.LSIDManager,
+		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
 	session="false" contentType="text/plain" language="Java" %><%
 
@@ -23,7 +24,7 @@ response.setDateHeader("Expires", 0);
 String serverPort = System.getProperty("GENEPATTERN_PORT");
 String userID = request.getParameter(GPConstants.USERID);
 if (userID == null) {
-	userID = GenePatternAnalysisTask.getUserID(request, null); // get userID but don't force login if not defined
+	userID = AccessManager.getUserID(request, null); // get userID but don't force login if not defined
 }
 LocalAdminClient adminClient = new LocalAdminClient(userID);
 String password = "";

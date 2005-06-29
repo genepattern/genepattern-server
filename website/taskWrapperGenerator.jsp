@@ -12,6 +12,7 @@
 		 org.genepattern.webservice.OmnigeneException,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.server.webservice.server.local.*,
+		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.LSID,
 		 org.genepattern.server.genepattern.LSIDManager"
@@ -23,7 +24,7 @@ response.setDateHeader("Expires", 0);
 
 String userID = request.getParameter(GPConstants.USERID);
 if (userID == null) {
-	userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
+	userID = AccessManager.getUserID(request, response); // will force login if necessary
 	if (userID == null) return; // come back after login
 }
 if (request.getParameter("noenvelope") == null) {

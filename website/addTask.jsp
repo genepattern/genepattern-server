@@ -3,6 +3,7 @@
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.webservice.ParameterFormatConverter,
 		 org.genepattern.webservice.OmnigeneException,
+		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.genepattern.LSIDManager,
 		 org.genepattern.server.webservice.server.local.*,
@@ -34,7 +35,7 @@ response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 
-String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
+String userID = AccessManager.getUserID(request, response); // will force login if necessary
 if (userID == null) return; // come back after login
 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 LocalAdminClient adminClient = new LocalAdminClient(userID);

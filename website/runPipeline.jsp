@@ -33,6 +33,7 @@
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
+		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.server.indexer.IndexerDaemon,
@@ -72,7 +73,7 @@
 	boolean DEBUG = false;
 	if (!DEBUG && requestParamsAndAttributes.get("DEBUG") != null) DEBUG = true;
 
-	String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
+	String userID = AccessManager.getUserID(request, response); // will force login if necessary
 	if (userID == null || userID.length() == 0) return; // come back after login
 	
 	String NAME = "name";

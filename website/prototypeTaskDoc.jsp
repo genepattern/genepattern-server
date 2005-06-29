@@ -1,4 +1,5 @@
-<%@ page import="org.genepattern.server.genepattern.GenePatternAnalysisTask,
+<%@ page import="org.genepattern.server.util.AccessManager,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.webservice.TaskInfo,
 		 java.io.File,
@@ -19,7 +20,7 @@ mySmartUpload.initialize(pageContext);
 try { mySmartUpload.upload(); } catch (NegativeArraySizeException nase) {}
 com.jspsmart.upload.Request rp = mySmartUpload.getRequest();
 
-String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
+String userID = AccessManager.getUserID(request, response); // will force login if necessary
 if (userID == null) return; // come back after login
 
 /*

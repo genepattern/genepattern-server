@@ -1,5 +1,6 @@
 <%@ page import="org.genepattern.server.webapp.*,
 		 org.genepattern.data.pipeline.*,
+		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.LSID,
@@ -12,7 +13,7 @@
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
 
-	String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
+	String userID = AccessManager.getUserID(request, response); // will force login if necessary
 	if (userID == null) return; // come back after login
 	if (request.getParameter(GenePatternAnalysisTask.NAME) != null && !request.getParameter(GenePatternAnalysisTask.NAME).equals("") && !LSIDManager.getInstance().getAuthorityType(new LSID(request.getParameter(GenePatternAnalysisTask.NAME))).equals(LSIDUtil.AUTHORITY_MINE)) {
 		response.sendRedirect("viewPipeline.jsp?" + GenePatternAnalysisTask.NAME + "=" + request.getParameter(GenePatternAnalysisTask.NAME));

@@ -14,6 +14,7 @@
 		 java.util.Properties,
 		 java.util.zip.*,
 		 org.genepattern.webservice.OmnigeneException,
+		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 com.jspsmart.upload.*"
 	session="false" contentType="text/html" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><% 
@@ -31,7 +32,7 @@ if (name == null || name.length() == 0) {
 
 try {
 
-	String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
+	String userID = AccessManager.getUserID(request, response); // will force login if necessary
 	if (userID == null) return; // come back after login
 
 	ti = GenePatternAnalysisTask.getTaskInfo(name, userID);

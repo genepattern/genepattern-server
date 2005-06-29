@@ -1,7 +1,8 @@
 <%@ page import="org.genepattern.server.webapp.*,
 		 org.genepattern.data.pipeline.*,
              org.genepattern.server.webapp.RunPipelineForJsp,
-		  org.genepattern.server.genepattern.GenePatternAnalysisTask,
+		  org.genepattern.server.util.AccessManager,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 java.io.Writer,
 		 java.io.PrintWriter,
 		 java.util.Map,
@@ -18,7 +19,7 @@ if (outWriter != null) {
 }
 System.out.println("Writing to: " + outstr);
 
-String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
+String userID = AccessManager.getUserID(request, response); // will force login if necessary
 if (userID == null) return; // come back after login
 String pipelineName = request.getParameter("name");
 boolean showParams = request.getParameter("showParams") == null ? false : true;

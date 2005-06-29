@@ -5,10 +5,11 @@
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.webservice.OmnigeneException,
 		 org.genepattern.util.GPConstants,
+		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
 	session="false" contentType="text/text" language="Java" %><%
 
-	String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
+	String userID = AccessManager.getUserID(request, response); // will force login if necessary
 	if (userID == null) return; // come back after login
 
 	String taskName = request.getParameter("name");

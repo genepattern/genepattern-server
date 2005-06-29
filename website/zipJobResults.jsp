@@ -9,7 +9,8 @@
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.webservice.WebServiceException,
 	       org.genepattern.server.webservice.server.local.*,
-	       org.genepattern.server.genepattern.GenePatternAnalysisTask,
+	       org.genepattern.server.util.AccessManager,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 com.jspsmart.upload.*"
 	session="false" contentType="text/html" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><% 
 
@@ -30,7 +31,7 @@ boolean isDelete = (request.getParameter("delete") != null);
 boolean isDownload = (request.getParameter("download") != null);
 String[] deleteJob = request.getParameterValues("deleteJob");
 String stopTaskID = request.getParameter(STOP);
-String userID = GenePatternAnalysisTask.getUserID(request, null); // get userID but don't force login if not defined
+String userID = AccessManager.getUserID(request, null); // get userID but don't force login if not defined
 
 if(isDownload) {
     ZipOutputStream zos = null;

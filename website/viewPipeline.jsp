@@ -1,5 +1,6 @@
 <%@ page import="org.genepattern.server.webapp.*,
 		 org.genepattern.data.pipeline.*,
+		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.webservice.TaskInfo,
@@ -21,7 +22,7 @@
 		 java.util.Iterator"
 	session="true" contentType="text/html" language="Java" %>
 <%
-String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
+String userID = AccessManager.getUserID(request, response); // will force login if necessary
 if (userID == null) return; // come back after login
 
 String pipelineName = request.getParameter("name");

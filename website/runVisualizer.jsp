@@ -1,4 +1,5 @@
-<%@ page import="org.genepattern.server.genepattern.GenePatternAnalysisTask,
+<%@ page import="org.genepattern.server.util.AccessManager,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
@@ -14,7 +15,7 @@
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
 
-	String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
+	String userID = AccessManager.getUserID(request, response); // will force login if necessary
 	if (userID == null) return; // come back after login
 
 	// create a map of params and attributes in case this call was from a dispatch

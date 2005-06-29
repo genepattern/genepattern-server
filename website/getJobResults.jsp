@@ -7,14 +7,14 @@
 		 org.genepattern.webservice.JobStatus,
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.webservice.TaskInfo,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
+		 org.genepattern.server.util.AccessManager"
 	session="false" contentType="text/html" language="Java" buffer="10kb" %><%
 
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 
-String userID = GenePatternAnalysisTask.getUserID(request, null); // get userID but don't force login if not defined
+String userID = AccessManager.getUserID(request, null); // get userID but don't force login if not defined
 if (userID == null || userID.length() == 0) {
 	return;
 }

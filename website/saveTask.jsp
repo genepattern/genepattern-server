@@ -17,6 +17,7 @@
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.webservice.ParameterInfo,
+		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.server.genepattern.TaskInstallationException,
@@ -35,7 +36,7 @@ response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 
-String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
+String userID = AccessManager.getUserID(request, response); // will force login if necessary
 if (userID == null) return; // come back after login
 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 %>
@@ -431,7 +432,7 @@ timeMS dateTime loginId taskType moduleName  manifest supportFilesChanges URLToE
 	log.append(" ");
 	log.append(dateFormat.format(d));
 	log.append(" ");
-	log.append(GenePatternAnalysisTask.getUserID(request, response));
+	log.append(AccessManager.getUserID(request, response));
 	log.append(" ");
 	String taskType = tia.get(GPConstants.TASK_TYPE);
 	if (taskType == null || taskType.length() == 0) taskType = "[unclassified]";

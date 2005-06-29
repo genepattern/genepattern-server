@@ -11,7 +11,8 @@
 		org.genepattern.webservice.TaskInfoAttributes,
 		org.genepattern.webservice.JobInfo,
 		org.genepattern.webservice.WebServiceException,
-     		org.genepattern.server.genepattern.GenePatternAnalysisTask,
+     		org.genepattern.server.util.AccessManager,
+		org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		org.genepattern.server.genepattern.LSIDManager,
 		org.genepattern.server.webservice.server.local.LocalAdminClient,
 		org.genepattern.server.webservice.server.local.LocalAnalysisClient,
@@ -25,7 +26,7 @@ String DIVIDER = "------";
 
 if (request.getAttribute("navbar") == null) { 
 
-String userID = GenePatternAnalysisTask.getUserID(request, null); // get userID but don't force login if not defined
+String userID = AccessManager.getUserID(request, null); // get userID but don't force login if not defined
 boolean userUnknown = (userID == null || userID.equals(""));
 Collection tmTasks = null;
 int recentCount = Integer.parseInt(System.getProperty("recentJobsToDisplay", "3"));
@@ -262,7 +263,7 @@ function checkEnableNavbar() {
 	<table width="100%">
 	<tr>
 		<td class="navbar" valign="top">
-			<a href="index.jsp" class="navbar"><img src="GenePatternLogo.png" border="0" alt="home" align="texttop"></a> &nbsp;
+			<a href="index.jsp" class="navbar"><img src="skin/Logo.png" border="0" alt="home" align="texttop"></a> &nbsp;
 		</td>
 		<td align="right" class="navbar" valign="top">
 			<nobr>

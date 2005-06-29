@@ -15,7 +15,8 @@
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.webservice.ParameterFormatConverter,
 		 org.genepattern.webservice.ParameterInfo,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.server.util.AccessManager,
+	       org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.LSID,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.webservice.OmnigeneException, 
@@ -46,7 +47,7 @@ if (taskName == null || taskName.length() == 0) {
 }
 String username = request.getParameter(GPConstants.USERID);
 if (username == null || username.length() == 0) {
-	username = GenePatternAnalysisTask.getUserID(request, response);
+	username = AccessManager.getUserID(request, response);
 }
 boolean bNoEnvelope = (request.getParameter("noEnvelope") != null);
 

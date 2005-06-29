@@ -11,6 +11,7 @@
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.util.GPConstants,
+		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
 	session="false" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><% 
 
@@ -19,7 +20,7 @@ response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 
-String userID = GenePatternAnalysisTask.getUserID(request, response); // will force login if necessary
+String userID = AccessManager.getUserID(request, response); // will force login if necessary
 LocalAdminClient adminClient = new LocalAdminClient(userID);
 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 String name = request.getParameter("name");

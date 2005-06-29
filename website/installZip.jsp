@@ -3,6 +3,7 @@
 		 java.util.Properties,
 		 java.util.Vector,
 		 java.util.Enumeration,
+		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.server.webservice.server.*,
@@ -71,7 +72,7 @@ com.jspsmart.upload.Request requestParameters = null;
 boolean isEncodedPost = true;
 int fileCount = 0;
 com.jspsmart.upload.File attachedFile = null;
-String username = GenePatternAnalysisTask.getUserID(request, response);
+String username = AccessManager.getUserID(request, response);
 if (username == null || username.length() == 0) return; // come back after login
 // TODO: get values for access_id from task_access table in database
 

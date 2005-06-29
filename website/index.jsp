@@ -18,6 +18,7 @@
 		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
+		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.util.GPConstants,
@@ -50,7 +51,7 @@
 	response.setDateHeader("Expires", 0);
 
 try {
-String userID = GenePatternAnalysisTask.getUserID(request, response); // get userID but don't force login if not defined
+String userID = AccessManager.getUserID(request, response); // get userID but don't force login if not defined
 boolean userIDKnown = !(userID == null || userID.length() == 0);
 LocalAdminClient adminClient = new LocalAdminClient(userID);
 Collection tmTasks = adminClient.getTaskCatalog();

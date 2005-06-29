@@ -24,6 +24,7 @@
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
+		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.server.genepattern.TaskInstallationException,
@@ -375,7 +376,7 @@ try {
 			model.setName(requestParameters.getParameter("cloneName"));
 			// TODO: change URLs that are task-relative to point to the new task
 			String oldUser = model.getUserID();
-			String requestUserID = GenePatternAnalysisTask.getUserID(request, null);
+			String requestUserID = AccessManager.getUserID(request, null);
 			if (oldUser.length() > 0 && !oldUser.equals(requestUserID)) {
 				oldUser = " (" + oldUser + ")";
 			} else {
