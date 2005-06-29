@@ -75,7 +75,7 @@ import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
-
+import org.genepattern.server.util.AccessManager;
 /**
  * Enables definition, execution, and sharing of AnalysisTasks using extensive
  * metadata descriptions and obviating programming effort by the task creator or
@@ -2951,66 +2951,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 	 *  
 	 */
 	public static String getUserID(HttpServletRequest request, HttpServletResponse response) {
-		String userID = null;
-		if (request.getAttribute(USER_LOGGED_OFF) != null) {
-			return userID;
-		}
-		Cookie[] cookies = request.getCookies();
-		if (cookies != null) {
-			for (int i = 0; i < cookies.length; i++) {
-				if (cookies[i].getName().equals(USERID)) {
-					userID = cookies[i].getValue();
-					if (userID.length() > 0) {
-						break;
-					}
-				}
-			}
-		}
-
-		if ((userID == null || userID.length() == 0)
-				&& request.getParameter(USERID) != null) {
-			userID = request.getParameter(USERID);
-		}
-
-		if ((userID == null || userID.length() == 0) && response != null) {
-			// redirect to the fully-qualified host name to make sure that the
-			// one cookie that we are allowed to write is useful
-			try {
-				String fqHostName = System.getProperty("fqHostName");
-				if (fqHostName == null) {
-					fqHostName = InetAddress.getLocalHost()
-							.getCanonicalHostName();
-					if (fqHostName.equals("localhost"))
-						fqHostName = "127.0.0.1";
-				}
-				String serverName = request.getServerName();
-				if (!fqHostName.equalsIgnoreCase(serverName)) {
-					String URL = request.getRequestURI();
-					if (request.getQueryString() != null)
-						URL = URL + ("?" + request.getQueryString());
-					String fqAddress = "http://" + fqHostName + ":"
-							+ request.getServerPort() + "/gp/login.jsp?origin="
-							+ URLEncoder.encode(URL, UTF8);
-					response.sendRedirect(fqAddress);
-					return null;
-				}
-				response.sendRedirect("login.jsp");
-				return null;
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-			}
-		}
-		if (userID != null) {
-			// strip surrounding quotes, if they exist
-			if (userID.startsWith("\"")) {
-				userID = userID.substring(1, userID.length() - 1);
-				try {
-					userID = URLDecoder.decode(userID, UTF8);
-				} catch (UnsupportedEncodingException uee) { /* ignore */
-				}
-			}
-		}
-		return userID;
+				return AccessManager.getUserID(request, response);
 	}
 
 	/**
