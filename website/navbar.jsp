@@ -263,7 +263,7 @@ function checkEnableNavbar() {
 	<table width="100%">
 	<tr>
 		<td class="navbar" valign="top">
-			<a href="index.jsp" class="navbar"><img src="skin/Logo.png" border="0" alt="home" align="texttop"></a> &nbsp;
+			<a href="index.jsp" class="navbar"><img src="GenePatternLogo.png" border="0" alt="home" align="texttop"></a> &nbsp;
 		</td>
 		<td align="right" class="navbar" valign="top">
 			<nobr>
