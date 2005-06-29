@@ -2,6 +2,8 @@
 		 java.io.FileInputStream,
 		 java.io.IOException,
 		 java.util.Hashtable,
+ 		 org.genepattern.util.StringUtils,
+
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 com.jspsmart.upload.*"
@@ -37,7 +39,7 @@ if(errorIfNotFound) {
    return;
 }
 %>
-Unable to locate <%= GenePatternAnalysisTask.htmlEncode(filename) %> for job <%= tempDir %>.  It may have been deleted already.
+Unable to locate <%= StringUtils.htmlEncode(filename) %> for job <%= tempDir %>.  It may have been deleted already.
 <%
 	return;
 }
@@ -64,7 +66,7 @@ if (bGridded) {
 %>
 	<html>
 	<head>
-	<title><%= GenePatternAnalysisTask.htmlEncode(filename) %>, job <%= tempDir %></title>
+	<title><%= StringUtils.htmlEncode(filename) %>, job <%= tempDir %></title>
 	<style>
 		TD { font-family: Courier; font-size: 9pt }
 	</style>

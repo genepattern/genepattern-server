@@ -17,6 +17,7 @@
 		
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.webservice.ParameterFormatConverter,
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
@@ -69,7 +70,7 @@ try {
 		for (java.util.Enumeration eNames = requestParameters.getParameterNames(); eNames.hasMoreElements(); ) {
 			String n = (String)eNames.nextElement();
                         if (!("code".equals(n)))
-			System.out.println(n + "='" + GenePatternAnalysisTask.htmlEncode(requestParameters.getParameter(n)) + "'");
+			System.out.println(n + "='" + StringUtils.htmlEncode(requestParameters.getParameter(n)) + "'");
 		}
 	}
 	String tmpDirName = null;
@@ -187,7 +188,7 @@ function checkAll(frm, bChecked) {
 </form>
 <form name="frmemail" method="POST" target="_blank" action="sendMail.jsp" onsubmit="javascript:return false;">
 		email notification to: <input name="to" class="little" size="70" value="" onkeydown="return suppressEnterKey(event)">
-		<input type="hidden" name="from" value="<%= GenePatternAnalysisTask.htmlEncode(userID) %>">
+		<input type="hidden" name="from" value="<%= StringUtils.htmlEncode(userID) %>">
 		<input type="hidden" name="subject" value="<%= task.getName() %> results for job # <%= jobID %>">
 		<input type="hidden" name="message" value="<html><head><link href='stylesheet.css' rel='stylesheet' type='text/css'><script language='Javascript'>\nfunction checkAll(frm, bChecked) {\n\tfrm = document.forms['results'];\n\tfor (i = 0; i < frm.elements.length; i++) {\n\t\tif (frm.elements[i].type != 'checkbox') continue; \n\t\tfrm.elements[i].checked = bChecked;\n\t}\n}\n</script></head><body>">
 </form>
@@ -228,7 +229,7 @@ for (int i=0; i < parmInfos.length; i++){
 		out.println(pinfo.getName().replace('.',' '));
 		out.println("=");
 		if (pinfo.isInputFile()) {
-			String htmlValue = GenePatternAnalysisTask.htmlEncode(pinfo.getValue().trim());		
+			String htmlValue = StringUtils.htmlEncode(pinfo.getValue().trim());		
 			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
 				out.println("<a href='"+ htmlValue + "'>"+htmlValue +"</a>");
 			} else {
@@ -242,7 +243,7 @@ for (int i=0; i < parmInfos.length; i++){
 
 		} else {
 			String display = pinfo.getUIValue(formalPinfo);
-			out.println(GenePatternAnalysisTask.htmlEncode(display));
+			out.println(StringUtils.htmlEncode(display));
 		}
 		if (i != (parmInfos.length -1))out.println(", ");
 	}
@@ -301,7 +302,7 @@ for (int i=0; i < parmInfos.length; i++){
 		} catch (UnsupportedEncodingException uee) {
 			// ignore
 		}
-		sbOut.append("\">" + GenePatternAnalysisTask.htmlEncode(fileName) + "</a></td></tr>");
+		sbOut.append("\">" + StringUtils.htmlEncode(fileName) + "</a></td></tr>");
 		out.println(sbOut.toString());
 	}
 	out.flush();

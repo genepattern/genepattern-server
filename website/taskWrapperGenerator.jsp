@@ -9,6 +9,7 @@
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.webservice.ParameterFormatConverter,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.webservice.OmnigeneException,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.server.webservice.server.local.*,
@@ -114,7 +115,7 @@ gpLogin("<%= userID %>");
 	String valueList = parameterInfo[i].getValue();
 	attributes = parameterInfo[i].getAttributes();
 	def = null;
-%>#	<%= parameterInfo[i].getName().replace('_','.') %>: <%= BLANKS.substring(parameterInfo[i].getName().length(), longestName) %><%= GenePatternAnalysisTask.htmlEncode(parameterInfo[i].getDescription()) %>
+%>#	<%= parameterInfo[i].getName().replace('_','.') %>: <%= BLANKS.substring(parameterInfo[i].getName().length(), longestName) %><%= StringUtils.htmlEncode(parameterInfo[i].getDescription()) %>
 <%
 	if (valueList != null && valueList.length() > 0) {
 %>#	  <%= blanks %>choose from the following values: <%= valueList.replace(';',',') %>
@@ -128,7 +129,7 @@ gpLogin("<%= userID %>");
 		if (def != null && def.length() > 0) {
 		if (attributeName.equals(GPConstants.PARAM_INFO_TYPE[0]) && def.indexOf(".") != -1) def = def.substring(def.lastIndexOf(".")+1);
 		if (attributeName.equals(GPConstants.PARAM_INFO_OPTIONAL[0])) def = "true";
-%>#	  <%= blanks %><%= attributeName.replace(GPConstants.PARAM_INFO_SPACER, ' ') %>: <%= GenePatternAnalysisTask.htmlEncode(def) %>
+%>#	  <%= blanks %><%= attributeName.replace(GPConstants.PARAM_INFO_SPACER, ' ') %>: <%= StringUtils.htmlEncode(def) %>
 <%
 		}
 	    }
@@ -140,7 +141,7 @@ gpLogin("<%= userID %>");
 <% } %>#
 # returns: list of filenames of results file(s)
 # created: <%= new Date() %>
-# author:  <%= GenePatternAnalysisTask.htmlEncode(tia.get(GPConstants.AUTHOR)) %>
+# author:  <%= StringUtils.htmlEncode(tia.get(GPConstants.AUTHOR)) %>
 #
 function(<% 
 	if (parameterInfo != null)  {
@@ -175,7 +176,7 @@ function(<%
 			}
 
 			if (def != null && def.length() > 0) {
-				out.print("=\"" + GenePatternAnalysisTask.htmlEncode(def) + "\"");
+				out.print("=\"" + StringUtils.htmlEncode(def) + "\"");
 			}
 		}
 	      }
@@ -229,7 +230,7 @@ runAnalysis(taskName="<%= sLSID %>"<%
 		    if (bNeedsQuoting) out.print("\"");
 		    out.print(parameterInfo[i].getName());
 		    if (bNeedsQuoting) out.print("\"");
-		    out.print("=askUser(\"" + parameterInfo[i].getName() + " (" + GenePatternAnalysisTask.htmlEncode(parameterInfo[i].getDescription()) + ")\",\"");
+		    out.print("=askUser(\"" + parameterInfo[i].getName() + " (" + StringUtils.htmlEncode(parameterInfo[i].getDescription()) + ")\",\"");
 		    attributes = parameterInfo[i].getAttributes();
 		    if (attributes != null) {
 			def = (String)attributes.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
@@ -257,7 +258,7 @@ runAnalysis(taskName="<%= sLSID %>"<%
 				}
 			}
 			if (def != null && def.length() > 0) {
-				out.print(GenePatternAnalysisTask.htmlEncode(def));
+				out.print(StringUtils.htmlEncode(def));
 			}
 		    }
 		    out.print("\")");
@@ -271,23 +272,23 @@ runAnalysis(taskName="<%= sLSID %>"<%
 Bindings are also available for Java and MATLAB.  To use them, generate a single-stage pipeline that invokes <%= taskInfo.getName() %>, save it, then download the pipeline code from the <a href="index.jsp">index.jsp</a> page.<br>
 <br>
 You may regenerate this code anytime with the following URL: 
-<a href="taskWrapperGenerator.jsp?<%= GPConstants.NAME %>=<%= GenePatternAnalysisTask.htmlEncode(request.getParameter(GPConstants.NAME)) %>" target="<%= GenePatternAnalysisTask.htmlEncode(name) %>_wrapper">
-<nobr>http://<%= request.getServerName() %>:<%= request.getServerPort() %>/gp/taskWrapperGenerator.jsp?<%= GPConstants.NAME %>=<%= GenePatternAnalysisTask.htmlEncode(request.getParameter(GPConstants.NAME)) %></nobr></a><br>
+<a href="taskWrapperGenerator.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %>" target="<%= StringUtils.htmlEncode(name) %>_wrapper">
+<nobr>http://<%= request.getServerName() %>:<%= request.getServerPort() %>/gp/taskWrapperGenerator.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %></nobr></a><br>
 
 <% 
 File[] docFiles = new LocalTaskIntegratorClient(userID, out).getDocFiles(taskInfo);
 if (docFiles != null && docFiles.length > 0) { %>
 <br>Read <%= name %> documentation: 
 <% for (int i = 0; i < docFiles.length; i++) { %>
-<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= GenePatternAnalysisTask.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= GenePatternAnalysisTask.htmlEncode(docFiles[i].getName()) %>"><%= docFiles[i].getName() %></a> 
+<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= StringUtils.htmlEncode(docFiles[i].getName()) %>"><%= docFiles[i].getName() %></a> 
 <% } %>
 <br>
 <% } %>
 
 <br>
-<a href="addTask.jsp?<%= GPConstants.NAME %>=<%= GenePatternAnalysisTask.htmlEncode(request.getParameter(GPConstants.NAME)) %>">edit <%= taskInfo.getName() %> task</a><br>
+<a href="addTask.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %>">edit <%= taskInfo.getName() %> task</a><br>
 <% if (tia != null) { %>
-<a href="makeZip.jsp?<%= GPConstants.NAME %>=<%= GenePatternAnalysisTask.htmlEncode(request.getParameter(GPConstants.NAME)) %>&includeDependents=1">package <%= taskInfo.getName() %> into a zip file</a><br>
+<a href="makeZip.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %>&includeDependents=1">package <%= taskInfo.getName() %> into a zip file</a><br>
 <% } %>
 <%
 } catch (Exception e) {

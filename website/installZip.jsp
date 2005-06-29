@@ -7,6 +7,7 @@
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.server.webservice.server.*,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.server.*,
 		 org.genepattern.webservice.*,
 		 org.genepattern.server.handler.*,
@@ -263,7 +264,7 @@ if(vProblems != null && vProblems.size() > 0) {
 <%	
     	for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
 %>
-		<li><%= GenePatternAnalysisTask.htmlEncode((String)eProblems.nextElement()) %></li>
+		<li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
 <%
 	}
 %>

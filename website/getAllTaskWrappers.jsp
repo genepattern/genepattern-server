@@ -12,6 +12,7 @@
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.util.LSID,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.server.genepattern.LSIDManager,
 		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
@@ -209,7 +210,7 @@ if (language.equals("R")) {
 			     parameterInfo[i].getValue().startsWith("ftp:"))) {
 				// note that this parameter is a URL that must be downloaded by adding it to the CSV list for the applet
 				if (numToDownload > 0) out.append(",");
-				out.append(GenePatternAnalysisTask.htmlEncode(paramName));
+				out.append(StringUtils.htmlEncode(paramName));
 				numToDownload++;
 			}
 		}
@@ -235,7 +236,7 @@ if (language.equals("R")) {
 		out.append("\"");
 		for (i = 0; i < supportFiles.length; i++) {
 			if (i > 0) out.append(",");
-			out.append(GenePatternAnalysisTask.htmlEncode(supportFiles[i].getName()));
+			out.append(StringUtils.htmlEncode(supportFiles[i].getName()));
 		}
 		out.append("\", ");
 

@@ -10,6 +10,7 @@
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.data.pipeline.PipelineModel,
 		 org.genepattern.webservice.WebServiceException,
+		  org.genepattern.util.StringUtils,
 		 java.io.PrintWriter,
 		 java.net.MalformedURLException,
 		 java.util.Collection,
@@ -335,10 +336,10 @@ for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 		int end = description.indexOf(" ", start);
 		if (end == -1) end = description.indexOf(")", start);
 		if (end == -1) end = description.length();
-		description = GenePatternAnalysisTask.htmlEncode(description.substring(0, start)) + 
+		description = StringUtils.htmlEncode(description.substring(0, start)) + 
 				"<a href=\"" + description.substring(start, end) + "\" target=\"_blank\">" + 
 				description.substring(start, end) + "</a>" + 
-				GenePatternAnalysisTask.htmlEncode(description.substring(end));
+				StringUtils.htmlEncode(description.substring(end));
 	}
 	return description;
     }

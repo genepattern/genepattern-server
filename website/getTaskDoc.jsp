@@ -6,6 +6,7 @@
 		 java.util.Hashtable,
 		 java.util.Iterator,
 		 com.jspsmart.upload.*,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.util.LSID,
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
@@ -74,7 +75,7 @@ for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 %>
 	<tr>
 	<td valign="top"><a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipelineDesigner.jsp" %>?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><nobr><%= ti.getName() %> (<%= lsid.getVersion() %>)</nobr><a/></td>
-	<td valign="top"><%= GenePatternAnalysisTask.htmlEncode(description) %>
+	<td valign="top"><%= StringUtils.htmlEncode(description) %>
 	<br>
 <%
 	File[] docFiles = taskIntegratorClient.getDocFiles(ti);

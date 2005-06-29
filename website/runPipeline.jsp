@@ -34,6 +34,7 @@
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.server.util.AccessManager,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.server.indexer.IndexerDaemon,
@@ -280,7 +281,7 @@ function suppressEnterKey(evt) {
 
 		<form name="frm<%= EMAIL %>" method="POST" target="_blank" action="sendMail.jsp" onsubmit="javascript:return false;">
 		email notification to: <input name="to" class="little" size="70" value="" onkeydown="return suppressEnterKey(event)">
-		<input type="hidden" name="from" value="<%= GenePatternAnalysisTask.htmlEncode(userID) %>">
+		<input type="hidden" name="from" value="<%= StringUtils.htmlEncode(userID) %>">
 		<input type="hidden" name="subject" value="<%= taskInfo.getName() %> results for job # <%= jobID %>">
 		<input type="hidden" name="message" value="<html><head><link href='stylesheet.css' rel='stylesheet' type='text/css'><script language='Javascript'>\nfunction checkAll(frm, bChecked) {\n\tfrm = document.forms['results'];\n\tfor (i = 0; i < frm.elements.length; i++) {\n\t\tif (frm.elements[i].type != 'checkbox') continue; \n\t\tfrm.elements[i].checked = bChecked;\n\t}\n}\n</script></head><body>">
 		</form>
@@ -400,7 +401,7 @@ function suppressEnterKey(evt) {
 			while((line = in.readLine())!=null){
 				if (!DEBUG) if (line.startsWith("> ") || line.startsWith("+ ")) continue;
 				if (htmlEncode) {
-					line = GenePatternAnalysisTask.htmlEncode(line);
+					line = StringUtils.htmlEncode(line);
 				}
 				bNeedsBreak = (line.length() > 0 && (line.indexOf("<") == -1 || line.indexOf("<-") != -1) && line.indexOf(">") == -1);
 				out.print(line);

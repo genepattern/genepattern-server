@@ -4,7 +4,8 @@
 <%@ page import="java.net.*" %>
 <%@ page import="java.sql.*" %>
 <%@ page import="org.genepattern.server.util.BeanReference,
-		 org.genepattern.server.ejb.AnalysisJobDataSource,
+		  		 org.genepattern.util.StringUtils,
+ 		org.genepattern.server.ejb.AnalysisJobDataSource,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask" %>
 <%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -68,7 +69,7 @@ if (query.length() > 0 && request.getParameter("submit") != null) {
 						   startTime.getTime();
 			out.println("<font size=\"-1\">" + elapsedMilliseconds + 
 				    " ms.</font><br><br>");
-			out.println(GenePatternAnalysisTask.htmlEncode(query) + "<br><br>");
+			out.println(StringUtils.htmlEncode(query) + "<br><br>");
 			if (rs.next()) {
 				if (rs.isLast()) {
 				    NumberFormat moneyFormat = NumberFormat.getCurrencyInstance();
@@ -88,7 +89,7 @@ if (query.length() > 0 && request.getParameter("submit") != null) {
 					    if (isMoney) s = moneyFormat.format(rs.getDouble(i));
 					    else if (isEmail) s = "<a href=\"mailto:" + rs.getString(i) + "\">" + s + "</a>";
 					    else {
-						s = GenePatternAnalysisTask.htmlEncode(s);
+						s = StringUtils.htmlEncode(s);
 						s = GenePatternAnalysisTask.replace(s, "\n", "<br>\n");
 					    }
 					    ret.append("<td valign=\"top\" class=\"little\">");
@@ -159,7 +160,7 @@ if (query.length() > 0 && request.getParameter("submit") != null) {
 		    if (isMoney) s = moneyFormat.format(rs.getDouble(i));
 		    else if (isEmail) s = "<a href=\"mailto:" + rs.getString(i) + "\">" + s + "</a>";
 		    else {
-			s = GenePatternAnalysisTask.htmlEncode(s);
+			s = StringUtils.htmlEncode(s);
 			s = GenePatternAnalysisTask.replace(s, "\n", "<br>\n");
 		    }
 		    ret.append("<td valign=\"top\"" + (isMoney ? " align=\"right\"" : "") + " class=\"little\">");

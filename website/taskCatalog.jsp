@@ -6,6 +6,7 @@
 		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient,
 		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.util.GPConstants,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.util.LSID,
 		 java.io.File,
 		 java.net.MalformedURLException,
@@ -359,7 +360,7 @@ Select from the following tasks from the GenePattern public access website to do
 		for (int val = 0; val < values.length; val++) {
 			boolean selected = vCol == null || vCol.size() == 0 || vCol.contains(values[val]);
 %>			
-			<option value="<%= GenePatternAnalysisTask.htmlEncode(values[val]) %>"<%= selected ? " selected" : ""%>><%= GenePatternAnalysisTask.htmlEncode(values[val]) %></option>
+			<option value="<%= StringUtils.htmlEncode(values[val]) %>"<%= selected ? " selected" : ""%>><%= StringUtils.htmlEncode(values[val]) %></option>
 <%
 			}
 %>
@@ -571,7 +572,7 @@ Select from the following tasks from the GenePattern public access website to do
 		<td valign="top" height="1">
 		<span class="tasks-<%= lsidManager.getAuthorityType(lsid) %>">
 		<a name="<%= attributes.get(GPConstants.LSID) %>"></a>
-		<b><nobr><a name="<%= attributes.get(GPConstants.NAME) %>"><%= GenePatternAnalysisTask.htmlEncode((String)attributes.get(GPConstants.NAME)) %></a></b>
+		<b><nobr><a name="<%= attributes.get(GPConstants.NAME) %>"><%= StringUtils.htmlEncode((String)attributes.get(GPConstants.NAME)) %></a></b>
 		</span>
 		<select name="<%= InstallTask.LSID_VERSION %>" onchange="javascript:document.forms['install'].<%= INSTALL_LSID_GROUP %>_<%= module %>.value=this.options[this.selectedIndex].value" class="tasks-<%= lsidManager.getAuthorityType(lsid) %>">
 <%		    boolean selected = (attributes.get(SELECTED) != null);
@@ -583,7 +584,7 @@ Select from the following tasks from the GenePattern public access website to do
 				ver = "";
 			}
 %>
-			<option value="<%= GenePatternAnalysisTask.htmlEncode(tasks[module].getLSID()) %>"<%= selected ? " selected" : ""%> title="<%= GenePatternAnalysisTask.htmlEncode(ver) + " - " + tasks[module].getLSID() %>"><%= (!tasks[module].getLSIDVersion().equals("") ? (GenePatternAnalysisTask.htmlEncode(tasks[module].getLSIDVersion())) : "") %><%= (!ver.equals("") ? (" - " + GenePatternAnalysisTask.htmlEncode(ver.substring(0, Math.min(ver.length(), 50)))) : "") %></option>
+			<option value="<%= StringUtils.htmlEncode(tasks[module].getLSID()) %>"<%= selected ? " selected" : ""%> title="<%= StringUtils.htmlEncode(ver) + " - " + tasks[module].getLSID() %>"><%= (!tasks[module].getLSIDVersion().equals("") ? (StringUtils.htmlEncode(tasks[module].getLSIDVersion())) : "") %><%= (!ver.equals("") ? (" - " + StringUtils.htmlEncode(ver.substring(0, Math.min(ver.length(), 50)))) : "") %></option>
 <%
 			// see if there are more modules of the same name but different LSID version number
 			if ((module+1) == tasks.length) break;
@@ -609,7 +610,7 @@ Select from the following tasks from the GenePattern public access website to do
 		</td>
 
 		<td valign="top" height="1">
-		<nobr><%= GenePatternAnalysisTask.htmlEncode((String)attributes.get(GPConstants.TASK_TYPE)) %></nobr>
+		<nobr><%= StringUtils.htmlEncode((String)attributes.get(GPConstants.TASK_TYPE)) %></nobr>
 		</td>
 
 		<td valign="top" colspan="<%= columns.length-HEADINGS.length %>" rowspan="2">
@@ -637,11 +638,11 @@ Select from the following tasks from the GenePattern public access website to do
 
 		<tr>
 		<td valign="top" align="right">quality:</td>
-		<td valign="top"><%= GenePatternAnalysisTask.htmlEncode((String)attributes.get(GPConstants.QUALITY)) %></td>
+		<td valign="top"><%= StringUtils.htmlEncode((String)attributes.get(GPConstants.QUALITY)) %></td>
 		</tr>
 
 <%
-	String languageLevel = GenePatternAnalysisTask.htmlEncode((String)attributes.get(GPConstants.JVM_LEVEL));
+	String languageLevel = StringUtils.htmlEncode((String)attributes.get(GPConstants.JVM_LEVEL));
 	if (languageLevel.equals(GPConstants.ANY)) {
 		languageLevel = "";
 	} else {
@@ -650,9 +651,9 @@ Select from the following tasks from the GenePattern public access website to do
 %>
 		<tr><td valign="top" align="right">requirements:</td>
 		<td valign="top">
-<nobr><%= GenePatternAnalysisTask.htmlEncode((String)attributes.get(GPConstants.LANGUAGE)) %><%= languageLevel %></nobr>,
-<nobr><%= GenePatternAnalysisTask.htmlEncode((String)attributes.get(GPConstants.OS)) %> operating system</nobr>,
-<nobr><%= GenePatternAnalysisTask.htmlEncode((String)attributes.get(GPConstants.CPU_TYPE)) %> cpu</nobr>
+<nobr><%= StringUtils.htmlEncode((String)attributes.get(GPConstants.LANGUAGE)) %><%= languageLevel %></nobr>,
+<nobr><%= StringUtils.htmlEncode((String)attributes.get(GPConstants.OS)) %> operating system</nobr>,
+<nobr><%= StringUtils.htmlEncode((String)attributes.get(GPConstants.CPU_TYPE)) %> cpu</nobr>
 		</td></tr>
 
 
@@ -665,7 +666,7 @@ Select from the following tasks from the GenePattern public access website to do
 <span class="tasks-<%= lsidManager.getAuthorityType(lsid) %>">
 <b><%= fixupLinksInText((String)attributes.get(GPConstants.DESCRIPTION)) %></b>
 <% if (!authority.equals(LSIDUtil.BROAD_AUTHORITY)) { %>
-	<br>source: <%= GenePatternAnalysisTask.htmlEncode(authority) %>
+	<br>source: <%= StringUtils.htmlEncode(authority) %>
 <% } %>
 </span>
 </td>
@@ -706,10 +707,10 @@ Select from the following tasks from the GenePattern public access website to do
 		if (end == -1) end = description.indexOf(",", start);
 		if (end == -1) end = description.indexOf(" ", start);
 		if (end == -1) end = description.length();
-		description = GenePatternAnalysisTask.htmlEncode(description.substring(0, start)) + 
+		description = StringUtils.htmlEncode(description.substring(0, start)) + 
 				"<a href=\"" + description.substring(start, end) + "\" target=\"_blank\">" + 
 				description.substring(start, end) + "</a>" + 
-				GenePatternAnalysisTask.htmlEncode(description.substring(end));
+				StringUtils.htmlEncode(description.substring(end));
 	}
 	return description;
     }

@@ -9,6 +9,7 @@
 		 org.apache.lucene.queryParser.QueryParser,
 		 org.apache.lucene.analysis.standard.StandardAnalyzer,
 		 java.io.File,
+ 		 org.genepattern.util.StringUtils,
 		 java.text.DecimalFormat,
 		 java.util.Enumeration,
 		 java.util.Vector,
@@ -124,7 +125,7 @@ if (q != null && q.length() > 0) {
 		numHits++;
 	    }
     } catch (Throwable e) {
-%><b><font color="red"><%= e.getMessage() %> in query term <font color="black"><%= GenePatternAnalysisTask.htmlEncode(q) %></font></font></b><br><br>
+%><b><font color="red"><%= e.getMessage() %> in query term <font color="black"><%= StringUtils.htmlEncode(q) %></font></font></b><br><br>
 <%
     }
 %>
@@ -132,9 +133,9 @@ if (q != null && q.length() > 0) {
 <% } else { %>
 search for: 
 <% } %>
-	   <input type="text" name="<%= SEARCH %>" value="<%= request.getParameter(SEARCH) != null ? GenePatternAnalysisTask.htmlEncode(request.getParameter(SEARCH)) : "" %>" size="40" onfocus="javascript:this.select()">
+	   <input type="text" name="<%= SEARCH %>" value="<%= request.getParameter(SEARCH) != null ? StringUtils.htmlEncode(request.getParameter(SEARCH)) : "" %>" size="40" onfocus="javascript:this.select()">
 	   <input type="submit" name="submit" value="search" class="little"><br>
-<!--<b><%=  GenePatternAnalysisTask.htmlEncode(q) %></b> -->
+<!--<b><%=  StringUtils.htmlEncode(q) %></b> -->
 <font size="-2">
 	<br>
 	in 

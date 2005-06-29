@@ -22,6 +22,7 @@
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.util.GPConstants,
+		 org.genepattern.util.StringUtils,		
 		 org.genepattern.server.indexer.Indexer"
 	session="false" contentType="text/html" language="Java" %><%
 
@@ -584,7 +585,7 @@ taskSelect(document.forms['index'].task, 'task');
 
 			sbCatalog.append("<option value=\"" + (lsid != null ? l.toStringNoVersion() : taskInfo.getName()) + 
 					 "\" class=\"tasks-" +  authorityType + "\"" +
-					 " title=\"" + GenePatternAnalysisTask.htmlEncode(description) + ", " + l.getAuthority() + "\"" + ">" + display + "</option>\n");
+					 " title=\"" + StringUtils.htmlEncode(description) + ", " + l.getAuthority() + "\"" + ">" + display + "</option>\n");
 		}
 	}
 	sbCatalog.append("</select>\n");

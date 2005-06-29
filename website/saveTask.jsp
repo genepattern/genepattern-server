@@ -17,6 +17,7 @@
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.webservice.ParameterInfo,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.local.*,
@@ -76,11 +77,11 @@ requestParameters = mySmartUpload.getRequest();
 out.println("request parameters:<br>");
 for (java.util.Enumeration eNames = requestParameters.getParameterNames(); eNames.hasMoreElements(); ) {
 	String n = (String)eNames.nextElement();
-	out.println(n + "='" + GenePatternAnalysisTask.htmlEncode(requestParameters.getParameter(n)) + "'<br>");
+	out.println(n + "='" + StringUtils.htmlEncode(requestParameters.getParameter(n)) + "'<br>");
 }
 for (java.util.Enumeration eNames = request.getParameterNames(); eNames.hasMoreElements(); ) {
 	String n = (String)eNames.nextElement();
-	out.println(n + "='" + GenePatternAnalysisTask.htmlEncode(request.getParameter(n)) + "'<br>");
+	out.println(n + "='" + StringUtils.htmlEncode(request.getParameter(n)) + "'<br>");
 }
 out.println("<hr><br>");
 */
@@ -200,7 +201,7 @@ if (request.getParameter("clone") != null) {
 <%	
 		    	for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
 %>
-				<li><%= GenePatternAnalysisTask.htmlEncode((String)eProblems.nextElement()) %></li>
+				<li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
 <%
 			}
 %>
@@ -400,7 +401,7 @@ if(vProblems != null && vProblems.size() > 0) {
 <%	
 	for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
 %>
-		<li><%= GenePatternAnalysisTask.htmlEncode((String)eProblems.nextElement()) %></li>
+		<li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
 <%
 	}
 %>

@@ -5,6 +5,7 @@
 	       java.util.*,
 	       java.net.*,
 		 org.genepattern.webservice.JobInfo,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.webservice.JobStatus,
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.webservice.WebServiceException,
@@ -330,7 +331,7 @@ out.print("<td><font color=" + htColors.get(status)  +">" + status + "</font></t
            out.println("<input type=\"checkbox\" name=\"dl\" value=\"" + value + "\" checked><a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\">" + fileName + "</a>");
    
         if(showAll) {
-               out.println(GenePatternAnalysisTask.htmlEncode(" " + job.getUserId()));
+               out.println(StringUtils.htmlEncode(" " + job.getUserId()));
            }
          }
       }

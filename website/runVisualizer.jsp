@@ -7,6 +7,7 @@
 		 org.genepattern.webservice.ParameterFormatConverter,
 		 org.genepattern.visualizer.RunVisualizerConstants,
 		 org.genepattern.util.GPConstants,
+ 		 org.genepattern.util.StringUtils,
 		 java.util.Enumeration,
 		 java.util.Properties,
 		 java.io.File" 
@@ -41,7 +42,7 @@
 		<link href="favicon.ico" rel="shortcut icon">
 		<body>
 		<jsp:include page="navbar.jsp"></jsp:include>
-		<%= GenePatternAnalysisTask.htmlEncode(message) %><br>
+		<%= StringUtils.htmlEncode(message) %><br>
 		<br>
 <% 		if (taskInfo != null) { %>
 			<a href="addTask.jsp?<%= GPConstants.NAME %>=<%= name %>&view=1">view/edit <%= taskInfo.getName() %> task</a><br>
@@ -78,24 +79,24 @@
 <applet code="<%= org.genepattern.visualizer.RunVisualizerApplet.class.getName() %>" archive="runVisualizer.jar" codebase="downloads" width="1" height="1" alt="Your browser refuses to run applets" name="<%= appletName %>">
 <param name="<%= RunVisualizerConstants.NAME %>" value="<%= name %>">
 
-<param name="<%= RunVisualizerConstants.OS %>" value="<%= GenePatternAnalysisTask.htmlEncode(tia.get(GPConstants.OS)) %>">
-<param name="<%= RunVisualizerConstants.CPU_TYPE %>" value="<%= GenePatternAnalysisTask.htmlEncode(tia.get(GPConstants.CPU_TYPE)) %>">
-<param name="<%= RunVisualizerConstants.LIBDIR %>" value="<%= GenePatternAnalysisTask.htmlEncode(libdir) %>">
+<param name="<%= RunVisualizerConstants.OS %>" value="<%= StringUtils.htmlEncode(tia.get(GPConstants.OS)) %>">
+<param name="<%= RunVisualizerConstants.CPU_TYPE %>" value="<%= StringUtils.htmlEncode(tia.get(GPConstants.CPU_TYPE)) %>">
+<param name="<%= RunVisualizerConstants.LIBDIR %>" value="<%= StringUtils.htmlEncode(libdir) %>">
 
 <param name="<%= RunVisualizerConstants.PARAM_NAMES %>" value="<%
 	for (i = 0; i < parameterInfoArray.length; i++) {
 		if (i > 0) out.print(",");
-		out.print(GenePatternAnalysisTask.htmlEncode(parameterInfoArray[i].getName()));
+		out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
 	}
 %>">
 <%	for (i = 0; i < parameterInfoArray.length; i++) {
 		String paramName = parameterInfoArray[i].getName();
 		if (paramName.equals("className")) { %>
-<param name="<%= paramName %>" value="<%= GenePatternAnalysisTask.htmlEncode(parameterInfoArray[i].getDescription()) %>">
+<param name="<%= paramName %>" value="<%= StringUtils.htmlEncode(parameterInfoArray[i].getDescription()) %>">
 <%			continue;
 		}
 %>
-<param name="<%= GenePatternAnalysisTask.htmlEncode(paramName) %>" value="<%= GenePatternAnalysisTask.htmlEncode(params.getProperty(paramName)) %>">
+<param name="<%= StringUtils.htmlEncode(paramName) %>" value="<%= StringUtils.htmlEncode(params.getProperty(paramName)) %>">
 <%	} %>
 <param name="<%= RunVisualizerConstants.DOWNLOAD_FILES %>" value="<%
 	int numToDownload = 0;
@@ -107,17 +108,17 @@
 		     params.getProperty(paramName).startsWith("ftp:"))) {
 			// note that this parameter is a URL that must be downloaded by adding it to the CSV list for the applet
 			if (numToDownload > 0) out.print(",");
-			out.print(GenePatternAnalysisTask.htmlEncode(parameterInfoArray[i].getName()));
+			out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
 			numToDownload++;
 		}
 	}
 %>">
-<param name="<%= RunVisualizerConstants.COMMAND_LINE %>" value="<%= GenePatternAnalysisTask.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) %>">
+<param name="<%= RunVisualizerConstants.COMMAND_LINE %>" value="<%= StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) %>">
 <param name="<%= RunVisualizerConstants.DEBUG%>" value="1">
 <param name="<%= RunVisualizerConstants.SUPPORT_FILE_NAMES %>" value="<%
 	for (i = 0; i < supportFiles.length; i++) {
 		if (i > 0) out.print(",");
-		out.print(GenePatternAnalysisTask.htmlEncode(supportFiles[i].getName()));
+		out.print(StringUtils.htmlEncode(supportFiles[i].getName()));
 	} %>">
 <param name="<%= RunVisualizerConstants.SUPPORT_FILE_DATES %>" value="<%
 	for (i = 0; i < supportFiles.length; i++) {

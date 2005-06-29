@@ -24,6 +24,7 @@
 		 org.genepattern.webservice.OmnigeneException,
 		 org.genepattern.webservice.AnalysisWebServiceProxy,
 		 org.genepattern.webservice.TaskInfo,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.webservice.JobInfo,
 		 com.jspsmart.upload.*,
 		 org.genepattern.data.pipeline.PipelineModel"
@@ -75,7 +76,7 @@ try {
 		for (java.util.Enumeration eNames = requestParameters.getParameterNames(); eNames.hasMoreElements(); ) {
 			String n = (String)eNames.nextElement();
                         if (!("code".equals(n)))
-			System.out.println(n + "='" + GenePatternAnalysisTask.htmlEncode(requestParameters.getParameter(n)) + "'");
+			System.out.println(n + "='" + StringUtils.htmlEncode(requestParameters.getParameter(n)) + "'");
 		}
 	}
 	String tmpDirName = null;

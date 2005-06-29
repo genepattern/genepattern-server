@@ -18,6 +18,7 @@
 		org.genepattern.server.webservice.server.local.LocalAnalysisClient,
  	 	org.genepattern.util.GPConstants,
 		org.genepattern.util.LSIDUtil,
+ 		 org.genepattern.util.StringUtils,
 		org.genepattern.util.LSID,
 		org.genepattern.server.indexer.Indexer" %>
 <% { %>
@@ -272,7 +273,7 @@ function checkEnableNavbar() {
 					<input type="text" class="little" size="30" name="<%= GPConstants.USERID %>" value="<%= EMAIL_ADDRESS %>" onfocus="ufocus(this, true, '<%= EMAIL_ADDRESS %>')" onblur="ufocus(this, false, '<%= EMAIL_ADDRESS %>')"> 
 					<input type="submit" value="sign in" class="little">
 				<% } else { %>
-					<a href="login.jsp" class="navbar">sign out</a> <%= GenePatternAnalysisTask.htmlEncode(userID) %>
+					<a href="login.jsp" class="navbar">sign out</a> <%= StringUtils.htmlEncode(userID) %>
 				<% } %>
 			<% } %>
 			</nobr>
@@ -390,7 +391,7 @@ function checkEnableNavbar() {
 		selected = requestedName != null && (name.equals(requestedName) || requestedName.startsWith(versionlessLSID + ":"));
 		sbCatalog.append("<option value=\"" + (lsid != null ? l.toString() : name) +
 			 "\" class=\"navbar-tasks-" + authorityType + "\"" + 
-			 " title=\"" + GenePatternAnalysisTask.htmlEncode(description) + ", " + l.getAuthority() + "\"" +
+			 " title=\"" + StringUtils.htmlEncode(description) + ", " + l.getAuthority() + "\"" +
 			 (selected ? " selected" : "") +
 			 "><i>" + name + "</i></option>\n");
 		
@@ -433,7 +434,7 @@ function checkEnableNavbar() {
 			selected = requestedName != null && (name.equals(requestedName) || requestedName.startsWith(versionlessLSID + ":"));
 			sbCatalog.append("<option value=\"" + (lsid != null ? l.toString() : name) +
 					 "\" class=\"navbar-tasks-" + authorityType + "\"" + 
-					 " title=\"" + GenePatternAnalysisTask.htmlEncode(description) + ", " + l.getAuthority() + "\"" +
+					 " title=\"" + StringUtils.htmlEncode(description) + ", " + l.getAuthority() + "\"" +
 					 (selected ? " selected" : "") +
 					 ">" + taskInfo.getName() + "</option>\n");
 		}

@@ -14,6 +14,7 @@
 		 java.util.GregorianCalendar,
 		 java.text.ParseException,
 		 java.text.DateFormat,
+ 		 org.genepattern.util.StringUtils,
 		
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
@@ -83,7 +84,7 @@ try {
 		for (java.util.Enumeration eNames = requestParameters.getParameterNames(); eNames.hasMoreElements(); ) {
 			String n = (String)eNames.nextElement();
                         if (!("code".equals(n)))
-			System.out.println(n + "='" + GenePatternAnalysisTask.htmlEncode(requestParameters.getParameter(n)) + "'");
+			System.out.println(n + "='" + StringUtils.htmlEncode(requestParameters.getParameter(n)) + "'");
 		}
 	}
 	String tmpDirName = null;
@@ -187,7 +188,7 @@ for (int i=0; i < parmInfos.length; i++){
 		out.println(pinfo.getName());
 		out.println("=");
 		if (pinfo.isInputFile()) {
-			String htmlValue = GenePatternAnalysisTask.htmlEncode(pinfo.getValue());		
+			String htmlValue = StringUtils.htmlEncode(pinfo.getValue());		
 			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
 				out.println("<a href='"+ htmlValue + "'>"+htmlValue +"</a>");
 			} else {
@@ -195,7 +196,7 @@ for (int i=0; i < parmInfos.length; i++){
 	
 			}
 		} else {
-			out.println(GenePatternAnalysisTask.htmlEncode(pinfo.getValue()));
+			out.println(StringUtils.htmlEncode(pinfo.getValue()));
 		}
 		if (i != (parmInfos.length -1))out.println(", ");
 	}

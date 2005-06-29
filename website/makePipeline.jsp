@@ -31,6 +31,7 @@
 		 org.genepattern.server.webservice.server.local.LocalAdminClient,
 		 org.genepattern.data.pipeline.*,
 		 org.genepattern.util.GPConstants,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.codegenerator.*,
 		 com.jspsmart.upload.*,
 		 java.io.StringWriter"
@@ -81,7 +82,7 @@ try {
 		for (java.util.Enumeration eNames = requestParameters.getParameterNames(); eNames.hasMoreElements(); ) {
 			String n = (String)eNames.nextElement();
                         if (!("code".equals(n)))
-			System.out.println(n + "='" + GenePatternAnalysisTask.htmlEncode(requestParameters.getParameter(n)) + "'");
+			System.out.println(n + "='" + StringUtils.htmlEncode(requestParameters.getParameter(n)) + "'");
 		}
 		out.println("<hr><br>");
 	}
@@ -516,7 +517,7 @@ try {
 <%	
     		for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
 %>
-			<li><%= GenePatternAnalysisTask.htmlEncode((String)eProblems.nextElement()) %></li>
+			<li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
 <%
 		}
 %>

@@ -13,6 +13,7 @@
 		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient , 
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.webservice.ParameterFormatConverter,
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.server.util.AccessManager,
@@ -159,7 +160,7 @@ if (taskName != null) {
 	if (hasDoc) {
 		%><td align="right"><b>Documentation:</b><%
  		for (int i = 0; i < docFiles.length; i++) { %>
-			<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= GenePatternAnalysisTask.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>" target="new"><%= GenePatternAnalysisTask.htmlEncode(docFiles[i].getName()) %></a><% 
+			<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(docFiles[i].getName()) %></a><% 
  		} 
 		%></td></tr><%
  	}
@@ -228,7 +229,7 @@ if (taskName != null) {
 
 <%
 			if (description.length() > 0 && !description.equals(pi.getName().replace('.',' '))) {
-				out.println("<br>" + GenePatternAnalysisTask.htmlEncode(description));
+				out.println("<br>" + StringUtils.htmlEncode(description));
 			}
 		} else if (pi.isOutputFile()) {
 		} else if (stChoices.length < 2) { %>
@@ -236,7 +237,7 @@ if (taskName != null) {
 			<input name="<%= pi.getName() %>" value="<%=  defaultValue %>">
 			</td><%
 			if (description.length() > 0) { %>
-				<td valign="top"><%= GenePatternAnalysisTask.htmlEncode(description) %></td>
+				<td valign="top"><%= StringUtils.htmlEncode(description) %></td>
 			<% } %>
 			</tr></table>
 <%		} else { %>
@@ -262,7 +263,7 @@ if (taskName != null) {
 <%			} %>
 			</select>
 			</td>
-			<td valign="top"><%= GenePatternAnalysisTask.htmlEncode(description) %></td>
+			<td valign="top"><%= StringUtils.htmlEncode(description) %></td>
 			</tr></table>
 <%
 		}

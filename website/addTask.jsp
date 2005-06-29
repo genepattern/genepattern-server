@@ -8,6 +8,7 @@
 		 org.genepattern.server.genepattern.LSIDManager,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.util.LSID,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.data.pipeline.PipelineModel,
@@ -475,9 +476,9 @@ Please enter the following information to submit a new or updated analysis task 
   <td align="right"><b>LSID:</b></td>
   <td width="*">
  <% if(!viewOnly) { %>
-   <input type="text" name="<%= GPConstants.LSID %>" value="<%= taskInfo != null ? GenePatternAnalysisTask.htmlEncode(tia.get(GPConstants.LSID)) : "" %>" size="100" readonly style="{ border-style: none; }">
+   <input type="text" name="<%= GPConstants.LSID %>" value="<%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.LSID)) : "" %>" size="100" readonly style="{ border-style: none; }">
   <% } else {
-   out.print(taskInfo != null ? GenePatternAnalysisTask.htmlEncode(tia.get(GPConstants.LSID)) : "");
+   out.print(taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.LSID)) : "");
   }
   %>
   </td>
@@ -488,9 +489,9 @@ Please enter the following information to submit a new or updated analysis task 
   <td width="*">
   <% if(!viewOnly) { %>
   <input name="<%= GPConstants.DESCRIPTION %>" size="80" class="hideable"
-       value="<%= taskInfo != null ? GenePatternAnalysisTask.htmlEncode(taskInfo.getDescription()) : "" %>">
+       value="<%= taskInfo != null ? StringUtils.htmlEncode(taskInfo.getDescription()) : "" %>">
    <%} else {
-      out.print(taskInfo != null ? GenePatternAnalysisTask.htmlEncode(taskInfo.getDescription()) : "");
+      out.print(taskInfo != null ? StringUtils.htmlEncode(taskInfo.getDescription()) : "");
   } %>
   </td>
   </tr>
@@ -501,9 +502,9 @@ Please enter the following information to submit a new or updated analysis task 
   <%
   if(!viewOnly) { %>
   <input name="<%= GPConstants.AUTHOR %>" size="80" class="hideable"
-       value="<%= taskInfo != null ? GenePatternAnalysisTask.htmlEncode(tia.get(GPConstants.AUTHOR)) : "" %>"> (name, affiliation)
+       value="<%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.AUTHOR)) : "" %>"> (name, affiliation)
   <% } else { 
-     out.print(taskInfo != null ? GenePatternAnalysisTask.htmlEncode(tia.get(GPConstants.AUTHOR)) : "");
+     out.print(taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.AUTHOR)) : "");
    } %>
        </td>
   </tr>
@@ -548,13 +549,13 @@ if (taskName != null) {
 	}
 	if (hasDoc) { 
  		for (i = 0; i < docFiles.length; i++) { %>
-<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= GenePatternAnalysisTask.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>" target="new"><%= GenePatternAnalysisTask.htmlEncode(docFiles[i].getName()) %></a> 
+<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(docFiles[i].getName()) %></a> 
 <% 		} 
  	}
 	if (isPipeline) {
 %>
 		<a href="pipelineDesigner.jsp?<%= GPConstants.NAME %>=<%= tia.get(GPConstants.LSID) %>">pipeline designer</a>
-		<input name="<%= PipelineModel.PIPELINE_MODEL %>" type="hidden" value="<%= GenePatternAnalysisTask.htmlEncode(tia.get(PipelineModel.PIPELINE_MODEL)) %>">
+		<input name="<%= PipelineModel.PIPELINE_MODEL %>" type="hidden" value="<%= StringUtils.htmlEncode(tia.get(PipelineModel.PIPELINE_MODEL)) %>">
 <%
 	}
 %>
@@ -580,7 +581,7 @@ if (taskName != null) {
   <tr title="the command line used to invoke the application, using &lt;tags&gt; for param &amp; environment variable substitutions.">
   <td align="right" valign="top"><b>command&nbsp;line:</b><br>
    </td>
-  <td valign="top" width="*"><% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="60" rows="5"><% } %><%= tia != null ? GenePatternAnalysisTask.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea> * (required) <% } %></td>
+  <td valign="top" width="*"><% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="60" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea> * (required) <% } %></td>
   </tr>
 
   <tr>
@@ -619,13 +620,13 @@ if (taskName != null) {
   <td align="right"><b>Language:</b></td>
   <td width="*">         
   <%= createSelection(tia, GPConstants.LANGUAGE, languages, "", viewOnly) %> &nbsp;
-    <b>min. language version:</b> <% if (!viewOnly) { %><input name="<%= GPConstants.JVM_LEVEL %>" value="<%= tia != null ? GenePatternAnalysisTask.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %>" size="10"><% } else { %><%= tia != null ? GenePatternAnalysisTask.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %><% } %>
+    <b>min. language version:</b> <% if (!viewOnly) { %><input name="<%= GPConstants.JVM_LEVEL %>" value="<%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %>" size="10"><% } else { %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %><% } %>
          </td>
    </tr>
    
   <td align="right" valign="top"><b>Version&nbsp;comment:</b></td>
   <td width="*">
-  	<% if (!viewOnly) { %><textarea name="<%= GPConstants.VERSION %>" cols="50" rows="1"><% } %><%= taskInfo != null ? GenePatternAnalysisTask.htmlEncode(tia.get(GPConstants.VERSION)) : "" %><% if (!viewOnly) { %></textarea><% } %>
+  	<% if (!viewOnly) { %><textarea name="<%= GPConstants.VERSION %>" cols="50" rows="1"><% } %><%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.VERSION)) : "" %><% if (!viewOnly) { %></textarea><% } %>
    </td>
    </tr>
 
@@ -657,7 +658,7 @@ if (taskName != null) {
 					break;
 				}
 			}
-			out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + GenePatternAnalysisTask.htmlEncode(c) + "</option>");
+			out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + StringUtils.htmlEncode(c) + "</option>");
 		}
 %>
 		</select>
@@ -696,7 +697,7 @@ if (taskName != null) {
 				}
 			}
 		
-			out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + GenePatternAnalysisTask.htmlEncode(c) + "</option>");
+			out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + StringUtils.htmlEncode(c) + "</option>");
 		}
 	}*/
 %>
@@ -742,7 +743,7 @@ if (taskName != null) {
 	   File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
 	   
 	   for (i = 0; i < allFiles.length; i++) { %>
-		<a href="getFile.jsp?task=<%= (String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%= URLEncoder.encode(allFiles[i].getName()) %>" target="new"><%= GenePatternAnalysisTask.htmlEncode(allFiles[i].getName()) %></a> 
+		<a href="getFile.jsp?task=<%= (String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%= URLEncoder.encode(allFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(allFiles[i].getName()) %></a> 
 <%	   }  %>
 
 <%	   if (allFiles != null && allFiles.length > 0 && !viewOnly) { %>
@@ -750,7 +751,7 @@ if (taskName != null) {
 		   <select name="deleteFiles">
 		   <option value="">delete support files...</option>
 <%		   for (i = 0; i < allFiles.length; i++) { %>
-			<option value="<%= GenePatternAnalysisTask.htmlEncode(allFiles[i].getName()) %>"><%= allFiles[i].getName() %></option> 
+			<option value="<%= StringUtils.htmlEncode(allFiles[i].getName()) %>"><%= allFiles[i].getName() %></option> 
 <%		   }  %>
 		   </select>
 		   <input type="hidden" name="deleteSupportFiles" value="">
@@ -887,7 +888,7 @@ if (taskName != null) {
 			sbOut.append(">");
 		}
 		if (!viewOnly || value.equals(values[i])) {
-			sbOut.append(GenePatternAnalysisTask.htmlEncode(optionDisplay));
+			sbOut.append(StringUtils.htmlEncode(optionDisplay));
 		}
 		if (!viewOnly) {
 			sbOut.append("</option>\n");
@@ -896,7 +897,7 @@ if (taskName != null) {
 	if (!found && value.length() > 0) {
 		// add unexpected entry to the selection list
 		sbOut.append("<option selected>");
-		sbOut.append(GenePatternAnalysisTask.htmlEncode(value));
+		sbOut.append(StringUtils.htmlEncode(value));
 		sbOut.append("</option>\n");
 	}
 
@@ -923,9 +924,9 @@ for (int i = from; i < to; i++) {
 	if (attributes == null) attributes = new HashMap();
 
 	out.append("<tr>\n");
-	out.append("<td valign=\"top\">" + (!viewOnly ? ("<input name=\"p" + i + "_" + GPConstants.NAME+ "\"" + ((p == null) ? "" : ("\" value=\"" + GenePatternAnalysisTask.htmlEncode(p.getName()) + "\"")) + ">") : ((p == null) ? "" : GenePatternAnalysisTask.htmlEncode(p.getName()))) + "</td>\n");
-	out.append("<td valign=\"top\">" + (!viewOnly ? ("<input name=\"p" + i + "_" + GPConstants.DESCRIPTION + "\" size=\"50\"" + ((p == null || p.getDescription() == null) ? "" : ("\" value=\"" + GenePatternAnalysisTask.htmlEncode(p.getDescription()) + "\"")) + ">") : ((p == null || p.getDescription() == null) ? "" : (GenePatternAnalysisTask.htmlEncode(p.getDescription())))) + "</td>\n");
-	out.append("<td valign=\"top\">" + (!viewOnly ? ("<input name=\"p" + i + "_" + "value\" size=\"30\"" + ((p == null || p.getValue() == null) ? "" : ("\" value=\"" + GenePatternAnalysisTask.htmlEncode(p.getValue()) + "\"")) + ">") : (((p == null || p.getValue() == null) ? "" : GenePatternAnalysisTask.htmlEncode(GenePatternAnalysisTask.replace(p.getValue(), GenePatternAnalysisTask.PARAM_INFO_CHOICE_DELIMITER, GenePatternAnalysisTask.PARAM_INFO_CHOICE_DELIMITER+" "))))) + "</td>\n");
+	out.append("<td valign=\"top\">" + (!viewOnly ? ("<input name=\"p" + i + "_" + GPConstants.NAME+ "\"" + ((p == null) ? "" : ("\" value=\"" + StringUtils.htmlEncode(p.getName()) + "\"")) + ">") : ((p == null) ? "" : StringUtils.htmlEncode(p.getName()))) + "</td>\n");
+	out.append("<td valign=\"top\">" + (!viewOnly ? ("<input name=\"p" + i + "_" + GPConstants.DESCRIPTION + "\" size=\"50\"" + ((p == null || p.getDescription() == null) ? "" : ("\" value=\"" + StringUtils.htmlEncode(p.getDescription()) + "\"")) + ">") : ((p == null || p.getDescription() == null) ? "" : (StringUtils.htmlEncode(p.getDescription())))) + "</td>\n");
+	out.append("<td valign=\"top\">" + (!viewOnly ? ("<input name=\"p" + i + "_" + "value\" size=\"30\"" + ((p == null || p.getValue() == null) ? "" : ("\" value=\"" + StringUtils.htmlEncode(p.getValue()) + "\"")) + ">") : (((p == null || p.getValue() == null) ? "" : StringUtils.htmlEncode(GenePatternAnalysisTask.replace(p.getValue(), GenePatternAnalysisTask.PARAM_INFO_CHOICE_DELIMITER, GenePatternAnalysisTask.PARAM_INFO_CHOICE_DELIMITER+" "))))) + "</td>\n");
 
 	if (p != null && (p.isInputFile() || p.getName().indexOf("filename") != -1)) {
 		attributes.put(GPConstants.PARAM_INFO_TYPE[GPConstants.PARAM_INFO_TYPE_NAME_OFFSET], GPConstants.PARAM_INFO_TYPE_INPUT_FILE);
@@ -944,7 +945,7 @@ for (int i = from; i < to; i++) {
 			if (!viewOnly) {
 				out.append("<input name=\"p" + i + "_" + attributeName + "\" size=\"10\" value=\"");
 			}
-			out.append(GenePatternAnalysisTask.htmlEncode(attributeValue));
+			out.append(StringUtils.htmlEncode(attributeValue));
 			if (!viewOnly) {
 				out.append("\">\n");
 			}
@@ -975,7 +976,7 @@ for (int i = from; i < to; i++) {
 					out.append("<option value=\"" + 
 						    choices[choice][GPConstants.PARAM_INFO_TYPE_OFFSET] + "\"" + 
 						    (selected ? " selected" : "") + ">" + 
-						    GenePatternAnalysisTask.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]) +
+						    StringUtils.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]) +
 						    "</option>\n");
 				}
 				out.append("</select>\n");
@@ -983,11 +984,11 @@ for (int i = from; i < to; i++) {
 				if (!multiple) {
 					for (int choice = 0; choice < choices.length; choice++) { 
 					    if (choices[choice][1].equals(attributeValue)) {
-						out.append(GenePatternAnalysisTask.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]));
+						out.append(StringUtils.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]));
 					    }
 					}
 				} else {
-					out.append(GenePatternAnalysisTask.htmlEncode(attributeValue));
+					out.append(StringUtils.htmlEncode(attributeValue));
 				}
 			}
 

@@ -8,6 +8,7 @@
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.server.genepattern.LSIDManager,
 		 org.genepattern.data.pipeline.*,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.server.*,
          	 org.genepattern.server.webapp.RunPipelineForJsp,
 		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient,
@@ -212,7 +213,7 @@ for(int i = 0; i < tasks.size(); i++) {
       tia = new HashMap();
       formalParams = new ParameterInfo[0];
    } else if (!unknownTask){
-		out.print("<a href=\"addTask.jsp?view=1&name=" + js.getLSID() + "\">" + js.getName() + "</a></font> " + GenePatternAnalysisTask.htmlEncode(formalTask.getDescription()));
+		out.print("<a href=\"addTask.jsp?view=1&name=" + js.getLSID() + "\">" + js.getName() + "</a></font> " + StringUtils.htmlEncode(formalTask.getDescription()));
 		
 	} else {
 		if (!unknownTaskVersion) {
@@ -223,7 +224,7 @@ for(int i = 0; i < tasks.size(); i++) {
 			LSID altVersionLSID = new LSID((String)(altVersionTia.get(GPConstants.LSID)) );
 
 			out.print("<font color='red'>"+ js.getName() + "</font></font> This task version <b>("+taskLSID.getVersion()+")</b> is not present on this server. The version present on this server is <br>"  );
-		out.print("<dd><a href=\"addTask.jsp?view=1&name=" + js.getName() + "\">" + js.getName() + " <b>("+altVersionLSID .getVersion()+")</b> </a> " + GenePatternAnalysisTask.htmlEncode(formalTask.getDescription()));
+		out.print("<dd><a href=\"addTask.jsp?view=1&name=" + js.getName() + "\">" + js.getName() + " <b>("+altVersionLSID .getVersion()+")</b> </a> " + StringUtils.htmlEncode(formalTask.getDescription()));
 
 		
 
@@ -310,7 +311,7 @@ out.println("<table cellspacing='0' width='100%' frame='box'>");
 					value = "<a href=\"" + value + "\">" + value + "</a>";
                
 				} catch(java.net.MalformedURLException x) { 
-			               value = GenePatternAnalysisTask.htmlEncode(value);
+			               value = StringUtils.htmlEncode(value);
 				}
 			}
 			
@@ -327,7 +328,7 @@ out.println("<table cellspacing='0' width='100%' frame='box'>");
 					break;
 				}
 			}
-			value = GenePatternAnalysisTask.htmlEncode(value);
+			value = StringUtils.htmlEncode(value);
 		}
       
 		paramName = paramName.replace('.', ' ');

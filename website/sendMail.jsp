@@ -3,6 +3,7 @@
 		 java.io.*,
 		 java.net.*,
 		 java.util.*,
+ 		 org.genepattern.util.StringUtils,
 		 org.genepattern.server.webapp.DNSClient,
  		 org.genepattern.server.genepattern.GenePatternAnalysisTask" 
     session="false" contentType="text/html" language="Java" %>
@@ -156,13 +157,13 @@ response.setDateHeader("Expires", 0);
 		<table cols="2">
 		<tr>
 		<td valign="top" align="right">From:</td>
-		<td valign="top"><input type="text" name="from" value="<%= GenePatternAnalysisTask.htmlEncode(URLDecoder.decode(from)) %>" size="70"></td>
+		<td valign="top"><input type="text" name="from" value="<%= StringUtils.htmlEncode(URLDecoder.decode(from)) %>" size="70"></td>
 		</tr>
-		<input type="hidden" name="subject" value="<%= GenePatternAnalysisTask.htmlEncode(subject) %>">
-		<input type="hidden" name="message" value="<%= GenePatternAnalysisTask.htmlEncode(msg) %>">
+		<input type="hidden" name="subject" value="<%= StringUtils.htmlEncode(subject) %>">
+		<input type="hidden" name="message" value="<%= StringUtils.htmlEncode(msg) %>">
 		<tr>
 		<td valign="top" align="right">Resend&nbsp;to:</td>
-		<td valign="top"><input type="text" name="to" value="<%= GenePatternAnalysisTask.htmlEncode(failedRecipients.toString()) %>" size="70"></td>
+		<td valign="top"><input type="text" name="to" value="<%= StringUtils.htmlEncode(failedRecipients.toString()) %>" size="70"></td>
 		</tr>
 		<tr>
 		<td></td>
