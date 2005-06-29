@@ -156,6 +156,34 @@ public class TaskLauncher {
    }
    
 	
+	private static void runVisualizerInPipeline(
+            AnalysisWebServiceProxy serviceProxy, AnalysisJob job,
+            Map visualizerTaskNumber2LSID) {
+        if (visualizerTaskNumber2LSID != null
+                && visualizerTaskNumber2LSID.size() > 0) {
+            try {
+                int[] children = serviceProxy.getChildren(job.getJobInfo()
+                        .getJobNumber());
+
+                for (int i = 0; i < children.length; i++) {
+                    if (visualizerTaskNumber2LSID.containsKey(new Integer(i))) {
+                        String lsid = (String) visualizerTaskNumber2LSID
+                                .remove(new Integer(i));
+
+                        ParameterInfo[] params = serviceProxy.checkStatus(
+                                children[i]).getParameterInfoArray();
+                        submitVisualizer(AnalysisServiceManager.getInstance()
+                                .getAnalysisService(lsid), params, job
+                                .getJobInfo().getUserId(), serviceProxy);
+                    }
+                }
+            } catch (Exception e) { // don't break out of loop if running
+                                    // visualizer fails
+                e.printStackTrace();
+            }
+
+        }
+    }
    private static AnalysisJob waitUntilCompletion(AnalysisJob job, AnalysisWebServiceProxy serviceProxy, Map visualizerTaskNumber2LSID) throws WebServiceException {
     
         String status = "";
@@ -184,29 +212,13 @@ public class TaskLauncher {
             if (!(status.equals(currentStatus))) {
                 JobModel.getInstance().jobStatusChanged(job);
             }
-            if (visualizerTaskNumber2LSID!=null && visualizerTaskNumber2LSID.size() > 0) {
-                int[] children = serviceProxy.getChildren(info.getJobNumber());
-               
-                for (int i = 0; i < children.length; i++) {
-                    if (visualizerTaskNumber2LSID.containsKey(new Integer(i))) {
-                        String lsid = (String) visualizerTaskNumber2LSID
-                                .remove(new Integer(i));
-                        
-                        ParameterInfo[] params = serviceProxy.checkStatus(children[i]).getParameterInfoArray();
-                       System.out.println(java.util.Arrays.asList(params));
-                        submitVisualizer(AnalysisServiceManager.getInstance()
-                                .getAnalysisService(lsid), params, job
-                                .getJobInfo().getUserId(),
-                                serviceProxy);
-                    }
-                }
-
-            }
+            runVisualizerInPipeline(serviceProxy, job, visualizerTaskNumber2LSID);
             status = currentStatus;
             sleep = incrementSleep(initialSleep, tries, maxTries);
-
         }
+        runVisualizerInPipeline(serviceProxy, job, visualizerTaskNumber2LSID);
         JobModel.getInstance().jobCompleted(job);
+        
         return job;
 	}
 
