@@ -2,7 +2,6 @@
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.webservice.OmnigeneException,
 		 org.genepattern.server.util.AccessManager,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.util.LSID,
 		 org.genepattern.server.genepattern.LSIDManager,

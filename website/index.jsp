@@ -19,7 +19,6 @@
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.server.util.AccessManager,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.StringUtils,		

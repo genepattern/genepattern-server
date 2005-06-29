@@ -1,6 +1,5 @@
 <%@ page import="org.genepattern.server.webapp.*,
 		 org.genepattern.server.process.*,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.genepattern.TaskInstallationException,
 		 org.genepattern.server.genepattern.LSIDManager,
 		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient,

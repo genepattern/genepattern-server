@@ -4,8 +4,7 @@
 		 java.net.*,
 		 java.util.*,
  		 org.genepattern.util.StringUtils,
-		 org.genepattern.server.webapp.DNSClient,
- 		 org.genepattern.server.genepattern.GenePatternAnalysisTask" 
+		 org.genepattern.server.webapp.DNSClient" 
     session="false" contentType="text/html" language="Java" %>
 <%
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control

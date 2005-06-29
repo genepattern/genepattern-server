@@ -12,7 +12,6 @@
 		org.genepattern.webservice.JobInfo,
 		org.genepattern.webservice.WebServiceException,
      		org.genepattern.server.util.AccessManager,
-		org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		org.genepattern.server.genepattern.LSIDManager,
 		org.genepattern.server.webservice.server.local.LocalAdminClient,
 		org.genepattern.server.webservice.server.local.LocalAnalysisClient,
