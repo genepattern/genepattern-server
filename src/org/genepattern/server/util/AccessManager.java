@@ -25,6 +25,7 @@ import java.io.IOException;
  * Preferences - Java - Code Style - Code Templates
  */
 public class AccessManager implements IGPConstants {
+	protected static String clientList = "";
 	protected static Vector allowedClients = null;
 
 	/**
@@ -49,9 +50,19 @@ public class AccessManager implements IGPConstants {
 	}
 
 	protected static Vector getAllowedClients() {
-		if (allowedClients == null) {
-			String clientList = System.getProperty("gp.allowed.clients");
-			if (clientList != null) {
+		String allowedClientList = System.getProperty("gp.allowed.clients");
+			
+
+		// refresh on first time through or if something has changed since last time
+		//
+		boolean refresh = (allowedClients == null);
+		if ((clientList == null) && (allowedClientList != null )) refresh=true;
+		else if ((clientList != null) && (allowedClientList == null )) refresh = true;
+		else if (!(clientList.trim().equals(allowedClientList.trim()))) refresh = true;
+
+		if (refresh ) {
+			clientList = System.getProperty("gp.allowed.clients");
+			if ((clientList != null)&& (!(clientList.trim().equals("Any computer")))) {
 				allowedClients = new Vector();
 				StringTokenizer strtok = new StringTokenizer(clientList, ",");
 				while (strtok.hasMoreTokens()) {
@@ -83,84 +94,5 @@ public class AccessManager implements IGPConstants {
 		return allowedClients;
 	}
 
-	/**
-	 * returns the userID value extracted from an HTTP cookie. If the user is
-	 * unidentified, this method sends a redirect to the browser to request the
-	 * user to login, and the login page will then redirect the user back to the
-	 * original page with a valid userID now known.
-	 * 
-	 * @param request
-	 *            HttpServletRequest containing a cookie with userID (if they
-	 *            are logged in)
-	 * @param response
-	 *            HttpServletResponse which is used to redirect the browser if
-	 *            the user is not logged in yet
-	 * @return String userID after login
-	 * @author Jim Lerner
-	 *  
-	 */
-	public static String getUserID(HttpServletRequest request, HttpServletResponse response) {
-		String userID = null;
-		if (request.getAttribute(USER_LOGGED_OFF) != null) {
-			return userID;
-		}
-		Cookie[] cookies = request.getCookies();
-		if (cookies != null) {
-			for (int i = 0; i < cookies.length; i++) {
-				if (cookies[i].getName().equals(USERID)) {
-					userID = cookies[i].getValue();
-					if (userID.length() > 0) {
-						break;
-					}
-				}
-			}
-		}
-
-		if ((userID == null || userID.length() == 0)
-				&& request.getParameter(USERID) != null) {
-			userID = request.getParameter(USERID);
-		}
-
-		if ((userID == null || userID.length() == 0) && response != null) {
-			// redirect to the fully-qualified host name to make sure that the
-			// one cookie that we are allowed to write is useful
-			try {
-				String fqHostName = System.getProperty("fqHostName");
-				if (fqHostName == null) {
-					fqHostName = InetAddress.getLocalHost()
-							.getCanonicalHostName();
-					if (fqHostName.equals("localhost"))
-						fqHostName = "127.0.0.1";
-				}
-				String serverName = request.getServerName();
-				if (!fqHostName.equalsIgnoreCase(serverName)) {
-					String URL = request.getRequestURI();
-					if (request.getQueryString() != null)
-						URL = URL + ("?" + request.getQueryString());
-					String fqAddress = "http://" + fqHostName + ":"
-							+ request.getServerPort() + "/gp/login.jsp?origin="
-							+ URLEncoder.encode(URL, UTF8);
-					response.sendRedirect(fqAddress);
-					return null;
-				}
-				response.sendRedirect("login.jsp");
-				return null;
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-			}
-		}
-		if (userID != null) {
-			// strip surrounding quotes, if they exist
-			if (userID.startsWith("\"")) {
-				userID = userID.substring(1, userID.length() - 1);
-				try {
-					userID = URLDecoder.decode(userID, UTF8);
-				} catch (UnsupportedEncodingException uee) { /* ignore */
-				}
-			}
-		}
-		return userID;
-	}
-
-
+	
 }
