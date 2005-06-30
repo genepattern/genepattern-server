@@ -26,7 +26,7 @@ String DIVIDER = "------";
 
 if (request.getAttribute("navbar") == null) { 
 
-String userID = AccessManager.getUserID(request, null); // get userID but don't force login if not defined
+String userID = (String)request.getAttribute("userID"); // get userID but don't force login if not defined
 boolean userUnknown = (userID == null || userID.equals(""));
 Collection tmTasks = null;
 int recentCount = Integer.parseInt(System.getProperty("recentJobsToDisplay", "3"));

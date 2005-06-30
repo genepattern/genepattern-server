@@ -48,7 +48,7 @@ function showJob(job) {
 <tr><td class="heading" colspan=3><span class="heading">Recent Jobs</span></td></tr><tr>
 
 <%
-String userID = AccessManager.getUserID(request, null); // get userID but don't force login if not defined
+String userID = (String)request.getAttribute("userID"); // get userID but don't force login if not defined
 
 SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss");
 SimpleDateFormat shortDateFormat = new SimpleDateFormat("HH:mm:ss");

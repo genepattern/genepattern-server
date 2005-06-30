@@ -14,7 +14,7 @@ response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 
-String userID = AccessManager.getUserID(request, null); // get userID but don't force login if not defined
+String userID = (String)request.getAttribute("userID"); // get userID but don't force login if not defined
 if (userID == null || userID.length() == 0) {
 	return;
 }

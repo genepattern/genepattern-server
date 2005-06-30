@@ -25,7 +25,7 @@ response.setDateHeader("Expires", 0);
 String serverPort = System.getProperty("GENEPATTERN_PORT");
 String userID = request.getParameter(GPConstants.USERID);
 if (userID == null) {
-	userID = AccessManager.getUserID(request, null); // get userID but don't force login if not defined
+	userID = (String)request.getAttribute("userID"); // get userID but don't force login if not defined
 }
 LocalAdminClient adminClient = new LocalAdminClient(userID);
 String password = "";

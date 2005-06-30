@@ -11,7 +11,8 @@
 
 	// given a pipeline name, generate the pipeline R code
 
-	String userID = request.getParameter(GPConstants.USERID); // AccessManager.getUserID(request, response); // will force login if necessary
+	String userID = request.getParameter(GPConstants.USERID); // 
+	// AccessManager.getUserID(request, response); // will force login if necessary
 //	if (userID == null || userID.length() == 0) return; // come back after login
 	String pipelineName = request.getParameter(GPConstants.NAME);
 	

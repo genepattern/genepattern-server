@@ -433,7 +433,7 @@ timeMS dateTime loginId taskType moduleName  manifest supportFilesChanges URLToE
 	log.append(" ");
 	log.append(dateFormat.format(d));
 	log.append(" ");
-	log.append(AccessManager.getUserID(request, response));
+	log.append((String)request.getAttribute("userID"));
 	log.append(" ");
 	String taskType = tia.get(GPConstants.TASK_TYPE);
 	if (taskType == null || taskType.length() == 0) taskType = "[unclassified]";

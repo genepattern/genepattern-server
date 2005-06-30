@@ -32,7 +32,7 @@ boolean isDelete = (request.getParameter("delete") != null);
 boolean isDownload = (request.getParameter("download") != null);
 String[] deleteJob = request.getParameterValues("deleteJob");
 String stopTaskID = request.getParameter(STOP);
-String userID = AccessManager.getUserID(request, null); // get userID but don't force login if not defined
+String userID = (String)request.getAttribute("userID"); // get userID but don't force login if not defined
 
 if(isDownload) {
     ZipOutputStream zos = null;

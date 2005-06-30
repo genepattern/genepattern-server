@@ -48,7 +48,7 @@ if (taskName == null || taskName.length() == 0) {
 }
 String username = request.getParameter(GPConstants.USERID);
 if (username == null || username.length() == 0) {
-	username = AccessManager.getUserID(request, response);
+	username = (String)request.getAttribute("userID");
 }
 boolean bNoEnvelope = (request.getParameter("noEnvelope") != null);
 

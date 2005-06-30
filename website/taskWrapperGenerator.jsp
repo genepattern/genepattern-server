@@ -25,7 +25,7 @@ response.setDateHeader("Expires", 0);
 
 String userID = request.getParameter(GPConstants.USERID);
 if (userID == null) {
-	userID = AccessManager.getUserID(request, response); // will force login if necessary
+	userID = (String)request.getAttribute("userID"); // will force login if necessary
 	if (userID == null) return; // come back after login
 }
 if (request.getParameter("noenvelope") == null) {

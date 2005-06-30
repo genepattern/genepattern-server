@@ -73,7 +73,7 @@ com.jspsmart.upload.Request requestParameters = null;
 boolean isEncodedPost = true;
 int fileCount = 0;
 com.jspsmart.upload.File attachedFile = null;
-String username = AccessManager.getUserID(request, response);
+String username = (String)request.getAttribute("userID");
 if (username == null || username.length() == 0) return; // come back after login
 // TODO: get values for access_id from task_access table in database
 

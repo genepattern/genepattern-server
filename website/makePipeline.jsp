@@ -377,7 +377,7 @@ try {
 			model.setName(requestParameters.getParameter("cloneName"));
 			// TODO: change URLs that are task-relative to point to the new task
 			String oldUser = model.getUserID();
-			String requestUserID = AccessManager.getUserID(request, null);
+			String requestUserID = (String)request.getAttribute("userID");
 			if (oldUser.length() > 0 && !oldUser.equals(requestUserID)) {
 				oldUser = " (" + oldUser + ")";
 			} else {
