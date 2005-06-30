@@ -58,8 +58,11 @@ public class AccessManager implements IGPConstants {
 		boolean refresh = (allowedClients == null);
 		if ((clientList == null) && (allowedClientList != null )) refresh=true;
 		else if ((clientList != null) && (allowedClientList == null )) refresh = true;
-		else if (!(clientList.trim().equals(allowedClientList.trim()))) refresh = true;
+		else {
 
+			if ((clientList == null) && (allowedClientList == null)) refresh = true;
+			else if (!(clientList.trim().equals(allowedClientList.trim()))) refresh = true;
+		}
 		if (refresh ) {
 			clientList = System.getProperty("gp.allowed.clients");
 			if ((clientList != null)&& (!(clientList.trim().equals("Any computer")))) {
