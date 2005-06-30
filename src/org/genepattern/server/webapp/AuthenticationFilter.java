@@ -61,7 +61,7 @@ public class AuthenticationFilter implements Filter, IGPConstants {
       	if (filterConfig == null)
       	   return;
       	String requestedURI = ((HttpServletRequest) request).getRequestURI();
-		System.out.println("FILTER=" + requestedURI);
+		//System.out.println("FILTER=" + requestedURI);
 		String userId = null;
 
 		if (!(requestedURI.indexOf("login.jsp") >= 0 )) {
@@ -74,7 +74,7 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 			request.setAttribute("userID", userId);
 			chain.doFilter(request, response);
 		} else { // looking for userID
-			System.out.println("Filter: Redirecting to login");
+			//System.out.println("Filter: Redirecting to login");
 			chain.doFilter(request, response);
 			return;
 		}
