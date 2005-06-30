@@ -17,6 +17,7 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
 import org.genepattern.webservice.ParameterInfo;
@@ -629,7 +630,7 @@ public class RunPipelineForJsp {
 							+ "\">"
 							+ js.getName()
 							+ "</a></font> "
-							+ GenePatternAnalysisTask.htmlEncode(formalTask
+							+ StringUtils.htmlEncode(formalTask
 									.getDescription()));
 
 				} else {
@@ -657,7 +658,7 @@ public class RunPipelineForJsp {
 								+ " <b>("
 								+ altVersionLSID.getVersion()
 								+ ")</b> </a> "
-								+ GenePatternAnalysisTask.htmlEncode(formalTask
+								+ StringUtils.htmlEncode(formalTask
 										.getDescription()));
 
 					} else {
@@ -758,13 +759,13 @@ public class RunPipelineForJsp {
 										+ "</a>";
 
 							} catch (java.net.MalformedURLException x) {
-								value = GenePatternAnalysisTask
+								value = StringUtils
 										.htmlEncode(value);
 							}
 						}
 
 					} else {
-						value = GenePatternAnalysisTask
+						value = StringUtils
 								.htmlEncode(informalParam.getValue());
 					}
 

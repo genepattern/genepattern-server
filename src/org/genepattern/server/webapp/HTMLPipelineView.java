@@ -19,6 +19,7 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
@@ -163,7 +164,7 @@ public class HTMLPipelineView implements IPipelineView {
 						+ "\"] = new TaskInfo(\""
 						+ taskInfo.getName()
 						+ "\", \""
-						+ GenePatternAnalysisTask.htmlEncode(taskInfo
+						+ StringUtils.htmlEncode(taskInfo
 								.getDescription()) + "\", \"" + lsid + "\", \""
 						+ taskType + "\", new Array(");
 
@@ -184,10 +185,10 @@ public class HTMLPipelineView implements IPipelineView {
 						.write("new ParameterInfo(\""
 								+ pi.getName()
 								+ "\", \""
-								+ GenePatternAnalysisTask.htmlEncode(pi
+								+ StringUtils.htmlEncode(pi
 										.getDescription())
 								+ "\", \""
-								+ GenePatternAnalysisTask
+								+ StringUtils
 										.htmlEncode((String) pi.getValue())
 								+ "\", "
 								+ (pi.isInputFile() ? "true" : "false")
@@ -195,7 +196,7 @@ public class HTMLPipelineView implements IPipelineView {
 								+ (pi.isOutputFile() ? "true" : "false")
 								+ ", \""
 								+ ((pia != null && pia
-										.get(GenePatternAnalysisTask.PARAM_INFO_DEFAULT_VALUE[0]) != null) ? GenePatternAnalysisTask
+										.get(GenePatternAnalysisTask.PARAM_INFO_DEFAULT_VALUE[0]) != null) ? StringUtils
 										.htmlEncode(((String) pia
 												.get(GenePatternAnalysisTask.PARAM_INFO_DEFAULT_VALUE[0]))
 												.trim())
@@ -482,7 +483,7 @@ public class HTMLPipelineView implements IPipelineView {
 								.write("<option value=''>delete doc files...</option>");
 						for (int i = 0; i < docFiles.length; i++) {
 							writer.write("<option value='"
-									+ GenePatternAnalysisTask
+									+ StringUtils
 											.htmlEncode(docFiles[i].getName())
 									+ "'>" + docFiles[i].getName()
 									+ "</option>");
