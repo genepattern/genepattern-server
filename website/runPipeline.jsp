@@ -74,7 +74,7 @@
 	boolean DEBUG = false;
 	if (!DEBUG && requestParamsAndAttributes.get("DEBUG") != null) DEBUG = true;
 
-	String userID = AccessManager.getUserID(request, response); // will force login if necessary
+	String userID= (String)request.getAttribute("userID"); // will force login if necessary
 	if (userID == null || userID.length() == 0) return; // come back after login
 	
 	String NAME = "name";

@@ -9,7 +9,7 @@
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
 	session="false" contentType="text/text" language="Java" %><%
 
-	String userID = AccessManager.getUserID(request, response); // will force login if necessary
+	String userID= (String)request.getAttribute("userID"); // will force login if necessary
 	if (userID == null) return; // come back after login
 
 	String taskName = request.getParameter("name");

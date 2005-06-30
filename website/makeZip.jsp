@@ -32,7 +32,7 @@ if (name == null || name.length() == 0) {
 
 try {
 
-	String userID = AccessManager.getUserID(request, response); // will force login if necessary
+	String userID= (String)request.getAttribute("userID"); // will force login if necessary
 	if (userID == null) return; // come back after login
 
 	ti = GenePatternAnalysisTask.getTaskInfo(name, userID);

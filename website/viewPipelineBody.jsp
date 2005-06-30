@@ -19,7 +19,7 @@ if (outWriter != null) {
 }
 System.out.println("Writing to: " + outstr);
 
-String userID = AccessManager.getUserID(request, response); // will force login if necessary
+String userID= (String)request.getAttribute("userID"); // will force login if necessary
 if (userID == null) return; // come back after login
 String pipelineName = request.getParameter("name");
 boolean showParams = request.getParameter("showParams") == null ? false : true;

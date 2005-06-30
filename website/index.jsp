@@ -51,7 +51,7 @@
 	response.setDateHeader("Expires", 0);
 
 try {
-String userID = AccessManager.getUserID(request, response); // get userID but don't force login if not defined
+String userID= (String)request.getAttribute("userID"); // get userID but don't force login if not defined
 boolean userIDKnown = !(userID == null || userID.length() == 0);
 LocalAdminClient adminClient = new LocalAdminClient(userID);
 Collection tmTasks = adminClient.getTaskCatalog();

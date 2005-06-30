@@ -37,7 +37,7 @@ response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 
-String userID = AccessManager.getUserID(request, response); // will force login if necessary
+String userID= (String)request.getAttribute("userID"); // will force login if necessary
 if (userID == null) return; // come back after login
 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 %>

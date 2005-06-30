@@ -20,7 +20,7 @@ mySmartUpload.initialize(pageContext);
 try { mySmartUpload.upload(); } catch (NegativeArraySizeException nase) {}
 com.jspsmart.upload.Request rp = mySmartUpload.getRequest();
 
-String userID = AccessManager.getUserID(request, response); // will force login if necessary
+String userID= (String)request.getAttribute("userID"); // will force login if necessary
 if (userID == null) return; // come back after login
 
 /*

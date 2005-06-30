@@ -23,7 +23,7 @@
 		 java.util.Iterator"
 	session="true" contentType="text/html" language="Java" %>
 <%
-String userID = AccessManager.getUserID(request, response); // will force login if necessary
+String userID= (String)request.getAttribute("userID"); // will force login if necessary
 if (userID == null) return; // come back after login
 
 String pipelineName = request.getParameter("name");

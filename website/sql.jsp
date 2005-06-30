@@ -6,7 +6,7 @@
 <%@ page import="org.genepattern.server.util.BeanReference,
 		  		 org.genepattern.util.StringUtils,
  		org.genepattern.server.ejb.AnalysisJobDataSource" %>
-<%
+<% 
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
@@ -89,7 +89,7 @@ if (query.length() > 0 && request.getParameter("submit") != null) {
 					    else if (isEmail) s = "<a href=\"mailto:" + rs.getString(i) + "\">" + s + "</a>";
 					    else {
 						s = StringUtils.htmlEncode(s);
-						s = StringUtils.replace(s, "\n", "<br>\n");
+						s = StringUtils.replaceAll(s, "\n", "<br>\n");
 					    }
 					    ret.append("<td valign=\"top\" class=\"little\">");
 					    ret.append(s != null ? s : "&nbsp;");
@@ -160,7 +160,7 @@ if (query.length() > 0 && request.getParameter("submit") != null) {
 		    else if (isEmail) s = "<a href=\"mailto:" + rs.getString(i) + "\">" + s + "</a>";
 		    else {
 			s = StringUtils.htmlEncode(s);
-			s = StringUtils.replace(s, "\n", "<br>\n");
+			s = StringUtils.replaceAll(s, "\n", "<br>\n");
 		    }
 		    ret.append("<td valign=\"top\"" + (isMoney ? " align=\"right\"" : "") + " class=\"little\">");
 		    ret.append(s != null ? s : "&nbsp;");
