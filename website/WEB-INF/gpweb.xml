@@ -57,7 +57,7 @@
     <servlet-name>AxisServlet</servlet-name>
     <display-name>Apache-Axis Servlet</display-name>
     <servlet-class>
-        org.genepattern.server.webapp.GPAxisServlet
+        org.apache.axis.transport.http.AxisServlet
     </servlet-class>
     <init-param>
 	<param-name>log4j.configuration</param-name>
@@ -70,7 +70,7 @@
   
   <servlet>
         <servlet-name>gpjsp</servlet-name>
-        <servlet-class>org.genepattern.server.webapp.JSPServlet</servlet-class>
+        <servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>
         <init-param>
             <param-name>logVerbosityLevel</param-name>
             <param-value>WARNING</param-value>
