@@ -8,11 +8,14 @@
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
 <link href="favicon.ico" rel="shortcut icon">
-<title>about GenePattern</title>
+<jsp:useBean id="messages" class="org.genepattern.server.util.MessageUtils" scope="page"/>
+
+<title>about <%=messages.get("ApplicationName")%></title>
 </head>
 <body>	
 <jsp:include page="navbar.jsp"></jsp:include>
-<img src="skin/logoBig.jpg" width="460" height="68" border="0" alt="GenePattern logo" /><br><br>
+
+<img src="skin/logoBig.jpg" width="460" height="68" border="0" alt="<%=messages.get("ApplicationName")%> logo" /><br><br>
 <%
  	int major    = (int)Long.parseLong(System.getProperty("version.major"));
 	String minor = System.getProperty("version.minor");
@@ -21,10 +24,9 @@
 	final String rev = ( revision > 0 ) ? "."+revision : "";
 	String full     = major+"."+minor+rev+release;
 
-
 %>
 You are using 
-<b><font color="firebrick">Gene</font><font color="blue">Pattern <%= full %></b></font> 
+<b><%=messages.get("ApplicationNameColored")%> <font color="blue"><%= full %></font></b> 
 <br>build: <%= System.getProperty("build.tag") %> 
 <br>built: <%= System.getProperty("date") %>
 <br><br>
