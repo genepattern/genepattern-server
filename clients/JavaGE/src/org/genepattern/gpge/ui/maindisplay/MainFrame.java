@@ -1538,16 +1538,20 @@ public class MainFrame extends JFrame {
 
       terminateJobAction = new MenuItemAction("Terminate Job", IconManager.loadIcon(IconManager.STOP_ICON)) {
 			public void actionPerformed(ActionEvent e) {
-            JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
-            try {
-               AnalysisWebServiceProxy p = new AnalysisWebServiceProxy(analysisServiceManager.getServer(), analysisServiceManager.getUsername(), false);
-               p.terminateJob(jobNode.job.getJobInfo().getJobNumber());
-            } catch(WebServiceException wse) {
-                wse.printStackTrace();
-                if(!disconnectedFromServer(wse)) {
-                  GenePattern.showErrorDialog("An error occurred terminating job number " + jobNode.job.getJobInfo().getJobNumber() + ".");
-                }
-            }
+                final JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
+                new Thread() {
+                    public void run() {
+                        try {
+                            AnalysisWebServiceProxy p = new AnalysisWebServiceProxy(analysisServiceManager.getServer(), analysisServiceManager.getUsername(), false);
+                            p.terminateJob(jobNode.job.getJobInfo().getJobNumber());
+                        } catch(WebServiceException wse) {
+                            wse.printStackTrace();
+                            if(!disconnectedFromServer(wse)) {
+                                GenePattern.showErrorDialog("An error occurred terminating job number " + jobNode.job.getJobInfo().getJobNumber() + ".");
+                            }
+                        }
+                    }
+                }.start();
 			}
 		};
       
