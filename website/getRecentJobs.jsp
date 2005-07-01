@@ -131,7 +131,7 @@ for(int i = 0; i < jobs.length; i++) {
 
    out.print("&nbsp;");
    if (hasLog[i])
-	out.print("<img src='info_obj.gif'>");
+	out.print("<img src='skin/info_obj.gif'>");
     out.print( "  </nobr></span>");
 
 

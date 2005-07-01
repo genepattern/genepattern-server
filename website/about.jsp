@@ -12,7 +12,7 @@
 </head>
 <body>	
 <jsp:include page="navbar.jsp"></jsp:include>
-<img src="GenePatternLogo.jpg" width="460" height="68" border="0" alt="GenePattern logo" /><br><br>
+<img src="skin/logoBig.jpg" width="460" height="68" border="0" alt="GenePattern logo" /><br><br>
 <%
  	int major    = (int)Long.parseLong(System.getProperty("version.major"));
 	String minor = System.getProperty("version.minor");
