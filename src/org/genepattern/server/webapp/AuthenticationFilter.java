@@ -58,15 +58,39 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 
 
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-      	if (filterConfig == null)
-      	   return;
-      	String requestedURI = ((HttpServletRequest) request).getRequestURI();
+      	//if (filterConfig == null)
+      	//   return;
+		HttpServletRequest req = (HttpServletRequest) request;
+      	String requestedURI = req.getRequestURI();
+		String stuff = req.getRequestURI();
 		//System.out.println("FILTER=" + requestedURI);
+		
+
+		String rh= req.getRemoteHost();
+		String p = req.getParameter("jsp_precompile");
+		int numParams = req.getParameterMap().keySet().size();
+
+		// allow jsp precompilation	
+		if ((p != null) && ("localhost".equals(rh)) && (numParams == 1)){
+			chain.doFilter(request, response);
+			return;
+		}
+
+		String fqHostName = System.getProperty("fullyQualifiedHostName");
+		if (fqHostName == null) fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
+		if (fqHostName.equals("localhost")) fqHostName = "127.0.0.1";
+		String serverName = request.getServerName();
+		if (!fqHostName.equalsIgnoreCase(serverName)) {
+			redirectToFullyQualifiedHostName((HttpServletRequest)request, (HttpServletResponse )response);
+			return;
+		}
+
 		String userId = null;
 
 		if (!(requestedURI.indexOf("login.jsp") >= 0 )) {
 
-			userId = _getUserID((HttpServletRequest) request, (HttpServletResponse ) response);	      
+			userId = _getUserID((HttpServletRequest) request);	  
+			System.out.println("UserID=" + userId);    
 			if (userId == null){	
 				setLoginPageRedirect((HttpServletRequest)request, (HttpServletResponse )response);
 				return ;
@@ -74,14 +98,14 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 			request.setAttribute("userID", userId);
 			chain.doFilter(request, response);
 		} else { // looking for userID
-			//System.out.println("Filter: Redirecting to login");
+			System.out.println("Filter: Redirecting to login");
 			chain.doFilter(request, response);
 			return;
 		}
    }
 
 
-	public String _getUserID(HttpServletRequest request, HttpServletResponse response) {
+	public String _getUserID(HttpServletRequest request) {
 		String userID = null;
 		if (request.getAttribute(USER_LOGGED_OFF) != null) {
 			return userID;
@@ -112,9 +136,8 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 				} catch (UnsupportedEncodingException uee) { /* ignore */
 				}
 			}
-		}
-		if (userID.length() == 0) userID = null;
-
+			if (userID.length() == 0) userID = null;
+		} 		
 		return userID;
 	}
 
@@ -122,7 +145,10 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 
 	public void setLoginPageRedirect(HttpServletRequest request, HttpServletResponse response){
 
+		String URL = request.getRequestURI();
+
 		if (response == null) return;
+
 
 		// redirect to the fully-qualified host name to make sure that the
 		// one cookie that we are allowed to write is useful
@@ -133,18 +159,37 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 				if (fqHostName.equals("localhost"))	fqHostName = "127.0.0.1";
 			}
 			String serverName = request.getServerName();
-			if (!fqHostName.equalsIgnoreCase(serverName)) {
-				String URL = request.getRequestURI();
-				if (request.getQueryString() != null) URL = URL + ("?" + request.getQueryString());
-				String fqAddress = "http://" + fqHostName + ":"	+ request.getServerPort() + "/gp/login.jsp?origin="+ URLEncoder.encode(URL, UTF8);
+			
+			if (request.getQueryString() != null) URL = URL + ("?" + request.getQueryString());
+			String fqAddress = "http://" + fqHostName + ":"	+ request.getServerPort() + "/gp/login.jsp?origin="+ URLEncoder.encode(URL, UTF8);
 
 
-				response.sendRedirect(fqAddress);
-			}
-			response.sendRedirect("login.jsp");
+			response.sendRedirect(fqAddress);
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
+	}
+
+public void redirectToFullyQualifiedHostName(HttpServletRequest request, HttpServletResponse response){
+	try {
+		String fqHostName = System.getProperty("fullyQualifiedHostName");
+		if (fqHostName == null) fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
+		if (fqHostName.equals("localhost")) fqHostName = "127.0.0.1";
+
+
+		String queryString = request.getQueryString();
+		if (queryString == null) {
+			queryString = "";
+		} else {
+			queryString = "?" + queryString;
+		}
+		String fqAddress = "http://" + fqHostName + ":" + request.getServerPort() + request.getRequestURI() + queryString;
+		response.sendRedirect(fqAddress);
+		return;
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+
 	}
 
 
