@@ -92,6 +92,8 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
 	public void init(int rows, int columns, boolean hasRowDesc,
 			boolean hasColDesc, boolean hasCalls) throws ParseException {
       data = new double[rows][columns];
+      rowNames = new String[rows];
+      columnNames = new String[columns];
 		if (hasRowDesc && keepRowDescriptions) {
 			rowDescriptions = new String[rows];
 		}
