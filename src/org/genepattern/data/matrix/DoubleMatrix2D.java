@@ -1,5 +1,6 @@
 package org.genepattern.data.matrix;
 
+import java.util.Arrays;
 import java.util.List;
 import Jama.Matrix;
 
@@ -34,6 +35,31 @@ public class DoubleMatrix2D {
 		this.columnNames = new String[columns];
 		fillInRows(0);
 		fillInColumns(0);
+	}
+   
+   /**
+   * Creates a new matrix
+   * 
+   * @param data The data.
+   * @param rowNames the row names
+   * @param columnNames the column names
+   */
+	public DoubleMatrix2D(double[][] data, String[] rowNames, String[] columnNames) {
+		int rows = data.length;
+		int columns = data[0].length;
+		matrix = new Matrix(data);
+		rowNameToRowIndexMap = new ObjectIntMap(rows);
+		columnNameToColumnIndexMap = new ObjectIntMap(columns);
+      if(columnNames.length!=rows) {
+         throw new IllegalArgumentException("Length of column names must be equal to number of columns in data.");
+      }
+      if(rowNames.length!=columns) {
+         throw new IllegalArgumentException("Length of row names must be equal to number of rows in data.");
+      }
+      this.rowNames = new String[rows];
+		this.columnNames = new String[columns];
+		setRowNames(Arrays.asList(rowNames));
+		setColumnNames(Arrays.asList(columnNames));
 	}
 		
 		

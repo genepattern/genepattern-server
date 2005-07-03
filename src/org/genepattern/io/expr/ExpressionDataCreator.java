@@ -15,10 +15,11 @@ import org.genepattern.io.ParseException;
 public class ExpressionDataCreator implements IExpressionDataCreator {
 	IntMatrix2D calls;
 
-	DoubleMatrix2D data;
+	double[][] data;
 
 	String[] rowDescriptions;
-
+   String[] rowNames;
+   String[] columnNames;
 	String[] columnDescriptions;
 	boolean keepRowDescriptions = true;
 	boolean keepColumnDescriptions = true;
@@ -44,11 +45,12 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
 
 
 	public Object create() {
+      DoubleMatrix2D matrix = new DoubleMatrix2D(data, rowNames, columnNames);
 		if (calls != null) {
-			return new ResExpressionData(data, calls, rowDescriptions,
+			return new ResExpressionData(matrix, calls, rowDescriptions,
 					columnDescriptions);
 		} else {
-			return new ExpressionData(data, rowDescriptions, columnDescriptions);
+			return new ExpressionData(matrix, rowDescriptions, columnDescriptions);
 		}
 	}
 
@@ -59,17 +61,17 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
 
 
 	public void data(int row, int column, double d) throws ParseException {
-		data.set(row, column, d);
+		data[row][column] =  d;
 	}
 
 
 	public void columnName(int j, String s) throws ParseException {
-		data.setColumnName(j, s);
+		columnNames[j] = s;
 	}
 
 
 	public void rowName(int i, String s) throws ParseException {
-		data.setRowName(i, s);
+		rowNames[i] = s;
 	}
 
 
@@ -89,7 +91,7 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
 
 	public void init(int rows, int columns, boolean hasRowDesc,
 			boolean hasColDesc, boolean hasCalls) throws ParseException {
-		data = new DoubleMatrix2D(rows, columns);
+      data = new double[rows][columns];
 		if (hasRowDesc && keepRowDescriptions) {
 			rowDescriptions = new String[rows];
 		}
