@@ -47,16 +47,16 @@ public class DoubleMatrix2D {
 	public DoubleMatrix2D(double[][] data, String[] rowNames, String[] columnNames) {
 		int rows = data.length;
 		int columns = data[0].length;
-		matrix = new Matrix(data);
-		rowNameToRowIndexMap = new ObjectIntMap(rows);
-		columnNameToColumnIndexMap = new ObjectIntMap(columns);
-      if(columnNames.length!=rows) {
-         throw new IllegalArgumentException("Length of column names must be equal to number of columns in data.");
-      }
-      if(rowNames.length!=columns) {
-         throw new IllegalArgumentException("Length of row names must be equal to number of rows in data.");
-      }
-      this.rowNames = new String[rows];
+		this.matrix = new Matrix(data);
+		this.rowNameToRowIndexMap = new ObjectIntMap(rows);
+		this.columnNameToColumnIndexMap = new ObjectIntMap(columns);
+		if(columnNames.length!=columns) {
+			throw new IllegalArgumentException("Length of column names must be equal to number of columns in data.");
+		}
+		if(rowNames.length!=rows) {
+			throw new IllegalArgumentException("Length of row names must be equal to number of rows in data.");
+		}
+		this.rowNames = new String[rows];
 		this.columnNames = new String[columns];
 		setRowNames(Arrays.asList(rowNames));
 		setColumnNames(Arrays.asList(columnNames));
