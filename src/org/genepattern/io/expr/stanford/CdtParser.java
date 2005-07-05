@@ -77,7 +77,7 @@ public class CdtParser implements IExpressionDataParser {
             handler.rowName(i, (String) rowNames.get(i));
             handler.rowDescription(i, (String) rowDescriptions.get(i));
             for(int j = 0; j < columns; j++) {
-                handler.data(i, j,  d[i]);
+                handler.data(i, j,  d[j]);
             }
             
         }
