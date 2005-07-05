@@ -25,7 +25,7 @@
 %>
 <html>
 <head>
-<link href="stylesheet.css" rel="stylesheet" type="text/css">
+<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link href="skin/favicon.ico" rel="shortcut icon">
 <title>Zip public GenePattern tasks</title>
 </head>

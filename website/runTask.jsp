@@ -33,7 +33,7 @@ if (taskName == null || taskName.length() == 0) {
 %>
 	<html>
 	<head>
-	<link href="stylesheet.css" rel="stylesheet" type="text/css">
+	<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 	<link rel="SHORTCUT ICON" href="favicon.ico" >
 	<title>run GenePattern task</title>
 	</head>
@@ -93,7 +93,7 @@ try{
 if (!bNoEnvelope) { %>
 	<html>
 	<head>
-	<link href="stylesheet.css" rel="stylesheet" type="text/css">
+	<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 	<link rel="SHORTCUT ICON" href="favicon.ico" >
 	<title>run <%= taskInfo != null ? taskInfo.getName() : "GenePattern task" %></title>
 <style>

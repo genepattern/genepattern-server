@@ -18,7 +18,7 @@
 %>
 <html>
 <head>
-<link href="stylesheet.css" rel="stylesheet" type="text/css">
+<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
 <title><%= filename %> from <%= request.getServerName() %></title>
 </head>

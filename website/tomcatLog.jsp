@@ -34,7 +34,7 @@
 %>
 <html>
 <head>
-<link href="stylesheet.css" rel="stylesheet" type="text/css">
+<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
 <title><%= what %> log file from <%= request.getServerName() %> on <%= cal.getTime() %></title>
 </head>

@@ -113,7 +113,7 @@ function runpipeline( url) {
 }
 </script>
 	
-<link href="stylesheet.css" rel="stylesheet" type="text/css">
+<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
 <title><%=task.getName()%></title>
 

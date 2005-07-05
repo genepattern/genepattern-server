@@ -100,7 +100,7 @@ if (isDelete || !isDownload) {
 %>
    <html>
    <head>
-   <link href="stylesheet.css" rel="stylesheet" type="text/css">
+   <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
    <link href="skin/favicon.ico" rel="shortcut icon">
    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
    <script language="javascript">

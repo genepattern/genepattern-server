@@ -32,7 +32,7 @@ if (request.getParameter("noenvelope") == null) {
 %>
 <html>
 <head>
-<link href="stylesheet.css" rel="stylesheet" type="text/css">
+<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
 <title>generated wrapper code for GenePattern</title>
 </head>

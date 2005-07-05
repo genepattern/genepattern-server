@@ -63,7 +63,7 @@ if (origin == null) origin = "";
 %>
 <html>
 <head>
-<link href="stylesheet.css" rel="stylesheet" type="text/css">
+<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
 <title>GenePattern sign-in</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">

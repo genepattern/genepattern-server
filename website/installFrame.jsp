@@ -1,7 +1,7 @@
 <%@ page session="false" language="Java" %>
 <html>
 <head>
-<link href="stylesheet.css" rel="stylesheet" type="text/css">
+<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link href="skin/favicon.ico" rel="shortcut icon">
 <title>GenePattern configuration</title>
 </head>

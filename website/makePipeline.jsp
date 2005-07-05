@@ -47,7 +47,7 @@
 %>
 			<html>
 			<head>
-			<link href="stylesheet.css" rel="stylesheet" type="text/css">
+			<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 			<link href="skin/favicon.ico" rel="shortcut icon">
 			<title>Delete pipeline</title>
 			</head>
@@ -113,7 +113,7 @@ try {
 %>
 			<html>
 			<head>
-			<link href="stylesheet.css" rel="stylesheet" type="text/css">
+			<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 			<link href="skin/favicon.ico" rel="shortcut icon">
 			<title>Delete pipeline</title>
 			</head>
@@ -137,7 +137,7 @@ try {
 %>
 		<html>
 		<head>
-		<link href="stylesheet.css" rel="stylesheet" type="text/css">
+		<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 		<link href="skin/favicon.ico" rel="shortcut icon">
 		<title>Delete pipeline</title>
 		</head>
@@ -359,7 +359,7 @@ try {
 %>
 		<html>
 		<head>
-		<link href="stylesheet.css" rel="stylesheet" type="text/css">
+		<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 		<link href="skin/favicon.ico" rel="shortcut icon">
 		<title><%= pipelineName %> - saved</title>
 		<script language="Javascript">window.focus();</script>

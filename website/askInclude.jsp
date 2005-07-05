@@ -8,7 +8,7 @@ String title = request.getParameter("title");
 %>
 <html>
 <head>
-<link href="stylesheet.css" rel="stylesheet" type="text/css">
+<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
 <title>include all tasks used by <%= title %></title>
 <script language="Javascript">

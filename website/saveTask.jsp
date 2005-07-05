@@ -44,7 +44,7 @@ LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(u
 <jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" />
 <html>
 <head>
-<link href="stylesheet.css" rel="stylesheet" type="text/css">
+<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
 
 <title>saved GenePattern task</title>
