@@ -37,7 +37,7 @@
 <html>
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
-<link href="favicon.ico" rel="shortcut icon">
+<link href="skin/favicon.ico" rel="shortcut icon">
 <title><%= props.getProperty(GPConstants.NAME) %> task details</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 </head>

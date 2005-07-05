@@ -34,7 +34,7 @@ String filename = request.getParameter(FILENAME);
 <html>
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
-<link href="favicon.ico" rel="shortcut icon">
+<link href="skin/favicon.ico" rel="shortcut icon">
 <title>test Indexer</title>
 </head>
 <body>

@@ -23,7 +23,7 @@
 <html>
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
-<link href="favicon.ico" rel="shortcut icon">
+<link href="skin/favicon.ico" rel="shortcut icon">
 
 <style>
 .shadow { border-style: none; font-style: italic; font-size: 9pt; background-color: transparent ;}

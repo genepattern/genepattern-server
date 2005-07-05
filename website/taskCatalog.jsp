@@ -52,7 +52,7 @@
 	<html>
 	<head>
 	<link href="stylesheet.css" rel="stylesheet" type="text/css">
-	<link href="favicon.ico" rel="shortcut icon">
+	<link href="skin/favicon.ico" rel="shortcut icon">
 <title>Installable tasks</title>
 <style>
 td { font-size: 8pt }

@@ -33,7 +33,7 @@ if (name == null) {
 <html>
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
-<link href="favicon.ico" rel="shortcut icon">
+<link href="skin/favicon.ico" rel="shortcut icon">
 <title>GenePattern task documentation</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 </head>
@@ -118,7 +118,7 @@ if (filename == null) {
 	<html>
 	<head>
 	<link href="stylesheet.css" rel="stylesheet" type="text/css">
-	<link href="favicon.ico" rel="shortcut icon">
+	<link href="skin/favicon.ico" rel="shortcut icon">
 	<title>GenePattern task documentation</title>
 	<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 	</head>
@@ -141,7 +141,7 @@ if (!in.exists()) {
 	<html>
 	<head>
 	<link href="stylesheet.css" rel="stylesheet" type="text/css">
-	<link href="favicon.ico" rel="shortcut icon">
+	<link href="skin/favicon.ico" rel="shortcut icon">
 	<title>GenePattern task documentation</title>
 	<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 	</head>

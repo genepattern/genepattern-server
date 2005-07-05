@@ -32,7 +32,7 @@ if (jobID == null) {
 <html>
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
-<link href="favicon.ico" rel="shortcut icon">
+<link href="skin/favicon.ico" rel="shortcut icon">
 <title>download job results</title>
 </head>
 <body>
@@ -92,7 +92,7 @@ job #: <input name="<%= JOBID %>" size="8"> <input type="submit" name="submit" v
 <html>
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
-<link href="favicon.ico" rel="shortcut icon">
+<link href="skin/favicon.ico" rel="shortcut icon">
 <title>download job results</title>
 </head>
 <body>
@@ -134,7 +134,7 @@ job #: <input name="<%= JOBID %>" size="8"> <input type="submit" name="submit" v
 <html>
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
-<link href="favicon.ico" rel="shortcut icon">
+<link href="skin/favicon.ico" rel="shortcut icon">
 <title>download job results</title>
 </head>
 <body>

@@ -26,7 +26,7 @@
 <html>
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
-<link href="favicon.ico" rel="shortcut icon">
+<link href="skin/favicon.ico" rel="shortcut icon">
 <title>Zip public GenePattern tasks</title>
 </head>
 <body>

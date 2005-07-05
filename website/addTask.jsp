@@ -129,7 +129,7 @@ taskTypes = (String[])tsTaskTypes.toArray(new String[0]);
 <html>
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
-<link href="favicon.ico" rel="shortcut icon">
+<link href="skin/favicon.ico" rel="shortcut icon">
 <title><%= taskName == null ? "add GenePattern task" : ((!viewOnly ? "update " : "") + taskName + " version " + new LSID(tia.get(GPConstants.LSID)).getVersion()) %></title>
 <% if (viewOnly) { %>
 <style>.hideable { border-style: none; readonly: true; }</style>

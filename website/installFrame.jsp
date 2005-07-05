@@ -2,7 +2,7 @@
 <html>
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
-<link href="favicon.ico" rel="shortcut icon">
+<link href="skin/favicon.ico" rel="shortcut icon">
 <title>GenePattern configuration</title>
 </head>
 <frameset cols="30%,*">

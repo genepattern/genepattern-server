@@ -15,7 +15,7 @@
 <html>
 <head>
 <link href="stylesheet.css" rel="stylesheet" type="text/css">
-	<link href="favicon.ico" rel="shortcut icon">
+	<link href="skin/favicon.ico" rel="shortcut icon">
 	<title>Can't find <%= pipelineName %></title>
 </head>
 <body>

@@ -71,7 +71,7 @@ if (bGridded) {
 		TD { font-family: Courier; font-size: 9pt }
 	</style>
 	<link href="stylesheet.css" rel="stylesheet" type="text/css">
-	<link href="favicon.ico" rel="shortcut icon">
+	<link href="skin/favicon.ico" rel="shortcut icon">
 	</head>
 	<body>
 	<jsp:include page="navbar.jsp"></jsp:include>
