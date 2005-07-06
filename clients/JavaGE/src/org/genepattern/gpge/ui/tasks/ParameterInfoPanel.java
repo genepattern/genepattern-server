@@ -104,6 +104,7 @@ public class ParameterInfoPanel extends JPanel {
         }
     }
 
+   
     /**
      * Gets the parameter info array for the current values of parameters
      */
@@ -118,7 +119,7 @@ public class ParameterInfoPanel extends JPanel {
                 ParameterInfo actualParameter = new ParameterInfo(
                         parameterName, "", "");
                 actualParameter.setAttributes(new HashMap(2));
-                boolean isCheckBox = false;
+                
                 if (c instanceof ObjectTextField) {
                     try {
 
@@ -130,7 +131,6 @@ public class ParameterInfoPanel extends JPanel {
                         ioe.printStackTrace();
                     }
                 } else if (c instanceof JComboBox) {
-                    isCheckBox = true;
                     ParameterInfoPanel.ChoiceItem ci = (ParameterInfoPanel.ChoiceItem) ((JComboBox) c)
                             .getSelectedItem();
                     value = ci.getValue();
@@ -150,6 +150,7 @@ public class ParameterInfoPanel extends JPanel {
         return actualParameterArray;
     }
 
+    
     public ParameterInfoPanel(String taskName, ParameterInfo[] params) {
         int numParams = params!=null?params.length:0;
         parameterName2ComponentMap = new HashMap(numParams);
@@ -223,6 +224,21 @@ public class ParameterInfoPanel extends JPanel {
         }
     }
 
+    public void setValue(String parameterName, Object value) {
+    		Component c = getComponent(parameterName);
+    	    if(c!=null) {
+    	    		if(c instanceof ObjectTextField) {
+	    			ObjectTextField tf = (ObjectTextField)  c;
+    	    			tf.setObject(value);
+	    		} else if(c instanceof JTextField) {
+    	    			((JTextField)c).setText(value.toString());
+    	    		} else if(c instanceof JComboBox) {
+    	    			JComboBox cb = (JComboBox) c;
+    	    			cb.setSelectedItem(new ChoiceItem(value.toString(), value.toString()));
+    	    		} 
+    	    }
+    }
+    
     protected final JTextField createProperTextField(final ParameterInfo info) {
         final int num_cols = 20;
         JTextField field = null;
@@ -375,11 +391,11 @@ public class ParameterInfoPanel extends JPanel {
     }
 
     static class ChoiceItem {
-        // fields
-        /** the text that represents this */
+        
+        /** the text that is displayed to the users */
         private final String text;
 
-        /** the object that this is a wrapper for */
+        /** the command line value */
         private final String value;
 
         ChoiceItem(final String text, final String value) {
@@ -388,15 +404,18 @@ public class ParameterInfoPanel extends JPanel {
 
         }
 
-        /**
-         * overrides super... returns the supplied text
-         * 
-         * @return Description of the Return Value
-         */
+      
         public final String toString() {
             return text;
         }
 
+        public boolean equals(Object obj) {
+        		if(obj instanceof ChoiceItem) {
+        			ChoiceItem other = (ChoiceItem) obj;
+        			return other.text.equals(this.text);
+        		}
+        		return false;
+        }
         /**
          * returns true if the <CODE>ChoiceItem</CODE>'s fields equal either
          * the value or the text
