@@ -112,4 +112,15 @@ WeightedVotingXValidation.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepatte
 WeightedVotingXValidation.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00028=2
 WeightedVotingXValidation.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00028=1
 all_aml_methodology_pipeline.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00001=0
+PNN.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00059=0
 Golub.Slonim.1999.Nature.all.aml.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00001=1
+HierarchicalClustering.MATLAB.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00060=0
+HierarchicalClusteringImage.MATLAB.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00061=0
+PNNXValidationOptimization.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00058=0
+Lu.Getz.Miska.Nature.June.2005.clustering.ALL.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00006=0
+Lu.Getz.Miska.Nature.June.2005.clustering.ep.miRNA.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00008=0
+Lu.Getz.Miska.Nature.June.2005.clustering.ep.mRNA.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00007=0
+Lu.Getz.Miska.Nature.June.2005.clustering.miGCM218.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00005=0
+Lu.Getz.Miska.Nature.June.2005.mouse.lung.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00004=0
+Lu.Getz.Miska.Nature.June.2005.PDT.miRNA.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00003=0
+Lu.Getz.Miska.Nature.June.2005.PDT.mRNA.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00002=0

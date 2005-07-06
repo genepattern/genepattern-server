@@ -806,10 +806,87 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00059=0 PNN.zip"/>
+	</commandline>
+</cvs>
+<copy file="PNN.zip" tofile="catalogregen/PNN.0.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00001=1 Golub.zip"/>
 	</commandline>
 </cvs>
 <copy file="Golub.zip" tofile="catalogregen/Golub.Slonim.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00060=0 HierarchicalClustering.zip"/>
+	</commandline>
+</cvs>
+<copy file="HierarchicalClustering.zip" tofile="catalogregen/HierarchicalClustering.MATLAB.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00061=0 HierarchicalClusteringImage.zip"/>
+	</commandline>
+</cvs>
+<copy file="HierarchicalClusteringImage.zip" tofile="catalogregen/HierarchicalClusteringImage.MATLAB.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00058=0 PNNXValidationOptimization.zip"/>
+	</commandline>
+</cvs>
+<copy file="PNNXValidationOptimization.zip" tofile="catalogregen/PNNXValidationOptimization.0.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00006=0 Lu.zip"/>
+	</commandline>
+</cvs>
+<copy file="Lu.zip" tofile="catalogregen/Lu.Getz.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00008=0 Lu.zip"/>
+	</commandline>
+</cvs>
+<copy file="Lu.zip" tofile="catalogregen/Lu.Getz.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00007=0 Lu.zip"/>
+	</commandline>
+</cvs>
+<copy file="Lu.zip" tofile="catalogregen/Lu.Getz.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00005=0 Lu.zip"/>
+	</commandline>
+</cvs>
+<copy file="Lu.zip" tofile="catalogregen/Lu.Getz.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00004=0 Lu.zip"/>
+	</commandline>
+</cvs>
+<copy file="Lu.zip" tofile="catalogregen/Lu.Getz.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00003=0 Lu.zip"/>
+	</commandline>
+</cvs>
+<copy file="Lu.zip" tofile="catalogregen/Lu.Getz.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00002=0 Lu.zip"/>
+	</commandline>
+</cvs>
+<copy file="Lu.zip" tofile="catalogregen/Lu.Getz.zip" />
 
 </target>
 </project>
