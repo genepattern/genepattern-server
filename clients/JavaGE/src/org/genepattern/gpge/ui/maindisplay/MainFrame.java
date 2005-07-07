@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FileDialog;
 import java.awt.GridLayout;
 import java.awt.Component;
 import java.awt.Graphics;
@@ -34,24 +35,6 @@ import java.net.URL;
 import java.beans.*;
 
 import javax.swing.*;
-import javax.swing.JDesktopPane;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.JWindow;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -2358,6 +2341,8 @@ public class MainFrame extends JFrame {
 
 		JMenuItem refreshModulesMenuItem;
 
+		JMenuItem importTaskMenuItem;
+		
 		JFileChooser projectDirFileChooser;
 
 		public void changeServerActionsEnabled(boolean b) {
@@ -2409,6 +2394,32 @@ public class MainFrame extends JFrame {
 			});
 			add(openProjectDirItem);
 			
+			importTaskMenuItem = new JMenuItem("Import Module...");
+			importTaskMenuItem.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					FileDialog fc = new FileDialog(GenePattern.getDialogParent(), "Import Module", FileDialog.LOAD);
+					fc.show();
+					final String file = fc.getFile();
+					final String dir = fc.getDirectory();
+					if(file!=null) {
+						new Thread() {
+							public void run() {
+								try {
+									new TaskIntegratorProxy(AnalysisServiceManager.getInstance().getServer(), AnalysisServiceManager.getInstance().getUsername()).importZip(new File(dir, file), GPConstants.ACCESS_PUBLIC);
+								} catch (WebServiceException wse) {
+									wse.printStackTrace();
+									if (!disconnectedFromServer(wse)) {
+										GenePattern.showErrorDialog("An error occurred while importing " + file);
+									}
+								}
+							}
+						}.start();
+					}
+				}
+				
+			});
+			add(importTaskMenuItem);
 			final javax.swing.JCheckBoxMenuItem showJobCompletedDialogMenuItem = new javax.swing.JCheckBoxMenuItem(
 					"Alert On Job Completion");
          jobCompletedDialog = new JobCompletedDialog(MainFrame.this, showJobCompletedDialogMenuItem);
