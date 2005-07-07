@@ -7,14 +7,34 @@ import java.awt.event.MouseEvent;
 
 public class TogglePanel extends JPanel {
     ToggleLabel label;
+    JPanel labelPanel;
     
-    public TogglePanel(String text, JComponent c) {
+    public TogglePanel(String text, JComponent toggleComponent) {
         setLayout(new BorderLayout());
-        label = new ToggleLabel(text, c);
+        label = new ToggleLabel(text, toggleComponent);
         add(label, BorderLayout.NORTH);
-        add(c, BorderLayout.CENTER);
+        add(toggleComponent, BorderLayout.CENTER);
     }
 
+    public TogglePanel(String text, JComponent rightComponent, JComponent toggleComponent) {
+    	 	setLayout(new BorderLayout());
+         label = new ToggleLabel(text, toggleComponent);
+         labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+         labelPanel.add(label);
+         labelPanel.setBackground(getBackground());
+         labelPanel.add(rightComponent);
+         add(labelPanel, BorderLayout.NORTH);
+         add(toggleComponent, BorderLayout.CENTER);
+    }
+    
+    public void setBackground(Color c) {
+    		super.setBackground(c);
+    		if(labelPanel!=null) {
+    			labelPanel.setBackground(c);
+    		}
+    		
+    }
+    
     public void setExpanded(boolean b) {
         label.setExpanded(b);
     }
