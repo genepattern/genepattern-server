@@ -2394,7 +2394,7 @@ public class MainFrame extends JFrame {
 			});
 			add(openProjectDirItem);
 			
-			importTaskMenuItem = new JMenuItem("Import Module...");
+			importTaskMenuItem = new JMenuItem("Import Module...", IconManager.loadIcon(IconManager.IMPORT_ICON));
 			importTaskMenuItem.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
