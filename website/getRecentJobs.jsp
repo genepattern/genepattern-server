@@ -26,11 +26,9 @@ response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 %>
-<style>
-.heading { font-family: Arial,Helvetica,sans-serif; background-color: #0E0166; color: white; font-size: 12pt; font-weight: 800; text-align: center; }
-.majorCell { border-width: 2; font-size: 10pt; }
-td { padding-left: 5; }
-</style>
+<head>
+<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
+</head>	
 <script language="JavaScript">
 
 var logFileContents = new Array(); 
@@ -43,7 +41,7 @@ function showJob(job) {
 
 </script>
 
-<table class="majorCell"  frame=border xwidth='100%' height='100%' bgcolor='#EFEFFF'  valign='top' style="font-size: 14px">
+<table   frame=border xwidth='100%' height='100%' class="paleBackground"  valign='top'>
 
 <tr><td class="heading" colspan=3><span class="heading">Recent Jobs</span></td></tr><tr>
 

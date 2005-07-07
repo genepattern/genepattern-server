@@ -138,7 +138,7 @@ No &lt;iframes&gt; support  :(
 </iframe>
 
 <form name='execLogForm'>
-<TEXTAREA name='execLogArea' style="font-size:9px; font-family: arial, helvetica, sans-serif; width: 100%;" rows='5'  readonly wrap='soft' bgcolor='#EFEFFF'></textarea>
+<TEXTAREA name='execLogArea' class="recentJobsArea" rows='5'  readonly wrap='soft'></textarea>
 </form>
 
 </td>

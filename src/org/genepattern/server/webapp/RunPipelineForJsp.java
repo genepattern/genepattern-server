@@ -83,7 +83,7 @@ public class RunPipelineForJsp {
 					.println("<font color='red' size=\"+1\"><b>Warning:</b></font><br>The following task versions do not exist on this server. Before running this pipeline you will need to edit the pipeline to use the available version or import them.");
 			out.println("<table width='100%'  border='1'>");
 			out
-					.println("<tr bgcolor='#efefff'><td> Name </td><td> Required Version</td><td> Available Version</td><td>LSID</td></tr>");
+					.println("<tr class=\"paleBackground\" ><td> Name </td><td> Required Version</td><td> Available Version</td><td>LSID</td></tr>");
 
 		}
 		if (((unknownTaskNames.size() + unknownTaskVersions.size()) > 0)
@@ -130,7 +130,7 @@ public class RunPipelineForJsp {
 			}
 		}
 		if ((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) {
-			out.println("<tr bgcolor='#efefff'>");
+			out.println("<tr class=\"paleBackground\" >");
 			out
 					.println("<td colspan='4' align='center' border = 'none'> <a href='addZip.jsp'>Import zip file </a>");
 			out
@@ -777,7 +777,7 @@ public class RunPipelineForJsp {
 								+ paramName);
 					else
 						outstr
-								.print("<tr  bgcolor='#EFEFFF'><td width='25%' align='right'>"
+								.print("<tr  class=\"paleBackground\" ><td width='25%' align='right'>"
 										+ paramName);
 
 					outstr.flush();

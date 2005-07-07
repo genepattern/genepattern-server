@@ -32,6 +32,10 @@ a.navbar:link  a.navbar:visited { color: white }
 		font-weight: 800; 
 		text-align: center; }
 
+TR.paleBackground, tr.paleBackground,table.paleBackground, TABLE.paleBackground   { 
+	background: #EFEFFF; 
+}
+ 
 .majorCell { border-width: 2; font-size: 10pt; }
 .button  { width: 50; }
 .wideButton  { width: 100; }

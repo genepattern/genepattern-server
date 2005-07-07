@@ -337,7 +337,7 @@ out.println("<table cellspacing='0' width='100%' frame='box'>");
 		if (odd)
 			out.print("<tr ><td width='25%' align='right'>" + paramName );
 		else 
-			out.print("<tr  bgcolor='#EFEFFF'><td width='25%' align='right'>" + paramName);
+			out.print("<tr  class=\"paleBackground\" ><td width='25%' align='right'>" + paramName);
 
 	
 		out.flush();
