@@ -24,6 +24,9 @@
 		 java.util.ArrayList,
 		 java.util.Vector"
    session="false" language="Java" %>
+<jsp:useBean id="messages" class="org.genepattern.server.util.MessageUtils" scope="page"/>
+
+
 <%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
@@ -131,7 +134,7 @@ function changeFilter(fld) {
 		tasks = collection.getAvailableModules();
 	} catch (Exception e) {
 %>
-		Sorry, the GenePattern <a href="<%= System.getProperty("ModuleRepositoryURL") %>" target="_new">module repository</a> is not currently available.<br>
+		Sorry, the <%=messages.get("ApplicationName")%> <a href="<%= System.getProperty("ModuleRepositoryURL") %>" target="_new">module repository</a> is not currently available.<br>
 		<p>Reason: <code><%= e.getMessage() %></code><br>
 		<p>
 		<b>Try to correct this problem</b> by changing <a href="adminServer.jsp">web proxy settings</a> or <a href="adminServer.jsp">Module Repository URL.</a>
@@ -158,7 +161,7 @@ function changeFilter(fld) {
 		<font size="1">updated <%= DateFormat.getDateInstance().format(collection.getMOTD_timestamp()) %>.  
 		<a href="<%= collection.getMOTD_url() %>" target="_blank">More information</a>.</font><br>
 		<%= newerServerAvailable(collection.getMOTD_latestServerVersion(), System.getProperty("GenePatternVersion")) ? 
-			("<a href=\"http://www.broad.mit.edu/cancer/software/genepattern/download\">Download updated GenePattern version " + 
+			("<a href=\"http://www.broad.mit.edu/cancer/software/genepattern/download\">Download updated "+messages.get("ApplicationName")+" version " + 
 				collection.getMOTD_latestServerVersion() + "</a> (currently running version " + 
 				System.getProperty("GenePatternVersion") + ")<br>") :
 			 "" %>
@@ -334,7 +337,7 @@ function changeFilter(fld) {
         	} %>);
         </script>
 
-Select from the following tasks from the GenePattern public access website to download and install:<br><br>
+Select from the following tasks from the <%=messages.get("ApplicationName")%> public access website to download and install:<br><br>
 
 <form name="filters">
 <!-- Filters -->

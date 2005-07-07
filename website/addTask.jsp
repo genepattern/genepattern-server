@@ -30,6 +30,9 @@
 		 java.util.TreeMap,
 		 java.util.Vector"
 	session="false" contentType="text/html" language="Java" buffer="50kb" %>
+<jsp:useBean id="messages" class="org.genepattern.server.util.MessageUtils" scope="page"/>
+
+
 <%
 try {
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -403,9 +406,10 @@ if (tia != null) {
 	} else {
 		lsid = "";
 	}
+
 %>
 
-<h2><%= taskName == null ? "Create new GenePattern task" : ((!viewOnly ? "Update " : "") + taskName  + " version ") %>
+<h2><%= taskName == null ? "Create new "+ messages.get("ApplicationName") +" task" : ((!viewOnly ? "Update " : "") + taskName  + " version ") %>
 <% if (taskName != null) { %>
 	<select name="notused" onchange="javascript:window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'" style="font-weight: bold; font-size: medium; outline-style: none;">
 <%
@@ -425,7 +429,7 @@ if (tia != null) {
 <input type="hidden" name="<%= GPConstants.FORMER_NAME %>" value="<%= taskInfo != null ? taskInfo.getName() : "" %>">
 
 
-Please enter the following information to submit a new or updated analysis task to GenePattern.
+Please enter the following information to submit a new or updated analysis task to <%= messages.get("ApplicationName") %>.
 &nbsp;&nbsp;<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="button">
 <% if (viewOnly && LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
 

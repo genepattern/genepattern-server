@@ -9,15 +9,16 @@
 .exampleLink { font-family: Courier, Courier New, serif; font-size: 10pt; color: blue; text-decoration: underline}
 </style>
 </head>
+<jsp:useBean id="messages" class="org.genepattern.server.util.MessageUtils" scope="page"/>
 
 <body>
 <jsp:include page="navbar.jsp"></jsp:include>
-<h2>GenePattern add/update analysis task help</h2>
+<h2><%=messages.get("ApplicationName")%> add/update analysis task help</h2>
 
-<h4>Adding a new task to the GenePattern server</h4>
+<h4>Adding a new task to the <%=messages.get("ApplicationName")%> server</h4>
 
-If you have an algorithm or utility that you would like to add to GenePattern,
-you'll need to upload it to the GenePattern server, along with descriptive information that the clients (graphical client, web browser, R, Java) will use to display and run it.  It takes just a few minutes to enter the
+If you have an algorithm or utility that you would like to add to <%=messages.get("ApplicationName")%>,
+you'll need to upload it to the <%=messages.get("ApplicationName")%> server, along with descriptive information that the clients (graphical client, web browser, R, Java) will use to display and run it.  It takes just a few minutes to enter the
 necessary information.  Once you have done so, you can run the task immediately and can
 share it with others.  You'll be able to decide which parameters from the algorithm to
 expose to the user, and can replace command line parameter names that are hard to remember
@@ -30,9 +31,9 @@ When you save a task, the information about it that you have typed in is valdate
 <li> Every command line parameter must be either a parameter, environment variable, or system property.</li>
 <li> The task name and parameter names must be legal - in general, you should avoid punctuation marks and other special characters. </li>
 </ul>
- If everything checks out, the uploaded files are saved in the GenePattern task library and the task registered in the task database.  The task and its uploaded files are indexed in the background so that they are immediately available for searching.<br><br>
+ If everything checks out, the uploaded files are saved in the <%=messages.get("ApplicationName")%> task library and the task registered in the task database.  The task and its uploaded files are indexed in the background so that they are immediately available for searching.<br><br>
 
-Each input field in the <a href="addTask.jsp">addTask.jsp</a> page (accessed from the <a href="index.jsp">GenePattern home page</a> or the edit task list on the navigation bar) is explained in detail below.  There are three sections to the form:
+Each input field in the <a href="addTask.jsp">addTask.jsp</a> page (accessed from the <a href="index.jsp"><%=messages.get("ApplicationName")%> home page</a> or the edit task list on the navigation bar) is explained in detail below.  There are three sections to the form:
 <ol>
 <li><b>Authorship Information.</b> A name, description, and other <a href="#taskLevelAttributes">task-level attributes</a>.</li>
 <li><b>Support Files. </b><a href="#supportFiles">Support files</a> are your task plus any accompanying applications, scripts, libraries, documentation, configuration files, etc.</li>
@@ -42,7 +43,7 @@ Each input field in the <a href="addTask.jsp">addTask.jsp</a> page (accessed fro
 
 An example for each field is given based on the Consensus Clustering task, which may be
 uploaded from the
-<a href="taskCatalog.jsp?taskType=Clustering&state=new&state=updated&state=up%20to%20date&name=ConsensusClustering"><nobr>GenePattern public website</nobr></a> if you haven't already installed it.
+<a href="taskCatalog.jsp?taskType=Clustering&state=new&state=updated&state=up%20to%20date&name=ConsensusClustering"><nobr><%=messages.get("ApplicationName")%> public website</nobr></a> if you haven't already installed it.
 <br>
 
 <h2><a name="taskLevelAttributes">Entering task-level attributes</a></h2>
@@ -75,7 +76,7 @@ or enhancement ideas.<br><br>
 ConsensusClustering example: <span class="example">Stefano Monti</span>
 
 <h4>Owner</h4>
-The email address (GenePattern user ID) of the person creating the task.
+The email address (<%=messages.get("ApplicationName")%> user ID) of the person creating the task.
 <br>
 <br>
 ConsensusClustering example: <span class="exampleLink">gp-help@broad.mit.edu</span>
@@ -99,8 +100,8 @@ ConsensusClustering example: <span class="example">development</span>
 <h4>Documentation</h4>
 Task authors should document their work to help make it more accessible to other users.  When you upload
 documentation files, the documentation is made available in conjunction with the task itself. When the task
-is zipped and shared, the documentation will travel with it.  GenePattern doesn't require any specific formats, but
-we suggest that you consider generating your documentation in either PDF or HTML format for maximum portability. In general, the GenePattern server will recognize as documentation files that have standard extensions: .doc, .pdf, .txt, .html, .rdf. You can add to or change these extensions by modifying the files.doc property in the GenePatternServer/resources/genepattern.properties file.<br><br>
+is zipped and shared, the documentation will travel with it.  <%=messages.get("ApplicationName")%> doesn't require any specific formats, but
+we suggest that you consider generating your documentation in either PDF or HTML format for maximum portability. In general, the <%=messages.get("ApplicationName")%> server will recognize as documentation files that have standard extensions: .doc, .pdf, .txt, .html, .rdf. You can add to or change these extensions by modifying the files.doc property in the <%=messages.get("ApplicationName")%>/resources/genepattern.properties file.<br><br>
 
 A good document file for a task gives a detailed description of each input parameter, what the output file format
 and content are, and explains the algorithm sufficiently for the reader to either immediately comprehend it, or
@@ -110,7 +111,7 @@ at least to have a reference to a paper, journal, or book where it is explained.
 ConsensusClustering example: <span class="exampleLink" ><a href="docs/help/ConsensusClustering.pdf">ConsensusClustering.pdf</a></span>
 
 <h4>Command line</h4>
-The crux of adding a task to the GenePattern server is to provide the command line that will be used to
+The crux of adding a task to the <%=messages.get("ApplicationName")%> server is to provide the command line that will be used to
 launch the task, including substitutions for settings that will be specified differently for each invocation.
 In the command line field of the form, you will provide a combination of the fixed text and the dynamically-changed
 text which together constitute the command line for an invocation of the task.<br><br>
@@ -129,16 +130,16 @@ invoking the task.<br><br>
 In addition to parameter names, you may also use environment variables,
 <a href="http://java.sun.com/docs/books/tutorial/essential/system/properties.html" target="_blank"><nobr>Java
 system properties</nobr></a>,
-and any properties defined in the %GenePatternInstallDir%/resources/genepattern.properties file.
+and any properties defined in the %<%=messages.get("ApplicationName")%>InstallDir%/resources/genepattern.properties file.
 In particular, there are predefined values for &lt;java&gt;, &lt;perl&gt;, and
 &lt;R&gt;, three languages that are used within various tasks that may be downloaded from the task catalog at
-the public GenePattern website.  Useful substitution properties include:<br><br>
+the public <%=messages.get("ApplicationName")%> website.  Useful substitution properties include:<br><br>
 
 <table>
-<tr><td valign="top"><span class="example">&lt;java&gt;</span></td><td>path to Java, the same one running the GenePattern server</td></tr>
-<tr><td valign="top"><span class="example">&lt;perl&gt;</span></td><td>path to Perl, installed with GenePattern server on Windows, otherwise the one already installed on your system</td></tr>
-<tr><td valign="top"><span class="example">&lt;R&gt;</span></td><td>path to a program that runs R and takes as input a script of R commands.  R is installed with GenePattern server on Windows and MacOS</td></tr>
-<tr><td valign="top"><span class="example">&lt;java_flags&gt;</span></td><td>memory size and other Java JVM settings from the GenePatternServer/resources/genepattern.properties file</td></tr>
+<tr><td valign="top"><span class="example">&lt;java&gt;</span></td><td>path to Java, the same one running the <%=messages.get("ApplicationName")%> server</td></tr>
+<tr><td valign="top"><span class="example">&lt;perl&gt;</span></td><td>path to Perl, installed with <%=messages.get("ApplicationName")%> server on Windows, otherwise the one already installed on your system</td></tr>
+<tr><td valign="top"><span class="example">&lt;R&gt;</span></td><td>path to a program that runs R and takes as input a script of R commands.  R is installed with <%=messages.get("ApplicationName")%>server on Windows and MacOS</td></tr>
+<tr><td valign="top"><span class="example">&lt;java_flags&gt;</span></td><td>memory size and other Java JVM settings from the <%=messages.get("ApplicationName")%>/resources/genepattern.properties file</td></tr>
 <tr><td valign="top"><span class="example">&lt;libdir&gt;</span></td><td>directory where the task's support files are stored</td></tr>
 <tr><td valign="top"><span class="example">&lt;job_id&gt;</span></td><td>job number</td></tr>
 <tr><td valign="top"><span class="example">&lt;name&gt;</span></td><td>name of the task being run</td></tr>
@@ -156,7 +157,7 @@ the public GenePattern website.  Useful substitution properties include:<br><br>
 Rather than having to customize your task's command line for the exact location of the language runtime
 on each computer, you may simply refer to, for example,<br>
 <span class="example">&lt;java&gt; -cp &lt;libdir&gt;mytask.jar com.foo.MyTask &lt;arg1&gt;</span><br>
-to run your task.  GenePattern will then take care of locating the Java runtime,
+to run your task.  <%=messages.get("ApplicationName")%> will then take care of locating the Java runtime,
 asking it to begin execution at the <span class="example">MyTask</span> class using code from the uploaded file
  <span class="example">mytask.jar</span>.<br><br>
 
@@ -235,7 +236,7 @@ a label within the web and graphical clients to prompt the user for the value fo
 a way of identifying which parameter is which for the scripting clients.<br><br>
 
 If the name contains the word &quot;filename&quot; within it, the parameter will be treated as a file rather than
-a specific value.  When one of the GenePattern clients needs to deal with such a parameter, it will pass along a whole
+a specific value.  When one of the <%=messages.get("ApplicationName")%> clients needs to deal with such a parameter, it will pass along a whole
 file, rather than just the name of the file.<br><br>
 
 ConsensusClustering examples: <span class="example">kmax</span>, <span class="example">input.filename</span>
@@ -279,7 +280,7 @@ which would create a drop-down list that looks like this:</td>
 
 Some parameters should have a default value which will be supplied on the task's command line if no setting
 is supplied by the user when invoking the task.  This is not the same as the task's own internal defaults.
-Instead, this allows the GenePattern task declaration author to create a default, even when none exists internally
+Instead, this allows the <%=messages.get("ApplicationName")%> task declaration author to create a default, even when none exists internally
 within the task.<br><br>
 
 Default values for parameters that have a choice list must be either blank, or one of the values from the choice list.
@@ -312,7 +313,7 @@ example: <span class="example">-F&nbsp;</span>
 <h4>Type</h4>
 
 Declaration of the type of an input parameter allows the client to make a smarter presentation of the input to the
-user.  (As of GenePattern 1.2, all parameters are being treated as either text or input file types).  Parameter type
+user.  (As of <%=messages.get("ApplicationName")%> 1.2, all parameters are being treated as either text or input file types).  Parameter type
 choices are: text, integer, floating point, and input file.
 
 <br><br>
