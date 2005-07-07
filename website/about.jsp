@@ -29,7 +29,21 @@ You are using
 <b><%=messages.get("ApplicationNameColored")%> <font color="blue"><%= full %></font></b> 
 <br>build: <%= System.getProperty("build.tag") %> 
 <br>built: <%= System.getProperty("date") %>
-<br><br>
+<br>
+<%
+String appName = messages.getProperty("ApplicationName");
+if (!(appName.indexOf("GenePattern") >= 0)) {
+	%>
+	<br>
+		<i>Powered by</i> <font color="firebrick">Gene</font><font color="blue">Pattern</font> &copy; 2003-2005 <a href="http://www.broad.mit.edu">Broad Institute, MIT</a>
+
+
+	<%
+}
+
+%>
+
+<br>
 
 <jsp:include page="footer.jsp"></jsp:include>
 </body>
