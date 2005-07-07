@@ -29,6 +29,7 @@ import org.genepattern.webservice.WebServiceException;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.server.util.MessageUtils;
 
 public class HTMLPipelineView implements IPipelineView {
 
@@ -332,9 +333,12 @@ public class HTMLPipelineView implements IPipelineView {
 		writer
 				.write("<form name=\"pipeline\" action=\""
 						+ submitURL
-						+ "\" target=\"pipeline_code\" method=\"post\" ENCTYPE=\"multipart/form-data\">\n");
+						+ "\"  method=\"post\" ENCTYPE=\"multipart/form-data\">\n");
+		
+		MessageUtils mu = new MessageUtils();
+		String appName = mu.getProperty("ApplicationName");
 
-		writer.write("<h2>GenePattern Pipeline Designer");
+		writer.write("<h2>"+appName+" Pipeline Designer");
 		if (taskInfo != null) {
 			writer.write(" - " + taskInfo.getName() + " version ");
 			writer
