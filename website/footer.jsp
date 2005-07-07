@@ -13,8 +13,8 @@
 			<img src="skin/logoSmall.gif" border="0"></a> <%=messages.getProperty("copyright"," &copy; 2003-2005 <a href='http://www.broad.mit.edu' class='navbar'>Broad Institute, MIT</a>")%>
 		</td>
 		<td class="navbar" align="right" valign="top">
-			<a href="mailto:gp-help@broad.mit.edu" class="navbar"><nobr>report bugs</nobr></a> |
-			<a href="mailto:gp-help@broad.mit.edu" class="navbar"><nobr>request help</nobr></a>
+			<a href="<%=messages.getProperty("bugReportLinkTarget")%>" class="navbar"><nobr>report bugs</nobr></a> |
+			<a href="<%=messages.getProperty("helpRequestLinkTarget")%>" class="navbar"><nobr>request help</nobr></a>
 		</td>
 	</tr>
 </table>
