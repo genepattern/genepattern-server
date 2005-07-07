@@ -26,26 +26,6 @@
 	session="false" contentType="text/html" language="Java" %><%
 
 	// redirect to the fully-qualified host name to make sure that the one cookie that we are allowed to write is useful
-	try {
-		String fqHostName = System.getProperty("fullyQualifiedHostName");
-		if (fqHostName == null) fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
-		if (fqHostName.equals("localhost")) fqHostName = "127.0.0.1";
-		String serverName = request.getServerName();
-		if (!fqHostName.equalsIgnoreCase(serverName)) {
-			String queryString = request.getQueryString();
-			if (queryString == null) {
-				queryString = "";
-			} else {
-				queryString = "?" + queryString;
-			}
-			String fqAddress = "http://" + fqHostName + ":" + request.getServerPort() + request.getRequestURI() + queryString;
-			response.sendRedirect(fqAddress);
-			return;
-		}
-	} catch (IOException ioe) {
-		ioe.printStackTrace();
-	}
-
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
@@ -87,33 +67,7 @@ function jmp(button, url, selector, versionSelector) {
 	}
 }
 
-function exportPipeline(button) {
-	var width = 250;
-	var height = 200;
-	var exportWindow = window.open('askInclude.jsp?name=' + 
-		    button.form.pipeline.options[button.form.pipeline.selectedIndex].value + 
-		    '<%= LSID.DELIMITER %>' + 
-		    button.form.pipelineVersion.options[button.form.pipelineVersion.selectedIndex].value +
-		    '&title=' + button.form.pipeline.options[button.form.pipeline.selectedIndex].text, 
-		    'export',
-		    'alwaysRaised=yes,height=' + height + ',width=' + width + ',menubar=no,location=no,resizable=yes,scrollbars=yes,directories=no,status=no,toolbar=no');
-	exportWindow.focus();
-}
 
-function getCode(url, pipeline, versionSelector, language, userID) {
-	if (pipeline.selectedIndex != 0 && language.selectedIndex != 0) {
-		var lsidVersion = versionSelector.options[versionSelector.selectedIndex].value;
-		window.location= url + pipeline.options[pipeline.selectedIndex].value +
-				 '<%= LSID.DELIMITER %>' + lsidVersion +
-				 '&language=' + language.options[language.selectedIndex].value;
-	} else {
-		var missing_pipeline = (pipeline.selectedIndex == 0);
-		var missing_language = (language.selectedIndex == 0);
-		window.alert('Please select ' + (missing_pipeline ? "a pipeline" : "") +
-			     (missing_pipeline && missing_language ? " and " : "") +
-			     (missing_language ? 'a language' : "") + ".");
-	}
-}
 
 function taskSelect(selector, type) {
 	var versionSelector = selector.form[type + 'Version'];
@@ -236,262 +190,22 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 </font>
 
 <table cellpadding="10" width="100%" border="1" rules="all" frame="border">
-<% if (userIDKnown) { %>
 <tr>
-    <td valign="top">
-	<table class="majorCell" width="100%">
-		<tr>
-		<td class="heading" colspan="2">Pipelines</td>
-		</tr>
-		<tr><td height="3"></td></tr>
-		<tr>
 
-			<td valign="top" align="right">
-			<%= taskCatalog(tmTasks, latestTaskMap, "pipeline", "pipeline catalog", GPConstants.TASK_TYPE_PIPELINE, userID, true) %>
-			<nobr>version <select name="pipelineVersion"></select></nobr>
-			</td>
+      <%@ include file="indexPipelineSection.jsp" %>
+	<%@ include file="indexTaskSection.jsp" %>
+	<%@ include file="indexAdminSection.jsp" %>
 
-		</tr>
-		<tr>
-			<td valign="top" align="center">
-				<input type="button" value="run" name="runpipeline" class="button" onclick="jmp(this, 'runTask.jsp?cmd=run&name=', document.forms['index'].pipeline, document.forms['index'].pipelineVersion)">
-				<input type="button" value="view" name="viewpipeline" class="button" onclick="jmp(this, 'viewPipeline.jsp?name=', document.forms['index'].pipeline, document.forms['index'].pipelineVersion)">
-				<input type="button" value="edit" name="editpipeline" class="button" onclick="jmp(this, 'pipelineDesigner.jsp?name=', document.forms['index'].pipeline, document.forms['index'].pipelineVersion)">
-				<input type="button" value="export" name="exportpipeline" class="button" onclick="exportPipeline(this)">
-			</td>
-		</tr>
-
-		<tr>
-			<td colspan="2">
-				<hr noshade size="1">
-			</td>
-		</tr>
-
-		<tr>
-			<td colspan="2" align="center" valign="top">
-				<input type="button" value="create" class="button" onclick="javascript: window.location='pipelineDesigner.jsp'">
-				<input type="button" value="import..." class="button" onclick="javascript:window.location='addZip.jsp'">
-			</td>
-		</tr>
-	</table> <!-- end pipeline cell -->
-    </td>
-
-    <td valign="top">
-	<table class="majorCell" width="100%">
-		<tr>
-		<td class="heading" colspan="2">Tasks</td>
-		</tr>
-		<tr><td height="3"></td></tr>
-		<tr>
-
-			<td valign="top" align="right">
-			<%= taskCatalog(tmTasks, latestTaskMap, "task", "task catalog", null, userID, false) %>
-			<nobr>version <select name="taskVersion"></select></nobr>
-			</td>
-
-		</tr>
-		<tr>
-			<td valign="top" align="center">
-				<input type="button" value="run" name="runtask" class="button" onclick="jmp(this, 'runTask.jsp?name=', document.forms['index'].task, document.forms['index'].taskVersion)">
-				<input type="button" value="view" name="viewtask" class="button" onclick="jmp(this, 'addTask.jsp?view=1&name=', document.forms['index'].task, document.forms['index'].taskVersion)">
-				<input type="button" value="edit" name="edittask" class="button" onclick="jmp(this, 'addTask.jsp?name=', document.forms['index'].task, document.forms['index'].taskVersion)">
-				<input type="button" value="export" name="exporttask" class="button" onclick="jmp(this, 'makeZip.jsp?name=', document.forms['index'].task, document.forms['index'].taskVersion)">
-			</td>
-		</tr>
-
-		<tr>
-			<td colspan="2">
-				<hr noshade size="1">
-			</td>
-		</tr>
-
-		<tr>
-			<td colspan="2" align="center">
-				<input type="button" value="create" class="button" onclick="javascript:window.location='addTask.jsp'">
-				<input type="button" value="import..." class="button" onclick="javascript:window.location='addZip.jsp'">
-			</td>
-		</tr>
-	</table> <!-- end task cell -->
-    </td>
-
-    <td valign="top">
-	<table class="majorCell" width="100%">
-		<tr>
-		<td class="heading" colspan="2">Admin</td>
-		</tr>
-		<tr><td height="3"></td></tr>
-		<tr>
-
-			<td valign="middle" align="right">
-				Jobs
-			</td>
-
-			<td valign="top" align="left">
-<!--				<input type="button" value="status" class="wideButton" onclick="javascript:window.location='getStatus.jsp'"><br> -->
-				<input type="button" value="results" class="wideButton" onclick="javascript:window.location='zipJobResults.jsp'"><br>
-			</td>
-		</tr>
-
-		<tr>
-			<td colspan="2">
-				<hr noshade size="1">
-			</td>
-		</tr>
-
-		<tr>
-			<td valign="middle" align="right">
-				Tasks
-			</td>
-			<td valign="top" align="left">
-				<input type="button" name="installButton" value="install/update" class="wideButton" onclick="javascript:window.location='taskCatalog.jsp'"><br>
-				<input type="button" value="delete" class="wideButton" onclick="javascript:window.location='deleteTask.jsp'"><br>
-			</td>
-		</tr>
-
-		<tr>
-			<td colspan="2">
-				<hr noshade size="1">
-			</td>
-		</tr>
-		<tr>
-			<td valign="middle" align="middle" colspan="2">
-				<a href="adminServer.jsp">Server administration</a>
-			</td>
-		</tr>
-	</table> <!-- end admin cell -->
-    </td>
-
+    
 </tr>
-
-<% } %>
 <tr>
 
-    <td valign="top">
-	<table class="majorCell" width="100%">
-		<tr>
-		<td class="heading" colspan="2">Documentation</td>
-		</tr>
-		<tr><td height="3"></td></tr>
-		<tr>
-			<td valign="top" align="left">
-				<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/" target="_new">User's Manual/Tutorial</a><br><br>
-				<a href="http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/">Release notes </a><br><br>
-				<a href="http://www.broad.mit.edu/cancer/software/genepattern/faq/">FAQ</a><br><br>
-				<a href="http://www.broad.mit.edu/cancer/software/genepattern/datasets/">Public datasets</a><br><br>
-				<a href="getTaskDoc.jsp">Task documentation</a><br><br>
-				<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_fileformats.html" target="_new">Common file formats</a>
-			</td>
+    <%@ include file="indexDocSection.jsp" %>
+    <%@ include file="indexResourcesSection.jsp" %>
+    <%@ include file="indexProgrammingSection.jsp" %>
 
-		</tr>
-	</table> <!-- end documentation cell -->
-    </td>
 
-    <td valign="top">
-	<table class="majorCell" width="100%">
-		<tr>
-		<td class="heading">Resources</td>
-		</tr>
-		<tr><td height="3"></td></tr>
-		<tr>
-			<td valign="top" align="left">
-				<a href="<%= System.getProperty("JavaGEInstallerURL") %>?version=<%= System.getProperty("GenePatternVersion") %>&server=<%= URLEncoder.encode("http://" + request.getServerName() + ":" + request.getServerPort()) %>">Install</a> graphical client<br><br>
-				<a href="mailto:gp-users-join@broad.mit.edu?body=Just send this!">Subscribe to gp-users mailing list</a><br><br>
-				<a href="mailto:gp-help@broad.mit.edu">Report bugs</a><br><br>
-				<a href="http://www.broad.mit.edu/cancer/software/genepattern/forum/">User Forum</a>
-<!-- 
-		<form action="search.jsp" name="indexSearch">
-			search tasks, jobs, documentation: <nobr><input type="text" class="little" size="20" name="search"
-			      value="" ><input type="image" src="search.jpeg" alt="search" value="?" onclick="this.form.submit()" align="top" class="little"></nobr>
-			<input type="hidden" name="<%= Indexer.TASK %>" value="1">
-			<input type="hidden" name="<%= Indexer.TASK_DOC %>" value="1">
-			<input type="hidden" name="<%= Indexer.TASK_SCRIPTS %>" value="1">
-			<input type="hidden" name="<%= Indexer.JOB_PARAMETERS %>" value="1">
-			<input type="hidden" name="<%= Indexer.JOB_OUTPUT %>" value="1">
-			<input type="hidden" name="<%= Indexer.MANUAL %>" value="1">
-		</form>
--->
-			</td>
-
-		</tr>
-	</table> <!-- end resources cell -->
-    </td>
-
-    <td valign="top">
-	<table class="majorCell" width="100%">
-		<tr>
-		<td class="heading" colspan="2">Programming</td>
-		</tr>
-		<tr><td height="3"></td></tr>
-		<tr>
-			<td valign="top" align="left" colspan="2">
-				Download GenePattern library:
-			</td>
-		</tr>
-
-		<tr>
-			<td valign="top" align="left">
-				Java
-			</td>
-			<td valign="top" align="left">
-				<a href="downloads/GenePattern.zip">.zip</a>
-				<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_prog_java.html" target="_blank">doc</a>
-			</td>
-
-		</tr>
-
-		<tr>
-			<td valign="top" align="left">
-				R
-			</td>
-
-			<td valign="top" align="left">
-				<a href="downloads/GenePattern_0.1-0.zip">.zip</a> &nbsp;
-				<a href="downloads/GenePattern_0.1-0.tar.gz">.tar.gz</a> &nbsp;
-				<a href="GenePattern.R">source</a>
-				<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_prog_R.html" target="_blank">doc</a>
-			</td>
-		</tr>
-		<tr>
-			<td valign="top" align="left">
-				MATLAB
-			</td>
-			<td valign="top" align="left">
-				<a href="downloads/GenePatternMatlab.zip">.zip</a>
-				<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_prog_MATLAB.html" target="_blank">doc</a>
-			</td>
-
-		</tr>
-
-<% if (userIDKnown) { %>
-		<tr>
-			<td valign="top" align="left" colspan="2">
-					<hr noshade size="1">
-					Download pipeline code:<br>
-					<%= taskCatalog(tmTasks, latestTaskMap, "code", "pipeline", GPConstants.TASK_TYPE_PIPELINE, userID, true) %>
-					<br>
-					version: <select name="codeVersion">
-					</select>
-					<select name="pipelineLanguage">
-					<option value="">language</option>
-<%
-					// discover (at runtime) all of the code generators that are available
-					Collection cLanguages = AbstractPipelineCodeGenerator.getLanguages();
-					for (Iterator itLanguages = cLanguages.iterator(); itLanguages.hasNext();  ) {
-						String name = (String)itLanguages.next();
-%>
-						<option value="<%= name %>"><%= name %></option>
-<%
-					}
-%>
-					</select>
-				<input type="button" value="code" class="button" onclick="getCode('getPipelineCode.jsp?download=1&name=', document.forms['index'].code, document.forms['index'].codeVersion, document.forms['index'].pipelineLanguage, '<%= userID %>')"><br>
-			</td>
-		</tr>
-<% } %>
-
-	</table> <!-- end programming cell -->
-    </td>
-
+   
 </tr>
 
 </form>
