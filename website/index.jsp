@@ -71,14 +71,6 @@ for (Iterator itTasks = latestTmTasks.iterator(); itTasks.hasNext(); ) {
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
 <title>GenePattern</title>
-<style>
-.heading { font-family: Arial,Helvetica,sans-serif; background-color: #0E0166; color: white; font-size: 12pt; font-weight: 800; text-align: center; }
-.majorCell { border-width: 2; font-size: 10pt; }
-.button  { width: 50; }
-.wideButton  { width: 100; }
-.wideBoldButton  { width: 100; font-weight: bold; color: red }
-td { padding-left: 5; }
-</style>
 
 <script language="Javascript">
 
