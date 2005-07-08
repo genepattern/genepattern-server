@@ -5,22 +5,17 @@ import java.io.*;
 import java.net.*;
 import java.text.DateFormat;
 import java.util.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Vector;
 
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import javax.swing.tree.*;
-import javax.swing.tree.DefaultMutableTreeNode;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.gpge.ui.tasks.*;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.*;
+import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.ui.treetable.*;
 import org.genepattern.gpge.ui.table.*;
 import org.genepattern.gpge.ui.maindisplay.FileInfoUtil;
@@ -153,13 +148,6 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			}
    }
    
-	public void addJobListener(JobListener l) {
-		listenerList.add(JobListener.class, l);
-	}
-
-	public void removeJobListener(JobListener l) {
-		listenerList.remove(JobListener.class, l);
-	}
 
 	/**
 	 * Removes the given file from the model
@@ -277,9 +265,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
       
         
       }
-     
-      notifyJobAdded(job);
-    
+      MessageManager.notifyListeners(new JobMessage(this,  JobMessage.JOB_SUBMITTED, job));
 	}
 
    private boolean isSameServerAndUsername(AnalysisJob job) {
@@ -330,7 +316,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			newIndexs[i] = i;
 		}
 		nodesWereInserted(jobNode, newIndexs);
-		notifyJobCompleted(job);
+		MessageManager.notifyListeners(new JobMessage(this, JobMessage.JOB_COMPLETED, job));
 	}
 
 	public void jobStatusChanged(AnalysisJob job) {
@@ -343,7 +329,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
          jobNode = findJobNode(job);
       }
 		nodeChanged(jobNode);
-		notifyJobStatusChanged(job);
+		MessageManager.notifyListeners(new JobMessage(this, JobMessage.JOB_STATUS_CHANGED, job));
 	}
 	
 	public void sortOrderChanged(SortEvent e) {
@@ -390,57 +376,6 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 	}
    
-
-	protected void notifyJobAdded(AnalysisJob job) {
-		Object[] listeners = listenerList.getListenerList();
-		JobEvent e = null;
-		// Process the listeners last to first, notifying
-		// those that are interested in this event
-		for (int i = listeners.length - 2; i >= 0; i -= 2) {
-			if (listeners[i] == JobListener.class) {
-				// Lazily create the event:
-				if (e == null) {
-					e = new JobEvent(this, job);
-				}
-
-				((JobListener) listeners[i + 1]).jobAdded(e);
-			}
-		}
-	}
-
-	protected void notifyJobStatusChanged(AnalysisJob job) {
-		Object[] listeners = listenerList.getListenerList();
-		JobEvent e = null;
-		// Process the listeners last to first, notifying
-		// those that are interested in this event
-		for (int i = listeners.length - 2; i >= 0; i -= 2) {
-			if (listeners[i] == JobListener.class) {
-				// Lazily create the event:
-				if (e == null) {
-					e = new JobEvent(this, job);
-				}
-
-				((JobListener) listeners[i + 1]).jobStatusChanged(e);
-			}
-		}
-	}
-
-	protected void notifyJobCompleted(AnalysisJob job) {
-		Object[] listeners = listenerList.getListenerList();
-		JobEvent e = null;
-		// Process the listeners last to first, notifying
-		// those that are interested in this event
-		for (int i = listeners.length - 2; i >= 0; i -= 2) {
-			if (listeners[i] == JobListener.class) {
-				// Lazily create the event:
-				if (e == null) {
-					e = new JobEvent(this, job);
-				}
-
-				((JobListener) listeners[i + 1]).jobCompleted(e);
-			}
-		}
-	}
 
    private JobNode findJobNode(int jobNumber) {
 		for (int i = 0, size = root.getChildCount(); i < size; i++) {

@@ -40,6 +40,9 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.border.Border;
 import org.genepattern.gpge.GenePattern;
+import org.genepattern.gpge.message.GPGEMessage;
+import org.genepattern.gpge.message.GPGEMessageListener;
+import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.ui.graphics.draggable.*;
 import org.genepattern.gpge.ui.preferences.*;
 import org.genepattern.gpge.ui.tasks.*;
@@ -590,7 +593,7 @@ public class GPGE {
 				.toArray(new ParameterInfo[0]));
 		AnalysisService serviceCopy = new AnalysisService(service.getServer(),
 				taskCopy);
-		analysisServicePanel.loadTask(serviceCopy);
+		MessageManager.notifyListeners(new AnalysisServiceMessage(this, AnalysisServiceMessage.RUN_TASK, serviceCopy));
 
 	}
 
@@ -755,16 +758,17 @@ public class GPGE {
 
 		createMenus();
 
-		jobModel.addJobListener(new JobListener() {
-			public void jobStatusChanged(JobEvent e) {
-
+		MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
+			public void receiveMessage(GPGEMessage message) {
+				if (message instanceof JobMessage) {
+					JobMessage e = (JobMessage) message;
+					if(e.getType()==JobMessage.JOB_COMPLETED) {
+						jobCompleted(e);
+					}
+				}
 			}
-
-			public void jobAdded(JobEvent e) {
-
-			}
-
-			public void jobCompleted(JobEvent e) {
+			
+			void jobCompleted(JobMessage e) {
 				AnalysisJob job = e.getJob();
 				int jobNumber = job.getJobInfo().getJobNumber();
 				String taskName = job.getTaskName();
@@ -803,7 +807,10 @@ public class GPGE {
 					}
 				}
 			}
+
 		});
+			
+		
 
 		changeServer(server, username);
 		splash.dispose();
@@ -1106,11 +1113,17 @@ public class GPGE {
 				}
 			}
 		});
-		analysisServicePanel
-				.addAnalysisServiceSelectionListener(new AnalysisServiceSelectionListener() {
+		MessageManager
+				.addGPGEMessageListener(new GPGEMessageListener() {
 
-					public void valueChanged(AnalysisServiceSelectionEvent e) {
-
+					public void receiveMessage(GPGEMessage message) {
+						if(!(message instanceof AnalysisServiceMessage)) {
+							return;
+						}
+						AnalysisServiceMessage asm = (AnalysisServiceMessage) message;
+						if(asm.getType()!=AnalysisServiceMessage.RUN_TASK) {
+							return;
+						}
 						jobResultFileSendToMenu.removeAll();
 						projectFileSendToMenu.removeAll();
 
@@ -2170,26 +2183,25 @@ public class GPGE {
 		}
 
 		class HistoryTableModel extends javax.swing.table.AbstractTableModel
-				implements SortTableModel, JobListener {
+				implements SortTableModel, GPGEMessageListener {
 
 			public HistoryTableModel() {
-				JobModel.getInstance().addJobListener(this);
+				
 			}
-
-			public void jobStatusChanged(JobEvent e) {
-				fireTableStructureChanged();
-			}
-
-			public void jobAdded(JobEvent e) {
-				add(e.getJob());
+			
+			public void receiveMessage(GPGEMessage message) {
+				if(message instanceof JobMessage) {
+					JobMessage je = (JobMessage) message;
+					if(je.getType()==JobMessage.JOB_SUBMITTED) {
+						add(je.getJob());
+					} else if(je.getType()==JobMessage.JOB_STATUS_CHANGED || je.getType()==JobMessage.JOB_COMPLETED) {
+						fireTableStructureChanged();
+					}
+				}
 			}
 
 			public void jobRetrievedFromServer(AnalysisJob job) {
 				add(job);
-			}
-
-			public void jobCompleted(JobEvent e) {
-				fireTableStructureChanged();
 			}
 
 			public void sortOrderChanged(SortEvent e) {
@@ -2264,6 +2276,8 @@ public class GPGE {
 					return null;
 				}
 			}
+
+			
 		}
 
 	}
@@ -2293,7 +2307,7 @@ public class GPGE {
 			serviceSelectedListener = new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					AnalysisMenuItem mi = (AnalysisMenuItem) e.getSource();
-					analysisServicePanel.loadTask(mi.svc);
+					MessageManager.notifyListeners(new AnalysisServiceMessage(this, AnalysisServiceMessage.RUN_TASK, mi.svc));
 				}
 			};
 		}

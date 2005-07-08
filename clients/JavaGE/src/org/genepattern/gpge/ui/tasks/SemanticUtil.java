@@ -25,6 +25,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreeNode;
 import org.genepattern.gpge.GenePattern;
+import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.ui.maindisplay.*;
 import org.genepattern.gpge.ui.menu.*;
 import org.genepattern.gpge.ui.table.*;
@@ -156,7 +157,9 @@ public class SemanticUtil {
             final AnalysisService svc = (AnalysisService) modules.get(i);
             m[i] = new ModuleMenuItemAction(svc.getTaskInfo().getName()) {
                public void actionPerformed(ActionEvent e) {
-                  analysisServiceDisplay.loadTask(svc); 
+            	   	MessageManager.notifyListeners(new AnalysisServiceMessage(this, AnalysisServiceMessage.RUN_TASK, svc));
+
+                 
                    
                   boolean uniqueSendTo = true;
 						final List matchingInputParameters = new ArrayList();
