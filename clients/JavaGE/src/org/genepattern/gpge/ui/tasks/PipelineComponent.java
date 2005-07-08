@@ -21,6 +21,10 @@ import javax.swing.JTextField;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.gpge.GenePattern;
+import org.genepattern.gpge.message.GPGEMessage;
+import org.genepattern.gpge.message.GPGEMessageListener;
+import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel;
 import org.genepattern.util.GPConstants;
@@ -39,22 +43,25 @@ public class PipelineComponent extends JPanel {
 	private PipelineModel pipelineModel;
 	private List jobSubmissions;
 	private String userID;
-
-	public static void test(TaskInfo taskInfo) {
-		PipelineComponent c = new PipelineComponent();
-		c.setTaskInfo(taskInfo);
-		JFrame f = new JFrame();
-		f.getContentPane().add(new JScrollPane(c), BorderLayout.CENTER);
-		f.pack();
-		f.show();
-
-	}
-
-	public PipelineComponent() {
+	public static PipelineComponent instance = new PipelineComponent();
+	
+	private PipelineComponent() {
 		setBackground(Color.white);
+		MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
+			public void receiveMessage(GPGEMessage message) {
+				if (message instanceof AnalysisServiceMessage) {
+					AnalysisServiceMessage asm = (AnalysisServiceMessage) message;
+					if (asm.getType() == AnalysisServiceMessage.EDIT_PIPELINE) {
+						setTaskInfo(asm.getAnalysisService().getTaskInfo());
+					}
+				}
+			}
+
+		});
 	}
 	
-	public void setTaskInfo(TaskInfo pipelineTaskInfo) {
+	private void setTaskInfo(TaskInfo pipelineTaskInfo) {
+		removeAll();
 		pipelineTaskInfoAttributes = pipelineTaskInfo.giveTaskInfoAttributes();
 		try {
 			pipelineModel = PipelineModel
@@ -62,6 +69,8 @@ public class PipelineComponent extends JPanel {
 							.get(GPConstants.SERIALIZED_MODEL));
 		} catch (Exception e1) {
 			e1.printStackTrace();
+			GenePattern.showErrorDialog("An error occurred while loading the pipeline");
+			return;
 		}
 		
 		jobSubmissions = pipelineModel.getTasks();
@@ -120,8 +129,6 @@ public class PipelineComponent extends JPanel {
 	private class PipelineTask extends JPanel {
 
 		public PipelineTask(int displayNumber, JobSubmission js) {
-			//          what is the difference between JobSubmission getName and getLSID
-
 			setBackground(Color.white);
 			TaskInfo formalTaskInfo = getTaskInfo(js.getLSID(), userID);
 			ParameterInfo[] formalParams = formalTaskInfo != null ? formalTaskInfo
@@ -137,42 +144,16 @@ public class PipelineComponent extends JPanel {
 			maxLabelWidth = Math.max(maxLabelWidth, parameterInfoPanel.getLabelWidth());
 			JTextField description = new JTextField(js.getDescription(), 80);
 			
-			String lsid = js.getLSID();
-			String lsidNoVersion = null;
-			String currentVersion = null;
-			try {
-				LSID _lsid = new LSID(lsid);
-				lsidNoVersion = _lsid.toStringNoVersion();
-				currentVersion = _lsid.getVersion();
-			} catch(Exception e) {
-				
-			}
-			Vector versionsCopy = new Vector();
-			if(lsidNoVersion!=null) {
-				List versions = (List) AnalysisServiceManager.getInstance().getLSIDToVersionsMap().get(lsidNoVersion);
-				versionsCopy.addAll(versions);
-				Collections.sort(versionsCopy, String.CASE_INSENSITIVE_ORDER);
-	        		versionsCopy.add("Always Use Latest");
-			} 
-			JComboBox versionComboBox = new JComboBox(versionsCopy);
-			versionComboBox.setBackground(getBackground());
-			versionComboBox.setSelectedItem(currentVersion);
-			JPanel p = new JPanel(new BorderLayout());
-			p.setBackground(getBackground());
 			
 			JButton docBtn = new JButton("Documentation");
 			docBtn.setBackground(getBackground());
 			
-			JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			topPanel.setBackground(getBackground());
-			JLabel versionLabel = new JLabel("Version:");
-			topPanel.add(versionLabel);
-			topPanel.add(versionComboBox);
-			topPanel.add(docBtn);
+			JPanel taskNamePanel = new TaskNamePanel(formalTaskInfo, AnalysisServiceMessage.EDIT_PIPELINE);
 			
-			p.add(topPanel, BorderLayout.NORTH);
-			p.add(parameterInfoPanel);
-			TogglePanel togglePanel = new TogglePanel((displayNumber+1) + ". " + formalTaskInfo.getName(), description, p);
+			add(taskNamePanel, BorderLayout.NORTH);
+			
+			JScrollPane sp = new JScrollPane(parameterInfoPanel);
+			TogglePanel togglePanel = new TogglePanel((displayNumber+1) + ". " + formalTaskInfo.getName(), description, sp);
 			togglePanel.setBackground(parameterInfoPanel.getBackground());
 			togglePanel.setExpanded(true);
 		     
