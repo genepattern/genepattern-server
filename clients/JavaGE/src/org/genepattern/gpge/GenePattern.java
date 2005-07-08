@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JWindow;
@@ -23,7 +24,7 @@ import org.genepattern.gpge.ui.infopanels.ReportPanel;
 import org.genepattern.gpge.util.BuildProperties;
 import  org.genepattern.gpge.ui.util.*;
 import org.genepattern.util.StringUtils;
-import org.genepattern.gpge.ui.maindisplay.MainFrame;
+import org.genepattern.gpge.ui.maindisplay.GPGE;
 import java.awt.Color;
 import javax.swing.SwingUtilities;
 
@@ -33,7 +34,7 @@ import javax.swing.SwingUtilities;
  * @author kohm
  */
 public final class GenePattern {
-  	static javax.swing.JFrame mainFrame;
+  	static JFrame parentFrame;
 	static Icon icon;
    /** where the module error messages go */
 	private static ReporterWithGUI REPORTER;
@@ -53,7 +54,7 @@ public final class GenePattern {
 			
 			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager
 					.getSystemLookAndFeelClassName());
-			if (!MainFrame.RUNNING_ON_MAC) {
+			if (!GPGE.RUNNING_ON_MAC) {
 				javax.swing.UIDefaults uiDefaults = javax.swing.UIManager
 						.getDefaults();
 				/*uiDefaults.put("Panel.background",
@@ -76,13 +77,14 @@ public final class GenePattern {
 			}
 		} catch (Exception e) {
 		}
-	   mainFrame = new MainFrame();
-      REPORTER = new ReporterWithGUI(mainFrame);
+	   parentFrame = new JFrame();
+	   new GPGE(parentFrame);
+       REPORTER = new ReporterWithGUI(parentFrame);
 
 	}
 
 	public static java.awt.Frame getDialogParent() {
-		return mainFrame;
+		return parentFrame;
 	}
 
 
@@ -106,22 +108,18 @@ public final class GenePattern {
 		return window;
 	}
 
-	/** quites the program by first saving some stuff... */
-	public void quit() {
-		System.exit(0);
-	}
 
 	// static methods
 
 	/** main */
 	public static final void main(String[] args) {
-		final GenePattern gp = new GenePattern();
+		new GenePattern();
 	}
 
    public static void showMessageDialog(final String title, final String message) {
        Runnable runnable = new Runnable() {
          public void run() {
-            javax.swing.JOptionPane.showMessageDialog(mainFrame, message, title,
+            javax.swing.JOptionPane.showMessageDialog(parentFrame, message, title,
 				javax.swing.JOptionPane.INFORMATION_MESSAGE);  
          }
       };
@@ -140,7 +138,7 @@ public final class GenePattern {
    public static void showErrorDialog(final String title, final String message) {
       Runnable runnable = new Runnable() {
          public void run() {
-             javax.swing.JOptionPane.showMessageDialog(mainFrame, message, "Error",
+             javax.swing.JOptionPane.showMessageDialog(parentFrame, message, "Error",
 				javax.swing.JOptionPane.ERROR_MESSAGE);  
          }
       };
@@ -163,7 +161,7 @@ public final class GenePattern {
          if(t instanceof java.net.ConnectException || t instanceof java.net.UnknownHostException) {
             String message = "Unable to connect to " + 
                   server;
-             javax.swing.JOptionPane.showMessageDialog(mainFrame, message, "Error",
+             javax.swing.JOptionPane.showMessageDialog(parentFrame, message, "Error",
 				javax.swing.JOptionPane.ERROR_MESSAGE);  
             return true;
          }
