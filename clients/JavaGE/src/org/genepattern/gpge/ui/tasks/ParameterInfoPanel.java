@@ -29,6 +29,10 @@ import javax.swing.JTextField;
 
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.PropertyManager;
+import org.genepattern.gpge.message.GPGEMessage;
+import org.genepattern.gpge.message.GPGEMessageListener;
+import org.genepattern.gpge.message.MessageManager;
+import org.genepattern.gpge.message.PreferenceChangeMessage;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.GPGE;
 import org.genepattern.gpge.ui.preferences.PreferenceKeys;
@@ -228,6 +232,25 @@ public class ParameterInfoPanel extends JPanel {
 	}
     
      public ParameterInfoPanel(String taskName, ParameterInfo[] params) {
+    	 	MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
+
+				public void receiveMessage(GPGEMessage message) {
+					if(message instanceof PreferenceChangeMessage) {
+						PreferenceChangeMessage pcm = (PreferenceChangeMessage) message;
+						if(pcm.getType()==PreferenceChangeMessage.SHOW_PARAMETER_DESCRIPTIONS) {
+							setDescriptionsVisible(PropertyManager
+		                              .getBooleanProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS));
+
+						}
+					}
+				}
+    	 		
+    	 		
+    	 	});
+    	 	boolean showDescriptions =
+                      PropertyManager
+                              .getBooleanProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS);
+
         int numParams = params!=null?params.length:0;
         parameterName2ComponentMap = new HashMap(numParams);
         parameterDescriptions = new ArrayList(numParams);
@@ -235,12 +258,7 @@ public class ParameterInfoPanel extends JPanel {
 
         this.setBackground(Color.white);
         this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        boolean showDescriptions = Boolean
-                .valueOf(
-                        PropertyManager
-                                .getProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS))
-                .booleanValue();
-
+      
         if (params == null || params.length == 0) {
             this.add(new JLabel(taskName + " has no input parameters"));
         } else {
@@ -308,8 +326,9 @@ public class ParameterInfoPanel extends JPanel {
                 			fc.setModal(true);
                 			fc.show();
                 			String f = fc.getFile();
+                			String directory = fc.getDirectory();
                 			if(f!=null) {
-                				setValue(info.getName(), new File(f));
+                				setValue(info.getName(), new File(directory, f));
                 			}
                 		}
                 	});
@@ -332,7 +351,7 @@ public class ParameterInfoPanel extends JPanel {
         }
     }
 
-    public void setDescriptionsVisible(boolean b) {
+    private void setDescriptionsVisible(boolean b) {
         for (int i = 0; i < parameterDescriptions.size(); i++) {
             Component c = (Component) parameterDescriptions.get(i);
             c.setVisible(b);
