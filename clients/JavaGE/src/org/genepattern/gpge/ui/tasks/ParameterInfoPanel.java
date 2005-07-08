@@ -30,7 +30,7 @@ import javax.swing.JTextField;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.PropertyManager;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
-import org.genepattern.gpge.ui.maindisplay.MainFrame;
+import org.genepattern.gpge.ui.maindisplay.GPGE;
 import org.genepattern.gpge.ui.preferences.PreferenceKeys;
 import org.genepattern.gpge.ui.project.ProjectDirModel;
 import org.genepattern.util.GPConstants;
@@ -401,7 +401,7 @@ public class ParameterInfoPanel extends JPanel {
 
     private ObjectTextField createObjectTextField() {
         final ObjectTextField field = new ObjectTextField(null, 20);
-        if (!MainFrame.RUNNING_ON_MAC) {
+        if (!GPGE.RUNNING_ON_MAC) {
             field.setBackground(Color.white);
         }
         field.setFont(getFont());

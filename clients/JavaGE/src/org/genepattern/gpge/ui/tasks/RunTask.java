@@ -182,7 +182,7 @@ public class RunTask {
    private static ParameterInfo[] copyParameterInfo(ParameterInfo[] p) {
       ParameterInfo[] c = new ParameterInfo[p.length];
       for(int i = 0; i < p.length; i++) {
-         c[i] = org.genepattern.gpge.ui.maindisplay.MainFrame.copyParameterInfo(p[i]);  
+         c[i] = org.genepattern.gpge.ui.maindisplay.GPGE.copyParameterInfo(p[i]);  
       }
       return c;
    }
