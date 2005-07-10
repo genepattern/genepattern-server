@@ -22,6 +22,7 @@ import javax.swing.JTextField;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.gpge.GenePattern;
+import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.GPGEMessage;
 import org.genepattern.gpge.message.GPGEMessageListener;
 import org.genepattern.gpge.message.MessageManager;
@@ -43,24 +44,12 @@ public class PipelineComponent extends JPanel {
 	private PipelineModel pipelineModel;
 	private List jobSubmissions;
 	private String userID;
-	public static PipelineComponent instance = new PipelineComponent();
 	
-	private PipelineComponent() {
+	public PipelineComponent() {
 		setBackground(Color.white);
-		MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
-			public void receiveMessage(GPGEMessage message) {
-				if (message instanceof AnalysisServiceMessage) {
-					AnalysisServiceMessage asm = (AnalysisServiceMessage) message;
-					if (asm.getType() == AnalysisServiceMessage.EDIT_PIPELINE) {
-						setTaskInfo(asm.getAnalysisService().getTaskInfo());
-					}
-				}
-			}
-
-		});
 	}
 	
-	private void setTaskInfo(TaskInfo pipelineTaskInfo) {
+	public void setTaskInfo(TaskInfo pipelineTaskInfo) {
 		removeAll();
 		pipelineTaskInfoAttributes = pipelineTaskInfo.giveTaskInfoAttributes();
 		try {
@@ -103,15 +92,21 @@ public class PipelineComponent extends JPanel {
 
         }
         
+        JPanel tasksPanel = new JPanel();
 		FormLayout formLayout = new FormLayout( // 
                 "left:pref:none", rowSpec
                         .toString());
 		
-		setLayout(formLayout);
+		tasksPanel.setLayout(formLayout);
 		CellConstraints cc = new CellConstraints();
 		for(int i = 0; i < tasks.size(); i++) {
-			add(new PipelineTask(i, (JobSubmission)tasks.get(i)), cc.xy(1, (i+1)));
+			tasksPanel.add(new PipelineTask(i, (JobSubmission)tasks.get(i)), cc.xy(1, (i+1)));
 		}
+		setLayout(new BorderLayout());
+		add(new JScrollPane(tasksPanel), BorderLayout.CENTER);
+		JPanel taskNamePanel = new TaskNamePanel(pipelineTaskInfo, ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST);	
+		add(taskNamePanel, BorderLayout.NORTH);
+	
 	}
 
 	protected boolean taskExists(String lsid, String userID) {
@@ -119,8 +114,10 @@ public class PipelineComponent extends JPanel {
 	}
 
 	protected TaskInfo getTaskInfo(String lsid, String userID) {
+		System.out.println("getting task info " + lsid);
 		AnalysisService svc = AnalysisServiceManager.getInstance().getAnalysisService(lsid);
 		if(svc==null) {
+			System.out.println("Unable to find");
 			return null;
 		}
 		return svc.getTaskInfo();
@@ -144,16 +141,12 @@ public class PipelineComponent extends JPanel {
 			maxLabelWidth = Math.max(maxLabelWidth, parameterInfoPanel.getLabelWidth());
 			JTextField description = new JTextField(js.getDescription(), 80);
 			
-			
 			JButton docBtn = new JButton("Documentation");
 			docBtn.setBackground(getBackground());
 			
-			JPanel taskNamePanel = new TaskNamePanel(formalTaskInfo, AnalysisServiceMessage.EDIT_PIPELINE);
+				
 			
-			add(taskNamePanel, BorderLayout.NORTH);
-			
-			JScrollPane sp = new JScrollPane(parameterInfoPanel);
-			TogglePanel togglePanel = new TogglePanel((displayNumber+1) + ". " + formalTaskInfo.getName(), description, sp);
+			TogglePanel togglePanel = new TogglePanel((displayNumber+1) + ". " + formalTaskInfo.getName(), description, parameterInfoPanel);
 			togglePanel.setBackground(parameterInfoPanel.getBackground());
 			togglePanel.setExpanded(true);
 		     
