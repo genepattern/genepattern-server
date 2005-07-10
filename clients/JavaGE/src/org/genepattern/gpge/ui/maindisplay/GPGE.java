@@ -40,6 +40,8 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.border.Border;
 import org.genepattern.gpge.GenePattern;
+import org.genepattern.gpge.message.ChangeViewMessage;
+import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.GPGEMessage;
 import org.genepattern.gpge.message.GPGEMessageListener;
 import org.genepattern.gpge.message.MessageManager;
@@ -62,8 +64,6 @@ import org.genepattern.gpge.PropertyManager;
  * @author Joshua Gould
  */
 public class GPGE {
-
-	AnalysisServiceDisplay analysisServicePanel;
 
 	AnalysisServiceManager analysisServiceManager;
 
@@ -181,6 +181,8 @@ public class GPGE {
 	MenuItemAction jobResultFileDefaultAppMenuItem;
 
 	MenuItemAction deleteAllJobsAction;
+
+	boolean runTaskViewShown = false;
 
 	public static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone
@@ -384,10 +386,11 @@ public class GPGE {
 		PropertyManager.setProperty(PreferenceKeys.USER_NAME, username);
 
 		setChangeServerActionsEnabled(false);
-		if (analysisServicePanel != null
+		
+		/*if (analysisServicePanel != null
 				&& analysisServicePanel.isShowingAnalysisService()) {
 			analysisServicePanel.showGettingStarted();
-		}
+		}FIXME*/
 
 		new Thread() {
 			public void run() {
@@ -593,7 +596,7 @@ public class GPGE {
 				.toArray(new ParameterInfo[0]));
 		AnalysisService serviceCopy = new AnalysisService(service.getServer(),
 				taskCopy);
-		MessageManager.notifyListeners(new AnalysisServiceMessage(this, AnalysisServiceMessage.RUN_TASK, serviceCopy));
+		MessageManager.notifyListeners(new ChangeViewMessageRequest(this, ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST, serviceCopy));
 
 	}
 
@@ -814,8 +817,7 @@ public class GPGE {
 
 		changeServer(server, username);
 		splash.dispose();
-		analysisServicePanel = new AnalysisServiceDisplay();
-
+		
 		jobResultsTree.setFocusable(true);
 		jobResultsTree.addKeyListener(new java.awt.event.KeyAdapter() {
 			public void keyPressed(java.awt.event.KeyEvent e) {
@@ -867,8 +869,7 @@ public class GPGE {
 						}
 
 						jobResultFileSendToMenu.setEnabled(isJobResultFileNode
-								&& analysisServicePanel
-										.isShowingAnalysisService());
+								&& runTaskViewShown );
 						saveServerFileMenu.setEnabled(isJobResultFileNode);
 						saveToFileSystemMenuItem
 								.setEnabled(isJobResultFileNode);
@@ -1018,8 +1019,7 @@ public class GPGE {
 						projectFileViewModulesMenu.setEnabled(false);
 
 						projectFileSendToMenu.setEnabled(projectFileSelected
-								&& analysisServicePanel
-										.isShowingAnalysisService());
+								&& runTaskViewShown);
 
 						projectFileOpenWithMenu.setEnabled(projectFileSelected);
 						revealFileMenuItem.setEnabled(projectFileSelected);
@@ -1117,22 +1117,22 @@ public class GPGE {
 				.addGPGEMessageListener(new GPGEMessageListener() {
 
 					public void receiveMessage(GPGEMessage message) {
-						if(!(message instanceof AnalysisServiceMessage)) {
+						if(!(message instanceof ChangeViewMessage)) {
 							return;
-						}
-						AnalysisServiceMessage asm = (AnalysisServiceMessage) message;
-						if(asm.getType()!=AnalysisServiceMessage.RUN_TASK) {
-							return;
-						}
+						} 
+						
+						ChangeViewMessage changeViewMessage = (ChangeViewMessage) message;
 						jobResultFileSendToMenu.removeAll();
 						projectFileSendToMenu.removeAll();
 
-						if (!analysisServicePanel.isShowingAnalysisService()) {
+						if(changeViewMessage.getType()!=ChangeViewMessage.RUN_TASK_SHOWN) {
 							jobResultFileSendToMenu.setEnabled(false);
 							projectFileSendToMenu.setEnabled(false);
 							return;
 						}
 
+						final AnalysisServiceDisplay analysisServicePanel = (AnalysisServiceDisplay) changeViewMessage.getComponent(); 
+						
 						for (Iterator it = analysisServicePanel
 								.getInputFileParameters(); it.hasNext();) {
 							final ParameterInfo pi = (ParameterInfo) it.next();
@@ -1237,9 +1237,11 @@ public class GPGE {
 		leftPanel.add(leftPane, BorderLayout.CENTER);
 		leftPanel.add(fileSummaryComponent, BorderLayout.SOUTH);
 
-		analysisServicePanel.setMinimumSize(new Dimension(200, 200));
+		
 		final JSplitPane splitPane = new JSplitPane(
-				JSplitPane.HORIZONTAL_SPLIT, leftPanel, analysisServicePanel);
+				JSplitPane.HORIZONTAL_SPLIT, leftPanel, null);
+		new ViewManager(splitPane); 
+		MessageManager.notifyListeners(new ChangeViewMessageRequest(this, ChangeViewMessageRequest.SHOW_GETTING_STARTED_REQUEST));
 		splitPane.setResizeWeight(0.5);
 		splitPane.setMinimumSize(new Dimension(400, 400));
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
@@ -1852,8 +1854,7 @@ public class GPGE {
 						.getLatestAnalysisServices();
 
 				inputTypeToMenuItemsMap = SemanticUtil
-						.getInputTypeToMenuItemsMap(latestTasks,
-								analysisServicePanel);
+						.getInputTypeToMenuItemsMap(latestTasks);
 				SwingUtilities.invokeLater(new Thread() {
 					public void run() {
 						analysisMenu.removeAll();
@@ -2307,7 +2308,7 @@ public class GPGE {
 			serviceSelectedListener = new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					AnalysisMenuItem mi = (AnalysisMenuItem) e.getSource();
-					MessageManager.notifyListeners(new AnalysisServiceMessage(this, AnalysisServiceMessage.RUN_TASK, mi.svc));
+					MessageManager.notifyListeners(new ChangeViewMessageRequest(this, ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST, mi.svc));
 				}
 			};
 		}
@@ -2439,7 +2440,7 @@ public class GPGE {
 			add(gettingStartedMenuItem);
 			gettingStartedMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					analysisServicePanel.showGettingStarted();
+					MessageManager.notifyListeners(new ChangeViewMessageRequest(this, ChangeViewMessageRequest.SHOW_GETTING_STARTED_REQUEST));
 				}
 			});
 
