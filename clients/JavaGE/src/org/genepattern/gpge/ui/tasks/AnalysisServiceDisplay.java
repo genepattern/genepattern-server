@@ -28,6 +28,7 @@ import org.genepattern.codegenerator.MATLABPipelineCodeGenerator;
 import org.genepattern.codegenerator.RPipelineCodeGenerator;
 import org.genepattern.codegenerator.TaskCodeGenerator;
 import org.genepattern.gpge.GenePattern;
+import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.GPGEMessage;
 import org.genepattern.gpge.message.GPGEMessageListener;
 import org.genepattern.gpge.message.MessageManager;
@@ -65,18 +66,6 @@ public class AnalysisServiceDisplay extends JPanel {
 	public AnalysisServiceDisplay() {
 		this.setBackground(Color.white);
 		showGettingStarted();
-		MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
-
-			public void receiveMessage(GPGEMessage message) {
-				if (message instanceof AnalysisServiceMessage) {
-					AnalysisServiceMessage asm = (AnalysisServiceMessage) message;
-					if (asm.getType() == AnalysisServiceMessage.RUN_TASK) {
-						loadTask(asm.getAnalysisService());
-					}
-				}
-			}
-
-		});
 	}
 
 	public void showGettingStarted() {
@@ -116,8 +105,6 @@ public class AnalysisServiceDisplay extends JPanel {
 		invalidate();
 		validate();
 		selectedService = null;
-		MessageManager.notifyListeners(new AnalysisServiceMessage(this,
-				AnalysisServiceMessage.RUN_TASK, selectedService));
 	}
 
 	private Border createBorder(final Border b, final int left, final int top,
@@ -158,7 +145,7 @@ public class AnalysisServiceDisplay extends JPanel {
 	 *
 	 * @param  selectedService  Description of the Parameter
 	 */
-	private void loadTask(AnalysisService _selectedService) {
+	public void loadTask(AnalysisService _selectedService) {
 		this.selectedService = _selectedService;
 		hasDocumentation = true;
 		if (togglePanel != null) {
@@ -189,7 +176,7 @@ public class AnalysisServiceDisplay extends JPanel {
 		String taskName = taskInfo.getName();
 
 		JPanel topPanel = new TaskNamePanel(taskInfo,
-				AnalysisServiceMessage.RUN_TASK);
+				ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST);
 
 		ParameterInfo[] params = taskInfo.getParameterInfoArray();
 
@@ -212,7 +199,7 @@ public class AnalysisServiceDisplay extends JPanel {
 		JButton editButton = new JButton("Edit");
 		editButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				MessageManager.notifyListeners(new AnalysisServiceMessage(this, AnalysisServiceMessage.EDIT_PIPELINE, selectedService));
+				MessageManager.notifyListeners(new ChangeViewMessageRequest(this, ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST, selectedService));
 			}
 		});
 		buttonPanel.add(editButton);
