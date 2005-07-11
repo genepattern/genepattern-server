@@ -87,7 +87,7 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 
 		String userId = null;
 		boolean isLogin = requestedURI.indexOf("login.jsp") >= 0;
-		boolean isResultFetch = requestedURI.indexOf("retrieveResults.jsp") >= 0;
+		boolean isResultFetch = (requestedURI.indexOf("retrieveResults.jsp") >= 0) || (requestedURI.indexOf("getFile.jsp") >= 0);
 
 		if (!(isLogin || isResultFetch )) {
 
