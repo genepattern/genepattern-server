@@ -48,4 +48,22 @@ public class LocalAnalysisClient {
 
 		return service.getJob(jobId);
 	}
+
+	public String createProvenancePipeline(JobInfo[] jobs, String pipelineName){
+	     return service.createProvenancePipeline(jobs, pipelineName);
+  		
+	}
+
+	public String createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName){
+	     return service.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
+  		
+	}
+
+	public JobInfo[] findJobsThatCreatedFile(String fileURLOrJobNumber){
+	     return service.findJobsThatCreatedFile(fileURLOrJobNumber);
+  		
+	}
+
+
+
 }
