@@ -63,7 +63,7 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 		HttpServletRequest req = (HttpServletRequest) request;
       	String requestedURI = req.getRequestURI();
 		String stuff = req.getRequestURI();
-		//System.out.println("FILTER=" + requestedURI);
+		System.out.println("FILTER=" + requestedURI);
 		
 
 		String rh= req.getRemoteHost();
@@ -86,8 +86,10 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 		}
 
 		String userId = null;
+		boolean isLogin = requestedURI.indexOf("login.jsp") >= 0;
+		boolean isResultFetch = requestedURI.indexOf("retrieveResults.jsp") >= 0;
 
-		if (!(requestedURI.indexOf("login.jsp") >= 0 )) {
+		if (!(isLogin || isResultFetch )) {
 
 			userId = _getUserID((HttpServletRequest) request);	  
 			System.out.println("UserID=" + userId);    

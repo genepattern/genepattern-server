@@ -125,7 +125,7 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 		try {
 			pipelineStart = new Date();
 
-			URL url = new URL(URL + "stylesheet.css");
+			URL url = new URL(URL + "skin/stylesheet.css");
 			HttpURLConnection uconn = (HttpURLConnection) url.openConnection();
 			uconn.setDoInput(true);
 			InputStream in = uconn.getInputStream();

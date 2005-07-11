@@ -510,7 +510,7 @@ public class RunPipelineForJsp {
 			outstr.println("</script>");
 
 			outstr
-					.println("<link href=\"stylesheet.css\" rel=\"stylesheet\" type=\"text/css\">");
+					.println("<link href=\"skin/stylesheet.css\" rel=\"stylesheet\" type=\"text/css\">");
 			outstr
 					.println("<link rel=\"SHORTCUT ICON\" href=\"favicon.ico\" >");
 			outstr.println("<title>" + model.getName()

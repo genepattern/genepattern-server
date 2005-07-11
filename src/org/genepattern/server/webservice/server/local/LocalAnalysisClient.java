@@ -43,5 +43,9 @@ public class LocalAnalysisClient {
    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean all) throws WebServiceException {
       return service.getJobs(username, maxJobNumber, maxEntries, all);
    }
+	
+	public JobInfo getJob(int jobId) throws WebServiceException {
 
+		return service.getJob(jobId);
+	}
 }

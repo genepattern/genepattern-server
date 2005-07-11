@@ -245,6 +245,8 @@ public class PipelineModel implements Serializable {
 	}
 
 	public String toXML() {
+
+
 		StringWriter outputWriter = new StringWriter();
 		JobSubmission task = null;
 		Enumeration eParams = null;
@@ -255,8 +257,7 @@ public class PipelineModel implements Serializable {
 		String paramName = null;
 
 		outputWriter.write("<?xml version=\"1.0\" ?>\n");
-		outputWriter
-				.write("<program comments=\"preserve\" space=\"ignore\">\n\n");
+		outputWriter.write("<program comments=\"preserve\" space=\"ignore\">\n\n");
 
 		// input parameters (runtime prompt)
 		if (getInputParameters().size() > 0) {
@@ -310,6 +311,7 @@ public class PipelineModel implements Serializable {
 		int taskNum = 1;
 		String lsid = null;
 		for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
+
 			task = (JobSubmission) eTasks.nextElement();
 			String tag = task.isVisualizer() ? TAG_VISUALIZER : TAG_TASK;
 			outputWriter.write("\t<" + tag + "\tname=\""

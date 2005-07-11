@@ -414,6 +414,20 @@ public class Analysis extends GenericWebService {
       return (ParameterInfo[]) newParams.toArray(new ParameterInfo[0]);
    }
    
+
+	public JobInfo getJob(int jobId) throws WebServiceException {
+		try {
+			org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference.getAnalysisJobDataSourceEJB();
+	        	return ds.getJobInfo(jobId);
+		 } catch(java.rmi.RemoteException re) {
+      	   throw new WebServiceException(re); 
+      	} catch(org.genepattern.webservice.OmnigeneException oe) {
+      	   throw new WebServiceException(oe);  
+      	}
+
+
+	}
+
 	/**
 	 * 
 	 * Deletes the given output file for the given job and removes the output file from the parameter info array for the job. If <tt>jobId</tt> is a parent job and value was created by it's child, the child will be updated as well. Additionall, if <tt>jobId</tt> is a child job, the parent will be updated too.
