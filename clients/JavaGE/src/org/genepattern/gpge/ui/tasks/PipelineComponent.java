@@ -59,9 +59,84 @@ public class PipelineComponent extends JPanel {
 	public PipelineComponent() {
 		setBackground(Color.white);
 	}
+	
+	private static ParameterInfo createRTPromptParameter(JobSubmission js,int index,ParameterInfo p) {
+		ParameterInfo rtParam = new ParameterInfo(js.getName() + index + "." + p.getName(), "", p.getDescription());
+		HashMap attrs = new HashMap();
+		attrs.put(PipelineModel.RUNTIME_PARAM, "1");
+		rtParam.setAttributes(attrs);
+		return rtParam;
+	}
+	
+	public void addTask(int index, TaskInfo task, boolean autoWire) {
+		JobSubmission addedJob = new  JobSubmission(pipelineTaskInfo.getName(), pipelineTaskInfo.getDescription(), (String) task.getTaskInfoAttributes().get(GPConstants.LSID),
+				task.getParameterInfoArray(), new boolean[task.getParameterInfoArray().length],
+				TaskLauncher.isVisualizer(task), pipelineTaskInfo);
+		addTask(index, addedJob, autoWire);
+	}
 
-	public void addTask(int index, TaskInfo task) {
+	/**
+	 *  Inserts the task at the given index. 
+	 * @param index
+	 * @param task
+	 * @param automaticWire
+	 */
+	public void addTask(int index, JobSubmission jobToAdd, boolean automaticWire) {
+		List currentTasks = pipelineModel.getTasks();
+		List promptWhenRunParameters = new ArrayList();
+		// check if other tasks inherit from this task or subsequent tasks
+		for (int i = index; i < currentTasks.size(); i++) {
+			JobSubmission js = (JobSubmission) currentTasks.get(i);
+			List parameterInfo = js.getParameters();
 		
+			for (int j = 0; j < parameterInfo.size(); j++) {
+				ParameterInfo p = (ParameterInfo) parameterInfo.get(j);
+				Map parameterAttributes = p.getAttributes();
+				if (parameterAttributes != null) {
+					String taskNumberString = (String) parameterAttributes
+							.get(PipelineModel.INHERIT_TASKNAME);
+					
+					if (taskNumberString != null) {
+						int taskNumber = Integer.parseInt(taskNumberString);
+						if (taskNumber >= index) { // task inerits from task that was at index
+							parameterAttributes.put(
+									PipelineModel.INHERIT_TASKNAME, String
+											.valueOf(taskNumber+2)); // increase task number by one
+						}
+					} 
+				}
+				if(js.getRuntimePrompt()[j]){
+					promptWhenRunParameters.add(createRTPromptParameter(js, i,p));
+				}
+			}
+		}
+		
+		
+		if (pipelineTaskInfo.getParameterInfoArray() != null) {
+			for (int i = 0; i < index; i++) {
+				JobSubmission js = (JobSubmission) currentTasks.get(i);
+				List parameterInfo = js.getParameters();
+			
+				for (int j = 0; j < parameterInfo.size(); j++) {
+					ParameterInfo p = (ParameterInfo) parameterInfo.get(j);
+					if(js.getRuntimePrompt()[j]){
+						promptWhenRunParameters.add(createRTPromptParameter(js, i,p));
+					}
+				}
+				
+			}
+			
+		}
+		
+		TreeMap inputParamsMap = pipelineModel.getInputParameters();	
+		inputParamsMap.clear();
+		for(int i = 0; i < promptWhenRunParameters.size(); i++) {
+			ParameterInfo p = (ParameterInfo) promptWhenRunParameters.get(i);
+			inputParamsMap.put(p.getName(), p);
+		}
+		
+		currentTasks.add(index, jobToAdd);
+		setPipeline(pipelineTaskInfo, pipelineModel);
 	}
 
 	public void delete(int index) {
@@ -125,6 +200,7 @@ public class PipelineComponent extends JPanel {
 					.toArray(new ParameterInfo[0]));
 		}
 
+		System.out.println(currentInputParameters);
 		setPipeline(pipelineTaskInfo, pipelineModel);
 	}
 
@@ -242,23 +318,40 @@ public class PipelineComponent extends JPanel {
 			setLayout(new BorderLayout());
 			add(togglePanel, BorderLayout.CENTER);
 
-			JButton addButton = new JButton("Add Task After");
+			final JButton addButton = new JButton("Add Task After");
 			addButton.setBackground(getBackground());
-			JButton addBeforeButton = new JButton("Add Task Before");
+			final JButton addBeforeButton = new JButton("Add Task Before");
 			addBeforeButton.setBackground(getBackground());
-			JButton deleteButton = new JButton("Delete");
+			final JButton deleteButton = new JButton("Delete");
 			deleteButton.setBackground(getBackground());
-			JButton moveUpButton = new JButton("Move Up");
+			final JButton moveUpButton = new JButton("Move Up");
 			moveUpButton.setBackground(getBackground());
-			JButton moveDownButton = new JButton("Move Down");
+			final JButton moveDownButton = new JButton("Move Down");
 			moveDownButton.setBackground(getBackground());
 
 			ActionListener listener = new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					delete(index);
+					Object source = e.getSource();
+					if(source==deleteButton) {
+						delete(index);
+					} else if(source==addButton) {
+						//add(index);
+					} else if(source==moveUpButton) {
+						JobSubmission js = (JobSubmission) pipelineModel.getTasks().get(index);
+						delete(index);
+						addTask(index-1,js,false);
+					} else if(source==moveDownButton) {
+						JobSubmission js = (JobSubmission) pipelineModel.getTasks().get(index);
+						delete(index);
+						addTask(index+1,js,false);
+					}
 				}
 			};
 			deleteButton.addActionListener(listener);
+			addButton.addActionListener(listener);
+			moveUpButton.addActionListener(listener);
+			moveDownButton.addActionListener(listener);
+			
 			JPanel bottomPanel = new JPanel();
 			bottomPanel.setBackground(getBackground());
 			FormLayout formLayout = new FormLayout(
