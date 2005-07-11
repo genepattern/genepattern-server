@@ -296,4 +296,30 @@ public class AnalysisWebServiceProxy {
   		}
    }
 
+	public String createProvenancePipeline(JobInfo[] jobs, String pipelineName)throws WebServiceException{
+	try {
+           return stub.createProvenancePipeline(jobs, pipelineName);
+  		} catch (RemoteException re) {
+  			throw new WebServiceException(re);
+  		}
+
+	}
+
+	public String createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName)throws WebServiceException{
+	try {
+           return stub.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
+  		} catch (RemoteException re) {
+  			throw new WebServiceException(re);
+  		}
+
+	}
+
+	public JobInfo[] findJobsThatCreatedFile(String fileURLOrJobNumber)throws WebServiceException{
+	try {
+           return stub.findJobsThatCreatedFile(fileURLOrJobNumber);
+  		} catch (RemoteException re) {
+  			throw new WebServiceException(re);
+  		}
+
+	}
 }

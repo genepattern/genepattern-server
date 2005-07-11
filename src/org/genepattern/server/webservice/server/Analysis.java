@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -561,6 +562,36 @@ public class Analysis extends GenericWebService {
 			username = "";
 		return username;
 	}
+
+	public String createProvenancePipeline(JobInfo[] jobs, String pipelineName){
+		String userID = getUsernameFromContext();
+		ProvenanceFinder pf = new ProvenanceFinder(userID);
+		TreeSet jobSet = new TreeSet();
+		for (int i=0; i < jobs.length; i++){
+			jobSet.add(jobs[i]);
+		}
+		return  pf.createProvenancePipeline(jobSet,  pipelineName);
+	}
+
+	public String createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName){
+		String userID = getUsernameFromContext();
+		ProvenanceFinder pf = new ProvenanceFinder(userID);
+		return pf.createProvenancePipeline(fileUrlOrJobNumber,  pipelineName);
+	}
+
+	public JobInfo[] findJobsThatCreatedFile(String fileURLOrJobNumber){
+		String userID = getUsernameFromContext();
+		ProvenanceFinder pf = new ProvenanceFinder(userID);
+		TreeSet jobSet = (TreeSet)pf.findJobsThatCreatedFile(fileURLOrJobNumber);
+		JobInfo[] jobs = new JobInfo[jobSet.size()];
+		int i=0;
+		for (Iterator iter = jobSet.iterator(); iter.hasNext(); i++){
+			JobInfo aJob = (JobInfo)iter.next();
+			jobs[i] = aJob;
+		} 
+		return jobs;
+	}
+
 
 }
 
