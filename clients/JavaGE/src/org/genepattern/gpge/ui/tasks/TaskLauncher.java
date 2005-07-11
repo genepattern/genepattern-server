@@ -255,4 +255,9 @@ public class TaskLauncher {
 		return "visualizer".equalsIgnoreCase((String) service.getTaskInfo()
 				.getTaskInfoAttributes().get(GPConstants.TASK_TYPE));
 	}
+	
+	public static boolean isVisualizer(TaskInfo taskInfo) {
+		return "visualizer".equalsIgnoreCase((String) taskInfo
+				.getTaskInfoAttributes().get(GPConstants.TASK_TYPE));
+	}
 }
