@@ -63,7 +63,7 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 		HttpServletRequest req = (HttpServletRequest) request;
       	String requestedURI = req.getRequestURI();
 		String stuff = req.getRequestURI();
-		System.out.println("FILTER=" + requestedURI);
+	//	System.out.println("FILTER=" + requestedURI);
 		
 
 		String rh= req.getRemoteHost();
@@ -92,7 +92,7 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 		if (!(isLogin || isResultFetch )) {
 
 			userId = _getUserID((HttpServletRequest) request);	  
-			System.out.println("UserID=" + userId);    
+			//System.out.println("UserID=" + userId);    
 			if (userId == null){	
 				setLoginPageRedirect((HttpServletRequest)request, (HttpServletResponse )response);
 				return ;
@@ -100,7 +100,7 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 			request.setAttribute("userID", userId);
 			chain.doFilter(request, response);
 		} else { // looking for userID
-			System.out.println("Filter: Redirecting to login");
+			//System.out.println("Filter: Redirecting to login");
 			chain.doFilter(request, response);
 			return;
 		}
