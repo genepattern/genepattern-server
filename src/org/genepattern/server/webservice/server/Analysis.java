@@ -576,7 +576,9 @@ public class Analysis extends GenericWebService {
 	public String createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName){
 		String userID = getUsernameFromContext();
 		ProvenanceFinder pf = new ProvenanceFinder(userID);
-		return pf.createProvenancePipeline(fileUrlOrJobNumber,  pipelineName);
+		String lsid =  pf.createProvenancePipeline(fileUrlOrJobNumber,  pipelineName);
+		System.out.println("Created: " + lsid);
+		return lsid;
 	}
 
 	public JobInfo[] findJobsThatCreatedFile(String fileURLOrJobNumber){

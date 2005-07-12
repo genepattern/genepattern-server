@@ -307,7 +307,9 @@ public class AnalysisWebServiceProxy {
 
 	public String createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName)throws WebServiceException{
 	try {
-           return stub.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
+           String lsid =  stub.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
+		System.out.println("LSID=" + lsid);
+		return lsid;
   		} catch (RemoteException re) {
   			throw new WebServiceException(re);
   		}

@@ -507,7 +507,7 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub  {
             throw new org.apache.axis.AxisFault("Failure trying to get the Call object", t);
         }
     }
-
+   
     public TaskInfo[] getTasks() throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
@@ -935,12 +935,13 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub  {
         setRequestHeaders(_call);
         setAttachments(_call);
         java.lang.Object _resp = _call.invoke(new java.lang.Object[] {jobs, pipelineName});
-
+System.out.println("_resp=" +_resp);
+           
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         else {
-            extractAttachments(_call);
+		 extractAttachments(_call);
             try {
                 return (java.lang.String) _resp;
             } catch (java.lang.Exception _exception) {
@@ -950,7 +951,7 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub  {
     }
 
     public java.lang.String createProvenancePipeline(java.lang.String fileUrlOrJobNumber, java.lang.String pipelineName) throws java.rmi.RemoteException {
-        if (super.cachedEndpoint == null) {
+       if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
         org.apache.axis.client.Call _call = createCall();
@@ -962,7 +963,16 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub  {
 
         setRequestHeaders(_call);
         setAttachments(_call);
-        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {fileUrlOrJobNumber, pipelineName});
+
+System.out.println("_call=" +_call);
+        java.lang.Object _resp = null;
+		try {
+		_resp = _call.invoke(new java.lang.Object[] {fileUrlOrJobNumber, pipelineName});
+
+		System.out.println("_resp=" +_resp);
+		} catch (Exception e){
+		e.printStackTrace();
+		}
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
