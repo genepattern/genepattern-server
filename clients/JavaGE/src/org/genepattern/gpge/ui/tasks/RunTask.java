@@ -56,8 +56,8 @@ public class RunTask {
 					.get(formalParams[i].getName());
 			String actualValue = actualParam != null ? actualParam.getValue()
 					: null;
-
-			if (actualValue == null || actualValue.trim().equals("")) {
+			
+			if (actualValue == null) {
 				java.util.HashMap attrs = formalParams[i].getAttributes();
 				String sOptional = (String) attrs
 						.get(GPConstants.PARAM_INFO_OPTIONAL[0]);

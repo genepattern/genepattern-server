@@ -158,7 +158,6 @@ public class ParameterInfoPanel extends JPanel {
                 
                 if (c instanceof ObjectTextField) {
                     try {
-
                         value = getValue(actualParameter, (ObjectTextField) c);
                         actualParameter.getAttributes().put(
                                 GPConstants.PARAM_INFO_CLIENT_FILENAME[0],
@@ -172,15 +171,18 @@ public class ParameterInfoPanel extends JPanel {
                     value = ci.getValue();
                 } else if (c instanceof JTextField) {
                     value = ((JTextField) c).getText();
+                    if (value != null) {
+                        value = value.trim();
+                    }
+                    if ("".equals(value)) {
+						value = null;
+                    }
                 }
-                if (value != null) {
-                    value = value.trim();
-                }
+                
                 actualParameter.setValue(value);
                 actualParameters.add(actualParameter);
             }
         }
-
         final ParameterInfo[] actualParameterArray = (ParameterInfo[]) actualParameters
                 .toArray(new ParameterInfo[0]);
         return actualParameterArray;
@@ -527,26 +529,29 @@ public class ParameterInfoPanel extends JPanel {
     static class ChoiceItem {
         
         /** the text that is displayed to the users */
-        private final String text;
+        private final String uiText;
 
         /** the command line value */
-        private final String value;
+        private final String commandLineValue;
 
         ChoiceItem(final String text, final String value) {
-            this.text = text.trim();
-            this.value = value;
+            this.uiText = text.trim();
+            this.commandLineValue = value;
 
         }
 
+        public String paramString() {
+        		return uiText + " = " + commandLineValue;
+        }
       
         public final String toString() {
-            return text;
+            return uiText;
         }
 
         public boolean equals(Object obj) {
         		if(obj instanceof ChoiceItem) {
         			ChoiceItem other = (ChoiceItem) obj;
-        			return other.text.equals(this.text);
+        			return other.uiText.equals(this.uiText);
         		}
         		return false;
         }
@@ -559,17 +564,17 @@ public class ParameterInfoPanel extends JPanel {
          * @return Description of the Return Value
          */
         protected boolean hasToken(final ChoiceItem item) {
-            return (item != null && (text.equalsIgnoreCase(item.text) || item.value
-                    .toString().equalsIgnoreCase(value.toString())));
+            return (item != null && (uiText.equalsIgnoreCase(item.uiText) || item.commandLineValue
+                    .toString().equalsIgnoreCase(commandLineValue.toString())));
         }
 
         /**
-         * returns the value (which is not displayed)
+         * returns the command line value (which is not displayed)
          * 
          * @return The value
          */
         public final String getValue() {
-            return value;
+            return commandLineValue;
         }
     }
 
