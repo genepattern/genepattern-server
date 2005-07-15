@@ -35,18 +35,17 @@ String stopTaskID = request.getParameter(STOP);
 String userID = (String)request.getAttribute("userID"); // get userID but don't force login if not defined
 
 if(isDownload) {
-    ZipOutputStream zos = null;
-    File zipFile = new File(System.getProperty("java.io.tmpdir"), jobID + ".zip");
-    zipFile.delete();
-    try {
-       zos = new ZipOutputStream(new FileOutputStream(zipFile));
-       byte[] buf = new byte[100000];
-       String jobDir = System.getProperty("jobs");
-       for(int i = 0; i < attachmentNames.length; i++) {
-         String value = attachmentNames[i];
+	ZipOutputStream zos = null;
+   File zipFile = new File(System.getProperty("java.io.tmpdir"), jobID + ".zip");
+   zipFile.delete();
+   try {
+   	zos = new ZipOutputStream(new FileOutputStream(zipFile));
+      byte[] buf = new byte[100000];
+      String jobDir = System.getProperty("jobs");
+		for(int i = 0; i < attachmentNames.length; i++) {
+			String value = attachmentNames[i];
          int index = value.lastIndexOf("=");
-
-	 value = value.substring(index+1);
+	 		value = value.substring(index+1);
          index = value.lastIndexOf("/");
          if (index == -1) index = value.lastIndexOf("\\");
 
@@ -91,7 +90,7 @@ ioe.printStackTrace();
          }
      }
      return;
-}
+} // isDownload
 
 if (isDelete || !isDownload) {
    response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -228,6 +227,24 @@ htColors.put(JobStatus.ERROR, "red");
 if (!isDelete) {
 %>
    <title>job results</title>
+   <script language="javascript">
+   function toggle(start, end) {
+		
+
+		for(i = start; i < end; i++) {
+			el = document.getElementById(i);
+			if(el.style.display=="none") {
+				el.style.display = '';
+			} else {
+				el.style.display = "none";
+			}
+		}
+	}
+	
+	</script>
+
+
+
    </head>
    <body>
    <jsp:include page="navbar.jsp"></jsp:include>
@@ -259,8 +276,7 @@ onclick="javascript:window.location='zipJobResults.jsp<%= showAll ? "" : ("?" + 
 if(jobs.length==0) {
    out.println("<p>No jobs to display");
 }
-
-
+int id = 0;
 for(int i = 0; i < jobs.length; i++) {
    JobInfo job = jobs[i];
    boolean myJob = userID.equals(job.getUserId());
@@ -274,9 +290,11 @@ for(int i = 0; i < jobs.length; i++) {
    
    out.print("<td>" + formatter.format(submitted));
    Date completed = job.getDateCompleted();
-   formatter = completed.after(midnight.getTime()) ? shortDateFormat : dateFormat;
+   if(completed!=null) {
+   	formatter = completed.after(midnight.getTime()) ? shortDateFormat : 	dateFormat;
    
-   out.print("<td>" + formatter.format(completed));
+   	out.print("<td>" + formatter.format(completed));
+   }
    String status = job.getStatus();
    
    if(status.equals(JobStatus.PROCESSING)) {
@@ -295,58 +313,59 @@ out.print("<td><font color=" + htColors.get(status)  +">" + status + "</font></t
 		}
 
    } else {
-	out.print("<td><font color=" + htColors.get(status)  +">" + status);
-	if (status.equals(JobStatus.FINISHED)) {
-		out.print("</td><td><form><input type=\"checkbox\" name=\"deleteJobID\" value=\"" + job.getJobNumber() + "\"></form>");	}
-   }
-   ParameterInfo[] params = job.getParameterInfoArray();
-   
-   if(params!=null && params.length > 0) {
-    
-      boolean firstOutputFile = true;  
-      boolean hasOutputFiles = false;
-      for(int j = 0; j < params.length; j++) {
-         ParameterInfo parameterInfo = params[j];
- 
-         if(parameterInfo.isOutputFile()) {
-
-            if(firstOutputFile) {
-                out.println("<form method=\"post\">");
-                out.println("<input type=\"hidden\" name=\"jobID\" value=\"" + job.getJobNumber() + "\"/>");
-                if (showAll) {
-                	out.println("<input type=\"hidden\" name=\"" + SHOW_ALL + "\" value=\"1\"/>");
-                }
-               firstOutputFile = false;
-               hasOutputFiles = true;
-            }
-           String value = parameterInfo.getValue();
-           int index = value.lastIndexOf(File.separator);
-	     String altSeperator = "/";
-	     if (index == -1) index = value.lastIndexOf(altSeperator);
-
-           String jobNumber = value.substring(0, index);
-           String fileName = value.substring(index + 1, value.length());
-                  
-           out.println("<tr><td></td><td colspan=\"4\">");
-           out.println("<input type=\"checkbox\" name=\"dl\" value=\"" + value + "\" checked><a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\">" + fileName + "</a>");
-   
-        if(showAll) {
-               out.println(StringUtils.htmlEncode(" " + job.getUserId()));
-           }
-         }
-      }
-      if(hasOutputFiles) {
-         out.println("<tr><td></td><td colspan=\"4\">");
-         out.println("<input type=\"submit\" name=\"delete\" value=\"delete\" class=\"little\"");
-	   if (!myJob){
-	 	out.println("disabled=\"true\" ");
-	   }
-         out.println("><input type=\"submit\" name=\"download\" value=\"download\" class=\"little\">");
-         out.println("</form>");
-      }
-
-   }
-
+		out.print("<td><font color=" + htColors.get(status)  +">" + status);
+		if (status.equals(JobStatus.FINISHED)) {
+			out.print("</td><td><form><input type=\"checkbox\" name=\"deleteJobID\" value=\"" + job.getJobNumber() + "\"></form>");	}
+  	 	}
+		ParameterInfo[] params = job.getParameterInfoArray();
+		JobInfo[] children = analysisClient.getChildren(job.getJobNumber());
+		out.println("<form method=\"post\">");
+		out.println("<input type=\"hidden\" name=\"jobID\" value=\"" + job.getJobNumber() + "\"/>");
+		boolean hasOutputFiles = false;
+		boolean isPipeline = false;
+		if (showAll) {
+			out.println("<input type=\"hidden\" name=\"" + SHOW_ALL + "\" value=\"1\"/>");
+		}
+		int startId = id;
+		if(children.length > 0) {
+			isPipeline = true;
+			
+			for(int k = 0; k < children.length; k++) {
+				List paramsList = getOutputParameters(children[k]);
+				if(paramsList.size() > 0) {
+					hasOutputFiles = true;
+					String userId = StringUtils.htmlEncode(" " + job.getUserId());
+					out.println("<tr id=" + id + "><td></td><td colspan=\"4\">");
+					id++;
+					out.println((k+1) + ". " + children[k].getTaskName());
+					writeParameters(userId, paramsList, showAll, out);
+				}
+				
+			}
+			
+		} else {
+			List paramsList = getOutputParameters(job);
+			if(paramsList.size() > 0) {
+				hasOutputFiles = true;
+				String userId = StringUtils.htmlEncode(" " + job.getUserId());
+				writeParameters(userId, paramsList, showAll, out);
+			}
+		}   	
+   	if(hasOutputFiles) {
+			out.println("<tr><td></td><td colspan=\"4\">");
+			out.println("<input type=\"submit\" name=\"delete\" value=\"delete\" class=\"little\"");
+			if (!myJob) {
+				out.println("disabled=\"true\" ");
+			}
+			out.println("><input type=\"submit\" name=\"download\" value=\"download\" class=\"little\">");
+			if(isPipeline) {
+			//	out.print("<input type=\"checkbox\" onClick=toggle('" + job.getJobNumber() + "');>");
+					out.print("<input type=\"checkbox\" checked onClick=\"toggle(" + startId +"," + id + ");\">");
+				out.println("Show Pipeline Steps</input>");
+			}
+		}
+		out.println("</form>");	
+	
 }
 
 out.println("</table>");
@@ -356,3 +375,41 @@ out.println("<br>");
  <jsp:include page="footer.jsp"></jsp:include>
 </body>
 </html>
+<%! 
+
+	public void writeParameters(String encodedUserId, List params, boolean showAll, JspWriter out) throws java.io.IOException {
+		for(int i = 0; i < params.size(); i++) {
+			ParameterInfo parameterInfo = (ParameterInfo) params.get(i);
+			String value = parameterInfo.getValue();
+           	int index = value.lastIndexOf(File.separator);
+	     	String altSeperator = "/";
+	        	if (index == -1) index = value.lastIndexOf(altSeperator);
+
+           	String jobNumber = value.substring(0, index);
+           	String fileName = value.substring(index + 1, value.length());
+                  
+           	out.println("<tr><td></td><td colspan=\"4\">");
+           	out.println("<input type=\"checkbox\" name=\"dl\" value=\"" + value + "\" checked><a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\">" + fileName + "</a>");
+   
+			if(showAll) {
+				out.println(encodedUserId); 
+			}
+		}	
+	}
+	
+	public List getOutputParameters(JobInfo job)  {
+		ParameterInfo[] params = job.getParameterInfoArray();
+		List paramsList = new ArrayList();
+		if(params!=null && params.length > 0) {
+  
+			for(int j = 0; j < params.length; j++) {
+				ParameterInfo parameterInfo = params[j];
+
+				if(parameterInfo.isOutputFile()) {
+					paramsList.add(parameterInfo);
+				}
+			}
+		}
+		return paramsList;
+	}
+%>
