@@ -365,6 +365,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00054=10 ImputeMissingValues.zip"/>
+	</commandline>
+</cvs>
+<copy file="ImputeMissingValues.zip" tofile="catalogregen/ImputeMissingValues.KNN.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00054=8 ImputeMissingValues.zip"/>
 	</commandline>
 </cvs>
@@ -775,6 +782,13 @@
 	</commandline>
 </cvs>
 <copy file="WeightedVoting.zip" tofile="catalogregen/WeightedVoting.1.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00027=2 WeightedVoting.zip"/>
+	</commandline>
+</cvs>
+<copy file="WeightedVoting.zip" tofile="catalogregen/WeightedVoting.2.zip" />
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>

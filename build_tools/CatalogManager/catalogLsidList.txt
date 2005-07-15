@@ -49,6 +49,7 @@ HierarchicalClustering.MeV.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepatt
 Hu68kHu35kAtoU95.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00011=0
 Hu68kHu35kAtoU95.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00011=1
 ImputeMissingValues.KNN.9.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00054=9
+ImputeMissingValues.KNN.10.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00054=10
 ImputeMissingValues.KNN.8.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00054=8
 KNN.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00012=0
 KNN.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00012=1
@@ -108,6 +109,7 @@ VariationFilter.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_
 VariationFilter.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00036=1
 WeightedVoting.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00027=0
 WeightedVoting.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00027=1
+WeightedVoting.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00027=2
 WeightedVotingXValidation.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00028=0
 WeightedVotingXValidation.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00028=2
 WeightedVotingXValidation.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00028=1
