@@ -130,6 +130,14 @@ taskName = taskInfo.getName();
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 %>
+<script language="javascript">
+function resetValues() {
+	// alert('Resetting');
+	window.location = 'runTask.jsp?<%= GPConstants.NAME %>=<%= taskName %>'
+}
+</script>
+
+
 <table cols="2">
 
 <tr><td  valign='top' height='100%'>
@@ -272,7 +280,7 @@ if (taskName != null) {
 %>
 	<tr>	
 		<td></td>
-		<td><input type="submit" name="cmd" value="run"> <input type="button" value="help" onclick="window.open('getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= taskName %>', '_new')"></td>
+		<td><input type="submit" name="cmd" value="run"><input type="button"  name="reset" value="reset" onClick="resetValues()"> <input type="button" value="help" onclick="window.open('getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= taskName %>', '_new')"></td>
 	</tr>
 
 	</table>
