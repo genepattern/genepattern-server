@@ -20,6 +20,7 @@ import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.util.KeySortedProperties;
 
 public class ZipTask extends CommandLineAction {
 
@@ -144,13 +145,21 @@ public class ZipTask extends CommandLineAction {
 		//	System.out.println("creating manifest");
 		ZipEntry zipEntry = new ZipEntry(GPConstants.MANIFEST_FILENAME);
 		zos.putNextEntry(zipEntry);
-
+		KeySortedProperties sProps = new KeySortedProperties();
+		sProps.putAll(props);
 		ByteArrayOutputStream manifestData = new ByteArrayOutputStream(1000);
-		props.store(manifestData, name); // write properties to stream
+		sProps.store(manifestData, name); // write properties to stream
+
+
+
 		zos.write(manifestData.toByteArray());
 		zos.closeEntry();
 		return zipEntry;
 	}
+
+
+	
+
 
 	public File packageTask(String name, String userID) throws Exception {
 
