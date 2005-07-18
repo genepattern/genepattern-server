@@ -33,7 +33,7 @@ public class ViewManager {
 						setComponent(analysisServiceDisplay);
 						MessageManager.notifyListeners(new ChangeViewMessage(this, ChangeViewMessage.RUN_TASK_SHOWN, analysisServiceDisplay));
 					} else if(asm.getType()==ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST) {
-						pipelineComponent.setTaskInfo(asm.getAnalysisService().getTaskInfo());
+						pipelineComponent.setTaskInfo(asm.getAnalysisService().getTaskInfo(), false);
 						setComponent(pipelineComponent);
 						MessageManager.notifyListeners(new ChangeViewMessage(this, ChangeViewMessage.EDIT_PIPELINE_SHOWN, analysisServiceDisplay));
 					} else if(asm.getType()==ChangeViewMessageRequest.SHOW_GETTING_STARTED_REQUEST) {
@@ -41,9 +41,11 @@ public class ViewManager {
 						setComponent(analysisServiceDisplay);
 						MessageManager.notifyListeners(new ChangeViewMessage(this, ChangeViewMessage.GETTING_STARTED_SHOWN, analysisServiceDisplay));
 					} else if(asm.getType()==ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST) {
-						pipelineComponent.setTaskInfo(asm.getAnalysisService().getTaskInfo());
+						pipelineComponent.setTaskInfo(asm.getAnalysisService().getTaskInfo(), true);
 						setComponent(pipelineComponent);
 						MessageManager.notifyListeners(new ChangeViewMessage(this, ChangeViewMessage.VIEW_PIPELINE_SHOWN, analysisServiceDisplay));
+					} else {
+						System.err.println("Unknown type:" + asm.getType());
 					}
 				}
 			}
