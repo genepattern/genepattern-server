@@ -308,11 +308,12 @@ function chooseInheritTask(taskNum, param) {
 	}
 
 	ctl.options[ctl.options.length]  = new Option('1st output', '1');
-	ctl.options[ctl.options.length]  = new Option('stdout', 'stdout');
-	ctl.options[ctl.options.length]  = new Option('stderr', 'stderr');
 	ctl.options[ctl.options.length]  = new Option('2nd output', '2');
 	ctl.options[ctl.options.length]  = new Option('3rd output', '3');
 	ctl.options[ctl.options.length]  = new Option('4th output', '4');
+	ctl.options[ctl.options.length]  = new Option('stdout', 'stdout');
+	ctl.options[ctl.options.length]  = new Option('stderr', 'stderr');
+	
 }
 
 function promptOnRunChecked(checkbox, taskNum, param, paramName) {
