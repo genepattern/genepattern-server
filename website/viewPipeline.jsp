@@ -283,10 +283,9 @@ out.println("<table cellspacing='0' width='100%' frame='box'>");
 			if((k < runtimePrompt.length )&&(runtimePrompt[k])) {
 				value = "Prompt when run";
 			} else if (taskNumber != null) {
-				String outputFileNumber = (String) pipelineAttributes
-				.get(PipelineModel.INHERIT_FILENAME);
+				String outputFileNumber = (String) pipelineAttributes.get(PipelineModel.INHERIT_FILENAME);
 				int taskNumberInt = Integer.parseInt(taskNumber.trim());
-				String inheritedOutputFileName = null;
+				String inheritedOutputFileName = outputFileNumber;
 				if(outputFileNumber.equals("1")) {
 					inheritedOutputFileName = "1st output";
 				} else if(outputFileNumber.equals("2")) {
@@ -305,13 +304,28 @@ out.println("<table cellspacing='0' width='100%' frame='box'>");
 			} else {
         
 				value = informalParam.getValue(); 	
-            
+				Properties props = System.getProperties();
+				props.setProperty("LSID", lsid);	
+				
+			            
 				try {
 					new java.net.URL(value); // see if parameter if a URL
 					value = "<a href=\"" + value + "\">" + value + "</a>";
                
 				} catch(java.net.MalformedURLException x) { 
+					try {
+						String svalue = GenePatternAnalysisTask.substitute(value, props, null);
+						new java.net.URL(svalue); // see if parameter if a URL
+
+						String filename = value;
+						int idx = value.indexOf("file=");
+						if (idx >= 0) filename = value.substring(idx+5);
+						value = "<a href=\"" + svalue + "\">" + filename + "</a>";
+
+	
+					} catch (java.net.MalformedURLException xx){
 			               value = StringUtils.htmlEncode(value);
+					}
 				}
 			}
 			
