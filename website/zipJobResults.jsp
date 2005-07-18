@@ -4,6 +4,7 @@
 	       java.text.*,
 	       java.util.*,
 	       java.net.*,
+	 	 org.genepattern.util.GPConstants,
 		 org.genepattern.webservice.JobInfo,
  		 org.genepattern.util.StringUtils,
 		 org.genepattern.webservice.JobStatus,
@@ -26,6 +27,9 @@ String SHOW_ALL = "showAll";
    
 String jobID = request.getParameter("jobID"); // for deleting or downloading 
 String[] attachmentNames = request.getParameterValues("dl"); // for deleting or downloading
+
+String SHOW_LOGS = "showLogs";
+boolean showLogs = (request.getParameter(SHOW_LOGS) != null);
 
 boolean showAll = (request.getParameter(SHOW_ALL) != null);
 boolean isDelete = (request.getParameter("delete") != null);
@@ -147,6 +151,23 @@ if (isDelete || !isDownload) {
 			window.location = "zipJobResults.jsp?" + url;
 		}
 	}
+
+	function toggleLogs() {
+		var visible = document.form1.showLogs.checked;
+			
+		var elements = document.getElementsByTagName("div")
+		for (i=0; i < elements.length; i++){
+			var objId = elements[i].id
+			if (objId == 'log'){
+				if (visible) {
+		  			elements[i].style.display = "block";
+				} else {
+					elements[i].style.display = "none";
+				}
+			}
+		}
+	}
+
    </script>
 <%
 }
@@ -251,9 +272,13 @@ if (!isDelete) {
 <% } %>
 
 
-<form>
+<form  name='form1'>
 <input type="checkbox" name="<%= SHOW_ALL %>" <%= showAll ? "checked" : "" %> value="<%= SHOW_ALL %>"
 onclick="javascript:window.location='zipJobResults.jsp<%= showAll ? "" : ("?" + SHOW_ALL + "=1") %>'">show everyone's jobs
+<input type="checkbox" name="<%= SHOW_LOGS %>" <%= showLogs ? "checked" : "" %> value="<%= SHOW_LOGS %>"
+onclick="toggleLogs()">show execution logs
+
+
 </form>
 
 <table cellspacing="4">
@@ -338,7 +363,7 @@ out.print("<td><font color=" + htColors.get(status)  +">" + status + "</font></t
 					out.println("<tr id=" + id + "><td></td><td colspan=\"4\">");
 					id++;
 					out.println((k+1) + ". " + children[k].getTaskName());
-					writeParameters(userId, paramsList, showAll, out);
+					writeParameters(userId, paramsList, showAll, "&nbsp;&nbsp;&nbsp;&nbsp;", out);
 				}
 				
 			}
@@ -348,7 +373,7 @@ out.print("<td><font color=" + htColors.get(status)  +">" + status + "</font></t
 			if(paramsList.size() > 0) {
 				hasOutputFiles = true;
 				String userId = StringUtils.htmlEncode(" " + job.getUserId());
-				writeParameters(userId, paramsList, showAll, out);
+				writeParameters(userId, paramsList, showAll, "", out);
 			}
 		}   	
    	if(hasOutputFiles) {
@@ -377,7 +402,7 @@ out.println("<br>");
 </html>
 <%! 
 
-	public void writeParameters(String encodedUserId, List params, boolean showAll, JspWriter out) throws java.io.IOException {
+	public void writeParameters(String encodedUserId, List params, boolean showAll, String prefix, JspWriter out) throws java.io.IOException {
 		for(int i = 0; i < params.size(); i++) {
 			ParameterInfo parameterInfo = (ParameterInfo) params.get(i);
 			String value = parameterInfo.getValue();
@@ -387,14 +412,28 @@ out.println("<br>");
 
            	String jobNumber = value.substring(0, index);
            	String fileName = value.substring(index + 1, value.length());
-                  
+            boolean isLog = ((fileName.indexOf(GPConstants.TASKLOG)) >= 0);
+		      
            	out.println("<tr><td></td><td colspan=\"4\">");
-           	out.println("<input type=\"checkbox\" name=\"dl\" value=\"" + value + "\" checked><a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\">" + fileName + "</a>");
-   
-			if(showAll) {
-				out.println(encodedUserId); 
+		if (isLog){
+			out.println("<div id=\"log\" style=\"display:none;\">");
+      	} 
+
+           	out.println(prefix + "<input type=\"checkbox\" name=\"dl\" value=\"" + value + "\" checked><a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\">" + fileName + "</a>");
+   		
+		if(showAll) {
+			out.println(encodedUserId); 
 			}
+
+		if (isLog){
+			out.println("</div>");
+      	} 
+
+		out.println("</td></tr>");
+
 		}	
+		
+
 	}
 	
 	public List getOutputParameters(JobInfo job)  {
