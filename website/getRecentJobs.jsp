@@ -17,6 +17,7 @@
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.util.LSID,
+		 org.genepattern.util.StringUtils,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.webservice.OmnigeneException, 
 		 org.genepattern.data.pipeline.PipelineModel"
@@ -59,7 +60,7 @@ midnight.set(Calendar.MILLISECOND, 0);
 JobInfo[] jobs = null;
 LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
 try {
-      jobs = analysisClient.getJobs(userID, -1, Integer.MAX_VALUE, false);
+      jobs = analysisClient.getJobs(userID, -1, Integer.MAX_VALUE, true);
 } catch(WebServiceException wse) {
 	wse.printStackTrace();
 }
@@ -72,9 +73,13 @@ boolean[] hasLog = new boolean[jobs.length];
 //// GET THE EXECUTION LOG FOR WRITING TO THE TEXTAREA
 for(int i = 0; i < jobs.length; i++) {
    JobInfo job = jobs[i];
+   job = analysisClient.getJob(job.getJobNumber());
+System.out.println("JN=" + job.getJobNumber());
    hasLog[i] = false;
    if(!job.getStatus().equals(JobStatus.FINISHED) ) continue;
-  
+   StringBuffer buff2 = new StringBuffer();
+   StringBuffer buff = new StringBuffer();
+			
    out.print("<tr><td align=\"right\" >" + job.getJobNumber() + "");
    jobsDisplayed++;
    ParameterInfo[] params = job.getParameterInfoArray();
@@ -83,45 +88,21 @@ for(int i = 0; i < jobs.length; i++) {
    if(params!=null && params.length > 0) {    
       for(int j = 0; j < params.length; j++) {
          ParameterInfo parameterInfo = params[j];
-         if(parameterInfo.isOutputFile()) {
-		String value = parameterInfo.getValue();
-           	int index = value.lastIndexOf(File.separator);
-	     	String altSeperator = "/";
-	     	if (index == -1) index = value.lastIndexOf(altSeperator);
-		String jobNumber = value.substring(0, index);
-		String fileName = value.substring(index + 1, value.length());
-           
-		boolean upToParams = false;      
-	     	if (GPConstants.TASKLOG.equals(fileName)){
-			File logFile = new File("temp/"+value);
-			if (!logFile.exists()) continue;
-			BufferedReader reader = new BufferedReader(new FileReader(logFile));
-			String line = null;
-			StringBuffer buff = new StringBuffer();
-			while ((line = reader.readLine()) != null){
-				if (!upToParams){
-					int idx = line.indexOf("# Parameters");
-					if (idx >= 0) upToParams = true;
-					continue;
-				} 
-				String trimline = line.substring(1).trim(); // remove hash and spaces
-				
-
-				buff.append(trimline);
-				buff.append("\\n");
-			}	
-			log = buff.toString();
-			hasLog[i] = true;
+	  	if (!parameterInfo.isOutputFile()){			
+			buff2.append(parameterInfo.getName());
+			buff2.append("=");
+			buff2.append(parameterInfo.getValue());
+			buff2.append("    ");
 		}
-			
-	   }
-	}
+	   }		
    }
+  log = buff2.toString();
+  hasLog[i] = true;
+
   // END OF GETTING THE EXECUTION LOG
   out.println("<script language='javascript'>");
 
   out.println("logFileContents["+job.getJobNumber()+"]='" + log+ "';");
-
   out.println("</script>");
 
 
