@@ -209,7 +209,6 @@ public class PipelineComponent extends JPanel {
 			}
 		});
 		pipelineTaskInfo.setParameterInfoArray((ParameterInfo[]) promptWhenRunParameters.toArray(new ParameterInfo[0]));
-		GenePattern.DEBUG = true;
 		setPipeline(pipelineTaskInfo, pipelineModel);
 	}
 	
@@ -260,7 +259,6 @@ public class PipelineComponent extends JPanel {
 				
 			}
 		});
-		GenePattern.DEBUG = true;
 		pipelineTaskInfo.setParameterInfoArray((ParameterInfo[]) promptWhenRunParameters.toArray(new ParameterInfo[0]));
 		setPipeline(pipelineTaskInfo, pipelineModel);
 		
@@ -409,9 +407,6 @@ public class PipelineComponent extends JPanel {
 		this.jobSubmissions = pipelineModel.getTasks();
 		this.userID = pipelineTaskInfo.getUserId();
 	
-		if(GenePattern.DEBUG) {
-			print();
-		}
 		String displayName = pipelineModel.getName();
 		if (displayName.endsWith(".pipeline")) {
 			displayName = displayName.substring(0, displayName.length()
