@@ -124,7 +124,6 @@ Or download the task from a website:</td></tr>
 <br><br>
 <center>
 <input type="submit" value="install" name="save">&nbsp;&nbsp;
-<input type="button" value="help" onclick="window.open('help.jsp', 'help')">
 </center>
 </form>
 </td></tr>
