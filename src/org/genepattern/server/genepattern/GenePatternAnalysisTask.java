@@ -612,7 +612,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 				 */
 				jobStatus = JobStatus.JOB_ERROR;
 			} else {
-				taskLog = writeProvenanceFile(outDirName, jobInfo, formalParameters, params)	;//XXX
+				taskLog = writeProvenanceFile(outDirName, jobInfo, formalParameters, params, props)	;//XXX
 				// run the task and wait for completion.
 				_cat.info(taskName + " command (job " + jobInfo.getJobNumber()
 						+ "): " + commandLine.toString());
@@ -878,7 +878,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	}
 
 	
-	protected static File writeProvenanceFile(String outDirName, JobInfo jobInfo, ParameterInfo[] formalParameters, ParameterInfo[] actualParams){
+	protected static File writeProvenanceFile(String outDirName, JobInfo jobInfo, ParameterInfo[] formalParameters, ParameterInfo[] actualParams, Properties props){
 
 		try {
 		File outDir = new File(outDirName);
@@ -889,7 +889,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
 		bw.write("# Created: "+ new Date(f.lastModified())+" by " + jobInfo.getUserId());
 		bw.write("\n# Job: " + jobInfo.getJobNumber());
 		bw.write("    server:  ");
-		
 		InetAddress addr = InetAddress.getLocalHost();
 		String host_address = addr.getCanonicalHostName();
 		String GP_URL =  "http://" + host_address+":" + System.getProperty("GENEPATTERN_PORT") + "/gp";
@@ -951,6 +950,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
 					} else {
 						value = pinfo.getUIValue(formalPinfo);
 					}
+				}
+				String substitutedValue = substitute(value, props, null); // bug 899 perform command line substitutions
+				if (!(value.equals(substitutedValue))){
+					value = substitutedValue +" (" + value + ")";
 				}
 				bw.write("\n#    " + pinfo.getName() + " = " + value);
 			}
