@@ -54,6 +54,7 @@ import org.genepattern.gpge.util.BuildProperties;
 import org.genepattern.modules.ui.graphics.*;
 import org.genepattern.util.*;
 import org.genepattern.gpge.ui.table.*;
+import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.webservice.*;
 import org.genepattern.gpge.ui.menu.*;
 import org.genepattern.gpge.PropertyManager;
@@ -106,8 +107,6 @@ public class GPGE {
 	DefaultMutableTreeNode selectedJobNode = null;
 
 	DefaultMutableTreeNode selectedProjectDirNode = null;
-
-	JFileChooser saveAsFileChooser;
 
 	FileMenu fileMenu;
 
@@ -335,24 +334,19 @@ public class GPGE {
 
 	public void showSaveDialog(final JobModel.ServerFileNode node) {
 		final File initiallySelectedFile = new File(node.toString());
-		if (saveAsFileChooser == null) {
-			saveAsFileChooser = new JFileChooser();
-		}
-		saveAsFileChooser.setSelectedFile(initiallySelectedFile);
+		final File outputFile = GUIUtil.showSaveDialog(initiallySelectedFile);
 
-		if (saveAsFileChooser.showSaveDialog(GenePattern.getDialogParent()) == JFileChooser.APPROVE_OPTION) {
-			final File outputFile = saveAsFileChooser.getSelectedFile();
-			if (!overwriteFile(outputFile)) {
-				return;
-			}
+		if (outputFile != null) {
 
 			new Thread() {
 				public void run() {
 					try {
 						node.download(outputFile);
-						//} catch (WebServiceException wse) {
-						//  if(!disconnectedFromServer(wse)) {
-						//    GenePattern.showErrorDialog("An error occurred while saving " + outputFile.getName() + ". Please try again.");
+						// } catch (WebServiceException wse) {
+						// if(!disconnectedFromServer(wse)) {
+						// GenePattern.showErrorDialog("An error occurred while
+						// saving " + outputFile.getName() + ". Please try
+						// again.");
 						// }
 					} catch (IOException ioe) {
 						ioe.printStackTrace();
@@ -1679,21 +1673,6 @@ public class GPGE {
 				language);
 	}
 
-	private boolean overwriteFile(File f) {
-		if (!f.exists()) {
-			return true;
-		}
-		String message = "An item named "
-				+ f.getName()
-				+ " already exists in this location.\nDo you want to replace it with the one that you are saving?";
-		if (JOptionPane.showOptionDialog(GenePattern.getDialogParent(),
-				message, null, JOptionPane.YES_NO_OPTION,
-				JOptionPane.WARNING_MESSAGE, GenePattern.getIcon(),
-				new Object[] { "Replace", "Cancel" }, "Cancel") != JOptionPane.YES_OPTION) {
-			return false;
-		}
-		return true;
-	}
 
 	private void createJobResultFileActions() {
 		jobResultFileViewModulesMenu = new MenuAction("Modules");
@@ -1726,7 +1705,7 @@ public class GPGE {
 										File outputFile = new File(dir,
 												node.name);
 										try {
-											if (overwriteFile(outputFile)) {
+											if (!GUIUtil.overwriteFile(outputFile)) {
 												node.download(outputFile);
 												projectDirModel.refresh(dir);
 											}
