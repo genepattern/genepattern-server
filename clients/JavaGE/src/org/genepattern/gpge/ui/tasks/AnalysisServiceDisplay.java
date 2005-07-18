@@ -204,6 +204,14 @@ public class AnalysisServiceDisplay extends JPanel {
 		});
 		buttonPanel.add(editButton);
 		
+		JButton viewButton = new JButton("View");
+		viewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				MessageManager.notifyListeners(new ChangeViewMessageRequest(this, ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST, selectedService));
+			}
+		});
+		buttonPanel.add(viewButton);
+		
 		JPanel viewCodePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
 		JLabel viewCodeLabel = new JLabel("View Code:");
