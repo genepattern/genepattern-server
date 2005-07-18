@@ -33,7 +33,11 @@ public class LocalAnalysisClient {
    public void deleteJobResultFile(int jobId, String value) throws WebServiceException {
       service.deleteJobResultFile(jobId, value);
    }
-
+	
+   public int[] getChildren(int jobId) throws WebServiceException {
+	return service.getChildren(jobId);
+   }
+   
 
    public void terminateJob(int jobId) throws WebServiceException {
       service.terminateJob(jobId);
