@@ -89,14 +89,43 @@ public class PipelineModel implements Serializable {
 	public void init() {
 	}
 
+	/**
+	 * Gets the <tt>JobSubmission</tt> at the given index
+	 * @param index The index of the task to get
+	 * @see getTasks
+	 * @return The <tt>JobSubmission</tt> at the given index
+	 */
+	public JobSubmission getTask(int index) {
+		return (JobSubmission) vTasks.get(index);
+	}
+
 	public Vector getTasks() {
 		return vTasks;
 	}
 
+	/**
+	 * Gets a map that maps the parameter name as a <tt>String</tt> to a <tt>ParameterInfo</tt> object
+	 * @see addInputParameter
+	 * @return a map of runtime prompt parameters
+	 */
 	public TreeMap getInputParameters() {
 		return hmParameters;
 	}
 
+	/**
+	 * Adds a runtime prompt parameter
+	 * 
+	 * @param name
+	 *            The parameter name. The name should be the task name + task
+	 *            number + . + parameter name. The name of the
+	 *            <tt>ParameterInfo</tt> object should NOT include the task
+	 *            name + task number prefix. It should have the parameter info
+	 *            attribute runTimePrompt set to 1. Additionally, the
+	 *            <tt>ParameterInfo</tt> should have the description and value
+	 *            fields set to the empty string.
+	 * @param p
+	 *            The parameter
+	 */
 	public void addInputParameter(String name, ParameterInfo p) {
 		hmParameters.put(name, p);
 	}
