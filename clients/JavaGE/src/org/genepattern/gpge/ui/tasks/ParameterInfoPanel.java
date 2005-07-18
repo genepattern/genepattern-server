@@ -27,6 +27,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.genepattern.data.pipeline.JobSubmission;
+import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.PropertyManager;
 import org.genepattern.gpge.message.GPGEMessage;
@@ -37,6 +39,7 @@ import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.GPGE;
 import org.genepattern.gpge.ui.preferences.PreferenceKeys;
 import org.genepattern.gpge.ui.project.ProjectDirModel;
+import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -62,6 +65,10 @@ public class ParameterInfoPanel extends JPanel {
 
 	private FormLayout formLayout;
 	private int maxLabelWidth = 0;
+
+	private boolean viewOnly;
+
+	private PipelineModel pipelineModel;
 	final static int PARAMETER_LABEL_COLUMN = 1;
 	final static int PARAMETER_INPUT_FIELD_COLUMN = 3;
 	
@@ -233,8 +240,14 @@ public class ParameterInfoPanel extends JPanel {
 		this.add(p, cc.xy(PARAMETER_INPUT_FIELD_COLUMN, row));
 	}
     
-     public ParameterInfoPanel(String taskName, ParameterInfo[] params) {
-    	 	MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
+	 public ParameterInfoPanel(String taskName, ParameterInfo[] params) {
+		 this(taskName, params, false);
+	 }
+	 
+     public ParameterInfoPanel(String taskName, ParameterInfo[] params, boolean viewOnly) {
+    	 	this.viewOnly = viewOnly; 
+    	 
+    	 	MessageManager.addGPGEMessageListener(new GPGEMessageListener() { // FIXME
 
 				public void receiveMessage(GPGEMessage message) {
 					if(message instanceof PreferenceChangeMessage) {
@@ -291,17 +304,9 @@ public class ParameterInfoPanel extends JPanel {
             for (int i = 0; i < params.length; i++) {
                 cc.gridWidth = 1;
                 final ParameterInfo info = params[i];
-                final String value = info.getValue();
-                Component input = null;
-                if (value == null || value.equals("")) {
-                    if (info.isInputFile()) {
-                        input = createInputFileField(info);
-                    } else {
-                        input = createTextInput(info);
-                    }
-                } else {
-                    input = createComboBox(info);
-                }
+                
+                Component input = getComponent(info);
+                
                 int row = getRowIndex(i);
                 Component inputLabel = new JLabel(AnalysisServiceDisplay
                         .getDisplayString(info) + ":");
@@ -314,41 +319,38 @@ public class ParameterInfoPanel extends JPanel {
                 this.add(inputLabel, cc.xy(PARAMETER_LABEL_COLUMN, row));
                 JLabel description = new JLabel(info.getDescription());
                
-                if (info.isInputFile()) {
-                	JPanel p = new JPanel();
-              
-                	p.setBackground(getBackground());
-                	FormLayout f = new FormLayout("left:pref:none, left:pref:none, left:default:none","pref");
-                	p.setLayout(f);
+                if (!viewOnly && info.isInputFile()) {
+					JPanel p = new JPanel();
+					p.setBackground(getBackground());
+					FormLayout f = new FormLayout(
+							"left:pref:none, left:pref:none, left:default:none",
+							"pref");
+					p.setLayout(f);
 
-                	JButton btn = new JButton("Browse...");
-                	btn.addActionListener(new ActionListener() {
-                		public void actionPerformed(ActionEvent e) {
-                			FileDialog fc = new FileDialog(GenePattern.getDialogParent());
-                			fc.setModal(true);
-                			fc.show();
-                			String f = fc.getFile();
-                			String directory = fc.getDirectory();
-                			if(f!=null) {
-                				setValue(info.getName(), new File(directory, f));
-                			}
-                		}
-                	});
-                	btn.setBackground(getBackground());
-               // 	Dimension d = btn.getPreferredSize();
-                //	d.height = size.height - 2;
-               // 	btn.setSize(d);
-                	p.add(input, cc.xy(1, 1));
-                	p.add(btn, cc.xy(2, 1));
-                	this.add(p, cc.xy(PARAMETER_INPUT_FIELD_COLUMN, row + PARAMETER_ROW_OFFSET));
-                } else {
-                	 this.add(input, cc.xy(PARAMETER_INPUT_FIELD_COLUMN, row + PARAMETER_ROW_OFFSET));
-                }
-                cc.hAlign = CellConstraints.FILL;
-                description.setVisible(showDescriptions);
-                parameterDescriptions.add(description);
-                this.add(description, cc.xy(PARAMETER_INPUT_FIELD_COLUMN, row + DESCRIPTION_ROW_OFFSET));
-                parameterName2ComponentMap.put(info.getName(), input);
+					JButton btn = new JButton("Browse...");
+					btn.setBackground(getBackground());
+					btn.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							File f = GUIUtil.showOpenDialog();
+							if (f != null) {
+								setValue(info.getName(), f);
+							}
+						}
+					});
+
+					p.add(input, cc.xy(1, 1));
+					p.add(btn, cc.xy(2, 1));
+					this.add(p, cc.xy(PARAMETER_INPUT_FIELD_COLUMN, row
+							+ PARAMETER_ROW_OFFSET));
+				} else {
+					this.add(input, cc.xy(PARAMETER_INPUT_FIELD_COLUMN, row
+							+ PARAMETER_ROW_OFFSET));
+				}
+				cc.hAlign = CellConstraints.FILL;
+				description.setVisible(showDescriptions);
+				parameterDescriptions.add(description);
+				this.add(description, cc.xy(PARAMETER_INPUT_FIELD_COLUMN, row
+						+ DESCRIPTION_ROW_OFFSET));
             }
         }
     }
@@ -360,7 +362,17 @@ public class ParameterInfoPanel extends JPanel {
         }
     }
 
-    public void setValue(String parameterName, Object value) {
+    /**
+	 * 
+	 * @param parameterName
+	 * @param value
+	 *            If the parameter contains a choice list, the value can be
+	 *            either the UI value of the command line value
+	 */
+	public void setValue(String parameterName, Object value) {
+		if(value==null) {
+			value = "";
+		}
     		Component c = getComponent(parameterName);
     	    if(c!=null) {
     	    		if(c instanceof ObjectTextField) {
@@ -370,28 +382,110 @@ public class ParameterInfoPanel extends JPanel {
     	    			((JTextField)c).setText(value.toString());
     	    		} else if(c instanceof JComboBox) {
     	    			JComboBox cb = (JComboBox) c;
-    	    			cb.setSelectedItem(new ChoiceItem(value.toString(), value.toString()));
-    	    		} 
+    	    			for(int i = 0, size = cb.getItemCount(); i < size; i++) {
+    	    				ChoiceItem ci = (ChoiceItem) cb.getItemAt(i);
+    	    				if(ci.commandLineValue.equals(value)|| ci.uiText.equals(value)) {
+    	    					cb.setSelectedIndex(i);
+    	    					break;
+    	    				}
+    	    			}
+    	    		} else if(c instanceof JLabel) {
+    	    			
+    	    			((JLabel)c).setText(value.toString());
+    	    		}
     	    }
     }
     
-    protected final JTextField createProperTextField(final ParameterInfo info) {
-        final int num_cols = 20;
-        JTextField field = null;
-        final Object value = info.getAttributes().get("type");
-        if (value == null || value.equals("java.lang.String")) {
-            field = new JTextField(num_cols);
-        } else if (value.equals("java.lang.Integer")) {
-            field = new JTextField(num_cols);
-        } else if (value.equals("java.lang.Float")) {
-            field = new JTextField(num_cols);
+	/* String getViewValue(ParameterInfo info) {
+    	System.out.println(info);
+    		Map attrs = info.getAttributes();
+    		if(attrs==null) {
+    			return info.getValue();
+    		}
+		if(attrs.get(PipelineModel.RUNTIME_PARAM)!=null) {
+			return "Prompt when run";
+		} 
+		
+		String taskNumber = (String) attrs	
+					.get(PipelineModel.INHERIT_TASKNAME);
+		
+		if (taskNumber != null) {
+			int taskNumberInt = Integer.parseInt(taskNumber);
+			String outputFileNumber = (String) attrs
+				.get(PipelineModel.INHERIT_FILENAME);
+			String inheritedOutputFileName = outputFileNumber;
+			if (outputFileNumber.equals("1")) {
+				inheritedOutputFileName = "1st output";
+			} else if (outputFileNumber.equals("2")) {
+				inheritedOutputFileName = "2nd output";
+			} else if (outputFileNumber.equals("3")) {
+				inheritedOutputFileName = "3rd output";
+			} else if (outputFileNumber.equals("stdout")) {
+				inheritedOutputFileName = "standard output";
+			} else if (outputFileNumber.equals("stderr")) {
+				inheritedOutputFileName = "standard error";
+			} 
+		
+			JobSubmission inheritedTask = pipelineModel
+				.getTask(taskNumberInt);
+			int displayTaskNumber = taskNumberInt + 1;
+
+			return "Use " + inheritedOutputFileName + "from "
+				+ displayTaskNumber + ". "
+				+ inheritedTask.getName();
+		}
+		return info.getValue();
+		
+	} */
+		
+    protected final Component getComponent(final ParameterInfo info) {
+    	    String value = info.getValue();
+        Component field = null;
+    	    if(viewOnly) {
+    	    		field = new JLabel(value);
+    	    } else if (value == null || value.equals("")) {
+            if (info.isInputFile()) {
+            		inputFileParameters.add(info);
+            		field = createInputFileField(info);
+            } else {
+            		field = createTextInput(info);
+            }
         } else {
-            field = new JTextField(num_cols);
-            System.err.println("Unknown type");
+        		field = createComboBox(info);
         }
+        parameterName2ComponentMap.put(info.getName(), field);
         return field;
     }
+    
+    /**
+     * creates a JTextField
+     * 
+     * @param info
+     *            Description of the Parameter
+     * @return Description of the Return Value
+     */
+    private Component createTextInput(ParameterInfo info) {
+        final JTextField field = new JTextField(20);
+        // set default
+        final String default_val = (String) info.getAttributes().get(
+                GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 
+        try {
+            if (default_val != null && default_val.trim().length() > 0) {
+                field.setText(default_val);
+            } else {
+                // if optional value and no default, clear the field
+                if (isOptional(info)) {
+                    field.setText(null);
+                }
+            }
+        } catch (NumberFormatException ex) {
+            ex.printStackTrace();
+        }
+        field.setFont(getFont());
+        return field;
+    }
+    
     private Component createComboBox(ParameterInfo info) {
         // get default
         final String default_val = ((String) info.getAttributes().get(
@@ -420,19 +514,14 @@ public class ParameterInfoPanel extends JPanel {
         return list;
     }
 
-    private ObjectTextField createObjectTextField() {
-        final ObjectTextField field = new ObjectTextField(null, 20);
-        if (!GPGE.RUNNING_ON_MAC) {
-            field.setBackground(Color.white);
-        }
-        field.setFont(getFont());
-        return field;
-    }
-
     private Component createInputFileField(ParameterInfo info) {
-        ObjectTextField field = createObjectTextField();
-        inputFileParameters.add(info);
-        parameterName2ComponentMap.put(info.getName(), field);
+    	 	final ObjectTextField field = new ObjectTextField(null, 20);
+         if (!GPGE.RUNNING_ON_MAC) {
+             field.setBackground(Color.white);
+         }
+         field.setFont(getFont());
+       
+        
         String defaultValue = (String) info.getAttributes().get(
                 GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 
@@ -453,7 +542,6 @@ public class ParameterInfoPanel extends JPanel {
             }
 
         }
-        field.setFont(getFont());
         return field;
     }
 
@@ -490,36 +578,7 @@ public class ParameterInfoPanel extends JPanel {
         return null;
     }
 
-    /**
-     * creates a JTextField
-     * 
-     * @param info
-     *            Description of the Parameter
-     * @return Description of the Return Value
-     */
-    private Component createTextInput(ParameterInfo info) {
-
-        //final JTextField field = new JTextField(15);
-        final JTextField field = createProperTextField(info);
-        // set default
-        final String default_val = (String) info.getAttributes().get(
-                GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
-
-        try {
-            if (default_val != null && default_val.trim().length() > 0) {
-                field.setText(default_val);
-            } else {
-                // if optional value and no default, clear the field
-                if (isOptional(info)) {
-                    field.setText(null);
-                }
-            }
-        } catch (NumberFormatException ex) {
-            ex.printStackTrace();
-        }
-        field.setFont(getFont());
-        return field;
-    }
+   
 
     protected final boolean isOptional(final ParameterInfo info) {
         final Object optional = info.getAttributes().get("optional");

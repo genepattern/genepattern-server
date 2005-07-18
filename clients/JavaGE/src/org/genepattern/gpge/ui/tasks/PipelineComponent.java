@@ -2,6 +2,7 @@ package org.genepattern.gpge.ui.tasks;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,6 +20,7 @@ import java.util.Vector;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -55,6 +57,12 @@ public class PipelineComponent extends JPanel {
 
 	private TaskInfo pipelineTaskInfo;
 
+	private boolean viewOnly;
+	
+	/**
+	 * Currently only one instance should be created by the ViewManager
+	 *
+	 */
 	public PipelineComponent() {
 		setBackground(Color.white);
 	}
@@ -134,7 +142,14 @@ public class PipelineComponent extends JPanel {
 		}
 	}
 	
+	/**
+	 * @param from 
+	 * @param to
+	 */
 	void moveUp(final int from, final int to) {
+		if(from < to) {
+			throw new IllegalArgumentException();
+		}
 		List currentTasks = pipelineModel.getTasks();
 		
 		JobSubmission movedTask = (JobSubmission) currentTasks.remove(from);
@@ -157,26 +172,35 @@ public class PipelineComponent extends JPanel {
 							parameterAttributes.put(
 									PipelineModel.INHERIT_TASKNAME, String
 											.valueOf(to));
-						} else if (inheritTaskNumber >= to) {
+						} else if(inheritTaskNumber >= to && inheritTaskNumber < from) { // tasks >= to and < from have task number increased by 1
 							parameterAttributes.put(
 									PipelineModel.INHERIT_TASKNAME, String
-											.valueOf(index + 1));
+											.valueOf(inheritTaskNumber+1));
 						}
 					}
 
-				});
-
-		iterate(to, to,  inputParamsMap, promptWhenRunParameters, new ParameterItereratorCallBack() {
-			public void param(JobSubmission js, int index, ParameterInfo p,
-					Map parameterAttributes, int inheritTaskNumber) {
-				if (inheritTaskNumber > to) { // if moved task inherits from a
-					// task that is > to then moved
-					// task loses inheritance
-					parameterAttributes.remove(PipelineModel.INHERIT_TASKNAME);
-					parameterAttributes.remove(PipelineModel.INHERIT_FILENAME);
-				}
-			}
 		});
+
+		iterate(to, from, inputParamsMap, promptWhenRunParameters, 
+				new ParameterItereratorCallBack() {
+
+					public void param(JobSubmission js, int index,
+							ParameterInfo p, Map parameterAttributes,
+							int inheritTaskNumber) {
+		
+						if (index==to && inheritTaskNumber > to) { // if moved task inherits from a
+							// task that is > to then moved
+							// task loses inheritance
+							parameterAttributes.remove(PipelineModel.INHERIT_TASKNAME);
+							parameterAttributes.remove(PipelineModel.INHERIT_FILENAME);
+						} else if (inheritTaskNumber >= to) {
+							parameterAttributes.put(
+									PipelineModel.INHERIT_TASKNAME, String
+									.valueOf(index + 1));
+						}
+					}
+		});
+	
 		// update prompt when run parameters
 		iterate(0, to,  inputParamsMap, promptWhenRunParameters, new ParameterItereratorCallBack() {
 			public void param(JobSubmission js, int index, ParameterInfo p,
@@ -185,13 +209,63 @@ public class PipelineComponent extends JPanel {
 			}
 		});
 		pipelineTaskInfo.setParameterInfoArray((ParameterInfo[]) promptWhenRunParameters.toArray(new ParameterInfo[0]));
+		GenePattern.DEBUG = true;
 		setPipeline(pipelineTaskInfo, pipelineModel);
 	}
 	
 	
-	public void moveDown(int from, int to) {
+	/**
+	 * Increases the position of a task in a pipeline
+	 * @param from
+	 * @param to
+	 */
+	void moveDown(final int from, final int to) {
+		List currentTasks = pipelineModel.getTasks();
+		
+		// notes: moved task can't lose inheritance, tasks that inherited from moved task can lose inheritance if task is moved beyond them
+		
+		JobSubmission movedTask = (JobSubmission) currentTasks.remove(from);
+		currentTasks.add(to, movedTask);
+		
+		TaskInfo pipelineTaskInfo = cloneTaskInfo(this.pipelineTaskInfo);
+		List promptWhenRunParameters = new ArrayList();
+		TreeMap inputParamsMap = pipelineModel.getInputParameters();	
+		inputParamsMap.clear();
+		
+		iterate(0, from, inputParamsMap, promptWhenRunParameters, 
+				new ParameterItereratorCallBack() {
+					public void param(JobSubmission js, int index, ParameterInfo p,
+							Map parameterAttributes, int inheritTaskNumber) {
+						// update prompt when run parameters
+					}
+					
+
+				});
+
+		iterate(from, currentTasks.size(),  inputParamsMap, promptWhenRunParameters, new ParameterItereratorCallBack() {
+			public void param(JobSubmission js, int index, ParameterInfo p,
+					Map parameterAttributes, int inheritTaskNumber) {
+				if (inheritTaskNumber == from || index < to) { // task lost inheritance
+					parameterAttributes.remove(PipelineModel.INHERIT_TASKNAME);
+					parameterAttributes.remove(PipelineModel.INHERIT_FILENAME);
+				} else if(inheritTaskNumber == from) {
+					parameterAttributes.put(
+							PipelineModel.INHERIT_TASKNAME, String
+									.valueOf(to));
+				} else if(inheritTaskNumber > from && inheritTaskNumber <= to) { // tasks > from and <= to have task number decreased by 1
+					parameterAttributes.put(
+							PipelineModel.INHERIT_TASKNAME, String
+									.valueOf(index - 1));
+				}
+				
+			}
+		});
+		GenePattern.DEBUG = true;
+		pipelineTaskInfo.setParameterInfoArray((ParameterInfo[]) promptWhenRunParameters.toArray(new ParameterInfo[0]));
+		setPipeline(pipelineTaskInfo, pipelineModel);
 		
 	}
+	
 	
 	/**
 	 * Adds a new task
@@ -310,13 +384,14 @@ public class PipelineComponent extends JPanel {
 		}
 	}
 
-	public void setTaskInfo(TaskInfo info) {
-
+	public void setTaskInfo(TaskInfo info, boolean viewOnly) {
+		this.viewOnly = viewOnly;
 		try {
 			PipelineModel pipelineModel = PipelineModel
 					.toPipelineModel((String) info.getTaskInfoAttributes().get(
 							GPConstants.SERIALIZED_MODEL));
 			setPipeline(info, pipelineModel);
+			
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			GenePattern
@@ -325,7 +400,7 @@ public class PipelineComponent extends JPanel {
 		}
 	}
 
-	public void setPipeline(TaskInfo pipelineTaskInfo, PipelineModel model) {
+	private void setPipeline(TaskInfo pipelineTaskInfo, PipelineModel model) {
 		
 		removeAll();
 
@@ -333,8 +408,10 @@ public class PipelineComponent extends JPanel {
 		this.pipelineModel = model;
 		this.jobSubmissions = pipelineModel.getTasks();
 		this.userID = pipelineTaskInfo.getUserId();
-		
-		print();
+	
+		if(GenePattern.DEBUG) {
+			print();
+		}
 		String displayName = pipelineModel.getName();
 		if (displayName.endsWith(".pipeline")) {
 			displayName = displayName.substring(0, displayName.length()
@@ -396,18 +473,21 @@ public class PipelineComponent extends JPanel {
 			}
 			int maxLabelWidth = 0;
 			ParameterInfoPanel parameterInfoPanel = new ParameterInfoPanel(js
-					.getName(), formalParams);
-			parameterInfoPanel.setUseInputFromPreviousTask(0,
-					new String[] { "a" }, new String[] { "b" });
+					.getName(), formalParams, viewOnly);
+			
+			//parameterInfoPanel.setUseInputFromPreviousTask(0,
+			//		new String[] { "a" }, new String[] { "b" });
 			maxLabelWidth = Math.max(maxLabelWidth, parameterInfoPanel
 					.getLabelWidth());
-			JTextField description = new JTextField(js.getDescription(), 80);
-
-			JButton docBtn = new JButton("Documentation");
-			docBtn.setBackground(getBackground());
-
+			JComponent descriptionComponent;
+			if(viewOnly) {
+				descriptionComponent = new JLabel(js.getDescription());
+			} else {
+				descriptionComponent = new JTextField(js.getDescription(), 80);
+			}
+			
 			TogglePanel togglePanel = new TogglePanel((index + 1) + ". "
-					+ formalTaskInfo.getName(), description, parameterInfoPanel);
+					+ formalTaskInfo.getName(), descriptionComponent, parameterInfoPanel);
 			togglePanel.setBackground(parameterInfoPanel.getBackground());
 			togglePanel.setExpanded(true);
 
@@ -415,54 +495,60 @@ public class PipelineComponent extends JPanel {
 			setLayout(new BorderLayout());
 			add(togglePanel, BorderLayout.CENTER);
 
-			final JButton addButton = new JButton("Add Task After");
-			addButton.setBackground(getBackground());
-			final JButton addBeforeButton = new JButton("Add Task Before");
-			addBeforeButton.setBackground(getBackground());
-			final JButton deleteButton = new JButton("Delete");
-			deleteButton.setBackground(getBackground());
-			final JButton moveUpButton = new JButton("Move Up");
-			moveUpButton.setBackground(getBackground());
-			final JButton moveDownButton = new JButton("Move Down");
-			moveDownButton.setBackground(getBackground());
+			if (!viewOnly) {
+				final JButton addButton = new JButton("Add Task After");
+				addButton.setBackground(getBackground());
+				final JButton addBeforeButton = new JButton("Add Task Before");
+				addBeforeButton.setBackground(getBackground());
+				final JButton deleteButton = new JButton("Delete");
+				deleteButton.setBackground(getBackground());
+				final JButton moveUpButton = new JButton("Move Up");
+				moveUpButton.setBackground(getBackground());
+				final JButton moveDownButton = new JButton("Move Down");
+				moveDownButton.setBackground(getBackground());
 
-			ActionListener listener = new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					Object source = e.getSource();
-					if(source==deleteButton) {
-						delete(index, true);
-					} else if(source==addButton) {
-						AnalysisService temp = AnalysisServiceManager.getInstance().getAnalysisService("ConvertLineEndings");
-						addTask(index+1, temp.getTaskInfo());
-					} else if(source==moveUpButton) {
-						moveUp(index, index-1);
-					} else if(source==moveDownButton) {
-						moveDown(index, index+1);
-					} else if(source==addBeforeButton) {
-						AnalysisService temp = AnalysisServiceManager.getInstance().getAnalysisService("ConvertLineEndings");
-						addTask(index, temp.getTaskInfo());
+				ActionListener listener = new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						Object source = e.getSource();
+						if (source == deleteButton) {
+							delete(index, true);
+						} else if (source == addButton) {
+							AnalysisService temp = AnalysisServiceManager
+									.getInstance().getAnalysisService(
+											"ConvertLineEndings");
+							addTask(index + 1, temp.getTaskInfo());
+						} else if (source == moveUpButton) {
+							moveUp(index, index - 1);
+						} else if (source == moveDownButton) {
+							moveDown(index, index + 1);
+						} else if (source == addBeforeButton) {
+							AnalysisService temp = AnalysisServiceManager
+									.getInstance().getAnalysisService(
+											"ConvertLineEndings");
+							addTask(index, temp.getTaskInfo());
+						}
 					}
-				}
-			};
-			deleteButton.addActionListener(listener);
-			addButton.addActionListener(listener);
-			addBeforeButton.addActionListener(listener);
-			moveUpButton.addActionListener(listener);
-			moveDownButton.addActionListener(listener);
-			
-			JPanel bottomPanel = new JPanel();
-			bottomPanel.setBackground(getBackground());
-			FormLayout formLayout = new FormLayout(
-					"left:pref, left:pref, left:pref, left:pref, left:pref",
-					"pref");
-			bottomPanel.setLayout(formLayout);
-			CellConstraints cc = new CellConstraints();
-			bottomPanel.add(addButton, cc.xy(1, 1));
-			bottomPanel.add(addBeforeButton, cc.xy(2, 1));
-			bottomPanel.add(deleteButton, cc.xy(3, 1));
-			bottomPanel.add(moveUpButton, cc.xy(4, 1));
-			bottomPanel.add(moveDownButton, cc.xy(5, 1));
-			add(bottomPanel, BorderLayout.SOUTH);
+				};
+				deleteButton.addActionListener(listener);
+				addButton.addActionListener(listener);
+				addBeforeButton.addActionListener(listener);
+				moveUpButton.addActionListener(listener);
+				moveDownButton.addActionListener(listener);
+
+				JPanel bottomPanel = new JPanel();
+				bottomPanel.setBackground(getBackground());
+				FormLayout formLayout = new FormLayout(
+						"left:pref, left:pref, left:pref, left:pref, left:pref",
+						"pref");
+				bottomPanel.setLayout(formLayout);
+				CellConstraints cc = new CellConstraints();
+				bottomPanel.add(addButton, cc.xy(1, 1));
+				bottomPanel.add(addBeforeButton, cc.xy(2, 1));
+				bottomPanel.add(deleteButton, cc.xy(3, 1));
+				bottomPanel.add(moveUpButton, cc.xy(4, 1));
+				bottomPanel.add(moveDownButton, cc.xy(5, 1));
+				add(bottomPanel, BorderLayout.SOUTH);
+			}
 		}
 
 	}
@@ -486,10 +572,11 @@ public class PipelineComponent extends JPanel {
 			ParameterInfo formalParam = formalParams[j];
 			Integer index = (Integer) paramName2ActualParamIndexMap
 					.get(paramName);
-			ParameterInfo actualParam = null;
-			if (index != null) {
-				actualParam = actualParameters[index.intValue()];
+			if (index == null) {
+				continue;
 			}
+			ParameterInfo actualParam = actualParameters[index.intValue()];
+			
 
 			String value = null;
 			if (formalParam.isInputFile()) {
@@ -504,10 +591,11 @@ public class PipelineComponent extends JPanel {
 				if ((k < runtimePrompt.length) && (runtimePrompt[k])) {
 					value = "Prompt when run";
 				} else if (taskNumber != null) {
+					int taskNumberInt = Integer.parseInt(taskNumber.trim());
 					String outputFileNumber = (String) pipelineAttributes
 							.get(PipelineModel.INHERIT_FILENAME);
-					int taskNumberInt = Integer.parseInt(taskNumber.trim());
-					String inheritedOutputFileName = null;
+					
+					String inheritedOutputFileName = outputFileNumber;
 					if (outputFileNumber.equals("1")) {
 						inheritedOutputFileName = "1st output";
 					} else if (outputFileNumber.equals("2")) {
@@ -523,21 +611,19 @@ public class PipelineComponent extends JPanel {
 							.get(taskNumberInt);
 					int displayTaskNumber = taskNumberInt + 1;
 
-					value = "Use " + inheritedOutputFileName + "from "
+					value = "Use " + inheritedOutputFileName + " from "
 							+ displayTaskNumber + ". "
 							+ inheritedTask.getName();
 				} else {
 					value = actualParam.getValue();
-
-					try {
-						new java.net.URL(value);// see if parameter is a URL
-					} catch (java.net.MalformedURLException x) {
-
+					if(value.startsWith("<GenePatternURL>getFile.jsp?task=<LSID>&file=")) {
+						value = value.substring("<GenePatternURL>getFile.jsp?task=<LSID>&file=".length(), value.length());
 					}
 				}
 
 			} else {
-				String[] choices = formalParam.getValue().split(
+				value = actualParam.getValue(); // can be command  
+				/*String[] choices = formalParam.getValue().split(
 						GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 				String[] eachValue;
 				value = actualParam.getValue();
@@ -550,7 +636,7 @@ public class PipelineComponent extends JPanel {
 						}
 						break;
 					}
-				}
+				}*/
 			}
 			parameterInfoPanel.setValue(paramName, value);
 		}
