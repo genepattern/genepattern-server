@@ -44,8 +44,8 @@ function checkAll(lastLSIDNoVersion, bChecked) {
 		var item = frm.elements[i];
 		if (item.type != "checkbox") continue;
 		if (item.value.indexOf(lastLSIDNoVersion + '<%= LSID.DELIMITER %>') != 0) continue;
-		var readonly = item.getAttribute('readonly');
-		if (readonly != null) continue;
+		var disabled = item.getAttribute('disabled');
+		if (disabled != null) continue;
 		item.checked = bChecked;
 	}
 }
