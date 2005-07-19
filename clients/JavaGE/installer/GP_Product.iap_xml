@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using Zero G's InstallAnywhere 6.1 Enterprise, Build 2325
-     STATUS: Fully Functional LICENSED Edition
-     DATE:   Thu May 19 12:48:22 EDT 2005 -->
-<InstallAnywhere_Deployment_Project increments="5114">
+     STATUS: Fully-Functional UNLICENSED Trial Edition
+     DATE:   Tue Jul 19 10:30:24 EDT 2005 -->
+<InstallAnywhere_Deployment_Project increments="5520">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
 		<versionID major="6" minor="1" revision="-1"/>
 		<editionID>54,46,49,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,50,51,50,53</editionID>
-		<scriptID>12,42,11,90,81,55,51,50,54,57,71,70,78,52,69,53</scriptID>
+		<scriptID>12,42,11,85,78,76,73,67,69,78,83,69,68</scriptID>
 		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,51,46,49,95,48,56,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,83,59,32,67,112,49,50,53,50</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,0,-13,-43,0,48,80,112,116,103,88,98,113,97,113,65,65,88,74,65,72,71,70,69,64,69,66,69,48,79,87,5,2,9,8,59,101,3,1,0,0</authorizationID>
+		<authorizationID>1,0,0,0,35,-123,-96,-96,64,99,70,101,125,121,100,96,105,48,48,49,56,52,67,98,113,112,124,44,81,100,99,62,57,15,14,1,7,48,111,5,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="418">
+	<installationObjects uniqueObjects="430">
 		<object class="com.zerog.ia.installer.Installer" objectID="7daeb2feafa5">
 			<property name="wizardME">
 				<object class="com.zerog.ia.installer.actions.MakeExecutable" objectID="7e4c8205afeb">
@@ -215,7 +215,7 @@ it will search for ones in this list]]></string>
 								</object>
 							</method>
 							<method name="addElement">
-								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="095b744ea896">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="42f37df495bb">
 									<property name="propertyValue">
 										<string><![CDATA[org.genepattern.gpge.GenePattern]]></string>
 									</property>
@@ -299,7 +299,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[gpge.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>598449</long>
+								<long>457357</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -392,7 +392,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[broad-cg.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>288670</long>
+								<long>75083</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -516,7 +516,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[runMain.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>3624</long>
+								<long>3627</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1074,7 +1074,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[ui_support.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>48353</long>
+								<long>6395</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1105,7 +1105,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[gpwebservice.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>188057</long>
+								<long>154318</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -5664,6 +5664,507 @@ gp.server=$GenePatternServer$:$GENEPATTERN_PORT$
 						</object>
 					</method>
 					<method name="addElement">
+						<object class="com.zerog.ia.installer.actions.ShowDialogAction" objectID="42e9352393c2">
+							<property name="title">
+								<string><![CDATA[Start GenePattern Client]]></string>
+							</property>
+							<property name="label">
+								<string><![CDATA[Start GenePattern Client]]></string>
+							</property>
+							<property name="narrative">
+								<string><![CDATA[Would you like to start the GenePattern client when the installation is complete?]]></string>
+							</property>
+							<property name="dismissalAction">
+								<int>1</int>
+							</property>
+							<property name="cancelDismissalAction">
+								<int>1</int>
+							</property>
+							<property name="detailsDismissalAction">
+								<int>1</int>
+							</property>
+							<property name="buttonLabel">
+								<string><![CDATA[OK]]></string>
+							</property>
+							<property name="cancelButtonLabel">
+								<string><![CDATA[Cancel]]></string>
+							</property>
+							<property name="detailsButtonLabel">
+								<string><![CDATA[Details...]]></string>
+							</property>
+							<property name="variableName">
+								<string><![CDATA[$START_GPGE$]]></string>
+							</property>
+							<property name="buttonCombination">
+								<int>1</int>
+							</property>
+							<property name="alertLevel">
+								<int>3</int>
+							</property>
+							<rules logicalOperation="AND">
+								<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="42f9824a973f">
+									<property name="installOnPlatformList">
+										<object class="java.util.Vector">
+											<method name="addElement">
+												<string><![CDATA[Linux]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows 95]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows 98]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows NT]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Me]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows 2000]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows XP]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Mac OS X]]></string>
+											</method>
+										</object>
+									</property>
+									<property name="doNotInstallOnPlatformList">
+										<object class="java.util.Vector">
+											<method name="addElement">
+												<string><![CDATA[OS/2]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Solaris]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[SunOS]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[HP-UX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[AIX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Irix]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[DG-UX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Compaq's Digital UNIX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[FreeBSD]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Rhapsody]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[NetWare]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[z/OS]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/390]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Unlisted Platforms]]></string>
+											</method>
+										</object>
+									</property>
+								</object>
+								<object class="com.zerog.ia.installer.rules.CompareVariable" objectID="4301e7e79798">
+									<property name="operation">
+										<string><![CDATA[does not contain]]></string>
+									</property>
+									<property name="operandOne">
+										<string><![CDATA[$INSTALL_SUCCESS$]]></string>
+									</property>
+									<property name="operandTwo">
+										<string><![CDATA[ERROR]]></string>
+									</property>
+								</object>
+							</rules>
+						</object>
+					</method>
+					<method name="addElement">
+						<object class="com.zerog.ia.installer.actions.ExecuteScript" objectID="42eaae3493c2">
+							<property name="showPleaseWaitPanel">
+								<boolean>true</boolean>
+							</property>
+							<property name="waitForProcess">
+								<boolean>false</boolean>
+							</property>
+							<property name="script">
+								<string><![CDATA["$USER_INSTALL_DIR$$/$GenePattern Client"]]></string>
+							</property>
+							<property name="showIndeterminateDialog">
+								<boolean>false</boolean>
+							</property>
+							<property name="dialogLabel">
+								<string><![CDATA[Executing Installation Script...]]></string>
+							</property>
+							<property name="comment">
+								<string><![CDATA[Launch GPGE win]]></string>
+							</property>
+							<property name="stdoutVar">
+								<string><![CDATA[$EXECUTE_STDOUT$]]></string>
+							</property>
+							<property name="stderrVar">
+								<string><![CDATA[$EXECUTE_STDERR$]]></string>
+							</property>
+							<property name="exitCodeVar">
+								<string><![CDATA[$EXECUTE_EXITCODE$]]></string>
+							</property>
+							<rules logicalOperation="AND">
+								<object class="com.zerog.ia.installer.rules.CompareVariable" objectID="42ec8c1493c2">
+									<property name="operation">
+										<string><![CDATA[equals]]></string>
+									</property>
+									<property name="operandOne">
+										<string><![CDATA[$START_GPGE$]]></string>
+									</property>
+									<property name="operandTwo">
+										<string><![CDATA[0]]></string>
+									</property>
+								</object>
+								<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="42f8e10a973f">
+									<property name="installOnPlatformList">
+										<object class="java.util.Vector">
+											<method name="addElement">
+												<string><![CDATA[Windows 95]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows 98]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows NT]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Me]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows 2000]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows XP]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows 2003]]></string>
+											</method>
+										</object>
+									</property>
+									<property name="doNotInstallOnPlatformList">
+										<object class="java.util.Vector">
+											<method name="addElement">
+												<string><![CDATA[Mac OS X]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/2]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Solaris]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[SunOS]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[HP-UX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Linux]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[AIX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Irix]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[DG-UX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Compaq's Digital UNIX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[FreeBSD]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Rhapsody]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[NetWare]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[z/OS]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/390]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Unlisted Platforms]]></string>
+											</method>
+										</object>
+									</property>
+								</object>
+							</rules>
+						</object>
+					</method>
+					<method name="addElement">
+						<object class="com.zerog.ia.installer.actions.ExecuteScript" objectID="42f84a0b973e">
+							<property name="showPleaseWaitPanel">
+								<boolean>true</boolean>
+							</property>
+							<property name="waitForProcess">
+								<boolean>false</boolean>
+							</property>
+							<property name="script">
+								<string><![CDATA[open "$USER_INSTALL_DIR$$/$GenePattern Client"]]></string>
+							</property>
+							<property name="showIndeterminateDialog">
+								<boolean>false</boolean>
+							</property>
+							<property name="dialogLabel">
+								<string><![CDATA[Executing Installation Script...]]></string>
+							</property>
+							<property name="comment">
+								<string><![CDATA[Launch GPGE mac]]></string>
+							</property>
+							<property name="stdoutVar">
+								<string><![CDATA[$EXECUTE_STDOUT$]]></string>
+							</property>
+							<property name="stderrVar">
+								<string><![CDATA[$EXECUTE_STDERR$]]></string>
+							</property>
+							<property name="exitCodeVar">
+								<string><![CDATA[$EXECUTE_EXITCODE$]]></string>
+							</property>
+							<rules logicalOperation="AND">
+								<object class="com.zerog.ia.installer.rules.CompareVariable" objectID="42f84a0c973e">
+									<property name="operation">
+										<string><![CDATA[equals]]></string>
+									</property>
+									<property name="operandOne">
+										<string><![CDATA[$START_GPGE$]]></string>
+									</property>
+									<property name="operandTwo">
+										<string><![CDATA[0]]></string>
+									</property>
+								</object>
+								<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="42f917d8973f">
+									<property name="installOnPlatformList">
+										<object class="java.util.Vector">
+											<method name="addElement">
+												<string><![CDATA[Mac OS X]]></string>
+											</method>
+										</object>
+									</property>
+									<property name="doNotInstallOnPlatformList">
+										<object class="java.util.Vector">
+											<method name="addElement">
+												<string><![CDATA[Windows 95]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows 98]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows NT]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Me]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows 2000]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows XP]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/2]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Solaris]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[SunOS]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[HP-UX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Linux]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[AIX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Irix]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[DG-UX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Compaq's Digital UNIX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[FreeBSD]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Rhapsody]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[NetWare]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[z/OS]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/390]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Unlisted Platforms]]></string>
+											</method>
+										</object>
+									</property>
+								</object>
+							</rules>
+						</object>
+					</method>
+					<method name="addElement">
+						<object class="com.zerog.ia.installer.actions.ExecuteScript" objectID="42f855e5973e">
+							<property name="showPleaseWaitPanel">
+								<boolean>true</boolean>
+							</property>
+							<property name="waitForProcess">
+								<boolean>false</boolean>
+							</property>
+							<property name="script">
+								<string><![CDATA["$USER_INSTALL_DIR$$/$GenePattern Client"]]></string>
+							</property>
+							<property name="showIndeterminateDialog">
+								<boolean>false</boolean>
+							</property>
+							<property name="dialogLabel">
+								<string><![CDATA[Executing Installation Script...]]></string>
+							</property>
+							<property name="comment">
+								<string><![CDATA[Launch GPGE linux]]></string>
+							</property>
+							<property name="stdoutVar">
+								<string><![CDATA[$EXECUTE_STDOUT$]]></string>
+							</property>
+							<property name="stderrVar">
+								<string><![CDATA[$EXECUTE_STDERR$]]></string>
+							</property>
+							<property name="exitCodeVar">
+								<string><![CDATA[$EXECUTE_EXITCODE$]]></string>
+							</property>
+							<rules logicalOperation="AND">
+								<object class="com.zerog.ia.installer.rules.CompareVariable" objectID="42f855e6973e">
+									<property name="operation">
+										<string><![CDATA[equals]]></string>
+									</property>
+									<property name="operandOne">
+										<string><![CDATA[$START_GPGE$]]></string>
+									</property>
+									<property name="operandTwo">
+										<string><![CDATA[0]]></string>
+									</property>
+								</object>
+								<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="42f942cc973f">
+									<property name="installOnPlatformList">
+										<object class="java.util.Vector">
+											<method name="addElement">
+												<string><![CDATA[Linux]]></string>
+											</method>
+										</object>
+									</property>
+									<property name="doNotInstallOnPlatformList">
+										<object class="java.util.Vector">
+											<method name="addElement">
+												<string><![CDATA[Windows 95]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows 98]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows NT]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Me]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows 2000]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows XP]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Mac OS X]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/2]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Solaris]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[SunOS]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[HP-UX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[AIX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Irix]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[DG-UX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Compaq's Digital UNIX]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[FreeBSD]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Rhapsody]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[NetWare]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[z/OS]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/390]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Unlisted Platforms]]></string>
+											</method>
+										</object>
+									</property>
+								</object>
+							</rules>
+						</object>
+					</method>
+					<method name="addElement">
 						<object class="com.zerog.ia.installer.actions.InstallCompleteAction" objectID="7daeb499afa5">
 							<property name="imageOption">
 								<int>1</int>
@@ -5881,7 +6382,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.build.last.date]]></string>
-						<string><![CDATA[May 19, 2005 12:33:30 PM EDT]]></string>
+						<string><![CDATA[July 19, 2005 10:22:01 AM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.windows.vm]]></string>
@@ -5901,7 +6402,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.vmpack.linux.path]]></string>
-						<string><![CDATA[SunJRE142_06LinuxINTEL.vm]]></string>
+						<string><![CDATA[SunJRE142_03LinuxINTEL.vm]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.named_unix.vm]]></string>
@@ -5917,7 +6418,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.vmpack.unix.path]]></string>
-						<string><![CDATA[SunJRE131_11LinuxINTEL.vm]]></string>
+						<string><![CDATA[SunJRE142_03LinuxINTEL.vm]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.named_unix.novm]]></string>
@@ -5941,7 +6442,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[May 19, 2005 12:48:21 PM EDT]]></string>
+						<string><![CDATA[July 19, 2005 10:30:24 AM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
@@ -6985,7 +7486,7 @@ and any path to a file to read from that file]]></string>
 												<string><![CDATA[build.properties]]></string>
 											</property>
 											<property name="fileSize">
-												<long>305</long>
+												<long>304</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
