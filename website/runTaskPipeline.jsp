@@ -11,6 +11,7 @@
  		 java.text.SimpleDateFormat,
 		 java.util.Date,
 		 java.util.Enumeration, 
+		 java.util.ArrayList, 
 		 java.util.GregorianCalendar,
 		 java.text.ParseException,
 		 java.text.DateFormat,
@@ -135,6 +136,7 @@ try {
 	} else {
 		parmInfos = new ParameterInfo[0];
 	}
+	ArrayList missingReqParams = new ArrayList ();
 	for (int i=0; i < nParams; i++){
 		ParameterInfo pinfo = parmInfos[i];
 		String value;	
@@ -153,7 +155,30 @@ try {
 		} else {
 			value = requestParameters.getParameter(pinfo.getName());
 		}
+
+		//
+		// look for missing required params
+		//
+		if ((value == null) || (value.trim().length() == 0)){
+			HashMap pia = pinfo.getAttributes();
+			boolean isOptional = ((String)pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET])).length() > 0;
+		
+			if (!isOptional){
+				missingReqParams.add(pinfo);
+			}
+		}
 		pinfo.setValue(value);
+	}
+	if (missingReqParams.size() > 0){
+		System.out.println(""+missingReqParams);
+		request.setAttribute("missingReqParams", missingReqParams);
+		(request.getRequestDispatcher("runTaskMissingParams.jsp")).include(request, response);
+%>
+		<jsp:include page="footer.jsp"></jsp:include>
+		</body>
+		</html>
+<%
+		return;
 	}
 
 	JobInfo job = analysisProxy.submitJob(task.getID(), parmInfos);
