@@ -128,9 +128,6 @@ function changeFilter(fld) {
 	try {
 		collection = new InstallTasksCollectionUtils(userID, initialInstall);
 
-		// test case independent of XML-based support:
-		//	collection.setupTestCollection(new String[]{ "KNN", "GeneNeighbors", "NMF", "ClassNeighbors", "TransposeDataset" });
-
 		tasks = collection.getAvailableModules();
 	} catch (Exception e) {
 %>
@@ -467,15 +464,20 @@ Select from the following tasks from the <%=messages.get("ApplicationName")%> pu
 					InstallTask t1 = (InstallTask)o1;
 					InstallTask t2 = (InstallTask)o2;
 
-					if (!t1.getName().equalsIgnoreCase(t2.getName())) {
-						return (t1.getName().compareToIgnoreCase(t2.getName()));
-					}
-					
+						
 					LSID l1 = null;
 					LSID l2 = null;
 					try {
 						l1 = new LSID((String)((InstallTask)t1).getAttributes().get(GPConstants.LSID));
 						l2 = new LSID((String)((InstallTask)t2).getAttributes().get(GPConstants.LSID));
+
+						if (l1.isSimilar(l2)) return l2.getVersion().compareToIgnoreCase(l1.getVersion());
+		
+						if (!t1.getName().equalsIgnoreCase(t2.getName())) {
+							return (t1.getName().compareToIgnoreCase(t2.getName()));
+						}
+				
+
 						if (!l1.isSimilar(l2)) {
 				  			return l1.toString().toLowerCase().compareToIgnoreCase(l2.toString().toLowerCase());
 						} else {
