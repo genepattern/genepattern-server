@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using Zero G's InstallAnywhere 6.1 Enterprise, Build 2325
      STATUS: Fully-Functional UNLICENSED Trial Edition
-     DATE:   Tue Jul 19 10:30:24 EDT 2005 -->
+     DATE:   Tue Jul 19 13:30:19 EDT 2005 -->
 <InstallAnywhere_Deployment_Project increments="5520">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
@@ -10,7 +10,7 @@
 		<scriptID>12,42,11,85,78,76,73,67,69,78,83,69,68</scriptID>
 		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,51,46,49,95,48,56,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,83,59,32,67,112,49,50,53,50</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,0,35,-123,-96,-96,64,99,70,101,125,121,100,96,105,48,48,49,56,52,67,98,113,112,124,44,81,100,99,62,57,15,14,1,7,48,111,5,1,0,0</authorizationID>
+		<authorizationID>1,0,0,0,51,37,80,-48,64,99,70,101,125,121,100,96,105,48,48,49,56,52,67,98,113,112,124,44,81,100,99,62,57,15,14,7,13,53,96,5,1,0,0</authorizationID>
 	</essentialScriptInfo>
 	<installationObjects uniqueObjects="430">
 		<object class="com.zerog.ia.installer.Installer" objectID="7daeb2feafa5">
@@ -121,19 +121,6 @@ Relative paths are relative to the launcher.]]></string>
 								</object>
 							</method>
 							<method name="addElement">
-								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1d780265afc0">
-									<property name="propertyValue">
-										<string><![CDATA[true]]></string>
-									</property>
-									<property name="propertyName">
-										<string><![CDATA[gp.graphical]]></string>
-									</property>
-									<property name="propertyComment">
-										<string><![CDATA[Indicates that the client will display graphics]]></string>
-									</property>
-								</object>
-							</method>
-							<method name="addElement">
 								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="7e4dd08dafec">
 									<property name="propertyValue">
 										<string><![CDATA[$CMD_LINE_ARGUMENTS$]]></string>
@@ -143,6 +130,19 @@ Relative paths are relative to the launcher.]]></string>
 									</property>
 									<property name="propertyComment">
 										<string><![CDATA[what will be passed to the main method -- be sure to quote arguments with spaces in them]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1d780265afc0">
+									<property name="propertyValue">
+										<string><![CDATA[true]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[gp.graphical]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[Indicates that the client will display graphics]]></string>
 									</property>
 								</object>
 							</method>
@@ -202,6 +202,19 @@ it will search for ones in this list]]></string>
 								</object>
 							</method>
 							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="43a619e592ea">
+									<property name="propertyValue">
+										<string><![CDATA[org.genepattern.gpge.GenePattern]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.main.class]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[the class that contains the main method for the application]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
 								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="ebe843eda34f">
 									<property name="propertyValue">
 										<string><![CDATA[128m]]></string>
@@ -211,19 +224,6 @@ it will search for ones in this list]]></string>
 									</property>
 									<property name="propertyComment">
 										<string><![CDATA[initial heap memory size]]></string>
-									</property>
-								</object>
-							</method>
-							<method name="addElement">
-								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="42f37df495bb">
-									<property name="propertyValue">
-										<string><![CDATA[org.genepattern.gpge.GenePattern]]></string>
-									</property>
-									<property name="propertyName">
-										<string><![CDATA[lax.main.class]]></string>
-									</property>
-									<property name="propertyComment">
-										<string><![CDATA[the class that contains the main method for the application]]></string>
 									</property>
 								</object>
 							</method>
@@ -5927,7 +5927,8 @@ gp.server=$GenePatternServer$:$GENEPATTERN_PORT$
 								<boolean>false</boolean>
 							</property>
 							<property name="script">
-								<string><![CDATA[open "$USER_INSTALL_DIR$$/$GenePattern Client"]]></string>
+								<string><![CDATA[open "$USER_INSTALL_DIR$$/$GenePattern Client.app"
+]]></string>
 							</property>
 							<property name="showIndeterminateDialog">
 								<boolean>false</boolean>
@@ -6382,7 +6383,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.build.last.date]]></string>
-						<string><![CDATA[July 19, 2005 10:22:01 AM EDT]]></string>
+						<string><![CDATA[July 19, 2005 1:30:19 PM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.windows.vm]]></string>
@@ -6442,7 +6443,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[July 19, 2005 10:30:24 AM EDT]]></string>
+						<string><![CDATA[July 19, 2005 1:30:19 PM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
