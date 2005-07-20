@@ -5,6 +5,12 @@
 		 java.util.Collection,
 		 java.util.Hashtable,
 		 java.util.Iterator,
+		 java.util.Comparator,
+ 		 java.util.Arrays,
+		 java.util.HashMap,
+		 java.util.TreeMap,
+		 java.util.ArrayList,
+		 java.net.MalformedURLException,
 		 com.jspsmart.upload.*,
  		 org.genepattern.util.StringUtils,
 		 org.genepattern.util.LSID,
@@ -36,6 +42,22 @@ if (name == null) {
 <link href="skin/favicon.ico" rel="shortcut icon">
 <title>GenePattern task documentation</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<script language="JavaScript">
+function toggleVersions(divname) {
+	var formobjs = document.getElementsByTagName('div');
+	var acheckbox = document.getElementById(divname + 'cb');
+	var visible = acheckbox.checked;
+	for(var i = 0; i < formobjs.length; i++) {
+		if (formobjs[i].id == divname){
+		if(!visible) {
+			formobjs[i].style.display = "none";
+		} else {
+			formobjs[i].style.display = "block";
+		}
+		}
+	}
+}
+</script>
 </head>
 <body>
 <jsp:include page="navbar.jsp"></jsp:include>
@@ -60,34 +82,132 @@ you can download it at no cost from the Adobe website.
 <tbody>
 <%
 
-Collection tmTasks = adminClient.getTaskCatalog();
+Collection tasks = adminClient.getTaskCatalog();
+HashMap taskMap = new HashMap();
+for (Iterator iter = tasks.iterator(); iter.hasNext(); ){
+	ti = (TaskInfo) iter.next();
+	LSID lsid = new LSID((String)ti.giveTaskInfoAttributes().get(GPConstants.LSID));
+	ArrayList versions = (ArrayList)taskMap.get(lsid.toStringNoVersion());
+	if (versions == null) {
+		versions = new ArrayList();
+		taskMap.put(lsid.toStringNoVersion(), versions);
+	}					
+	versions.add(ti);
+}
+for (Iterator iter = taskMap.keySet().iterator(); iter.hasNext(); ){
+	String key = (String)iter.next();
+	ArrayList versions = (ArrayList)taskMap.get(key);
+	TaskInfo[] sortedVersions = (TaskInfo[])versions.toArray(new TaskInfo[versions.size()]);
+	Arrays.sort(sortedVersions , new Comparator() {
+				public int compare(Object o1, Object o2) {
+					TaskInfo t1 = (TaskInfo)o1;
+					TaskInfo t2 = (TaskInfo)o2;
+						
+					LSID l1, l2;					
+					try {
+						l1 = new LSID((String)t1.giveTaskInfoAttributes().get(GPConstants.LSID));
+						l2 = new LSID((String)t2.giveTaskInfoAttributes().get(GPConstants.LSID));
+						return l2.getVersion().compareToIgnoreCase(l1.getVersion());
+
+					} catch (MalformedURLException mue) {
+						// ignore
+						return 0;
+					}
+				}
+			});
+	taskMap.put(key, sortedVersions);
+}
+
+
+TreeMap sortedTaskMap = new TreeMap ( new Comparator() {
+	public int compare(Object o1, Object o2) {
+		String k1 = (String)o1;
+		String k2 = (String)o2;
+		return k1.compareToIgnoreCase(k2);		
+	}
+} ) ;
+
+
+
+for (Iterator iter = taskMap.keySet().iterator(); iter.hasNext(); ) {
+	String key = (String)iter.next();
+	TaskInfo[] versions = (TaskInfo[])taskMap.get(key);
+	sortedTaskMap.put(((versions[0]).getName()), versions);
+}
+
 String description;
 LSID lsid;
 String taskType;
-for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
-	ti = (TaskInfo)itTasks.next();
-	tia = ti.giveTaskInfoAttributes();
-	lsid = new LSID(tia.get(GPConstants.LSID));
-	taskType = tia.get(GPConstants.TASK_TYPE);
-	description = ti.getDescription();
-	if (description == null || description.length() == 0) description = "[no description]";
-	boolean isPipeline = taskType.equals(GPConstants.TASK_TYPE_PIPELINE);
+for (Iterator iter = sortedTaskMap.keySet().iterator(); iter.hasNext(); ) {
+	String key = (String)iter.next();
+	TaskInfo[] versions = (TaskInfo[])sortedTaskMap.get(key);
+	String firstName = versions[0].getName();
+	for (int j=0; j < versions.length; j++){
+		ti = (TaskInfo)versions[j];
+		tia = ti.giveTaskInfoAttributes();
+		lsid = new LSID(tia.get(GPConstants.LSID));
+		taskType = tia.get(GPConstants.TASK_TYPE);
+		description = ti.getDescription();
+		if (description == null || description.length() == 0) description = "[no description]";
+		boolean isPipeline = taskType.equals(GPConstants.TASK_TYPE_PIPELINE);
+		String indent = "";
+		String taskName = ti.getName();
+		
+		if (j >= 1){
+		 	indent="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+			if (firstName.equalsIgnoreCase(taskName)) taskName = "";
+			out.println("");
 %>
 	<tr>
-	<td valign="top"><a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipelineDesigner.jsp" %>?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><nobr><%= ti.getName() %> (<%= lsid.getVersion() %>)</nobr><a/></td>
-	<td valign="top"><%= StringUtils.htmlEncode(description) %>
+	<td valign="top"><div id="<%=firstName%>" style="display:none"><%= indent %>
+		<font size='-2'><a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipelineDesigner.jsp" %>?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><nobr><%= ti.getName() %> (<%= lsid.getVersion() %>)</nobr></a></font></div></td>
+	<td valign="top"><div id="<%=firstName%>" style="display:none"><%= StringUtils.htmlEncode(description) %>
 	<br>
 <%
-	File[] docFiles = taskIntegratorClient.getDocFiles(ti);
-	if (docFiles.length == 0) out.println("[no documentation]");
-	for (int i = 0; i < docFiles.length; i++) {
+		File[] docFiles = taskIntegratorClient.getDocFiles(ti);
+		if (docFiles.length == 0) out.println("[no documentation]");
+		for (int i = 0; i < docFiles.length; i++) {
 %>
 		<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= lsid %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>"><%= docFiles[i].getName() %></a>
 <%
+			}
+
+out.println("</div></td></tr>");
+
+		} else {  // Only one or first one
+
+%>
+	<tr>
+	<td valign="top"><%= indent %>
+		<a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipelineDesigner.jsp" %>?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><nobr><%= ti.getName() %> 
+		(<%= lsid.getVersion() %>)</nobr><a/>
+<%
+	if (versions.length > 1){
+%>		
+	<input id="<%=firstName%>cb" type="checkbox" onClick="toggleVersions('<%=firstName%>') "> all Versions</input>
+	<%	
+	}
+%>		
+		</td>
+	
+
+	<td valign="top"><%= StringUtils.htmlEncode(description) %>
+	<br>
+<%
+		File[] docFiles = taskIntegratorClient.getDocFiles(ti);
+		if (docFiles.length == 0) out.println("[no documentation]");
+		for (int i = 0; i < docFiles.length; i++) {
+%>
+		<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= lsid %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>"><%= docFiles[i].getName() %></a>
+<%
+	
+			}
+		}
 	}
 %>
 	</td></tr>
 <%
+
 }
 %>
 </tbody>
