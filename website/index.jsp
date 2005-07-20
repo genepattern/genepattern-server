@@ -192,17 +192,17 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 <table cellpadding="10" width="100%" border="1" rules="all" frame="border">
 <tr>
 
-      <%@ include file="indexPipelineSection.jsp" %>
-	<%@ include file="indexTaskSection.jsp" %>
-	<%@ include file="indexAdminSection.jsp" %>
+      <%@ include file="indexPipelineSection.htm" %>
+	<%@ include file="indexTaskSection.htm" %>
+	<%@ include file="indexAdminSection.htm" %>
 
     
 </tr>
 <tr>
 
-    <%@ include file="indexDocSection.jsp" %>
-    <%@ include file="indexResourcesSection.jsp" %>
-    <%@ include file="indexProgrammingSection.jsp" %>
+    <%@ include file="indexDocSection.htm" %>
+    <%@ include file="indexResourcesSection.htm" %>
+    <%@ include file="indexProgrammingSection.htm" %>
 
 
    
