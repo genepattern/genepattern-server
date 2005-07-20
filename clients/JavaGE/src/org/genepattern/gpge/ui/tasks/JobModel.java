@@ -620,42 +620,75 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			return jobToString(job);
 		}
 
-		public int getOutputFiles() {
-			int count = 0;
-			ParameterInfo[] jobParameterInfo = job.getJobInfo()
-					.getParameterInfoArray();
-         int jobNumber = job.getJobInfo().getJobNumber();
+		private int addOutputFiles(ParameterInfo[] jobParameterInfo, String displayPrefix) {
+			int numOutputFiles = 0;
 			for (int j = 0; j < jobParameterInfo.length; j++) {
 				if (jobParameterInfo[j].isOutputFile()) {
-               int paramJobNumber = jobNumber;
+					//int paramJobNumber = jobNumber;
 					String fileName = jobParameterInfo[j].getValue();
 					int index1 = fileName.lastIndexOf('/');
 					int index2 = fileName.lastIndexOf('\\');
 					int index = (index1 > index2 ? index1 : index2);
 					if (index != -1) {
-                  paramJobNumber = Integer.parseInt(fileName.substring(0, index));
+						//paramJobNumber = Integer.parseInt(fileName
+						//		.substring(0, index));
 						fileName = fileName.substring(index + 1, fileName
 								.length());
-                  
+
 					}
-               String displayString = fileName;
-              // if(paramJobNumber != jobNumber) {
-               //   displayString = jobParameterInfo[j].getValue(); will prefix fileName with jobNumber/
-               // }
-               
-               ServerFileNode child = new ServerFileNode(displayString, fileName, j);
-               
-					this.add(child); 
-               child.updateFileInfo();
-					count++;
+					
+					String displayString = displayPrefix + fileName;
+
+					ServerFileNode child = new ServerFileNode(
+							displayString, fileName, j);
+
+					this.add(child);
+					child.updateFileInfo();
+					numOutputFiles++;
 				}
 			}
-         if(children!=null) {
-            Collections.sort(children,
-               JobModel.getInstance().fileComparator);
-         }
-         
-			return count;
+			return numOutputFiles;
+		}
+		public int getOutputFiles() {
+			int numOutputFiles = 0;
+			ParameterInfo[] jobParameterInfo = job.getJobInfo()
+					.getParameterInfoArray();
+			int jobNumber = job.getJobInfo().getJobNumber();
+
+			AnalysisWebServiceProxy proxy = null;
+			int[] childJobNumbers = null;
+			try {
+				proxy = new AnalysisWebServiceProxy(AnalysisServiceManager
+						.getInstance().getServer(), AnalysisServiceManager
+						.getInstance().getUsername());
+				childJobNumbers = proxy.getChildren(jobNumber);
+			} catch (WebServiceException wse) {
+				wse.printStackTrace();
+			}
+
+			if (childJobNumbers != null && childJobNumbers.length > 0) {
+				try {
+					JobInfo[] children = new JobInfo[childJobNumbers.length];
+					for (int i = 0; i < children.length; i++) {
+						JobInfo job = proxy.checkStatus(childJobNumbers[i]);
+						numOutputFiles += addOutputFiles(job
+								.getParameterInfoArray(), job.getTaskName() + (i+1) + ":");
+					}
+				} catch (WebServiceException wse) {
+					wse.printStackTrace();
+					this.removeAllChildren();
+					addOutputFiles(jobParameterInfo, "");
+				}
+
+			} else {
+				numOutputFiles = addOutputFiles(jobParameterInfo, "");
+			}
+			if (children != null) {
+				Collections.sort(children,
+						JobModel.getInstance().fileComparator);
+			}
+
+			return numOutputFiles;
 		}
 
 		public boolean getAllowsChildren() {
