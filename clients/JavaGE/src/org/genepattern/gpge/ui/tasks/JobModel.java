@@ -620,27 +620,37 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			return jobToString(job);
 		}
 
-		private int addOutputFiles(ParameterInfo[] jobParameterInfo, String displayPrefix) {
+		private int addOutputFiles(ParameterInfo[] jobParameterInfo, JobInfo[] childJobs) {
 			int numOutputFiles = 0;
+			
 			for (int j = 0; j < jobParameterInfo.length; j++) {
 				if (jobParameterInfo[j].isOutputFile()) {
-					//int paramJobNumber = jobNumber;
+					String displayPrefix = "";
 					String fileName = jobParameterInfo[j].getValue();
 					int index1 = fileName.lastIndexOf('/');
 					int index2 = fileName.lastIndexOf('\\');
 					int index = (index1 > index2 ? index1 : index2);
 					if (index != -1) {
-						//paramJobNumber = Integer.parseInt(fileName
-						//		.substring(0, index));
+						int paramJobNumber = Integer.parseInt(fileName
+								.substring(0, index));
+						if(childJobs!=null) {
+							for(int k = 0; k < childJobs.length; k++) {
+								if(childJobs[k].getJobNumber()==paramJobNumber) {
+									displayPrefix = (k+1) + "." + childJobs[k].getTaskName() + ":";
+									break;
+								}
+							}
+						}
 						fileName = fileName.substring(index + 1, fileName
 								.length());
+						
 
 					}
 					
 					String displayString = displayPrefix + fileName;
 
 					ServerFileNode child = new ServerFileNode(
-							displayString, fileName, j);
+							displayString, fileName, j); 
 
 					this.add(child);
 					child.updateFileInfo();
@@ -670,18 +680,17 @@ public class JobModel extends AbstractSortableTreeTableModel {
 				try {
 					JobInfo[] children = new JobInfo[childJobNumbers.length];
 					for (int i = 0; i < children.length; i++) {
-						JobInfo job = proxy.checkStatus(childJobNumbers[i]);
-						numOutputFiles += addOutputFiles(job
-								.getParameterInfoArray(), job.getTaskName() + (i+1) + ":");
+						children[i] = proxy.checkStatus(childJobNumbers[i]);
 					}
+					numOutputFiles += addOutputFiles(jobParameterInfo, children);
 				} catch (WebServiceException wse) {
 					wse.printStackTrace();
 					this.removeAllChildren();
-					addOutputFiles(jobParameterInfo, "");
+					numOutputFiles = addOutputFiles(jobParameterInfo, null);
 				}
 
 			} else {
-				numOutputFiles = addOutputFiles(jobParameterInfo, "");
+				numOutputFiles = addOutputFiles(jobParameterInfo, null);
 			}
 			if (children != null) {
 				Collections.sort(children,
