@@ -10,6 +10,7 @@
 		 java.net.URLDecoder,
  		 java.text.SimpleDateFormat,
 		 java.util.Date,
+		 java.util.ArrayList,
 		 java.util.Enumeration, 
 		 java.util.GregorianCalendar,
 		 java.text.ParseException,
@@ -138,7 +139,7 @@ try {
  		parmInfos = new ParameterInfo[0];
  	}
 
-
+	ArrayList missingReqParams = new ArrayList();
 	 for (int i=0; i < parmInfos.length; i++){
 		ParameterInfo pinfo = parmInfos[i];
 		String value;	
@@ -156,11 +157,36 @@ try {
 			value = requestParameters.getParameter(pinfo.getName());
 		}
 		request.setAttribute(pinfo.getName(), value);
+	
+		// look for missing required params
+		if ((value == null) || (value.trim().length() == 0)){
+			HashMap pia = pinfo.getAttributes();
+			boolean isOptional = ((String)pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET])).length() > 0;
+		
+			if (!isOptional){
+				missingReqParams.add(pinfo);
+			}
+		}
 		
 		pinfo.setValue(value);
 
 	}
 	
+	if (missingReqParams.size() > 0){
+		System.out.println(""+missingReqParams);
+%>
+		<jsp:include page="navbar.jsp"></jsp:include>
+<%
+
+		request.setAttribute("missingReqParams", missingReqParams);
+		(request.getRequestDispatcher("runTaskMissingParams.jsp")).include(request, response);
+%>
+		<jsp:include page="footer.jsp"></jsp:include>
+		</body>
+		</html>
+<%
+		return;
+	}
 
 
 
