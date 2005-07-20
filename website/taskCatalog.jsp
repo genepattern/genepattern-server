@@ -666,7 +666,7 @@ Select from the following tasks from the <%=messages.get("ApplicationName")%> pu
 </tr>
 
 <tr>
-<td valign="top" colspan="3">
+<td valign="top" colspan="2">
 <span class="tasks-<%= lsidManager.getAuthorityType(lsid) %>">
 <b><%= fixupLinksInText((String)attributes.get(GPConstants.DESCRIPTION)) %></b>
 <% if (!authority.equals(LSIDUtil.BROAD_AUTHORITY)) { %>
