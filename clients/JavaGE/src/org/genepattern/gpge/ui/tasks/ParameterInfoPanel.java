@@ -6,8 +6,6 @@ package org.genepattern.gpge.ui.tasks;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FileDialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -27,9 +25,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.genepattern.data.pipeline.JobSubmission;
-import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.PropertyManager;
 import org.genepattern.gpge.message.GPGEMessage;
 import org.genepattern.gpge.message.GPGEMessageListener;
@@ -55,271 +50,241 @@ import com.jgoodies.forms.layout.RowSpec;
  *  
  */
 public class ParameterInfoPanel extends JPanel {
-    
 
 	private Map parameterName2ComponentMap;
 
-    private List inputFileParameters;
+	private List inputFileParameters;
 
-    private List parameterDescriptions;
+	private List parameterDescriptions;
 
 	private FormLayout formLayout;
+
 	private int maxLabelWidth = 0;
 
 	private boolean viewOnly;
 
-	private PipelineModel pipelineModel;
+	private DescriptionListener descriptionListener;
+
 	final static int PARAMETER_LABEL_COLUMN = 1;
+
 	final static int PARAMETER_INPUT_FIELD_COLUMN = 3;
-	
+
 	private static final int ROWS_PER_PARAMETER = 4;
-	
+
 	final static int PARAMETER_ROW_OFFSET = 0;
+
 	final static int USE_OUTPUT_ROW_OFFSET = 1;
+
 	final static int DESCRIPTION_ROW_OFFSET = 2;
+
 	final static int SPACE_ROW_OFFSET = 3;
-	
+
 	public void setLabelWidth(int labelWidth) {
-		formLayout.setColumnSpec(PARAMETER_LABEL_COLUMN, new ColumnSpec(labelWidth + "px"));
+		formLayout.setColumnSpec(PARAMETER_LABEL_COLUMN, new ColumnSpec(
+				labelWidth + "px"));
 		formLayout.invalidateLayout(this);
 		formLayout.layoutContainer(this);
 	}
-	
+
 	public int getLabelWidth() {
 		return maxLabelWidth;
 	}
-	
-    /**
-     * Gets the component that is used to display the given parameter
-     * 
-     * @param parameterName
-     *            the parameter name
-     * @return the component
-     */
-    public Component getComponent(String parameterName) {
-        return (Component) parameterName2ComponentMap.get(parameterName);
-    }
 
-    /**
-     * Gets an iterator of the input file parameter names
-     * 
-     * @return the input file parameter names
-     */
-    public Iterator getInputFileParameters() {
-        return inputFileParameters.iterator();
-    }
-
-    private final static String getValue(ParameterInfo info,
-            ObjectTextField field) throws java.io.IOException {
-        final Object obj = field.getObject();
-        if (obj == null) {
-            return null;
-        }
-
-        if (obj instanceof String) {// reloaded job where input file is
-            // on server
-            info.getAttributes().put(ParameterInfo.TYPE,
-                    ParameterInfo.FILE_TYPE);
-
-            info.getAttributes().put(ParameterInfo.MODE,
-                    ParameterInfo.CACHED_INPUT_MODE);
-            return obj.toString();
-        }
-        if (obj instanceof org.genepattern.gpge.ui.project.ProjectDirModel.FileNode) {
-            info.setAsInputFile();
-            ProjectDirModel.FileNode node = (ProjectDirModel.FileNode) obj;
-            return node.file.getCanonicalPath();
-        } else if (obj instanceof org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) {
-            info.getAttributes().put(ParameterInfo.TYPE,
-                    ParameterInfo.FILE_TYPE);
-            info.getAttributes().put(ParameterInfo.MODE,
-                    ParameterInfo.CACHED_INPUT_MODE);
-            org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode node = (org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) obj;
-            return node.getParameterValue();
-        } else if (obj instanceof java.io.File) {
-            info.setAsInputFile();
-            final File drop_file = (File) obj;
-            return drop_file.getCanonicalPath();
-        } else if (obj instanceof java.net.URL) {
-            return obj.toString();
-        } else {
-            throw new IllegalStateException();
-        }
-    }
-
-   
-    /**
-     * Gets the parameter info array for the current values of parameters
-     */
-    public ParameterInfo[] getParameterInfoArray() {
-        List actualParameters = new ArrayList();
-        
-        if (parameterName2ComponentMap.size() > 0) {
-            for (Iterator it = parameterName2ComponentMap.keySet().iterator(); it.hasNext(); ) {
-                String parameterName = (String) it.next();
-                Component c = this.getComponent(parameterName);
-                String value = null;
-                ParameterInfo actualParameter = new ParameterInfo(
-                        parameterName, "", "");
-                actualParameter.setAttributes(new HashMap(2));
-                
-                if (c instanceof ObjectTextField) {
-                    try {
-                        value = getValue(actualParameter, (ObjectTextField) c);
-                        actualParameter.getAttributes().put(
-                                GPConstants.PARAM_INFO_CLIENT_FILENAME[0],
-                                value);
-                    } catch (java.io.IOException ioe) {
-                        ioe.printStackTrace();
-                    }
-                } else if (c instanceof JComboBox) {
-                    ParameterInfoPanel.ChoiceItem ci = (ParameterInfoPanel.ChoiceItem) ((JComboBox) c)
-                            .getSelectedItem();
-                    value = ci.getValue();
-                } else if (c instanceof JTextField) {
-                    value = ((JTextField) c).getText();
-                    if (value != null) {
-                        value = value.trim();
-                    }
-                    if ("".equals(value)) {
-						value = null;
-                    }
-                }
-                
-                actualParameter.setValue(value);
-                actualParameters.add(actualParameter);
-            }
-        }
-        final ParameterInfo[] actualParameterArray = (ParameterInfo[]) actualParameters
-                .toArray(new ParameterInfo[0]);
-        return actualParameterArray;
-    }
-    
-    private int getRowIndex(int i) {
-    		return  i * ROWS_PER_PARAMETER + 1;
-    }
-
-    /**
-     * Sets the vertical spacing between the description and the next input field
-     * @param size
-     */
-    public void setVerticalSpacing(int size) {
-    	 if (parameterName2ComponentMap.size() > 0) {
-    		 for(int i = 0; i < parameterName2ComponentMap.size(); i++) {
-    			 int row = getRowIndex(i) + SPACE_ROW_OFFSET;
-    			 formLayout.setRowSpec(row, new RowSpec(size + "px"));
-    		 }
-    		 formLayout.invalidateLayout(this);
-    		 formLayout.layoutContainer(this);
-    	 }
-    }
-    
-    /**
-     * 
-     * @param parameterIndex the index of the parameter, starting at 0
-     * @param previousTaskNames, the array of task names to display
-     * @param choices the array of output type choices to display
-     */
-	public void setUseInputFromPreviousTask(int parameterIndex, String[] previousTaskNames, String[] choices) {
-		int row = getRowIndex(parameterIndex) + USE_OUTPUT_ROW_OFFSET;
-		JLabel tasksLabel = new JLabel("or use output from");
-		JComboBox tasksComboBox = new JComboBox(previousTaskNames);
-		tasksComboBox.setBackground(getBackground());
-		
-		JLabel outputFilesLabel = new JLabel("output file");
-		JComboBox outputFilesComboBox = new JComboBox(choices);
-		outputFilesComboBox.setBackground(getBackground());
-		
-		JPanel p = new JPanel();
-		p.setBackground(getBackground());
-		p.add(tasksLabel);
-		p.add(tasksComboBox);
-		p.add(outputFilesLabel);
-		p.add(outputFilesComboBox);
-		CellConstraints cc = new CellConstraints();
-		this.add(p, cc.xy(PARAMETER_INPUT_FIELD_COLUMN, row));
+	/**
+	 * Gets the component that is used to display the given parameter
+	 * 
+	 * @param parameterName
+	 *            the parameter name
+	 * @return the component
+	 */
+	public Component getComponent(String parameterName) {
+		return (Component) parameterName2ComponentMap.get(parameterName);
 	}
-    
-	 public ParameterInfoPanel(String taskName, ParameterInfo[] params) {
-		 this(taskName, params, false);
-	 }
-	 
-     public ParameterInfoPanel(String taskName, ParameterInfo[] params, boolean viewOnly) {
-    	 	this.viewOnly = viewOnly; 
-    	 
-    	 	MessageManager.addGPGEMessageListener(new GPGEMessageListener() { // FIXME
 
-				public void receiveMessage(GPGEMessage message) {
-					if(message instanceof PreferenceChangeMessage) {
-						PreferenceChangeMessage pcm = (PreferenceChangeMessage) message;
-						if(pcm.getType()==PreferenceChangeMessage.SHOW_PARAMETER_DESCRIPTIONS) {
-							setDescriptionsVisible(PropertyManager
-		                              .getBooleanProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS));
+	/**
+	 * Gets an iterator of the input file parameter names
+	 * 
+	 * @return the input file parameter names
+	 */
+	public Iterator getInputFileParameters() {
+		return inputFileParameters.iterator();
+	}
 
-						}
+	private final static String getValue(ParameterInfo info,
+			ObjectTextField field) throws java.io.IOException {
+		final Object obj = field.getObject();
+		if (obj == null) {
+			return null;
+		}
+
+		if (obj instanceof String) {// reloaded job where input file is
+			// on server
+			info.getAttributes().put(ParameterInfo.TYPE,
+					ParameterInfo.FILE_TYPE);
+
+			info.getAttributes().put(ParameterInfo.MODE,
+					ParameterInfo.CACHED_INPUT_MODE);
+			return obj.toString();
+		}
+		if (obj instanceof org.genepattern.gpge.ui.project.ProjectDirModel.FileNode) {
+			info.setAsInputFile();
+			ProjectDirModel.FileNode node = (ProjectDirModel.FileNode) obj;
+			return node.file.getCanonicalPath();
+		} else if (obj instanceof org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) {
+			info.getAttributes().put(ParameterInfo.TYPE,
+					ParameterInfo.FILE_TYPE);
+			info.getAttributes().put(ParameterInfo.MODE,
+					ParameterInfo.CACHED_INPUT_MODE);
+			org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode node = (org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) obj;
+			return node.getParameterValue();
+		} else if (obj instanceof java.io.File) {
+			info.setAsInputFile();
+			final File drop_file = (File) obj;
+			return drop_file.getCanonicalPath();
+		} else if (obj instanceof java.net.URL) {
+			return obj.toString();
+		} else {
+			throw new IllegalStateException();
+		}
+	}
+
+	/**
+	 * Gets the parameter info array for the current values of parameters
+	 */
+	public ParameterInfo[] getParameterInfoArray() {
+		List actualParameters = new ArrayList();
+
+		if (parameterName2ComponentMap.size() > 0) {
+			for (Iterator it = parameterName2ComponentMap.keySet().iterator(); it
+					.hasNext();) {
+				String parameterName = (String) it.next();
+				Component c = this.getComponent(parameterName);
+				String value = null;
+				ParameterInfo actualParameter = new ParameterInfo(
+						parameterName, "", "");
+				actualParameter.setAttributes(new HashMap(2));
+
+				if (c instanceof ObjectTextField) {
+					try {
+						value = getValue(actualParameter, (ObjectTextField) c);
+						actualParameter.getAttributes().put(
+								GPConstants.PARAM_INFO_CLIENT_FILENAME[0],
+								value);
+					} catch (java.io.IOException ioe) {
+						ioe.printStackTrace();
+					}
+				} else if (c instanceof JComboBox) {
+					ParameterInfoPanel.ChoiceItem ci = (ParameterInfoPanel.ChoiceItem) ((JComboBox) c)
+							.getSelectedItem();
+					value = ci.getValue();
+				} else if (c instanceof JTextField) {
+					value = ((JTextField) c).getText();
+					if (value != null) {
+						value = value.trim();
+					}
+					if ("".equals(value)) {
+						value = null;
 					}
 				}
-    	 		
-    	 		
-    	 	});
-    	 	boolean showDescriptions =
-                      PropertyManager
-                              .getBooleanProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS);
 
-        int numParams = params!=null?params.length:0;
-        parameterName2ComponentMap = new HashMap(numParams);
-        parameterDescriptions = new ArrayList(numParams);
-        inputFileParameters = new ArrayList();
+				actualParameter.setValue(value);
+				actualParameters.add(actualParameter);
+			}
+		}
+		final ParameterInfo[] actualParameterArray = (ParameterInfo[]) actualParameters
+				.toArray(new ParameterInfo[0]);
+		return actualParameterArray;
+	}
 
-        this.setBackground(Color.white);
-        this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-      
-        if (params == null || params.length == 0) {
-            this.add(new JLabel(taskName + " has no input parameters"));
-        } else {
-	            StringBuffer rowSpec = new StringBuffer();
-	            for (int i = 0; i < params.length; i++) {
-	                if (i > 0) {
-	                    rowSpec.append(", ");
-	                }
-	                rowSpec.append("pref, pref, pref, 12px");
-	                // input row
-	                // use output from row
-	                // description row
-	                // space
-	            }
-	            // input label, space, input field + browse button
-	            //                     description
-	            
-	            
-	            formLayout = new FormLayout( // 
-	                    "right:pref:none, 6px, left:default:none", rowSpec
-	                            .toString());
-	            
-	            this.setLayout(formLayout);
-        		
-            
-            CellConstraints cc = new CellConstraints();
+	private int getRowIndex(int i) {
+		return i * ROWS_PER_PARAMETER + 1;
+	}
 
-            for (int i = 0; i < params.length; i++) {
-                cc.gridWidth = 1;
-                final ParameterInfo info = params[i];
-                
-                Component input = getComponent(info);
-                
-                int row = getRowIndex(i);
-                Component inputLabel = new JLabel(AnalysisServiceDisplay
-                        .getDisplayString(info) + ":");
-                maxLabelWidth = Math.max(maxLabelWidth, inputLabel.getWidth());
-                if (!isOptional(params[i])) {
-                    inputLabel.setFont(inputLabel.getFont().deriveFont(
-                            java.awt.Font.BOLD));
-                }
-                
-                this.add(inputLabel, cc.xy(PARAMETER_LABEL_COLUMN, row));
-                JLabel description = new JLabel(info.getDescription());
-               
-                if (!viewOnly && info.isInputFile()) {
+	/**
+	 * Sets the vertical spacing between the description and the next input field
+	 * @param size
+	 */
+	public void setVerticalSpacing(int size) {
+		if (parameterName2ComponentMap.size() > 0) {
+			for (int i = 0; i < parameterName2ComponentMap.size(); i++) {
+				int row = getRowIndex(i) + SPACE_ROW_OFFSET;
+				formLayout.setRowSpec(row, new RowSpec(size + "px"));
+			}
+			formLayout.invalidateLayout(this);
+			formLayout.layoutContainer(this);
+		}
+	}
+
+	public void removeNotif() {
+		super.removeNotify();
+		MessageManager.removeGPGEMessageListener(descriptionListener);
+	}
+
+	public ParameterInfoPanel(String taskName, ParameterInfo[] params) {
+		this(taskName, params, false);
+	}
+
+	public ParameterInfoPanel(String taskName, ParameterInfo[] params,
+			boolean viewOnly) {
+		this.viewOnly = viewOnly;
+		descriptionListener = new DescriptionListener();
+		MessageManager.addGPGEMessageListener(descriptionListener);
+		boolean showDescriptions = PropertyManager
+				.getBooleanProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS);
+
+		int numParams = params != null ? params.length : 0;
+		parameterName2ComponentMap = new HashMap(numParams);
+		parameterDescriptions = new ArrayList(numParams);
+		inputFileParameters = new ArrayList();
+
+		this.setBackground(Color.white);
+		this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+		if (params == null || params.length == 0) {
+			this.add(new JLabel(taskName + " has no input parameters"));
+		} else {
+			StringBuffer rowSpec = new StringBuffer();
+			for (int i = 0; i < params.length; i++) {
+				if (i > 0) {
+					rowSpec.append(", ");
+				}
+				rowSpec.append("pref, pref, pref, 12px");
+				// input row
+				// use output from row
+				// description row
+				// space
+			}
+			// input label, space, input field + browse button
+			//                     description
+
+			formLayout = new FormLayout( // 
+					"right:pref:none, 6px, left:default:none", rowSpec
+							.toString());
+
+			this.setLayout(formLayout);
+
+			CellConstraints cc = new CellConstraints();
+
+			for (int i = 0; i < params.length; i++) {
+				cc.gridWidth = 1;
+				final ParameterInfo info = params[i];
+
+				Component input = createComponent(info);
+
+				int row = getRowIndex(i);
+				Component inputLabel = new JLabel(AnalysisServiceDisplay
+						.getDisplayString(info)
+						+ ":");
+				maxLabelWidth = Math.max(maxLabelWidth, inputLabel.getWidth());
+				if (!isOptional(params[i])) {
+					inputLabel.setFont(inputLabel.getFont().deriveFont(
+							java.awt.Font.BOLD));
+				}
+
+				this.add(inputLabel, cc.xy(PARAMETER_LABEL_COLUMN, row));
+				JLabel description = new JLabel(info.getDescription());
+
+				if (!viewOnly && info.isInputFile()) {
 					JPanel p = new JPanel();
 					p.setBackground(getBackground());
 					FormLayout f = new FormLayout(
@@ -351,18 +316,18 @@ public class ParameterInfoPanel extends JPanel {
 				parameterDescriptions.add(description);
 				this.add(description, cc.xy(PARAMETER_INPUT_FIELD_COLUMN, row
 						+ DESCRIPTION_ROW_OFFSET));
-            }
-        }
-    }
+			}
+		}
+	}
 
-    private void setDescriptionsVisible(boolean b) {
-        for (int i = 0; i < parameterDescriptions.size(); i++) {
-            Component c = (Component) parameterDescriptions.get(i);
-            c.setVisible(b);
-        }
-    }
+	private void setDescriptionsVisible(boolean b) {
+		for (int i = 0; i < parameterDescriptions.size(); i++) {
+			Component c = (Component) parameterDescriptions.get(i);
+			c.setVisible(b);
+		}
+	}
 
-    /**
+	/**
 	 * 
 	 * @param parameterName
 	 * @param value
@@ -370,271 +335,241 @@ public class ParameterInfoPanel extends JPanel {
 	 *            either the UI value of the command line value
 	 */
 	public void setValue(String parameterName, Object value) {
-		if(value==null) {
+		if (value == null) {
 			value = "";
 		}
-    		Component c = getComponent(parameterName);
-    	    if(c!=null) {
-    	    		if(c instanceof ObjectTextField) {
-	    			ObjectTextField tf = (ObjectTextField)  c;
-    	    			tf.setObject(value);
-	    		} else if(c instanceof JTextField) {
-    	    			((JTextField)c).setText(value.toString());
-    	    		} else if(c instanceof JComboBox) {
-    	    			JComboBox cb = (JComboBox) c;
-    	    			for(int i = 0, size = cb.getItemCount(); i < size; i++) {
-    	    				ChoiceItem ci = (ChoiceItem) cb.getItemAt(i);
-    	    				if(ci.commandLineValue.equals(value)|| ci.uiText.equals(value)) {
-    	    					cb.setSelectedIndex(i);
-    	    					break;
-    	    				}
-    	    			}
-    	    		} else if(c instanceof JLabel) {
-    	    			
-    	    			((JLabel)c).setText(value.toString());
-    	    		}
-    	    }
-    }
-    
-	/* String getViewValue(ParameterInfo info) {
-    	System.out.println(info);
-    		Map attrs = info.getAttributes();
-    		if(attrs==null) {
-    			return info.getValue();
-    		}
-		if(attrs.get(PipelineModel.RUNTIME_PARAM)!=null) {
-			return "Prompt when run";
-		} 
-		
-		String taskNumber = (String) attrs	
-					.get(PipelineModel.INHERIT_TASKNAME);
-		
-		if (taskNumber != null) {
-			int taskNumberInt = Integer.parseInt(taskNumber);
-			String outputFileNumber = (String) attrs
-				.get(PipelineModel.INHERIT_FILENAME);
-			String inheritedOutputFileName = outputFileNumber;
-			if (outputFileNumber.equals("1")) {
-				inheritedOutputFileName = "1st output";
-			} else if (outputFileNumber.equals("2")) {
-				inheritedOutputFileName = "2nd output";
-			} else if (outputFileNumber.equals("3")) {
-				inheritedOutputFileName = "3rd output";
-			} else if (outputFileNumber.equals("stdout")) {
-				inheritedOutputFileName = "standard output";
-			} else if (outputFileNumber.equals("stderr")) {
-				inheritedOutputFileName = "standard error";
-			} 
-		
-			JobSubmission inheritedTask = pipelineModel
-				.getTask(taskNumberInt);
-			int displayTaskNumber = taskNumberInt + 1;
+		Component c = getComponent(parameterName);
+		if (c != null) {
+			if (c instanceof ObjectTextField) {
+				ObjectTextField tf = (ObjectTextField) c;
+				tf.setObject(value);
+			} else if (c instanceof JTextField) {
+				((JTextField) c).setText(value.toString());
+			} else if (c instanceof JComboBox) {
+				JComboBox cb = (JComboBox) c;
+				for (int i = 0, size = cb.getItemCount(); i < size; i++) {
+					ChoiceItem ci = (ChoiceItem) cb.getItemAt(i);
+					if (ci.commandLineValue.equals(value)
+							|| ci.uiText.equals(value)) {
+						cb.setSelectedIndex(i);
+						break;
+					}
+				}
+			} else if (c instanceof JLabel) {
 
-			return "Use " + inheritedOutputFileName + "from "
-				+ displayTaskNumber + ". "
-				+ inheritedTask.getName();
+				((JLabel) c).setText(value.toString());
+			}
 		}
-		return info.getValue();
-		
-	} */
-		
-    protected final Component getComponent(final ParameterInfo info) {
-    	    String value = info.getValue();
-        Component field = null;
-    	    if(viewOnly) {
-    	    		field = new JLabel(value);
-    	    } else if (value == null || value.equals("")) {
-            if (info.isInputFile()) {
-            		inputFileParameters.add(info);
-            		field = createInputFileField(info);
-            } else {
-            		field = createTextInput(info);
-            }
-        } else {
-        		field = createComboBox(info);
-        }
-        parameterName2ComponentMap.put(info.getName(), field);
-        return field;
-    }
-    
-    /**
-     * creates a JTextField
-     * 
-     * @param info
-     *            Description of the Parameter
-     * @return Description of the Return Value
-     */
-    private Component createTextInput(ParameterInfo info) {
-        final JTextField field = new JTextField(20);
-        // set default
-        final String default_val = (String) info.getAttributes().get(
-                GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
+	}
 
-        try {
-            if (default_val != null && default_val.trim().length() > 0) {
-                field.setText(default_val);
-            } else {
-                // if optional value and no default, clear the field
-                if (isOptional(info)) {
-                    field.setText(null);
-                }
-            }
-        } catch (NumberFormatException ex) {
-            ex.printStackTrace();
-        }
-        field.setFont(getFont());
-        return field;
-    }
-    
-    private Component createComboBox(ParameterInfo info) {
-        // get default
-        final String default_val = ((String) info.getAttributes().get(
-                GPConstants.PARAM_INFO_DEFAULT_VALUE[0])).trim();
-        final ChoiceItem default_item = createDefaultChoice(default_val);
-        final StringTokenizer tokenizer = new StringTokenizer(info.getValue(),
-                ";");
-        final JComboBox list = new JComboBox();
-        list.setBackground(Color.white);
-        list.setFont(getFont());
-        int selectIndex = -1;
-        for (int i = 0; tokenizer.hasMoreTokens(); i++) {
-            final String token = tokenizer.nextToken();
-            final ChoiceItem item = createChoiceItem(token);
-            list.addItem(item);
-            if (selectIndex < 0 && item.hasToken(default_item)) {
-                selectIndex = i;
-            }
-        }
+	protected final Component createComponent(final ParameterInfo info) {
+		String value = info.getValue();
+		Component field = null;
+		if (viewOnly) {
+			field = new JLabel(value);
+		} else if (value == null || value.equals("")) {
+			if (info.isInputFile()) {
+				inputFileParameters.add(info);
+				field = createInputFileField(info);
+			} else {
+				field = createTextInput(info);
+			}
+		} else {
+			field = createComboBox(info);
+		}
+		parameterName2ComponentMap.put(info.getName(), field);
+		return field;
+	}
 
-        if (selectIndex >= 0) {
-            list.setSelectedIndex(selectIndex);
-        } else {
-            list.setSelectedIndex(0);
-        }
-        return list;
-    }
+	/**
+	 * creates a JTextField
+	 * 
+	 * @param info
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
+	 */
+	private Component createTextInput(ParameterInfo info) {
+		final JTextField field = new JTextField(20);
+		// set default
+		final String default_val = (String) info.getAttributes().get(
+				GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 
-    private Component createInputFileField(ParameterInfo info) {
-    	 	final ObjectTextField field = new ObjectTextField(null, 20);
-         if (!GPGE.RUNNING_ON_MAC) {
-             field.setBackground(Color.white);
-         }
-         field.setFont(getFont());
-       
-        
-        String defaultValue = (String) info.getAttributes().get(
-                GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
+		try {
+			if (default_val != null && default_val.trim().length() > 0) {
+				field.setText(default_val);
+			} else {
+				// if optional value and no default, clear the field
+				if (isOptional(info)) {
+					field.setText(null);
+				}
+			}
+		} catch (NumberFormatException ex) {
+			ex.printStackTrace();
+		}
+		field.setFont(getFont());
+		return field;
+	}
 
-        if (defaultValue != null && !defaultValue.trim().equals("")) {
-            File f = new File(defaultValue);
-            if (f.exists()) {
-                field.setObject(f);
-            } else if (defaultValue.startsWith("http://")
-                    || defaultValue.startsWith("https://")
-                    || defaultValue.startsWith("ftp:")) {
-                try {
-                    field.setObject(new URL(defaultValue));
-                } catch (MalformedURLException mue) {
-                    System.err.println("Error setting default value.");
-                }
-            } else {// for reload of server file
-                field.setObject(defaultValue);
-            }
+	private Component createComboBox(ParameterInfo info) {
+		// get default
+		final String default_val = ((String) info.getAttributes().get(
+				GPConstants.PARAM_INFO_DEFAULT_VALUE[0])).trim();
+		final ChoiceItem default_item = createDefaultChoice(default_val);
+		final StringTokenizer tokenizer = new StringTokenizer(info.getValue(),
+				";");
+		final JComboBox list = new JComboBox();
+		list.setBackground(Color.white);
+		list.setFont(getFont());
+		int selectIndex = -1;
+		for (int i = 0; tokenizer.hasMoreTokens(); i++) {
+			final String token = tokenizer.nextToken();
+			final ChoiceItem item = createChoiceItem(token);
+			list.addItem(item);
+			if (selectIndex < 0 && item.hasToken(default_item)) {
+				selectIndex = i;
+			}
+		}
 
-        }
-        return field;
-    }
+		if (selectIndex >= 0) {
+			list.setSelectedIndex(selectIndex);
+		} else {
+			list.setSelectedIndex(0);
+		}
+		return list;
+	}
 
-    /**
-     * Parses the String and returns a ChoiceItem
-     * 
-     * @param string
-     *            Description of the Parameter
-     * @return Description of the Return Value
-     */
-    private ChoiceItem createChoiceItem(final String string) {
-        final int index = string.indexOf('=');
-        ChoiceItem choice = null;
-        if (index < 0) {
-            choice = new ChoiceItem(string, string);
-        } else {
-            choice = new ChoiceItem(string.substring(index + 1), string
-                    .substring(0, index));
-        }
-        return choice;
-    }
+	private Component createInputFileField(ParameterInfo info) {
+		final ObjectTextField field = new ObjectTextField(null, 20);
+		if (!GPGE.RUNNING_ON_MAC) {
+			field.setBackground(Color.white);
+		}
+		field.setFont(getFont());
 
-    /**
-     * creates the default <CODE>ChoiceItem</CODE> for the combo box
-     * 
-     * @param default_val
-     *            Description of the Parameter
-     * @return Description of the Return Value
-     */
-    private ChoiceItem createDefaultChoice(final String default_val) {
-        if (default_val != null && default_val.length() > 0) {
-            return createChoiceItem(default_val);
-        }
-        return null;
-    }
+		String defaultValue = (String) info.getAttributes().get(
+				GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 
-   
+		if (defaultValue != null && !defaultValue.trim().equals("")) {
+			File f = new File(defaultValue);
+			if (f.exists()) {
+				field.setObject(f);
+			} else if (defaultValue.startsWith("http://")
+					|| defaultValue.startsWith("https://")
+					|| defaultValue.startsWith("ftp:")) {
+				try {
+					field.setObject(new URL(defaultValue));
+				} catch (MalformedURLException mue) {
+					System.err.println("Error setting default value.");
+				}
+			} else {// for reload of server file
+				field.setObject(defaultValue);
+			}
 
-    protected final boolean isOptional(final ParameterInfo info) {
-        final Object optional = info.getAttributes().get("optional");
-        return (optional != null && "on".equalsIgnoreCase(optional.toString()));
-    }
+		}
+		return field;
+	}
 
-    static class ChoiceItem {
-        
-        /** the text that is displayed to the users */
-        private final String uiText;
+	/**
+	 * Parses the String and returns a ChoiceItem
+	 * 
+	 * @param string
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
+	 */
+	private ChoiceItem createChoiceItem(final String string) {
+		final int index = string.indexOf('=');
+		ChoiceItem choice = null;
+		if (index < 0) {
+			choice = new ChoiceItem(string, string);
+		} else {
+			choice = new ChoiceItem(string.substring(index + 1), string
+					.substring(0, index));
+		}
+		return choice;
+	}
 
-        /** the command line value */
-        private final String commandLineValue;
+	/**
+	 * creates the default <CODE>ChoiceItem</CODE> for the combo box
+	 * 
+	 * @param default_val
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
+	 */
+	private ChoiceItem createDefaultChoice(final String default_val) {
+		if (default_val != null && default_val.length() > 0) {
+			return createChoiceItem(default_val);
+		}
+		return null;
+	}
 
-        ChoiceItem(final String text, final String value) {
-            this.uiText = text.trim();
-            this.commandLineValue = value;
+	protected final boolean isOptional(final ParameterInfo info) {
+		final Object optional = info.getAttributes().get("optional");
+		return (optional != null && "on".equalsIgnoreCase(optional.toString()));
+	}
 
-        }
+	private final class DescriptionListener implements GPGEMessageListener {
+		public void receiveMessage(GPGEMessage message) {
+			if (message instanceof PreferenceChangeMessage) {
+				PreferenceChangeMessage pcm = (PreferenceChangeMessage) message;
+				if (pcm.getType() == PreferenceChangeMessage.SHOW_PARAMETER_DESCRIPTIONS) {
+					setDescriptionsVisible(PropertyManager
+							.getBooleanProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS));
 
-        public String paramString() {
-        		return uiText + " = " + commandLineValue;
-        }
-      
-        public final String toString() {
-            return uiText;
-        }
+				}
+			}
+		}
+	}
 
-        public boolean equals(Object obj) {
-        		if(obj instanceof ChoiceItem) {
-        			ChoiceItem other = (ChoiceItem) obj;
-        			return other.uiText.equals(this.uiText);
-        		}
-        		return false;
-        }
-        /**
-         * returns true if the <CODE>ChoiceItem</CODE>'s fields equal either
-         * the value or the text
-         * 
-         * @param item
-         *            Description of the Parameter
-         * @return Description of the Return Value
-         */
-        protected boolean hasToken(final ChoiceItem item) {
-            return (item != null && (uiText.equalsIgnoreCase(item.uiText) || item.commandLineValue
-                    .toString().equalsIgnoreCase(commandLineValue.toString())));
-        }
+	static class ChoiceItem {
 
-        /**
-         * returns the command line value (which is not displayed)
-         * 
-         * @return The value
-         */
-        public final String getValue() {
-            return commandLineValue;
-        }
-    }
+		/** the text that is displayed to the users */
+		private final String uiText;
+
+		/** the command line value */
+		private final String commandLineValue;
+
+		ChoiceItem(final String text, final String value) {
+			this.uiText = text.trim();
+			this.commandLineValue = value;
+
+		}
+
+		public String paramString() {
+			return uiText + " = " + commandLineValue;
+		}
+
+		public final String toString() {
+			return uiText;
+		}
+
+		public boolean equals(Object obj) {
+			if (obj instanceof ChoiceItem) {
+				ChoiceItem other = (ChoiceItem) obj;
+				return other.uiText.equals(this.uiText);
+			}
+			return false;
+		}
+
+		/**
+		 * returns true if the <CODE>ChoiceItem</CODE>'s fields equal either
+		 * the value or the text
+		 * 
+		 * @param item
+		 *            Description of the Parameter
+		 * @return Description of the Return Value
+		 */
+		protected boolean hasToken(final ChoiceItem item) {
+			return (item != null && (uiText.equalsIgnoreCase(item.uiText) || item.commandLineValue
+					.toString().equalsIgnoreCase(commandLineValue.toString())));
+		}
+
+		/**
+		 * returns the command line value (which is not displayed)
+		 * 
+		 * @return The value
+		 */
+		public final String getValue() {
+			return commandLineValue;
+		}
+	}
 
 }
