@@ -38,13 +38,14 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.*;
 
 /**
- *  Utility methods for semantic information
- *
- * @author    Joshua Gould
+ * Utility methods for semantic information
+ * 
+ * @author Joshua Gould
  */
 public class SemanticUtil {
 
-	public static class ModuleMenuItemAction extends MenuItemAction implements ActionListener, GPGEMessageListener {
+	public static class ModuleMenuItemAction extends MenuItemAction implements
+			ActionListener, GPGEMessageListener {
 		/** Currently selected node */
 		TreeNode node;
 
@@ -53,7 +54,7 @@ public class SemanticUtil {
 
 		/** The <tt>AnalysisService</tt> that this menu item represents */
 		AnalysisService svc;
-		
+
 		public ModuleMenuItemAction(AnalysisService svc) {
 			super(svc.getTaskInfo().getName());
 			MessageManager.addGPGEMessageListener(this);
@@ -65,113 +66,106 @@ public class SemanticUtil {
 			this.node = node;
 			this.kind = kind;
 		}
-		
+
 		public void actionPerformed(ActionEvent e) {
-			MessageManager
-					.notifyListeners(new ChangeViewMessageRequest(
-							this,
-							ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST,
-							svc));
+			MessageManager.notifyListeners(new ChangeViewMessageRequest(this,
+					ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST, svc));
 		}
-		
+
 		public void receiveMessage(GPGEMessage message) {
-			if(!(message instanceof ChangeViewMessage) || message.getSource()!=this) {
-				return;
-			}
-			ChangeViewMessage changeViewMessage = (ChangeViewMessage) message;
-			final AnalysisServiceDisplay analysisServiceDisplay = (AnalysisServiceDisplay) changeViewMessage.getComponent(); 
-			boolean uniqueSendTo = true;
-			final List matchingInputParameters = new ArrayList();
-			for (Iterator it = analysisServiceDisplay
-					.getInputFileParameters(); it.hasNext();) {
-				ParameterInfo parameterInfo = (ParameterInfo) it
-						.next();
-				if (isCorrectKind(parameterInfo, kind)) {
-					matchingInputParameters.add(parameterInfo);
+
+			if (message instanceof ChangeViewMessage && message.getSource()==this) {
+				ChangeViewMessage cvm = (ChangeViewMessage) message;
+				if(cvm.getType()!=ChangeViewMessage.RUN_TASK_SHOWN) {
+					return;
+				}
+				ChangeViewMessage changeViewMessage = (ChangeViewMessage) message;
+				final AnalysisServiceDisplay analysisServiceDisplay = (AnalysisServiceDisplay) changeViewMessage
+						.getComponent();
+
+				final List matchingInputParameters = new ArrayList();
+				for (Iterator it = analysisServiceDisplay
+						.getInputFileParameters(); it.hasNext();) {
+					ParameterInfo parameterInfo = (ParameterInfo) it.next();
+					if (isCorrectKind(parameterInfo, kind)) {
+						matchingInputParameters.add(parameterInfo);
+					}
+				}
+				if (matchingInputParameters.size() == 1) {
+					ParameterInfo inputParameter = (ParameterInfo) matchingInputParameters
+							.get(0);
+					analysisServiceDisplay.setInputFile(inputParameter
+							.getName(), node);
+				} else if (matchingInputParameters.size() > 1) {
+					final JDialog d = new CenteredDialog(GenePattern
+							.getDialogParent());
+					TableModel model = new AbstractTableModel() {
+						public int getColumnCount() {
+							return 1;
+						}
+
+						public int getRowCount() {
+							return matchingInputParameters.size();
+						}
+
+						public String getColumnName(int j) {
+							return "Parameter";
+						}
+
+						public Class getColumnClass(int j) {
+							return String.class;
+						}
+
+						public Object getValueAt(int r, int c) {
+							ParameterInfo p = (ParameterInfo) matchingInputParameters
+									.get(r);
+							return AnalysisServiceDisplay.getDisplayString(p);
+						}
+					};
+					final JButton ok = new JButton("OK");
+					final JButton cancel = new JButton("Cancel");
+					final JTable t = new AlternatingColorTable(model);
+
+					t.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+					t.setRowSelectionInterval(0, 0);
+					d.setTitle("Send " + node.toString() + " To");
+					d.getContentPane().add(new JScrollPane(t));
+
+					final ActionListener listener = new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							if (e.getSource() == ok) {
+								int row = t.getSelectedRow();
+								if (row < 0) {
+									return;
+								}
+								ParameterInfo inputParameter = (ParameterInfo) matchingInputParameters
+										.get(row);
+								analysisServiceDisplay.setInputFile(
+										inputParameter.getName(), node);
+							}
+							d.dispose();
+						}
+					};
+					t.addMouseListener(new MouseAdapter() {
+						public void mouseClicked(MouseEvent e) {
+							if (e.getClickCount() == 2) {
+								listener.actionPerformed(new ActionEvent(ok,
+										ActionEvent.ACTION_PERFORMED, ""));
+							}
+						}
+					});
+					ok.addActionListener(listener);
+					cancel.addActionListener(listener);
+					JPanel buttonPanel = new JPanel();
+					buttonPanel.add(cancel);
+					buttonPanel.add(ok);
+					d.getRootPane().setDefaultButton(ok);
+					d.getContentPane().add(BorderLayout.SOUTH, buttonPanel);
+					d.setSize(300, 200);
+					d.show();
 				}
 			}
-			if (matchingInputParameters.size() == 1) {
-				ParameterInfo inputParameter = (ParameterInfo) matchingInputParameters
-						.get(0);
-				analysisServiceDisplay.setInputFile(inputParameter
-						.getName(), node);
-			} else if (matchingInputParameters.size() > 1) {
-				final JDialog d = new CenteredDialog(GenePattern
-						.getDialogParent());
-				TableModel model = new AbstractTableModel() {
-					public int getColumnCount() {
-						return 1;
-					}
-
-					public int getRowCount() {
-						return matchingInputParameters.size();
-					}
-
-					public String getColumnName(int j) {
-						return "Parameter";
-					}
-
-					public Class getColumnClass(int j) {
-						return String.class;
-					}
-
-					public Object getValueAt(int r, int c) {
-						ParameterInfo p = (ParameterInfo) matchingInputParameters
-								.get(r);
-						return AnalysisServiceDisplay
-								.getDisplayString(p);
-					}
-				};
-				final JButton ok = new JButton("OK");
-				final JButton cancel = new JButton("Cancel");
-				final JTable t = new AlternatingColorTable(model);
-
-				t
-						.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-				t.setRowSelectionInterval(0, 0);
-				d.setTitle("Send " + node.toString() + " To");
-				d.getContentPane().add(new JScrollPane(t));
-
-				final ActionListener listener = new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						if (e.getSource() == ok) {
-							int row = t.getSelectedRow();
-							if (row < 0) {
-								return;
-							}
-							ParameterInfo inputParameter = (ParameterInfo) matchingInputParameters
-									.get(row);
-							analysisServiceDisplay.setInputFile(
-									inputParameter.getName(), node);
-						}
-						d.dispose();
-					}
-				};
-				t.addMouseListener(new MouseAdapter() {
-					public void mouseClicked(MouseEvent e) {
-						if (e.getClickCount() == 2) {
-							listener
-									.actionPerformed(new ActionEvent(
-											ok,
-											ActionEvent.ACTION_PERFORMED,
-											""));
-						}
-					}
-				});
-				ok.addActionListener(listener);
-				cancel.addActionListener(listener);
-				JPanel buttonPanel = new JPanel();
-				buttonPanel.add(cancel);
-				buttonPanel.add(ok);
-				d.getRootPane().setDefaultButton(ok);
-				d.getContentPane().add(BorderLayout.SOUTH,
-						buttonPanel);
-				d.setSize(300, 200);
-				d.show();
-			}
 		}
-	
-
 	}
 
 	private SemanticUtil() {
@@ -230,13 +224,9 @@ public class SemanticUtil {
 		}
 	}
 
-	public static Map getInputTypeToMenuItemsMap(Collection analysisServices) {
-		Map inputTypeToModulesMap = SemanticUtil
-				.getInputTypeToModulesMap(analysisServices);
-		return SemanticUtil._getInputTypeToMenuItemsMap(inputTypeToModulesMap);
-	}
-
-	/** Returns <code>true</code> if the given kind is an acceptable input file format for the given input parameter
+	/**
+	 * Returns <code>true</code> if the given kind is an acceptable input file
+	 * format for the given input parameter
 	 */
 	public static boolean isCorrectKind(ParameterInfo info, String kind) {
 		String fileFormatsString = (String) info.getAttributes().get(
@@ -279,7 +269,18 @@ public class SemanticUtil {
 	}
 
 	/**
-	 * Gets a map which maps the input type as a string to a list of analysis services that take that input type as an input parameter
+	 * Gets a map which maps the input type as a string to an array of
+	 * ModuleMenuItemAction instances
+	 */
+	public static Map getInputTypeToMenuItemsMap(Collection analysisServices) {
+		Map inputTypeToModulesMap = SemanticUtil
+				.getInputTypeToModulesMap(analysisServices);
+		return SemanticUtil._getInputTypeToMenuItemsMap(inputTypeToModulesMap);
+	}
+
+	/**
+	 * Gets a map which maps the input type as a string to a list of analysis
+	 * services that take that input type as an input parameter
 	 */
 	private static Map getInputTypeToModulesMap(Collection analysisServices) {
 		Map map = new HashMap();
