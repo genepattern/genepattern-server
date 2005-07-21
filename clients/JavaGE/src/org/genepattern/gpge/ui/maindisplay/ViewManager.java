@@ -31,19 +31,19 @@ public class ViewManager {
 					if (asm.getType() == ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST) {
 						analysisServiceDisplay.loadTask(asm.getAnalysisService());
 						setComponent(analysisServiceDisplay);
-						MessageManager.notifyListeners(new ChangeViewMessage(this, ChangeViewMessage.RUN_TASK_SHOWN, analysisServiceDisplay));
+						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.RUN_TASK_SHOWN, analysisServiceDisplay));
 					} else if(asm.getType()==ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST) {
 						pipelineComponent.setTaskInfo(asm.getAnalysisService().getTaskInfo(), false);
 						setComponent(pipelineComponent);
-						MessageManager.notifyListeners(new ChangeViewMessage(this, ChangeViewMessage.EDIT_PIPELINE_SHOWN, analysisServiceDisplay));
+						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.EDIT_PIPELINE_SHOWN, analysisServiceDisplay));
 					} else if(asm.getType()==ChangeViewMessageRequest.SHOW_GETTING_STARTED_REQUEST) {
 						analysisServiceDisplay.showGettingStarted();
 						setComponent(analysisServiceDisplay);
-						MessageManager.notifyListeners(new ChangeViewMessage(this, ChangeViewMessage.GETTING_STARTED_SHOWN, analysisServiceDisplay));
+						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.GETTING_STARTED_SHOWN, analysisServiceDisplay));
 					} else if(asm.getType()==ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST) {
 						pipelineComponent.setTaskInfo(asm.getAnalysisService().getTaskInfo(), true);
 						setComponent(pipelineComponent);
-						MessageManager.notifyListeners(new ChangeViewMessage(this, ChangeViewMessage.VIEW_PIPELINE_SHOWN, analysisServiceDisplay));
+						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.VIEW_PIPELINE_SHOWN, analysisServiceDisplay));
 					} else {
 						System.err.println("Unknown type:" + asm.getType());
 					}
