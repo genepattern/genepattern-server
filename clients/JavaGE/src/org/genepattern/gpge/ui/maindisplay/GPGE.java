@@ -645,7 +645,7 @@ public class GPGE {
 		return c.getRed() + "," + c.getGreen() + "," + c.getBlue();
 	}
 
-	// String kind = node.getFileInfo().getKind();
+	
 	void enableSendToMenus(MenuAction sendToMenu, String kind) {
 		for (int i = 0, length = sendToMenu.getItemCount(); i < length; i++) {
 			Object obj = sendToMenu.getMenuComponent(i);
@@ -1022,6 +1022,7 @@ public class GPGE {
 						removeProjectMenuItem.setEnabled(projectNodeSelected);
 
 						if (projectFileSelected) {
+						
 							ProjectDirModel.FileNode node = (ProjectDirModel.FileNode) selectedProjectDirNode;
 							ProjectDirModel.ProjectDirNode parent = (ProjectDirModel.ProjectDirNode) node
 									.getParent();
@@ -1122,9 +1123,10 @@ public class GPGE {
 						if(changeViewMessage.getType()!=ChangeViewMessage.RUN_TASK_SHOWN) {
 							jobResultFileSendToMenu.setEnabled(false);
 							projectFileSendToMenu.setEnabled(false);
+							runTaskViewShown = false;
 							return;
 						}
-
+						runTaskViewShown = true;
 						final AnalysisServiceDisplay analysisServicePanel = (AnalysisServiceDisplay) changeViewMessage.getComponent(); 
 						
 						for (Iterator it = analysisServicePanel
@@ -1135,11 +1137,13 @@ public class GPGE {
 									.getDisplayString(name);
 							MenuItemAction jobResultFileSendToMenuItem = new SendToMenuItemAction(
 									displayName, pi) {
+								
 								public void actionPerformed(ActionEvent e) {
 									analysisServicePanel.setInputFile(name,
 											selectedJobNode);
 								}
 							};
+							
 							jobResultFileSendToMenu
 									.add(jobResultFileSendToMenuItem);
 
@@ -1153,6 +1157,7 @@ public class GPGE {
 							projectMenuItem.putValue(GPGE.PARAMETER_NAME, name);
 							projectFileSendToMenu.add(projectMenuItem);
 						}
+						
 						if (selectedJobNode instanceof JobModel.ServerFileNode) {
 							jobResultFileSendToMenu.setEnabled(true);
 							String kind = ((JobModel.ServerFileNode) selectedJobNode)
@@ -1161,7 +1166,6 @@ public class GPGE {
 						}
 						if (selectedProjectDirNode instanceof ProjectDirModel.FileNode) {
 							projectFileSendToMenu.setEnabled(true);
-
 							String kind = ((ProjectDirModel.FileNode) selectedProjectDirNode)
 									.getFileInfo().getKind();
 							enableSendToMenus(projectFileSendToMenu, kind);
