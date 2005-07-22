@@ -1,6 +1,7 @@
 package org.genepattern.gpge.ui.maindisplay;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
@@ -13,7 +14,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
-public class TogglePanel2 extends JLabel {
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+public class TogglePanel2 extends JPanel {
 
 		final Icon collapsedIcon = (Icon) UIManager.get("Tree.collapsedIcon");
 
@@ -23,6 +27,29 @@ public class TogglePanel2 extends JLabel {
 
 		private List components = new ArrayList();
 
+		private JLabel majorLabel;
+		
+		private JLabel minorLabel;
+		
+		public TogglePanel2(String major, String minor) {
+			majorLabel = new JLabel(major);
+			minorLabel = new JLabel(minor);
+			FormLayout layout = new FormLayout("pref, 6px, pref", "pref");
+			setLayout(layout);
+			CellConstraints cc = new CellConstraints();
+			add(majorLabel, cc.xy(1, 1));
+			add(minorLabel, cc.xy(3, 1));
+			Font f = majorLabel.getFont();
+			majorLabel.setFont(f.deriveFont(f.getSize2D()+2));
+			majorLabel.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					toggleState();
+				}
+			});
+			majorLabel.setIcon(collapsedIcon);
+			
+		}
+		
 		public void addComponent(Component c) {
 			components.add(c);
 		}
@@ -37,14 +64,13 @@ public class TogglePanel2 extends JLabel {
 				c.setVisible(b);
 			}
 		}
-
 		
 		public void setExpanded(boolean expanded) {
 			this.expanded = expanded;
 			if (!expanded) {
-				setIcon(collapsedIcon);
+				majorLabel.setIcon(collapsedIcon);
 			} else {
-				setIcon(expandedIcon);
+				majorLabel.setIcon(expandedIcon);
 			}
 			setComponentsVisible(expanded);
 		}
@@ -54,15 +80,8 @@ public class TogglePanel2 extends JLabel {
 			setExpanded(expanded);
 		}
 
-		public TogglePanel2(String text) {
-			super(text);
-			Font f = getFont();
-			setFont(f.deriveFont(f.getSize2D()+2));
-			addMouseListener(new MouseAdapter() {
-				public void mouseClicked(MouseEvent e) {
-					toggleState();
-				}
-			});
-			setIcon(collapsedIcon);
+		public void setMajorLabelForeground(Color c) {
+			majorLabel.setForeground(c);
 		}
+
 }
