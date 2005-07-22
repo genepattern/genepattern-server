@@ -1,6 +1,9 @@
 package org.genepattern.gpge.ui.tasks;
 
+import gnu.trove.TIntArrayList;
+
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 
 import javax.swing.JPanel;
@@ -38,7 +41,8 @@ public class AlternatingRowColorPanel extends JPanel {
      * Holds the color used to paint the debug grid.
      */
     private Color gridColor = DEFAULT_GRID_COLOR;
-
+    
+    private TIntArrayList taskIndices = new TIntArrayList();
     
    
     /**
@@ -52,8 +56,10 @@ public class AlternatingRowColorPanel extends JPanel {
     }
 
 
-
-
+    public void addTaskIndex(int index) {
+    		taskIndices.add(index);
+    }
+  
     /**
      * Sets the debug grid's color.
      * 
@@ -94,11 +100,22 @@ public class AlternatingRowColorPanel extends JPanel {
 
         int gridHeight = height/layoutInfo.rowOrigins.length;
         g.setColor(gridColor);
+        
         // Paint the row bounds.
-        for (int row = 0; row < layoutInfo.rowOrigins.length; row+=2) {
-            g.fillRect(left, layoutInfo.rowOrigins[row], width, gridHeight);
+        for(int i = 0; i < taskIndices.size(); i++) {
+        		int index = taskIndices.get(i);
+        		int nextIndex;
+        		if(i!=(taskIndices.size()-1)) {
+        			nextIndex = taskIndices.get(i+1);
+        		} else {
+        			nextIndex = layoutInfo.rowOrigins.length;
+        		}
+        		int row = index;
+        		while(row < nextIndex) {
+        			g.fillRect(left, layoutInfo.rowOrigins[row], width, gridHeight);
+        			row+=2;
+        		}
         }
-
     }
     
     
