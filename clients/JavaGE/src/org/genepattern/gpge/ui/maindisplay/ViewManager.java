@@ -33,7 +33,7 @@ public class ViewManager {
 						setComponent(analysisServiceDisplay);
 						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.RUN_TASK_SHOWN, analysisServiceDisplay));
 					} else if(asm.getType()==ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST) {
-						pipelineComponent.setTaskInfo(asm.getAnalysisService().getTaskInfo(), false);
+						pipelineComponent.display(asm.getAnalysisService(), false);
 						setComponent(pipelineComponent);
 						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.EDIT_PIPELINE_SHOWN, analysisServiceDisplay));
 					} else if(asm.getType()==ChangeViewMessageRequest.SHOW_GETTING_STARTED_REQUEST) {
@@ -41,7 +41,7 @@ public class ViewManager {
 						setComponent(analysisServiceDisplay);
 						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.GETTING_STARTED_SHOWN, analysisServiceDisplay));
 					} else if(asm.getType()==ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST) {
-						pipelineComponent.setTaskInfo(asm.getAnalysisService().getTaskInfo(), true);
+						pipelineComponent.display(asm.getAnalysisService(), true);
 						setComponent(pipelineComponent);
 						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.VIEW_PIPELINE_SHOWN, analysisServiceDisplay));
 					} else {
