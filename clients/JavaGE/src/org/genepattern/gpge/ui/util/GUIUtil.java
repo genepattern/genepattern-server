@@ -1,10 +1,14 @@
 package org.genepattern.gpge.ui.util;
 
+import java.awt.Component;
 import java.awt.FileDialog;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.io.File;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.border.Border;
 
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.maindisplay.GPGE;
@@ -97,6 +101,48 @@ public class GUIUtil {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Creates a wrapped border with the given insets
+	 * @param b
+	 * @param left
+	 * @param top
+	 * @param right
+	 * @param bottom
+	 * @return
+	 */
+	public static Border createBorder(final Border b, final int left, final int top,
+			final int right, final int bottom) {
+		return new javax.swing.border.Border() {
+			public Insets getBorderInsets(java.awt.Component c) {
+				Insets i = b.getBorderInsets(c);
+				if (left >= 0) {
+					i.left = left;
+				}
+				if (top >= 0) {
+					i.top = top;
+				}
+				if (right >= 0) {
+					i.right = right;
+				}
+				if (bottom >= 0) {
+					i.bottom = bottom;
+				}
+	
+				return i;
+			}
+	
+			public boolean isBorderOpaque() {
+				return b.isBorderOpaque();
+			}
+	
+			public void paintBorder(Component c, Graphics g, int x, int y,
+					int width, int height) {
+				b.paintBorder(c, g, x, y, width, height);
+			}
+	
+		};
 	}
 
 }
