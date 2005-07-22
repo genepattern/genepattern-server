@@ -2,10 +2,8 @@ package org.genepattern.gpge.ui.tasks;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,7 +17,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
@@ -35,6 +32,7 @@ import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.LSIDUtil;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel;
+import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AnalysisJob;
@@ -53,9 +51,6 @@ import org.genepattern.webservice.WebServiceException;
 public class AnalysisServiceDisplay extends JPanel {
 	/** the currently displayed <tt>AnalysisService</tt> */
 	private AnalysisService selectedService;
-
-	/** whether the <tt>selectedService</tt> has documentation */
-	private volatile boolean hasDocumentation;
 
 	private boolean advancedGroupExpanded = false;
 
@@ -107,39 +102,6 @@ public class AnalysisServiceDisplay extends JPanel {
 		selectedService = null;
 	}
 
-	private Border createBorder(final Border b, final int left, final int top,
-			final int right, final int bottom) {
-		return new javax.swing.border.Border() {
-			public Insets getBorderInsets(java.awt.Component c) {
-				Insets i = b.getBorderInsets(c);
-				if (left >= 0) {
-					i.left = left;
-				}
-				if (top >= 0) {
-					i.top = top;
-				}
-				if (right >= 0) {
-					i.right = right;
-				}
-				if (bottom >= 0) {
-					i.bottom = bottom;
-				}
-
-				return i;
-			}
-
-			public boolean isBorderOpaque() {
-				return b.isBorderOpaque();
-			}
-
-			public void paintBorder(Component c, Graphics g, int x, int y,
-					int width, int height) {
-				b.paintBorder(c, g, x, y, width, height);
-			}
-
-		};
-	}
-
 	/**
 	 *  Displays the given analysis service
 	 *
@@ -147,29 +109,9 @@ public class AnalysisServiceDisplay extends JPanel {
 	 */
 	public void loadTask(AnalysisService _selectedService) {
 		this.selectedService = _selectedService;
-		hasDocumentation = true;
+		
 		if (togglePanel != null) {
 			advancedGroupExpanded = togglePanel.isExpanded();
-		}
-		if (selectedService != null) {
-			new Thread() {
-				public void run() {
-					try {
-
-						String username = AnalysisServiceManager.getInstance()
-								.getUsername();
-						String server = selectedService.getServer();
-						String lsid = LSIDUtil.getTaskId(selectedService
-								.getTaskInfo());
-						String[] supportFileNames = new TaskIntegratorProxy(
-								server, username).getSupportFileNames(lsid);
-						hasDocumentation = supportFileNames != null
-								&& supportFileNames.length > 0;
-					} catch (WebServiceException wse) {
-						wse.printStackTrace();
-					}
-				}
-			}.start();
 		}
 
 		TaskInfo taskInfo = selectedService.getTaskInfo();
@@ -193,7 +135,7 @@ public class AnalysisServiceDisplay extends JPanel {
 		resetButton.addActionListener(new ResetActionListener());
 		buttonPanel.add(resetButton);
 		JButton helpButton = new JButton("Help");
-		helpButton.addActionListener(new HelpActionListener());
+		helpButton.addActionListener(new TaskHelpActionListener(this.selectedService));
 		buttonPanel.add(helpButton);
 
 		JButton editButton = new JButton("Edit");
@@ -230,7 +172,7 @@ public class AnalysisServiceDisplay extends JPanel {
 		 tp.add(group);*/
 
 		JPanel bottomPanel = new JPanel(new BorderLayout());
-		bottomPanel.setBorder(createBorder(UIManager.getLookAndFeelDefaults()
+		bottomPanel.setBorder(GUIUtil.createBorder(UIManager.getLookAndFeelDefaults()
 				.getBorder("ScrollPane.border"), 0, 0, 0, 2));
 
 		bottomPanel.add(buttonPanel, BorderLayout.CENTER);
@@ -267,7 +209,7 @@ public class AnalysisServiceDisplay extends JPanel {
 
 		JScrollPane sp = new JScrollPane(parameterInfoPanel);
 		final javax.swing.border.Border b = sp.getBorder();
-		sp.setBorder(createBorder(b, 0, -1, -1, -1));
+		sp.setBorder(GUIUtil.createBorder(b, 0, -1, -1, -1));
 		add(sp, BorderLayout.CENTER);
 
 		add(bottomPanel, BorderLayout.SOUTH);
@@ -341,29 +283,6 @@ public class AnalysisServiceDisplay extends JPanel {
 		}
 	}
 
-	private class HelpActionListener implements ActionListener {
-		public final void actionPerformed(java.awt.event.ActionEvent ae) {
-			try {
-				String username = AnalysisServiceManager.getInstance()
-						.getUsername();
-				String server = selectedService.getServer();
-				String lsid = LSIDUtil.getTaskId(selectedService.getTaskInfo());
-
-				if (hasDocumentation) {
-					String docURL = server + "/gp/getTaskDoc.jsp?name=" + lsid
-							+ "&" + GPConstants.USERID + "="
-							+ java.net.URLEncoder.encode(username, "UTF-8");
-					org.genepattern.util.BrowserLauncher.openURL(docURL);
-				} else {
-					GenePattern.showMessageDialog(selectedService.getTaskInfo()
-							.getName()
-							+ "has no documentation");
-				}
-			} catch (java.io.IOException ex) {
-				System.err.println(ex);
-			}
-		}
-	}
 
 	private class SubmitActionListener implements ActionListener {
 		public final void actionPerformed(ActionEvent ae) {
