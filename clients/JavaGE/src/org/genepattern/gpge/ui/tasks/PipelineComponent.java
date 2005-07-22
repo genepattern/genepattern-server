@@ -31,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.border.Border;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
@@ -45,6 +46,7 @@ import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel2;
 import org.genepattern.gpge.ui.table.AlternatingColorTable;
+import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
@@ -71,11 +73,15 @@ public class PipelineComponent extends JPanel {
 
 	private boolean viewOnly;
 	
-	private JPanel tasksPanel;
+	private AlternatingRowColorPanel tasksPanel;
 
 	private FormLayout tasksLayout;
 	
 	private ArrayList togglePanelList = new ArrayList();
+
+	private PipelineEditor editor;
+
+	private AnalysisService svc;
 	
 	/**
 	 * Currently only one instance should be created by the ViewManager
@@ -85,322 +91,15 @@ public class PipelineComponent extends JPanel {
 		setBackground(Color.white);
 	}
 	
-	private static TaskInfo cloneTaskInfo(TaskInfo taskInfo) {
-		TaskInfo c = new TaskInfo(taskInfo.getID(), taskInfo.getName(), taskInfo.getDescription(),
-				taskInfo.getParameterInfo(), (TaskInfoAttributes) taskInfo.getTaskInfoAttributes());
-		return c;
+	void clear() {
+		togglePanelList.clear();
+		removeAll();
 	}
 	
-	private static ParameterInfo createRTPromptParameterForMap(ParameterInfo p) {
-		ParameterInfo rtParam = new ParameterInfo(p.getName(), "", "");
-		HashMap attrs = new HashMap();
-		attrs.put(PipelineModel.RUNTIME_PARAM, "1");
-		rtParam.setAttributes(attrs);
-		return rtParam;
-		// in PipelineModel.getInputParameters {ConvertLineEndings1.input.filename maps to name=input.filename value= Description Attribute:{runTimePrompt=1}}
-		// in TaskInfo for pipeline [name=ConvertLineEndings1.input.filename runTimePrompt=1]
-	}
-	
-	private ParameterInfo createRTPromptParameterForTaskInfo(JobSubmission js, int index, ParameterInfo p) {
-		TaskInfo task = getTaskInfo(js.getLSID());
-		ParameterInfo[] taskInfoParams = task.getParameterInfoArray();
-		ParameterInfo formalParam = null;
-		for(int i = 0; i < taskInfoParams.length; i++) {
-			if(taskInfoParams[i].getName().equals(p.getName())) {
-				formalParam = taskInfoParams[i];
-			}
-		}
-		ParameterInfo rtParam = new ParameterInfo(js.getName() + (index+1) + "." + p.getName(), "", formalParam.getDescription());
-		HashMap attrs = new HashMap(formalParam.getAttributes());
-		attrs.put(PipelineModel.RUNTIME_PARAM, "1");
-		rtParam.setAttributes(attrs);
-		return rtParam;
-		// in PipelineModel.getInputParameters {ConvertLineEndings1.input.filename maps to name=input.filename value= Description Attribute:{runTimePrompt=1}}
-		// in TaskInfo for pipeline [name=ConvertLineEndings1.input.filename runTimePrompt=1]
-	}
-	
-	private 	void moveTask(int from, int to) {
-		if(to < from) {
-			moveUp(from, to);
-		} else if(to > from) {
-			moveDown(from, to);
-		}
-	}
-	
-	private static interface ParameterItereratorCallBack {
-		void param(JobSubmission js, int index, ParameterInfo p, Map parameterAttributes, int inheritTaskNumber);
-	}
-	
-	private void iterate(int from, int to, Map inputParamsMap, List promptWhenRunParameters, ParameterItereratorCallBack cb) {
-		List currentTasks = pipelineModel.getTasks();
-		for (int i = from; i < to; i++) {
-			JobSubmission js = (JobSubmission) currentTasks.get(i);
-			List parameterInfo = js.getParameters();
-
-			for (int j = 0; j < parameterInfo.size(); j++) {
-				ParameterInfo p = (ParameterInfo) parameterInfo.get(j);
-				Map parameterAttributes = p.getAttributes();
-				int taskNumber = -1;
-				if (parameterAttributes != null) {
-					String taskNumberString = (String) parameterAttributes
-					.get(PipelineModel.INHERIT_TASKNAME);
-
-					if (taskNumberString != null) {
-						taskNumber = Integer.parseInt(taskNumberString);
-					}
-				}
-				cb.param(js, i, p, parameterAttributes, taskNumber);
-				if(js.getRuntimePrompt()[j]){
-					ParameterInfo mapParam = createRTPromptParameterForMap(p);
-					ParameterInfo taskInfoParam = createRTPromptParameterForTaskInfo(js, i,  p);
-					promptWhenRunParameters.add(taskInfoParam);
-					inputParamsMap.put(taskInfoParam.getName(), mapParam);
-				}
-			}
-		}
-	}
-	
-	/**
-	 * @param from 
-	 * @param to
-	 */
-	private void moveUp(final int from, final int to) {
-		if(from < to) {
-			throw new IllegalArgumentException();
-		}
-		List currentTasks = pipelineModel.getTasks();
-		
-		JobSubmission movedTask = (JobSubmission) currentTasks.remove(from);
-		currentTasks.add(to, movedTask);
-		
-		TaskInfo pipelineTaskInfo = cloneTaskInfo(this.pipelineTaskInfo);
-		List promptWhenRunParameters = new ArrayList();
-		TreeMap inputParamsMap = pipelineModel.getInputParameters();	
-		inputParamsMap.clear();
-		
-		iterate(from, currentTasks.size(), inputParamsMap, promptWhenRunParameters, 
-				new ParameterItereratorCallBack() {
-
-					public void param(JobSubmission js, int index,
-							ParameterInfo p, Map parameterAttributes,
-							int inheritTaskNumber) {
-						if (inheritTaskNumber == from) { // task inherited
-							// from moved
-							// task
-							parameterAttributes.put(
-									PipelineModel.INHERIT_TASKNAME, String
-											.valueOf(to));
-						} else if(inheritTaskNumber >= to && inheritTaskNumber < from) { // tasks >= to and < from have task number increased by 1
-							parameterAttributes.put(
-									PipelineModel.INHERIT_TASKNAME, String
-											.valueOf(inheritTaskNumber+1));
-						}
-					}
-
-		});
-
-		iterate(to, from, inputParamsMap, promptWhenRunParameters, 
-				new ParameterItereratorCallBack() {
-
-					public void param(JobSubmission js, int index,
-							ParameterInfo p, Map parameterAttributes,
-							int inheritTaskNumber) {
-		
-						if (index==to && inheritTaskNumber > to) { // if moved task inherits from a
-							// task that is > to then moved
-							// task loses inheritance
-							parameterAttributes.remove(PipelineModel.INHERIT_TASKNAME);
-							parameterAttributes.remove(PipelineModel.INHERIT_FILENAME);
-						} else if (inheritTaskNumber >= to) {
-							parameterAttributes.put(
-									PipelineModel.INHERIT_TASKNAME, String
-									.valueOf(index + 1));
-						}
-					}
-		});
-	
-		// update prompt when run parameters
-		iterate(0, to,  inputParamsMap, promptWhenRunParameters, new ParameterItereratorCallBack() {
-			public void param(JobSubmission js, int index, ParameterInfo p,
-					Map parameterAttributes, int inheritTaskNumber) {
-				
-			}
-		});
-		pipelineTaskInfo.setParameterInfoArray((ParameterInfo[]) promptWhenRunParameters.toArray(new ParameterInfo[0]));
-		setPipeline(pipelineTaskInfo, pipelineModel);
-	}
-	
-	
-	/**
-	 * Increases the position of a task in a pipeline
-	 * @param from
-	 * @param to
-	 */
-	private void moveDown(final int from, final int to) {
-		List currentTasks = pipelineModel.getTasks();
-		
-		// notes: moved task can't lose inheritance, tasks that inherited from moved task can lose inheritance if task is moved beyond them
-		
-		JobSubmission movedTask = (JobSubmission) currentTasks.remove(from);
-		currentTasks.add(to, movedTask);
-		
-		TaskInfo pipelineTaskInfo = cloneTaskInfo(this.pipelineTaskInfo);
-		List promptWhenRunParameters = new ArrayList();
-		TreeMap inputParamsMap = pipelineModel.getInputParameters();	
-		inputParamsMap.clear();
-		
-		iterate(0, from, inputParamsMap, promptWhenRunParameters, 
-				new ParameterItereratorCallBack() {
-					public void param(JobSubmission js, int index, ParameterInfo p,
-							Map parameterAttributes, int inheritTaskNumber) {
-						// update prompt when run parameters
-					}
-					
-
-				});
-
-		iterate(from, currentTasks.size(),  inputParamsMap, promptWhenRunParameters, new ParameterItereratorCallBack() {
-			public void param(JobSubmission js, int index, ParameterInfo p,
-					Map parameterAttributes, int inheritTaskNumber) {
-				if (inheritTaskNumber == from || index < to) { // task lost inheritance
-					parameterAttributes.remove(PipelineModel.INHERIT_TASKNAME);
-					parameterAttributes.remove(PipelineModel.INHERIT_FILENAME);
-				} else if(inheritTaskNumber == from) {
-					parameterAttributes.put(
-							PipelineModel.INHERIT_TASKNAME, String
-									.valueOf(to));
-				} else if(inheritTaskNumber > from && inheritTaskNumber <= to) { // tasks > from and <= to have task number decreased by 1
-					parameterAttributes.put(
-							PipelineModel.INHERIT_TASKNAME, String
-									.valueOf(index - 1));
-				}
-				
-			}
-		});
-		pipelineTaskInfo.setParameterInfoArray((ParameterInfo[]) promptWhenRunParameters.toArray(new ParameterInfo[0]));
-		setPipeline(pipelineTaskInfo, pipelineModel);
-		
-	}
-	
-	
-	/**
-	 * Adds a new task
-	 * @param index
-	 * @param task
-	 */
-	private void addTask(int index, TaskInfo task) {
-		JobSubmission addedJob = new  JobSubmission(pipelineTaskInfo.getName(), pipelineTaskInfo.getDescription(), (String) task.getTaskInfoAttributes().get(GPConstants.LSID),
-				task.getParameterInfoArray(), new boolean[task.getParameterInfoArray().length],
-				TaskLauncher.isVisualizer(task), pipelineTaskInfo);
-		addTask(index, addedJob, true, true);
-	}
-
-	/**
-	 *  Inserts the task at the given index. 
-	 * @param index
-	 * @param jobToAdd
-	 * @param updateInheritedFiles
-	 * @param doLayout
-	 */
-	private void addTask(int index, JobSubmission jobToAdd, boolean updateInheritedFiles, boolean doLayout) {
-		List currentTasks = pipelineModel.getTasks();
-		currentTasks.add(index, jobToAdd);
-		List promptWhenRunParameters = new ArrayList();
-		TreeMap inputParamsMap = pipelineModel.getInputParameters();	
-		inputParamsMap.clear();
-		TaskInfo pipelineTaskInfo = cloneTaskInfo(this.pipelineTaskInfo);
-		// check if other tasks inherit from this task or subsequent tasks
-		iterate(index+1, currentTasks.size(), inputParamsMap, promptWhenRunParameters, 
-				new ParameterItereratorCallBack() {
-
-					public void param(JobSubmission js, int index,
-							ParameterInfo p, Map parameterAttributes,
-							int inheritTaskNumber) {
-						if (inheritTaskNumber >= index) { // task inherits from a task that was at index or later
-							parameterAttributes.put(
-									PipelineModel.INHERIT_TASKNAME, String
-											.valueOf(inheritTaskNumber+1)); // increase task number by one 
-						}
-						
-					}
-				});
-		
-		iterate(0, index, inputParamsMap, promptWhenRunParameters, 
-				new ParameterItereratorCallBack() {
-
-					public void param(JobSubmission js, int index,
-							ParameterInfo p, Map parameterAttributes,
-							int inheritTaskNumber) {
-						
-						
-					}
-		});
-		pipelineTaskInfo.setParameterInfoArray((ParameterInfo[]) promptWhenRunParameters.toArray(new ParameterInfo[0]));
-			
-		if(doLayout) {
-			setPipeline(pipelineTaskInfo, pipelineModel);
-		}
-	}
-	
-	void print() {
-		ParameterInfo[] pi = pipelineTaskInfo.getParameterInfoArray();
-		if(pi!=null) {
-			System.out.print("TaskInfo: ");
-			System.out.println(Arrays.asList(pi));
-		}
-		System.out.println();
-		System.out.print("input params: ");
-		System.out.println(pipelineModel.getInputParameters());
-		System.out.println();
-		
-		System.out.println("Job submissions: ");
-		List currentTasks = pipelineModel.getTasks();
-		for (int i = 0; i < currentTasks.size(); i++) {
-			JobSubmission js = (JobSubmission) currentTasks.get(i);
-			List parameterInfo = js.getParameters();
-			System.out.print("task number" + i);
-			System.out.println(parameterInfo);
-		}
-		System.out.println();
-		System.out.println();
-	}
-
-	private void delete(final int index, boolean doLayout) {
-		List currentTasks = pipelineModel.getTasks();
-		List promptWhenRunParameters = new ArrayList();
-		TreeMap inputParamsMap = pipelineModel.getInputParameters();	
-		inputParamsMap.clear();
-		TaskInfo pipelineTaskInfo = cloneTaskInfo(this.pipelineTaskInfo);
-		currentTasks.remove(index);
-		// check if subsequent tasks inherit from removed task or subsequent tasks
-		iterate(index, currentTasks.size(), inputParamsMap, promptWhenRunParameters, 
-				new ParameterItereratorCallBack() {
-
-					public void param(JobSubmission js, int index,
-							ParameterInfo p, Map parameterAttributes,
-							int inheritTaskNumber) {
-						if (inheritTaskNumber == index) { // lost inheritance
-							parameterAttributes
-									.remove(PipelineModel.INHERIT_TASKNAME);
-							parameterAttributes
-									.remove(PipelineModel.INHERIT_FILENAME);
-							System.out
-									.println("lost inheritance " + inheritTaskNumber);
-						} else if (inheritTaskNumber > index) { // inherits from a task that comes after deleted task
-							parameterAttributes.put(
-									PipelineModel.INHERIT_TASKNAME, String
-											.valueOf(inheritTaskNumber-1)); // decrease task number by one
-						}
-					}
-		});
-		pipelineTaskInfo.setParameterInfoArray((ParameterInfo[]) promptWhenRunParameters.toArray(new ParameterInfo[0]));
-		
-		if(doLayout) {
-			setPipeline(pipelineTaskInfo, pipelineModel);
-		}
-	}
-
-	public void setTaskInfo(TaskInfo info, boolean viewOnly) {
+	public void display(AnalysisService svc, boolean viewOnly) {
+		clear();
+		this.svc = svc;
+		TaskInfo info = svc.getTaskInfo();
 		this.viewOnly = viewOnly;
 		try {
 			PipelineModel pipelineModel = PipelineModel
@@ -442,8 +141,9 @@ public class PipelineComponent extends JPanel {
 		; // this.add(p, cc.xy(PARAMETER_INPUT_FIELD_COLUMN, row));
 	}
 	
+	
 	private void setPipeline(TaskInfo pipelineTaskInfo, PipelineModel model) {
-		removeAll();
+		
 		this.pipelineTaskInfo = pipelineTaskInfo;
 		this.pipelineModel = model;
 		this.jobSubmissions = pipelineModel.getTasks();
@@ -457,7 +157,7 @@ public class PipelineComponent extends JPanel {
 
 		// show edit link when task has local authority and either belongs to
 		// current user or is public
-		List tasks = pipelineModel.getTasks();
+		
 		
 		
 		tasksLayout = new FormLayout(
@@ -467,16 +167,80 @@ public class PipelineComponent extends JPanel {
 		
 		tasksPanel = new AlternatingRowColorPanel(tasksLayout);
 		tasksPanel.setBackground(getBackground());
+		
+		List tasks = pipelineModel.getTasks();
 		for (int i = 0; i < tasks.size(); i++) {
 			layoutTask(i, (JobSubmission) tasks.get(i));
 		}
 		
+		setMinimumSize(new java.awt.Dimension(100, 100));
 		setLayout(new BorderLayout());
-		add(new JScrollPane(tasksPanel), BorderLayout.CENTER);
-		JPanel taskNamePanel = new TaskNamePanel(pipelineTaskInfo,
-				ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST);
-		add(taskNamePanel, BorderLayout.NORTH);
+		JScrollPane sp = new JScrollPane(tasksPanel);
+		Border b = sp.getBorder();
+		sp.setBorder(GUIUtil.createBorder(b, 0, -1, -1, -1));
+		add(sp, BorderLayout.CENTER);
+		int messageType;
+		if(viewOnly) {
+			messageType = ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST;
+		} else {
+			messageType = ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST;
+		}
+		final JButton expandAllButton = new JButton("Expand All");
+		final JButton collapseAllButton = new JButton("Collapse All");
 
+		JPanel expandPanel = new JPanel();
+		expandPanel.add(collapseAllButton);
+		expandPanel.add(expandAllButton);
+		
+		ActionListener expandListener = new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				if(e.getSource()==expandAllButton) {
+					for(int i = 0; i < togglePanelList.size(); i++) {
+						TogglePanel2 p = (TogglePanel2) togglePanelList.get(i);
+						p.setExpanded(true);
+					}
+				} else if(e.getSource()==collapseAllButton) {
+					for(int i = 0; i < togglePanelList.size(); i++) {
+						TogglePanel2 p = (TogglePanel2) togglePanelList.get(i);
+						p.setExpanded(false);
+					}
+				} 
+			}
+			
+		};
+		
+		expandAllButton.addActionListener(expandListener);
+		collapseAllButton.addActionListener(expandListener);
+		
+		JPanel taskNamePanel = new TaskNamePanel(pipelineTaskInfo,
+				messageType, expandPanel);
+		
+		add(taskNamePanel, BorderLayout.NORTH);
+		
+		JPanel bottomPanel = new JPanel();
+		final JButton runButton = new JButton("Run");
+		final JButton editButton = new JButton("Edit");
+		final JButton helpButton = new JButton("Help");
+		helpButton.addActionListener(new TaskHelpActionListener(svc));
+		
+		ActionListener btnListener = new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				if(e.getSource()==runButton) {
+					MessageManager.notifyListeners(new ChangeViewMessageRequest(this, ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST, svc));
+				} else if(e.getSource()==editButton) {
+					MessageManager.notifyListeners(new ChangeViewMessageRequest(this, ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST, svc));
+				} 
+			}
+			
+		};
+		runButton.addActionListener(btnListener);
+		editButton.addActionListener(btnListener);
+		bottomPanel.add(runButton);
+		bottomPanel.add(editButton);
+		bottomPanel.add(helpButton);
+		add(bottomPanel, BorderLayout.SOUTH);
 		invalidate();
 		validate();
 
@@ -500,12 +264,14 @@ public class PipelineComponent extends JPanel {
 			}
 			
 			TogglePanel2 togglePanel = new TogglePanel2((index + 1) + ". "
-					+ formalTaskInfo.getName());
+					+ formalTaskInfo.getName(), formalTaskInfo.getDescription());
 			togglePanelList.add(togglePanel);
 			CellConstraints cc = new CellConstraints();
+			
 			tasksLayout.appendRow(new RowSpec("pref"));
 			
-			tasksPanel.add(togglePanel, cc.xy(1, tasksLayout.getRowCount(), CellConstraints.LEFT, CellConstraints.BOTTOM));
+			tasksPanel.addTaskIndex(tasksLayout.getRowCount());
+			tasksPanel.add(togglePanel, cc.xywh(1, tasksLayout.getRowCount(), 2, 1, CellConstraints.LEFT, CellConstraints.BOTTOM));
 			togglePanel.setBackground(getBackground());
 			addTaskComponents(js, formalParams, togglePanel);
 			togglePanel.setExpanded(true);
@@ -526,21 +292,21 @@ public class PipelineComponent extends JPanel {
 					public void actionPerformed(ActionEvent e) {
 						Object source = e.getSource();
 						if (source == deleteButton) {
-							delete(index, true);
+							editor.delete(index);
 						} else if (source == addButton) {
 							AnalysisService temp = AnalysisServiceManager
 									.getInstance().getAnalysisService(
 											"ConvertLineEndings");
-							addTask(index + 1, temp.getTaskInfo());
+							editor.addTask(index + 1, temp.getTaskInfo());
 						} else if (source == moveUpButton) {
-							moveUp(index, index - 1);
+							editor.moveUp(index, index - 1);
 						} else if (source == moveDownButton) {
-							moveDown(index, index + 1);
+							editor.moveDown(index, index + 1);
 						} else if (source == addBeforeButton) {
 							AnalysisService temp = AnalysisServiceManager
 									.getInstance().getAnalysisService(
 											"ConvertLineEndings");
-							addTask(index, temp.getTaskInfo());
+							editor.addTask(index, temp.getTaskInfo());
 						}
 					}
 				};
@@ -646,8 +412,8 @@ public class PipelineComponent extends JPanel {
 				}
 
 			} else {
-				value = actualParam.getValue(); // can be command  
-				/*String[] choices = formalParam.getValue().split(
+				value = actualParam.getValue(); // can be command line value instead of UI value  
+				String[] choices = formalParam.getValue().split(
 						GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 				String[] eachValue;
 				value = actualParam.getValue();
@@ -660,7 +426,7 @@ public class PipelineComponent extends JPanel {
 						}
 						break;
 					}
-				}*/
+				}
 			}
 			if(viewOnly) {
 				CellConstraints cc = new CellConstraints();
@@ -668,23 +434,15 @@ public class PipelineComponent extends JPanel {
 				JLabel label = new JLabel(AnalysisServiceDisplay.getDisplayString(paramName) + ":");
 				if(inheritedTaskNumber!=-1) {
 					final int inheritedTaskIndex = inheritedTaskNumber;
-					
-					//field.setEditable(false);
 					field.addMouseListener(new MouseAdapter() {
 
 						public void mouseEntered(MouseEvent e) {
-							
-							
 								TogglePanel2 p = (TogglePanel2) togglePanelList.get(inheritedTaskIndex);
-								p.setForeground(Color.red);
+								p.setMajorLabelForeground(Color.red);
 						}
 						public void mouseExited(MouseEvent e) {
-								
 								TogglePanel2 p = (TogglePanel2) togglePanelList.get(inheritedTaskIndex);
-								p.setForeground(Color.black);
-								p.repaint();
-
-							
+								p.setMajorLabelForeground(Color.black);	
 						}
 						
 					});
