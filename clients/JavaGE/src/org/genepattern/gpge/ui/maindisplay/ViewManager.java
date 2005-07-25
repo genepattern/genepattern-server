@@ -11,11 +11,13 @@ import org.genepattern.gpge.message.GPGEMessage;
 import org.genepattern.gpge.message.GPGEMessageListener;
 import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.ui.tasks.pipeline.PipelineComponent;
+import org.genepattern.gpge.ui.tasks.pipeline.ViewPipeline;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceDisplay;
 
 public class ViewManager {
 	private AnalysisServiceDisplay analysisServiceDisplay;
 	private PipelineComponent pipelineComponent;
+	private ViewPipeline viewPipeline;
 	private JSplitPane splitPane;
 	
 	public ViewManager(JSplitPane splitPane) {
@@ -23,6 +25,8 @@ public class ViewManager {
 		analysisServiceDisplay = new AnalysisServiceDisplay();
 		analysisServiceDisplay.setMinimumSize(new Dimension(200, 200));
 		pipelineComponent = new PipelineComponent();
+		viewPipeline = new ViewPipeline();
+		
 		MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
 
 			public void receiveMessage(GPGEMessage message) {
@@ -41,8 +45,8 @@ public class ViewManager {
 						setComponent(analysisServiceDisplay);
 						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.GETTING_STARTED_SHOWN, analysisServiceDisplay));
 					} else if(asm.getType()==ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST) {
-						pipelineComponent.display(asm.getAnalysisService(), true);
-						setComponent(pipelineComponent);
+						viewPipeline.display(asm.getAnalysisService());
+						setComponent(viewPipeline);
 						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.VIEW_PIPELINE_SHOWN, analysisServiceDisplay));
 					} else {
 						System.err.println("Unknown type:" + asm.getType());
