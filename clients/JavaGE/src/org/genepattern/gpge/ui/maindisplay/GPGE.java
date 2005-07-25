@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FileDialog;
 import java.awt.GridLayout;
 import java.awt.Component;
 import java.awt.Graphics;
@@ -613,38 +612,7 @@ public class GPGE {
 		return filenames;
 	}
 
-	private Color decodeColorFromProperties(String prop) {
-		if (prop == null) {
-			return null;
-		}
-		String[] rgbString = prop.split(",");
-		int[] rgb = new int[3];
-		int rgbIndex = 0;
-		for (int i = 0; i < rgbString.length; i++) {
-			if ("".equals(rgbString[i])) {
-				continue;
-			}
-			try {
-				rgb[rgbIndex] = Integer.parseInt(rgbString[i]);
-				if (rgb[rgbIndex] < 0 || rgbIndex > 255) {
-					return null;
-				}
-				rgbIndex++;
-			} catch (Exception e) {
-				return null;
-			}
-		}
-		return new Color(rgb[0], rgb[1], rgb[2]);
-
-	}
-
-	private String encodeColorToProperty(Color c) {
-		if (c == null) {
-			return null;
-		}
-		return c.getRed() + "," + c.getGreen() + "," + c.getBlue();
-	}
-
+	
 	
 	void enableSendToMenus(MenuAction sendToMenu, String kind) {
 		for (int i = 0, length = sendToMenu.getItemCount(); i < length; i++) {
@@ -703,30 +671,30 @@ public class GPGE {
 		} catch (MalformedURLException mfe) {
 			server = "http://" + server;
 		}
-		authorityMineColor = decodeColorFromProperties(PropertyManager
+		authorityMineColor = PropertyManager.decodeColorFromProperties(PropertyManager
 				.getProperty(PreferenceKeys.AUTHORITY_MINE_COLOR));
 		if (authorityMineColor == null) {
 			authorityMineColor = DEFAULT_AUTHORITY_MINE_COLOR;
 		}
 
-		authorityForeignColor = decodeColorFromProperties(PropertyManager
+		authorityForeignColor = PropertyManager.decodeColorFromProperties(PropertyManager
 				.getProperty(PreferenceKeys.AUTHORITY_FOREIGN_COLOR));
 		if (authorityForeignColor == null) {
 			authorityForeignColor = DEFAULT_AUTHORITY_FOREIGN_COLOR;
 		}
 
-		authorityBroadColor = decodeColorFromProperties(PropertyManager
+		authorityBroadColor = PropertyManager.decodeColorFromProperties(PropertyManager
 				.getProperty(PreferenceKeys.AUTHORITY_BROAD_COLOR));
 		if (authorityBroadColor == null) {
 			authorityBroadColor = DEFAULT_AUTHORITY_BROAD_COLOR;
 		}
 
 		PropertyManager.setProperty(PreferenceKeys.AUTHORITY_BROAD_COLOR,
-				encodeColorToProperty(authorityBroadColor));
+				PropertyManager.encodeColorToProperty(authorityBroadColor));
 		PropertyManager.setProperty(PreferenceKeys.AUTHORITY_FOREIGN_COLOR,
-				encodeColorToProperty(authorityForeignColor));
+				PropertyManager.encodeColorToProperty(authorityForeignColor));
 		PropertyManager.setProperty(PreferenceKeys.AUTHORITY_MINE_COLOR,
-				encodeColorToProperty(authorityMineColor));
+				PropertyManager.encodeColorToProperty(authorityMineColor));
 
 		String showParameterDescriptions = PropertyManager
 				.getProperty(PreferenceKeys.SHOW_PARAMETER_DESCRIPTIONS);
@@ -2539,12 +2507,8 @@ public class GPGE {
 			importTaskMenuItem.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
-					FileDialog fc = new FileDialog(GenePattern
-							.getDialogParent(), "Import Module",
-							FileDialog.LOAD);
-					fc.show();
-					final String file = fc.getFile();
-					final String dir = fc.getDirectory();
+					
+					final File file = GUIUtil.showOpenDialog("Import Module");
 					if (file != null) {
 						new Thread() {
 							public void run() {
@@ -2555,7 +2519,7 @@ public class GPGE {
 											AnalysisServiceManager
 													.getInstance()
 													.getUsername()).importZip(
-											new File(dir, file),
+											file,
 											GPConstants.ACCESS_PUBLIC);
 								} catch (WebServiceException wse) {
 									wse.printStackTrace();
