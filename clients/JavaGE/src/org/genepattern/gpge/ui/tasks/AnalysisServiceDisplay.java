@@ -14,7 +14,6 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
@@ -108,12 +107,16 @@ public class AnalysisServiceDisplay extends JPanel {
 	 * @param  selectedService  Description of the Parameter
 	 */
 	public void loadTask(AnalysisService _selectedService) {
+		if(_selectedService==null) {
+			throw new NullPointerException();
+		}
 		this.selectedService = _selectedService;
+		
 		
 		if (togglePanel != null) {
 			advancedGroupExpanded = togglePanel.isExpanded();
 		}
-
+		
 		TaskInfo taskInfo = selectedService.getTaskInfo();
 		String taskName = taskInfo.getName();
 
@@ -216,21 +219,6 @@ public class AnalysisServiceDisplay extends JPanel {
 		setMinimumSize(new java.awt.Dimension(100, 100));
 		revalidate();
 		doLayout();
-	}
-
-	static JTextArea createWrappedLabel(String s) {
-		JTextArea jTextArea = new JTextArea();
-		// Set JTextArea to look like JLabel
-		jTextArea.setWrapStyleWord(true);
-		jTextArea.setLineWrap(true);
-		jTextArea.setEnabled(false);
-		jTextArea.setEditable(false);
-		jTextArea.setOpaque(false);
-		jTextArea.setFont(javax.swing.UIManager.getFont("Label.font"));
-		jTextArea.setBackground(UIManager.getColor("Label.background"));
-		jTextArea.setDisabledTextColor(UIManager.getColor("Label.foreground"));
-		jTextArea.setText(s);
-		return jTextArea;
 	}
 
 	/**
