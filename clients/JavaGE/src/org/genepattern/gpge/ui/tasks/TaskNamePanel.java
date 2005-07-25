@@ -23,6 +23,7 @@ import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.message.PreferenceChangeMessage;
 import org.genepattern.gpge.ui.maindisplay.GPGE;
 import org.genepattern.gpge.ui.preferences.PreferenceKeys;
+import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.AnalysisService;
@@ -76,6 +77,11 @@ public class TaskNamePanel extends JPanel {
 		super();
 		String latestVersion = null;
 		String taskName = taskInfo.getName();
+		if (taskName.endsWith(".pipeline")) {
+			taskName = taskName.substring(0, taskName.length()
+					- ".pipeline".length());
+		}
+		
 		String taskVersionDisplay = "";
 		JComboBox versionComboBox = null;
 		try {
@@ -153,7 +159,7 @@ public class TaskNamePanel extends JPanel {
 
 		JLabel taskVersionLabel = new JLabel(taskVersionDisplay);
 
-		Component description = AnalysisServiceDisplay
+		Component description = GUIUtil
 				.createWrappedLabel(taskInfo.getDescription());
 		if(bottomComponent==null) {
 			bottomComponent = createBottomComponent();
