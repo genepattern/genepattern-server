@@ -10,8 +10,8 @@ import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.GPGEMessage;
 import org.genepattern.gpge.message.GPGEMessageListener;
 import org.genepattern.gpge.message.MessageManager;
+import org.genepattern.gpge.ui.tasks.pipeline.PipelineComponent;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceDisplay;
-import org.genepattern.gpge.ui.tasks.PipelineComponent;
 
 public class ViewManager {
 	private AnalysisServiceDisplay analysisServiceDisplay;
