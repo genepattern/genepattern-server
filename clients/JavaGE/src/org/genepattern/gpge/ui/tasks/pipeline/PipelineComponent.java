@@ -44,9 +44,8 @@ import org.genepattern.gpge.message.GPGEMessageListener;
 import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel;
-import org.genepattern.gpge.ui.maindisplay.TogglePanel2;
+import org.genepattern.gpge.ui.maindisplay.GroupPanel;
 import org.genepattern.gpge.ui.table.AlternatingColorTable;
-import org.genepattern.gpge.ui.tasks.AlternatingRowColorPanel;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceDisplay;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
 import org.genepattern.gpge.ui.tasks.TaskHelpActionListener;
@@ -202,12 +201,12 @@ public class PipelineComponent extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				if(e.getSource()==expandAllButton) {
 					for(int i = 0; i < togglePanelList.size(); i++) {
-						TogglePanel2 p = (TogglePanel2) togglePanelList.get(i);
+						GroupPanel p = (GroupPanel) togglePanelList.get(i);
 						p.setExpanded(true);
 					}
 				} else if(e.getSource()==collapseAllButton) {
 					for(int i = 0; i < togglePanelList.size(); i++) {
-						TogglePanel2 p = (TogglePanel2) togglePanelList.get(i);
+						GroupPanel p = (GroupPanel) togglePanelList.get(i);
 						p.setExpanded(false);
 					}
 				} 
@@ -268,14 +267,14 @@ public class PipelineComponent extends JPanel {
 				descriptionComponent = new JTextField(js.getDescription(), 80);
 			}
 			
-			TogglePanel2 togglePanel = new TogglePanel2((index + 1) + ". "
+			GroupPanel togglePanel = new GroupPanel((index + 1) + ". "
 					+ formalTaskInfo.getName(), formalTaskInfo.getDescription());
 			togglePanelList.add(togglePanel);
 			CellConstraints cc = new CellConstraints();
 			
 			tasksLayout.appendRow(new RowSpec("pref"));
 			
-			tasksPanel.addTaskIndex(tasksLayout.getRowCount());
+			// FIXME tasksPanel.addTask(tasksLayout.getRowCount());
 			tasksPanel.add(togglePanel, cc.xywh(1, tasksLayout.getRowCount(), 2, 1, CellConstraints.LEFT, CellConstraints.BOTTOM));
 			togglePanel.setBackground(getBackground());
 			addTaskComponents(js, formalParams, togglePanel);
@@ -347,7 +346,7 @@ public class PipelineComponent extends JPanel {
 		return svc.getTaskInfo();
 	}
 	
-	private void addTaskComponents(JobSubmission js, ParameterInfo[] formalParams, TogglePanel2 togglePanel) {
+	private void addTaskComponents(JobSubmission js, ParameterInfo[] formalParams, GroupPanel togglePanel) {
 
 		ParameterInfo[] actualParameters = js.giveParameterInfoArray();
 
@@ -442,11 +441,11 @@ public class PipelineComponent extends JPanel {
 					field.addMouseListener(new MouseAdapter() {
 
 						public void mouseEntered(MouseEvent e) {
-								TogglePanel2 p = (TogglePanel2) togglePanelList.get(inheritedTaskIndex);
+								GroupPanel p = (GroupPanel) togglePanelList.get(inheritedTaskIndex);
 								p.setMajorLabelForeground(Color.red);
 						}
 						public void mouseExited(MouseEvent e) {
-								TogglePanel2 p = (TogglePanel2) togglePanelList.get(inheritedTaskIndex);
+								GroupPanel p = (GroupPanel) togglePanelList.get(inheritedTaskIndex);
 								p.setMajorLabelForeground(Color.black);	
 						}
 						
@@ -458,8 +457,8 @@ public class PipelineComponent extends JPanel {
 				tasksPanel.add(label, cc.xy(1, tasksLayout.getRowCount(), CellConstraints.RIGHT, CellConstraints.BOTTOM));
 				tasksPanel.add(field, cc.xy(3, tasksLayout.getRowCount(), CellConstraints.LEFT, CellConstraints.BOTTOM));
 				
-				togglePanel.addComponent(field);
-				togglePanel.addComponent(label);
+				togglePanel.addToggleComponent(field);
+				togglePanel.addToggleComponent(label);
 			} else {
 			//	JLabel field = new JLabel(value);
 			//	JLabel label = builder.append(AnalysisServiceDisplay.getDisplayString(paramName), field);
