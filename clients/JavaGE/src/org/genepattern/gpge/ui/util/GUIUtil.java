@@ -8,6 +8,8 @@ import java.io.File;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.genepattern.gpge.GenePattern;
@@ -19,13 +21,14 @@ public class GUIUtil {
 	private GUIUtil() {
 	}
 
-	private static File showFileDialog(int mode) {
-		return showFileDialog(mode, null);
-	}
-
-	private static File showFileDialog(int mode, File selectedFile) {
+	private static File showFileDialog(int mode, File selectedFile, String title) {
+		if(title==null) {
+			title = "GenePattern";
+		} else {
+			title = "GenePattern - " + title;
+		}
 		FileDialog fc = new FileDialog(GenePattern.getDialogParent(),
-				"GenePattern", mode);
+				title, mode);
 		if (selectedFile != null) {
 			fc.setDirectory(selectedFile.getPath());
 			fc.setFile(selectedFile.getName());
@@ -49,13 +52,18 @@ public class GUIUtil {
 		return null;
 	}
 
-	public static File showOpenDialog() {
+	public static File showOpenDialog() {	
+		return GUIUtil.showOpenDialog(null);
+	}
+	
+	public static File showOpenDialog(String title) {
 		if (GPGE.RUNNING_ON_MAC) {
-			return showFileDialog(FileDialog.LOAD);
+			return showFileDialog(FileDialog.LOAD, null, title);
 		} else {
 			if (fileChooser == null) {
 				fileChooser = new JFileChooser();
 			}
+			fileChooser.setDialogTitle(title);
 			if (fileChooser.showOpenDialog(GenePattern.getDialogParent()) == JFileChooser.APPROVE_OPTION) {
 				return fileChooser.getSelectedFile();
 			}
@@ -69,7 +77,7 @@ public class GUIUtil {
 
 	public static File showSaveDialog(File selectedFile) {
 		if (GPGE.RUNNING_ON_MAC) {
-			return showFileDialog(FileDialog.SAVE, selectedFile);
+			return showFileDialog(FileDialog.SAVE, selectedFile, "GenePattern");
 		} else {
 			if (fileChooser == null) {
 				fileChooser = new JFileChooser();
@@ -143,6 +151,21 @@ public class GUIUtil {
 			}
 	
 		};
+	}
+
+	public static JTextArea createWrappedLabel(String s) {
+		JTextArea jTextArea = new JTextArea();
+		// Set JTextArea to look like JLabel
+		jTextArea.setWrapStyleWord(true);
+		jTextArea.setLineWrap(true);
+		jTextArea.setEnabled(false);
+		jTextArea.setEditable(false);
+		jTextArea.setOpaque(false);
+		jTextArea.setFont(javax.swing.UIManager.getFont("Label.font"));
+		jTextArea.setBackground(UIManager.getColor("Label.background"));
+		jTextArea.setDisabledTextColor(UIManager.getColor("Label.foreground"));
+		jTextArea.setText(s);
+		return jTextArea;
 	}
 
 }
