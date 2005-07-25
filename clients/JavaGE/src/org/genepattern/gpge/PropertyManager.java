@@ -1,5 +1,6 @@
 package org.genepattern.gpge;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -119,6 +120,38 @@ public class PropertyManager {
 		} catch(Exception e) {
 			return Integer.MAX_VALUE;
 		}
+	}
+
+	public static Color decodeColorFromProperties(String prop) {
+		if (prop == null) {
+			return null;
+		}
+		String[] rgbString = prop.split(",");
+		int[] rgb = new int[3];
+		int rgbIndex = 0;
+		for (int i = 0; i < rgbString.length; i++) {
+			if ("".equals(rgbString[i])) {
+				continue;
+			}
+			try {
+				rgb[rgbIndex] = Integer.parseInt(rgbString[i]);
+				if (rgb[rgbIndex] < 0 || rgbIndex > 255) {
+					return null;
+				}
+				rgbIndex++;
+			} catch (Exception e) {
+				return null;
+			}
+		}
+		return new Color(rgb[0], rgb[1], rgb[2]);
+	
+	}
+
+	public static String encodeColorToProperty(Color c) {
+		if (c == null) {
+			return null;
+		}
+		return c.getRed() + "," + c.getGreen() + "," + c.getBlue();
 	}
 	
 }
