@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -35,25 +36,35 @@ public class GroupPanel extends JPanel {
 
 	private JLabel majorLabel;
 
-	private JLabel minorLabel;
+	private JComponent minorComponent;
 
 	public GroupPanel(String major, String minor) {
+		this(major, new JLabel(minor));
+	}
+	public GroupPanel(String major, JComponent minor) {
 		setOpaque(false);
 		majorLabel = new JLabel(major);
-		minorLabel = new JLabel(minor);
+		this.minorComponent = minor;
 		FormLayout layout = new FormLayout("pref, 6px, pref", "pref");
 		setLayout(layout);
 		CellConstraints cc = new CellConstraints();
 		add(majorLabel, cc.xy(1, 1));
-		add(minorLabel, cc.xy(3, 1));
+		add(minorComponent, cc.xy(3, 1));
 		Font f = majorLabel.getFont();
 		majorLabel.setFont(f.deriveFont(f.getSize2D() + 2));
 		majorLabel.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
+				if(e.isPopupTrigger() || e.getModifiers() == MouseEvent.BUTTON3_MASK) {
+					return;
+				}
 				toggleState();
 			}
 		});
 		majorLabel.setIcon(collapsedIcon);
+	}
+	
+	public JLabel getMajorLabel() {
+		return majorLabel;
 	}
 
 	public void addToggleComponent(Component c) {
