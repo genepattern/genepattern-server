@@ -47,7 +47,7 @@ import org.genepattern.webservice.WebServiceException;
  *
  * @author    Joshua Gould
  */
-public class AnalysisServiceDisplay extends JPanel {
+public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 	/** the currently displayed <tt>AnalysisService</tt> */
 	private AnalysisService selectedService;
 
@@ -141,21 +141,31 @@ public class AnalysisServiceDisplay extends JPanel {
 		helpButton.addActionListener(new TaskHelpActionListener(this.selectedService));
 		buttonPanel.add(helpButton);
 
-		JButton editButton = new JButton("Edit");
-		editButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				MessageManager.notifyListeners(new ChangeViewMessageRequest(this, ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST, selectedService));
-			}
-		});
-		buttonPanel.add(editButton);
-		
-		JButton viewButton = new JButton("View");
-		viewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				MessageManager.notifyListeners(new ChangeViewMessageRequest(this, ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST, selectedService));
-			}
-		});
-		buttonPanel.add(viewButton);
+		if (TaskLauncher.isPipeline(selectedService)) {
+			JButton editButton = new JButton("Edit");
+			editButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					MessageManager
+							.notifyListeners(new ChangeViewMessageRequest(
+									this,
+									ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST,
+									selectedService));
+				}
+			});
+			buttonPanel.add(editButton);
+
+			JButton viewButton = new JButton("View");
+			viewButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					MessageManager
+							.notifyListeners(new ChangeViewMessageRequest(
+									this,
+									ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST,
+									selectedService));
+				}
+			});
+			buttonPanel.add(viewButton);
+		}
 		
 		JPanel viewCodePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
@@ -257,9 +267,9 @@ public class AnalysisServiceDisplay extends JPanel {
 	}
 
 	/**
-	 *  Gets a collection of input file parameters
-	 *
-	 * @return    the input file names
+	 * Gets an iterator of the input file parameters
+	 * 
+	 * @return the input file parameters
 	 */
 	public java.util.Iterator getInputFileParameters() {
 		return parameterInfoPanel.getInputFileParameters();
