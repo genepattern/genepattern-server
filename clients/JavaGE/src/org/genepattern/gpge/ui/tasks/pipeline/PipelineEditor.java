@@ -9,6 +9,8 @@ import java.util.TreeMap;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.gpge.GenePattern;
+import org.genepattern.gpge.ui.tasks.AnalysisServiceDisplay;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
 import org.genepattern.gpge.ui.tasks.TaskLauncher;
 import org.genepattern.util.GPConstants;
@@ -19,8 +21,12 @@ import org.genepattern.webservice.TaskInfoAttributes;
 
 public class PipelineEditor {
 	private TaskInfo pipelineTaskInfo;
-
 	private PipelineModel pipelineModel;
+	
+	public PipelineEditor(TaskInfo taskInfo, PipelineModel m) {
+		this.pipelineTaskInfo = taskInfo;
+		this.pipelineModel = m;
+	}
 	
 	private static TaskInfo cloneTaskInfo(TaskInfo taskInfo) {
 		TaskInfo c = new TaskInfo(taskInfo.getID(), taskInfo.getName(),
@@ -116,6 +122,7 @@ public class PipelineEditor {
 				}
 			}
 		}
+	
 	}
 
 	/**
@@ -123,6 +130,7 @@ public class PipelineEditor {
 	 * @param to
 	 */
 	void moveUp(final int from, final int to) {
+		final StringBuffer errors = new StringBuffer();
 		if (from < to) {
 			throw new IllegalArgumentException();
 		}
@@ -131,7 +139,7 @@ public class PipelineEditor {
 		JobSubmission movedTask = (JobSubmission) currentTasks.remove(from);
 		currentTasks.add(to, movedTask);
 
-		TaskInfo pipelineTaskInfo = cloneTaskInfo(this.pipelineTaskInfo);
+		this.pipelineTaskInfo = cloneTaskInfo(this.pipelineTaskInfo);
 		List promptWhenRunParameters = new ArrayList();
 		TreeMap inputParamsMap = pipelineModel.getInputParameters();
 		inputParamsMap.clear();
@@ -170,7 +178,7 @@ public class PipelineEditor {
 							ParameterInfo p, Map parameterAttributes,
 							int inheritTaskNumber) {
 
-						if (index == to && inheritTaskNumber > to) { // if
+						if (index == to && inheritTaskNumber >= to) { // if
 																		// moved
 																		// task
 																		// inherits
@@ -182,6 +190,7 @@ public class PipelineEditor {
 									.remove(PipelineModel.INHERIT_TASKNAME);
 							parameterAttributes
 									.remove(PipelineModel.INHERIT_FILENAME);
+							errors.append((index+1) + ". " + js.getName() + " lost input for " + AnalysisServiceDisplay.getDisplayString(p.getName()) + "\n");
 						} else if (inheritTaskNumber >= to) {
 							parameterAttributes.put(
 									PipelineModel.INHERIT_TASKNAME, String
@@ -202,6 +211,9 @@ public class PipelineEditor {
 		pipelineTaskInfo
 				.setParameterInfoArray((ParameterInfo[]) promptWhenRunParameters
 						.toArray(new ParameterInfo[0]));
+		if(errors.length() > 0) {
+			GenePattern.showErrorDialog(errors.toString());
+		}
 
 	}
 
@@ -221,14 +233,14 @@ public class PipelineEditor {
 	 */
 	void moveDown(final int from, final int to) {
 		List currentTasks = pipelineModel.getTasks();
-
+		final StringBuffer errors = new StringBuffer();
 		// notes: moved task can't lose inheritance, tasks that inherited from
 		// moved task can lose inheritance if task is moved beyond them
 
 		JobSubmission movedTask = (JobSubmission) currentTasks.remove(from);
 		currentTasks.add(to, movedTask);
 
-		TaskInfo pipelineTaskInfo = cloneTaskInfo(this.pipelineTaskInfo);
+		this.pipelineTaskInfo = cloneTaskInfo(this.pipelineTaskInfo);
 		List promptWhenRunParameters = new ArrayList();
 		TreeMap inputParamsMap = pipelineModel.getInputParameters();
 		inputParamsMap.clear();
@@ -248,13 +260,15 @@ public class PipelineEditor {
 					public void param(JobSubmission js, int index,
 							ParameterInfo p, Map parameterAttributes,
 							int inheritTaskNumber) {
-						if (inheritTaskNumber == from || index < to) { // task
+						if (inheritTaskNumber == from && index < to) { // task
 																		// lost
 																		// inheritance
+							
 							parameterAttributes
 									.remove(PipelineModel.INHERIT_TASKNAME);
 							parameterAttributes
 									.remove(PipelineModel.INHERIT_FILENAME);
+							errors.append((index+1) + ". " + js.getName() + " lost input for " + AnalysisServiceDisplay.getDisplayString(p.getName()) + "\n");
 						} else if (inheritTaskNumber == from) {
 							parameterAttributes.put(
 									PipelineModel.INHERIT_TASKNAME, String
@@ -276,7 +290,9 @@ public class PipelineEditor {
 		pipelineTaskInfo
 				.setParameterInfoArray((ParameterInfo[]) promptWhenRunParameters
 						.toArray(new ParameterInfo[0]));
-
+		if(errors.length()>0) {
+			GenePattern.showErrorDialog(errors.toString());
+		}
 	}
 
 	/**
@@ -303,22 +319,22 @@ public class PipelineEditor {
 	 * @param updateInheritedFiles
 	 * @param doLayout
 	 */
-	private void addTask(int index, JobSubmission jobToAdd,
+	private void addTask(final int taskIndex, JobSubmission jobToAdd,
 			boolean updateInheritedFiles) {
 		List currentTasks = pipelineModel.getTasks();
-		currentTasks.add(index, jobToAdd);
+		currentTasks.add(taskIndex, jobToAdd);
 		List promptWhenRunParameters = new ArrayList();
 		TreeMap inputParamsMap = pipelineModel.getInputParameters();
 		inputParamsMap.clear();
-		TaskInfo pipelineTaskInfo = cloneTaskInfo(this.pipelineTaskInfo);
+		this.pipelineTaskInfo = cloneTaskInfo(this.pipelineTaskInfo);
 		// check if other tasks inherit from this task or subsequent tasks
-		iterate(index + 1, currentTasks.size(), inputParamsMap,
+		iterate(taskIndex + 1, currentTasks.size(), inputParamsMap,
 				promptWhenRunParameters, new ParameterItereratorCallBack() {
 
 					public void param(JobSubmission js, int index,
 							ParameterInfo p, Map parameterAttributes,
 							int inheritTaskNumber) {
-						if (inheritTaskNumber >= index) { // task inherits
+						if (inheritTaskNumber >= taskIndex) { // task inherits
 															// from a task that
 															// was at index or
 															// later
@@ -334,7 +350,7 @@ public class PipelineEditor {
 					}
 				});
 
-		iterate(0, index, inputParamsMap, promptWhenRunParameters,
+		iterate(0, taskIndex, inputParamsMap, promptWhenRunParameters,
 				new ParameterItereratorCallBack() {
 
 					public void param(JobSubmission js, int index,
@@ -371,29 +387,29 @@ public class PipelineEditor {
 		System.out.println();
 	}
 
-	void delete(final int index) {
+	void delete(final int taskIndex) {
+		final StringBuffer errors = new StringBuffer();
 		List currentTasks = pipelineModel.getTasks();
 		List promptWhenRunParameters = new ArrayList();
 		TreeMap inputParamsMap = pipelineModel.getInputParameters();
 		inputParamsMap.clear();
-		TaskInfo pipelineTaskInfo = cloneTaskInfo(this.pipelineTaskInfo);
-		currentTasks.remove(index);
+		this.pipelineTaskInfo = cloneTaskInfo(this.pipelineTaskInfo);
+		currentTasks.remove(taskIndex);
 		// check if subsequent tasks inherit from removed task or subsequent
 		// tasks
-		iterate(index, currentTasks.size(), inputParamsMap,
+		iterate(taskIndex, currentTasks.size(), inputParamsMap,
 				promptWhenRunParameters, new ParameterItereratorCallBack() {
 
 					public void param(JobSubmission js, int index,
 							ParameterInfo p, Map parameterAttributes,
 							int inheritTaskNumber) {
-						if (inheritTaskNumber == index) { // lost inheritance
+						if (inheritTaskNumber == taskIndex) { // lost inheritance
 							parameterAttributes
 									.remove(PipelineModel.INHERIT_TASKNAME);
 							parameterAttributes
 									.remove(PipelineModel.INHERIT_FILENAME);
-							System.out.println("lost inheritance "
-									+ inheritTaskNumber);
-						} else if (inheritTaskNumber > index) { // inherits from
+							errors.append((index+1) + ". " + js.getName() + " lost input for " + AnalysisServiceDisplay.getDisplayString(p.getName()) + "\n");
+						} else if (inheritTaskNumber > taskIndex) { // inherits from
 																// a task that
 																// comes after
 																// deleted task
@@ -410,5 +426,8 @@ public class PipelineEditor {
 		pipelineTaskInfo
 				.setParameterInfoArray((ParameterInfo[]) promptWhenRunParameters
 						.toArray(new ParameterInfo[0]));
+		if(errors.length()>0) {
+			GenePattern.showErrorDialog(errors.toString());
+		}
 	}
 }
