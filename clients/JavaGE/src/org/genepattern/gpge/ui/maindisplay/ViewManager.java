@@ -37,9 +37,9 @@ public class ViewManager {
 						setComponent(analysisServiceDisplay);
 						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.RUN_TASK_SHOWN, analysisServiceDisplay));
 					} else if(asm.getType()==ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST) {
-						pipelineComponent.display(asm.getAnalysisService(), false);
+						pipelineComponent.display(asm.getAnalysisService());
 						setComponent(pipelineComponent);
-						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.EDIT_PIPELINE_SHOWN, analysisServiceDisplay));
+						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.EDIT_PIPELINE_SHOWN, pipelineComponent));
 					} else if(asm.getType()==ChangeViewMessageRequest.SHOW_GETTING_STARTED_REQUEST) {
 						analysisServiceDisplay.showGettingStarted();
 						setComponent(analysisServiceDisplay);
@@ -47,7 +47,7 @@ public class ViewManager {
 					} else if(asm.getType()==ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST) {
 						viewPipeline.display(asm.getAnalysisService());
 						setComponent(viewPipeline);
-						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.VIEW_PIPELINE_SHOWN, analysisServiceDisplay));
+						MessageManager.notifyListeners(new ChangeViewMessage(message.getSource(), ChangeViewMessage.VIEW_PIPELINE_SHOWN, viewPipeline));
 					} else {
 						System.err.println("Unknown type:" + asm.getType());
 					}
@@ -63,7 +63,9 @@ public class ViewManager {
 	
 	private void setComponent(Component c) {
 		if(c!=splitPane.getRightComponent()) {
+			int location = splitPane.getDividerLocation();
 			splitPane.setRightComponent(c);
+			splitPane.setDividerLocation(location);
 		}
 	}
 }
