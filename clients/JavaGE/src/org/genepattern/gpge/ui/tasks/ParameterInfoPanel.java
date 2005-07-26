@@ -102,9 +102,9 @@ public class ParameterInfoPanel extends JPanel {
 	}
 
 	/**
-	 * Gets an iterator of the input file parameter names
+	 * Gets an iterator of the input file parameters
 	 * 
-	 * @return the input file parameter names
+	 * @return the input file parameters
 	 */
 	public Iterator getInputFileParameters() {
 		return inputFileParameters.iterator();
@@ -215,7 +215,7 @@ public class ParameterInfoPanel extends JPanel {
 		}
 	}
 
-	public void removeNotif() {
+	public void removeNotify() {
 		super.removeNotify();
 		MessageManager.removeGPGEMessageListener(descriptionListener);
 	}
