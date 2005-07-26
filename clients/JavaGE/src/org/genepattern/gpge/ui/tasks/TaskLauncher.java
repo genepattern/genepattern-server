@@ -250,6 +250,11 @@ public class TaskLauncher {
 		}
 		return init * 16;
 	}
+	
+	public static boolean isPipeline(AnalysisService service) {
+		return "pipeline".equalsIgnoreCase((String) service.getTaskInfo()
+				.getTaskInfoAttributes().get(GPConstants.TASK_TYPE));
+	}
 
 	public static boolean isVisualizer(AnalysisService service) {
 		return "visualizer".equalsIgnoreCase((String) service.getTaskInfo()
