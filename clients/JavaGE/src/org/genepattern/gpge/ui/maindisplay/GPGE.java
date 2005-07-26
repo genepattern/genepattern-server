@@ -1088,16 +1088,16 @@ public class GPGE {
 						jobResultFileSendToMenu.removeAll();
 						projectFileSendToMenu.removeAll();
 
-						if(changeViewMessage.getType()!=ChangeViewMessage.RUN_TASK_SHOWN) {
+						if(changeViewMessage.getType()!=ChangeViewMessage.RUN_TASK_SHOWN && changeViewMessage.getType()!=ChangeViewMessage.EDIT_PIPELINE_SHOWN) {
 							jobResultFileSendToMenu.setEnabled(false);
 							projectFileSendToMenu.setEnabled(false);
 							runTaskViewShown = false;
 							return;
 						}
 						runTaskViewShown = true;
-						final AnalysisServiceDisplay analysisServicePanel = (AnalysisServiceDisplay) changeViewMessage.getComponent(); 
-						
-						for (Iterator it = analysisServicePanel
+					
+						final TaskDisplay taskDisplay = (TaskDisplay) changeViewMessage.getComponent(); 
+						for (Iterator it = taskDisplay
 								.getInputFileParameters(); it.hasNext();) {
 							final ParameterInfo pi = (ParameterInfo) it.next();
 							final String name = pi.getName();
@@ -1107,7 +1107,7 @@ public class GPGE {
 									displayName, pi) {
 								
 								public void actionPerformed(ActionEvent e) {
-									analysisServicePanel.setInputFile(name,
+									taskDisplay.setInputFile(name,
 											selectedJobNode);
 								}
 							};
@@ -1118,7 +1118,7 @@ public class GPGE {
 							MenuItemAction projectMenuItem = new SendToMenuItemAction(
 									displayName, pi) {
 								public void actionPerformed(ActionEvent e) {
-									analysisServicePanel.setInputFile(name,
+									taskDisplay.setInputFile(name,
 											selectedProjectDirNode);
 								}
 							};
