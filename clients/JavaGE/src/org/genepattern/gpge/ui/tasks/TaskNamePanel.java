@@ -31,8 +31,6 @@ import org.genepattern.webservice.TaskInfo;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.openbase.a.a;
-import com.sun.rsasign.ap;
 
 public class TaskNamePanel extends JPanel {
 	
