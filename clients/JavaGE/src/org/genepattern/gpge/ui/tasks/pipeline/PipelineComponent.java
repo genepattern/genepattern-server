@@ -693,6 +693,12 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 							for (int i = 0; i < outputs.size(); i++) {
 								outputFilesComboBox.addItem(outputs.get(i));
 							}
+							outputFilesComboBox.addItem("1st output");
+							outputFilesComboBox.addItem("2nd output");
+							outputFilesComboBox.addItem("3rd output");
+							outputFilesComboBox.addItem("4th output");
+							outputFilesComboBox.addItem("stdout");
+							outputFilesComboBox.addItem("stderr");
 						}
 					}
 
