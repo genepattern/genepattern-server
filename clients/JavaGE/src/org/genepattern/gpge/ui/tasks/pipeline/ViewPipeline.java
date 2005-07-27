@@ -320,16 +320,20 @@ public class ViewPipeline extends JPanel {
 				+ js.getName(), js.getDescription());
 		togglePanelList.add(togglePanel);
 		CellConstraints cc = new CellConstraints();
-
+		
 		tasksLayout.appendRow(new RowSpec("pref"));
 
+		tasksPanel.setOpaque(false);
 		tasksPanel.add(togglePanel, cc.xywh(1, tasksLayout.getRowCount(), 2, 1,
 				CellConstraints.LEFT, CellConstraints.BOTTOM));
+		int taskStart = tasksLayout.getRowCount();
+		
 		togglePanel.setBackground(getBackground());
 		addTaskComponents(js, formalParams, togglePanel);
+		int taskEnd = tasksLayout.getRowCount();
+		int parameterCount = taskEnd-taskStart;
 		togglePanel.setExpanded(true);
-
-		tasksPanel.addTask(togglePanel);
+		tasksPanel.addTask(togglePanel, parameterCount);
 
 	}
 
