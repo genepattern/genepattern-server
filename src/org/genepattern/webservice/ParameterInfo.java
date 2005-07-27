@@ -17,20 +17,12 @@ public class ParameterInfo implements Serializable {
 
 	private HashMap attributes;
 
+	// note additional keys for the attributes map are defined in
+	// GPConstants.PARAM_INFO_XX
 	//keys for the attributes HashMap
 	public static final String TYPE = "TYPE";
 
 	public static final String MODE = "MODE";
-
-	public static final String DISPLAY_TYPE = "DISPLAY_TYPE";
-
-	public static final String LABEL = "LABEL";
-
-	public static final String DEFAULT = "DEFAULT";
-
-	public static final String RANGE = "RANGE";
-
-	public static final String NOTE = "NOTE";
 
 	//used as a value for key "TYPE"
 	public static final String FILE_TYPE = "FILE";
@@ -47,6 +39,8 @@ public class ParameterInfo implements Serializable {
 	public static final String CACHED_INPUT_MODE = "CACHED_IN";
 
 	public static final String URL_INPUT_MODE = "URL_IN";
+
+	private static final String LABEL = "LABEL";
 
 	/** Creates new ParameterInfo */
 	public ParameterInfo() {
@@ -161,32 +155,6 @@ public class ParameterInfo implements Serializable {
 		this.attributes.put(ParameterInfo.MODE, ParameterInfo.OUTPUT_MODE);
 	}
 
-	/**
-	 * Gets the parameter displaying label.
-	 * 
-	 * @return displaying label as a String
-	 */
-	public String getLabel() {
-		String label = "";
-		if (this.attributes != null
-				&& this.attributes.containsKey(ParameterInfo.LABEL)) {
-			label = (String) this.attributes.get(ParameterInfo.LABEL);
-		}
-		return label;
-	}
-
-	/**
-	 * Sets the parameter displaying label
-	 * 
-	 * @param label
-	 *            used as displaying purpose
-	 */
-	public void setLabel(String label) {
-		if (this.attributes == null)
-			this.attributes = new HashMap();
-		this.attributes.put(ParameterInfo.LABEL, label);
-	}
-
 	/** returns a String representation of this */
 	public String toString() {
 		final StringBuffer buf = new StringBuffer();
@@ -225,7 +193,7 @@ public class ParameterInfo implements Serializable {
 		if (!formalParam.hasChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER)) return getValue();
 		String uiValue = getValue();
 	
-		String[] choices = formalParam.getChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER);//GPConstants.PARAM_INFO_CHOICE_DELIMITER
+		String[] choices = formalParam.getChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 		for (int i=0; i < choices.length; i++){
 			String[] subchoices = choices[i].split(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
 			if (subchoices.length > 1) {
@@ -238,6 +206,32 @@ public class ParameterInfo implements Serializable {
 			} 
 		}
 		return uiValue;
+	}
+	
+	/**
+	 * Gets the parameter displaying label.
+	 * 
+	 * @return displaying label as a String
+	 */
+	public String getLabel() {
+		String label = "";
+		if (this.attributes != null
+				&& this.attributes.containsKey(ParameterInfo.LABEL)) {
+			label = (String) this.attributes.get(ParameterInfo.LABEL);
+		}
+		return label;
+	}
+
+	/**
+	 * Sets the parameter displaying label
+	 * 
+	 * @param label
+	 *            used as displaying purpose
+	 */
+	public void setLabel(String label) {
+		if (this.attributes == null)
+			this.attributes = new HashMap();
+		this.attributes.put(ParameterInfo.LABEL, label);
 	}
 	
 }
