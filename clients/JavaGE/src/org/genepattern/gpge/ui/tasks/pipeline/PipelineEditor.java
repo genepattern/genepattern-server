@@ -301,14 +301,25 @@ public class PipelineEditor {
 	 * @param index
 	 * @param task
 	 */
-	void addTask(int index, TaskInfo task) {
-		JobSubmission addedJob = new JobSubmission(pipelineTaskInfo.getName(),
-				pipelineTaskInfo.getDescription(), (String) task
-						.getTaskInfoAttributes().get(GPConstants.LSID), task
-						.getParameterInfoArray(), new boolean[task
+	public void addTask(int index, TaskInfo task) {
+		ParameterInfo[] formalParams = task.getParameterInfoArray();
+		ParameterInfo[] params = new ParameterInfo[formalParams.length];
+		HashMap emptyMap = new HashMap(0);
+		for(int i = 0; i < params.length; i++) {
+			ParameterInfo formalParam = formalParams[i];
+			String defaultValue = (String) formalParam.getAttributes().get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
+			if(defaultValue==null) {
+				defaultValue = "";
+			}
+			params[i] = new ParameterInfo(formalParam.getName(), defaultValue, "");
+			params[i].setAttributes(emptyMap);
+		}
+		JobSubmission addedJob = new JobSubmission(task.getName(),
+				task.getDescription(), (String) task
+						.getTaskInfoAttributes().get(GPConstants.LSID), params, new boolean[task
 						.getParameterInfoArray().length], TaskLauncher
-						.isVisualizer(task), pipelineTaskInfo);
-		addTask(index, addedJob, true);
+						.isVisualizer(task), task);
+		addTask(index, addedJob);
 	}
 
 	/**
@@ -319,8 +330,7 @@ public class PipelineEditor {
 	 * @param updateInheritedFiles
 	 * @param doLayout
 	 */
-	private void addTask(final int taskIndex, JobSubmission jobToAdd,
-			boolean updateInheritedFiles) {
+	private void addTask(final int taskIndex, JobSubmission jobToAdd) {
 		List currentTasks = pipelineModel.getTasks();
 		currentTasks.add(taskIndex, jobToAdd);
 		List promptWhenRunParameters = new ArrayList();
