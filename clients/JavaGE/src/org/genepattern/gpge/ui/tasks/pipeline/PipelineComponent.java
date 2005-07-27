@@ -1,5 +1,7 @@
 package org.genepattern.gpge.ui.tasks.pipeline;
 
+import gnu.trove.TIntArrayList;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -21,6 +23,8 @@ import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -37,9 +41,11 @@ import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.ui.maindisplay.GroupPanel;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceDisplay;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
+import org.genepattern.gpge.ui.tasks.ParameterInfoPanel;
 import org.genepattern.gpge.ui.tasks.TaskDisplay;
 import org.genepattern.gpge.ui.tasks.TaskHelpActionListener;
 import org.genepattern.gpge.ui.tasks.TaskNamePanel;
+import org.genepattern.gpge.ui.tasks.ParameterInfoPanel.ChoiceItem;
 import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AnalysisService;
@@ -54,6 +60,8 @@ import com.jgoodies.forms.layout.RowSpec;
 
 // inherited task numbers start at 0, output files start at one,, names for params start at one
 public class PipelineComponent extends JPanel implements TaskDisplay {
+	private static final boolean DEBUG = false;
+
 	private PipelineModel pipelineModel;
 
 	private List jobSubmissions;
@@ -62,7 +70,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 
 	private TaskInfo pipelineTaskInfo;
 
-	private JPanel tasksPanel;
+	private AlternatingRowColorPanel tasksPanel;
 
 	private FormLayout tasksLayout;
 
@@ -82,6 +90,8 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 
 	private JComboBox tasksInPipelineComboBox;
 
+	private JScrollPane scrollPane;
+
 	/**
 	 * Currently only one instance should be created by the ViewManager
 	 * 
@@ -90,17 +100,14 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 		setBackground(Color.white);
 		setMinimumSize(new java.awt.Dimension(100, 100));
 		setLayout(new BorderLayout());
-		tasksLayout = new FormLayout("right:pref, 3dlu, default:grow", "");
-
-		tasksPanel = new JPanel(tasksLayout);
-		tasksPanel.setBackground(getBackground());
-		JScrollPane sp = new JScrollPane(tasksPanel);
-		Border b = sp.getBorder();
-		sp.setBorder(GUIUtil.createBorder(b, 0, -1, -1, -1));
-		add(sp, BorderLayout.CENTER);
+		
+		scrollPane = new JScrollPane();
+		Border b = scrollPane.getBorder();
+		scrollPane.setBorder(GUIUtil.createBorder(b, 0, -1, -1, -1));
+		add(scrollPane, BorderLayout.CENTER);
 
 		tasksInPipelineComboBox = new JComboBox();
-
+		
 		final JButton addButton = new JButton("Add Task After");
 
 		final JButton addBeforeButton = new JButton("Add Task Before");
@@ -114,22 +121,35 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 		final JButton expandAllButton = new JButton("Expand All");
 		final JButton collapseAllButton = new JButton("Collapse All");
 
+		tasksInPipelineComboBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JComboBox cb = (JComboBox) e.getSource();
+				int index = cb.getSelectedIndex();
+				addBeforeButton.setEnabled(index != 0);
+				addButton.setEnabled(index != cb.getItemCount() - 1 || cb.getItemCount()==1);
+
+			}
+		});
+		
 		ActionListener taskBtnListener = new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
 				int index = tasksInPipelineComboBox.getSelectedIndex();
 				if (e.getSource() == addButton) {
-					editor.addTask(index + 1, null); // FIXME
+					showAddTask(index, true);
 				} else if (e.getSource() == addBeforeButton) {
-					editor.addTask(index - 1, null); // FIXME
+					showAddTask(index, false);
 				} else if (e.getSource() == deleteButton) {
 					editor.delete(index);
+					setPipeline(editor.getTaskInfo(), editor.getPipelineModel());
 				} else if (e.getSource() == moveUpButton) {
 					editor.moveUp(index, index - 1);
+					setPipeline(editor.getTaskInfo(), editor.getPipelineModel());
 				} else if (e.getSource() == moveDownButton) {
 					editor.moveDown(index, index + 1);
+					setPipeline(editor.getTaskInfo(), editor.getPipelineModel());
 				}
-				setPipeline(editor.getTaskInfo(), editor.getPipelineModel());
+				
 			}
 		};
 
@@ -259,10 +279,13 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 			remove(taskNamePanel);
 		}
 		togglePanelList.clear();
-		tasksPanel.removeAll();
 		parameterName2ComponentMap.clear();
 		inputFileParameters.clear();
 		tasksInPipelineComboBox.removeAllItems();
+		tasksLayout = new FormLayout("right:pref, 3dlu, default:grow", "");
+		tasksPanel = new AlternatingRowColorPanel(tasksLayout);
+		tasksPanel.setBackground(getBackground());
+		scrollPane.setViewportView(tasksPanel);
 	}
 
 	/**
@@ -313,7 +336,9 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 		this.pipelineTaskInfo = _pipelineTaskInfo;
 		this.pipelineModel = model;
 		editor = new PipelineEditor(pipelineTaskInfo, pipelineModel);
-		editor.print();
+		if(DEBUG) {
+			editor.print();
+		}
 		this.jobSubmissions = pipelineModel.getTasks();
 		this.userID = pipelineTaskInfo.getUserId();
 
@@ -355,7 +380,8 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 
 		GroupPanel togglePanel = new GroupPanel((index + 1) + ". "
 				+ formalTaskInfo.getName(), new JTextField(formalTaskInfo
-				.getDescription(), 60));
+				.getDescription(), 80));
+		togglePanel.setBackground(getBackground());
 		final JPopupMenu popupMenu = new JPopupMenu();
 
 		final JMenuItem addTaskAfterItem = new JMenuItem("Add Task After");
@@ -373,18 +399,19 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 
 			public void actionPerformed(ActionEvent e) {
 				if (e.getSource() == addTaskAfterItem) {
-					editor.addTask(index + 1, null);
+					showAddTask(index, true);
 				} else if (e.getSource() == addBeforeItem) {
-					editor.addTask(index - 1, null);
+					showAddTask(index, false);
 				} else if (e.getSource() == moveUpItem) {
 					editor.moveUp(index, index - 1);
+					setPipeline(editor.getTaskInfo(), editor.getPipelineModel());
 				} else if (e.getSource() == moveDownItem) {
 					editor.moveDown(index, index + 1);
+					setPipeline(editor.getTaskInfo(), editor.getPipelineModel());
 				} else if (e.getSource() == deleteItem) {
 					editor.delete(index);
+					setPipeline(editor.getTaskInfo(), editor.getPipelineModel());
 				}
-
-				setPipeline(editor.getTaskInfo(), editor.getPipelineModel());
 			}
 
 		};
@@ -409,13 +436,35 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 
 		tasksLayout.appendRow(new RowSpec("pref"));
 
-		// tasksPanel.addTask(togglePanel);
+		
 		tasksPanel.add(togglePanel, cc.xywh(1, tasksLayout.getRowCount(), 2, 1,
 				CellConstraints.LEFT, CellConstraints.BOTTOM));
-		togglePanel.setBackground(getBackground());
+		int parameterStart = tasksLayout.getRowCount();
 		addTaskComponents(index, js, formalParams, togglePanel);
+		int parameterEnd = tasksLayout.getRowCount();
+		tasksPanel.addTask(togglePanel, parameterEnd-parameterStart);
 		togglePanel.setExpanded(true);
 
+	}
+	
+	void addTask(int index, AnalysisService svc) {
+		editor.addTask(index, svc.getTaskInfo());
+		setPipeline(editor.getTaskInfo(), editor.getPipelineModel());
+	}
+	
+	private void showAddTask(int jobSubmissionIndex, boolean addAfter) {
+		JobSubmission js = (JobSubmission) jobSubmissions.get(jobSubmissionIndex);
+		String title;
+		int insertionIndex;
+		if(addAfter) {
+			title = "Add Task After " + (jobSubmissionIndex+1) + ". " + js.getName();
+			insertionIndex = jobSubmissionIndex + 1;
+		} else {
+			title = "Add Task Before " + (jobSubmissionIndex+1) + ". " + js.getName();
+			insertionIndex = jobSubmissionIndex + 1;
+		}
+		
+		JDialog dialog = new TaskChooser(GenePattern.getDialogParent(), title, this, insertionIndex);
 	}
 
 	private TaskInfo getTaskInfo(String lsid) {
@@ -439,7 +488,8 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 			paramName2ActualParamIndexMap.put(actualParameters[j].getName(),
 					new Integer(j));
 		}
-
+		
+		int startParameterRow = tasksLayout.getRowCount()+1;
 		for (int j = 0; j < formalParams.length; j++) {
 			String paramName = formalParams[j].getName();
 			ParameterInfo formalParam = formalParams[j];
@@ -448,10 +498,11 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 
 			String value = "";
 			String inheritedOutputFileName = null;
+			JComboBox comboBox = null;
 			int inheritedTaskNumber = -1;
 			if (index == null) {
 				value = (String) formalParam.getAttributes().get(
-						ParameterInfo.DEFAULT);
+						GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 				if (value == null) {
 					value = "";
 				}
@@ -509,18 +560,27 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 					// instead of UI value
 					String[] choices = formalParam.getValue().split(
 							GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-					String[] eachValue;
-					value = actualParam.getValue();
-					for (int v = 0; v < choices.length; v++) {
-						eachValue = choices[v]
-								.split(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
-						if (value.equals(eachValue[0])) {
-							if (eachValue.length == 2) {
-								value = eachValue[1];
+					if(choices.length > 1) {
+						comboBox = new JComboBox();
+						comboBox.setOpaque(false);
+						for(int i = 0; i < choices.length; i++) {
+							String[] s = choices[i].split("=");
+							if(s.length==2) {
+								String cmdLineValue = s[0];
+								String uiValue = s[1];
+								comboBox.addItem(new ParameterInfoPanel.ChoiceItem(uiValue, cmdLineValue));
+							} else {
+								comboBox.addItem(new ParameterInfoPanel.ChoiceItem(s[0], s[0]));
 							}
-							break;
+						}
+						for(int i = 0; i < comboBox.getItemCount(); i++) {
+							if(((ChoiceItem) comboBox.getItemAt(i)).equalsCmdLineOrUIValue(value)) {
+								comboBox.setSelectedIndex(i);
+								break;
+							}
 						}
 					}
+					
 				}
 			}
 			CellConstraints cc = new CellConstraints();
@@ -530,10 +590,17 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 			togglePanel.addToggleComponent(label);
 			tasksLayout.appendRow(new RowSpec("pref"));
 			tasksPanel.add(label, cc.xy(1, tasksLayout.getRowCount(),
-					CellConstraints.RIGHT, CellConstraints.BOTTOM));
-			final JTextField inputField = new JTextField(value, 20);
+					CellConstraints.RIGHT, CellConstraints.CENTER));
+			final JComponent inputComponent;
+			if(comboBox==null) {
+				inputComponent =  new JTextField(value, 20);
+				inputComponent.setOpaque(false);
+			} else {
+				inputComponent = comboBox;
+			}
 			if (formalParam.isInputFile()) {
 				JPanel inputPanel = new JPanel();
+				inputPanel.setOpaque(false);
 				inputPanel.setBackground(getBackground());
 				FormLayout inputPanelLayout = new FormLayout(
 						"left:pref:none, left:pref:none, left:pref:none, left:pref:none, left:default:none",
@@ -541,22 +608,25 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 				inputPanel.setLayout(	inputPanelLayout);
 
 				final JButton browseBtn = new JButton("Browse...");
+				browseBtn.setOpaque(false);
 				browseBtn.setBackground(getBackground());
 				browseBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						File f = GUIUtil.showOpenDialog();
 						if (f != null) {
-							inputField.setText(f.getPath());
+							((JTextField)
+							inputComponent).setText(f.getPath());
 						}
 					}
 				});
 
 				final JCheckBox usePreviousOutput = new JCheckBox(
 						"Use Output From Previous Task");
+				usePreviousOutput.setOpaque(false);
 				usePreviousOutput.setBackground(getBackground());
 				
 
-				inputPanel.add(inputField, cc.xy(1, 1));
+				inputPanel.add(inputComponent, cc.xy(1, 1));
 				inputPanel.add(browseBtn, cc.xy(2, 1));
 				inputPanel.add(usePreviousOutput, cc.xy(5, 1));
 
@@ -564,7 +634,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 				tasksPanel.add(inputPanel, cc.xy(3, tasksLayout.getRowCount(),
 						CellConstraints.LEFT, CellConstraints.BOTTOM));
 
-				parameterName2ComponentMap.put(paramName, inputField); // FIXME
+				parameterName2ComponentMap.put(paramName, inputComponent); // FIXME
 				inputFileParameters.add(formalParams[j]);
 
 				Vector previousTaskNames = new Vector();
@@ -576,22 +646,23 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 							.add((k + 1) + ". " + previousJS.getName());
 				}
 				final JComboBox tasksComboBox = new JComboBox(previousTaskNames);
-
+				tasksComboBox.setOpaque(false);
 				final JComboBox outputFilesComboBox = new JComboBox();
+				outputFilesComboBox.setOpaque(false);
 				inputPanel.add(tasksComboBox, cc.xy(3, 1));
 				inputPanel.add(outputFilesComboBox, cc.xy(4, 1));
 				
 				usePreviousOutput.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						browseBtn.setVisible(!usePreviousOutput.isSelected());
-						inputField.setVisible(!usePreviousOutput.isSelected());
+						inputComponent.setVisible(!usePreviousOutput.isSelected());
 						tasksComboBox.setVisible(usePreviousOutput.isSelected());
-						outputFilesComboBox.setVisible(usePreviousOutput.isSelected());
+						outputFilesComboBox.setVisible(usePreviousOutput.isSelected() && outputFilesComboBox.getItemCount() > 0);
 					}
 				});
 				
 				browseBtn.setVisible(inheritedTaskNumber == -1);
-				inputField.setVisible(inheritedTaskNumber == -1);
+				inputComponent.setVisible(inheritedTaskNumber == -1);
 				tasksComboBox.setVisible(inheritedTaskNumber != -1);
 				outputFilesComboBox.setVisible(inheritedTaskNumber != -1);
 				usePreviousOutput.setSelected(inheritedTaskNumber != -1);
@@ -642,12 +713,24 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 			
 
 			} else {
-				tasksPanel.add(inputField, cc.xy(3, tasksLayout.getRowCount(),
+				tasksPanel.add(inputComponent, cc.xy(3, tasksLayout.getRowCount(),
 						CellConstraints.LEFT, CellConstraints.BOTTOM));
-				togglePanel.addToggleComponent(inputField);
+				togglePanel.addToggleComponent(inputComponent);
 
 			}
-
 		}
+		
+		int endParameterRow = tasksLayout.getRowCount();
+		int[] group = new int[endParameterRow-startParameterRow+1];
+		for(int i = startParameterRow, index=0; i <= endParameterRow; i++,index++) {
+			group[index] = i;
+		}
+		int[][] rowGroups = tasksLayout.getRowGroups();
+		int[][] newRowGroups = new int[rowGroups.length+1][];
+		for(int i = 0; i < rowGroups.length; i++) {
+			newRowGroups[i] = rowGroups[i];
+		}
+		newRowGroups[newRowGroups.length-1] = group;
+		tasksLayout.setRowGroups(newRowGroups);
 	}
 }
