@@ -30,7 +30,7 @@ public class ParameterChoice {
 	 * @return new ParameterChoice
 	 */
 	public static ParameterChoice createChoice(String s) {
-		String[] tokens = s.split(";");
+		String[] tokens = s.split("=");
 		if(tokens.length==2) {
 			return new ParameterChoice(tokens[1], tokens[0]);
 		}
