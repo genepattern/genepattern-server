@@ -309,6 +309,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=99999=4 TedsTestModule.zip"/>
+	</commandline>
+</cvs>
+<copy file="TedsTestModule.zip" tofile="catalogregen/TedsTestModule.4.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00009=0 HierarchicalClustering.zip"/>
 	</commandline>
 </cvs>
