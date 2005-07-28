@@ -79,62 +79,6 @@ public class ParameterInfoPanel extends JPanel {
 
 	final static int SPACE_ROW_OFFSET = 3;
 
-	public static class ChoiceItem {
-
-		/** the text that is displayed to the users */
-		private final String uiText;
-
-		/** the command line value */
-		private final String commandLineValue;
-
-		public ChoiceItem(final String text, final String value) {
-			this.uiText = text.trim();
-			this.commandLineValue = value;
-
-		}
-
-		public String paramString() {
-			return uiText + " = " + commandLineValue;
-		}
-
-		public final String toString() {
-			return uiText;
-		}
-
-		public boolean equalsCmdLineOrUIValue(String s) {
-			return uiText.equals(s) || commandLineValue.equals(s);
-		}
-		
-		public boolean equals(Object obj) {
-			if (obj instanceof ChoiceItem) {
-				ChoiceItem other = (ChoiceItem) obj;
-				return other.uiText.equals(this.uiText);
-			}
-			return false;
-		}
-
-		/**
-		 * returns true if the <CODE>ChoiceItem</CODE>'s fields equal either
-		 * the value or the text
-		 * 
-		 * @param item
-		 *            Description of the Parameter
-		 * @return Description of the Return Value
-		 */
-		protected boolean hasToken(final ChoiceItem item) {
-			return (item != null && (uiText.equalsIgnoreCase(item.uiText) || item.commandLineValue
-					.toString().equalsIgnoreCase(commandLineValue.toString())));
-		}
-
-		/**
-		 * returns the command line value (which is not displayed)
-		 * 
-		 * @return The value
-		 */
-		public final String getValue() {
-			return commandLineValue;
-		}
-	}
 	
 	public void setLabelWidth(int labelWidth) {
 		formLayout.setColumnSpec(PARAMETER_LABEL_COLUMN, new ColumnSpec(
@@ -231,7 +175,7 @@ public class ParameterInfoPanel extends JPanel {
 						ioe.printStackTrace();
 					}
 				} else if (c instanceof JComboBox) {
-					ParameterInfoPanel.ChoiceItem ci = (ParameterInfoPanel.ChoiceItem) ((JComboBox) c)
+					ParameterChoice ci = (ParameterChoice) ((JComboBox) c)
 							.getSelectedItem();
 					value = ci.getValue();
 				} else if (c instanceof JTextField) {
@@ -404,10 +348,10 @@ public class ParameterInfoPanel extends JPanel {
 				((JTextField) c).setText(value.toString());
 			} else if (c instanceof JComboBox) {
 				JComboBox cb = (JComboBox) c;
+				String stringValue = value.toString();
 				for (int i = 0, size = cb.getItemCount(); i < size; i++) {
-					ChoiceItem ci = (ChoiceItem) cb.getItemAt(i);
-					if (ci.commandLineValue.equals(value)
-							|| ci.uiText.equals(value)) {
+					ParameterChoice ci = (ParameterChoice) cb.getItemAt(i);
+					if (ci.equalsCmdLineOrUIValue(stringValue)) {
 						cb.setSelectedIndex(i);
 						break;
 					}
@@ -499,19 +443,19 @@ public class ParameterInfoPanel extends JPanel {
 	}
 
 	/**
-	 * Parses the String and returns a ChoiceItem
+	 * Parses the String and returns a ParameterChoice
 	 * 
 	 * @param string
 	 *            Description of the Parameter
 	 * @return Description of the Return Value
 	 */
-	private static ChoiceItem createChoiceItem(final String string) {
+	private static ParameterChoice createChoiceItem(final String string) {
 		final int index = string.indexOf('=');
-		ChoiceItem choice = null;
+		ParameterChoice choice = null;
 		if (index < 0) {
-			choice = new ChoiceItem(string, string);
+			choice = new ParameterChoice(string, string);
 		} else {
-			choice = new ChoiceItem(string.substring(index + 1), string
+			choice = new ParameterChoice(string.substring(index + 1), string
 					.substring(0, index));
 		}
 		return choice;
@@ -524,7 +468,7 @@ public class ParameterInfoPanel extends JPanel {
 	 *            Description of the Parameter
 	 * @return Description of the Return Value
 	 */
-	private static ChoiceItem createDefaultChoice(final String default_val) {
+	private static ParameterChoice createDefaultChoice(final String default_val) {
 		if (default_val != null && default_val.length() > 0) {
 			return createChoiceItem(default_val);
 		}
@@ -552,31 +496,23 @@ public class ParameterInfoPanel extends JPanel {
 	/**
 	 * Creates a combo box for parameter that have a choice list
 	 * @param info the parameter info
-	 * @return a combo box containing ChoiceItem objects
+	 * @return a combo box containing ParameterChoice objects
 	 */
 	private static JComboBox createComboBox(ParameterInfo info) {
 		// get default
 		final String default_val = ((String) info.getAttributes().get(
 				GPConstants.PARAM_INFO_DEFAULT_VALUE[0])).trim();
-		final ChoiceItem default_item = createDefaultChoice(default_val);
 		final StringTokenizer tokenizer = new StringTokenizer(info.getValue(),
 				";");
 		final JComboBox list = new JComboBox();
 		list.setBackground(Color.white);
-		int selectIndex = -1;
 		for (int i = 0; tokenizer.hasMoreTokens(); i++) {
 			final String token = tokenizer.nextToken();
-			final ChoiceItem item = createChoiceItem(token);
+			final ParameterChoice item = createChoiceItem(token);
 			list.addItem(item);
-			if (selectIndex < 0 && item.hasToken(default_item)) {
-				selectIndex = i;
+			if(item.equalsCmdLineOrUIValue(default_val)) {
+				list.setSelectedIndex(i);
 			}
-		}
-
-		if (selectIndex >= 0) {
-			list.setSelectedIndex(selectIndex);
-		} else {
-			list.setSelectedIndex(0);
 		}
 		return list;
 	}
