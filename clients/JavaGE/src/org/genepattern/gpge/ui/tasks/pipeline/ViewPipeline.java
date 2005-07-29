@@ -308,13 +308,17 @@ public class ViewPipeline extends JPanel {
 		for (int i = 0; i < model.getParameterCount(taskIndex); i++) {
 
 			CellConstraints cc = new CellConstraints();
-			JLabel field = new JLabel(model.getValue(taskIndex, i));
+			String value = model.getValue(taskIndex, i);
+			if(value.startsWith("<GenePatternURL>getFile.jsp?task=<LSID>&file=")) {
+				value = value.substring("<GenePatternURL>getFile.jsp?task=<LSID>&file=".length(), value.length());
+			}
+			JLabel field = new JLabel(value);
 			JLabel label = new JLabel(AnalysisServiceDisplay
 					.getDisplayString(model.getParameterName(taskIndex, i))
 					+ ":");
 			if (model.getInheritedTaskIndex(taskIndex, i) != -1) {
 				final int parameterIndex = i;
-				String value = "<html>Use <b>"
+				value = "<html>Use <b>"
 						+ model.getInheritedFile(taskIndex, i)
 						+ "</b> from <b>"
 						+ (1 + model.getInheritedTaskIndex(taskIndex, i))
