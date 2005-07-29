@@ -316,7 +316,9 @@ public class ViewPipeline extends JPanel {
 			JLabel label = new JLabel(AnalysisServiceDisplay
 					.getDisplayString(model.getParameterName(taskIndex, i))
 					+ ":");
-			if (model.getInheritedTaskIndex(taskIndex, i) != -1) {
+			if(model.isPromptWhenRun(taskIndex, i)) {
+				field.setText("Prompt when run");
+			} else if (model.getInheritedTaskIndex(taskIndex, i) != -1) {
 				final int parameterIndex = i;
 				value = "<html>Use <b>"
 						+ model.getInheritedFile(taskIndex, i)
