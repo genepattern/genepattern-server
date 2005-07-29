@@ -138,7 +138,11 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 		resetButton.addActionListener(new ResetActionListener());
 		buttonPanel.add(resetButton);
 		JButton helpButton = new JButton("Help");
-		helpButton.addActionListener(new TaskHelpActionListener(this.selectedService));
+		
+		TaskHelpActionListener tsl = new TaskHelpActionListener();
+		tsl.setTaskInfo(selectedService.getTaskInfo());
+		helpButton.addActionListener(tsl);
+		
 		buttonPanel.add(helpButton);
 
 		if (TaskLauncher.isPipeline(selectedService)) {
