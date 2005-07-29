@@ -1,5 +1,6 @@
 package org.genepattern.gpge.ui.tasks.pipeline;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +30,8 @@ public class PipelineEditorModel {
 
 	/** pipeline description */
 	private String description;
+
+	private String userId;
 
 	private AnalysisService pipelineAnalysisService;
 
@@ -280,59 +283,100 @@ public class PipelineEditorModel {
 		PipelineModel pipelineModel = new PipelineModel();
 		pipelineModel.setName(pipelineName);
 		pipelineModel.setDescription(description);
-		pipelineModel.setAuthor("");
-		pipelineModel.setUserid("");
+		// FIXME
+		userId = "jgould";
+		pipelineModel.setAuthor(userId);
+		pipelineModel.setUserid(userId);
+		HashMap promptWhenRunAttrs = new HashMap();
+		promptWhenRunAttrs.put("runTimePrompt", "1");
+
+		HashMap emptyAttrs = new HashMap();
 
 		List pipelineParameterInfoList = new ArrayList();
 		for (int i = 0; i < getTaskCount(); i++) {
-			ParameterInfo[] jsParameterInfoArray = new ParameterInfo[getParameterCount(i)];
-			for (int j = 0; j < getParameterCount(i); j++) {
-				ParameterInfo p = new ParameterInfo(getParameterName(i, j),
-						getValue(i, j), "");
-				if (isPromptWhenRun(i, j)) {
-					HashMap attrs = new HashMap();
-					attrs.put("runTimePrompt", "1");
-					p.setAttributes(attrs);
-
-					ParameterInfo pipelineParam = new ParameterInfo(
-							getParameterName(i, j), getValue(i, j), ""); // FIXME
-					pipelineParameterInfoList.add(pipelineParam);
-				}
-			}
 			TaskInfo taskInfo = ((MyTask) tasks.get(i)).formalTaskInfo;
+
 			JobSubmission js = new JobSubmission(getTaskName(i),
 					getTaskDescription(i), (String) taskInfo
 							.getTaskInfoAttributes().get(GPConstants.LSID),
-					jsParameterInfoArray, null, TaskLauncher
-							.isVisualizer(taskInfo), null);
+					null, null, TaskLauncher.isVisualizer(taskInfo), null);
+
+			for (int j = 0; j < getParameterCount(i); j++) {
+				String value = getValue(i, j);
+				ParameterInfo p = new ParameterInfo(getParameterName(i, j), "",
+						"");
+
+				int inheritedTaskIndex = getInheritedTaskIndex(i, j);
+				if (inheritedTaskIndex != -1) {
+					HashMap attrs = new HashMap();
+					String inheritedFile = getInheritedFile(i, j);
+					if ("1st output".equals(inheritedFile)) {
+						inheritedFile = "1";
+					} else if ("2nd output".equals(inheritedFile)) {
+						inheritedFile = "2";
+					} else if ("3rd output".equals(inheritedFile)) {
+						inheritedFile = "3";
+					} else if ("4th output".equals(inheritedFile)) {
+						inheritedFile = "4";
+					}
+					attrs.put(PipelineModel.INHERIT_FILENAME, inheritedFile);
+					attrs.put(PipelineModel.INHERIT_TASKNAME, String
+							.valueOf(inheritedTaskIndex - 1));
+					p.setAttributes(attrs);
+				} else if (isPromptWhenRun(i, j)) {
+					p.setAttributes(promptWhenRunAttrs);
+					ParameterInfo pipelineParam = new ParameterInfo(
+							getTaskName(i) + (i + 1) + "."
+									+ getParameterName(i, j), getValue(i, j),
+							"");
+					pipelineParam.setAttributes(promptWhenRunAttrs);
+					pipelineParameterInfoList.add(pipelineParam);
+				} else if (isInputFile(i, j)) {
+					File file = new File(value);
+					if (file.exists()) {
+						value = "<GenePatternURL>getFile.jsp?task=<LSID>&file="
+								+ file.getName();
+					}
+					p.setValue(value);
+					p.setAttributes(emptyAttrs);
+				} else {
+					p.setValue(value);
+					p.setAttributes(emptyAttrs);
+				}
+				js.addParameter(p);
+			}
+
 			pipelineModel.addTask(js);
 
 		}
 		TaskInfo pipelineTaskInfo = new TaskInfo();
 		pipelineTaskInfo.setName(pipelineName);
 		pipelineTaskInfo.setDescription(description);
-		pipelineTaskInfo.setUserId("");
+		pipelineTaskInfo.setUserId(userId);
 		pipelineTaskInfo.setAccessId(GPConstants.ACCESS_PUBLIC);
 		pipelineTaskInfo
 				.setParameterInfoArray((ParameterInfo[]) pipelineParameterInfoList
 						.toArray(new ParameterInfo[0]));
 		HashMap taskInfoAttrs = new HashMap();
-		taskInfoAttrs.put("version", "");
+		taskInfoAttrs.put("version", ""); // FIXME
 		taskInfoAttrs.put("taskType", "pipeline");
 		taskInfoAttrs.put("os", "any");
 		taskInfoAttrs.put("cpuType", "any");
-		taskInfoAttrs
-				.put(
-						"commandLine",
-						"<java> -cp <pipeline.cp> -Ddecorator=<pipeline.decorator> -Dgenepattern.properties=<resources> -DLSID=<LSID> <pipeline.main> <GenePatternURL>getPipelineModel.jsp?name=<LSID>&userid=<userid> <userid>");
+		StringBuffer baseCmdLine = new StringBuffer(
+				"<java> -cp <pipeline.cp> -Ddecorator=<pipeline.decorator> -Dgenepattern.properties=<resources> -DLSID=<LSID> <pipeline.main> <GenePatternURL>getPipelineModel.jsp?name=<LSID>&userid=<userid> <userid>");
+		for (int i = 0; i < pipelineParameterInfoList.size(); i++) {
+			ParameterInfo p = (ParameterInfo) pipelineParameterInfoList.get(i);
+			baseCmdLine.append(" " + p.getName() + "=<" + p.getName() + ">");
+		}
+		taskInfoAttrs.put("commandLine", baseCmdLine.toString());
 		taskInfoAttrs.put("JVMLevel", "1.4");
-		taskInfoAttrs.put("LSID", "");
+		taskInfoAttrs.put("LSID", pipelineAnalysisService.getTaskInfo()
+				.getTaskInfoAttributes().get(GPConstants.LSID));
 		taskInfoAttrs.put("serializedModel", pipelineModel.toXML());
 		taskInfoAttrs.put("language", "Java");
 		pipelineTaskInfo.setTaskInfoAttributes(taskInfoAttrs);
-		/**
-		 * userid=gp-help@broad.mit.edu author=GenePattern
-		 */
+		System.out.println(taskInfoAttrs);
+		System.out.print(pipelineParameterInfoList);
 		return pipelineTaskInfo;
 	}
 
@@ -376,7 +420,13 @@ public class PipelineEditorModel {
 	public String getInheritedFile(int taskIndex, int parameterIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
 		MyParameter p = task.getParameter(parameterIndex);
-		return p.getUIInheritedOutputFileName();
+		return p.inheritedOutputFileName;
+	}
+
+	public boolean isRequired(int taskIndex, int parameterIndex) {
+		MyTask task = (MyTask) tasks.get(taskIndex);
+		MyParameter p = task.getParameter(parameterIndex);
+		return p.isRequired;
 	}
 
 	public boolean isPromptWhenRun(int taskIndex, int parameterIndex) {
@@ -417,6 +467,25 @@ public class PipelineEditorModel {
 		return p.value;
 	}
 
+	public void setValue(int taskIndex, int parameterIndex, String value) {
+		MyTask task = (MyTask) tasks.get(taskIndex);
+		MyParameter p = task.getParameter(parameterIndex);
+		p.setValue(value);
+	}
+
+	public void setPromptWhenRun(int taskIndex, int parameterIndex) {
+		MyTask task = (MyTask) tasks.get(taskIndex);
+		MyParameter p = task.getParameter(parameterIndex);
+		p.setPromptWhenRun();
+	}
+
+	public void setInheritedFile(int taskIndex, int parameterIndex,
+			int inheritedTaskIndex, String inheritedName) {
+		MyTask task = (MyTask) tasks.get(taskIndex);
+		MyParameter p = task.getParameter(parameterIndex);
+		p.setInheritOutput(inheritedTaskIndex, inheritedName);
+	}
+
 	public String getPipelineName() {
 		return pipelineName;
 	}
@@ -428,19 +497,21 @@ public class PipelineEditorModel {
 	}
 
 	private static class MyParameter {
-		boolean isPromptWhenRun;
+		private boolean isPromptWhenRun;
 
-		ParameterChoice[] choiceItems;
+		private final ParameterChoice[] choiceItems;
 
-		String name;
+		private final String name;
 
-		String value;
+		private String value;
 
-		int inheritedTaskIndex = -1;
+		private int inheritedTaskIndex = -1;
 
-		String inheritedOutputFileName;
+		private String inheritedOutputFileName;
 
-		boolean isInputFile;
+		private final boolean isInputFile;
+
+		private final boolean isRequired;
 
 		public String toString() {
 			StringBuffer sb = new StringBuffer();
@@ -452,111 +523,128 @@ public class PipelineEditorModel {
 			return sb.toString();
 		}
 
-		public String getUIInheritedOutputFileName() {
-			if (inheritedOutputFileName.equals("1")) {
-				return "1st output";
-			} else if (inheritedOutputFileName.equals("2")) {
-				return "2nd output";
-			} else if (inheritedOutputFileName.equals("3")) {
-				return "3rd output";
-			} else if (inheritedOutputFileName.equals("4")) {
-				return "4th output";
-			} else if (inheritedOutputFileName.equals("stdout")) {
-				return "standard output";
-			} else if (inheritedOutputFileName.equals("stderr")) {
-				return "standard error";
-			} else {
-				return inheritedOutputFileName;
-			}
+		public void setPromptWhenRun() {
+			isPromptWhenRun = true;
+			value = null;
+			inheritedTaskIndex = -1;
+			inheritedOutputFileName = null;
+
 		}
 
-		public ParameterInfo createJobSubmissionParameter() {
-			return null;
+		public void setValue(String s) {
+			value = s;
+			/*
+			 * if (value .startsWith("<GenePatternURL>getFile.jsp?task=<LSID>&file=")) {
+			 * value = value.substring( "<GenePatternURL>getFile.jsp?task=<LSID>&file="
+			 * .length(), value.length()); }
+			 */
+			inheritedOutputFileName = null;
+			inheritedTaskIndex = -1;
+			isPromptWhenRun = false;
+		}
+
+		public void setInheritOutput(int taskIndex,
+				String _inheritedOutputFileName) {
+			this.inheritedTaskIndex = taskIndex;
+			value = null;
+			isPromptWhenRun = false;
+			if (_inheritedOutputFileName.equals("1")) {
+				inheritedOutputFileName = "1st output";
+			} else if (_inheritedOutputFileName.equals("2")) {
+				inheritedOutputFileName = "2nd output";
+			} else if (_inheritedOutputFileName.equals("3")) {
+				inheritedOutputFileName = "3rd output";
+			} else if (_inheritedOutputFileName.equals("4")) {
+				inheritedOutputFileName = "4th output";
+			} else if (_inheritedOutputFileName.equals("stdout")) {
+				inheritedOutputFileName = "standard output";
+			} else if (_inheritedOutputFileName.equals("stderr")) {
+				inheritedOutputFileName = "standard error";
+			} else {
+				inheritedOutputFileName = _inheritedOutputFileName;
+			}
+
 		}
 
 		public MyParameter(ParameterInfo formalParam) {
 			name = formalParam.getName();
 			value = (String) formalParam.getAttributes().get(
-					ParameterInfo.DEFAULT);
+					GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 			isInputFile = formalParam.isInputFile();
-			String[] choices = formalParam.getValue().split(
-					GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-			if (choices.length > 1) {
-				choiceItems = new ParameterChoice[choices.length];
-				for (int i = 0; i < choices.length; i++) {
-					choiceItems[i] = ParameterChoice.createChoice(choices[i]);
+			ParameterChoice[] _choiceItems = null;
+			if (!isInputFile) {
+				String[] choices = formalParam.getValue().split(
+						GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+				if (choices.length > 1) {
+					_choiceItems = new ParameterChoice[choices.length];
+					for (int i = 0; i < choices.length; i++) {
+						_choiceItems[i] = ParameterChoice
+								.createChoice(choices[i]);
+					}
 				}
 			}
+			choiceItems = _choiceItems;
+			String optional = (String) formalParam.getAttributes().get(
+					GPConstants.PARAM_INFO_OPTIONAL[0]);
+			isRequired = !"on".equalsIgnoreCase(optional);
+
 		}
 
 		public MyParameter(ParameterInfo formalParam, JobSubmission js,
 				int indexInJobSubmission) {
 			this.isInputFile = formalParam.isInputFile();
+			String optional = (String) formalParam.getAttributes().get(
+					GPConstants.PARAM_INFO_OPTIONAL[0]);
+			isRequired = !"on".equalsIgnoreCase(optional);
 			ParameterInfo jobSubmissionParam = (ParameterInfo) js
 					.getParameters().get(indexInJobSubmission);
 			this.name = jobSubmissionParam.getName();
-			if (indexInJobSubmission == -1) {
-				/*
-				 * value = (String) formalParam.getAttributes().get(
-				 * GPConstants.PARAM_INFO_DEFAULT_VALUE[0]); if (value == null) {
-				 * value = ""; } js.getParameters().add(new ParameterInfo(name,
-				 * value, "")); boolean[] newRuntimePrompt = new
-				 * boolean[runtimePrompt.length + 1]; for (int k = 0; k <
-				 * runtimePrompt.length; k++) { newRuntimePrompt[k] =
-				 * runtimePrompt[k]; } newRuntimePrompt[newRuntimePrompt.length -
-				 * 1] = false; js.setRuntimePrompt(newRuntimePrompt);
-				 */
-			} else {
+			ParameterChoice[] _choiceItems = null;
 
-				boolean[] runtimePrompt = js.getRuntimePrompt();
-				if (formalParam.isInputFile()) {
-					java.util.Map pipelineAttributes = jobSubmissionParam
-							.getAttributes();
+			if (formalParam.isInputFile()) {
+				java.util.Map pipelineAttributes = jobSubmissionParam
+						.getAttributes();
 
-					String taskNumberString = null;
-					if (pipelineAttributes != null) {
-						taskNumberString = (String) pipelineAttributes
-								.get(PipelineModel.INHERIT_TASKNAME);
-					}
-					if ((indexInJobSubmission < runtimePrompt.length)
-							&& (runtimePrompt[indexInJobSubmission])) {
-						isPromptWhenRun = true;
-						value = "Prompt when run";
-					} else if (taskNumberString != null) {
-						inheritedTaskIndex = Integer.parseInt(taskNumberString
-								.trim());
+				String taskNumberString = null;
+				if (pipelineAttributes != null) {
+					taskNumberString = (String) pipelineAttributes
+							.get(PipelineModel.INHERIT_TASKNAME);
+					if (taskNumberString != null) {
+						int inheritedTaskIndex = Integer
+								.parseInt(taskNumberString.trim());
 						String outputFileNumber = (String) pipelineAttributes
 								.get(PipelineModel.INHERIT_FILENAME);
-
-						inheritedOutputFileName = outputFileNumber;
+						setInheritOutput(inheritedTaskIndex, outputFileNumber);
 
 					} else {
-						value = jobSubmissionParam.getValue();
-						if (value
-								.startsWith("<GenePatternURL>getFile.jsp?task=<LSID>&file=")) {
-							value = value.substring(
-									"<GenePatternURL>getFile.jsp?task=<LSID>&file="
-											.length(), value.length());
-						}
+						setValue(jobSubmissionParam.getValue());
 					}
-
-				} else {
-					value = jobSubmissionParam.getValue(); // can be command
-					// line value
-					// can be command line value
-					// instead of UI value
-					String[] choices = formalParam.getValue().split(
-							GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-					if (choices.length > 1) {
-						choiceItems = new ParameterChoice[choices.length];
-						for (int i = 0; i < choices.length; i++) {
-							choiceItems[i] = ParameterChoice
-									.createChoice(choices[i]);
-						}
-					}
-
 				}
+
+			} else {
+				value = jobSubmissionParam.getValue(); // can be command
+				// line value
+				// can be command line value
+				// instead of UI value
+				String[] choices = formalParam.getValue().split(
+						GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+				if (choices.length > 1) {
+					_choiceItems = new ParameterChoice[choices.length];
+					for (int i = 0; i < choices.length; i++) {
+						_choiceItems[i] = ParameterChoice
+								.createChoice(choices[i]);
+					}
+				}
+
 			}
+			boolean[] runtimePrompt = js.getRuntimePrompt();
+
+			if ((indexInJobSubmission < runtimePrompt.length)
+					&& (runtimePrompt[indexInJobSubmission])) {
+				setPromptWhenRun();
+			}
+
+			choiceItems = _choiceItems;
 		}
 	}
 
