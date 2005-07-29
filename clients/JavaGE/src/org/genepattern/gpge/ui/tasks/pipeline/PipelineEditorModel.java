@@ -7,17 +7,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.event.EventListenerList;
+
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
 import org.genepattern.gpge.ui.tasks.ParameterChoice;
+import org.genepattern.gpge.ui.tasks.TaskLauncher;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
 public class PipelineEditorModel {
 
-	/** list of MyTask objects*/
+	/** list of MyTask objects */
 	private List tasks;
 
 	/** pipeline name */
@@ -26,8 +30,22 @@ public class PipelineEditorModel {
 	/** pipeline description */
 	private String description;
 
-	public PipelineEditorModel(TaskInfo _pipelineTaskInfo, PipelineModel model) {
+	private AnalysisService pipelineAnalysisService;
 
+	private EventListenerList listenerList;
+
+	public void addPipelineListener(PipelineListener l) {
+		listenerList.add(PipelineListener.class, l);
+	}
+
+	public void removePipelineListener(PipelineListener l) {
+		listenerList.remove(PipelineListener.class, l);
+	}
+
+	public PipelineEditorModel(AnalysisService svc, PipelineModel model)
+			throws JobSubmissionsNotFoundException {
+		this.pipelineAnalysisService = svc;
+		listenerList = new EventListenerList();
 		pipelineName = model.getName();
 		description = model.getDescription();
 
@@ -39,11 +57,16 @@ public class PipelineEditorModel {
 		tasks = new ArrayList();
 		AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
 		List jobSubmissions = model.getTasks();
+		List missingTasks = new ArrayList();
 		for (int i = 0; i < jobSubmissions.size(); i++) {
 			JobSubmission js = (JobSubmission) jobSubmissions.get(i);
 			TaskInfo formalTask = asm.getAnalysisService(js.getLSID())
 					.getTaskInfo();
 
+			if (formalTask == null) {
+				missingTasks.add(js);
+				continue;
+			}
 			MyTask myTask = new MyTask(formalTask, js.getDescription());
 			tasks.add(myTask);
 			Map paramName2ParamIndex = new HashMap();
@@ -60,7 +83,8 @@ public class PipelineEditorModel {
 					Integer index = (Integer) paramName2ParamIndex
 							.get(formalParam.getName());
 					if (index == null) {
-						throw new IllegalArgumentException("Missing parameter "
+						throw new IllegalArgumentException((i + 1) + ". "
+								+ js.getName() + " is missing parameter "
 								+ formalParam.getName());
 					}
 					int indexInJobSubmission = index.intValue();
@@ -68,15 +92,182 @@ public class PipelineEditorModel {
 							indexInJobSubmission));
 				}
 			}
-
+		}
+		if (missingTasks.size() > 0) {
+			throw new JobSubmissionsNotFoundException(missingTasks);
 		}
 	}
 
-	
-	public void delete(int index) {
+	public void move(int from, int to) {
+		if (from < to) {
+			moveDown(from, to);
+		} else if (from > to) {
+			moveUp(from, to);
+		}
 	}
 
-	public void move(int from, int to) {
+	void moveDown(int from, int to) {
+		for (int i = from + 1; i < getTaskCount(); i++) {
+			MyTask task = (MyTask) tasks.get(i);
+			for (int j = 0; j < getParameterCount(i); j++) {
+				MyParameter p = (MyParameter) task.parameters.get(j);
+				if (p.inheritedTaskIndex == from && i < to) { // task
+					// lost
+					// inheritance
+					p.inheritedTaskIndex = -1;
+					p.inheritedOutputFileName = null;
+					p.value = null;
+				} else if (p.inheritedTaskIndex == from) {
+					p.inheritedTaskIndex = to;
+				} else if (p.inheritedTaskIndex > from
+						&& p.inheritedTaskIndex <= to) { // tasks > from
+					// and <= to
+					// have task
+					// number
+					// decreased by
+					// 1
+					p.inheritedTaskIndex--;
+				}
+			}
+		}
+		MyTask task = (MyTask) tasks.remove(from);
+		tasks.add(to, task);
+		notifyListeners();
+	}
+
+	void moveUp(int from, int to) {
+		for (int i = from + 1; i < getTaskCount(); i++) {
+			MyTask task = (MyTask) tasks.get(i);
+			for (int j = 0; j < getParameterCount(i); j++) {
+				MyParameter p = (MyParameter) task.parameters.get(j);
+				if (p.inheritedTaskIndex == from) { // task inherits
+					p.inheritedTaskIndex = to;
+				} else if (p.inheritedTaskIndex >= to
+						&& p.inheritedTaskIndex < from) { // tasks >= to
+					p.inheritedTaskIndex++;
+					// and < from
+					// have task
+					// number
+					// increased by
+					// 1
+
+				}
+			}
+		}
+		MyTask movedTask = (MyTask) tasks.get(from);
+		for (int j = 0; j < getParameterCount(from); j++) {
+			MyParameter p = (MyParameter) movedTask.parameters.get(j);
+			if (p.inheritedTaskIndex >= to) {
+				p.inheritedTaskIndex = -1;
+				p.inheritedOutputFileName = null;
+				p.value = null;
+				// moved
+				// task
+				// inherits
+				// from
+				// a
+				// task that is > to then moved
+				// task loses inheritance
+			}
+		}
+		for (int i = to; i < from; i++) {
+			MyTask task = (MyTask) tasks.get(i);
+			for (int j = 0; j < getParameterCount(i); j++) {
+				MyParameter p = (MyParameter) task.parameters.get(j);
+				if (p.inheritedTaskIndex >= to) {
+					p.inheritedTaskIndex++;
+				}
+			}
+		}
+		MyTask task = (MyTask) tasks.remove(from);
+		tasks.add(to, task);
+		notifyListeners();
+	}
+
+	public void add(final int taskIndex, TaskInfo t) {
+		for (int i = taskIndex + 1; i < getTaskCount(); i++) {
+			MyTask task = (MyTask) tasks.get(i);
+			for (int j = 0; j < getParameterCount(i); j++) {
+				MyParameter p = (MyParameter) task.parameters.get(j);
+				if (p.inheritedTaskIndex >= taskIndex) { // task inherits
+					// from a task that
+					// was at index or
+					// later
+					p.inheritedTaskIndex++;
+					// increase
+					// task
+					// number
+					// by
+					// one
+				}
+			}
+		}
+
+		ParameterInfo[] formalParams = t.getParameterInfoArray();
+		MyTask myTask = new MyTask(t, t.getDescription());
+		if (formalParams != null) {
+			for (int j = 0; j < formalParams.length; j++) {
+				ParameterInfo formalParam = formalParams[j];
+				myTask.addParameter(new MyParameter(formalParam));
+			}
+		}
+
+		tasks.add(taskIndex, myTask);
+		notifyListeners();
+	}
+
+	protected void notifyListeners() {
+		Object[] listeners = listenerList.getListenerList();
+		PipelineEvent e = null;
+		// Process the listeners last to first, notifying
+		// those that are interested in this event
+		for (int i = listeners.length - 2; i >= 0; i -= 2) {
+			if (listeners[i] == PipelineListener.class) {
+				// Lazily create the event:
+				if (e == null) {
+					e = new PipelineEvent(this);
+				}
+
+				((PipelineListener) listeners[i + 1]).pipelineChanged(e);
+			}
+		}
+	}
+
+	public void remove(final int taskIndex) {
+		// check if subsequent tasks inherit from removed task or subsequent
+		// tasks
+		for (int i = taskIndex + 1; i < getTaskCount(); i++) {
+			MyTask task = (MyTask) tasks.get(i);
+			for (int j = 0; j < getParameterCount(i); j++) {
+				MyParameter p = (MyParameter) task.parameters.get(j);
+				if (p.inheritedTaskIndex == taskIndex) { // lost inheritance
+					p.inheritedTaskIndex = -1;
+					p.inheritedOutputFileName = null;
+					p.value = null;
+				} else if (p.inheritedTaskIndex > taskIndex) { // inherits
+					// from
+					// a task that
+					// comes after
+					// deleted task
+					p.inheritedTaskIndex--; // decrease
+					// task
+					// number
+					// by
+					// one
+
+				}
+			}
+		}
+		tasks.remove(taskIndex);
+		notifyListeners();
+	}
+
+	public TaskInfo getPipelineTaskInfo() {
+		return pipelineAnalysisService.getTaskInfo();
+	}
+
+	public AnalysisService getPipelineAnalysisService() {
+		return pipelineAnalysisService;
 	}
 
 	void print() {
@@ -85,18 +276,69 @@ public class PipelineEditorModel {
 		}
 	}
 
-	public void addTask(int index, TaskInfo taskInfo) {
+	public TaskInfo toTaskInfo() {
+		PipelineModel pipelineModel = new PipelineModel();
+		pipelineModel.setName(pipelineName);
+		pipelineModel.setDescription(description);
+		pipelineModel.setAuthor("");
+		pipelineModel.setUserid("");
+
+		List pipelineParameterInfoList = new ArrayList();
+		for (int i = 0; i < getTaskCount(); i++) {
+			ParameterInfo[] jsParameterInfoArray = new ParameterInfo[getParameterCount(i)];
+			for (int j = 0; j < getParameterCount(i); j++) {
+				ParameterInfo p = new ParameterInfo(getParameterName(i, j),
+						getValue(i, j), "");
+				if (isPromptWhenRun(i, j)) {
+					HashMap attrs = new HashMap();
+					attrs.put("runTimePrompt", "1");
+					p.setAttributes(attrs);
+
+					ParameterInfo pipelineParam = new ParameterInfo(
+							getParameterName(i, j), getValue(i, j), ""); // FIXME
+					pipelineParameterInfoList.add(pipelineParam);
+				}
+			}
+			TaskInfo taskInfo = ((MyTask) tasks.get(i)).formalTaskInfo;
+			JobSubmission js = new JobSubmission(getTaskName(i),
+					getTaskDescription(i), (String) taskInfo
+							.getTaskInfoAttributes().get(GPConstants.LSID),
+					jsParameterInfoArray, null, TaskLauncher
+							.isVisualizer(taskInfo), null);
+			pipelineModel.addTask(js);
+
+		}
+		TaskInfo pipelineTaskInfo = new TaskInfo();
+		pipelineTaskInfo.setName(pipelineName);
+		pipelineTaskInfo.setDescription(description);
+		pipelineTaskInfo.setUserId("");
+		pipelineTaskInfo.setAccessId(GPConstants.ACCESS_PUBLIC);
+		pipelineTaskInfo
+				.setParameterInfoArray((ParameterInfo[]) pipelineParameterInfoList
+						.toArray(new ParameterInfo[0]));
+		HashMap taskInfoAttrs = new HashMap();
+		taskInfoAttrs.put("version", "");
+		taskInfoAttrs.put("taskType", "pipeline");
+		taskInfoAttrs.put("os", "any");
+		taskInfoAttrs.put("cpuType", "any");
+		taskInfoAttrs
+				.put(
+						"commandLine",
+						"<java> -cp <pipeline.cp> -Ddecorator=<pipeline.decorator> -Dgenepattern.properties=<resources> -DLSID=<LSID> <pipeline.main> <GenePatternURL>getPipelineModel.jsp?name=<LSID>&userid=<userid> <userid>");
+		taskInfoAttrs.put("JVMLevel", "1.4");
+		taskInfoAttrs.put("LSID", "");
+		taskInfoAttrs.put("serializedModel", pipelineModel.toXML());
+		taskInfoAttrs.put("language", "Java");
+		pipelineTaskInfo.setTaskInfoAttributes(taskInfoAttrs);
+		/**
+		 * userid=gp-help@broad.mit.edu author=GenePattern
+		 */
+		return pipelineTaskInfo;
 	}
-	
-	public String toXML() {
-		return null;
-	}
-	
+
 	public int getTaskCount() {
 		return tasks.size();
 	}
-
-	
 
 	/**
 	 * 
@@ -202,11 +444,11 @@ public class PipelineEditorModel {
 
 		public String toString() {
 			StringBuffer sb = new StringBuffer();
-			sb.append("name:" + name);
-			sb.append("value:" + value);
-			sb.append("prompt when run:" + isPromptWhenRun);
-			sb.append("inherited index:" + inheritedTaskIndex);
-			sb.append("inherited name:" + inheritedOutputFileName);
+			sb.append("name: " + name);
+			sb.append(", value: " + value);
+			sb.append(", prompt when run: " + isPromptWhenRun);
+			sb.append(", inherited index: " + inheritedTaskIndex);
+			sb.append(", inherited name: " + inheritedOutputFileName);
 			return sb.toString();
 		}
 
@@ -230,6 +472,21 @@ public class PipelineEditorModel {
 
 		public ParameterInfo createJobSubmissionParameter() {
 			return null;
+		}
+
+		public MyParameter(ParameterInfo formalParam) {
+			name = formalParam.getName();
+			value = (String) formalParam.getAttributes().get(
+					ParameterInfo.DEFAULT);
+			isInputFile = formalParam.isInputFile();
+			String[] choices = formalParam.getValue().split(
+					GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+			if (choices.length > 1) {
+				choiceItems = new ParameterChoice[choices.length];
+				for (int i = 0; i < choices.length; i++) {
+					choiceItems[i] = ParameterChoice.createChoice(choices[i]);
+				}
+			}
 		}
 
 		public MyParameter(ParameterInfo formalParam, JobSubmission js,
@@ -264,6 +521,7 @@ public class PipelineEditorModel {
 					if ((indexInJobSubmission < runtimePrompt.length)
 							&& (runtimePrompt[indexInJobSubmission])) {
 						isPromptWhenRun = true;
+						value = "Prompt when run";
 					} else if (taskNumberString != null) {
 						inheritedTaskIndex = Integer.parseInt(taskNumberString
 								.trim());
@@ -320,8 +578,12 @@ public class PipelineEditorModel {
 		}
 
 		public List getOutputFileTypes() {
-			List outputs = Arrays.asList(((String) formalTaskInfo
-					.getTaskInfoAttributes().get("fileFormat")).split(";"));
+			String fileFormat = (String) formalTaskInfo.getTaskInfoAttributes()
+					.get("fileFormat");
+			if (fileFormat == null) {
+				return Collections.EMPTY_LIST;
+			}
+			List outputs = Arrays.asList(fileFormat.split(";"));
 			Collections.sort(outputs, String.CASE_INSENSITIVE_ORDER);
 			return outputs;
 		}
@@ -343,7 +605,5 @@ public class PipelineEditorModel {
 		}
 
 	}
-
-	
 
 }
