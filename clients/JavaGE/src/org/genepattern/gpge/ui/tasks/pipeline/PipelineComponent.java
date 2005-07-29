@@ -1,7 +1,5 @@
 package org.genepattern.gpge.ui.tasks.pipeline;
 
-import gnu.trove.TIntArrayList;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -12,8 +10,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +19,6 @@ import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -33,33 +28,28 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 
-import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.ui.maindisplay.GroupPanel;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceDisplay;
-import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
 import org.genepattern.gpge.ui.tasks.ParameterChoice;
-import org.genepattern.gpge.ui.tasks.ParameterInfoPanel;
 import org.genepattern.gpge.ui.tasks.TaskDisplay;
 import org.genepattern.gpge.ui.tasks.TaskHelpActionListener;
 import org.genepattern.gpge.ui.tasks.TaskNamePanel;
 import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AnalysisService;
-import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskIntegratorProxy;
-import org.genepattern.webservice.WebServiceException;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
 // inherited task numbers start at 0, output files start at one,, names for params start at one
-public class PipelineComponent extends JPanel implements TaskDisplay {
+public class PipelineComponent extends JPanel implements TaskDisplay,
+		PipelineListener {
 	private static final boolean DEBUG = false;
 
 	private PipelineEditorModel model;
@@ -69,8 +59,6 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 	private FormLayout tasksLayout;
 
 	private ArrayList togglePanelList = new ArrayList();
-
-	private AnalysisService analysisService;
 
 	private JPanel buttonPanel;
 
@@ -83,6 +71,8 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 	private JComboBox tasksInPipelineComboBox;
 
 	private JScrollPane scrollPane;
+
+	private TaskHelpActionListener taskHelpActionListener;
 
 	/**
 	 * Currently only one instance should be created by the ViewManager
@@ -120,6 +110,8 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 				addBeforeButton.setEnabled(index != 0);
 				addButton.setEnabled(index != cb.getItemCount() - 1
 						|| cb.getItemCount() == 1);
+				moveDownButton.setEnabled((index + 1) != model.getTaskCount());
+				moveUpButton.setEnabled(index > 0);
 
 			}
 		});
@@ -133,7 +125,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 				} else if (e.getSource() == addBeforeButton) {
 					showAddTask(index, false);
 				} else if (e.getSource() == deleteButton) {
-					model.delete(index);
+					model.remove(index);
 					// editor.delete(index);
 					// setPipeline(editor.getTaskInfo(),
 					// editor.getPipelineModel());
@@ -198,8 +190,8 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 		final JButton runButton = new JButton("Run");
 		final JButton viewButton = new JButton("View");
 		final JButton helpButton = new JButton("Help");
-		helpButton
-				.addActionListener(new TaskHelpActionListener(analysisService));
+		taskHelpActionListener = new TaskHelpActionListener();
+		helpButton.addActionListener(taskHelpActionListener);
 
 		ActionListener btnListener = new ActionListener() {
 
@@ -213,9 +205,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 					 * .getParameterInfoArray(); if (formalParams == null) {
 					 * formalParams = new ParameterInfo[0]; } for (int j = 0; j <
 					 * formalParams.length; j++) { ParameterInfo p =
-					 * formalParams[j];
-					 *  }
-					 *  }
+					 * formalParams[j]; } }
 					 * 
 					 * pipelineTaskInfo.getTaskInfoAttributes()
 					 * .put(PipelineModel.PIPELINE_MODEL,
@@ -235,17 +225,19 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 					 * saving the pipeline."); } }
 					 */
 				} else if (e.getSource() == runButton) {
+					// FIXME
 					MessageManager
 							.notifyListeners(new ChangeViewMessageRequest(
 									this,
 									ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST,
-									analysisService));
+									null));
 				} else if (e.getSource() == viewButton) {
 					MessageManager
 							.notifyListeners(new ChangeViewMessageRequest(
 									this,
 									ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST,
-									analysisService));
+									null));
+					// FIXME
 				}
 			}
 
@@ -300,13 +292,12 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 	}
 
 	public void display(AnalysisService svc) {
-		this.analysisService = svc;
 		TaskInfo info = svc.getTaskInfo();
 		try {
 			PipelineModel pipelineModel = PipelineModel
 					.toPipelineModel((String) info.getTaskInfoAttributes().get(
 							GPConstants.SERIALIZED_MODEL));
-			setPipeline(info, pipelineModel);
+			setPipeline(svc, pipelineModel);
 
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -316,26 +307,35 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 		}
 	}
 
-	private void setPipeline(TaskInfo _pipelineTaskInfo,
-			PipelineModel pipelineModel) {
-		reset();
-		model = new PipelineEditorModel(_pipelineTaskInfo, pipelineModel);
-		// editor = new PipelineEditor(pipelineTaskInfo, pipelineModel);
-		if (DEBUG) {
-			model.print();
+	private void setPipeline(AnalysisService svc, PipelineModel pipelineModel) {
+		try {
+			model = new PipelineEditorModel(svc, pipelineModel);
+			model.addPipelineListener(this);
+			if (DEBUG) {
+				model.print();
+			}
+
+			// show edit link when task has local authority and either belongs
+			// to
+			// current user or is public
+			layoutTasks();
+		} catch (JobSubmissionsNotFoundException e) {
+			e.printStackTrace();
+			// FIXME
 		}
+	}
 
-		// show edit link when task has local authority and either belongs to
-		// current user or is public
-
-		System.out.println(model.getTaskCount() + " Tasks");
+	private void layoutTasks() {
+		reset();
 		for (int i = 0; i < model.getTaskCount(); i++) {
 			layoutTask(i);
 			tasksInPipelineComboBox.addItem((i + 1) + ". "
 					+ model.getTaskName(i));
 		}
 
-		taskNamePanel = new TaskNamePanel(_pipelineTaskInfo,
+		// FIXME
+		taskNamePanel = new TaskNamePanel(model.getPipelineAnalysisService()
+				.getTaskInfo(),
 				ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST,
 				buttonPanel);
 
@@ -344,10 +344,10 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 		validate();
 		tasksPanel.invalidate();
 		tasksPanel.validate();
+
 	}
 
 	private void layoutTask(final int taskIndex) {
-		System.out.println("layoutTask" + taskIndex);
 		GroupPanel togglePanel = new GroupPanel((taskIndex + 1) + ". "
 				+ model.getTaskName(taskIndex), new JTextField(model
 				.getTaskDescription(taskIndex), 80));
@@ -377,7 +377,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 				} else if (e.getSource() == moveDownItem) {
 					model.move(taskIndex, taskIndex + 1);
 				} else if (e.getSource() == deleteItem) {
-					model.delete(taskIndex);
+					model.remove(taskIndex);
 				}
 			}
 		};
@@ -389,10 +389,15 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 		deleteItem.addActionListener(listener);
 
 		togglePanel.getMajorLabel().addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
+			public void mousePressed(MouseEvent e) {
 				moveDownItem
 						.setEnabled((taskIndex + 1) != model.getTaskCount());
 				moveUpItem.setEnabled(taskIndex > 0);
+				
+				addBeforeItem.setEnabled(taskIndex != 0);
+				addTaskAfterItem.setEnabled(taskIndex != model.getTaskCount() - 1
+						|| model.getTaskCount() == 1);
+				
 				if (e.isPopupTrigger()
 						|| e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 					popupMenu.show(e.getComponent(), e.getX(), e.getY());
@@ -415,7 +420,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 	}
 
 	void addTask(int index, AnalysisService svc) {
-		model.addTask(index, svc.getTaskInfo());
+		model.add(index, svc.getTaskInfo());
 	}
 
 	private void showAddTask(int jobSubmissionIndex, boolean addAfter) {
@@ -435,7 +440,6 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 				this, insertionIndex);
 	}
 
-
 	private void addTaskParameters(final int taskIndex, GroupPanel togglePanel) {
 
 		int startParameterRow = tasksLayout.getRowCount() + 1;
@@ -451,20 +455,20 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 			tasksPanel.add(label, cc.xy(1, tasksLayout.getRowCount(),
 					CellConstraints.RIGHT, CellConstraints.CENTER));
 
-		
 			if (model.isChoiceList(taskIndex, i)) {
-				JComboBox comboBox = new JComboBox(model.getChoices(taskIndex, i));
+				JComboBox comboBox = new JComboBox(model.getChoices(taskIndex,
+						i));
 				String value = model.getValue(taskIndex, i);
-				for(int j = 0; j < comboBox.getItemCount(); j++) {
-					if(((ParameterChoice) comboBox.getItemAt(j)).equalsCmdLineOrUIValue(value)) {
+				for (int j = 0; j < comboBox.getItemCount(); j++) {
+					if (((ParameterChoice) comboBox.getItemAt(j))
+							.equalsCmdLineOrUIValue(value)) {
 						comboBox.setSelectedIndex(j);
 						break;
 					}
 				}
 				comboBox.setSelectedItem(model.getValue(taskIndex, i));
-				tasksPanel.add(comboBox, cc.xy(3, tasksLayout
-						.getRowCount(), CellConstraints.LEFT,
-						CellConstraints.BOTTOM));
+				tasksPanel.add(comboBox, cc.xy(3, tasksLayout.getRowCount(),
+						CellConstraints.LEFT, CellConstraints.BOTTOM));
 				togglePanel.addToggleComponent(comboBox);
 			} else if (model.isInputFile(taskIndex, i)) {
 				final JTextField inputComponent = new JTextField(20);
@@ -474,7 +478,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 				FormLayout inputPanelLayout = new FormLayout(
 						"left:pref:none, left:pref:none, left:pref:none, left:pref:none, left:default:none",
 						"pref"); // input field, browse, task drop down,
-									// output file drop down, checkbox
+				// output file drop down, checkbox
 				inputPanel.setLayout(inputPanelLayout);
 
 				final JButton browseBtn = new JButton("Browse...");
@@ -579,7 +583,8 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 				}
 
 			} else {
-				JTextField inputComponent = new JTextField(model.getValue(taskIndex, i), 20);
+				JTextField inputComponent = new JTextField(model.getValue(
+						taskIndex, i), 20);
 				tasksPanel.add(inputComponent, cc.xy(3, tasksLayout
 						.getRowCount(), CellConstraints.LEFT,
 						CellConstraints.BOTTOM));
@@ -601,4 +606,10 @@ public class PipelineComponent extends JPanel implements TaskDisplay {
 		newRowGroups[newRowGroups.length - 1] = group;
 		tasksLayout.setRowGroups(newRowGroups);
 	}
+
+	public void pipelineChanged(PipelineEvent e) {
+		model.print();
+		layoutTasks();
+	}
+
 }
