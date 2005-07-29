@@ -366,17 +366,17 @@ public class ParameterInfoPanel extends JPanel {
 	protected final Component createComponent(final ParameterInfo info) {
 		String value = info.getValue();
 		Component field = null;
-		if (viewOnly) {
+		if(viewOnly) {
 			field = new JLabel(value);
-		} else if (value == null || value.equals("")) {
+		} else {
 			if (info.isInputFile()) {
 				inputFileParameters.add(info);
 				field = createInputFileField(info);
+			} else if(value.split(";").length > 1) {
+				field = createComboBox(info);
 			} else {
 				field = createTextInput(info);
 			}
-		} else {
-			field = createComboBox(info);
 		}
 		parameterName2ComponentMap.put(info.getName(), field);
 		return field;
@@ -500,8 +500,11 @@ public class ParameterInfoPanel extends JPanel {
 	 */
 	private static JComboBox createComboBox(ParameterInfo info) {
 		// get default
-		final String default_val = ((String) info.getAttributes().get(
-				GPConstants.PARAM_INFO_DEFAULT_VALUE[0])).trim();
+		Map attrs = info.getAttributes();
+		String default_val = null;
+		if(attrs!=null) {
+			default_val = (String) attrs.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
+		}
 		final StringTokenizer tokenizer = new StringTokenizer(info.getValue(),
 				";");
 		final JComboBox list = new JComboBox();
