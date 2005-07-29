@@ -309,7 +309,7 @@ public class ViewPipeline extends JPanel {
 
 			CellConstraints cc = new CellConstraints();
 			String value = model.getValue(taskIndex, i);
-			if(value.startsWith("<GenePatternURL>getFile.jsp?task=<LSID>&file=")) {
+			if(value !=null && value.startsWith("<GenePatternURL>getFile.jsp?task=<LSID>&file=")) {
 				value = value.substring("<GenePatternURL>getFile.jsp?task=<LSID>&file=".length(), value.length());
 			}
 			JLabel field = new JLabel(value);
