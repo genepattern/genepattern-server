@@ -6,28 +6,30 @@ import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.maindisplay.LSIDUtil;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskIntegratorProxy;
 import org.genepattern.webservice.WebServiceException;
 
 public class TaskHelpActionListener implements ActionListener {
-	private AnalysisService selectedService;
+	private TaskInfo taskInfo;
 
 	/** whether the <tt>selectedService</tt> has documentation */
 	private volatile boolean hasDocumentation;
 
-	public TaskHelpActionListener(AnalysisService svc) {
-		this.selectedService = svc;
+	
+	public void setTaskInfo(TaskInfo t) {
+		this.taskInfo = t;
 		hasDocumentation = true;
-		if (selectedService != null) {
+		if (taskInfo != null) {
 			new Thread() {
 				public void run() {
 					try {
 
 						String username = AnalysisServiceManager.getInstance()
 								.getUsername();
-						String server = selectedService.getServer();
-						String lsid = LSIDUtil.getTaskId(selectedService
-								.getTaskInfo());
+						String server = AnalysisServiceManager.getInstance()
+						.getServer();
+						String lsid = LSIDUtil.getTaskId(taskInfo);
 						String[] supportFileNames = new TaskIntegratorProxy(
 								server, username).getSupportFileNames(lsid);
 						hasDocumentation = supportFileNames != null
@@ -44,8 +46,9 @@ public class TaskHelpActionListener implements ActionListener {
 		try {
 			String username = AnalysisServiceManager.getInstance()
 					.getUsername();
-			String server = selectedService.getServer();
-			String lsid = LSIDUtil.getTaskId(selectedService.getTaskInfo());
+			String server = AnalysisServiceManager.getInstance()
+			.getServer();
+			String lsid = LSIDUtil.getTaskId(taskInfo);
 
 			if (hasDocumentation) {
 				String docURL = server + "/gp/getTaskDoc.jsp?name=" + lsid
@@ -53,7 +56,7 @@ public class TaskHelpActionListener implements ActionListener {
 						+ java.net.URLEncoder.encode(username, "UTF-8");
 				org.genepattern.util.BrowserLauncher.openURL(docURL);
 			} else {
-				GenePattern.showMessageDialog(selectedService.getTaskInfo()
+				GenePattern.showMessageDialog(taskInfo
 						.getName()
 						+ "has no documentation");
 			}
