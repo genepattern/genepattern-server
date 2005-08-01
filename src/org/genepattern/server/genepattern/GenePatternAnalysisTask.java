@@ -286,9 +286,13 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			Hashtable env = getEnv();
 
 			addTaskLibToPath(taskName, env, taskInfoAttributes.get(LSID));
-
+			JobInfo parentJI = getDS().getParent(jobInfo.getJobNumber());
+			int parent = -1;
+			if (parentJI != null){
+				parent = parentJI.getJobNumber();
+			} 
 			ParameterInfo[] params = jobInfo.getParameterInfoArray();
-			Properties props = setupProps(taskName, jobInfo.getJobNumber(),
+			Properties props = setupProps(taskName, parent, jobInfo.getJobNumber(), 
 					jobInfo.getTaskID(), taskInfoAttributes, params, env,
 					taskInfo.getParameterInfoArray(), jobInfo.getUserId());
 
@@ -473,7 +477,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 			// built-ins merged)
 
 			// build props again, now that downloaded files are set
-			props = setupProps(taskName, jobInfo.getJobNumber(), jobInfo
+			props = setupProps(taskName, parent, jobInfo.getJobNumber(), jobInfo
 					.getTaskID(), taskInfoAttributes, params, env, taskInfo
 					.getParameterInfoArray(), jobInfo.getUserId());
 
@@ -2011,7 +2015,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 	 * @return Properties Properties object with all substitution name/value
 	 *         pairs defined
 	 */
-	public Properties setupProps(String taskName, int jobNumber, int taskID,
+	public Properties setupProps(String taskName, int parentJobNumber, int jobNumber, int taskID,
 			TaskInfoAttributes taskInfoAttributes, ParameterInfo[] actuals,
 			Hashtable env, ParameterInfo[] formalParameters, String userID)
 			throws Exception {
@@ -2038,6 +2042,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 
 			props.put(NAME, taskName);
 			props.put(JOB_ID, Integer.toString(jobNumber));
+			props.put("parent_" + JOB_ID, Integer.toString(parentJobNumber));
 			props.put(TASK_ID, Integer.toString(taskID));
 			props.put(USERID, "" + userID);
 			String sLSID = taskInfoAttributes.get(LSID);
@@ -2644,7 +2649,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 		GenePatternAnalysisTask gp = new GenePatternAnalysisTask();
 		Vector vProblems = null;
 		try {
-			Properties props = gp.setupProps(taskName, 0, -1, tia, params,
+			Properties props = gp.setupProps(taskName, -1, 0, -1, tia, params,
 					GenePatternAnalysisTask.getEnv(), params, null);
 			vProblems = gp.validateParameters(props, taskName, tia
 					.get(COMMAND_LINE), params, params, false);

@@ -101,14 +101,17 @@ public class InstallTask {
 
 	protected String lsidVersion = "";
 
+	protected boolean deprecated = false;
+
 	public InstallTask(String userID, String manifestString,
 			String[] supportFiles, String installURL, long downloadSize,
-			long modificationTimestamp, String siteName) {
+			long modificationTimestamp, String siteName, boolean deprecated) {
 		this.userID = userID;
 		this.installURL = installURL;
 		this.downloadSize = downloadSize;
 		this.modificationTimestamp = modificationTimestamp;
 		this.siteName = siteName;
+		this.deprecated = deprecated;
 
 		String name;
 		String value;
@@ -302,6 +305,10 @@ public class InstallTask {
 		return lsidVersion;
 	}
 
+	public boolean isDeprecated(){
+		return deprecated;
+	}
+
 	// Date?
 	public long getModificationTimestamp() {
 		return modificationTimestamp;
@@ -379,7 +386,7 @@ public class InstallTask {
 		}
 		InstallTask task = new InstallTask(userID, InstallTask.loadManifest(
 				taskName, userID), supportFileURLs, installURL, zip.length(),
-				zip.lastModified(), "Broad");
+				zip.lastModified(), "Broad", false);
 		return task;
 	}
 

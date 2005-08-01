@@ -175,6 +175,12 @@ public class ModuleRepository {
 											.getAttribute("isexternal")))
 									: false;
 
+ 							boolean deprecated = c_elt.hasAttribute("deprecated") ? (boolean) (Boolean
+									.getBoolean(c_elt
+											.getAttribute("deprecated")))
+									: false;
+
+
 							Vector support_urls = new Vector();
 
 							NodeList children = c_node.getChildNodes();
@@ -203,7 +209,7 @@ public class ModuleRepository {
 							try {
 								InstallTask it = new InstallTask(null,
 										manifest, supportUrlArray, url,
-										fileSize, timestamp, siteName);
+										fileSize, timestamp, siteName, deprecated);
 								module_list.add(it);
 							} catch (Throwable t) {
 								System.err.println(t.getMessage());

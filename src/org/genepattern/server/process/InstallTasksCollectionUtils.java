@@ -37,10 +37,13 @@ public class InstallTasksCollectionUtils {
 	// get a list of all modules available for download
 	public InstallTask[] getAvailableModules() throws Exception {
 		String repositoryURL = System.getProperty("ModuleRepositoryURL");
+		boolean notFirstParam = (repositoryURL.indexOf("?") > 0);		
+		String paramPrefix = notFirstParam? "&" :"?";
+
 		if (initialInstall) {
-			repositoryURL = repositoryURL + "?initialInstall=1&GenePatternVersion=" + System.getProperty("GenePatternVersion");;
+			repositoryURL = repositoryURL + paramPrefix + "initialInstall=1&GenePatternVersion=" + System.getProperty("GenePatternVersion");;
 		} else {
-			repositoryURL = repositoryURL + "?GenePatternVersion=" + System.getProperty("GenePatternVersion");
+			repositoryURL = repositoryURL + paramPrefix + "GenePatternVersion=" + System.getProperty("GenePatternVersion");
 		}
 
 		Vector modules = new Vector();
