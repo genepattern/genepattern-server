@@ -1,4 +1,5 @@
 <%@ page import="java.io.File,
+		 java.util.*,
 		 java.io.IOException,
 		 java.util.Properties,
 		 java.util.Vector,
@@ -12,52 +13,33 @@
 		 org.genepattern.webservice.*,
 		 org.genepattern.server.handler.*,
 		 org.genepattern.server.webservice.*,
-		 com.jspsmart.upload.*,
 		 org.genepattern.util.LSID,
+		 org.apache.commons.fileupload.DiskFileUpload,
+		 org.apache.commons.fileupload.FileItem,
+		 org.apache.commons.fileupload.FileUpload,
 		 org.genepattern.server.webservice.server.local.*"
 	session="false" contentType="text/html" language="Java" buffer="1kb" %>
 <%
+System.out.println("-A-");
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
 %>
-<jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" />
+<%
+System.out.println("-B-");
+%>
 <html>
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
 <title>install GenePattern task from zip file</title>
-<script language="Javascript">
-var ie4 = (document.all) ? true : false;
-var ns4 = (document.layers) ? true : false;
-var ns6 = (document.getElementById && !document.all) ? true : false;
-
-function writeToLayer(lay,txt) {
-	if (ns6) {
-		over = document.getElementById([lay]);
-		range = document.createRange();
-		range.setStartBefore(over);
-		domfrag = range.createContextualFragment(txt);
-		while (over.hasChildNodes()) {
-			over.removeChild(over.lastChild);
-		}
-		over.appendChild(domfrag);
-	} else if (ns4) {
-		var l = document['id'+lay];
-		l.document.write(txt);
-		l.document.close();
-	} else if (ie4) {
-		document.all(lay).innerHTML = txt;
-	}
-
-}
-</script>
 </head>
 <body>	
 <jsp:include page="navbar.jsp"></jsp:include>
 <%
 
-out.flush();
+
+//out.flush();
 
 int i;
 String taskName = null;
@@ -69,38 +51,45 @@ String url = null;
 String attachmentDir;
 String filename = null;
 String lsid = null;
-com.jspsmart.upload.Request requestParameters = null;
+HashMap requestParameters = new HashMap();
 boolean isEncodedPost = true;
 int fileCount = 0;
-com.jspsmart.upload.File attachedFile = null;
+File attachedFile = null;
 String username = (String)request.getAttribute("userID");
 if (username == null || username.length() == 0) return; // come back after login
 // TODO: get values for access_id from task_access table in database
 
-// mySmartUpload is from http://www.jspsmart.com/
 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username, out);
+DiskFileUpload fub = new DiskFileUpload();
+isEncodedPost = FileUpload.isMultipartContent(request);
+List params = fub.parseRequest(request);
 
-mySmartUpload.initialize(pageContext);
-try {
-	mySmartUpload.upload();
-	requestParameters = mySmartUpload.getRequest();
-	url = requestParameters.getParameter("url");
-	isEncodedPost = (url == null);
-} catch (NegativeArraySizeException nase) {
-	// just means that this wasn't a form-encoded post
-	isEncodedPost = false;
-	url = request.getParameter("url"); // if this was not a form-encoded post
-} catch (Exception e) {
-	System.err.println(e + " during mySmartUpload.upload call in installZip.jsp");
-}
+System.out.println("-C-");
 
-if (url != null && (url.equals("http://") || url.length() == 0)) url = null;
-if (isEncodedPost) {
-	for (i=0;i<mySmartUpload.getFiles().getCount();i++) {
-		attachedFile = mySmartUpload.getFiles().getFile(i);
-		if (!attachedFile.isMissing()) fileCount++;
+for (Iterator iter = params.iterator(); iter.hasNext();){
+	FileItem fi = (FileItem) iter.next();
+System.out.println("-CC-" + fi.getFieldName());
+	if (fi.isFormField()){
+		requestParameters.put(fi.getFieldName(), fi.getString());
+	} else {
+		// it is the file
+		fileCount++;
+		System.out.println(fi.getFieldName() + "=" + fi.getName());
+		String name = fi.getName();
+		File zipFile = new File(System.getProperty("java.io.tmpdir"),name);
+		fi.write(zipFile);
+		requestParameters.put(fi.getFieldName(), zipFile);
+
 	}
+System.out.println("-CC- file written");
+
 }
+System.out.println("-DC-");
+
+url = (String)requestParameters.get("url");
+if (url != null && (url.equals("http://") || url.length() == 0)) url = null;
+
+System.out.println("-D-");
 
 if (fileCount == 0 && url == null) { %>
 	Please select a zip file for upload containing GenePattern manifest and optional support files<br>
@@ -111,76 +100,67 @@ if (fileCount == 0 && url == null) { %>
 <%
 	return;
 }
+System.out.println("-E-");
 if (isEncodedPost) {
-	for (i=0;i<mySmartUpload.getFiles().getCount();i++) {
-		attachedFile = mySmartUpload.getFiles().getFile(i);
-		if (attachedFile.isMissing()) continue;
-
+System.out.println("-F-");
+	attachedFile = (File)requestParameters.get("zipfile");
+	System.out.println("attachedFile="+ attachedFile);
+	attachmentName = attachedFile.getName();
+		
+		fullName = attachedFile.toString();
 		try {
-			attachmentName = attachedFile.getFileName();
-			if (attachmentName.trim().length() == 0) continue;
-
-			attachment = new File(System.getProperty("java.io.tmpdir"), attachmentName);
-			fullName = attachment.toString();
-			attachedFile.saveAs(fullName);
-			try {
-				taskName = attachmentName;
-				String privacy = requestParameters.getParameter(GPConstants.PRIVACY);
-				int access_id = (requestParameters.getParameter(GPConstants.PRIVACY) != null ? GPConstants.ACCESS_PRIVATE : GPConstants.ACCESS_PUBLIC);
+			taskName = attachmentName;
+			String privacy = (String)requestParameters.get(GPConstants.PRIVACY);
+			int access_id = (privacy != null ? GPConstants.ACCESS_PRIVATE : GPConstants.ACCESS_PUBLIC);
 						
-				try {
-					String fileURL = attachment.toURI().toURL().toString();
-					boolean askedRecursive = (requestParameters.getParameter("askedRecursive") != null);
-					boolean doRecursive = (requestParameters.getParameter("inclDependents") != null);
-					if (!askedRecursive &&
-		 			    taskIntegratorClient.isZipOfZips(fileURL)) {
- 						// see if user wants to install recursively or just the first entry
-						Vector vTaskInfos = GenePatternAnalysisTask.getZipOfZipsTaskInfos(attachment);
-						Enumeration vTasks = vTaskInfos.elements();
+			try {
+				String fileURL = attachedFile.toURI().toURL().toString();
+				boolean askedRecursive = ((String)requestParameters.get("askedRecursive") != null);
+				boolean doRecursive = ((String)requestParameters.get("inclDependents") != null);
+				if (!askedRecursive && taskIntegratorClient.isZipOfZips(fileURL)) {
+ 					// see if user wants to install recursively or just the first entry
+					Vector vTaskInfos = GenePatternAnalysisTask.getZipOfZipsTaskInfos(attachedFile);
+					Enumeration vTasks = vTaskInfos.elements();
 %>
-                	                	<form>
-	                        	        <input type="checkbox" name="inclDependents" checked> include all tasks used within <%= attachmentName %>?
-        	                        	<input type="hidden" name="url" value="<%= fileURL %>">
-						<input type="hidden" name="askedRecursive" value="true">
-                	                	<input type="submit" name="submit" value="install">
-						<br><br>
-						<table cols="2">
-						<tr><td valign="top" align="right"><%= attachmentName %> contents:</td>
-						<td valign="top" align="left">
+                	            <form>
+	                        <input type="checkbox" name="inclDependents" checked> include all tasks used within <%= attachmentName %>?
+        	                  <input type="hidden" name="url" value="<%= fileURL %>">
+					<input type="hidden" name="askedRecursive" value="true">
+                	            <input type="submit" name="submit" value="install">
+					<br><br>
+					<table cols="2">
+					<tr><td valign="top" align="right"><%= attachmentName %> contents:</td>
+					<td valign="top" align="left">
 <%
-						// skip the first one, it is the pipeline task itself
-						vTasks.nextElement();
-					    	for (i = 0; vTasks.hasMoreElements(); i++) {
-							TaskInfo ti = ((TaskInfo)vTasks.nextElement());
-							TaskInfoAttributes tia = ti.giveTaskInfoAttributes();
-							LSID l = new LSID((String)tia.get(GPConstants.LSID));
+					// skip the first one, it is the pipeline task itself
+					vTasks.nextElement();
+					for (i = 0; vTasks.hasMoreElements(); i++) {
+						TaskInfo ti = ((TaskInfo)vTasks.nextElement());
+						TaskInfoAttributes tia = ti.giveTaskInfoAttributes();
+						LSID l = new LSID((String)tia.get(GPConstants.LSID));
 %>
-							<%= ti.getName() %> version <%= l.getVersion() %><br>
-<%						} %>
-						</td></tr></table>
-	                        	        </form>
-        	                        	<jsp:include page="footer.jsp"></jsp:include>
-  		              	                </body>
-                	        	        </html>
+						<%= ti.getName() %> version <%= l.getVersion() %><br>
+<%					} %>
+					</td></tr></table>
+	                             </form>
+        	                       	<jsp:include page="footer.jsp"></jsp:include>
+  		              	 </body>
+                	        	</html>
 <%
-						return;
-					}
-					lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive); 
-
-				} catch (WebServiceErrorMessageException wse){
-					vProblems = wse.getErrors();
+					return;
 				}
+				lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive); 
 
-			} catch (Exception ioe) {
-				taskName = "[unknown task name] in " + fullName;
-				vProblems = new Vector();
-				vProblems.add("Unable to install " + fullName + ": " + ioe.getMessage());
+			} catch (WebServiceErrorMessageException wse){
+				vProblems = wse.getErrors();
 			}
-			attachment.delete();
-		} catch (SmartUploadException sue) {
-		    	throw new Exception("error saving " + fullName + ":<br>" + sue.getMessage());
+
+		} catch (Exception ioe) {
+			taskName = "[unknown task name] in " + fullName;
+			vProblems = new Vector();
+			vProblems.add("Unable to install " + fullName + ": " + ioe.getMessage());
 		}
-	} // end loop for each file in upload
+		attachedFile.delete();
 
 } else { // end if not isEncodedPost
 
