@@ -63,6 +63,10 @@ public class GroupPanel extends JPanel {
 		majorLabel.setIcon(collapsedIcon);
 	}
 	
+	public JComponent getMinorComponent() {
+		return minorComponent;
+	}
+	
 	public JLabel getMajorLabel() {
 		return majorLabel;
 	}
