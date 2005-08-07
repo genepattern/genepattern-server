@@ -1,8 +1,11 @@
 package org.genepattern.gpge.ui.tasks;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.net.InetAddress;
 import java.net.URL;
@@ -71,7 +74,7 @@ public class AnalysisServiceManager {
 	 * without the version to a <tt>List</tt> of versions. Invoke refresh to
 	 * update the internal cache.
 	 * 
-	 * @return the lsid to versions map
+	 * @return the lsid to versions map. The list of versions is sorted in ascending order.
 	 */
 	public Map getLSIDToVersionsMap() {
 		return lsid2VersionsMap;
@@ -107,8 +110,9 @@ public class AnalysisServiceManager {
 	 *                Description of the Exception
 	 */
 	public void refresh() throws WebServiceException {
-		lsid2LatestAnalysisServices.clear();
-
+		this.lsid2LatestAnalysisServices.clear();
+		this.lsid2AnalysisServices.clear();
+		
 		TaskInfo[] tasks = new AnalysisWebServiceProxy(server, username)
 				.getTasks();
 		for (int i = 0; i < tasks.length; i++) {
@@ -119,10 +123,16 @@ public class AnalysisServiceManager {
 			lsid2LatestAnalysisServices.put(lsidOrTaskName,
 					new AnalysisService(server, task));
 		}
+		this.lsid2VersionsMap = new org.genepattern.webservice.AdminProxy(
+				server, username).getLSIDToVersionsMap();
+		
+		for(Iterator it = lsid2VersionsMap.keySet().iterator(); it.hasNext(); ) {
+			List versions = (List) lsid2VersionsMap.get(it.next());
+			Collections.sort(versions, LSIDVersionComparator.INSTANCE);
+		}
 		this.lsid2VersionsMap = java.util.Collections
-				.unmodifiableMap(new org.genepattern.webservice.AdminProxy(
-						server, username).getLSIDToVersionsMap());
-		this.lsid2AnalysisServices.clear();
+				.unmodifiableMap(lsid2VersionsMap);
+		
 
 	}
 
