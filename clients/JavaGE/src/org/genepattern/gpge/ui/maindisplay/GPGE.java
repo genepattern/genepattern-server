@@ -2462,6 +2462,16 @@ public class GPGE {
 
 		public FileMenu() {
 			super("File");
+			
+			JMenuItem newPipelineItem = new JMenuItem(
+					"New Pipeline");
+			newPipelineItem.addActionListener(new ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					MessageManager.notifyListeners(new ChangeViewMessageRequest(GPGE.this, ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST));
+				}
+			});
+			add(newPipelineItem);
+			
 			JMenuItem openProjectDirItem = new JMenuItem(
 					"Open Project Directory...", IconManager
 							.loadIcon(IconManager.NEW_PROJECT_ICON));
@@ -2500,6 +2510,7 @@ public class GPGE {
 					}
 				}
 			});
+			
 			add(openProjectDirItem);
 
 			importTaskMenuItem = new JMenuItem("Import Module...", IconManager
