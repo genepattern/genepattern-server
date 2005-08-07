@@ -31,9 +31,15 @@ public class PipelineEditorModel {
 	/** pipeline description */
 	private String description;
 
-	private String userId;
+	private String owner;
 
-	private AnalysisService pipelineAnalysisService;
+	private String author;
+
+	private String versionComment;
+
+	private int privacy;
+
+	private String lsid;
 
 	private EventListenerList listenerList;
 
@@ -45,17 +51,28 @@ public class PipelineEditorModel {
 		listenerList.remove(PipelineListener.class, l);
 	}
 
+	public PipelineEditorModel() {
+		tasks = new ArrayList();
+		listenerList = new EventListenerList();
+	}
+
 	public PipelineEditorModel(AnalysisService svc, PipelineModel model)
 			throws JobSubmissionsNotFoundException {
-		this.pipelineAnalysisService = svc;
-		listenerList = new EventListenerList();
-		pipelineName = model.getName();
-		description = model.getDescription();
+		Map attrs = svc.getTaskInfo().getTaskInfoAttributes();
+		this.lsid = (String) attrs.get(GPConstants.LSID);
+		this.owner = svc.getTaskInfo().getUserId();
+		this.author = model.getAuthor();
+		this.privacy = svc.getTaskInfo().getAccessId();
+		this.versionComment = (String) attrs.get(GPConstants.VERSION);
 
+		this.description = model.getDescription();
+
+		this.pipelineName = model.getName();
 		if (pipelineName.endsWith(".pipeline")) {
 			pipelineName = pipelineName.substring(0, pipelineName.length()
 					- ".pipeline".length());
 		}
+		listenerList = new EventListenerList();
 
 		tasks = new ArrayList();
 		AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
@@ -265,14 +282,6 @@ public class PipelineEditorModel {
 		notifyListeners();
 	}
 
-	public TaskInfo getPipelineTaskInfo() {
-		return pipelineAnalysisService.getTaskInfo();
-	}
-
-	public AnalysisService getPipelineAnalysisService() {
-		return pipelineAnalysisService;
-	}
-
 	void print() {
 		for (int i = 0; i < tasks.size(); i++) {
 			System.out.println(tasks.get(i));
@@ -283,11 +292,9 @@ public class PipelineEditorModel {
 		PipelineModel pipelineModel = new PipelineModel();
 		pipelineModel.setName(pipelineName);
 		pipelineModel.setDescription(description);
-		// FIXME
-		userId = "jgould";
-		pipelineModel.setAuthor(userId);
-		pipelineModel.setUserid(userId);
-		HashMap promptWhenRunAttrs = new HashMap();
+		pipelineModel.setAuthor(author);
+		pipelineModel.setUserid(owner);
+		final HashMap promptWhenRunAttrs = new HashMap();
 		promptWhenRunAttrs.put("runTimePrompt", "1");
 
 		HashMap emptyAttrs = new HashMap();
@@ -352,13 +359,13 @@ public class PipelineEditorModel {
 		TaskInfo pipelineTaskInfo = new TaskInfo();
 		pipelineTaskInfo.setName(pipelineName);
 		pipelineTaskInfo.setDescription(description);
-		pipelineTaskInfo.setUserId(userId);
-		pipelineTaskInfo.setAccessId(GPConstants.ACCESS_PUBLIC);
+		pipelineTaskInfo.setUserId(owner);
+		pipelineTaskInfo.setAccessId(privacy);
 		pipelineTaskInfo
 				.setParameterInfoArray((ParameterInfo[]) pipelineParameterInfoList
 						.toArray(new ParameterInfo[0]));
 		HashMap taskInfoAttrs = new HashMap();
-		taskInfoAttrs.put("version", ""); // FIXME
+		taskInfoAttrs.put("version", versionComment);
 		taskInfoAttrs.put("taskType", "pipeline");
 		taskInfoAttrs.put("os", "any");
 		taskInfoAttrs.put("cpuType", "any");
@@ -370,8 +377,7 @@ public class PipelineEditorModel {
 		}
 		taskInfoAttrs.put("commandLine", baseCmdLine.toString());
 		taskInfoAttrs.put("JVMLevel", "1.4");
-		taskInfoAttrs.put("LSID", pipelineAnalysisService.getTaskInfo()
-				.getTaskInfoAttributes().get(GPConstants.LSID));
+		taskInfoAttrs.put("LSID", lsid);
 		taskInfoAttrs.put("serializedModel", pipelineModel.toXML());
 		taskInfoAttrs.put("language", "Java");
 		pipelineTaskInfo.setTaskInfoAttributes(taskInfoAttrs);
@@ -398,6 +404,11 @@ public class PipelineEditorModel {
 	public String getTaskDescription(int taskIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
 		return task.description;
+	}
+	
+	public void setTaskDescription(int taskIndex, String s) {
+		MyTask task = (MyTask) tasks.get(taskIndex);
+		task.description = s;
 	}
 
 	public List getOutputFileTypes(int taskIndex) {
@@ -694,4 +705,57 @@ public class PipelineEditorModel {
 
 	}
 
+	public String getPipelineDescription() {
+		return description;
+	}
+
+	public String getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+
+	public String getLSID() {
+		return lsid;
+	}
+
+	public String getOwner() {
+		return owner;
+	}
+
+	public void setOwner(String owner) {
+		this.owner = owner;
+	}
+
+	public int getPrivacy() {
+		return privacy;
+	}
+
+	public void setPrivacy(int privacy) {
+		this.privacy = privacy;
+	}
+
+	public String getVersionComment() {
+		return versionComment;
+	}
+
+	public void setVersionComment(String versionComment) {
+		this.versionComment = versionComment;
+	}
+
+	public void setPipelineDescription(String text) {
+		this.description = text;
+	}
+
+	public void setPipelineName(String text) {
+		this.pipelineName = text;
+	}
+
+	public void setLSID(String lsid2) {
+		this.lsid = lsid2;
+	}
+
+	
 }
