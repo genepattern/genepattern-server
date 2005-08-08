@@ -19,6 +19,8 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskIntegratorProxy;
+import org.genepattern.webservice.WebServiceException;
 
 public class PipelineEditorModel {
 
@@ -43,6 +45,40 @@ public class PipelineEditorModel {
 
 	private EventListenerList listenerList;
 
+	/** list of doc file names that have already been uploaded to the server for this task */
+	private List serverDocFiles = new ArrayList();
+	
+	/** list of doc file names that have already been uploaded to the server for this task */
+	private List localDocFiles = new ArrayList();
+	
+	/**
+	 * Gets a list containing <tt>String</tt> instances of existing doc file names
+	 * @return the doc files
+	 */
+	public List getServerDocFiles() {
+		return serverDocFiles;
+	}
+	
+	/**
+	 * Gets a list containing <tt>File</tt> instances of new uploaded doc files
+	 * @return the doc files
+	 */
+	public List getLocalDocFiles() {
+		return localDocFiles;
+	}
+	
+	public void addLocalDocFile(File file) {
+		localDocFiles.add(file);
+	}
+	
+	public void removeLocalDocFile(File file) {
+		localDocFiles.remove(file);
+	}
+	
+	public void removeServerDocFile(String s) {
+		serverDocFiles.remove(s);
+	}
+	
 	public void addPipelineListener(PipelineListener l) {
 		listenerList.add(PipelineListener.class, l);
 	}
@@ -60,6 +96,15 @@ public class PipelineEditorModel {
 			throws JobSubmissionsNotFoundException {
 		Map attrs = svc.getTaskInfo().getTaskInfoAttributes();
 		this.lsid = (String) attrs.get(GPConstants.LSID);
+		try {
+			String[] fileNames = new TaskIntegratorProxy(AnalysisServiceManager.getInstance()
+					.getServer(), AnalysisServiceManager.getInstance()
+					.getUsername()).getDocFileNames(lsid);
+			serverDocFiles.addAll(Arrays.asList(fileNames));
+		} catch (WebServiceException e) {
+			e.printStackTrace();
+		}
+		
 		this.owner = svc.getTaskInfo().getUserId();
 		this.author = model.getAuthor();
 		this.privacy = svc.getTaskInfo().getAccessId();
@@ -298,7 +343,7 @@ public class PipelineEditorModel {
 		promptWhenRunAttrs.put("runTimePrompt", "1");
 
 		HashMap emptyAttrs = new HashMap();
-
+	
 		List pipelineParameterInfoList = new ArrayList();
 		for (int i = 0; i < getTaskCount(); i++) {
 			TaskInfo taskInfo = ((MyTask) tasks.get(i)).formalTaskInfo;
@@ -381,8 +426,8 @@ public class PipelineEditorModel {
 		taskInfoAttrs.put("serializedModel", pipelineModel.toXML());
 		taskInfoAttrs.put("language", "Java");
 		pipelineTaskInfo.setTaskInfoAttributes(taskInfoAttrs);
-		System.out.println(taskInfoAttrs);
-		System.out.print(pipelineParameterInfoList);
+		//System.out.println(taskInfoAttrs);
+		//System.out.print(pipelineParameterInfoList);
 		return pipelineTaskInfo;
 	}
 
