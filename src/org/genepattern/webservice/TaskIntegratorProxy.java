@@ -6,9 +6,13 @@ import java.net.URL;
 
 import java.rmi.RemoteException;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.axis.client.Service;
+import org.genepattern.util.GPConstants;
 
 /**
  * @author Joshua Gould
@@ -73,26 +77,47 @@ public class TaskIntegratorProxy {
       }
 	}
 
+	/**
+	 * 
+	 * @param accessId one of GPConstants.ACCESS_PUBLIC or GPConstants.ACCESS_PRIVATE
+	 * @param taskName The task name
+	 * @param description The task description
+	 * @param parameterInfoArray The parameter info array
+	 * @param taskAttributes Task info attributes
+	 * @param files array of files to upload
+	 * @param existingFileNames array of file names to copy from existing task or <tt>null</tt>
+	 * @return The new LSID
+	 * @throws WebServiceException
+	 */
 	public String modifyTask(int accessId, String taskName, String description,
 			ParameterInfo[] parameterInfoArray,
-			java.util.HashMap taskAttributes, File[] files)
-			throws WebServiceException {
-      try {
-         String[] fileNames = null;
-         DataHandler[] dataHandlers = null;
-         if (files != null) {
-            dataHandlers = new DataHandler[files.length];
-            fileNames = new String[files.length];
-            for (int i = 0; i < files.length; i++) {
-               dataHandlers[i] = new DataHandler(new FileDataSource(files[i]));
-   
-            }
-         }
-         return stub.modifyTask(accessId, taskName, description,
-				parameterInfoArray, taskAttributes, dataHandlers, fileNames);
-      } catch(RemoteException re) {
-         throw new WebServiceException(re);  
-      }
+			java.util.HashMap taskAttributes, File[] files,
+			String[] existingFileNames) throws WebServiceException {
+		try {
+			String[] uploadedFileNames = null;
+			DataHandler[] dataHandlers = null;
+			if (files != null) {
+				dataHandlers = new DataHandler[files.length];
+				uploadedFileNames = new String[files.length];
+				for (int i = 0; i < files.length; i++) {
+					dataHandlers[i] = new DataHandler(new FileDataSource(
+							files[i]));
+					uploadedFileNames[i] = files[i].getName();
+				}
+			}
+			List fileNames = new ArrayList();
+			if (uploadedFileNames != null) {
+				fileNames.addAll(Arrays.asList(uploadedFileNames));
+			}
+			if (existingFileNames != null) {
+				fileNames.addAll(Arrays.asList(existingFileNames));
+			}
+			return stub.modifyTask(accessId, taskName, description,
+					parameterInfoArray, taskAttributes, dataHandlers,
+					(String[]) fileNames.toArray(new String[0]));
+		} catch (RemoteException re) {
+			throw new WebServiceException(re);
+		}
 	}
 
 	public String deleteFiles(String lsid, String[] fileNames)
