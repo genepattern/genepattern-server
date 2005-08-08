@@ -168,4 +168,17 @@ public class GUIUtil {
 		return jTextArea;
 	}
 
+	public static boolean showConfirmDialog(String message) {
+		return showConfirmDialog(GenePattern.getDialogParent(), "GenePattern", message);
+	}
+	
+	public static boolean showConfirmDialog(Component parent, String title, String message) {
+		if (JOptionPane.showOptionDialog(parent, message, null,
+				JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
+				GenePattern.getIcon(), new Object[] { "Yes", "No" }, "Yes") == JOptionPane.YES_OPTION) {
+			return true;
+		}
+		return false;
+	}
+
 }
