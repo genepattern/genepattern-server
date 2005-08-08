@@ -181,7 +181,8 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 		bottomPanel.add(expandAllButton);
 		buttonPanel.add(topPanel, BorderLayout.CENTER);
 		buttonPanel.add(bottomPanel, BorderLayout.SOUTH);
-
+		buttonPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.DARK_GRAY));
+		
 		ActionListener expandListener = new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
@@ -246,6 +247,8 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 
 	protected void save() {
 		StringBuffer errors = headerPanel.save();
+		List localInputFiles = new ArrayList();
+		List existingFileNames = new ArrayList();
 		for (int i = 0; i < taskDisplayList.size(); i++) {
 			MyTask td = (MyTask) taskDisplayList.get(i);
 			model.setTaskDescription(i, td.getTaskDescription());
@@ -272,6 +275,17 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 									+ model.getParameterName(i, j) + "\n");
 						}
 					}
+					
+					if (model.isInputFile(i, j)) {
+						File file = new File(value);
+						if (file.exists()) {
+							localInputFiles.add(file);
+						} else if(value.startsWith("<GenePatternURL>getFile.jsp?task=<LSID>&file=")){
+							String fileName = value.substring("<GenePatternURL>getFile.jsp?task=<LSID>&file=".length(), value.length());
+							existingFileNames.add(fileName);
+						}
+					}
+					
 					model.setValue(i, j, value);
 				}
 			}
@@ -282,12 +296,20 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 		}
 		TaskInfo ti = model.toTaskInfo();
 		try {
+			List taskFiles = new ArrayList();
+			taskFiles.addAll(localInputFiles);
+			taskFiles.addAll(model.getLocalDocFiles());
+			
+			existingFileNames.addAll(model.getServerDocFiles());
+			
+			
 			String lsid = new TaskIntegratorProxy(AnalysisServiceManager.getInstance()
 					.getServer(), AnalysisServiceManager.getInstance()
 					.getUsername(), false).modifyTask(
 					GPConstants.ACCESS_PUBLIC, ti.getName(), ti
 							.getDescription(), ti.getParameterInfoArray(),
-					(HashMap) ti.getTaskInfoAttributes(), new File[] {});
+					(HashMap) ti.getTaskInfoAttributes(), (File[]) taskFiles.toArray(new File[0]), (String[]) existingFileNames.toArray(new String[0]));
+			
 			model.setLSID(lsid);
 		} catch (WebServiceException e1) {
 			e1.printStackTrace();
@@ -313,6 +335,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 		tasksPanel.setBackground(getBackground());
 		scrollPane.setViewportView(tasksPanel);
 	}
+	
 
 	/**
 	 * Gets an iterator of input file parameters
@@ -363,6 +386,9 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 		try {
 			if (svc == null) {
 				model = new PipelineEditorModel();
+				String username = AnalysisServiceManager.getInstance().getUsername();
+				model.setAuthor(username);
+				model.setOwner(username);
 			} else {
 				model = new PipelineEditorModel(svc, pipelineModel);
 			}
@@ -423,9 +449,9 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 			return errors;
 		}
 		
-		public HeaderPanel(PipelineEditorModel model, JPanel buttonPanel) {
+		public HeaderPanel(final PipelineEditorModel model, JPanel buttonPanel) {
 			this.model = model;
-			setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+			//setBorder(BorderFactory.createLineBorder());
 			setLayout(new BorderLayout());
 
 			String name = model.getPipelineName();
@@ -469,17 +495,17 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 			JPanel detailsPanel = new JPanel(new FormLayout(
 					"right:pref:none, 3dlu, left:pref", rowSpec.toString()));
 			detailsPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-			JLabel authorLabel = new JLabel("Author");
+			JLabel authorLabel = new JLabel("Author:");
 			authorField = new JTextField(model.getAuthor(), 40);
 			detailsPanel.add(authorLabel, cc.xy(1, 1));
 			detailsPanel.add(authorField, cc.xy(3, 1));
 
-			JLabel ownerLabel = new JLabel("Owner");
+			JLabel ownerLabel = new JLabel("Owner:");
 			ownerField = new JTextField(model.getOwner(), 40);
 			detailsPanel.add(ownerLabel, cc.xy(1, 3));
 			detailsPanel.add(ownerField, cc.xy(3, 3));
 
-			JLabel privacyLabel = new JLabel("Privacy");
+			JLabel privacyLabel = new JLabel("Privacy:");
 			privacyComboBox = new JComboBox(new String[] { "Public",
 					"Private" });
 			if (model.getPrivacy() == GPConstants.ACCESS_PRIVATE) {
@@ -494,11 +520,53 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 			detailsPanel.add(versionLabel, cc.xy(1, 7));
 			detailsPanel.add(versionField, cc.xy(3, 7));
 
-			JLabel documentationLabel = new JLabel("Documentation");
-			JComboBox existingDocComboBox = new JComboBox();
-			detailsPanel.add(documentationLabel, cc.xy(1, 9));
-			detailsPanel.add(existingDocComboBox, cc.xy(3, 9));
+			JLabel documentationLabel = new JLabel("Documentation:");
+			final JComboBox existingDocComboBox = new JComboBox();
+			if (name != null) {
+				List docFiles = model.getServerDocFiles();
+				for(int i = 0; i < docFiles.size(); i++) {
+					existingDocComboBox.addItem(docFiles.get(i));
+				}
+			}
+			
+			JButton deleteDocBtn = new JButton("Delete");
+			deleteDocBtn.addActionListener(new ActionListener() {
 
+				public void actionPerformed(ActionEvent e) {
+					if(existingDocComboBox.getSelectedItem()==null) {
+						return;
+					}
+					if(GUIUtil.showConfirmDialog("Are you sure you want to delete " + existingDocComboBox.getSelectedItem() + "?")) {
+						Object obj = existingDocComboBox.getSelectedItem();
+						if(obj instanceof LocalFileWrapper) {
+							model.removeLocalDocFile(((LocalFileWrapper)obj).file);
+						} else {
+							model.removeServerDocFile((String)obj);
+						}
+						existingDocComboBox.removeItemAt(existingDocComboBox.getSelectedIndex());
+					}
+				}
+			});
+			
+			JButton addDocBtn = new JButton("Add...");
+			addDocBtn.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					File f = GUIUtil.showOpenDialog();
+					if(f!=null) {
+						model.addLocalDocFile(f);
+						existingDocComboBox.addItem(new LocalFileWrapper(f));
+					}
+				}
+			});
+			
+			detailsPanel.add(documentationLabel, cc.xy(1, 9));
+			JPanel docPanel = new JPanel(new FormLayout("pref, 3dlu, pref, 3dlu, pref", "pref"));
+			docPanel.add(existingDocComboBox, cc.xy(1, 1));
+			docPanel.add(deleteDocBtn, cc.xy(3, 1));
+			docPanel.add(addDocBtn, cc.xy(5, 1));
+			detailsPanel.add(docPanel, cc.xy(3, 9));
+			
 			if(name!=null) {
 				JLabel lsidLabel = new JLabel("LSID:");
 				JLabel lsidField = new JLabel(model.getLSID());
@@ -515,6 +583,17 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 		}
 	}
 
+	private static class LocalFileWrapper {
+		File file;
+		
+		LocalFileWrapper(File f) {
+			this.file = f;
+		}
+		
+		public String toString() {
+			return file.getName();
+		}
+	}
 	private void layoutTasks() {
 		reset();
 		for (int i = 0; i < model.getTaskCount(); i++) {
