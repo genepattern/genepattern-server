@@ -1506,16 +1506,7 @@ public class GPGE {
 	}
 
 	private boolean showConfirmDialog(String message) {
-		return showConfirmDialog(GenePattern.getDialogParent(), message);
-	}
-
-	private boolean showConfirmDialog(java.awt.Component parent, String message) {
-		if (JOptionPane.showOptionDialog(parent, message, null,
-				JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
-				GenePattern.getIcon(), new Object[] { "Yes", "No" }, "Yes") == JOptionPane.YES_OPTION) {
-			return true;
-		}
-		return false;
+		return GUIUtil.showConfirmDialog(message);
 	}
 
 	private void createJobActions() {
@@ -2028,7 +2019,7 @@ public class GPGE {
 			AnalysisJob job = (AnalysisJob) sortedJobs.get(row);
 			String message = "Are you sure you want to purge job number "
 					+ job.getJobInfo().getJobNumber() + "?";
-			if (!showConfirmDialog(historyDialog, message)) {
+			if (!GUIUtil.showConfirmDialog(historyDialog, "GenePattern", message)) {
 				return;
 			}
 			try {
