@@ -2,6 +2,7 @@ package org.genepattern.server.webservice.server;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -282,6 +283,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 		return dhs;
 	}
 
+
 	public String modifyTask(int accessId, String taskName, String description,
 			ParameterInfo[] parameterInfoArray, Map taskAttributes,
 			DataHandler[] dataHandlers, String[] fileNames)
@@ -289,19 +291,18 @@ public class TaskIntegrator implements ITaskIntegrator {
 		Vector vProblems = null;
 		String lsid = null;
 		String username = getUserName();
+		String oldLSID = null;
 		try {
 			Thread.yield();
 			if (taskAttributes == null) {
 				taskAttributes = new HashMap();
 			}
-			//   COMMAND_LINE, TASK_TYPE, CLASSNAME, CPU_TYPE, OS, JVM_LEVEL,
-			// LANGUAGE, VERSION, AUTHOR, USERID, PRIVACY, QUALITY,
-			// PIPELINE_SCRIPT, LSID, SERIALIZED_MODEL
-			//GPConstants.TASK_INFO_ATTRIBUTES[i];
+		
 			if (parameterInfoArray == null) {
 				parameterInfoArray = new ParameterInfo[0];
 			}
 			lsid = (String) taskAttributes.get(GPConstants.LSID);
+			oldLSID = lsid;
 			// if an LSID is set, make sure that it is for the current
 			// authority, not the task's source, since it is now modified
 			if (lsid != null && lsid.length() > 0) {
@@ -326,26 +327,15 @@ public class TaskIntegrator implements ITaskIntegrator {
 				} catch (MalformedURLException mue) {
 				}
 			}
-			if (false && GenePatternAnalysisTask.taskExists(lsid != null ? lsid
-					: taskName, null)) {
-				// task exists, update it
-				lsid = GenePatternAnalysisTask
-						.updateTask(
-								taskName,
-								description,
-								parameterInfoArray, // FIXME
-								new TaskInfoAttributes(taskAttributes),
-								username, accessId);
-			} // task does not already exist, treat as new
-			else {
-				lsid = GenePatternAnalysisTask
+			
+			lsid = GenePatternAnalysisTask
 						.installNewTask(
 								taskName,
 								description,								
-								parameterInfoArray, // FIXME
+								parameterInfoArray, 
 								new TaskInfoAttributes(taskAttributes),
-								username, accessId, null);
-			}
+								username, accessId, this);
+				
 			taskAttributes.put(GPConstants.LSID, lsid); // update so that upon
 														// return, the LSID is
 														// the new one
@@ -363,29 +353,27 @@ public class TaskIntegrator implements ITaskIntegrator {
 
 				
 				if (!f.getParentFile().getParent().equals(dir.getParent())) {
-					System.out.println("TaskIntegrator.modifyTask: renaming "
-							+ f.getCanonicalPath() + " to "
-							+ newFile.getCanonicalPath());
-					System.out.println(f.getParentFile().getParent() + " vs. "
-							+ dir.getParent());
 					f.renameTo(newFile);
 				} else {
 					// copy file, leaving original intact
-					byte[] buf = new byte[100000];
-					int j;
-					FileOutputStream os = new FileOutputStream(newFile);
-					FileInputStream is = new FileInputStream(f);
-					while ((j = is.read(buf, 0, buf.length)) > 0) {
-						os.write(buf, 0, j);
-					}
-					is.close();
-					os.close();
+					copyFile(f, newFile);
 				}
 			}
+			
+			if(fileNames!=null) {
+				String oldAttachmentDir = GenePatternAnalysisTask.getTaskLibDir(
+						null, oldLSID, username);
+				int start = dataHandlers != null && dataHandlers.length > 0 ? dataHandlers.length-1
+						: 0;
+				for(int i = start; i < fileNames.length; i++) {
+					copyFile(new File(oldAttachmentDir, fileNames[i]), new File(dir, fileNames[i]));
+				}
+			}
+			
 		} catch (TaskInstallationException tie) {
 			throw new WebServiceErrorMessageException(tie.getErrors());
 		} catch (Exception e) {
-			throw new WebServiceException("in modifyTask", e);
+			throw new WebServiceException(e);
 		}
 		return lsid;
 	}
@@ -452,6 +440,37 @@ public class TaskIntegrator implements ITaskIntegrator {
 			dir.delete();
 		} catch (Throwable e) {
 			throw new WebServiceException("while deleting task " + lsid, e);
+		}
+	}
+	
+	private static void copyFile(File source, File dest) {
+		byte[] buf = new byte[100000];
+		int j;
+		FileOutputStream os = null;
+		FileInputStream is = null;
+		try {
+			os = new FileOutputStream(dest);
+			is = new FileInputStream(source);
+			while ((j = is.read(buf, 0, buf.length)) > 0) {
+				os.write(buf, 0, j);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(is!=null) {
+					is.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				if(os!=null) {
+					os.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
