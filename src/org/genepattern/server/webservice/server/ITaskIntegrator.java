@@ -100,7 +100,12 @@ public interface ITaskIntegrator {
 	 * @param dataHandlers
 	 *            Holds the uploaded files
 	 * @param fileNames
-	 *            The names of the files on the client
+	 *            The file names for the <tt>dataHandlers</tt> array. If the
+	 *            array has more elements than the <tt>dataHandlers</tt>
+	 *            array, then the additional elements are assumed to be uploaded
+	 *            files for an existing task with the LSID contained in
+	 *            <tt>taskAttributes</tt>
+	 * 
 	 * @return The LSID of the task
 	 * @exception WebServiceException
 	 *                If an error occurs
