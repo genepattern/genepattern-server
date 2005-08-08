@@ -31,7 +31,7 @@ public class TaskHelpActionListener implements ActionListener {
 						.getServer();
 						String lsid = LSIDUtil.getTaskId(taskInfo);
 						String[] supportFileNames = new TaskIntegratorProxy(
-								server, username).getSupportFileNames(lsid);
+								server, username).getDocFileNames(lsid);
 						hasDocumentation = supportFileNames != null
 								&& supportFileNames.length > 0;
 					} catch (WebServiceException wse) {
