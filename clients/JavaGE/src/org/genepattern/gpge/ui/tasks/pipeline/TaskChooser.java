@@ -2,10 +2,13 @@ package org.genepattern.gpge.ui.tasks.pipeline;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +46,15 @@ public class TaskChooser extends CenteredDialog {
 
 	private JList tasksList;
 
+	private void ok() {
+		setVisible(false);
+		//getOwner().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		AnalysisServiceWrapper wrapper = (AnalysisServiceWrapper) tasksList
+				.getSelectedValue();
+		pipelineComponent.addTask(indexToAdd, wrapper.svc);
+		//getOwner().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+	}
+	
 	public TaskChooser(Frame parent, String title,
 			PipelineComponent _pipelineComponent, int _indexToAdd) {
 		super(parent);
@@ -76,6 +88,14 @@ public class TaskChooser extends CenteredDialog {
 							(AnalysisService) tasks.get(i));
 				}
 				tasksList = new JList(taskWrappers);
+				tasksList.addMouseListener(new MouseAdapter() {
+				     public void mouseClicked(MouseEvent e) {
+				         if (e.getClickCount() == 2) {
+				            ok();
+				          }
+				     }
+				 });
+				 
 				tasksList.addListSelectionListener(new ListSelectionListener() {
 
 					public void valueChanged(ListSelectionEvent e) {
@@ -114,10 +134,7 @@ public class TaskChooser extends CenteredDialog {
 		ActionListener btnListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (e.getSource() == okBtn) {
-					setVisible(false);
-					AnalysisServiceWrapper wrapper = (AnalysisServiceWrapper) tasksList
-							.getSelectedValue();
-					pipelineComponent.addTask(indexToAdd, wrapper.svc);
+					ok();
 				}
 				dispose();
 			}
@@ -133,6 +150,7 @@ public class TaskChooser extends CenteredDialog {
 		setSize(450, 250);
 		show();
 	}
+	
 
 	private static class AnalysisServiceWrapper {
 		AnalysisService svc;
