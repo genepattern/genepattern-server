@@ -218,11 +218,18 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 			}
 
 			sbOut.setLength(0);
-			String fileName = new File("../../" + jobParams[j].getValue())
-					.getName();
+			String fileName = new File("../../" + jobParams[j].getValue()).getName();
+			String fileJobDirAndName = jobParams[j].getValue();
+		
+			int idx = fileJobDirAndName.indexOf("/");
+			String realJobId = fileJobDirAndName.substring(0, idx);
+
+//System.out.println("PI=" + jobParams[j] + " -- " + fileName + "  == " + jobParams[j].getValue());
+
+			String jobNumber = realJobId; //jobInfo.getJobNumber()
 
 			sbOut.append("<tr><td></td><td><input type=\"checkbox\" value=\"");
-			sbOut.append(name + "/" + fileName + "=" + jobInfo.getJobNumber()
+			sbOut.append(name + "/" + fileName + "=" + jobNumber 
 					+ "/" + fileName);
 			sbOut.append("\" name=\"dl\" ");
 			sbOut.append("checked><a target=\"_blank\" href=\"");
@@ -230,11 +237,11 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 			String outFileUrl = null;
 			try {
 				outFileUrl = URL + GET_TASK_FILE + "job="
-						+ jobInfo.getJobNumber() + "&filename="
+						+ jobNumber  + "&filename="
 						+ URLEncoder.encode(fileName, "utf-8");
 			} catch (UnsupportedEncodingException uee) {
 				outFileUrl = URL + GET_TASK_FILE + "job="
-						+ jobInfo.getJobNumber() + "&filename=" + fileName;
+						+ jobNumber  + "&filename=" + fileName;
 			}
 
 			sbOut.append(localizeURL(outFileUrl));
