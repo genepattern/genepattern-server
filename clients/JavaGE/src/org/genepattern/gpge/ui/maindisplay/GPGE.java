@@ -439,23 +439,18 @@ public class GPGE {
 	public void reload(AnalysisJob job) {
 		String taskName = job.getTaskName();
 		String lsid = job.getLSID();
-		String key = lsid != null ? lsid : taskName;
-		//this won't reload old jobs b/c they have no lsid
+	
 		AnalysisService service = analysisServiceManager
-				.getAnalysisService(key);
+				.getAnalysisService(lsid);
 
 		if (service == null) {
-			if (lsid != null) {
-				service = analysisServiceManager.getAnalysisService(lsid); // see
-				// if
-				// old
-				// version
-				// of
-				// task
-				// exists
-			}
-			if (service == null) { // get task by name
-				service = analysisServiceManager.getAnalysisService(taskName);
+			
+			if (service == null) { // get latest version of lsid
+				try {
+					service = analysisServiceManager.getAnalysisService(new LSID(lsid).toStringNoVersion());
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				}
 			}
 			if (service == null) {
 				GenePattern.showMessageDialog("The task " + taskName
@@ -527,12 +522,20 @@ public class GPGE {
 						ParameterInfo pi = new ParameterInfo(savedParameterInfo
 								.getName(), "", savedParameterInfo
 								.getDescription());
-						HashMap attrs = new HashMap(1);
-						pi.setAttributes(attrs);
-						pi.getAttributes().put(
-								GPConstants.PARAM_INFO_DEFAULT_VALUE[0],
-								fileNameOnServer);
-						pi.setAsInputFile();
+						int index1 = fileNameOnServer.lastIndexOf('/');
+						int index2 = fileNameOnServer.lastIndexOf('\\');
+						int index = (index1 > index2 ? index1 : index2);
+						if (index != -1) {
+							String fileName = fileNameOnServer.substring(index + 1, fileNameOnServer.length());
+							String jobNumber = fileNameOnServer.substring(0, index);
+							HashMap attrs = new HashMap(1);
+							pi.setAttributes(attrs);
+							pi.getAttributes().put(
+									GPConstants.PARAM_INFO_DEFAULT_VALUE[0],
+									"job #" + jobNumber + ", " + fileName);
+							pi.setAsInputFile();
+						}
+						
 						actualParams.add(pi);
 						continue;
 					} else if (savedParameterInfo.isInputFile()) { // input file
@@ -1106,8 +1109,8 @@ public class GPGE {
 									name, fileTypes) {
 								
 								public void actionPerformed(ActionEvent e) {
-									taskDisplay.setInputFile(name,
-											selectedJobNode);
+									taskDisplay.sendTo(name,
+											(Sendable) selectedJobNode);
 								}
 							};
 							
@@ -1117,8 +1120,8 @@ public class GPGE {
 							MenuItemAction projectMenuItem = new SendToMenuItemAction(
 									name, fileTypes) {
 								public void actionPerformed(ActionEvent e) {
-									taskDisplay.setInputFile(name,
-											selectedProjectDirNode);
+									taskDisplay.sendTo(name,
+											(Sendable)  selectedProjectDirNode);
 								}
 							};
 							projectMenuItem.putValue(GPGE.PARAMETER_NAME, name);
