@@ -28,6 +28,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.text.JTextComponent;
@@ -688,7 +689,10 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 		int parameterEnd = tasksLayout.getRowCount();
 	//	tasksPanel.addTask(togglePanel, parameterEnd - parameterStart);
 		togglePanel.setExpanded(true);
-
+		tasksLayout.appendRow(new RowSpec("1dlu"));
+		tasksLayout.appendRow(new RowSpec("pref"));
+		tasksPanel.add(new JSeparator(), cc.xyw(1, tasksLayout.getRowCount(), tasksLayout.getColumnCount()));
+		tasksLayout.appendRow(new RowSpec("5dlu"));
 	}
 
 	void addTask(int index, AnalysisService svc) {
