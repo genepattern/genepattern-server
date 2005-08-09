@@ -95,7 +95,7 @@ public class RunTask {
 		if (missingParams.size() > 0) {
 			String message = "Missing required fields: ";
 			for (int j = 0, size = missingParams.size(); j < size; j++) {
-				message += "\n" + missingParams.get(j);
+				message += "\n" + AnalysisServiceDisplay.getDisplayString((String) missingParams.get(j));
 			}
          GenePattern.showErrorDialog(message);
          return;
