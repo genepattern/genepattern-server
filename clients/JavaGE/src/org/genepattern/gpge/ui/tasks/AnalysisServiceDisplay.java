@@ -8,6 +8,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
+import java.util.Iterator;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -259,6 +260,10 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 	public static String getDisplayString(String name) {
 		return name.replace('.', ' ');
 	}
+	
+	public static String displayToActualParameterString(String name) {
+		return name.replace(' ', '.');
+	}
 
 	/**
 	 *  Returns <tt>true</tt> of this panel is showing an <tt>AnalysisService
@@ -270,11 +275,7 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 		return selectedService != null;
 	}
 
-	/**
-	 * Gets an iterator of the input file parameters
-	 * 
-	 * @return the input file parameters
-	 */
+
 	public java.util.Iterator getInputFileParameters() {
 		return parameterInfoPanel.getInputFileParameters();
 	}
@@ -315,6 +316,11 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 				source.setEnabled(true);
 			}
 		}
+	}
+
+
+	public Iterator getInputFileTypes() {
+		return parameterInfoPanel.getInputFileTypes();
 	}
 
 }
