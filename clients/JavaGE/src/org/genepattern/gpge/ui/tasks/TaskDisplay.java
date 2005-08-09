@@ -29,14 +29,12 @@ public interface TaskDisplay {
 	public Iterator getInputFileTypes();
 
 	/**
-	 * Sets the value of the given parameter to the given node
+	 * Sets the value of the given parameter to the given value
 	 * 
 	 * @param parameterName
 	 *            the parameter name as returned by getInputFileParameters
-	 * @param node
-	 *            a tree node
+	 * @param sendable a <tt>Sendable</tt> object
 	 */
-	public void setInputFile(String parameterName,
-			javax.swing.tree.TreeNode node);
+	public void sendTo(String parameterName, Sendable sendable);
 
 }

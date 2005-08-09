@@ -237,18 +237,22 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 	}
 
 	/**
-	 *  Sets the value of the given parameter to the given node
-	 *
-	 * @param  parameterName  the parmeter name
-	 * @param  node           a tree node
+	 * Sets the value of the given parameter
+	 * @param parameterName the unencoded parameter name as returned by ParameterInfo.getName()
+	 * @param parameterValue the parameter value. If the parameter contains a choice list, the value can be
+	 *            either the UI value of the command line value
 	 */
-	public void setInputFile(String parameterName,
-			javax.swing.tree.TreeNode node) {
+	public void setValue(String parameterName, String parameterValue) {
+		parameterInfoPanel.setValue(parameterName, parameterValue);
+	}
+	
+	public void sendTo(String parameterName,
+			Sendable sendable) {
 		if (selectedService != null) {
 			ObjectTextField tf = (ObjectTextField) parameterInfoPanel
-					.getComponent(parameterName);
+					.getComponent(displayToActualParameterString(parameterName));
 			if (tf != null) {
-				tf.setObject(node);
+				tf.setObject(sendable);
 			}
 		}
 	}

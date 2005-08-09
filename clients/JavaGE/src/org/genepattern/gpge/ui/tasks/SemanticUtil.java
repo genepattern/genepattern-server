@@ -94,8 +94,8 @@ public class SemanticUtil {
 				if (matchingInputParameters.size() == 1) {
 					ParameterInfo inputParameter = (ParameterInfo) matchingInputParameters
 							.get(0);
-					analysisServiceDisplay.setInputFile(inputParameter
-							.getName(), node);
+					analysisServiceDisplay.sendTo(inputParameter
+							.getName(), (Sendable) node);
 				} else if (matchingInputParameters.size() > 1) {
 					final JDialog d = new CenteredDialog(GenePattern
 							.getDialogParent());
@@ -140,8 +140,8 @@ public class SemanticUtil {
 								}
 								ParameterInfo inputParameter = (ParameterInfo) matchingInputParameters
 										.get(row);
-								analysisServiceDisplay.setInputFile(
-										inputParameter.getName(), node);
+								analysisServiceDisplay.sendTo(
+										inputParameter.getName(), (Sendable) node);
 							}
 							d.dispose();
 						}
