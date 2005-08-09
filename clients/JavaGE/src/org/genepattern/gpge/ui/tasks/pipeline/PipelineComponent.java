@@ -676,14 +676,15 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 		tasksPanel.add(togglePanel, cc.xywh(1, tasksLayout.getRowCount(), 2, 1,
 				CellConstraints.LEFT, CellConstraints.BOTTOM));
 
-		tasksLayout.appendRow(new RowSpec("pref"));
-
-		JLabel promptWhenRunLabel = new JLabel("Prompt when run");
-		promptWhenRunLabel.setFont(promptWhenRunLabel.getFont().deriveFont(
+		if(model.getParameterCount(taskIndex) > 0) {
+			JLabel promptWhenRunLabel = new JLabel("Prompt when run");
+			promptWhenRunLabel.setFont(promptWhenRunLabel.getFont().deriveFont(
 				promptWhenRunLabel.getFont().getSize2D() - 2));
-		togglePanel.addToggleComponent(promptWhenRunLabel);
-		tasksPanel.add(promptWhenRunLabel, cc.xyw(PROMPT_WHEN_RUN_COLUMN,
+			togglePanel.addToggleComponent(promptWhenRunLabel);
+			tasksLayout.appendRow(new RowSpec("pref"));
+			tasksPanel.add(promptWhenRunLabel, cc.xyw(PROMPT_WHEN_RUN_COLUMN,
 				tasksLayout.getRowCount(), tasksLayout.getColumnCount()));
+		}
 		int parameterStart = tasksLayout.getRowCount();
 		addTaskParameters(taskIndex, togglePanel);
 		int parameterEnd = tasksLayout.getRowCount();
