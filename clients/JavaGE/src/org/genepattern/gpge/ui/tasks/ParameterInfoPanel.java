@@ -122,7 +122,7 @@ public class ParameterInfoPanel extends JPanel {
 		if(new File(text).exists()) {
 			info.setAsInputFile();
 			return new File(text).getCanonicalPath();
-		} else if(text.startsWith("job #")) { // job #21, out.txt
+		} else if(text.startsWith("job #")) { // e.g. job #21, out.txt
 			info.getAttributes().put(ParameterInfo.TYPE,
 					ParameterInfo.FILE_TYPE);
 			info.getAttributes().put(ParameterInfo.MODE,
@@ -130,6 +130,8 @@ public class ParameterInfoPanel extends JPanel {
 			String jobNumber = text.substring(text.indexOf("#")+1, text.indexOf(",")).trim();
 			String fileName = text.substring(text.indexOf(",")+1, text.length()).trim();
 			return jobNumber + "/" + fileName;
+		} else if(text.equals("")){
+			return null;
 		} else {
 			return text;
 		}
