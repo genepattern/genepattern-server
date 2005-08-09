@@ -461,6 +461,15 @@ public class PipelineEditorModel {
 		return task.getOutputFileTypes();
 	}
 
+	public String[] getParameterInputTypes(int taskIndex, int parameterIndex) {
+		MyTask task = (MyTask) tasks.get(taskIndex);
+		TaskInfo formalTask = task.getTaskInfo();
+		ParameterInfo p = formalTask.getParameterInfoArray()[parameterIndex];
+		String fileFormatsString = (String) p.getAttributes().get(
+				GPConstants.FILE_FORMAT);
+		return fileFormatsString!=null? fileFormatsString.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER):new String[0];
+	}
+	
 	public String getParameterName(int taskIndex, int parameterIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
 		TaskInfo formalTask = task.getTaskInfo();
