@@ -31,9 +31,11 @@ public class AlternatingRowColorPanel extends JPanel {
 	private static class Task {
 		GroupPanel groupPanel;
 		int parameterCount;
+		int rowStart;
 		
-		Task(GroupPanel p, int count) {
+		Task(GroupPanel p, int rowStart, int count) {
 			this.groupPanel = p;
+			this.rowStart = rowStart;
 			this.parameterCount = count;
 		}
 	}
@@ -42,8 +44,8 @@ public class AlternatingRowColorPanel extends JPanel {
 		taskList = new ArrayList();
 	}
 
-	public void addTask(GroupPanel tp, int parameterCount) {
-		taskList.add(new Task(tp, parameterCount));
+	public void addTask(GroupPanel tp, int rowStart, int parameterCount) {
+		taskList.add(new Task(tp, rowStart, parameterCount));
 	}
 
 	public void setShowGrid(boolean b) {
@@ -68,44 +70,28 @@ public class AlternatingRowColorPanel extends JPanel {
 	//	FormDebugUtils.dumpRowGroups((FormLayout) getLayout());
 		int left = layoutInfo.getX();
 		int width = layoutInfo.getWidth();
-		int height = layoutInfo.getHeight();
-
+		
 		g.setColor(gridColor);
-		int rowIndex = 0;
 		int[] rowOrigins = layoutInfo.rowOrigins;
 
 		for (int i = 0; i < taskList.size(); i++) {
-			int taskStartIndex = rowIndex;
 			g.setColor(gridColor);
 			Task task = (Task) taskList.get(i);
-			int numParameters = task.parameterCount;
-			int parameterRowIndex = rowIndex + 1;
+			int row = task.rowStart;
+			
 			if (showGrid && task.groupPanel.isExpanded()) {
-				int tempRow = parameterRowIndex;
 				int gridHeight;
-				if(rowOrigins.length==(tempRow + 1)) {
-					gridHeight =  rowOrigins[rowOrigins.length-1] - rowOrigins[tempRow]; 
+				if(rowOrigins.length==(row + 1)) {
+					gridHeight =  rowOrigins[rowOrigins.length-1] - rowOrigins[row]; 
 				} else {
-					gridHeight = rowOrigins[tempRow + 1] - rowOrigins[tempRow];
+					gridHeight = rowOrigins[row + 1] - rowOrigins[row];
 				}
-										
-				for (int j = 0; j < numParameters; j += 2, tempRow += 2) {
-					g.fillRect(left, rowOrigins[tempRow], width, gridHeight);
+									
+				
+				for (int j = 0; j < task.parameterCount; j += 2, row+=2) {
+					g.fillRect(left, rowOrigins[row], width, gridHeight);
 				}
 			}
-			rowIndex = parameterRowIndex + numParameters;
-			int taskEndIndex = rowIndex;
-			
-			int taskHeight;
-			if (rowOrigins.length == (taskEndIndex+1)) {
-				taskHeight = height - layoutInfo.rowOrigins[taskStartIndex]-1;
-			} else {
-				taskHeight = rowOrigins[taskEndIndex] - layoutInfo.rowOrigins[taskStartIndex];
-			}
-			
-			g.setColor(Color.LIGHT_GRAY);
-			g.drawRect(left, layoutInfo.rowOrigins[taskStartIndex], width, taskHeight);
-			//g.drawString("" + taskStartIndex, left, layoutInfo.rowOrigins[taskStartIndex]);
 		}
 	}
 	
