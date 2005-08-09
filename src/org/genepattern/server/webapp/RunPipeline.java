@@ -300,11 +300,15 @@ public class RunPipeline {
 			ParameterInfo[] parameterInfo, JobInfo[] results) throws FileNotFoundException {
 		for (int i = 0; i < parameterInfo.length; i++) {
 			ParameterInfo aParam = parameterInfo[i];
+
 			if (aParam.getAttributes() != null) {
 				if (aParam.getAttributes().get(PipelineModel.INHERIT_TASKNAME) != null) {
 					String url = getInheritedFilename(aParam.getAttributes(),
 							results);
 					aParam.setValue(url);
+					//if (aParam.getAttributes().get(PipelineModel.RUNTIME_PARAM) != null){
+					//aParam.getAttributes().remove(PipelineModel.RUNTIME_PARAM);
+					//}
 				}
 			}
 		}
@@ -350,7 +354,8 @@ public class RunPipeline {
 					aParam.getAttributes().remove(PipelineModel.RUNTIME_PARAM);
 					String key = name + taskNum + "." + aParam.getName();
 					String val = (String) args.get(key);
-					aParam.setValue(val);
+					if ((val != null))
+						aParam.setValue(val);
 				}
 			}
 		}
