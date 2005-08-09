@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,6 +56,9 @@ public class ParameterInfoPanel extends JPanel {
 
 	private List inputFileParameters;
 
+	private List inputFileTypes;
+
+	
 	private List parameterDescriptions;
 
 	private FormLayout formLayout;
@@ -65,6 +69,7 @@ public class ParameterInfoPanel extends JPanel {
 
 	private DescriptionListener descriptionListener;
 
+	
 	final static int PARAMETER_LABEL_COLUMN = 1;
 
 	final static int PARAMETER_INPUT_FIELD_COLUMN = 3;
@@ -102,13 +107,13 @@ public class ParameterInfoPanel extends JPanel {
 		return (Component) parameterName2ComponentMap.get(parameterName);
 	}
 
-	/**
-	 * Gets an iterator of the input file parameters
-	 * 
-	 * @return the input file parameters
-	 */
+	
 	public Iterator getInputFileParameters() {
 		return inputFileParameters.iterator();
+	}
+	
+	public Iterator getInputFileTypes() {
+		return inputFileTypes.iterator();
 	}
 
 	private final static String getValue(ParameterInfo info,
@@ -237,7 +242,8 @@ public class ParameterInfoPanel extends JPanel {
 		parameterName2ComponentMap = new HashMap(numParams);
 		parameterDescriptions = new ArrayList(numParams);
 		inputFileParameters = new ArrayList();
-
+		inputFileTypes = new ArrayList();
+		
 		this.setBackground(Color.white);
 		this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -366,11 +372,20 @@ public class ParameterInfoPanel extends JPanel {
 	protected final Component createComponent(final ParameterInfo info) {
 		String value = info.getValue();
 		Component field = null;
+		String name = AnalysisServiceDisplay.getDisplayString(info);
 		if(viewOnly) {
 			field = new JLabel(value);
 		} else {
 			if (info.isInputFile()) {
-				inputFileParameters.add(info);
+				inputFileParameters.add(name);
+				String fileFormatsString = (String) info.getAttributes().get(
+						GPConstants.FILE_FORMAT);
+				if(fileFormatsString!=null) {
+					inputFileTypes.add(fileFormatsString
+						.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER));
+				} else {
+					inputFileTypes.add(new String[0]);
+				}
 				field = createInputFileField(info);
 			} else if(value.split(";").length > 1) {
 				field = createComboBox(info);
