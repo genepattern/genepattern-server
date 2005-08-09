@@ -15,6 +15,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -213,14 +214,23 @@ public class ViewPipeline extends JPanel {
 		tasksPanel.setOpaque(false);
 		tasksPanel.add(togglePanel, cc.xywh(1, tasksLayout.getRowCount(), 2, 1,
 				CellConstraints.LEFT, CellConstraints.BOTTOM));
-		int taskStart = tasksLayout.getRowCount();
+		
 
 		togglePanel.setBackground(getBackground());
+		int taskStart = tasksLayout.getRowCount();
 		addTaskParameters(taskIndex, togglePanel);
 		int taskEnd = tasksLayout.getRowCount();
 		int parameterCount = taskEnd - taskStart;
 		togglePanel.setExpanded(true);
-		tasksPanel.addTask(togglePanel, parameterCount);
+		tasksPanel.addTask(togglePanel, taskStart, parameterCount);
+		
+		// add separator between tasks
+		tasksLayout.appendRow(new RowSpec("1dlu"));
+		tasksLayout.appendRow(new RowSpec("pref"));
+		tasksPanel.add(new JSeparator(), cc.xyw(1, tasksLayout.getRowCount(), tasksLayout.getColumnCount()));
+		tasksLayout.appendRow(new RowSpec("5dlu"));
+		
+		
 
 	}
 
