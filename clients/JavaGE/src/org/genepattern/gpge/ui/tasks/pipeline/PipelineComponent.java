@@ -37,11 +37,13 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.MessageManager;
+import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.GroupPanel;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceDisplay;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
 import org.genepattern.gpge.ui.tasks.ParameterChoice;
+import org.genepattern.gpge.ui.tasks.Sendable;
 import org.genepattern.gpge.ui.tasks.TaskDisplay;
 import org.genepattern.gpge.ui.tasks.TaskHelpActionListener;
 import org.genepattern.gpge.ui.tasks.TaskNamePanel;
@@ -70,7 +72,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 
 	private PipelineEditorModel model;
 
-	private AlternatingRowColorPanel tasksPanel;
+	private JPanel tasksPanel;
 
 	private FormLayout tasksLayout;
 
@@ -336,17 +338,11 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 		tasksInPipelineComboBox.removeAllItems();
 		tasksLayout = new FormLayout(
 				"left:pref, 3dlu, right:pref, 3dlu, default:grow", "");
-		tasksPanel = new AlternatingRowColorPanel(tasksLayout);
+		tasksPanel = new JPanel(tasksLayout);
 		tasksPanel.setBackground(getBackground());
 		scrollPane.setViewportView(tasksPanel);
 	}
 	
-
-	/**
-	 * Gets an iterator of input file parameters
-	 * 
-	 * @return the input file names
-	 */
 	public Iterator getInputFileParameters() {
 		return inputFileParameters.iterator();
 	}
@@ -355,19 +351,11 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 		return inputFileTypes.iterator();
 	}
 
-	/**
-	 * Sets the value of the given parameter to the given node
-	 * 
-	 * @param parameterName
-	 *            the parmeter name
-	 * @param node
-	 *            a tree node
-	 */
-	public void setInputFile(String parameterName,
-			TreeNode node) {
+	public void sendTo(String parameterName,
+			Sendable sendable) {
 		ParameterDisplay display = (ParameterDisplay) parameterName2ComponentMap  .get(parameterName);
 		if (display != null) {
-			 display.setValue(node.toString()); // FIXME
+			 display.setValue(sendable); 
 		}
 	}
 
@@ -392,30 +380,31 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 	}
 
 	private void setPipeline(AnalysisService svc, PipelineModel pipelineModel) {
-		try {
-			if (svc == null) {
-				model = new PipelineEditorModel();
-				String username = AnalysisServiceManager.getInstance().getUsername();
-				model.setAuthor(username);
-				model.setOwner(username);
-			} else {
-				model = new PipelineEditorModel(svc, pipelineModel);
-			}
-			enableButtons();
-			model.addPipelineListener(this);
-			if (DEBUG) {
-				model.print();
-			}
 
-			// show edit link when task has local authority and either belongs
-			// to
-			// current user or is public
-			layoutTasks();
-		} catch (JobSubmissionsNotFoundException e) {
-			List missingJobSubmissions = e.getjobSubmissions();
-			GenePattern.showErrorDialog(missingJobSubmissions.toString());
-			// FIXME
+		if (svc == null) {
+			model = new PipelineEditorModel();
+			String username = AnalysisServiceManager.getInstance()
+					.getUsername();
+			model.setAuthor(username);
+			model.setOwner(username);
+		} else {
+			model = new PipelineEditorModel(svc, pipelineModel);
+			if(model.getMissingJobSubmissions().size() > 0) {
+				MessageManager.notifyListeners(new ChangeViewMessageRequest(this, ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST, svc));
+				return; // FIXME
+			}
 		}
+		enableButtons();
+		model.addPipelineListener(this);
+		if (DEBUG) {
+			model.print();
+		}
+
+		// show edit link when task has local authority and either belongs
+		// to
+		// current user or is public
+		layoutTasks();
+
 	}
 
 	static class HeaderPanel extends JPanel {
@@ -692,12 +681,12 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 		promptWhenRunLabel.setFont(promptWhenRunLabel.getFont().deriveFont(
 				promptWhenRunLabel.getFont().getSize2D() - 2));
 		togglePanel.addToggleComponent(promptWhenRunLabel);
-		tasksPanel.add(promptWhenRunLabel, cc.xy(PROMPT_WHEN_RUN_COLUMN,
-				tasksLayout.getRowCount()));
+		tasksPanel.add(promptWhenRunLabel, cc.xyw(PROMPT_WHEN_RUN_COLUMN,
+				tasksLayout.getRowCount(), tasksLayout.getColumnCount()));
 		int parameterStart = tasksLayout.getRowCount();
 		addTaskParameters(taskIndex, togglePanel);
 		int parameterEnd = tasksLayout.getRowCount();
-		tasksPanel.addTask(togglePanel, parameterEnd - parameterStart);
+	//	tasksPanel.addTask(togglePanel, parameterEnd - parameterStart);
 		togglePanel.setExpanded(true);
 
 	}
@@ -761,6 +750,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 			if (model.isChoiceList(taskIndex, i)) {
 				JComboBox comboBox = new JComboBox(model.getChoices(taskIndex,
 						i));
+				comboBox.setBackground(getBackground());
 				String value = model.getValue(taskIndex, i);
 				for (int j = 0; j < comboBox.getItemCount(); j++) {
 					if (((ParameterChoice) comboBox.getItemAt(j))
@@ -785,7 +775,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 				inputFileParameters.add(sendToString);
 				inputFileTypes.add(model.getParameterInputTypes(taskIndex, i));
 				
-				final JTextField inputComponent = new JTextField(20);
+				final JTextField inputComponent = new ObjectTextField(20);
 				taskDisplay.parameters[i].inputField = inputComponent;
 				this.parameterName2ComponentMap.put(sendToString, taskDisplay.parameters[i]);
 				JPanel inputPanel = new JPanel();
@@ -1004,6 +994,8 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 
 		JCheckBox createPromptWhenRunCheckBox() {
 			promptWhenRun = new JCheckBox();
+			promptWhenRun.setBackground(Color.white);
+			
 			promptWhenRun.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if (!promptWhenRun.isSelected()) {
@@ -1040,9 +1032,9 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 			promptWhenRun.setSelected(false);
 		}
 
-		void setValue(String s) {
+		void setValue(Sendable s) {
 			if (inputField instanceof JTextField) {
-				((JTextComponent) inputField).setText(s);
+				((ObjectTextField) inputField).setObject(s);
 				useOutputFromPreviousTask.setVisible(true);
 				useOutputFromPreviousTask.setSelected(false);
 				select();
