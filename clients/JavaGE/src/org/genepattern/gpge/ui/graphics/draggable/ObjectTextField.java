@@ -24,13 +24,14 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import org.genepattern.gpge.ui.project.ProjectDirModel;
+import org.genepattern.gpge.ui.tasks.JobModel;
+
 /**
  * 
  * @author kohm
  */
 public class ObjectTextField extends JTextField {
-	/** the object that is displayed */
-	private Object object;
 
 	/** normal border */
 	private Border normal_border = getBorder();
@@ -39,12 +40,16 @@ public class ObjectTextField extends JTextField {
 	private Border good_border = new EtchedBorder(java.awt.Color.darkGray,
 			java.awt.Color.green);
 
-	/** Creates new form ObjectTextField */
+	/** Creates new ObjectTextField */
 	public ObjectTextField() {
 		this(null, 10);
 	}
-
-	/** Creates new form ObjectTextField */
+	
+	/** Creates new ObjectTextField */
+	public ObjectTextField(int cols) {
+		this(null, cols);
+	}
+	/** Creates new ObjectTextField */
 	public ObjectTextField(final String text, final int cols) {
 		super(text, cols);
 		DropTarget dropTarget = new DropTarget(this,
@@ -54,21 +59,24 @@ public class ObjectTextField extends JTextField {
 
 	/** sets the object and it's text representation */
 	public void setObject(final Object object) {
-		this.object = object;
-		this.setText(object.toString());
-		if (object instanceof java.net.URL) {
+		if(object instanceof ProjectDirModel.FileNode) {
+			this.setText(((ProjectDirModel.FileNode) object).file.getPath());
+		} else if(object instanceof JobModel.ServerFileNode) {
+			JobModel.ServerFileNode node = (JobModel.ServerFileNode) object;
+			this.setText("job #" + node.getJobNumber() + ", " + node.getFileName());
+		} else if (object instanceof java.net.URL) {
 			java.net.URL url = (java.net.URL) object;
 			if ("file".equals(url.getProtocol())) {
 				java.io.File file = new java.io.File(url.getFile());
-				this.object = file;
+				setText(file.getPath());
+			} else {
+				setText(url.toString());
 			}
+		} else {
+			setText(object.toString());
 		}
 	}
 
-	/** gets the object */
-	public Object getObject() {
-		return this.object;
-	}
 
 	// helpers that cause visual change depending on if the drop target is ok or
 	// not
@@ -211,16 +219,8 @@ public class ObjectTextField extends JTextField {
 		}
 
 		public final boolean isDropAcceptable(final DropTargetDropEvent e) {
-
-			// Only accept COPY or MOVE gestures (ie LINK is not supported)
-			// System.out.println("checking for Copy or Move
-			// "+e.getDropAction());
-			// if ((e.getDropAction() & DnDConstants.ACTION_COPY_OR_MOVE) == 0)
-			// return false;
-
 			// Only accept particular flavors
-			final boolean is_acceptable = isDataFlavorSupported(e);
-			if (!is_acceptable) {
+			if (!isDataFlavorSupported(e)) {
 				return false;
 			}
 			return true;
