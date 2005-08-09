@@ -118,39 +118,20 @@ public class ParameterInfoPanel extends JPanel {
 
 	private final static String getValue(ParameterInfo info,
 			ObjectTextField field) throws java.io.IOException {
-		final Object obj = field.getObject();
-		if (obj == null) {
-			return null;
-		}
-
-		if (obj instanceof String) {// reloaded job where input file is
-			// on server
-			info.getAttributes().put(ParameterInfo.TYPE,
-					ParameterInfo.FILE_TYPE);
-
-			info.getAttributes().put(ParameterInfo.MODE,
-					ParameterInfo.CACHED_INPUT_MODE);
-			return obj.toString();
-		}
-		if (obj instanceof org.genepattern.gpge.ui.project.ProjectDirModel.FileNode) {
+		String text = field.getText().trim();
+		if(new File(text).exists()) {
 			info.setAsInputFile();
-			ProjectDirModel.FileNode node = (ProjectDirModel.FileNode) obj;
-			return node.file.getCanonicalPath();
-		} else if (obj instanceof org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) {
+			return new File(text).getCanonicalPath();
+		} else if(text.startsWith("job #")) { // job #21, out.txt
 			info.getAttributes().put(ParameterInfo.TYPE,
 					ParameterInfo.FILE_TYPE);
 			info.getAttributes().put(ParameterInfo.MODE,
 					ParameterInfo.CACHED_INPUT_MODE);
-			org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode node = (org.genepattern.gpge.ui.tasks.JobModel.ServerFileNode) obj;
-			return node.getParameterValue();
-		} else if (obj instanceof java.io.File) {
-			info.setAsInputFile();
-			final File drop_file = (File) obj;
-			return drop_file.getCanonicalPath();
-		} else if (obj instanceof java.net.URL) {
-			return obj.toString();
+			String jobNumber = text.substring(text.indexOf("#")+1, text.indexOf(",")).trim();
+			String fileName = text.substring(text.indexOf(",")+1, text.length()).trim();
+			return jobNumber + "/" + fileName;
 		} else {
-			throw new IllegalStateException();
+			return text;
 		}
 	}
 
@@ -335,10 +316,9 @@ public class ParameterInfoPanel extends JPanel {
 	}
 
 	/**
-	 * 
-	 * @param parameterName
-	 * @param value
-	 *            If the parameter contains a choice list, the value can be
+	 * Sets the value of the given parameter
+	 * @param parameterName the unencoded parameter name as returned by ParameterInfo.getName()
+	 * @param parameterValue the parameter value. If the parameter contains a choice list, the value can be
 	 *            either the UI value of the command line value
 	 */
 	public void setValue(String parameterName, Object value) {
