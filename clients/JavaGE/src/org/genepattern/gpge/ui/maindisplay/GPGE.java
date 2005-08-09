@@ -1097,14 +1097,13 @@ public class GPGE {
 						runTaskViewShown = true;
 					
 						final TaskDisplay taskDisplay = (TaskDisplay) changeViewMessage.getComponent(); 
+						Iterator inputFileTypes = taskDisplay.getInputFileTypes();
 						for (Iterator it = taskDisplay
 								.getInputFileParameters(); it.hasNext();) {
-							final ParameterInfo pi = (ParameterInfo) it.next();
-							final String name = pi.getName();
-							final String displayName = AnalysisServiceDisplay
-									.getDisplayString(name);
+							final String name = (String) it.next();
+							final String[] fileTypes = (String[]) inputFileTypes.next();
 							MenuItemAction jobResultFileSendToMenuItem = new SendToMenuItemAction(
-									displayName, pi) {
+									name, fileTypes) {
 								
 								public void actionPerformed(ActionEvent e) {
 									taskDisplay.setInputFile(name,
@@ -1116,7 +1115,7 @@ public class GPGE {
 									.add(jobResultFileSendToMenuItem);
 
 							MenuItemAction projectMenuItem = new SendToMenuItemAction(
-									displayName, pi) {
+									name, fileTypes) {
 								public void actionPerformed(ActionEvent e) {
 									taskDisplay.setInputFile(name,
 											selectedProjectDirNode);
@@ -1289,28 +1288,24 @@ public class GPGE {
 	}
 
 	static class SendToMenuItemAction extends MenuItemAction {
-		List fileFormats;
+		String[] fileFormats;
 
-		public SendToMenuItemAction(String text, ParameterInfo info) {
+		public SendToMenuItemAction(String text, String[] fileFormats) {
 			super(text);
-			String fileFormatsString = (String) info.getAttributes().get(
-					GPConstants.FILE_FORMAT);
-			fileFormats = new ArrayList();
-			if (fileFormatsString == null || fileFormatsString.equals("")) {
-				return;
-			}
-			java.util.StringTokenizer st = new java.util.StringTokenizer(
-					fileFormatsString, GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-			while (st.hasMoreTokens()) {
-				fileFormats.add(st.nextToken().toLowerCase());
-			}
+			this.fileFormats = fileFormats; 
+			
 		}
 
 		public boolean isCorrectKind(String kind) {
-			if (fileFormats.size() == 0 || kind == null || kind.equals("")) {
+			if (fileFormats.length == 0 || kind == null || kind.equals("")) {
 				return true;
 			}
-			return fileFormats.contains(kind.toLowerCase());
+			for(int i = 0; i < fileFormats.length; i++) {
+				if(fileFormats[i].equalsIgnoreCase(kind)) {
+					return true;
+				}
+ 			}
+			return false;
 		}
 	}
 
