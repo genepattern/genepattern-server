@@ -78,94 +78,7 @@ public class ViewPipeline extends JPanel {
 		removeAll();
 	}
 
-	private void showMissingTasks(AnalysisService svc, final List missingTasks) {
-
-		final String[] columnNames = { "Name", "Version", "LSID" };
-		TableModel tableModel = new AbstractTableModel() {
-
-			public int getRowCount() {
-				return missingTasks.size();
-			}
-
-			public int getColumnCount() {
-				return columnNames.length;
-			}
-
-			public String getColumnName(int j) {
-				return columnNames[j];
-			}
-
-			public Object getValueAt(int row, int col) {
-				JobSubmission js = (JobSubmission) missingTasks.get(row);
-				if (col == 0) {
-					return js.getName();
-				} else if (col == 1) {
-					try {
-						return new LSID(js.getLSID()).getVersion();
-					} catch (MalformedURLException e) {
-						e.printStackTrace();
-					}
-					return null;
-				} else {
-					return js.getLSID();
-				}
-			}
-		};
-
-		JTable table = new AlternatingColorTable(tableModel);
-
-		JPanel buttonPanel = new JPanel();
-		JButton installFromCatalogBtn = new JButton(
-				"Install Missing Modules From Catalog");
-		JButton importZipBtn = new JButton("Import Module From Zip File");
-		importZipBtn.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent arg0) {
-
-			}
-
-		});
-		buttonPanel.add(installFromCatalogBtn);
-		// buttonPanel.add(importZipBtn);
-		installFromCatalogBtn.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent arg0) {
-				PostData postData = new PostData(AnalysisServiceManager
-						.getInstance().getServer()
-						+ "/gp/taskCatalog.jsp");
-				try {
-					for (int i = 0; i < missingTasks.size(); i++) {
-						JobSubmission js = (JobSubmission) missingTasks.get(i);
-						postData.addPostData("LSID", js.getLSID());
-					}
-					BrowserLauncher.openURL(postData.toString());
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-			}
-
-		});
-
-		JScrollPane sp = new JScrollPane(table);
-
-		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sp,
-				new JScrollPane(tasksPanel));
-		// table.getColumnModel().getColumn(1).setPreferredWidth(10);
-		JTextArea errorLabel = GUIUtil
-				.createWrappedLabel("The following modules do not exist on the server. Please install the missing modules from the Module Repository or import them from a zip file (File > Import Module).");
-		errorLabel.setBackground(Color.red);
-		Border b = sp.getBorder();
-		sp.setBorder(GUIUtil.createBorder(b, 0, -1, -1, -1));
-		JPanel topPanel = new JPanel(new BorderLayout());
-		topPanel.add(errorLabel, BorderLayout.NORTH);
-		topPanel.add(buttonPanel, BorderLayout.CENTER);
-		taskNamePanel = new TaskNamePanel(svc.getTaskInfo(),
-				ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST, topPanel);
-
-		add(taskNamePanel, BorderLayout.NORTH);
-		add(splitPane, BorderLayout.CENTER);
-
-	}
+	
 
 	public void display(AnalysisService svc) {
 		clear();
@@ -191,16 +104,16 @@ public class ViewPipeline extends JPanel {
 
 		// show edit link when task has local authority and either belongs to
 		// current user or is public
-		try {
-			model = new PipelineEditorModel(svc, pipelineModel);
-
-			tasksLayout = new FormLayout("right:pref, 3dlu, default:grow", "");
-			tasksPanel = new AlternatingRowColorPanel(tasksLayout);
-			tasksPanel.setBackground(getBackground());
-			for (int i = 0; i < model.getTaskCount(); i++) {
-				layoutTask(i);
-			}
-
+		
+		model = new PipelineEditorModel(svc, pipelineModel);
+		
+		tasksLayout = new FormLayout("right:pref, 3dlu, default:grow", "");
+		tasksPanel = new AlternatingRowColorPanel(tasksLayout);
+		tasksPanel.setBackground(getBackground());
+		for (int i = 0; i < model.getTaskCount(); i++) {
+			layoutTask(i);
+		}
+		if (model.getMissingJobSubmissions().size() == 0) {
 			JScrollPane sp = new JScrollPane(tasksPanel);
 			Border b = sp.getBorder();
 			sp.setBorder(GUIUtil.createBorder(b, 0, -1, -1, -1));
@@ -273,11 +186,18 @@ public class ViewPipeline extends JPanel {
 			add(bottomPanel, BorderLayout.SOUTH);
 			invalidate();
 			validate();
-		} catch (JobSubmissionsNotFoundException e) {
-			e.printStackTrace();
-			showMissingTasks(svc, e.getjobSubmissions());
-
+		} else {
+			MissingTasksDisplay mtd = new MissingTasksDisplay(model.getMissingJobSubmissions());
+			taskNamePanel = new TaskNamePanel(svc.getTaskInfo(),
+					ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST, mtd
+							.getErrorPanel());
+			add(taskNamePanel, BorderLayout.NORTH);
+			JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+					mtd.getScrollPane(), new JScrollPane(tasksPanel));
+			add(splitPane, BorderLayout.CENTER);
+			splitPane.setDividerLocation(mtd.getScrollPane().getPreferredSize().height);
 		}
+
 	}
 
 	private void layoutTask(final int taskIndex) {
@@ -320,11 +240,12 @@ public class ViewPipeline extends JPanel {
 				field.setText("Prompt when run");
 			} else if (model.getInheritedTaskIndex(taskIndex, i) != -1) {
 				final int parameterIndex = i;
+				int inheritedTaskIndex = model.getInheritedTaskIndex(taskIndex, i);
 				value = "<html>Use <b>"
 						+ model.getInheritedFile(taskIndex, i)
 						+ "</b> from <b>"
 						+ (1 + model.getInheritedTaskIndex(taskIndex, i))
-						+ ". " + model.getTaskName(taskIndex) + "</b>";
+						+ ". " + model.getTaskName(inheritedTaskIndex) + "</b>";
 				field.setText(value);
 				field.addMouseListener(new MouseAdapter() {
 
