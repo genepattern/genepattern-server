@@ -1,9 +1,3 @@
-/*
- * ObjectTextField.java
- *
- * Created on March 24, 2003, 2:39 PM
- */
-
 package org.genepattern.gpge.ui.graphics.draggable;
 
 import java.awt.datatransfer.DataFlavor;
@@ -24,8 +18,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import org.genepattern.gpge.ui.project.ProjectDirModel;
-import org.genepattern.gpge.ui.tasks.JobModel;
+import org.genepattern.gpge.ui.tasks.Sendable;
 
 /**
  * 
@@ -44,11 +37,12 @@ public class ObjectTextField extends JTextField {
 	public ObjectTextField() {
 		this(null, 10);
 	}
-	
+
 	/** Creates new ObjectTextField */
 	public ObjectTextField(int cols) {
 		this(null, cols);
 	}
+
 	/** Creates new ObjectTextField */
 	public ObjectTextField(final String text, final int cols) {
 		super(text, cols);
@@ -59,11 +53,8 @@ public class ObjectTextField extends JTextField {
 
 	/** sets the object and it's text representation */
 	public void setObject(final Object object) {
-		if(object instanceof ProjectDirModel.FileNode) {
-			this.setText(((ProjectDirModel.FileNode) object).file.getPath());
-		} else if(object instanceof JobModel.ServerFileNode) {
-			JobModel.ServerFileNode node = (JobModel.ServerFileNode) object;
-			this.setText("job #" + node.getJobNumber() + ", " + node.getFileName());
+		if (object instanceof Sendable) {
+			setText(((Sendable) object).toUIString());
 		} else if (object instanceof java.net.URL) {
 			java.net.URL url = (java.net.URL) object;
 			if ("file".equals(url.getProtocol())) {
@@ -77,7 +68,6 @@ public class ObjectTextField extends JTextField {
 		}
 	}
 
-
 	// helpers that cause visual change depending on if the drop target is ok or
 	// not
 	/** indicates normal */
@@ -85,17 +75,15 @@ public class ObjectTextField extends JTextField {
 		setBorder(normal_border);
 	}
 
-
 	/** indicates good drop */
-	protected void indicateGoodDrop() {	
+	protected void indicateGoodDrop() {
 		setBorder(good_border);
 	}
 
-	
-
-	// I N N E R C L A S S E S
-
 	class ObjectDropTargetListener implements java.awt.dnd.DropTargetListener {
+		protected DataFlavor[] ok_flavors = null;
+
+		protected DataFlavor textFlavor = null;
 
 		public final void dragEnter(final DropTargetDragEvent e) {
 			if (!isDragAcceptable(e)) {
@@ -278,10 +266,6 @@ public class ObjectTextField extends JTextField {
 			}
 			return ok_flavors;
 		}
-
-		protected DataFlavor[] ok_flavors = null;
-
-		protected DataFlavor textFlavor = null;
 	}
 
 }
