@@ -50,6 +50,8 @@ public class PipelineEditorModel {
 	
 	/** list of doc file names that have already been uploaded to the server for this task */
 	private List localDocFiles = new ArrayList();
+
+	private List missingJobSubmissions;
 	
 	/**
 	 * Gets a list containing <tt>String</tt> instances of existing doc file names
@@ -92,8 +94,7 @@ public class PipelineEditorModel {
 		listenerList = new EventListenerList();
 	}
 
-	public PipelineEditorModel(AnalysisService svc, PipelineModel model)
-			throws JobSubmissionsNotFoundException {
+	public PipelineEditorModel(AnalysisService svc, PipelineModel model) {
 		Map attrs = svc.getTaskInfo().getTaskInfoAttributes();
 		this.lsid = (String) attrs.get(GPConstants.LSID);
 		try {
@@ -122,17 +123,24 @@ public class PipelineEditorModel {
 		tasks = new ArrayList();
 		AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
 		List jobSubmissions = model.getTasks();
-		List missingTasks = new ArrayList();
+		missingJobSubmissions = new ArrayList();
+		List missingLSIDs = new ArrayList();
 		for (int i = 0; i < jobSubmissions.size(); i++) {
 			JobSubmission js = (JobSubmission) jobSubmissions.get(i);
-			TaskInfo formalTask = asm.getAnalysisService(js.getLSID())
-					.getTaskInfo();
-
-			if (formalTask == null) {
-				missingTasks.add(js);
-				continue;
+			 AnalysisService formalAnalysisService = asm.getAnalysisService(js.getLSID());
+			 
+			if (formalAnalysisService == null) {
+				if(!missingLSIDs.contains(js.getLSID())) {
+					missingLSIDs.add(js.getLSID());
+					missingJobSubmissions.add(js);
+				}
 			}
-			MyTask myTask = new MyTask(formalTask, js.getDescription());
+			MyTask myTask;
+			if(formalAnalysisService!=null) {
+				myTask = new MyTask(formalAnalysisService.getTaskInfo(), js.getDescription());
+			} else {
+				myTask = new MyTask(js.getName(), js.getDescription());
+			}
 			tasks.add(myTask);
 			Map paramName2ParamIndex = new HashMap();
 			List jsParams = js.getParameters();
@@ -140,7 +148,7 @@ public class PipelineEditorModel {
 				ParameterInfo p = (ParameterInfo) jsParams.get(j);
 				paramName2ParamIndex.put(p.getName(), new Integer(j));
 			}
-			ParameterInfo[] formalParams = formalTask.getParameterInfoArray();
+			ParameterInfo[] formalParams = formalAnalysisService!=null?formalAnalysisService.getTaskInfo().getParameterInfoArray():null;
 			if (formalParams != null) {
 				for (int j = 0; j < formalParams.length; j++) {
 					ParameterInfo formalParam = formalParams[j];
@@ -156,13 +164,19 @@ public class PipelineEditorModel {
 					myTask.addParameter(new MyParameter(formalParam, js,
 							indexInJobSubmission));
 				}
+			} else {
+				for (int j = 0; j < jsParams.size(); j++) {
+					ParameterInfo p = (ParameterInfo) jsParams.get(j);
+					myTask.addParameter(MyParameter.createMissingFormalParam(p));
+				}
 			}
-		}
-		if (missingTasks.size() > 0) {
-			throw new JobSubmissionsNotFoundException(missingTasks);
 		}
 	}
 
+	public List getMissingJobSubmissions() {
+		return missingJobSubmissions;
+	}
+	
 	public void move(int from, int to) {
 		if (from < to) {
 			moveDown(from, to);
@@ -442,8 +456,7 @@ public class PipelineEditorModel {
 	 */
 	public int getParameterCount(int taskIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
-		TaskInfo formalTask = task.getTaskInfo();
-		return formalTask.getParameterInfoArray().length;
+		return task.parameters.size();
 	}
 
 	public String getTaskDescription(int taskIndex) {
@@ -472,8 +485,7 @@ public class PipelineEditorModel {
 	
 	public String getParameterName(int taskIndex, int parameterIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
-		TaskInfo formalTask = task.getTaskInfo();
-		return formalTask.getParameterInfoArray()[parameterIndex].getName();
+		return ((MyParameter) task.parameters.get(parameterIndex)).name;
 	}
 
 	public int getInheritedTaskIndex(int taskIndex, int parameterIndex) {
@@ -557,8 +569,7 @@ public class PipelineEditorModel {
 
 	public String getTaskName(int taskIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
-		TaskInfo formalTask = task.getTaskInfo();
-		return formalTask.getName();
+		return task.taskName;
 	}
 
 	private static class MyParameter {
@@ -631,6 +642,42 @@ public class PipelineEditorModel {
 
 		}
 
+		
+		private MyParameter(String name) {
+			isRequired = false;
+			isInputFile = false;
+			choiceItems = null;
+			this.name = name;
+		}
+		
+		/**
+		 * Creates a new instance. Use when missing formal parameter
+		 * @param jobSubmissionParam ParameterInfo returned from JobSubmission
+		 */
+		public static MyParameter createMissingFormalParam(ParameterInfo jobSubmissionParam) {
+			MyParameter p = new MyParameter(jobSubmissionParam.getName());
+
+			java.util.Map pipelineAttributes = jobSubmissionParam
+			.getAttributes();
+
+			String taskNumberString = null;
+			if (pipelineAttributes != null) {
+				taskNumberString = (String) pipelineAttributes
+				.get(PipelineModel.INHERIT_TASKNAME);
+				if (taskNumberString != null) {
+					int inheritedTaskIndex = Integer
+					.parseInt(taskNumberString.trim());
+					String outputFileNumber = (String) pipelineAttributes
+					.get(PipelineModel.INHERIT_FILENAME);
+					p.setInheritOutput(inheritedTaskIndex, outputFileNumber);
+
+				} else {
+					p.setValue(jobSubmissionParam.getValue());
+				}
+			}
+			return p;
+		}
+		
 		public MyParameter(ParameterInfo formalParam) {
 			name = formalParam.getName();
 			value = (String) formalParam.getAttributes().get(
@@ -720,8 +767,17 @@ public class PipelineEditorModel {
 
 		private String description;
 
+		private String taskName;
+
+		public MyTask(String taskName, String description) {
+			this.taskName = taskName;
+			this.description = description;
+			parameters = new ArrayList();
+		}
+		
 		public MyTask(TaskInfo formalTask, String description) {
 			this.formalTaskInfo = formalTask;
+			this.taskName = formalTaskInfo.getName();
 			this.description = description;
 			parameters = new ArrayList();
 		}
