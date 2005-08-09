@@ -31,6 +31,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.text.JTextComponent;
+import javax.swing.tree.TreeNode;
 
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.gpge.GenePattern;
@@ -79,8 +80,6 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 
 	private HeaderPanel headerPanel;
 
-	private Map parameterName2ComponentMap = new HashMap();
-
 	private List inputFileParameters = new ArrayList();
 
 	private JComboBox tasksInPipelineComboBox;
@@ -99,6 +98,11 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 
 	private JButton moveDownButton;
 
+	private Map parameterName2ComponentMap = new HashMap();
+
+	private ArrayList inputFileTypes = new ArrayList();
+
+	
 	private void enableButtons() {
 		deleteButton.setEnabled(model.getTaskCount() > 0);
 		int index = tasksInPipelineComboBox.getSelectedIndex();
@@ -326,6 +330,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 			remove(headerPanel);
 		}
 		taskDisplayList.clear();
+		inputFileTypes.clear();
 		parameterName2ComponentMap.clear();
 		inputFileParameters.clear();
 		tasksInPipelineComboBox.removeAllItems();
@@ -345,6 +350,10 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 	public Iterator getInputFileParameters() {
 		return inputFileParameters.iterator();
 	}
+	
+	public Iterator getInputFileTypes() {
+		return inputFileTypes.iterator();
+	}
 
 	/**
 	 * Sets the value of the given parameter to the given node
@@ -355,10 +364,10 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 	 *            a tree node
 	 */
 	public void setInputFile(String parameterName,
-			javax.swing.tree.TreeNode node) {
-		JLabel label = (JLabel) parameterName2ComponentMap.get(parameterName);
-		if (label != null) {
-			label.setText(node.toString()); // FIXME
+			TreeNode node) {
+		ParameterDisplay display = (ParameterDisplay) parameterName2ComponentMap  .get(parameterName);
+		if (display != null) {
+			 display.setValue(node.toString()); // FIXME
 		}
 	}
 
@@ -767,8 +776,18 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 				togglePanel.addToggleComponent(comboBox);
 				taskDisplay.parameters[i].inputField = comboBox;
 			} else if (model.isInputFile(taskIndex, i)) {
+				String sendToString = (taskIndex + 1)
+						+ ". "
+						+ model.getTaskName(taskIndex)
+						+ "."
+						+ AnalysisServiceDisplay.getDisplayString(model
+								.getParameterName(taskIndex, i));
+				inputFileParameters.add(sendToString);
+				inputFileTypes.add(model.getParameterInputTypes(taskIndex, i));
+				
 				final JTextField inputComponent = new JTextField(20);
 				taskDisplay.parameters[i].inputField = inputComponent;
+				this.parameterName2ComponentMap.put(sendToString, taskDisplay.parameters[i]);
 				JPanel inputPanel = new JPanel();
 				inputPanel.setOpaque(false);
 				inputPanel.setBackground(getBackground());
@@ -991,7 +1010,6 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 						inputField.setVisible(true);
 						if (useOutputFromPreviousTask != null) {
 							browseBtn.setVisible(true);
-							;
 							useOutputFromPreviousTask.setVisible(true);
 						}
 					} else {
@@ -1013,6 +1031,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 
 		private void select() {
 			browseBtn.setVisible(!useOutputFromPreviousTask.isSelected());
+			
 			inputField.setVisible(!useOutputFromPreviousTask.isSelected());
 			inheritedTaskIndex.setVisible(useOutputFromPreviousTask
 					.isSelected());
@@ -1021,8 +1040,16 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 			promptWhenRun.setSelected(false);
 		}
 
-		String getValue() {
+		void setValue(String s) {
+			if (inputField instanceof JTextField) {
+				((JTextComponent) inputField).setText(s);
+				useOutputFromPreviousTask.setVisible(true);
+				useOutputFromPreviousTask.setSelected(false);
+				select();
+			}
+		}
 		
+		String getValue() {
 			if (inputField instanceof JTextField) {
 				return ((JTextComponent) inputField).getText().trim();
 			}
