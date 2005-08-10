@@ -32,6 +32,7 @@ import org.genepattern.gpge.ui.maindisplay.GroupPanel;
 import org.genepattern.gpge.ui.table.AlternatingColorTable;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceDisplay;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
+import org.genepattern.gpge.ui.tasks.ParameterChoice;
 import org.genepattern.gpge.ui.tasks.TaskHelpActionListener;
 import org.genepattern.gpge.ui.tasks.TaskNamePanel;
 import org.genepattern.gpge.ui.util.GUIUtil;
@@ -275,6 +276,17 @@ public class ViewPipeline extends JPanel {
 
 				});
 
+			} else if(model.isChoiceList(taskIndex, i)) {
+				ParameterChoice[] choiceItems = model.getChoices(taskIndex, i);
+				if(choiceItems!=null) {
+					for (int j = 0; j < choiceItems.length; j++) {
+						if (choiceItems[j]
+							.equalsCmdLineOrUIValue(value)) {
+							field.setText(choiceItems[j].getUIValue());
+							break;
+						}
+					}
+				}
 			}
 
 			tasksLayout.appendRow(new RowSpec("pref"));
@@ -286,6 +298,6 @@ public class ViewPipeline extends JPanel {
 			togglePanel.addToggleComponent(field);
 			togglePanel.addToggleComponent(label);
 
-		}
+		} 
 	}
 }
