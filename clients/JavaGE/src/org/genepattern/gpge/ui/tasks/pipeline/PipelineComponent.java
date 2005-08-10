@@ -108,6 +108,11 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 	
 	private void enableButtons() {
 		deleteButton.setEnabled(model.getTaskCount() > 0);
+		if(model.getTaskCount()==0) {
+			addAfterButton.setText("Add Task");
+		} else {
+			addAfterButton.setText("Add Task After");
+		}
 		int index = tasksInPipelineComboBox.getSelectedIndex();
 		addBeforeButton.setEnabled(index > 0);
 		moveDownButton.setEnabled((index + 1) != model.getTaskCount());
@@ -662,7 +667,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 				addTaskAfterItem
 						.setEnabled(taskIndex != model.getTaskCount() - 1
 								|| model.getTaskCount() == 1);
-
+				tasksInPipelineComboBox.setSelectedIndex(taskIndex);
 				if (e.isPopupTrigger()
 						|| e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 					popupMenu.show(e.getComponent(), e.getX(), e.getY());
