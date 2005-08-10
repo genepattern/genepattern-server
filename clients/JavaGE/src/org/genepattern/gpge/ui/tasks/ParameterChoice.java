@@ -37,14 +37,16 @@ public class ParameterChoice {
 		return new ParameterChoice(tokens[0]);
 	}
 
-	
-	
 	public final String toString() {
 		return uiText;
 	}
 
 	public boolean equalsCmdLineOrUIValue(String s) {
 		return uiText.equals(s) || commandLineValue.equals(s);
+	}
+	
+	public String getUIValue() {
+		return uiText;
 	}
 
 	/**
