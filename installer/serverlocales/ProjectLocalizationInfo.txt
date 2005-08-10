@@ -19,13 +19,12 @@
 #     property to configure an object when working with the custom_xx files.
 #
 # Product Name: GenePattern
-# Project File: C:\projects\gp2_refactor\installer\server.iap_xml
-# Generated:    Fri Jan 28 09:20:51 EST 2005
+# Project File: C:\projects\genepattern\installer\server.iap_xml
+# Generated:    Wed Aug 10 09:19:51 EDT 2005
 
 
 ---- PRE-INSTALL ACTIONS ----
 -- EditMultipleVariables.9c0beb7083e3 (NoEP)
--- EditVariableTable.578a9f1cbb06 (NoEP)
 -- GetRegEntry.9c3989d58479 (NoEP)
 -- GetRegEntry.080fed078e8c (NoEP)
 -- CustomAction.fc6ca1dd88e2 (NoEP)
@@ -35,7 +34,6 @@
 -- IntroAction.72a1c5a5b1d6
    +-- Help.72a1c5a6b1d6
 -- DisplayScrollingMessage.1f3de6dba442
--- ShowDialogAction.b87c61e0b99f
 -- LicenseAgrAction.1fd0f094a5aa
    +-- Help.1fd0f095a5aa
 -- LicenseAgrAction.1fd243c0a5aa
@@ -49,11 +47,17 @@
 -- EditMultipleVariables.0ebb85cba1d1 (NoEP)
 -- EditMultipleVariables.0f9a4e91a6af (NoEP)
 -- EditMultipleVariables.1e4b3660a1e6 (NoEP)
+-- AntRunner.edaf3302920a (NoEP)
 -- PlugInAction.40f81d5ca67d (NoEP)
 -- GetUserInput.9c15fc95842d
    +-- GUIGroupData.9c17de94842d
        +-- GUIComponentData.9c17de95842d
    +-- Help.9c15fc96842d
+-- ShowDialogAction.d9f737aea213
+-- GetUserInput.d9f35ed8a212
+   +-- GUIGroupData.d9f99b56a213
+       +-- GUIComponentData.d9f99b57a213
+   +-- Help.d9f35ed9a212
 -- CustomAction.41142830a735 (NoEP)
 -- GetUserInput.35173a9ab622
    +-- GUIGroupData.35179c0eb622
@@ -61,7 +65,6 @@
    +-- Help.35173a9bb622
 -- CustomAction.20be4b82bb15 (NoEP)
 -- CustomAction.caf6f6769fcf (NoEP)
--- AntRunner.caf7aa309fcf (NoEP)
 -- ShowDialogAction.20c28394bb15
 -- EditVariableTable.0f812e51a600 (NoEP)
 -- EditVariableTable.1f6da0dfa4f0 (NoEP)
@@ -77,26 +80,25 @@
 ---- POST-INSTALL ACTIONS ----
 -- Comment.4791a863b9a2 (NoEP)
 -- EditVariableTable.551e2e128ec8 (NoEP)
--- ShowDialogAction.66500cf6bd1f
+-- CustomAction.df4dde6d9259 (NoEP)
 -- ASCIIFileManipulator.9beca9d983e2
 -- ASCIIFileManipulator.9598e282995a
 -- ASCIIFileManipulator.9c9d2bb985a5
 -- ASCIIFileManipulator.3371d63db721
+-- ASCIIFileManipulator.da094140a30e
+-- ASCIIFileManipulator.d5531da3a535
 -- ASCIIFileManipulator.9cb004b38637
 -- Comment.478ffb01b9a2 (NoEP)
 -- ASCIIFileManipulator.3371e243b722
 -- ASCIIFileManipulator.9bef6fad83e2
 -- ASCIIFileManipulator.3371f2ceb722
+-- ASCIIFileManipulator.27389a048c8d
 -- Comment.47900c56b9a2 (NoEP)
 -- ASCIIFileManipulator.47811f0cb949
 -- Comment.47929786b9a2 (NoEP)
 -- AntRunner.29228022ac97 (NoEP)
 -- Comment.47947185b9a2 (NoEP)
--- ExecuteScript.1ff4c3c8a6ab (NoEP)
 -- ExecuteScript.00cba3af8998 (NoEP)
--- Comment.4793df09b9a2 (NoEP)
--- Exec.3429c5f2b844
--- ShowDialogAction.6648a5f8bd1f
 -- Comment.9d76bb598765 (NoEP)
 -- Comment.9d7603918765 (NoEP)
 -- AntRunner.cfa008388fd9 (NoEP)
@@ -107,7 +109,11 @@
    +-- Help.72a1c5bab1d8
 -- Comment.47960852b9a2 (NoEP)
 -- AntRunner.29732c0dac9c (NoEP)
+-- CustomAction.f919e62a9b43 (NoEP)
 -- LaunchDefaultBrowser.9bf31d129263
+-- Exec.fed8b687bcbd
+-- DisplayScrollingMessage.fedc0849bcbd
+-- DisplayScrollingMessage.fee03dd9bcc0
 
 
 ---- PRE-UNINSTALL ACTIONS ----
@@ -136,6 +142,7 @@
    |-- InstallBundle.72a1c57db1d4
    |-- InstallBundle.72a1c587b1d4
    |-- GhostDirectory.72a1c569b1d2 (NoEP)
+   |   |-- Exec.0081260688de
    |   |-- InstallDirectory.72a1c5c4b1d9 (NoEP)
    |   |   |-- InstallUninstaller.72a1c627b1da
    |   |-- MakeExecutable.1e2286c2bfa5
@@ -151,11 +158,8 @@
    |   |-- CreateShortcut.1f05a5bba3e1
    |   |-- CreateShortcut.ab3e464b8fb3
    |   |-- CreateShortcut.1e6cee84a1fb
-   |   |-- CreateShortcut.0ecd4dcba2f6
    |   |-- CreateShortcut.a6a9e2578cce
    |   |-- CreateShortcut.ab0f6a91a55f
-   |-- GhostDirectory.1ec564b2a32e (NoEP)
-   |   |-- Exec.0081260688de
    |-- Billboard.72a1c573b1d2
 
 

@@ -18,9 +18,12 @@
 #     - see the utility 'native2ascii' distributed with your JDK
 #
 # Product Name: GenePattern
-# Project File: C:\projects\gp2_refactor\installer\server.iap_xml
-# Generated:    Fri Jan 28 09:20:51 EST 2005
+# Project File: C:\projects\genepattern\installer\server.iap_xml
+# Generated:    Wed Aug 10 09:19:51 EDT 2005
 
+
+# ASCIIFileManipulator.27389a048c8d.additionalText=
+ASCIIFileManipulator.27389a048c8d.additionalText=
 
 # ASCIIFileManipulator.3371d63db721.additionalText=
 ASCIIFileManipulator.3371d63db721.additionalText=
@@ -49,20 +52,17 @@ ASCIIFileManipulator.9c9d2bb985a5.additionalText=
 # ASCIIFileManipulator.9cb004b38637.additionalText=
 ASCIIFileManipulator.9cb004b38637.additionalText=
 
+# ASCIIFileManipulator.d5531da3a535.additionalText=gpServerHostAddress=$HOST_ADDRESS$\n\n
+ASCIIFileManipulator.d5531da3a535.additionalText=gpServerHostAddress=$HOST_ADDRESS$\n\n
+
+# ASCIIFileManipulator.da094140a30e.additionalText=http.proxyHost=$HTTP_PROXYSERVER$\nhttp.proxyPort=$HTTP_PROXYPORT$\n\n\n
+ASCIIFileManipulator.da094140a30e.additionalText=http.proxyHost=$HTTP_PROXYSERVER$\nhttp.proxyPort=$HTTP_PROXYPORT$\n\n\n
+
 # Billboard.72a1c573b1d2.imageName=billboard_default.png
 Billboard.72a1c573b1d2.imageName=billboard_default.png
 
 # Billboard.72a1c573b1d2.imagePath=com/zerog/ia/installer/images/
 Billboard.72a1c573b1d2.imagePath=com/zerog/ia/installer/images/
-
-# CreateShortcut.0ecd4dcba2f6.args=
-CreateShortcut.0ecd4dcba2f6.args=
-
-# CreateShortcut.0ecd4dcba2f6.destinationName=R
-CreateShortcut.0ecd4dcba2f6.destinationName=R
-
-# CreateShortcut.0ecd4dcba2f6.workingDir=
-CreateShortcut.0ecd4dcba2f6.workingDir=
 
 # CreateShortcut.1e6cee84a1fb.args=
 CreateShortcut.1e6cee84a1fb.args=
@@ -172,14 +172,29 @@ DisplayScrollingMessage.1f3de6dba442.stepPrompt=Please install R on your compute
 # DisplayScrollingMessage.1f3de6dba442.title=Install R for your system
 DisplayScrollingMessage.1f3de6dba442.title=Install R for your system
 
-# Exec.0081260688de.commandLineArgs=chmod 775 $USER_MAGIC_FOLDER_1$$/$StartR.app$/$RAqua.app$/$Contents$/$bin$/$*
-Exec.0081260688de.commandLineArgs=chmod 775 $USER_MAGIC_FOLDER_1$$/$StartR.app$/$RAqua.app$/$Contents$/$bin$/$*
+# DisplayScrollingMessage.fedc0849bcbd.messageText=The Installer was unable to launch or confirm the launch of your default web browser. Please open the followign URL in your web browser to walk through the final four steps to complete the installation\n\nhttp://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp
+DisplayScrollingMessage.fedc0849bcbd.messageText=The Installer was unable to launch or confirm the launch of your default web browser. Please open the followign URL in your web browser to walk through the final four steps to complete the installation\n\nhttp://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp
 
-# Exec.3429c5f2b844.commandLineArgs=/Applications/Utilities/Installer.app/Contents/MacOS/Installer  \"$MAC_CHEWABLE$$/$J_libreadline.pkg\"
-Exec.3429c5f2b844.commandLineArgs=/Applications/Utilities/Installer.app/Contents/MacOS/Installer  \"$MAC_CHEWABLE$$/$J_libreadline.pkg\"
+# DisplayScrollingMessage.fedc0849bcbd.stepPrompt=
+DisplayScrollingMessage.fedc0849bcbd.stepPrompt=
 
-# Exec.3429c5f2b844.dialogLabel=Waiting for installation of libreadline (MacOS support for R) to finish
-Exec.3429c5f2b844.dialogLabel=Waiting for installation of libreadline (MacOS support for R) to finish
+# DisplayScrollingMessage.fedc0849bcbd.title=Could not launch browser
+DisplayScrollingMessage.fedc0849bcbd.title=Could not launch browser
+
+# DisplayScrollingMessage.fee03dd9bcc0.messageText=The Installer  was unable to start the GenePattern server.  The installation log is available at\n\n$USER_INSTALL_DIR$/GenePattern_InstallLog.log \n\nPlease review this and try to install again or contact gp-help@broad.mit.edu.
+DisplayScrollingMessage.fee03dd9bcc0.messageText=The Installer  was unable to start the GenePattern server.  The installation log is available at\n\n$USER_INSTALL_DIR$/GenePattern_InstallLog.log \n\nPlease review this and try to install again or contact gp-help@broad.mit.edu.
+
+# DisplayScrollingMessage.fee03dd9bcc0.stepPrompt=
+DisplayScrollingMessage.fee03dd9bcc0.stepPrompt=
+
+# DisplayScrollingMessage.fee03dd9bcc0.title=Could not launch browser
+DisplayScrollingMessage.fee03dd9bcc0.title=Could not launch browser
+
+# Exec.0081260688de.commandLineArgs=chmod 775 $USER_INSTALL_DIR$$/$StartR.app$/$RAqua.app$/$Contents$/$bin$/$*
+Exec.0081260688de.commandLineArgs=chmod 775 $USER_INSTALL_DIR$$/$StartR.app$/$RAqua.app$/$Contents$/$bin$/$*
+
+# Exec.fed8b687bcbd.commandLineArgs=/usr/bin/konqueror http://127.0.0.1:$GENEPATTERN_PORT$/gp/login.jsp?userid=$webmaster$&referrer=installFrame.jsp
+Exec.fed8b687bcbd.commandLineArgs=/usr/bin/konqueror http://127.0.0.1:$GENEPATTERN_PORT$/gp/login.jsp?userid=$webmaster$&referrer=installFrame.jsp
 
 # ExecuteScript.198ffaadb9f4.dialogLabel=Executing Installation Script...
 ExecuteScript.198ffaadb9f4.dialogLabel=Executing Installation Script...
@@ -195,6 +210,12 @@ GetUserInput.9c15fc95842d.prompt=Below are the settings that the GenePattern ser
 
 # GetUserInput.9c15fc95842d.title=GenePattern server configuration
 GetUserInput.9c15fc95842d.title=GenePattern server configuration
+
+# GetUserInput.d9f35ed8a212.prompt=Please provide the proxy server and port for your web (HTTP) proxy.   \nIf your proxy requires authentication you will need to provide the username and password to the server at the end of the installation process in order to be able to install GenePattern modules from the catalog.
+GetUserInput.d9f35ed8a212.prompt=Please provide the proxy server and port for your web (HTTP) proxy.   \nIf your proxy requires authentication you will need to provide the username and password to the server at the end of the installation process in order to be able to install GenePattern modules from the catalog.
+
+# GetUserInput.d9f35ed8a212.title=Web Proxy Settings
+GetUserInput.d9f35ed8a212.title=Web Proxy Settings
 
 # GUIComponentData.1ec8e994a387.defaultValue=$R$
 GUIComponentData.1ec8e994a387.defaultValue=$R$
@@ -244,6 +265,18 @@ GUIComponentData.9d917cd487f9.defaultValue=$HSQL_port$
 # GUIComponentData.9d917cd487f9.label=HSQL port:
 GUIComponentData.9d917cd487f9.label=HSQL port:
 
+# GUIComponentData.d9f99b57a213.defaultValue=
+GUIComponentData.d9f99b57a213.defaultValue=
+
+# GUIComponentData.d9f99b57a213.label=Proxy Server
+GUIComponentData.d9f99b57a213.label=Proxy Server
+
+# GUIComponentData.d9f9aa99a213.defaultValue=
+GUIComponentData.d9f9aa99a213.defaultValue=
+
+# GUIComponentData.d9f9aa99a213.label=Proxy Port
+GUIComponentData.d9f9aa99a213.label=Proxy Port
+
 # GUIGroupData.1ec8e993a387.caption=
 GUIGroupData.1ec8e993a387.caption=
 
@@ -267,6 +300,12 @@ GUIGroupData.9c193ed0842d.caption=
 
 # GUIGroupData.9d917cd387f9.caption=
 GUIGroupData.9d917cd387f9.caption=
+
+# GUIGroupData.d9f99b56a213.caption=
+GUIGroupData.d9f99b56a213.caption=
+
+# GUIGroupData.d9f9aa98a213.caption=
+GUIGroupData.d9f9aa98a213.caption=
 
 # InstallBundle.72a1c57db1d4.bundleName=Application
 InstallBundle.72a1c57db1d4.bundleName=Application
@@ -313,17 +352,17 @@ Installer.72a1c4b4b1bf.installLabels.06=Choose $SHORTCUT_NAME$ Folder
 # Installer.72a1c4b4b1bf.installLabels.07=GenePattern server configuration
 Installer.72a1c4b4b1bf.installLabels.07=GenePattern server configuration
 
-# Installer.72a1c4b4b1bf.installLabels.08=LSID Authority
-Installer.72a1c4b4b1bf.installLabels.08=LSID Authority
+# Installer.72a1c4b4b1bf.installLabels.08=Web Proxy Settings
+Installer.72a1c4b4b1bf.installLabels.08=Web Proxy Settings
 
-# Installer.72a1c4b4b1bf.installLabels.09=Pre-Installation Summary
-Installer.72a1c4b4b1bf.installLabels.09=Pre-Installation Summary
+# Installer.72a1c4b4b1bf.installLabels.09=LSID Authority
+Installer.72a1c4b4b1bf.installLabels.09=LSID Authority
 
-# Installer.72a1c4b4b1bf.installLabels.10=Installing...
-Installer.72a1c4b4b1bf.installLabels.10=Installing...
+# Installer.72a1c4b4b1bf.installLabels.10=Pre-Installation Summary
+Installer.72a1c4b4b1bf.installLabels.10=Pre-Installation Summary
 
-# Installer.72a1c4b4b1bf.installLabels.11=Install Complete
-Installer.72a1c4b4b1bf.installLabels.11=Install Complete
+# Installer.72a1c4b4b1bf.installLabels.11=Installing...
+Installer.72a1c4b4b1bf.installLabels.11=Installing...
 
 # Installer.72a1c4b4b1bf.installLabels.12=Install Complete
 Installer.72a1c4b4b1bf.installLabels.12=Install Complete
@@ -361,11 +400,11 @@ InstallFinishAction.72a1c5b9b1d8.installErrorMessage=The installation of $PRODUC
 # InstallFinishAction.72a1c5b9b1d8.installFatalMessage=The installation of $PRODUCT_NAME$ $version.major$.$version.minor$ is finished, but some serious errors occurred during the install.   The install log will be opened for your review  when the installer is closed.
 InstallFinishAction.72a1c5b9b1d8.installFatalMessage=The installation of $PRODUCT_NAME$ $version.major$.$version.minor$ is finished, but some serious errors occurred during the install.   The install log will be opened for your review  when the installer is closed.
 
-# InstallFinishAction.72a1c5b9b1d8.installSuccessMessage=Congratulations! $PRODUCT_NAME$ version  $version.major$.$version.minor$ has been successfully installed to:\n     $USER_INSTALL_DIR$\nA web page to complete the installation which will open following the installer.  Press \"Done\" to quit the installer.
-InstallFinishAction.72a1c5b9b1d8.installSuccessMessage=Congratulations! $PRODUCT_NAME$ version  $version.major$.$version.minor$ has been successfully installed to:\n     $USER_INSTALL_DIR$\nA web page to complete the installation which will open following the installer.  Press \"Done\" to quit the installer.
+# InstallFinishAction.72a1c5b9b1d8.installSuccessMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\n     $USER_INSTALL_DIR$\nA web page to complete the installation which will open following the installer.  Press \"Done\" to quit the installer.
+InstallFinishAction.72a1c5b9b1d8.installSuccessMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\n     $USER_INSTALL_DIR$\nA web page to complete the installation which will open following the installer.  Press \"Done\" to quit the installer.
 
-# InstallFinishAction.72a1c5b9b1d8.installWarningMessage=Congratulations! $PRODUCT_NAME$ $version.major$.$version.minor$ has been successfully installed to:\n\n     $USER_INSTALL_DIR$\n\nSome warnings were generated during the install. The install log will be opened for your review  when the installer is closed.\n\nPress \"Done\" to quit the installer.
-InstallFinishAction.72a1c5b9b1d8.installWarningMessage=Congratulations! $PRODUCT_NAME$ $version.major$.$version.minor$ has been successfully installed to:\n\n     $USER_INSTALL_DIR$\n\nSome warnings were generated during the install. The install log will be opened for your review  when the installer is closed.\n\nPress \"Done\" to quit the installer.
+# InstallFinishAction.72a1c5b9b1d8.installWarningMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\n     $USER_INSTALL_DIR$\nSome warnings were generated during the install. The install log will be opened for your review  when the installer is closed. Press \"Done\" to quit the installer.
+InstallFinishAction.72a1c5b9b1d8.installWarningMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\n     $USER_INSTALL_DIR$\nSome warnings were generated during the install. The install log will be opened for your review  when the installer is closed. Press \"Done\" to quit the installer.
 
 # InstallFinishAction.72a1c5b9b1d8.rebootNotNeededMessage=
 InstallFinishAction.72a1c5b9b1d8.rebootNotNeededMessage=
@@ -421,8 +460,8 @@ IntroAction.72a1c5a5b1d6.message=InstallAnywhere will guide you through the inst
 # IntroAction.72a1c5a5b1d6.stepTitle=Introduction
 IntroAction.72a1c5a5b1d6.stepTitle=Introduction
 
-# LaunchDefaultBrowser.9bf31d129263.urlPath=http://127.0.0.1:$GENEPATTERN_PORT$/gp/installFrame.jsp
-LaunchDefaultBrowser.9bf31d129263.urlPath=http://127.0.0.1:$GENEPATTERN_PORT$/gp/installFrame.jsp
+# LaunchDefaultBrowser.9bf31d129263.urlPath=http://127.0.0.1:$GENEPATTERN_PORT$/gp/login.jsp?userid=$webmaster$&referrer=installFrame.jsp
+LaunchDefaultBrowser.9bf31d129263.urlPath=http://127.0.0.1:$GENEPATTERN_PORT$/gp/login.jsp?userid=$webmaster$&referrer=installFrame.jsp
 
 # LicenseAgrAction.1fd0f094a5aa.resourceName=LICENSE
 LicenseAgrAction.1fd0f094a5aa.resourceName=LICENSE
@@ -523,42 +562,6 @@ ShowDialogAction.20d77b1abbbc.narrative=Please stop the running GenePattern serv
 # ShowDialogAction.20d77b1abbbc.title=Please Stop GenePattern
 ShowDialogAction.20d77b1abbbc.title=Please Stop GenePattern
 
-# ShowDialogAction.6648a5f8bd1f.buttonLabel=OK
-ShowDialogAction.6648a5f8bd1f.buttonLabel=OK
-
-# ShowDialogAction.6648a5f8bd1f.cancelButtonLabel=Cancel
-ShowDialogAction.6648a5f8bd1f.cancelButtonLabel=Cancel
-
-# ShowDialogAction.6648a5f8bd1f.detailsButtonLabel=Details...
-ShowDialogAction.6648a5f8bd1f.detailsButtonLabel=Details...
-
-# ShowDialogAction.6648a5f8bd1f.label=libreadline.4.3.dylib not installed
-ShowDialogAction.6648a5f8bd1f.label=libreadline.4.3.dylib not installed
-
-# ShowDialogAction.6648a5f8bd1f.narrative=libreadline.4.3.dylib was not installed into /usr/local/lib.  This may be because you do not have permissions to write to this folder. This may cause problems with running \"R\".  If you see an error running \"R\" indicating that this file is missing you will need an administrator of this machine to install the J_libreadline.pkg from the $USER_INSTALL_DIR$ directory.
-ShowDialogAction.6648a5f8bd1f.narrative=libreadline.4.3.dylib was not installed into /usr/local/lib.  This may be because you do not have permissions to write to this folder. This may cause problems with running \"R\".  If you see an error running \"R\" indicating that this file is missing you will need an administrator of this machine to install the J_libreadline.pkg from the $USER_INSTALL_DIR$ directory.
-
-# ShowDialogAction.6648a5f8bd1f.title=libreadline not installed
-ShowDialogAction.6648a5f8bd1f.title=libreadline not installed
-
-# ShowDialogAction.66500cf6bd1f.buttonLabel=OK
-ShowDialogAction.66500cf6bd1f.buttonLabel=OK
-
-# ShowDialogAction.66500cf6bd1f.cancelButtonLabel=Cancel
-ShowDialogAction.66500cf6bd1f.cancelButtonLabel=Cancel
-
-# ShowDialogAction.66500cf6bd1f.detailsButtonLabel=Details...
-ShowDialogAction.66500cf6bd1f.detailsButtonLabel=Details...
-
-# ShowDialogAction.66500cf6bd1f.label=R was not installed
-ShowDialogAction.66500cf6bd1f.label=R was not installed
-
-# ShowDialogAction.66500cf6bd1f.narrative=The R application could not be installed into your /Applications directory.  This was probably due to insufficient write permissions on this directory.  The GenePattern application will function correctly but without this you will be unable to run some modules. You may install R at a later date (see the FAQ) but will need administrator priviliges on this machine.
-ShowDialogAction.66500cf6bd1f.narrative=The R application could not be installed into your /Applications directory.  This was probably due to insufficient write permissions on this directory.  The GenePattern application will function correctly but without this you will be unable to run some modules. You may install R at a later date (see the FAQ) but will need administrator priviliges on this machine.
-
-# ShowDialogAction.66500cf6bd1f.title=R not installed
-ShowDialogAction.66500cf6bd1f.title=R not installed
-
 # ShowDialogAction.9b007f4b9827.buttonLabel=Proceed
 ShowDialogAction.9b007f4b9827.buttonLabel=Proceed
 
@@ -577,23 +580,23 @@ ShowDialogAction.9b007f4b9827.narrative=You do not have write permission to the 
 # ShowDialogAction.9b007f4b9827.title=Write permission required in $R$/library
 ShowDialogAction.9b007f4b9827.title=Write permission required in $R$/library
 
-# ShowDialogAction.b87c61e0b99f.buttonLabel=OK
-ShowDialogAction.b87c61e0b99f.buttonLabel=OK
+# ShowDialogAction.d9f737aea213.buttonLabel=No
+ShowDialogAction.d9f737aea213.buttonLabel=No
 
-# ShowDialogAction.b87c61e0b99f.cancelButtonLabel=Cancel
-ShowDialogAction.b87c61e0b99f.cancelButtonLabel=Cancel
+# ShowDialogAction.d9f737aea213.cancelButtonLabel=Yes
+ShowDialogAction.d9f737aea213.cancelButtonLabel=Yes
 
-# ShowDialogAction.b87c61e0b99f.detailsButtonLabel=Details...
-ShowDialogAction.b87c61e0b99f.detailsButtonLabel=Details...
+# ShowDialogAction.d9f737aea213.detailsButtonLabel=Details...
+ShowDialogAction.d9f737aea213.detailsButtonLabel=Details...
 
-# ShowDialogAction.b87c61e0b99f.label=/Applications not writable
-ShowDialogAction.b87c61e0b99f.label=/Applications not writable
+# ShowDialogAction.d9f737aea213.label=Is a web proxy Required?
+ShowDialogAction.d9f737aea213.label=Is a web proxy Required?
 
-# ShowDialogAction.b87c61e0b99f.narrative=You do not have write permissions to the /Applications directory on this Mac.  The installation will be unable to complete normally. Please write-enable the /Applications directory and restart the installer. 
-ShowDialogAction.b87c61e0b99f.narrative=You do not have write permissions to the /Applications directory on this Mac.  The installation will be unable to complete normally. Please write-enable the /Applications directory and restart the installer. 
+# ShowDialogAction.d9f737aea213.narrative=Do you use a web (http) proxy to connect to web sites outside of your organization?
+ShowDialogAction.d9f737aea213.narrative=Do you use a web (http) proxy to connect to web sites outside of your organization?
 
-# ShowDialogAction.b87c61e0b99f.title=/Applications write permissions required
-ShowDialogAction.b87c61e0b99f.title=/Applications write permissions required
+# ShowDialogAction.d9f737aea213.title=Web proxy Required?
+ShowDialogAction.d9f737aea213.title=Web proxy Required?
 
 # UninstallCompleteAction.986089158a4a.rebootRecommendedMessage=You should restart the system to complete the uninstallation.
 UninstallCompleteAction.986089158a4a.rebootRecommendedMessage=You should restart the system to complete the uninstallation.
