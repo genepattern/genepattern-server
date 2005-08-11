@@ -24,6 +24,8 @@ import org.genepattern.webservice.WebServiceException;
 
 public class PipelineEditorModel {
 
+	public static final int CHOOSE_TASK_INDEX = Integer.MIN_VALUE;
+	
 	/** list of MyTask objects */
 	private List tasks;
 
@@ -211,7 +213,7 @@ public class PipelineEditorModel {
 		}
 		MyTask task = (MyTask) tasks.remove(from);
 		tasks.add(to, task);
-		notifyListeners();
+		notifyListeners(new PipelineEvent(this));
 	}
 
 	void moveUp(int from, int to) {
@@ -260,7 +262,7 @@ public class PipelineEditorModel {
 		}
 		MyTask task = (MyTask) tasks.remove(from);
 		tasks.add(to, task);
-		notifyListeners();
+		notifyListeners(new PipelineEvent(this));
 	}
 
 	public void add(final int taskIndex, TaskInfo t) {
@@ -292,21 +294,15 @@ public class PipelineEditorModel {
 		}
 
 		tasks.add(taskIndex, myTask);
-		notifyListeners();
+		notifyListeners(new PipelineEvent(this, PipelineEvent.INSERT, taskIndex));
 	}
 
-	protected void notifyListeners() {
+	protected void notifyListeners(PipelineEvent e) {
 		Object[] listeners = listenerList.getListenerList();
-		PipelineEvent e = null;
 		// Process the listeners last to first, notifying
 		// those that are interested in this event
 		for (int i = listeners.length - 2; i >= 0; i -= 2) {
 			if (listeners[i] == PipelineListener.class) {
-				// Lazily create the event:
-				if (e == null) {
-					e = new PipelineEvent(this);
-				}
-
 				((PipelineListener) listeners[i + 1]).pipelineChanged(e);
 			}
 		}
@@ -338,7 +334,7 @@ public class PipelineEditorModel {
 			}
 		}
 		tasks.remove(taskIndex);
-		notifyListeners();
+		notifyListeners(new PipelineEvent(this, PipelineEvent.DELETE, taskIndex));
 	}
 
 	void print() {
@@ -624,7 +620,9 @@ public class PipelineEditorModel {
 			this.inheritedTaskIndex = taskIndex;
 			value = null;
 			isPromptWhenRun = false;
-			if (_inheritedOutputFileName.equals("1")) {
+			if(_inheritedOutputFileName==null) {
+				inheritedOutputFileName = _inheritedOutputFileName; // user has not selected a value
+			} else if (_inheritedOutputFileName.equals("1")) {
 				inheritedOutputFileName = "1st output";
 			} else if (_inheritedOutputFileName.equals("2")) {
 				inheritedOutputFileName = "2nd output";
