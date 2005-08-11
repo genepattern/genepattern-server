@@ -40,7 +40,7 @@ public class TaskChooser extends CenteredDialog {
 
 	private JButton okBtn;
 
-	private PipelineComponent pipelineComponent;
+	private PipelineEditor pipelineComponent;
 
 	private int indexToAdd;
 
@@ -56,7 +56,7 @@ public class TaskChooser extends CenteredDialog {
 	}
 	
 	public TaskChooser(Frame parent, String title,
-			PipelineComponent _pipelineComponent, int _indexToAdd) {
+			PipelineEditor _pipelineComponent, int _indexToAdd) {
 		super(parent);
 		setTitle(title);
 		this.pipelineComponent = _pipelineComponent;

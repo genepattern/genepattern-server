@@ -10,13 +10,13 @@ import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.GPGEMessage;
 import org.genepattern.gpge.message.GPGEMessageListener;
 import org.genepattern.gpge.message.MessageManager;
-import org.genepattern.gpge.ui.tasks.pipeline.PipelineComponent;
+import org.genepattern.gpge.ui.tasks.pipeline.PipelineEditor;
 import org.genepattern.gpge.ui.tasks.pipeline.ViewPipeline;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceDisplay;
 
 public class ViewManager {
 	private AnalysisServiceDisplay analysisServiceDisplay;
-	private PipelineComponent pipelineComponent;
+	private PipelineEditor pipelineComponent;
 	private ViewPipeline viewPipeline;
 	private JSplitPane splitPane;
 	
@@ -24,7 +24,7 @@ public class ViewManager {
 		this.splitPane = splitPane;
 		analysisServiceDisplay = new AnalysisServiceDisplay();
 		analysisServiceDisplay.setMinimumSize(new Dimension(200, 200));
-		pipelineComponent = new PipelineComponent();
+		pipelineComponent = new PipelineEditor();
 		viewPipeline = new ViewPipeline();
 		
 		MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
