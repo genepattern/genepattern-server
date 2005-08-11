@@ -723,7 +723,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 			insertionIndex = jobSubmissionIndex + 1;
 		}
 
-		new TaskChooser(GenePattern.getDialogParent(), title, this,
+		new TaskChooser(GenePattern.getDialogParent(), title, null,
 				insertionIndex);
 	}
 
