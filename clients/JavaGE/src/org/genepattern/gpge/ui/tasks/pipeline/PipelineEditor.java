@@ -147,12 +147,12 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		ActionListener taskBtnListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int index = tasksInPipelineComboBox.getSelectedIndex();
+				updateInputFileValues();
 				if (e.getSource() == addAfterButton) {
 					showAddTask(index, true);
 				} else if (e.getSource() == addBeforeButton) {
 					showAddTask(index, false);
 				} else if (e.getSource() == deleteButton) {
-					updateInputFileValues();
 					model.remove(index);
 				} else if (e.getSource() == moveUpButton) {
 					model.move(index, index - 1);
@@ -700,7 +700,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		} else {
 			title = "Add Task Before " + (jobSubmissionIndex + 1) + ". "
 					+ model.getTaskName(jobSubmissionIndex);
-			insertionIndex = jobSubmissionIndex + 1;
+			insertionIndex = jobSubmissionIndex - 1;
 		}
 
 		new TaskChooser(GenePattern.getDialogParent(), title, this,
@@ -708,6 +708,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	}
 
 	public void pipelineChanged(PipelineEvent e) {
+		
 		if (e.getType() == PipelineEvent.DELETE) {
 			int deletedRow = e.getRow();
 			TaskPanel deletedTask = (TaskPanel) taskDisplayList
@@ -729,13 +730,12 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			}
 
 			addItemsToTaskComboBox();
-
 			TaskPanel addedTask = (TaskPanel) taskDisplayList.get(addedRow);
 			Rectangle rect = addedTask.getBounds();
 			JViewport jvp = scrollPane.getViewport();
 			Rectangle rectSpn = jvp.getViewRect();
 			if (!rectSpn.contains(rect)) {
-				Point p = new Point(0, rect.y - 5);
+				Point p = new Point(0, rect.y);
 				jvp.setViewPosition(p);
 			}
 
@@ -959,27 +959,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			// i));
 
 			final JTextField inputComponent = new ObjectTextField(20);
-			/*
-			 * inputComponent.getDocument().addDocumentListener(new
-			 * DocumentListener() {
-			 * 
-			 * public void insertUpdate(DocumentEvent e) { //
-			 * System.out.println("updated " + taskIndex + " " +
-			 * parameterIndex); model.setValue(taskIndex, parameterIndex,
-			 * inputComponent.getText()); }
-			 * 
-			 * public void removeUpdate(DocumentEvent e) { //
-			 * System.out.println("remove " + taskIndex + " " + parameterIndex);
-			 * model.setValue(taskIndex, parameterIndex,
-			 * inputComponent.getText()); }
-			 * 
-			 * public void changedUpdate(DocumentEvent e) {
-			 * //System.out.println("change " + taskIndex + " " +
-			 * parameterIndex); model.setValue(taskIndex, parameterIndex,
-			 * inputComponent.getText()); }
-			 * 
-			 * });
-			 */
 			this.inputField = inputComponent;
 			JPanel inputPanel = new JPanel();
 			inputPanel.setOpaque(false);
@@ -1100,8 +1079,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			popupMenu.add(deleteItem);
 
 			ActionListener listener = new ActionListener() {
-
 				public void actionPerformed(ActionEvent e) {
+					updateInputFileValues();
 					if (e.getSource() == addTaskAfterItem) {
 						showAddTask(taskIndex, true);
 					} else if (e.getSource() == addBeforeItem) {
@@ -1111,7 +1090,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					} else if (e.getSource() == moveDownItem) {
 						model.move(taskIndex, taskIndex + 1);
 					} else if (e.getSource() == deleteItem) {
-						updateInputFileValues();
 						model.remove(taskIndex);
 					}
 				}
