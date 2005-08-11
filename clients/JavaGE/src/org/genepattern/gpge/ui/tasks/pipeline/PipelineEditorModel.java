@@ -286,17 +286,43 @@ public class PipelineEditorModel {
 
 		ParameterInfo[] formalParams = t.getParameterInfoArray();
 		MyTask myTask = new MyTask(t, t.getDescription());
+		
+		tasks.add(taskIndex, myTask);
+		
 		if (formalParams != null) {
 			for (int j = 0; j < formalParams.length; j++) {
 				ParameterInfo formalParam = formalParams[j];
-				myTask.addParameter(new MyParameter(formalParam));
+				MyParameter myParam = new MyParameter(formalParam);
+				myTask.addParameter(myParam);
+				if(myParam.isInputFile && myParam.inputTypes!=null) {
+					String inheritedFileName = null;;
+					int inheritedTaskIndex = -1;
+					boolean unique = true;
+					for(int i = 0; i < taskIndex; i++) {
+						List outputs = getOutputFileTypes(i);
+						for(int inputIndex = 0; inputIndex < myParam.inputTypes.length && unique; inputIndex++) {
+							if(outputs.contains(myParam.inputTypes[inputIndex])) {
+								if(inheritedFileName==null) {
+									inheritedTaskIndex = i;
+									inheritedFileName = myParam.inputTypes[inputIndex];
+								} else { // inherited output is not unique
+									unique = false;
+									break;
+								}
+							}
+						}
+					}
+					if(unique && inheritedFileName!=null) {
+						setInheritedFile(taskIndex, j, inheritedTaskIndex, inheritedFileName);
+					}
+				}
 			}
 		}
 
-		tasks.add(taskIndex, myTask);
-		notifyListeners(new PipelineEvent(this, PipelineEvent.INSERT, taskIndex));
+		
+		notifyListeners(new PipelineEvent(this, PipelineEvent.INSERT, taskIndex));	
 	}
-
+	
 	protected void notifyListeners(PipelineEvent e) {
 		Object[] listeners = listenerList.getListenerList();
 		// Process the listeners last to first, notifying
@@ -585,6 +611,8 @@ public class PipelineEditorModel {
 
 		private final boolean isRequired;
 
+		private final String[] inputTypes;
+
 		public String toString() {
 			StringBuffer sb = new StringBuffer();
 			sb.append("name: " + name);
@@ -646,6 +674,7 @@ public class PipelineEditorModel {
 			isInputFile = false;
 			choiceItems = null;
 			this.name = name;
+			this.inputTypes = null;
 		}
 		
 		/**
@@ -693,6 +722,12 @@ public class PipelineEditorModel {
 					}
 				}
 			}
+			String fileFormatString = (String) formalParam.getAttributes().get("fileFormat");
+			if(fileFormatString!=null) {
+				inputTypes = fileFormatString.split(";");
+			} else {
+				inputTypes = null;
+			}
 			choiceItems = _choiceItems;
 			String optional = (String) formalParam.getAttributes().get(
 					GPConstants.PARAM_INFO_OPTIONAL[0]);
@@ -710,7 +745,13 @@ public class PipelineEditorModel {
 					.getParameters().get(indexInJobSubmission);
 			this.name = jobSubmissionParam.getName();
 			ParameterChoice[] _choiceItems = null;
-
+			String fileFormatString = (String) formalParam.getAttributes().get("fileFormat");
+			if(fileFormatString!=null) {
+				inputTypes = fileFormatString.split(";");
+			} else {
+				inputTypes = null;
+			}
+			
 			if (formalParam.isInputFile()) {
 				java.util.Map pipelineAttributes = jobSubmissionParam
 						.getAttributes();
