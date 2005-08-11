@@ -381,6 +381,7 @@
 	       <include name="axis-ant.jar"/>
 	       <include name="commons-discovery.jar"/>
 	       <include name="commons-logging.jar"/>
+	       <include name="commons-fileupload-1.0.jar"/>
 	       <include name="crimson.jar"/>
 	       <include name="hsqldb.jar"/>
 	       <include name="jaxb-rt-1.0-ea.jar"/>
