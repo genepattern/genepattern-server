@@ -185,6 +185,7 @@ public class PipelineEditorModel {
 		} else if (from > to) {
 			moveUp(from, to);
 		}
+		notifyListeners(new PipelineEvent(this, PipelineEvent.MOVE, from, to));
 	}
 
 	void moveDown(int from, int to) {
@@ -213,7 +214,6 @@ public class PipelineEditorModel {
 		}
 		MyTask task = (MyTask) tasks.remove(from);
 		tasks.add(to, task);
-		notifyListeners(new PipelineEvent(this));
 	}
 
 	void moveUp(int from, int to) {
@@ -262,10 +262,38 @@ public class PipelineEditorModel {
 		}
 		MyTask task = (MyTask) tasks.remove(from);
 		tasks.add(to, task);
-		notifyListeners(new PipelineEvent(this));
+	}
+	
+	public void replace(final int taskIndex, TaskInfo t) {
+		MyTask removedTask = (MyTask) tasks.get(taskIndex);
+		remove(taskIndex, false);
+		add(taskIndex, t, false);
+	//	MyTask addedTask = (MyTask) tasks.get(taskIndex);
+		List removedParameters = removedTask.parameters;
+		
+		for(int i = 0; i < removedParameters.size(); i++) {
+			MyParameter p = (MyParameter) removedParameters.get(i);
+			for(int j = 0; j < this.getParameterCount(taskIndex); j++) {
+				if(p.name.equals(getParameterName(taskIndex, j))) {
+					if(p.inheritedTaskIndex!=-1) {
+						setInheritedFile(taskIndex, j, p.inheritedTaskIndex, p.inheritedOutputFileName);
+					} else if(p.isPromptWhenRun) {
+						setPromptWhenRun(taskIndex, j);
+					} else {
+						setValue(taskIndex, j, p.value);
+					}
+					break;
+				}
+			}
+		}
+		notifyListeners(new PipelineEvent(this, PipelineEvent.REPLACE, taskIndex));
 	}
 
 	public void add(final int taskIndex, TaskInfo t) {
+		add(taskIndex, t, true);
+	}
+	
+	private void add(final int taskIndex, TaskInfo t, boolean notify) {
 		for (int i = taskIndex + 1; i < getTaskCount(); i++) {
 			MyTask task = (MyTask) tasks.get(i);
 			for (int j = 0; j < getParameterCount(i); j++) {
@@ -319,8 +347,10 @@ public class PipelineEditorModel {
 			}
 		}
 
-		
-		notifyListeners(new PipelineEvent(this, PipelineEvent.INSERT, taskIndex));	
+		if(notify) {
+			
+			notifyListeners(new PipelineEvent(this, PipelineEvent.INSERT, taskIndex));
+		}
 	}
 	
 	protected void notifyListeners(PipelineEvent e) {
@@ -335,6 +365,10 @@ public class PipelineEditorModel {
 	}
 
 	public void remove(final int taskIndex) {
+		remove(taskIndex, true);
+	}
+	
+	private void remove(final int taskIndex, boolean notify) {
 		// check if subsequent tasks inherit from removed task or subsequent
 		// tasks
 		for (int i = taskIndex + 1; i < getTaskCount(); i++) {
@@ -360,7 +394,9 @@ public class PipelineEditorModel {
 			}
 		}
 		tasks.remove(taskIndex);
-		notifyListeners(new PipelineEvent(this, PipelineEvent.DELETE, taskIndex));
+		if(notify) {
+			notifyListeners(new PipelineEvent(this, PipelineEvent.DELETE, taskIndex));
+		}
 	}
 
 	void print() {
@@ -481,6 +517,11 @@ public class PipelineEditorModel {
 		return task.parameters.size();
 	}
 
+	public String getTaskLSID(int taskIndex) {
+		MyTask task = (MyTask) tasks.get(taskIndex);
+		TaskInfo ti = task.getTaskInfo();
+		return (String) ti.getTaskInfoAttributes().get(GPConstants.LSID);
+	}
 	public String getTaskDescription(int taskIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
 		return task.description;
@@ -498,11 +539,8 @@ public class PipelineEditorModel {
 
 	public String[] getParameterInputTypes(int taskIndex, int parameterIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
-		TaskInfo formalTask = task.getTaskInfo();
-		ParameterInfo p = formalTask.getParameterInfoArray()[parameterIndex];
-		String fileFormatsString = (String) p.getAttributes().get(
-				GPConstants.FILE_FORMAT);
-		return fileFormatsString!=null? fileFormatsString.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER):new String[0];
+		MyParameter p = task.getParameter(parameterIndex);
+		return p.inputTypes;
 	}
 	
 	public String getParameterName(int taskIndex, int parameterIndex) {
