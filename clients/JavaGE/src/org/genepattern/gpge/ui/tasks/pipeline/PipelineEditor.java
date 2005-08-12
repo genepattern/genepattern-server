@@ -6,9 +6,12 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,6 +49,7 @@ import org.genepattern.gpge.ui.tasks.TaskHelpActionListener;
 import org.genepattern.gpge.ui.tasks.VersionComboBox;
 import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskIntegratorProxy;
@@ -105,14 +109,14 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			addAfterButton.setText("Add Task After");
 		}
 		int index = tasksInPipelineComboBox.getSelectedIndex();
-		addBeforeButton.setEnabled(index > 0);
+		addBeforeButton.setEnabled(model.getTaskCount() != 0);
 		moveDownButton.setEnabled((index + 1) != model.getTaskCount());
 		moveUpButton.setEnabled(index > 0);
 
 	}
 
 	/**
-	 * Currently only one instance should be created by the ViewManager
+	 * Only one instance should be created by the ViewManager
 	 * 
 	 */
 	public PipelineEditor() {
@@ -274,6 +278,25 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		}
 	}
 
+	protected void updateValues(int taskIndex) {
+		TaskPanel td = (TaskPanel) taskDisplayList.get(taskIndex);
+		model.setTaskDescription(taskIndex, td.getTaskDescription());
+		for (int j = 0; j < model.getParameterCount(taskIndex); j++) {
+			ParameterDisplay pd = td.parameters[j];
+			int inheritedTaskIndex = pd.getInheritedTaskIndex();
+			if (inheritedTaskIndex != -1) {
+				String inheritedFileName = pd.getInheritedFileName();
+				model.setInheritedFile(taskIndex, j, inheritedTaskIndex,
+						inheritedFileName);
+
+			} else if (pd.isPromptWhenRun()) {
+				model.setPromptWhenRun(taskIndex, j);
+			} else {
+				model.setValue(taskIndex, j, pd.getValue());
+			}
+		}
+	}
+
 	protected void save() {
 		save(true);
 	}
@@ -374,20 +397,45 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	}
 
 	public Iterator getInputFileParameters() {
-		return new ArrayList().iterator(); // FIXME
+		List list = new ArrayList();
+		for (int i = 0; i < model.getTaskCount(); i++) {
+			for (int j = 0, numParams = model.getParameterCount(i); j < numParams; j++) {
+				if (model.isInputFile(i, j)) {
+					list.add((i + 1)
+							+ ". "
+							+ model.getTaskName(i)
+							+ " "
+							+ AnalysisServiceDisplay.getDisplayString(model
+									.getParameterName(i, j)));
+				}
+			}
+		}
+		return list.iterator();
 	}
 
 	public Iterator getInputFileTypes() {
-		return new ArrayList().iterator(); // FIXME
+		List list = new ArrayList();
+		for (int i = 0; i < model.getTaskCount(); i++) {
+			for (int j = 0, numParams = model.getParameterCount(i); j < numParams; j++) {
+				if (model.isInputFile(i, j)) {
+					list.add(model.getParameterInputTypes(i, j));
+				}
+			}
+		}
+		return list.iterator();
 	}
 
-	public void sendTo(String parameterName, Sendable sendable) {
-		// ParameterDisplay display = (ParameterDisplay)
-		// parameterName2ComponentMap
-		// .get(parameterName);
-		// if (display != null) {
-		// display.setValue(sendable);
-		// } FIXME
+	public void sendTo(String sendToString, Sendable sendable) {
+		int taskIndex = Integer.parseInt(sendToString.substring(0, sendToString.indexOf(".")))-1;
+		String taskNameAndParamName = sendToString.substring(sendToString.indexOf(" ")+1, sendToString.length());
+		String parameterName = taskNameAndParamName.substring(taskNameAndParamName.indexOf(" ")+1, taskNameAndParamName.length());
+		for(int i = 0, numParams = model.getParameterCount(taskIndex); i < numParams; i++) {
+			if(AnalysisServiceDisplay.getDisplayString(model.getParameterName(taskIndex, i)).equals(parameterName)) {
+				TaskPanel tp = (TaskPanel) this.taskDisplayList.get(taskIndex);
+				tp.parameters[i].setValue(sendable);
+				break;
+			}
+		}
 	}
 
 	public void display(AnalysisService svc) {
@@ -686,6 +734,11 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	}
 
 	private void showAddTask(int jobSubmissionIndex, boolean addAfter) {
+
+		if (addAfter)
+			System.out.print("Add task after " + jobSubmissionIndex);
+		else
+			System.out.print("Add task before " + jobSubmissionIndex);
 		String title;
 		int insertionIndex;
 
@@ -700,51 +753,86 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		} else {
 			title = "Add Task Before " + (jobSubmissionIndex + 1) + ". "
 					+ model.getTaskName(jobSubmissionIndex);
-			insertionIndex = jobSubmissionIndex - 1;
+			insertionIndex = jobSubmissionIndex;
 		}
 
 		new TaskChooser(GenePattern.getDialogParent(), title, this,
 				insertionIndex);
 	}
 
+	private void taskInserted(int addedRow) {
+		layoutTask(addedRow);
+		for (int i = addedRow + 1; i < model.getTaskCount(); i++) {
+			TaskPanel task = (TaskPanel) taskDisplayList.get(i);
+			task.setTaskIndex(i);
+		}
+
+		addItemsToTaskComboBox();
+		TaskPanel addedTask = (TaskPanel) taskDisplayList.get(addedRow);
+		scrollTo(addedTask);
+	}
+
+	private void scrollTo(TaskPanel task) {
+		// Rectangle rect = task.getBounds(); //getVisibleRect();
+		Point p = task.getLocation();
+		System.out.println(p);
+		JViewport jvp = scrollPane.getViewport();
+		Rectangle rectSpn = jvp.getViewRect();
+		jvp.setViewPosition(p);
+		/*
+		 * if (!rectSpn.contains(rect)) { System.out.println("scrolling to "+
+		 * rect.y); jvp.scrollRectToVisible(rect); //Point p = new Point(0,
+		 * rect.y);
+		 *  // }
+		 */
+	}
+
+	private void taskDeleted(int deletedRow) {
+		TaskPanel deletedTask = (TaskPanel) taskDisplayList.remove(deletedRow);
+		deletedTask.setVisible(false);
+		tasksPanel.remove(deletedTask);
+		tasksLayout.removeRow(deletedRow + 1);
+		for (int i = deletedRow; i < model.getTaskCount(); i++) {
+			TaskPanel task = (TaskPanel) taskDisplayList.get(i);
+			task.setTaskIndex(i);
+		}
+		addItemsToTaskComboBox();
+
+	}
+
 	public void pipelineChanged(PipelineEvent e) {
-		
-		if (e.getType() == PipelineEvent.DELETE) {
-			int deletedRow = e.getRow();
-			TaskPanel deletedTask = (TaskPanel) taskDisplayList
-					.remove(deletedRow);
+		if (e.getType() == PipelineEvent.REPLACE) {
+			TaskPanel deletedTask = (TaskPanel) taskDisplayList.remove(e
+					.getFirstRow());
+			deletedTask.setVisible(false);
 			tasksPanel.remove(deletedTask);
-			tasksLayout.removeRow(deletedRow + 1);
-			for (int i = deletedRow; i < model.getTaskCount(); i++) {
-				TaskPanel task = (TaskPanel) taskDisplayList.get(i);
-				task.setTaskIndex(i);
-			}
-			addItemsToTaskComboBox();
-
+			tasksLayout.removeRow(e.getFirstRow() + 1);
+			taskInserted(e.getFirstRow());
+		} else if (e.getType() == PipelineEvent.DELETE) {
+			taskDeleted(e.getFirstRow());
 		} else if (e.getType() == PipelineEvent.INSERT) {
-			int addedRow = e.getRow();
-			layoutTask(addedRow);
-			for (int i = addedRow + 1; i < model.getTaskCount(); i++) {
+			taskInserted(e.getFirstRow());
+		} else if (e.getType() == PipelineEvent.MOVE) {
+			int from = e.getFirstRow();
+			int to = e.getLastRow();
+			TaskPanel movedTask = (TaskPanel) taskDisplayList.remove(from);
+			tasksPanel.remove(movedTask);
+			tasksLayout.removeRow(from + 1);
+
+			layoutTask(to);
+
+			for (int i = 0; i < model.getTaskCount(); i++) {
 				TaskPanel task = (TaskPanel) taskDisplayList.get(i);
 				task.setTaskIndex(i);
 			}
-
 			addItemsToTaskComboBox();
-			TaskPanel addedTask = (TaskPanel) taskDisplayList.get(addedRow);
-			Rectangle rect = addedTask.getBounds();
-			JViewport jvp = scrollPane.getViewport();
-			Rectangle rectSpn = jvp.getViewRect();
-			if (!rectSpn.contains(rect)) {
-				Point p = new Point(0, rect.y);
-				jvp.setViewPosition(p);
-			}
-
+			scrollTo(movedTask);
 		} else {
-			layoutTasks();
+			System.err.println("Unknown pipeline event");
 		}
 		tasksPanel.invalidate();
 		tasksPanel.validate();
-		System.out.println(this.taskDisplayList);
+
 	}
 
 	static class ParameterDisplay {
@@ -1103,17 +1191,18 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 			togglePanel.getMajorLabel().addMouseListener(new MouseAdapter() {
 				public void mousePressed(MouseEvent e) {
-					moveDownItem.setEnabled((taskIndex + 1) != model
-							.getTaskCount());
-					moveUpItem.setEnabled(taskIndex > 0);
 
-					addBeforeItem.setEnabled(taskIndex != 0);
-					addTaskAfterItem.setEnabled(taskIndex != model
-							.getTaskCount() - 1
-							|| model.getTaskCount() == 1);
-					tasksInPipelineComboBox.setSelectedIndex(taskIndex);
 					if (e.isPopupTrigger()
 							|| e.getModifiers() == MouseEvent.BUTTON3_MASK) {
+						moveDownItem.setEnabled((taskIndex + 1) != model
+								.getTaskCount());
+						moveUpItem.setEnabled(taskIndex > 0);
+
+						// addBeforeItem.setEnabled(taskIndex != 0);
+						// addTaskAfterItem.setEnabled(taskIndex != model
+						// .getTaskCount() - 1
+						// || model.getTaskCount() == 1);
+						tasksInPipelineComboBox.setSelectedIndex(taskIndex);
 						popupMenu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				}
@@ -1146,6 +1235,40 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			CellConstraints cc = new CellConstraints();
 			layout.appendRow(new RowSpec("pref"));
 			add(togglePanel, cc.xyw(1, 1, layout.getColumnCount()));
+
+			try {
+				final String lsidString = model.getTaskLSID(taskIndex);
+				final LSID lsid = new LSID(lsidString);
+				List versions = (List) AnalysisServiceManager.getInstance()
+						.getLSIDToVersionsMap().get(lsid.toStringNoVersion());
+				JComboBox versionChooserComboBox = new JComboBox(versions
+						.toArray());
+				versionChooserComboBox.setSelectedItem(lsid.getVersion());
+				versionChooserComboBox.setBackground(Color.white);
+				togglePanel.addToggleComponent(versionChooserComboBox);
+				layout.appendRow(new RowSpec("pref"));
+				add(versionChooserComboBox, cc.xy(1, layout.getRowCount()));
+
+				versionChooserComboBox.addItemListener(new ItemListener() {
+
+					public void itemStateChanged(ItemEvent e) {
+						if (e.getStateChange() != ItemEvent.SELECTED) {
+							return;
+						}
+						String version = (String) e.getItem();
+						String newLSID = lsid.toStringNoVersion() + ":"
+								+ version;
+						updateInputFileValues();
+						updateValues(taskIndex);
+						model.replace(taskIndex, AnalysisServiceManager
+								.getInstance().getAnalysisService(newLSID)
+								.getTaskInfo());
+					}
+
+				});
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
 			if (model.getParameterCount(taskIndex) > 0) {
 				JLabel promptWhenRunLabel = new JLabel("Prompt when run");
 				promptWhenRunLabel.setFont(promptWhenRunLabel.getFont()
@@ -1210,6 +1333,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					togglePanel.addToggleComponent(inputComponent);
 
 				}
+				layout.appendRow(new RowSpec("1dlu"));
 			}
 
 			int endParameterRow = layout.getRowCount();
