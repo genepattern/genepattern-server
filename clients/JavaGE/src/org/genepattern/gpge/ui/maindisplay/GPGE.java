@@ -1300,7 +1300,7 @@ public class GPGE {
 		}
 
 		public boolean isCorrectKind(String kind) {
-			if (fileFormats.length == 0 || kind == null || kind.equals("")) {
+			if (fileFormats==null || fileFormats.length == 0 || kind == null || kind.equals("")) {
 				return true;
 			}
 			for(int i = 0; i < fileFormats.length; i++) {
