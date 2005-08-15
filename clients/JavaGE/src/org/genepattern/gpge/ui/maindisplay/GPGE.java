@@ -44,6 +44,7 @@ import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.GPGEMessage;
 import org.genepattern.gpge.message.GPGEMessageListener;
 import org.genepattern.gpge.message.MessageManager;
+import org.genepattern.gpge.message.TaskInstallMessage;
 import org.genepattern.gpge.ui.graphics.draggable.*;
 import org.genepattern.gpge.ui.preferences.*;
 import org.genepattern.gpge.ui.tasks.*;
@@ -1772,6 +1773,27 @@ public class GPGE {
 		}
 	}
 
+	private void taskInstalled(LSID lsid) {
+		analysisServiceManager.taskInstalled(lsid);
+		new Thread() {
+			public void run() {
+				SwingUtilities.invokeLater(new Thread() {
+					public void run() {
+						Map categoryToAnalysisServices = AnalysisServiceUtil
+								.getCategoryToAnalysisServicesMap(analysisServiceManager.getLatestAnalysisServices());
+						analysisMenu
+								.rebuild(categoryToAnalysisServices);
+						visualizerMenu
+								.rebuild(categoryToAnalysisServices);
+						pipelineMenu
+								.rebuild(categoryToAnalysisServices);
+
+					}
+				});
+			}
+		}.start();
+	}
+	
 	public void refreshModules(boolean displayMessage) {
 		if (displayMessage) {
 			MessageDialog.getInstance().setText("Retrieving modules");
@@ -1797,14 +1819,11 @@ public class GPGE {
 						.getInputTypeToMenuItemsMap(latestTasks);
 				SwingUtilities.invokeLater(new Thread() {
 					public void run() {
-						analysisMenu.removeAll();
-						visualizerMenu.removeAll();
-						pipelineMenu.removeAll();
 						Map categoryToAnalysisServices = AnalysisServiceUtil
 								.getCategoryToAnalysisServicesMap(latestTasks);
-						analysisMenu.init(categoryToAnalysisServices);
-						visualizerMenu.init(categoryToAnalysisServices);
-						pipelineMenu.init(categoryToAnalysisServices);
+						analysisMenu.rebuild(categoryToAnalysisServices);
+						visualizerMenu.rebuild(categoryToAnalysisServices);
+						pipelineMenu.rebuild(categoryToAnalysisServices);
 						setChangeServerActionsEnabled(true);
 					}
 				});
@@ -1874,6 +1893,17 @@ public class GPGE {
 		menuBar.add(visualizerMenu);
 
 		pipelineMenu = new AnalysisMenu(AnalysisMenu.PIPELINES);
+		
+		MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
+
+			public void receiveMessage(GPGEMessage message) {
+				if (message instanceof TaskInstallMessage) {
+					LSID lsid = ((TaskInstallMessage) message).getLsid();
+					taskInstalled(lsid);
+				}
+			}
+
+		});
 		pipelineMenu.setEnabled(false);
 		menuBar.add(pipelineMenu);
 
@@ -2265,7 +2295,8 @@ public class GPGE {
 			}
 		}
 
-		public void init(Map categoryToAnalysisServices) {
+		public void rebuild(Map categoryToAnalysisServices) {
+			removeAll();
 			if (type == DATA_ANALYZERS) {
 				for (Iterator keys = categoryToAnalysisServices.keySet()
 						.iterator(); keys.hasNext();) {
@@ -2513,7 +2544,7 @@ public class GPGE {
 						new Thread() {
 							public void run() {
 								try {
-									new TaskIntegratorProxy(
+									String lsid = new TaskIntegratorProxy(
 											AnalysisServiceManager
 													.getInstance().getServer(),
 											AnalysisServiceManager
@@ -2521,6 +2552,8 @@ public class GPGE {
 													.getUsername()).importZip(
 											file,
 											GPConstants.ACCESS_PUBLIC);
+									
+									taskInstalled(new LSID(lsid));
 								} catch (WebServiceException wse) {
 									wse.printStackTrace();
 									if (!disconnectedFromServer(wse)) {
@@ -2528,6 +2561,8 @@ public class GPGE {
 												.showErrorDialog("An error occurred while importing "
 														+ file);
 									}
+								} catch (MalformedURLException e) {
+									e.printStackTrace();
 								}
 							}
 						}.start();
