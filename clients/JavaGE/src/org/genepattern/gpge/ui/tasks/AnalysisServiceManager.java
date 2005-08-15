@@ -1,23 +1,31 @@
 package org.genepattern.gpge.ui.tasks;
 
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.net.InetAddress;
-import java.net.URL;
+
+import org.genepattern.gpge.message.GPGEMessage;
+import org.genepattern.gpge.message.GPGEMessageListener;
+import org.genepattern.gpge.message.MessageManager;
+import org.genepattern.gpge.message.TaskInstallMessage;
+import org.genepattern.gpge.util.ReverseComparator;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
 /**
- * Mantains an internal cache of the latest analysis services. Retrieves older
- * versions of services when requested.
+ * Mantains an internal cache of analysis services.
  * 
  * @author Joshua Gould
  */
@@ -37,10 +45,84 @@ public class AnalysisServiceManager {
 	/** Maps a versionless LSID to a list of versions for that LSID */
 	private Map lsid2VersionsMap = new HashMap();
 
+	private Comparator versionComparator = LSIDVersionComparator.INSTANCE;
+
 	private AnalysisServiceManager() {
 		this.lsid2LatestAnalysisServices = new HashMap();
-		final int maxEntries = 50;
 		this.lsid2AnalysisServices = new HashMap();
+	}
+
+	/**
+	 * Notify this service manager that a task was installed
+	 * 
+	 * @param lsid
+	 */
+	public void taskInstalled(LSID lsid) {
+		List versions = (List) lsid2VersionsMap.get(lsid.toStringNoVersion());
+		if (versions == null) {
+			versions = new ArrayList();
+			lsid2VersionsMap.put(lsid.toStringNoVersion(), versions);
+		}
+		if (!versions.contains(lsid.getVersion())) {
+			versions.add(lsid.getVersion());
+			Collections.sort(versions, versionComparator);
+		}
+
+		if (isLatestVersion(lsid)) {
+			String lsidNoVersionString = lsid.toStringNoVersion();
+			for (Iterator it = lsid2LatestAnalysisServices.keySet().iterator(); it
+					.hasNext();) {
+				String taskLSID = (String) it.next();
+				try {
+					if (lsidNoVersionString.equals(new LSID(taskLSID)
+							.toStringNoVersion())) {
+						it.remove();
+						break;
+					}
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				}
+			}
+			TaskInfo task = null;
+			try {
+				task = new org.genepattern.webservice.AdminProxy(server,
+						username, false).getTask(lsid.toString());
+			} catch (WebServiceException e) {
+				e.printStackTrace();
+			}
+			if (task != null) {
+				lsid2LatestAnalysisServices.put(lsid.toString(),
+						new AnalysisService(server, task));
+			} else {
+				System.err.println("Installed task " + lsid + " not found.");
+			}
+
+		} else {
+			getAnalysisService(lsid.toString());
+		}
+	}
+
+	/**
+	 * Returns <tt>true</tt> if the given <tt>lsid</tt> is the latest
+	 * version of the task, <tt>false</tt> otherwise
+	 * 
+	 * @param lsid
+	 *            an lsid
+	 * @return whether the lsid is the latest version
+	 */
+	public boolean isLatestVersion(LSID lsid) {
+		String version = lsid.getVersion();
+		List versions = (List) lsid2VersionsMap.get(lsid.toStringNoVersion());
+		if (versions == null || versions.size() == 0) {
+			return true;
+		}
+		if (version.equals(versions.get(0))) {
+			return true;
+		}
+		String latestInstalledVersion = (String) versions.get(0);
+		return versionComparator.compare(lsid.getVersion(),
+				latestInstalledVersion) > 0;
+
 	}
 
 	/**
@@ -70,11 +152,12 @@ public class AnalysisServiceManager {
 	}
 
 	/**
-	 * Gets the internal cache of an unmodifiable map of the module LSIDs
-	 * without the version to a <tt>List</tt> of versions. Invoke refresh to
-	 * update the internal cache.
+	 * Gets the internal cache of a map of the module LSIDs without the version
+	 * to a <tt>List</tt> of versions. Invoke refresh to update the internal
+	 * cache.
 	 * 
-	 * @return the lsid to versions map. The list of versions is sorted in ascending order.
+	 * @return the lsid to versions map. The list of versions is sorted in
+	 *         descending order (latest version first).
 	 */
 	public Map getLSIDToVersionsMap() {
 		return lsid2VersionsMap;
@@ -112,7 +195,7 @@ public class AnalysisServiceManager {
 	public void refresh() throws WebServiceException {
 		this.lsid2LatestAnalysisServices.clear();
 		this.lsid2AnalysisServices.clear();
-		
+
 		TaskInfo[] tasks = new AnalysisWebServiceProxy(server, username)
 				.getTasks();
 		for (int i = 0; i < tasks.length; i++) {
@@ -125,15 +208,11 @@ public class AnalysisServiceManager {
 		}
 		this.lsid2VersionsMap = new org.genepattern.webservice.AdminProxy(
 				server, username).getLSIDToVersionsMap();
-		
-		for(Iterator it = lsid2VersionsMap.keySet().iterator(); it.hasNext(); ) {
-			List versions = (List) lsid2VersionsMap.get(it.next());
-			Collections.sort(versions, LSIDVersionComparator.INSTANCE);
-		}
-		this.lsid2VersionsMap = java.util.Collections
-				.unmodifiableMap(lsid2VersionsMap);
-		
 
+		for (Iterator it = lsid2VersionsMap.keySet().iterator(); it.hasNext();) {
+			List versions = (List) lsid2VersionsMap.get(it.next());
+			Collections.sort(versions, versionComparator);
+		}
 	}
 
 	/**
