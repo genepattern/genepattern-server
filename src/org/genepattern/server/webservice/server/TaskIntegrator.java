@@ -322,6 +322,9 @@ public class TaskIntegrator implements ITaskIntegrator {
 						// change owner to current user
 						String owner = (String) taskAttributes
 								.get(GPConstants.USERID);
+						if(owner==null) {
+							owner = "";
+						}
 						if (owner.length() > 0) {
 							owner = " (" + owner + ")";
 						}
