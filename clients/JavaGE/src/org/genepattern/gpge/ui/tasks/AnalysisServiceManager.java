@@ -12,11 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.genepattern.gpge.message.GPGEMessage;
-import org.genepattern.gpge.message.GPGEMessageListener;
-import org.genepattern.gpge.message.MessageManager;
-import org.genepattern.gpge.message.TaskInstallMessage;
-import org.genepattern.gpge.util.ReverseComparator;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.AnalysisService;
