@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -21,6 +22,7 @@ import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
 import org.apache.axis.MessageContext;
+import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
@@ -42,6 +44,8 @@ import org.genepattern.webservice.WebServiceException;
  * @author Joshua Gould
  */
 public class TaskIntegrator implements ITaskIntegrator {
+	
+	
 	protected String getUserName() {
 		MessageContext context = MessageContext.getCurrentContext();
 		String username = context.getUsername();
@@ -335,13 +339,14 @@ public class TaskIntegrator implements ITaskIntegrator {
 								parameterInfoArray, 
 								new TaskInfoAttributes(taskAttributes),
 								username, accessId, this);
-				
+			
 			taskAttributes.put(GPConstants.LSID, lsid); // update so that upon
 														// return, the LSID is
 														// the new one
 			String attachmentDir = GenePatternAnalysisTask.getTaskLibDir(
 					taskName, lsid, username);
 			File dir = new File(attachmentDir);
+			
 			for (int i = 0, length = dataHandlers != null ? dataHandlers.length
 					: 0; i < length; i++) {
 				DataHandler dataHandler = dataHandlers[i];
@@ -361,8 +366,11 @@ public class TaskIntegrator implements ITaskIntegrator {
 			}
 			
 			if(fileNames!=null) {
-				String oldAttachmentDir = GenePatternAnalysisTask.getTaskLibDir(
+				String oldAttachmentDir = null;
+				if(oldLSID!=null) {
+					oldAttachmentDir = GenePatternAnalysisTask.getTaskLibDir(
 						null, oldLSID, username);
+				}
 				int start = dataHandlers != null && dataHandlers.length > 0 ? dataHandlers.length-1
 						: 0;
 				for(int i = start; i < fileNames.length; i++) {
@@ -372,7 +380,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 						String fileName = text.substring(text.indexOf(",")+1, text.length()).trim();
 						String jobDir = GenePatternAnalysisTask.getJobDir(jobNumber);
 						copyFile(new File(jobDir, fileName), new File(dir, fileName));
-					} else { // file from previous version of task
+					} else if(oldAttachmentDir!=null){ // file from previous version of task
 						copyFile(new File(oldAttachmentDir, text), new File(dir, text));
 					}
 				}
