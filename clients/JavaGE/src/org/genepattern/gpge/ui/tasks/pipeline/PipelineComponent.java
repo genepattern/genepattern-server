@@ -402,9 +402,7 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 		}
 		enableButtons();
 		model.addPipelineListener(this);
-		if (DEBUG) {
-			model.print();
-		}
+		
 
 		// show edit link when task has local authority and either belongs
 		// to
@@ -917,7 +915,6 @@ public class PipelineComponent extends JPanel implements TaskDisplay,
 	}
 
 	public void pipelineChanged(PipelineEvent e) {
-		model.print();
 		layoutTasks();
 	}
 
