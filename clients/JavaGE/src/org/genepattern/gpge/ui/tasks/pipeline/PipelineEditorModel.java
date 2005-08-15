@@ -477,6 +477,7 @@ public class PipelineEditorModel {
 		pipelineTaskInfo.setDescription(description);
 		pipelineTaskInfo.setUserId(owner);
 		pipelineTaskInfo.setAccessId(privacy);
+		
 		pipelineTaskInfo
 				.setParameterInfoArray((ParameterInfo[]) pipelineParameterInfoList
 						.toArray(new ParameterInfo[0]));
@@ -496,9 +497,10 @@ public class PipelineEditorModel {
 		taskInfoAttrs.put("LSID", lsid);
 		taskInfoAttrs.put("serializedModel", pipelineModel.toXML());
 		taskInfoAttrs.put("language", "Java");
+		taskInfoAttrs.put(GPConstants.USERID, owner);
 		pipelineTaskInfo.setTaskInfoAttributes(taskInfoAttrs);
-		System.out.println(taskInfoAttrs);
-		System.out.print(pipelineParameterInfoList);
+	//	System.out.println(taskInfoAttrs);
+		//System.out.print(pipelineParameterInfoList);
 		return pipelineTaskInfo;
 	}
 
