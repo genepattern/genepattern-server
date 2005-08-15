@@ -37,6 +37,7 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.MessageManager;
+import org.genepattern.gpge.message.TaskInstallMessage;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.GroupPanel;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel;
@@ -299,6 +300,18 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 	protected void save() {
 		save(true);
+		try {
+			MessageManager.notifyListeners(new TaskInstallMessage(this, model
+					.getLSID()));
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		remove(headerPanel);
+		headerPanel = new HeaderPanel(model, buttonPanel);
+		add(headerPanel, BorderLayout.NORTH); // update lsid in drop down
+		invalidate();
+		validate();
+
 	}
 
 	protected void save(boolean saveAll) {
@@ -319,9 +332,13 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 				if (inheritedTaskIndex != -1) {
 					String inheritedFileName = pd.getInheritedFileName();
 					if (saveAll && inheritedFileName == null) {
-						errors.append("Missing value for " + (i + 1) + ". "
-								+ model.getTaskName(i) + " "
-								+ model.getParameterName(i, j) + "\n");
+						errors.append("Missing value for "
+								+ (i + 1)
+								+ ". "
+								+ model.getTaskName(i)
+								+ " "
+								+ AnalysisServiceDisplay.getDisplayString(model
+										.getParameterName(i, j)) + "\n");
 					}
 					model.setInheritedFile(i, j, inheritedTaskIndex,
 							inheritedFileName);
@@ -331,9 +348,15 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					String value = pd.getValue();
 					if (model.isRequired(i, j)) {
 						if (saveAll && value.trim().equals("")) {
-							errors.append("Missing value for " + (i + 1) + ". "
-									+ model.getTaskName(i) + " "
-									+ model.getParameterName(i, j) + "\n");
+							errors.append("Missing value for "
+									+ (i + 1)
+									+ ". "
+									+ model.getTaskName(i)
+									+ " "
+									+ AnalysisServiceDisplay
+											.getDisplayString(model
+													.getParameterName(i, j))
+									+ "\n");
 						}
 					}
 
@@ -353,6 +376,10 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					model.setValue(i, j, value);
 				}
 			}
+		}
+
+		if (!saveAll) {
+			return;
 		}
 
 		if (errors.length() > 0) {
@@ -426,11 +453,16 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	}
 
 	public void sendTo(String sendToString, Sendable sendable) {
-		int taskIndex = Integer.parseInt(sendToString.substring(0, sendToString.indexOf(".")))-1;
-		String taskNameAndParamName = sendToString.substring(sendToString.indexOf(" ")+1, sendToString.length());
-		String parameterName = taskNameAndParamName.substring(taskNameAndParamName.indexOf(" ")+1, taskNameAndParamName.length());
-		for(int i = 0, numParams = model.getParameterCount(taskIndex); i < numParams; i++) {
-			if(AnalysisServiceDisplay.getDisplayString(model.getParameterName(taskIndex, i)).equals(parameterName)) {
+		int taskIndex = Integer.parseInt(sendToString.substring(0, sendToString
+				.indexOf("."))) - 1;
+		String taskNameAndParamName = sendToString.substring(sendToString
+				.indexOf(" ") + 1, sendToString.length());
+		String parameterName = taskNameAndParamName.substring(
+				taskNameAndParamName.indexOf(" ") + 1, taskNameAndParamName
+						.length());
+		for (int i = 0, numParams = model.getParameterCount(taskIndex); i < numParams; i++) {
+			if (AnalysisServiceDisplay.getDisplayString(
+					model.getParameterName(taskIndex, i)).equals(parameterName)) {
 				TaskPanel tp = (TaskPanel) this.taskDisplayList.get(taskIndex);
 				tp.parameters[i].setValue(sendable);
 				break;
@@ -782,8 +814,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		/*
 		 * if (!rectSpn.contains(rect)) { System.out.println("scrolling to "+
 		 * rect.y); jvp.scrollRectToVisible(rect); //Point p = new Point(0,
-		 * rect.y);
-		 *  // }
+		 * rect.y); // }
 		 */
 	}
 
