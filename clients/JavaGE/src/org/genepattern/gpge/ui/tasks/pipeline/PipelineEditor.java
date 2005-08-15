@@ -526,27 +526,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		}
 	}
 
-	public void display(AnalysisService svc) {
-		if (svc == null) {
-			setPipeline(null, null);
-		} else {
-			TaskInfo info = svc.getTaskInfo();
-			try {
-				PipelineModel pipelineModel = PipelineModel
-						.toPipelineModel((String) info.getTaskInfoAttributes()
-								.get(GPConstants.SERIALIZED_MODEL));
-				setPipeline(svc, pipelineModel);
-
-			} catch (Exception e1) {
-				e1.printStackTrace();
-				GenePattern
-						.showErrorDialog("An error occurred while loading the pipeline");
-
-			}
-		}
-	}
-
-	private void setPipeline(AnalysisService svc, PipelineModel pipelineModel) {
+	public boolean display(AnalysisService svc, PipelineModel pipelineModel) {
 		this.analysisService = svc;
 		pipelineChanged = false;
 		if (svc == null) {
@@ -555,14 +535,11 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					.getUsername();
 			model.setAuthor(username);
 			model.setOwner(username);
+		
 		} else {
 			model = new PipelineEditorModel(svc, pipelineModel);
-			if (model.getMissingJobSubmissions().size() > 0) {
-				MessageManager.notifyListeners(new ChangeViewMessageRequest(
-						this,
-						ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST,
-						analysisService)); // FIXME
-				return;
+			if(model.getMissingJobSubmissions().size() > 0) {
+				return false;
 			}
 		}
 		if (headerPanel != null) {
@@ -581,6 +558,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		// to
 		// current user or is public
 		layoutTasks();
+		return true;
 
 	}
 
