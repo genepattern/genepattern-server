@@ -426,6 +426,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 									"<GenePatternURL>getFile.jsp?task=<LSID>&file="
 											.length(), value.length());
 							existingFileNames.add(fileName);
+						} else if(value.startsWith("job #")) {
+							existingFileNames.add(value);
 						}
 					}
 
@@ -550,9 +552,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 		enableButtons();
 		model.addPipelineListener(this);
-		if (DEBUG) {
-			model.print();
-		}
+		
 
 		// show edit link when task has local authority and either belongs
 		// to
