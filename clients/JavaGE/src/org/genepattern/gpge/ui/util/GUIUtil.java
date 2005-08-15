@@ -172,8 +172,25 @@ public class GUIUtil {
 		return showConfirmDialog(GenePattern.getDialogParent(), "GenePattern", message);
 	}
 	
+	/**
+	 * 
+	 * @param parent
+	 * @param title
+	 * @param message
+	 * @param text array containing 'Yes', 'No', 'Cancel' text
+	 * @return
+	 */
+	public static int showYesNoCancelDialog(Component parent, String title, String message, String[] text) {
+		if(text.length!=3) {
+			throw new IllegalArgumentException("Invalid array length.");
+		}
+		return JOptionPane.showOptionDialog(parent, message, title,
+				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE,
+				GenePattern.getIcon(), text, text[0]);
+	}
+	
 	public static boolean showConfirmDialog(Component parent, String title, String message) {
-		if (JOptionPane.showOptionDialog(parent, message, null,
+		if (JOptionPane.showOptionDialog(parent, message, title,
 				JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
 				GenePattern.getIcon(), new Object[] { "Yes", "No" }, "Yes") == JOptionPane.YES_OPTION) {
 			return true;
