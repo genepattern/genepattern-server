@@ -99,6 +99,42 @@ public class ViewPipeline extends JPanel {
 		}
 	}
 
+	private JPanel createButtonPanel(final AnalysisService svc) {
+		JPanel bottomPanel = new JPanel();
+		final JButton runButton = new JButton("Run");
+		final JButton editButton = new JButton("Edit");
+		final JButton helpButton = new JButton("Help");
+		TaskHelpActionListener taskHelpActionListener = new TaskHelpActionListener();
+		taskHelpActionListener.setTaskInfo(svc.getTaskInfo());
+		helpButton.addActionListener(taskHelpActionListener);
+
+		ActionListener btnListener = new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				if (e.getSource() == runButton) {
+					MessageManager
+							.notifyListeners(new ChangeViewMessageRequest(
+									this,
+									ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST,
+									svc));
+				} else if (e.getSource() == editButton) {
+					MessageManager
+							.notifyListeners(new ChangeViewMessageRequest(
+									this,
+									ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST,
+									svc));
+				}
+			}
+
+		};
+		runButton.addActionListener(btnListener);
+		editButton.addActionListener(btnListener);
+		bottomPanel.add(runButton);
+		bottomPanel.add(editButton);
+		bottomPanel.add(helpButton);
+		return bottomPanel;
+	}
+	
 	private void setPipeline(final AnalysisService svc,
 			PipelineModel pipelineModel) {
 		setMinimumSize(new java.awt.Dimension(100, 100));
@@ -153,43 +189,9 @@ public class ViewPipeline extends JPanel {
 
 			add(taskNamePanel, BorderLayout.NORTH);
 
-			JPanel bottomPanel = new JPanel();
-			final JButton runButton = new JButton("Run");
-			final JButton editButton = new JButton("Edit");
-			final JButton helpButton = new JButton("Help");
-			TaskHelpActionListener taskHelpActionListener = new TaskHelpActionListener();
-			taskHelpActionListener.setTaskInfo(svc.getTaskInfo());
-			helpButton.addActionListener(taskHelpActionListener);
-
-			ActionListener btnListener = new ActionListener() {
-
-				public void actionPerformed(ActionEvent e) {
-					if (e.getSource() == runButton) {
-						MessageManager
-								.notifyListeners(new ChangeViewMessageRequest(
-										this,
-										ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST,
-										svc));
-					} else if (e.getSource() == editButton) {
-						MessageManager
-								.notifyListeners(new ChangeViewMessageRequest(
-										this,
-										ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST,
-										svc));
-					}
-				}
-
-			};
-			runButton.addActionListener(btnListener);
-			editButton.addActionListener(btnListener);
-			bottomPanel.add(runButton);
-			bottomPanel.add(editButton);
-			bottomPanel.add(helpButton);
-			add(bottomPanel, BorderLayout.SOUTH);
-			invalidate();
-			validate();
+			add(createButtonPanel(svc), BorderLayout.SOUTH);
 		} else {
-			MissingTasksDisplay mtd = new MissingTasksDisplay(model.getMissingJobSubmissions());
+			MissingTasksDisplay mtd = new MissingTasksDisplay(model.getMissingJobSubmissions(), svc);
 			taskNamePanel = new TaskNamePanel(svc.getTaskInfo(),
 					ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST, mtd
 							.getErrorPanel());
@@ -197,8 +199,11 @@ public class ViewPipeline extends JPanel {
 			JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 					mtd.getScrollPane(), new JScrollPane(tasksPanel));
 			add(splitPane, BorderLayout.CENTER);
-			splitPane.setDividerLocation(mtd.getScrollPane().getPreferredSize().height);
+			splitPane.setDividerLocation(200);
+			add(createButtonPanel(svc), BorderLayout.SOUTH);
 		}
+		invalidate();
+		validate();
 
 	}
 
