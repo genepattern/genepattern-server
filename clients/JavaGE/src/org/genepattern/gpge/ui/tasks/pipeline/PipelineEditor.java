@@ -2,6 +2,7 @@ package org.genepattern.gpge.ui.tasks.pipeline;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -24,6 +25,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -102,6 +104,16 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 	private JButton moveDownButton;
 
+	private AnalysisService analysisService;
+
+	private JButton runButton;
+
+	private JButton viewButton;
+
+	private JButton helpButton;
+
+	private boolean pipelineChanged = false;
+
 	private void enableButtons() {
 		deleteButton.setEnabled(model.getTaskCount() > 0);
 		if (model.getTaskCount() == 0) {
@@ -114,6 +126,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		moveDownButton.setEnabled((index + 1) != model.getTaskCount());
 		moveUpButton.setEnabled(index > 0);
 
+		runButton.setEnabled(analysisService != null);
+		viewButton.setEnabled(analysisService != null);
+		helpButton.setEnabled(analysisService != null);
 	}
 
 	/**
@@ -145,7 +160,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		tasksInPipelineComboBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				enableButtons();
-
 			}
 		});
 
@@ -216,9 +230,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 		JPanel bottomBtnPanel = new JPanel();
 		final JButton saveButton = new JButton("Save");
-		final JButton runButton = new JButton("Run");
-		final JButton viewButton = new JButton("View");
-		final JButton helpButton = new JButton("Help");
+		runButton = new JButton("Run");
+		viewButton = new JButton("View");
+		helpButton = new JButton("Help");
 		taskHelpActionListener = new TaskHelpActionListener();
 		helpButton.addActionListener(taskHelpActionListener);
 
@@ -228,19 +242,58 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 				if (e.getSource() == saveButton) {
 					save();
 				} else if (e.getSource() == runButton) {
-					// FIXME
-					MessageManager
-							.notifyListeners(new ChangeViewMessageRequest(
-									this,
-									ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST,
-									null));
+					if (pipelineChanged) {
+						int result = GUIUtil
+								.showYesNoCancelDialog(
+										GenePattern.getDialogParent(),
+										"GenePattern",
+										"Do you want to save the changes to the pipeline?",
+										new String[] { "Save", "Don't Save",
+												"Cancel" });
+
+						if (result == JOptionPane.YES_OPTION) {
+							save();
+						} else if (result == JOptionPane.NO_OPTION) {
+							MessageManager
+									.notifyListeners(new ChangeViewMessageRequest(
+											this,
+											ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST,
+											analysisService));
+						}
+					} else {
+						MessageManager
+						.notifyListeners(new ChangeViewMessageRequest(
+								this,
+								ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST,
+								analysisService));
+					}
+
 				} else if (e.getSource() == viewButton) {
-					MessageManager
-							.notifyListeners(new ChangeViewMessageRequest(
-									this,
-									ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST,
-									null));
-					// FIXME
+					if (pipelineChanged) {
+						int result = GUIUtil
+								.showYesNoCancelDialog(
+										GenePattern.getDialogParent(),
+										"GenePattern",
+										"Do you want to save the changes to the pipeline?",
+										new String[] { "Save", "Don't Save",
+												"Cancel" });
+
+						if (result == JOptionPane.YES_OPTION) {
+							save();
+						} else if (result == JOptionPane.NO_OPTION) {
+							MessageManager
+									.notifyListeners(new ChangeViewMessageRequest(
+											this,
+											ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST,
+											analysisService));
+						}
+					} else {
+						MessageManager
+						.notifyListeners(new ChangeViewMessageRequest(
+								this,
+								ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST,
+								analysisService));
+					}
 				}
 			}
 
@@ -299,6 +352,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	}
 
 	protected void save() {
+		pipelineChanged = false;
 		save(true);
 		try {
 			MessageManager.notifyListeners(new TaskInstallMessage(this, model
@@ -311,7 +365,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		add(headerPanel, BorderLayout.NORTH); // update lsid in drop down
 		invalidate();
 		validate();
-
+		this.analysisService = AnalysisServiceManager.getInstance()
+				.getAnalysisService(model.getLSID());
+		enableButtons();
 	}
 
 	protected void save(boolean saveAll) {
@@ -491,7 +547,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	}
 
 	private void setPipeline(AnalysisService svc, PipelineModel pipelineModel) {
-
+		this.analysisService = svc;
+		pipelineChanged = false;
 		if (svc == null) {
 			model = new PipelineEditorModel();
 			String username = AnalysisServiceManager.getInstance()
@@ -504,8 +561,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 				MessageManager.notifyListeners(new ChangeViewMessageRequest(
 						this,
 						ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST,
-						svc));
-				return; // FIXME
+						analysisService)); // FIXME
+				return;
 			}
 		}
 		if (headerPanel != null) {
@@ -832,6 +889,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	}
 
 	public void pipelineChanged(PipelineEvent e) {
+		pipelineChanged = true;
 		if (e.getType() == PipelineEvent.REPLACE) {
 			TaskPanel deletedTask = (TaskPanel) taskDisplayList.remove(e
 					.getFirstRow());
@@ -861,6 +919,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		} else {
 			System.err.println("Unknown pipeline event");
 		}
+		enableButtons();
 		tasksPanel.invalidate();
 		tasksPanel.validate();
 
