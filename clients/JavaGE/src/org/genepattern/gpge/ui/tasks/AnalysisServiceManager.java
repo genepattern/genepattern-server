@@ -40,8 +40,20 @@ public class AnalysisServiceManager {
 	/** Maps a versionless LSID to a list of versions for that LSID */
 	private Map lsid2VersionsMap = new HashMap();
 
-	private Comparator versionComparator = LSIDVersionComparator.INSTANCE;
+	private Comparator versionComparator = new ReverseComparator(LSIDVersionComparator.INSTANCE);
 
+	private static class ReverseComparator implements Comparator {
+		private Comparator c;
+
+		public ReverseComparator(Comparator c) {
+			this.c = c;
+		}
+		
+		public int compare(Object obj1, Object obj2) {
+			return c.compare(obj2, obj1);
+		}
+	}
+	
 	private AnalysisServiceManager() {
 		this.lsid2LatestAnalysisServices = new HashMap();
 		this.lsid2AnalysisServices = new HashMap();
@@ -93,7 +105,7 @@ public class AnalysisServiceManager {
 			}
 
 		} else {
-			getAnalysisService(lsid.toString());
+			getAnalysisService(lsid.toString()); // adds to lsid2AnalysisServices
 		}
 	}
 
@@ -204,6 +216,7 @@ public class AnalysisServiceManager {
 		this.lsid2VersionsMap = new org.genepattern.webservice.AdminProxy(
 				server, username).getLSIDToVersionsMap();
 
+		
 		for (Iterator it = lsid2VersionsMap.keySet().iterator(); it.hasNext();) {
 			List versions = (List) lsid2VersionsMap.get(it.next());
 			Collections.sort(versions, versionComparator);
