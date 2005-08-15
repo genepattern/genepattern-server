@@ -399,12 +399,6 @@ public class PipelineEditorModel {
 		}
 	}
 
-	void print() {
-		for (int i = 0; i < tasks.size(); i++) {
-			System.out.println(tasks.get(i));
-		}
-	}
-
 	public TaskInfo toTaskInfo() {
 		PipelineModel pipelineModel = new PipelineModel();
 		pipelineModel.setName(pipelineName);
@@ -445,7 +439,7 @@ public class PipelineEditorModel {
 					}
 					attrs.put(PipelineModel.INHERIT_FILENAME, inheritedFile);
 					attrs.put(PipelineModel.INHERIT_TASKNAME, String
-							.valueOf(inheritedTaskIndex - 1));
+							.valueOf(inheritedTaskIndex)); // gpUseResult indices start at 1
 					p.setAttributes(attrs);
 				} else if (isPromptWhenRun(i, j)) {
 					p.setAttributes(promptWhenRunAttrs);
@@ -460,7 +454,12 @@ public class PipelineEditorModel {
 					if (file.exists()) {
 						value = "<GenePatternURL>getFile.jsp?task=<LSID>&file="
 								+ file.getName();
+					} else if(value.startsWith("job #")) {
+						String jobNumber = value.substring(value.indexOf("#")+1, value.indexOf(",")).trim();
+						String fileName = value.substring(value.indexOf(",")+1, value.length()).trim();
+						value = "<GenePatternURL>getFile.jsp?task=<LSID>&file=" + fileName;
 					}
+					
 					p.setValue(value);
 					p.setAttributes(emptyAttrs);
 				} else {
@@ -498,8 +497,8 @@ public class PipelineEditorModel {
 		taskInfoAttrs.put("serializedModel", pipelineModel.toXML());
 		taskInfoAttrs.put("language", "Java");
 		pipelineTaskInfo.setTaskInfoAttributes(taskInfoAttrs);
-		//System.out.println(taskInfoAttrs);
-		//System.out.print(pipelineParameterInfoList);
+		System.out.println(taskInfoAttrs);
+		System.out.print(pipelineParameterInfoList);
 		return pipelineTaskInfo;
 	}
 
