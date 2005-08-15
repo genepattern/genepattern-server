@@ -18,12 +18,16 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
 import org.genepattern.data.pipeline.JobSubmission;
+import org.genepattern.gpge.message.ChangeViewMessageRequest;
+import org.genepattern.gpge.message.MessageManager;
+import org.genepattern.gpge.ui.maindisplay.ViewManager;
 import org.genepattern.gpge.ui.table.AlternatingColorTable;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
 import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.gpge.util.PostData;
 import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.AnalysisService;
 
 /**
  * Displays missing tasks in a pipeline
@@ -36,7 +40,7 @@ public class MissingTasksDisplay {
 	private JScrollPane sp;
 
 
-	public MissingTasksDisplay(final List missingTasks) {
+	public MissingTasksDisplay(final List missingTasks, final AnalysisService service) {
 
 		final String[] columnNames = { "Name", "Version", "LSID" };
 		TableModel tableModel = new AbstractTableModel() {
@@ -75,16 +79,16 @@ public class MissingTasksDisplay {
 		JPanel buttonPanel = new JPanel();
 		JButton installFromCatalogBtn = new JButton(
 				"Install Missing Modules From Catalog");
-		JButton importZipBtn = new JButton("Import Module From Zip File");
-		importZipBtn.addActionListener(new ActionListener() {
+		JButton refreshViewBtn = new JButton("Refresh View");
+		refreshViewBtn.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent arg0) {
-
+				MessageManager.notifyListeners(new ChangeViewMessageRequest(this, ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST, service));
 			}
 
 		});
 		buttonPanel.add(installFromCatalogBtn);
-		// buttonPanel.add(importZipBtn);
+		buttonPanel.add(refreshViewBtn);
 		installFromCatalogBtn.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent arg0) {
