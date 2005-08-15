@@ -366,7 +366,15 @@ public class TaskIntegrator implements ITaskIntegrator {
 				int start = dataHandlers != null && dataHandlers.length > 0 ? dataHandlers.length-1
 						: 0;
 				for(int i = start; i < fileNames.length; i++) {
-					copyFile(new File(oldAttachmentDir, fileNames[i]), new File(dir, fileNames[i]));
+					String text = fileNames[i];
+					if(text.startsWith("job #")) { // job output file
+						String jobNumber = text.substring(text.indexOf("#")+1, text.indexOf(",")).trim();
+						String fileName = text.substring(text.indexOf(",")+1, text.length()).trim();
+						String jobDir = GenePatternAnalysisTask.getJobDir(jobNumber);
+						copyFile(new File(jobDir, fileName), new File(dir, fileName));
+					} else { // file from previous version of task
+						copyFile(new File(oldAttachmentDir, text), new File(dir, text));
+					}
 				}
 			}
 			
@@ -499,14 +507,9 @@ public class TaskIntegrator implements ITaskIntegrator {
 	public String cloneTask(String oldLSID, String cloneName)
 			throws WebServiceException {
 		String userID = getUserName();
-		String requestURL = null;
 		try {
 			TaskInfo taskInfo = null;
 			try {
-				requestURL = "http://"
-						+ java.net.InetAddress.getLocalHost()
-								.getCanonicalHostName() + ":"
-						+ System.getProperty("GENEPATTERN_PORT");
 				taskInfo = new LocalAdminClient(userID).getTask(oldLSID);
 			} catch (Exception e) {
 				throw new WebServiceException(e);
@@ -520,12 +523,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 			oldLSID = (String) tia.remove(GPConstants.LSID);
 			if (tia.get(GPConstants.TASK_TYPE).equals(
 					GPConstants.TASK_TYPE_PIPELINE)) {
-				URL request = null;
-				try {
-					request = new URL(requestURL);
-				} catch (MalformedURLException mue) {
-					throw new WebServiceException(mue.getMessage());
-				}
+				
 				PipelineModel model = PipelineModel.toPipelineModel((String) tia
 						.get(GPConstants.SERIALIZED_MODEL));
 				

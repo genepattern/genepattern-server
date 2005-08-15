@@ -104,7 +104,8 @@ public interface ITaskIntegrator {
 	 *            array has more elements than the <tt>dataHandlers</tt>
 	 *            array, then the additional elements are assumed to be uploaded
 	 *            files for an existing task with the LSID contained in
-	 *            <tt>taskAttributes</tt>
+	 *            <tt>taskAttributes</tt> or the the element is of the form 'job
+	 *            #, filename', then the element is assumed to be an output from a job.
 	 * 
 	 * @return The LSID of the task
 	 * @exception WebServiceException
