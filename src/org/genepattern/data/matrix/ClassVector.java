@@ -44,7 +44,6 @@ public class ClassVector {
 		this.classCount = maxClassNumber;
 	}
 
-
 	private ClassVector(Map classNumber2IndicesMap, int[] assignments,
 			Map classNumber2LabelMap, int classCount) {
 		this.classNumber2IndicesMap = classNumber2IndicesMap;
@@ -139,13 +138,24 @@ public class ClassVector {
 	}
 
 
-	public String toString() {
+	public String toAssignmentString() {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0, length = assignments.length; i < length; i++) {
 			if (i > 0) {
 				sb.append(" ");
 			}
 			sb.append(assignments[i]);
+		}
+		return sb.toString();
+	}
+	
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0, length = assignments.length; i < length; i++) {
+			if (i > 0) {
+				sb.append(" ");
+			}
+			sb.append(getClassName(assignments[i]));
 		}
 		return sb.toString();
 	}
@@ -193,14 +203,43 @@ public class ClassVector {
 	public int[] getAssignments() {
 		return (int[]) assignments.clone();
 	}
-
+	
+	
 
 	/**
-	 *  Gets the indices in the assignments array that have the specified class
-	 *  number.
-	 *
-	 *@param  classNumber  The class number
-	 *@return              The indices
+	 * Creates a array containing all one versus all class vectors. For example
+	 * if this class vector contained the classes 'A', 'B', and 'C', the
+	 * returned array would contain 3 elements: 'A' vs all, 'B' vs all, and 'C'
+	 * vs all
+	 * 
+	 * @return all one versus all class vectors
+	 */
+	public ClassVector[] getOneVersusAll() {
+		int numClasses = this.getClassCount();
+		ClassVector[] array = new ClassVector[numClasses];
+		for (int i = 0; i < numClasses; i++) {
+			String[] x = new String[this.size()];
+			for (int j = 0; j < x.length; j++) {
+				int assignment = this.getAssignment(j);
+				if (assignment == i) {
+					x[j] = this.getClassName(assignment);
+				} else {
+					x[j] = "All";
+				}
+			}
+			ClassVector oneVersusAll = new ClassVector(x);
+			array[i] = oneVersusAll;
+		}
+		return array;
+	}
+	
+	/**
+	 * Gets the indices in the assignments array that have the specified class
+	 * number.
+	 * 
+	 * @param classNumber
+	 *            The class number
+	 * @return The indices
 	 */
 	public int[] getIndices(int classNumber) {
 		List indices = (List) classNumber2IndicesMap.get(new Integer(
