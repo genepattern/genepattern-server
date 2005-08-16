@@ -40,10 +40,11 @@ public class GUIUtil {
 		if (f != null) {
 			File file = new File(directory, f);
 			if (mode == FileDialog.SAVE) {
-				if (!overwriteFile(file)) {
+				if (overwriteFile(file)) {
 					return file;
+				} else {
+					return null;
 				}
-				return null;
 			} else {
 				return file;
 			}
