@@ -39,16 +39,7 @@ public class GUIUtil {
 		String directory = fc.getDirectory();
 		if (f != null) {
 			File file = new File(directory, f);
-			if (mode == FileDialog.SAVE) {
-				if (overwriteFile(file)) {
-					return file;
-				} else {
-					return null;
-				}
-			} else {
-				return file;
-			}
-
+			return file; // mac os x file chooser asks chooser whether to replace file
 		}
 		return null;
 	}
