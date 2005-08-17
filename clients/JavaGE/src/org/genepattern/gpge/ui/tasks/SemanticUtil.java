@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -80,22 +81,23 @@ public class SemanticUtil {
 					return;
 				}
 				ChangeViewMessage changeViewMessage = (ChangeViewMessage) message;
-				final AnalysisServiceDisplay analysisServiceDisplay = (AnalysisServiceDisplay) changeViewMessage
+				final TaskDisplay analysisServiceDisplay = (TaskDisplay) changeViewMessage
 						.getComponent();
 
 				final List matchingInputParameters = new ArrayList();
+				Iterator typesIterator = analysisServiceDisplay.getInputFileTypes();
 				for (Iterator it = analysisServiceDisplay
 						.getInputFileParameters(); it.hasNext();) {
-					ParameterInfo parameterInfo = (ParameterInfo) it.next();
-					if (isCorrectKind(parameterInfo, kind)) {
-						matchingInputParameters.add(parameterInfo);
+					String name = (String) it.next();
+					String[] types = (String[])  typesIterator.next();
+					if (isCorrectKind(types, kind)) {
+						matchingInputParameters.add(name);
 					}
 				}
 				if (matchingInputParameters.size() == 1) {
-					ParameterInfo inputParameter = (ParameterInfo) matchingInputParameters
+					String inputParameter = (String) matchingInputParameters
 							.get(0);
-					analysisServiceDisplay.sendTo(inputParameter
-							.getName(), (Sendable) node);
+					analysisServiceDisplay.sendTo(inputParameter, (Sendable) node);
 				} else if (matchingInputParameters.size() > 1) {
 					final JDialog d = new CenteredDialog(GenePattern
 							.getDialogParent());
@@ -117,9 +119,9 @@ public class SemanticUtil {
 						}
 
 						public Object getValueAt(int r, int c) {
-							ParameterInfo p = (ParameterInfo) matchingInputParameters
+							String p = (String) matchingInputParameters
 									.get(r);
-							return AnalysisServiceDisplay.getDisplayString(p);
+							return p;
 						}
 					};
 					final JButton ok = new JButton("OK");
@@ -228,22 +230,14 @@ public class SemanticUtil {
 	 * Returns <code>true</code> if the given kind is an acceptable input file
 	 * format for the given input parameter
 	 */
-	public static boolean isCorrectKind(ParameterInfo info, String kind) {
-		String fileFormatsString = (String) info.getAttributes().get(
-				GPConstants.FILE_FORMAT);
-		List fileFormats = new ArrayList();
-		if (fileFormatsString == null || fileFormatsString.equals("")) {
+	public static boolean isCorrectKind(String[] inputTypes, String kind) {
+		if (inputTypes == null || inputTypes.length==0) {
 			return false;
 		}
-		java.util.StringTokenizer st = new java.util.StringTokenizer(
-				fileFormatsString, GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-		while (st.hasMoreTokens()) {
-			fileFormats.add(st.nextToken().toLowerCase());
-		}
-		if (fileFormats.size() == 0 || kind == null || kind.equals("")) {
+		if(kind == null || kind.equals("")) {
 			return true;
 		}
-		return fileFormats.contains(kind.toLowerCase());
+		return Arrays.asList(inputTypes).contains(kind);
 	}
 
 	private static Map _getInputTypeToMenuItemsMap(Map inputTypeToModulesMap) {
