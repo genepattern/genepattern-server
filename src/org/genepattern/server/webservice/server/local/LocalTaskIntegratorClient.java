@@ -18,41 +18,41 @@ import org.genepattern.webservice.WebServiceException;
 /**
  * @author Joshua Gould
  */
-public class LocalTaskIntegratorClient implements ITaskIntegrator {
-	ITaskIntegrator service;
+public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIntegrator {
 	String progressMessage = "";
 	JspWriter out = null;
+	String userName = null;
 
 	public LocalTaskIntegratorClient(final String userName, final JspWriter out) {
 		this.out = out;
-		service = new TaskIntegrator() {
-			
-			protected String getUserName() {
-				return userName;
-			}
-		};
+		this.userName = userName;
+	}
+
+	protected String getUserName() {
+		return userName;
+
 	}
 
 	public String modifyTask(int accessId, String taskName, String description,
 			ParameterInfo[] parameterInfoArray, java.util.Map taskAttributes,
 			javax.activation.DataHandler[] dataHandlers, String[] fileNames)
 			throws WebServiceException {
-		return service.modifyTask(accessId, taskName, description,
+		return super.modifyTask(accessId, taskName, description,
 				parameterInfoArray, taskAttributes, dataHandlers, fileNames);
 	}
 
 	public String cloneTask(String lsid, String cloneName)
 			throws WebServiceException {
-		return service.cloneTask(lsid, cloneName);
+		return super.cloneTask(lsid, cloneName);
 	}
 
 	public DataHandler[] getSupportFiles(String lsid)
 			throws WebServiceException {
-		return service.getSupportFiles(lsid);
+		return super.getSupportFiles(lsid);
 	}
 
 	public String[] getSupportFileNames(String lsid) throws WebServiceException {
-		return service.getSupportFileNames(lsid);
+		return super.getSupportFileNames(lsid);
 	}
 
 	public File[] getAllFiles(TaskInfo task) throws WebServiceException {
@@ -61,7 +61,7 @@ public class LocalTaskIntegratorClient implements ITaskIntegrator {
 		if (taskId == null) {
 			taskId = task.getName();
 		}
-		DataHandler[] dh = service.getSupportFiles(taskId);
+		DataHandler[] dh = super.getSupportFiles(taskId);
 
 		Vector vFiles = new Vector();
 		for (int i = 0, length = dh.length; i < length; i++) {
@@ -80,7 +80,7 @@ public class LocalTaskIntegratorClient implements ITaskIntegrator {
 		if (taskId == null) {
 			taskId = task.getName();
 		}
-		DataHandler[] dh = service.getDocFiles(taskId);
+		DataHandler[] dh = super.getDocFiles(taskId);
 		File[] files = new File[dh.length];
 		for (int i = 0, length = dh.length; i < length; i++) {
 			FileDataSource ds = (FileDataSource) dh[i].getDataSource();
@@ -90,52 +90,52 @@ public class LocalTaskIntegratorClient implements ITaskIntegrator {
 	}
 
 	public void deleteTask(String lsid) throws WebServiceException {
-		service.deleteTask(lsid);
+		super.deleteTask(lsid);
 	}
 
 	public String deleteFiles(String lsid, String[] fileNames)
 			throws WebServiceException {
-		return service.deleteFiles(lsid, fileNames);
+		return super.deleteFiles(lsid, fileNames);
 	}
 
 	public String importZipFromURL(String url, int privacy)
 			throws WebServiceException {
-		return service.importZipFromURL(url, privacy, true, this);
+		return super.importZipFromURL(url, privacy, true, this);
 	}
 
 	public String importZipFromURL(String url, int privacy, boolean recursive)
 			throws WebServiceException {
-		return service.importZipFromURL(url, privacy, recursive, this);
+		return super.importZipFromURL(url, privacy, recursive, this);
 	}
 	
 	public String importZipFromURL(String url, int privacy, boolean recursive, ITaskIntegrator taskIntegrator)
 			throws WebServiceException {
-		return service.importZipFromURL(url, privacy, recursive, taskIntegrator);
+		return super.importZipFromURL(url, privacy, recursive, taskIntegrator);
 	}
 	
 	public String importZip(DataHandler handler, int privacy) throws WebServiceException {
-		return service.importZip(handler, privacy);
+		return super.importZip(handler, privacy);
 	}
 	
 	public DataHandler exportToZip(String taskName) throws WebServiceException {
-		return service.exportToZip(taskName, false);
+		return super.exportToZip(taskName, false);
 	}
 
 	public DataHandler exportToZip(String taskName, boolean recursive) throws WebServiceException {
-		return service.exportToZip(taskName, recursive);
+		return super.exportToZip(taskName, recursive);
 	}
 
 	public long[] getLastModificationTimes(String lsid, String[] fileNames) throws WebServiceException {
-		return service.getLastModificationTimes(lsid, fileNames);
+		return super.getLastModificationTimes(lsid, fileNames);
 	}
 
 	public DataHandler[] getSupportFiles(String lsid, String[] fileNames)
 			throws WebServiceException {
-		return service.getSupportFiles(lsid, fileNames);
+		return super.getSupportFiles(lsid, fileNames);
 	}
 	
 	public DataHandler[] getDocFiles(String lsid) throws WebServiceException {
-		return service.getDocFiles(lsid);
+		return super.getDocFiles(lsid);
 	}
 	
 	public boolean isZipOfZips(String url) throws WebServiceException {

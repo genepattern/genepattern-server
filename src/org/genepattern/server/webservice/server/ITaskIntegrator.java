@@ -66,8 +66,8 @@ public interface ITaskIntegrator {
 	public String importZipFromURL(String url, int privacy, boolean recursive)
 			throws WebServiceException;
 
-	public String importZipFromURL(String url, int privacy, boolean recursive, ITaskIntegrator taskIntegrator)
-			throws WebServiceException;
+	//public String importZipFromURL(String url, int privacy, boolean recursive, ITaskIntegrator taskIntegrator)
+	//		throws WebServiceException;
 
 	/**
 	 * Installs the zip file overwriting anything already there.

@@ -98,7 +98,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 		return importZip(handler, privacy, recursive, null);
 	}
 
-	public String importZip(DataHandler handler, int privacy, boolean recursive, ITaskIntegrator taskIntegrator)
+	protected String importZip(DataHandler handler, int privacy, boolean recursive, ITaskIntegrator taskIntegrator)
 			throws WebServiceException {
 		Vector vProblems = null;
 		String lsid = null;
@@ -130,7 +130,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 		return 	importZipFromURL(url, privacy, recursive, null);
 	}
 
-	public String importZipFromURL(String url, int privacy, boolean recursive, ITaskIntegrator taskIntegrator) throws WebServiceException {
+	protected String importZipFromURL(String url, int privacy, boolean recursive, ITaskIntegrator taskIntegrator) throws WebServiceException {
 		File zipFile = null;
 		FileOutputStream os = null;
 		InputStream is = null;
@@ -188,7 +188,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 		return importZipFromURL(url, privacy, true, null);
 	}
 
-	public String importZipFromURL(String url, int privacy, ITaskIntegrator taskIntegrator) throws WebServiceException {
+	protected String importZipFromURL(String url, int privacy, ITaskIntegrator taskIntegrator) throws WebServiceException {
 		return importZipFromURL(url, privacy, true, taskIntegrator);
 	}
 
