@@ -162,14 +162,20 @@ public class Analysis extends GenericWebService {
 			for (int x = 0; x < parameters.length; x++) {
 				if (parameters[x].isInputFile()) {
 					String orgFilename = parameters[x].getValue();
-					AttachmentPart ap = (AttachmentPart) files.get(orgFilename);
+					Object obj = files.get(orgFilename);
 					DataHandler dataHandler = null;
-					try {
-						dataHandler = ap.getDataHandler();
-					} catch (SOAPException se) {
-						throw new WebServiceException(
-								"Error while processing files");
+					if(obj instanceof AttachmentPart) {
+						AttachmentPart ap = (AttachmentPart) obj;
+						try {
+							dataHandler = ap.getDataHandler();
+						} catch (SOAPException se) {
+							throw new WebServiceException(
+									"Error while processing files");
+						}
+					} else {
+						dataHandler = (DataHandler) obj;
 					}
+	
 					String newFilename = dataHandler.getName() + "_"
 							+ orgFilename;
 					File f = new File(dataHandler.getName());
