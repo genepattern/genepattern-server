@@ -1,11 +1,5 @@
-/**
- * AdminSoapBindingStub.java
- *
- * This file was auto-generated from WSDL
- * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
- */
 
-package org.genepattern.webservice;;
+package org.genepattern.webservice;
 
 public class AdminSoapBindingStub extends org.apache.axis.client.Stub {
     private java.util.Vector cachedSerClasses = new java.util.Vector();
@@ -33,7 +27,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub {
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/Admin", "fault"),
+                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/Admin", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -48,7 +42,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub {
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/Admin", "fault"),
+                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/Admin", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -63,7 +57,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub {
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/Admin", "fault"),
+                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/Admin", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -78,7 +72,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub {
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/Admin", "fault"),
+                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/Admin", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -93,7 +87,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub {
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/Admin", "fault"),
+                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/Admin", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -108,7 +102,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub {
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/Admin", "fault"),
+                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/Admin", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -123,7 +117,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub {
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/Admin", "fault"),
+                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/Admin", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -138,7 +132,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub {
         oper.setStyle(org.apache.axis.constants.Style.RPC);
         oper.setUse(org.apache.axis.constants.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/Admin", "fault"),
+                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/Admin", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
