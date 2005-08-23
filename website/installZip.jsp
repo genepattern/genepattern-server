@@ -20,14 +20,11 @@
 		 org.genepattern.server.webservice.server.local.*"
 	session="false" contentType="text/html" language="Java" buffer="1kb" %>
 <%
-System.out.println("-A-");
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
 %>
-<%
-System.out.println("-B-");
-%>
+
 <html>
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
@@ -64,34 +61,30 @@ DiskFileUpload fub = new DiskFileUpload();
 isEncodedPost = FileUpload.isMultipartContent(request);
 List params = fub.parseRequest(request);
 
-System.out.println("-C-");
 
 for (Iterator iter = params.iterator(); iter.hasNext();){
 	FileItem fi = (FileItem) iter.next();
-System.out.println("-CC-" + fi.getFieldName());
 	if (fi.isFormField()){
 		requestParameters.put(fi.getFieldName(), fi.getString());
 	} else {
 		// it is the file
 		fileCount++;
-		System.out.println(fi.getFieldName() + "=" + fi.getName());
 		String name = fi.getName();
+		if(name==null || name.equals("")) {
+			continue;
+		}
 		File zipFile = new File(System.getProperty("java.io.tmpdir"),name);
 		fi.write(zipFile);
 		requestParameters.put(fi.getFieldName(), zipFile);
 
 	}
-System.out.println("-CC- file written");
-
 }
-System.out.println("-DC-");
 
 url = (String)requestParameters.get("url");
 if (url != null && (url.equals("http://") || url.length() == 0)) url = null;
 
-System.out.println("-D-");
 
-if (fileCount == 0 && url == null) { %>
+if (requestParameters.get("file1")==null && url == null) { %>
 	Please select a zip file for upload containing GenePattern manifest and optional support files<br>
 	<a href="addZip.jsp">back</a><br>
 	<jsp:include page="footer.jsp"></jsp:include>
@@ -100,11 +93,8 @@ if (fileCount == 0 && url == null) { %>
 <%
 	return;
 }
-System.out.println("-E-");
 if (isEncodedPost) {
-System.out.println("-F-");
-	attachedFile = (File)requestParameters.get("zipfile");
-	System.out.println("attachedFile="+ attachedFile);
+	attachedFile = (File)requestParameters.get("file1");
 	attachmentName = attachedFile.getName();
 		
 		fullName = attachedFile.toString();
