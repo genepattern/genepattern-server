@@ -165,7 +165,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		
 		taskComboBoxListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new RuntimeException().printStackTrace();
 				if(!e.getSource().equals(tasksInPipelineComboBox)) {
 					return;
 				}
