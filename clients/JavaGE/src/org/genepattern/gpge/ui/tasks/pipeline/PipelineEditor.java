@@ -3,8 +3,9 @@ package org.genepattern.gpge.ui.tasks.pipeline;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -29,9 +30,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.text.JTextComponent;
 
@@ -114,6 +115,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 	private boolean pipelineChanged = false;
 
+	private ActionListener taskComboBoxListener;
+
+	
 	private void enableButtons() {
 		deleteButton.setEnabled(model.getTaskCount() > 0);
 		if (model.getTaskCount() == 0) {
@@ -131,6 +135,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		helpButton.setEnabled(analysisService != null);
 	}
 
+	
 	/**
 	 * Only one instance should be created by the ViewManager
 	 * 
@@ -157,12 +162,23 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 		moveDownButton = new JButton("Move Down");
 
-		tasksInPipelineComboBox.addActionListener(new ActionListener() {
+		
+		taskComboBoxListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				new RuntimeException().printStackTrace();
+				if(!e.getSource().equals(tasksInPipelineComboBox)) {
+					return;
+				}
+				int index = tasksInPipelineComboBox.getSelectedIndex();
+				if(index >=0) {
+					TaskPanel t = (TaskPanel) taskDisplayList.get(index);
+					scrollTo(t);
+ 				}
 				enableButtons();
 			}
-		});
-
+		};
+		tasksInPipelineComboBox.addActionListener(taskComboBoxListener);
+		
 		ActionListener taskBtnListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int index = tasksInPipelineComboBox.getSelectedIndex();
@@ -835,22 +851,20 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		}
 
 		addItemsToTaskComboBox();
-		TaskPanel addedTask = (TaskPanel) taskDisplayList.get(addedRow);
-		scrollTo(addedTask);
+		tasksInPipelineComboBox.setSelectedIndex(addedRow);
+		scrollTo((TaskPanel) taskDisplayList.get(addedRow));
 	}
 
-	private void scrollTo(TaskPanel task) {
-		// Rectangle rect = task.getBounds(); //getVisibleRect();
-		Point p = task.getLocation();
-		System.out.println(p);
-		JViewport jvp = scrollPane.getViewport();
-		Rectangle rectSpn = jvp.getViewRect();
-		jvp.setViewPosition(p);
-		/*
-		 * if (!rectSpn.contains(rect)) { System.out.println("scrolling to "+
-		 * rect.y); jvp.scrollRectToVisible(rect); //Point p = new Point(0,
-		 * rect.y); // }
-		 */
+	private void scrollTo(final TaskPanel task) {
+		Thread t = new Thread() {
+			public void run() {
+				Point p = task.getLocation();
+				JViewport jvp = scrollPane.getViewport();
+				jvp.setViewPosition(p);
+			}
+		};
+		SwingUtilities.invokeLater(t);
+		
 	}
 
 	private void taskDeleted(int deletedRow) {
@@ -863,7 +877,11 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			task.setTaskIndex(i);
 		}
 		addItemsToTaskComboBox();
-
+		tasksInPipelineComboBox.setSelectedIndex(deletedRow-1);
+		int index = deletedRow-1;
+		if(index > 0) {
+			scrollTo((TaskPanel) taskDisplayList.get(index));
+		}
 	}
 
 	public void pipelineChanged(PipelineEvent e) {
@@ -893,7 +911,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 				task.setTaskIndex(i);
 			}
 			addItemsToTaskComboBox();
-			scrollTo(movedTask);
 		} else {
 			System.err.println("Unknown pipeline event");
 		}
@@ -1202,6 +1219,29 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		}
 	}
 
+	static class MyBorder implements Border {
+		 int top = 5;
+		 int left = 1;
+		 int right = 1;
+		 int bottom = 10;
+		 
+		public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
+			Color oldColor = g.getColor();
+			g.setColor(Color.gray);
+			g.drawRect(x, top, w -1,c.getHeight()-bottom-top-1);
+			g.setColor(oldColor);
+		}
+
+		public Insets getBorderInsets(Component arg0) {
+			return new Insets(top, left, bottom, right);
+		}
+
+		public boolean isBorderOpaque() {
+			return true;
+		}
+		
+	}
+	 
 	class TaskPanel extends JPanel {
 		private ParameterDisplay[] parameters;
 
@@ -1214,7 +1254,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		public String toString() {
 			return (1 + taskIndex) + ". " + model.getTaskName(taskIndex);
 		}
-
+		
 		public TaskPanel(int _taskIndex) {
 			this.taskIndex = _taskIndex;
 			togglePanel = new GroupPanel((taskIndex + 1) + ". "
@@ -1265,12 +1305,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 						moveDownItem.setEnabled((taskIndex + 1) != model
 								.getTaskCount());
 						moveUpItem.setEnabled(taskIndex > 0);
-
-						// addBeforeItem.setEnabled(taskIndex != 0);
-						// addTaskAfterItem.setEnabled(taskIndex != model
-						// .getTaskCount() - 1
-						// || model.getTaskCount() == 1);
-						tasksInPipelineComboBox.setSelectedIndex(taskIndex);
+						tasksInPipelineComboBox.removeActionListener(taskComboBoxListener);
+						tasksInPipelineComboBox.getModel().setSelectedItem(tasksInPipelineComboBox.getModel().getElementAt(taskIndex));
+						tasksInPipelineComboBox.addActionListener(taskComboBoxListener);
 						popupMenu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				}
@@ -1282,12 +1319,12 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					"left:pref, 3dlu, right:pref, 3dlu, default:grow", "");
 			setLayout(layout);
 			addTaskParameters();
-
-			layout.appendRow(new RowSpec("1dlu"));
-			layout.appendRow(new RowSpec("pref"));
+			//layout.appendRow(new RowSpec("15dlu"));
+		/*	layout.appendRow(new RowSpec("pref"));
 			add(new JSeparator(), cc.xyw(1, layout.getRowCount(), layout
 					.getColumnCount()));
-			layout.appendRow(new RowSpec("5dlu"));
+					*/
+			setBorder(new MyBorder());
 		}
 
 		public void setTaskIndex(int taskIndex) {
