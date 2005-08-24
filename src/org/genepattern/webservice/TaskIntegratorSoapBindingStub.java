@@ -2,12 +2,12 @@
  * TaskIntegratorSoapBindingStub.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis 1.2.1 Jun 14, 2005 (09:15:57 EDT) WSDL2Java emitter.
+ * by the Apache Axis WSDL2Java emitter.
  */
 
 package org.genepattern.webservice;
 
-public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  {
+public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
     private java.util.Vector cachedSerClasses = new java.util.Vector();
     private java.util.Vector cachedSerQNames = new java.util.Vector();
     private java.util.Vector cachedSerFactories = new java.util.Vector();
@@ -16,33 +16,33 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
     static org.apache.axis.description.OperationDesc [] _operations;
 
     static {
-        _operations = new org.apache.axis.description.OperationDesc[22];
-        _initOperationDesc1();
-        _initOperationDesc2();
-        _initOperationDesc3();
-    }
-
-    private static void _initOperationDesc1(){
+        _operations = new org.apache.axis.description.OperationDesc[17];
         org.apache.axis.description.OperationDesc oper;
-        org.apache.axis.description.ParameterDesc param;
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("errorMessage");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "message"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
+        oper.setName("deleteTask");
+        oper.addParameter(new javax.xml.namespace.QName("", "lsid"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
         oper.setReturnType(org.apache.axis.encoding.XMLType.AXIS_VOID);
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.addFault(new org.apache.axis.description.FaultDesc(
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
+                      "org.genepattern.webservice.WebServiceException",
+                      new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
+                      true
+                     ));
         _operations[0] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("deleteTask");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "lsid"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(org.apache.axis.encoding.XMLType.AXIS_VOID);
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setName("deleteFiles");
+        oper.addParameter(new javax.xml.namespace.QName("", "lsid"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "fileNames"), new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "ArrayOf_xsd_string"), java.lang.String[].class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        oper.setReturnClass(java.lang.String.class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "deleteFilesReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -50,52 +50,83 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         _operations[1] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("statusMessage");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "message"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(org.apache.axis.encoding.XMLType.AXIS_VOID);
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setName("getDocFiles");
+        oper.addParameter(new javax.xml.namespace.QName("", "lsid"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "ArrayOf_apachesoap_DataHandler"));
+        oper.setReturnClass(javax.activation.DataHandler[].class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "getDocFilesReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.addFault(new org.apache.axis.description.FaultDesc(
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
+                      "org.genepattern.webservice.WebServiceException",
+                      new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
+                      true
+                     ));
         _operations[2] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("beginProgress");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "message"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(org.apache.axis.encoding.XMLType.AXIS_VOID);
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setName("importZipFromURL");
+        oper.addParameter(new javax.xml.namespace.QName("", "url"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "privacy"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "recursive"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        oper.setReturnClass(java.lang.String.class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "importZipFromURLReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.addFault(new org.apache.axis.description.FaultDesc(
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
+                      "org.genepattern.webservice.WebServiceException",
+                      new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
+                      true
+                     ));
         _operations[3] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("continueProgress");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "percentComplete"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(org.apache.axis.encoding.XMLType.AXIS_VOID);
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setName("importZipFromURL");
+        oper.addParameter(new javax.xml.namespace.QName("", "url"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "privacy"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        oper.setReturnClass(java.lang.String.class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "importZipFromURLReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.addFault(new org.apache.axis.description.FaultDesc(
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
+                      "org.genepattern.webservice.WebServiceException",
+                      new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
+                      true
+                     ));
         _operations[4] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("endProgress");
-        oper.setReturnType(org.apache.axis.encoding.XMLType.AXIS_VOID);
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setName("cloneTask");
+        oper.addParameter(new javax.xml.namespace.QName("", "oldLSID"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "cloneName"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        oper.setReturnClass(java.lang.String.class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "cloneTaskReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.addFault(new org.apache.axis.description.FaultDesc(
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
+                      "org.genepattern.webservice.WebServiceException",
+                      new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
+                      true
+                     ));
         _operations[5] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("deleteFiles");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "lsid"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "fileNames"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "ArrayOf_soapenc_string"), java.lang.String[].class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"));
-        oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "deleteFilesReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setName("getSupportFiles");
+        oper.addParameter(new javax.xml.namespace.QName("", "lsid"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "ArrayOf_apachesoap_DataHandler"));
+        oper.setReturnClass(javax.activation.DataHandler[].class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "getSupportFilesReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -103,16 +134,16 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         _operations[6] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("getDocFiles");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "lsid"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "ArrayOf_apachesoap_DataHandler"));
+        oper.setName("getSupportFiles");
+        oper.addParameter(new javax.xml.namespace.QName("", "lsid"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "fileNames"), new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "ArrayOf_xsd_string"), java.lang.String[].class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "ArrayOf_apachesoap_DataHandler"));
         oper.setReturnClass(javax.activation.DataHandler[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getDocFilesReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "getSupportFilesReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -120,20 +151,15 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         _operations[7] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("importZipFromURL");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "url"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "privacy"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "recursive"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"));
-        oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "importZipFromURLReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setName("getSupportFileNames");
+        oper.addParameter(new javax.xml.namespace.QName("", "lsid"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "ArrayOf_xsd_string"));
+        oper.setReturnClass(java.lang.String[].class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "getSupportFileNamesReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -141,42 +167,39 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         _operations[8] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("importZipFromURL");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "url"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "privacy"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"));
+        oper.setName("modifyTask");
+        oper.addParameter(new javax.xml.namespace.QName("", "accessId"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "taskName"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "description"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "parameterInfoArray"), new javax.xml.namespace.QName("TaskIntegrator", "ParmInfoArray"), ParameterInfo[].class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "taskAttributes"), new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "Map"), java.util.HashMap.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "dataHandlers"), new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "ArrayOf_apachesoap_DataHandler"), javax.activation.DataHandler[].class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "fileNames"), new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "ArrayOf_xsd_string"), java.lang.String[].class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "importZipFromURLReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "modifyTaskReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
                      ));
         _operations[9] = oper;
 
-    }
-
-    private static void _initOperationDesc2(){
-        org.apache.axis.description.OperationDesc oper;
-        org.apache.axis.description.ParameterDesc param;
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("importZip");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "handler"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "DataHandler"), javax.activation.DataHandler.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "privacy"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"));
+        oper.addParameter(new javax.xml.namespace.QName("", "handler"), new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "DataHandler"), javax.activation.DataHandler.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "privacy"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "recursive"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
         oper.setReturnQName(new javax.xml.namespace.QName("", "importZipReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -185,19 +208,15 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("importZip");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "handler"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "DataHandler"), javax.activation.DataHandler.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "privacy"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "recursive"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"));
+        oper.addParameter(new javax.xml.namespace.QName("", "handler"), new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "DataHandler"), javax.activation.DataHandler.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "privacy"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
         oper.setReturnQName(new javax.xml.namespace.QName("", "importZipReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -205,28 +224,16 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         _operations[11] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("modifyTask");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "accessId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "taskName"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "description"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "parameterInfoArray"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("TaskIntegrator", "ParmInfoArray"), ParameterInfo[].class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "taskAttributes"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "Map"), java.util.HashMap.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "dataHandlers"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "ArrayOf_apachesoap_DataHandler"), javax.activation.DataHandler[].class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "fileNames"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "ArrayOf_soapenc_string"), java.lang.String[].class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"));
-        oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "modifyTaskReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setName("getLastModificationTimes");
+        oper.addParameter(new javax.xml.namespace.QName("", "lsid"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "fileNames"), new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "ArrayOf_xsd_string"), java.lang.String[].class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "ArrayOf_xsd_long"));
+        oper.setReturnClass(long[].class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "getLastModificationTimesReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -234,18 +241,15 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         _operations[12] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("cloneTask");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "oldLSID"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "cloneName"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"));
-        oper.setReturnClass(java.lang.String.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "cloneTaskReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setName("exportToZip");
+        oper.addParameter(new javax.xml.namespace.QName("", "taskName"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "DataHandler"));
+        oper.setReturnClass(javax.activation.DataHandler.class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "exportToZipReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -253,16 +257,16 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         _operations[13] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("getSupportFileNames");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "lsid"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "ArrayOf_soapenc_string"));
-        oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getSupportFileNamesReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setName("exportToZip");
+        oper.addParameter(new javax.xml.namespace.QName("", "taskName"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "recursive"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "DataHandler"));
+        oper.setReturnClass(javax.activation.DataHandler.class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "exportToZipReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -270,16 +274,16 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         _operations[14] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("getSupportFiles");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "lsid"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "ArrayOf_apachesoap_DataHandler"));
-        oper.setReturnClass(javax.activation.DataHandler[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getSupportFilesReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setName("getSupportFile");
+        oper.addParameter(new javax.xml.namespace.QName("", "lsid"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "fileName"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "DataHandler"));
+        oper.setReturnClass(javax.activation.DataHandler.class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "getSupportFileReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
@@ -287,119 +291,20 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         _operations[15] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("getSupportFiles");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "lsid"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "fileNames"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "ArrayOf_soapenc_string"), java.lang.String[].class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "ArrayOf_apachesoap_DataHandler"));
-        oper.setReturnClass(javax.activation.DataHandler[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getSupportFilesReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.setName("getDocFileNames");
+        oper.addParameter(new javax.xml.namespace.QName("", "lsid"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "ArrayOf_xsd_string"));
+        oper.setReturnClass(java.lang.String[].class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "getDocFileNamesReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
         oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "fault"),
                       "org.genepattern.webservice.WebServiceException",
                       new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
                       true
                      ));
         _operations[16] = oper;
-
-        oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("getLastModificationTimes");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "lsid"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "fileNames"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "ArrayOf_soapenc_string"), java.lang.String[].class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "ArrayOf_xsd_long"));
-        oper.setReturnClass(long[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getLastModificationTimesReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
-        oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
-                      "org.genepattern.webservice.WebServiceException",
-                      new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
-                      true
-                     ));
-        _operations[17] = oper;
-
-        oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("exportToZip");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "taskName"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "recursive"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "DataHandler"));
-        oper.setReturnClass(javax.activation.DataHandler.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "exportToZipReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
-        oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
-                      "org.genepattern.webservice.WebServiceException",
-                      new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
-                      true
-                     ));
-        _operations[18] = oper;
-
-        oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("exportToZip");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "taskName"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "DataHandler"));
-        oper.setReturnClass(javax.activation.DataHandler.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "exportToZipReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
-        oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
-                      "org.genepattern.webservice.WebServiceException",
-                      new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
-                      true
-                     ));
-        _operations[19] = oper;
-
-    }
-
-    private static void _initOperationDesc3(){
-        org.apache.axis.description.OperationDesc oper;
-        org.apache.axis.description.ParameterDesc param;
-        oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("getSupportFile");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "lsid"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "fileName"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "DataHandler"));
-        oper.setReturnClass(javax.activation.DataHandler.class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getSupportFileReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
-        oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
-                      "org.genepattern.webservice.WebServiceException",
-                      new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
-                      true
-                     ));
-        _operations[20] = oper;
-
-        oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("getDocFileNames");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "lsid"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
-        oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "ArrayOf_soapenc_string"));
-        oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("", "getDocFileNamesReturn"));
-        oper.setStyle(org.apache.axis.constants.Style.RPC);
-        oper.setUse(org.apache.axis.constants.Use.ENCODED);
-        oper.addFault(new org.apache.axis.description.FaultDesc(
-                      new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "fault"),
-                      "org.genepattern.webservice.WebServiceException",
-                      new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
-                      true
-                     ));
-        _operations[21] = oper;
 
     }
 
@@ -418,10 +323,8 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         } else {
             super.service = service;
         }
-        ((org.apache.axis.client.Service)super.service).setTypeMappingVersion("1.2");
             java.lang.Class cls;
             javax.xml.namespace.QName qName;
-            javax.xml.namespace.QName qName2;
             java.lang.Class beansf = org.apache.axis.encoding.ser.BeanSerializerFactory.class;
             java.lang.Class beandf = org.apache.axis.encoding.ser.BeanDeserializerFactory.class;
             java.lang.Class enumsf = org.apache.axis.encoding.ser.EnumSerializerFactory.class;
@@ -430,38 +333,51 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
             java.lang.Class arraydf = org.apache.axis.encoding.ser.ArrayDeserializerFactory.class;
             java.lang.Class simplesf = org.apache.axis.encoding.ser.SimpleSerializerFactory.class;
             java.lang.Class simpledf = org.apache.axis.encoding.ser.SimpleDeserializerFactory.class;
-            java.lang.Class simplelistsf = org.apache.axis.encoding.ser.SimpleListSerializerFactory.class;
-            java.lang.Class simplelistdf = org.apache.axis.encoding.ser.SimpleListDeserializerFactory.class;
-            qName = new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "ArrayOf_apachesoap_DataHandler");
-            cachedSerQNames.add(qName);
-            cls = javax.activation.DataHandler[].class;
-            cachedSerClasses.add(cls);
-            qName = new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "DataHandler");
-            qName2 = null;
-            cachedSerFactories.add(new org.apache.axis.encoding.ser.ArraySerializerFactory(qName, qName2));
-            cachedDeserFactories.add(new org.apache.axis.encoding.ser.ArrayDeserializerFactory());
-
-            qName = new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "ArrayOf_soapenc_string");
-            cachedSerQNames.add(qName);
-            cls = java.lang.String[].class;
-            cachedSerClasses.add(cls);
-            qName = new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string");
-            qName2 = null;
-            cachedSerFactories.add(new org.apache.axis.encoding.ser.ArraySerializerFactory(qName, qName2));
-            cachedDeserFactories.add(new org.apache.axis.encoding.ser.ArrayDeserializerFactory());
-
-            qName = new javax.xml.namespace.QName("http://broad.mit.edu:8080/gp/services/TaskIntegrator", "ArrayOf_xsd_long");
-            cachedSerQNames.add(qName);
-            cls = long[].class;
-            cachedSerClasses.add(cls);
-            qName = new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "long");
-            qName2 = null;
-            cachedSerFactories.add(new org.apache.axis.encoding.ser.ArraySerializerFactory(qName, qName2));
-            cachedDeserFactories.add(new org.apache.axis.encoding.ser.ArrayDeserializerFactory());
-
             qName = new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException");
             cachedSerQNames.add(qName);
             cls = org.genepattern.webservice.WebServiceException.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
+            qName = new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "ArrayOf_apachesoap_DataHandler");
+            cachedSerQNames.add(qName);
+            cls = javax.activation.DataHandler[].class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(arraysf);
+            cachedDeserFactories.add(arraydf);
+
+            qName = new javax.xml.namespace.QName("TaskIntegrator", "ParmInfoArray");
+            cachedSerQNames.add(qName);
+            cls = ParameterInfo[].class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(arraysf);
+            cachedDeserFactories.add(arraydf);
+
+            qName = new javax.xml.namespace.QName("TaskIntegrator", "TaskInfo");
+            cachedSerQNames.add(qName);
+            cls = TaskInfo.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
+            qName = new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "ArrayOf_xsd_long");
+            cachedSerQNames.add(qName);
+            cls = long[].class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(arraysf);
+            cachedDeserFactories.add(arraydf);
+
+            qName = new javax.xml.namespace.QName("http://localhost:8080/gp/services/TaskIntegrator", "ArrayOf_xsd_string");
+            cachedSerQNames.add(qName);
+            cls = java.lang.String[].class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(arraysf);
+            cachedDeserFactories.add(arraydf);
+
+            qName = new javax.xml.namespace.QName("TaskIntegrator", "ParmInfo");
+            cachedSerQNames.add(qName);
+            cls = ParameterInfo.class;
             cachedSerClasses.add(cls);
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
@@ -473,27 +389,12 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
 
-            qName = new javax.xml.namespace.QName("TaskIntegrator", "ParmInfo");
-            cachedSerQNames.add(qName);
-            cls = ParameterInfo.class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(beansf);
-            cachedDeserFactories.add(beandf);
-
-            qName = new javax.xml.namespace.QName("TaskIntegrator", "ParmInfoArray");
-            cachedSerQNames.add(qName);
-            cls = ParameterInfo[].class;
-            cachedSerClasses.add(cls);
-            qName = new javax.xml.namespace.QName("TaskIntegrator", "ParmInfo");
-            qName2 = null;
-            cachedSerFactories.add(new org.apache.axis.encoding.ser.ArraySerializerFactory(qName, qName2));
-            cachedDeserFactories.add(new org.apache.axis.encoding.ser.ArrayDeserializerFactory());
-
     }
 
-    protected org.apache.axis.client.Call createCall() throws java.rmi.RemoteException {
+    private org.apache.axis.client.Call createCall() throws java.rmi.RemoteException {
         try {
-            org.apache.axis.client.Call _call = super._createCall();
+            org.apache.axis.client.Call _call =
+                    (org.apache.axis.client.Call) super.service.createCall();
             if (super.maintainSessionSet) {
                 _call.setMaintainSession(super.maintainSession);
             }
@@ -531,32 +432,22 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
                         java.lang.Class cls = (java.lang.Class) cachedSerClasses.get(i);
                         javax.xml.namespace.QName qName =
                                 (javax.xml.namespace.QName) cachedSerQNames.get(i);
-                        java.lang.Object x = cachedSerFactories.get(i);
-                        if (x instanceof Class) {
-                            java.lang.Class sf = (java.lang.Class)
+                        java.lang.Class sf = (java.lang.Class)
                                  cachedSerFactories.get(i);
-                            java.lang.Class df = (java.lang.Class)
+                        java.lang.Class df = (java.lang.Class)
                                  cachedDeserFactories.get(i);
-                            _call.registerTypeMapping(cls, qName, sf, df, false);
-                        }
-                        else if (x instanceof javax.xml.rpc.encoding.SerializerFactory) {
-                            org.apache.axis.encoding.SerializerFactory sf = (org.apache.axis.encoding.SerializerFactory)
-                                 cachedSerFactories.get(i);
-                            org.apache.axis.encoding.DeserializerFactory df = (org.apache.axis.encoding.DeserializerFactory)
-                                 cachedDeserFactories.get(i);
-                            _call.registerTypeMapping(cls, qName, sf, df, false);
-                        }
+                        _call.registerTypeMapping(cls, qName, sf, df, false);
                     }
                 }
             }
             return _call;
         }
-        catch (java.lang.Throwable _t) {
-            throw new org.apache.axis.AxisFault("Failure trying to get the Call object", _t);
+        catch (java.lang.Throwable t) {
+            throw new org.apache.axis.AxisFault("Failure trying to get the Call object", t);
         }
     }
 
-    public void errorMessage(java.lang.String message) throws java.rmi.RemoteException {
+    public void deleteTask(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -565,22 +456,19 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "errorMessage"));
+        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "deleteTask"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {message});
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-  throw axisFaultException;
-}
     }
 
-    public void deleteTask(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
+    public java.lang.String deleteFiles(java.lang.String lsid, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -589,139 +477,11 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "deleteTask"));
-
-        setRequestHeaders(_call);
-        setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid});
-
-        if (_resp instanceof java.rmi.RemoteException) {
-            throw (java.rmi.RemoteException)_resp;
-        }
-        extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
-    }
-
-    public void statusMessage(java.lang.String message) throws java.rmi.RemoteException {
-        if (super.cachedEndpoint == null) {
-            throw new org.apache.axis.NoEndPointException();
-        }
-        org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[2]);
-        _call.setUseSOAPAction(true);
-        _call.setSOAPActionURI("");
-        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "statusMessage"));
-
-        setRequestHeaders(_call);
-        setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {message});
-
-        if (_resp instanceof java.rmi.RemoteException) {
-            throw (java.rmi.RemoteException)_resp;
-        }
-        extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-  throw axisFaultException;
-}
-    }
-
-    public void beginProgress(java.lang.String message) throws java.rmi.RemoteException {
-        if (super.cachedEndpoint == null) {
-            throw new org.apache.axis.NoEndPointException();
-        }
-        org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[3]);
-        _call.setUseSOAPAction(true);
-        _call.setSOAPActionURI("");
-        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "beginProgress"));
-
-        setRequestHeaders(_call);
-        setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {message});
-
-        if (_resp instanceof java.rmi.RemoteException) {
-            throw (java.rmi.RemoteException)_resp;
-        }
-        extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-  throw axisFaultException;
-}
-    }
-
-    public void continueProgress(int percentComplete) throws java.rmi.RemoteException {
-        if (super.cachedEndpoint == null) {
-            throw new org.apache.axis.NoEndPointException();
-        }
-        org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[4]);
-        _call.setUseSOAPAction(true);
-        _call.setSOAPActionURI("");
-        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "continueProgress"));
-
-        setRequestHeaders(_call);
-        setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {new java.lang.Integer(percentComplete)});
-
-        if (_resp instanceof java.rmi.RemoteException) {
-            throw (java.rmi.RemoteException)_resp;
-        }
-        extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-  throw axisFaultException;
-}
-    }
-
-    public void endProgress() throws java.rmi.RemoteException {
-        if (super.cachedEndpoint == null) {
-            throw new org.apache.axis.NoEndPointException();
-        }
-        org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[5]);
-        _call.setUseSOAPAction(true);
-        _call.setSOAPActionURI("");
-        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "endProgress"));
-
-        setRequestHeaders(_call);
-        setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {});
-
-        if (_resp instanceof java.rmi.RemoteException) {
-            throw (java.rmi.RemoteException)_resp;
-        }
-        extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-  throw axisFaultException;
-}
-    }
-
-    public java.lang.String deleteFiles(java.lang.String lsid, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
-        if (super.cachedEndpoint == null) {
-            throw new org.apache.axis.NoEndPointException();
-        }
-        org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[6]);
-        _call.setUseSOAPAction(true);
-        _call.setSOAPActionURI("");
-        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
         _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "deleteFiles"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid, fileNames});
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid, fileNames});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -734,17 +494,6 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
                 return (java.lang.String) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
     }
 
     public javax.activation.DataHandler[] getDocFiles(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
@@ -752,7 +501,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
             throw new org.apache.axis.NoEndPointException();
         }
         org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[7]);
+        _call.setOperation(_operations[2]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
@@ -760,7 +509,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid});
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -773,20 +522,149 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
                 return (javax.activation.DataHandler[]) org.apache.axis.utils.JavaUtils.convert(_resp, javax.activation.DataHandler[].class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
     }
 
     public java.lang.String importZipFromURL(java.lang.String url, int privacy, boolean recursive) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[3]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("");
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "importZipFromURL"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {url, new java.lang.Integer(privacy), new java.lang.Boolean(recursive)});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        else {
+            extractAttachments(_call);
+            try {
+                return (java.lang.String) _resp;
+            } catch (java.lang.Exception _exception) {
+                return (java.lang.String) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String.class);
+            }
+        }
+    }
+
+    public java.lang.String importZipFromURL(java.lang.String url, int privacy) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[4]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("");
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "importZipFromURL"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {url, new java.lang.Integer(privacy)});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        else {
+            extractAttachments(_call);
+            try {
+                return (java.lang.String) _resp;
+            } catch (java.lang.Exception _exception) {
+                return (java.lang.String) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String.class);
+            }
+        }
+    }
+
+    public java.lang.String cloneTask(java.lang.String oldLSID, java.lang.String cloneName) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[5]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("");
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "cloneTask"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {oldLSID, cloneName});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        else {
+            extractAttachments(_call);
+            try {
+                return (java.lang.String) _resp;
+            } catch (java.lang.Exception _exception) {
+                return (java.lang.String) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String.class);
+            }
+        }
+    }
+
+    public javax.activation.DataHandler[] getSupportFiles(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[6]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("");
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "getSupportFiles"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        else {
+            extractAttachments(_call);
+            try {
+                return (javax.activation.DataHandler[]) _resp;
+            } catch (java.lang.Exception _exception) {
+                return (javax.activation.DataHandler[]) org.apache.axis.utils.JavaUtils.convert(_resp, javax.activation.DataHandler[].class);
+            }
+        }
+    }
+
+    public javax.activation.DataHandler[] getSupportFiles(java.lang.String lsid, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[7]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("");
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "getSupportFiles"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid, fileNames});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        else {
+            extractAttachments(_call);
+            try {
+                return (javax.activation.DataHandler[]) _resp;
+            } catch (java.lang.Exception _exception) {
+                return (javax.activation.DataHandler[]) org.apache.axis.utils.JavaUtils.convert(_resp, javax.activation.DataHandler[].class);
+            }
+        }
+    }
+
+    public java.lang.String[] getSupportFileNames(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -795,11 +673,11 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "importZipFromURL"));
+        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "getSupportFileNames"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {url, new java.lang.Integer(privacy), new java.lang.Boolean(recursive)});
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -807,25 +685,14 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         else {
             extractAttachments(_call);
             try {
-                return (java.lang.String) _resp;
+                return (java.lang.String[]) _resp;
             } catch (java.lang.Exception _exception) {
-                return (java.lang.String) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String.class);
+                return (java.lang.String[]) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String[].class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
     }
 
-    public java.lang.String importZipFromURL(java.lang.String url, int privacy) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
+    public java.lang.String modifyTask(int accessId, java.lang.String taskName, java.lang.String description, ParameterInfo[] parameterInfoArray, java.util.HashMap taskAttributes, javax.activation.DataHandler[] dataHandlers, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -834,11 +701,11 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "importZipFromURL"));
+        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "modifyTask"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {url, new java.lang.Integer(privacy)});
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {new java.lang.Integer(accessId), taskName, description, parameterInfoArray, taskAttributes, dataHandlers, fileNames});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -851,20 +718,9 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
                 return (java.lang.String) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
     }
 
-    public java.lang.String importZip(javax.activation.DataHandler handler, int privacy) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
+    public java.lang.String importZip(javax.activation.DataHandler handler, int privacy, boolean recursive) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -877,7 +733,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {handler, new java.lang.Integer(privacy)});
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {handler, new java.lang.Integer(privacy), new java.lang.Boolean(recursive)});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -890,20 +746,9 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
                 return (java.lang.String) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
     }
 
-    public java.lang.String importZip(javax.activation.DataHandler handler, int privacy, boolean recursive) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
+    public java.lang.String importZip(javax.activation.DataHandler handler, int privacy) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -916,7 +761,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {handler, new java.lang.Integer(privacy), new java.lang.Boolean(recursive)});
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {handler, new java.lang.Integer(privacy)});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -929,20 +774,9 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
                 return (java.lang.String) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
     }
 
-    public java.lang.String modifyTask(int accessId, java.lang.String taskName, java.lang.String description, ParameterInfo[] parameterInfoArray, java.util.HashMap taskAttributes, javax.activation.DataHandler[] dataHandlers, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
+    public long[] getLastModificationTimes(java.lang.String lsid, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -951,206 +785,11 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "modifyTask"));
-
-        setRequestHeaders(_call);
-        setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {new java.lang.Integer(accessId), taskName, description, parameterInfoArray, taskAttributes, dataHandlers, fileNames});
-
-        if (_resp instanceof java.rmi.RemoteException) {
-            throw (java.rmi.RemoteException)_resp;
-        }
-        else {
-            extractAttachments(_call);
-            try {
-                return (java.lang.String) _resp;
-            } catch (java.lang.Exception _exception) {
-                return (java.lang.String) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String.class);
-            }
-        }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
-    }
-
-    public java.lang.String cloneTask(java.lang.String oldLSID, java.lang.String cloneName) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
-        if (super.cachedEndpoint == null) {
-            throw new org.apache.axis.NoEndPointException();
-        }
-        org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[13]);
-        _call.setUseSOAPAction(true);
-        _call.setSOAPActionURI("");
-        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "cloneTask"));
-
-        setRequestHeaders(_call);
-        setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {oldLSID, cloneName});
-
-        if (_resp instanceof java.rmi.RemoteException) {
-            throw (java.rmi.RemoteException)_resp;
-        }
-        else {
-            extractAttachments(_call);
-            try {
-                return (java.lang.String) _resp;
-            } catch (java.lang.Exception _exception) {
-                return (java.lang.String) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String.class);
-            }
-        }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
-    }
-
-    public java.lang.String[] getSupportFileNames(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
-        if (super.cachedEndpoint == null) {
-            throw new org.apache.axis.NoEndPointException();
-        }
-        org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[14]);
-        _call.setUseSOAPAction(true);
-        _call.setSOAPActionURI("");
-        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "getSupportFileNames"));
-
-        setRequestHeaders(_call);
-        setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid});
-
-        if (_resp instanceof java.rmi.RemoteException) {
-            throw (java.rmi.RemoteException)_resp;
-        }
-        else {
-            extractAttachments(_call);
-            try {
-                return (java.lang.String[]) _resp;
-            } catch (java.lang.Exception _exception) {
-                return (java.lang.String[]) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String[].class);
-            }
-        }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
-    }
-
-    public javax.activation.DataHandler[] getSupportFiles(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
-        if (super.cachedEndpoint == null) {
-            throw new org.apache.axis.NoEndPointException();
-        }
-        org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[15]);
-        _call.setUseSOAPAction(true);
-        _call.setSOAPActionURI("");
-        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "getSupportFiles"));
-
-        setRequestHeaders(_call);
-        setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid});
-
-        if (_resp instanceof java.rmi.RemoteException) {
-            throw (java.rmi.RemoteException)_resp;
-        }
-        else {
-            extractAttachments(_call);
-            try {
-                return (javax.activation.DataHandler[]) _resp;
-            } catch (java.lang.Exception _exception) {
-                return (javax.activation.DataHandler[]) org.apache.axis.utils.JavaUtils.convert(_resp, javax.activation.DataHandler[].class);
-            }
-        }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
-    }
-
-    public javax.activation.DataHandler[] getSupportFiles(java.lang.String lsid, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
-        if (super.cachedEndpoint == null) {
-            throw new org.apache.axis.NoEndPointException();
-        }
-        org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[16]);
-        _call.setUseSOAPAction(true);
-        _call.setSOAPActionURI("");
-        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "getSupportFiles"));
-
-        setRequestHeaders(_call);
-        setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid, fileNames});
-
-        if (_resp instanceof java.rmi.RemoteException) {
-            throw (java.rmi.RemoteException)_resp;
-        }
-        else {
-            extractAttachments(_call);
-            try {
-                return (javax.activation.DataHandler[]) _resp;
-            } catch (java.lang.Exception _exception) {
-                return (javax.activation.DataHandler[]) org.apache.axis.utils.JavaUtils.convert(_resp, javax.activation.DataHandler[].class);
-            }
-        }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
-    }
-
-    public long[] getLastModificationTimes(java.lang.String lsid, java.lang.String[] fileNames) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
-        if (super.cachedEndpoint == null) {
-            throw new org.apache.axis.NoEndPointException();
-        }
-        org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[17]);
-        _call.setUseSOAPAction(true);
-        _call.setSOAPActionURI("");
-        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
         _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "getLastModificationTimes"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid, fileNames});
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid, fileNames});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -1163,56 +802,6 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
                 return (long[]) org.apache.axis.utils.JavaUtils.convert(_resp, long[].class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
-    }
-
-    public javax.activation.DataHandler exportToZip(java.lang.String taskName, boolean recursive) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
-        if (super.cachedEndpoint == null) {
-            throw new org.apache.axis.NoEndPointException();
-        }
-        org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[18]);
-        _call.setUseSOAPAction(true);
-        _call.setSOAPActionURI("");
-        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "exportToZip"));
-
-        setRequestHeaders(_call);
-        setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {taskName, new java.lang.Boolean(recursive)});
-
-        if (_resp instanceof java.rmi.RemoteException) {
-            throw (java.rmi.RemoteException)_resp;
-        }
-        else {
-            extractAttachments(_call);
-            try {
-                return (javax.activation.DataHandler) _resp;
-            } catch (java.lang.Exception _exception) {
-                return (javax.activation.DataHandler) org.apache.axis.utils.JavaUtils.convert(_resp, javax.activation.DataHandler.class);
-            }
-        }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
     }
 
     public javax.activation.DataHandler exportToZip(java.lang.String taskName) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
@@ -1220,7 +809,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
             throw new org.apache.axis.NoEndPointException();
         }
         org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[19]);
+        _call.setOperation(_operations[13]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
@@ -1228,7 +817,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {taskName});
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {taskName});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -1241,17 +830,34 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
                 return (javax.activation.DataHandler) org.apache.axis.utils.JavaUtils.convert(_resp, javax.activation.DataHandler.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
+    }
+
+    public javax.activation.DataHandler exportToZip(java.lang.String taskName, boolean recursive) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[14]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("");
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "exportToZip"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {taskName, new java.lang.Boolean(recursive)});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        else {
+            extractAttachments(_call);
+            try {
+                return (javax.activation.DataHandler) _resp;
+            } catch (java.lang.Exception _exception) {
+                return (javax.activation.DataHandler) org.apache.axis.utils.JavaUtils.convert(_resp, javax.activation.DataHandler.class);
+            }
+        }
     }
 
     public javax.activation.DataHandler getSupportFile(java.lang.String lsid, java.lang.String fileName) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
@@ -1259,7 +865,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
             throw new org.apache.axis.NoEndPointException();
         }
         org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[20]);
+        _call.setOperation(_operations[15]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
@@ -1267,7 +873,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid, fileName});
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid, fileName});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -1280,17 +886,6 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
                 return (javax.activation.DataHandler) org.apache.axis.utils.JavaUtils.convert(_resp, javax.activation.DataHandler.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
     }
 
     public java.lang.String[] getDocFileNames(java.lang.String lsid) throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
@@ -1298,7 +893,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
             throw new org.apache.axis.NoEndPointException();
         }
         org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[21]);
+        _call.setOperation(_operations[16]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
@@ -1306,7 +901,7 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid});
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {lsid});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -1319,17 +914,6 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub  
                 return (java.lang.String[]) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String[].class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof org.genepattern.webservice.WebServiceException) {
-              throw (org.genepattern.webservice.WebServiceException) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
     }
 
 }
