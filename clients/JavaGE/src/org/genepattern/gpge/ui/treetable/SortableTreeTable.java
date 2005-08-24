@@ -66,6 +66,8 @@ public class SortableTreeTable extends JTreeTable implements
 
 	DragSource dragSource;
 
+	private boolean dragLeafsOnly = true;
+
 
 	public SortableTreeTable(SortTreeTableModel m) {
 		super(m);
@@ -128,6 +130,10 @@ public class SortableTreeTable extends JTreeTable implements
       }
    }
 
+   public void setDragLeafsOnly(boolean b) {
+	   dragLeafsOnly = b;
+   }
+   
 	public final void dragGestureRecognized(final DragGestureEvent e) {
 
 		final Point ptDragOrigin = e.getDragOrigin();
@@ -141,11 +147,12 @@ public class SortableTreeTable extends JTreeTable implements
 		if (path == null) {
 			return;
 		}
-		if (isRootPath(path)) {
+		if (isRootPath(path)) { // Ignore user trying to drag the root node
 			return;
-		}// Ignore user trying to drag the root node
+		}
+
 		Object comp = path.getLastPathComponent();
-		if (!tree.getModel().isLeaf(comp)) {
+		if (dragLeafsOnly && !tree.getModel().isLeaf(comp)) {
 			return;
 		}
 
