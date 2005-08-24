@@ -3,6 +3,7 @@ package org.genepattern.gpge.ui.maindisplay;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import com.jgoodies.forms.layout.CellConstraints;
@@ -57,7 +59,13 @@ public class GroupPanel extends JPanel {
 				if(e.isPopupTrigger() || e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 					return;
 				}
-				toggleState();
+				Icon icon = majorLabel.getIcon();
+				int width = icon.getIconWidth();
+				int height = icon.getIconHeight();
+				if(e.getPoint().x <= width && e.getPoint().y <= height) {
+					toggleState();
+				}
+				
 			}
 		});
 		majorLabel.setIcon(collapsedIcon);
