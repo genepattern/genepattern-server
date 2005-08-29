@@ -900,11 +900,15 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			int from = e.getFirstRow();
 			int to = e.getLastRow();
 			TaskPanel movedTask = (TaskPanel) taskDisplayList.remove(from);
+			boolean expanded = movedTask.togglePanel.isExpanded();
 			tasksPanel.remove(movedTask);
 			tasksLayout.removeRow(from + 1);
 
 			layoutTask(to);
-
+			if(!expanded) {
+				TaskPanel t = (TaskPanel) taskDisplayList.get(to);
+				t.togglePanel.setExpanded(false);
+			}
 			for (int i = 0; i < model.getTaskCount(); i++) {
 				TaskPanel task = (TaskPanel) taskDisplayList.get(i);
 				task.setTaskIndex(i);
