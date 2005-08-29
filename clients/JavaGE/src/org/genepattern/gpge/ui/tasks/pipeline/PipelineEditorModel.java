@@ -449,6 +449,7 @@ public class PipelineEditorModel {
 							"");
 					pipelineParam.setAttributes(promptWhenRunAttrs);
 					pipelineParameterInfoList.add(pipelineParam);
+					pipelineModel.addInputParameter(pipelineParam.getName(), p);
 				} else if (isInputFile(i, j)) {
 					File file = new File(value);
 					if (file.exists()) {
