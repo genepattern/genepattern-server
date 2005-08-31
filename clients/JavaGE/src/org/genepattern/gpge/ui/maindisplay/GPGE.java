@@ -218,6 +218,8 @@ public class GPGE {
 
 	boolean runTaskViewShown = false;
 
+	private MenuItemAction createPipelineMenuItem;
+
 	public static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone
 				.getValue(), toClone.getDescription());
@@ -398,7 +400,8 @@ public class GPGE {
 		analysisServiceManager = AnalysisServiceManager.getInstance();
 
 		analysisServiceManager.changeServer(server, username);
-
+		MessageManager.notifyListeners(new ChangeViewMessageRequest(this, ChangeViewMessageRequest.SHOW_GETTING_STARTED_REQUEST));
+		
 		final boolean isLocalHost = analysisServiceManager.isLocalHost();
 		if (isLocalHost) {
 			MessageDialog
@@ -885,6 +888,7 @@ public class GPGE {
 						saveToFileSystemMenuItem
 								.setEnabled(isJobResultFileNode);
 						deleteFileMenuItem.setEnabled(isJobResultFileNode);
+						createPipelineMenuItem.setEnabled(isJobResultFileNode);
 						openWithMenu.setEnabled(isJobResultFileNode);
 						jobResultFileViewModulesMenu.removeAll();
 						if (selectedJobNode instanceof JobModel.ServerFileNode) {
@@ -1775,6 +1779,50 @@ public class GPGE {
 			}
 		};
 
+
+		createPipelineMenuItem = new MenuItemAction("Create Pipeline") {
+			public void actionPerformed(ActionEvent e) {
+				final JobModel.ServerFileNode serverFileNode = (JobModel.ServerFileNode) selectedJobNode;
+				final String pipelineName = JOptionPane.showInputDialog(frame,
+						"Pipeline name", "GenePattern",
+						JOptionPane.QUESTION_MESSAGE);
+
+				if (pipelineName != null) {
+					new Thread() {
+						public void run() {
+							try {
+								AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(
+										analysisServiceManager.getServer(),
+										analysisServiceManager.getUsername());
+								System.out.println("creating pipeline for " + serverFileNode.getURL());
+								String lsid = proxy.createProvenancePipeline(
+										serverFileNode.getURL().toString(),
+										pipelineName);
+								taskInstalled(new LSID(lsid));
+								MessageManager
+										.notifyListeners(new ChangeViewMessageRequest(
+												this,
+												ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST,
+												analysisServiceManager
+														.getAnalysisService(lsid)));
+							} catch (WebServiceException wse) {
+								wse.printStackTrace();
+								if (!disconnectedFromServer(wse)) {
+									GenePattern
+											.showErrorDialog("An error occurred while creating the pipeline");
+								}
+							} catch (MalformedURLException e) {
+								e.printStackTrace();
+							}
+
+						}
+					}.start();
+
+				}
+
+			}
+		};
+
 		openWithMenu = new MenuAction("Open With");
 
 		jobResultFileTextViewerMenuItem = new MenuItemAction("Text Viewer",
@@ -1900,6 +1948,7 @@ public class GPGE {
 		jobResultFileSendToMenu.setEnabled(false);
 		saveServerFileMenu.setEnabled(false);
 		deleteFileMenuItem.setEnabled(false);
+		createPipelineMenuItem.setEnabled(false);
 		openWithMenu.setEnabled(false);
 		viewCodeAction.setEnabled(false);
 
@@ -1925,7 +1974,7 @@ public class GPGE {
 						viewCodeAction, new JSeparator(),
 						jobResultFileSendToMenu, saveServerFileMenu,
 						deleteFileMenuItem, openWithMenu,
-						jobResultFileViewModulesMenu });
+						jobResultFileViewModulesMenu, createPipelineMenuItem });
 
 		menuBar.add(jobResultsMenuAction.createMenu());
 
@@ -1970,7 +2019,7 @@ public class GPGE {
 		MenuAction jobResultFilePopupAction = new MenuAction("",
 				new Object[] { jobResultFileSendToMenu, saveServerFileMenu,
 						deleteFileMenuItem, openWithMenu,
-						jobResultFileViewModulesMenu });
+						jobResultFileViewModulesMenu, createPipelineMenuItem });
 		jobResultFilePopupMenu = jobResultFilePopupAction.createPopupMenu();
 
 		MenuAction projectDirPopupMenuAction = new MenuAction("", new Object[] {
