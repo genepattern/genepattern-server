@@ -240,7 +240,9 @@ public class ProvenanceFinder {
 		// if it is null or not a local file we can do nothing
 	
 		if (fileURL == null) return null;
-		if (!(fileURL.toUpperCase().startsWith(serverURL))) return null;
+		if (!(fileURL.toUpperCase().startsWith(serverURL)) && !fileURL.startsWith("http://127.0.0.1") && !fileURL.startsWith("http://localhost")) {
+			return null;
+		}
 		
 		// if it is not a result file do nothing		
 		if (!(fileURL.indexOf("retrieveResults.jsp") >= 1)) return null;
