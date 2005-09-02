@@ -274,6 +274,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00032=5 HeatMapImage.zip"/>
+	</commandline>
+</cvs>
+<copy file="HeatMapImage.zip" tofile="catalogregen/HeatMapImage.5.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00032=1 HeatMapImage.zip"/>
 	</commandline>
 </cvs>

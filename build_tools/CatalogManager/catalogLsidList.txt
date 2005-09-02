@@ -36,6 +36,7 @@ GeneNeighbors.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_an
 GlobalAlignment.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00008=0
 HeatMapImage.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00032=0
 HeatMapImage.4.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00032=4
+HeatMapImage.5.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00032=5
 HeatMapImage.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00032=1
 HeatMapImage.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00032=3
 HeatMapViewer.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00010=0
