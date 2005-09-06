@@ -1,0 +1,235 @@
+package org.genepattern.server.process;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Vector;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
+import java.net.HttpURLConnection;
+
+import org.jdom.*;
+import org.jdom.input.SAXBuilder;
+
+
+public class SuiteRepository {
+	protected org.jdom.Document document;  
+	HashMap suites = new HashMap();
+		
+
+	protected String motd_message = "";
+
+	protected String motd_url = "";
+
+	protected int motd_urgency = 0;
+
+	protected long motd_timestamp = 0;
+
+	protected String motd_latestServerVersion = "";
+
+	SuiteRepository() {
+		return;
+	}
+
+	public static void main(String[] args) {
+		String url = "http://lead:7070/ModuleRepository/suite?env=dev";
+
+		SuiteRepository sr = new SuiteRepository();
+
+		try {
+			sr.GetSuites(url);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		//		System.out.println(dumpDOM(root, 0));
+	}
+
+	public HashMap GetSuites(String url) throws IOException,
+			IllegalArgumentException, IllegalAccessException,
+			NoSuchMethodException, SecurityException {
+		String DBF = "javax.xml.parsers.DocumentBuilderFactory";
+		String oldDocumentBuilderFactory = System.getProperty(DBF);
+		URL reposURL = new URL(url);
+		InputStream is = null;
+		Document doc = null;
+
+		try {
+			//
+			// proxy support for people behind an authenticating web proxy.
+			// use it only if we find a username/password in the System properties
+			//
+			HttpURLConnection conn = (HttpURLConnection )reposURL.openConnection();
+			String user = System.getProperty("http.proxyUser");
+			String pass = System.getProperty("http.proxyPassword");			
+			if ((user != null) && (pass != null)){
+				Authenticator.setDefault(new SimpleAuthenticator(user,pass));
+			}
+			conn.setDoInput( true );
+     			is = conn.getInputStream();
+
+			System.setProperty(DBF,	"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+			SAXBuilder builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser");
+        		// Parse the specified file and convert it to a JDOM document
+        		document = builder.build(is);
+			Element root = document.getRootElement();
+			getMessageOfTheDay(root);
+ 			for(Iterator i = root.getChildren("GenePatternSuite").iterator(); i.hasNext(); ) {
+            		Element suite = (Element) i.next();
+				Map suiteMap = getSuiteMap(suite);
+				suites.put(suiteMap.get("name"), suiteMap);
+			}
+
+		} catch (IOException ioe) {
+			throw new IOException(ioe.getMessage() + " while connecting to "
+					+ url);
+		} catch (JDOMException ioe) {
+			throw new IOException(ioe.getMessage() + " while parsing from "
+					+ url);
+		} finally {
+			try {
+				if (is != null)
+					is.close();
+			} catch (IOException ioe) {
+				// ignore
+			}
+			if (oldDocumentBuilderFactory != null)
+				System.setProperty(DBF, oldDocumentBuilderFactory);
+		}
+
+//		InstallTask[] module_list = parseDOM(root);
+
+		return suites;
+	}
+	
+	public void getMessageOfTheDay(Element root) throws JDOMException {
+		Element site_motd = root.getChild(NODE_SITE_MOTD);
+		motd_message = ((Text)site_motd.getChild(NODE_MOTD_MESSAGE).getContent().get(0)).getText();
+		motd_url = ((Text)site_motd.getChild(NODE_MOTD_URL).getContent().get(0)).getText();
+		motd_urgency = Integer.parseInt(((Text)site_motd.getChild(NODE_MOTD_URGENCY).getContent().get(0)).getText());
+		motd_latestServerVersion = ((Text)site_motd.getChild(NODE_MOTD_LATESTSERVERVERSION).getContent().get(0)).getText();
+		
+		String timestamp = ((Text)site_motd.getChild(NODE_MOTD_TIMESTAMP).getContent().get(0)).getText();
+		try {
+			motd_timestamp = Long.parseLong(timestamp);
+		} catch (NumberFormatException nfe) {
+			try {
+				motd_timestamp = (new SimpleDateFormat("dd-MMM-yyyy").parse(timestamp)).getTime();
+			} catch (ParseException pe) {
+				// ignore
+				System.out.println(pe.getMessage()+ " in ModuleRepository.getModules() handling MOTD timestamp");
+			}
+		}
+
+	}
+
+
+
+	public HashMap getSuiteMap(Element root) throws JDOMException {
+    	HashMap manifest = new HashMap();
+    	// Get the root element of the document.
+      //  Element root = document.getRootElement();
+
+        // instead of org.w3c.dom.NodeList.
+        Text name = (Text)root.getChild("name").getContent().get(0);
+        Text lsid = (Text)root.getChild("lsid").getContent().get(0);
+        Text author = (Text)root.getChild("author").getContent().get(0);
+        Text owner = (Text)root.getChild("owner").getContent().get(0);
+        Text description = (Text)root.getChild("description").getContent().get(0);
+        
+        manifest.put("name", name.getText());
+        manifest.put("lsid", lsid.getText());
+        manifest.put("author", author.getText());
+        manifest.put("owner", owner.getText());
+        manifest.put("description", description.getText());
+        
+        System.out.println("name=" + name.getText());
+        System.out.println("lsid=" + lsid.getText());
+        System.out.println("author=" + author.getText());
+        System.out.println("owner=" + owner.getText());
+        System.out.println("description=" + description.getText());
+
+        Properties modules = new Properties();
+        manifest.put("modules", modules);
+        for(Iterator i = root.getChildren("module").iterator(); i.hasNext(); ) {
+            Element module = (Element) i.next();
+            // Get the text of the <servlet-name> tag within the <servlet> tag
+            Text tname = (Text)module.getChild("name").getContent().get(0);
+            Text tlsid = (Text)module.getChild("lsid").getContent().get(0); 
+            modules.setProperty("name", tname.getText());
+            modules.setProperty("lsid", tlsid.getText());
+            
+            System.out.println("\tModule Name=" + tname.getText());
+            System.out.println("\tModule LSID=" + tlsid.getText());
+        }
+        for(Iterator i = root.getChildren("documentationFile").iterator(); i.hasNext(); ) {
+            Text docFile = (Text)((Element) i.next()).getContent().get(0);
+           
+            System.out.println("\n\tDocFile=" + docFile.getText());
+        }
+        
+        return manifest;
+    }
+
+	
+
+	public String getMOTD_message() {
+		return motd_message;
+	}
+
+	public String getMOTD_url() {
+		return motd_url;
+	}
+
+	public int getMOTD_urgency() {
+		return motd_urgency;
+	}
+
+	public Date getMOTD_timestamp() {
+		return new Date(motd_timestamp);
+	}
+
+	public String getMOTD_latestServerVersion() {
+		return motd_latestServerVersion;
+	}
+
+	public static String NODE_MANIFEST = "suiteManifest.xml";
+
+	public static String NODE_SUPPORTFILE = "support_file";
+
+	public static String NODE_SITEMODULE = "site_module";
+
+	public static String NODE_MODULEREPOSITORY = "module_repository";
+
+	public static String NODE_SITE_MOTD = "site_motd";
+
+	public static String NODE_MOTD_MESSAGE = "motd_message";
+
+	public static String NODE_MOTD_URL = "motd_url";
+
+	public static String NODE_MOTD_URGENCY = "motd_urgency";
+
+	public static String NODE_MOTD_TIMESTAMP = "motd_timestamp";
+
+	public static String NODE_MOTD_LATESTSERVERVERSION = "motd_latestServerVersion";
+}
+
+class SimpleAuthenticator   extends Authenticator{
+   private String username,  password;
+                     
+   public SimpleAuthenticator(String username,String password)
+   {
+      this.username = username;
+      this.password = password;
+   }
+   
+   protected PasswordAuthentication getPasswordAuthentication()
+   {
+      return new PasswordAuthentication(username,password.toCharArray());
+   }
+}
