@@ -95,18 +95,24 @@ public class PipelineEditorModel {
 		tasks = new ArrayList();
 		listenerList = new EventListenerList();
 	}
+	
+	public void resetDocFiles() {
+		try {
+			String[]  fileNames = new TaskIntegratorProxy(AnalysisServiceManager.getInstance()
+					.getServer(), AnalysisServiceManager.getInstance()
+					.getUsername()).getDocFileNames(lsid);
+			serverDocFiles.clear();
+			serverDocFiles.addAll(Arrays.asList(fileNames));
+			localDocFiles.clear();
+		} catch (WebServiceException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public PipelineEditorModel(AnalysisService svc, PipelineModel model) {
 		Map attrs = svc.getTaskInfo().getTaskInfoAttributes();
 		this.lsid = (String) attrs.get(GPConstants.LSID);
-		try {
-			String[] fileNames = new TaskIntegratorProxy(AnalysisServiceManager.getInstance()
-					.getServer(), AnalysisServiceManager.getInstance()
-					.getUsername()).getDocFileNames(lsid);
-			serverDocFiles.addAll(Arrays.asList(fileNames));
-		} catch (WebServiceException e) {
-			e.printStackTrace();
-		}
+		resetDocFiles();
 		
 		this.owner = svc.getTaskInfo().getUserId();
 		this.author = model.getAuthor();

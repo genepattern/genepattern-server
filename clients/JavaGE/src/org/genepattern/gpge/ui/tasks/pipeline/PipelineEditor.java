@@ -369,6 +369,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	protected void save() {
 		pipelineChanged = false;
 		save(true);
+		model.resetDocFiles();
 		try {
 			MessageManager.notifyListeners(new TaskInstallMessage(this, model
 					.getLSID()));
@@ -383,11 +384,22 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		this.analysisService = AnalysisServiceManager.getInstance()
 				.getAnalysisService(model.getLSID());
 		enableButtons();
+		try {
+			GenePattern.showMessageDialog("Saved " + model.getPipelineName() + " version " + new LSID(model.getLSID()).getVersion());
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
 	}
 
-	protected void save(boolean saveAll) {
+	/**
+	 * 
+	 * @param saveTask
+	 *            if <tt>true</tt> save the task on the server, otherwise
+	 *            update the paramter values in the model
+	 */
+	protected void save(boolean saveTask) {
 		StringBuffer errors = null;
-		if (saveAll) {
+		if (saveTask) {
 			errors = headerPanel.save();
 		} else {
 			errors = new StringBuffer();
@@ -402,7 +414,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 				int inheritedTaskIndex = pd.getInheritedTaskIndex();
 				if (inheritedTaskIndex != -1) {
 					String inheritedFileName = pd.getInheritedFileName();
-					if (saveAll && inheritedFileName == null) {
+					if (saveTask && inheritedFileName == null) {
 						errors.append("Missing value for "
 								+ (i + 1)
 								+ ". "
@@ -418,7 +430,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 				} else {
 					String value = pd.getValue();
 					if (model.isRequired(i, j)) {
-						if (saveAll && value.trim().equals("")) {
+						if (saveTask && value.trim().equals("")) {
 							errors.append("Missing value for "
 									+ (i + 1)
 									+ ". "
@@ -451,7 +463,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			}
 		}
 
-		if (!saveAll) {
+		if (!saveTask) {
 			return;
 		}
 
