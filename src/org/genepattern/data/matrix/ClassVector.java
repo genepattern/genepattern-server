@@ -224,7 +224,7 @@ public class ClassVector {
 				if (assignment == i) {
 					x[j] = this.getClassName(assignment);
 				} else {
-					x[j] = "All";
+					x[j] = "Rest";
 				}
 			}
 			ClassVector oneVersusAll = new ClassVector(x);
