@@ -32,7 +32,7 @@ public class SuiteRepository {
 
 	protected String motd_latestServerVersion = "";
 
-	SuiteRepository() {
+	public SuiteRepository() {
 		return;
 	}
 
@@ -42,7 +42,7 @@ public class SuiteRepository {
 		SuiteRepository sr = new SuiteRepository();
 
 		try {
-			sr.GetSuites(url);
+			sr.getSuites(url);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -50,7 +50,7 @@ public class SuiteRepository {
 		//		System.out.println(dumpDOM(root, 0));
 	}
 
-	public HashMap GetSuites(String url) throws IOException,
+	public HashMap getSuites(String url) throws IOException,
 			IllegalArgumentException, IllegalAccessException,
 			NoSuchMethodException, SecurityException {
 		String DBF = "javax.xml.parsers.DocumentBuilderFactory";
@@ -82,7 +82,7 @@ public class SuiteRepository {
  			for(Iterator i = root.getChildren("GenePatternSuite").iterator(); i.hasNext(); ) {
             		Element suite = (Element) i.next();
 				Map suiteMap = getSuiteMap(suite);
-				suites.put(suiteMap.get("name"), suiteMap);
+				suites.put(suiteMap.get("lsid"), suiteMap);
 			}
 
 		} catch (IOException ioe) {
@@ -154,23 +154,38 @@ public class SuiteRepository {
         System.out.println("owner=" + owner.getText());
         System.out.println("description=" + description.getText());
 
-        Properties modules = new Properties();
+        ArrayList modules = new ArrayList();
         manifest.put("modules", modules);
         for(Iterator i = root.getChildren("module").iterator(); i.hasNext(); ) {
+		HashMap moduleMap = new HashMap();
             Element module = (Element) i.next();
             // Get the text of the <servlet-name> tag within the <servlet> tag
             Text tname = (Text)module.getChild("name").getContent().get(0);
             Text tlsid = (Text)module.getChild("lsid").getContent().get(0); 
-            modules.setProperty("name", tname.getText());
-            modules.setProperty("lsid", tlsid.getText());
-            
-            System.out.println("\tModule Name=" + tname.getText());
-            System.out.println("\tModule LSID=" + tlsid.getText());
+            Element edoc = module.getChild("docFile");
+
+	     moduleMap.put("name", tname.getText());
+            moduleMap.put("lsid", tlsid.getText());
+	
+      	if (edoc != null){
+			Text tdoc = (Text)edoc.getContent().get(0); 
+      
+		      moduleMap.put("docFile", tdoc.getText());
+		}
+           modules.add(moduleMap);
+            //System.out.println("\tModule Name=" + tname.getText());
+            //System.out.println("\tModule LSID=" + tlsid.getText());
+
         }
+
+		
+        ArrayList docFiles = new ArrayList();
+        manifest.put("docFiles", docFiles );
+
         for(Iterator i = root.getChildren("documentationFile").iterator(); i.hasNext(); ) {
             Text docFile = (Text)((Element) i.next()).getContent().get(0);
-           
-            System.out.println("\n\tDocFile=" + docFile.getText());
+            docFiles.add(docFile.getText());
+        //    System.out.println("\n\tDocFile=" + docFile.getText());
         }
         
         return manifest;
@@ -217,9 +232,8 @@ public class SuiteRepository {
 	public static String NODE_MOTD_TIMESTAMP = "motd_timestamp";
 
 	public static String NODE_MOTD_LATESTSERVERVERSION = "motd_latestServerVersion";
-}
 
-class SimpleAuthenticator   extends Authenticator{
+ class SimpleAuthenticator   extends Authenticator{
    private String username,  password;
                      
    public SimpleAuthenticator(String username,String password)
@@ -232,4 +246,5 @@ class SimpleAuthenticator   extends Authenticator{
    {
       return new PasswordAuthentication(username,password.toCharArray());
    }
+}
 }
