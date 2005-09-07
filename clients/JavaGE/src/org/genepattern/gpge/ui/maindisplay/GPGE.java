@@ -1713,10 +1713,12 @@ public class GPGE {
 										JobModel.ServerFileNode node = (JobModel.ServerFileNode) selectedJobNode;
 										File outputFile = new File(dir,
 												node.name);
+										
 										try {
-											if (!GUIUtil
+											if (GUIUtil
 													.overwriteFile(outputFile)) {
 												node.download(outputFile);
+												
 												projectDirModel.refresh(dir);
 											}
 										} catch (IOException ioe) {
