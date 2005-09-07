@@ -2141,7 +2141,12 @@ public class GPGE {
 		AnalysisService svc;
 
 		public AnalysisMenuItem(AnalysisService svc) {
-			super(svc.getTaskInfo().getName());
+			String name = svc.getTaskInfo().getName();
+			if (name.endsWith(".pipeline")) {
+				name = name.substring(0, name.length()
+						- ".pipeline".length());
+			}
+			setText(name);
 			this.svc = svc;
 			String lsid = (String) svc.getTaskInfo().getTaskInfoAttributes()
 					.get(GPConstants.LSID);
