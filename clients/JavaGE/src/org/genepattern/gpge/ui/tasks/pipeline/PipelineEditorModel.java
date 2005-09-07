@@ -121,7 +121,7 @@ public class PipelineEditorModel {
 
 		this.description = model.getDescription();
 
-		this.pipelineName = model.getName();
+		this.pipelineName = svc.getTaskInfo().getName();
 		if (pipelineName.endsWith(".pipeline")) {
 			pipelineName = pipelineName.substring(0, pipelineName.length()
 					- ".pipeline".length());
