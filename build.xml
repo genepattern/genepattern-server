@@ -175,6 +175,7 @@
 			<zipfileset dir="lib" prefix="lib">
 				<include name="activation.jar"/>
 				<include name="mail.jar"/>
+				<include name="jdom.jar"/>
 				<include name="axis.jar"/> 
 				<include name="log4j-1.2.4.jar"/> 
 				<include name="jaxrpc.jar"/> 
@@ -273,7 +274,18 @@
    <target depends="init" name="prepare-compile" unless="prepare.disable">
      <mkdir dir="${genepattern.build}"/>
    </target>
-   
+
+  <target depends="init" name="runsuite">
+     <java classname="org.genepattern.server.process.SuiteRepository">
+		<classpath>
+			<fileset dir="lib">
+				<include name="**/*.jar"/>
+		  	</fileset>
+		  	<fileset dir="${build}"/>
+		</classpath>
+
+     </java>
+   </target>
 
    <target depends="R-client,GPGE, matlabclient" name="clients">
    </target>
@@ -386,6 +398,7 @@
 	       <include name="hsqldb.jar"/>
 	       <include name="jaxb-rt-1.0-ea.jar"/>
 	       <include name="jaxp.jar"/>
+	       <include name="jdom.jar"/>
 	       <include name="jaxrpc.jar"/>
 	       <include name="jspsmart.jar"/>
 	       <include name="log4j-1.2.4.jar"/>
