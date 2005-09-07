@@ -3,6 +3,7 @@ package org.genepattern.gpge.ui.tasks.pipeline;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -117,7 +118,9 @@ public class TaskChooser extends CenteredDialog {
 		});
 
 		JScrollPane categoryScrollPane = new JScrollPane(categoryList);
-		categoryScrollPane.setColumnHeaderView(new JLabel("Category"));
+		JLabel categoryLabel = new JLabel("Category");
+		categoryLabel.setFont(categoryLabel.getFont().deriveFont(Font.BOLD, categoryLabel.getFont().getSize2D()+2));
+		categoryScrollPane.setColumnHeaderView(categoryLabel);
 
 		Container cp = getContentPane();
 
@@ -126,7 +129,11 @@ public class TaskChooser extends CenteredDialog {
 		middlePanel.add(categoryScrollPane, BorderLayout.WEST);
 		middlePanel.add(tasksScrollPane, BorderLayout.EAST);
 		tasksScrollPane.setVisible(false);
-		tasksScrollPane.setColumnHeaderView(new JLabel("Task"));
+		
+		JLabel taskLabel = new JLabel("Task");
+		taskLabel.setFont(taskLabel.getFont().deriveFont(Font.BOLD, taskLabel.getFont().getSize2D()+2));
+		
+		tasksScrollPane.setColumnHeaderView(taskLabel);
 		JPanel buttonPanel = new JPanel();
 		final JButton cancelBtn = new JButton("Cancel");
 		okBtn = new JButton("OK");
