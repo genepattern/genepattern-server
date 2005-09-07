@@ -408,6 +408,7 @@ public class PipelineEditorModel {
 		final HashMap promptWhenRunAttrs = new HashMap();
 		promptWhenRunAttrs.put("runTimePrompt", "1");
 
+		
 		HashMap emptyAttrs = new HashMap();
 	
 		List pipelineParameterInfoList = new ArrayList();
@@ -447,7 +448,10 @@ public class PipelineEditorModel {
 							getTaskName(i) + (i + 1) + "."
 									+ getParameterName(i, j), getValue(i, j),
 							"");
-					pipelineParam.setAttributes(promptWhenRunAttrs);
+					HashMap attributes = new HashMap(promptWhenRunAttrs);
+					attributes.putAll(getParameterAttributes(i, j));
+					
+					pipelineParam.setAttributes(attributes);
 					pipelineParameterInfoList.add(pipelineParam);
 					pipelineModel.addInputParameter(pipelineParam.getName(), p);
 				} else if (isInputFile(i, j)) {
@@ -549,6 +553,13 @@ public class PipelineEditorModel {
 		MyTask task = (MyTask) tasks.get(taskIndex);
 		return ((MyParameter) task.parameters.get(parameterIndex)).name;
 	}
+	
+	public HashMap getParameterAttributes(int taskIndex, int parameterIndex) {
+		MyTask task = (MyTask) tasks.get(taskIndex);
+		MyParameter p = task.getParameter(parameterIndex);
+		return p.attributes;
+	}
+	
 
 	public int getInheritedTaskIndex(int taskIndex, int parameterIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
@@ -653,6 +664,8 @@ public class PipelineEditorModel {
 
 		private final String[] inputTypes;
 
+		private final HashMap attributes;
+		
 		public String toString() {
 			StringBuffer sb = new StringBuffer();
 			sb.append("name: " + name);
@@ -668,7 +681,6 @@ public class PipelineEditorModel {
 			value = null;
 			inheritedTaskIndex = -1;
 			inheritedOutputFileName = null;
-
 		}
 
 		public void setValue(String s) {
@@ -715,6 +727,7 @@ public class PipelineEditorModel {
 			choiceItems = null;
 			this.name = name;
 			this.inputTypes = null;
+			this.attributes = new HashMap();
 		}
 		
 		/**
@@ -750,6 +763,7 @@ public class PipelineEditorModel {
 			value = (String) formalParam.getAttributes().get(
 					GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 			isInputFile = formalParam.isInputFile();
+			this.attributes = formalParam.getAttributes();
 			ParameterChoice[] _choiceItems = null;
 			if (!isInputFile) {
 				String[] choices = formalParam.getValue().split(
@@ -784,6 +798,7 @@ public class PipelineEditorModel {
 			ParameterInfo jobSubmissionParam = (ParameterInfo) js
 					.getParameters().get(indexInJobSubmission);
 			this.name = jobSubmissionParam.getName();
+			this.attributes = formalParam.getAttributes();
 			ParameterChoice[] _choiceItems = null;
 			String fileFormatString = (String) formalParam.getAttributes().get("fileFormat");
 			if(fileFormatString!=null) {
