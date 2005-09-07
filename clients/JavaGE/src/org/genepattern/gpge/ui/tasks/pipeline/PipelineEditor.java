@@ -1275,6 +1275,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			togglePanel = new GroupPanel((taskIndex + 1) + ". "
 					+ model.getTaskName(taskIndex), new JTextField(model
 					.getTaskDescription(taskIndex), 80));
+			togglePanel.getMajorLabel().setToolTipText("Right-click to modify pipeline");
 			togglePanel.setBackground(getBackground());
 			final JPopupMenu popupMenu = new JPopupMenu();
 
