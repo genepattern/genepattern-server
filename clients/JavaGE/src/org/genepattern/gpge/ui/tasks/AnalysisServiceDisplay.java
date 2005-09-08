@@ -181,7 +181,7 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 		viewCodePanel.add(viewCodeLabel);
 		viewCodePanel.add(viewCodeComboBox);
 
-		togglePanel = new TogglePanel("Advanced", viewCodePanel);
+		togglePanel = new TogglePanel("Generate Code", viewCodePanel);
 		togglePanel.setExpanded(advancedGroupExpanded);
 		/*JTaskPaneGroup group = new JTaskPaneGroup();
 		 group.setText("Advanced Options");
