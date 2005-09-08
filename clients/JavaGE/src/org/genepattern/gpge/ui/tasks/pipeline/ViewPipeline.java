@@ -41,6 +41,7 @@ import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.ParameterInfo;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -112,11 +113,16 @@ public class ViewPipeline extends JPanel {
 
 			public void actionPerformed(ActionEvent e) {
 				if (e.getSource() == runButton) {
-					MessageManager
+					ParameterInfo[] p = svc.getTaskInfo().getParameterInfoArray();
+					if(p==null || p.length==0) {
+						AnalysisServiceDisplay.doSubmit(runButton, new ParameterInfo[0], svc);
+					} else {
+						MessageManager
 							.notifyListeners(new ChangeViewMessageRequest(
 									this,
 									ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST,
 									svc));
+					}
 				} else if (e.getSource() == editButton) {
 					MessageManager
 							.notifyListeners(new ChangeViewMessageRequest(

@@ -55,6 +55,7 @@ import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskIntegratorProxy;
 import org.genepattern.webservice.WebServiceException;
@@ -269,18 +270,30 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 						if (result == JOptionPane.YES_OPTION) {
 							save();
 						} else if (result == JOptionPane.NO_OPTION) {
-							MessageManager
+							// run task directly if pipeline has no prompt when run parameters, otherwise go to run page
+							ParameterInfo[] p = analysisService.getTaskInfo().getParameterInfoArray();
+							if(p==null || p.length==0) {
+								AnalysisServiceDisplay.doSubmit(runButton, new ParameterInfo[0], analysisService);
+							} else {
+								MessageManager
 									.notifyListeners(new ChangeViewMessageRequest(
 											this,
 											ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST,
 											analysisService));
+							}
 						}
 					} else {
-						MessageManager
+						// run task directly if pipeline has no prompt when run parameters, otherwise go to run page
+						ParameterInfo[] p = analysisService.getTaskInfo().getParameterInfoArray();
+						if(p==null || p.length==0) {
+							AnalysisServiceDisplay.doSubmit(runButton, new ParameterInfo[0], analysisService);
+						} else {
+							MessageManager
 						.notifyListeners(new ChangeViewMessageRequest(
 								this,
 								ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST,
 								analysisService));
+						}
 					}
 
 				} else if (e.getSource() == viewButton) {
