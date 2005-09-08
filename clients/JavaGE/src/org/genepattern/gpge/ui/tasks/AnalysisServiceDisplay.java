@@ -291,35 +291,43 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 	}
 
 
+	public static void doSubmit(JButton source,
+			final ParameterInfo[] actualParameterArray,
+			final AnalysisService selectedService) {
+		try {
+			source.setEnabled(false);
+			final String username = AnalysisServiceManager.getInstance()
+					.getUsername();
+
+			new Thread() {
+				public void run() {
+					RunTask rt = new RunTask(selectedService,
+							actualParameterArray, username);
+					rt.exec();
+				}
+			}.start();
+		} finally {
+			if (TaskLauncher.isVisualizer(selectedService)) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			source.setEnabled(true);
+		}
+	}
+
 	private class SubmitActionListener implements ActionListener {
+
 		public final void actionPerformed(ActionEvent ae) {
 			final JButton source = (JButton) ae.getSource();
-			try {
-				source.setEnabled(false);
-				final ParameterInfo[] actualParameterArray = parameterInfoPanel
-						.getParameterInfoArray();
-				final AnalysisService _selectedService = selectedService;
-				final String username = AnalysisServiceManager.getInstance()
-						.getUsername();
-
-				new Thread() {
-					public void run() {
-						RunTask rt = new RunTask(_selectedService,
-								actualParameterArray, username);
-						rt.exec();
-					}
-				}.start();
-			} finally {
-				if (TaskLauncher.isVisualizer(selectedService)) {
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-				source.setEnabled(true);
-			}
+			final ParameterInfo[] actualParameterArray = parameterInfoPanel
+					.getParameterInfoArray();
+			final AnalysisService _selectedService = selectedService;
+			doSubmit(source, actualParameterArray, _selectedService);
 		}
+
 	}
 
 
