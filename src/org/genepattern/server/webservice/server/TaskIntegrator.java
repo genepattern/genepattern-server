@@ -28,6 +28,8 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
+import org.genepattern.server.process.InstallTask;
+import org.genepattern.server.process.InstallTasksCollectionUtils;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -186,6 +188,20 @@ public class TaskIntegrator implements ITaskIntegrator {
 
 	public String importZipFromURL(String url, int privacy) throws WebServiceException {
 		return importZipFromURL(url, privacy, true, null);
+	}
+	
+	public void installTask(String lsid) throws WebServiceException {
+		InstallTasksCollectionUtils utils = new InstallTasksCollectionUtils(getUserName(), false);
+		try {
+			InstallTask[] tasks = utils.getAvailableModules();
+			for(int i = 0; i < tasks.length; i++) {
+				if(tasks[i].getLSID().equalsIgnoreCase(lsid)) {
+					tasks[i].install(getUserName(), GPConstants.ACCESS_PUBLIC, this);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	protected String importZipFromURL(String url, int privacy, ITaskIntegrator taskIntegrator) throws WebServiceException {

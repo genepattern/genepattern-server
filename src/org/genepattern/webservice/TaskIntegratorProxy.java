@@ -48,6 +48,14 @@ public class TaskIntegratorProxy {
       }
 	}
 
+	public void installTask(String lsid) throws WebServiceException {
+		try {
+			stub.installTask(lsid);
+		} catch (RemoteException re) {
+			throw new WebServiceException(re);
+		}
+	}
+	
 	public String importZipFromURL(String url, int privacy)
 			throws WebServiceException {
       try {

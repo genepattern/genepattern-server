@@ -66,6 +66,15 @@ public interface ITaskIntegrator {
 	public String importZipFromURL(String url, int privacy, boolean recursive)
 			throws WebServiceException;
 
+	/**
+	 * Installs the task with the given LSID from the module repository
+	 * 
+	 * @param lsid
+	 *            The task LSID
+	 * @throws WebServiceException
+	 *             If an error occurs
+	 */
+	public void installTask(String lsid) throws WebServiceException;
 	//public String importZipFromURL(String url, int privacy, boolean recursive, ITaskIntegrator taskIntegrator)
 	//		throws WebServiceException;
 
