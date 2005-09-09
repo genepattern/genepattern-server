@@ -540,10 +540,12 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		public final String name;
 
 		/**
-		 * The string for this node to display. Equals the <tt>name</tt> when
-		 * the output file was not produced by a child job
+		 * The string for this node to display before the <tt>name</tt>. <tt>Null</tt> when
+		 * the output file was not produced by a child job. When the output was
+		 * produces by a pipeline, the name is prefixed with the step number in
+		 * the pipeline (e.g. 1.PreprocessDataset:all_aml_preprocess.gct).
 		 */
-		private final String displayString;
+		private final String displayPrefix;
 
 		/**
 		 * The index in the <tt>ParameterInfo</tt> array of this job result
@@ -553,13 +555,14 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 		private FileInfoUtil.FileInfo fileInfo;
 
-		public ServerFileNode(String displayString, String name, int index) {
-			this.displayString = displayString;
+		public ServerFileNode(String displayPrefix, String name, int index) {
+			this.displayPrefix = displayPrefix;
 			this.name = name;
 			this.index = index;
 		}
 
 		void updateFileInfo() {
+			String displayString = displayPrefix!=null?displayPrefix+name:name;
 			fileInfo = FileInfoUtil.getInfo(getURL(), displayString);
 		}
 
@@ -617,11 +620,26 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		}
 
 		public String toString() {
-			return displayString;
+			return displayPrefix!=null?displayPrefix+name:name;
 		}
 
 		public int compareTo(Object other) {
 			ServerFileNode node = (ServerFileNode) other;
+			if(this.displayPrefix!=null && node.displayPrefix==null) {
+				return -1;
+			} else if(this.displayPrefix==null && node.displayPrefix!=null) {
+				return 1;
+			} else if(this.displayPrefix!=null && node.displayPrefix!=null) {
+				int num1 = Integer.parseInt(displayPrefix.substring(0, displayPrefix.indexOf(".")));
+				int num2 = Integer.parseInt(node.displayPrefix.substring(0, node.displayPrefix.indexOf(".")));
+				if(num1 < num2) {
+					return -1;
+				} else if(num2 > num1) {
+					return 1;
+				} else {
+					this.name.compareToIgnoreCase(node.name);
+				}
+			}
 			return this.name.compareToIgnoreCase(node.name);
 		}
 
@@ -674,7 +692,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 			for (int j = 0; j < jobParameterInfo.length; j++) {
 				if (jobParameterInfo[j].isOutputFile()) {
-					String displayPrefix = "";
+					String displayPrefix = null;
 					String fileName = jobParameterInfo[j].getValue();
 					int index1 = fileName.lastIndexOf('/');
 					int index2 = fileName.lastIndexOf('\\');
@@ -696,9 +714,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 					}
 
-					String displayString = displayPrefix + fileName;
-
-					ServerFileNode child = new ServerFileNode(displayString,
+					ServerFileNode child = new ServerFileNode(displayPrefix,
 							fileName, j);
 
 					this.add(child);
@@ -826,7 +842,8 @@ public class JobModel extends AbstractSortableTreeTableModel {
 				sfn1 = (ServerFileNode) obj2;
 				sfn2 = (ServerFileNode) obj1;
 			}
-			return sfn1.toString().compareToIgnoreCase(sfn2.toString());
+			
+			return sfn1.compareTo(sfn2);
 		}
 
 	}
