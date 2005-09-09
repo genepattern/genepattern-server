@@ -35,6 +35,7 @@ import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.text.JTextComponent;
 
 import org.genepattern.data.pipeline.PipelineModel;
@@ -53,6 +54,7 @@ import org.genepattern.gpge.ui.tasks.TaskDisplay;
 import org.genepattern.gpge.ui.tasks.TaskHelpActionListener;
 import org.genepattern.gpge.ui.tasks.VersionComboBox;
 import org.genepattern.gpge.ui.util.GUIUtil;
+import org.genepattern.gpge.ui.util.ShadowBorder;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.AnalysisService;
@@ -831,9 +833,11 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		} else {
 			tasksLayout.insertRow(rowIndex, new RowSpec("pref"));
 		}
-		tasksPanel.add(taskPanel, cc.xy(1, 1 + taskIndex));
+		JPanel temp = new JPanel(new BorderLayout());
+		temp.add(taskPanel);
+		temp.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+		tasksPanel.add(temp, cc.xy(1, 1 + taskIndex));
 		taskDisplayList.add(taskIndex, taskPanel);
-
 	}
 
 	void addTask(int index, AnalysisService svc) {
@@ -842,11 +846,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	}
 
 	private void showAddTask(int jobSubmissionIndex, boolean addAfter) {
-
-		if (addAfter)
-			System.out.print("Add task after " + jobSubmissionIndex);
-		else
-			System.out.print("Add task before " + jobSubmissionIndex);
 		String title;
 		int insertionIndex;
 
@@ -1247,30 +1246,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			return comboBox;
 		}
 	}
-
-	static class MyBorder implements Border {
-		 int top = 5;
-		 int left = 1;
-		 int right = 1;
-		 int bottom = 10;
-		 Color color = Color.gray;
-		 
-		public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
-			Color oldColor = g.getColor();
-			g.setColor(color);
-			g.drawRect(x, top, w -1,c.getHeight()-bottom-top-1);
-			g.setColor(oldColor);
-		}
-
-		public Insets getBorderInsets(Component arg0) {
-			return new Insets(top, left, bottom, right);
-		}
-
-		public boolean isBorderOpaque() {
-			return true;
-		}
-		
-	}
 	 
 	class TaskPanel extends JPanel {
 		private ParameterDisplay[] parameters;
@@ -1286,7 +1261,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		JMenuItem moveUpItem;
 		
 		JMenuItem moveDownItem;
-		MyBorder border = new MyBorder();
+		
+		Border selectedBorder = new CompoundBorder(new ShadowBorder(), BorderFactory.createLineBorder(new Color(56, 117, 215), 2));
+		Border unselectedBorder = new CompoundBorder(new ShadowBorder(), BorderFactory.createLineBorder(Color.GRAY, 2));
 		
 		public String toString() {
 			return (1 + taskIndex) + ". " + model.getTaskName(taskIndex);
@@ -1310,6 +1287,15 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		}
 		
 		public TaskPanel(int _taskIndex) {
+			addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					for(int i = 0; i < taskDisplayList.size(); i++) {
+						TaskPanel t = (TaskPanel) taskDisplayList.get(i);
+						t.setBorder(unselectedBorder);
+					}
+					setBorder(selectedBorder);
+				}
+			});
 			enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 			this.taskIndex = _taskIndex;
 			togglePanel = new GroupPanel((taskIndex + 1) + ". "
@@ -1360,12 +1346,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					"left:pref, 3dlu, right:pref, 3dlu, default:grow", "");
 			setLayout(layout);
 			addTaskParameters();
-			//layout.appendRow(new RowSpec("15dlu"));
-		/*	layout.appendRow(new RowSpec("pref"));
-			add(new JSeparator(), cc.xyw(1, layout.getRowCount(), layout
-					.getColumnCount()));
-					*/
-			setBorder(border);
+			setBorder(unselectedBorder);
 		}
 
 		public void setTaskIndex(int taskIndex) {
