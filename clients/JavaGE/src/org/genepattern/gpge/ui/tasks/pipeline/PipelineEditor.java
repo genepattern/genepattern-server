@@ -1,5 +1,6 @@
 package org.genepattern.gpge.ui.tasks.pipeline;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -1252,10 +1253,11 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		 int left = 1;
 		 int right = 1;
 		 int bottom = 10;
+		 Color color = Color.gray;
 		 
 		public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
 			Color oldColor = g.getColor();
-			g.setColor(Color.gray);
+			g.setColor(color);
 			g.drawRect(x, top, w -1,c.getHeight()-bottom-top-1);
 			g.setColor(oldColor);
 		}
@@ -1278,27 +1280,52 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		GroupPanel togglePanel;
 
 		int taskIndex;
-
+		
+		JPopupMenu popupMenu;
+		
+		JMenuItem moveUpItem;
+		
+		JMenuItem moveDownItem;
+		MyBorder border = new MyBorder();
+		
 		public String toString() {
 			return (1 + taskIndex) + ". " + model.getTaskName(taskIndex);
 		}
 		
+		public void processMouseEvent(MouseEvent e) {
+			if (e.isPopupTrigger()) {
+				moveDownItem
+						.setEnabled((taskIndex + 1) != model.getTaskCount());
+				moveUpItem.setEnabled(taskIndex > 0);
+				tasksInPipelineComboBox
+						.removeActionListener(taskComboBoxListener);
+				tasksInPipelineComboBox.getModel().setSelectedItem(
+						tasksInPipelineComboBox.getModel().getElementAt(
+								taskIndex));
+				tasksInPipelineComboBox.addActionListener(taskComboBoxListener);
+				popupMenu.show(e.getComponent(), e.getX(), e.getY());
+			} else {
+				super.processMouseEvent(e);
+			}
+		}
+		
 		public TaskPanel(int _taskIndex) {
+			enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 			this.taskIndex = _taskIndex;
 			togglePanel = new GroupPanel((taskIndex + 1) + ". "
 					+ model.getTaskName(taskIndex), new JTextField(model
 					.getTaskDescription(taskIndex), 80));
 			togglePanel.getMajorLabel().setToolTipText("Right-click to modify pipeline");
 			togglePanel.setBackground(getBackground());
-			final JPopupMenu popupMenu = new JPopupMenu();
+			popupMenu = new JPopupMenu();
 
 			final JMenuItem addTaskAfterItem = new JMenuItem("Add Task After");
 			popupMenu.add(addTaskAfterItem);
 			final JMenuItem addBeforeItem = new JMenuItem("Add Task Before");
 			popupMenu.add(addBeforeItem);
-			final JMenuItem moveUpItem = new JMenuItem("Move Up");
+			moveUpItem = new JMenuItem("Move Up");
 			popupMenu.add(moveUpItem);
-			final JMenuItem moveDownItem = new JMenuItem("Move Down");
+			moveDownItem = new JMenuItem("Move Down");
 			popupMenu.add(moveDownItem);
 			final JMenuItem deleteItem = new JMenuItem("Delete");
 			popupMenu.add(deleteItem);
@@ -1326,21 +1353,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			moveDownItem.addActionListener(listener);
 			deleteItem.addActionListener(listener);
 
-			togglePanel.getMajorLabel().addMouseListener(new MouseAdapter() {
-				public void mousePressed(MouseEvent e) {
-
-					if (e.isPopupTrigger()
-							|| e.getModifiers() == MouseEvent.BUTTON3_MASK) {
-						moveDownItem.setEnabled((taskIndex + 1) != model
-								.getTaskCount());
-						moveUpItem.setEnabled(taskIndex > 0);
-						tasksInPipelineComboBox.removeActionListener(taskComboBoxListener);
-						tasksInPipelineComboBox.getModel().setSelectedItem(tasksInPipelineComboBox.getModel().getElementAt(taskIndex));
-						tasksInPipelineComboBox.addActionListener(taskComboBoxListener);
-						popupMenu.show(e.getComponent(), e.getX(), e.getY());
-					}
-				}
-			});
 			togglePanel.setExpanded(true);
 			CellConstraints cc = new CellConstraints();
 			setBackground(Color.white);
@@ -1353,7 +1365,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			add(new JSeparator(), cc.xyw(1, layout.getRowCount(), layout
 					.getColumnCount()));
 					*/
-			setBorder(new MyBorder());
+			setBorder(border);
 		}
 
 		public void setTaskIndex(int taskIndex) {
