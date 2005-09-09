@@ -9,6 +9,8 @@ import java.net.MalformedURLException;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -18,8 +20,10 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
 import org.genepattern.data.pipeline.JobSubmission;
+import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.MessageManager;
+import org.genepattern.gpge.ui.maindisplay.CenteredDialog;
 import org.genepattern.gpge.ui.maindisplay.ViewManager;
 import org.genepattern.gpge.ui.table.AlternatingColorTable;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
@@ -28,6 +32,8 @@ import org.genepattern.gpge.util.PostData;
 import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.TaskIntegratorProxy;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * Displays missing tasks in a pipeline
@@ -92,18 +98,67 @@ public class MissingTasksDisplay {
 		installFromCatalogBtn.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent arg0) {
-				PostData postData = new PostData(AnalysisServiceManager
-						.getInstance().getServer()
-						+ "/gp/taskCatalog.jsp");
-				try {
-					for (int i = 0; i < missingTasks.size(); i++) {
-						JobSubmission js = (JobSubmission) missingTasks.get(i);
-						postData.addPostData("LSID", js.getLSID());
+				new Thread() {
+					private boolean cancel = false;
+
+					public void run() {
+						JButton okButton = new JButton("OK");
+						final JDialog dialog = new CenteredDialog(GenePattern.getDialogParent());
+						final JLabel label = new JLabel("Preparing to install tasks...", JLabel.CENTER);
+						
+						try {
+							dialog.getContentPane().add(label);
+							JPanel buttonPanel = new JPanel();
+							
+							final JButton cancelButton = new JButton("Cancel");
+							
+							okButton.setEnabled(false);
+							
+							ActionListener btnListener = new ActionListener() {
+
+								public void actionPerformed(ActionEvent e) {
+									if(e.getSource()==cancelButton) {
+										label.setText("Cancelling Installation...");
+										cancel = true;
+									} else {
+										dialog.dispose();
+									}
+								}
+								
+							};
+							cancelButton.addActionListener(btnListener);
+							okButton.addActionListener(btnListener);
+							
+							buttonPanel.add(cancelButton);
+							buttonPanel.add(okButton);
+							
+							dialog.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+							TaskIntegratorProxy proxy = new TaskIntegratorProxy(
+									AnalysisServiceManager.getInstance().getServer(),
+									AnalysisServiceManager.getInstance().getUsername());
+							dialog.setSize(300, 200);
+							dialog.show();
+							for (int i = 0; i < missingTasks.size(); i++) {
+								JobSubmission js = (JobSubmission) missingTasks.get(i);
+								label.setText("Installing " + js.getName() + "...");
+								if(cancel) {
+									break;
+								}
+								proxy.installTask(js.getLSID());
+							}
+						} catch (WebServiceException e1) {
+							dialog.dispose();
+							if(!GenePattern.disconnectedFromServer(e1)) {
+								GenePattern.showErrorDialog("An error occurred while installing the missing modules.");
+							}
+							
+						} finally {
+							label.setText("Installation complete.");
+							okButton.setEnabled(true);
+						}
 					}
-					BrowserLauncher.openURL(postData.toString());
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+				}.start();
+				
 			}
 
 		});
