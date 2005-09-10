@@ -835,7 +835,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		}
 		JPanel temp = new JPanel(new BorderLayout());
 		temp.add(taskPanel);
-		temp.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+		temp.setBorder(BorderFactory.createEmptyBorder(2, 0, 8, 0));
 		tasksPanel.add(temp, cc.xy(1, 1 + taskIndex));
 		taskDisplayList.add(taskIndex, taskPanel);
 	}
@@ -1262,8 +1262,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		
 		JMenuItem moveDownItem;
 		
-		Border selectedBorder = new CompoundBorder(new ShadowBorder(), BorderFactory.createLineBorder(new Color(56, 117, 215), 2));
-		Border unselectedBorder = new CompoundBorder(new ShadowBorder(), BorderFactory.createLineBorder(Color.GRAY, 2));
+		Border selectedBorder = new CompoundBorder(new ShadowBorder(getBackground()), BorderFactory.createLineBorder(new Color(56, 117, 215), 2));
+		Border unselectedBorder = new CompoundBorder(new ShadowBorder(getBackground()), BorderFactory.createLineBorder(Color.GRAY, 2));
 		
 		public String toString() {
 			return (1 + taskIndex) + ". " + model.getTaskName(taskIndex);
@@ -1287,6 +1287,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		}
 		
 		public TaskPanel(int _taskIndex) {
+			
 			addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
 					for(int i = 0; i < taskDisplayList.size(); i++) {
@@ -1300,7 +1301,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			this.taskIndex = _taskIndex;
 			togglePanel = new GroupPanel((taskIndex + 1) + ". "
 					+ model.getTaskName(taskIndex), new JTextField(model
-					.getTaskDescription(taskIndex), 80));
+					.getTaskDescription(taskIndex), 40));
 			togglePanel.getMajorLabel().setToolTipText("Right-click to modify pipeline");
 			togglePanel.setBackground(getBackground());
 			popupMenu = new JPopupMenu();

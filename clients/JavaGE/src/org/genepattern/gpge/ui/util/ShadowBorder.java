@@ -19,8 +19,9 @@ public class ShadowBorder extends AbstractBorder {
 	/**
 	 * Creates a ShadowBorder with default properties
 	 */
-	public ShadowBorder() {
+	public ShadowBorder(Color background) {
 		this(null, 0, 5);
+		this.background = background;
 	}
 
 	/**
@@ -41,10 +42,6 @@ public class ShadowBorder extends AbstractBorder {
 		this.size = size;
 	}
 
-	public static ShadowBorder createShadowBorder() {
-		return defaultInstance;
-	}
-
 	public void paintBorder(Component comp, Graphics g, int x, int y,
 			int width, int height) {
 		g.setColor(color == null ? comp.getBackground().darker() : color);
@@ -60,8 +57,11 @@ public class ShadowBorder extends AbstractBorder {
 			g.fillRect(x, y + size, size, height - size); // vert
 		case SOUTHEAST:
 		default:
-			g.fillRect(x + size, y + height - size, width - size, size); // horiz
+			g.fillRect(x + size, y + height - size-1, width - size, size+1); // horiz
 			g.fillRect(x + width - size, y + size, size, height - size); // vert
+			g.setColor(background);
+			g.fillRect(x, y + height - size-1, size+1, size+1); // horiz
+			g.fillRect(x + width - size, y, size, size); // vert
 		}
 	}
 
@@ -103,7 +103,8 @@ public class ShadowBorder extends AbstractBorder {
 
 	private Color color;
 
+	private Color background;
+	
 	private int orientation;
 
-	private static ShadowBorder defaultInstance = new ShadowBorder();
 }
