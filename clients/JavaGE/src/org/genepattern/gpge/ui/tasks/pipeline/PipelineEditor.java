@@ -882,7 +882,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	private void scrollTo(final TaskPanel task) {
 		Thread t = new Thread() {
 			public void run() {
-				Point p = task.getLocation();
+				Point p = task.getParent().getLocation();
 				JViewport jvp = scrollPane.getViewport();
 				jvp.setViewPosition(p);
 			}
@@ -1269,17 +1269,24 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			return (1 + taskIndex) + ". " + model.getTaskName(taskIndex);
 		}
 		
+		private void selectTask() {
+			for(int i = 0; i < taskDisplayList.size(); i++) {
+				TaskPanel t = (TaskPanel) taskDisplayList.get(i);
+				t.setBorder(unselectedBorder);
+			}
+			setBorder(selectedBorder);
+			moveDownItem.setEnabled((taskIndex + 1) != model.getTaskCount());
+			moveUpItem.setEnabled(taskIndex > 0);
+			tasksInPipelineComboBox.removeActionListener(taskComboBoxListener); // remove
+																				// temporarily
+			tasksInPipelineComboBox.getModel().setSelectedItem(
+					tasksInPipelineComboBox.getModel().getElementAt(taskIndex));
+			tasksInPipelineComboBox.addActionListener(taskComboBoxListener);
+		}
+		
 		public void processMouseEvent(MouseEvent e) {
 			if (e.isPopupTrigger()) {
-				moveDownItem
-						.setEnabled((taskIndex + 1) != model.getTaskCount());
-				moveUpItem.setEnabled(taskIndex > 0);
-				tasksInPipelineComboBox
-						.removeActionListener(taskComboBoxListener);
-				tasksInPipelineComboBox.getModel().setSelectedItem(
-						tasksInPipelineComboBox.getModel().getElementAt(
-								taskIndex));
-				tasksInPipelineComboBox.addActionListener(taskComboBoxListener);
+				selectTask();
 				popupMenu.show(e.getComponent(), e.getX(), e.getY());
 			} else {
 				super.processMouseEvent(e);
@@ -1290,11 +1297,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			
 			addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
-					for(int i = 0; i < taskDisplayList.size(); i++) {
-						TaskPanel t = (TaskPanel) taskDisplayList.get(i);
-						t.setBorder(unselectedBorder);
-					}
-					setBorder(selectedBorder);
+					selectTask();
+					
 				}
 			});
 			enableEvents(AWTEvent.MOUSE_EVENT_MASK);
