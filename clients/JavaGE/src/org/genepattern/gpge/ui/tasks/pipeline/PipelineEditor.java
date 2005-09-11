@@ -1282,6 +1282,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			tasksInPipelineComboBox.getModel().setSelectedItem(
 					tasksInPipelineComboBox.getModel().getElementAt(taskIndex));
 			tasksInPipelineComboBox.addActionListener(taskComboBoxListener);
+			enableButtons();
 		}
 		
 		public void processMouseEvent(MouseEvent e) {
