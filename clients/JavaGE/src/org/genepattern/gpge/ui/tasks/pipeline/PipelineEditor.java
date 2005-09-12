@@ -520,7 +520,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		tasksInPipelineComboBox.removeAllItems();
 		tasksLayout = new FormLayout("pref", "");
 		tasksPanel = new JPanel(tasksLayout);
-		tasksPanel.setBackground(getBackground());
+		tasksPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 30));
+		//tasksPanel.setBackground(getBackground());
 		scrollPane.setViewportView(tasksPanel);
 	}
 
