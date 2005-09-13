@@ -694,7 +694,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 			taskFields = taskFields + '</tr></table>';
 		} else {
 			taskFields = taskFields + "	<select name='t" + taskNum + "_" + pi.name + 
-					"' onchange=\"changeChoice(this, taskNum, param)\">\n";
+					"' onchange='changeChoice(this, " + taskNum + ", " + param + ")'>\n";
 			for (i in choices) {
 				var c = choices[i].split('=');
 				if (c.length == 1) c = new Array(c, c);
