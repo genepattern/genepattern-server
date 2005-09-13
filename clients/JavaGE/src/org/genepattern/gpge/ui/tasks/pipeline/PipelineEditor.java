@@ -111,13 +111,15 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 	private JButton runButton;
 
-	private JButton viewButton;
+	private JButton viewOrEditButton;
 
 	private JButton helpButton;
 
 	private boolean pipelineChanged = false;
 
 	private ActionListener taskComboBoxListener;
+
+	private JPanel editButtonPanel;
 
 	private static boolean view = true;
 
@@ -134,7 +136,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		moveUpButton.setEnabled(index > 0);
 
 		runButton.setEnabled(analysisService != null);
-		viewButton.setEnabled(analysisService != null);
+		viewOrEditButton.setEnabled(analysisService != null);
 		helpButton.setEnabled(analysisService != null);
 	}
 
@@ -205,21 +207,21 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		moveDownButton.addActionListener(taskBtnListener);
 
 		buttonPanel = new JPanel(new BorderLayout());
-		JPanel topPanel = new JPanel();
-		topPanel.add(tasksInPipelineComboBox);
-		topPanel.add(addAfterButton);
-		topPanel.add(addBeforeButton);
-		topPanel.add(deleteButton);
-		topPanel.add(moveUpButton);
-		topPanel.add(moveDownButton);
+		editButtonPanel = new JPanel();
+		editButtonPanel.add(tasksInPipelineComboBox);
+		editButtonPanel.add(addAfterButton);
+		editButtonPanel.add(addBeforeButton);
+		editButtonPanel.add(deleteButton);
+		editButtonPanel.add(moveUpButton);
+		editButtonPanel.add(moveDownButton);
 
-		topPanel.setVisible(!view);
+		
 		JPanel bottomPanel = new JPanel();
 		final JButton expandAllButton = new JButton("Expand All");
 		final JButton collapseAllButton = new JButton("Collapse All");
 		bottomPanel.add(collapseAllButton);
 		bottomPanel.add(expandAllButton);
-		buttonPanel.add(topPanel, BorderLayout.CENTER);
+		buttonPanel.add(editButtonPanel, BorderLayout.CENTER);
 		buttonPanel.add(bottomPanel, BorderLayout.SOUTH);
 		buttonPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0,
 				Color.DARK_GRAY));
@@ -248,7 +250,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		JPanel bottomBtnPanel = new JPanel();
 		final JButton saveButton = new JButton("Save");
 		runButton = new JButton("Run");
-		viewButton = new JButton("View");
+		viewOrEditButton = view?new JButton("Edit"):new JButton("View");
 		helpButton = new JButton("Help");
 		taskHelpActionListener = new TaskHelpActionListener();
 		helpButton.addActionListener(taskHelpActionListener);
@@ -303,7 +305,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 						}
 					}
 
-				} else if (e.getSource() == viewButton) {
+				} else if (e.getSource() == viewOrEditButton) {
+					int message = view?ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST
+							:ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST;
 					if (pipelineChanged) {
 						int result = GUIUtil
 								.showYesNoCancelDialog(
@@ -319,15 +323,13 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 							MessageManager
 									.notifyListeners(new ChangeViewMessageRequest(
 											this,
-											ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST,
-											analysisService));
+											message, analysisService));
 						}
 					} else {
 						MessageManager
 								.notifyListeners(new ChangeViewMessageRequest(
 										this,
-										ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST,
-										analysisService));
+										message, analysisService));
 					}
 				}
 			}
@@ -335,10 +337,10 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		};
 		saveButton.addActionListener(btnListener);
 		runButton.addActionListener(btnListener);
-		viewButton.addActionListener(btnListener);
+		viewOrEditButton.addActionListener(btnListener);
 		bottomBtnPanel.add(saveButton);
 		bottomBtnPanel.add(runButton);
-		bottomBtnPanel.add(viewButton);
+		bottomBtnPanel.add(viewOrEditButton);
 		bottomBtnPanel.add(helpButton);
 		add(bottomBtnPanel, BorderLayout.SOUTH);
 	}
@@ -590,6 +592,12 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	protected boolean display(AnalysisService svc, PipelineModel pipelineModel) {
 		this.analysisService = svc;
 		pipelineChanged = false;
+		if(view) {
+			viewOrEditButton.setText("Edit");
+		} else {
+			viewOrEditButton.setText("View");
+		}
+		editButtonPanel.setVisible(!view); 
 		if (svc == null) {
 			model = new PipelineEditorModel();
 			String username = AnalysisServiceManager.getInstance()
