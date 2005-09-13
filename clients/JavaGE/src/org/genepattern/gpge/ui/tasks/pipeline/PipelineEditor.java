@@ -1309,6 +1309,11 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					+ model.getTaskName(taskIndex), new JTextField(model
 					.getTaskDescription(taskIndex), 40));
 			togglePanel.getMajorLabel().setToolTipText(model.getTaskLSID(taskIndex));
+			togglePanel.getMajorLabel().addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					selectTask();
+				}
+			});
 			togglePanel.setBackground(getBackground());
 			popupMenu = new JPopupMenu();
 
