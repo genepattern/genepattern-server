@@ -9,6 +9,7 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
@@ -22,13 +23,13 @@ public class GUIUtil {
 	}
 
 	private static File showFileDialog(int mode, File selectedFile, String title) {
-		if(title==null) {
+		if (title == null) {
 			title = "GenePattern";
 		} else {
 			title = "GenePattern - " + title;
 		}
-		FileDialog fc = new FileDialog(GenePattern.getDialogParent(),
-				title, mode);
+		FileDialog fc = new FileDialog(GenePattern.getDialogParent(), title,
+				mode);
 		if (selectedFile != null) {
 			fc.setDirectory(selectedFile.getPath());
 			fc.setFile(selectedFile.getName());
@@ -39,15 +40,16 @@ public class GUIUtil {
 		String directory = fc.getDirectory();
 		if (f != null) {
 			File file = new File(directory, f);
-			return file; // mac os x file chooser asks chooser whether to replace file
+			return file; // mac os x file chooser asks chooser whether to
+							// replace file
 		}
 		return null;
 	}
 
-	public static File showOpenDialog() {	
+	public static File showOpenDialog() {
 		return GUIUtil.showOpenDialog(null);
 	}
-	
+
 	public static File showOpenDialog(String title) {
 		if (GPGE.RUNNING_ON_MAC) {
 			return showFileDialog(FileDialog.LOAD, null, title);
@@ -105,6 +107,7 @@ public class GUIUtil {
 
 	/**
 	 * Creates a wrapped border with the given insets
+	 * 
 	 * @param b
 	 * @param left
 	 * @param top
@@ -112,8 +115,8 @@ public class GUIUtil {
 	 * @param bottom
 	 * @return
 	 */
-	public static Border createBorder(final Border b, final int left, final int top,
-			final int right, final int bottom) {
+	public static Border createBorder(final Border b, final int left,
+			final int top, final int right, final int bottom) {
 		return new javax.swing.border.Border() {
 			public Insets getBorderInsets(java.awt.Component c) {
 				Insets i = b.getBorderInsets(c);
@@ -129,20 +132,57 @@ public class GUIUtil {
 				if (bottom >= 0) {
 					i.bottom = bottom;
 				}
-	
+
 				return i;
 			}
-	
+
 			public boolean isBorderOpaque() {
 				return b.isBorderOpaque();
 			}
-	
+
 			public void paintBorder(Component c, Graphics g, int x, int y,
 					int width, int height) {
 				b.paintBorder(c, g, x, y, width, height);
 			}
-	
+
 		};
+	}
+
+	/**
+	 * Creates a text field that looks like a label. Users can copy and paste
+	 * from text fields but not from labels
+	 * 
+	 * @param s
+	 * @param size
+	 * @return
+	 */
+	public static JTextField createLabelLikeTextField(String s, int size) {
+		JTextField tf = new JTextField(s, size);
+		tf.setEditable(false);
+		tf.setOpaque(false);
+		tf.setFont(javax.swing.UIManager.getFont("Label.font"));
+		tf.setBackground(UIManager.getColor("Label.background"));
+		tf.setDisabledTextColor(UIManager.getColor("Label.foreground"));
+		tf.setBorder(UIManager.getBorder("Label.border"));
+		return tf;
+	}
+
+	/**
+	 * Creates a text field that looks like a label. Users can copy and paste
+	 * from text fields but not from labels
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public static JTextField createLabelLikeTextField(String s) {
+		JTextField tf = new JTextField(s);
+		tf.setEditable(false);
+		tf.setOpaque(false);
+		tf.setFont(javax.swing.UIManager.getFont("Label.font"));
+		tf.setBackground(UIManager.getColor("Label.background"));
+		tf.setDisabledTextColor(UIManager.getColor("Label.foreground"));
+		tf.setBorder(UIManager.getBorder("Label.border"));
+		return tf;
 	}
 
 	public static JTextArea createWrappedLabel(String s) {
@@ -161,27 +201,31 @@ public class GUIUtil {
 	}
 
 	public static boolean showConfirmDialog(String message) {
-		return showConfirmDialog(GenePattern.getDialogParent(), "GenePattern", message);
+		return showConfirmDialog(GenePattern.getDialogParent(), "GenePattern",
+				message);
 	}
-	
+
 	/**
 	 * 
 	 * @param parent
 	 * @param title
 	 * @param message
-	 * @param text array containing 'Yes', 'No', 'Cancel' text
+	 * @param text
+	 *            array containing 'Yes', 'No', 'Cancel' text
 	 * @return
 	 */
-	public static int showYesNoCancelDialog(Component parent, String title, String message, String[] text) {
-		if(text.length!=3) {
+	public static int showYesNoCancelDialog(Component parent, String title,
+			String message, String[] text) {
+		if (text.length != 3) {
 			throw new IllegalArgumentException("Invalid array length.");
 		}
 		return JOptionPane.showOptionDialog(parent, message, title,
 				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE,
 				GenePattern.getIcon(), text, text[0]);
 	}
-	
-	public static boolean showConfirmDialog(Component parent, String title, String message) {
+
+	public static boolean showConfirmDialog(Component parent, String title,
+			String message) {
 		if (JOptionPane.showOptionDialog(parent, message, title,
 				JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
 				GenePattern.getIcon(), new Object[] { "Yes", "No" }, "Yes") == JOptionPane.YES_OPTION) {
