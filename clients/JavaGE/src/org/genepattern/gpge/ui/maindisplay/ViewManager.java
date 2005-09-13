@@ -2,8 +2,11 @@ package org.genepattern.gpge.ui.maindisplay;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JSplitPane;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.gpge.GenePattern;
@@ -17,14 +20,14 @@ import org.genepattern.gpge.ui.tasks.pipeline.ViewPipeline;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceDisplay;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.TaskInfo;
+import org.xml.sax.SAXException;
 
 public class ViewManager {
 	private AnalysisServiceDisplay analysisServiceDisplay;
 
 	private PipelineEditor pipelineComponent;
-
-	private ViewPipeline viewPipeline;
 
 	private JSplitPane splitPane;
 
@@ -33,7 +36,6 @@ public class ViewManager {
 		analysisServiceDisplay = new AnalysisServiceDisplay();
 		analysisServiceDisplay.setMinimumSize(new Dimension(200, 200));
 		pipelineComponent = new PipelineEditor();
-		viewPipeline = new ViewPipeline();
 
 		MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
 
@@ -51,7 +53,7 @@ public class ViewManager {
 					} else if (asm.getType() == ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST) {
 						AnalysisService svc = asm.getAnalysisService();
 						if (svc == null) {
-							pipelineComponent.display(null, null);
+							pipelineComponent.edit(null, null);
 							setComponent(pipelineComponent);
 							MessageManager
 									.notifyListeners(new ChangeViewMessage(
@@ -67,24 +69,27 @@ public class ViewManager {
 												.getTaskInfoAttributes()
 												.get(
 														GPConstants.SERIALIZED_MODEL));
-								
-								
-								if(!pipelineComponent.display(asm
+
+								// FIXME
+								if (!pipelineComponent.edit(asm
 										.getAnalysisService(), pipelineModel)) {
-									viewPipeline.display(asm.getAnalysisService());
-									setComponent(viewPipeline);
-									MessageManager.notifyListeners(new ChangeViewMessage(
-											message.getSource(),
-											ChangeViewMessage.VIEW_PIPELINE_SHOWN,
-											viewPipeline));
-									
+									pipelineComponent.view(asm
+											.getAnalysisService(),
+											pipelineModel);
+									setComponent(pipelineComponent);
+									MessageManager
+											.notifyListeners(new ChangeViewMessage(
+													message.getSource(),
+													ChangeViewMessage.VIEW_PIPELINE_SHOWN,
+													pipelineComponent));
+
 								} else {
 									setComponent(pipelineComponent);
 									MessageManager
-										.notifyListeners(new ChangeViewMessage(
-												message.getSource(),
-												ChangeViewMessage.EDIT_PIPELINE_SHOWN,
-												pipelineComponent));
+											.notifyListeners(new ChangeViewMessage(
+													message.getSource(),
+													ChangeViewMessage.EDIT_PIPELINE_SHOWN,
+													pipelineComponent));
 								}
 
 							} catch (Exception e1) {
@@ -103,12 +108,27 @@ public class ViewManager {
 								ChangeViewMessage.GETTING_STARTED_SHOWN,
 								analysisServiceDisplay));
 					} else if (asm.getType() == ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST) {
-						viewPipeline.display(asm.getAnalysisService());
-						setComponent(viewPipeline);
-						MessageManager.notifyListeners(new ChangeViewMessage(
-								message.getSource(),
-								ChangeViewMessage.VIEW_PIPELINE_SHOWN,
-								viewPipeline));
+						PipelineModel pipelineModel;
+						try {
+							pipelineModel = PipelineModel
+									.toPipelineModel((String) asm
+											.getAnalysisService().getTaskInfo()
+											.getTaskInfoAttributes()
+											.get(GPConstants.SERIALIZED_MODEL));
+
+							pipelineComponent.view(asm.getAnalysisService(),
+									pipelineModel);
+							setComponent(pipelineComponent);
+							MessageManager
+									.notifyListeners(new ChangeViewMessage(
+											message.getSource(),
+											ChangeViewMessage.VIEW_PIPELINE_SHOWN,
+											pipelineComponent));
+						} catch (Exception e) {
+							e.printStackTrace();
+							GenePattern
+									.showErrorDialog("An error occurred while loading the pipeline");
+						}
 					} else {
 						System.err.println("Unknown type:" + asm.getType());
 					}

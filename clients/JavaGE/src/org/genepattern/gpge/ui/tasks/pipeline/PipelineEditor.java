@@ -3,9 +3,6 @@ package org.genepattern.gpge.ui.tasks.pipeline;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,6 +28,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
@@ -121,7 +119,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 	private ActionListener taskComboBoxListener;
 
-	
+	private static boolean view = true;
+
 	private void enableButtons() {
 		deleteButton.setEnabled(model.getTaskCount() > 0);
 		if (model.getTaskCount() == 0) {
@@ -139,7 +138,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		helpButton.setEnabled(analysisService != null);
 	}
 
-	
 	/**
 	 * Only one instance should be created by the ViewManager
 	 * 
@@ -166,22 +164,21 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 		moveDownButton = new JButton("Move Down");
 
-		
 		taskComboBoxListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(!e.getSource().equals(tasksInPipelineComboBox)) {
+				if (!e.getSource().equals(tasksInPipelineComboBox)) {
 					return;
 				}
 				int index = tasksInPipelineComboBox.getSelectedIndex();
-				if(index >=0) {
+				if (index >= 0) {
 					TaskPanel t = (TaskPanel) taskDisplayList.get(index);
 					scrollTo(t);
- 				}
+				}
 				enableButtons();
 			}
 		};
 		tasksInPipelineComboBox.addActionListener(taskComboBoxListener);
-		
+
 		ActionListener taskBtnListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int index = tasksInPipelineComboBox.getSelectedIndex();
@@ -216,6 +213,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		topPanel.add(moveUpButton);
 		topPanel.add(moveDownButton);
 
+		topPanel.setVisible(!view);
 		JPanel bottomPanel = new JPanel();
 		final JButton expandAllButton = new JButton("Expand All");
 		final JButton collapseAllButton = new JButton("Collapse All");
@@ -273,29 +271,35 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 						if (result == JOptionPane.YES_OPTION) {
 							save();
 						} else if (result == JOptionPane.NO_OPTION) {
-							// run task directly if pipeline has no prompt when run parameters, otherwise go to run page
-							ParameterInfo[] p = analysisService.getTaskInfo().getParameterInfoArray();
-							if(p==null || p.length==0) {
-								AnalysisServiceDisplay.doSubmit(runButton, new ParameterInfo[0], analysisService);
+							// run task directly if pipeline has no prompt when
+							// run parameters, otherwise go to run page
+							ParameterInfo[] p = analysisService.getTaskInfo()
+									.getParameterInfoArray();
+							if (p == null || p.length == 0) {
+								AnalysisServiceDisplay.doSubmit(runButton,
+										new ParameterInfo[0], analysisService);
 							} else {
 								MessageManager
+										.notifyListeners(new ChangeViewMessageRequest(
+												this,
+												ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST,
+												analysisService));
+							}
+						}
+					} else {
+						// run task directly if pipeline has no prompt when run
+						// parameters, otherwise go to run page
+						ParameterInfo[] p = analysisService.getTaskInfo()
+								.getParameterInfoArray();
+						if (p == null || p.length == 0) {
+							AnalysisServiceDisplay.doSubmit(runButton,
+									new ParameterInfo[0], analysisService);
+						} else {
+							MessageManager
 									.notifyListeners(new ChangeViewMessageRequest(
 											this,
 											ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST,
 											analysisService));
-							}
-						}
-					} else {
-						// run task directly if pipeline has no prompt when run parameters, otherwise go to run page
-						ParameterInfo[] p = analysisService.getTaskInfo().getParameterInfoArray();
-						if(p==null || p.length==0) {
-							AnalysisServiceDisplay.doSubmit(runButton, new ParameterInfo[0], analysisService);
-						} else {
-							MessageManager
-						.notifyListeners(new ChangeViewMessageRequest(
-								this,
-								ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST,
-								analysisService));
 						}
 					}
 
@@ -320,10 +324,10 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 						}
 					} else {
 						MessageManager
-						.notifyListeners(new ChangeViewMessageRequest(
-								this,
-								ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST,
-								analysisService));
+								.notifyListeners(new ChangeViewMessageRequest(
+										this,
+										ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST,
+										analysisService));
 					}
 				}
 			}
@@ -393,7 +397,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			e.printStackTrace();
 		}
 		remove(headerPanel);
-		headerPanel = new HeaderPanel(model, buttonPanel);
+		headerPanel = new HeaderPanel(model, buttonPanel, view);
 		add(headerPanel, BorderLayout.NORTH); // update lsid in drop down
 		invalidate();
 		validate();
@@ -401,7 +405,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 				.getAnalysisService(model.getLSID());
 		enableButtons();
 		try {
-			GenePattern.showMessageDialog("Saved " + model.getPipelineName() + " version " + new LSID(model.getLSID()).getVersion());
+			GenePattern.showMessageDialog("Saved " + model.getPipelineName()
+					+ " version " + new LSID(model.getLSID()).getVersion());
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
@@ -469,7 +474,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 									"<GenePatternURL>getFile.jsp?task=<LSID>&file="
 											.length(), value.length());
 							existingFileNames.add(fileName);
-						} else if(value.startsWith("job #")) {
+						} else if (value.startsWith("job #")) {
 							existingFileNames.add(value);
 						}
 					}
@@ -521,7 +526,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		tasksLayout = new FormLayout("pref", "");
 		tasksPanel = new JPanel(tasksLayout);
 		tasksPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 30));
-		//tasksPanel.setBackground(getBackground());
+		// tasksPanel.setBackground(getBackground());
 		scrollPane.setViewportView(tasksPanel);
 	}
 
@@ -572,7 +577,17 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		}
 	}
 
-	public boolean display(AnalysisService svc, PipelineModel pipelineModel) {
+	public boolean view(AnalysisService svc, PipelineModel pipelineModel) {
+		view = true;
+		return display(svc, pipelineModel);
+	}
+	
+	public boolean edit(AnalysisService svc, PipelineModel pipelineModel) {
+		view = false;
+		return display(svc, pipelineModel);
+	}
+	
+	protected boolean display(AnalysisService svc, PipelineModel pipelineModel) {
 		this.analysisService = svc;
 		pipelineChanged = false;
 		if (svc == null) {
@@ -581,29 +596,27 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					.getUsername();
 			model.setAuthor(username);
 			model.setOwner(username);
-		
+
 		} else {
 			model = new PipelineEditorModel(svc, pipelineModel);
-			if(model.getMissingJobSubmissions().size() > 0) {
+			if (model.getMissingJobSubmissions().size() > 0) {
 				return false;
 			}
 		}
 		if (headerPanel != null) {
 			remove(headerPanel);
 		}
-		headerPanel = new HeaderPanel(model, buttonPanel);
+		headerPanel = new HeaderPanel(model, buttonPanel, view);
 		add(headerPanel, BorderLayout.NORTH);
 
 		enableButtons();
 		model.addPipelineListener(this);
-		
 
 		// show edit link when task has local authority and either belongs
 		// to
 		// current user or is public
 		layoutTasks();
 		return true;
-
 	}
 
 	static class HeaderPanel extends JPanel {
@@ -652,7 +665,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			return errors;
 		}
 
-		public HeaderPanel(final PipelineEditorModel model, JPanel buttonPanel) {
+		public HeaderPanel(final PipelineEditorModel model, JPanel buttonPanel,
+				boolean view) {
 			this.model = model;
 			// setBorder(BorderFactory.createLineBorder());
 			setLayout(new BorderLayout());
@@ -662,11 +676,13 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 				name = name.substring(0, name.length() - ".pipeline".length());
 			}
 			JLabel nameLabel = new JLabel("Name:");
-			nameField = new JTextField(name, 40);
+			nameField = view ? GUIUtil.createLabelLikeTextField(name, 40)
+					: new JTextField(name, 40);
 
 			JLabel descriptionLabel = new JLabel("Description:");
-			descriptionField = new JTextField(model.getPipelineDescription(),
-					40);
+			descriptionField = view ? GUIUtil.createLabelLikeTextField(model
+					.getPipelineDescription(), 40) : new JTextField(model
+					.getPipelineDescription(), 40);
 			JComboBox versionComboBox = null;
 			if (name != null) {
 				versionComboBox = new VersionComboBox(model.getLSID(),
@@ -699,12 +715,14 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					"right:pref:none, 3dlu, left:pref", rowSpec.toString()));
 			detailsPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 			JLabel authorLabel = new JLabel("Author:");
-			authorField = new JTextField(model.getAuthor(), 40);
+			authorField = view ? GUIUtil.createLabelLikeTextField(model
+					.getAuthor(), 40) : new JTextField(model.getAuthor(), 40);
 			detailsPanel.add(authorLabel, cc.xy(1, 1));
 			detailsPanel.add(authorField, cc.xy(3, 1));
 
 			JLabel ownerLabel = new JLabel("Owner:");
-			ownerField = new JTextField(model.getOwner(), 40);
+			ownerField = view ? GUIUtil.createLabelLikeTextField(model
+					.getOwner(), 40) : new JTextField(model.getOwner(), 40);
 			detailsPanel.add(ownerLabel, cc.xy(1, 3));
 			detailsPanel.add(ownerField, cc.xy(3, 3));
 
@@ -714,11 +732,15 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			if (model.getPrivacy() == GPConstants.ACCESS_PRIVATE) {
 				privacyComboBox.setSelectedIndex(1);
 			}
+			privacyComboBox.setEditable(!view);
+
 			detailsPanel.add(privacyLabel, cc.xy(1, 5));
 			detailsPanel.add(privacyComboBox, cc.xy(3, 5));
 
 			JLabel versionLabel = new JLabel("Version comment:");
-			versionField = new JTextField(model.getVersionComment(), 40);
+			versionField = view ? GUIUtil.createLabelLikeTextField(model
+					.getVersionComment(), 40) : new JTextField(model
+					.getVersionComment(), 40);
 			detailsPanel.add(versionLabel, cc.xy(1, 7));
 			detailsPanel.add(versionField, cc.xy(3, 7));
 
@@ -730,8 +752,10 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					existingDocComboBox.addItem(docFiles.get(i));
 				}
 			}
+			existingDocComboBox.setEditable(!view);
 
 			JButton deleteDocBtn = new JButton("Delete");
+			deleteDocBtn.setVisible(!view);
 			deleteDocBtn.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
@@ -756,6 +780,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			});
 
 			JButton addDocBtn = new JButton("Add...");
+			addDocBtn.setVisible(!view);
 			addDocBtn.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
@@ -889,7 +914,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			}
 		};
 		SwingUtilities.invokeLater(t);
-		
+
 	}
 
 	private void taskDeleted(int deletedRow) {
@@ -902,9 +927,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			task.setTaskIndex(i);
 		}
 		addItemsToTaskComboBox();
-		tasksInPipelineComboBox.setSelectedIndex(deletedRow-1);
-		int index = deletedRow-1;
-		if(index > 0) {
+		tasksInPipelineComboBox.setSelectedIndex(deletedRow - 1);
+		int index = deletedRow - 1;
+		if (index > 0) {
 			scrollTo((TaskPanel) taskDisplayList.get(index));
 		}
 	}
@@ -931,7 +956,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			tasksLayout.removeRow(from + 1);
 
 			layoutTask(to);
-			if(!expanded) {
+			if (!expanded) {
 				TaskPanel t = (TaskPanel) taskDisplayList.get(to);
 				t.togglePanel.setExpanded(false);
 			}
@@ -1187,8 +1212,10 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			useOutputFromPreviousTask.setOpaque(false);
 			useOutputFromPreviousTask.setBackground(Color.white);
 			inputPanel.add(inputComponent, cc.xy(1, 1));
-			inputPanel.add(browseBtn, cc.xy(2, 1));
-			inputPanel.add(useOutputFromPreviousTask, cc.xy(5, 1));
+			if (!view) {
+				inputPanel.add(browseBtn, cc.xy(2, 1));
+				inputPanel.add(useOutputFromPreviousTask, cc.xy(5, 1));
+			}
 
 			inheritedTaskIndexComboBox = new JComboBox();
 
@@ -1247,7 +1274,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			return comboBox;
 		}
 	}
-	 
+
 	class TaskPanel extends JPanel {
 		private ParameterDisplay[] parameters;
 
@@ -1256,22 +1283,26 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		GroupPanel togglePanel;
 
 		int taskIndex;
-		
+
 		JPopupMenu popupMenu;
-		
+
 		JMenuItem moveUpItem;
-		
+
 		JMenuItem moveDownItem;
-		
-		Border selectedBorder = new CompoundBorder(new ShadowBorder(getBackground()), BorderFactory.createLineBorder(new Color(56, 117, 215), 2));
-		Border unselectedBorder = new CompoundBorder(new ShadowBorder(getBackground()), BorderFactory.createLineBorder(Color.GRAY, 2));
-		
+
+		Border selectedBorder = new CompoundBorder(new ShadowBorder(
+				getBackground()), BorderFactory.createLineBorder(new Color(56,
+				117, 215), 2));
+
+		Border unselectedBorder = new CompoundBorder(new ShadowBorder(
+				getBackground()), BorderFactory.createLineBorder(Color.GRAY, 2));
+
 		public String toString() {
 			return (1 + taskIndex) + ". " + model.getTaskName(taskIndex);
 		}
-		
+
 		private void selectTask() {
-			for(int i = 0; i < taskDisplayList.size(); i++) {
+			for (int i = 0; i < taskDisplayList.size(); i++) {
 				TaskPanel t = (TaskPanel) taskDisplayList.get(i);
 				t.setBorder(unselectedBorder);
 			}
@@ -1279,36 +1310,48 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			moveDownItem.setEnabled((taskIndex + 1) != model.getTaskCount());
 			moveUpItem.setEnabled(taskIndex > 0);
 			tasksInPipelineComboBox.removeActionListener(taskComboBoxListener); // remove
-																				// temporarily
+			// temporarily
 			tasksInPipelineComboBox.getModel().setSelectedItem(
 					tasksInPipelineComboBox.getModel().getElementAt(taskIndex));
 			tasksInPipelineComboBox.addActionListener(taskComboBoxListener);
 			enableButtons();
 		}
-		
+
 		public void processMouseEvent(MouseEvent e) {
 			if (e.isPopupTrigger()) {
 				selectTask();
-				popupMenu.show(e.getComponent(), e.getX(), e.getY());
+				if (!view) {
+					popupMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
 			} else {
 				super.processMouseEvent(e);
 			}
 		}
-		
+
 		public TaskPanel(int _taskIndex) {
-			
+
 			addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
 					selectTask();
-					
+
 				}
 			});
 			enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 			this.taskIndex = _taskIndex;
+			JComponent descriptionTextField = null;
+			if (view) {
+				descriptionTextField = GUIUtil.createWrappedLabel(model
+						.getTaskDescription(taskIndex));
+				((JTextArea) descriptionTextField).setColumns(40);
+
+			} else {
+				descriptionTextField = new JTextField(model
+						.getTaskDescription(taskIndex), 40);
+			}
 			togglePanel = new GroupPanel((taskIndex + 1) + ". "
-					+ model.getTaskName(taskIndex), new JTextField(model
-					.getTaskDescription(taskIndex), 40));
-			togglePanel.getMajorLabel().setToolTipText(model.getTaskLSID(taskIndex));
+					+ model.getTaskName(taskIndex), descriptionTextField);
+			togglePanel.getMajorLabel().setToolTipText(
+					model.getTaskLSID(taskIndex));
 			togglePanel.getMajorLabel().addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
 					selectTask();
@@ -1380,31 +1423,39 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 				final LSID lsid = new LSID(lsidString);
 				List versions = (List) AnalysisServiceManager.getInstance()
 						.getLSIDToVersionsMap().get(lsid.toStringNoVersion());
-				JComboBox versionChooserComboBox = new JComboBox(versions
-						.toArray());
-				versionChooserComboBox.setSelectedItem(lsid.getVersion());
-				versionChooserComboBox.setBackground(Color.white);
-				togglePanel.addToggleComponent(versionChooserComboBox);
-				layout.appendRow(new RowSpec("pref"));
-				add(versionChooserComboBox, cc.xy(1, layout.getRowCount()));
+				JComponent versionComponent = null;
+				if (!view) {
+					JComboBox versionChooserComboBox = new JComboBox(versions
+							.toArray());
+					versionComponent = versionChooserComboBox;
+					versionChooserComboBox.setSelectedItem(lsid.getVersion());
+					versionChooserComboBox.setBackground(Color.white);
 
-				versionChooserComboBox.addItemListener(new ItemListener() {
+					versionChooserComboBox.addItemListener(new ItemListener() {
 
-					public void itemStateChanged(ItemEvent e) {
-						if (e.getStateChange() != ItemEvent.SELECTED) {
-							return;
+						public void itemStateChanged(ItemEvent e) {
+							if (e.getStateChange() != ItemEvent.SELECTED) {
+								return;
+							}
+							String version = (String) e.getItem();
+							String newLSID = lsid.toStringNoVersion() + ":"
+									+ version;
+							updateInputFileValues();
+							updateValues(taskIndex);
+							model.replace(taskIndex, AnalysisServiceManager
+									.getInstance().getAnalysisService(newLSID)
+									.getTaskInfo());
 						}
-						String version = (String) e.getItem();
-						String newLSID = lsid.toStringNoVersion() + ":"
-								+ version;
-						updateInputFileValues();
-						updateValues(taskIndex);
-						model.replace(taskIndex, AnalysisServiceManager
-								.getInstance().getAnalysisService(newLSID)
-								.getTaskInfo());
-					}
 
-				});
+					});
+				} else {
+					versionComponent = new JLabel("version: "
+							+ lsid.getVersion());
+				}
+				togglePanel.addToggleComponent(versionComponent);
+				layout.appendRow(new RowSpec("pref"));
+				add(versionComponent, cc.xy(1, layout.getRowCount()));
+
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 			}
@@ -1415,8 +1466,10 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 								promptWhenRunLabel.getFont().getSize2D() - 2));
 				togglePanel.addToggleComponent(promptWhenRunLabel);
 				layout.appendRow(new RowSpec("pref"));
-				add(promptWhenRunLabel, cc.xyw(PROMPT_WHEN_RUN_COLUMN, layout
-						.getRowCount(), layout.getColumnCount()));
+				if (!view) {
+					add(promptWhenRunLabel, cc.xyw(PROMPT_WHEN_RUN_COLUMN,
+							layout.getRowCount(), layout.getColumnCount()));
+				}
 			}
 			parameters = new ParameterDisplay[model
 					.getParameterCount(taskIndex)];
@@ -1438,14 +1491,69 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 				togglePanel.addToggleComponent(promptWhenRunCheckBox);
 
-				add(promptWhenRunCheckBox, cc.xy(PROMPT_WHEN_RUN_COLUMN, layout
-						.getRowCount(), CellConstraints.LEFT,
-						CellConstraints.CENTER));
+				if (!view) {
+					add(promptWhenRunCheckBox, cc.xy(PROMPT_WHEN_RUN_COLUMN,
+							layout.getRowCount(), CellConstraints.LEFT,
+							CellConstraints.CENTER));
+				}
 
 				add(label, cc.xy(INPUT_LABEL_COLUMN, layout.getRowCount(),
 						CellConstraints.RIGHT, CellConstraints.CENTER));
+				if (view) {
+					String value = model.getValue(taskIndex, i);
+					JLabel field = new JLabel(value);
+					if (model.isPromptWhenRun(taskIndex, i)) {
+						field.setText("Prompt when run");
+					} else if (model.getInheritedTaskIndex(taskIndex, i) != -1) {
+						final int parameterIndex = i;
+						int inheritedTaskIndex = model.getInheritedTaskIndex(
+								taskIndex, i);
+						value = "<html>Use <b>"
+								+ model.getInheritedFile(taskIndex, i)
+								+ "</b> from <b>"
+								+ (1 + model
+										.getInheritedTaskIndex(taskIndex, i))
+								+ ". " + model.getTaskName(inheritedTaskIndex)
+								+ "</b>";
+						field.setText(value);
+						field.addMouseListener(new MouseAdapter() {
 
-				if (model.isChoiceList(taskIndex, i)) {
+							public void mouseEntered(MouseEvent e) {
+
+								TaskPanel td = (TaskPanel) taskDisplayList
+										.get(model.getInheritedTaskIndex(
+												taskIndex, parameterIndex));
+								td.togglePanel
+										.setMajorLabelForeground(Color.red);
+							}
+
+							public void mouseExited(MouseEvent e) {
+								TaskPanel td = (TaskPanel) taskDisplayList
+										.get(model.getInheritedTaskIndex(
+												taskIndex, parameterIndex));
+								td.togglePanel
+										.setMajorLabelForeground(Color.black);
+							}
+
+						});
+
+					} else if (model.isChoiceList(taskIndex, i)) {
+						ParameterChoice[] choiceItems = model.getChoices(
+								taskIndex, i);
+						if (choiceItems != null) {
+							for (int j = 0; j < choiceItems.length; j++) {
+								if (choiceItems[j]
+										.equalsCmdLineOrUIValue(value)) {
+									field.setText(choiceItems[j].getUIValue());
+									break;
+								}
+							}
+						}
+					}
+					togglePanel.addToggleComponent(field);
+					add(field, cc.xy(INPUT_FIELD_COLUMN, layout.getRowCount(),
+							CellConstraints.LEFT, CellConstraints.BOTTOM));
+				} else if (model.isChoiceList(taskIndex, i)) {
 					JComponent choiceInput = parameters[i].createChoiceInput(
 							model.getChoices(taskIndex, i), model.getValue(
 									taskIndex, i));
@@ -1472,9 +1580,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					togglePanel.addToggleComponent(inputComponent);
 
 				}
+
 				layout.appendRow(new RowSpec("1dlu"));
 			}
-
 			int endParameterRow = layout.getRowCount();
 			// int[] group = new int[endParameterRow - startParameterRow + 1];
 			// for (int i = startParameterRow, index = 0; i <= endParameterRow;
