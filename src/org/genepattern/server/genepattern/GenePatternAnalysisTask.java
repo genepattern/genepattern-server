@@ -3323,17 +3323,18 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 			// and that the numbering runs consecutively. When there is no
 			// p[m]_name value, then there are m-1 ParameterInfos
 
-			// count ParameterInfo entries
-			int numParameterInfos = 0;
 			String value;
 			String description;
 
 			Vector vParams = new Vector();
 			ParameterInfo pi = null;
-			for (i = 1; i <= MAX_PARAMETERS; i++) {
+			boolean found = true;
+			for(i = 1; found; i++) { // loop until we don't find p_i_name
 				name = (String) props.remove("p" + i + "_name");
-				if (name == null)
+				if (name == null) {
+					found = false;
 					continue;
+				}
 				if (name == null || name.length() == 0)
 					throw new Exception("missing parameter name for " + "p" + i
 							+ "_name");
