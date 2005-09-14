@@ -152,6 +152,11 @@ public class RunR extends Thread {
 
 			final Process process = Runtime.getRuntime().exec(commandLine,
 					null, null);
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				public void run() {
+					process.destroy();
+				}
+			});
 
 			if (DEBUG) {
 				System.setOut(new PrintStream(new FileOutputStream(args[JOBID]
