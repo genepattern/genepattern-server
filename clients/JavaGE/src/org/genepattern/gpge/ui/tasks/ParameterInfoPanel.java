@@ -24,6 +24,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import org.genepattern.gpge.PropertyManager;
@@ -272,7 +273,9 @@ public class ParameterInfoPanel extends JPanel {
 				}
 
 				this.add(inputLabel, cc.xy(PARAMETER_LABEL_COLUMN, row));
-				JLabel description = new JLabel(info.getDescription());
+				JTextArea description = GUIUtil.createWrappedLabel(info.getDescription());
+				description.setColumns(50);
+				//JLabel description = new JLabel(info.getDescription());
 
 				if (!viewOnly && info.isInputFile()) {
 					JPanel p = new JPanel();
