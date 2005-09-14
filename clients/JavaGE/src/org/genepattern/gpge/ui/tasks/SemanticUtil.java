@@ -140,10 +140,10 @@ public class SemanticUtil {
 								if (row < 0) {
 									return;
 								}
-								ParameterInfo inputParameter = (ParameterInfo) matchingInputParameters
+								String inputParameter = (String) matchingInputParameters
 										.get(row);
 								analysisServiceDisplay.sendTo(
-										inputParameter.getName(), (Sendable) node);
+										inputParameter, (Sendable) node);
 							}
 							d.dispose();
 						}
