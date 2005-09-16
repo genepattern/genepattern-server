@@ -28,6 +28,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
@@ -50,6 +51,7 @@ import org.genepattern.gpge.ui.tasks.ParameterChoice;
 import org.genepattern.gpge.ui.tasks.Sendable;
 import org.genepattern.gpge.ui.tasks.TaskDisplay;
 import org.genepattern.gpge.ui.tasks.TaskHelpActionListener;
+import org.genepattern.gpge.ui.tasks.TaskNamePanel;
 import org.genepattern.gpge.ui.tasks.VersionComboBox;
 import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.gpge.ui.util.ShadowBorder;
@@ -215,7 +217,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		editButtonPanel.add(moveUpButton);
 		editButtonPanel.add(moveDownButton);
 
-		
 		JPanel bottomPanel = new JPanel();
 		final JButton expandAllButton = new JButton("Expand All");
 		final JButton collapseAllButton = new JButton("Collapse All");
@@ -250,7 +251,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		JPanel bottomBtnPanel = new JPanel();
 		final JButton saveButton = new JButton("Save");
 		runButton = new JButton("Run");
-		viewOrEditButton = view?new JButton("Edit"):new JButton("View");
+		viewOrEditButton = view ? new JButton("Edit") : new JButton("View");
 		helpButton = new JButton("Help");
 		taskHelpActionListener = new TaskHelpActionListener();
 		helpButton.addActionListener(taskHelpActionListener);
@@ -306,8 +307,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					}
 
 				} else if (e.getSource() == viewOrEditButton) {
-					int message = view?ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST
-							:ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST;
+					int message = view ? ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST
+							: ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST;
 					if (pipelineChanged) {
 						int result = GUIUtil
 								.showYesNoCancelDialog(
@@ -322,14 +323,12 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 						} else if (result == JOptionPane.NO_OPTION) {
 							MessageManager
 									.notifyListeners(new ChangeViewMessageRequest(
-											this,
-											message, analysisService));
+											this, message, analysisService));
 						}
 					} else {
 						MessageManager
 								.notifyListeners(new ChangeViewMessageRequest(
-										this,
-										message, analysisService));
+										this, message, analysisService));
 					}
 				}
 			}
@@ -530,6 +529,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		tasksPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 30));
 		// tasksPanel.setBackground(getBackground());
 		scrollPane.setViewportView(tasksPanel);
+		scrollPane.setColumnHeaderView(null);
 	}
 
 	public Iterator getInputFileParameters() {
@@ -579,25 +579,20 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		}
 	}
 
-	public boolean view(AnalysisService svc, PipelineModel pipelineModel) {
+	public void view(AnalysisService svc, PipelineModel pipelineModel) {
 		view = true;
-		return display(svc, pipelineModel);
+		display(svc, pipelineModel);
 	}
-	
-	public boolean edit(AnalysisService svc, PipelineModel pipelineModel) {
+
+	public void edit(AnalysisService svc, PipelineModel pipelineModel) {
 		view = false;
-		return display(svc, pipelineModel);
+		display(svc, pipelineModel);
 	}
-	
-	protected boolean display(AnalysisService svc, PipelineModel pipelineModel) {
+
+	protected void display(AnalysisService svc, PipelineModel pipelineModel) {
+		reset();
 		this.analysisService = svc;
 		pipelineChanged = false;
-		if(view) {
-			viewOrEditButton.setText("Edit");
-		} else {
-			viewOrEditButton.setText("View");
-		}
-		editButtonPanel.setVisible(!view); 
 		if (svc == null) {
 			model = new PipelineEditorModel();
 			String username = AnalysisServiceManager.getInstance()
@@ -607,15 +602,36 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 		} else {
 			model = new PipelineEditorModel(svc, pipelineModel);
-			if (model.getMissingJobSubmissions().size() > 0) {
-				return false;
-			}
 		}
+
 		if (headerPanel != null) {
 			remove(headerPanel);
 		}
 		headerPanel = new HeaderPanel(model, buttonPanel, view);
 		add(headerPanel, BorderLayout.NORTH);
+
+		if (model.getMissingJobSubmissions().size() > 0) {
+			view = true;
+			MissingTasksDisplay mtd = new MissingTasksDisplay(model
+					.getMissingJobSubmissions(), svc);
+			JPanel p = new JPanel(new FormLayout("pref", "pref, pref, pref"));
+			CellConstraints cc = new CellConstraints();
+			p.add(mtd.getErrorPanel(), cc.xy(1, 1));
+			p.add(mtd.getMissingTasksPanel(), cc.xy(1, 2));
+			p.add(tasksPanel, cc.xy(1, 3));
+			scrollPane.setViewportView(p);
+			headerPanel = new HeaderPanel(model, buttonPanel, view);
+			add(headerPanel, BorderLayout.NORTH);
+			
+		}
+
+		if (view) {
+			viewOrEditButton.setText("Edit");
+		} else {
+			viewOrEditButton.setText("View");
+		}
+		
+		editButtonPanel.setVisible(!view);
 
 		enableButtons();
 		model.addPipelineListener(this);
@@ -624,7 +640,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		// to
 		// current user or is public
 		layoutTasks();
-		return true;
 	}
 
 	static class HeaderPanel extends JPanel {
@@ -837,7 +852,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	}
 
 	private void layoutTasks() {
-		reset();
 		for (int i = 0; i < model.getTaskCount(); i++) {
 			layoutTask(i);
 		}
@@ -1429,8 +1443,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			try {
 				final String lsidString = model.getTaskLSID(taskIndex);
 				final LSID lsid = new LSID(lsidString);
-				List versions = (List) AnalysisServiceManager.getInstance()
-						.getLSIDToVersionsMap().get(lsid.toStringNoVersion());
+				List versions = !lsidString.equals("") ? (List) AnalysisServiceManager.getInstance()
+						.getLSIDToVersionsMap().get(lsid.toStringNoVersion()):new ArrayList();
 				JComponent versionComponent = null;
 				if (!view) {
 					JComboBox versionChooserComboBox = new JComboBox(versions
