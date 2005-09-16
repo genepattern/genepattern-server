@@ -2,6 +2,7 @@ package org.genepattern.gpge.ui.tasks.pipeline;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -35,6 +36,9 @@ import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.TaskIntegratorProxy;
 import org.genepattern.webservice.WebServiceException;
 
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
 /**
  * Displays missing tasks in a pipeline
  * @author Joshua Gould
@@ -44,7 +48,8 @@ public class MissingTasksDisplay {
 
 	private JPanel topPanel;
 	private JScrollPane sp;
-
+	private AlternatingColorTable table;
+	private JPanel missingTasksPanel;
 
 	public MissingTasksDisplay(final List missingTasks, final AnalysisService service) {
 
@@ -80,7 +85,38 @@ public class MissingTasksDisplay {
 			}
 		};
 
-		JTable table = new AlternatingColorTable(tableModel);
+		StringBuffer rowSpec = new StringBuffer();
+		for(int i = 0, size = missingTasks.size()+1; i < size; i++) {
+			if(i > 0) {
+				rowSpec.append(",");
+			}
+			rowSpec.append("pref");
+		}
+		missingTasksPanel = new JPanel(new FormLayout("left:pref, 3dlu, left:pref, 3dlu, left:pref", rowSpec.toString()));
+		//missingTasksPanel.setBackground(Color.white);
+		CellConstraints cc = new CellConstraints();
+		JLabel taskLabel = new JLabel("Task");
+		taskLabel.setFont(taskLabel.getFont().deriveFont(Font.BOLD));
+		missingTasksPanel.add(taskLabel, cc.xy(1, 1));
+		JLabel versionLabel = new JLabel("Version");
+		versionLabel.setFont(versionLabel.getFont().deriveFont(Font.BOLD));
+		missingTasksPanel.add(versionLabel, cc.xy(3, 1));
+		JLabel lsidLabel = new JLabel("LSID");
+		lsidLabel.setFont(lsidLabel.getFont().deriveFont(Font.BOLD));
+		missingTasksPanel.add(lsidLabel, cc.xy(5, 1));
+		
+		
+		for(int i = 0, size = missingTasks.size(); i < size; i++) {
+			JobSubmission js = (JobSubmission) missingTasks.get(i);
+			missingTasksPanel.add(new JLabel(js.getName()), cc.xy(1, i+2));
+			try {
+				missingTasksPanel.add(new JLabel(new LSID(js.getLSID()).getVersion()), cc.xy(3, i+2));
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+			missingTasksPanel.add(new JLabel(js.getLSID()), cc.xy(5, i+2));
+		}
+		table = new AlternatingColorTable(tableModel);
 
 		JPanel buttonPanel = new JPanel();
 		JButton installFromCatalogBtn = new JButton(
@@ -163,13 +199,13 @@ public class MissingTasksDisplay {
 
 		});
 
-		sp = new JScrollPane(table);
+		//sp = new JScrollPane(table);
 
 		JTextArea errorLabel = GUIUtil
 				.createWrappedLabel("The following modules do not exist on the server. Please install the missing modules from the Module Repository or import them from a zip file (File > Import Module).");
 		errorLabel.setBackground(Color.red);
-		Border b = sp.getBorder();
-		sp.setBorder(GUIUtil.createBorder(b, 0, -1, -1, -1));
+	//	Border b = sp.getBorder();
+		//sp.setBorder(GUIUtil.createBorder(b, 0, -1, -1, -1));
 		topPanel = new JPanel(new BorderLayout());
 		topPanel.add(errorLabel, BorderLayout.NORTH);
 		topPanel.add(buttonPanel, BorderLayout.CENTER);
@@ -179,8 +215,16 @@ public class MissingTasksDisplay {
 		return sp;
 	}
 	
+	public JPanel getMissingTasksPanel() {
+		return missingTasksPanel;
+	}
+	
 	public JPanel getErrorPanel() {
 		return topPanel;
+	}
+	
+	public JTable getTable() {
+		return table;
 	}
 	
 
