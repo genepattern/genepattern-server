@@ -69,28 +69,13 @@ public class ViewManager {
 												.getTaskInfoAttributes()
 												.get(
 														GPConstants.SERIALIZED_MODEL));
-
-								// FIXME
-								if (!pipelineComponent.edit(asm
-										.getAnalysisService(), pipelineModel)) {
-									pipelineComponent.view(asm
-											.getAnalysisService(),
-											pipelineModel);
-									setComponent(pipelineComponent);
-									MessageManager
-											.notifyListeners(new ChangeViewMessage(
-													message.getSource(),
-													ChangeViewMessage.VIEW_PIPELINE_SHOWN,
-													pipelineComponent));
-
-								} else {
-									setComponent(pipelineComponent);
-									MessageManager
-											.notifyListeners(new ChangeViewMessage(
-													message.getSource(),
-													ChangeViewMessage.EDIT_PIPELINE_SHOWN,
-													pipelineComponent));
-								}
+								pipelineComponent.edit(svc, pipelineModel);
+								setComponent(pipelineComponent);
+								MessageManager
+										.notifyListeners(new ChangeViewMessage(
+												message.getSource(),
+												ChangeViewMessage.EDIT_PIPELINE_SHOWN,
+												pipelineComponent));
 
 							} catch (Exception e1) {
 								e1.printStackTrace();
