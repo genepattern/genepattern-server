@@ -13,21 +13,21 @@ import org.genepattern.io.ParseException;
  *@author    Joshua Gould
  */
 public class ExpressionDataCreator implements IExpressionDataCreator {
-	IntMatrix2D calls;
+	protected IntMatrix2D calls;
 
-	double[][] data;
+	protected double[][] data;
 
-	String[] rowDescriptions;
+	protected String[] rowDescriptions;
 
-	String[] rowNames;
+	protected String[] rowNames;
 
-	String[] columnNames;
+	protected String[] columnNames;
 
-	String[] columnDescriptions;
+	protected String[] columnDescriptions;
 
-	boolean keepRowDescriptions = true;
+	protected boolean keepRowDescriptions = true;
 
-	boolean keepColumnDescriptions = true;
+	protected boolean keepColumnDescriptions = true;
 
 	public ExpressionDataCreator() {
 		this(true, true);
