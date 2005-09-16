@@ -94,6 +94,7 @@ public class PipelineEditorModel {
 	public PipelineEditorModel() {
 		tasks = new ArrayList();
 		listenerList = new EventListenerList();
+		this.missingJobSubmissions = new ArrayList();
 	}
 	
 	public void resetDocFiles() {
@@ -532,7 +533,7 @@ public class PipelineEditorModel {
 	public String getTaskLSID(int taskIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
 		TaskInfo ti = task.getTaskInfo();
-		return (String) ti.getTaskInfoAttributes().get(GPConstants.LSID);
+		return ti !=null ? (String) ti.getTaskInfoAttributes().get(GPConstants.LSID) : "";
 	}
 	public String getTaskDescription(int taskIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
