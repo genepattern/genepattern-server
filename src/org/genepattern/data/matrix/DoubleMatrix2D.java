@@ -90,52 +90,6 @@ public class DoubleMatrix2D {
 		fillInColumns(0);
 	}
 
-	/**
-	 * Creates a new matrix
-	 * 
-	 * @param rows
-	 *            The number of rows.
-	 * @param columns
-	 *            The number of columns.
-	 * @param rowNames
-	 *            The row names.
-	 * @param columnNames
-	 *            The column names.
-	 */
-	DoubleMatrix2D(int rows, int columns, List rowNames, List columnNames) {
-		matrix = new Matrix(rows, columns);
-		rowNameToRowIndexMap = new ObjectIntMap(rows);
-		columnNameToColumnIndexMap = new ObjectIntMap(columns);
-		this.rowNames = new String[rows];
-		this.columnNames = new String[columns];
-		setRowNames(rowNames);
-		setColumnNames(columnNames);
-	}
-
-	/**
-	 * Creates a new matrix.
-	 * 
-	 * @param matrix
-	 *            The matrix
-	 * @param rowNames
-	 *            The row names.
-	 * @param columnNames
-	 *            The column names.
-	 * @param rowNameToRowIndexMap
-	 *            The row name to row index map.
-	 * @param columnNameToColumnIndexMap
-	 *            The column name to row index map.
-	 */
-	private DoubleMatrix2D(Matrix matrix, String[] rowNames,
-			String[] columnNames, ObjectIntMap rowNameToRowIndexMap,
-			ObjectIntMap columnNameToColumnIndexMap) {
-		this.matrix = matrix;
-		this.rowNames = rowNames;
-		this.columnNames = columnNames;
-		this.rowNameToRowIndexMap = rowNameToRowIndexMap;
-		this.columnNameToColumnIndexMap = columnNameToColumnIndexMap;
-	}
-
 	/** Creates a new uninitalized matrix with 0 rows and 0 columns */
 
 	private DoubleMatrix2D() {
