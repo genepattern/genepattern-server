@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
-import java.util.Collection;
-import java.util.HashSet;
 
 import org.genepattern.io.expr.IExpressionDataHandler;
 import org.genepattern.io.expr.IExpressionDataParser;
@@ -69,11 +67,10 @@ public class GctParser implements IExpressionDataParser {
 	void readData() throws org.genepattern.io.ParseException, IOException {
 		int rowIndex = 0;
 		int expectedColumns = columns + 2;
-		Collection rowNamesSet = new HashSet(rows);
 		for (String s = reader.readLine(); s != null; s = reader.readLine(), rowIndex++) {
 			if (rowIndex >= rows) {
 				if (s.trim().equals("")) {// ignore blank lines at the end of
-										  // the file
+					// the file
 					rowIndex--;
 					continue;
 				}
@@ -92,12 +89,8 @@ public class GctParser implements IExpressionDataParser {
 						+ expectedColumns + ".");
 			}
 			String rowName = tokens[0];
-			if (rowNamesSet.contains(rowName)) {
-				throw new org.genepattern.io.ParseException(
-						"Duplicate row name " + rowName + " on line "
-								+ reader.getLineNumber());
-			}
-			rowNamesSet.add(rowName);
+
+			
 			if (handler != null) {
 				handler.rowName(rowIndex, rowName);
 				handler.rowDescription(rowIndex, tokens[1]);
@@ -130,8 +123,8 @@ public class GctParser implements IExpressionDataParser {
 					"Unknown version on line 1.");
 		}
 		String dimensionsLine = reader.readLine().trim();// 2nd header line:
-														 // <numRows> <tab>
-														 // <numCols>
+		// <numRows> <tab>
+		// <numCols>
 
 		String[] dimensions = dimensionsLine.split("\t");
 		if (dimensions.length != 2) {
@@ -165,17 +158,13 @@ public class GctParser implements IExpressionDataParser {
 		int expectedColumns = columns + 2;
 		if (columnNames.length != expectedColumns) {
 			throw new org.genepattern.io.ParseException("Expected "
-					+ (expectedColumns-2) + " column names, but read " + (columnNames.length-2)
-					+ " column names on line " + reader.getLineNumber() + ".");
+					+ (expectedColumns - 2) + " column names, but read "
+					+ (columnNames.length - 2) + " column names on line "
+					+ reader.getLineNumber() + ".");
 		}
-		Collection columnNamesSet = new HashSet(columns);
+		
 		for (int j = 0; j < columns; j++) {
 			String columnName = columnNames[j + 2];
-			if (columnNamesSet.contains(columnName)) {
-				throw new org.genepattern.io.ParseException(
-						"Duplicate column name " + columnName + " on line " + reader.getLineNumber() + ".");
-			}
-			columnNamesSet.add(columnName);
 			if (handler != null) {
 				handler.columnName(j, columnName);
 			}
@@ -200,4 +189,3 @@ public class GctParser implements IExpressionDataParser {
 		return "columns";
 	}
 }
-

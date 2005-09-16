@@ -6,8 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 
 import org.genepattern.data.expr.ResExpressionData;
@@ -32,6 +30,9 @@ public class ResParser implements IExpressionDataParser {
 	final static String ACCESSION = "Accession";
 
 	LineNumberReader reader;
+
+	/** whether to ensure that a call is one of A, P, M */
+	boolean verifyCalls = true;
 
 	public boolean canDecode(InputStream is) throws IOException {
 		reader = new LineNumberReader(new BufferedReader(new InputStreamReader(
@@ -74,11 +75,11 @@ public class ResParser implements IExpressionDataParser {
 	private void readData() throws ParseException, IOException {
 		int expectedColumns = 2 * columns + 2;
 		int rowIndex = 0;
-		Collection rowNamesSet = new HashSet(rows);
+		
 		for (String s = reader.readLine(); s != null; s = reader.readLine(), rowIndex++) {
 			if (rowIndex >= rows) {
 				if (s.trim().equals("")) {// ignore blank lines at the end of
-										  // the file
+					// the file
 					rowIndex--;
 					continue;
 				}
@@ -98,13 +99,10 @@ public class ResParser implements IExpressionDataParser {
 			if (handler != null) {
 				handler.rowDescription(rowIndex, dataTokens[0]);
 			}
-			String geneName = dataTokens[1];
-			if (rowNamesSet.contains(geneName)) {
-				throw new ParseException("Duplicate gene name " + geneName);
-			}
-			rowNamesSet.add(geneName);
+			String rowName = dataTokens[1];
+			
 			if (handler != null) {
-				handler.rowName(rowIndex, geneName);
+				handler.rowName(rowIndex, rowName);
 			}
 
 			for (int columnIndex = 0, tokenIndex = 2; columnIndex < columns; columnIndex++, tokenIndex += 2) {
@@ -120,6 +118,7 @@ public class ResParser implements IExpressionDataParser {
 				}
 				String callString = dataTokens[tokenIndex + 1];
 				int call = 0;
+
 				if ("P".equals(callString)) {
 					call = ResExpressionData.PRESENT;
 				} else if ("A".equals(callString)) {
@@ -127,8 +126,11 @@ public class ResParser implements IExpressionDataParser {
 				} else if ("M".equals(callString)) {
 					call = ResExpressionData.MARGINAL;
 				} else {
-					throw new ParseException("Unknown call, " + callString
-							+ ", at [" + rowIndex + "," + columnIndex + "].");
+					if (verifyCalls) {
+						throw new ParseException("Unknown call, " + callString + ", on line " + reader.getLineNumber());
+					} else {
+						call = ResExpressionData.ABSENT;
+					}
 				}
 				if (handler != null) {
 					handler.call(rowIndex, columnIndex, call);
@@ -137,7 +139,7 @@ public class ResParser implements IExpressionDataParser {
 		}
 
 		if (rowIndex != rows) {// check to see if there are less rows than
-							   // specified
+			// specified
 			throw new ParseException("Missing data rows. Read " + rowIndex
 					+ " " + getRowString(rowIndex) + ", expected " + rows);
 		}
@@ -150,34 +152,31 @@ public class ResParser implements IExpressionDataParser {
 		// (column names)
 		String sampleIdLine = reader.readLine();
 		List sampleNamesList = new ArrayList();
-		Collection sampleNamesSet = new HashSet();// used to check for duplicate
-												  // sample names
+		
+		// sample names
 		if (sampleIdLine != null && sampleIdLine.length() > 0) {
 			String[] tokens = sampleIdLine.split("\t");
-         if(tokens == null || tokens.length==0 || tokens.length==1) {
-            throw new ParseException("Unable to parse line 1");  
-         }
-         
+			if (tokens == null || tokens.length == 0 || tokens.length == 1) {
+				throw new ParseException("Unable to parse line 1");
+			}
+
 			String desc = tokens[0];// Description
 			if (!DESCRIPTION.equalsIgnoreCase(desc)) {
 				// System.out
-					//	.println("Warning: First line should start with 'Description'");
+				// .println("Warning: First line should start with
+				// 'Description'");
 			}
-         
+
 			String acc = tokens[1];// Accession
 			if (!ACCESSION.equalsIgnoreCase(acc)) {
-				//System.out
-					//	.println("Warning: First line second token should be 'Accession'");
+				// System.out
+				// .println("Warning: First line second token should be
+				// 'Accession'");
 			}
 
 			int sampleIndex = 2;
 			for (int j = 1, length = tokens.length; sampleIndex < length; sampleIndex += 2, j++) {
 				String sampleName = tokens[sampleIndex].trim();
-				if (sampleNamesSet.contains(sampleName)) {
-					sampleNamesList.add(sampleName);
-               throw new ParseException("Duplicate column name " + sampleName + " at column " + j + " on line " + reader.getLineNumber() + ".");
-				}
-				sampleNamesSet.add(sampleName);
 				sampleNamesList.add(sampleName);
 			}
 			if (sampleIndex - 1 != tokens.length) {
@@ -213,15 +212,12 @@ public class ResParser implements IExpressionDataParser {
 			if (sampleDescriptionsTokens.length != expectedTokens) {
 				int tokens = (int) Math
 						.ceil(sampleDescriptionsTokens.length / 2.0);
-				/*System.out
-						.println("Warning: Incorrect number of sample descriptions on line "
-								+ reader.getLineNumber()
-								+ ". Expected "
-								+ columns
-								+ " descriptions, got "
-								+ tokens
-								+ " descriptions.");// warn user
-                        */
+				/*
+				 * System.out .println("Warning: Incorrect number of sample
+				 * descriptions on line " + reader.getLineNumber() + ". Expected " +
+				 * columns + " descriptions, got " + tokens + "
+				 * descriptions.");// warn user
+				 */
 			}
 
 			int index = 0;
@@ -231,8 +227,9 @@ public class ResParser implements IExpressionDataParser {
 						.trim();
 			}
 
-			if (index < columns) {// if less sample descriptions than required,
-								  // fill remaining with empty string
+			if (index < columns) {// if less sample descriptions than
+									// required,
+				// fill remaining with empty string
 				for (int j = index; j < columns; j++) {
 					sampleDescriptions[j] = "";
 				}
@@ -294,4 +291,3 @@ public class ResParser implements IExpressionDataParser {
 	}
 
 }
-
