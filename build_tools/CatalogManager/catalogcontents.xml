@@ -316,6 +316,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00041=1 ExpressionFileCreator.zip"/>
+	</commandline>
+</cvs>
+<copy file="ExpressionFileCreator.zip" tofile="catalogregen/ExpressionFileCreator.1.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00009=2 HierarchicalClustering.zip"/>
 	</commandline>
 </cvs>

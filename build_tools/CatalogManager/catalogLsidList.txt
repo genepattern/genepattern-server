@@ -42,6 +42,7 @@ HeatMapImage.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_ana
 HeatMapViewer.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00010=0
 HeatMapViewer.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00010=1
 HeatMapViewer.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00010=2
+ExpressionFileCreator.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00041=1
 HierarchicalClustering.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00009=2
 Hu68kHu35kAtoU95.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00011=0
 Hu68kHu35kAtoU95.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00011=1
