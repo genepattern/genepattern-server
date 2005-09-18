@@ -750,16 +750,20 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			detailsPanel.add(ownerField, cc.xy(3, 3));
 
 			JLabel privacyLabel = new JLabel("Privacy:");
+			
 			privacyComboBox = new JComboBox(
 					new String[] { "Public", "Private" });
 			if (model.getPrivacy() == GPConstants.ACCESS_PRIVATE) {
 				privacyComboBox.setSelectedIndex(1);
 			}
-			privacyComboBox.setEditable(!view);
-
+			
 			detailsPanel.add(privacyLabel, cc.xy(1, 5));
-			detailsPanel.add(privacyComboBox, cc.xy(3, 5));
-
+			if(!view) {
+				detailsPanel.add(privacyComboBox, cc.xy(3, 5));
+			} else {
+				String privacyString = model.getPrivacy()==GPConstants.ACCESS_PRIVATE?"Private":"Public";
+				detailsPanel.add(GUIUtil.createLabelLikeTextField(privacyString), cc.xy(3, 5));
+			}
 			JLabel versionLabel = new JLabel("Version comment:");
 			versionField = view ? GUIUtil.createLabelLikeTextField(model
 					.getVersionComment(), 40) : new JTextField(model
