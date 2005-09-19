@@ -584,12 +584,12 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		display(svc, pipelineModel);
 	}
 
-	public void edit(AnalysisService svc, PipelineModel pipelineModel) {
+	public boolean edit(AnalysisService svc, PipelineModel pipelineModel) {
 		view = false;
-		display(svc, pipelineModel);
+		return display(svc, pipelineModel);
 	}
 
-	protected void display(AnalysisService svc, PipelineModel pipelineModel) {
+	protected boolean display(AnalysisService svc, PipelineModel pipelineModel) {
 		reset();
 		this.analysisService = svc;
 		pipelineChanged = false;
@@ -610,8 +610,10 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		headerPanel = new HeaderPanel(model, buttonPanel, view);
 		add(headerPanel, BorderLayout.NORTH);
 
-		if (model.getMissingJobSubmissions().size() > 0) {
-			view = true;
+		if (!view && model.getMissingJobSubmissions().size() > 0) {
+			return false;
+		}
+		if(model.getMissingJobSubmissions().size() > 0) {
 			MissingTasksDisplay mtd = new MissingTasksDisplay(model
 					.getMissingJobSubmissions(), svc);
 			JPanel p = new JPanel(new FormLayout("pref", "pref, pref, pref"));
@@ -640,6 +642,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		// to
 		// current user or is public
 		layoutTasks();
+		return true;
 	}
 
 	static class HeaderPanel extends JPanel {
