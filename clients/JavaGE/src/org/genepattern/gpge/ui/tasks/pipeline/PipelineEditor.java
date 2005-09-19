@@ -123,7 +123,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 	private JPanel editButtonPanel;
 
-	private static boolean view = true;
+	private boolean view = true;
 
 	private void enableButtons() {
 		deleteButton.setEnabled(model.getTaskCount() > 0);
@@ -1020,11 +1020,14 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 		PipelineEditorModel model;
 
+		private boolean view;
+
 		public ParameterDisplay(PipelineEditorModel model, int taskIndex,
-				int parameterIndex) {
+				int parameterIndex, boolean view) {
 			this.model = model;
 			this.taskIndex = taskIndex;
 			this.parameterIndex = parameterIndex;
+			this.view = view;
 		}
 
 		String getInheritedFileName() {
@@ -1238,7 +1241,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			useOutputFromPreviousTask.setOpaque(false);
 			useOutputFromPreviousTask.setBackground(Color.white);
 			inputPanel.add(inputComponent, cc.xy(1, 1));
-			if (!view) {
+			if (!this.view) {
 				inputPanel.add(browseBtn, cc.xy(2, 1));
 				inputPanel.add(useOutputFromPreviousTask, cc.xy(5, 1));
 			}
@@ -1500,7 +1503,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			parameters = new ParameterDisplay[model
 					.getParameterCount(taskIndex)];
 			for (int i = 0; i < model.getParameterCount(taskIndex); i++) {
-				parameters[i] = new ParameterDisplay(model, taskIndex, i);
+				parameters[i] = new ParameterDisplay(model, taskIndex, i, view);
 				String paramName = model.getParameterName(taskIndex, i);
 
 				JLabel label = new JLabel(AnalysisServiceDisplay
