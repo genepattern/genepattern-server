@@ -27,7 +27,9 @@ import org.xml.sax.SAXException;
 public class ViewManager {
 	private AnalysisServiceDisplay analysisServiceDisplay;
 
-	private PipelineEditor pipelineComponent;
+	private PipelineEditor pipelineEditor;
+	
+	private PipelineEditor pipelineViewer;
 
 	private JSplitPane splitPane;
 
@@ -35,8 +37,9 @@ public class ViewManager {
 		this.splitPane = splitPane;
 		analysisServiceDisplay = new AnalysisServiceDisplay();
 		analysisServiceDisplay.setMinimumSize(new Dimension(200, 200));
-		pipelineComponent = new PipelineEditor();
-
+		pipelineEditor = new PipelineEditor();
+		pipelineViewer = new PipelineEditor();
+		
 		MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
 
 			public void receiveMessage(GPGEMessage message) {
@@ -53,13 +56,13 @@ public class ViewManager {
 					} else if (asm.getType() == ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST) {
 						AnalysisService svc = asm.getAnalysisService();
 						if (svc == null) {
-							pipelineComponent.edit(null, null);
-							setComponent(pipelineComponent);
+							pipelineEditor.edit(null, null);
+							setComponent(pipelineEditor);
 							MessageManager
 									.notifyListeners(new ChangeViewMessage(
 											message.getSource(),
 											ChangeViewMessage.EDIT_PIPELINE_SHOWN,
-											pipelineComponent));
+											pipelineEditor));
 						} else {
 							TaskInfo info = asm.getAnalysisService()
 									.getTaskInfo();
@@ -69,13 +72,25 @@ public class ViewManager {
 												.getTaskInfoAttributes()
 												.get(
 														GPConstants.SERIALIZED_MODEL));
-								pipelineComponent.edit(svc, pipelineModel);
-								setComponent(pipelineComponent);
-								MessageManager
+								if(!pipelineEditor.edit(svc, pipelineModel)) {
+									if(!pipelineEditor.edit(svc, pipelineModel)) {
+										setComponent(pipelineViewer);
+										MessageManager
 										.notifyListeners(new ChangeViewMessage(
 												message.getSource(),
-												ChangeViewMessage.EDIT_PIPELINE_SHOWN,
-												pipelineComponent));
+												ChangeViewMessage.VIEW_PIPELINE_SHOWN,
+												pipelineEditor));
+									}
+								} else {
+									setComponent(pipelineEditor);
+									MessageManager
+									.notifyListeners(new ChangeViewMessage(
+											message.getSource(),
+											ChangeViewMessage.EDIT_PIPELINE_SHOWN,
+											pipelineEditor));
+								}
+								
+								
 
 							} catch (Exception e1) {
 								e1.printStackTrace();
@@ -101,14 +116,14 @@ public class ViewManager {
 											.getTaskInfoAttributes()
 											.get(GPConstants.SERIALIZED_MODEL));
 
-							pipelineComponent.view(asm.getAnalysisService(),
+							pipelineViewer.view(asm.getAnalysisService(),
 									pipelineModel);
-							setComponent(pipelineComponent);
+							setComponent(pipelineViewer);
 							MessageManager
 									.notifyListeners(new ChangeViewMessage(
 											message.getSource(),
 											ChangeViewMessage.VIEW_PIPELINE_SHOWN,
-											pipelineComponent));
+											pipelineViewer));
 						} catch (Exception e) {
 							e.printStackTrace();
 							GenePattern
