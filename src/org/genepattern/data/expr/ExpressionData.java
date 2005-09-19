@@ -221,4 +221,33 @@ public class ExpressionData implements IExpressionData {
 		return dataset.getColumnIndex(columnName);
 	}
 
+	/**
+	 * Sets a single element.
+	 * 
+	 * @param value
+	 *            A(row,column).
+	 * @param rowIndex
+	 *            The row index.
+	 * @param columnIndex
+	 *            The column index.
+	 */
+
+	public void set(int rowIndex, int columnIndex, double value) {
+		dataset.set(rowIndex, columnIndex, value);
+	}
+
+	/**
+	 * Sets a single element.
+	 * 
+	 * @param value
+	 *            A(row,column).
+	 * @param rowName
+	 *            The row name.
+	 * @param columnName
+	 *            The column name.
+	 */
+
+	public void set(String rowName, String columnName, double value) {
+		dataset.set(rowName, columnName, value);
+	}
 }
