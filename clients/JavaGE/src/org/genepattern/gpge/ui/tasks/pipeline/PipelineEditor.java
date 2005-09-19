@@ -779,7 +779,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					existingDocComboBox.addItem(docFiles.get(i));
 				}
 			}
-			existingDocComboBox.setEditable(!view);
+			
 
 			JButton deleteDocBtn = new JButton("Delete");
 			deleteDocBtn.setVisible(!view);
