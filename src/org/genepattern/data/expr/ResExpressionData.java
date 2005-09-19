@@ -74,5 +74,13 @@ public class ResExpressionData extends ExpressionData implements
 
 		}
 	}
-}
 
+	/**
+	 * Gets the 2-dimensional matrix that holds the absent-present calls
+	 * 
+	 * @return The call matrix
+	 */
+	public IntMatrix2D getCallMatrix() {
+		return calls;
+	}
+}
