@@ -35,6 +35,26 @@ public class IntMatrix2D {
 	}
 
 	/**
+	 * Gets the underlying int[][] array
+	 * 
+	 * @return the array
+	 */
+	public int[][] getArray() {
+		return matrix;
+	}
+	
+	/**
+	 * Gets the underlying array at the given row
+	 * 
+	 * @param row
+	 *            Row index
+	 * @return the row array
+	 */
+	public int[] getRow(int row) {
+		return matrix[row];
+	}
+
+	/**
 	 * Constructs and returns a new matrix that contains the indicated cells.
 	 * Indices can be in arbitrary order.
 	 * 
@@ -120,4 +140,3 @@ public class IntMatrix2D {
 	}
 
 }
-
