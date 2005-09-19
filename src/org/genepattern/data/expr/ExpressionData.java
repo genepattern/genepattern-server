@@ -250,4 +250,17 @@ public class ExpressionData implements IExpressionData {
 	public void set(String rowName, String columnName, double value) {
 		dataset.set(rowName, columnName, value);
 	}
+	
+	/**
+	 * Gets a single element
+	 * 
+	 * @param row
+	 *            Row index.
+	 * @param column
+	 *            Column index.
+	 * @return The value at A[row,column]
+	 */
+	public double get(int row, int column) {
+		return dataset.get(row, column);
+	}
 }
