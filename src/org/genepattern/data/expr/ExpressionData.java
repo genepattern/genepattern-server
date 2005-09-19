@@ -173,7 +173,7 @@ public class ExpressionData implements IExpressionData {
 	 * 
 	 * @return The expression matrix
 	 */
-	public org.genepattern.data.matrix.DoubleMatrix2D getExpressionMatrix() {
+	public DoubleMatrix2D getExpressionMatrix() {
 		return dataset;
 	}
 
@@ -186,5 +186,39 @@ public class ExpressionData implements IExpressionData {
 		return dataset.getArray();
 	}
 
-}
+	/**
+	 * Gets the underlying array at the given row
+	 * 
+	 * @param row
+	 *            Row index
+	 * @return the row array
+	 */
+	public double[] getRow(int row) {
+		return dataset.getRow(row);
+	}
 
+	/**
+	 * Gets the row index for the row name .
+	 * 
+	 * @param rowName
+	 *            the row name.
+	 * @return the row index, or -1 if the row name is not contained in this
+	 *         matrix
+	 */
+	public int getRowIndex(String rowName) {
+		return dataset.getRowIndex(rowName);
+	}
+
+	/**
+	 * Gets the column index for the column name .
+	 * 
+	 * @param columnName
+	 *            the column name.
+	 * @return the column index, or -1 if the column name is not contained in
+	 *         this matrix
+	 */
+	public int getColumnIndex(String columnName) {
+		return dataset.getColumnIndex(columnName);
+	}
+
+}
