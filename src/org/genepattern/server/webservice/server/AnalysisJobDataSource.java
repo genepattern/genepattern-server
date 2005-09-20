@@ -1,4 +1,4 @@
-package org.genepattern.server.ejb;
+package org.genepattern.server.webservice.server;
 
 import java.rmi.RemoteException;
 import java.sql.ResultSet;

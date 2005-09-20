@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.FSDirectory;
-import org.genepattern.server.ejb.AnalysisJobDataSource;
+import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.server.util.BeanReference;
 
 public class IndexerDaemon implements Runnable {

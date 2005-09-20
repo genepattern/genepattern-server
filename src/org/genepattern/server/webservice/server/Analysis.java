@@ -81,7 +81,7 @@ public class Analysis extends GenericWebService {
     
    public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters) 	throws WebServiceException {
       try {
-          org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+          AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
                      .getAnalysisJobDataSourceEJB();   
          return ds.recordClientJob(taskID, getUsernameFromContext(), org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters));
       } catch(Exception e) {
@@ -103,7 +103,7 @@ public class Analysis extends GenericWebService {
    
   public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters, int parentJobNumber) 	throws WebServiceException {
      try {
-         org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+         AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
                     .getAnalysisJobDataSourceEJB();   
         return ds.recordClientJob(taskID, getUsernameFromContext(), org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters), parentJobNumber);
      } catch(Exception e) {
@@ -115,7 +115,7 @@ public class Analysis extends GenericWebService {
    public int[] getChildren(int jobId) throws WebServiceException {
        
         try {
-            org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+            AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
             .getAnalysisJobDataSourceEJB();
             JobInfo[] children = ds.getChildren(jobId);
 
@@ -336,7 +336,7 @@ public class Analysis extends GenericWebService {
          if (p != null) {
             setJobStatus(jobId, JobStatus.ERROR);
          }
-         org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+         AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
 			.getAnalysisJobDataSourceEJB();
          JobInfo[] children = ds.getChildren(jobId);
          for(int i = 0; i < children.length; i++) { // terminate all child jobs
@@ -357,7 +357,7 @@ public class Analysis extends GenericWebService {
 	public void purgeJob(int jobId) throws WebServiceException {
 		try {
          deleteJob(jobId);
-         org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+         AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
 					.getAnalysisJobDataSourceEJB();
          org.genepattern.server.indexer.Indexer.deleteJob(jobId);  
          JobInfo[] children = ds.getChildren(jobId);
@@ -394,7 +394,7 @@ public class Analysis extends GenericWebService {
 				}
 			}
 			jobDir.delete();
-			org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+			AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
 					.getAnalysisJobDataSourceEJB();
 			ds.setJobDeleted(jobId, true);
          JobInfo[] children = ds.getChildren(jobId);
@@ -424,7 +424,7 @@ public class Analysis extends GenericWebService {
 
 	public JobInfo getJob(int jobId) throws WebServiceException {
 		try {
-			org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference.getAnalysisJobDataSourceEJB();
+			AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference.getAnalysisJobDataSourceEJB();
 	        	return ds.getJobInfo(jobId);
 		 } catch(java.rmi.RemoteException re) {
       	   throw new WebServiceException(re); 
@@ -446,7 +446,7 @@ public class Analysis extends GenericWebService {
 	 */
 	public void deleteJobResultFile(int jobId, String value) throws WebServiceException {
       try {
-         org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+         AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
                      .getAnalysisJobDataSourceEJB();
          JobInfo jobInfo = ds.getJobInfo(jobId);
          int beforeDeletionLength = 0;
@@ -518,7 +518,7 @@ public class Analysis extends GenericWebService {
    */
    public void setJobStatus(int jobId, String status) throws WebServiceException {
       try {
-         org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+         AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
                   .getAnalysisJobDataSourceEJB();
          JobInfo jobInfo = ds.getJobInfo(jobId);
          Integer intStatus = (Integer) JobStatus.STATUS_MAP.get(status);
@@ -545,7 +545,7 @@ public class Analysis extends GenericWebService {
 	 */
 	public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs) throws WebServiceException {
 		try {
-			org.genepattern.server.ejb.AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
+			AnalysisJobDataSource ds = org.genepattern.server.util.BeanReference
 					.getAnalysisJobDataSourceEJB();
 			return ds.getJobs(username, maxJobNumber, maxEntries, allJobs);
 		} catch (Exception e) {

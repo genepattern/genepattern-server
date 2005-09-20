@@ -2,7 +2,7 @@ package org.genepattern.server.dbloader;
 
 import java.rmi.RemoteException;
 
-import org.genepattern.server.ejb.AnalysisJobDataSource;
+import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.server.util.BeanReference;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.OmnigeneException;

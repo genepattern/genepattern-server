@@ -62,7 +62,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.genepattern.server.AnalysisServiceException;
 import org.genepattern.server.dbloader.DBLoader;
-import org.genepattern.server.ejb.AnalysisJobDataSource;
+import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.server.indexer.Indexer;
 import org.genepattern.server.indexer.IndexerDaemon;
 import org.genepattern.server.util.BeanReference;

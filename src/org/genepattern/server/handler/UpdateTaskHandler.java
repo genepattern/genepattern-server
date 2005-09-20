@@ -1,6 +1,6 @@
 package org.genepattern.server.handler;
 
-import org.genepattern.server.ejb.AnalysisJobDataSource;
+import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.server.util.BeanReference;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;

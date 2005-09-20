@@ -3,8 +3,8 @@ package org.genepattern.server.util;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
-import org.genepattern.server.ejb.AnalysisHypersonicDAO;
-import org.genepattern.server.ejb.AnalysisJobDataSource;
+import org.genepattern.server.webservice.server.AnalysisHypersonicDAO;
+import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.webservice.OmnigeneException;
 
 /**
