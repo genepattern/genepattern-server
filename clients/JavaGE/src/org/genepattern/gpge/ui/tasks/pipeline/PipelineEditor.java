@@ -125,6 +125,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 	private boolean view = true;
 
+	private JButton saveButton;
+
 	private void enableButtons() {
 		deleteButton.setEnabled(model.getTaskCount() > 0);
 		if (model.getTaskCount() == 0) {
@@ -249,7 +251,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		collapseAllButton.addActionListener(expandListener);
 
 		JPanel bottomBtnPanel = new JPanel();
-		final JButton saveButton = new JButton("Save");
+		saveButton = new JButton("Save");
 		runButton = new JButton("Run");
 		viewOrEditButton = view ? new JButton("Edit") : new JButton("View");
 		helpButton = new JButton("Help");
@@ -632,7 +634,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		} else {
 			viewOrEditButton.setText("View");
 		}
-		
+		saveButton.setVisible(!view);
 		editButtonPanel.setVisible(!view);
 
 		enableButtons();
@@ -949,7 +951,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	private void taskDeleted(int deletedRow) {
 		TaskPanel deletedTask = (TaskPanel) taskDisplayList.remove(deletedRow);
 		deletedTask.setVisible(false);
-		tasksPanel.remove(deletedTask);
+		tasksPanel.remove(deletedTask.getParent());
 		tasksLayout.removeRow(deletedRow + 1);
 		for (int i = deletedRow; i < model.getTaskCount(); i++) {
 			TaskPanel task = (TaskPanel) taskDisplayList.get(i);
@@ -969,7 +971,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			TaskPanel deletedTask = (TaskPanel) taskDisplayList.remove(e
 					.getFirstRow());
 			deletedTask.setVisible(false);
-			tasksPanel.remove(deletedTask);
+			tasksPanel.remove(deletedTask.getParent());
 			tasksLayout.removeRow(e.getFirstRow() + 1);
 			taskInserted(e.getFirstRow());
 		} else if (e.getType() == PipelineEvent.DELETE) {
@@ -981,7 +983,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			int to = e.getLastRow();
 			TaskPanel movedTask = (TaskPanel) taskDisplayList.remove(from);
 			boolean expanded = movedTask.togglePanel.isExpanded();
-			tasksPanel.remove(movedTask);
+			tasksPanel.remove(movedTask.getParent());
 			tasksLayout.removeRow(from + 1);
 
 			layoutTask(to);
