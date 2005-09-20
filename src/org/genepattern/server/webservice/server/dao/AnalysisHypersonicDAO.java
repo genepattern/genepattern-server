@@ -1,4 +1,4 @@
-package org.genepattern.server.webservice.server;
+package org.genepattern.server.webservice.dao.server;
 
 import java.io.File;
 import java.io.FileInputStream;
