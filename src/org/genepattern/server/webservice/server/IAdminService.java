@@ -3,6 +3,7 @@ package org.genepattern.server.webservice.server;
 import java.util.Map;
 
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.WebServiceException;
 
 /**
@@ -55,6 +56,58 @@ public interface IAdminService {
 	 *                If an error occurs
 	 */
 	public TaskInfo[] getAllTasks() throws WebServiceException;
+
+//XX
+
+	/**
+	 * Gets the suite with the given lsid or task name. If
+	 * <code>lsidOrTaskName</code> is a valid LSID with a version, then it is
+	 * unambiguous which task to retrieve. If <code>lsidOrTaskName</code> is a
+	 * valid LSID with no version, the latest version for the suite is retrieved.
+	 * If <code>lsidOrTaskName</code> is a suite name, the latest version of
+	 * the task with the nearest authority is selected. The nearest authority is
+	 * the first match in the sequence: local authority,ÊBroad authority, other
+	 * authority.
+	 * 
+	 * @param username
+	 *            The username
+	 * @param lsidOrSuiteName
+	 *            Description of the Parameter
+	 * @return The suite or <code>null</code> if not found
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public SuiteInfo getSuite(String lsid) throws WebServiceException;
+
+	/**
+	 * Gets the latest versions of all suites
+	 * 
+	 * @return The latest suites
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public SuiteInfo[] getLatestSuites() throws WebServiceException;
+
+	/**
+	 * Gets all versions of all suites
+	 * 
+	 * @return The suites
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public SuiteInfo[] getAllSuites() throws WebServiceException;
+
+	/**
+	 * Gets all suites this task is a part of
+	 * 
+	 * @return The suites
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public SuiteInfo[] getSuiteMembership(String taskLsid) throws WebServiceException;
+
+
+//XX
 
 	/**
 	 * Gets the server log

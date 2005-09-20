@@ -19,6 +19,7 @@ import org.genepattern.server.webservice.server.dao.AdminHSQLDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.WebServiceException;
 
 /**
@@ -157,6 +158,45 @@ public class AdminService implements IAdminService {
 		}
 		return lsid2VersionsMap;
 	}
+
+	public SuiteInfo getSuite(String lsid) throws WebServiceException {
+		return null;
+	}
+
+	/**
+	 * Gets the latest versions of all suites
+	 * 
+	 * @return The latest suites
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public SuiteInfo[] getLatestSuites() throws WebServiceException {
+		return new SuiteInfo[0];
+	}
+
+	/**
+	 * Gets all versions of all suites
+	 * 
+	 * @return The suites
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public SuiteInfo[] getAllSuites() throws WebServiceException{
+		return new SuiteInfo[0];
+
+	}
+
+	/**
+	 * Gets all suites this task is a part of
+	 * 
+	 * @return The suites
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public SuiteInfo[] getSuiteMembership(String taskLsid) throws WebServiceException{
+		return new SuiteInfo[0];
+	}
+
 
 	static {
 		serviceInfoMap = new HashMap();
