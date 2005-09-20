@@ -1,4 +1,4 @@
-package org.genepattern.server.webservice.dao.server;
+package org.genepattern.server.webservice.server.dao;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +31,7 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.JobStatus;
+import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 
 /**
  * AnalysisHypersonicDAO.java
