@@ -7,12 +7,14 @@ import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.net.URL;
 import java.util.Iterator;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -32,6 +34,7 @@ import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.LSIDUtil;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel;
+import org.genepattern.gpge.ui.tasks.pipeline.ExportPipeline;
 import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.GPConstants;
@@ -44,11 +47,11 @@ import org.genepattern.webservice.TaskIntegratorProxy;
 import org.genepattern.webservice.WebServiceException;
 
 /**
- *  Displays an <tt>AnalysisService</tt>
- *
- * @author    Joshua Gould
+ * Displays an <tt>AnalysisService</tt>
+ * 
+ * @author Joshua Gould
  */
-public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
+public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
 	/** the currently displayed <tt>AnalysisService</tt> */
 	private AnalysisService selectedService;
 
@@ -103,21 +106,21 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 	}
 
 	/**
-	 *  Displays the given analysis service
-	 *
-	 * @param  selectedService  Description of the Parameter
+	 * Displays the given analysis service
+	 * 
+	 * @param selectedService
+	 *            Description of the Parameter
 	 */
 	public void loadTask(AnalysisService _selectedService) {
-		if(_selectedService==null) {
+		if (_selectedService == null) {
 			throw new NullPointerException();
 		}
 		this.selectedService = _selectedService;
-		
-		
+
 		if (togglePanel != null) {
 			advancedGroupExpanded = togglePanel.isExpanded();
 		}
-		
+
 		TaskInfo taskInfo = selectedService.getTaskInfo();
 		String taskName = taskInfo.getName();
 
@@ -139,11 +142,11 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 		resetButton.addActionListener(new ResetActionListener());
 		buttonPanel.add(resetButton);
 		JButton helpButton = new JButton("Help");
-		
+
 		TaskHelpActionListener tsl = new TaskHelpActionListener();
 		tsl.setTaskInfo(selectedService.getTaskInfo());
 		helpButton.addActionListener(tsl);
-		
+
 		buttonPanel.add(helpButton);
 
 		if (TaskLauncher.isPipeline(selectedService)) {
@@ -170,8 +173,16 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 				}
 			});
 			buttonPanel.add(viewButton);
+
+			JButton exportButton = new JButton("Export");
+			exportButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					new ExportPipeline(selectedService);
+				}
+			});
+			buttonPanel.add(exportButton);
 		}
-		
+
 		JPanel viewCodePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
 		JLabel viewCodeLabel = new JLabel("View Code:");
@@ -183,15 +194,16 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 
 		togglePanel = new TogglePanel("Generate Code", viewCodePanel);
 		togglePanel.setExpanded(advancedGroupExpanded);
-		/*JTaskPaneGroup group = new JTaskPaneGroup();
-		 group.setText("Advanced Options");
-		 JTaskPane tp = new JTaskPane();
-		 group.add(viewCodePanel);
-		 tp.add(group);*/
+		/*
+		 * JTaskPaneGroup group = new JTaskPaneGroup(); group.setText("Advanced
+		 * Options"); JTaskPane tp = new JTaskPane(); group.add(viewCodePanel);
+		 * tp.add(group);
+		 */
 
 		JPanel bottomPanel = new JPanel(new BorderLayout());
-		bottomPanel.setBorder(GUIUtil.createBorder(UIManager.getLookAndFeelDefaults()
-				.getBorder("ScrollPane.border"), 0, 0, 0, 2));
+		bottomPanel.setBorder(GUIUtil.createBorder(UIManager
+				.getLookAndFeelDefaults().getBorder("ScrollPane.border"), 0, 0,
+				0, 2));
 
 		bottomPanel.add(buttonPanel, BorderLayout.CENTER);
 		bottomPanel.add(togglePanel, BorderLayout.SOUTH);
@@ -238,16 +250,19 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 
 	/**
 	 * Sets the value of the given parameter
-	 * @param parameterName the unencoded parameter name as returned by ParameterInfo.getName()
-	 * @param parameterValue the parameter value. If the parameter contains a choice list, the value can be
-	 *            either the UI value of the command line value
+	 * 
+	 * @param parameterName
+	 *            the unencoded parameter name as returned by
+	 *            ParameterInfo.getName()
+	 * @param parameterValue
+	 *            the parameter value. If the parameter contains a choice list,
+	 *            the value can be either the UI value of the command line value
 	 */
 	public void setValue(String parameterName, String parameterValue) {
 		parameterInfoPanel.setValue(parameterName, parameterValue);
 	}
-	
-	public void sendTo(String parameterName,
-			Sendable sendable) {
+
+	public void sendTo(String parameterName, Sendable sendable) {
 		if (selectedService != null) {
 			ObjectTextField tf = (ObjectTextField) parameterInfoPanel
 					.getComponent(displayToActualParameterString(parameterName));
@@ -264,21 +279,20 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 	public static String getDisplayString(String name) {
 		return name.replace('.', ' ');
 	}
-	
+
 	public static String displayToActualParameterString(String name) {
 		return name.replace(' ', '.');
 	}
 
 	/**
-	 *  Returns <tt>true</tt> of this panel is showing an <tt>AnalysisService
+	 * Returns <tt>true</tt> of this panel is showing an <tt>AnalysisService
 	 *  </tt>
-	 *
-	 * @return    whether this panel is showing an <tt>AnalysisService</tt>
+	 * 
+	 * @return whether this panel is showing an <tt>AnalysisService</tt>
 	 */
 	public boolean isShowingAnalysisService() {
 		return selectedService != null;
 	}
-
 
 	public java.util.Iterator getInputFileParameters() {
 		return parameterInfoPanel.getInputFileParameters();
@@ -289,7 +303,6 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 			loadTask(selectedService);
 		}
 	}
-
 
 	public static void doSubmit(JButton source,
 			final ParameterInfo[] actualParameterArray,
@@ -329,7 +342,6 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay{
 		}
 
 	}
-
 
 	public Iterator getInputFileTypes() {
 		return parameterInfoPanel.getInputFileTypes();
