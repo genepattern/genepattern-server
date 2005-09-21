@@ -127,6 +127,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 	private JButton saveButton;
 
+	private JButton exportButton;
+
 	private void enableButtons() {
 		deleteButton.setEnabled(model.getTaskCount() > 0);
 		if (model.getTaskCount() == 0) {
@@ -142,6 +144,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		runButton.setEnabled(analysisService != null);
 		viewOrEditButton.setEnabled(analysisService != null);
 		helpButton.setEnabled(analysisService != null);
+		exportButton.setEnabled(analysisService!=null);
 	}
 
 	/**
@@ -255,13 +258,17 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		runButton = new JButton("Run");
 		viewOrEditButton = view ? new JButton("Edit") : new JButton("View");
 		helpButton = new JButton("Help");
+		exportButton = new JButton("Export");
+
 		taskHelpActionListener = new TaskHelpActionListener();
 		helpButton.addActionListener(taskHelpActionListener);
 
 		ActionListener btnListener = new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
-				if (e.getSource() == saveButton) {
+				if (e.getSource() == exportButton) {
+					new ExportPipeline(analysisService);
+				} else if (e.getSource() == saveButton) {
 					save();
 				} else if (e.getSource() == runButton) {
 					if (pipelineChanged) {
@@ -339,10 +346,12 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		saveButton.addActionListener(btnListener);
 		runButton.addActionListener(btnListener);
 		viewOrEditButton.addActionListener(btnListener);
+		exportButton.addActionListener(btnListener);
 		bottomBtnPanel.add(saveButton);
 		bottomBtnPanel.add(runButton);
 		bottomBtnPanel.add(viewOrEditButton);
 		bottomBtnPanel.add(helpButton);
+		bottomBtnPanel.add(exportButton);
 		add(bottomBtnPanel, BorderLayout.SOUTH);
 	}
 
@@ -596,6 +605,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		this.analysisService = svc;
 		pipelineChanged = false;
 		if (svc == null) {
+			exportButton.setEnabled(false);
 			model = new PipelineEditorModel();
 			String username = AnalysisServiceManager.getInstance()
 					.getUsername();
@@ -615,7 +625,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		if (!view && model.getMissingJobSubmissions().size() > 0) {
 			return false;
 		}
-		if(model.getMissingJobSubmissions().size() > 0) {
+		if (model.getMissingJobSubmissions().size() > 0) {
 			MissingTasksDisplay mtd = new MissingTasksDisplay(model
 					.getMissingJobSubmissions(), svc);
 			JPanel p = new JPanel(new FormLayout("pref", "pref, pref, pref"));
@@ -626,7 +636,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			scrollPane.setViewportView(p);
 			headerPanel = new HeaderPanel(model, buttonPanel, view);
 			add(headerPanel, BorderLayout.NORTH);
-			
+
 		}
 
 		if (view) {
@@ -755,19 +765,21 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			detailsPanel.add(ownerField, cc.xy(3, 3));
 
 			JLabel privacyLabel = new JLabel("Privacy:");
-			
+
 			privacyComboBox = new JComboBox(
 					new String[] { "Public", "Private" });
 			if (model.getPrivacy() == GPConstants.ACCESS_PRIVATE) {
 				privacyComboBox.setSelectedIndex(1);
 			}
-			
+
 			detailsPanel.add(privacyLabel, cc.xy(1, 5));
-			if(!view) {
+			if (!view) {
 				detailsPanel.add(privacyComboBox, cc.xy(3, 5));
 			} else {
-				String privacyString = model.getPrivacy()==GPConstants.ACCESS_PRIVATE?"Private":"Public";
-				detailsPanel.add(GUIUtil.createLabelLikeTextField(privacyString), cc.xy(3, 5));
+				String privacyString = model.getPrivacy() == GPConstants.ACCESS_PRIVATE ? "Private"
+						: "Public";
+				detailsPanel.add(GUIUtil
+						.createLabelLikeTextField(privacyString), cc.xy(3, 5));
 			}
 			JLabel versionLabel = new JLabel("Version comment:");
 			versionField = view ? GUIUtil.createLabelLikeTextField(model
@@ -784,7 +796,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					existingDocComboBox.addItem(docFiles.get(i));
 				}
 			}
-			
 
 			JButton deleteDocBtn = new JButton("Delete");
 			deleteDocBtn.setVisible(!view);
@@ -1325,11 +1336,14 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		JMenuItem moveDownItem;
 
 		Border selectedBorder = new CompoundBorder(new ShadowBorder(
-				getBackground()), new CompoundBorder(BorderFactory.createLineBorder(new Color(56,
-						117, 215), 2), BorderFactory.createEmptyBorder(4, 4, 4, 4)));
-		
+				getBackground()), new CompoundBorder(BorderFactory
+				.createLineBorder(new Color(56, 117, 215), 2), BorderFactory
+				.createEmptyBorder(4, 4, 4, 4)));
+
 		Border unselectedBorder = new CompoundBorder(new ShadowBorder(
-				getBackground()), new CompoundBorder(BorderFactory.createLineBorder(Color.GRAY, 2), BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+				getBackground()), new CompoundBorder(BorderFactory
+				.createLineBorder(Color.GRAY, 2), BorderFactory
+				.createEmptyBorder(4, 4, 4, 4)));
 
 		private JPanel minorPanel;
 
@@ -1387,7 +1401,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			minorPanel = new JPanel();
 			minorPanel.setBackground(Color.white);
 			minorPanel.add(descriptionTextField);
-			
+
 			togglePanel = new GroupPanel((taskIndex + 1) + ". "
 					+ model.getTaskName(taskIndex), minorPanel);
 			togglePanel.getMajorLabel().setToolTipText(
@@ -1461,8 +1475,10 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			try {
 				final String lsidString = model.getTaskLSID(taskIndex);
 				final LSID lsid = new LSID(lsidString);
-				List versions = !lsidString.equals("") ? (List) AnalysisServiceManager.getInstance()
-						.getLSIDToVersionsMap().get(lsid.toStringNoVersion()):new ArrayList();
+				List versions = !lsidString.equals("") ? (List) AnalysisServiceManager
+						.getInstance().getLSIDToVersionsMap().get(
+								lsid.toStringNoVersion())
+						: new ArrayList();
 				JComponent versionComponent = null;
 				if (!view) {
 					JComboBox versionChooserComboBox = new JComboBox(versions
@@ -1496,7 +1512,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					add(versionComponent, cc.xy(1, layout.getRowCount()));
 				}
 				togglePanel.addToggleComponent(versionComponent);
-				
 
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
@@ -1565,8 +1580,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 								TaskPanel td = (TaskPanel) taskDisplayList
 										.get(model.getInheritedTaskIndex(
 												taskIndex, parameterIndex));
-								//td.togglePanel
-								//		.setMajorLabelForeground(Color.red);
+								// td.togglePanel
+								// .setMajorLabelForeground(Color.red);
 								td.setBackground(Color.yellow);
 							}
 
@@ -1574,8 +1589,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 								TaskPanel td = (TaskPanel) taskDisplayList
 										.get(model.getInheritedTaskIndex(
 												taskIndex, parameterIndex));
-								//td.togglePanel
-								//		.setMajorLabelForeground(Color.black);
+								// td.togglePanel
+								// .setMajorLabelForeground(Color.black);
 								td.setBackground(Color.white);
 							}
 
