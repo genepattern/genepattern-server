@@ -22,12 +22,16 @@ public class GUIUtil {
 	private GUIUtil() {
 	}
 
-	private static File showFileDialog(int mode, File selectedFile, String title) {
+	private static String getDialogTitle(String title) {
 		if (title == null) {
 			title = "GenePattern";
-		} else {
+		} else if(!title.equals("GenePattern")) {
 			title = "GenePattern - " + title;
 		}
+		return title;
+	}
+	
+	private static File showFileDialog(int mode, File selectedFile, String title) {
 		FileDialog fc = new FileDialog(GenePattern.getDialogParent(), title,
 				mode);
 		if (selectedFile != null) {
@@ -51,6 +55,7 @@ public class GUIUtil {
 	}
 
 	public static File showOpenDialog(String title) {
+		title = getDialogTitle(title);
 		if (GPGE.RUNNING_ON_MAC) {
 			return showFileDialog(FileDialog.LOAD, null, title);
 		} else {
@@ -66,16 +71,22 @@ public class GUIUtil {
 	}
 
 	public static File showSaveDialog() {
-		return showSaveDialog(null);
+		return showSaveDialog(null, "GenePattern");
 	}
 
 	public static File showSaveDialog(File selectedFile) {
+		return showSaveDialog(selectedFile, "GenePattern");
+	}
+	
+	public static File showSaveDialog(File selectedFile, String title) {
+		title = getDialogTitle(title);
 		if (GPGE.RUNNING_ON_MAC) {
-			return showFileDialog(FileDialog.SAVE, selectedFile, "GenePattern");
+			return showFileDialog(FileDialog.SAVE, selectedFile, title);
 		} else {
 			if (fileChooser == null) {
 				fileChooser = new JFileChooser();
 			}
+			fileChooser.setDialogTitle(title);
 			fileChooser.setSelectedFile(selectedFile);
 			if (fileChooser.showSaveDialog(GenePattern.getDialogParent()) == JFileChooser.APPROVE_OPTION) {
 				final File outputFile = fileChooser.getSelectedFile();
