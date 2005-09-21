@@ -528,7 +528,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		tasksInPipelineComboBox.removeAllItems();
 		tasksLayout = new FormLayout("pref", "");
 		tasksPanel = new JPanel(tasksLayout);
-		tasksPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 30));
+		tasksPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 30));
 		// tasksPanel.setBackground(getBackground());
 		scrollPane.setViewportView(tasksPanel);
 		scrollPane.setColumnHeaderView(null);
@@ -892,7 +892,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		}
 		JPanel temp = new JPanel(new BorderLayout());
 		temp.add(taskPanel);
-		temp.setBorder(BorderFactory.createEmptyBorder(2, 0, 8, 0));
+		temp.setBorder(BorderFactory.createEmptyBorder(2, 0, 4, 0));
 		tasksPanel.add(temp, cc.xy(1, 1 + taskIndex));
 		taskDisplayList.add(taskIndex, taskPanel);
 	}
@@ -1325,11 +1325,11 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		JMenuItem moveDownItem;
 
 		Border selectedBorder = new CompoundBorder(new ShadowBorder(
-				getBackground()), BorderFactory.createLineBorder(new Color(56,
-				117, 215), 2));
-
+				getBackground()), new CompoundBorder(BorderFactory.createLineBorder(new Color(56,
+						117, 215), 2), BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+		
 		Border unselectedBorder = new CompoundBorder(new ShadowBorder(
-				getBackground()), BorderFactory.createLineBorder(Color.GRAY, 2));
+				getBackground()), new CompoundBorder(BorderFactory.createLineBorder(Color.GRAY, 2), BorderFactory.createEmptyBorder(4, 4, 4, 4)));
 
 		public String toString() {
 			return (1 + taskIndex) + ". " + model.getTaskName(taskIndex);
@@ -1557,16 +1557,18 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 								TaskPanel td = (TaskPanel) taskDisplayList
 										.get(model.getInheritedTaskIndex(
 												taskIndex, parameterIndex));
-								td.togglePanel
-										.setMajorLabelForeground(Color.red);
+								//td.togglePanel
+								//		.setMajorLabelForeground(Color.red);
+								td.setBackground(Color.yellow);
 							}
 
 							public void mouseExited(MouseEvent e) {
 								TaskPanel td = (TaskPanel) taskDisplayList
 										.get(model.getInheritedTaskIndex(
 												taskIndex, parameterIndex));
-								td.togglePanel
-										.setMajorLabelForeground(Color.black);
+								//td.togglePanel
+								//		.setMajorLabelForeground(Color.black);
+								td.setBackground(Color.white);
 							}
 
 						});
