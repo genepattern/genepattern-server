@@ -5,7 +5,7 @@
 <%@ page import="java.sql.*" %>
 <%@ page import="org.genepattern.server.util.BeanReference,
 		  		 org.genepattern.util.StringUtils,
- 		org.genepattern.server.ejb.AnalysisJobDataSource" %>
+ 		org.genepattern.server.webservice.server.AnalysisJobDataSource" %>
 <% 
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control

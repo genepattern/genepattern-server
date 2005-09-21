@@ -169,8 +169,8 @@ for (Iterator iter2 = docs .iterator(); iter2.hasNext(); ){
 <tr class='paleBackground'>
 <td valign='top' align='right'>
 
-<form name="installSuite<%=suite.get("name")%>" action="suiteCatalog.jsp" >
-	<input type="hidden" name="checkAll" value="1" >
+<form name="installSuite<%=suite.get("name")%>" action="installSuite.jsp" >
+	<input type="hidden" name="suiteLsid" value="<%=suite.get("lsid")%>" >
 	<input type="submit" name="InstallSuite" value="Install Suite" />
 &nbsp;
 </form>
@@ -178,8 +178,8 @@ for (Iterator iter2 = docs .iterator(); iter2.hasNext(); ){
 </td><td valign='top' align='left'>
 
 <form name="install<%=suite.get("name")%>" action="taskCatalog.jsp" >
-
-	<input type="submit" name="Install" value="install checked modules"/>
+	<input type="hidden" name="checkAll" value="1" >
+	<input type="submit" name="install" value="install checked modules"/>
 	<input type="checkbox"  name="checkall" onClick="javascript:checkAll('install<%=suite.get("name")%>', false)"/> Check all
 </td>
 
