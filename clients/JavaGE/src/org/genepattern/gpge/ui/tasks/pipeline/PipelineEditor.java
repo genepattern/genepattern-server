@@ -1347,6 +1347,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 		private JPanel minorPanel;
 
+		JTextComponent descriptionField = null;
+		
 		public String toString() {
 			return (1 + taskIndex) + ". " + model.getTaskName(taskIndex);
 		}
@@ -1388,19 +1390,19 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			});
 			enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 			this.taskIndex = _taskIndex;
-			JComponent descriptionTextField = null;
+			
 			if (view) {
-				descriptionTextField = GUIUtil.createWrappedLabel(model
+				descriptionField = GUIUtil.createWrappedLabel(model
 						.getTaskDescription(taskIndex));
-				((JTextArea) descriptionTextField).setColumns(40);
+				((JTextArea) descriptionField).setColumns(40);
 
 			} else {
-				descriptionTextField = new JTextField(model
+				descriptionField = new JTextField(model
 						.getTaskDescription(taskIndex), 40);
 			}
 			minorPanel = new JPanel();
 			minorPanel.setBackground(Color.white);
-			minorPanel.add(descriptionTextField);
+			minorPanel.add(descriptionField);
 
 			togglePanel = new GroupPanel((taskIndex + 1) + ". "
 					+ model.getTaskName(taskIndex), minorPanel);
@@ -1583,6 +1585,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 								// td.togglePanel
 								// .setMajorLabelForeground(Color.red);
 								td.setBackground(Color.yellow);
+								minorPanel.setBackground(Color.yellow);
 							}
 
 							public void mouseExited(MouseEvent e) {
@@ -1592,6 +1595,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 								// td.togglePanel
 								// .setMajorLabelForeground(Color.black);
 								td.setBackground(Color.white);
+								minorPanel.setBackground(Color.white);
 							}
 
 						});
@@ -1658,7 +1662,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		}
 
 		public String getTaskDescription() {
-			return ((JTextComponent) togglePanel.getMinorComponent()).getText()
+			return ((JTextComponent) descriptionField).getText()
 					.trim();
 		}
 
