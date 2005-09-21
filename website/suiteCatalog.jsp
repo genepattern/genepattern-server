@@ -48,46 +48,32 @@ td { font-size: 8pt }
 </style>
 
 <script language="Javascript">
-var ie4 = (document.all) ? true : false;
-var ns4 = (document.layers) ? true : false;
-var ns6 = (document.getElementById && !document.all) ? true : false;
 
-function writeToLayer(lay,txt) {
-	if (ns6) {
-		over = document.getElementById([lay]);
-		range = document.createRange();
-		range.setStartBefore(over);
-		domfrag = range.createContextualFragment(txt);
-		while (over.hasChildNodes()) {
-			over.removeChild(over.lastChild);
-		}
-		over.appendChild(domfrag);
-	} else if (ns4) {
-		var l = document['id'+lay];
-		l.document.write(txt);
-		l.document.close();
-	} else if (ie4) {
-		document.all(lay).innerHTML = txt;
-	}
-
-}
-
-function checkAll(frm, bChecked) {
-	frm = document.forms['install'];
+function checkAll(frmName, bChecked) {
+	frm = document.forms[frmName];
+	bChecked = frm.checkall.checked;
 	for (i = 0; i < frm.elements.length; i++) {
 		if (frm.elements[i].type != "checkbox") continue;
+		if (frm.elements[i].disabled == true) continue;
 		frm.elements[i].checked = bChecked;
 	}
 }
 
-
 </script>
-	</head>
-	<body>
-	<jsp:include page="navbar.jsp"></jsp:include>
+
+</head>
+<body>
+
+	<table width=100% cellspacing=0>
+<tr><td colspan=3>
+<jsp:include page="navbar.jsp"></jsp:include>
+
+</td></tr>
+	<tr><td colspan=2>	
 	<span id="fetching">
 		Fetching suite catalog from <a href="<%= System.getProperty("SuiteRepositoryURL") %>" target="_new"><%= System.getProperty("SuiteRepositoryURL") %></a>...
 	</span>
+
 <%
 	out.flush();
 	
@@ -118,7 +104,7 @@ HashMap suites = new HashMap();
 <%
 		out.flush();
 	}
-	String motd = sr.getMOTD_message();
+String motd = sr.getMOTD_message();
 	if (motd.length() > 0) {
 %>
 		<%= motd %><br>
@@ -138,19 +124,20 @@ HashMap suites = new HashMap();
 	}
 	
 %>
-
 	
 Select from the following suites from the <%=messages.get("ApplicationName")%> public access website to download and install:<br><br>
  
 <br>
-<table width=100% cellspacing=0>
+</td></tr>
+
 <tr>
-<td colspan="5" width="80%">
+<td colspan=2>
 <font size="+1"><b><%= "YYY"  %> of <%=suites.size()%> suites are new or updated</b></font>
 </td>
-<td>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</td>
+</tr>
+
+
+
 <tr><td>&nbsp;</td></tr>
 </tr>
 <%  
@@ -159,29 +146,45 @@ Select from the following suites from the <%=messages.get("ApplicationName")%> p
 %>
 <tr class='paleBackground'>
 
-<td><font size=+1><b><%=suite.get("name")%></b></font></td>
+
+<td><font size=+1><b><%=suite.get("name")%></b></font>
+<%
+ArrayList docs = (ArrayList)suite.get("docFiles");
+for (Iterator iter2 = docs .iterator(); iter2.hasNext(); ){
+		String doc = (String)iter2.next();
+		int idx = doc.lastIndexOf("/");
+%>
+		<a href='<%=doc%>'><img src="skin/pdf.jpg" border="0" alt="doc" align="top"></a>
+
+<% } %>
+
+
+</td>
 <td>Author: <%=suite.get("author")%><br>Owner: <%=suite.get("owner")%></td>
 </tr>
 <tr class='paleBackground'>
-<td colspan=2><%=suite.get("description")%></td>
-
+<td  colspan=2><%=suite.get("description")%></td>
 </tr>
+
 <tr class='paleBackground'>
-<td colspan=2>Suite Documentation: <%  ArrayList docs = (ArrayList)suite.get("docFiles");
-	for (Iterator iter2 = docs .iterator(); iter2.hasNext(); ){
-		String doc = (String)iter2.next();
-		int idx = doc.lastIndexOf("/");
+<td valign='top' align='right'>
 
-%>
-		<a href='<%=doc%>'><%= doc.substring(idx+1)%></a>
+<form name="installSuite<%=suite.get("name")%>" action="suiteCatalog.jsp" >
+	<input type="hidden" name="checkAll" value="1" >
+	<input type="submit" name="InstallSuite" value="Install Suite" />
+&nbsp;
+</form>
 
-<% } %>
+</td><td valign='top' align='left'>
+
+<form name="install<%=suite.get("name")%>" action="taskCatalog.jsp" >
+
+	<input type="submit" name="Install" value="install checked modules"/>
+	<input type="checkbox"  name="checkall" onClick="javascript:checkAll('install<%=suite.get("name")%>', false)"/> Check all
 </td>
+
 </tr>
-<tr>
-<td colspan=2>
-<table width=100%>
-<% 
+<tr><% 
 ArrayList modules = (ArrayList)suite.get("modules");
 int count = 0;
 for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
@@ -197,12 +200,23 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 
 	if (installed){
 %>
-		<td><input type="checkbox" checked="true" disabled="true"/></td>
-<td width=50%><%=mod.get("name")%> (<%=modLsid.getVersion()%>) <a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> <a href="addTask.jsp?view=1&name=<%=modLsid.toString()%>"><img src="skin/view.jpg" border="0" alt="view" align="texttop"></a> </td>
+
+
+<td>
+<input type="checkbox" checked="true" name="LSID" disabled="true"/>
+	<%=mod.get("name")%> (<%=modLsid.getVersion()%>) 
+<a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
+<a href="addTask.jsp?view=1&name=<%=modLsid.toString()%>"><img src="skin/view.gif" alt="view" border="0" align="texttop"></a> 
+
+</td>
 
 <% 	} else { %>
-		<td><input type="checkbox"/></td>
-<td width=50%><%=mod.get("name")%> (<%=modLsid.getVersion()%>) <a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> </td>
+
+<td>
+<input type="checkbox" name="LSID" value="<%=modLsid.toString()%>"/>
+	<%=mod.get("name")%> (<%=modLsid.getVersion()%>) 
+	<a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
+</td>
 
 <% 	
 	} 
@@ -213,16 +227,23 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 } 
 %>
 
-</table>
-</td>
-</tr>
+</form>
 <%
+	// end looping over suites
 	}
 %>
+
+
+</tr>
+
+<tr><td colspan=2><jsp:include page="footer.jsp"></jsp:include></td> 
+
+</tr>
+
 </table>
 
 
-<jsp:include page="footer.jsp"></jsp:include>
+<% // <jsp:include page="footer.jsp"></jsp:include> %>
 </body>
 </html>
 <%! public boolean newerServerAvailable(String versionAtBroad, String localVersion) {
