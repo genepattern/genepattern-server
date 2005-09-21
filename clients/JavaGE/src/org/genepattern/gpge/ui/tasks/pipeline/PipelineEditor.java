@@ -1331,6 +1331,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		Border unselectedBorder = new CompoundBorder(new ShadowBorder(
 				getBackground()), new CompoundBorder(BorderFactory.createLineBorder(Color.GRAY, 2), BorderFactory.createEmptyBorder(4, 4, 4, 4)));
 
+		private JPanel minorPanel;
+
 		public String toString() {
 			return (1 + taskIndex) + ". " + model.getTaskName(taskIndex);
 		}
@@ -1382,8 +1384,12 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 				descriptionTextField = new JTextField(model
 						.getTaskDescription(taskIndex), 40);
 			}
+			minorPanel = new JPanel();
+			minorPanel.setBackground(Color.white);
+			minorPanel.add(descriptionTextField);
+			
 			togglePanel = new GroupPanel((taskIndex + 1) + ". "
-					+ model.getTaskName(taskIndex), descriptionTextField);
+					+ model.getTaskName(taskIndex), minorPanel);
 			togglePanel.getMajorLabel().setToolTipText(
 					model.getTaskLSID(taskIndex));
 			togglePanel.getMajorLabel().addMouseListener(new MouseAdapter() {
@@ -1482,13 +1488,15 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 						}
 
 					});
+					minorPanel.add(versionComponent);
 				} else {
 					versionComponent = new JLabel("version: "
 							+ lsid.getVersion());
+					layout.appendRow(new RowSpec("pref"));
+					add(versionComponent, cc.xy(1, layout.getRowCount()));
 				}
 				togglePanel.addToggleComponent(versionComponent);
-				layout.appendRow(new RowSpec("pref"));
-				add(versionComponent, cc.xy(1, layout.getRowCount()));
+				
 
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
