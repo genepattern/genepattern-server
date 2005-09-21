@@ -1,5 +1,7 @@
 package org.genepattern.webservice;
 
+import org.genepattern.util.GPConstants;
+
 /**
  * Holds a <tt>TaskInfo</tt> object and the server on which the task is
  * located.
@@ -44,6 +46,24 @@ public class AnalysisService {
 	 */
 	public String getServer() {
 		return this.server;
+	}
+
+	/**
+	 * Gets the LSID for this <tt>AnalysisService</tt> instance
+	 * 
+	 * @return the lsid
+	 */
+	public String getLsid() {
+		return (String) task.getTaskInfoAttributes().get(GPConstants.LSID);
+	}
+
+	/**
+	 * Gets the name of this <tt>AnalysisService</tt> instance
+	 * 
+	 * @return the task name
+	 */
+	public String getName() {
+		return task.getName();
 	}
 
 	/**
