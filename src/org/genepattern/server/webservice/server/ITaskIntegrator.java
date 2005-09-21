@@ -21,6 +21,18 @@ public interface ITaskIntegrator {
 	public void deleteTask(String lsid) throws WebServiceException;
 
 	/**
+	 * Deletes the given task, suite or other object identified by the lsid
+	 * 
+	 * @param lsid
+	 *            The LSID
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public void delete(String lsid) throws WebServiceException;
+
+
+
+	/**
 	 * Deletes the given files that belong to the given task
 	 * 
 	 * @param lsid
@@ -75,8 +87,21 @@ public interface ITaskIntegrator {
 	 *             If an error occurs
 	 */
 	public void installTask(String lsid) throws WebServiceException;
-	//public String importZipFromURL(String url, int privacy, boolean recursive, ITaskIntegrator taskIntegrator)
-	//		throws WebServiceException;
+
+
+	/**
+	 * Installs the task, patch or suite with the given LSID from the module repository.
+	 * Superst of intallTask method.
+	 * 
+	 * @param lsid
+	 *            The task LSID
+	 * @throws WebServiceException
+	 *             If an error occurs
+	 */
+	public void install(String lsid) throws WebServiceException;
+
+
+
 
 	/**
 	 * Installs the zip file overwriting anything already there.
@@ -125,6 +150,45 @@ public interface ITaskIntegrator {
 			javax.activation.DataHandler[] dataHandlers, String[] fileNames)
 			throws WebServiceException;
 
+
+	/**
+	 * Modifies the task with the given name. If the task does not exist, it
+	 * will be created.
+	 * 
+	 * @param accessId
+	 *            One of GPConstants.ACCESS_PUBLIC or GPConstants.ACCESS_PRIVATE
+	 * @param name
+	 *            The name of the suite
+	 * @param lsid 
+	 *		The LSID of the suite
+	 * @param description
+	 *            The description
+	 * @param author
+	 *            The author
+	 * @param owner
+	 *            The owner
+	 * @param moduleLsids
+	 *            lsids of modules that are in this suite
+	 * @param dataHandlers
+	 *            Holds the uploaded files
+	 * @param fileNames
+	 *            The file names for the <tt>dataHandlers</tt> array. If the
+	 *            array has more elements than the <tt>dataHandlers</tt>
+	 *            array, then the additional elements are assumed to be uploaded
+	 *            files for an existing task with the LSID contained in
+	 *            <tt>taskAttributes</tt> or the the element is of the form 'job
+	 *            #, filename', then the element is assumed to be an output from a job.
+	 * 
+	 * @return The LSID of the task
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public String modifySuite(int access_id, String lsid, String name, String description,
+			String author, String owner, String[] moduleLsids, 
+			javax.activation.DataHandler[] dataHandlers, String[] fileNames)
+			throws WebServiceException;
+
+
 	/**
 	 * Clones the given task.
 	 * 
@@ -138,6 +202,22 @@ public interface ITaskIntegrator {
 	 */
 	public String cloneTask(String lsid, String cloneName)
 			throws WebServiceException;
+
+	/**
+	 * Clones the given object identified by the lsid. Operates on tasks
+	 * or suites
+	 * 
+	 * @param lsid
+	 *            The lsid of the task to clone
+	 * @param cloneName
+	 *            The name of the cloned task
+	 * @return The LSID of the cloned object
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public String clone(String lsid, String name)
+			throws WebServiceException;
+
 
 	/**
 	 * Gets the files that belong to the given task that are considered to be

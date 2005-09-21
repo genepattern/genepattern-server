@@ -1,7 +1,6 @@
 package org.genepattern.server.webservice.server;
 
 import java.util.Map;
-
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -9,7 +8,7 @@ import org.genepattern.webservice.WebServiceException;
 /**
  * @author Joshua Gould
  */
-public interface IAdminService {
+public interface IAdminService{
 	/**
 	 * Gets a map that contains information about this service.
 	 * 

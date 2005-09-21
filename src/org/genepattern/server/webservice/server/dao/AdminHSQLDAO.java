@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
@@ -25,6 +26,7 @@ import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 
 /**
@@ -56,7 +58,27 @@ public class AdminHSQLDAO implements AdminDAO {
 		return task;
 	}
 
-	private void close(ResultSet rs, Statement st, Connection c) {
+	protected SuiteInfo suiteInfoFromResultSet(ResultSet resultSet)
+			throws SQLException, AdminDAOSysException {
+
+		String lsid = resultSet.getString("lsid");
+		int access_id = resultSet.getInt("access_id");
+		String name = resultSet.getString("name");
+		String description = resultSet.getString("description");
+		String owner = resultSet.getString("owner");
+		String author = resultSet.getString("author");
+		// int accessId = resultSet.getInt("access_id");
+
+		ArrayList mods = getSuiteModules(lsid);
+
+		SuiteInfo suite = new SuiteInfo(lsid, name, description, owner, author, mods, access_id);
+
+		return suite;
+
+	}
+
+
+	protected void close(ResultSet rs, Statement st, Connection c) {
 		if (rs != null) {
 			try {
 				rs.close();
@@ -352,6 +374,159 @@ public class AdminHSQLDAO implements AdminDAO {
 			close(rs, st, c);
 		}
 	}
+
+	protected ArrayList getSuiteModules(String lsid) throws AdminDAOSysException{
+		Connection c = null;
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		ArrayList moduleLSIDs = new ArrayList();
+
+		try {
+			c = getConnection();
+			st = c.prepareStatement("SELECT * FROM suite_modules where lsid =?");
+			st.setString(1, lsid);
+			rs = st.executeQuery();
+			if (rs.next()) {
+				String modlsid = rs.getString("module_lsid");
+				moduleLSIDs.add(modlsid);				
+			}
+		} catch (SQLException e) {
+			throw new AdminDAOSysException("A database error occurred", e);
+		} finally {
+			close(rs, st, c);
+		}
+		return moduleLSIDs;
+	}
+
+
+
+	public SuiteInfo getSuite(String lsid) throws AdminDAOSysException{
+		Connection c = null;
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		try {
+			c = getConnection();
+			st = c.prepareStatement("SELECT * FROM suite where lsid =?");
+			st.setString(1, lsid);
+			rs = st.executeQuery();
+			if (rs.next()) {
+				return suiteInfoFromResultSet(rs);
+			}
+			throw new AdminDAOSysException("suite id " + lsid + " not found");
+		} catch (SQLException e) {
+			throw new AdminDAOSysException("A database error occurred", e);
+		} finally {
+			close(rs, st, c);
+		}
+	}
+
+	/**
+	 * Gets the latest versions of all suites
+	 * 
+	 * @return The latest suites
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public SuiteInfo[] getLatestSuites() throws AdminDAOSysException{
+	try {	
+		SuiteInfo[] allSuites = getAllSuites();
+		TreeMap latestSuites = new TreeMap();		
+		// loop through them placing them into a tree set based on their LSIDs
+		for (int i=0; i < allSuites.length; i++){
+			SuiteInfo si = allSuites[i];
+			LSID siLsid = new LSID(si.getLSID());		
+			
+			SuiteInfo altSi = (SuiteInfo)latestSuites.get(siLsid.toStringNoVersion());
+			if (altSi == null){
+				latestSuites.put(siLsid.toStringNoVersion(), si);
+			} else {
+				LSID altLsid = new LSID(altSi.getLSID());
+				if (siLsid.compareTo(altLsid) > 0){
+					latestSuites.put(siLsid.toStringNoVersion(), si); // it is newer
+				} // else it is older so leave it out
+			}
+		}
+
+		SuiteInfo[] latest = new SuiteInfo[latestSuites.size()];
+		int i=0; 
+		for (Iterator iter = latestSuites.keySet().iterator(); iter.hasNext(); i++){
+			latest[i] = (SuiteInfo)latestSuites.get(iter.next());
+		}
+		return latest;
+		} catch (Exception mfe){
+			throw new AdminDAOSysException("A database error occurred", mfe);
+
+		}
+	}
+
+	/**
+	 * Gets all versions of all suites
+	 * 
+	 * @return The suites
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public SuiteInfo[] getAllSuites() throws AdminDAOSysException{
+
+		Connection c = null;
+		PreparedStatement st = null;
+
+		ResultSet rs = null;
+		ArrayList suites = new ArrayList();
+		try {
+			c = getConnection();
+			st = c.prepareStatement("SELECT * FROM suite");
+			rs = st.executeQuery();
+			while (rs.next()) {
+				SuiteInfo suite = suiteInfoFromResultSet(rs);
+				suites.add(suite);
+			}
+
+		} catch (SQLException e) {
+			throw new AdminDAOSysException("A database error occurred", e);
+		} finally {
+			close(rs, st, c);
+		}
+
+		return (SuiteInfo[])suites.toArray(new SuiteInfo[suites.size()]);
+	}
+
+	/**
+	 * Gets all suites this task is a part of
+	 * 
+	 * @return The suites
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public SuiteInfo[] getSuiteMembership(String taskLsid) throws AdminDAOSysException{
+		Connection c = null;
+		PreparedStatement st = null;
+
+		ResultSet rs = null;
+		ArrayList suites = new ArrayList();
+		
+		try {
+			c = getConnection();
+			st = c.prepareStatement("SELECT lsid FROM suite_modules where module_lsid = ?");
+			st.setString(1, taskLsid);
+			rs = st.executeQuery();
+			while (rs.next()) {
+				String suiteId = rs.getString("lsid");
+				suites.add(getSuite(suiteId));
+			}
+			close(rs, st, c);
+
+			
+		} catch (SQLException e) {
+			throw new AdminDAOSysException("A database error occurred", e);
+		} finally {
+			close(rs, st, c);
+		}
+
+		return (SuiteInfo[])suites.toArray(new SuiteInfo[suites.size()]);	}
+
+
+
 
 	public Map getSchemaProperties() {
 		Connection c = null;

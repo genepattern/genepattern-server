@@ -160,7 +160,11 @@ public class AdminService implements IAdminService {
 	}
 
 	public SuiteInfo getSuite(String lsid) throws WebServiceException {
-		return null;
+		try {	
+			return adminDAO.getSuite(lsid);
+		} catch (AdminDAOSysException e) {
+			throw new WebServiceException(e);
+		}
 	}
 
 	/**
@@ -171,7 +175,12 @@ public class AdminService implements IAdminService {
 	 *                If an error occurs
 	 */
 	public SuiteInfo[] getLatestSuites() throws WebServiceException {
-		return new SuiteInfo[0];
+		try {
+			return adminDAO.getLatestSuites();
+		} catch (AdminDAOSysException e) {
+			throw new WebServiceException(e);
+		}
+
 	}
 
 	/**
@@ -182,7 +191,11 @@ public class AdminService implements IAdminService {
 	 *                If an error occurs
 	 */
 	public SuiteInfo[] getAllSuites() throws WebServiceException{
-		return new SuiteInfo[0];
+		try {
+			return adminDAO.getAllSuites();
+		} catch (AdminDAOSysException e) {
+			throw new WebServiceException(e);
+		}
 
 	}
 
@@ -194,7 +207,11 @@ public class AdminService implements IAdminService {
 	 *                If an error occurs
 	 */
 	public SuiteInfo[] getSuiteMembership(String taskLsid) throws WebServiceException{
-		return new SuiteInfo[0];
+		try {
+			return  adminDAO.getSuiteMembership(taskLsid);
+		} catch (AdminDAOSysException e) {
+			throw new WebServiceException(e);
+		}
 	}
 
 

@@ -1,6 +1,7 @@
 package org.genepattern.server.webservice.server.dao;
 
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.SuiteInfo;
 
 /**
  * Interface for adminstrative tasks. 
@@ -117,5 +118,37 @@ public interface AdminDAO {
 	 *                If an error occurs or if the given taskId is not found.
 	 */
 	public TaskInfo getTask(int taskId) throws AdminDAOSysException;
+
+	public SuiteInfo getSuite(String taskId) throws AdminDAOSysException;
+
+
+
+	/**
+	 * Gets the latest versions of all suites
+	 * 
+	 * @return The latest suites
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public SuiteInfo[] getLatestSuites() throws AdminDAOSysException;
+
+	/**
+	 * Gets all versions of all suites
+	 * 
+	 * @return The suites
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public SuiteInfo[] getAllSuites() throws AdminDAOSysException;
+
+	/**
+	 * Gets all suites this task is a part of
+	 * 
+	 * @return The suites
+	 * @exception WebServiceException
+	 *                If an error occurs
+	 */
+	public SuiteInfo[] getSuiteMembership(String taskLsid) throws AdminDAOSysException;
+
 
 }

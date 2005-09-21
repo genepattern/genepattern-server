@@ -50,6 +50,7 @@ public class SuiteRepository {
 		//		System.out.println(dumpDOM(root, 0));
 	}
 
+	// returns a map keyed by LSID
 	public HashMap getSuites(String url) throws IOException,
 			IllegalArgumentException, IllegalAccessException,
 			NoSuchMethodException, SecurityException {

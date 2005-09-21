@@ -28,6 +28,10 @@ public class LSIDUtil {
 
 	private static String namespace = "genepatternmodules";
 
+	private static String SUITE_NAMESPACE_INCLUDE = "suite";
+
+
+
 	private LSIDUtil() {
 		String auth = System.getProperty("lsid.authority");
 		if (auth != null) {
@@ -112,5 +116,28 @@ public class LSIDUtil {
 		}
 		return lsid1; // equal???
 	}
+
+	public static  boolean isSuiteLSID(String lsid){
+		System.out.println("Checking : " + lsid + " : for : " + SUITE_NAMESPACE_INCLUDE);
+		
+		
+
+		try {
+			LSID anLsid = new LSID(lsid);
+			String nom = anLsid.getNamespace();
+System.out.println("nom="+nom);
+			return isSuiteLSID(anLsid);
+		} catch (Exception e){
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public static boolean isSuiteLSID(LSID lsid){
+		String nom = lsid.getNamespace();
+
+				return (nom.indexOf(SUITE_NAMESPACE_INCLUDE)) >= 0;
+	}
+
 }
 

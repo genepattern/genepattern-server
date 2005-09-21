@@ -33,11 +33,13 @@ import org.genepattern.server.process.InstallTasksCollectionUtils;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
+import org.genepattern.server.webservice.server.dao.TaskIntegratorHSQLDAO;
 
 /**
  * TaskIntegrator Web Service. Do a Thread.yield at beginning of each method-
@@ -46,7 +48,7 @@ import org.genepattern.webservice.WebServiceException;
  * @author Joshua Gould
  */
 public class TaskIntegrator implements ITaskIntegrator {
-	
+	TaskIntegratorHSQLDAO tiDao = new TaskIntegratorHSQLDAO ();
 	
 	protected String getUserName() {
 		MessageContext context = MessageContext.getCurrentContext();
@@ -203,6 +205,48 @@ public class TaskIntegrator implements ITaskIntegrator {
 			e.printStackTrace();
 		}
 	}
+
+	public void install(String lsid) throws WebServiceException {
+
+	System.out.println("\n A. Installing a SUITE " + LSIDUtil.isSuiteLSID(lsid));
+
+		if (LSIDUtil.isSuiteLSID(lsid)){
+			tiDao.installSuite(lsid);
+		} else {
+System.out.println("\n A. Installing a TASK ");
+
+		installTask(lsid);
+		}
+	}
+
+	
+	public void delete(String lsid) throws WebServiceException {
+		if (LSIDUtil.isSuiteLSID(lsid)){
+			tiDao.deleteSuite(lsid);
+		} else {
+			deleteTask(lsid);
+		}
+	}
+
+	
+
+	public String clone(String lsid, String cloneName) throws WebServiceException {
+		if (LSIDUtil.isSuiteLSID(lsid)){
+			return tiDao.cloneSuite(lsid, cloneName);
+		} else {
+			return cloneTask(lsid, cloneName);
+		}
+	}
+
+	
+
+	public String modifySuite(int access_id, String lsid, String name, String description,
+			String author, String owner, String[] moduleLsids, 
+			javax.activation.DataHandler[] dataHandlers, String[] fileNames)
+			throws WebServiceException{
+		return tiDao.modifySuite(access_id, lsid, name, description, author, owner, moduleLsids, dataHandlers, fileNames);
+	}
+
 
 	protected String importZipFromURL(String url, int privacy, ITaskIntegrator taskIntegrator) throws WebServiceException {
 		return importZipFromURL(url, privacy, true, taskIntegrator);
