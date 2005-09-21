@@ -1337,12 +1337,12 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 		Border selectedBorder = new CompoundBorder(new ShadowBorder(
 				getBackground()), new CompoundBorder(BorderFactory
-				.createLineBorder(new Color(56, 117, 215), 2), BorderFactory
+				.createLineBorder(new Color(56, 117, 215), 3), BorderFactory
 				.createEmptyBorder(4, 4, 4, 4)));
 
 		Border unselectedBorder = new CompoundBorder(new ShadowBorder(
 				getBackground()), new CompoundBorder(BorderFactory
-				.createLineBorder(Color.GRAY, 2), BorderFactory
+				.createLineBorder(Color.GRAY, 3), BorderFactory
 				.createEmptyBorder(4, 4, 4, 4)));
 
 		private JPanel minorPanel;
