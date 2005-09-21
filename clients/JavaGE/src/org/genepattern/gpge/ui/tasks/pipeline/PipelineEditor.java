@@ -1585,7 +1585,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 								// td.togglePanel
 								// .setMajorLabelForeground(Color.red);
 								td.setBackground(Color.yellow);
-								minorPanel.setBackground(Color.yellow);
+								td.minorPanel.setBackground(Color.yellow);
 							}
 
 							public void mouseExited(MouseEvent e) {
@@ -1595,7 +1595,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 								// td.togglePanel
 								// .setMajorLabelForeground(Color.black);
 								td.setBackground(Color.white);
-								minorPanel.setBackground(Color.white);
+								td.minorPanel.setBackground(Color.white);
 							}
 
 						});
