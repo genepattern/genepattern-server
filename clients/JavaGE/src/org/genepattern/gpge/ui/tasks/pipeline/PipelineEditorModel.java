@@ -490,6 +490,7 @@ public class PipelineEditorModel {
 		pipelineTaskInfo.setUserId(owner);
 		pipelineTaskInfo.setAccessId(privacy);
 		
+		
 		pipelineTaskInfo
 				.setParameterInfoArray((ParameterInfo[]) pipelineParameterInfoList
 						.toArray(new ParameterInfo[0]));
@@ -498,6 +499,7 @@ public class PipelineEditorModel {
 		taskInfoAttrs.put("taskType", "pipeline");
 		taskInfoAttrs.put("os", "any");
 		taskInfoAttrs.put("cpuType", "any");
+		taskInfoAttrs.put("author", author);
 		StringBuffer baseCmdLine = new StringBuffer(
 				"<java> -cp <pipeline.cp> -Ddecorator=<pipeline.decorator> -Dgenepattern.properties=<resources> -DLSID=<LSID> <pipeline.main> <GenePatternURL>getPipelineModel.jsp?name=<LSID>&userid=<userid> <userid>");
 		for (int i = 0; i < pipelineParameterInfoList.size(); i++) {
