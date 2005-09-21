@@ -123,12 +123,12 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			url = new URL(job.getServer() + "/gp/retrieveResults.jsp?job="
 					+ jobNumber + "&filename="
 					+ URLEncoder.encode(fileName, "UTF-8")); // include &e=
-																// to get
-																// response code
-																// HttpURLConnection.HTTP_GONE
-																// if file not
-																// found on
-																// server
+			// to get
+			// response code
+			// HttpURLConnection.HTTP_GONE
+			// if file not
+			// found on
+			// server
 		} catch (MalformedURLException x) {
 			throw new Error(x);
 		} catch (java.io.UnsupportedEncodingException uee) {
@@ -301,7 +301,16 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		return server.equals(jobServer) && username.equals(jobUsername);
 	}
 
+	public void addChildOutputFiles(AnalysisJob job) {
+		addOutputs(job, false);
+
+	}
+
 	public void jobCompleted(AnalysisJob job) {
+		addOutputs(job, true);
+	}
+
+	private void addOutputs(AnalysisJob job, boolean jobCompleted) {
 		if (!isSameServerAndUsername(job)) {
 			return;
 		}
@@ -310,7 +319,14 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		if (jobNode == null) {
 			add(job);
 			jobNode = findJobNode(job);
-		} else if (jobComparator == TASK_DATE_COMPARATOR) {
+		} else if (jobCompleted && jobComparator == TASK_DATE_COMPARATOR) { // remove
+																			// job
+																			// and
+																			// insert
+																			// it
+																			// in
+																			// correct
+																			// position
 			int insertionIndex = 0;
 			int removedNodeIndex = 0;
 			List children = root.getChildren();
@@ -334,13 +350,20 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			}
 		}
 		int outputFiles = jobNode.getOutputFiles();
-		int[] newIndexs = new int[outputFiles];
-		for (int i = 0; i < outputFiles; i++) {
-			newIndexs[i] = i;
+
+		if (outputFiles > 0) {
+			// int[] newIndexs = new int[outputFiles];
+			// for (int i = 0; i < outputFiles; i++) {
+			// newIndexs[i] = i;
+			// }
+			nodeStructureChanged(jobNode);
+			// nodesWereInserted(jobNode, newIndexs);
 		}
-		nodesWereInserted(jobNode, newIndexs);
-		MessageManager.notifyListeners(new JobMessage(this,
-				JobMessage.JOB_COMPLETED, job));
+
+		if (jobCompleted) {
+			MessageManager.notifyListeners(new JobMessage(this,
+					JobMessage.JOB_COMPLETED, job));
+		}
 	}
 
 	public void jobStatusChanged(AnalysisJob job) {
@@ -376,9 +399,9 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			jobComparator = TASK_NAME_COMPARATOR;
 
 			FILE_NAME_COMPARATOR.setAscending(ascending); // file name is used
-															// in case of tie
-															// when comparing by
-															// kind
+			// in case of tie
+			// when comparing by
+			// kind
 			FILE_KIND_COMPARATOR.setAscending(ascending);
 			fileComparator = FILE_KIND_COMPARATOR;
 
@@ -540,10 +563,11 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		public final String name;
 
 		/**
-		 * The string for this node to display before the <tt>name</tt>. <tt>Null</tt> when
-		 * the output file was not produced by a child job. When the output was
-		 * produces by a pipeline, the name is prefixed with the step number in
-		 * the pipeline (e.g. 1.PreprocessDataset:all_aml_preprocess.gct).
+		 * The string for this node to display before the <tt>name</tt>.
+		 * <tt>Null</tt> when the output file was not produced by a child job.
+		 * When the output was produces by a pipeline, the name is prefixed with
+		 * the step number in the pipeline (e.g.
+		 * 1.PreprocessDataset:all_aml_preprocess.gct).
 		 */
 		private final String displayPrefix;
 
@@ -561,8 +585,21 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			this.index = index;
 		}
 
+		public boolean equals(Object obj) {
+			if (obj instanceof ServerFileNode) {
+				ServerFileNode n = (ServerFileNode) obj;
+				return this.toString().equals(n.toString());
+			}
+			return false;
+		}
+
+		public int hashCode() {
+			return toString().hashCode();
+		}
+
 		void updateFileInfo() {
-			String displayString = displayPrefix!=null?displayPrefix+name:name;
+			String displayString = displayPrefix != null ? displayPrefix + name
+					: name;
 			fileInfo = FileInfoUtil.getInfo(getURL(), displayString);
 		}
 
@@ -575,19 +612,21 @@ public class JobModel extends AbstractSortableTreeTableModel {
 			return parent.job.getJobInfo().getParameterInfoArray()[index]
 					.getValue();
 		}
-		
+
 		/**
 		 * Gets the job number that created this file
+		 * 
 		 * @return
 		 */
 		public int getJobNumber() {
 			return getJobCreationJobNumber(this);
 		}
-		
+
 		/**
 		 * Gets the file name on the server for this output file
+		 * 
 		 * @return
-		 */ 
+		 */
 		public String getFileName() {
 			return name;
 		}
@@ -620,21 +659,23 @@ public class JobModel extends AbstractSortableTreeTableModel {
 		}
 
 		public String toString() {
-			return displayPrefix!=null?displayPrefix+name:name;
+			return displayPrefix != null ? displayPrefix + name : name;
 		}
 
 		public int compareTo(Object other) {
 			ServerFileNode node = (ServerFileNode) other;
-			if(this.displayPrefix!=null && node.displayPrefix==null) {
+			if (this.displayPrefix != null && node.displayPrefix == null) {
 				return -1;
-			} else if(this.displayPrefix==null && node.displayPrefix!=null) {
+			} else if (this.displayPrefix == null && node.displayPrefix != null) {
 				return 1;
-			} else if(this.displayPrefix!=null && node.displayPrefix!=null) {
-				int num1 = Integer.parseInt(displayPrefix.substring(0, displayPrefix.indexOf(".")));
-				int num2 = Integer.parseInt(node.displayPrefix.substring(0, node.displayPrefix.indexOf(".")));
-				if(num1 < num2) {
+			} else if (this.displayPrefix != null && node.displayPrefix != null) {
+				int num1 = Integer.parseInt(displayPrefix.substring(0,
+						displayPrefix.indexOf(".")));
+				int num2 = Integer.parseInt(node.displayPrefix.substring(0,
+						node.displayPrefix.indexOf(".")));
+				if (num1 < num2) {
 					return -1;
-				} else if(num2 > num1) {
+				} else if (num2 > num1) {
 					return 1;
 				} else {
 					this.name.compareToIgnoreCase(node.name);
@@ -716,10 +757,11 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
 					ServerFileNode child = new ServerFileNode(displayPrefix,
 							fileName, j);
-
-					this.add(child);
-					child.updateFileInfo();
-					numOutputFiles++;
+					if (children == null || !children.contains(child)) {
+						this.add(child);
+						child.updateFileInfo();
+						numOutputFiles++;
+					}
 				}
 			}
 			return numOutputFiles;
@@ -842,7 +884,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 				sfn1 = (ServerFileNode) obj2;
 				sfn2 = (ServerFileNode) obj1;
 			}
-			
+
 			return sfn1.compareTo(sfn2);
 		}
 
