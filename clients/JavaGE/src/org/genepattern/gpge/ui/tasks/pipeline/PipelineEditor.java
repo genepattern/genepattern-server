@@ -3,6 +3,7 @@ package org.genepattern.gpge.ui.tasks.pipeline;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,8 +11,10 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -31,10 +34,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.text.JTextComponent;
 
 import org.genepattern.data.pipeline.PipelineModel;
@@ -55,6 +61,7 @@ import org.genepattern.gpge.ui.tasks.TaskNamePanel;
 import org.genepattern.gpge.ui.tasks.VersionComboBox;
 import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.gpge.ui.util.ShadowBorder;
+import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.AnalysisService;
@@ -144,7 +151,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		runButton.setEnabled(analysisService != null);
 		viewOrEditButton.setEnabled(analysisService != null);
 		helpButton.setEnabled(analysisService != null);
-		exportButton.setEnabled(analysisService!=null);
+		exportButton.setEnabled(analysisService != null);
 	}
 
 	/**
@@ -1348,7 +1355,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		private JPanel minorPanel;
 
 		JTextComponent descriptionField = null;
-		
+
 		public String toString() {
 			return (1 + taskIndex) + ". " + model.getTaskName(taskIndex);
 		}
@@ -1390,7 +1397,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			});
 			enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 			this.taskIndex = _taskIndex;
-			
+
 			if (view) {
 				descriptionField = GUIUtil.createWrappedLabel(model
 						.getTaskDescription(taskIndex));
@@ -1560,9 +1567,10 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 						CellConstraints.RIGHT, CellConstraints.CENTER));
 				if (view) {
 					String value = model.getValue(taskIndex, i);
-					JLabel field = new JLabel(value);
+					JLabel valueLabel = new JLabel(value);
+					JComponent valueComponent = valueLabel;
 					if (model.isPromptWhenRun(taskIndex, i)) {
-						field.setText("Prompt when run");
+						valueLabel.setText("Prompt when run");
 					} else if (model.getInheritedTaskIndex(taskIndex, i) != -1) {
 						final int parameterIndex = i;
 						int inheritedTaskIndex = model.getInheritedTaskIndex(
@@ -1574,8 +1582,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 										.getInheritedTaskIndex(taskIndex, i))
 								+ ". " + model.getTaskName(inheritedTaskIndex)
 								+ "</b>";
-						field.setText(value);
-						field.addMouseListener(new MouseAdapter() {
+						valueLabel.setText(value);
+						valueLabel.addMouseListener(new MouseAdapter() {
 
 							public void mouseEntered(MouseEvent e) {
 
@@ -1607,15 +1615,65 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 							for (int j = 0; j < choiceItems.length; j++) {
 								if (choiceItems[j]
 										.equalsCmdLineOrUIValue(value)) {
-									field.setText(choiceItems[j].getUIValue());
+									valueLabel.setText(choiceItems[j]
+											.getUIValue());
 									break;
 								}
 							}
 						}
+					} else if (model.isInputFile(taskIndex, i)) {
+						String filePrefix = "<GenePatternURL>getFile.jsp?task=<LSID>&file=";
+
+						String text;
+
+						if (value.startsWith(filePrefix)) {
+							value = value.substring(filePrefix.length(), value
+									.length());
+
+							String url = AnalysisServiceManager.getInstance()
+									.getServer()
+									+ "/gp/getFile.jsp?task="
+									+ analysisService.getLsid()
+									+ "&file="
+									+ value;
+							text = "<html><a href=" + url + ">" + value
+									+ "</a>";
+						} else {
+							text = "<html><a href=" + value + ">" + value
+									+ "</a>";
+						}
+						if (value!=null && !value.equals("")) {
+							final JTextPane pane = new JTextPane();
+							pane.setEditable(false);
+							valueComponent = pane;
+							pane.setContentType("text/html");
+							pane.setText(text);
+
+							pane.addHyperlinkListener(new HyperlinkListener() {
+								public void hyperlinkUpdate(HyperlinkEvent evt) {
+									if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+										URL url = evt.getURL();
+										try {
+											BrowserLauncher.openURL(url
+													.toString());
+										} catch (Exception e) {
+										}
+									} else if (evt.getEventType() == HyperlinkEvent.EventType.ENTERED) {
+										pane
+												.setCursor(Cursor
+														.getPredefinedCursor(Cursor.HAND_CURSOR));
+									} else if (evt.getEventType() == HyperlinkEvent.EventType.EXITED) {
+										pane.setCursor(Cursor
+												.getDefaultCursor());
+									}
+								}
+							});
+						}
 					}
-					togglePanel.addToggleComponent(field);
-					add(field, cc.xy(INPUT_FIELD_COLUMN, layout.getRowCount(),
-							CellConstraints.LEFT, CellConstraints.BOTTOM));
+					togglePanel.addToggleComponent(valueComponent);
+					add(valueComponent, cc.xy(INPUT_FIELD_COLUMN, layout
+							.getRowCount(), CellConstraints.LEFT,
+							CellConstraints.BOTTOM));
 				} else if (model.isChoiceList(taskIndex, i)) {
 					JComponent choiceInput = parameters[i].createChoiceInput(
 							model.getChoices(taskIndex, i), model.getValue(
@@ -1662,8 +1720,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		}
 
 		public String getTaskDescription() {
-			return ((JTextComponent) descriptionField).getText()
-					.trim();
+			return ((JTextComponent) descriptionField).getText().trim();
 		}
 
 		public void setExpanded(boolean b) {
