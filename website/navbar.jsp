@@ -174,7 +174,9 @@ function changePipeline() {
 
 // add an item to either the task or pipeline dropdown list
 function addNavbarItem(name, lsid) {
+
 	if (<%= userUnknown%>) return; // no selections
+
 
 	var taskType = name.substr(-(".<%= GPConstants.TASK_TYPE_PIPELINE %>".length)) == ".<%= GPConstants.TASK_TYPE_PIPELINE %>" ? "Pipeline" : "Task";
 	var selector = document.forms['searchForm'][taskType];
@@ -229,6 +231,18 @@ function LSID(lsid) {
 	this.version = tokens[5];
 	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>'.replace(" ", "+")) ? '<%= LSIDUtil.AUTHORITY_MINE %>' : (this.authority == '<%= LSIDUtil.BROAD_AUTHORITY %>' ? '<%= LSIDUtil.AUTHORITY_BROAD %>' : '<%= LSIDUtil.AUTHORITY_FOREIGN %>');
 }
+
+function trimName(name){
+	var shortName = name;
+	if (name.length > 41){
+		var len = name.length;
+		var idx = name.length - 19;
+		shortName = name.substring(0,19) + "..." + name.substring(idx, len);
+	}
+	return shortName;
+
+}
+
 
 function checkEnableNavbar() {
        if (<%= userUnknown%>) return; // no selections
@@ -338,6 +352,7 @@ function checkEnableNavbar() {
 	}
 	DIVIDER=divBuff.toString();
 
+		
 
 	StringBuffer sbCatalog = new StringBuffer();
 	sbCatalog.append("<select name=\"" + selectorName + "\" onchange=\"");
@@ -376,6 +391,17 @@ function checkEnableNavbar() {
 		if (name.endsWith("." + GPConstants.TASK_TYPE_PIPELINE)) {
 			shortName = name.substring(0, name.length() - GPConstants.TASK_TYPE_PIPELINE.length() -1);
 		}
+
+		String shortenedName = shortName;
+		if (shortName.length() > 41){
+			int len = shortName.length();
+			int idx = shortName.length() - 19;
+			shortenedName = shortName.substring(0,19) + "..." + shortName.substring(idx, len);
+			System.out.println(shortName+ " --> " + shortenedName);
+			shortName = shortenedName;
+		}	
+
+
 		description = taskInfo.getDescription();
 
 		lsid = tia.get(GPConstants.LSID);
@@ -412,6 +438,18 @@ function checkEnableNavbar() {
 			if (type == null || !type.equals(GPConstants.TASK_TYPE_PIPELINE)) continue;
 		}
 		if (type != null && !tia.get(GPConstants.TASK_TYPE).equals(type)) continue;
+
+		String shortenedName = shortName;
+		int halfLength = Integer.parseInt(System.getProperty("gp.name.halflength", "17"));
+		
+		if (shortName.length() > ((2*halfLength)+3)){
+			int len = shortName.length();
+			int idx = shortName.length() - halfLength;
+			shortenedName = shortName.substring(0,halfLength) + "..." + shortName.substring(idx, len);
+			shortName = shortenedName;
+		}	
+			
+
 		description = taskInfo.getDescription();
 		isPublic = tia.get(GPConstants.PRIVACY).equals(GPConstants.PUBLIC);
 		isMine = tia.get(GPConstants.USERID).equals(userID);
@@ -435,7 +473,7 @@ function checkEnableNavbar() {
 					 "\" class=\"navbar-tasks-" + authorityType + "\"" + 
 					 " title=\"" + StringUtils.htmlEncode(description) + ", " + l.getAuthority() + "\"" +
 					 (selected ? " selected" : "") +
-					 ">" + taskInfo.getName() + "</option>\n");
+					 ">" + shortName + "</option>\n");
 		}
 	}
 

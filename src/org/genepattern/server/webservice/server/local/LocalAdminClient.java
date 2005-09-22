@@ -9,6 +9,7 @@ import org.genepattern.server.webservice.server.AdminService;
 import org.genepattern.server.webservice.server.IAdminService;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.WebServiceException;
 
 public class LocalAdminClient {
@@ -49,9 +50,30 @@ public class LocalAdminClient {
 	public Collection getLatestTasks() throws WebServiceException {
 		return Arrays.asList(service.getLatestTasks());
 	}
-
+	
 
 	public TaskInfo getTask(String lsid) throws WebServiceException {
 		return service.getTask(lsid);
 	}
+
+	public SuiteInfo getSuite(String lsid) throws WebServiceException{
+		return service.getSuite(lsid);
+	}
+
+	
+	public SuiteInfo[] getLatestSuites() throws WebServiceException{
+		return service.getLatestSuites();
+	}
+	
+	public SuiteInfo[] getAllSuites() throws WebServiceException{
+		return service.getAllSuites();
+	}
+
+	public SuiteInfo[] getSuiteMembership(String lsid) throws WebServiceException{
+		return service.getSuiteMembership(lsid);
+	}
+
+
+
+
 }

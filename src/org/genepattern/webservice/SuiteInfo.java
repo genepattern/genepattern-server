@@ -114,6 +114,10 @@ public class SuiteInfo implements Serializable {
 	}
 
 	public String[] getModuleLSIDs(){
+		for (int i=0; i < moduleLsids.length; i++){
+			System.out.println("\t==>" + moduleLsids[i]);
+		}
+
 		return moduleLsids;
 	}
 	

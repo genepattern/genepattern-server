@@ -1,10 +1,9 @@
 <%@ page import="org.genepattern.server.webapp.*,
 		 org.genepattern.server.process.*,
-		 org.genepattern.server.genepattern.TaskInstallationException,
 		 org.genepattern.server.genepattern.LSIDManager,
-		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient,
 		 org.genepattern.server.webservice.server.local.LocalAdminClient,
 		 org.genepattern.webservice.TaskInfo,
+		 org.genepattern.webservice.SuiteInfo,
 		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.util.GPConstants,
  		 org.genepattern.util.StringUtils,
@@ -34,9 +33,8 @@
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
+	String userID= (String)request.getAttribute("userID");
 	LocalAdminClient adminClient = new LocalAdminClient("GenePattern");
-
-
 %>
 	<html>
 	<head>
@@ -49,9 +47,9 @@ td { font-size: 8pt }
 
 <script language="Javascript">
 
-function checkAll(frmName, bChecked) {
+function checkSuite(frmName, bChecked) {
 	frm = document.forms[frmName];
-	bChecked = frm.checkall.checked;
+	bChecked = frm.checkit.checked;
 	for (i = 0; i < frm.elements.length; i++) {
 		if (frm.elements[i].type != "checkbox") continue;
 		if (frm.elements[i].disabled == true) continue;
@@ -60,16 +58,10 @@ function checkAll(frmName, bChecked) {
 }
 
 </script>
-
-</head>
-<body>
-
-	<table width=100% cellspacing=0>
-<tr><td colspan=3>
-<jsp:include page="navbar.jsp"></jsp:include>
-
-</td></tr>
-	<tr><td colspan=2>	
+</head><body>
+<table width=100% cellspacing=0>
+<tr><td colspan=3><jsp:include page="navbar.jsp"></jsp:include></td></tr>
+<tr><td colspan=2>	
 	<span id="fetching">
 		Fetching suite catalog from <a href="<%= System.getProperty("SuiteRepositoryURL") %>" target="_new"><%= System.getProperty("SuiteRepositoryURL") %></a>...
 	</span>
@@ -79,14 +71,19 @@ function checkAll(frmName, bChecked) {
 	
 SuiteRepository sr = null;
 HashMap suites = new HashMap();
+HashMap loadedSuites = new HashMap();
 	try {
 		sr = new SuiteRepository();
 		suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
+		SuiteInfo[] loaded = adminClient.getAllSuites();
+		for (int i=0; i < loaded.length; i++){
+			loadedSuites.put(loaded[i].getLSID(), loaded[i]);
+		}
+
 	} catch (Exception e) {
 %>
 		Sorry, the <%=messages.get("ApplicationName")%> <a href="<%= System.getProperty("SuiteRepositoryURL") %>" target="_new">suite repository</a> is not currently available.<br>
-		<p>Reason: <code><%= e.getMessage() %></code><br>
-		<p>
+		<p>Reason: <code><%= e.getMessage() %></code><br><p>
 		<b>Try to correct this problem</b> by changing <a href="adminServer.jsp">web proxy settings</a> or <a href="adminServer.jsp">Suite Repository URL.</a>
 
 		<jsp:include page="footer.jsp"></jsp:include>
@@ -115,8 +112,7 @@ String motd = sr.getMOTD_message();
 				sr.getMOTD_latestServerVersion() + "</a> (currently running version " + 
 				System.getProperty("GenePatternVersion") + ")<br>") :
 			 "" %>
-		<br>
-		<hr>
+		<br><hr>
 <%
 		for (int ii = 0; ii < 8*1024; ii++) out.print(" ");
 		out.println();
@@ -125,24 +121,27 @@ String motd = sr.getMOTD_message();
 	
 %>
 	
-Select from the following suites from the <%=messages.get("ApplicationName")%> public access website to download and install:<br><br>
- 
 <br>
 </td></tr>
-
-<tr>
-<td colspan=2>
-<font size="+1"><b><%= "YYY"  %> of <%=suites.size()%> suites are new or updated</b></font>
-</td>
-</tr>
-
-
-
+<tr><td colspan=2 align='center'><font size="+1"><b>New/Available Suites</b></font></td></tr>
 <tr><td>&nbsp;</td></tr>
-</tr>
+
 <%  
 	for (Iterator iter = suites.keySet().iterator(); iter.hasNext(); ){
 		HashMap suite = (HashMap)suites.get(iter.next());		
+		boolean alreadyLoaded = ((loadedSuites.get(suite.get("lsid"))) != null);
+		if (alreadyLoaded) continue;
+
+		ArrayList modules = (ArrayList)suite.get("modules");
+
+		boolean allInstalled = true;
+		for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
+			HashMap mod = (HashMap)iter2.next();
+			TaskInfo ti = adminClient.getTask((String)mod.get("lsid"));
+			allInstalled  = allInstalled && (ti != null);
+		}
+
+
 %>
 <tr class='paleBackground'>
 
@@ -159,33 +158,34 @@ for (Iterator iter2 = docs .iterator(); iter2.hasNext(); ){
 <% } %>
 
 
-</td>
-<td>Author: <%=suite.get("author")%><br>Owner: <%=suite.get("owner")%></td>
-</tr>
-<tr class='paleBackground'>
-<td  colspan=2><%=suite.get("description")%></td>
-</tr>
+</td> <td>
+<table width=100%><tr>
+<td>Author: <%=suite.get("author")%></td><td> Owner: <%=suite.get("owner")%><td>
+</tr></table>
+</td></tr>
+<tr class='paleBackground'><td  colspan=2><%=suite.get("description")%></td></tr>
 
 <tr class='paleBackground'>
 <td valign='top' align='right'>
 
 <form name="installSuite<%=suite.get("name")%>" action="installSuite.jsp" >
 	<input type="hidden" name="suiteLsid" value="<%=suite.get("lsid")%>" >
-	<input type="submit" name="InstallSuite" value="Install Suite" />
-&nbsp;
+	<input type="submit" name="InstallSuite" value="Install Suite" />&nbsp;
 </form>
 
 </td><td valign='top' align='left'>
 
 <form name="install<%=suite.get("name")%>" action="taskCatalog.jsp" >
 	<input type="hidden" name="checkAll" value="1" >
+<%
+	if (!allInstalled){
+%>
 	<input type="submit" name="install" value="install checked modules"/>
-	<input type="checkbox"  name="checkall" onClick="javascript:checkAll('install<%=suite.get("name")%>', false)"/> Check all
+	<input type="checkbox" name="checkit" onClick="javascript:checkSuite('install<%=suite.get("name")%>', false)"/> Check all
+<% } %>
 </td>
-
-</tr>
-<tr><% 
-ArrayList modules = (ArrayList)suite.get("modules");
+</tr><tr>
+<% 
 int count = 0;
 for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 	HashMap mod = (HashMap)iter2.next();
@@ -207,7 +207,6 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 	<%=mod.get("name")%> (<%=modLsid.getVersion()%>) 
 <a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
 <a href="addTask.jsp?view=1&name=<%=modLsid.toString()%>"><img src="skin/view.gif" alt="view" border="0" align="texttop"></a> 
-
 </td>
 
 <% 	} else { %>
@@ -220,21 +219,120 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 
 <% 	
 	} 
-
 	if ( (count%2) == 1) out.println("</tr>");
-
 	count++;
 } 
 %>
-
 </form>
 <%
 	// end looping over suites
 	}
 %>
+</tr><tr>
+<td colspan=2 align='center'>
+<hr><font size="+1"><b>Loaded Suites</b></font>
+</td></tr>
+<tr><td>&nbsp;</td></tr>
+
+<%  
+	if (loadedSuites.size() == 0) out.println("<tr><td colspan=2 align=center>No suites currently loaded</td></tr>");
+	for (Iterator iter = loadedSuites.keySet().iterator(); iter.hasNext(); ){
+		SuiteInfo suite = (SuiteInfo)loadedSuites.get(iter.next());		
+		String[] moduleLsids = suite.getModuleLSIDs();
+
+
+		boolean allInstalled = true;
+		for (int i=0; i < moduleLsids.length; i++){
+			TaskInfo ti = adminClient.getTask(moduleLsids[i]);
+			allInstalled  = allInstalled && (ti != null);
+		}
+
+
+%>
+<tr class='altpaleBackground'>
+<td><font size=+1><b><%=suite.getName()%></b></font>
+</td><td>
+<table width=100%><tr>
+<td>Author: <%=suite.getAuthor()%></td><td> Owner: <%=suite.getOwner()%><td>
+</tr></table>
+</td>
+</tr>
+<tr class='altpaleBackground'>
+<td  colspan=2><%=suite.getDescription()%></td>
+</tr>
+
+<tr class='altpaleBackground'>
+<td valign='top' align='right'>
+
+<form name="installSuite<%=suite.getName()%>" action="deleteSuite.jsp" >
+	<input type="hidden" name="suiteLsid" value="<%=suite.getLSID()%>" >
+	<input type="submit" name="InstallSuite" value="Delete Suite" />
+&nbsp;
+</form>
+
+</td><td valign='top' align='left'>
+
+<form name="install<%=suite.getName()%>" action="taskCatalog.jsp" >
+	<input type="hidden" name="checkAll" value="1" >
+<%	if (!allInstalled) { %>
+	<input type="submit" name="install" value="install checked modules"/>
+	<input type="checkbox" name="checkit" onClick="javascript:checkSuite('install<%=suite.getName()%>', false)"/> Check all
+<% } %>
+</td>
+
+</tr>
+<tr><% 
+for (int i=0; i < moduleLsids.length; i++){
+	//HashMap mod = (HashMap)iter2.next();
+	
+	LSID modLsid = new LSID(moduleLsids[i]);
+	String docName = "fff"; // (String)(mod.get("docFile"));
+	int idx = docName.lastIndexOf("/");
+
+	TaskInfo ti = adminClient.getTask(modLsid.toString());
+	boolean installed = ti != null;
+	
+	if ( (i%2) == 0) out.println("<tr>");
+
+	if (installed){
+%>
+
+
+<td>
+<input type="checkbox" checked="true" name="LSID" disabled="true"/>
+	<%=ti.getName()%> (<%=modLsid.getVersion()%>) 
+<a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
+<a href="addTask.jsp?view=1&name=<%=modLsid.toString()%>"><img src="skin/view.gif" alt="view" border="0" align="texttop"></a> 
+
+</td>
+
+<% 	} else { %>
+
+<td>
+<input type="checkbox" name="LSID" value="<%=modLsid.toString()%>"/>
+	<%=ti.getName()%> (<%=modLsid.getVersion()%>) 
+	<a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
+</td>
+
+<% 	
+	} 
+	if ( (i%2) == 1) out.println("</tr>");
+} 
+%>
+
+</form>
+
+<%
+		// end looping over loaded suites
+	}
+%>
+
 
 
 </tr>
+
+
+
 
 <tr><td colspan=2><jsp:include page="footer.jsp"></jsp:include></td> 
 

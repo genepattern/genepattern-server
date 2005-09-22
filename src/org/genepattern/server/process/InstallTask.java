@@ -321,19 +321,17 @@ public class InstallTask {
 		Vector vProblems = new Vector();
 		String url = getURL();
 		try {
-			boolean wasInstalled = isAlreadyInstalled()
-					&& tia.get(GPConstants.LSID).equals(getLSID());
+			boolean wasInstalled = isAlreadyInstalled() && tia.get(GPConstants.LSID).equals(getLSID());
 			filename = GenePatternAnalysisTask.downloadTask(url);
 			String zipLSID = (String) GenePatternAnalysisTask
 					.getPropsFromZipFile(filename)
 					.getProperty(GPConstants.LSID);
 			if (!zipLSID.equals(getLSID()))
-				throw new Exception("requested LSID " + getLSID()
-						+ " doesn't match actual " + zipLSID);
-			String taskName = GenePatternAnalysisTask
-					.getTaskNameFromZipFile(filename);
-			lsid = GenePatternAnalysisTask.installNewTask(filename, username,
-					access_id, taskIntegrator);
+				throw new Exception("requested LSID " + getLSID()+ " doesn't match actual " + zipLSID);
+
+			String taskName = GenePatternAnalysisTask.getTaskNameFromZipFile(filename);
+			lsid = GenePatternAnalysisTask.installNewTask(filename, username,	access_id, taskIntegrator);
+
 			return wasInstalled;
 		} catch (TaskInstallationException tie) {
 			throw tie;

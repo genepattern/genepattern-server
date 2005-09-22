@@ -386,7 +386,7 @@ public class AdminHSQLDAO implements AdminDAO {
 			st = c.prepareStatement("SELECT * FROM suite_modules where lsid =?");
 			st.setString(1, lsid);
 			rs = st.executeQuery();
-			if (rs.next()) {
+			while (rs.next()) {
 				String modlsid = rs.getString("module_lsid");
 				moduleLSIDs.add(modlsid);				
 			}

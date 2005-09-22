@@ -268,6 +268,17 @@ taskSelect(document.forms['index'].task, 'task');
 				display = display.substring(0, display.length() - dotPipeline.length());
 			}
 		}
+
+		int halfLength = Integer.parseInt(System.getProperty("gp.name.halflength", "17"));
+		String shortenedName = display;
+		if (display.length() > ((2*halfLength)+3 )){
+			int len = display.length();
+			int idx = display.length() - halfLength ;
+			shortenedName = display.substring(0,halfLength) + "..." + display.substring(idx, len);
+			display= shortenedName;
+		}	
+
+
 		description = latestTaskInfo.getDescription();
 		isPublic = latestTia.get(GPConstants.PRIVACY).equals(GPConstants.PUBLIC);
 		isMine = latestTia.get(GPConstants.USERID).equals(userID);

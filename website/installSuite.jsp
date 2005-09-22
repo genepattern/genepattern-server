@@ -32,6 +32,12 @@
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
+	String suiteLsid = request.getParameter("suiteLsid");
+	boolean initialInstall = (request.getParameter("initialInstall") != null);
+
+	SuiteRepository sr = new SuiteRepository();
+	HashMap suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
+	HashMap hm = (HashMap)suites.get(suiteLsid);
 
 %>
 
@@ -39,16 +45,18 @@
 	<head>
 	<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 	<link href="skin/favicon.ico" rel="shortcut icon">
-	<title>Installing Suite</title>
+	<title>Installing Suite - <%= hm.get("name") %></title>
+</head>
+<body>
 
+<jsp:include page="navbar.jsp"></jsp:include>
+
+Installing Suite - 	<font size=+1><b><%= hm.get("name") %></b></font>
+...done.<br>
+Installing Modules:<br>
 
 <%
-	String suiteLsid = request.getParameter("suiteLsid");
-	boolean initialInstall = (request.getParameter("initialInstall") != null);
-	
-	SuiteRepository sr = new SuiteRepository();
-	HashMap suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
-	HashMap hm = (HashMap)suites.get(suiteLsid);
+		
 	String userID= (String)request.getAttribute("userID");
 	TaskIntegrator taskIntegrator = new LocalTaskIntegratorClient( userID , out);
 	InstallTasksCollectionUtils collection = null;
@@ -98,7 +106,7 @@
 			try {
 				boolean wasInstalled = installTask.install(userID, GPConstants.ACCESS_PUBLIC, taskIntegrator);
 %>
-				<%= wasInstalled ? "Overwrote" : "Installed" %> <a href="addTask.jsp?name=<%= installTask.getLSID() %>"><%= installTask.getName() %></a> version <%= new LSID(installTask.getLSID()).getVersion() %><br>
+				&nbsp;&nbsp;&nbsp;&nbsp;<%= wasInstalled ? "Overwrote" : "Installed" %> <a href="addTask.jsp?name=<%= installTask.getLSID() %>"><%= installTask.getName() %></a> version <%= new LSID(installTask.getLSID()).getVersion() %><br>
 				<script language="Javascript">
 				addNavbarItem("<%= installTask.getName() %>", "<%= installTask.getLSID() %>");
 				</script>
@@ -120,7 +128,7 @@
 		}
 %>
 <br>
-<a href="taskCatalog.jsp<%= initialInstall ? "?initialInstall=1" : "" %>">install more tasks</a><br>
+<a href="suiteCatalog.jsp<%= initialInstall ? "?initialInstall=1" : "" %>">install more suites</a><br>
 
 		<jsp:include page="footer.jsp"></jsp:include>
 		</body>
