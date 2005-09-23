@@ -1356,6 +1356,18 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 		JTextComponent descriptionField = null;
 
+		private JTextPane pane;
+
+		public void setBackground(Color c) {
+			super.setBackground(c);
+			if (minorPanel != null) {
+				minorPanel.setBackground(c);
+			}
+			if (pane != null) {
+				pane.setBackground(c);
+			}
+		}
+
 		public String toString() {
 			return (1 + taskIndex) + ". " + model.getTaskName(taskIndex);
 		}
@@ -1593,7 +1605,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 								// td.togglePanel
 								// .setMajorLabelForeground(Color.red);
 								td.setBackground(Color.yellow);
-								td.minorPanel.setBackground(Color.yellow);
+
 							}
 
 							public void mouseExited(MouseEvent e) {
@@ -1603,7 +1615,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 								// td.togglePanel
 								// .setMajorLabelForeground(Color.black);
 								td.setBackground(Color.white);
-								td.minorPanel.setBackground(Color.white);
+
 							}
 
 						});
@@ -1642,8 +1654,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 							text = "<html><a href=" + value + ">" + value
 									+ "</a>";
 						}
-						if (value!=null && !value.equals("")) {
-							final JTextPane pane = new JTextPane();
+						if (value != null && !value.equals("")) {
+							pane = new JTextPane();
 							pane.setEditable(false);
 							valueComponent = pane;
 							pane.setContentType("text/html");
