@@ -6,8 +6,11 @@
 		java.util.HashMap,
 		java.util.Set,
 		java.util.Vector,
+		java.util.ArrayList,
+		java.util.StringTokenizer,
 		java.util.LinkedHashSet,
 		org.genepattern.webservice.TaskInfo,
+		org.genepattern.webservice.SuiteInfo,
 		org.genepattern.webservice.TaskInfoAttributes,
 		org.genepattern.webservice.JobInfo,
 		org.genepattern.webservice.WebServiceException,
@@ -33,10 +36,62 @@ int recentCount = Integer.parseInt(System.getProperty("recentJobsToDisplay", "3"
 Vector recentTasks = new Vector();
 Vector recentPipes = new Vector();
 
+
+//
+// set up suite filtering by saving suite list in the session
+//
+ArrayList suiteFilterAttr = (ArrayList)request.getSession().getAttribute("suiteSelection");
+String suiteFilterParam = request.getParameter("suiteSelection");
+if (suiteFilterParam  != null){
+	StringTokenizer strtok = new StringTokenizer(suiteFilterParam , ",");
+	suiteFilterAttr = new ArrayList();
+	while (strtok.hasMoreTokens()){
+		String suiteId = strtok.nextToken();
+		if (suiteId.endsWith("'")) suiteId = suiteId.substring(0, suiteId.length()-1); 
+		System.out.println("\t Nt =  " + suiteId +"  " + System.currentTimeMillis());
+		suiteFilterAttr.add(suiteId);
+	}	
+	request.getSession().setAttribute("suiteSelection",suiteFilterAttr );
+	System.out.println("\n SS =  " + suiteFilterParam);
+
+}
+
+
+SuiteInfo[] suites = new SuiteInfo[0];
 try { 
 	LocalAdminClient adminClient = new LocalAdminClient(userID);
-	tmTasks = adminClient.getLatestTasks();
-	
+	boolean allTasks = true;
+	suites = adminClient.getAllSuites();
+
+	if (suiteFilterAttr != null) {
+		if (suiteFilterAttr.contains("all")){
+			allTasks = true;	
+			System.out.println("\tall=true");
+		} else {
+			allTasks = false;
+		}
+	} 
+
+	if (allTasks){
+		tmTasks = adminClient.getLatestTasks();
+	} else {
+		tmTasks = new ArrayList();
+		for (int i=0; i < suites.length; i++){
+			SuiteInfo suite = suites[i];
+			if (suiteFilterAttr.contains(suite.getLSID()) ){
+				String[] mods = suite.getModuleLSIDs();
+				for (int j=0; j < mods.length; j++ ){
+					TaskInfo ti = adminClient.getTask(mods[j]);
+					if (ti != null) tmTasks.add(ti);
+				}
+			}
+
+		}	
+
+
+	}
+
+		
 
 	LinkedHashSet recentTasksSet = new LinkedHashSet();
 	LinkedHashSet recentPipesSet = new LinkedHashSet();
@@ -232,17 +287,31 @@ function LSID(lsid) {
 	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>'.replace(" ", "+")) ? '<%= LSIDUtil.AUTHORITY_MINE %>' : (this.authority == '<%= LSIDUtil.BROAD_AUTHORITY %>' ? '<%= LSIDUtil.AUTHORITY_BROAD %>' : '<%= LSIDUtil.AUTHORITY_FOREIGN %>');
 }
 
-function trimName(name){
-	var shortName = name;
-	if (name.length > 41){
-		var len = name.length;
-		var idx = name.length - 19;
-		shortName = name.substring(0,19) + "..." + name.substring(idx, len);
-	}
-	return shortName;
-
+function getSelectedValues (select) {
+  var r = new Array();
+  for (var i = 0; i < select.options.length; i++)
+    if (select.options[i].selected)
+      r[r.length] = select.options[i].value;
+  return r;
 }
 
+function selectSuiteFilter() {
+//	document.getElementById("lowerPart").style.visibility = "hidden"
+	document.getElementById("lowerPart").style.display = "none"
+//	document.getElementById("topPart").innerText = value
+
+	var selected = getSelectedValues(document.getElementById("selectSuite"))
+	var search = window.location.search;
+	var here
+	if (search.length==0){
+		here = window.location + "?suiteSelection=" + selected +"'"
+	} else {
+		here = window.location + "&suiteSelection='" + selected +"'"
+	}
+	parent.selectedSuites = selected;
+	window.location = here;
+
+}
 
 function checkEnableNavbar() {
        if (<%= userUnknown%>) return; // no selections
@@ -313,6 +382,29 @@ function checkEnableNavbar() {
 				checkEnableNavbar();
 			</script>
 		<% } %>
+
+
+
+&nbsp;&nbsp;&nbsp;Suites:
+<span id="topPart" style="position:relative; height:20; width:100; border-style:inset;border-width:thin;" onClick="document.getElementById('lowerPart').style.display = 'inline'">
+-- Select --
+</span>
+
+<span id="lowerPart" style="position:relative; border-style:none; overflow:scroll; height:60; width:100; display:none">
+<select id="selectSuite" name="selectSuite" multiple size="<%= suites.length+1%>">
+<OPTION VALUE="all">All&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+<%
+	for (int j=0; j < suites.length; j++){
+%>
+	<OPTION VALUE="<%=suites[j].getLSID()%>"><%=suites[j].getName()%> </option>
+<% } // end loop over suites %>
+
+</select>
+<input type='button' name='selectSuites' value='Select Suite' onClick="selectSuiteFilter()"/>
+</span>
+
+
+
 	</td>
 	<td align="right" valign="top" class="navbar">
 			<nobr><input type="text" class="little" size="10" name="search" 
@@ -342,6 +434,7 @@ function checkEnableNavbar() {
 	String IGNORE = "dontJump";
 	String DIVIDER = "";
 	int maxNameWidth = 0; 
+
 	for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 		TaskInfo task = (TaskInfo)itTasks.next();
 		maxNameWidth = Math.max(maxNameWidth, task.getName().length());

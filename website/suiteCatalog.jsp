@@ -35,18 +35,14 @@
 	response.setDateHeader("Expires", 0);
 	String userID= (String)request.getAttribute("userID");
 	LocalAdminClient adminClient = new LocalAdminClient("GenePattern");
+try {
 %>
 	<html>
 	<head>
 	<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 	<link href="skin/favicon.ico" rel="shortcut icon">
 <title>Installable Suites</title>
-<style>
-td { font-size: 8pt }
-</style>
-
 <script language="Javascript">
-
 function checkSuite(frmName, bChecked) {
 	frm = document.forms[frmName];
 	bChecked = frm.checkit.checked;
@@ -56,7 +52,6 @@ function checkSuite(frmName, bChecked) {
 		frm.elements[i].checked = bChecked;
 	}
 }
-
 </script>
 </head><body>
 <table width=100% cellspacing=0>
@@ -67,8 +62,7 @@ function checkSuite(frmName, bChecked) {
 	</span>
 
 <%
-	out.flush();
-	
+	out.flush();	
 SuiteRepository sr = null;
 HashMap suites = new HashMap();
 HashMap loadedSuites = new HashMap();
@@ -101,7 +95,7 @@ HashMap loadedSuites = new HashMap();
 <%
 		out.flush();
 	}
-String motd = sr.getMOTD_message();
+	String motd = sr.getMOTD_message();
 	if (motd.length() > 0) {
 %>
 		<%= motd %><br>
@@ -117,15 +111,10 @@ String motd = sr.getMOTD_message();
 		for (int ii = 0; ii < 8*1024; ii++) out.print(" ");
 		out.println();
 		out.flush();
-	}
-	
+	}	
 %>
-	
-<br>
-</td></tr>
-<tr><td colspan=2 align='center'><font size="+1"><b>New/Available Suites</b></font></td></tr>
-<tr><td>&nbsp;</td></tr>
-
+<br></td></tr>
+<tr><td colspan=2 align='center'><font size="+1"><b>New/Available Suites</b></font></td></tr><tr><td>&nbsp;</td></tr>
 <%  
 	for (Iterator iter = suites.keySet().iterator(); iter.hasNext(); ){
 		HashMap suite = (HashMap)suites.get(iter.next());		
@@ -133,31 +122,27 @@ String motd = sr.getMOTD_message();
 		if (alreadyLoaded) continue;
 
 		ArrayList modules = (ArrayList)suite.get("modules");
-
-		boolean allInstalled = true;
-		for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
-			HashMap mod = (HashMap)iter2.next();
-			TaskInfo ti = adminClient.getTask((String)mod.get("lsid"));
-			allInstalled  = allInstalled && (ti != null);
+				boolean allInstalled = true;
+		if (modules != null) {
+		
+			for (Iterator iter3 = modules.iterator(); iter3.hasNext(); ){
+				HashMap mod = (HashMap)iter3.next();
+				TaskInfo ti = adminClient.getTask((String)mod.get("lsid"));
+				allInstalled  = allInstalled && (ti != null);
+			}
 		}
-
-
 %>
-<tr class='paleBackground'>
-
-
-<td><font size=+1><b><%=suite.get("name")%></b></font>
+<tr class='paleBackground'><td><font size=+1><b><%=suite.get("name")%></b></font>
 <%
 ArrayList docs = (ArrayList)suite.get("docFiles");
 for (Iterator iter2 = docs .iterator(); iter2.hasNext(); ){
+
 		String doc = (String)iter2.next();
 		int idx = doc.lastIndexOf("/");
 %>
 		<a href='<%=doc%>'><img src="skin/pdf.jpg" border="0" alt="doc" align="top"></a>
 
-<% } %>
-
-
+<% }%>
 </td> <td>
 <table width=100%><tr>
 <td>Author: <%=suite.get("author")%></td><td> Owner: <%=suite.get("owner")%><td>
@@ -167,6 +152,8 @@ for (Iterator iter2 = docs .iterator(); iter2.hasNext(); ){
 
 <tr class='paleBackground'>
 <td valign='top' align='right'>
+<% System.out.println("C ");
+%>
 
 <form name="installSuite<%=suite.get("name")%>" action="installSuite.jsp" >
 	<input type="hidden" name="suiteLsid" value="<%=suite.get("lsid")%>" >
@@ -187,25 +174,38 @@ for (Iterator iter2 = docs .iterator(); iter2.hasNext(); ){
 </tr><tr>
 <% 
 int count = 0;
+if (modules == null) modules = new ArrayList();
+System.out.println("modules=" + modules);
 for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 	HashMap mod = (HashMap)iter2.next();
 	LSID modLsid = new LSID((String)mod.get("lsid"));
 	String docName = (String)(mod.get("docFile"));
-	int idx = docName.lastIndexOf("/");
+
+	int idx = -1;
+	if (docName != null) {
+		idx = docName.lastIndexOf("/");
+	} else {
+		
+	}
 
 	TaskInfo ti = adminClient.getTask(modLsid.toString());
 	boolean installed = ti != null;
 	
 	if ( (count%2) == 0) out.println("<tr>");
-
+ System.out.println("E ");
 	if (installed){
+ System.out.println("F " + modLsid.getVersion());
+
 %>
 
 
 <td>
 <input type="checkbox" checked="true" name="LSID" disabled="true"/>
 	<%=mod.get("name")%> (<%=modLsid.getVersion()%>) 
+<%if (docName != null) { %>
+
 <a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
+<%}%>
 <a href="addTask.jsp?view=1&name=<%=modLsid.toString()%>"><img src="skin/view.gif" alt="view" border="0" align="texttop"></a> 
 </td>
 
@@ -214,27 +214,25 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 <td>
 <input type="checkbox" name="LSID" value="<%=modLsid.toString()%>"/>
 	<%=mod.get("name")%> (<%=modLsid.getVersion()%>) 
+<%if (docName != null) { %>
 	<a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
+<%}%>
 </td>
 
 <% 	
 	} 
 	if ( (count%2) == 1) out.println("</tr>");
-	count++;
-} 
+	count++; 
+}
 %>
 </form>
 <%
-	// end looping over suites
-	}
+System.out.println("XX");
+	}  // iterating over available suites
 %>
-</tr><tr>
-<td colspan=2 align='center'>
-<hr><font size="+1"><b>Loaded Suites</b></font>
-</td></tr>
-<tr><td>&nbsp;</td></tr>
-
+</tr><tr><td colspan=2 align='center'><hr><font size="+1"><b>Loaded Suites</b></font></td></tr><tr><td>&nbsp;</td></tr>
 <%  
+System.out.println("G ");
 	if (loadedSuites.size() == 0) out.println("<tr><td colspan=2 align=center>No suites currently loaded</td></tr>");
 	for (Iterator iter = loadedSuites.keySet().iterator(); iter.hasNext(); ){
 		SuiteInfo suite = (SuiteInfo)loadedSuites.get(iter.next());		
@@ -326,19 +324,15 @@ for (int i=0; i < moduleLsids.length; i++){
 		// end looping over loaded suites
 	}
 %>
-
-
-
 </tr>
-
-
-
-
 <tr><td colspan=2><jsp:include page="footer.jsp"></jsp:include></td> 
+</tr></table>
 
-</tr>
-
-</table>
+<%
+	} catch (Throwable t){
+		t.printStackTrace();
+	}
+%>
 
 
 <% // <jsp:include page="footer.jsp"></jsp:include> %>

@@ -9,6 +9,7 @@
 		 java.util.HashMap,
 		 java.util.HashSet,
 		 java.util.Iterator,
+		 java.util.ArrayList,
 		 java.util.Set,
 		 java.util.TreeMap,
 		 java.util.Vector,
@@ -17,6 +18,7 @@
 		 org.genepattern.server.genepattern.LSIDManager,
 		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.webservice.TaskInfo,
+		 org.genepattern.webservice.SuiteInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.webservice.server.local.*,
@@ -34,8 +36,39 @@ try {
 String userID= (String)request.getAttribute("userID"); // get userID but don't force login if not defined
 boolean userIDKnown = !(userID == null || userID.length() == 0);
 LocalAdminClient adminClient = new LocalAdminClient(userID);
-Collection tmTasks = adminClient.getTaskCatalog();
+Collection tmTasks = null;
 Collection latestTmTasks = adminClient.getLatestTasks();
+ArrayList suiteFilterAttr = (ArrayList)request.getSession().getAttribute("suiteSelection");
+
+
+boolean allTasks = true;
+SuiteInfo[] suites = adminClient.getAllSuites();
+
+if (suiteFilterAttr != null) {
+	if (suiteFilterAttr.contains("all")){
+		allTasks = true;	
+		System.out.println("\tall=true");
+	} else {
+		allTasks = false;
+	}
+} 
+
+if (allTasks){
+	tmTasks = adminClient.getLatestTasks();
+} else {
+	tmTasks = new ArrayList();
+	for (int i=0; i < suites.length; i++){
+		SuiteInfo suite = suites[i];
+		if (suiteFilterAttr.contains(suite.getLSID()) ){
+			String[] mods = suite.getModuleLSIDs();
+			for (int j=0; j < mods.length; j++ ){
+				TaskInfo ti = adminClient.getTask(mods[j]);
+				if (ti != null) tmTasks.add(ti);
+			}
+		}
+	}	
+}
+
 
 HashMap latestTaskMap = new HashMap();
 for (Iterator itTasks = latestTmTasks.iterator(); itTasks.hasNext(); ) {
