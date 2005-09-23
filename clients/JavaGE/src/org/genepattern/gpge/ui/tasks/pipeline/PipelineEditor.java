@@ -13,6 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -416,7 +417,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			e.printStackTrace();
 		}
 		remove(headerPanel);
-		headerPanel = new HeaderPanel(model, buttonPanel, view);
+		headerPanel = new HeaderPanel(model, analysisService, buttonPanel, view);
 		add(headerPanel, BorderLayout.NORTH); // update lsid in drop down
 		invalidate();
 		validate();
@@ -626,7 +627,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		if (headerPanel != null) {
 			remove(headerPanel);
 		}
-		headerPanel = new HeaderPanel(model, buttonPanel, view);
+		headerPanel = new HeaderPanel(model, analysisService, buttonPanel, view);
 		add(headerPanel, BorderLayout.NORTH);
 
 		if (!view && model.getMissingJobSubmissions().size() > 0) {
@@ -641,7 +642,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			p.add(mtd.getMissingTasksPanel(), cc.xy(1, 2));
 			p.add(tasksPanel, cc.xy(1, 3));
 			scrollPane.setViewportView(p);
-			headerPanel = new HeaderPanel(model, buttonPanel, view);
+			headerPanel = new HeaderPanel(model, analysisService, buttonPanel, view);
 			add(headerPanel, BorderLayout.NORTH);
 
 		}
@@ -710,7 +711,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			return errors;
 		}
 
-		public HeaderPanel(final PipelineEditorModel model, JPanel buttonPanel,
+		public HeaderPanel(final PipelineEditorModel model, final AnalysisService analysisService, JPanel buttonPanel,
 				boolean view) {
 			this.model = model;
 			// setBorder(BorderFactory.createLineBorder());
@@ -841,13 +842,36 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					}
 				}
 			});
+			
+			JButton viewBtn = new JButton("View");
+			viewBtn.setVisible(view && existingDocComboBox.getItemCount() > 0);
+			viewBtn.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					String s = (String) existingDocComboBox.getSelectedItem();
+					String url = AnalysisServiceManager.getInstance()
+					.getServer()
+					+ "/gp/getFile.jsp?task="
+					+ analysisService.getLsid()
+					+ "&file="
+					+ s;
+			
+					try {
+						BrowserLauncher.openURL(url);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+			});
 
 			detailsPanel.add(documentationLabel, cc.xy(1, 9));
 			JPanel docPanel = new JPanel(new FormLayout(
-					"pref, 3dlu, pref, 3dlu, pref", "pref"));
+					"pref, 3dlu, pref, 3dlu, pref, 3dlu, pref", "pref"));
 			docPanel.add(existingDocComboBox, cc.xy(1, 1));
 			docPanel.add(deleteDocBtn, cc.xy(3, 1));
 			docPanel.add(addDocBtn, cc.xy(5, 1));
+			docPanel.add(viewBtn, cc.xy(7, 1));
+			
 			detailsPanel.add(docPanel, cc.xy(3, 9));
 
 			if (name != null) {
