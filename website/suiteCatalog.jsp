@@ -242,16 +242,6 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 %>
 <tr class='altpaleBackground'>
 <td>
-<%
-//<input type="checkbox" checked="true" name="loaded" disabled="true"/>
-	ArrayList suiteFilterAttr = (ArrayList)request.getSession().getAttribute("suiteSelection");
-	if (suiteFilterAttr.contains(suite.getLSID())) {
-		out.println("<input type='checkbox' checked='true' name='loaded' value='"+suite.getLSID()+"'/>");
-	} else {
-		out.println("<input type='checkbox' name='loaded' value='"+suite.getLSID()+"'/>");
-	}
-
-%>
 
 <font size=+1><b><%=suite.getName()%></b></font>
 </td><td>

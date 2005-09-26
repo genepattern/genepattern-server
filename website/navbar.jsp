@@ -384,14 +384,13 @@ function checkEnableNavbar() {
 		<% } %>
 
 <%
-	int height = 100 + 20*suites.length;
-System.out.println("height="+height);
+	int height = 120 + 20*suites.length;
 %>
 
 &nbsp;&nbsp;&nbsp;
 <a href="#" 
 	onclick="window.open('chooseSuite.jsp', 'Suite Filter',
-	'toolbar=no, location=no, status=no, menubar=no, scrollbars=no, resizable=yes,width=300, height=<%=height%>')" class="navbar"> Filter by Suite </a>
+	'toolbar=no, location=no, status=no, menubar=no, resizable=yes,width=320, height=<%=height%>')" class="navbar"> <nobr>Filter by Suite</nobr></a>
 
 	</td>
 	<td align="right" valign="top" class="navbar">

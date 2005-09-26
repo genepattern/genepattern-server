@@ -75,8 +75,13 @@ suites = adminClient.getAllSuites();
 %>
 
 <html>
-<head><title> Filter by suite</title></head>
+<head>
+<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
+	<link href="skin/favicon.ico" rel="shortcut icon">
+<title> Filter by suite</title>
 
+</head>
+<body class="paleBackground" >
 <script language="Javascript">
 function okPressed(frm) {
 
@@ -98,20 +103,25 @@ function toggleFilter(showing, form){
 </script>
 
 
-<body>
 <form>
+<table border=0 cellspacing=0  width=100%>
+<tr class='paleBackground'><td >
+
 <input type='radio' name='filter' value='all' onClick="toggleFilter(false, this.form)"
 <%if (!filtering) {%>
 checked='true' 
 <%}%>
->No Filtering (show all tasks)</input><br>
+>No Filtering (show all tasks)</input>
+</td></tr>
+<tr class='paleBackground'><td >
+
 <input type='radio' name='filter' value='filter'  onClick="toggleFilter(true, this.form)"
 <%if (filtering) {%>
 checked='true' 
 <%}%>
 >Filter (show only tasks from selected suites)</input>
-<hr>
-
+</td></tr>
+<tr class='paleBackground'><td><hr></td></tr>
 <%
 for (int i=0; i < suites.length; i++ ){
 	SuiteInfo suite = suites[i];		
@@ -121,8 +131,16 @@ for (int i=0; i < suites.length; i++ ){
 	} else {
 		selectedSuite = false;
 	}
-
 %>
+	<tr
+<%
+	if ((i % 2) != 0){
+%>
+	bgcolor="#EFEFFF" 
+<%} else  { %>
+	bgcolor="#FFFFFF" 
+<%}%>
+><td>
 	<input type='checkbox' name='suiteSelection'
 <%
 	if (selectedSuite) { %> checked='true'
@@ -132,14 +150,17 @@ for (int i=0; i < suites.length; i++ ){
 <% } %>
 
  value='<%= suite.getLSID()%>'/><%=suite.getName()%><br>
-
-
-
+</td></tr>
 <%
 	} // end loop over suites
 %>
+
+
+<tr><td>
 <input type='button' name='ok' value='OK' onClick="okPressed(this.form)"/>
 <input type='button' name='cancel' value='Close' onClick="window.close()"/>
+</td></tr>
+</table>
 </form>
 
 
