@@ -152,8 +152,6 @@ for (Iterator iter2 = docs .iterator(); iter2.hasNext(); ){
 
 <tr class='paleBackground'>
 <td valign='top' align='right'>
-<% System.out.println("C ");
-%>
 
 <form name="installSuite<%=suite.get("name")%>" action="installSuite.jsp" >
 	<input type="hidden" name="suiteLsid" value="<%=suite.get("lsid")%>" >
@@ -175,7 +173,6 @@ for (Iterator iter2 = docs .iterator(); iter2.hasNext(); ){
 <% 
 int count = 0;
 if (modules == null) modules = new ArrayList();
-System.out.println("modules=" + modules);
 for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 	HashMap mod = (HashMap)iter2.next();
 	LSID modLsid = new LSID((String)mod.get("lsid"));
@@ -192,10 +189,7 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 	boolean installed = ti != null;
 	
 	if ( (count%2) == 0) out.println("<tr>");
- System.out.println("E ");
 	if (installed){
- System.out.println("F " + modLsid.getVersion());
-
 %>
 
 
@@ -227,12 +221,11 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 %>
 </form>
 <%
-System.out.println("XX");
 	}  // iterating over available suites
 %>
 </tr><tr><td colspan=2 align='center'><hr><font size="+1"><b>Loaded Suites</b></font></td></tr><tr><td>&nbsp;</td></tr>
 <%  
-System.out.println("G ");
+
 	if (loadedSuites.size() == 0) out.println("<tr><td colspan=2 align=center>No suites currently loaded</td></tr>");
 	for (Iterator iter = loadedSuites.keySet().iterator(); iter.hasNext(); ){
 		SuiteInfo suite = (SuiteInfo)loadedSuites.get(iter.next());		
@@ -248,7 +241,19 @@ System.out.println("G ");
 
 %>
 <tr class='altpaleBackground'>
-<td><font size=+1><b><%=suite.getName()%></b></font>
+<td>
+<%
+//<input type="checkbox" checked="true" name="loaded" disabled="true"/>
+	ArrayList suiteFilterAttr = (ArrayList)request.getSession().getAttribute("suiteSelection");
+	if (suiteFilterAttr.contains(suite.getLSID())) {
+		out.println("<input type='checkbox' checked='true' name='loaded' value='"+suite.getLSID()+"'/>");
+	} else {
+		out.println("<input type='checkbox' name='loaded' value='"+suite.getLSID()+"'/>");
+	}
+
+%>
+
+<font size=+1><b><%=suite.getName()%></b></font>
 </td><td>
 <table width=100%><tr>
 <td>Author: <%=suite.getAuthor()%></td><td> Owner: <%=suite.getOwner()%><td>

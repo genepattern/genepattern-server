@@ -383,27 +383,15 @@ function checkEnableNavbar() {
 			</script>
 		<% } %>
 
-
-
-&nbsp;&nbsp;&nbsp;Suites:
-<span id="topPart" style="position:relative; height:20; width:100; border-style:inset;border-width:thin;" onClick="document.getElementById('lowerPart').style.display = 'inline'">
--- Select --
-</span>
-
-<span id="lowerPart" style="position:relative; border-style:none; overflow:scroll; height:60; width:100; display:none">
-<select id="selectSuite" name="selectSuite" multiple size="<%= suites.length+1%>">
-<OPTION VALUE="all">All&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
 <%
-	for (int j=0; j < suites.length; j++){
+	int height = 100 + 20*suites.length;
+System.out.println("height="+height);
 %>
-	<OPTION VALUE="<%=suites[j].getLSID()%>"><%=suites[j].getName()%> </option>
-<% } // end loop over suites %>
 
-</select>
-<input type='button' name='selectSuites' value='Select Suite' onClick="selectSuiteFilter()"/>
-</span>
-
-
+&nbsp;&nbsp;&nbsp;
+<a href="#" 
+	onclick="window.open('chooseSuite.jsp', 'Suite Filter',
+	'toolbar=no, location=no, status=no, menubar=no, scrollbars=no, resizable=yes,width=300, height=<%=height%>')" class="navbar"> Filter by Suite </a>
 
 	</td>
 	<td align="right" valign="top" class="navbar">
@@ -486,11 +474,12 @@ function checkEnableNavbar() {
 		}
 
 		String shortenedName = shortName;
-		if (shortName.length() > 41){
+		int halfLength = Integer.parseInt(System.getProperty("gp.name.halflength", "17"));
+		
+		if (shortName.length() > ((2*halfLength)+3)){
 			int len = shortName.length();
-			int idx = shortName.length() - 19;
-			shortenedName = shortName.substring(0,19) + "..." + shortName.substring(idx, len);
-			System.out.println(shortName+ " --> " + shortenedName);
+			int idx = shortName.length() - halfLength;
+			shortenedName = shortName.substring(0,halfLength) + "..." + shortName.substring(idx, len);
 			shortName = shortenedName;
 		}	
 
@@ -511,7 +500,7 @@ function checkEnableNavbar() {
 			 "\" class=\"navbar-tasks-" + authorityType + "\"" + 
 			 " title=\"" + StringUtils.htmlEncode(description) + ", " + l.getAuthority() + "\"" +
 			 (selected ? " selected" : "") +
-			 "><i>" + name + "</i></option>\n");
+			 "><i>" + shortName + "</i></option>\n");
 		
 	}
 
