@@ -84,10 +84,9 @@ suites = adminClient.getAllSuites();
 <body class="paleBackground" >
 <script language="Javascript">
 function okPressed(frm) {
-
 	frm.submit()
-
-	window.opener.history.go(0);	
+//	window.opener.history.go(0);	
+	window.opener.location.reload();	
 	//window.close();
 
 }
