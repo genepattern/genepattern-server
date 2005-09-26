@@ -27,21 +27,35 @@ String[] suiteFilterParams = request.getParameterValues("suiteSelection");
 if (suiteFilterAttr == null) suiteFilterAttr = new ArrayList();
 
 String filter = request.getParameter("filter");
+
+
 System.out.println("filter " + filter);
 boolean filtering = false;
-if (!("all".equals(filter))) {
-	filtering = true;
+
+if ("filter".equals(filter)) {
+
+	if (suiteFilterAttr.contains("all")) {
+		suiteFilterAttr.remove("all");
+	}
+	filtering=true;
+}  else if (filter == null) {
+	if (suiteFilterAttr.contains("all")) {
+		filtering = false;
+	} else {
+		filtering = true;
+	}
 }
 
+
 if (filtering) { 
+	if (suiteFilterAttr.contains("all")) suiteFilterAttr.remove("all");
+
+
 	if (suiteFilterParams  != null){
 		suiteFilterAttr = new ArrayList();
 		for (int i=0; i < suiteFilterParams.length; i++){
 			String suiteId = suiteFilterParams[i];
 			suiteFilterAttr.add(suiteId);
-		}
-		if (suiteFilterAttr.contains("all")) {
-			suiteFilterAttr.remove("all");
 		}
 		request.getSession().setAttribute("suiteSelection",suiteFilterAttr );
 	}
