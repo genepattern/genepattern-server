@@ -69,7 +69,7 @@
 	name = taskInfo.getName();
 	TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
 	String lsid = (String)tia.get(GPConstants.LSID);
-	String libdir = GenePatternAnalysisTask.getTaskLibDir(lsid);
+	String libdir = DirectoryManager.getTaskLibDir(lsid);
 	ParameterInfo[] parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
 	if (parameterInfoArray == null) parameterInfoArray = new ParameterInfo[0];
 	File[] supportFiles = new File(libdir).listFiles();

@@ -244,6 +244,17 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 <td>
 
 <font size=+1><b><%=suite.getName()%></b></font>
+<%
+
+String[] docs = suite.getDocumentationFiles();
+for (int k=0; k < docs.length; k++ ){
+//  http://cp21e-789.broad.mit.edu:8080/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00001:1&file=ClassNeighbors.pdf
+		String doc = docs[k];
+%>
+		<a href='getSuiteDoc.jsp?name=<%=suite.getLSID()%>&file=<%=doc%>'><img src="skin/pdf.jpg" border="0" alt="doc" align="top"></a>
+
+<% }%>
+
 </td><td>
 <table width=100%><tr>
 <td>Author: <%=suite.getAuthor()%></td><td> Owner: <%=suite.getOwner()%><td>
@@ -294,7 +305,7 @@ for (int i=0; i < moduleLsids.length; i++){
 <td>
 <input type="checkbox" checked="true" name="LSID" disabled="true"/>
 	<%=ti.getName()%> (<%=modLsid.getVersion()%>) 
-<a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
+<a href='getTaskDoc.jsp?name=<%=modLsid.toString()%>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
 <a href="addTask.jsp?view=1&name=<%=modLsid.toString()%>"><img src="skin/view.gif" alt="view" border="0" align="texttop"></a> 
 
 </td>

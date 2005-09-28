@@ -6,6 +6,7 @@
 		 org.genepattern.webservice.OmnigeneException,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.server.util.AccessManager,
+org.genepattern.server.webservice.server.DirectoryManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
 	session="false" contentType="text/text" language="Java" %><%
 
@@ -14,7 +15,7 @@
 
 	String taskName = request.getParameter("name");
 	TaskInfo taskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, null);
-	String libdir = GenePatternAnalysisTask.getTaskLibDir(taskName, (String)taskInfo.getTaskInfoAttributes().get(GPConstants.LSID), userID);
+	String libdir = DirectoryManager.getTaskLibDir(taskName, (String)taskInfo.getTaskInfoAttributes().get(GPConstants.LSID), userID);
 	out.println("libdir="+libdir);
 	File[] supportFiles = new File(libdir).listFiles();
 	out.print("support.files=");

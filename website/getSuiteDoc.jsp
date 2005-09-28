@@ -15,6 +15,7 @@
  		 org.genepattern.util.StringUtils,
 		 org.genepattern.util.LSID,
 		 org.genepattern.webservice.TaskInfo,
+		 org.genepattern.webservice.SuiteInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.util.GPConstants,
@@ -32,8 +33,8 @@ String userID= (String)request.getAttribute("userID"); // will force login if ne
 LocalAdminClient adminClient = new LocalAdminClient(userID);
 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 String name = request.getParameter("name");
+SuiteInfo si;
 TaskInfo ti;
-TaskInfoAttributes tia;
 
 if (name == null) {
 %>
@@ -83,31 +84,31 @@ you can download it at no cost from the Adobe website.
 <tbody>
 <%
 
-Collection tasks = adminClient.getTaskCatalog();
-HashMap taskMap = new HashMap();
-for (Iterator iter = tasks.iterator(); iter.hasNext(); ){
-	ti = (TaskInfo) iter.next();
-	LSID lsid = new LSID((String)ti.giveTaskInfoAttributes().get(GPConstants.LSID));
-	ArrayList versions = (ArrayList)taskMap.get(lsid.toStringNoVersion());
+SuiteInfo[] suites = adminClient.getAllSuites();
+HashMap suiteMap = new HashMap();
+for (int i=0; i < suites.length; i++ ){
+	si = suites[i];
+	LSID lsid = new LSID(si.getLSID());
+	ArrayList versions = (ArrayList)suiteMap.get(lsid.toStringNoVersion());
 	if (versions == null) {
 		versions = new ArrayList();
-		taskMap.put(lsid.toStringNoVersion(), versions);
+		suiteMap.put(lsid.toStringNoVersion(), versions);
 	}					
-	versions.add(ti);
+	versions.add(si);
 }
-for (Iterator iter = taskMap.keySet().iterator(); iter.hasNext(); ){
+for (Iterator iter = suiteMap.keySet().iterator(); iter.hasNext(); ){
 	String key = (String)iter.next();
-	ArrayList versions = (ArrayList)taskMap.get(key);
-	TaskInfo[] sortedVersions = (TaskInfo[])versions.toArray(new TaskInfo[versions.size()]);
+	ArrayList versions = (ArrayList)suiteMap.get(key);
+	SuiteInfo[] sortedVersions = (SuiteInfo[])versions.toArray(new SuiteInfo[versions.size()]);
 	Arrays.sort(sortedVersions , new Comparator() {
 				public int compare(Object o1, Object o2) {
-					TaskInfo t1 = (TaskInfo)o1;
-					TaskInfo t2 = (TaskInfo)o2;
+					SuiteInfo t1 = (SuiteInfo)o1;
+					SuiteInfo t2 = (SuiteInfo)o2;
 						
 					LSID l1, l2;					
 					try {
-						l1 = new LSID((String)t1.giveTaskInfoAttributes().get(GPConstants.LSID));
-						l2 = new LSID((String)t2.giveTaskInfoAttributes().get(GPConstants.LSID));
+						l1 = new LSID((String)t1.getLSID());
+						l2 = new LSID((String)t2.getLSID());
 						return l2.getVersion().compareToIgnoreCase(l1.getVersion());
 
 					} catch (MalformedURLException mue) {
@@ -116,11 +117,11 @@ for (Iterator iter = taskMap.keySet().iterator(); iter.hasNext(); ){
 					}
 				}
 			});
-	taskMap.put(key, sortedVersions);
+	suiteMap.put(key, sortedVersions);
 }
 
 
-TreeMap sortedTaskMap = new TreeMap ( new Comparator() {
+TreeMap sortedSuiteMap = new TreeMap ( new Comparator() {
 	public int compare(Object o1, Object o2) {
 		String k1 = (String)o1;
 		String k2 = (String)o2;
@@ -130,46 +131,43 @@ TreeMap sortedTaskMap = new TreeMap ( new Comparator() {
 
 
 
-for (Iterator iter = taskMap.keySet().iterator(); iter.hasNext(); ) {
+for (Iterator iter = suiteMap.keySet().iterator(); iter.hasNext(); ) {
 	String key = (String)iter.next();
-	TaskInfo[] versions = (TaskInfo[])taskMap.get(key);
-	sortedTaskMap.put(((versions[0]).getName()), versions);
+	SuiteInfo[] versions = (SuiteInfo[])suiteMap.get(key);
+	sortedSuiteMap.put(((versions[0]).getName()), versions);
 }
 
 String description;
 LSID lsid;
 String taskType;
-for (Iterator iter = sortedTaskMap.keySet().iterator(); iter.hasNext(); ) {
+for (Iterator iter = sortedSuiteMap.keySet().iterator(); iter.hasNext(); ) {
 	String key = (String)iter.next();
-	TaskInfo[] versions = (TaskInfo[])sortedTaskMap.get(key);
+	SuiteInfo[] versions = (SuiteInfo[])sortedSuiteMap.get(key);
 	String firstName = versions[0].getName();
 	for (int j=0; j < versions.length; j++){
-		ti = (TaskInfo)versions[j];
-		tia = ti.giveTaskInfoAttributes();
-		lsid = new LSID(tia.get(GPConstants.LSID));
-		taskType = tia.get(GPConstants.TASK_TYPE);
-		description = ti.getDescription();
+		si = (SuiteInfo)versions[j];
+		lsid = new LSID(si.getLSID());
+		description = si.getDescription();
 		if (description == null || description.length() == 0) description = "[no description]";
-		boolean isPipeline = taskType.equals(GPConstants.TASK_TYPE_PIPELINE);
 		String indent = "";
-		String taskName = ti.getName();
+		String suiteName = si.getName();
 		
 		if (j >= 1){
 		 	indent="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-			if (firstName.equalsIgnoreCase(taskName)) taskName = "";
+			if (firstName.equalsIgnoreCase(suiteName)) suiteName = "";
 			out.println("");
 %>
 	<tr>
 	<td valign="top"><div id="<%=firstName%>" style="display:none"><%= indent %>
-		<font size='-2'><a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipelineDesigner.jsp" %>?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><nobr><%= ti.getName() %> (<%= lsid.getVersion() %>)</nobr></a></font></div></td>
+		<font size='-2'><a name="<%= si.getName() %>" href=addTask.jsp?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><nobr><%= si.getName() %> (<%= lsid.getVersion() %>)</nobr></a></font></div></td>
 	<td valign="top"><div id="<%=firstName%>" style="display:none"><%= StringUtils.htmlEncode(description) %>
 	<br>
 <%
-		File[] docFiles = taskIntegratorClient.getDocFiles(ti);
+		String[] docFiles = si.getDocumentationFiles();
 		if (docFiles.length == 0) out.println("[no documentation]");
 		for (int i = 0; i < docFiles.length; i++) {
 %>
-		<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= lsid %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>"><%= docFiles[i].getName() %></a>
+		<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= lsid %>&file=<%= URLEncoder.encode(docFiles[i]) %>"><%= docFiles[i] %></a>
 <%
 			}
 
@@ -180,7 +178,7 @@ out.println("</div></td></tr>");
 %>
 	<tr>
 	<td valign="top"><%= indent %>
-		<a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipelineDesigner.jsp" %>?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><nobr><%= ti.getName() %> 
+		<a name="<%= si.getName() %>" href="addTask.jsp?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><nobr><%= si.getName() %> 
 		(<%= lsid.getVersion() %>)</nobr><a/>
 <%
 	if (versions.length > 1){
@@ -195,11 +193,11 @@ out.println("</div></td></tr>");
 	<td valign="top"><%= StringUtils.htmlEncode(description) %>
 	<br>
 <%
-		File[] docFiles = taskIntegratorClient.getDocFiles(ti);
+		String[] docFiles = si.getDocumentationFiles();
 		if (docFiles.length == 0) out.println("[no documentation]");
 		for (int i = 0; i < docFiles.length; i++) {
 %>
-		<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= lsid %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>"><%= docFiles[i].getName() %></a>
+		<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= lsid %>&file=<%= URLEncoder.encode(docFiles[i]) %>"><%= docFiles[i] %></a>
 <%
 	
 			}
@@ -219,19 +217,20 @@ out.println("</div></td></tr>");
 <%
 	return;
 }
-ti = GenePatternAnalysisTask.getTaskInfo(name, userID);
-if (ti == null) {
-	out.print("No such task: " + name);
+si = adminClient.getSuite(name);
+
+if (si == null) {
+	out.print("No such suite: " + name);
 	return;
 }
-tia = ti.giveTaskInfoAttributes();
+
 
 String filename = request.getParameter("file");
 if (filename != null && filename.length() == 0) filename = null;
 if (filename == null) {
-	File[] docFiles = taskIntegratorClient.getDocFiles(ti);
+	String[] docFiles = si.getDocumentationFiles();
 	if (docFiles.length > 0) {
-		filename = docFiles[0].getName();
+		filename = docFiles[0];
 	}
 }
 if (filename == null) {
@@ -245,7 +244,7 @@ if (filename == null) {
 	</head>
 	<body>
 	<jsp:include page="navbar.jsp"></jsp:include>
-	Sorry, no documentation available for <a href="addTask.jsp?<%= GPConstants.NAME %>=<%= name %>&view=1"><%= ti.getName() %></a>.<br>
+	Sorry, no documentation available for <%= si.getName() %>.<br>
 	<jsp:include page="footer.jsp"></jsp:include>
 	</body>
 	</html>
@@ -253,22 +252,22 @@ if (filename == null) {
 	return;
 }
 if (filename.indexOf("/") != -1) filename = filename.substring(filename.indexOf("/")+1);
-String taskLibDir = DirectoryManager.getTaskLibDir(ti.getName(), (String)tia.get(GPConstants.LSID), userID);
+String suiteLibDir = DirectoryManager.getSuiteLibDir(si.getName(), si.getLSID(), userID);
 int i = filename.lastIndexOf(".");
 
-File in = new File(taskLibDir, filename);
+File in = new File(suiteLibDir, filename);
 if (!in.exists()) {
 %>
 	<html>
 	<head>
 	<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 	<link href="skin/favicon.ico" rel="shortcut icon">
-	<title>GenePattern task documentation</title>
+	<title>GenePattern suite documentation</title>
 	<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 	</head>
 	<body>
 	<jsp:include page="navbar.jsp"></jsp:include>
-	Sorry, no such file <%= filename %> for <a href="addTask.jsp?<%= GPConstants.NAME %>=<%= tia.get(GPConstants.LSID) %>&view=1"><%= ti.getName() %></a>.<br>
+	Sorry, no such file <%= filename %> for <%= si.getName() %>.<br>
 	<jsp:include page="footer.jsp"></jsp:include>
 	</body>
 	</html>

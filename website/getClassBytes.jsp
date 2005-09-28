@@ -9,8 +9,8 @@
 		 java.util.StringTokenizer,
 		 java.util.jar.*,
 		 java.util.zip.*,
-		 org.genepattern.util.GPConstants,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask" 
+		org.genepattern.server.webservice.server.DirectoryManager
+		 org.genepattern.util.GPConstants" 
 session="false" contentType="text/text" language="Java" %><%
 
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -26,7 +26,7 @@ if (classPath == null) classPath="";
 
 if (DEBUG) System.out.println("1. Looking for " + taskName + "'s " + className + " class on " + classPath );
 int i;
-String startingPath = GenePatternAnalysisTask.getTaskLibDir(taskName, null, null) + File.separator;
+String startingPath = DirectoryManager.getTaskLibDir(taskName, null, null) + File.separator;
 StringBuffer after = new StringBuffer(classPath);
 String[] fileList = new File(startingPath).list(new FilenameFilter() {
 				public boolean accept(File dir, String name) {

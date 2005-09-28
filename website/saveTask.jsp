@@ -27,6 +27,7 @@
 		 org.genepattern.webservice.WebServiceException, 
 		 org.genepattern.webservice.WebServiceErrorMessageException, 
 		 org.genepattern.server.webservice.*,
+		 org.genepattern.server.webservice.server.DirectoryManager
 		 org.genepattern.server.webapp.*,
 		 org.genepattern.data.pipeline.PipelineModel,
 		 com.jspsmart.upload.*,
@@ -242,13 +243,13 @@ if (formerName != null && formerName.length() > 0 && !formerName.equals(taskName
 		// TODO: handle overwrite-by-renaming of some other task
 	}
 
-	attachmentDir = GenePatternAnalysisTask.getTaskLibDir(taskName, lsid, userID);
+	attachmentDir = DirectoryManager.getTaskLibDir(taskName, lsid, userID);
 	dir = new File(attachmentDir);
 	dir.delete(); // delete the just created directory
 
 	// renaming task, need to rename taskLib directory for this task
 	formerName = requestParameters.getParameter(GPConstants.FORMER_NAME);
-	File oldDir = new File(GenePatternAnalysisTask.getTaskLibDir(formerName, lsid, userID));
+	File oldDir = new File(DirectoryManager.getTaskLibDir(formerName, lsid, userID));
 	oldDir.renameTo(dir);
 
 	// TODO: check whether this task is involved in any pipelines and if so, alert/offer to rename
@@ -351,7 +352,7 @@ try {
 
 	// make $GenePatternHome/taskLib/<taskName> to store DLLs, etc.
 
-	attachmentDir = GenePatternAnalysisTask.getTaskLibDir(requestParameters.getParameter(GPConstants.NAME), lsid, userID);
+	attachmentDir = DirectoryManager.getTaskLibDir(requestParameters.getParameter(GPConstants.NAME), lsid, userID);
 	dir = new File(attachmentDir);
 
 	for (i=0;i<mySmartUpload.getFiles().getCount();i++){
@@ -392,7 +393,7 @@ if (forward == null) {
 if(vProblems != null && vProblems.size() > 0) {
 	if (formerName != null && formerName.length() > 0 && !formerName.equals(taskName)) {
 		// renaming task, need to rename taskLib directory for this task
-		dir.renameTo(new File(GenePatternAnalysisTask.getTaskLibDir(formerName, lsid, userID)));
+		dir.renameTo(new File(DirectoryManager.getTaskLibDir(formerName, lsid, userID)));
 	}
 
 %>

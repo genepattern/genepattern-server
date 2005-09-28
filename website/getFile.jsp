@@ -1,9 +1,9 @@
 <%@ page import="java.io.File,
 		 java.io.IOException,
 		 java.util.Hashtable,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.LSID,
 		 org.genepattern.util.GPConstants,
+		org.genepattern.server.webservice.server.DirectoryManager,
 		 com.jspsmart.upload.*"
 	session="false" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><% 
 
@@ -43,14 +43,14 @@ mySmartUpload.initialize(pageContext);
 File in = null;
 try {
 	if (taskName.length() > 0) {
-		in = new File(GenePatternAnalysisTask.getTaskLibDir(taskName), filename);
+		in = new File(DirectoryManager.getTaskLibDir(taskName), filename);
 	} else {
 		// look in temp for pipelines run without saving
 		in = new File(System.getProperty("java.io.tmpdir"), filename);
 	}
 } catch (Exception e) {
 	try {
-		in = new File(GenePatternAnalysisTask.getTaskLibDir(taskName, null, null), filename);
+		in = new File(DirectoryManager.getTaskLibDir(taskName, null, null), filename);
 	} catch (Exception e2) {
 		out.println("No such task " + taskName);
 		return;

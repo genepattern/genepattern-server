@@ -96,7 +96,7 @@ try {
 		try {
 			TaskInfo taskInfo = GenePatternAnalysisTask.getTaskInfo(requestParameters.getParameter("changePipeline"), userID);
 			String lsid = (String)taskInfo.getTaskInfoAttributes().get(GPConstants.LSID);
-			String attachmentDir = GenePatternAnalysisTask.getTaskLibDir(requestParameters.getParameter("pipeline_name"), lsid, userID); // + "." + GPConstants.TASK_TYPE_PIPELINE);
+			String attachmentDir = DirectoryManager.getTaskLibDir(requestParameters.getParameter("pipeline_name"), lsid, userID); // + "." + GPConstants.TASK_TYPE_PIPELINE);
 			File dir = new File(attachmentDir);
 			try {
 				GenePatternAnalysisTask.deleteTask(lsid);
@@ -410,7 +410,7 @@ try {
 			String attachmentName = null;
 
 			if (!isTemp) {
-				attachmentDir = GenePatternAnalysisTask.getTaskLibDir(modelName + "." + GPConstants.TASK_TYPE_PIPELINE, lsid, userID);
+				attachmentDir = DirectoryManager.getTaskLibDir(modelName + "." + GPConstants.TASK_TYPE_PIPELINE, lsid, userID);
 				dir = new File(attachmentDir);
 				dir.mkdir();
 			}
@@ -542,7 +542,7 @@ try {
 <%
 		// delete the legacy R file for the pipeline, if it exists
 		pipelineName = model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE;
-		String dir = GenePatternAnalysisTask.getTaskLibDir(pipelineName, lsid, userID);
+		String dir = DirectoryManager.getTaskLibDir(pipelineName, lsid, userID);
       out.println(model.getName() + " version " + new org.genepattern.util.LSID(model.getLsid()).getVersion()  + " has been saved.");
 		new File(dir, model.getName() + ".r").delete();
 
@@ -583,8 +583,8 @@ try {
 	}
 } %>
 <%! void copySupportFiles(String oldTaskName, String newTaskName, String oldLSID, String newLSID, String userID) throws Exception {
-	String oldDir = GenePatternAnalysisTask.getTaskLibDir(oldTaskName + "." + GPConstants.TASK_TYPE_PIPELINE, oldLSID, userID);
-	String newDir = GenePatternAnalysisTask.getTaskLibDir(newTaskName + "." + GPConstants.TASK_TYPE_PIPELINE, newLSID, userID);
+	String oldDir = DirectoryManager.getTaskLibDir(oldTaskName + "." + GPConstants.TASK_TYPE_PIPELINE, oldLSID, userID);
+	String newDir = DirectoryManager.getTaskLibDir(newTaskName + "." + GPConstants.TASK_TYPE_PIPELINE, newLSID, userID);
 	File[] oldFiles = new File(oldDir).listFiles(new FilenameFilter() {
 				public boolean accept(File dir, String name) {
 					return (!name.endsWith(".old") && !name.equals("version.txt"));

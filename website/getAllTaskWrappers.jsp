@@ -15,6 +15,7 @@
  		 org.genepattern.util.StringUtils,
 		 org.genepattern.server.genepattern.LSIDManager,
 		 org.genepattern.server.util.AccessManager,
+		org.genepattern.server.webservice.server.DirectoryManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
 	session="false" contentType="text/plain" language="Java" %><%
 
@@ -178,7 +179,7 @@ if (language.equals("R")) {
 
 	boolean isVisualizer = taskInfoAttributes.get(GPConstants.TASK_TYPE).equals(GPConstants.TASK_TYPE_VISUALIZER);
 	if (isVisualizer) {
-		String libdir = GenePatternAnalysisTask.getTaskLibDir(taskInfo.getName(), sLSID, userID);
+		String libdir = DirectoryManager.getTaskLibDir(taskInfo.getName(), sLSID, userID);
 		File[] supportFiles = new File(libdir).listFiles();
 		String paramName = null;
 

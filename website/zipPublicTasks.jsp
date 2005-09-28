@@ -15,7 +15,7 @@
 		 java.util.zip.*,
 		 org.genepattern.webservice.OmnigeneException,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
+   		org.genepattern.server.webservice.server.DirectoryManager
 		 org.genepattern.server.webservice.server.local.*"
 	session="false" contentType="text/html" language="Java" %>
 <%
@@ -106,7 +106,7 @@ try {
 
 		// insert attachments
 		// find $OMNIGENE_ANALYSIS_ENGINE/taskLib/<taskName> to locate DLLs, other support files
-		dir = new File(GenePatternAnalysisTask.getTaskLibDir(taskInfo.getName(), (String)taskInfo.getTaskInfoAttributes().get(GPConstants.LSID), null));
+		dir = new File(DirectoryManager.getTaskLibDir(taskInfo.getName(), (String)taskInfo.getTaskInfoAttributes().get(GPConstants.LSID), null));
 		File attachment = null;
 		String attachmentName = null;
 		File[] fileList = dir.listFiles(new FilenameFilter() {

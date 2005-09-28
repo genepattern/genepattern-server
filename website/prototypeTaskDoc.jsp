@@ -2163,7 +2163,7 @@ String lsid = (String)taskInfo.getTaskInfoAttributes().get(GPConstants.LSID);
 	} else {
 	   s = "";
 	   try {
-		   String[] allFiles = new File(GenePatternAnalysisTask.getTaskLibDir(taskName, lsid, userID)).list(new FilenameFilter() {
+		   String[] allFiles = new File(DirectoryManager.getTaskLibDir(taskName, lsid, userID)).list(new FilenameFilter() {
 						public boolean accept(File dir, String name) {
 							return (!(name.endsWith(".old")));
 						} });
