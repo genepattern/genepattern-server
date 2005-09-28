@@ -2,7 +2,7 @@
 		 java.net.URLEncoder,
 		 java.util.Date,
 		 org.genepattern.server.util.BeanReference,
-		 org.genepattern.server.ejb.AnalysisJobDataSource,
+		 org.genepattern.server.webservice.server.AnalysisJobDataSource,
 		 org.genepattern.webservice.JobInfo,
 		 org.genepattern.webservice.JobStatus,
 		 org.genepattern.webservice.ParameterInfo,
