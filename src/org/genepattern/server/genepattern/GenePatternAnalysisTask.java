@@ -61,12 +61,12 @@ import org.xml.sax.InputSource;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.genepattern.server.AnalysisServiceException;
-import org.genepattern.server.dbloader.DBLoader;
 import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.server.indexer.Indexer;
 import org.genepattern.server.indexer.IndexerDaemon;
 import org.genepattern.server.util.BeanReference;
 import org.genepattern.server.webservice.server.ITaskIntegrator;
+import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.util.IGPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.StringUtils;
@@ -174,12 +174,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	private static Logger _cat = Logger
 			.getLogger("edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask");
 
-	/**
-	 * location on server of taskLib directory where per-task support files are
-	 * stored
-	 */
-	private static String taskLibDir = null;
-
+	
 	protected static final String CLASSPATH = "classpath";
 
 	protected static final String OUTPUT_FILENAME = "output_filename";
@@ -203,10 +198,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 	/** hashtable of running pipelines. key=jobID (as String), value=Process */
 	protected static Hashtable htRunningPipelines = new Hashtable();
 
-	/** mapping of LSIDs to taskLibDir directories */
-	protected static Hashtable htTaskLibDir = new Hashtable();
-
-	/** indicates whether version string has been displayed by init already */
+		/** indicates whether version string has been displayed by init already */
 	protected static boolean bAnnounced = false;
 
 	/** use rename or copy for input files */
@@ -1601,7 +1593,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 		TaskInfo ti = GenePatternAnalysisTask.getTaskInfo(lsid, username);
 		File libdir = null;
 		try {
-			libdir = new File(getTaskLibDir(ti.getName(), (String) ti
+			libdir = new File(DirectoryManager.getTaskLibDir(ti.getName(), (String) ti
 					.getTaskInfoAttributes().get(LSID), username));
 		} catch (Exception e) {
 			// ignore
@@ -1738,191 +1730,6 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 	}
 
 	/**
-	 * Locates the directory where the a particular task's files are stored. It
-	 * is one level below $omnigene.conf/taskLib. TODO: involve userID in this,
-	 * so that there is no conflict among same-named private tasks. Creates the
-	 * directory if it doesn't already exist.
-	 * 
-	 * @param taskName
-	 *            name of task to look up
-	 * @return directory name on server where taskName support files are stored
-	 * @throws Exception
-	 *             if genepattern.properties System property not defined
-	 * @author Jim Lerner
-	 */
-
-	public static String getTaskLibDir(String lsid) throws Exception,
-			MalformedURLException {
-		LSID l = new LSID(lsid);
-		if (l.getAuthority().equals("") || l.getIdentifier().equals("")
-				|| !l.hasVersion()) {
-			throw new MalformedURLException("invalid LSID");
-		}
-		return getTaskLibDir(null, lsid, null);
-	}
-
-	/**
-	 * Locates the directory where the a particular task's files are stored. It
-	 * is one level below $omnigene.conf/taskLib. TODO: involve userID in this,
-	 * so that there is no conflict among same-named private tasks. Creates the
-	 * directory if it doesn't already exist.
-	 * 
-	 * @param taskName
-	 *            name of task to look up
-	 * @return directory name on server where taskName support files are stored
-	 * @throws Exception
-	 *             if genepattern.properties System property not defined
-	 * @author Jim Lerner
-	 */
-	public static String getTaskLibDir(String taskName, String sLSID,
-			String username) throws Exception {
-		String ret = null;
-		if (sLSID != null) {
-			ret = (String) htTaskLibDir.get(sLSID);
-			if (ret != null)
-				return ret;
-		}
-
-		try {
-			File f = null;
-			if (taskLibDir == null) {
-				taskLibDir = System.getProperty("genepattern.properties");
-				if (taskLibDir == null)
-					throw new Exception(
-							"GenePatternAnalysisTask.getTaskLibDir: genepattern.properties environment variable not set");
-				f = new File(taskLibDir).getParentFile();
-				f = new File(f, "taskLib");
-				taskLibDir = f.getCanonicalPath();
-			}
-			LSID lsid = null;
-			TaskInfo taskInfo = null;
-			if (sLSID != null && sLSID.length() > 0) {
-				try {
-					lsid = new LSID(sLSID);
-					//System.out.println("getTaskLibDir: using lsid " + sLSID +
-					// " for task name " + taskName);
-					if (taskName == null || taskInfo == null) {
-						// lookup task name for this LSID
-						taskInfo = getTaskInfo(lsid.toString(), username);
-						if (taskInfo != null) {
-							taskName = taskInfo.getName();
-							if (username == null)
-								username = taskInfo.getUserId();
-						}
-					}
-				} catch (MalformedURLException mue) {
-					_cat.info("getTaskLibDir: bad sLSID " + sLSID);
-				}
-			}
-			if (lsid == null && taskName != null) {
-				try {
-					lsid = new LSID(taskName);
-					_cat.debug("getTaskLibDir: using lsid from taskName "
-							+ taskName);
-					// lookup task name for this LSID
-					taskInfo = getTaskInfo(lsid.toString(), username);
-					if (taskInfo == null)
-						throw new Exception("can't getTaskInfo from "
-								+ lsid.toString());
-					taskName = taskInfo.getName();
-					if (username == null)
-						username = taskInfo.getUserId();
-				} catch (MalformedURLException mue2) {
-					// neither LSID nor taskName is an actual LSID. So use the
-					// taskName without an LSID
-					_cat.info("getTaskLibDir: using taskName " + taskName);
-				}
-			}
-			String dirName = makeDirName(lsid, taskName, taskInfo);
-			f = new File(taskLibDir, dirName);
-			f.mkdirs();
-			ret = f.getCanonicalPath();
-			if (lsid != null) {
-				htTaskLibDir.put(lsid, ret);
-			}
-			return ret;
-		} catch (Exception e) {
-			//e.printStackTrace();
-			throw e;
-		}
-	}
-
-	/**
-	 * Locates the directory where the a particular task's files are stored. It
-	 * is one level below $omnigene.conf/taskLib. TODO: involve userID in this,
-	 * so that there is no conflict among same-named private tasks. Creates the
-	 * directory if it doesn't already exist.
-	 * 
-	 * @param taskName
-	 *            name of task to look up
-	 * @return directory name on server where taskName support files are stored
-	 * @throws Exception
-	 *             if genepattern.properties System property not defined
-	 * @author Jim Lerner
-	 */
-	public static String getTaskLibDir(TaskInfo taskInfo) throws Exception {
-		File f = null;
-		if (taskLibDir == null) {
-			taskLibDir = System.getProperty("genepattern.properties");
-			if (taskLibDir == null)
-				throw new Exception(
-						"GenePatternAnalysisTask.getTaskLibDir: genepattern.properties environment variable not set");
-			f = new File(taskLibDir).getParentFile();
-			f = new File(f, "taskLib");
-			taskLibDir = f.getCanonicalPath();
-		}
-		String taskName = taskInfo.getName();
-		TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-		LSID lsid = null;
-		try {
-			lsid = new LSID(tia.get(IGPConstants.LSID));
-		} catch (MalformedURLException mue) {
-			// ignore -- not an LSID
-		} catch (Exception e2) {
-		}
-		String dirName = makeDirName(lsid, taskName, taskInfo);
-		f = new File(taskLibDir, dirName);
-		f.mkdirs();
-		return f.getCanonicalPath();
-	}
-
-	protected static String makeDirName(LSID lsid, String taskName,
-			TaskInfo taskInfo) {
-		String dirName;
-		int MAX_DIR_LENGTH = 255; // Mac OS X directory name limit
-		String version;
-		String invariantPart = (taskInfo != null ? ("" + taskInfo.getID())
-				: Integer.toString(Math.abs(taskName.hashCode()), 36)); // [a-z,0-9];
-		if (lsid != null) {
-			//invariantPart = lsid.getAuthority() + "-" + lsid.getNamespace() +
-			// "-" + lsid.getIdentifier();
-			version = lsid.getVersion();
-			if (version.equals("")) {
-				//invariantPart = "" + Math.random() + "-" + Math.random() ;
-				version = "tmp";
-			}
-			// String hashBase36 =
-			// Integer.toString(Math.abs(invariantPart.hashCode()), 36); //
-			// [a-z,0-9]
-		} else {
-			//try { throw new Exception("no LSID given"); } catch (Exception e)
-			// { System.out.println(e.getMessage()); e.printStackTrace(); }
-			dirName = taskName;
-			version = "1";
-		}
-		dirName = "." + version + "." + invariantPart; // hashBase36;
-		dirName = taskName.substring(0, Math.min(MAX_DIR_LENGTH
-				- dirName.length(), taskName.length()))
-				+ dirName;
-		//	System.out.println("makeDirName: " + dirName + " from task " +
-		// (taskInfo != null ? ("" + taskInfo.getID()) : "[no taskInfo]") + ",
-		// LSID " + lsid);
-		//	if (taskInfo == null) try { throw new Exception("where am I?"); }
-		// catch (Exception e) { e.printStackTrace(); }
-		return dirName;
-	}
-
-	/**
 	 * Given a task name and a Hashtable of environment variables, find the path
 	 * in the environment and add the named task's directory to the path,
 	 * supporting enhanced transparency of execution in the GenePattern
@@ -1947,7 +1754,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 			pathKey = "PATH";
 			path = (String) envVariables.get(pathKey);
 		}
-		String taskDir = getTaskLibDir(taskName, sLSID, null);
+		String taskDir = DirectoryManager.getTaskLibDir(taskName, sLSID, null);
 
 		if (isWindows) {
 			// Windows
@@ -2050,7 +1857,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 
 			// as a convenience to the user, create a <libdir> property which is
 			// where DLLs, JARs, EXEs, etc. are dumped to when adding tasks
-			String taskLibDir = (taskID != -1 ? new File(getTaskLibDir(
+			String taskLibDir = (taskID != -1 ? new File(DirectoryManager.getTaskLibDir(
 					taskName, sLSID, userID)).getPath()
 					+ System.getProperty("file.separator") : "taskLibDir");
 			props.put(LIBDIR, taskLibDir);
@@ -3402,8 +3209,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 					lsid = (String) tia.get(IGPConstants.LSID);
 
 					// extract files from zip file
-					String taskDir = GenePatternAnalysisTask
-							.getTaskLibDir((String) tia.get(IGPConstants.LSID));
+					String taskDir = DirectoryManager.getTaskLibDir((String) tia.get(IGPConstants.LSID));
 					File dir = new File(taskDir);
 
 					// if there are any existing files from a previous installation

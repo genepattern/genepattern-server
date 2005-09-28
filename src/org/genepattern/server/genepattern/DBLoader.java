@@ -1,4 +1,4 @@
-package org.genepattern.server.dbloader;
+package org.genepattern.server.genepattern;
 
 import java.rmi.RemoteException;
 
