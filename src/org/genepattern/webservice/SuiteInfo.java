@@ -11,7 +11,7 @@ import java.io.*;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.Iterator;
-
+import org.genepattern.server.webservice.server.DirectoryManager;
 
 
 public class SuiteInfo implements Serializable {
@@ -22,13 +22,14 @@ public class SuiteInfo implements Serializable {
 	private String author = null;
 	private String owner = null;
 	private String[] moduleLsids = new String[0];
+	private String[] docFiles = new String[0];
 
 
 	/** Creates new SuiteInfo  */
 	public SuiteInfo () {
 	}
 
-	public SuiteInfo (String lsid, String name, String description, String author, String owner, ArrayList modules, int access_id) {
+	public SuiteInfo (String lsid, String name, String description, String author, String owner, ArrayList modules, int access_id, ArrayList docs) {
 		this.lsid = lsid;
 		this.name = name;
 		this.author = author;
@@ -36,6 +37,8 @@ public class SuiteInfo implements Serializable {
 		this.description = description;
 		this.moduleLsids = (String[])modules.toArray(new String[modules.size()]);
 		this.accessId = access_id;
+		this.docFiles = (String[])docs.toArray(new String[docs.size()]);
+
 	}
 
 	public SuiteInfo(Map hm){
@@ -51,6 +54,13 @@ public class SuiteInfo implements Serializable {
 		for (Iterator iter = modules.iterator(); iter.hasNext(); i++){
 			Map modMap = (Map)iter.next();
 			moduleLsids[i] = (String) modMap.get("lsid");
+		}
+		ArrayList docs = (ArrayList)hm.get("docFiles");
+		this.docFiles = new String[docs.size()];
+		i=0;
+		for (Iterator iter = docs.iterator(); iter.hasNext(); i++){
+			String doc = (String)iter.next();
+			docFiles[i] = doc;
 		}
 
 	}
@@ -114,10 +124,6 @@ public class SuiteInfo implements Serializable {
 	}
 
 	public String[] getModuleLSIDs(){
-		for (int i=0; i < moduleLsids.length; i++){
-			System.out.println("\t==>" + moduleLsids[i]);
-		}
-
 		return moduleLsids;
 	}
 	
@@ -125,6 +131,13 @@ public class SuiteInfo implements Serializable {
 		this.moduleLsids  = mods;
 	}
 	
+	public String[] getDocumentationFiles(){
+		return docFiles  ;
+	}
+	
+	public void setDocumentationFiles(String[] mods){
+		this.docFiles  = mods;
+	}
 	
 	public boolean equals(Object otherThing) {
 		if (!(otherThing instanceof SuiteInfo ) || otherThing == null)

@@ -15,6 +15,7 @@ import java.util.List;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.StringUtils;
@@ -855,8 +856,7 @@ class DeleteUnsavedTasklibDirThread extends Thread {
 		}
 
 		try {
-			java.io.File fDir = new java.io.File(GenePatternAnalysisTask
-					.getTaskLibDir(taskInfo));
+			java.io.File fDir = new java.io.File(DirectoryManager.getTaskLibDir(taskInfo));
 			// delete the temp files now
 			if (fDir.exists()) {
 				java.io.File[] children = fDir.listFiles();

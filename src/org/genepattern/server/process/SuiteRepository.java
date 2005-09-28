@@ -149,12 +149,6 @@ public class SuiteRepository {
         manifest.put("owner", owner.getText());
         manifest.put("description", description.getText());
         
-        System.out.println("name=" + name.getText());
-        System.out.println("lsid=" + lsid.getText());
-        System.out.println("author=" + author.getText());
-        System.out.println("owner=" + owner.getText());
-        System.out.println("description=" + description.getText());
-
         ArrayList modules = new ArrayList();
         manifest.put("modules", modules);
         for(Iterator i = root.getChildren("module").iterator(); i.hasNext(); ) {
@@ -174,10 +168,7 @@ public class SuiteRepository {
 		      moduleMap.put("docFile", tdoc.getText());
 		}
            modules.add(moduleMap);
-            //System.out.println("\tModule Name=" + tname.getText());
-            //System.out.println("\tModule LSID=" + tlsid.getText());
-
-        }
+         }
 
 		
         ArrayList docFiles = new ArrayList();
@@ -186,7 +177,6 @@ public class SuiteRepository {
         for(Iterator i = root.getChildren("documentationFile").iterator(); i.hasNext(); ) {
             Text docFile = (Text)((Element) i.next()).getContent().get(0);
             docFiles.add(docFile.getText());
-        //    System.out.println("\n\tDocFile=" + docFile.getText());
         }
         
         return manifest;

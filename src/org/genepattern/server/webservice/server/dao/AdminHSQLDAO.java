@@ -28,6 +28,7 @@ import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.server.webservice.server.DirectoryManager;
 
 /**
  * @author Joshua Gould
@@ -69,9 +70,28 @@ public class AdminHSQLDAO implements AdminDAO {
 		String author = resultSet.getString("author");
 		// int accessId = resultSet.getInt("access_id");
 
+		ArrayList docs = new ArrayList();
+		try {
+			String suiteDirStr = DirectoryManager.getSuiteLibDir(name, lsid,owner);
+			File suiteDir = new File(suiteDirStr);
+		
+			if (suiteDir.exists()){
+				File docFiles[] = suiteDir.listFiles();
+				for (int i=0; i < docFiles.length; i++){
+					File f = docFiles[i];
+					docs.add(f.getName());				
+				}
+			}
+		} catch (Exception e){
+			// swallow & no docs
+			e.printStackTrace();
+		}
+
+
+
 		ArrayList mods = getSuiteModules(lsid);
 
-		SuiteInfo suite = new SuiteInfo(lsid, name, description, owner, author, mods, access_id);
+		SuiteInfo suite = new SuiteInfo(lsid, name, description, owner, author, mods, access_id, docs);
 
 		return suite;
 

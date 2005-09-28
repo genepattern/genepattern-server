@@ -26,6 +26,7 @@ import org.genepattern.webservice.WebServiceException;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.server.webservice.server.DirectoryManager;
 
 public class ProvenanceFinder {
 	public static String serverURL = null;
@@ -199,7 +200,7 @@ public class ProvenanceFinder {
 	protected void copyFilesToPipelineDir(String pipelineLSID){
 		String attachmentDir = null;
 		try {
-			attachmentDir = GenePatternAnalysisTask.getTaskLibDir(pipelineLSID);
+			attachmentDir = DirectoryManager.getTaskLibDir(pipelineLSID);
 		} catch (Exception e){
 			System.out.println("Could not copy files for pipeline: " + pipelineLSID);
 			e.printStackTrace();

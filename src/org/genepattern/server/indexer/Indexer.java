@@ -40,6 +40,7 @@ import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.server.webservice.server.DirectoryManager;
 
 public class Indexer {
 
@@ -524,7 +525,7 @@ public class Indexer {
 					+ "=" + lsid + "&view=1"));
 
 			// index documentation files for this task
-			String taskLibDir = GenePatternAnalysisTask.getTaskLibDir(lsid);
+			String taskLibDir = DirectoryManager.getTaskLibDir(lsid);
 			String[] docs = new File(taskLibDir).list(new FilenameFilter() {
 				public boolean accept(File dir, String name) {
 					return !name.endsWith(".old");

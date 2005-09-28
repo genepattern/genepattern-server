@@ -29,6 +29,8 @@ import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
 import org.genepattern.server.process.SuiteRepository;
+import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 
 /**
  * @author Ted Liefeld
@@ -57,8 +59,24 @@ public class TaskIntegratorHSQLDAO {
 		// int accessId = resultSet.getInt("access_id");
 
 		ArrayList mods = null;//getSuiteModules(lsid);
+		ArrayList docs = new ArrayList();
+		
+		try {
+			String suiteDirStr = DirectoryManager.getSuiteLibDir(name, lsid,owner);
+			File suiteDir = new File(suiteDirStr);
+			if (suiteDir.exists()){
+				File docFiles[] = suiteDir.listFiles();
+				for (int i=0; i < docFiles.length; i++){
+					File f = docFiles[i];
+					docs.add(f.getName());				
+				}
+			}
+		} catch (Exception e) {
+			// swallow, just no docs
+			e.printStackTrace();
+		}
 
-		SuiteInfo suite = new SuiteInfo(lsid, name, description, owner, author, mods, 1);
+		SuiteInfo suite = new SuiteInfo(lsid, name, description, owner, author, mods, 1, docs);
 
 		return suite;
 
@@ -152,20 +170,39 @@ public class TaskIntegratorHSQLDAO {
 			st = c.prepareStatement("delete FROM suite_modules where lsid =?");
 			st.setString(1, suite.getLSID());
 			int done = st.executeUpdate();
-			
+			String suiteDir = DirectoryManager.getSuiteLibDir(suite.getName(), suite.getLSID(), suite.getOwner());
+
+			System.out.println("SuiteDir=" + suiteDir);
+			String[] docs = suite.getDocumentationFiles();
+			for (int i=0; i < docs.length; i++){
+				System.out.println("Doc=" + docs[i]);
+				String file = GenePatternAnalysisTask.downloadTask(docs[i]);
+				File f2 = new File(suiteDir, filenameFromURL(docs[i]));
+				GenePatternAnalysisTask.rename(new File(file), f2, true);
+
+				// XXX if it is a url, download it and put it in the suiteDir now
+			}
+
 			String[] modLsids = suite.getModuleLSIDs();
 			for (int i=0; i < modLsids.length; i++){
 				installSuiteModule(lsid, modLsids[i]);
 			}
 
 
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new WebServiceException("A database error occurred", e);
 		} finally {
 			close(null, st, c);
 		}
 	}
+
+	public static String filenameFromURL(String url){
+		int idx = url.lastIndexOf("/");
+		if (idx >= 0) return url.substring(idx+1);
+		else return url;
+	}
+
 	
 	public void installSuiteModule(String lsid, String mod_lsid) throws WebServiceException {
 		Connection c = null;

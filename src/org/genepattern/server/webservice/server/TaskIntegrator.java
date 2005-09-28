@@ -40,6 +40,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
 import org.genepattern.server.webservice.server.dao.TaskIntegratorHSQLDAO;
+import org.genepattern.server.webservice.server.DirectoryManager;
 
 /**
  * TaskIntegrator Web Service. Do a Thread.yield at beginning of each method-
@@ -258,7 +259,7 @@ System.out.println("\n A. Installing a TASK ");
 		}
 		try {
 			Thread.yield();
-			String attachmentDir = GenePatternAnalysisTask.getTaskLibDir(lsid);
+			String attachmentDir = DirectoryManager.getTaskLibDir(lsid);
 			File dir = new File(attachmentDir);
 			String[] oldFiles = dir.list(new FilenameFilter() {
 				public boolean accept(File dir, String name) {
@@ -278,7 +279,7 @@ System.out.println("\n A. Installing a TASK ");
 		}
 		try {
 			Thread.yield();
-			String attachmentDir = GenePatternAnalysisTask.getTaskLibDir(lsid);
+			String attachmentDir = DirectoryManager.getTaskLibDir(lsid);
 			File dir = new File(attachmentDir);
 			File f = new File(dir, fileName);
 			if (!f.exists()) {
@@ -299,7 +300,7 @@ System.out.println("\n A. Installing a TASK ");
 				throw new WebServiceException("Invalid LSID");
 			}
 			DataHandler[] dhs = new DataHandler[fileNames.length];
-			String attachmentDir = GenePatternAnalysisTask.getTaskLibDir(lsid);
+			String attachmentDir = DirectoryManager.getTaskLibDir(lsid);
 			File dir = new File(attachmentDir);
 			for (int i = 0; i < fileNames.length; i++) {
 				File f = new File(dir, fileNames[i]);
@@ -322,7 +323,7 @@ System.out.println("\n A. Installing a TASK ");
 				throw new WebServiceException("Invalid LSID");
 			}
 			long[] modificationTimes = new long[fileNames.length];
-			String attachmentDir = GenePatternAnalysisTask.getTaskLibDir(lsid);
+			String attachmentDir = DirectoryManager.getTaskLibDir(lsid);
 			File dir = new File(attachmentDir);
 			for (int i = 0; i < fileNames.length; i++) {
 				File f = new File(dir, fileNames[i]);
@@ -406,7 +407,7 @@ System.out.println("\n A. Installing a TASK ");
 			taskAttributes.put(GPConstants.LSID, lsid); // update so that upon
 														// return, the LSID is
 														// the new one
-			String attachmentDir = GenePatternAnalysisTask.getTaskLibDir(
+			String attachmentDir = DirectoryManager.getTaskLibDir(
 					taskName, lsid, username);
 			File dir = new File(attachmentDir);
 			
@@ -431,7 +432,7 @@ System.out.println("\n A. Installing a TASK ");
 			if(fileNames!=null) {
 				String oldAttachmentDir = null;
 				if(oldLSID!=null) {
-					oldAttachmentDir = GenePatternAnalysisTask.getTaskLibDir(
+					oldAttachmentDir = DirectoryManager.getTaskLibDir(
 						null, oldLSID, username);
 				}
 				int start = dataHandlers != null && dataHandlers.length > 0 ? dataHandlers.length-1
@@ -467,7 +468,7 @@ System.out.println("\n A. Installing a TASK ");
 			TaskInfo taskInfo = new LocalAdminClient(username).getTask(lsid);
 			String taskName = taskInfo.getName();
 
-			String attachmentDir = GenePatternAnalysisTask.getTaskLibDir(
+			String attachmentDir = DirectoryManager.getTaskLibDir(
 					taskName, lsid, username);
 
 			Vector lAttachments = new Vector(Arrays
@@ -507,8 +508,7 @@ System.out.println("\n A. Installing a TASK ");
 				throw new WebServiceException("no such task " + lsid);
 			}
 
-			String attachmentDir = GenePatternAnalysisTask
-					.getTaskLibDir(taskInfo);
+			String attachmentDir = DirectoryManager.getTaskLibDir(taskInfo);
 			GenePatternAnalysisTask.deleteTask(lsid);
 			File dir = new File(attachmentDir);
 			// clear out the directory
@@ -556,9 +556,9 @@ System.out.println("\n A. Installing a TASK ");
 	// copy the taskLib entries to the new directory
 	private void cloneTaskLib(String oldTaskName, String cloneName,
 			String lsid, String cloneLSID, String username) throws Exception {
-		String dir = GenePatternAnalysisTask.getTaskLibDir(oldTaskName, lsid,
+		String dir = DirectoryManager.getTaskLibDir(oldTaskName, lsid,
 				username);
-		String newDir = GenePatternAnalysisTask.getTaskLibDir(cloneName,
+		String newDir = DirectoryManager.getTaskLibDir(cloneName,
 				cloneLSID, username);
 		String[] oldFiles = getSupportFileNames(lsid);
 		byte[] buf = new byte[100000];
@@ -626,7 +626,7 @@ System.out.println("\n A. Installing a TASK ");
 		}
 		try {
 			Thread.yield();
-			String taskLibDir = GenePatternAnalysisTask.getTaskLibDir(lsid);
+			String taskLibDir = DirectoryManager.getTaskLibDir(lsid);
 			String[] docFiles = new File(taskLibDir).list(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
 				return GenePatternAnalysisTask.isDocFile(name)
@@ -647,7 +647,7 @@ System.out.println("\n A. Installing a TASK ");
 		String userID = getUserName();
 		String taskLibDir = null;
 		try {
-			taskLibDir = GenePatternAnalysisTask.getTaskLibDir(lsid);
+			taskLibDir = DirectoryManager.getTaskLibDir(lsid);
 		} catch (Exception e) {
 			throw new WebServiceException(e);
 		}

@@ -14,6 +14,7 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.OmnigeneException;
@@ -199,8 +200,7 @@ public class ZipTask extends CommandLineAction {
 		// insert attachments
 		// find $OMNIGENE_ANALYSIS_ENGINE/taskLib/<taskName> to locate DLLs,
 		// other support files
-		File dir = new File(GenePatternAnalysisTask
-				.getTaskLibDir(name, (String) taskInfo.getTaskInfoAttributes()
+		File dir = new File(DirectoryManager.getTaskLibDir(name, (String) taskInfo.getTaskInfoAttributes()
 						.get(GPConstants.LSID), userID));
 		zipTaskFiles(zos, dir);
 		zos.finish();
