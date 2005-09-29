@@ -2359,6 +2359,13 @@ public class GPGE {
 											file, GPConstants.ACCESS_PUBLIC);
 
 									taskInstalled(new LSID(lsid));
+									final AnalysisService svc = AnalysisServiceManager.getInstance().getAnalysisService(lsid);
+									SwingUtilities.invokeLater(new Thread() {
+										public void run() {
+											GenePattern.showMessageDialog("Successfully installed module " + svc.getName() + ".");
+										}
+									});
+									
 								} catch (WebServiceException wse) {
 									wse.printStackTrace();
 									if (!disconnectedFromServer(wse)) {
