@@ -8,7 +8,7 @@ package org.genepattern.data.expr;
 public interface IExpressionData {
 
 	/**
-	 * Gets the expression value at the given row and column as a string.
+	 * Gets the expression value at the given row and column.
 	 * 
 	 * @param row
 	 *            The row
@@ -16,8 +16,7 @@ public interface IExpressionData {
 	 *            The column
 	 * @return The expression value
 	 */
-	public String getValueAsString(int row, int column);
-
+	public double getValue(int row, int column);
 
 	/**
 	 * Gets the row name at the given row
@@ -52,8 +51,8 @@ public interface IExpressionData {
 	public String getColumnName(int column);
 
 	/**
-	 * Gets the row description at the given row or null if no row description
-	 * exists.
+	 * Gets the row description at the given row or <tt>null</tt> if no row
+	 * description exists.
 	 * 
 	 * @param row
 	 *            The row
@@ -62,8 +61,8 @@ public interface IExpressionData {
 	public String getRowDescription(int row);
 
 	/**
-	 * Gets the column description at the given column or null if no column
-	 * description exists.
+	 * Gets the column description at the given column or <tt>null</tt> if no
+	 * column description exists.
 	 * 
 	 * @param column
 	 *            The column
@@ -71,5 +70,24 @@ public interface IExpressionData {
 	 */
 	public String getColumnDescription(int column);
 
-}
+	/**
+	 * Gets the row index for the row name .
+	 * 
+	 * @param rowName
+	 *            the row name.
+	 * @return the row index, or -1 if the row name is not contained in this
+	 *         matrix
+	 */
+	public int getRowIndex(String rowName);
 
+	/**
+	 * Gets the column index for the column name .
+	 * 
+	 * @param columnName
+	 *            the column name.
+	 * @return the column index, or -1 if the column name is not contained in
+	 *         this matrix
+	 */
+	public int getColumnIndex(String columnName);
+
+}
