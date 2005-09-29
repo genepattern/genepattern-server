@@ -84,7 +84,7 @@ public class ResWriter implements IExpressionDataWriter {
 			out.print(data.getRowName(i));
 			for (int j = 0; j < columns; j++) {
 				out.print("\t");
-				out.print(data.getValueAsString(i, j));
+				out.print(data.getValue(i, j));
 				out.print("\t");
 				String call = expressionData.getCallAsString(i, j);
 				out.print(call);

@@ -57,7 +57,7 @@ public class GctWriter implements IExpressionDataWriter {
 			out.print(rowDescription);
 			for (int j = 0; j < columns; j++) {
 				out.print("\t");
-				out.print(expressionData.getValueAsString(i, j));
+				out.print(expressionData.getValue(i, j));
 			}
 		}
 		out.print("\n");
