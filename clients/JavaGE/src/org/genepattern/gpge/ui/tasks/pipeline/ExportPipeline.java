@@ -46,7 +46,7 @@ public class ExportPipeline {
 				return;
 			}
 			final boolean recursive = _recursive;
-			final File destination = GUIUtil.showSaveDialog(null,
+			final File destination = GUIUtil.showSaveDialog(new File(selectedService.getName() + ".zip"),
 					"Select destination zip file");
 			if (destination == null) {
 				return;
