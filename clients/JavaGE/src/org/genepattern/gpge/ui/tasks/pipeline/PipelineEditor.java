@@ -279,7 +279,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 				} else if (e.getSource() == saveButton) {
 					save();
 				} else if (e.getSource() == runButton) {
-					if (pipelineChanged) {
+					if (!view) { // XXX always ask users if they want to save
+									// pipeline when editing, even if user did
+									// not make any changes
 						int result = GUIUtil
 								.showYesNoCancelDialog(
 										GenePattern.getDialogParent(),
@@ -642,7 +644,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			p.add(mtd.getMissingTasksPanel(), cc.xy(1, 2));
 			p.add(tasksPanel, cc.xy(1, 3));
 			scrollPane.setViewportView(p);
-			headerPanel = new HeaderPanel(model, analysisService, buttonPanel, view);
+			headerPanel = new HeaderPanel(model, analysisService, buttonPanel,
+					view);
 			add(headerPanel, BorderLayout.NORTH);
 
 		}
@@ -711,7 +714,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			return errors;
 		}
 
-		public HeaderPanel(final PipelineEditorModel model, final AnalysisService analysisService, JPanel buttonPanel,
+		public HeaderPanel(final PipelineEditorModel model,
+				final AnalysisService analysisService, JPanel buttonPanel,
 				boolean view) {
 			this.model = model;
 			// setBorder(BorderFactory.createLineBorder());
@@ -842,7 +846,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					}
 				}
 			});
-			
+
 			JButton viewBtn = new JButton("View");
 			viewBtn.setVisible(view && existingDocComboBox.getItemCount() > 0);
 			viewBtn.addActionListener(new ActionListener() {
@@ -850,12 +854,10 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 				public void actionPerformed(ActionEvent e) {
 					String s = (String) existingDocComboBox.getSelectedItem();
 					String url = AnalysisServiceManager.getInstance()
-					.getServer()
-					+ "/gp/getFile.jsp?task="
-					+ analysisService.getLsid()
-					+ "&file="
-					+ s;
-			
+							.getServer()
+							+ "/gp/getFile.jsp?task="
+							+ analysisService.getLsid() + "&file=" + s;
+
 					try {
 						BrowserLauncher.openURL(url);
 					} catch (IOException e1) {
@@ -871,7 +873,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			docPanel.add(deleteDocBtn, cc.xy(3, 1));
 			docPanel.add(addDocBtn, cc.xy(5, 1));
 			docPanel.add(viewBtn, cc.xy(7, 1));
-			
+
 			detailsPanel.add(docPanel, cc.xy(3, 9));
 
 			if (name != null) {
