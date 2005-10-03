@@ -2207,6 +2207,19 @@ public class GPGE {
 					}
 				}
 			});
+			
+			JMenuItem genePatternHomeMenuItem = new JMenuItem(
+					"GenePattern Server");
+			add(genePatternHomeMenuItem);
+			genePatternHomeMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						BrowserLauncher.openURL(AnalysisServiceManager
+								.getInstance().getServer() + "/gp/");
+					} catch (IOException ioe) {
+					}
+				}
+			});
 
 			JMenuItem gettingStartedMenuItem = new JMenuItem("Getting Started");
 			add(gettingStartedMenuItem);
