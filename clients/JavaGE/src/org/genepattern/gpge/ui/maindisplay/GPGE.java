@@ -2384,7 +2384,7 @@ public class GPGE {
 									if (!disconnectedFromServer(wse)) {
 										GenePattern
 												.showErrorDialog("An error occurred while importing "
-														+ file);
+														+ file.getName());
 									}
 								} catch (MalformedURLException e) {
 									e.printStackTrace();
