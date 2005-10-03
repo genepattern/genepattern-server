@@ -1,9 +1,7 @@
 package org.genepattern.server.webservice.server.local;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.TreeMap;
+
+import java.util.*;
 
 import org.genepattern.server.webservice.server.AdminService;
 import org.genepattern.server.webservice.server.IAdminService;
@@ -40,6 +38,10 @@ public class LocalAdminClient {
 		return tmCatalog;
 	}
 
+	public Map getLSIDToVersionsMap() throws WebServiceException {
+		return service.getLSIDToVersionsMap();
+	}
+
 	public TreeMap getTaskCatalogByLSID() throws WebServiceException {
 		return getTaskCatalogByLSID(Arrays.asList(service.getAllTasks()));
 	}
@@ -51,6 +53,45 @@ public class LocalAdminClient {
 		return Arrays.asList(service.getLatestTasks());
 	}
 	
+
+	/**
+	 * return a map keyed by taskType with values being
+	 * alphabetically sorted list of the tasks that are
+	 * part of that type
+	 **/
+	public Map getLatestTasksByType() throws WebServiceException{
+		Collection latest = getLatestTasks();
+		TreeMap typeToTaskMap = new TreeMap(new Comparator() {
+			public int compare(Object o1, Object o2) {
+				String s1 = (String) o1;
+				String s2 = (String) o2;
+				return ((s1.toLowerCase()).compareTo(s2.toLowerCase()));
+			}
+			}
+		);
+		
+		for (Iterator iter = latest.iterator(); iter.hasNext(); ){
+			TaskInfo task = (TaskInfo)iter.next();
+			String type = (String)task.getTaskInfoAttributes().get(GPConstants.TASK_TYPE);
+			
+			if (type == null) type = "Unclassified";
+			TreeSet typeList = (TreeSet)typeToTaskMap.get(type);
+			if (typeList == null) {
+				typeList = new TreeSet( new Comparator() {
+					public int compare(Object o1, Object o2) {
+						TaskInfo t1 = (TaskInfo) o1;
+						TaskInfo t2 = (TaskInfo) o2;
+						return (((String)t1.getName().toLowerCase()).compareTo(t2.getName().toLowerCase()));
+					}
+				}
+				);
+				typeToTaskMap.put(type, typeList);
+			}
+			typeList.add(task);
+		}
+		return typeToTaskMap;
+	}
+
 
 	public TaskInfo getTask(String lsid) throws WebServiceException {
 		return service.getTask(lsid);
