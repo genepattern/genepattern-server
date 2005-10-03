@@ -53,8 +53,11 @@ try {
 	<link href="skin/favicon.ico" rel="shortcut icon">
 <title>Edit Suite</title>
 </head><body>
-<form action="createSuite.jsp">
 <jsp:include page="navbar.jsp"></jsp:include>
+<form action="createSuite.jsp" method="post" ENCTYPE="multipart/form-data" >
+
+<%// ENCTYPE="multipart/form-data" %>
+
 
 <table width=100% cellspacing=2>
 <tr><td colspan=3><h2>Create new GenePattern Suite</td></tr>
