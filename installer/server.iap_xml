@@ -11001,7 +11001,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[..\build\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$\..\build\]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
