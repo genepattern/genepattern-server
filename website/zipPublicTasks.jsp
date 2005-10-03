@@ -15,7 +15,7 @@
 		 java.util.zip.*,
 		 org.genepattern.webservice.OmnigeneException,
 		 org.genepattern.util.GPConstants,
-   		org.genepattern.server.webservice.server.DirectoryManager
+   		org.genepattern.server.webservice.server.DirectoryManager,
 		 org.genepattern.server.webservice.server.local.*"
 	session="false" contentType="text/html" language="Java" %>
 <%
