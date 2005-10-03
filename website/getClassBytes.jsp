@@ -9,7 +9,7 @@
 		 java.util.StringTokenizer,
 		 java.util.jar.*,
 		 java.util.zip.*,
-		org.genepattern.server.webservice.server.DirectoryManager
+		 org.genepattern.server.webservice.server.DirectoryManager, 
 		 org.genepattern.util.GPConstants" 
 session="false" contentType="text/text" language="Java" %><%
 

@@ -1,5 +1,6 @@
 <%@ page import="org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
+		 org.genepattern.server.webservice.server.DirectoryManager,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
