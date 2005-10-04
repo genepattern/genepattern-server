@@ -29,7 +29,7 @@ for i=0:obj.latestModules.size()-1
     taskId = iter.next();
     aTask = obj.latestModules.get(taskId);
     taskInfo = aTask.getTaskInfo();
-    taskName = char(taskInfo.getName());  
+    taskName = strrep(char(taskInfo.getName()), '.', '_') ;
     eval(['obj.methods.' taskName '=aTask;']);
 end
 
