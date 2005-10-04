@@ -16,6 +16,7 @@ import org.genepattern.webservice.OmnigeneException;
  */
 public class LSIDManager {
 
+
 	private static LSIDManager inst = null;
 
 	private static LSIDUtil lsidUtil = LSIDUtil.getInstance();
@@ -37,14 +38,11 @@ public class LSIDManager {
 		return lsidUtil.getAuthority();
 	}
 
-	public String getNamespace() {
-		return lsidUtil.getNamespace();
-	}
-
-	public LSID createNewID() throws OmnigeneException, RemoteException {
+	
+	public LSID createNewID(String namespace) throws OmnigeneException, RemoteException {
 		try {
-			LSID newLSID = new LSID(getAuthority(), getNamespace(),
-					getNextID(), initialVersion);
+			LSID newLSID = new LSID(getAuthority(), namespace,
+					getNextID(namespace), initialVersion);
 			return newLSID;
 		} catch (MalformedURLException mue) {
 			mue.printStackTrace();
@@ -54,10 +52,12 @@ public class LSIDManager {
 	}
 
 	// get the next ID in the sequence from the DB
-	protected synchronized String getNextID() throws OmnigeneException,
-			RemoteException {
+	protected synchronized String getNextID(String namespace) throws OmnigeneException,	RemoteException {
 		AnalysisJobDataSource ds = getDS();
-		int nextId = ds.getNextLSIDIdentifier();
+
+	// XXX handle suites as well
+
+		int nextId = ds.getNextLSIDIdentifier(namespace);
 		return "" + nextId;
 	}
 
@@ -65,6 +65,8 @@ public class LSIDManager {
 	protected synchronized String getNextVersionFromDB(LSID lsid)
 			throws OmnigeneException, RemoteException {
 		AnalysisJobDataSource ds = getDS();
+
+// XXX handle suits as well
 		String nextVersion = ds.getNextLSIDVersion(lsid);
 		return nextVersion;
 	}

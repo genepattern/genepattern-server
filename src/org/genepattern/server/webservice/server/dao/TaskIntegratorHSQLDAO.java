@@ -2,6 +2,8 @@ package org.genepattern.server.webservice.server.dao;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.sql.Connection;
@@ -20,6 +22,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import javax.activation.DataHandler;
+
 import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.LSIDManager;
@@ -31,6 +35,8 @@ import org.genepattern.webservice.WebServiceException;
 import org.genepattern.server.process.SuiteRepository;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.genepattern.LSIDManager;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
 
 /**
  * @author Ted Liefeld
@@ -150,9 +156,20 @@ public class TaskIntegratorHSQLDAO {
 	public void installSuite(SuiteInfo suite) throws WebServiceException {
 		Connection c = null;
 		PreparedStatement st = null;
-		try {
-			deleteSuite(suite.getLSID());
+System.out.println("aa '" + suite.getLSID()+"'");
+		if (suite.getLSID() != null)
+			if (suite.getLSID().trim().length() == 0) suite.setLSID(null);
 
+		try {
+			if (suite.getLSID() != null)	deleteSuite(suite.getLSID());
+			else {
+				// create an LSID for this module
+				LSIDManager lsidManager = LSIDManager.getInstance();
+			
+				String lsid = lsidManager.createNewID(GPConstants.SUITE_NAMESPACE).toString();
+
+				suite.setLSID(lsid);
+			}
 			c = getConnection();
 			st = c.prepareStatement("insert into suite (lsid, name, description, author, owner, access_id ) values (?, ?, ?, ?, ?, ?)");
 			st.setString(1, suite.getLSID());
@@ -171,17 +188,32 @@ public class TaskIntegratorHSQLDAO {
 			st.setString(1, suite.getLSID());
 			int done = st.executeUpdate();
 			String suiteDir = DirectoryManager.getSuiteLibDir(suite.getName(), suite.getLSID(), suite.getOwner());
+System.out.println("B " + suiteDir);
 
 			System.out.println("SuiteDir=" + suiteDir);
 			String[] docs = suite.getDocumentationFiles();
 			for (int i=0; i < docs.length; i++){
 				System.out.println("Doc=" + docs[i]);
-				String file = GenePatternAnalysisTask.downloadTask(docs[i]);
-				File f2 = new File(suiteDir, filenameFromURL(docs[i]));
-				GenePatternAnalysisTask.rename(new File(file), f2, true);
-
-				// XXX if it is a url, download it and put it in the suiteDir now
+				File f2 = new File(docs[i]);
+				// if it is a url, download it and put it in the suiteDir now
+				if (!f2.exists()){
+					String file = GenePatternAnalysisTask.downloadTask(docs[i]);
+					f2 = new File(suiteDir, filenameFromURL(docs[i]));
+					boolean success = GenePatternAnalysisTask.rename(new File(file), f2, true);
+					System.out.println("Doc rename =" + success);	
+				
+				} else {
+					// move file to suitedir
+				
+					File f3 = new File(suiteDir, f2.getName());
+					boolean success = GenePatternAnalysisTask.rename(f2, f3, true);
+					System.out.println("Doc rename =" + success);	
+		
+				}
+				
+				
 			}
+System.out.println("C ");
 
 			String[] modLsids = suite.getModuleLSIDs();
 			for (int i=0; i < modLsids.length; i++){
@@ -229,13 +261,96 @@ public class TaskIntegratorHSQLDAO {
 		throw new WebServiceException("Clone suite Not implemented yet");
 	}
 
+	public String modifySuite(int access_id, String lsid, String name, String description,
+			String author, String owner, ArrayList moduleLsids, ArrayList files)
+			throws WebServiceException{
+
+		String newlsid = lsid;
+		ArrayList docs = new ArrayList();
+		
+		if ((lsid != null) && (lsid.length() > 0)) {
+			try {
+				LSIDManager lsidManager = LSIDManager.getInstance();
+				newlsid = lsidManager.getNextIDVersion(lsid).toString();
+
+				LocalAdminClient adminClient = new LocalAdminClient("GenePattern");
+
+				SuiteInfo oldsi = adminClient.getSuite(lsid);
+				String oldDir = DirectoryManager.getSuiteLibDir(null, lsid, "GenePattern");
+				String[] oldDocs = oldsi.getDocumentationFiles();
+
+				for (int i=0; i < oldDocs.length; i++){
+					File f = new File(oldDir, oldDocs[i]);
+					docs.add(f.getAbsolutePath());
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new WebServiceException(e);
+			}
+		} else {
+			newlsid = null;
+		}
+
+		for (int i=0; i < files.size(); i++){
+			File f = (File)files.get(i);
+			docs.add(f.getAbsolutePath());
+		}
+		
+		SuiteInfo si = new SuiteInfo(newlsid, name, description, author, owner, moduleLsids, access_id, docs);
+		installSuite(si);
+
+
+		return "";
+
+	}
 
 	public String modifySuite(int access_id, String lsid, String name, String description,
 			String author, String owner, String[] moduleLsids, 
 			javax.activation.DataHandler[] dataHandlers, String[] fileNames)
 			throws WebServiceException{
+	
+		if (lsid == null) {
+			// creating a new suite
+			ArrayList mods = new ArrayList();
+			for (int i=0; i < moduleLsids.length; i++){
+				mods.add(moduleLsids[i]);
+			}
+			ArrayList docs = new ArrayList();
+			for (int i=0; i < dataHandlers.length; i++){
+	
+				try {
+					int downloadedBytes = 0;
+					DataHandler dh = dataHandlers[i];
+					File f = new File(dh.getName());
+					FileOutputStream os = new FileOutputStream(f);
+					InputStream is = dh.getInputStream();
+					byte[] buf = new byte[100000];
+					int ii;
+					long lastPercent = 0;
+					while ((ii = is.read(buf, 0, buf.length)) > 0) {			
+						downloadedBytes += ii;
+						os.write(buf, 0, ii);
+						//System.out.print(new String(buf, 0, ii));
+					}
+				
+					is.close();
+					os.close();
+					docs.add("file://" + f.getAbsolutePath());
 
-		throw new WebServiceException("modifySuite Not implemented yet");
+				} catch (IOException ioe){
+					ioe.printStackTrace();
+				}
+			}
+
+			SuiteInfo si = new SuiteInfo(lsid, name, description, author, owner, mods, access_id, docs);
+			
+		} else {
+	
+			throw new WebServiceException("modifySuite Not implemented yet");
+		}
+
+		return "";
 
 	}
 

@@ -1348,6 +1348,8 @@ public class AnalysisHypersonicDAO implements
 
 	}
 
+
+
 	/**
 	 * get the next available LSID identifer from the database
 	 * 
@@ -1355,8 +1357,27 @@ public class AnalysisHypersonicDAO implements
 	 * @throws RemoteException
 	 * @return int next identifier in sequence
 	 */
-	public int getNextLSIDIdentifier() throws OmnigeneException,
+	public int getNextLSIDIdentifier(String namespace) throws OmnigeneException,
 			RemoteException {
+		if (GPConstants.TASK_NAMESPACE.equals(namespace)) {
+			return getNextTaskLSIDIdentifier();
+		} else if (GPConstants.SUITE_NAMESPACE.equals(namespace)) {
+			return getNextSuiteLSIDIdentifier();
+		} else {
+			throw new OmnigeneException("unknown Namespace for LSID: " + namespace);
+		}
+
+	}
+
+
+	/**
+	 * get the next available task LSID identifer from the database
+	 * 
+	 * @throws OmnigeneException
+	 * @throws RemoteException
+	 * @return int next identifier in sequence
+	 */
+	public int getNextTaskLSIDIdentifier() throws OmnigeneException,	RemoteException {
 		java.sql.Connection conn = null;
 		PreparedStatement stat = null;
 		ResultSet resultSet = null;
@@ -1373,8 +1394,7 @@ public class AnalysisHypersonicDAO implements
 			if (resultSet.next()) {
 				nextIdentifier = resultSet.getInt(1);
 			} else {
-				throw new OmnigeneException(
-						"Unable to retrieve lsid_identifier_seq");
+				throw new OmnigeneException("Unable to retrieve lsid_identifier_seq");
 			}
 
 		} catch (Exception e) {
@@ -1387,6 +1407,46 @@ public class AnalysisHypersonicDAO implements
 		return nextIdentifier;
 	}
 
+
+	/**	
+	 * get the next available suite LSID identifer from the database
+	 * 
+	 * @throws OmnigeneException
+	 * @throws RemoteException
+	 * @return int next identifier in sequence
+	 */
+	public int getNextSuiteLSIDIdentifier() throws OmnigeneException,
+			RemoteException {
+		java.sql.Connection conn = null;
+		PreparedStatement stat = null;
+		ResultSet resultSet = null;
+		int nextIdentifier = -1;
+		try {
+			//getConnection
+			conn = getConnection();
+
+			stat = conn.prepareStatement("select next value for lsid_suite_identifier_seq from dual");
+			resultSet = stat.executeQuery();
+
+			//only one record
+			if (resultSet.next()) {
+				nextIdentifier = resultSet.getInt(1);
+			} else {
+				throw new OmnigeneException(
+						"Unable to retrieve lsid_suite_identifier_seq");
+			}
+
+		} catch (Exception e) {
+			logger.error("AnalysisHypersonicDAO: getNextSuiteLSIDIdentifier failed"
+					+ e);
+			throw new OmnigeneException(e.getMessage());
+		} finally {
+			closeConnection(resultSet, stat, conn);
+		}
+		return nextIdentifier;
+	}
+
+
 	/**
 	 * get the next available LSID version for a given identifer from the
 	 * database
@@ -1396,6 +1456,24 @@ public class AnalysisHypersonicDAO implements
 	 * @return int next version in sequence
 	 */
 	public String getNextLSIDVersion(LSID lsid) throws OmnigeneException,
+			RemoteException {
+		String namespace = lsid.getNamespace();
+		if (GPConstants.SUITE_NAMESPACE.equals(namespace)) {
+			return getNextSuiteLSIDVersion(lsid);
+		} else {
+			return getNextTaskLSIDVersion(lsid);
+		}
+	}
+
+	/**
+	 * get the next available LSID version for a given identifer from the
+	 * database
+	 * 
+	 * @throws OmnigeneException
+	 * @throws RemoteException
+	 * @return int next version in sequence
+	 */
+	public String getNextTaskLSIDVersion(LSID lsid) throws OmnigeneException,
 			RemoteException {
 		java.sql.Connection conn = null;
 		PreparedStatement stat = null;
@@ -1420,7 +1498,7 @@ public class AnalysisHypersonicDAO implements
 				newLSID.setVersion(lsid.getVersion() + ".0");
 				//System.out.println("AHDAO.getNextLSIDVersion: recursing with
 				// " + newLSID.getVersion());
-				nextVersion = getNextLSIDVersion(newLSID);
+				nextVersion = getNextTaskLSIDVersion(newLSID);
 			} else {
 				// not found: must be version 1
 				nextVersion = newLSID.getVersion();
@@ -1437,5 +1515,56 @@ public class AnalysisHypersonicDAO implements
 		}
 		return nextVersion;
 	}
+	/**
+	 * get the next available LSID version for a given identifer from the
+	 * database
+	 * 
+	 * @throws OmnigeneException
+	 * @throws RemoteException
+	 * @return int next version in sequence
+	 */
+	public String getNextSuiteLSIDVersion(LSID lsid) throws OmnigeneException,
+			RemoteException {
+		java.sql.Connection conn = null;
+		PreparedStatement stat = null;
+		ResultSet resultSet = null;
+		String nextVersion = "1";
+		try {
+			//getConnection
+			conn = getConnection();
+
+			LSID newLSID = lsid.copy();
+			newLSID.setVersion(newLSID.getIncrementedMinorVersion());
+			String query = "select lsid from suite where lsid='" + newLSID
+					+ "'";
+			stat = conn.prepareStatement(query);
+			resultSet = stat.executeQuery();
+
+			//only one record
+			// example: old version=9, see if version 10 is taken. If not,
+			// that's the answer.
+			// If it is taken, see if version 9.1 is taken. Etc.
+			if (resultSet.next()) {
+				newLSID.setVersion(lsid.getVersion() + ".0");
+				//System.out.println("AHDAO.getNextLSIDVersion: recursing with
+				// " + newLSID.getVersion());
+				nextVersion = getNextSuiteLSIDVersion(newLSID);
+			} else {
+				// not found: must be version 1
+				nextVersion = newLSID.getVersion();
+				//System.out.println("AHDAO.getNextLSIDVersion: returning " +
+				// nextVersion);
+			}
+
+		} catch (Exception e) {
+			logger.error("AnalysisHypersonicDAO: getNextSuiteLSIDVersion failed: "
+					+ e);
+			throw new OmnigeneException(e.getMessage());
+		} finally {
+			closeConnection(resultSet, stat, conn);
+		}
+		return nextVersion;
+	}
+
 
 }

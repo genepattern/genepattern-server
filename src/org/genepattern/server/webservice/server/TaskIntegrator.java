@@ -49,7 +49,7 @@ import org.genepattern.server.webservice.server.DirectoryManager;
  * @author Joshua Gould
  */
 public class TaskIntegrator implements ITaskIntegrator {
-	TaskIntegratorHSQLDAO tiDao = new TaskIntegratorHSQLDAO ();
+	protected TaskIntegratorHSQLDAO tiDao = new TaskIntegratorHSQLDAO ();
 	
 	protected String getUserName() {
 		MessageContext context = MessageContext.getCurrentContext();
@@ -209,14 +209,10 @@ public class TaskIntegrator implements ITaskIntegrator {
 
 	public void install(String lsid) throws WebServiceException {
 
-	System.out.println("\n A. Installing a SUITE " + LSIDUtil.isSuiteLSID(lsid));
-
 		if (LSIDUtil.isSuiteLSID(lsid)){
 			tiDao.installSuite(lsid);
 		} else {
-System.out.println("\n A. Installing a TASK ");
-
-		installTask(lsid);
+			installTask(lsid);
 		}
 	}
 
@@ -626,7 +622,7 @@ System.out.println("\n A. Installing a TASK ");
 		}
 		try {
 			Thread.yield();
-			String taskLibDir = DirectoryManager.getTaskLibDir(lsid);
+			String taskLibDir = DirectoryManager.getLibDir(lsid);
 			String[] docFiles = new File(taskLibDir).list(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
 				return GenePatternAnalysisTask.isDocFile(name)
@@ -641,13 +637,16 @@ System.out.println("\n A. Installing a TASK ");
 			throw new WebServiceException("while getting doc filenames", e);
 		}
 	}
-   
+
+    
 	public DataHandler[] getDocFiles(String lsid) throws WebServiceException {
 
 		String userID = getUserName();
 		String taskLibDir = null;
+	
 		try {
-			taskLibDir = DirectoryManager.getTaskLibDir(lsid);
+			taskLibDir = DirectoryManager.getLibDir(lsid);
+			System.out.println("getLibDir " + taskLibDir);
 		} catch (Exception e) {
 			throw new WebServiceException(e);
 		}

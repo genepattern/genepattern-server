@@ -76,6 +76,23 @@ public class DirectoryManager {
 		return getTaskLibDir(null, lsid, null);
 	}
 
+
+	public static String getLibDir(String lsid) throws Exception,
+			MalformedURLException {
+		LSID l = new LSID(lsid);
+		if (l.getAuthority().equals("") || l.getIdentifier().equals("")
+				|| !l.hasVersion()) {
+			throw new MalformedURLException("invalid LSID");
+		}
+
+		if (LSIDUtil.isSuiteLSID(lsid)){
+			return getSuiteLibDir(null, lsid, null);
+
+		} else {
+			return getTaskLibDir(null, lsid, null);
+		}
+	}
+
 	/**
 	 * Locates the directory where the a particular task's files are stored. It
 	 * is one level below $omnigene.conf/taskLib. TODO: involve userID in this,
@@ -288,6 +305,13 @@ public class DirectoryManager {
 	 */
 	public static String getSuiteLibDir(String suiteName, String sLSID, String username) throws Exception {
 		String ret = null;
+		String name = suiteName;
+		if (suiteName == null){
+			LocalAdminClient adminClient = new LocalAdminClient(username);
+			SuiteInfo si = adminClient.getSuite(sLSID);
+			name = si.getName();
+		}
+
 		if (sLSID != null) {
 			ret = (String) htSuiteLibDir.get(sLSID);
 			if (ret != null)
@@ -301,7 +325,7 @@ public class DirectoryManager {
 			LSID lsid = null;
 
 			
-			String dirName = makeDirName(lsid, suiteName);
+			String dirName = makeDirName(lsid, name);
 			f = new File(taskLibDir, dirName);
 			f.mkdirs();
 			ret = f.getCanonicalPath();

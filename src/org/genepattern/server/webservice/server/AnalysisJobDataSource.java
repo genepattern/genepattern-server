@@ -429,7 +429,7 @@ public interface AnalysisJobDataSource {
 	 * @throws RemoteException
 	 * @return int next identifier in sequence
 	 */
-	public int getNextLSIDIdentifier() throws OmnigeneException,
+	public int getNextLSIDIdentifier(String namespace) throws OmnigeneException,
 			RemoteException;
 
 	/**

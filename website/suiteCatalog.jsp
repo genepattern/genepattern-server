@@ -69,7 +69,7 @@ HashMap loadedSuites = new HashMap();
 	try {
 		sr = new SuiteRepository();
 		suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
-		SuiteInfo[] loaded = adminClient.getAllSuites();
+		SuiteInfo[] loaded = adminClient.getLatestSuites();
 		for (int i=0; i < loaded.length; i++){
 			loadedSuites.put(loaded[i].getLSID(), loaded[i]);
 		}
@@ -224,9 +224,23 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 	}  // iterating over available suites
 %>
 </tr><tr><td colspan=2 align='center'><hr><font size="+1"><b>Loaded Suites</b></font></td></tr><tr><td>&nbsp;</td></tr>
+
+<tr><td colspan=2 align=center>
+
+<form name="createSuite" action="editSuite.jsp" >
+		<input type="submit" name="EditSuite" value="Create new Suite" />
+&nbsp;
+</form>
+</td></tr>
+
 <%  
 
-	if (loadedSuites.size() == 0) out.println("<tr><td colspan=2 align=center>No suites currently loaded</td></tr>");
+	if (loadedSuites.size() == 0){
+%>	
+	 <tr><td colspan=2 align=center>No suites currently loaded</td></tr>
+		
+<%
+	}	
 	for (Iterator iter = loadedSuites.keySet().iterator(); iter.hasNext(); ){
 		SuiteInfo suite = (SuiteInfo)loadedSuites.get(iter.next());		
 		String[] moduleLsids = suite.getModuleLSIDs();
@@ -248,7 +262,6 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 
 String[] docs = suite.getDocumentationFiles();
 for (int k=0; k < docs.length; k++ ){
-//  http://cp21e-789.broad.mit.edu:8080/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00001:1&file=ClassNeighbors.pdf
 		String doc = docs[k];
 %>
 		<a href='getSuiteDoc.jsp?name=<%=suite.getLSID()%>&file=<%=doc%>'><img src="skin/pdf.jpg" border="0" alt="doc" align="top"></a>
@@ -266,16 +279,26 @@ for (int k=0; k < docs.length; k++ ){
 </tr>
 
 <tr class='altpaleBackground'>
-<td valign='top' align='right'>
+<td valign='top' colspan=2>
+<table width='100%' align='center'>
+<tr>
 
+<td align='right'>
 <form name="installSuite<%=suite.getName()%>" action="deleteSuite.jsp" >
 	<input type="hidden" name="suiteLsid" value="<%=suite.getLSID()%>" >
 	<input type="submit" name="InstallSuite" value="Delete Suite" />
 &nbsp;
 </form>
+</td>
+<td  align='left'>
+<form name="editSuite<%=suite.getName()%>" action="editSuite.jsp" >
+	<input type="hidden" name="suiteLsid" value="<%=suite.getLSID()%>" >
+	<input type="submit" name="EditSuite" value="Edit Suite" />
+&nbsp;
+</form>
+</td>
 
-</td><td valign='top' align='left'>
-
+<td valign='top' align='left'>
 <form name="install<%=suite.getName()%>" action="taskCatalog.jsp" >
 	<input type="hidden" name="checkAll" value="1" >
 <%	if (!allInstalled) { %>
@@ -284,6 +307,10 @@ for (int k=0; k < docs.length; k++ ){
 <% } %>
 </td>
 
+</tr>
+</table>
+
+</td>
 </tr>
 <tr><% 
 for (int i=0; i < moduleLsids.length; i++){

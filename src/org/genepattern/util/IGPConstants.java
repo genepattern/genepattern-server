@@ -294,4 +294,11 @@ public interface IGPConstants {
 
 
 	public static String UTF8 = "UTF-8";
+
+
+	public static String TASK_NAMESPACE = "genepatternmodules";
+	public static String SUITE_NAMESPACE = "genepatternsuites";
+
+
+
 }

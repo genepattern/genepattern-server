@@ -12,7 +12,7 @@ package org.genepattern.util;
  * TODO To change the template for this generated type comment go to Window -
  * Preferences - Java - Code Style - Code Templates
  */
-public class LSIDUtil {
+public class LSIDUtil implements IGPConstants {
 
 	public static String AUTHORITY_MINE = "mine";
 
@@ -25,9 +25,7 @@ public class LSIDUtil {
 	private static LSIDUtil inst = null;
 
 	private static String authority = "broad-cancer-genomics";
-
-	private static String namespace = "genepatternmodules";
-
+	
 	private static String SUITE_NAMESPACE_INCLUDE = "suite";
 
 
@@ -50,9 +48,13 @@ public class LSIDUtil {
 		return authority;
 	}
 
-	public String getNamespace() {
-		return namespace;
+	public String getTaskNamespace() {
+		return TASK_NAMESPACE;
 	}
+	public String getSuiteNamespace() {
+		return SUITE_NAMESPACE;
+	}
+
 
 	public String getAuthorityType(LSID lsid) {
 		String authorityType;

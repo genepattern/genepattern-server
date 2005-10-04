@@ -457,13 +457,17 @@ public class AdminHSQLDAO implements AdminDAO {
 			LSID siLsid = new LSID(si.getLSID());		
 			
 			SuiteInfo altSi = (SuiteInfo)latestSuites.get(siLsid.toStringNoVersion());
+
+
+
 			if (altSi == null){
 				latestSuites.put(siLsid.toStringNoVersion(), si);
 			} else {
 				LSID altLsid = new LSID(altSi.getLSID());
-				if (siLsid.compareTo(altLsid) > 0){
+				if (altLsid.compareTo(siLsid) > 0){
 					latestSuites.put(siLsid.toStringNoVersion(), si); // it is newer
 				} // else it is older so leave it out
+
 			}
 		}
 

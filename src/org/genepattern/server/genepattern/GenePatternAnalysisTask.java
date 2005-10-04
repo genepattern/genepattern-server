@@ -2598,7 +2598,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 		String lsid = taskInfoAttributes.get(LSID);
 		if (lsid == null || lsid.equals("")) {
 			//System.out.println("installTask: creating new LSID");
-			lsid = LSIDManager.getInstance().createNewID().toString();
+			lsid = LSIDManager.getInstance().createNewID(TASK_NAMESPACE).toString();
 			taskInfoAttributes.put(LSID, lsid);
 		}
 
@@ -2658,7 +2658,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 		LSIDManager lsidManager = LSIDManager.getInstance();
 		if (taskLSID == null) {
 			//System.out.println("installNewTask: creating new LSID");
-			taskLSID = lsidManager.createNewID();
+			taskLSID = lsidManager.createNewID(TASK_NAMESPACE);
 		} else {
 			taskLSID = lsidManager.getNextIDVersion(requestedLSID);
 		}
@@ -2696,7 +2696,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 		}
 
 		if (taskLSID == null) { // old task from 1.1 or earlier
-			taskLSID = mgr.createNewID();
+			taskLSID = mgr.createNewID(TASK_NAMESPACE);
 			//System.out.println("updateTask: creating new ID: " +
 			// taskLSID.toString());
 			taskInfoAttributes.put(LSID, taskLSID.toString());
@@ -2722,7 +2722,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 			provenance = provenance + "  " + taskLSID.toString();
 			taskInfoAttributes.put(IGPConstants.LSID_PROVENANCE, provenance);
 
-			taskLSID = mgr.createNewID();
+			taskLSID = mgr.createNewID(TASK_NAMESPACE);
 			//System.out.println("updateTask: creating new ID for someone
 			// else's provenance: " + taskLSID.toString());
 			taskInfoAttributes.put(LSID, taskLSID.toString());

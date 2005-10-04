@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
+import java.util.ArrayList;
 
 import org.genepattern.server.webservice.server.ITaskIntegrator;
 import org.genepattern.server.webservice.server.TaskIntegrator;
@@ -40,6 +41,15 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIn
 		return super.modifyTask(accessId, taskName, description,
 				parameterInfoArray, taskAttributes, dataHandlers, fileNames);
 	}
+
+	public String modifySuite(int access_id, String lsid, String name, String description,
+			String author, String owner, ArrayList moduleLsids, ArrayList files)
+			throws WebServiceException{
+
+		return tiDao.modifySuite(access_id, lsid, name, description, author, owner, moduleLsids, files);
+
+	}
+
 
 	public String cloneTask(String lsid, String cloneName)
 			throws WebServiceException {
@@ -88,6 +98,8 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIn
 		}
 		return files;
 	}
+
+	
 
 	public void deleteTask(String lsid) throws WebServiceException {
 		super.deleteTask(lsid);

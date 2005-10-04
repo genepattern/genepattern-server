@@ -23,6 +23,8 @@
 		 java.util.StringTokenizer,
 		 java.util.TreeSet,
 		 java.util.List,
+		 org.genepattern.server.webservice.server.local.LocalAdminClient,
+		 org.genepattern.webservice.SuiteInfo,
 		 java.util.ArrayList,
 		 java.util.Vector"
    session="false" language="Java" %>
@@ -36,9 +38,12 @@
 	String userID= (String)request.getAttribute("userID");
 	boolean initialInstall = (request.getParameter("initialInstall") != null);
 
-	SuiteRepository sr = new SuiteRepository();
-	HashMap suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
-	HashMap hm = (HashMap)suites.get(suiteLsid);
+//	SuiteRepository sr = new SuiteRepository();
+//	HashMap suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
+//	HashMap hm = (HashMap)suites.get(suiteLsid);
+
+	LocalAdminClient adminClient = new LocalAdminClient("GenePattern");
+	SuiteInfo si = adminClient.getSuite(suiteLsid);
 
 %>
 
@@ -46,16 +51,21 @@
 	<head>
 	<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 	<link href="skin/favicon.ico" rel="shortcut icon">
-	<title>Installing Suite - <%= hm.get("name") %></title>
+	<title>Deleting Suite - <%= si.getName() %></title>
 </head>
 <body>
 
 <jsp:include page="navbar.jsp"></jsp:include>
 
-Deleting Suite - 	<font size=+1><b><%= hm.get("name") %></b></font>
+Deleting Suite - 	<font size=+1><b><%= si.getName() %></b></font>
 <%
+try {
 	TaskIntegrator taskIntegrator = new LocalTaskIntegratorClient( userID , out);
 	taskIntegrator.delete(suiteLsid);
+} catch (Throwable t){
+	t.printStackTrace();
+}
+
 
 %>
 ...done.<br>

@@ -2,13 +2,16 @@
 		 org.genepattern.server.process.*,
 		 org.genepattern.server.genepattern.LSIDManager,
 		 org.genepattern.server.webservice.server.local.LocalAdminClient,
+		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient,
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.SuiteInfo,
 		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.util.GPConstants,
  		 org.genepattern.util.StringUtils,
 		 org.genepattern.util.LSID,
+		  java.net.URLEncoder,
 		 java.io.File,
+		 javax.activation.*,
 		 java.net.MalformedURLException,
 		 java.text.DateFormat,
 		 java.text.NumberFormat,
@@ -39,11 +42,18 @@
 	response.setDateHeader("Expires", 0);
 	String userID= (String)request.getAttribute("userID");
 	LocalAdminClient adminClient = new LocalAdminClient("GenePattern");
+	LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 
 	String[] privacies = GPConstants.PRIVACY_LEVELS;
 	Map typeTaskMap = adminClient.getLatestTasksByType();
 	Map taskVersionMap = adminClient.getLSIDToVersionsMap();
-	
+	String suiteLsid = request.getParameter("suiteLsid");
+	SuiteInfo si = new SuiteInfo("", "", "", "", userID, new ArrayList(), 1, new ArrayList());
+	if (suiteLsid != null) {
+		si = adminClient.getSuite(suiteLsid);
+	}
+
+
 
 try {
 
@@ -57,7 +67,12 @@ try {
 <title>Edit Suite</title>
 </head><body>
 <jsp:include page="navbar.jsp"></jsp:include>
-<form action="createSuite.jsp" method="post" ENCTYPE="multipart/form-data" >
+
+
+
+
+LSID= <%=si.getLSID()%>
+<form action="createSuite.jsp" name='edit' method="post" ENCTYPE="multipart/form-data" >
 
 <%// ENCTYPE="multipart/form-data" %>
 
@@ -65,15 +80,24 @@ try {
 <table width=100% cellspacing=2>
 <tr><td colspan=3><h2>Create new GenePattern Suite</td></tr>
 <tr>
-<td align="right"><b>Name:</b></td><td><input type='text' name='suiteName' size=60  maxlength="100">(*required, no spaces)</td></tr>
-<td align="right"><b>Description:</b></td><td><textArea rows="2" cols="60" name='suiteDescription'></textarea> </td></tr>
-<td align="right"><b>Author:</b></td><td><input type='text' name='suiteAuthor' size=80 maxlength="100">(name, affiliation)</td></tr>
-<td align="right"><b>Owner:</b></td><td><input type='text' name='suiteOwner' size=60 maxlength="100" value="<%=userID%>">(email address)</td></tr>
+<td align="right"><input type='hidden' name='suiteLSID' value="<%=si.getLSID()%>">
+<b>Name:</b></td><td><input type='text' name='suiteName' size=60  maxlength="100" value="<%=si.getName()%>">(*required, no spaces)</td></tr>
+<td align="right"><b>Description:</b></td><td><textArea rows="2" cols="60" name='suiteDescription'><%=si.getDescription()%></textarea> </td></tr>
+<td align="right"><b>Author:</b></td><td><input type='text' name='suiteAuthor' size=80 maxlength="100" value="<%=si.getAuthor()%>">(name, affiliation)</td></tr>
+<td align="right"><b>Owner:</b></td><td><input type='text' name='suiteOwner' size=60 maxlength="100" value="<%=si.getOwner()%>">(email address)</td></tr>
 <td align="right"><b>Privacy:</b></td>
 	<td>
-		<select name='privacy'>
-			<option value="<%=privacies[0]%>"><%=privacies[0]%></option>
-			<option value="<%=privacies[1]%>"><%=privacies[1]%></option>
+<select name='privacy'>
+
+<% 
+	for (int i=0; i < privacies.length; i++){
+		boolean selected = (i == si.getAccessId());
+
+		out.println("<option value='"+ privacies[1]);
+		if (selected) out.println(" selected='true' ");
+		out.println("'> "+privacies[1]+"</option>");
+}
+%>
 		</select>
 	</td>
 </tr>
@@ -87,12 +111,59 @@ try {
   Any documentation or data files you wish to bundle in with the suite</font><br>
 
 
-<% for (int i = 1; i <= NUM_ATTACHMENTS; i++) { %>
+<% 
+// XXX must display existing support files and link to delete them
+
+	for (int i = 1; i <= NUM_ATTACHMENTS; i++) { %>
   	<input type="file" name="file<%= i %>" size="70" class="little"><br>
 <% } %>
 
 </td>
 </tr>
+
+
+ <tr>
+  <td align="right" valign="top"><b>Current&nbsp;files:</b></td>
+  <td width="*">
+<%
+   	DataHandler[] dh = new DataHandler[0];
+
+	if ((si.getLSID() != null) && (si.getLSID().trim().length() > 0)){
+		dh = taskIntegratorClient.getDocFiles(si.getLSID());
+
+	
+
+	File[] allFiles = new File[dh.length];
+	for (int j = 0, length = dh.length; j < length; j++) {
+		FileDataSource ds = (FileDataSource) dh[j].getDataSource();
+		allFiles[j] = ds.getFile();
+	}
+	
+	   for (int j = 0; j < allFiles.length; j++) { %>
+		<a href="getSuiteDoc.jsp?name=<%= si.getLSID() %>&file=<%= URLEncoder.encode(allFiles[j].getName()) %>" target="new"><%= StringUtils.htmlEncode(allFiles[j].getName()) %></a> 
+<%	   }  %>
+
+<%	   if (allFiles != null && allFiles.length > 0 ) { %>
+		   <br>
+		   <select name="deleteFiles">
+		   <option value="">delete support files...</option>
+<%		   for (int i = 0; i < allFiles.length; i++) { %>
+			<option value="<%= StringUtils.htmlEncode(allFiles[i].getName()) %>"><%= allFiles[i].getName() %></option> 
+<%		   }  %>
+		   </select>
+		   <input type="hidden" name="deleteSupportFiles" value="">
+		   <input type="button" value="delete..." class="little" onclick="confirmDeleteSupportFiles()">
+<%	   } 
+
+	}%>
+
+
+  <br>
+  </td>
+   </tr>
+
+
+
 </table>
 <table width=100% cellspacing=2>
 <tr><td colspan=1 align="center"><input type="submit" value="save"/><input type="button" name="clear" value="clear"/></td></tr>
@@ -183,7 +254,6 @@ try {
 			idx2++;
 			while ((sizeMap.get(new Integer(idx2))  == null) && (idx2 < numCat)){
 				idx2++;
-				System.out.println(" " + idx2);
 			}
 			addNext = counts[idx2];
 
@@ -198,6 +268,9 @@ try {
 
 	}
 
+	String[] lsidStrs = si.getModuleLSIDs();
+	List modsLsids = Arrays.asList(lsidStrs);
+			
 
 	int numRows = (int)Math.max(col1.size(), col2.size());
 	for (int i=0; i < numRows; i++){
@@ -224,8 +297,17 @@ try {
 				Vector versions = (Vector)taskVersionMap.get(lsidNoVer );
 				String link = (task.getName().endsWith(".pipeline") ? "viewPipeline.jsp" : "addTask.jsp");
 
+				boolean checked = false;
+				if (modsLsids.contains(lsidStr)){
+					checked = true;
+				} 
+
 %>
-<br>&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="LSID" value="<%=lsidStr%>"/><a href="<%=link%>?view=1&name=<%=lsidStr%>"><%=task.getName()%></a>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="LSID" value="<%=lsidStr%>"
+<%
+	if (checked) out.println(" checked='true' ");
+%>
+/><a href="<%=link%>?view=1&name=<%=lsidStr%>"><%=task.getName()%></a>
 
 <% if (versions.size() > 1) { %>
 &nbsp;&nbsp;<select name="<%=lsidNoVer%>">
@@ -264,10 +346,17 @@ try {
 				String lsidNoVer = lsid.toStringNoVersion();
 				Vector versions = (Vector)taskVersionMap.get(lsidNoVer);
 				String link = (task.getName().endsWith(".pipeline") ? "viewPipeline.jsp" : "addTask.jsp");
-
+				boolean checked = false;
+				if (modsLsids.contains(lsidStr)){
+					checked = true;
+				} 
 				
 %>
-<br>&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="LSID" value="<%=task.getTaskInfoAttributes().get("LSID")%>"/><a href="<%=link%>?view=1&name=<%=lsidStr%>"><%=task.getName()%></a>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="LSID" 
+<%
+	if (checked) out.println(" checked='true' ");
+%>
+value="<%=task.getTaskInfoAttributes().get("LSID")%>"/><a href="<%=link%>?view=1&name=<%=lsidStr%>"><%=task.getName()%></a>
 
 <% if (versions.size() > 1) { %>
 &nbsp;&nbsp;<select name="<%=lsidNoVer%>">

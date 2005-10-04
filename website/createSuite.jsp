@@ -13,6 +13,7 @@
 		 java.net.MalformedURLException,
 		 java.text.DateFormat,
 		 java.text.NumberFormat,
+		 javax.activation.*,
 		 java.text.ParseException,
 		 java.util.Arrays,
 		 java.util.Comparator,
@@ -41,12 +42,26 @@
 	DiskFileUpload fub = new DiskFileUpload();
 	boolean isEncodedPost = FileUpload.isMultipartContent(request);
 	List params = fub.parseRequest(request);
+	ArrayList docFiles = new ArrayList();
 
-
+	String userID= (String)request.getAttribute("userID");
+	
 	for (Iterator iter = params.iterator(); iter.hasNext();){
 		FileItem fi = (FileItem) iter.next();
 		if (fi.isFormField()){
-			requestParameters.put(fi.getFieldName(), fi.getString());
+			String name = fi.getFieldName();
+			String value = fi.getString();
+
+			if ("LSID".equals(name)) {
+				ArrayList lsids = (ArrayList)requestParameters.get("LSID");
+				if (lsids == null){
+					lsids = new ArrayList();
+					requestParameters.put("LSID", lsids);
+				}
+				lsids.add(value);	
+			} else {
+				requestParameters.put(name, value);
+			}
 		} else {
 			// it is the file
 			fileCount++;
@@ -57,9 +72,34 @@
 			File zipFile = new File(System.getProperty("java.io.tmpdir"),name);
 			fi.write(zipFile);
 			requestParameters.put(fi.getFieldName(), zipFile);
+			docFiles.add(zipFile);
 
 		}
 	}
+
+	
+	LocalTaskIntegratorClient  taskInt = new LocalTaskIntegratorClient(userID, out);
+
+	String accessIdStr = (String)requestParameters.get("privacy");
+	int accessId = 0;
+	if ("public".equalsIgnoreCase(accessIdStr)) accessId = 1;
+	
+	String lsid = (String)requestParameters.get("suiteLSID");
+	String name = (String)requestParameters.get("suiteName");
+	String description = (String)requestParameters.get("suiteDescription");
+	String author = (String)requestParameters.get("suiteAuthor");
+	String owner = (String)requestParameters.get("suiteOwner");
+
+	ArrayList LSIDs = (ArrayList)requestParameters.get("LSID");
+
+	try {
+
+
+		taskInt.modifySuite(accessId, lsid, name, description, author, owner, LSIDs, 	docFiles);
+	} catch (Throwable t){
+		t.printStackTrace();
+	}
+
 
 %>
 
@@ -77,7 +117,8 @@
 Saved Suite - 
 ...done.<br>
 <br>
-<a href="editSuite.jsp">create another suite</a><br>
+<a href="suiteCatalog.jsp">Manage suites</a>&nbsp;&nbsp;&nbsp;
+<a href="editSuite.jsp">Create another suite</a><br>
 
 		<jsp:include page="footer.jsp"></jsp:include>
 		</body>
