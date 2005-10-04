@@ -107,4 +107,12 @@ public class AdminProxy {
          throw new WebServiceException(re);  
       }
 	}
+	
+	public SuiteInfo[] getLatestSuites() throws WebServiceException {
+		try {
+			return proxy.getLatestSuites();
+		} catch (RemoteException e) {
+			throw new WebServiceException(e);
+		}
+	}
 }
