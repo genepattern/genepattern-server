@@ -199,8 +199,14 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 <%if (docName != null) { %>
 
 <a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
-<%}%>
-<a href="addTask.jsp?view=1&name=<%=modLsid.toString()%>"><img src="skin/view.gif" alt="view" border="0" align="texttop"></a> 
+<%}
+	String viewUrl = "addTask.jsp";
+	if (installed){
+		boolean isPipe = ti.getName().endsWith("pipeline");
+		if (isPipe) viewUrl = "viewPipeline.jsp";
+	}
+%>
+<a href="<%=viewUrl%>?view=1&name=<%=modLsid.toString()%>"><img src="skin/view.gif" alt="view" border="0" align="texttop"></a> 
 </td>
 
 <% 	} else { %>
@@ -325,7 +331,11 @@ for (int i=0; i < moduleLsids.length; i++){
 	
 	if ( (i%2) == 0) out.println("<tr>");
 
+	String viewUrl = "addTask.jsp";
 	if (installed){
+		boolean isPipe = ti.getName().endsWith("pipeline");
+		if (isPipe) viewUrl = "viewPipeline.jsp";
+	
 %>
 
 
@@ -333,7 +343,7 @@ for (int i=0; i < moduleLsids.length; i++){
 <input type="checkbox" checked="true" name="LSID" disabled="true"/>
 	<%=ti.getName()%> (<%=modLsid.getVersion()%>) 
 <a href='getTaskDoc.jsp?name=<%=modLsid.toString()%>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
-<a href="addTask.jsp?view=1&name=<%=modLsid.toString()%>"><img src="skin/view.gif" alt="view" border="0" align="texttop"></a> 
+<a href="<%=viewUrl%>?view=1&name=<%=modLsid.toString()%>"><img src="skin/view.gif" alt="view" border="0" align="texttop"></a> 
 
 </td>
 
