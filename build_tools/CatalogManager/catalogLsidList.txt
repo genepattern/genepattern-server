@@ -44,6 +44,7 @@ HeatMapViewer.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_vi
 HeatMapViewer.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00010=2
 ExpressionFileCreator.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00041=1
 HierarchicalClustering.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00009=2
+AreaChange.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00049=1
 Hu68kHu35kAtoU95.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00011=0
 Hu68kHu35kAtoU95.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00011=1
 ImputeMissingValues.KNN.9.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00054=9
@@ -98,9 +99,11 @@ SelectFeaturesRows.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_modu
 SplitDatasetTrainTest.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00024=0
 SplitDatasetTrainTest.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00024=1
 SplitDatasetTrainTest.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00024=2
+CompareSpectra.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00052=1
 TransposeDataset.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00026=0
 TransposeDataset.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00026=1
 TransposeDataset.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00026=3
+LocatePeaks.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00051=1
 WeightedVoting.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00027=0
 WeightedVoting.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00027=1
 WeightedVoting.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00027=2
@@ -121,3 +124,6 @@ Lu.Getz.Miska.Nature.June.2005.mouse.lung.0.zip=urn=lsid=broad_mit_edu=cancer_so
 Lu.Getz.Miska.Nature.June.2005.PDT.miRNA.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00003=0
 Lu.Getz.Miska.Nature.June.2005.PDT.mRNA.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00002=0
 JavaTreeView.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00063=1
+Peaks.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00050=1
+PlotPeaks.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00053=1
+ProteomicsAnalysis.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00048=1

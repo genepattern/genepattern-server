@@ -330,6 +330,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00049=1 AreaChange.zip"/>
+	</commandline>
+</cvs>
+<copy file="AreaChange.zip" tofile="catalogregen/AreaChange.1.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00011=0 Hu68kHu35kAtoU95.zip"/>
 	</commandline>
 </cvs>
@@ -708,6 +715,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00052=1 CompareSpectra.zip"/>
+	</commandline>
+</cvs>
+<copy file="CompareSpectra.zip" tofile="catalogregen/CompareSpectra.1.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00026=0 TransposeDataset.zip"/>
 	</commandline>
 </cvs>
@@ -726,6 +740,13 @@
 	</commandline>
 </cvs>
 <copy file="TransposeDataset.zip" tofile="catalogregen/TransposeDataset.3.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00051=1 LocatePeaks.zip"/>
+	</commandline>
+</cvs>
+<copy file="LocatePeaks.zip" tofile="catalogregen/LocatePeaks.1.zip" />
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
@@ -866,6 +887,27 @@
 	</commandline>
 </cvs>
 <copy file="JavaTreeView.zip" tofile="catalogregen/JavaTreeView.1.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00050=1 Peaks.zip"/>
+	</commandline>
+</cvs>
+<copy file="Peaks.zip" tofile="catalogregen/Peaks.1.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00053=1 PlotPeaks.zip"/>
+	</commandline>
+</cvs>
+<copy file="PlotPeaks.zip" tofile="catalogregen/PlotPeaks.1.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00048=1 ProteomicsAnalysis.zip"/>
+	</commandline>
+</cvs>
+<copy file="ProteomicsAnalysis.zip" tofile="catalogregen/ProteomicsAnalysis.1.zip" />
 
 </target>
 </project>
