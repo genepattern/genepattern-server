@@ -65,6 +65,23 @@ try {
 	<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 	<link href="skin/favicon.ico" rel="shortcut icon">
 <title>Edit Suite</title>
+
+
+<script language="javascript">
+
+function confirmDeleteSupportFiles() {
+	var sel = document.forms['edit'].deleteFiles;
+	var selection = sel.options[sel.selectedIndex].value;
+	if (selection == null || selection == "") return;
+	if (window.confirm('Really delete ' + selection + ' from  <%= si.getName() %>\'s support files?')) { 
+		//window.location='saveTask.jsp?deleteSupportFiles=1&deleteFiles=' + selection + '&<%= GPConstants.NAME %>=' + document.forms['task'].<%= GPConstants.NAME %>.value + '&<%= GPConstants.LSID %>=' + document.forms['task']['<%= GPConstants.LSID %>'].value;
+		sel.form.deleteSupportFiles.value = "1";
+		sel.form.submit();
+	}
+}
+</script>
+
+
 </head><body>
 <jsp:include page="navbar.jsp"></jsp:include>
 
@@ -129,26 +146,22 @@ LSID= <%=si.getLSID()%>
    	DataHandler[] dh = new DataHandler[0];
 
 	if ((si.getLSID() != null) && (si.getLSID().trim().length() > 0)){
-		dh = taskIntegratorClient.getDocFiles(si.getLSID());
-
 	
 
-	File[] allFiles = new File[dh.length];
-	for (int j = 0, length = dh.length; j < length; j++) {
-		FileDataSource ds = (FileDataSource) dh[j].getDataSource();
-		allFiles[j] = ds.getFile();
-	}
-	
-	   for (int j = 0; j < allFiles.length; j++) { %>
-		<a href="getSuiteDoc.jsp?name=<%= si.getLSID() %>&file=<%= URLEncoder.encode(allFiles[j].getName()) %>" target="new"><%= StringUtils.htmlEncode(allFiles[j].getName()) %></a> 
-<%	   }  %>
+String[] docs = si.getDocumentationFiles();
+for (int k=0; k < docs.length; k++ ){
+		String doc = docs[k];
+%>
+		<a href='getSuiteDoc.jsp?name=<%=si.getLSID()%>&file=<%=StringUtils.htmlEncode(doc)%>'><%=doc%></a>&nbsp;&nbsp;
 
-<%	   if (allFiles != null && allFiles.length > 0 ) { %>
+<% }%>
+
+<%	   if (docs.length > 0 ) { %>
 		   <br>
 		   <select name="deleteFiles">
 		   <option value="">delete support files...</option>
-<%		   for (int i = 0; i < allFiles.length; i++) { %>
-			<option value="<%= StringUtils.htmlEncode(allFiles[i].getName()) %>"><%= allFiles[i].getName() %></option> 
+<%		   for (int i = 0; i < docs.length; i++) { %>
+			<option value="<%= StringUtils.htmlEncode(docs[i]) %>"><%= docs[i] %></option> 
 <%		   }  %>
 		   </select>
 		   <input type="hidden" name="deleteSupportFiles" value="">
@@ -296,11 +309,21 @@ LSID= <%=si.getLSID()%>
 				String lsidNoVer = lsid.toStringNoVersion();
 				Vector versions = (Vector)taskVersionMap.get(lsidNoVer );
 				String link = (task.getName().endsWith(".pipeline") ? "viewPipeline.jsp" : "addTask.jsp");
-
+				String checkVer = null;
 				boolean checked = false;
 				if (modsLsids.contains(lsidStr)){
 					checked = true;
-				} 
+				} else {
+					// look for alt versions
+					for (Iterator iter3 = versions.iterator(); iter3.hasNext(); ){
+						String ver = (String )iter3.next();
+						if (modsLsids.contains(lsidNoVer+":"+ver)){
+							checked = true;
+							checkVer = ver;	
+							break;
+						}
+					}
+				}
 
 %>
 <br>&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="LSID" value="<%=lsidStr%>"
@@ -316,7 +339,11 @@ LSID= <%=si.getLSID()%>
 
 				String ver = (String )iter3.next();
 %>
-	<option value="<%=ver%>"><%=ver%></option>
+	<option value="<%=ver%>" 
+<%
+		if (ver.equals(checkVer)) out.println(" selected='true' ");
+%>
+><%=ver%></option>
 <%}%>		
 </select>
 <% } else {  // only one version available %>
@@ -347,9 +374,21 @@ LSID= <%=si.getLSID()%>
 				Vector versions = (Vector)taskVersionMap.get(lsidNoVer);
 				String link = (task.getName().endsWith(".pipeline") ? "viewPipeline.jsp" : "addTask.jsp");
 				boolean checked = false;
+				String checkVer = null;
 				if (modsLsids.contains(lsidStr)){
 					checked = true;
-				} 
+				}  else {
+					// look for alt versions
+					for (Iterator iter3 = versions.iterator(); iter3.hasNext(); ){
+						String ver = (String )iter3.next();
+						if (modsLsids.contains(lsidNoVer+":"+ver)){
+							checked = true;
+							checkVer = ver;	
+							break;
+						}
+					}
+				}
+
 				
 %>
 <br>&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="LSID" 
@@ -365,7 +404,12 @@ value="<%=task.getTaskInfoAttributes().get("LSID")%>"/><a href="<%=link%>?view=1
 
 				String ver = (String )iter3.next();
 %>
-	<option value="<%=ver%>"><%=ver%></option>
+	<option value="<%=ver%>" 
+<%
+		if (ver.equals(checkVer)) out.println(" selected='true' ");
+%>
+
+"><%=ver%></option>
 <%}%>		
 </select>
 <% } else {  // only one version available %>

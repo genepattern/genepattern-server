@@ -66,13 +66,27 @@ function checkSuite(frmName, bChecked) {
 SuiteRepository sr = null;
 HashMap suites = new HashMap();
 HashMap loadedSuites = new HashMap();
+HashMap allSuites = new HashMap();
 	try {
 		sr = new SuiteRepository();
 		suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
 		SuiteInfo[] loaded = adminClient.getLatestSuites();
+		SuiteInfo[] allOfThem = adminClient.getAllSuites();
 		for (int i=0; i < loaded.length; i++){
 			loadedSuites.put(loaded[i].getLSID(), loaded[i]);
 		}
+		for (int i=0; i < allOfThem.length; i++){
+			SuiteInfo si = allOfThem[i];
+			LSID lsid = new LSID(si.getLSID());
+			ArrayList verlist = (ArrayList)allSuites.get(lsid.toStringNoVersion());
+			if (verlist == null){
+				verlist = new ArrayList();
+				allSuites.put(lsid.toStringNoVersion(), verlist);
+			}
+			verlist.add(si);
+		}
+
+
 
 	} catch (Exception e) {
 %>
@@ -124,7 +138,7 @@ HashMap loadedSuites = new HashMap();
 </td>
 <td align=center>
 
-<form  action="addZip.jsp" >
+<form  action="addSuiteZip.jsp" >
 		<input type="submit" name="importSuite" value="Import Suite from zip" />
 &nbsp;
 </form>
@@ -307,21 +321,35 @@ for (int k=0; k < docs.length; k++ ){
 <table width='100%' align='center'>
 <tr>
 
-<td align='right'>
-<form name="installSuite<%=suite.getName()%>" action="deleteSuite.jsp" >
-	<input type="hidden" name="suiteLsid" value="<%=suite.getLSID()%>" >
-	<input type="submit" name="InstallSuite" value="Delete Suite" />
+<td>
+<form name="deleteSuite<%=suite.getName()%>" action="deleteSuite.jsp" >
+	<input type="submit" name="InstallSuite" value="Delete Suite verison" />
+	<select name='suiteLsid'>
+<%
+	String lsidNoVer = (new LSID(suite.getLSID())).toStringNoVersion();
+	ArrayList vers = (ArrayList)allSuites.get(lsidNoVer);
+	for (Iterator iterV = vers.iterator(); iterV.hasNext(); ){
+		SuiteInfo ver = (SuiteInfo)iterV.next();
+		LSID vlsid = new LSID(ver.getLSID());
+		String verStr = vlsid.getVersion();
+
+		out.println("<option value='"+vlsid+"'>"+verStr);
+	}
+%>
+	</select>
+
 &nbsp;
 </form>
 </td>
-<td  align='left'>
+
+<td >
 <form name="editSuite<%=suite.getName()%>" action="editSuite.jsp" >
 	<input type="hidden" name="suiteLsid" value="<%=suite.getLSID()%>" >
 	<input type="submit" name="EditSuite" value="Edit Suite" />
 &nbsp;
 </form>
 </td>
-<td  align='left'>
+<td  >
 <form name="zipSuite<%=suite.getName()%>" action="makeSuiteZip.jsp" >
 	<input type="hidden" name="name" value="<%=suite.getLSID()%>" >
 	<input type="submit" name="EditSuite" value="Export Suite" />

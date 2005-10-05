@@ -77,7 +77,10 @@
 		}
 	}
 
-	
+	System.out.println("DELETE ==" + requestParameters.get("deleteSupportFiles"));
+	System.out.println("DELETE 2 ==" + requestParameters.get("deleteFiles"));
+
+
 	LocalTaskIntegratorClient  taskInt = new LocalTaskIntegratorClient(userID, out);
 
 	String accessIdStr = (String)requestParameters.get("privacy");
@@ -92,10 +95,22 @@
 
 	ArrayList LSIDs = (ArrayList)requestParameters.get("LSID");
 
+	ArrayList lsidsWithVersions = new ArrayList();
+	// loop through the lsids and get the right version
+	for (Iterator iter = LSIDs.iterator(); iter.hasNext(); ){
+		String lsidStr = (String)iter.next();
+		LSID anlsid = new LSID(lsidStr);
+		String ver = (String)requestParameters.get(anlsid.toStringNoVersion());
+		if (ver != null) {		
+			anlsid.setVersion(ver);
+		}
+		lsidsWithVersions.add(anlsid.toString());
+	}
+
 	try {
 
 
-		taskInt.modifySuite(accessId, lsid, name, description, author, owner, LSIDs, 	docFiles);
+		taskInt.modifySuite(accessId, lsid, name, description, author, owner, lsidsWithVersions, 	docFiles);
 	} catch (Throwable t){
 		t.printStackTrace();
 	}
