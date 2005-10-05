@@ -110,7 +110,7 @@ public class RunR extends Thread {
 			}
 		}
 		try {
-			Properties props = new Properties();
+//			Properties props = new Properties();
 
 			// load genepattern.properties file
 			/*
@@ -119,36 +119,36 @@ public class RunR extends Thread {
 			 * in this directory
 			 */
 
-			String resourceDir = System.getProperty("resources", ".."
-					+ File.separator + ".." + File.separator + ".."
-					+ File.separator + "resources");
-			File propFile = new File(resourceDir, "genepattern.properties");
-
-			FileInputStream fis = null;
-			String GenePatternURL = null;
-			try {
-				fis = new FileInputStream(propFile);
-				props.load(fis);
-				GenePatternURL = props.getProperty("GenePatternURL",
-						"http://127.0.0.1:8080/gp");
-				if (GenePatternURL.endsWith("/"))
-					GenePatternURL = GenePatternURL.substring(0, GenePatternURL
-							.length()
-							- "/".length());
-				if (GenePatternURL.endsWith("/gp"))
-					GenePatternURL = GenePatternURL.substring(0, GenePatternURL
-							.length()
-							- "/gp".length());
-			} catch (IOException ioe) {
-				throw new IOException(propFile.getAbsolutePath()
-						+ " cannot be loaded.  " + ioe.getMessage());
-			} finally {
-				try {
-					if (fis != null)
-						fis.close();
-				} catch (IOException ioe) {
-				}
-			}
+//			String resourceDir = System.getProperty("resources", ".."
+//					+ File.separator + ".." + File.separator + ".."
+//					+ File.separator + "resources");
+//			File propFile = new File(resourceDir, "genepattern.properties");
+//
+//			FileInputStream fis = null;
+//			String GenePatternURL = null;
+//			try {
+//				fis = new FileInputStream(propFile);
+//				props.load(fis);
+//				GenePatternURL = props.getProperty("GenePatternURL",
+//						"http://127.0.0.1:8080/gp");
+//				if (GenePatternURL.endsWith("/"))
+//					GenePatternURL = GenePatternURL.substring(0, GenePatternURL
+//							.length()
+//							- "/".length());
+//				if (GenePatternURL.endsWith("/gp"))
+//					GenePatternURL = GenePatternURL.substring(0, GenePatternURL
+//							.length()
+//							- "/gp".length());
+//			} catch (IOException ioe) {
+//				throw new IOException(propFile.getAbsolutePath()
+//						+ " cannot be loaded.  " + ioe.getMessage());
+//			} finally {
+//				try {
+//					if (fis != null)
+//						fis.close();
+//				} catch (IOException ioe) {
+//				}
+//			}
 
 			final Process process = Runtime.getRuntime().exec(commandLine,
 					null, null);
@@ -193,7 +193,7 @@ public class RunR extends Thread {
 				System.out.println("</script>");
 				System.out.println("</head>\n<body>\n<pre>");
 			}
-			sendCmd("defaultServer <<- \"" + GenePatternURL + "\"\n");
+			//sendCmd("defaultServer <<- \"" + GenePatternURL + "\"\n");
 			if (args[R_SOURCE].startsWith("http:")
 					|| args[R_SOURCE].startsWith("https:")) {
 				args[R_SOURCE] = "url(\"" + args[R_SOURCE] + "\")";
@@ -201,10 +201,10 @@ public class RunR extends Thread {
 				args[R_SOURCE] = "\"" + fixPath(args[R_SOURCE]) + "\"";
 			}
 			sendCmd("source(" + args[R_SOURCE] + ")\n");
-			sendCmd("runningOnServer <<- TRUE\n");
-			sendCmd("jobID <- " + args[JOBID] + "\n");
-			sendCmd("lastTaskDir <<- getwd()\n");
-			sendCmd("userID <<- \"" + System.getProperty("userid", "") + "\"\n");
+		//	sendCmd("runningOnServer <<- TRUE\n");
+		//	sendCmd("jobID <- " + args[JOBID] + "\n");
+		//	sendCmd("lastTaskDir <<- getwd()\n");
+		//	sendCmd("userID <<- \"" + System.getProperty("userid", "") + "\"\n");
 			// change backslashes to forward slashes
 			// sendCmd("slash <- ifelse(Sys.info()[[\"sysname\"]]==\"Windows\",
 			// \"\\\\\", \"/\")\n");
@@ -222,6 +222,7 @@ public class RunR extends Thread {
 			sendCmd(")\n");
 			// move all of the output files to *my* directory so that they will
 			// appear to have come from me
+		/*
 			sendCmd("if (!is.null(files)) {\n");
 			sendCmd("	if (class(files) != \"list\") files <- list(files)\n");
 			sendCmd("	ignore <- sapply(seq(along=files), function(i) {\n");
@@ -245,6 +246,7 @@ public class RunR extends Thread {
 			sendCmd("		}\n");
 			sendCmd("	} )\n");
 			sendCmd("}\n");
+			*/
 			sendCmd("q(save=\"no\")\n");
 			if (DEBUG)
 				System.out.println("</pre>");
