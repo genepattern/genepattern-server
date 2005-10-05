@@ -12,13 +12,16 @@ import java.util.Vector;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.net.HttpURLConnection;
-
+import java.util.zip.*;
+import org.genepattern.util.GPConstants;
 import org.jdom.*;
 import org.jdom.input.SAXBuilder;
 
 
 public class SuiteRepository {
 	protected org.jdom.Document document;  
+	protected static String DBF = "javax.xml.parsers.DocumentBuilderFactory";
+		
 	HashMap suites = new HashMap();
 		
 
@@ -54,7 +57,6 @@ public class SuiteRepository {
 	public HashMap getSuites(String url) throws IOException,
 			IllegalArgumentException, IllegalAccessException,
 			NoSuchMethodException, SecurityException {
-		String DBF = "javax.xml.parsers.DocumentBuilderFactory";
 		String oldDocumentBuilderFactory = System.getProperty(DBF);
 		URL reposURL = new URL(url);
 		InputStream is = null;
@@ -108,6 +110,21 @@ public class SuiteRepository {
 		return suites;
 	}
 	
+	public static HashMap  getSuiteMap(ZipFile zipFile) throws Exception {
+
+		ZipEntry suiteManifestEntry = zipFile.getEntry(GPConstants.SUITE_MANIFEST_FILENAME);
+		InputStream is = zipFile.getInputStream(suiteManifestEntry);
+		
+		System.setProperty(DBF,	"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+		SAXBuilder builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser");
+        	// Parse the specified file and convert it to a JDOM document
+        	org.jdom.Document doc = builder.build(is);
+		Element root = doc.getRootElement();
+		return getSuiteMap(root);	
+
+	}
+
+
 	public void getMessageOfTheDay(Element root) throws JDOMException {
 		Element site_motd = root.getChild(NODE_SITE_MOTD);
 		motd_message = ((Text)site_motd.getChild(NODE_MOTD_MESSAGE).getContent().get(0)).getText();
@@ -131,7 +148,7 @@ public class SuiteRepository {
 
 
 
-	public HashMap getSuiteMap(Element root) throws JDOMException {
+	public static HashMap getSuiteMap(Element root) throws JDOMException {
     	HashMap manifest = new HashMap();
     	// Get the root element of the document.
       //  Element root = document.getRootElement();
@@ -154,14 +171,17 @@ public class SuiteRepository {
         for(Iterator i = root.getChildren("module").iterator(); i.hasNext(); ) {
 		HashMap moduleMap = new HashMap();
             Element module = (Element) i.next();
-            // Get the text of the <servlet-name> tag within the <servlet> tag
-            Text tname = (Text)module.getChild("name").getContent().get(0);
-            Text tlsid = (Text)module.getChild("lsid").getContent().get(0); 
-            Element edoc = module.getChild("docFile");
+            
+		if (module.getChild("name") != null){
+	            Text tname = (Text)module.getChild("name").getContent().get(0);
+		      moduleMap.put("name", tname.getText());
+		} 
+		if (module.getChild("lsid") != null) {
+	           Text tlsid = (Text)module.getChild("lsid").getContent().get(0); 
+      	     moduleMap.put("lsid", tlsid.getText());
+		}
 
-	     moduleMap.put("name", tname.getText());
-            moduleMap.put("lsid", tlsid.getText());
-	
+		Element edoc = module.getChild("docFile");
       	if (edoc != null){
 			Text tdoc = (Text)edoc.getContent().get(0); 
       

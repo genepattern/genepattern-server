@@ -17,6 +17,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
+import java.util.zip.*;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -136,7 +137,8 @@ public class TaskIntegrator implements ITaskIntegrator {
 	}
 
 	protected String importZipFromURL(String url, int privacy, boolean recursive, ITaskIntegrator taskIntegrator) throws WebServiceException {
-		File zipFile = null;
+ 		File zipFile = null;
+		ZipFile zippedFile = null;
 		FileOutputStream os = null;
 		InputStream is = null;
 		Vector vProblems = null;
@@ -160,10 +162,31 @@ public class TaskIntegrator implements ITaskIntegrator {
 				}
 			}
 			String path = zipFile.getCanonicalPath();
-			// replace task, do not version lsid or replace the lsid in the zip
-			// with a local one
-			lsid = GenePatternAnalysisTask.installNewTask(path, username,
-					privacy, recursive, taskIntegrator);
+
+			// determine if we are installing a task or a suite
+			boolean isTask = false;
+			boolean isSuite = false;
+			try {
+				zippedFile = new ZipFile(path);
+				ZipEntry taskManifestEntry = zippedFile.getEntry(GPConstants.MANIFEST_FILENAME);
+				ZipEntry suiteManifestEntry = zippedFile.getEntry(GPConstants.SUITE_MANIFEST_FILENAME);
+				if (taskManifestEntry != null) isTask = true;
+				if (suiteManifestEntry != null) isSuite = true;
+			} catch (IOException ioe) {
+				throw new WebServiceException("Couldn't open " + path + ": "
+						+ ioe.getMessage());
+			}
+			if (!(isTask || isSuite)) throw new WebServiceException("Couldn't find task or suite manifest in zip file ");
+
+
+			if (isSuite) {
+				lsid = tiDao.installSuite(zippedFile);
+			} else { //isTask
+				// replace task, do not version lsid or replace the lsid in the zip
+				// with a local one
+				lsid = GenePatternAnalysisTask.installNewTask(path, username,
+						privacy, recursive, taskIntegrator);
+			}
 		} catch (TaskInstallationException tie) {
 			throw new WebServiceErrorMessageException(tie.getErrors());
 		} catch (IOException ioe) {

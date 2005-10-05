@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.zip.*;
 
 import javax.activation.DataHandler;
 
@@ -153,10 +154,52 @@ public class TaskIntegratorHSQLDAO {
 		}
 	}
 
-	public void installSuite(SuiteInfo suite) throws WebServiceException {
+	public String installSuite(ZipFile zipFile) throws WebServiceException {
+		try {
+			System.out.println("Installing suite from zip");
+	
+			HashMap hm = SuiteRepository.getSuiteMap(zipFile);				
+			SuiteInfo suite = new SuiteInfo(hm);
+
+			// now we need to extract the doc files and repoint the suiteInfo
+			// docfiles to the file url of the extracted version
+			String[] filenames = suite.getDocumentationFiles();
+			for (int j=0; j < filenames.length; j++){
+				int i=0;
+				String name = filenames[j];
+				ZipEntry zipEntry = (ZipEntry) zipFile.getEntry(name);
+System.out.println("name= " + name + " ze= " + zipEntry);
+				if (zipEntry != null){
+					InputStream is = zipFile.getInputStream(zipEntry);
+					File outFile = new File(System.getProperty("java.io.tmpdir"),
+							zipEntry.getName());
+					FileOutputStream os = new FileOutputStream(outFile);
+					long fileLength = zipEntry.getSize();
+					long numRead = 0;
+					byte[] buf = new byte[100000];
+					while ((i = is.read(buf, 0, buf.length)) > 0) {
+						os.write(buf, 0, i);
+						numRead += i;
+					}
+					os.close();
+					os = null;
+					outFile.setLastModified(zipEntry.getTime());
+					is.close();
+					filenames[j] = outFile.toURL().toString();
+				}
+			}
+
+			return installSuite(suite);
+		} catch (Exception e){
+			e.printStackTrace();
+			throw new WebServiceException(e);
+		}
+	}
+
+	public String installSuite(SuiteInfo suite) throws WebServiceException {
 		Connection c = null;
 		PreparedStatement st = null;
-System.out.println("aa '" + suite.getLSID()+"'");
+		
 		if (suite.getLSID() != null)
 			if (suite.getLSID().trim().length() == 0) suite.setLSID(null);
 
@@ -188,7 +231,6 @@ System.out.println("aa '" + suite.getLSID()+"'");
 			st.setString(1, suite.getLSID());
 			int done = st.executeUpdate();
 			String suiteDir = DirectoryManager.getSuiteLibDir(suite.getName(), suite.getLSID(), suite.getOwner());
-System.out.println("B " + suiteDir);
 
 			System.out.println("SuiteDir=" + suiteDir);
 			String[] docs = suite.getDocumentationFiles();
@@ -213,20 +255,20 @@ System.out.println("B " + suiteDir);
 				
 				
 			}
-System.out.println("C ");
 
 			String[] modLsids = suite.getModuleLSIDs();
 			for (int i=0; i < modLsids.length; i++){
 				installSuiteModule(lsid, modLsids[i]);
 			}
 
-
+			return suite.getLSID();
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new WebServiceException("A database error occurred", e);
 		} finally {
 			close(null, st, c);
 		}
+		
 	}
 
 	public static String filenameFromURL(String url){

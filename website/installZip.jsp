@@ -14,6 +14,7 @@
 		 org.genepattern.server.handler.*,
 		 org.genepattern.server.webservice.*,
 		 org.genepattern.util.LSID,
+		 org.genepattern.util.LSIDUtil,
 		 org.apache.commons.fileupload.DiskFileUpload,
 		 org.apache.commons.fileupload.FileItem,
 		 org.apache.commons.fileupload.FileUpload,
@@ -34,7 +35,7 @@
 <body>	
 <jsp:include page="navbar.jsp"></jsp:include>
 <%
-
+try {
 
 //out.flush();
 
@@ -86,33 +87,49 @@ if (url != null && (url.equals("http://") || url.length() == 0)) url = null;
 
 if (requestParameters.get("file1")==null && url == null) { %>
 	Please select a zip file for upload containing GenePattern manifest and optional support files<br>
-	<a href="addZip.jsp">back</a><br>
+	<a href="addSuiteZip.jsp">back</a><br>
 	<jsp:include page="footer.jsp"></jsp:include>
 	</body>
 	</html>
 <%
 	return;
 }
+
+int access_id = (request.getParameter(GPConstants.PRIVACY) != null ? GPConstants.ACCESS_PRIVATE : GPConstants.ACCESS_PUBLIC);
+boolean askedRecursive = (request.getParameter("askedRecursive") != null);
+boolean doRecursive = (request.getParameter("inclDependents") != null);
+String fileURL = null;
+
 if (isEncodedPost) {
 	attachedFile = (File)requestParameters.get("file1");
 	attachmentName = attachedFile.getName();
-		
-		fullName = attachedFile.toString();
-		try {
-			taskName = attachmentName;
-			String privacy = (String)requestParameters.get(GPConstants.PRIVACY);
-			int access_id = (privacy != null ? GPConstants.ACCESS_PRIVATE : GPConstants.ACCESS_PUBLIC);
-						
-			try {
-				String fileURL = attachedFile.toURI().toURL().toString();
-				boolean askedRecursive = ((String)requestParameters.get("askedRecursive") != null);
-				boolean doRecursive = ((String)requestParameters.get("inclDependents") != null);
-				if (!askedRecursive && taskIntegratorClient.isZipOfZips(fileURL)) {
- 					// see if user wants to install recursively or just the first entry
-					Vector vTaskInfos = GenePatternAnalysisTask.getZipOfZipsTaskInfos(attachedFile);
-					Enumeration vTasks = vTaskInfos.elements();
+	taskName = attachmentName;			
+	fileURL = attachedFile.toURI().toURL().toString();
+				
+} else {
+ 	if (url != null) {
+		filename = GenePatternAnalysisTask.downloadTask(url);
+
+		attachedFile =  new File(filename);
+		attachmentName = url.substring(url.lastIndexOf("/")+1);			
+		taskName = url;
+		fileURL = new File(filename).toURI().toURL().toString();
+	}
+
+}
+
+try {
+	fullName = attachedFile.toString();
+	
+	try {
+		if (!askedRecursive &&    taskIntegratorClient.isZipOfZips(fileURL)) {
+
+			// query user to see if they want just the first thing or all contents and then come back in
+
+			Vector vTaskInfos = GenePatternAnalysisTask.getZipOfZipsTaskInfos(attachedFile);
+			Enumeration vTasks = vTaskInfos.elements();
 %>
-                	            <form>
+                	            <form method="post" ENCTYPE="multipart/form-data">
 	                        <input type="checkbox" name="inclDependents" checked> include all tasks used within <%= attachmentName %>?
         	                  <input type="hidden" name="url" value="<%= fileURL %>">
 					<input type="hidden" name="askedRecursive" value="true">
@@ -138,93 +155,24 @@ if (isEncodedPost) {
                 	        	</html>
 <%
 					return;
-				}
-				lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive); 
 
-			} catch (WebServiceErrorMessageException wse){
-				vProblems = wse.getErrors();
-			}
-
-		} catch (Exception ioe) {
-			taskName = "[unknown task name] in " + fullName;
-			vProblems = new Vector();
-			vProblems.add("Unable to install " + fullName + ": " + ioe.getMessage());
-		}
-		attachedFile.delete();
-
-} else { // end if not isEncodedPost
-
-    if (url != null) {
-	taskName = "[unknown task name]";
-	try {
-		filename = GenePatternAnalysisTask.downloadTask(url);
-		taskName = url;
-		int access_id = (request.getParameter(GPConstants.PRIVACY) != null ? GPConstants.ACCESS_PRIVATE : GPConstants.ACCESS_PUBLIC);
-		try {
-			boolean askedRecursive = (request.getParameter("askedRecursive") != null);
-			boolean doRecursive = (request.getParameter("inclDependents") != null);
-			String fileURL = new File(filename).toURI().toURL().toString();
-			if (!askedRecursive &&
-			    taskIntegratorClient.isZipOfZips(fileURL)) {
-				// see if user wants to install recursively or just the first entry
-				attachmentName = url.substring(url.lastIndexOf("/")+1);
-				Vector vTaskInfos = GenePatternAnalysisTask.getZipOfZipsTaskInfos(new File(filename));
-				Enumeration vTasks = vTaskInfos.elements();
-%>
-                                <form>
-				<br>contents: 
-<%
-				// skip the first one, it is the pipeline task itself
-				vTasks.nextElement();
-			    	for (i = 0; vTasks.hasMoreElements(); i++) {
-					if (i > 0) out.println(",");
-					TaskInfo ti = ((TaskInfo)vTasks.nextElement());
-					TaskInfoAttributes tia = ti.giveTaskInfoAttributes();
-					LSID l = new LSID((String)tia.get(GPConstants.LSID));
-%>
-					<%= ti.getName() %> version <%= l.getVersion() %>
-<%				} %><br><br>
-                                <input type="checkbox" name="inclDependents" checked> include all tasks used within <a href="<%= url %>"><%= attachmentName %></a>?
-                                <input type="hidden" name="url" value="<%= fileURL %>">
-				<input type="hidden" name="askedRecursive" value="true">
-                                <input type="submit" name="submit" value="install">
-				<br>
-				<table cols="2">
-				<tr><td valign="top" align="right">contents:</td>
-				<td valign="top" align="left">
-<%
-				// skip the first one, it is the pipeline task itself
-				vTasks.nextElement();
-			    	for (i = 0; vTasks.hasMoreElements(); i++) {
-					if (i > 0) out.println(",");
-					TaskInfo ti = ((TaskInfo)vTasks.nextElement());
-					TaskInfoAttributes tia = ti.giveTaskInfoAttributes();
-					LSID l = new LSID((String)tia.get(GPConstants.LSID));
-%>
-					<%= ti.getName() %> version <%= l.getVersion() %>
-<%						} %>
-				</td></tr></table>
-                                </form>
-                                <jsp:include page="footer.jsp"></jsp:include>
-                                </body>
-                                </html>
-<%
-				return;
-			}
-			lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive); 
-		} catch (WebServiceErrorMessageException wse){
-			vProblems = wse.getErrors();
+	
 		}
 
-	} catch (Exception e) {
-		vProblems = new Vector();
-		vProblems.add("Unable to load " + url + ": " + e.getMessage());
-	} finally {
-		if (filename != null) { new File(filename).delete(); }
+		// do the real installation
+		lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive);
+ 	} catch (WebServiceErrorMessageException wse){
+		vProblems = wse.getErrors();
 	}
-    }
 
-} // end if not isEncodedPost
+} catch (Exception ioe) {
+	taskName = "[unknown task name] in " + fullName;
+	vProblems = new Vector();
+	vProblems.add("Unable to install " + fullName + ": " + ioe.getMessage());
+} finally {
+	attachedFile.delete(); 
+}
+
 
 if(vProblems != null && vProblems.size() > 0) {
 %>
@@ -242,14 +190,16 @@ if(vProblems != null && vProblems.size() > 0) {
 	<a href="addZip.jsp">back</a><br>
 <%
 } else {
-	TaskInfo ti = GenePatternAnalysisTask.getTaskInfo(lsid, username);
+	boolean isSuite = LSIDUtil.isSuiteLSID(lsid);
+
+	if (! isSuite) {
+
+		TaskInfo ti = GenePatternAnalysisTask.getTaskInfo(lsid, username);	
 %>
     Installation of the <%= ti.getName() %> task is complete.  
 <% 
-
 	String taskType = ti.giveTaskInfoAttributes().get(GPConstants.TASK_TYPE);
-	if (!taskType.equals(GPConstants.TASK_TYPE_PIPELINE)) {
-	
+	if (!taskType.equals(GPConstants.TASK_TYPE_PIPELINE)) {	
 %>
 		Try it out!<br><br>
 		<jsp:include page="runTask.jsp" flush="true">
@@ -261,8 +211,25 @@ if(vProblems != null && vProblems.size() > 0) {
 %>
 		<a href="runPipeline.jsp?<%= GPConstants.NAME %>=<%= lsid %>&cmd=run">Try it out</a><br><br>
 <%
+	} 
+	} else {
+		// its a suite we just installed
+		LocalAdminClient adminClient = new LocalAdminClient(username);
+		SuiteInfo suite = adminClient.getSuite(lsid);
+	%>
+    		Installation of the <%= suite.getName() %> suite is complete.  
+	<% 
+	
+
 	}
+
+	
+
 } // end if successfully installed
+} catch (Exception e){
+e.printStackTrace();
+}
+
 %>
 <a href="addZip.jsp">install another zip file</a><br>
 <jsp:include page="footer.jsp"></jsp:include>

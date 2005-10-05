@@ -114,10 +114,34 @@ HashMap loadedSuites = new HashMap();
 	}	
 %>
 <br></td></tr>
+<tr><td align=center>
+
+<form  action="editSuite.jsp" >
+		<input type="submit" name="EditSuite" value="Create new Suite" />
+&nbsp;
+</form>
+
+</td>
+<td align=center>
+
+<form  action="addZip.jsp" >
+		<input type="submit" name="importSuite" value="Import Suite from zip" />
+&nbsp;
+</form>
+
+
+</td></tr>
+<tr><td colspan=2><hr></td></tr>
 <tr><td colspan=2 align='center'><font size="+1"><b>New/Available Suites</b></font></td></tr><tr><td>&nbsp;</td></tr>
 <%  
 	for (Iterator iter = suites.keySet().iterator(); iter.hasNext(); ){
-		HashMap suite = (HashMap)suites.get(iter.next());		
+		HashMap suite = (HashMap)suites.get(iter.next());	
+		
+		LSID lsid = new LSID("a","n","1","1");
+		try {
+			lsid = new LSID((String)suite.get("lsid"));	
+		} catch (Exception e) {}		
+	
 		boolean alreadyLoaded = ((loadedSuites.get(suite.get("lsid"))) != null);
 		if (alreadyLoaded) continue;
 
@@ -132,7 +156,7 @@ HashMap loadedSuites = new HashMap();
 			}
 		}
 %>
-<tr class='paleBackground'><td><font size=+1><b><%=suite.get("name")%></b></font>
+<tr class='paleBackground'><td><font size=+1><b><%=suite.get("name")%></b></font>(<%=lsid.getVersion()%>)
 <%
 ArrayList docs = (ArrayList)suite.get("docFiles");
 for (Iterator iter2 = docs .iterator(); iter2.hasNext(); ){
@@ -231,13 +255,6 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 %>
 </tr><tr><td colspan=2 align='center'><hr><font size="+1"><b>Loaded Suites</b></font></td></tr><tr><td>&nbsp;</td></tr>
 
-<tr><td colspan=2 align=center>
-
-<form name="createSuite" action="editSuite.jsp" >
-		<input type="submit" name="EditSuite" value="Create new Suite" />
-&nbsp;
-</form>
-</td></tr>
 
 <%  
 
@@ -248,7 +265,8 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 <%
 	}	
 	for (Iterator iter = loadedSuites.keySet().iterator(); iter.hasNext(); ){
-		SuiteInfo suite = (SuiteInfo)loadedSuites.get(iter.next());		
+		SuiteInfo suite = (SuiteInfo)loadedSuites.get(iter.next());	
+		LSID lsid = new LSID(suite.getLSID());	
 		String[] moduleLsids = suite.getModuleLSIDs();
 
 
@@ -263,7 +281,7 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 <tr class='altpaleBackground'>
 <td>
 
-<font size=+1><b><%=suite.getName()%></b></font>
+<font size=+1><b><%=suite.getName()%></b></font>(<%=lsid.getVersion()%>)
 <%
 
 String[] docs = suite.getDocumentationFiles();
@@ -303,7 +321,13 @@ for (int k=0; k < docs.length; k++ ){
 &nbsp;
 </form>
 </td>
-
+<td  align='left'>
+<form name="zipSuite<%=suite.getName()%>" action="makeSuiteZip.jsp" >
+	<input type="hidden" name="name" value="<%=suite.getLSID()%>" >
+	<input type="submit" name="EditSuite" value="Export Suite" />
+&nbsp;
+</form>
+</td>
 <td valign='top' align='left'>
 <form name="install<%=suite.getName()%>" action="taskCatalog.jsp" >
 	<input type="hidden" name="checkAll" value="1" >

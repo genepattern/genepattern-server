@@ -299,6 +299,8 @@ public interface IGPConstants {
 	public static String TASK_NAMESPACE = "genepatternmodules";
 	public static String SUITE_NAMESPACE = "genepatternsuites";
 
+	public static final String SUITE_MANIFEST_FILENAME = "suiteManifest.xml";
+
 
 
 }
