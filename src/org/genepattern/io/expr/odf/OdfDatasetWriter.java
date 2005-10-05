@@ -93,7 +93,7 @@ public class OdfDatasetWriter implements IExpressionDataWriter {
 
 			for (int j = 0; j < columns; j++) {
 				out.print("\t");
-				out.print(expressionData.getValue(i, j));
+				out.print(expressionData.getValueAsString(i, j));
 			}
 		}
 		out.flush();

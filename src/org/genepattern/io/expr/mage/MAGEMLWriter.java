@@ -149,7 +149,7 @@ public class MAGEMLWriter implements IExpressionDataWriter {
 						if (j > 0) {
 							pw.print("\t");
 						}
-						pw.print(expressionData.getValue(i, j));
+						pw.print(expressionData.getValueAsString(i, j));
 
 						if (resExpressionData != null) {
 
@@ -178,7 +178,7 @@ public class MAGEMLWriter implements IExpressionDataWriter {
 
 			for (int j = 0; j < expressionData.getColumnCount(); j++) {
 				for (int i = 0; i < expressionData.getRowCount(); i++) {
-					buf.append(String.valueOf(expressionData.getValue(
+					buf.append(String.valueOf(expressionData.getValueAsString(
 							i, j)));
 					buf.append(" ");
 					if (resExpressionData != null) {
