@@ -8,6 +8,17 @@ package org.genepattern.data.expr;
 public interface IExpressionData {
 
 	/**
+	 * Gets the value at the given row and column as a string.
+	 * 
+	 * @param row
+	 *            The row
+	 * @param column
+	 *            The column
+	 * @return The expression value
+	 */
+	public String getValueAsString(int row, int column);
+
+	/**
 	 * Gets the expression value at the given row and column.
 	 * 
 	 * @param row
