@@ -909,5 +909,12 @@
 </cvs>
 <copy file="ProteomicsAnalysis.zip" tofile="catalogregen/ProteomicsAnalysis.1.zip" />
 
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00055=1 MAGEMLImportViewer.zip"/>
+	</commandline>
+</cvs>
+<copy file="MAGEMLImportViewer.zip" tofile="catalogregen/MAGEMLImportViewer.1.zip" />
+
 </target>
 </project>

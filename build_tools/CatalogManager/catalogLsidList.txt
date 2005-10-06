@@ -127,3 +127,4 @@ JavaTreeView.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_vis
 Peaks.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00050=1
 PlotPeaks.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00053=1
 ProteomicsAnalysis.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00048=1
+MAGEMLImportViewer.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00055=1
