@@ -15,24 +15,28 @@ import org.genepattern.io.OdfWriter;
  */
 public class OdfDatasetWriter implements IExpressionDataWriter {
 	final static String FORMAT_NAME = "odf";
-   private boolean prependExecutionLog = false;
-	
-   public String checkFileExtension(String filename) {
+
+	private boolean prependExecutionLog = false;
+
+	public String checkFileExtension(String filename) {
 		if (!filename.toLowerCase().endsWith(".odf")) {
 			filename += ".odf";
 		}
 		return filename;
 	}
 
-   public void setPrependExecutionLog(boolean b) {
-      prependExecutionLog = b;
-   }
-   
+	public void setPrependExecutionLog(boolean b) {
+		prependExecutionLog = b;
+	}
+
 	// note old odf parser requires row descriptions and column descriptions
 
 	public void write(IExpressionData expressionData, OutputStream os)
 			throws IOException {
-		PrintWriter out = new OdfWriter(os, prependExecutionLog);
+		PrintWriter out = new PrintWriter(os);
+		if (prependExecutionLog) {
+			OdfWriter.appendExecutionLog(out);
+		}
 		int rows = expressionData.getRowCount();
 		int columns = expressionData.getColumnCount();
 
@@ -105,4 +109,3 @@ public class OdfDatasetWriter implements IExpressionDataWriter {
 	}
 
 }
-
