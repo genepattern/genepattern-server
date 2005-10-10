@@ -77,13 +77,13 @@ public class OdfWriter extends PrintWriter {
 		}
 		this.println();
 		this.println("Model=" + model);
-		this.println("DataLines=" + dataLines);
 		for (int i = 0, size = headers.size(); i < size; i++) {
 			Header h = (Header) headers.get(i);
 			this.print(h.key);
 			this.print("=");
 			this.println(h.value);
 		}
+		this.println("DataLines=" + dataLines);
 
 	}
 
