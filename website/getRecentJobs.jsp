@@ -35,8 +35,7 @@ response.setDateHeader("Expires", 0);
 var logFileContents = new Array(); 
 
 function showJob(job) {
-	execLogArea = parent.document.execLogForm.execLogArea;	
-	execLogArea.value = logFileContents[job];
+	alert( logFileContents[job]);
 }
 
 
@@ -106,7 +105,7 @@ System.out.println("JN=" + job.getJobNumber());
   out.println("</script>");
 
 
-   out.print("<td valign='center'><span name='"+job.getJobNumber()+"'onmouseover='showJob("+job.getJobNumber()+")'><nobr>" + job.getTaskName());
+   out.print("<td valign='center'><span name='"+job.getJobNumber()+"'onClick='showJob("+job.getJobNumber()+")'><nobr>" + job.getTaskName());
 
    out.print("&nbsp;");
    if (hasLog[i])

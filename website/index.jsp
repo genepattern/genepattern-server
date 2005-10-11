@@ -222,27 +222,48 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 
 </font>
 
-<table cellpadding="10" width="100%" border="1" rules="all" frame="border">
-<tr>
+<table cellpadding="0" width="100%" border="0" >
 
-      <%@ include file="indexPipelineSection.htm" %>
-	<%@ include file="indexTaskSection.htm" %>
-	<%@ include file="indexAdminSection.htm" %>
+<tr><td valign=top>
 
-    
+<td  valign='top' height='100%'>
+<iframe frameborder="0" scrolling="yes" marginwidth="1" src="getRecentJobs.jsp" style="width: 100%; height: 500px" name="iframe" id="iframeid">
+No &lt;iframes&gt; support  :(
+</iframe>
+
+
+</td>
+<td valign=top>
+<table  width="100%" height="100%" border="0" >
+	<tr>
+		<%@ include file="indexTaskSection.htm" %>
+	</tr>
+
+	<tr>
+	      <%@ include file="indexPipelineSection.htm" %>
+	</tr>
+</table>
+</td>
+<td>
+<table cellspacing=0 cellpadding=0 height="100%"  bgcolor="#EFEFFF">
+<tr><td valign='top'>
+
+
+<font size=-2>
+	<%@ include file="indexDocSection.htm" %>
+	<%@ include file="indexResourcesSection.htm" %>
+</font>
+</td></tr>
+</table>
+
+
+</td>
 </tr>
-<tr>
+</table>
 
-    <%@ include file="indexDocSection.htm" %>
-    <%@ include file="indexResourcesSection.htm" %>
-    <%@ include file="indexProgrammingSection.htm" %>
-
-
-   
-</tr>
 
 </form>
-</table>
+
 
 <script language="Javascript">
 taskSelect(document.forms['index'].pipeline, 'pipeline');

@@ -345,22 +345,21 @@ function checkEnableNavbar() {
 	<form action="login.jsp" name="login">
 	<table width="100%">
 	<tr>
-		<td class="navbar" valign="top">
-			<a href="index.jsp" class="navbar"><img src="skin/HeaderLogo.png" border="0" alt="home" align="texttop"></a> &nbsp;
+		<td valign="top">	<a href="index.jsp" class='logo'><img src='skin/logoSmall.gif' border="0" height=25 width=25 />&nbsp;<B>Gene</B>Pattern</a> &nbsp;
 		</td>
-		<td align="right" class="navbar" valign="top">
+		<td align="right"  valign="top">
 			<nobr>
 			<% if (request.getAttribute(GPConstants.USER_LOGGED_OFF) == null) { %>
 				<% if (userUnknown) { %>
 					<input type="text" class="little" size="30" name="<%= GPConstants.USERID %>" value="<%= EMAIL_ADDRESS %>" onfocus="ufocus(this, true, '<%= EMAIL_ADDRESS %>')" onblur="ufocus(this, false, '<%= EMAIL_ADDRESS %>')"> 
 					<input type="submit" value="sign in" class="little">
 				<% } else { %>
-					<a href="login.jsp" class="navbar">sign out</a> <%= StringUtils.htmlEncode(userID) %>
+					<a href="login.jsp" class="navbarlink">sign out</a> <%= StringUtils.htmlEncode(userID) %>
 				<% } %>
 			<% } %>
 			</nobr>
 			<br>
-			<a href="about.jsp" class="navbar">about</a>
+			<a href="about.jsp" class="navbarlink">about</a>
 		</td>
 	</tr>
 	</form>
@@ -370,7 +369,7 @@ function checkEnableNavbar() {
 
 	<table width="100%">
 	<tr>
-	<td class="navbar" valign="top">
+	<td  valign="top">
 		<% if (!userUnknown) { %>
 			<%= _taskCatalog(tmTasks, recentPipes, "Pipeline", "changePipeline();", GPConstants.TASK_TYPE_PIPELINE, userID, request.getParameter(GPConstants.NAME)) %>
 			<%= _taskCatalog(tmTasks, recentTasks, "Task", "changeTask();", null, userID, request.getParameter(GPConstants.NAME)) %>
@@ -390,10 +389,10 @@ function checkEnableNavbar() {
 &nbsp;&nbsp;&nbsp;
 <a href="#" 
 	onclick="window.open('chooseSuite.jsp', 'Suite Filter',
-	'toolbar=no, location=no, status=no, menubar=no, resizable=yes,width=320, height=<%=height%>')" class="navbar"> <nobr>Filter by Suite</nobr></a>
+	'toolbar=no, location=no, status=no, menubar=no, resizable=yes,width=320, height=<%=height%>')" class="navbarlink"> <nobr>Filter by Suite</nobr></a>
 
 	</td>
-	<td align="right" valign="top" class="navbar">
+	<td align="right" valign="top" >
 			<nobr><input type="text" class="little" size="10" name="search" 
 			      value="<%= request.getParameter("search") != null ? 
 				request.getParameter("search") : SEARCH %>" onfocus="ufocus(this, true, '<%= SEARCH %>')" 
@@ -437,7 +436,7 @@ function checkEnableNavbar() {
 	StringBuffer sbCatalog = new StringBuffer();
 	sbCatalog.append("<select name=\"" + selectorName + "\" onchange=\"");
 	sbCatalog.append(onSelectURL);
-	sbCatalog.append("\" class=\"navbar\">\n");
+	sbCatalog.append("\">\n");
 	sbCatalog.append("<option value=\"" + IGNORE + "\">" + (type == null ? "task" : type) + "</option>\n");
 	sbCatalog.append("<option value=\"\">new " + (type == null ? "task" : type) + "</option>\n");
 
@@ -496,7 +495,7 @@ function checkEnableNavbar() {
 		}
 		selected = requestedName != null && (name.equals(requestedName) || requestedName.startsWith(versionlessLSID + ":"));
 		sbCatalog.append("<option value=\"" + (lsid != null ? l.toString() : name) +
-			 "\" class=\"navbar-tasks-" + authorityType + "\"" + 
+			 "\" class=\"tasks-" + authorityType + "\"" + 
 			 " title=\"" + StringUtils.htmlEncode(description) + ", " + l.getAuthority() + "\"" +
 			 (selected ? " selected" : "") +
 			 "><i>" + shortName + "</i></option>\n");
@@ -551,7 +550,7 @@ function checkEnableNavbar() {
 			}
 			selected = requestedName != null && (name.equals(requestedName) || requestedName.startsWith(versionlessLSID + ":"));
 			sbCatalog.append("<option value=\"" + (lsid != null ? l.toString() : name) +
-					 "\" class=\"navbar-tasks-" + authorityType + "\"" + 
+					 "\" class=\"tasks-" + authorityType + "\"" + 
 					 " title=\"" + StringUtils.htmlEncode(description) + ", " + l.getAuthority() + "\"" +
 					 (selected ? " selected" : "") +
 					 ">" + shortName + "</option>\n");
