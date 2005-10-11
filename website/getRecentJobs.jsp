@@ -35,7 +35,11 @@ response.setDateHeader("Expires", 0);
 var logFileContents = new Array(); 
 
 function showJob(job) {
-	alert( logFileContents[job]);
+	//execLogArea = parent.document.execLogForm.execLogArea;	
+	//execLogArea.value = logFileContents[job];
+	window.open('showJob.jsp?jobId=' + job, 'Job ' + job,'toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=240')
+
+	//alert( job);
 }
 
 

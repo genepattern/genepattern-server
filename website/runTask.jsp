@@ -145,9 +145,6 @@ function resetValues() {
 No &lt;iframes&gt; support  :(
 </iframe>
 
-<form name='execLogForm'>
-<TEXTAREA name='execLogArea' class="recentJobsArea" rows='5'  readonly wrap='soft'></textarea>
-</form>
 
 </td>
 <td valign='top'>
