@@ -22,6 +22,8 @@ public class OdfWriter extends PrintWriter {
 
 	private int dataLines;
 
+	private String[] columnTypes;
+
 	public OdfWriter(String outputFileName, String[] columnNames, String model,
 			int dataLines, boolean prependExecutionLog) throws IOException {
 		super(new FileWriter(fixName(outputFileName)));
@@ -65,17 +67,29 @@ public class OdfWriter extends PrintWriter {
 		headers.add(new Header(key, String.valueOf(value)));
 	}
 
-	public void printHeader() {
-		this.println("ODF 1.0");
-		this.println("HeaderLines=" + (headers.size() + 2));
-		this.print("COLUMN_NAMES:");
-		for (int j = 0; j < columnNames.length; j++) {
+	private void printArray(String key, String[] values) {
+		this.print(key + ":");
+		for (int j = 0; j < values.length; j++) {
 			if (j > 0) {
 				this.print("\t");
 			}
-			this.print(columnNames[j]);
+			this.print(values[j]);
 		}
 		this.println();
+	}
+
+	public void printHeader() {
+		this.println("ODF 1.0");
+		int headerLines = headers.size() + 3; // DataLines, COLUMN_NAMES, Model
+		if(columnTypes!=null) {
+			headerLines++;
+		}
+		this.println("HeaderLines=" + headerLines);
+
+		printArray("COLUMN_NAMES", columnNames);
+		if(columnTypes!=null) {
+			printArray("COLUMN_TYPES", columnTypes);
+		}
 		this.println("Model=" + model);
 		for (int i = 0, size = headers.size(); i < size; i++) {
 			Header h = (Header) headers.get(i);
@@ -106,5 +120,9 @@ public class OdfWriter extends PrintWriter {
 				}
 			}
 		}
+	}
+
+	public void setColumnTypes(String[] columnTypes2) {
+		this.columnTypes = columnTypes2;
 	}
 }
