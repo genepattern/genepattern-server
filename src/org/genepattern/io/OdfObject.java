@@ -58,7 +58,7 @@ public class OdfObject implements TableModel {
 			}
 		}
 	}
-
+	
 	private class MyHandler implements IOdfHandler {
 		public void header(String key, String[] values) throws ParseException {
 			if (key.equals("COLUMN_NAMES")) {
@@ -105,11 +105,11 @@ public class OdfObject implements TableModel {
 				} else if (columnTypes[i].equals("int")) {
 					columns[i] = new Integer[dataLines];
 					columnClasses[i] = Integer.class;
-				} else if (columnTypes.equals("boolean")) {
+				} else if (columnTypes[i].equals("boolean")) {
 					columns[i] = new Boolean[dataLines];
 					columnClasses[i] = Boolean.class;
 				} else {
-					throw new ParseException("Uknown column type");
+					throw new ParseException("Unknown column type");
 				}
 
 			}
