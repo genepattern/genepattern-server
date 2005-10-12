@@ -280,15 +280,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 					save();
 				} else if (e.getSource() == runButton) {
 					if (!view) { // XXX always ask users if they want to save
-									// pipeline when editing, even if user did
-									// not make any changes
-						int result = GUIUtil
-								.showYesNoCancelDialog(
-										GenePattern.getDialogParent(),
-										"GenePattern",
-										"Do you want to save the changes to the pipeline?",
-										new String[] { "Save", "Don't Save",
-												"Cancel" });
+						// pipeline when editing, even if user did
+						// not make any changes
+						int result = showSaveDialog();
 
 						if (result == JOptionPane.YES_OPTION) {
 							save();
@@ -328,14 +322,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 				} else if (e.getSource() == viewOrEditButton) {
 					int message = view ? ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST
 							: ChangeViewMessageRequest.SHOW_VIEW_PIPELINE_REQUEST;
-					if (pipelineChanged) {
-						int result = GUIUtil
-								.showYesNoCancelDialog(
-										GenePattern.getDialogParent(),
-										"GenePattern",
-										"Do you want to save the changes to the pipeline?",
-										new String[] { "Save", "Don't Save",
-												"Cancel" });
+					if (!view) {
+						int result = showSaveDialog();
 
 						if (result == JOptionPane.YES_OPTION) {
 							save();
@@ -1047,6 +1035,14 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		tasksPanel.invalidate();
 		tasksPanel.validate();
 
+	}
+
+	private int showSaveDialog() {
+		int result = GUIUtil.showYesNoCancelDialog(GenePattern
+				.getDialogParent(), "GenePattern",
+				"Do you want to save the pipeline before exiting the editor?",
+				new String[] { "Save", "Don't Save", "Cancel" });
+		return result;
 	}
 
 	static class ParameterDisplay {
