@@ -86,14 +86,6 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 	public boolean isAllowed(String urlOrSoapMethod, String userID){
 		boolean allow = _isAllowed(urlOrSoapMethod,userID);
 		System.out.println("AM: " + urlOrSoapMethod + " --> " + userID + "  == " + allow);
-
-System.out.println("\nAP: " + actionPermission);
-System.out.println("\nUG: " + userGroups);
-System.out.println("\nGP: " + groupPermission);
-
-
-
-
 		return allow;		
 	}
 
@@ -101,7 +93,6 @@ System.out.println("\nGP: " + groupPermission);
 
 		//convert link name to permission name and then check permission
 		HashSet permNames = getPermissionNameForLink(urlOrSoapMethod);
-System.out.println("perms = " + permNames);
 		if (permNames == emptySet) return true;
 
 		for (Iterator iter = permNames.iterator(); iter.hasNext(); ){
@@ -118,8 +109,6 @@ System.out.println("perms = " + permNames);
 		boolean allowed = false;		
 
 		HashSet allowedGroups = (HashSet)groupPermission.get(permissionName);
-
-System.out.println("allowed for  " + permissionName + " = " + allowedGroups );
 
 		// the file says anyone may connect if it has a group named '*'
 		if (allowedGroups.contains("*")) return true;
@@ -181,8 +170,6 @@ System.out.println("allowed for  " + permissionName + " = " + allowedGroups );
 		File actionPermissionMapFile = new File(System.getProperty("genepattern.properties"),"actionPermissionMap.xml");
   		is = new FileInputStream(actionPermissionMapFile);
 
-System.out.println("Load from: " + actionPermissionMapFile.getAbsolutePath() + "  " + actionPermissionMapFile.exists());
-
 		SAXBuilder builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser");
         	// Parse the specified file and convert it to a JDOM document
         	document = builder.build(is);
@@ -225,8 +212,6 @@ System.out.println("Load from: " + actionPermissionMapFile.getAbsolutePath() + "
 
 		File userGroupMapFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
   		is = new FileInputStream(userGroupMapFile);
-System.out.println("2. Load from: " + userGroupMapFile.getAbsolutePath() + "  " + userGroupMapFile.exists());
-
 
 		SAXBuilder builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser");
         	// Parse the specified file and convert it to a JDOM document
@@ -265,8 +250,6 @@ System.out.println("2. Load from: " + userGroupMapFile.getAbsolutePath() + "  " 
 		org.jdom.Document document = null;
 
 		File permissionMapFile = new File(System.getProperty("genepattern.properties"), "permissionMap.xml");
-System.out.println("3. Load from: " + permissionMapFile.getAbsolutePath() + "  " + permissionMapFile.exists());
-
   		is = new FileInputStream(permissionMapFile);
 
 		SAXBuilder builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser");
