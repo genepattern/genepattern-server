@@ -68,6 +68,7 @@ import org.genepattern.gpge.ui.menu.MenuAction;
 import org.genepattern.gpge.ui.menu.MenuItemAction;
 import org.genepattern.gpge.ui.preferences.ChangeServerDialog;
 import org.genepattern.gpge.ui.preferences.PreferenceKeys;
+import org.genepattern.gpge.ui.preferences.SuitesPreferences;
 import org.genepattern.gpge.ui.project.ProjectDirModel;
 import org.genepattern.gpge.ui.project.ProjectDirectoryListener;
 import org.genepattern.gpge.ui.project.ProjectEvent;
@@ -1869,8 +1870,10 @@ public class GPGE {
 		}
 	}
 
-	private void taskInstalled(LSID lsid) {
-		analysisServiceManager.taskInstalled(lsid);
+	public void rebuildTasksUI() {
+		inputTypeToMenuItemsMap = SemanticUtil
+		.getInputTypeToMenuItemsMap(analysisServiceManager.getLatestAnalysisServices());
+
 		new Thread() {
 			public void run() {
 				SwingUtilities.invokeLater(new Thread() {
@@ -1886,6 +1889,11 @@ public class GPGE {
 				});
 			}
 		}.start();
+	}
+	
+	private void taskInstalled(LSID lsid) {
+		analysisServiceManager.taskInstalled(lsid);
+		rebuildTasksUI();
 	}
 
 	public void refreshModules(boolean displayMessage) {
@@ -2451,9 +2459,20 @@ public class GPGE {
 
 				}
 			});
+			
 			add(changeServerMenuItem);
 			changeServerMenuItem.setEnabled(false);
 
+			
+			JMenuItem suitesMenuItem = new JMenuItem("Suites...");
+			suitesMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					new SuitesPreferences(GenePattern.getDialogParent());
+				}
+			});
+			add(suitesMenuItem);
+			
+			
 			refreshMenu = new JMenu("Refresh");
 			add(refreshMenu);
 			refreshModulesMenuItem = new JMenuItem("Modules");

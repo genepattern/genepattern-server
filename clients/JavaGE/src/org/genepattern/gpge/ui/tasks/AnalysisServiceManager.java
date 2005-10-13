@@ -16,6 +16,7 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.AnalysisWebServiceProxy;
+import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
@@ -40,7 +41,10 @@ public class AnalysisServiceManager {
 	/** Maps a versionless LSID to a list of versions for that LSID */
 	private Map lsid2VersionsMap = new HashMap();
 
-	private Comparator versionComparator = new ReverseComparator(LSIDVersionComparator.INSTANCE);
+	private Comparator versionComparator = new ReverseComparator(
+			LSIDVersionComparator.INSTANCE);
+
+	private List suites;
 
 	private static class ReverseComparator implements Comparator {
 		private Comparator c;
@@ -48,15 +52,51 @@ public class AnalysisServiceManager {
 		public ReverseComparator(Comparator c) {
 			this.c = c;
 		}
-		
+
 		public int compare(Object obj1, Object obj2) {
 			return c.compare(obj2, obj1);
 		}
 	}
-	
+
 	private AnalysisServiceManager() {
 		this.lsid2LatestAnalysisServices = new HashMap();
 		this.lsid2AnalysisServices = new HashMap();
+	}
+
+	public void setSuites(List suites) {
+		this.suites = suites;
+		if (suites == null) {
+			try {
+				refresh();
+			} catch (WebServiceException e) {
+				e.printStackTrace();
+			}
+		} else {
+			lsid2LatestAnalysisServices.clear();
+			for (int i = 0, size = suites.size(); i < size; i++) {
+				SuiteInfo suite = (SuiteInfo) suites.get(i);
+				try {
+					String[] lsids = suite.getModuleLSIDs();
+					for(int j = 0; j < lsids.length; j++) {
+						TaskInfo task = new org.genepattern.webservice.AdminProxy(
+							server, username, false).getTask(lsids[j]);
+						if (task != null) {
+							lsid2LatestAnalysisServices.put(lsids[j],
+								new AnalysisService(server, task));
+						} else {
+							System.out.println("Can't find " + lsids[j]);
+						}
+					}
+				} catch (WebServiceException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		System.out.println(lsid2LatestAnalysisServices);
+	}
+
+	public List getSuites() {
+		return suites;
 	}
 
 	/**
@@ -105,7 +145,8 @@ public class AnalysisServiceManager {
 			}
 
 		} else {
-			getAnalysisService(lsid.toString()); // adds to lsid2AnalysisServices
+			getAnalysisService(lsid.toString()); // adds to
+			// lsid2AnalysisServices
 		}
 	}
 
@@ -193,13 +234,26 @@ public class AnalysisServiceManager {
 	}
 
 	/**
+	 * Refreshes the modules
+	 * 
+	 * @throws WebServiceException
+	 */
+	public void refresh() throws WebServiceException {
+		if (suites == null) {
+			updateLatestAnalysisServices();
+		} else {
+			setSuites(suites);
+		}
+	}
+
+	/**
 	 * Retrieves the latest versions of all analysis services from the server
 	 * stores the analysis services internally
 	 * 
 	 * @exception WebServiceException
 	 *                Description of the Exception
 	 */
-	public void refresh() throws WebServiceException {
+	public void updateLatestAnalysisServices() throws WebServiceException {
 		this.lsid2LatestAnalysisServices.clear();
 		this.lsid2AnalysisServices.clear();
 
@@ -216,7 +270,6 @@ public class AnalysisServiceManager {
 		this.lsid2VersionsMap = new org.genepattern.webservice.AdminProxy(
 				server, username).getLSIDToVersionsMap();
 
-		
 		for (Iterator it = lsid2VersionsMap.keySet().iterator(); it.hasNext();) {
 			List versions = (List) lsid2VersionsMap.get(it.next());
 			Collections.sort(versions, versionComparator);
