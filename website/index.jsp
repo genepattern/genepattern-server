@@ -254,9 +254,10 @@ No &lt;iframes&gt; support  :(
 	</tr>
 </table>
 </td>
-<td valign='top' bgcolor="#EFEFFF">
+<td valign='top' >
 
-<table ><tr><td>
+<table bgcolor="#EFEFFF" height='100%' width='100%' border="0" margin='1' class='majorcell'>
+	<tr height='520'><td valign='top'>
 		<%@ include file="indexDocSection.jsp" %>
 </td></tr></table>
 

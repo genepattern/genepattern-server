@@ -129,7 +129,7 @@ for(int i = 0; i < jobs.length; i++) {
 }
 
 if (jobsDisplayed == 0){
- out.print("<tr><td colspan=3 align=\"right\" >No completed jobs available to display</td></tr>");
+ out.print("<tr><td colspan=3 align=\"center\" >No completed jobs available to display</td></tr>");
 }
 int numRows = jobsDisplayed;
 while (numRows < (numJobsToDisplay)){
