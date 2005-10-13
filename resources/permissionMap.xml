@@ -1,0 +1,30 @@
+<!-- map of group/user names to permissions -->
+<!-- * indicates anyone has a permission -->
+
+<permissionMap>
+
+<permission name="importTask">
+	<user name="*"/>
+	<group name="*"/>
+</permission>
+
+<permission name="createTask">
+	<user name="*"/>
+	<group name="*">
+</permission>
+
+<permission name="createPipeline">
+	<user name="*"/>
+	<group name="*"/>
+</permission>
+
+<permission name="arbitrarySql">
+	<group name="genepatternAdministrators"/>
+</permission>
+
+<permission name="administrateServer">
+	<group name="genepatternAdministrators"/>
+</permission>
+
+
+<permissionMap>

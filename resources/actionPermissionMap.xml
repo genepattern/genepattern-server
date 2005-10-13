@@ -1,0 +1,13 @@
+<!-- map of urls and SOAP methods to required permissions -->
+<!-- anything not listed here can be used by anyone -->
+
+<actionPermissionMap>
+
+	<url link="addTask.jsp" permission="createTask"/>
+	<url link="addZip.jsp" permission="createTask"/>
+
+	<url link="adminServer.jsp" permission="administrateServer"/>
+
+	<url link="sql.jsp" permission="arbitrarySql"/>
+
+<actionPermissionMap>

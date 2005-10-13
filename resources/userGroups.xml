@@ -1,0 +1,18 @@
+<!-- map of users to groups -->
+
+<userGroups>
+
+<group name="genepatternUsers">
+	<user name="*"/>
+</group>
+
+<group name="genepatternAdministrators">
+	<user name="*"/>
+</group>
+
+<group name="genepatternTaskCreators">
+	<user name="*"/>
+</group>
+
+
+</userGroups>
