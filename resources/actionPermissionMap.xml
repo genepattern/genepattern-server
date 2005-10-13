@@ -10,4 +10,4 @@
 
 	<url link="sql.jsp" permission="arbitrarySql"/>
 
-<actionPermissionMap>
+</actionPermissionMap>

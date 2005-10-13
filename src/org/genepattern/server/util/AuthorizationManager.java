@@ -43,45 +43,103 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 		if (System.getProperty("genepattern.properties") == null){
 			System.setProperty("genepattern.properties", "c:/progra~1/genepatternserver/resources/");
 		}
-		AuthorizationManager.init();
+		(new AuthorizationManager()).init();
 
 
 
 	}
 
 
+	public AuthorizationManager(){
+		try {
+			init();
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+
 	protected HashMap userGroups = new HashMap();
+	protected HashMap groupUsers = new HashMap();
+
 	protected HashMap actionPermission = new HashMap();
-	protected HashMap userPermission = new HashMap();
+	protected HashMap groupPermission = new HashMap();
 	
 
 
-
 	public String getCheckedLink(String link, String userID, String failureNote){
-		String permission = getPermissionNameForLink(link);
-		if (permission == null) return link;
-		else return getCheckedLink(permission, link, userID, failureNote);
-	}
-
-
-	public String getCheckedLink(String permission, String link, String userID, String failureNote){
-		if (isAllowed(permission, userID)) return link;
+		// to pass to isAllowed we want everything before the ?
+		int idx = link.indexOf("?");
+		
+		String uri = link.substring(0, idx);
+		if (isAllowed(uri, userID)) return link;
 		else return failureNote;
+
+	}
+	public String getCheckedLink(String permName, String link, String userID, String failureNote){
+		// to pass to isAllowed we want everything before the ?
+		int idx = link.indexOf("?");
+		if (checkPermission(permName, userID)) return link;
+		else return failureNote;
+
 	}
 
 	public boolean isAllowed(String urlOrSoapMethod, String userID){
-		//convert link name to permission name and then check permission
+		boolean allow = _isAllowed(urlOrSoapMethod,userID);
+		System.out.println("AM: " + urlOrSoapMethod + " --> " + userID + "  == " + allow);
 
-		return false; //XXX
+System.out.println("\nAP: " + actionPermission);
+System.out.println("\nUG: " + userGroups);
+System.out.println("\nGP: " + groupPermission);
+
+
+
+
+		return allow;		
+	}
+
+	public boolean _isAllowed(String urlOrSoapMethod, String userID){
+
+		//convert link name to permission name and then check permission
+		HashSet permNames = getPermissionNameForLink(urlOrSoapMethod);
+System.out.println("perms = " + permNames);
+		if (permNames == emptySet) return true;
+
+		for (Iterator iter = permNames.iterator(); iter.hasNext(); ){
+			String permName = (String)iter.next();
+			boolean allowed = checkPermission(permName, userID); 
+			if (allowed) return true;
+		}
+		return false;
 	}
 
 	public boolean checkPermission(String permissionName, String userID){
-		return false; //XXX
+		HashSet usersGroups = (HashSet )userGroups.get(userID);
+		if (usersGroups == null) usersGroups = emptySet;
+		boolean allowed = false;		
+
+		HashSet allowedGroups = (HashSet)groupPermission.get(permissionName);
+
+System.out.println("allowed for  " + permissionName + " = " + allowedGroups );
+
+		// the file says anyone may connect if it has a group named '*'
+		if (allowedGroups.contains("*")) return true;
+		if (allowedGroups == emptySet) return true;
+
+
+		for (Iterator iter = usersGroups.iterator(); iter.hasNext(); ){
+			String groupName = (String)iter.next();
+			if (allowedGroups.contains(groupName)) return true;
+		}
+
+		return false;
 	}
 
+	private final HashSet emptySet = new HashSet();
 
-	protected String getPermissionNameForLink(String link){
-		return null; // XXX
+	protected HashSet getPermissionNameForLink(String link){
+		HashSet perms =  (HashSet)actionPermission.get(link);
+		if (perms == null) return emptySet;
+		else return perms;
 	}
 
 
@@ -92,7 +150,7 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 
 	protected static String DBF = "javax.xml.parsers.DocumentBuilderFactory";
 
-	public static void init() throws IOException, IllegalArgumentException, IllegalAccessException,
+	public void init() throws IOException, IllegalArgumentException, IllegalAccessException,
 			NoSuchMethodException, SecurityException {
 		String oldDocumentBuilderFactory = System.getProperty(DBF);
 		try {
@@ -105,7 +163,8 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 			initActionPermissionMap();
 			initUserGroupMap();
 		} catch (IOException ioe) {
-			throw new IOException(ioe.getMessage() + " while reading authorization files");
+			ioe.printStackTrace();
+			throw ioe;
 		} catch (JDOMException ioe) {
 			throw new IOException(ioe.getMessage() + " while reading authorization files");
 		} finally {
@@ -115,45 +174,59 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 
 	}
 	
-	public static void initActionPermissionMap() throws IOException, JDOMException {
+	public void initActionPermissionMap() throws IOException, JDOMException {
 		InputStream is = null;
 		org.jdom.Document document = null;
 
 		File actionPermissionMapFile = new File(System.getProperty("genepattern.properties"),"actionPermissionMap.xml");
   		is = new FileInputStream(actionPermissionMapFile);
 
+System.out.println("Load from: " + actionPermissionMapFile.getAbsolutePath() + "  " + actionPermissionMapFile.exists());
+
 		SAXBuilder builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser");
         	// Parse the specified file and convert it to a JDOM document
         	document = builder.build(is);
 		Element root = document.getRootElement();
 		
- 		for(Iterator i = root.getChildren("url").iterator(); i.hasNext(); ) {
+		for(Iterator i = root.getChildren("url").iterator(); i.hasNext(); ) {
             	Element controlledUrl = (Element) i.next();
-			// XXX
-  			Text link = (Text)root.getChild("link").getContent().get(0);
-		      Text perm = (Text)root.getChild("permission").getContent().get(0);
-      
+			String link = controlledUrl.getAttribute("link").getValue();
+
+			HashSet actionPerms = (HashSet)actionPermission.get(link);
+			if (actionPerms == null) {
+				actionPerms = new HashSet();
+				actionPermission.put(link, actionPerms);
+			}
+		      String perm = controlledUrl.getAttribute("permission").getValue();
+      		actionPerms.add(perm);
 
 		}
  		for(Iterator i = root.getChildren("SOAPmethod").iterator(); i.hasNext(); ) {
             	Element controlledUrl = (Element) i.next();
 			// XXX
-  			Text meth = (Text)controlledUrl.getChild("name").getContent().get(0);
-		      Text perm = (Text)controlledUrl.getChild("permission").getContent().get(0);
-      
-
+  			String meth = controlledUrl.getAttribute("name").getValue();
+		      
+			HashSet actionPerms = (HashSet)actionPermission.get(meth);
+			if (actionPerms == null) {
+				actionPerms = new HashSet();
+				actionPermission.put(meth, actionPerms);
+			}
+			String perm = controlledUrl.getAttribute("permission").getValue();
+      		actionPerms.add(perm);
 		}
 
 		// loop over SOAP methods next
 		is.close();
 	}
 
-	public static void initUserGroupMap() throws IOException, JDOMException {
+	public void initUserGroupMap() throws IOException, JDOMException {
 		InputStream is = null;
 		org.jdom.Document document = null;
 
 		File userGroupMapFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
   		is = new FileInputStream(userGroupMapFile);
+System.out.println("2. Load from: " + userGroupMapFile.getAbsolutePath() + "  " + userGroupMapFile.exists());
+
 
 		SAXBuilder builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser");
         	// Parse the specified file and convert it to a JDOM document
@@ -162,24 +235,38 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 		
  		for(Iterator i = root.getChildren("group").iterator(); i.hasNext(); ) {
             	Element group = (Element) i.next();
-			// XXX
-  			Text name = (Text)group.getChild("name").getContent().get(0);
+
+  			String groupName = group.getAttribute("name").getValue();
+
+			HashSet groupMembers = (HashSet )groupUsers.get(groupName);
+			if (groupMembers == null){
+				groupMembers = new HashSet ();
+				groupUsers.put(groupName, groupMembers);
+
+			}
 		 	for(Iterator i2 = group.getChildren("user").iterator(); i2.hasNext(); ) {
 	            	Element user = (Element) i2.next();
-
-	  			Text userName = (Text)user.getChild("name").getContent().get(0);
+	  			String userName = user.getAttribute("name").getValue();
+				HashSet usersGroups = (HashSet )userGroups.get(userName);
+				if (usersGroups== null){
+					usersGroups= new HashSet ();
+					userGroups.put(userName, usersGroups);
+				}
 	
-			
+				usersGroups.add(groupName);
+				groupMembers.add(userName);
 			}
 		}
 		// loop over SOAP methods next
 		is.close();
 	}
-	public static void initPermissionMap() throws IOException, JDOMException {
+	public void initPermissionMap() throws IOException, JDOMException {
 		InputStream is = null;
 		org.jdom.Document document = null;
 
 		File permissionMapFile = new File(System.getProperty("genepattern.properties"), "permissionMap.xml");
+System.out.println("3. Load from: " + permissionMapFile.getAbsolutePath() + "  " + permissionMapFile.exists());
+
   		is = new FileInputStream(permissionMapFile);
 
 		SAXBuilder builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser");
@@ -189,18 +276,18 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 		
  		for(Iterator i = root.getChildren("permission").iterator(); i.hasNext(); ) {
             	Element permission = (Element) i.next();
-			Text permissionName = (Text)permission.getChild("name").getContent().get(0);
-		 	for(Iterator i2 = permission.getChildren("user").iterator(); i2.hasNext(); ) {
-	  			Element user = (Element) i2.next();
-				Text userName = (Text)user.getChild("name").getContent().get(0);
-	
-			
-			}			
+			Attribute permissionNameText = (Attribute)permission.getAttribute("name");
+			String pName = permissionNameText.getValue();
+			HashSet perm = (HashSet)groupPermission.get(pName);
+			if (perm == null){
+				perm = new HashSet();
+				groupPermission.put(pName, perm);
+
+			}
 			for(Iterator i2 = permission.getChildren("group").iterator(); i2.hasNext(); ) {
 	  			Element group = (Element) i2.next();
-				Text groupName = (Text)group.getChild("name").getContent().get(0);
-	
-			
+				String groupName = group.getAttribute("name").getValue();
+				perm.add(groupName);
 			}
 
 		}

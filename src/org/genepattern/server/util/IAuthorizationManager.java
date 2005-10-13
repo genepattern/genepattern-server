@@ -40,7 +40,7 @@ public interface IAuthorizationManager  {
 
 
 	public String getCheckedLink(String link, String userID, String failureNote);
-
+	
 	public String getCheckedLink(String permission, String link, String userID, String failureNote);
 
 

@@ -1,20 +1,19 @@
 <!-- map of group/user names to permissions -->
 <!-- * indicates anyone has a permission -->
+<!-- - indicates no one has a permission -->
+
 
 <permissionMap>
 
 <permission name="importTask">
-	<user name="*"/>
-	<group name="*"/>
+	<group name="genepatternTaskCreators"/>
 </permission>
 
 <permission name="createTask">
-	<user name="*"/>
-	<group name="*">
+	<group name="genepatternTaskCreators"/>
 </permission>
 
 <permission name="createPipeline">
-	<user name="*"/>
 	<group name="*"/>
 </permission>
 
@@ -27,4 +26,4 @@
 </permission>
 
 
-<permissionMap>
+</permissionMap>
