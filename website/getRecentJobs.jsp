@@ -29,23 +29,19 @@ response.setDateHeader("Expires", 0);
 %>
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
-</head>	
+
+</head><body class="bodyNoMargin">
+	
 <script language="JavaScript">
 
-var logFileContents = new Array(); 
-
 function showJob(job) {
-	//execLogArea = parent.document.execLogForm.execLogArea;	
-	//execLogArea.value = logFileContents[job];
 	window.open('showJob.jsp?jobId=' + job, 'Job ' + job,'toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=240')
-
-	//alert( job);
 }
 
 
 </script>
 
-<table   frame=border xwidth='100%' height='100%' class="paleBackground"  valign='top'>
+<table   margin=0 frame=border width=100% height='100%' class="paleBackground"  valign='top'>
 
 <tr><td class="heading" colspan=3><span class="heading">Recent Jobs</span></td></tr><tr>
 
@@ -77,8 +73,7 @@ boolean[] hasLog = new boolean[jobs.length];
 for(int i = 0; i < jobs.length; i++) {
    JobInfo job = jobs[i];
    job = analysisClient.getJob(job.getJobNumber());
-System.out.println("JN=" + job.getJobNumber());
-   hasLog[i] = false;
+
    if(!job.getStatus().equals(JobStatus.FINISHED) ) continue;
    StringBuffer buff2 = new StringBuffer();
    StringBuffer buff = new StringBuffer();
@@ -86,34 +81,12 @@ System.out.println("JN=" + job.getJobNumber());
    out.print("<tr><td align=\"right\" >" + job.getJobNumber() + "");
    jobsDisplayed++;
    ParameterInfo[] params = job.getParameterInfoArray();
-      String log = "execution log unavailable for job " + job.getJobNumber();
-
-   if(params!=null && params.length > 0) {    
-      for(int j = 0; j < params.length; j++) {
-         ParameterInfo parameterInfo = params[j];
-	  	if (!parameterInfo.isOutputFile()){			
-			buff2.append(parameterInfo.getName());
-			buff2.append("=");
-			buff2.append(parameterInfo.getValue());
-			buff2.append("    ");
-		}
-	   }		
-   }
-  log = buff2.toString();
-  hasLog[i] = true;
-
-  // END OF GETTING THE EXECUTION LOG
-  out.println("<script language='javascript'>");
-
-  out.println("logFileContents["+job.getJobNumber()+"]='" + log+ "';");
-  out.println("</script>");
-
-
+   
    out.print("<td valign='center'><span name='"+job.getJobNumber()+"'onClick='showJob("+job.getJobNumber()+")'><nobr>" + job.getTaskName());
 
    out.print("&nbsp;");
-   if (hasLog[i])
-	out.print("<img src='skin/info_obj.gif'>");
+   
+    out.print("<img src='skin/info_obj.gif'>");
     out.print( "  </nobr></span>");
 
 
@@ -152,7 +125,6 @@ System.out.println("JN=" + job.getJobNumber());
       }
    }
 
-// System.out
    if (jobsDisplayed >= numJobsToDisplay) break;
 }
 
@@ -167,7 +139,7 @@ while (numRows < (numJobsToDisplay)){
 }
 
 out.println("</td></tr>");
-//out.println("<tr><td colspan=3><form name='execLogForm'><TEXTAREA name='execLogArea' style=\"font-size:9px;font-family: arial, helvetica, sans-serif;width: 100%;\" rows='5'  readonly wrap='soft' bgcolor='#EFEFFF'></textarea></form></td></tr>");
 out.println("</table>");
 
 %>
+</body>

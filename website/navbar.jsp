@@ -396,7 +396,7 @@ function checkEnableNavbar() {
 			<nobr><input type="text" class="little" size="10" name="search" 
 			      value="<%= request.getParameter("search") != null ? 
 				request.getParameter("search") : SEARCH %>" onfocus="ufocus(this, true, '<%= SEARCH %>')" 
-				onblur="ufocus(this, false, '<%= SEARCH %>')"><input type="image" src="search.jpeg" 
+				onblur="ufocus(this, false, '<%= SEARCH %>')"><input type="image" src="skin/search.jpeg" 
 				alt="search" value="?" onclick="this.form.submit()" align="top" 
 				class="little"></nobr>
 			<input type="hidden" name="<%= Indexer.TASK %>" value="1">

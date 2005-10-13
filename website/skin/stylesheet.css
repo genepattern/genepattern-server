@@ -1,10 +1,20 @@
-body { font-family: Arial,Helvetica,sans-serif; 
+body { 
+	font-family: Arial,Helvetica,sans-serif; 
 	font-size: 12px;
 	background-color: white;
 	margin-left: 7%;
 	margin-right: 7% }
+
+body.bodyNoMargin { 
+	font-family: Arial,Helvetica,sans-serif; 
+	font-size: 12px;
+	background-color: white;
+	margin-left: 0%;
+	margin-right: 0% }
+
 	
-body.paleBackground { font-family: Arial,Helvetica,sans-serif; 
+body.paleBackground { 
+	font-family: Arial,Helvetica,sans-serif; 
 	font-size: 12px;
 	background-color: #EFEFFF;
 	margin-left: 2%;
@@ -38,16 +48,16 @@ input { font-size: 8pt }
 	color: white;
 	font-color: white;
 	border-color: #0E0166;
-	font-size: 9pt;
-	border-color: gray }
+	font-size: 9pt
+}
+
 .navbarlink {
 	color: white;
 	font-color: white;
 	border-color: #0E0166;
 	font-size: 9pt;
-	border-color: gray }
-
-
+	border-color: gray 
+}
 
 .heading { font-family: Arial,Helvetica,sans-serif; 
 		background-image:  url('http://localhost:8080/gp/skin/blueGradNarrow.jpeg');
@@ -66,7 +76,7 @@ TR.altpaleBackground, tr.altpaleBackground,table.altpaleBackground, TABLE.altpal
 	background: #FFEFEF; 
 }
 
-.majorCell { border-width: 2; font-size: 10pt; }
+.majorCell { border-width: 2;  font-size: 10pt; }
 .button  { width: 50; }
 .wideButton  { width: 100; }
 .wideBoldButton  { width: 100; font-weight: bold; color: red }

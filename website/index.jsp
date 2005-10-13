@@ -208,9 +208,6 @@ setTimeout("blinkInstallModules()", 1000); // delay 1000 milliseconds
 
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
-<form name="index" method="post">
-
 <% if (tmTasks.size() == 0) { %>
 <font size="+1" color="red">
 <br>
@@ -222,37 +219,39 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 
 </font>
 
-<table cellpadding="0" width="100%" border="0" >
+<table cellpadding="0" cellspacing="0" width="100%" border="0" >
+<tr><td colspan=3>
+<jsp:include page="navbar.jsp"></jsp:include>
 
-<tr><td valign=top>
 
-<td  valign='top' height='100%'>
-<iframe frameborder="0" scrolling="yes" marginwidth="1" src="getRecentJobs.jsp" style="width: 100%; height: 500px" name="iframe" id="iframeid">
+</td></tr>
+
+<tr> 
+
+<td  valign='top' align='left' height='100%'>
+<form name="index" method="post">
+
+<iframe frameborder="0" scrolling="yes" marginwidth="1" src="getRecentJobs.jsp" style="width: 100%; height: 530px" name="iframe" id="iframeid">
 No &lt;iframes&gt; support  :(
 </iframe>
 
 
-</td>
+</td> 
 <td valign=top>
-<table  width="100%" height="100%" border="0" >
+<table  width="100%" height="100%"  cellspacing=0 cellpadding=0 >
 	<tr>
 		<%@ include file="indexTaskSection.htm" %>
 	</tr>
 
-	<tr>
+		<tr>
 	      <%@ include file="indexPipelineSection.htm" %>
 	</tr>
 </table>
 </td>
 <td>
-<table cellspacing=0 cellpadding=0 height="100%"  bgcolor="#EFEFFF">
+<table cellspacing=0 cellpadding=0 height="100%" align='top' margin='0' bgcolor="#EFEFFF">
 <tr><td valign='top'>
-
-
-<font size=-2>
 	<%@ include file="indexDocSection.htm" %>
-	<%@ include file="indexResourcesSection.htm" %>
-</font>
 </td></tr>
 </table>
 
