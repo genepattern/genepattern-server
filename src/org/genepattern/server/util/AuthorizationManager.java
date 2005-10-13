@@ -69,8 +69,11 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 	public String getCheckedLink(String link, String userID, String failureNote){
 		// to pass to isAllowed we want everything before the ?
 		int idx = link.indexOf("?");
-		
-		String uri = link.substring(0, idx);
+		String uri = link;
+		if (idx >= 0) {
+			uri = link.substring(0, idx);
+		} 
+
 		if (isAllowed(uri, userID)) return link;
 		else return failureNote;
 

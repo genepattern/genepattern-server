@@ -1,10 +1,27 @@
+<%@ page import="
+		 java.net.URLEncoder,
+		 org.genepattern.server.util.AuthorizationManager" %>
+
 <font size=-2>
 <font size='-1'><b>Tasks and Pipelines</b></font><br>
-&nbsp;&nbsp;&nbsp;<a href="addTask.jsp">create task</a><br>
+
+<%
+	if (authManager.isAllowed("addTask.jsp", userID)){
+%>
+&nbsp;&nbsp;&nbsp;<a href=\"addTask.jsp\"">create task</a><br>
+<% } %>
 &nbsp;&nbsp;&nbsp;<a href="pipelineDesigner.jsp">create pipeline</a><br>
+
+<%	if (authManager.isAllowed("addZip.jsp", userID)){ %>
 &nbsp;&nbsp;&nbsp;<a href="addZip.jsp">import</a><br>
+<% } %>
+
+<%	if (authManager.isAllowed("taskCatalog.jsp", userID)){ %>
 &nbsp;&nbsp;&nbsp;<a href="taskCatalog.jsp">install/update</a><br>
+<% } %>
+<%	if (authManager.isAllowed("deleteTask.jsp", userID)){ %>
 &nbsp;&nbsp;&nbsp;<a href="deleteTask.jsp">delete</a><p>
+<% } %>
 
 <font size='-1'><b>Suites</b></font><br>
 &nbsp;&nbsp;&nbsp;<a href="editSuite.jsp">create suite</a><br>
@@ -15,8 +32,9 @@
 
 <font size='-1'><b>Server Administration</b></font><br>
 &nbsp;&nbsp;&nbsp;<a href="zipJobResults.jsp">job results</a><br>
+<%	if (authManager.isAllowed("adminServer.jsp", userID)){ %>
 &nbsp;&nbsp;&nbsp;<a href="adminServer.jsp">modify settings</a><br>
-
+<% } %>
 
 
 

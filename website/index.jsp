@@ -21,6 +21,8 @@
 		 org.genepattern.webservice.SuiteInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.server.util.AccessManager,
+		 org.genepattern.server.util.AuthorizationManager,
+		 org.genepattern.server.util.IAuthorizationManager,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.StringUtils,		
@@ -77,6 +79,10 @@ for (Iterator itTasks = latestTmTasks.iterator(); itTasks.hasNext(); ) {
 	String versionlessLSID = (new LSID(tia.get(GPConstants.LSID))).toStringNoVersion();
 	latestTaskMap.put(versionlessLSID, taskInfo); 
 }
+
+
+AuthorizationManager authManager = new AuthorizationManager();
+
 
 %>
 <html>
@@ -248,13 +254,11 @@ No &lt;iframes&gt; support  :(
 	</tr>
 </table>
 </td>
-<td>
-<table cellspacing=0 cellpadding=0 height="100%" align='top' margin='0' bgcolor="#EFEFFF">
-<tr><td valign='top'>
-	<%@ include file="indexDocSection.htm" %>
-</td></tr>
-</table>
+<td valign='top' bgcolor="#EFEFFF">
 
+<table ><tr><td>
+		<%@ include file="indexDocSection.jsp" %>
+</td></tr></table>
 
 </td>
 </tr>
