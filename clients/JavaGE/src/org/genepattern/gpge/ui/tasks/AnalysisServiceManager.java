@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,9 @@ public class AnalysisServiceManager {
 
 	public void setSuites(List suites) {
 		this.suites = suites;
+		if (suites != null && suites.size() == 0) {
+			this.suites = null;
+		}
 		if (suites == null) {
 			try {
 				refresh();
@@ -77,12 +81,12 @@ public class AnalysisServiceManager {
 				SuiteInfo suite = (SuiteInfo) suites.get(i);
 				try {
 					String[] lsids = suite.getModuleLSIDs();
-					for(int j = 0; j < lsids.length; j++) {
+					for (int j = 0; j < lsids.length; j++) {
 						TaskInfo task = new org.genepattern.webservice.AdminProxy(
-							server, username, false).getTask(lsids[j]);
+								server, username, false).getTask(lsids[j]);
 						if (task != null) {
 							lsid2LatestAnalysisServices.put(lsids[j],
-								new AnalysisService(server, task));
+									new AnalysisService(server, task));
 						} else {
 							System.out.println("Can't find " + lsids[j]);
 						}
@@ -92,7 +96,6 @@ public class AnalysisServiceManager {
 				}
 			}
 		}
-		System.out.println(lsid2LatestAnalysisServices);
 	}
 
 	public List getSuites() {
@@ -197,6 +200,7 @@ public class AnalysisServiceManager {
 		lsid2LatestAnalysisServices.clear();
 		lsid2VersionsMap.clear();
 		lsid2AnalysisServices.clear();
+		suites = null;
 	}
 
 	/**
@@ -253,7 +257,7 @@ public class AnalysisServiceManager {
 	 * @exception WebServiceException
 	 *                Description of the Exception
 	 */
-	public void updateLatestAnalysisServices() throws WebServiceException {
+	private void updateLatestAnalysisServices() throws WebServiceException {
 		this.lsid2LatestAnalysisServices.clear();
 		this.lsid2AnalysisServices.clear();
 
@@ -272,6 +276,9 @@ public class AnalysisServiceManager {
 
 		for (Iterator it = lsid2VersionsMap.keySet().iterator(); it.hasNext();) {
 			List versions = (List) lsid2VersionsMap.get(it.next());
+			versions = new ArrayList(new HashSet(versions)); // ensure
+			// versions are
+			// unique
 			Collections.sort(versions, versionComparator);
 		}
 	}
