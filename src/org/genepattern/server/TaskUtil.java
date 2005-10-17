@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.genepattern.util.IGPConstants;
 
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
@@ -58,6 +59,32 @@ public class TaskUtil {
 		// if we get here, the zip file contains only other zip files
 		return true;
 	}
+
+	public static boolean isSuiteZip(File file) throws IOException{
+		ZipFile zipFile = new ZipFile(file);
+		if (zipFile.getEntry(GPConstants.SUITE_MANIFEST_FILENAME) != null) {
+			return true;
+		}
+		return false;
+	}
+
+	public static boolean isPipelineZip(File file) throws IOException {
+		if (isZipOfZips(file)) return false;
+
+		ZipFile zipFile = new ZipFile(file);
+		
+		if (zipFile.getEntry(GPConstants.MANIFEST_FILENAME) == null) {
+			return false;
+		}
+
+		TaskInfo ti = getTaskInfoFromZip(file);
+		String type  = (String)ti.getTaskInfoAttributes().get(IGPConstants.TASK_TYPE);
+		
+		return type.endsWith(".pipeline");
+	}
+
+
+
 
 	/**
 	 * Creates a new array of <code>TaskInfo</code> instances from the given

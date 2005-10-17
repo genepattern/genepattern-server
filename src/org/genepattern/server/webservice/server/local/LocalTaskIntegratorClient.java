@@ -149,8 +149,9 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIn
 	public DataHandler[] getDocFiles(String lsid) throws WebServiceException {
 		return super.getDocFiles(lsid);
 	}
-	
-	public boolean isZipOfZips(String url) throws WebServiceException {
+
+
+	protected File getFile(String url) throws WebServiceException{
 		File file = null;
 		java.io.OutputStream os = null;
 		java.io.InputStream is = null;
@@ -169,6 +170,7 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIn
 				int i;
 				while ((i = is.read(buf, 0, buf.length)) > 0) {
 					os.write(buf, 0, i);
+
 				}
 			}
 		} catch (java.io.IOException ioe) {
@@ -188,16 +190,37 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIn
 			}
 
 		}
+		return file;
+	}
+	
+	public boolean isZipOfZips(String url) throws WebServiceException {
+		File file = getFile(url);
 		try {
 			return org.genepattern.server.TaskUtil.isZipOfZips(file);
 		} catch (java.io.IOException ioe) {
 			throw new WebServiceException(ioe);
-		} finally {
-			if (deleteFile && file != null) {
-				file.delete();
-			}
-		}
+		} 
 	}
+
+	public boolean isSuiteZip(String url) throws WebServiceException {
+		File file = getFile(url);
+		try {
+			return org.genepattern.server.TaskUtil.isSuiteZip(file);
+		} catch (java.io.IOException ioe) {
+			throw new WebServiceException(ioe);
+		} 
+	}
+
+	public boolean isPipelineZip(String url) throws WebServiceException {
+		File file = getFile(url);
+		try {
+			return org.genepattern.server.TaskUtil.isPipelineZip(file);
+		} catch (java.io.IOException ioe) {
+			throw new WebServiceException(ioe);
+		} 
+	}
+
+
 
 	public void statusMessage(String message) {
 		System.out.println(message);

@@ -114,6 +114,8 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 		HashSet allowedGroups = (HashSet)groupPermission.get(permissionName);
 
 		// the file says anyone may connect if it has a group named '*'
+		// or if no restriction is specified
+		if (allowedGroups == null) return true;
 		if (allowedGroups.contains("*")) return true;
 		if (allowedGroups == emptySet) return true;
 
@@ -171,6 +173,8 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 		org.jdom.Document document = null;
 
 		File actionPermissionMapFile = new File(System.getProperty("genepattern.properties"),"actionPermissionMap.xml");
+		if (!actionPermissionMapFile.exists()) return;
+
   		is = new FileInputStream(actionPermissionMapFile);
 
 		SAXBuilder builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser");
@@ -214,7 +218,8 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 		org.jdom.Document document = null;
 
 		File userGroupMapFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
-  		is = new FileInputStream(userGroupMapFile);
+		if (!userGroupMapFile.exists()) return; 
+ 		is = new FileInputStream(userGroupMapFile);
 
 		SAXBuilder builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser");
         	// Parse the specified file and convert it to a JDOM document
@@ -253,7 +258,8 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 		org.jdom.Document document = null;
 
 		File permissionMapFile = new File(System.getProperty("genepattern.properties"), "permissionMap.xml");
-  		is = new FileInputStream(permissionMapFile);
+  		if (!permissionMapFile.exists()) return;
+		is = new FileInputStream(permissionMapFile);
 
 		SAXBuilder builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser");
         	// Parse the specified file and convert it to a JDOM document
