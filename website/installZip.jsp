@@ -14,7 +14,10 @@
 		 org.genepattern.server.handler.*,
 		 org.genepattern.server.webservice.*,
 		 org.genepattern.util.LSID,
+		 org.genepattern.server.TaskUtil,
 		 org.genepattern.util.LSIDUtil,
+		 org.genepattern.server.util.AuthorizationManager,
+		 org.genepattern.server.util.IAuthorizationManager,
 		 org.apache.commons.fileupload.DiskFileUpload,
 		 org.apache.commons.fileupload.FileItem,
 		 org.apache.commons.fileupload.FileUpload,
@@ -54,6 +57,14 @@ boolean isEncodedPost = true;
 int fileCount = 0;
 File attachedFile = null;
 String username = (String)request.getAttribute("userID");
+AuthorizationManager authManager = new AuthorizationManager();
+
+boolean taskInstallAllowed = authManager.checkPermission("createTask", username);
+boolean pipelineInstallAllowed = authManager.checkPermission("createPipeline", username);
+boolean suiteInstallAllowed = authManager.checkPermission("createSuite", username);
+
+
+
 if (username == null || username.length() == 0) return; // come back after login
 // TODO: get values for access_id from task_access table in database
 
@@ -122,7 +133,7 @@ try {
 	fullName = attachedFile.toString();
 	
 	try {
-		if (!askedRecursive &&    taskIntegratorClient.isZipOfZips(fileURL)) {
+		if (!askedRecursive && taskInstallAllowed &&  taskIntegratorClient.isZipOfZips(fileURL)) {
 
 			// query user to see if they want just the first thing or all contents and then come back in
 
@@ -159,15 +170,64 @@ try {
 	
 		}
 
-		// do the real installation
-		lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive);
+		boolean isZipOfZips = taskIntegratorClient.isZipOfZips(fileURL);
+		boolean isSuiteZip = taskIntegratorClient.isSuiteZip(fileURL);
+		boolean isPipelineZip = taskIntegratorClient.isPipelineZip(fileURL);
+
+		/*
+		* if zip of zips, its either a pipeline or a suite but you need to
+		* allow tasks if doRecursive is true
+		*
+		*/
+
+		if (isZipOfZips) {
+			if (doRecursive) {
+				if (!taskInstallAllowed) {
+					// install pipeline but not tasks
+					if (pipelineInstallAllowed) {
+						doRecursive = false;
+					} else {
+						throw new WebServiceException
+					("You do not have permission to install tasks on this server: " + attachmentName);	
+					}
+				} else {
+					// tasks are to be installed and we are allowed
+					// so just jo on and do it
+				} 
+			}
+			lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive);		
+
+
+		} else if (isSuiteZip){
+			if (!suiteInstallAllowed) {
+				throw new WebServiceException
+					("You do not have permission to install suites on this server: " + attachmentName);	
+			} 
+			// do the real installation
+			lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive);
+		} else if (isPipelineZip) {
+			if (!pipelineInstallAllowed) {
+				throw new WebServiceException
+					("You do not have permission to install pipelines on this server: " + attachmentName);
+			} 
+			lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive);
+		} else { // must be a task
+			if (!taskInstallAllowed){
+				throw new WebServiceException
+					("You do not have permission to install tasks on this server: " + attachmentName);
+			}
+			lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive);			
+		}
+		
+
+
  	} catch (WebServiceErrorMessageException wse){
 		vProblems = wse.getErrors();
 	}
 
 } catch (Exception ioe) {
 	taskName = "[unknown task name] in " + fullName;
-	vProblems = new Vector();
+	if (vProblems == null) vProblems = new Vector();
 	vProblems.add("Unable to install " + fullName + ": " + ioe.getMessage());
 } finally {
 	attachedFile.delete(); 

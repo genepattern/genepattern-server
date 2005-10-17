@@ -1,25 +1,30 @@
 <%@ page import="
 		 java.net.URLEncoder,
 		 org.genepattern.server.util.AuthorizationManager" %>
+<%
+	String username= (String)request.getAttribute("userID"); // get userID but don't force login if not defined
+	AuthorizationManager authorizationManager = new AuthorizationManager();
 
+
+%>
 <font size=-2>
 <font size='-1'><b>Tasks and Pipelines</b></font><br>
 
 <%
-	if (authManager.isAllowed("addTask.jsp", userID)){
+	if (authorizationManager.isAllowed("addTask.jsp", username)){
 %>
-&nbsp;&nbsp;&nbsp;<a href=\"addTask.jsp\"">create task</a><br>
+&nbsp;&nbsp;&nbsp;<a href="addTask.jsp">create task</a><br>
 <% } %>
 &nbsp;&nbsp;&nbsp;<a href="pipelineDesigner.jsp">create pipeline</a><br>
 
-<%	if (authManager.isAllowed("addZip.jsp", userID)){ %>
+<%	if ((authorizationManager.checkPermission("createTask", username)) || (authorizationManager.checkPermission("createPipeline", username))){ %>
 &nbsp;&nbsp;&nbsp;<a href="addZip.jsp">import</a><br>
 <% } %>
 
-<%	if (authManager.isAllowed("taskCatalog.jsp", userID)){ %>
+<%	if (authorizationManager.isAllowed("taskCatalog.jsp", username)){ %>
 &nbsp;&nbsp;&nbsp;<a href="taskCatalog.jsp">install/update</a><br>
 <% } %>
-<%	if (authManager.isAllowed("deleteTask.jsp", userID)){ %>
+<%	if (authorizationManager.isAllowed("deleteTask.jsp", username)){ %>
 &nbsp;&nbsp;&nbsp;<a href="deleteTask.jsp">delete</a><p>
 <% } %>
 
@@ -32,7 +37,7 @@
 
 <font size='-1'><b>Server Administration</b></font><br>
 &nbsp;&nbsp;&nbsp;<a href="zipJobResults.jsp">job results</a><br>
-<%	if (authManager.isAllowed("adminServer.jsp", userID)){ %>
+<%	if (authorizationManager.isAllowed("adminServer.jsp", username)){ %>
 &nbsp;&nbsp;&nbsp;<a href="adminServer.jsp">modify settings</a><br>
 <% } %>
 
