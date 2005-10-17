@@ -5,16 +5,14 @@
 
 <permissionMap>
 
-<permission name="importTask">
-	<group name="genepatternTaskCreators"/>
-</permission>
 
 <permission name="createTask">
 	<group name="genepatternTaskCreators"/>
 </permission>
 
 <permission name="createPipeline">
-	<group name="*"/>
+	<group name="genePatternTaskCreators"/>
+	<group name="genepatternAdministrators"/>
 </permission>
 
 <permission name="arbitrarySql">

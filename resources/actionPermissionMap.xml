@@ -4,10 +4,7 @@
 <actionPermissionMap>
 
 	<url link="addTask.jsp" permission="createTask"/>
-	<url link="addZip.jsp" permission="createTask"/>
-
 	<url link="adminServer.jsp" permission="administrateServer"/>
-
 	<url link="sql.jsp" permission="arbitrarySql"/>
 
 </actionPermissionMap>
