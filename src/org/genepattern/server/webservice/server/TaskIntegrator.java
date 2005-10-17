@@ -2,46 +2,41 @@ package org.genepattern.server.webservice.server;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
-import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
-import java.util.zip.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
 import org.apache.axis.MessageContext;
-import org.apache.log4j.Logger;
+import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.genepattern.TaskInstallationException;
-import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
+import org.genepattern.server.webservice.server.dao.TaskIntegratorHSQLDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
-import org.genepattern.server.webservice.server.dao.TaskIntegratorHSQLDAO;
-import org.genepattern.server.webservice.server.DirectoryManager;
 
 /**
  * TaskIntegrator Web Service. Do a Thread.yield at beginning of each method-
@@ -49,9 +44,13 @@ import org.genepattern.server.webservice.server.DirectoryManager;
  * 
  * @author Joshua Gould
  */
+/**
+ * @author Joshua Gould
+ * 
+ */
 public class TaskIntegrator implements ITaskIntegrator {
-	protected TaskIntegratorHSQLDAO tiDao = new TaskIntegratorHSQLDAO ();
-	
+	protected TaskIntegratorHSQLDAO tiDao = new TaskIntegratorHSQLDAO();
+
 	protected String getUserName() {
 		MessageContext context = MessageContext.getCurrentContext();
 		String username = context.getUsername();
@@ -96,15 +95,42 @@ public class TaskIntegrator implements ITaskIntegrator {
 		return new File(dh.getName());
 	}
 
-	public String importZip(DataHandler handler, int privacy) throws WebServiceException {
+	public String importZip(DataHandler handler, int privacy)
+			throws WebServiceException {
 		return importZip(handler, privacy, true);
 	}
 
-	public String importZip(DataHandler handler, int privacy, boolean recursive) throws WebServiceException {
+	public String importZip(DataHandler handler, int privacy, boolean recursive)
+			throws WebServiceException {
 		return importZip(handler, privacy, recursive, null);
 	}
 
-	protected String importZip(DataHandler handler, int privacy, boolean recursive, ITaskIntegrator taskIntegrator)
+	public String installSuite(SuiteInfo suiteInfo, DataHandler[] supportFiles,
+			String[] fileNames) throws WebServiceException {
+
+		String lsid = tiDao.installSuite(suiteInfo);
+		if (supportFiles != null) {
+			for (int i = 0; i < supportFiles.length; i++) {
+				String attachmentDir;
+				try {
+					attachmentDir = DirectoryManager.getSuiteLibDir(null, lsid,
+							getUserName());
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new WebServiceException(e);
+				}
+				File f = getFile(supportFiles[i]);
+				File dir = new File(attachmentDir);
+				File newFile = new File(dir, fileNames[i]);
+				f.renameTo(newFile);
+			}
+		}
+		return lsid;
+
+	}
+
+	protected String importZip(DataHandler handler, int privacy,
+			boolean recursive, ITaskIntegrator taskIntegrator)
 			throws WebServiceException {
 		Vector vProblems = null;
 		String lsid = null;
@@ -132,12 +158,15 @@ public class TaskIntegrator implements ITaskIntegrator {
 		return lsid;
 	}
 
-	public String importZipFromURL(String url, int privacy, boolean recursive) throws WebServiceException {
-		return 	importZipFromURL(url, privacy, recursive, null);
+	public String importZipFromURL(String url, int privacy, boolean recursive)
+			throws WebServiceException {
+		return importZipFromURL(url, privacy, recursive, null);
 	}
 
-	protected String importZipFromURL(String url, int privacy, boolean recursive, ITaskIntegrator taskIntegrator) throws WebServiceException {
- 		File zipFile = null;
+	protected String importZipFromURL(String url, int privacy,
+			boolean recursive, ITaskIntegrator taskIntegrator)
+			throws WebServiceException {
+		File zipFile = null;
 		ZipFile zippedFile = null;
 		FileOutputStream os = null;
 		InputStream is = null;
@@ -168,21 +197,27 @@ public class TaskIntegrator implements ITaskIntegrator {
 			boolean isSuite = false;
 			try {
 				zippedFile = new ZipFile(path);
-				ZipEntry taskManifestEntry = zippedFile.getEntry(GPConstants.MANIFEST_FILENAME);
-				ZipEntry suiteManifestEntry = zippedFile.getEntry(GPConstants.SUITE_MANIFEST_FILENAME);
-				if (taskManifestEntry != null) isTask = true;
-				if (suiteManifestEntry != null) isSuite = true;
+				ZipEntry taskManifestEntry = zippedFile
+						.getEntry(GPConstants.MANIFEST_FILENAME);
+				ZipEntry suiteManifestEntry = zippedFile
+						.getEntry(GPConstants.SUITE_MANIFEST_FILENAME);
+				if (taskManifestEntry != null)
+					isTask = true;
+				if (suiteManifestEntry != null)
+					isSuite = true;
 			} catch (IOException ioe) {
 				throw new WebServiceException("Couldn't open " + path + ": "
 						+ ioe.getMessage());
 			}
-			if (!(isTask || isSuite)) throw new WebServiceException("Couldn't find task or suite manifest in zip file ");
-
+			if (!(isTask || isSuite))
+				throw new WebServiceException(
+						"Couldn't find task or suite manifest in zip file ");
 
 			if (isSuite) {
 				lsid = tiDao.installSuite(zippedFile);
-			} else { //isTask
-				// replace task, do not version lsid or replace the lsid in the zip
+			} else { // isTask
+				// replace task, do not version lsid or replace the lsid in the
+				// zip
 				// with a local one
 				lsid = GenePatternAnalysisTask.installNewTask(path, username,
 						privacy, recursive, taskIntegrator);
@@ -212,17 +247,20 @@ public class TaskIntegrator implements ITaskIntegrator {
 		return lsid;
 	}
 
-	public String importZipFromURL(String url, int privacy) throws WebServiceException {
+	public String importZipFromURL(String url, int privacy)
+			throws WebServiceException {
 		return importZipFromURL(url, privacy, true, null);
 	}
-	
+
 	public void installTask(String lsid) throws WebServiceException {
-		InstallTasksCollectionUtils utils = new InstallTasksCollectionUtils(getUserName(), false);
+		InstallTasksCollectionUtils utils = new InstallTasksCollectionUtils(
+				getUserName(), false);
 		try {
 			InstallTask[] tasks = utils.getAvailableModules();
-			for(int i = 0; i < tasks.length; i++) {
-				if(tasks[i].getLSID().equalsIgnoreCase(lsid)) {
-					tasks[i].install(getUserName(), GPConstants.ACCESS_PUBLIC, this);
+			for (int i = 0; i < tasks.length; i++) {
+				if (tasks[i].getLSID().equalsIgnoreCase(lsid)) {
+					tasks[i].install(getUserName(), GPConstants.ACCESS_PUBLIC,
+							this);
 				}
 			}
 		} catch (Exception e) {
@@ -232,43 +270,40 @@ public class TaskIntegrator implements ITaskIntegrator {
 
 	public void install(String lsid) throws WebServiceException {
 
-		if (LSIDUtil.isSuiteLSID(lsid)){
+		if (LSIDUtil.isSuiteLSID(lsid)) {
 			tiDao.installSuite(lsid);
 		} else {
 			installTask(lsid);
 		}
 	}
 
-	
 	public void delete(String lsid) throws WebServiceException {
-		if (LSIDUtil.isSuiteLSID(lsid)){
+		if (LSIDUtil.isSuiteLSID(lsid)) {
 			tiDao.deleteSuite(lsid);
 		} else {
 			deleteTask(lsid);
 		}
 	}
 
-	
-
-	public String clone(String lsid, String cloneName) throws WebServiceException {
-		if (LSIDUtil.isSuiteLSID(lsid)){
+	public String clone(String lsid, String cloneName)
+			throws WebServiceException {
+		if (LSIDUtil.isSuiteLSID(lsid)) {
 			return tiDao.cloneSuite(lsid, cloneName);
 		} else {
 			return cloneTask(lsid, cloneName);
 		}
 	}
 
-	
-
-	public String modifySuite(int access_id, String lsid, String name, String description,
-			String author, String owner, String[] moduleLsids, 
-			javax.activation.DataHandler[] dataHandlers, String[] fileNames)
-			throws WebServiceException{
-		return tiDao.modifySuite(access_id, lsid, name, description, author, owner, moduleLsids, dataHandlers, fileNames);
+	public String modifySuite(int access_id, String lsid, String name,
+			String description, String author, String owner,
+			String[] moduleLsids, javax.activation.DataHandler[] dataHandlers,
+			String[] fileNames) throws WebServiceException {
+		return tiDao.modifySuite(access_id, lsid, name, description, author,
+				owner, moduleLsids, dataHandlers, fileNames);
 	}
 
-
-	protected String importZipFromURL(String url, int privacy, ITaskIntegrator taskIntegrator) throws WebServiceException {
+	protected String importZipFromURL(String url, int privacy,
+			ITaskIntegrator taskIntegrator) throws WebServiceException {
 		return importZipFromURL(url, privacy, true, taskIntegrator);
 	}
 
@@ -367,7 +402,6 @@ public class TaskIntegrator implements ITaskIntegrator {
 		return dhs;
 	}
 
-
 	public String modifyTask(int accessId, String taskName, String description,
 			ParameterInfo[] parameterInfoArray, Map taskAttributes,
 			DataHandler[] dataHandlers, String[] fileNames)
@@ -381,7 +415,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 			if (taskAttributes == null) {
 				taskAttributes = new HashMap();
 			}
-		
+
 			if (parameterInfoArray == null) {
 				parameterInfoArray = new ParameterInfo[0];
 			}
@@ -402,7 +436,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 						// change owner to current user
 						String owner = (String) taskAttributes
 								.get(GPConstants.USERID);
-						if(owner==null) {
+						if (owner == null) {
 							owner = "";
 						}
 						if (owner.length() > 0) {
@@ -414,32 +448,28 @@ public class TaskIntegrator implements ITaskIntegrator {
 				} catch (MalformedURLException mue) {
 				}
 			}
-			
-			lsid = GenePatternAnalysisTask
-						.installNewTask(
-								taskName,
-								description,								
-								parameterInfoArray, 
-								new TaskInfoAttributes(taskAttributes),
-								username, accessId, this);
-			
+
+			lsid = GenePatternAnalysisTask.installNewTask(taskName,
+					description, parameterInfoArray, new TaskInfoAttributes(
+							taskAttributes), username, accessId, this);
+
 			taskAttributes.put(GPConstants.LSID, lsid); // update so that upon
-														// return, the LSID is
-														// the new one
-			String attachmentDir = DirectoryManager.getTaskLibDir(
-					taskName, lsid, username);
+			// return, the LSID is
+			// the new one
+			String attachmentDir = DirectoryManager.getTaskLibDir(taskName,
+					lsid, username);
 			File dir = new File(attachmentDir);
-			
+
 			for (int i = 0, length = dataHandlers != null ? dataHandlers.length
 					: 0; i < length; i++) {
 				DataHandler dataHandler = dataHandlers[i];
 				File f = getFile(dataHandler);
 
-				if (f.isDirectory()) continue;
+				if (f.isDirectory())
+					continue;
 
 				File newFile = new File(dir, fileNames[i]);
 
-				
 				if (!f.getParentFile().getParent().equals(dir.getParent())) {
 					f.renameTo(newFile);
 				} else {
@@ -447,28 +477,36 @@ public class TaskIntegrator implements ITaskIntegrator {
 					copyFile(f, newFile);
 				}
 			}
-			
-			if(fileNames!=null) {
+
+			if (fileNames != null) {
 				String oldAttachmentDir = null;
-				if(oldLSID!=null) {
-					oldAttachmentDir = DirectoryManager.getTaskLibDir(
-						null, oldLSID, username);
+				if (oldLSID != null) {
+					oldAttachmentDir = DirectoryManager.getTaskLibDir(null,
+							oldLSID, username);
 				}
-				int start = dataHandlers != null && dataHandlers.length > 0 ? dataHandlers.length-1
+				int start = dataHandlers != null && dataHandlers.length > 0 ? dataHandlers.length - 1
 						: 0;
-				for(int i = start; i < fileNames.length; i++) {
+				for (int i = start; i < fileNames.length; i++) {
 					String text = fileNames[i];
-					if(text.startsWith("job #")) { // job output file
-						String jobNumber = text.substring(text.indexOf("#")+1, text.indexOf(",")).trim();
-						String fileName = text.substring(text.indexOf(",")+1, text.length()).trim();
-						String jobDir = GenePatternAnalysisTask.getJobDir(jobNumber);
-						copyFile(new File(jobDir, fileName), new File(dir, fileName));
-					} else if(oldAttachmentDir!=null){ // file from previous version of task
-						copyFile(new File(oldAttachmentDir, text), new File(dir, text));
+					if (text.startsWith("job #")) { // job output file
+						String jobNumber = text.substring(
+								text.indexOf("#") + 1, text.indexOf(","))
+								.trim();
+						String fileName = text.substring(text.indexOf(",") + 1,
+								text.length()).trim();
+						String jobDir = GenePatternAnalysisTask
+								.getJobDir(jobNumber);
+						copyFile(new File(jobDir, fileName), new File(dir,
+								fileName));
+					} else if (oldAttachmentDir != null) { // file from
+						// previous version
+						// of task
+						copyFile(new File(oldAttachmentDir, text), new File(
+								dir, text));
 					}
 				}
 			}
-			
+
 		} catch (TaskInstallationException tie) {
 			throw new WebServiceErrorMessageException(tie.getErrors());
 		} catch (Exception e) {
@@ -487,8 +525,8 @@ public class TaskIntegrator implements ITaskIntegrator {
 			TaskInfo taskInfo = new LocalAdminClient(username).getTask(lsid);
 			String taskName = taskInfo.getName();
 
-			String attachmentDir = DirectoryManager.getTaskLibDir(
-					taskName, lsid, username);
+			String attachmentDir = DirectoryManager.getTaskLibDir(taskName,
+					lsid, username);
 
 			Vector lAttachments = new Vector(Arrays
 					.asList(getSupportFileNames(lsid))); // Vector of String
@@ -540,7 +578,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 			throw new WebServiceException("while deleting task " + lsid, e);
 		}
 	}
-	
+
 	private static void copyFile(File source, File dest) {
 		byte[] buf = new byte[100000];
 		int j;
@@ -556,14 +594,14 @@ public class TaskIntegrator implements ITaskIntegrator {
 			e.printStackTrace();
 		} finally {
 			try {
-				if(is!=null) {
+				if (is != null) {
 					is.close();
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			try {
-				if(os!=null) {
+				if (os != null) {
 					os.close();
 				}
 			} catch (IOException e) {
@@ -575,10 +613,10 @@ public class TaskIntegrator implements ITaskIntegrator {
 	// copy the taskLib entries to the new directory
 	private void cloneTaskLib(String oldTaskName, String cloneName,
 			String lsid, String cloneLSID, String username) throws Exception {
-		String dir = DirectoryManager.getTaskLibDir(oldTaskName, lsid,
+		String dir = DirectoryManager
+				.getTaskLibDir(oldTaskName, lsid, username);
+		String newDir = DirectoryManager.getTaskLibDir(cloneName, cloneLSID,
 				username);
-		String newDir = DirectoryManager.getTaskLibDir(cloneName,
-				cloneLSID, username);
 		String[] oldFiles = getSupportFileNames(lsid);
 		byte[] buf = new byte[100000];
 		int j;
@@ -613,15 +651,17 @@ public class TaskIntegrator implements ITaskIntegrator {
 			oldLSID = (String) tia.remove(GPConstants.LSID);
 			if (tia.get(GPConstants.TASK_TYPE).equals(
 					GPConstants.TASK_TYPE_PIPELINE)) {
-				
-				PipelineModel model = PipelineModel.toPipelineModel((String) tia
-						.get(GPConstants.SERIALIZED_MODEL));
-				
+
+				PipelineModel model = PipelineModel
+						.toPipelineModel((String) tia
+								.get(GPConstants.SERIALIZED_MODEL));
+
 				// update the pipeline model with the new name
 				model.setName(cloneName);
 				// update the task with the new model and command line
-				TaskInfoAttributes newTIA = AbstractPipelineCodeGenerator.getTaskInfoAttributes(model);
-						
+				TaskInfoAttributes newTIA = AbstractPipelineCodeGenerator
+						.getTaskInfoAttributes(model);
+
 				tia.put(GPConstants.SERIALIZED_MODEL, model.toXML());
 				tia.put(GPConstants.COMMAND_LINE, newTIA
 						.get(GPConstants.COMMAND_LINE));
@@ -639,7 +679,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 		}
 	}
 
-    public String[] getDocFileNames(String lsid) throws WebServiceException {
+	public String[] getDocFileNames(String lsid) throws WebServiceException {
 		if (lsid == null || lsid.equals("")) {
 			throw new WebServiceException("Invalid LSID");
 		}
@@ -647,26 +687,25 @@ public class TaskIntegrator implements ITaskIntegrator {
 			Thread.yield();
 			String taskLibDir = DirectoryManager.getLibDir(lsid);
 			String[] docFiles = new File(taskLibDir).list(new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				return GenePatternAnalysisTask.isDocFile(name)
-						&& !name.equals("version.txt");
-			   }
-         });
-         if(docFiles==null) {
-            docFiles = new String[0];  
-         }
+				public boolean accept(File dir, String name) {
+					return GenePatternAnalysisTask.isDocFile(name)
+							&& !name.equals("version.txt");
+				}
+			});
+			if (docFiles == null) {
+				docFiles = new String[0];
+			}
 			return docFiles;
 		} catch (Exception e) {
 			throw new WebServiceException("while getting doc filenames", e);
 		}
 	}
 
-    
 	public DataHandler[] getDocFiles(String lsid) throws WebServiceException {
 
 		String userID = getUserName();
 		String taskLibDir = null;
-	
+
 		try {
 			taskLibDir = DirectoryManager.getLibDir(lsid);
 			System.out.println("getLibDir " + taskLibDir);
