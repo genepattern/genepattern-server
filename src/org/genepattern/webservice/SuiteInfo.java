@@ -1,17 +1,17 @@
 package org.genepattern.webservice;
 
 /**
- * Used to hold information about particular Task
+ * Used to hold information about particular suite
  * 
  * @author Ted Liefeld
  * @version 1.0
  */
 
-import java.io.*;
-import java.util.Map;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
-import org.genepattern.server.webservice.server.DirectoryManager;
+import java.util.Map;
 
 
 public class SuiteInfo implements Serializable {
@@ -41,7 +41,7 @@ public class SuiteInfo implements Serializable {
 
 	}
 
-	public SuiteInfo(Map hm){
+	public SuiteInfo(HashMap hm){
 		this.lsid = (String)hm.get("lsid");	
 
 		this.name = (String)hm.get("name");	
@@ -152,6 +152,30 @@ public class SuiteInfo implements Serializable {
 	
 	public int hashCode(){
       	return this.getLSID().hashCode();
+	}
+
+	public String[] getDocFiles() {
+		return docFiles;
+	}
+
+	public void setDocFiles(String[] docFiles) {
+		this.docFiles = docFiles;
+	}
+
+	public String getLsid() {
+		return lsid;
+	}
+
+	public void setLsid(String lsid) {
+		this.lsid = lsid;
+	}
+
+	public String[] getModuleLsids() {
+		return moduleLsids;
+	}
+
+	public void setModuleLsids(String[] moduleLsids) {
+		this.moduleLsids = moduleLsids;
 	}
 
 }
