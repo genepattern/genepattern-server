@@ -72,6 +72,7 @@ import org.genepattern.gpge.ui.preferences.SuitesPreferences;
 import org.genepattern.gpge.ui.project.ProjectDirModel;
 import org.genepattern.gpge.ui.project.ProjectDirectoryListener;
 import org.genepattern.gpge.ui.project.ProjectEvent;
+import org.genepattern.gpge.ui.suites.SuiteEditor;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceUtil;
 import org.genepattern.gpge.ui.tasks.FileInfoComponent;
@@ -2319,6 +2320,14 @@ public class GPGE {
 			});
 			add(newPipelineItem);
 
+			JMenuItem createSuiteMenuItem = new JMenuItem("New Suite");
+			createSuiteMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					MessageManager.notifyListeners(new ChangeViewMessageRequest(GPGE.this, ChangeViewMessageRequest.SHOW_EDIT_SUITE_REQUEST));
+				}
+			});
+			add(createSuiteMenuItem);
+			
 			JMenuItem openProjectDirItem = new JMenuItem(
 					"Open Project Directory...", IconManager
 							.loadIcon(IconManager.NEW_PROJECT_ICON));
@@ -2464,14 +2473,13 @@ public class GPGE {
 			changeServerMenuItem.setEnabled(false);
 
 			
-			JMenuItem suitesMenuItem = new JMenuItem("Suites...");
+			JMenuItem suitesMenuItem = new JMenuItem("Filter By Suite...");
 			suitesMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					new SuitesPreferences(GenePattern.getDialogParent());
 				}
 			});
 			add(suitesMenuItem);
-			
 			
 			refreshMenu = new JMenu("Refresh");
 			add(refreshMenu);

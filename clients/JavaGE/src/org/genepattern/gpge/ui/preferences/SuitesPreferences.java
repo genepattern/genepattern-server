@@ -4,8 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,7 +20,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 
-import org.genepattern.gpge.PropertyManager;
 import org.genepattern.gpge.ui.maindisplay.CenteredDialog;
 import org.genepattern.gpge.ui.maindisplay.GPGE;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
@@ -83,22 +83,23 @@ public class SuitesPreferences {
 			}
 		}
 		StringBuffer suiteValue = new StringBuffer();
-		if(selectedSuites!=null) {
-			for(int i = 0; i < selectedSuites.size(); i++) {
+		if (selectedSuites != null) {
+			for (int i = 0; i < selectedSuites.size(); i++) {
 				SuiteInfo s = (SuiteInfo) selectedSuites.get(i);
 				String lsid = s.getLSID();
-				if(i > 0) {
+				if (i > 0) {
 					suiteValue.append(";");
 				}
 				suiteValue.append(lsid);
 			}
 		}
-	//	PropertyManager.setProperty(PreferenceKeys.SUITES, suiteValue.toString());
-	//	try {
-	//		PropertyManager.saveProperties();
-	//	} catch (IOException e) {
-	//		e.printStackTrace();
-	//	}
+		// PropertyManager.setProperty(PreferenceKeys.SUITES,
+		// suiteValue.toString());
+		// try {
+		// PropertyManager.saveProperties();
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
 	}
 
 	private JPanel createSuitePanel() {
@@ -164,6 +165,15 @@ public class SuitesPreferences {
 		filterBtn.addActionListener(btnListener);
 
 		List selectedSuites = AnalysisServiceManager.getInstance().getSuites();
+		Collections.sort(selectedSuites, new Comparator() {
+
+			public int compare(Object o1, Object o2) {
+				SuiteInfo suite1 = (SuiteInfo) o1;
+				SuiteInfo suite2 = (SuiteInfo) o2;
+				return suite1.getName().compareTo(suite2.getName());
+			}
+
+		});
 		isFilteringInitially = selectedSuites != null;
 		Set selectedSuiteLsids = new HashSet();
 
@@ -182,7 +192,7 @@ public class SuitesPreferences {
 					.getInstance().getServer(), AnalysisServiceManager
 					.getInstance().getUsername());
 
-			suites = proxy.getLatestSuites(); // createSuites(); 
+			suites = proxy.getLatestSuites(); // createSuites();
 			JLabel showSuiteLabel = new JLabel("Show suite");
 			showSuiteLabel.setFont(showSuiteLabel.getFont().deriveFont(
 					showSuiteLabel.getFont().getSize2D() - 2));
@@ -219,7 +229,7 @@ public class SuitesPreferences {
 		return panel;
 
 	}
-	
+
 	private SuiteInfo[] createSuites() {
 		int numSuites = 5;
 		SuiteInfo[] a = new SuiteInfo[numSuites];

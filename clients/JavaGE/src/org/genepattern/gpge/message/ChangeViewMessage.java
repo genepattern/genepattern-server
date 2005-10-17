@@ -10,6 +10,7 @@ public class ChangeViewMessage extends AbstractTypedGPGEMessage {
 	public static int RUN_TASK_SHOWN = 1;
 	public static int EDIT_PIPELINE_SHOWN = 2;
 	public static int VIEW_PIPELINE_SHOWN = 3;
+	public static int EDIT_SUITE_SHOWN = 4;
 	
 	private Component component;
 	

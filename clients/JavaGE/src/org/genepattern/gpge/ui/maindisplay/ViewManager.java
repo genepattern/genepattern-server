@@ -2,11 +2,8 @@ package org.genepattern.gpge.ui.maindisplay;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JSplitPane;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.gpge.GenePattern;
@@ -15,14 +12,12 @@ import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.GPGEMessage;
 import org.genepattern.gpge.message.GPGEMessageListener;
 import org.genepattern.gpge.message.MessageManager;
-import org.genepattern.gpge.ui.tasks.pipeline.PipelineEditor;
-import org.genepattern.gpge.ui.tasks.pipeline.ViewPipeline;
+import org.genepattern.gpge.ui.suites.SuiteEditor;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceDisplay;
+import org.genepattern.gpge.ui.tasks.pipeline.PipelineEditor;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AnalysisService;
-import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.TaskInfo;
-import org.xml.sax.SAXException;
 
 public class ViewManager {
 	private AnalysisServiceDisplay analysisServiceDisplay;
@@ -33,19 +28,29 @@ public class ViewManager {
 
 	private JSplitPane splitPane;
 
+	private SuiteEditor suiteEditor;
+
 	public ViewManager(JSplitPane splitPane) {
 		this.splitPane = splitPane;
 		analysisServiceDisplay = new AnalysisServiceDisplay();
 		analysisServiceDisplay.setMinimumSize(new Dimension(200, 200));
 		pipelineEditor = new PipelineEditor();
 		pipelineViewer = new PipelineEditor();
+		suiteEditor = new SuiteEditor();
 		
 		MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
 
 			public void receiveMessage(GPGEMessage message) {
 				if (message instanceof ChangeViewMessageRequest) {
 					ChangeViewMessageRequest asm = (ChangeViewMessageRequest) message;
-					if (asm.getType() == ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST) {
+					if(asm.getType()==ChangeViewMessageRequest.SHOW_EDIT_SUITE_REQUEST) {
+						suiteEditor.display(asm.getSuiteInfo());
+						setComponent(suiteEditor);
+						MessageManager.notifyListeners(new ChangeViewMessage(
+								message.getSource(),
+								ChangeViewMessage.EDIT_SUITE_SHOWN,
+								suiteEditor));
+					} else if (asm.getType() == ChangeViewMessageRequest.SHOW_RUN_TASK_REQUEST) {
 						analysisServiceDisplay.loadTask(asm
 								.getAnalysisService());
 						setComponent(analysisServiceDisplay);
