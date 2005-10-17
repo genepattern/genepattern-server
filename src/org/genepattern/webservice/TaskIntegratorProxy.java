@@ -65,6 +65,31 @@ public class TaskIntegratorProxy {
 		}
 	}
 
+	public String installSuite(SuiteInfo suiteInfo, File[] files)
+			throws WebServiceException {
+		try {
+			DataHandler[] handlers = null;
+			String[] fileNames = null;
+			if (files != null) {
+				handlers = new DataHandler[files.length];
+				fileNames = new String[files.length];
+				for (int i = 0; i < handlers.length; i++) {
+					handlers[i] = new DataHandler(new FileDataSource(files[i]));
+					fileNames[i] = files[i].getName();
+				}
+
+			}
+			return stub.installSuite(suiteInfo, handlers, fileNames);
+			// return stub.modifySuite(suiteInfo.getAccessId(), suiteInfo
+			// .getLsid(), suiteInfo.getName(),
+			// suiteInfo.getDescription(), suiteInfo.getAuthor(),
+			// suiteInfo.getOwner(), suiteInfo.getModuleLsids(), handlers,
+			// fileNames);
+		} catch (RemoteException re) {
+			throw new WebServiceException(re);
+		}
+	}
+
 	public String importZip(File zipFile, int privacy)
 			throws WebServiceException {
 		try {
