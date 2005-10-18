@@ -26,6 +26,7 @@ import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
+import org.genepattern.server.process.ZipSuite;
 import org.genepattern.server.webservice.server.dao.TaskIntegratorHSQLDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
@@ -62,6 +63,18 @@ public class TaskIntegrator implements ITaskIntegrator {
 
 	public DataHandler exportToZip(String taskName) throws WebServiceException {
 		return exportToZip(taskName, false);
+	}
+
+	public DataHandler exportSuiteToZip(String lsid) throws WebServiceException {
+		try {
+			ZipSuite zs = new ZipSuite();
+			File zipFile = zs.packageSuite(lsid, getUserName());
+			DataHandler h = new DataHandler(new FileDataSource(zipFile
+					.getCanonicalPath()));
+			return h; // FIXME delete zip file
+		} catch (Exception e) {
+			throw new WebServiceException(e);
+		}
 	}
 
 	public DataHandler exportToZip(String taskName, boolean recursive)

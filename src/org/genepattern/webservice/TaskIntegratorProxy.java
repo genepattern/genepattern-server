@@ -251,4 +251,13 @@ public class TaskIntegratorProxy {
 			throw new WebServiceException(re);
 		}
 	}
+
+	public void exportSuiteToZip(String lsid, File destination) throws WebServiceException {
+		try {
+			DataHandler dh = stub.exportSuiteToZip(lsid); 
+			copy(dh, destination );
+		} catch (RemoteException re) {
+			throw new WebServiceException(re);
+		}
+	}
 }
