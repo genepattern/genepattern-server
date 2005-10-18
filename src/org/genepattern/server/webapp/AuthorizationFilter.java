@@ -79,8 +79,6 @@ public class AuthorizationFilter implements Filter, IGPConstants {
       	//   return;
 		HttpServletRequest req = (HttpServletRequest) request;
       	String requestedURI = req.getRequestURI();
-		String stuff = req.getRequestURI();
-		
 
 		String rh= req.getRemoteHost();
 		String p = req.getParameter("jsp_precompile");
@@ -92,8 +90,17 @@ public class AuthorizationFilter implements Filter, IGPConstants {
 			return;
 		}
 
-		//System.out.println("AUTH FILTER=" + requestedURI);
-	
+/*		System.out.println("AUTH FILTER=" + requestedURI);
+		System.out.println("\tmeth=" + req.getMethod());
+		System.out.println("\tQS=" + req.getQueryString());
+		Enumeration enum = req.getHeaderNames();
+		while (enum.hasMoreElements()) {
+			String na = (String)enum.nextElement();
+			String he = req.getHeader(na);
+			System.out.println("\t\t" + na + "  =  " + he);
+		}
+*/
+
 		String userId = (String)request.getAttribute("userID");
 		String uri = req.getRequestURI();
 		int idx = uri.lastIndexOf("/");
