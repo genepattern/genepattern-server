@@ -86,7 +86,7 @@ public class SuitesPreferences {
 		if (selectedSuites != null) {
 			for (int i = 0; i < selectedSuites.size(); i++) {
 				SuiteInfo s = (SuiteInfo) selectedSuites.get(i);
-				String lsid = s.getLSID();
+				String lsid = s.getLsid();
 				if (i > 0) {
 					suiteValue.append(";");
 				}
@@ -182,7 +182,7 @@ public class SuitesPreferences {
 
 			for (int i = 0; i < selectedSuites.size(); i++) {
 				selectedSuiteLsids.add(((SuiteInfo) selectedSuites.get(i))
-						.getLSID());
+						.getLsid());
 			}
 		} else {
 			noFilterBtn.setSelected(true);
@@ -208,7 +208,7 @@ public class SuitesPreferences {
 
 				JCheckBox showCheckBox = new JCheckBox();
 				showCheckBox.setSelected(selectedSuiteLsids.contains(suiteInfo
-						.getLSID()));
+						.getLsid()));
 				checkBoxes[i] = showCheckBox;
 				formLayout.appendRow(new RowSpec("pref"));
 				suitePanel
