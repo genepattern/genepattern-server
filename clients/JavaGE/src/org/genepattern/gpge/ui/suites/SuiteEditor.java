@@ -53,6 +53,8 @@ public class SuiteEditor extends JPanel {
 
 	private ArrayList checkBoxes = new ArrayList();
 
+	private SuiteInfo suiteInfo;
+
 	private static String createRowSpec(int rows) {
 		StringBuffer rowBuff = new StringBuffer();
 		for (int i = 0; i < rows; i++) {
@@ -81,11 +83,15 @@ public class SuiteEditor extends JPanel {
 
 	}
 
-	public void display(SuiteInfo suiteInfo) {
+	public void display(SuiteInfo _suiteInfo) {
 		removeAll();
-		if (suiteInfo == null) {
-			suiteInfo = new SuiteInfo();
+		if (_suiteInfo == null) {
+			_suiteInfo = new SuiteInfo();
+			AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
+			_suiteInfo.setAuthor(asm.getUsername());
+			_suiteInfo.setOwner(asm.getUsername());
 		}
+		this.suiteInfo = _suiteInfo;
 		Map categoryToAnalysisServices = AnalysisServiceUtil
 				.getCategoryToAnalysisServicesMap(AnalysisServiceManager
 						.getInstance().getLatestAnalysisServices());
@@ -212,9 +218,36 @@ public class SuiteEditor extends JPanel {
 
 			public void actionPerformed(ActionEvent e) {
 				if (e.getSource() == exportButton) {
+					new Thread() {
+						public void run() {
+							
+							try {
+								AnalysisServiceManager asm = AnalysisServiceManager
+										.getInstance();
+								final File destination = GUIUtil
+										.showSaveDialog(new File(
+												suiteInfo.getName()
+														+ ".zip"),
+												"Select destination zip file");
+								if (destination == null) {
+									return;
+								}
+								System.out.println(suiteInfo
+										.getLsid());
+								new TaskIntegratorProxy(asm.getServer(), asm
+										.getUsername()).exportSuiteToZip(suiteInfo
+										.getLsid(), destination);
+
+							} catch (WebServiceException e1) {
+								e1.printStackTrace();
+								GenePattern
+										.showErrorDialog("An error occurred while exporting the suite "
+												+ suiteInfo.getName());
+							}
+						}
+					}.start();
 
 				} else if (e.getSource() == saveButton) {
-					final SuiteInfo suiteInfo = new SuiteInfo();
 					int accessId = headerPanel.privacyComboBox
 							.getSelectedItem().equals("Public") ? GPConstants.ACCESS_PUBLIC
 							: GPConstants.ACCESS_PRIVATE;
@@ -226,6 +259,17 @@ public class SuiteEditor extends JPanel {
 						return;
 					}
 					suiteInfo.setAuthor(headerPanel.authorField.getText());
+					if (suiteInfo.getAuthor().trim().equals("")) {
+						GenePattern.showErrorDialog("Please supply an author.");
+						return;
+					}
+					suiteInfo.setOwner(headerPanel.authorField.getText());
+					if (suiteInfo.getOwner().trim().equals("")) {
+						GenePattern.showErrorDialog("Please supply an owner.");
+						return;
+					}
+
+					
 					suiteInfo.setDescription(headerPanel.descriptionField
 							.getText());
 					JComboBox docComboBox = headerPanel.docComboBox;
@@ -270,16 +314,20 @@ public class SuiteEditor extends JPanel {
 					suiteInfo.setModuleLSIDs((String[]) moduleLsids
 							.toArray(new String[0]));
 
-					suiteInfo.setOwner(headerPanel.authorField.getText());
+					
 					final AnalysisServiceManager asm = AnalysisServiceManager
 							.getInstance();
 					new Thread() {
 						public void run() {
 							try {
 
-								new TaskIntegratorProxy(asm.getServer(), asm
-										.getUsername()).installSuite(suiteInfo,
-										(File[]) files.toArray(new File[0]));
+								String lsid = new TaskIntegratorProxy(asm
+										.getServer(), asm.getUsername())
+										.installSuite(suiteInfo, (File[]) files
+												.toArray(new File[0]));
+								
+								suiteInfo.setLsid(lsid);
+								headerPanel.lsidField.setText(lsid);
 								GenePattern.showMessageDialog("Saved "
 										+ suiteInfo.getName());
 							} catch (WebServiceException e1) {
@@ -321,6 +369,8 @@ public class SuiteEditor extends JPanel {
 		private JComboBox privacyComboBox;
 
 		private JComboBox docComboBox;
+
+		private JLabel lsidField;
 
 		public HeaderPanel(final SuiteInfo suiteInfo) {
 			boolean view = false;
@@ -467,7 +517,7 @@ public class SuiteEditor extends JPanel {
 
 			if (name != null) {
 				JLabel lsidLabel = new JLabel("LSID:");
-				JLabel lsidField = new JLabel(suiteInfo.getLSID());
+				lsidField = new JLabel(suiteInfo.getLSID());
 				detailsPanel.add(lsidLabel, cc.xy(1, 11));
 				detailsPanel.add(lsidField, cc.xy(3, 11));
 			}
