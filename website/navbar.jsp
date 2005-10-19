@@ -20,7 +20,8 @@
 		org.genepattern.server.webservice.server.local.LocalAnalysisClient,
  	 	org.genepattern.util.GPConstants,
 		org.genepattern.util.LSIDUtil,
- 		 org.genepattern.util.StringUtils,
+ 	 	org.genepattern.server.util.AuthorizationManager,
+		org.genepattern.util.StringUtils,
 		org.genepattern.util.LSID,
 		org.genepattern.server.indexer.Indexer" %>
 <% { %>
@@ -125,6 +126,9 @@ try {
 String EMAIL_ADDRESS = "email address";
 String SEARCH = "search";
 
+AuthorizationManager authManager = new AuthorizationManager();
+
+
 %>
 <!-- begin navbar.jsp -->
 <script language="javascript">
@@ -134,6 +138,10 @@ var CREATE = "create";
 var EDIT = "edit";
 var VIEW = "view";
 var RUN = "run";
+var createTaskPermission = <%= authManager.checkPermission("createTask", userID) %>;
+var createPipelinePermission = <%= authManager.checkPermission("createPipeline", userID) %>;
+
+
 
 // handle focus and blur events for a field
 function ufocus(fld, focus, deflt ) {
@@ -198,6 +206,9 @@ function changeTask() {
 	} else {
 		enableEdit = false;
 	}
+
+	enableEdit = enableEdit && createTaskPermission;
+
 	document.forms['searchForm'].navbaredit.value = (enableEdit ? (create ? CREATE : EDIT) : VIEW);
 	document.forms['searchForm'].navbarrun.disabled = (sel.selectedIndex == 0 || create);
 	document.forms['searchForm'].navbaredit.disabled = (sel.selectedIndex == 0);
@@ -222,6 +233,7 @@ function changePipeline() {
 	} else {
 		enableEdit = false;
 	}
+	enableEdit = enableEdit && createPipelinePermission;
 	document.forms['searchForm'].navbaredit.value = (enableEdit ? (create ? CREATE : EDIT) : VIEW);
 	document.forms['searchForm'].navbarrun.disabled = (sel.selectedIndex == 0);
 	document.forms['searchForm'].navbaredit.disabled = (sel.selectedIndex == 0);

@@ -30,7 +30,7 @@ td { padding-left: 5; }
 	<table width="100%" class="navbar">
 	<tr>
 		<td  valign="top">
-			<a href="index.jsp"><img src="skin/logoSmall.gif" border="0" alt="GenePattern" align="texttop"> &nbsp;<font size=+1 color='white'><b>Gene</b>Pattern</font></a>
+			<a href="index.jsp" class='logo'><img src="skin/logoSmall.gif" border="0" alt="GenePattern" align="texttop"> &nbsp;<font size=+2 color='white'><b>Gene</b>Pattern</font></a>
 		</td>
 		<td align="right"  valign="top">
 					</td>

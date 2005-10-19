@@ -18,6 +18,7 @@
 		 java.io.File,
 		 java.util.Map,
 		 java.util.HashMap,
+		 org.genepattern.server.util.AuthorizationManager,
 		 java.util.*,
 		 java.util.Collection,
 		 java.util.Iterator"
@@ -25,6 +26,8 @@
 <%
 String userID= (String)request.getAttribute("userID"); // will force login if necessary
 if (userID == null) return; // come back after login
+AuthorizationManager authManager = new AuthorizationManager();
+
 
 String pipelineName = request.getParameter("name");
 if (pipelineName == null) {
@@ -141,7 +144,10 @@ if(showEdit) {
 	String editURL = "pipelineDesigner.jsp?name=" + pipelineName;
 	out.println("  <input type=\"button\" value=\"edit\" name=\"edit\" class=\"little\" onclick=\"window.location='" + editURL + "'\"; />");
 }
+
+if (authManager.checkPermission("createPipeline", userID)){
 out.println("  <input type=\"button\" value=\"clone...\" name=\"clone\"       class=\"little\" onclick=\"cloneTask('"+displayName+"', '" + pipelineName + "', '" + userID + "')\"; />");
+}
 
 if (! RunPipelineForJsp.isMissingTasks(model, userID)){
 	out.println("  <input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runTask.jsp?cmd=run&name="+pipelineName + "')\"; />");

@@ -12,6 +12,7 @@
 		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.data.pipeline.PipelineModel,
+		 org.genepattern.server.util.AuthorizationManager,
 		 java.io.File,
 		 java.io.FilenameFilter,
 		 java.net.MalformedURLException,
@@ -272,6 +273,8 @@ function addNewDomainType(name, desc){
 <%
 	taskName = null;
 	}
+AuthorizationManager authManager = new AuthorizationManager();
+
 
 StringBuffer publicTasks = new StringBuffer();
 String name;
@@ -449,7 +452,11 @@ Please enter the following information to submit a new or updated analysis task 
 <% } %>
 <% if (taskInfo != null) { %>
   <input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
+
+<% if (authManager.isAllowed("addTask.jsp", userID)) { %>
   <input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
+<%}%>
+
 <% } %>
 
    &nbsp;&nbsp;&nbsp;<select onchange="javascript:if (this.options[this.selectedIndex].value != '<%= DONT_JUMP %>') window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'">
