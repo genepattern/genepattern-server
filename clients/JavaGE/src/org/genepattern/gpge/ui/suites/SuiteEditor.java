@@ -25,6 +25,8 @@ import javax.swing.border.Border;
 
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.message.ChangeViewMessageRequest;
+import org.genepattern.gpge.message.MessageManager;
+import org.genepattern.gpge.message.SuiteInstallMessage;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceUtil;
@@ -168,23 +170,24 @@ public class SuiteEditor extends JPanel {
 					categoryPanel.add(cb, cc.xy(1, i + 2));
 
 					JComboBox versionsComboBox = null;
+					JPanel temp = new JPanel(new FlowLayout(FlowLayout.LEFT));
 					if (versions != null && versions.size() > 1) {
 						versionsComboBox = new JComboBox();
 						for (int j = 0; j < versions.size(); j++) {
 							versionsComboBox.addItem(versions.get(j));
 						}
 						versionsComboBox.setSelectedItem(lsid.getVersion());
-						JPanel temp = new JPanel(
-								new FlowLayout(FlowLayout.LEFT));
+
 						JLabel taskNameLabel = new JLabel(svc.getName());
 						temp.add(taskNameLabel);
 						temp.add(versionsComboBox);
-						categoryPanel.add(temp, cc.xy(2, i + 2));
+
 					} else {
 						JLabel taskNameLabel = new JLabel(svc.getName() + " ("
 								+ lsid.getVersion() + ")");
-						categoryPanel.add(taskNameLabel, cc.xy(2, i + 2));
+						temp.add(taskNameLabel);
 					}
+					categoryPanel.add(temp, cc.xy(2, i + 2));
 					checkBoxes
 							.add(new TaskSelector(cb, lsid, versionsComboBox));
 
@@ -220,23 +223,22 @@ public class SuiteEditor extends JPanel {
 				if (e.getSource() == exportButton) {
 					new Thread() {
 						public void run() {
-							
+
 							try {
 								AnalysisServiceManager asm = AnalysisServiceManager
 										.getInstance();
 								final File destination = GUIUtil
-										.showSaveDialog(new File(
-												suiteInfo.getName()
-														+ ".zip"),
+										.showSaveDialog(new File(suiteInfo
+												.getName()
+												+ ".zip"),
 												"Select destination zip file");
 								if (destination == null) {
 									return;
 								}
-								System.out.println(suiteInfo
-										.getLsid());
+								System.out.println(suiteInfo.getLsid());
 								new TaskIntegratorProxy(asm.getServer(), asm
-										.getUsername()).exportSuiteToZip(suiteInfo
-										.getLsid(), destination);
+										.getUsername()).exportSuiteToZip(
+										suiteInfo.getLsid(), destination);
 
 							} catch (WebServiceException e1) {
 								e1.printStackTrace();
@@ -269,7 +271,6 @@ public class SuiteEditor extends JPanel {
 						return;
 					}
 
-					
 					suiteInfo.setDescription(headerPanel.descriptionField
 							.getText());
 					JComboBox docComboBox = headerPanel.docComboBox;
@@ -314,7 +315,6 @@ public class SuiteEditor extends JPanel {
 					suiteInfo.setModuleLSIDs((String[]) moduleLsids
 							.toArray(new String[0]));
 
-					
 					final AnalysisServiceManager asm = AnalysisServiceManager
 							.getInstance();
 					new Thread() {
@@ -325,11 +325,12 @@ public class SuiteEditor extends JPanel {
 										.getServer(), asm.getUsername())
 										.installSuite(suiteInfo, (File[]) files
 												.toArray(new File[0]));
-								
+
 								suiteInfo.setLsid(lsid);
 								headerPanel.lsidField.setText(lsid);
 								GenePattern.showMessageDialog("Saved "
 										+ suiteInfo.getName());
+								
 							} catch (WebServiceException e1) {
 								e1.printStackTrace();
 								GenePattern
