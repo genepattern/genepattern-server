@@ -15,7 +15,11 @@
 %>
 &nbsp;&nbsp;&nbsp;<a href="addTask.jsp">create task</a><br>
 <% } %>
+<%
+	if (authorizationManager.checkPermission("createPipeline", username)){
+%>
 &nbsp;&nbsp;&nbsp;<a href="pipelineDesigner.jsp">create pipeline</a><br>
+<%}%>
 
 <%	if ((authorizationManager.checkPermission("createTask", username)) || (authorizationManager.checkPermission("createPipeline", username))){ %>
 &nbsp;&nbsp;&nbsp;<a href="addZip.jsp">import</a><br>

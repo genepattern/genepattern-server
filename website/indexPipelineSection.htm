@@ -50,7 +50,9 @@ function getCode(url, pipeline, versionSelector, language, userID) {
 			<td valign="top" align="center">
 				<input type="button" value="run" name="runpipeline" class="button" onclick="jmp(this, 'runTask.jsp?cmd=run&name=', document.forms['index'].pipeline, document.forms['index'].pipelineVersion)">
 				<input type="button" value="view" name="viewpipeline" class="button" onclick="jmp(this, 'viewPipeline.jsp?name=', document.forms['index'].pipeline, document.forms['index'].pipelineVersion)">
+<% if (authManager.checkPermission("createPipeline", userID)) { %>
 				<input type="button" value="edit" name="editpipeline" class="button" onclick="jmp(this, 'pipelineDesigner.jsp?name=', document.forms['index'].pipeline, document.forms['index'].pipelineVersion)">
+<% } %>
 				<input type="button" value="export" name="exportpipeline" class="button" onclick="exportPipeline(this)">
 			</td>
 		</tr>
@@ -63,15 +65,22 @@ function getCode(url, pipeline, versionSelector, language, userID) {
 
 		<tr>
 			<td colspan="2" align="center" valign="top">
+<% if (authManager.checkPermission("createPipeline", userID)) { %>
 				<input type="button" value="create" class="button" onclick="javascript: window.location='pipelineDesigner.jsp'">
+
 				<input type="button" value="import..." class="button" onclick="javascript:window.location='addZip.jsp'">
+<%}%>
 			</td>
 		</tr>
+<% 
+if (authManager.checkPermission("createPipeline", userID)) { %>
+
 <tr>
 			<td colspan="2">
 				<hr noshade size="1">
 			</td>
 		</tr>
+<%}%>
 
 <tr>
 			<td valign="top" align="left" colspan="2">
