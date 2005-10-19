@@ -59,6 +59,14 @@ public class AdminProxy {
          throw new WebServiceException(re);  
       }
 	}
+	
+	public SuiteInfo getSuite(String lsidOrTaskName) throws WebServiceException {
+	      try {
+	         return proxy.getSuite(lsidOrTaskName);
+	      } catch(RemoteException re) {
+	         throw new WebServiceException(re);  
+	      }
+		}
 
 	public TaskInfo[] getLatestTasks() throws WebServiceException {
       try {
