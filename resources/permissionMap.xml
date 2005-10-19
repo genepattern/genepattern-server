@@ -11,17 +11,25 @@
 </permission>
 
 <permission name="createPipeline">
-	<group name="genePatternTaskCreators"/>
-	<group name="genepatternAdministrators"/>
-</permission>
-
-<permission name="arbitrarySql">
-	<group name="genepatternAdministrators"/>
+	<group name="genepatternTaskCreators"/>
 </permission>
 
 <permission name="administrateServer">
 	<group name="genepatternAdministrators"/>
 </permission>
+
+<permission name="createSuite">
+	<group name="*"/>
+</permission>
+
+<permission name="deleteTask">
+	<group name="genepatternTaskCreators"/>
+</permission>
+
+<permission name="deleteJob">
+	<group name="*"/>
+</permission>
+
 
 
 </permissionMap>

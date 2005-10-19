@@ -7,8 +7,7 @@
 </group>
 
 <group name="genepatternTaskCreators">
-	<user name="creator"/>
-	<user name="foo"/>
+	<user name="*"/>
 </group>
 
 

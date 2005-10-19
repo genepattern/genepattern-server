@@ -4,7 +4,33 @@
 <actionPermissionMap>
 
 	<url link="addTask.jsp" permission="createTask"/>
+	<url link="pipelineDesigner.jsp" permission="createPipeline"/>
 	<url link="adminServer.jsp" permission="administrateServer"/>
-	<url link="sql.jsp" permission="arbitrarySql"/>
+	<url link="sql.jsp" permission="administrateServer"/>
+
+	<url link="TaskIntegrator.modifyTask" permission="createTask"/>
+	<url link="TaskIntegrator.importZipFromURL" permission="createTask"/>
+	<url link="TaskIntegrator.installTask" permission="createTask"/>
+	<url link="TaskIntegrator.install" permission="createTask"/>
+	<url link="TaskIntegrator.importZip" permission="createTask"/>
+	<url link="TaskIntegrator.cloneTask" permission="createTask"/>
+	<url link="TaskIntegrator.clone" permission="createTask"/>
+
+	<url link="TaskIntegrator.modifySuite" permission="createSuite"/>
+
+	<url link="TaskIntegrator.deleteTask" permission="deleteTask"/>
+	<url link="TaskIntegrator.delete" permission="deleteTask"/>
+	<url link="TaskIntegrator.deleteFiles" permission="deleteTask"/>
+
+
+	<url link="Analysis.purgeJob" permission="deleteJob"/>
+	<url link="Analysis.deleteJob" permission="deleteJob"/>
+	<url link="Analysis.removeOutputFile" permission="deleteJob"/>
+	<url link="Analysis.deleteJobResultFile" permission="deleteJob"/>
+
+
+	<url link="AdminService.getServerLog" permission="administrateServer"/>
+	<url link="AdminService.getGenePatternLog" permission="administrateServer"/>
+
 
 </actionPermissionMap>
