@@ -9,9 +9,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -94,6 +97,11 @@ public class SuiteEditor extends JPanel {
 			_suiteInfo.setOwner(asm.getUsername());
 		}
 		this.suiteInfo = _suiteInfo;
+
+		Set moduleLsids = new HashSet();
+		if (suiteInfo.getModuleLsids() != null) {
+			moduleLsids.addAll(Arrays.asList(suiteInfo.getModuleLsids()));
+		}
 		Map categoryToAnalysisServices = AnalysisServiceUtil
 				.getCategoryToAnalysisServicesMap(AnalysisServiceManager
 						.getInstance().getLatestAnalysisServices());
@@ -174,10 +182,17 @@ public class SuiteEditor extends JPanel {
 					if (versions != null && versions.size() > 1) {
 						versionsComboBox = new JComboBox();
 						for (int j = 0; j < versions.size(); j++) {
+							String moduleLsid = lsid.toStringNoVersion() + ":"
+									+ versions.get(j);
 							versionsComboBox.addItem(versions.get(j));
+							if (moduleLsids.contains(moduleLsid)) {
+								cb.setSelected(true);
+								versionsComboBox.setSelectedItem(moduleLsid);
+							}
 						}
-						versionsComboBox.setSelectedItem(lsid.getVersion());
-
+						if (versionsComboBox.getSelectedItem() == null) {
+							versionsComboBox.setSelectedItem(lsid.getVersion());
+						}
 						JLabel taskNameLabel = new JLabel(svc.getName());
 						temp.add(taskNameLabel);
 						temp.add(versionsComboBox);
@@ -186,6 +201,9 @@ public class SuiteEditor extends JPanel {
 						JLabel taskNameLabel = new JLabel(svc.getName() + " ("
 								+ lsid.getVersion() + ")");
 						temp.add(taskNameLabel);
+						if (moduleLsids.contains(lsid.toString())) {
+							cb.setSelected(true);
+						}
 					}
 					categoryPanel.add(temp, cc.xy(2, i + 2));
 					checkBoxes
@@ -330,7 +348,13 @@ public class SuiteEditor extends JPanel {
 								headerPanel.lsidField.setText(lsid);
 								GenePattern.showMessageDialog("Saved "
 										+ suiteInfo.getName());
-								
+								try {
+									MessageManager
+											.notifyListeners(new SuiteInstallMessage(
+													SuiteEditor.this, lsid));
+								} catch (MalformedURLException e) {
+									e.printStackTrace();
+								}
 							} catch (WebServiceException e1) {
 								e1.printStackTrace();
 								GenePattern
