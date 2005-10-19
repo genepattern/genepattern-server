@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -63,6 +65,7 @@ import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.GPGEMessage;
 import org.genepattern.gpge.message.GPGEMessageListener;
 import org.genepattern.gpge.message.MessageManager;
+import org.genepattern.gpge.message.SuiteInstallMessage;
 import org.genepattern.gpge.message.TaskInstallMessage;
 import org.genepattern.gpge.ui.menu.MenuAction;
 import org.genepattern.gpge.ui.menu.MenuItemAction;
@@ -72,7 +75,6 @@ import org.genepattern.gpge.ui.preferences.SuitesPreferences;
 import org.genepattern.gpge.ui.project.ProjectDirModel;
 import org.genepattern.gpge.ui.project.ProjectDirectoryListener;
 import org.genepattern.gpge.ui.project.ProjectEvent;
-import org.genepattern.gpge.ui.suites.SuiteEditor;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceUtil;
 import org.genepattern.gpge.ui.tasks.FileInfoComponent;
@@ -88,10 +90,12 @@ import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskIntegratorProxy;
 import org.genepattern.webservice.WebServiceException;
@@ -221,6 +225,8 @@ public class GPGE {
 	boolean runTaskViewShown = false;
 
 	private MenuItemAction createPipelineMenuItem;
+
+	private SuiteMenu suiteMenu;
 
 	public static ParameterInfo copyParameterInfo(ParameterInfo toClone) {
 		ParameterInfo pi = new ParameterInfo(toClone.getName(), toClone
@@ -402,8 +408,9 @@ public class GPGE {
 		analysisServiceManager = AnalysisServiceManager.getInstance();
 
 		analysisServiceManager.changeServer(server, username);
-		MessageManager.notifyListeners(new ChangeViewMessageRequest(this, ChangeViewMessageRequest.SHOW_GETTING_STARTED_REQUEST));
-		
+		MessageManager.notifyListeners(new ChangeViewMessageRequest(this,
+				ChangeViewMessageRequest.SHOW_GETTING_STARTED_REQUEST));
+
 		final boolean isLocalHost = analysisServiceManager.isLocalHost();
 		if (isLocalHost) {
 			MessageDialog
@@ -436,6 +443,7 @@ public class GPGE {
 					// refreshModules
 				}
 				refreshModules(false);
+
 				displayServerStatus();
 				MessageDialog.getInstance().setVisible(false);
 			}
@@ -539,7 +547,7 @@ public class GPGE {
 					continue;
 				}
 				String actualValue = null; // the value to set the parameter
-											// for
+				// for
 				// the job we are about to submit
 
 				if (savedParameterInfo != null) { // saved parameter exists in
@@ -577,7 +585,7 @@ public class GPGE {
 						actualParams.add(pi);
 						continue;
 					} else if (savedParameterInfo.isInputFile()) { // input
-																	// file
+						// file
 						// is local
 						// file
 						actualValue = (String) savedParameterInfo
@@ -687,8 +695,8 @@ public class GPGE {
 			frame.setSize(0, 0);
 			frame.setLocation(screenSize.width / 2, screenSize.height / 2);
 			frame.show(); // on Mac OSX the dialog won't stay on top unless
-							// the parent frame is visible when the dialog is
-							// created
+			// the parent frame is visible when the dialog is
+			// created
 		}
 		MessageDialog.init(frame);
 		frame.setVisible(false);
@@ -1715,12 +1723,12 @@ public class GPGE {
 										JobModel.ServerFileNode node = (JobModel.ServerFileNode) selectedJobNode;
 										File outputFile = new File(dir,
 												node.name);
-										
+
 										try {
 											if (GUIUtil
 													.overwriteFile(outputFile)) {
 												node.download(outputFile);
-												
+
 												projectDirModel.refresh(dir);
 											}
 										} catch (IOException ioe) {
@@ -1783,7 +1791,6 @@ public class GPGE {
 			}
 		};
 
-
 		createPipelineMenuItem = new MenuItemAction("Create Pipeline") {
 			public void actionPerformed(ActionEvent e) {
 				final JobModel.ServerFileNode serverFileNode = (JobModel.ServerFileNode) selectedJobNode;
@@ -1798,7 +1805,8 @@ public class GPGE {
 								AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(
 										analysisServiceManager.getServer(),
 										analysisServiceManager.getUsername());
-								System.out.println("creating pipeline for " + serverFileNode.getURL());
+								System.out.println("creating pipeline for "
+										+ serverFileNode.getURL());
 								String lsid = proxy.createProvenancePipeline(
 										serverFileNode.getURL().toString(),
 										pipelineName);
@@ -1862,6 +1870,7 @@ public class GPGE {
 				pipelineMenu.setEnabled(b);
 				fileMenu.changeServerActionsEnabled(b);
 				historyMenu.setEnabled(b);
+				suiteMenu.setEnabled(b);
 			}
 		};
 		if (SwingUtilities.isEventDispatchThread()) {
@@ -1873,7 +1882,8 @@ public class GPGE {
 
 	public void rebuildTasksUI() {
 		inputTypeToMenuItemsMap = SemanticUtil
-		.getInputTypeToMenuItemsMap(analysisServiceManager.getLatestAnalysisServices());
+				.getInputTypeToMenuItemsMap(analysisServiceManager
+						.getLatestAnalysisServices());
 
 		new Thread() {
 			public void run() {
@@ -1885,13 +1895,12 @@ public class GPGE {
 						analysisMenu.rebuild(categoryToAnalysisServices);
 						visualizerMenu.rebuild(categoryToAnalysisServices);
 						pipelineMenu.rebuild(categoryToAnalysisServices);
-
 					}
 				});
 			}
 		}.start();
 	}
-	
+
 	private void taskInstalled(LSID lsid) {
 		analysisServiceManager.taskInstalled(lsid);
 		rebuildTasksUI();
@@ -1928,6 +1937,7 @@ public class GPGE {
 						visualizerMenu.rebuild(categoryToAnalysisServices);
 						pipelineMenu.rebuild(categoryToAnalysisServices);
 						setChangeServerActionsEnabled(true);
+						suiteMenu.rebuild();
 					}
 				});
 			}
@@ -2004,12 +2014,17 @@ public class GPGE {
 				if (message instanceof TaskInstallMessage) {
 					LSID lsid = ((TaskInstallMessage) message).getLsid();
 					taskInstalled(lsid);
+				} else if (message instanceof SuiteInstallMessage) {
+					suiteMenu.rebuild();
 				}
 			}
-
 		});
 		pipelineMenu.setEnabled(false);
 		menuBar.add(pipelineMenu);
+
+		suiteMenu = new SuiteMenu();
+		suiteMenu.setEnabled(false);
+		menuBar.add(suiteMenu);
 
 		historyMenu = new HistoryMenu();
 		historyMenu.setEnabled(false);
@@ -2027,10 +2042,10 @@ public class GPGE {
 				viewCodeAction });
 		jobPopupMenu = jobPopupAction.createPopupMenu();
 
-		MenuAction jobResultFilePopupAction = new MenuAction("",
-				new Object[] { jobResultFileSendToMenu, saveServerFileMenu,
-						deleteFileMenuItem, openWithMenu,
-						jobResultFileViewModulesMenu, createPipelineMenuItem });
+		MenuAction jobResultFilePopupAction = new MenuAction("", new Object[] {
+				jobResultFileSendToMenu, saveServerFileMenu,
+				deleteFileMenuItem, openWithMenu, jobResultFileViewModulesMenu,
+				createPipelineMenuItem });
 		jobResultFilePopupMenu = jobResultFilePopupAction.createPopupMenu();
 
 		MenuAction projectDirPopupMenuAction = new MenuAction("", new Object[] {
@@ -2102,6 +2117,20 @@ public class GPGE {
 
 		public void rebuild(Map categoryToAnalysisServices) {
 			removeAll();
+			if (type == PIPELINES) {
+				JMenuItem newPipelineItem = new JMenuItem("New");
+				newPipelineItem.addActionListener(new ActionListener() {
+					public void actionPerformed(java.awt.event.ActionEvent e) {
+						MessageManager
+								.notifyListeners(new ChangeViewMessageRequest(
+										GPGE.this,
+										ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST));
+					}
+				});
+				add(newPipelineItem);
+				add(new JSeparator());
+			}
+
 			if (type == DATA_ANALYZERS) {
 				for (Iterator keys = categoryToAnalysisServices.keySet()
 						.iterator(); keys.hasNext();) {
@@ -2152,8 +2181,7 @@ public class GPGE {
 		public AnalysisMenuItem(AnalysisService svc) {
 			String name = svc.getTaskInfo().getName();
 			if (name.endsWith(".pipeline")) {
-				name = name.substring(0, name.length()
-						- ".pipeline".length());
+				name = name.substring(0, name.length() - ".pipeline".length());
 			}
 			setText(name);
 			this.svc = svc;
@@ -2216,7 +2244,7 @@ public class GPGE {
 					}
 				}
 			});
-			
+
 			JMenuItem genePatternHomeMenuItem = new JMenuItem(
 					"GenePattern Server");
 			add(genePatternHomeMenuItem);
@@ -2224,7 +2252,8 @@ public class GPGE {
 				public void actionPerformed(ActionEvent e) {
 					try {
 						BrowserLauncher.openURL(AnalysisServiceManager
-								.getInstance().getServer() + "/gp/");
+								.getInstance().getServer()
+								+ "/gp/");
 					} catch (IOException ioe) {
 					}
 				}
@@ -2284,6 +2313,85 @@ public class GPGE {
 		}
 	}
 
+	class SuiteMenu extends JMenu {
+
+		public SuiteMenu() {
+			super("Suites");
+
+		}
+
+		public void rebuild() {
+			removeAll();
+			JMenuItem createSuiteMenuItem = new JMenuItem("New");
+			createSuiteMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					MessageManager
+							.notifyListeners(new ChangeViewMessageRequest(
+									GPGE.this,
+									ChangeViewMessageRequest.SHOW_EDIT_SUITE_REQUEST));
+				}
+			});
+			add(createSuiteMenuItem);
+
+			JMenuItem suitesMenuItem = new JMenuItem("Filter...");
+			suitesMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					new SuitesPreferences(GenePattern.getDialogParent());
+				}
+			});
+			add(suitesMenuItem);
+
+			add(new JSeparator());
+
+			try {
+				final AdminProxy proxy = new AdminProxy(AnalysisServiceManager
+						.getInstance().getServer(), AnalysisServiceManager
+						.getInstance().getUsername());
+				SuiteInfo[] suites = proxy.getLatestSuites();
+				Arrays.sort(suites, new Comparator() {
+					public int compare(Object o1, Object o2) {
+						SuiteInfo s1 = (SuiteInfo) o1;
+						SuiteInfo s2 = (SuiteInfo) o2;
+						return s1.getName().compareToIgnoreCase(s2.getName());
+					}
+				});
+
+				ActionListener l = new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						SuiteMenuItem s = (SuiteMenuItem) e.getSource();
+						try {
+							MessageManager
+									.notifyListeners(new ChangeViewMessageRequest(
+											GPGE.this,
+											ChangeViewMessageRequest.SHOW_EDIT_SUITE_REQUEST,
+											proxy.getSuite(s.lsid)));
+						} catch (WebServiceException e1) {
+							e1.printStackTrace();
+						}
+					}
+				};
+				for (int i = 0; i < suites.length; i++) {
+					JMenuItem mi = new SuiteMenuItem(suites[i].getName(),
+							suites[i].getLsid());
+					add(mi);
+					mi.addActionListener(l);
+				}
+			} catch (WebServiceException e1) {
+				e1.printStackTrace();
+			}
+		}
+
+	}
+
+	static class SuiteMenuItem extends JMenuItem {
+		String lsid;
+
+		public SuiteMenuItem(String name, String lsid) {
+			super(name);
+			this.lsid = lsid;
+		}
+	}
+
 	class FileMenu extends JMenu {
 		JobCompletedDialog jobCompletedDialog;
 
@@ -2309,25 +2417,6 @@ public class GPGE {
 		public FileMenu() {
 			super("File");
 
-			JMenuItem newPipelineItem = new JMenuItem("New Pipeline");
-			newPipelineItem.addActionListener(new ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent e) {
-					MessageManager
-							.notifyListeners(new ChangeViewMessageRequest(
-									GPGE.this,
-									ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST));
-				}
-			});
-			add(newPipelineItem);
-
-			JMenuItem createSuiteMenuItem = new JMenuItem("New Suite");
-			createSuiteMenuItem.addActionListener(new ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent e) {
-					MessageManager.notifyListeners(new ChangeViewMessageRequest(GPGE.this, ChangeViewMessageRequest.SHOW_EDIT_SUITE_REQUEST));
-				}
-			});
-			add(createSuiteMenuItem);
-			
 			JMenuItem openProjectDirItem = new JMenuItem(
 					"Open Project Directory...", IconManager
 							.loadIcon(IconManager.NEW_PROJECT_ICON));
@@ -2389,13 +2478,18 @@ public class GPGE {
 											file, GPConstants.ACCESS_PUBLIC);
 
 									taskInstalled(new LSID(lsid));
-									final AnalysisService svc = AnalysisServiceManager.getInstance().getAnalysisService(lsid);
+									final AnalysisService svc = AnalysisServiceManager
+											.getInstance().getAnalysisService(
+													lsid);
 									SwingUtilities.invokeLater(new Thread() {
 										public void run() {
-											GenePattern.showMessageDialog("Successfully installed module " + svc.getName() + ".");
+											GenePattern
+													.showMessageDialog("Successfully installed module "
+															+ svc.getName()
+															+ ".");
 										}
 									});
-									
+
 								} catch (WebServiceException wse) {
 									wse.printStackTrace();
 									if (!disconnectedFromServer(wse)) {
@@ -2468,19 +2562,10 @@ public class GPGE {
 
 				}
 			});
-			
+
 			add(changeServerMenuItem);
 			changeServerMenuItem.setEnabled(false);
 
-			
-			JMenuItem suitesMenuItem = new JMenuItem("Filter By Suite...");
-			suitesMenuItem.addActionListener(new ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent e) {
-					new SuitesPreferences(GenePattern.getDialogParent());
-				}
-			});
-			add(suitesMenuItem);
-			
 			refreshMenu = new JMenu("Refresh");
 			add(refreshMenu);
 			refreshModulesMenuItem = new JMenuItem("Modules");
