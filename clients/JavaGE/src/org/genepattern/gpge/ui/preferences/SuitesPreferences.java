@@ -165,15 +165,17 @@ public class SuitesPreferences {
 		filterBtn.addActionListener(btnListener);
 
 		List selectedSuites = AnalysisServiceManager.getInstance().getSuites();
-		Collections.sort(selectedSuites, new Comparator() {
+		if (selectedSuites != null) {
+			Collections.sort(selectedSuites, new Comparator() {
 
-			public int compare(Object o1, Object o2) {
-				SuiteInfo suite1 = (SuiteInfo) o1;
-				SuiteInfo suite2 = (SuiteInfo) o2;
-				return suite1.getName().compareTo(suite2.getName());
-			}
+				public int compare(Object o1, Object o2) {
+					SuiteInfo suite1 = (SuiteInfo) o1;
+					SuiteInfo suite2 = (SuiteInfo) o2;
+					return suite1.getName().compareToIgnoreCase(suite2.getName());
+				}
 
-		});
+			});
+		}
 		isFilteringInitially = selectedSuites != null;
 		Set selectedSuiteLsids = new HashSet();
 
@@ -192,8 +194,14 @@ public class SuitesPreferences {
 					.getInstance().getServer(), AnalysisServiceManager
 					.getInstance().getUsername());
 
-			suites = proxy.getLatestSuites(); // createSuites();
-			JLabel showSuiteLabel = new JLabel("Show suite");
+			suites = proxy.getLatestSuites(); 
+			JLabel showSuiteLabel = null;
+			if(suites==null || suites.length==0) {
+				showSuiteLabel = new JLabel("No suites available");
+			} else {
+				showSuiteLabel = new JLabel("Show suite");
+			}
+			
 			showSuiteLabel.setFont(showSuiteLabel.getFont().deriveFont(
 					showSuiteLabel.getFont().getSize2D() - 2));
 
