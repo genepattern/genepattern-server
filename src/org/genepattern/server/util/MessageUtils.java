@@ -30,7 +30,9 @@ public class MessageUtils extends Properties {
 
 	public void _init(File aFile){
 		try {
-			this.load(new FileInputStream(aFile));		
+			FileInputStream is = new FileInputStream(aFile); 
+			this.load(is);
+			is.close();		
 		} catch (Exception e){
 			e.printStackTrace();
 		}
