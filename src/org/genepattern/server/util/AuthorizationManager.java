@@ -88,7 +88,7 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 
 	public boolean isAllowed(String urlOrSoapMethod, String userID){
 		boolean allow = _isAllowed(urlOrSoapMethod,userID);
-		System.out.println("AM: " + urlOrSoapMethod + " --> " + userID + "  == " + allow);
+		System.out.println("AM IA: " + urlOrSoapMethod + " --> " + userID + "  == " + allow);
 		return allow;		
 	}
 
@@ -107,8 +107,19 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 	}
 
 	public boolean checkPermission(String permissionName, String userID){
+		System.out.println("AM CP: ");
+
+		boolean allow = _checkPermission(permissionName,userID);
+		System.out.println("AM CP: " + permissionName+ " --> " + userID + "  == " + allow);
+		return allow;	
+
+	}
+	public boolean _checkPermission(String permissionName, String userID){
 		HashSet usersGroups = (HashSet )userGroups.get(userID);
+		HashSet openGroups = (HashSet )userGroups.get("*");
+		
 		if (usersGroups == null) usersGroups = emptySet;
+		if (openGroups == null) openGroups = emptySet;
 		boolean allowed = false;		
 
 		HashSet allowedGroups = (HashSet)groupPermission.get(permissionName);
@@ -119,9 +130,15 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 		if (allowedGroups.contains("*")) return true;
 		if (allowedGroups == emptySet) return true;
 
-
+System.out.println("Allowed Groups for " + permissionName + " is " + allowedGroups); 
 		for (Iterator iter = usersGroups.iterator(); iter.hasNext(); ){
 			String groupName = (String)iter.next();
+
+			if (allowedGroups.contains(groupName)) return true;
+		}
+		for (Iterator iter = openGroups.iterator(); iter.hasNext(); ){
+			String groupName = (String)iter.next();
+
 			if (allowedGroups.contains(groupName)) return true;
 		}
 
@@ -135,11 +152,6 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 		if (perms == null) return emptySet;
 		else return perms;
 	}
-
-
-
-
-
 
 
 	protected static String DBF = "javax.xml.parsers.DocumentBuilderFactory";
@@ -252,6 +264,8 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 		}
 		// loop over SOAP methods next
 		is.close();
+
+System.out.println("UG=" + userGroups);
 	}
 	public void initPermissionMap() throws IOException, JDOMException {
 		InputStream is = null;
