@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JComboBox;
 
@@ -11,34 +12,59 @@ import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.ui.maindisplay.GPGE;
-import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.AnalysisService;
-import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * A combo box that allows the user to select a version for a task
  * 
  * @author jgould
- *
+ * 
  */
 public class VersionComboBox extends JComboBox {
 
-	/**
-	 * @param taskInfo
-	 * @param type
-	 */
 	public VersionComboBox(String lsidString, final int type) {
+		this(lsidString, type, false);
+
+	}
+
+	/**
+	 * @param lsidString
+	 *            the lsid
+	 * @param the
+	 *            type of event to fire
+	 * @param isSuite
+	 *            whether the lsid refers to a suite
+	 */
+	public VersionComboBox(String lsidString, final int type,
+			final boolean isSuite) {
 		try {
 			final LSID lsid = new LSID(lsidString);
 
 			final String lsidNoVersion = lsid.toStringNoVersion();
-			List versions = (List) AnalysisServiceManager.getInstance()
-					.getLSIDToVersionsMap().get(lsidNoVersion);
-			
+			List versions = null;
+			if (isSuite) {
+				AnalysisServiceManager asm = AnalysisServiceManager
+						.getInstance();
+
+				try {
+					Map suiteLsidToVersions = new AdminProxy(asm.getServer(),
+							asm.getUsername(), false)
+							.getSuiteLsidToVersionsMap();
+					versions = (List) suiteLsidToVersions.get(lsidNoVersion);
+				} catch (WebServiceException e) {
+					e.printStackTrace();
+				}
+			} else {
+				versions = (List) AnalysisServiceManager.getInstance()
+						.getLSIDToVersionsMap().get(lsidNoVersion);
+			}
+
 			if (versions != null) {
 				String version = lsid.getVersion();
-				for(int i = 0; i < versions.size(); i++) {
+				for (int i = 0; i < versions.size(); i++) {
 					String s = (String) versions.get(i);
 					addItem(s);
 				}
@@ -62,16 +88,38 @@ public class VersionComboBox extends JComboBox {
 
 						String selectedLSID = lsidNoVersion + ":"
 								+ selectedItem;
-						AnalysisService svc = AnalysisServiceManager
-								.getInstance().getAnalysisService(selectedLSID);
-						if (svc == null) {
-							GenePattern
-									.showMessageDialog("The task was not found.");
+						Object objectToDisplay = null;
+						if (isSuite) {
+							try {
+								AnalysisServiceManager asm = AnalysisServiceManager
+										.getInstance();
+								objectToDisplay = new AdminProxy(asm
+										.getServer(), asm.getUsername(), false)
+										.getSuite(selectedLSID);
+								if (objectToDisplay == null) {
+									GenePattern
+											.showMessageDialog("The suite was not found.");
+									return;
+								}
+							} catch (WebServiceException e2) {
+								e2.printStackTrace();
+							}
+
 						} else {
-							MessageManager
-									.notifyListeners(new ChangeViewMessageRequest(
-											this, type, svc));
+							objectToDisplay = AnalysisServiceManager
+									.getInstance().getAnalysisService(
+											selectedLSID);
+							if (objectToDisplay == null) {
+								GenePattern
+										.showMessageDialog("The task was not found.");
+								return;
+							}
 						}
+
+						MessageManager
+								.notifyListeners(new ChangeViewMessageRequest(
+										this, type, objectToDisplay));
+
 					}
 				});
 			}
@@ -79,5 +127,4 @@ public class VersionComboBox extends JComboBox {
 			mfe.printStackTrace();
 		}
 	}
-
 }
