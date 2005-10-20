@@ -128,6 +128,36 @@ public class AdminService implements IAdminService {
 		}
 	}
 
+	public Map getSuiteLsidToVersionsMap() throws WebServiceException {
+		Map suiteLsid2VersionsMap = new HashMap();
+		SuiteInfo[] allSuites;
+		try {
+			allSuites = adminDAO.getAllSuites();
+		} catch (AdminDAOSysException e1) {
+			throw new WebServiceException(e1);
+		}
+
+		for (int i = 0, length = allSuites.length; i < length; i++) {
+			SuiteInfo suite = allSuites[i];
+			String suiteLsid = suite.getLsid();
+			if (suiteLsid != null) {
+				try {
+					LSID lsid = new LSID(suiteLsid);
+					String lsidNoVersion = lsid.toStringNoVersion();
+					Vector versions = (Vector) suiteLsid2VersionsMap
+							.get(lsidNoVersion);
+					if (versions == null) {
+						versions = new Vector();
+						suiteLsid2VersionsMap.put(lsidNoVersion, versions);
+					}
+					versions.add(lsid.getVersion());
+				} catch (java.net.MalformedURLException e) {
+				}
+			}
+		}
+		return suiteLsid2VersionsMap;
+	}
+	
 	public Map getLSIDToVersionsMap() throws WebServiceException {
 		Thread.yield();
 		Map lsid2VersionsMap = new HashMap();
