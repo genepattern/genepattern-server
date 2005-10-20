@@ -64,7 +64,7 @@ public class AnalysisServiceManager {
 		this.lsid2AnalysisServices = new HashMap();
 	}
 
-	public void setSuites(List suites) {
+	public void setVisibleSuites(List suites) {
 		this.suites = suites;
 		if (suites != null && suites.size() == 0) {
 			this.suites = null;
@@ -98,7 +98,7 @@ public class AnalysisServiceManager {
 		}
 	}
 
-	public List getSuites() {
+	public List getVisibleSuites() {
 		return suites;
 	}
 
@@ -246,7 +246,7 @@ public class AnalysisServiceManager {
 		if (suites == null) {
 			updateLatestAnalysisServices();
 		} else {
-			setSuites(suites);
+			setVisibleSuites(suites);
 		}
 	}
 
