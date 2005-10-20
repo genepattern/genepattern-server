@@ -73,12 +73,12 @@ public class SuitesPreferences {
 			if (selectedSuites.size() == 0) {
 				selectedSuites = null;
 			}
-			AnalysisServiceManager.getInstance().setSuites(selectedSuites);
+			AnalysisServiceManager.getInstance().setVisibleSuites(selectedSuites);
 			GPGE.getInstance().rebuildTasksUI();
 		} else {
 			if (isFilteringInitially) { // only update if initially filtering
 				// and now not filtering
-				AnalysisServiceManager.getInstance().setSuites(null);
+				AnalysisServiceManager.getInstance().setVisibleSuites(null);
 				GPGE.getInstance().rebuildTasksUI();
 			}
 		}
@@ -164,7 +164,7 @@ public class SuitesPreferences {
 		noFilterBtn.addActionListener(btnListener);
 		filterBtn.addActionListener(btnListener);
 
-		List selectedSuites = AnalysisServiceManager.getInstance().getSuites();
+		List selectedSuites = AnalysisServiceManager.getInstance().getVisibleSuites();
 		if (selectedSuites != null) {
 			Collections.sort(selectedSuites, new Comparator() {
 
