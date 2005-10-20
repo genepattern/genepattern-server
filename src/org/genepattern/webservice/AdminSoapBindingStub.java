@@ -16,7 +16,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub  {
     static org.apache.axis.description.OperationDesc [] _operations;
 
     static {
-        _operations = new org.apache.axis.description.OperationDesc[12];
+        _operations = new org.apache.axis.description.OperationDesc[13];
         org.apache.axis.description.OperationDesc oper;
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getTask");
@@ -201,6 +201,21 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub  {
                      ));
         _operations[11] = oper;
 
+        oper = new org.apache.axis.description.OperationDesc();
+        oper.setName("getSuiteLsidToVersionsMap");
+        oper.setReturnType(new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "Map"));
+        oper.setReturnClass(java.util.HashMap.class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "getSuiteLsidToVersionsMapReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.addFault(new org.apache.axis.description.FaultDesc(
+                      new javax.xml.namespace.QName("http://localhost:8080/gp/services/Admin", "fault"),
+                      "org.genepattern.webservice.WebServiceException",
+                      new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException"), 
+                      true
+                     ));
+        _operations[12] = oper;
+
     }
 
     public AdminSoapBindingStub() throws org.apache.axis.AxisFault {
@@ -228,20 +243,6 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub  {
             java.lang.Class arraydf = org.apache.axis.encoding.ser.ArrayDeserializerFactory.class;
             java.lang.Class simplesf = org.apache.axis.encoding.ser.SimpleSerializerFactory.class;
             java.lang.Class simpledf = org.apache.axis.encoding.ser.SimpleDeserializerFactory.class;
-            qName = new javax.xml.namespace.QName("Admin", "SuiteInfoArray");
-            cachedSerQNames.add(qName);
-            cls = SuiteInfo[].class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(arraysf);
-            cachedDeserFactories.add(arraydf);
-
-            qName = new javax.xml.namespace.QName("Admin", "ParmInfoArray");
-            cachedSerQNames.add(qName);
-            cls = ParameterInfo[].class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(arraysf);
-            cachedDeserFactories.add(arraydf);
-
             qName = new javax.xml.namespace.QName("http://localhost:8080/gp/services/Admin", "ArrayOf_xsd_string");
             cachedSerQNames.add(qName);
             cls = java.lang.String[].class;
@@ -249,9 +250,23 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub  {
             cachedSerFactories.add(arraysf);
             cachedDeserFactories.add(arraydf);
 
-            qName = new javax.xml.namespace.QName("Admin", "SuiteInfo");
+            qName = new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException");
             cachedSerQNames.add(qName);
-            cls = SuiteInfo.class;
+            cls = org.genepattern.webservice.WebServiceException.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
+            qName = new javax.xml.namespace.QName("Admin", "SuiteInfoArray");
+            cachedSerQNames.add(qName);
+            cls = SuiteInfo[].class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(arraysf);
+            cachedDeserFactories.add(arraydf);
+
+            qName = new javax.xml.namespace.QName("Admin", "ParmInfo");
+            cachedSerQNames.add(qName);
+            cls = ParameterInfo.class;
             cachedSerClasses.add(cls);
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
@@ -263,12 +278,19 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub  {
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
 
-            qName = new javax.xml.namespace.QName("Admin", "ParmInfo");
+            qName = new javax.xml.namespace.QName("Admin", "TaskInfoArray");
             cachedSerQNames.add(qName);
-            cls = ParameterInfo.class;
+            cls = TaskInfo[].class;
             cachedSerClasses.add(cls);
-            cachedSerFactories.add(beansf);
-            cachedDeserFactories.add(beandf);
+            cachedSerFactories.add(arraysf);
+            cachedDeserFactories.add(arraydf);
+
+            qName = new javax.xml.namespace.QName("Admin", "ParmInfoArray");
+            cachedSerQNames.add(qName);
+            cls = ParameterInfo[].class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(arraysf);
+            cachedDeserFactories.add(arraydf);
 
             qName = new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "mapItem");
             cachedSerQNames.add(qName);
@@ -277,16 +299,9 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub  {
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
 
-            qName = new javax.xml.namespace.QName("Admin", "TaskInfoArray");
+            qName = new javax.xml.namespace.QName("Admin", "SuiteInfo");
             cachedSerQNames.add(qName);
-            cls = TaskInfo[].class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(arraysf);
-            cachedDeserFactories.add(arraydf);
-
-            qName = new javax.xml.namespace.QName("http://webservice.genepattern.org", "WebServiceException");
-            cachedSerQNames.add(qName);
-            cls = org.genepattern.webservice.WebServiceException.class;
+            cls = SuiteInfo.class;
             cachedSerClasses.add(cls);
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
@@ -681,6 +696,34 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub  {
                 return (javax.activation.DataHandler) _resp;
             } catch (java.lang.Exception _exception) {
                 return (javax.activation.DataHandler) org.apache.axis.utils.JavaUtils.convert(_resp, javax.activation.DataHandler.class);
+            }
+        }
+    }
+
+    public java.util.HashMap getSuiteLsidToVersionsMap() throws java.rmi.RemoteException, org.genepattern.webservice.WebServiceException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[12]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("");
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("http://server.webservice.server.genepattern.org", "getSuiteLsidToVersionsMap"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        else {
+            extractAttachments(_call);
+            try {
+                return (java.util.HashMap) _resp;
+            } catch (java.lang.Exception _exception) {
+                return (java.util.HashMap) org.apache.axis.utils.JavaUtils.convert(_resp, java.util.HashMap.class);
             }
         }
     }
