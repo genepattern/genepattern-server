@@ -38,6 +38,7 @@ import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskIntegratorProxy;
@@ -253,7 +254,6 @@ public class SuiteEditor extends JPanel {
 								if (destination == null) {
 									return;
 								}
-								System.out.println(suiteInfo.getLsid());
 								new TaskIntegratorProxy(asm.getServer(), asm
 										.getUsername()).exportSuiteToZip(
 										suiteInfo.getLsid(), destination);
@@ -355,6 +355,13 @@ public class SuiteEditor extends JPanel {
 								} catch (MalformedURLException e) {
 									e.printStackTrace();
 								}
+								MessageManager
+										.notifyListeners(new ChangeViewMessageRequest(
+												SuiteEditor.this,
+												ChangeViewMessageRequest.SHOW_EDIT_SUITE_REQUEST,
+												new AdminProxy(asm.getServer(),
+														asm.getUsername())
+														.getSuite(lsid)));
 							} catch (WebServiceException e1) {
 								e1.printStackTrace();
 								GenePattern
@@ -379,6 +386,8 @@ public class SuiteEditor extends JPanel {
 		add(headerPanel, BorderLayout.NORTH);
 
 		add(bottomBtnPanel, BorderLayout.SOUTH);
+		invalidate();
+		validate();
 	}
 
 	static class HeaderPanel extends JPanel {
@@ -413,7 +422,7 @@ public class SuiteEditor extends JPanel {
 			JComboBox versionComboBox = null;
 			if (name != null && !name.equals("")) {
 				versionComboBox = new VersionComboBox(suiteInfo.getLSID(),
-						ChangeViewMessageRequest.SHOW_EDIT_PIPELINE_REQUEST);
+						ChangeViewMessageRequest.SHOW_EDIT_SUITE_REQUEST, true);
 			}
 			CellConstraints cc = new CellConstraints();
 			JPanel temp = new JPanel(new FormLayout(
