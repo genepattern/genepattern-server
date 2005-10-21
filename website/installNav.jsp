@@ -8,7 +8,7 @@
 <body>
 <base target="aStep">
 <b>Configure your
-<img src="skin/HeaderLogo.jpg" width="115" height="17" border="0" alt="GenePattern logo" />
+<img src="skin/HeaderLogo.png" width="115" height="17" border="0" alt="GenePattern logo" />
 server:</b>
 <ol>
 <li><a href="installLog.jsp">View the server installation report</a><br><br></li>
