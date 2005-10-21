@@ -88,7 +88,7 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 
 	public boolean isAllowed(String urlOrSoapMethod, String userID){
 		boolean allow = _isAllowed(urlOrSoapMethod,userID);
-		System.out.println("AM IA: " + urlOrSoapMethod + " --> " + userID + "  == " + allow);
+		//System.out.println("AM IA: " + urlOrSoapMethod + " --> " + userID + "  == " + allow);
 		return allow;		
 	}
 
@@ -107,10 +107,10 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 	}
 
 	public boolean checkPermission(String permissionName, String userID){
-		System.out.println("AM CP: ");
+		//System.out.println("AM CP: ");
 
 		boolean allow = _checkPermission(permissionName,userID);
-		System.out.println("AM CP: " + permissionName+ " --> " + userID + "  == " + allow);
+	//	System.out.println("AM CP: " + permissionName+ " --> " + userID + "  == " + allow);
 		return allow;	
 
 	}
@@ -130,7 +130,7 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 		if (allowedGroups.contains("*")) return true;
 		if (allowedGroups == emptySet) return true;
 
-System.out.println("Allowed Groups for " + permissionName + " is " + allowedGroups); 
+//System.out.println("Allowed Groups for " + permissionName + " is " + allowedGroups); 
 		for (Iterator iter = usersGroups.iterator(); iter.hasNext(); ){
 			String groupName = (String)iter.next();
 
@@ -265,7 +265,7 @@ System.out.println("Allowed Groups for " + permissionName + " is " + allowedGrou
 		// loop over SOAP methods next
 		is.close();
 
-System.out.println("UG=" + userGroups);
+//System.out.println("UG=" + userGroups);
 	}
 	public void initPermissionMap() throws IOException, JDOMException {
 		InputStream is = null;
