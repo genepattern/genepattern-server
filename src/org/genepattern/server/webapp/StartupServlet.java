@@ -63,22 +63,16 @@ public class StartupServlet extends HttpServlet {
 		ServletContext application = config.getServletContext();
 		application.setAttribute("genepattern.properties", config
 				.getInitParameter("genepattern.properties"));
-
 		loadProperties(config);
-
 		// start HSQL
 		launchTasks();
-
 		// make sure that database exists
 		new CreateDatabase().run(new String[] { "." });
-
 		// get a single instance of AnalysisManager so that it doesn't get
 		// re-instantiated with every invocation of GP
 		application.setAttribute("AnalysisManager", AnalysisManager
 				.getInstance());
-
 		startDaemons(System.getProperties(), application);
-
 		announceReady(System.getProperties());
 	}
 
@@ -188,7 +182,7 @@ public class StartupServlet extends HttpServlet {
 		}
 		vThreads.removeAllElements();
 		shutdownDatabase();
-		GenePatternAnalysisTask.terminateAll("Shutting down server");
+		GenePatternAnalysisTask.terminateAll("--> Shutting down server");
 		log("StartupServlet: destroy done");
 		dumpThreads();
 	}
@@ -199,8 +193,12 @@ public class StartupServlet extends HttpServlet {
 			BeanReference.getAnalysisJobDataSourceEJB().executeUpdate(
 					"CHECKPOINT"); // HSQL: Closes the database files, shrinks
 								   // the script file and opens the database.
+
+			
 			log("Checkpointed.");
+			BeanReference.getAnalysisJobDataSourceEJB().executeUpdate("SHUTDOWN");
 		} catch (Throwable t) {
+			t.printStackTrace();
 			log("checkpoint database in StartupServlet.destroy", t);
 		}
 	}
