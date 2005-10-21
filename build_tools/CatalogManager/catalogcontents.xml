@@ -916,5 +916,12 @@
 </cvs>
 <copy file="MAGEMLImportViewer.zip" tofile="catalogregen/MAGEMLImportViewer.1.zip" />
 
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00057=3 NMFConsensus.zip"/>
+	</commandline>
+</cvs>
+<copy file="NMFConsensus.zip" tofile="catalogregen/NMFConsensus.3.zip" />
+
 </target>
 </project>
