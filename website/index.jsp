@@ -35,6 +35,14 @@
 	response.setDateHeader("Expires", 0);
 
 try {
+
+String agent = request.getHeader("USER-AGENT");
+ System.out.println("\n\nAGENT=" + agent);
+String iFrameWidth=" width='100%'; ";
+if (agent.indexOf("Safari") >= 0) {
+	iFrameWidth = " width='250px'; ";
+} 
+
 String userID= (String)request.getAttribute("userID"); // get userID but don't force login if not defined
 boolean userIDKnown = !(userID == null || userID.length() == 0);
 LocalAdminClient adminClient = new LocalAdminClient(userID);
@@ -237,7 +245,7 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 <td  valign='top' align='left' height='100%'>
 <form name="index" method="post">
 
-<iframe frameborder="0" scrolling="yes" marginwidth="1" src="getRecentJobs.jsp" style="width: 100%; height: 530px" name="iframe" id="iframeid">
+<iframe frameborder="0" scrolling="yes" marginwidth="1" src="getRecentJobs.jsp" style="<%=iFrameWidth%> height: 530px" name="iframe" id="iframeid">
 No &lt;iframes&gt; support  :(
 </iframe>
 

@@ -432,11 +432,16 @@ function checkEnableNavbar() {
 	String IGNORE = "dontJump";
 	String DIVIDER = "";
 	int maxNameWidth = 0; 
-
+	int halfLength = Integer.parseInt(System.getProperty("gp.name.halflength", "17"));
+		
 	for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 		TaskInfo task = (TaskInfo)itTasks.next();
 		maxNameWidth = Math.max(maxNameWidth, task.getName().length());
-			}
+	}
+	if (	maxNameWidth > ((2*halfLength)+3)) {
+		maxNameWidth = (2*halfLength)+3;
+	}
+
 	StringBuffer divBuff = new StringBuffer(DIVIDER);
 	for (int i=0; i < maxNameWidth; i++){
 		divBuff.append("-");
@@ -484,7 +489,6 @@ function checkEnableNavbar() {
 		}
 
 		String shortenedName = shortName;
-		int halfLength = Integer.parseInt(System.getProperty("gp.name.halflength", "17"));
 		
 		if (shortName.length() > ((2*halfLength)+3)){
 			int len = shortName.length();
@@ -532,7 +536,6 @@ function checkEnableNavbar() {
 		if (type != null && !tia.get(GPConstants.TASK_TYPE).equals(type)) continue;
 
 		String shortenedName = shortName;
-		int halfLength = Integer.parseInt(System.getProperty("gp.name.halflength", "17"));
 		
 		if (shortName.length() > ((2*halfLength)+3)){
 			int len = shortName.length();

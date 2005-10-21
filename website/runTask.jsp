@@ -28,6 +28,19 @@ response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 
+String agent = request.getHeader("USER-AGENT");
+System.out.println("RT AGENT= " + agent);
+String iFrameWidth=" width='100%'; ";
+
+System.out.println("\n\n============SAFARI= " + agent.indexOf("Safari"));
+
+if (agent.indexOf("Safari") >= 0) {
+	iFrameWidth = " width='250px'; ";
+System.out.println("\n\n============SAFARI= " + agent);
+
+} 
+
+
 String taskName = request.getParameter(GPConstants.NAME);
 if (taskName == null || taskName.length() == 0) {
 %>
@@ -141,7 +154,7 @@ function resetValues() {
 <table cols="2">
 
 <tr><td  valign='top' height='100%'>
-<iframe frameborder="0" scrolling="yes" marginwidth="1" src="getRecentJobs.jsp" style="width: 100%; height: 500px" name="iframe" id="iframeid">
+<iframe frameborder="0" scrolling="yes" marginwidth="1" src="getRecentJobs.jsp" style="style="<%=iFrameWidth%> height: 500px" name="iframe" id="iframeid">
 No &lt;iframes&gt; support  :(
 </iframe>
 
