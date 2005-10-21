@@ -115,7 +115,7 @@ int outFileCount=1;
 				File f = new File(parameterInfo.getValue());
 				String axisName = f.getName();
 				if (f.exists()){
-					out.println("<a href=getInputFile.jsp?file="+StringUtils.htmlEncode(axisName)+" > ");
+					out.println("<a href=\"getInputFile.jsp?file="+StringUtils.htmlEncode(axisName)+  "\" target=\"_blank\" > ");
 				}
 				String name = axisName;						
 				int idx = axisName.lastIndexOf("axis_");
