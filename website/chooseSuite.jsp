@@ -72,8 +72,8 @@ SuiteInfo[] suites = new SuiteInfo[0];
  
 LocalAdminClient adminClient = new LocalAdminClient(userID);
 suites = adminClient.getAllSuites();
-%>
 
+%>
 <html>
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
@@ -101,6 +101,19 @@ function toggleFilter(showing, form){
 
 </script>
 
+
+
+<%
+if (suites.length == 0){
+%>
+There are no suites loaded. To filter by suites you must first <a href='editSuite.jsp' target='#'>create</a> or <a href='suiteCatalog.jsp' target='#'>install</a>
+an existing suite.<p>
+
+<input type='button' name='cancel' value='Close' onClick="window.close()"/>
+
+<% 
+} else { // suites.length != 0
+%>
 
 <form>
 <table border=0 cellspacing=0  width=100%>
@@ -161,7 +174,9 @@ for (int i=0; i < suites.length; i++ ){
 </td></tr>
 </table>
 </form>
-
+<% 
+} // end of we have more than 0 suites
+%>
 
 </body>
 </html>
