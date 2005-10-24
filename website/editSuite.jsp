@@ -86,9 +86,6 @@ function confirmDeleteSupportFiles() {
 <jsp:include page="navbar.jsp"></jsp:include>
 
 
-
-
-LSID= <%=si.getLSID()%>
 <form action="createSuite.jsp" name='edit' method="post" ENCTYPE="multipart/form-data" >
 
 <%// ENCTYPE="multipart/form-data" %>
@@ -99,6 +96,9 @@ LSID= <%=si.getLSID()%>
 <tr>
 <td align="right"><input type='hidden' name='suiteLSID' value="<%=si.getLSID()%>">
 <b>Name:</b></td><td><input type='text' name='suiteName' size=60  maxlength="100" value="<%=si.getName()%>">(*required, no spaces)</td></tr>
+
+<tr><td align="right"><b>LSID:</b></td><td><input type="text" name="LSID" value="<%=si.getLSID()%>" size="100" readonly style="{ border-style: none; }"></tr>
+
 <td align="right"><b>Description:</b></td><td><textArea rows="2" cols="60" name='suiteDescription'><%=si.getDescription()%></textarea> </td></tr>
 <td align="right"><b>Author:</b></td><td><input type='text' name='suiteAuthor' size=80 maxlength="100" value="<%=si.getAuthor()%>">(name, affiliation)</td></tr>
 <td align="right"><b>Owner:</b></td><td><input type='text' name='suiteOwner' size=60 maxlength="100" value="<%=si.getOwner()%>">(email address)</td></tr>
