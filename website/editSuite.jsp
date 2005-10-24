@@ -258,7 +258,15 @@ for (int k=0; k < docs.length; k++ ){
 		idx2 = idx + 1;
 		addNext = counts[idx2];
 		while ( ((col1Size + addNext) <= (col2Size+1)) && (idx2 < numCat)  ) {
-			if (sizeMap.get(new Integer(idx2))  != null){
+			Integer anInt = 	new Integer(idx2);		
+			Object anIdx = null;
+			try {
+				anIdx = sizeMap.get(anInt);
+			} catch (ArrayIndexOutOfBoundsException e){
+				System.out.println("ERROR\n\n" + anInt + "\n--" + anIdx);
+			}
+
+			if ( anIdx != null){
 				index = new Integer(idx2);
 				row1.add(index);
 				col1Size += addNext;
@@ -268,8 +276,10 @@ for (int k=0; k < docs.length; k++ ){
 			while ((sizeMap.get(new Integer(idx2))  == null) && (idx2 < numCat)){
 				idx2++;
 			}
-			addNext = counts[idx2];
-
+			
+			if (idx2 < counts.length)
+				addNext = counts[idx2];
+			
 		} // end of row next starting index is lowest value left in the keyset of sizeMap
 		
 		int min = numCat;
