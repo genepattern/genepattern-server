@@ -26,7 +26,7 @@
 <% } %>
 
 <%	if (authorizationManager.isAllowed("taskCatalog.jsp", username)){ %>
-&nbsp;&nbsp;&nbsp;<a href="taskCatalog.jsp">install/update</a><br>
+&nbsp;&nbsp;&nbsp;<a href="taskCatalog.jsp">install/update tasks & </a><br>
 <% } %>
 <%	if (authorizationManager.isAllowed("deleteTask.jsp", username)){ %>
 &nbsp;&nbsp;&nbsp;<a href="deleteTask.jsp">delete</a><p>
@@ -50,10 +50,10 @@
 <p>
 <font size='-1'><b>Documentation</b></font><br>
 &nbsp;&nbsp;&nbsp;<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/" target="_new" >User's Manual/Tutorial</a><br>
-&nbsp;&nbsp;&nbsp;<a href="http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/" >Release notes </a><br>
-&nbsp;&nbsp;&nbsp;<a href="http://www.broad.mit.edu/cancer/software/genepattern/faq/">FAQ</a><br>
-&nbsp;&nbsp;&nbsp;<a href="http://www.broad.mit.edu/cancer/software/genepattern/datasets/" >Public datasets</a><br>
-&nbsp;&nbsp;&nbsp;<a href="getTaskDoc.jsp" >Task documentation</a><br>
+&nbsp;&nbsp;&nbsp;<a href="http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/" target="_new">Release notes </a><br>
+&nbsp;&nbsp;&nbsp;<a href="http://www.broad.mit.edu/cancer/software/genepattern/faq/" target="_new">FAQ</a><br>
+&nbsp;&nbsp;&nbsp;<a href="http://www.broad.mit.edu/cancer/software/genepattern/datasets/" target="_new">Public datasets</a><br>
+&nbsp;&nbsp;&nbsp;<a href="getTaskDoc.jsp" target="_new">Task documentation</a><br>
 &nbsp;&nbsp;&nbsp;<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_fileformats.html" target="_new" >Common file formats</a>
 <p>
 
