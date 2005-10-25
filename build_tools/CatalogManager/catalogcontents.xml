@@ -923,5 +923,12 @@
 </cvs>
 <copy file="NMFConsensus.zip" tofile="catalogregen/NMFConsensus.3.zip" />
 
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00068=1 ProteoArray.zip"/>
+	</commandline>
+</cvs>
+<copy file="ProteoArray.zip" tofile="catalogregen/ProteoArray.1.zip" />
+
 </target>
 </project>
