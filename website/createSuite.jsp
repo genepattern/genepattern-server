@@ -24,6 +24,8 @@
 		 java.util.StringTokenizer,
 		 java.util.TreeSet,
 		 java.util.List,
+		 java.util.Date,
+		 java.text.SimpleDateFormat,
 		 java.util.ArrayList,
 		 org.apache.commons.fileupload.DiskFileUpload,
 		 org.apache.commons.fileupload.FileItem,
@@ -93,7 +95,22 @@
 	String author = (String)requestParameters.get("suiteAuthor");
 	String owner = (String)requestParameters.get("suiteOwner");
 
+	if (name == null) {
+		Date d = new Date();
+		SimpleDateFormat df = new SimpleDateFormat("EEE_MMM_d_yyyy");
+		String dd = df.format(d);
+		name = userID + "_suite_" + dd;
+	} else if (name.trim().length() == 0){
+		Date d = new Date();
+		SimpleDateFormat df = new SimpleDateFormat("EEE_MMM_d_yyyy");
+		String dd = df.format(d);
+		name = userID + "_suite_" + dd;
+	}
+
+
+
 	ArrayList LSIDs = (ArrayList)requestParameters.get("LSID");
+	if (LSIDs == null) LSIDs = new ArrayList();
 
 	ArrayList lsidsWithVersions = new ArrayList();
 	// loop through the lsids and get the right version
@@ -108,8 +125,7 @@
 	}
 
 	try {
-
-
+System.out.println("suite name is " + name);
 		taskInt.modifySuite(accessId, lsid, name, description, author, owner, lsidsWithVersions, 	docFiles);
 	} catch (Throwable t){
 		t.printStackTrace();
