@@ -34,6 +34,7 @@ public class RunVisualizerApplet extends Applet {
 			for (int i = 0; i < wellKnownNames.length; i++) {
 				setParameter(wellKnownNames[i], getParameter(wellKnownNames[i]));
 			}
+			setParameter(RunVisualizerConstants.JAVA_FLAGS,getParameter(RunVisualizerConstants.JAVA_FLAGS));
 			StringTokenizer stParameterNames = new StringTokenizer(
 					getParameter(RunVisualizerConstants.PARAM_NAMES), ", ");
 			while (stParameterNames.hasMoreTokens()) {
@@ -44,6 +45,8 @@ public class RunVisualizerApplet extends Applet {
 
 			setSupportFileNames(getParameter(RunVisualizerConstants.SUPPORT_FILE_NAMES));
 			setSupportFileDates(getParameter(RunVisualizerConstants.SUPPORT_FILE_DATES));
+			
+
 			if (getParameter(RunVisualizerConstants.NO_RUN) == null) {
 				run();
 			} else {
@@ -101,6 +104,8 @@ public class RunVisualizerApplet extends Applet {
 	public void run() throws Exception {
 		validateInputs();
 		showStatus("starting " + params.get(RunVisualizerConstants.NAME));
+
+	showStatus("JAVA_FLAGS=" + params.get("java_flags"));
 		RunVisualizer visualizer = new RunVisualizer(params, source,
 				supportFileNames, supportFileDates);
 		visualizer.run();

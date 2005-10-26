@@ -96,7 +96,10 @@ public class RunVisualizer {
 				+ (System.getProperty("os.name").startsWith("Windows") ? ".exe"
 						: "");
 		params.put(JAVA, java);
-		params.put(JAVA_FLAGS, "");
+		String javaFlags = (String)params.get(JAVA_FLAGS);
+		if (javaFlags == null) javaFlags = "";
+
+		params.put(JAVA_FLAGS, javaFlags);
 		params.put("GENEPATTERN_PORT", "" + source.getPort());
 
 		// check OS and CPU restrictions of TaskInfoAttributes against this
