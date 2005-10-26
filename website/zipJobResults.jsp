@@ -108,6 +108,11 @@ if (isDelete || !isDownload) {
    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
    <script language="javascript">
 
+
+	function showJob(job) {
+	window.open('showJob.jsp?jobId=' + job, 'Job ' + job,'toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=240')
+	}
+
 	function checkAll(bChecked) {
 		for (f = 0; f < document.forms.length; f++) {
 			var frm = document.forms[f];
@@ -307,8 +312,8 @@ for(int i = 0; i < jobs.length; i++) {
    boolean myJob = userID.equals(job.getUserId());
 
    out.print("<tr><td align=\"right\"><a href=\"getJobResults.jsp?jobID=" + job.getJobNumber() + "\">" + job.getJobNumber() + "</a>");
-   
-   out.print("<td><a href=\"addTask.jsp?view=1&name=" + job.getTaskLSID() + "\">" + job.getTaskName() + "</a>");
+     
+   out.println("<td><span onClick='showJob(" + job.getJobNumber() + ")'>" + job.getTaskName() + "&nbsp;<img src='skin/info_obj.gif'>");
    
    Date submitted = job.getDateSubmitted();
    DateFormat formatter = submitted.after(midnight.getTime()) ? shortDateFormat : dateFormat;
