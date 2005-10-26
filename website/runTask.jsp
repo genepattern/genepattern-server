@@ -29,15 +29,11 @@ response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 
 String agent = request.getHeader("USER-AGENT");
-System.out.println("RT AGENT= " + agent);
-String iFrameWidth=" width='100%'; ";
 
-System.out.println("\n\n============SAFARI= " + agent.indexOf("Safari"));
+String iFrameWidth="width=\"100%\"";
 
 if (agent.indexOf("Safari") >= 0) {
-	iFrameWidth = " width='250px'; ";
-System.out.println("\n\n============SAFARI= " + agent);
-
+	iFrameWidth = "width=\"250\"";
 } 
 
 
@@ -154,7 +150,7 @@ function resetValues() {
 <table cols="2">
 
 <tr><td  valign='top' height='100%'>
-<iframe frameborder="0" scrolling="yes" marginwidth="1" src="getRecentJobs.jsp" style="style="<%=iFrameWidth%> height: 500px" name="iframe" id="iframeid">
+<iframe frameborder="0" scrolling="yes" marginwidth="1" src="getRecentJobs.jsp" <%=iFrameWidth%> height="500" name="iframe" id="iframeid">
 No &lt;iframes&gt; support  :(
 </iframe>
 
