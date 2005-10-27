@@ -363,10 +363,10 @@ public class AdminHSQLDAO implements AdminDAO {
 		}
 		return results;
 	}
-
+	
 	public TaskInfo[] getLatestTasks(String username)
 			throws AdminDAOSysException {
-		String sql = "SELECT * FROM task_master, (SELECT lsid_no_version AS no_version, MAX(lsid_version) AS max_version FROM lsids, task_master WHERE task_master.lsid=lsids.lsid AND (user_id='"
+		String sql = "SELECT * FROM task_master, (SELECT lsid_no_version AS no_version, MAX(CONVERT(lsid_version, INT)) AS max_version FROM lsids, task_master WHERE task_master.lsid=lsids.lsid AND (user_id='"
 				+ username
 				+ "' OR access_id="
 				+ GPConstants.ACCESS_PUBLIC
