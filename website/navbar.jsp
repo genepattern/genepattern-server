@@ -173,7 +173,7 @@ function jumpTo(btn) {
 		}
 	} else if (btn.value == VIEW) {
 		if (task.selectedIndex != 0) {
-			window.location = "addTask.jsp?<%= GPConstants.NAME %>=" + task.options[task.selectedIndex].value + "&view=1";
+			window.location = "viewTask.jsp?<%= GPConstants.NAME %>=" + task.options[task.selectedIndex].value + "&view=1";
 		} else if (pipeline.selectedIndex != 0) {
 			window.location = "viewPipeline.jsp?<%= GPConstants.NAME %>=" + pipeline.options[pipeline.selectedIndex].value;
 		}
