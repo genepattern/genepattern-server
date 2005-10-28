@@ -62,7 +62,7 @@ public class TestTaskIntegrator extends TestWebService {
       File[] files = null;
       String description = "desc";
       ParameterInfo[] parameterInfoArray = null;
-      String assignedLSID = taskIntegratorProxy.modifyTask(GPConstants.ACCESS_PUBLIC, "test", description, parameterInfoArray, createTaskAttributes(), files);
+      String assignedLSID = taskIntegratorProxy.modifyTask(GPConstants.ACCESS_PUBLIC, "test", description, parameterInfoArray, createTaskAttributes(), files, null);
       TaskInfo task = adminProxy.getTask(assignedLSID);
       assertTrue(task != null);
       assertTrue(task.getTaskInfoAttributes().get("privacy").equals("public"));
@@ -75,11 +75,11 @@ public class TestTaskIntegrator extends TestWebService {
       deleteAllTasks();
       File[] files = null;
       ParameterInfo[] parameterInfoArray = null;
-      String lsid1 = taskIntegratorProxy.modifyTask(GPConstants.ACCESS_PUBLIC, "test", "desc", parameterInfoArray, createTaskAttributes(), files);
+      String lsid1 = taskIntegratorProxy.modifyTask(GPConstants.ACCESS_PUBLIC, "test", "desc", parameterInfoArray, createTaskAttributes(), files, null);
       HashMap map = new HashMap();
       map.put("language", "Java");
       map.put("LSID", lsid1);
-      String lsid2 = taskIntegratorProxy.modifyTask(GPConstants.ACCESS_PUBLIC, "test", "desc", parameterInfoArray, map, files);
+      String lsid2 = taskIntegratorProxy.modifyTask(GPConstants.ACCESS_PUBLIC, "test", "desc", parameterInfoArray, map, files, null);
       TaskInfo task = adminProxy.getTask(lsid2);
       assertTrue(task != null);
       assertTrue(task.getTaskInfoAttributes().get("language").equals("Java"));
