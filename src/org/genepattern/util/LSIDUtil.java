@@ -120,14 +120,11 @@ public class LSIDUtil implements IGPConstants {
 	}
 
 	public static  boolean isSuiteLSID(String lsid){
-		System.out.println("Checking : " + lsid + " : for : " + SUITE_NAMESPACE_INCLUDE);
-		
 		
 
 		try {
 			LSID anLsid = new LSID(lsid);
 			String nom = anLsid.getNamespace();
-System.out.println("nom="+nom);
 			return isSuiteLSID(anLsid);
 		} catch (Exception e){
 			e.printStackTrace();
