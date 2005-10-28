@@ -118,6 +118,15 @@ public class AdminService implements IAdminService {
 			throw new WebServiceException(e);
 		}
 	}
+	
+	public TaskInfo[] getLatestTasksByName() throws WebServiceException {
+		Thread.yield();
+		try {
+			return adminDAO.getLatestTasksByName(getUserName());
+		} catch (AdminDAOSysException e) {
+			throw new WebServiceException(e);
+		}
+	}
 
 	public Map getSuiteLsidToVersionsMap() throws WebServiceException {
 		Map suiteLsid2VersionsMap = new HashMap();

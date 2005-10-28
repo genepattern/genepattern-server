@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -340,6 +341,36 @@ public class AdminHSQLDAO implements AdminDAO {
 			}
 		}
 		return latestTasks;
+	}
+
+	public TaskInfo[] getLatestTasksByName(String username)
+			throws AdminDAOSysException {
+		TaskInfo[] tasks = getLatestTasks(username);
+		Map map = new LinkedHashMap();
+		for (int i = 0; i < tasks.length; i++) {
+			TaskInfo t = (TaskInfo) map.get(tasks[i].getName());
+			if (t != null) {
+
+				try {
+					LSID existingLsid = new LSID((String) t
+							.getTaskInfoAttributes().get(GPConstants.LSID));
+
+					LSID currentLSID = new LSID((String) tasks[i]
+							.getTaskInfoAttributes().get(GPConstants.LSID));
+					LSID closer = LSIDManager.getInstance().getNearerLSID(
+							existingLsid, currentLSID);
+					if (closer == currentLSID) {
+						map.put(tasks[i].getName(), tasks[i]);
+					}
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				}
+
+			} else {
+				map.put(tasks[i].getName(), tasks[i]);
+			}
+		}
+		return (TaskInfo[]) map.values().toArray(new TaskInfo[0]);
 	}
 
 	public TaskInfo[] getLatestTasks(String username)
