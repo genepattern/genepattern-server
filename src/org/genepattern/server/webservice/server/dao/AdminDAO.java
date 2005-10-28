@@ -81,7 +81,7 @@ public interface AdminDAO {
 	/**
 	 * Gets the latest tasks for the given user. This differs from
 	 * getLatestTasksByName in that the returned array can contain more than
-	 * once task with the same name if those tasks are from different
+	 * one task with the same name if those tasks are from different
 	 * authorities.
 	 * 
 	 * @param username
@@ -93,20 +93,6 @@ public interface AdminDAO {
 	public TaskInfo[] getLatestTasks(String username)
 			throws AdminDAOSysException;
 
-	/**
-	 * Gets the latest tasks for each task name. For example, if there are
-	 * multiple tasks named PreprocessDataset from different authorities, only
-	 * the latest version from the nearest authority for PreprocessDataset is
-	 * returned.
-	 * 
-	 * @param username
-	 *            The username
-	 * @return The latest tasks by name
-	 * @exception AdminDAOSysException
-	 *                If an error occurs
-	 */
-	public TaskInfo[] getLatestTasksByName(String username)
-			throws AdminDAOSysException;
 
 	/**
 	 * Gets task from a task id
