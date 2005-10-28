@@ -96,7 +96,7 @@ try {
 				String fieldName = attachedFile.getFieldName();
 				String fullName = attachedFile.getFilePathName();
 				if (DEBUG) System.out.println("makePipeline: " + fieldName + " -> " + fullName);
-				if (fullName.startsWith("http:") || value.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
+				if (fullName.startsWith("http:") || fullName.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
 				// don't bother trying to save a file that is a URL, retrieve it at execution time instead
 
 					htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
