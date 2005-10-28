@@ -21,7 +21,7 @@
 		 org.genepattern.webservice.SuiteInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.server.util.AccessManager,
-		 org.genepattern.server.util.AuthorizationManager,
+		 org.genepattern.server.util.AuthorizationManagerFactoryImpl,
 		 org.genepattern.server.util.IAuthorizationManager,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.util.GPConstants,
@@ -89,7 +89,7 @@ for (Iterator itTasks = latestTmTasks.iterator(); itTasks.hasNext(); ) {
 }
 
 
-AuthorizationManager authManager = new AuthorizationManager();
+IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
 
 
 %>

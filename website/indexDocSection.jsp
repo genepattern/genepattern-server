@@ -1,9 +1,10 @@
 <%@ page import="
 		 java.net.URLEncoder,
-		 org.genepattern.server.util.AuthorizationManager" %>
+		 org.genepattern.server.util.AuthorizationManagerFactoryImpl,
+		 org.genepattern.server.util.IAuthorizationManager" %>
 <%
 	String username= (String)request.getAttribute("userID"); // get userID but don't force login if not defined
-	AuthorizationManager authorizationManager = new AuthorizationManager();
+	IAuthorizationManager authorizationManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
 
 
 %>
@@ -26,7 +27,7 @@
 <% } %>
 
 <%	if (authorizationManager.isAllowed("taskCatalog.jsp", username)){ %>
-&nbsp;&nbsp;&nbsp;<a href="taskCatalog.jsp">install/update tasks & </a><br>
+&nbsp;&nbsp;&nbsp;<a href="taskCatalog.jsp">install/update tasks</a><br>
 <% } %>
 <%	if (authorizationManager.isAllowed("deleteTask.jsp", username)){ %>
 &nbsp;&nbsp;&nbsp;<a href="deleteTask.jsp">delete</a><p>

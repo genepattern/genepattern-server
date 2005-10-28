@@ -18,7 +18,8 @@
 		 java.io.File,
 		 java.util.Map,
 		 java.util.HashMap,
-		 org.genepattern.server.util.AuthorizationManager,
+		 org.genepattern.server.util.IAuthorizationManager,
+		 org.genepattern.server.util.AuthorizationManagerFactoryImpl,
 		 java.util.*,
 		 java.util.Collection,
 		 java.util.Iterator"
@@ -26,7 +27,8 @@
 <%
 String userID= (String)request.getAttribute("userID"); // will force login if necessary
 if (userID == null) return; // come back after login
-AuthorizationManager authManager = new AuthorizationManager();
+IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
+
 
 
 String pipelineName = request.getParameter("name");

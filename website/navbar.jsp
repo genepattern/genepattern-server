@@ -20,7 +20,8 @@
 		org.genepattern.server.webservice.server.local.LocalAnalysisClient,
  	 	org.genepattern.util.GPConstants,
 		org.genepattern.util.LSIDUtil,
- 	 	org.genepattern.server.util.AuthorizationManager,
+ 	 	org.genepattern.server.util.IAuthorizationManager,
+		org.genepattern.server.util.AuthorizationManagerFactoryImpl,
 		org.genepattern.util.StringUtils,
 		org.genepattern.util.LSID,
 		org.genepattern.server.indexer.Indexer" %>
@@ -126,7 +127,8 @@ try {
 String EMAIL_ADDRESS = "email address";
 String SEARCH = "search";
 
-AuthorizationManager authManager = new AuthorizationManager();
+IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
+
 
 
 %>
