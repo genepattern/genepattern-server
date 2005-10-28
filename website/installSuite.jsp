@@ -10,6 +10,8 @@
 		 org.genepattern.server.webservice.server.TaskIntegrator,
 		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient,
 		 java.io.File,
+ 		 org.genepattern.server.util.AuthorizationManager,
+		 org.genepattern.server.util.IAuthorizationManager,
 		 java.net.MalformedURLException,
 		 java.text.DateFormat,
 		 java.text.NumberFormat,
@@ -39,6 +41,17 @@
 	HashMap suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
 	HashMap hm = (HashMap)suites.get(suiteLsid);
 
+	String username = (String)request.getAttribute("userID");
+	AuthorizationManager authManager = new AuthorizationManager();
+
+	boolean taskInstallAllowed = authManager.checkPermission("createTask", username);
+	boolean suiteInstallAllowed = authManager.checkPermission("createSuite", username);
+
+	if (!suiteInstallAllowed) {
+		response.sendRedirect("notpermitted.jsp?link='installSuite.jsp'");
+		return;
+	}
+
 %>
 
 <html>
@@ -56,7 +69,7 @@ Installing Suite - 	<font size=+1><b><%= hm.get("name") %></b></font>
 Installing Modules:<br>
 
 <%
-		
+
 	String userID= (String)request.getAttribute("userID");
 	TaskIntegrator taskIntegrator = new LocalTaskIntegratorClient( userID , out);
 	InstallTasksCollectionUtils collection = null;
@@ -73,9 +86,8 @@ Installing Modules:<br>
 	// install the suite
 	taskIntegrator.install(suiteLsid);
 
-
+	if (taskInstallAllowed){		
 	// now the modules in it
-
 
 	// build TreeSet of InstallTask to install (sorting on task name)
 	TreeSet tsToInstall = new TreeSet(new Comparator() {
@@ -126,6 +138,11 @@ Installing Modules:<br>
 		if (numSelected == 0) {
 			out.println("No tasks selected for installation!<br>");
 		}
+	} else {
+%>	
+No tasks installed.  You do not have permission to install tasks on this server.
+<%
+	}
 %>
 <br>
 <a href="suiteCatalog.jsp<%= initialInstall ? "?initialInstall=1" : "" %>">install more suites</a><br>
