@@ -23,12 +23,13 @@ import java.util.TreeMap;
 import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.LSIDManager;
+import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
-import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.SuiteInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
-import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * @author Joshua Gould
@@ -366,12 +367,40 @@ public class AdminHSQLDAO implements AdminDAO {
 	
 	public TaskInfo[] getLatestTasks(String username)
 			throws AdminDAOSysException {
-		String sql = "SELECT * FROM task_master, (SELECT lsid_no_version AS no_version, MAX(CONVERT(lsid_version, INT)) AS max_version FROM lsids, task_master WHERE task_master.lsid=lsids.lsid AND (user_id='"
-				+ username
-				+ "' OR access_id="
-				+ GPConstants.ACCESS_PUBLIC
-				+ ") GROUP BY lsid_no_version) WHERE task_master.lsid=CONCAT(CONCAT(no_version, ':'), max_version)";
-		return _getTasks(sql, true);
+		String sql = "SELECT * FROM task_master where (user_id='" + username
+				+ "' OR access_id = " + PUBLIC_ACCESS_ID + ")";
+
+		TaskInfo[] tasks = _getTasks(sql, false);
+		Map latestTasks = new HashMap();
+		try {
+			for (int i = 0; i < tasks.length; i++) {
+				TaskInfo ti = tasks[i];
+				LSID tiLSID = new LSID((String) ti.getTaskInfoAttributes().get(
+						GPConstants.LSID));
+
+				TaskInfo altTi = (TaskInfo) latestTasks.get(tiLSID
+						.toStringNoVersion());
+
+				if (altTi == null) {
+					latestTasks.put(tiLSID.toStringNoVersion(), ti);
+				} else {
+					LSID altLSID = new LSID((String) altTi
+							.getTaskInfoAttributes().get(GPConstants.LSID));
+					if (altLSID.compareTo(tiLSID) > 0) {
+						latestTasks.put(tiLSID.toStringNoVersion(), ti); // it
+						// is
+						// newer
+					} // else it is older so leave it out
+
+				}
+			}
+			TaskInfo[] tasksArray = (TaskInfo[]) latestTasks.entrySet()
+					.toArray(new TaskInfo[0]);
+			Arrays.sort(tasksArray, new TaskNameComparator());
+			return tasksArray;
+		} catch (MalformedURLException mfe) {
+			throw new AdminDAOSysException("A database error occurred.", mfe);
+		}
 	}
 
 	public TaskInfo getTask(int taskId) throws AdminDAOSysException {
@@ -588,6 +617,16 @@ public class AdminHSQLDAO implements AdminDAO {
 					+ dbUsername + ", " + dbPassword);
 			throw se;
 		}
+	}
+	
+	static class TaskNameComparator implements Comparator {
+
+		public int compare(Object o1, Object o2) {
+			TaskInfo t1 = (TaskInfo) o1;
+			TaskInfo t2 = (TaskInfo) o2;
+			return t1.getName().compareToIgnoreCase(t2.getName());
+		}
+
 	}
 
 	static {
