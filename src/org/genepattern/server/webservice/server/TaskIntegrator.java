@@ -208,23 +208,22 @@ public class TaskIntegrator implements ITaskIntegrator {
 			// determine if we are installing a task or a suite
 			boolean isTask = false;
 			boolean isSuite = false;
+			boolean isZipOfZips = false;
 			try {
 				zippedFile = new ZipFile(path);
-				ZipEntry taskManifestEntry = zippedFile
-						.getEntry(GPConstants.MANIFEST_FILENAME);
-				ZipEntry suiteManifestEntry = zippedFile
-						.getEntry(GPConstants.SUITE_MANIFEST_FILENAME);
-				if (taskManifestEntry != null)
-					isTask = true;
-				if (suiteManifestEntry != null)
-					isSuite = true;
+				ZipEntry taskManifestEntry = zippedFile.getEntry(GPConstants.MANIFEST_FILENAME);
+				ZipEntry suiteManifestEntry = zippedFile.getEntry(GPConstants.SUITE_MANIFEST_FILENAME);
+				isZipOfZips = isZipOfZips(url);
+				if (taskManifestEntry != null) isTask = true;
+				if (suiteManifestEntry != null) isSuite = true;
+		
 			} catch (IOException ioe) {
 				throw new WebServiceException("Couldn't open " + path + ": "
 						+ ioe.getMessage());
 			}
-			if (!(isTask || isSuite))
-				throw new WebServiceException(
-						"Couldn't find task or suite manifest in zip file ");
+
+			if (!(isTask || isSuite || isZipOfZips )) throw new WebServiceException("Couldn't find task or suite manifest in zip file ");
+
 
 			if (isSuite) {
 				lsid = tiDao.installSuite(zippedFile);
@@ -753,6 +752,76 @@ public class TaskIntegrator implements ITaskIntegrator {
 		}
 		return dh;
 	}
+
+	protected File getFile(String url) throws WebServiceException{
+		File file = null;
+		java.io.OutputStream os = null;
+		java.io.InputStream is = null;
+		boolean deleteFile = false;
+		try {
+
+			if (url.startsWith("file://")) {
+				String fileStr = url.substring(7, url.length());
+				file = new File(fileStr);
+			} else {
+				deleteFile = true;
+				file = File.createTempFile("gpz", ".zip");
+				os = new java.io.FileOutputStream(file);
+				is = new java.net.URL(url).openStream();
+				byte[] buf = new byte[100000];
+				int i;
+				while ((i = is.read(buf, 0, buf.length)) > 0) {
+					os.write(buf, 0, i);
+
+				}
+			}
+		} catch (java.io.IOException ioe) {
+			throw new WebServiceException(ioe);
+		} finally {
+			if (os != null) {
+				try {
+					os.close();
+				} catch (java.io.IOException x) {
+				}
+			}
+			if (is != null) {
+				try {
+					is.close();
+				} catch (java.io.IOException x) {
+				}
+			}
+
+		}
+		return file;
+	}
+
+	public boolean isZipOfZips(String url) throws WebServiceException {
+		File file = getFile(url);
+		try {
+			return org.genepattern.server.TaskUtil.isZipOfZips(file);
+		} catch (java.io.IOException ioe) {
+			throw new WebServiceException(ioe);
+		} 
+	}
+
+	public boolean isSuiteZip(String url) throws WebServiceException {
+		File file = getFile(url);
+		try {
+			return org.genepattern.server.TaskUtil.isSuiteZip(file);
+		} catch (java.io.IOException ioe) {
+			throw new WebServiceException(ioe);
+		} 
+	}
+
+	public boolean isPipelineZip(String url) throws WebServiceException {
+		File file = getFile(url);
+		try {
+			return org.genepattern.server.TaskUtil.isPipelineZip(file);
+		} catch (java.io.IOException ioe) {
+			throw new WebServiceException(ioe);
+		} 
+	}
+
 
 	public void statusMessage(String message) {
 		System.out.println("statusMessage: " + message);

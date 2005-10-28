@@ -107,16 +107,24 @@ if (requestParameters.get("file1")==null && url == null) { %>
 }
 
 int access_id = (request.getParameter(GPConstants.PRIVACY) != null ? GPConstants.ACCESS_PRIVATE : GPConstants.ACCESS_PUBLIC);
-boolean askedRecursive = (request.getParameter("askedRecursive") != null);
-boolean doRecursive = (request.getParameter("inclDependents") != null);
+boolean askedRecursive = (requestParameters.get("askedRecursive") != null);
+boolean doRecursive = (requestParameters.get("inclDependents") != null);
 String fileURL = null;
 
 if (isEncodedPost) {
 	attachedFile = (File)requestParameters.get("file1");
-	attachmentName = attachedFile.getName();
-	taskName = attachmentName;			
-	fileURL = attachedFile.toURI().toURL().toString();
-				
+	if (attachedFile == null) {
+		url = (String)requestParameters.get("url");
+		filename = GenePatternAnalysisTask.downloadTask(url);
+		attachedFile =  new File(filename);
+		taskName = attachmentName;			
+		fileURL = url;
+
+	} else {
+		attachmentName = attachedFile.getName();
+		taskName = attachmentName;			
+		fileURL = attachedFile.toURI().toURL().toString();
+	}				
 } else {
  	if (url != null) {
 		filename = GenePatternAnalysisTask.downloadTask(url);
@@ -131,10 +139,11 @@ if (isEncodedPost) {
 
 try {
 	fullName = attachedFile.toString();
-	
 	try {
-		if (!askedRecursive && taskInstallAllowed &&  taskIntegratorClient.isZipOfZips(fileURL)) {
+		if (!askedRecursive ) {
 
+
+			if (taskInstallAllowed &&  taskIntegratorClient.isZipOfZips(fileURL)){
 			// query user to see if they want just the first thing or all contents and then come back in
 
 			Vector vTaskInfos = GenePatternAnalysisTask.getZipOfZipsTaskInfos(attachedFile);
@@ -167,7 +176,7 @@ try {
 <%
 					return;
 
-	
+			}
 		}
 
 		boolean isZipOfZips = taskIntegratorClient.isZipOfZips(fileURL);
@@ -196,7 +205,6 @@ try {
 				} 
 			}
 			lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive);		
-
 
 		} else if (isSuiteZip){
 			if (!suiteInstallAllowed) {
