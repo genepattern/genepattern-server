@@ -105,7 +105,7 @@ try {
 				String fieldName = attachedFile.getFieldName();
 				String fullName = attachedFile.getFilePathName();
 				if (DEBUG) System.out.println("makePipeline: " + fieldName + " -> " + fullName);
-				if (fullName.startsWith("http:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
+				if (fullName.startsWith("http:") || fullName.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
 				// don't bother trying to save a file that is a URL, retrieve it at execution time instead
 					htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
 					continue;
@@ -140,7 +140,7 @@ try {
 	ParameterInfo[] parmInfos = task.getParameterInfoArray();
 
 	request.setAttribute("name", lsid);
-	String server = "http://"+ InetAddress.getLocalHost().getCanonicalHostName() + ":"
+	String server = request.getScheme() + "://"+ InetAddress.getLocalHost().getCanonicalHostName() + ":"
 					+ System.getProperty("GENEPATTERN_PORT");
 
 	ArrayList missingReqParams = new ArrayList();
@@ -156,12 +156,12 @@ try {
 				attrs.put(pinfo.MODE , pinfo.URL_INPUT_MODE);
 				attrs.remove(pinfo.TYPE);
 			} else
-			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
+			if (value.startsWith("http:") || value.startsWith("https:") || value.startsWith("ftp:") || value.startsWith("file:")) {
 				HashMap attrs = pinfo.getAttributes();
 				attrs.put(pinfo.MODE , pinfo.URL_INPUT_MODE);
 				attrs.remove(pinfo.TYPE);
 			} else {
-				value = server + "/gp/getFile.jsp?task=&file="+ value;
+				value = server + "/"+request.getContextPath()+"/getFile.jsp?task=&file="+ value;
 			}
 		} else {
 			value = requestParameters.getParameter(pinfo.getName());
@@ -215,7 +215,7 @@ for (int i=0; i < parmInfos.length; i++){
 		out.println("=");
 		if (pinfo.isInputFile()) {
 			String htmlValue = StringUtils.htmlEncode(pinfo.getValue());		
-			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
+			if (value.startsWith("http:") || value.startsWith("https:") || value.startsWith("ftp:") || value.startsWith("file:")) {
 				out.println("<a href='"+ htmlValue + "'>"+htmlValue +"</a>");
 			} else {
 				out.println("<a href='getFile.jsp?task=&file="+ URLEncoder.encode(tmpDirName +"/" + value)+"'>"+htmlValue +"</a>");

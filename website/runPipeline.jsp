@@ -104,7 +104,7 @@
 
 
 
-	String baseURL = "http://" + request.getServerName() + ":" + serverPort + request.getRequestURI();
+	String baseURL = request.getScheme()+"://" + request.getServerName() + ":" + serverPort + request.getRequestURI();
 	baseURL = baseURL.substring(0, baseURL.lastIndexOf("/")+1);
 	
 try {

@@ -46,7 +46,7 @@
       PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
       model.setLsid((String)tia.get(GPConstants.LSID));
       model.setUserID(userID);
-      String server = "http://" + request.getServerName() + ":" + request.getServerPort();
+      String server = request.getScheme() +"://" + request.getServerName() + ":" + request.getServerPort();
       List pipelineTasks = new ArrayList();
       List jobSubmissions = model.getTasks();
       LocalAdminClient adminClient = new LocalAdminClient(userID);

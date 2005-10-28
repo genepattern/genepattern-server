@@ -402,8 +402,6 @@ if (tia != null) {
 		String key = (String)itDomain.next();
 		domains[i] = new String[] { key, key};
 	}
-	//GPConstants.PARAM_INFO_ATTRIBUTES[DOMAIN_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET] = domains;
-
 	if (tia != null) {
 		lsid = tia.get(GPConstants.LSID);
 	} else {

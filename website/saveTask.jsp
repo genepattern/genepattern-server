@@ -461,7 +461,7 @@ timeMS dateTime loginId taskType moduleName  manifest supportFilesChanges URLToE
 	log.append(sbAttachments);
 	log.append("\" ");
 
-	String baseURL = "http://" + request.getServerName() + ":" + request.getServerPort() + request.getRequestURI();
+	String baseURL = request.getScheme()+"://" + request.getServerName() + ":" + request.getServerPort() + request.getRequestURI();
 	baseURL = baseURL.substring(0, baseURL.lastIndexOf("/")+1);
 	log.append(baseURL + "addTask.jsp?" + GPConstants.NAME + "=" + URLEncoder.encode(lsid, "UTF-8"));
 	log.append(" ");

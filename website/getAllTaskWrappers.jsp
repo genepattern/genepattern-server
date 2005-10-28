@@ -39,7 +39,8 @@ if (language == null) language = "R";
 	TaskInfoAttributes taskInfoAttributes = null;
 	String sLSID = null;
 	LSID lsid = null;
-	String server = "http://" + request.getServerName() + ":" + serverPort;
+
+	String server = request.getScheme() +"://" + request.getServerName() + ":" + serverPort;
 
 HashMap hmTasks = computeDefaultLSIDs(tmTasks);
 

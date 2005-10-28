@@ -273,7 +273,7 @@ Bindings are also available for Java and MATLAB.  To use them, generate a single
 <br>
 You may regenerate this code anytime with the following URL: 
 <a href="taskWrapperGenerator.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %>" target="<%= StringUtils.htmlEncode(name) %>_wrapper">
-<nobr>http://<%= request.getServerName() %>:<%= request.getServerPort() %>/gp/taskWrapperGenerator.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %></nobr></a><br>
+<nobr><%=request.getScheme()%>://<%= request.getServerName() %>:<%= request.getServerPort() %>/<%=request.getContextPath()%>/taskWrapperGenerator.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %></nobr></a><br>
 
 <% 
 File[] docFiles = new LocalTaskIntegratorClient(userID, out).getDocFiles(taskInfo);

@@ -38,7 +38,7 @@
 		 java.io.StringWriter"
 
 	session="false" contentType="text/html" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><%
-
+System.out.println("MAKE_PIPELINE");
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
@@ -72,7 +72,9 @@ try {
 	mySmartUpload.initialize(pageContext);
 	mySmartUpload.upload();
 	requestParameters = mySmartUpload.getRequest();
+System.out.println("A");
 	userID = requestParameters.getParameter(GPConstants.USERID);
+System.out.println("B");
 	String RUN = "run";
 	String CLONE = "clone";
 
@@ -211,7 +213,7 @@ try {
 			String fieldName = attachedFile.getFieldName();
 			String fullName = attachedFile.getFilePathName();
 			if (DEBUG) System.out.println("makePipeline: " + fieldName + " -> " + fullName);
-			if (fullName.startsWith("http:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
+			if (fullName.startsWith("http:") || fullName.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
 				// don't bother trying to save a file that is a URL, retrieve it at execution time instead
 				htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
 				continue;
@@ -425,7 +427,7 @@ try {
 					String fieldName = attachedFile.getFieldName();
 					String fullName = attachedFile.getFilePathName();
 					if (DEBUG) System.out.println("makePipeline: " + fieldName + " -> " + fullName);
-					if (fullName.startsWith("http:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
+					if (fullName.startsWith("http:") || fullName.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
 						// don't bother trying to save a file that is a URL, retrieve it at execution time instead
 						htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
 						continue;

@@ -61,7 +61,7 @@
 
 <font size='-1'><b>Resources</b></font><br>
 
-&nbsp;&nbsp;&nbsp;	<a href="<%= System.getProperty("JavaGEInstallerURL") %>?version=<%= System.getProperty("GenePatternVersion") %>&server=<%= URLEncoder.encode("http://" + request.getServerName() + ":" + request.getServerPort()) %>" class='navbarlinksmall'>Install</a> graphical client<br>
+&nbsp;&nbsp;&nbsp;	<a href="<%= System.getProperty("JavaGEInstallerURL") %>?version=<%= System.getProperty("GenePatternVersion") %>&server=<%= URLEncoder.encode(request.getScheme()+"://" + request.getServerName() + ":" + request.getServerPort()) %>" class='navbarlinksmall'>Install</a> graphical client<br>
 &nbsp;&nbsp;&nbsp;	<a href="mailto:gp-users-join@broad.mit.edu?body=Just send this!" class='navbarlinksmall'>Subscribe to gp-users mailing list</a><br>
 &nbsp;&nbsp;&nbsp;	<a href="mailto:gp-help@broad.mit.edu" class='navbarlinksmall'>Report bugs</a><br>
 &nbsp;&nbsp;&nbsp;	<a href="http://www.broad.mit.edu/cancer/software/genepattern/forum/" class='navbarlinksmall'>User Forum</a>

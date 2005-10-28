@@ -1002,7 +1002,7 @@ function savePipeline(bMustName, cmd) {
 		   var fileChooserValue = document.forms['pipeline']['t' + i + '_' + pi.name];
 		   var shadowValue = document.forms['pipeline']['t' + i + '_shadow' + param].value;
 		   if (shadowValue != '' && fileChooserValue.value != shadowValue && shadowValue.indexOf('http://') != 0
-		       && shadowValue.indexOf('ftp://') != 0 && shadowValue.indexOf('<GenePatternURL>') != 0) {
+		       && shadowValue.indexOf('https://') != 0 && shadowValue.indexOf('ftp://') != 0 && shadowValue.indexOf('<GenePatternURL>') != 0) {
 			lostFiles = lostFiles + (i+1) + '. ' + task.name + ': ' + pi.name + ' (was ' + shadowValue + ')\n';
 			success = false;
 		   }
@@ -1230,7 +1230,7 @@ nextTask:
 		try {
 			PipelineModel model = new PipelineModel();
 			model.setUserID(userID);
-			HTMLPipelineView viewer = new HTMLPipelineView(out, "http://" + request.getServerName() + ":" + request.getServerPort() + "/gp/makePipeline.jsp", request.getHeader("User-Agent"), request.getParameter("name"));
+			HTMLPipelineView viewer = new HTMLPipelineView(out, request.getScheme()+"://" + request.getServerName() + ":" + request.getServerPort() +request.getContextPath()+"/makePipeline.jsp", request.getHeader("User-Agent"), request.getParameter("name"));
 			PipelineController controller = new PipelineController(viewer, model);
 			
 			controller.init();

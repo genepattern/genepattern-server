@@ -102,7 +102,7 @@ try {
 				String fieldName = attachedFile.getFieldName();
 				String fullName = attachedFile.getFilePathName();
 				if (DEBUG) System.out.println("makePipeline: " + fieldName + " -> " + fullName);
-				if (fullName.startsWith("http:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
+				if (fullName.startsWith("http:") || fullName.startsWith("https:")|| fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
 				// don't bother trying to save a file that is a URL, retrieve it at execution time instead
 					htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
 					continue;
@@ -133,7 +133,7 @@ try {
 	ParameterInfo[] parmInfos = task.getParameterInfoArray();
 
 	request.setAttribute("name", lsid);
-	String server = "http://"+ InetAddress.getLocalHost().getCanonicalHostName() + ":"
+	String server = request.getScheme()+"://"+ InetAddress.getLocalHost().getCanonicalHostName() + ":"
 					+ System.getProperty("GENEPATTERN_PORT");
  	if (parmInfos == null){
  		parmInfos = new ParameterInfo[0];
@@ -145,10 +145,10 @@ try {
 		String value;	
 		if (pinfo.isInputFile()){
 			value = (String)htFilenames.get(pinfo.getName());
-			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
+			if (value.startsWith("http:") || value.startsWith("https:")|| value.startsWith("ftp:") || value.startsWith("file:")) {
 				value = value;
 			} else {
-				value = server + "/gp/getFile.jsp?task=&file="+ value;
+				value = server + "/"+request.getContextPath()+"/getFile.jsp?task=&file="+ value;
 			}
 			HashMap pia = pinfo.getAttributes();
 			pia.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);

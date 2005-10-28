@@ -93,7 +93,7 @@ for (Iterator iter = params.iterator(); iter.hasNext();){
 }
 
 url = (String)requestParameters.get("url");
-if (url != null && (url.equals("http://") || url.length() == 0)) url = null;
+if (url != null && (url.equals("http://") || (url.length() == 0) )) url = null;
 
 
 if (requestParameters.get("file1")==null && url == null) { %>

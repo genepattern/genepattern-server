@@ -50,11 +50,11 @@ if (suiteFilterParam  != null){
 	while (strtok.hasMoreTokens()){
 		String suiteId = strtok.nextToken();
 		if (suiteId.endsWith("'")) suiteId = suiteId.substring(0, suiteId.length()-1); 
-		System.out.println("\t Nt =  " + suiteId +"  " + System.currentTimeMillis());
+		//System.out.println("\t Nt =  " + suiteId +"  " + System.currentTimeMillis());
 		suiteFilterAttr.add(suiteId);
 	}	
 	request.getSession().setAttribute("suiteSelection",suiteFilterAttr );
-	System.out.println("\n SS =  " + suiteFilterParam);
+	//System.out.println("\n SS =  " + suiteFilterParam);
 
 }
 
@@ -68,7 +68,7 @@ try {
 	if (suiteFilterAttr != null) {
 		if (suiteFilterAttr.contains("all")){
 			allTasks = true;	
-			System.out.println("\tall=true");
+		//	System.out.println("\tall=true");
 		} else {
 			allTasks = false;
 		}
@@ -175,7 +175,7 @@ function jumpTo(btn) {
 		}
 	} else if (btn.value == VIEW) {
 		if (task.selectedIndex != 0) {
-			window.location = "viewTask.jsp?<%= GPConstants.NAME %>=" + task.options[task.selectedIndex].value + "&view=1";
+			window.location = "addTask.jsp?<%= GPConstants.NAME %>=" + task.options[task.selectedIndex].value + "&view=1";
 		} else if (pipeline.selectedIndex != 0) {
 			window.location = "viewPipeline.jsp?<%= GPConstants.NAME %>=" + pipeline.options[pipeline.selectedIndex].value;
 		}

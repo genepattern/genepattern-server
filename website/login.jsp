@@ -14,7 +14,7 @@ response.setDateHeader("Expires", 0);
 String REFERRER = "referrer";
 String userID = request.getParameter(GPConstants.USERID);
 String referrer = request.getParameter(REFERRER);
-if (referrer == null) referrer = "/gp/index.jsp";
+if (referrer == null) referrer = request.getContextPath()+"/index.jsp";
 
 // handle base64 encoding request from R client
 if (userID != null && userID.length() > 0 && request.getParameter("getBasicAuthentication") != null) {
@@ -36,7 +36,7 @@ try {
 			} else {
 				queryString = "?" + queryString;
 			}
-		String fqAddress = "http://" + fqHostName + ":" + request.getServerPort() + request.getRequestURI() + queryString;
+		String fqAddress = request.getScheme() + "://" + fqHostName + ":" + request.getServerPort() + request.getRequestURI() + queryString;
 
 		response.sendRedirect(fqAddress);
 		return;
@@ -47,12 +47,12 @@ try {
 
 if (userID != null && userID.length() > 0) {
 	userID = "\"" + URLEncoder.encode(GenePatternAnalysisTask.replace(userID, "\"", "\\\""), "utf-8") + "\"";
-	addUserIDCookies(response, userID);
+	addUserIDCookies(response, request, userID);
 	//request.getRequestDispatcher(referrer).forward(request, response);
 	response.sendRedirect(referrer);
 	return;
 } else {
-	addUserIDCookies(response, "");
+	addUserIDCookies(response, request, "");
 }
 // set request attribute to indicate to getUserID (in navbar) that user has signed out as of now,
 // even though the request has a cookie indicating the user [was] still signed in.
@@ -85,10 +85,10 @@ function sf(){document.loginForm.userid.focus();}
 <jsp:include page="footer.jsp"></jsp:include>
 </body>
 </html>
-<%! void addUserIDCookies(HttpServletResponse response, String userID) {
+<%! void addUserIDCookies(HttpServletResponse response, HttpServletRequest request, String userID) {
 	// no explicit domain
 	Cookie cookie4 = new Cookie(GPConstants.USERID, userID);
-	cookie4.setPath("/gp");
+	cookie4.setPath(request.getContextPath());
 	cookie4.setMaxAge(Integer.MAX_VALUE);
 	response.addCookie(cookie4);
 }
