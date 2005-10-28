@@ -3,6 +3,7 @@
 <userGroups>
 
 <group name="genepatternAdministrators">
+	<user name="*"/>
 	<user name="admin"/>
 </group>
 
