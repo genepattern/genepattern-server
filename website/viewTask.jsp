@@ -840,8 +840,10 @@ if (taskName != null) {
 		<input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button">
 <%	} else { %>
 		<input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
-		<input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
-<% 	} 
+		<% if (authManager.isAllowed("addTask.jsp", userID)) { %>
+  <input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
+<%		}
+ 	} 
   }
 %>
 </td></tr>
