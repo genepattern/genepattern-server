@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,8 +56,8 @@ public class AdminHSQLDAO implements AdminDAO {
 		String userId = resultSet.getString("user_id");
 		int accessId = resultSet.getInt("access_id");
 		TaskInfo task = new TaskInfo(taskID, taskName, description,
-				parameter_info, TaskInfoAttributes
-						.decode(taskInfoAttributes), userId, accessId);
+				parameter_info, TaskInfoAttributes.decode(taskInfoAttributes),
+				userId, accessId);
 		return task;
 	}
 
@@ -73,31 +74,30 @@ public class AdminHSQLDAO implements AdminDAO {
 
 		ArrayList docs = new ArrayList();
 		try {
-			String suiteDirStr = DirectoryManager.getSuiteLibDir(name, lsid,owner);
+			String suiteDirStr = DirectoryManager.getSuiteLibDir(name, lsid,
+					owner);
 			File suiteDir = new File(suiteDirStr);
-		
-			if (suiteDir.exists()){
+
+			if (suiteDir.exists()) {
 				File docFiles[] = suiteDir.listFiles();
-				for (int i=0; i < docFiles.length; i++){
+				for (int i = 0; i < docFiles.length; i++) {
 					File f = docFiles[i];
-					docs.add(f.getName());				
+					docs.add(f.getName());
 				}
 			}
-		} catch (Exception e){
+		} catch (Exception e) {
 			// swallow & no docs
 			e.printStackTrace();
 		}
 
-
-
 		ArrayList mods = getSuiteModules(lsid);
 
-		SuiteInfo suite = new SuiteInfo(lsid, name, description, owner, author, mods, access_id, docs);
+		SuiteInfo suite = new SuiteInfo(lsid, name, description, owner, author,
+				mods, access_id, docs);
 
 		return suite;
 
 	}
-
 
 	protected void close(ResultSet rs, Statement st, Connection c) {
 		if (rs != null) {
@@ -178,130 +178,130 @@ public class AdminHSQLDAO implements AdminDAO {
 	}
 
 	// FIXME see doc for AdminDAO.getTaskId
-	private ResultSet _getTask(String lsidOrTaskName, String username,
-			Connection c, Statement st) throws SQLException {
+	private TaskInfo _getTask(String lsidOrTaskName, String username)
+			throws AdminDAOSysException {
 		if (lsidOrTaskName == null || lsidOrTaskName.trim().equals("")) {
 			return null;
 		}
 		ResultSet rs = null;
 		String sql = null;
+		Connection c = null;
+		Statement st = null;
 		try {
-			LSID lsid = new LSID(lsidOrTaskName);
-			String version = lsid.getVersion();
-			if (version != null && !version.equals("")) {
+			c = getConnection();
+			st = c.createStatement();
+			try {
+				LSID lsid = new LSID(lsidOrTaskName);
+				String version = lsid.getVersion();
+				if (version != null && !version.equals("")) {
+					if (username != null) {
+						sql = "SELECT * FROM task_Master WHERE lsid='"
+								+ lsidOrTaskName + "' AND (user_id='"
+								+ username + "' OR access_id="
+								+ GPConstants.ACCESS_PUBLIC + ")";
+					} else {
+						sql = "SELECT * FROM task_Master WHERE lsid='"
+								+ lsidOrTaskName + "'";
+					}
+
+				} else { // lsid with no version
+					if (username != null) {
+						sql = "SELECT * FROM task_master WHERE LSID LIKE '"
+								+ lsidOrTaskName + "%' AND (user_id='"
+								+ username + "' OR access_id="
+								+ GPConstants.ACCESS_PUBLIC + ")";
+					} else {
+						sql = "SELECT * FROM task_master WHERE LSID LIKE '"
+								+ lsidOrTaskName + "%'";
+					}
+				}
+				rs = st.executeQuery(sql);
+				TaskInfo latestTask = null;
+				LSID latestLSID = null;
+				if (rs.next()) {
+					latestTask = taskInfoFromResultSet(rs);
+					latestLSID = new LSID((String) latestTask
+							.getTaskInfoAttributes().get(GPConstants.LSID));
+				}
+				while (rs.next()) {
+					LSID l = new LSID(rs.getString("LSID"));
+					if (l.compareTo(latestLSID) < 0) {
+						latestTask = taskInfoFromResultSet(rs);
+						latestLSID = l;
+					}
+				}
+				return latestTask;
+
+			} catch (java.net.MalformedURLException e) {
+				// no lsid specified, find the 'best' match
 				if (username != null) {
-					sql = "SELECT * FROM task_Master WHERE lsid='"
+					sql = "SELECT * FROM task_master WHERE task_name='"
 							+ lsidOrTaskName + "' AND (user_id='" + username
 							+ "' OR access_id=" + GPConstants.ACCESS_PUBLIC
 							+ ")";
 				} else {
-					sql = "SELECT * FROM task_Master WHERE lsid='"
+					sql = "SELECT * FROM task_master WHERE task_name='"
 							+ lsidOrTaskName + "'";
 				}
 
-			} else {
-				if (username != null) {
-					sql = "SELECT * FROM task_master, (SELECT MAX(lsid_version) AS max_version, lsid_no_version FROM lsids, task_master WHERE lsids.lsid=task_master.lsid AND lsid_no_version='"
-							+ lsidOrTaskName
-							+ "' AND (user_id='"
-							+ username
-							+ "' OR access_id="
-							+ GPConstants.ACCESS_PUBLIC
-							+ ") GROUP BY lsid_no_version) WHERE task_master.lsid=CONCAT(CONCAT(lsid_no_version, ':'), max_version)";
-				} else {
-					sql = "SELECT * FROM task_master, (SELECT MAX(lsid_version) AS max_version, lsid_no_version FROM lsids, task_master WHERE lsids.lsid=task_master.lsid AND lsid_no_version='"
-							+ lsidOrTaskName
-							+ "' GROUP BY lsid_no_version) WHERE task_master.lsid=CONCAT(CONCAT(lsid_no_version, ':'), max_version)";
+				rs = st.executeQuery(sql);
+				List tasksWithGivenName = new ArrayList();
+				while (rs.next()) {
+					tasksWithGivenName.add(taskInfoFromResultSet(rs));
 				}
-			}
-
-			rs = st.executeQuery(sql);
-			if (rs.next()) {
-				return rs;
-			}
-			return null;
-		} catch (java.net.MalformedURLException e) {
-			// find the 'best' match
-			if (username != null) {
-				sql = "SELECT * FROM task_master, (SELECT lsid_no_version AS no_version, MAX(lsid_version) AS max_version FROM task_master, lsids WHERE task_name='"
-						+ lsidOrTaskName
-						+ "' AND lsids.lsid=task_master.lsid AND (user_id='"
-						+ username
-						+ "' OR access_id="
-						+ GPConstants.ACCESS_PUBLIC
-						+ ") GROUP BY lsid_no_version) WHERE task_master.lsid=CONCAT(CONCAT(no_version, ':'), max_version)";
-			} else {
-				sql = "SELECT * FROM task_master, (SELECT lsid_no_version AS no_version, MAX(lsid_version) AS max_version FROM task_master, lsids WHERE task_name='"
-						+ lsidOrTaskName
-						+ "' AND lsids.lsid=task_master.lsid GROUP BY lsid_no_version) WHERE task_master.lsid=CONCAT(CONCAT(no_version, ':'), max_version)";
-			}
-
-			c = getConnection();
-			st = c.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY);
-			rs = st.executeQuery(sql);
-
-			int index = 1;
-			LSID closestLSID = null;
-			int taskIndex = -1;
-			while (rs.next()) {
+				Collection latestTasks = null;
 				try {
-					LSID lsid = new LSID(rs.getString("lsid"));
-					if (closestLSID == null) {
-						closestLSID = lsid;
-					} else {
-						closestLSID = LSIDManager.getInstance().getNearerLSID(
-								closestLSID, lsid);
-					}
-					if (closestLSID == lsid) {
-						taskIndex = index;
-					}
-				} catch (java.net.MalformedURLException mfe) {
-				}// shouldn't happen
-				index++;
+					latestTasks = getLatestTasks(
+							(TaskInfo[]) tasksWithGivenName
+									.toArray(new TaskInfo[0])).values();
+				} catch (MalformedURLException e1) {
+					throw new AdminDAOSysException("A database error occured.",
+							e1);
+				}
+
+				TaskInfo latestTask = null;
+				LSID closestLSID = null;
+
+				for (Iterator it = latestTasks.iterator(); it.hasNext();) {
+					TaskInfo t = (TaskInfo) it.next();
+					try {
+						LSID lsid = new LSID((String) t.getTaskInfoAttributes()
+								.get(GPConstants.LSID));
+						if (closestLSID == null) {
+							closestLSID = lsid;
+						} else {
+							closestLSID = LSIDManager.getInstance()
+									.getNearerLSID(closestLSID, lsid);
+						}
+						if (closestLSID == lsid) {
+							latestTask = t;
+						}
+					} catch (java.net.MalformedURLException mfe) {
+					}// shouldn't happen
+
+				}
+				return latestTask;
 			}
-			if (taskIndex == -1) {
-				return null;
-			}
-			rs.absolute(taskIndex);
-			return rs;
+		} catch (SQLException sqle) {
+			throw new AdminDAOSysException("A database error occurred.", sqle);
+		} finally {
+			close(rs, st, c);
 		}
 
 	}
 
 	public int getTaskId(String lsidOrTaskName, String username)
 			throws AdminDAOSysException {
-		ResultSet rs = null;
-		Connection c = null;
-		Statement st = null;
-		try {
-			c = getConnection();
-			st = c.createStatement();
-			rs = _getTask(lsidOrTaskName, username, c, st);
-			int returnValue = rs != null ? rs.getInt("task_id") : -1;
-			return returnValue;
-		} catch (SQLException e) {
-			throw new AdminDAOSysException("A database error occurred.", e);
-		} finally {
-			close(rs, st, c);
-		}
+
+		TaskInfo task = _getTask(lsidOrTaskName, username);
+		return task != null ? task.getID() : -1;
+
 	}
 
 	public TaskInfo getTask(String lsidOrTaskName, String username)
 			throws AdminDAOSysException {
-		ResultSet rs = null;
-		Connection c = null;
-		Statement st = null;
-		try {
-			c = getConnection();
-			st = c.createStatement();
-			rs = _getTask(lsidOrTaskName, username, c, st);
-			return rs != null ? taskInfoFromResultSet(rs) : null;
-		} catch (SQLException e) {
-			throw new AdminDAOSysException("A database error occurred.", e);
-		} finally {
-			close(rs, st, c);
-		}
+		return _getTask(lsidOrTaskName, username);
+
 	}
 
 	public TaskInfo[] getAllTasks() throws AdminDAOSysException {
@@ -315,87 +315,46 @@ public class AdminHSQLDAO implements AdminDAO {
 		return _getTasks(sql, true);
 	}
 
-	public TaskInfo[] getLatestTasksByName(String username)
-			throws AdminDAOSysException {
-		Connection c = null;
-		Statement st = null;
-		ResultSet rs = null;
-		Map taskName2TaskInfoMap = new HashMap();
-		try {
-			String sql = "SELECT * FROM task_master,(SELECT lsid_no_version AS no_version, MAX(lsid_version) AS max_version FROM task_master, lsids WHERE task_master.lsid=lsids.lsid AND (user_id='"
-					+ username
-					+ "' OR access_id="
-					+ GPConstants.ACCESS_PUBLIC
-					+ ") GROUP BY lsid_no_version) WHERE task_master.lsid=CONCAT(CONCAT(no_version, ':'), max_version)";
-			c = getConnection();
-			st = c.createStatement();
-			rs = st.executeQuery(sql);
-			while (rs.next()) {
-				TaskInfo currentTask = taskInfoFromResultSet(rs);
-				TaskInfo closestTask = (TaskInfo) taskName2TaskInfoMap
-						.get(currentTask.getName());
-				if (closestTask != null) {
-					try {
-						LSID currentTaskLSID = new LSID((String) currentTask
-								.getTaskInfoAttributes().get(GPConstants.LSID));
-						LSID closestTaskLSID = new LSID((String) closestTask
-								.getTaskInfoAttributes().get(GPConstants.LSID));
-						LSID result = LSIDManager.getInstance().getNearerLSID(
-								currentTaskLSID, closestTaskLSID);
-						closestTask = result == currentTaskLSID ? currentTask
-								: closestTask;
-					} catch (java.net.MalformedURLException mfe) {
-					}
-				} else {
-					closestTask = currentTask;
-				}
-				taskName2TaskInfoMap.put(closestTask.getName(), closestTask);
+	private static Map getLatestTasks(TaskInfo[] tasks)
+			throws MalformedURLException {
+		Map latestTasks = new HashMap();
+		for (int i = 0; i < tasks.length; i++) {
+			TaskInfo ti = tasks[i];
+			LSID tiLSID = new LSID((String) ti.getTaskInfoAttributes().get(
+					GPConstants.LSID));
+
+			TaskInfo altTi = (TaskInfo) latestTasks.get(tiLSID
+					.toStringNoVersion());
+
+			if (altTi == null) {
+				latestTasks.put(tiLSID.toStringNoVersion(), ti);
+			} else {
+				LSID altLSID = new LSID((String) altTi.getTaskInfoAttributes()
+						.get(GPConstants.LSID));
+				if (altLSID.compareTo(tiLSID) > 0) {
+					latestTasks.put(tiLSID.toStringNoVersion(), ti); // it
+					// is
+					// newer
+				} // else it is older so leave it out
+
 			}
-		} catch (SQLException e) {
-			throw new AdminDAOSysException("A database error occurred.", e);
-		} finally {
-			close(rs, st, c);
 		}
-		TaskInfo[] results = new TaskInfo[taskName2TaskInfoMap.size()];
-		int index = 0;
-		for (Iterator keys = taskName2TaskInfoMap.keySet().iterator(); keys
-				.hasNext();) {
-			results[index++] = (TaskInfo) taskName2TaskInfoMap.get(keys.next());
-		}
-		return results;
+		return latestTasks;
 	}
-	
+
 	public TaskInfo[] getLatestTasks(String username)
 			throws AdminDAOSysException {
 		String sql = "SELECT * FROM task_master where (user_id='" + username
 				+ "' OR access_id = " + PUBLIC_ACCESS_ID + ")";
 
 		TaskInfo[] tasks = _getTasks(sql, false);
-		Map latestTasks = new HashMap();
+		if (tasks == null) {
+			return new TaskInfo[0];
+		}
 		try {
-			for (int i = 0; i < tasks.length; i++) {
-				TaskInfo ti = tasks[i];
-				LSID tiLSID = new LSID((String) ti.getTaskInfoAttributes().get(
-						GPConstants.LSID));
-
-				TaskInfo altTi = (TaskInfo) latestTasks.get(tiLSID
-						.toStringNoVersion());
-
-				if (altTi == null) {
-					latestTasks.put(tiLSID.toStringNoVersion(), ti);
-				} else {
-					LSID altLSID = new LSID((String) altTi
-							.getTaskInfoAttributes().get(GPConstants.LSID));
-					if (altLSID.compareTo(tiLSID) > 0) {
-						latestTasks.put(tiLSID.toStringNoVersion(), ti); // it
-						// is
-						// newer
-					} // else it is older so leave it out
-
-				}
-			}
-			TaskInfo[] tasksArray = (TaskInfo[]) latestTasks.entrySet()
-					.toArray(new TaskInfo[0]);
+			Map lsidToTask = getLatestTasks(tasks);
+			TaskInfo[] tasksArray = (TaskInfo[]) lsidToTask.values().toArray(
+					new TaskInfo[0]);
 			Arrays.sort(tasksArray, new TaskNameComparator());
 			return tasksArray;
 		} catch (MalformedURLException mfe) {
@@ -424,7 +383,8 @@ public class AdminHSQLDAO implements AdminDAO {
 		}
 	}
 
-	protected ArrayList getSuiteModules(String lsid) throws AdminDAOSysException{
+	protected ArrayList getSuiteModules(String lsid)
+			throws AdminDAOSysException {
 		Connection c = null;
 		PreparedStatement st = null;
 		ResultSet rs = null;
@@ -432,12 +392,13 @@ public class AdminHSQLDAO implements AdminDAO {
 
 		try {
 			c = getConnection();
-			st = c.prepareStatement("SELECT * FROM suite_modules where lsid =?");
+			st = c
+					.prepareStatement("SELECT * FROM suite_modules where lsid =?");
 			st.setString(1, lsid);
 			rs = st.executeQuery();
 			while (rs.next()) {
 				String modlsid = rs.getString("module_lsid");
-				moduleLSIDs.add(modlsid);				
+				moduleLSIDs.add(modlsid);
 			}
 		} catch (SQLException e) {
 			throw new AdminDAOSysException("A database error occurred", e);
@@ -447,9 +408,7 @@ public class AdminHSQLDAO implements AdminDAO {
 		return moduleLSIDs;
 	}
 
-
-
-	public SuiteInfo getSuite(String lsid) throws AdminDAOSysException{
+	public SuiteInfo getSuite(String lsid) throws AdminDAOSysException {
 		Connection c = null;
 		PreparedStatement st = null;
 		ResultSet rs = null;
@@ -476,37 +435,40 @@ public class AdminHSQLDAO implements AdminDAO {
 	 * @exception WebServiceException
 	 *                If an error occurs
 	 */
-	public SuiteInfo[] getLatestSuites() throws AdminDAOSysException{
-	try {	
-		SuiteInfo[] allSuites = getAllSuites();
-		TreeMap latestSuites = new TreeMap();		
-		// loop through them placing them into a tree set based on their LSIDs
-		for (int i=0; i < allSuites.length; i++){
-			SuiteInfo si = allSuites[i];
-			LSID siLsid = new LSID(si.getLSID());		
-			
-			SuiteInfo altSi = (SuiteInfo)latestSuites.get(siLsid.toStringNoVersion());
+	public SuiteInfo[] getLatestSuites() throws AdminDAOSysException {
+		try {
+			SuiteInfo[] allSuites = getAllSuites();
+			TreeMap latestSuites = new TreeMap();
+			// loop through them placing them into a tree set based on their
+			// LSIDs
+			for (int i = 0; i < allSuites.length; i++) {
+				SuiteInfo si = allSuites[i];
+				LSID siLsid = new LSID(si.getLSID());
 
+				SuiteInfo altSi = (SuiteInfo) latestSuites.get(siLsid
+						.toStringNoVersion());
 
+				if (altSi == null) {
+					latestSuites.put(siLsid.toStringNoVersion(), si);
+				} else {
+					LSID altLsid = new LSID(altSi.getLSID());
+					if (altLsid.compareTo(siLsid) > 0) {
+						latestSuites.put(siLsid.toStringNoVersion(), si); // it
+						// is
+						// newer
+					} // else it is older so leave it out
 
-			if (altSi == null){
-				latestSuites.put(siLsid.toStringNoVersion(), si);
-			} else {
-				LSID altLsid = new LSID(altSi.getLSID());
-				if (altLsid.compareTo(siLsid) > 0){
-					latestSuites.put(siLsid.toStringNoVersion(), si); // it is newer
-				} // else it is older so leave it out
-
+				}
 			}
-		}
 
-		SuiteInfo[] latest = new SuiteInfo[latestSuites.size()];
-		int i=0; 
-		for (Iterator iter = latestSuites.keySet().iterator(); iter.hasNext(); i++){
-			latest[i] = (SuiteInfo)latestSuites.get(iter.next());
-		}
-		return latest;
-		} catch (Exception mfe){
+			SuiteInfo[] latest = new SuiteInfo[latestSuites.size()];
+			int i = 0;
+			for (Iterator iter = latestSuites.keySet().iterator(); iter
+					.hasNext(); i++) {
+				latest[i] = (SuiteInfo) latestSuites.get(iter.next());
+			}
+			return latest;
+		} catch (Exception mfe) {
 			throw new AdminDAOSysException("A database error occurred", mfe);
 
 		}
@@ -519,7 +481,7 @@ public class AdminHSQLDAO implements AdminDAO {
 	 * @exception WebServiceException
 	 *                If an error occurs
 	 */
-	public SuiteInfo[] getAllSuites() throws AdminDAOSysException{
+	public SuiteInfo[] getAllSuites() throws AdminDAOSysException {
 
 		Connection c = null;
 		PreparedStatement st = null;
@@ -541,7 +503,7 @@ public class AdminHSQLDAO implements AdminDAO {
 			close(rs, st, c);
 		}
 
-		return (SuiteInfo[])suites.toArray(new SuiteInfo[suites.size()]);
+		return (SuiteInfo[]) suites.toArray(new SuiteInfo[suites.size()]);
 	}
 
 	/**
@@ -551,16 +513,18 @@ public class AdminHSQLDAO implements AdminDAO {
 	 * @exception WebServiceException
 	 *                If an error occurs
 	 */
-	public SuiteInfo[] getSuiteMembership(String taskLsid) throws AdminDAOSysException{
+	public SuiteInfo[] getSuiteMembership(String taskLsid)
+			throws AdminDAOSysException {
 		Connection c = null;
 		PreparedStatement st = null;
 
 		ResultSet rs = null;
 		ArrayList suites = new ArrayList();
-		
+
 		try {
 			c = getConnection();
-			st = c.prepareStatement("SELECT lsid FROM suite_modules where module_lsid = ?");
+			st = c
+					.prepareStatement("SELECT lsid FROM suite_modules where module_lsid = ?");
 			st.setString(1, taskLsid);
 			rs = st.executeQuery();
 			while (rs.next()) {
@@ -569,17 +533,14 @@ public class AdminHSQLDAO implements AdminDAO {
 			}
 			close(rs, st, c);
 
-			
 		} catch (SQLException e) {
 			throw new AdminDAOSysException("A database error occurred", e);
 		} finally {
 			close(rs, st, c);
 		}
 
-		return (SuiteInfo[])suites.toArray(new SuiteInfo[suites.size()]);	}
-
-
-
+		return (SuiteInfo[]) suites.toArray(new SuiteInfo[suites.size()]);
+	}
 
 	public Map getSchemaProperties() {
 		Connection c = null;
@@ -618,7 +579,7 @@ public class AdminHSQLDAO implements AdminDAO {
 			throw se;
 		}
 	}
-	
+
 	static class TaskNameComparator implements Comparator {
 
 		public int compare(Object o1, Object o2) {
@@ -632,7 +593,7 @@ public class AdminHSQLDAO implements AdminDAO {
 	static {
 		Properties props = new Properties();
 		String gpPropsFilename = System.getProperty("genepattern.properties");
-		//System.out.println("GPPropsFile="+ gpPropsFilename);
+		// System.out.println("GPPropsFile="+ gpPropsFilename);
 		File gpProps = new File(gpPropsFilename, "genepattern.properties");
 		FileInputStream fis = null;
 		try {
