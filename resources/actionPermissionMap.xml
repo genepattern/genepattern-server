@@ -7,6 +7,9 @@
 	<url link="pipelineDesigner.jsp" permission="createPipeline"/>
 	<url link="adminServer.jsp" permission="administrateServer"/>
 	<url link="sql.jsp" permission="administrateServer"/>
+	<url link="installSuite.jsp" permission="createSuite"/>
+
+
 
 	<url link="TaskIntegrator.modifyTask" permission="createTask"/>
 	<url link="TaskIntegrator.importZipFromURL" permission="createTask"/>
