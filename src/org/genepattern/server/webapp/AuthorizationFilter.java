@@ -34,7 +34,7 @@ import java.lang.reflect.*;
 
 import org.genepattern.util.IGPConstants;
 import org.apache.jasper.servlet.JspServlet;
-import org.genepattern.server.util.IAuthorizationManagerFactory;
+import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
 import org.genepattern.server.util.IAuthorizationManager;
 
 
@@ -55,13 +55,15 @@ public class AuthorizationFilter implements Filter, IGPConstants {
 			String gpprops = filterConfig.getInitParameter("genepattern.properties");
 			System.setProperty("genepattern.properties", gpprops);		
 
-			String className = filterConfig.getInitParameter("org.genepattern.AuthorizationManagerFactory");
-			Class cl = Class.forName(className);
-			Constructor construct = cl.getConstructor(new Class[0]);
-		
-			IAuthorizationManagerFactory factory = (IAuthorizationManagerFactory)construct.newInstance(new Object[0]);
+			authManager  = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
 
-			authManager = factory.getAuthorizationManager();
+//			String className = filterConfig.getInitParameter("org.genepattern.AuthorizationManagerFactory");
+//			Class cl = Class.forName(className);
+//			Constructor construct = cl.getConstructor(new Class[0]);
+//		
+//			IAuthorizationManagerFactory factory = (IAuthorizationManagerFactory)construct.newInstance(new Object[0]);
+//
+//			authManager = factory.getAuthorizationManager();
 
 		} catch (Exception e){
 			throw new ServletException(e);

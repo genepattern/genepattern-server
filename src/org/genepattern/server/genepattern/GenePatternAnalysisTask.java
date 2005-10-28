@@ -43,7 +43,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
-
+import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.IAuthorizationManager;
+		
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -3041,6 +3043,14 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 	public static String installNewTask(String zipFilename, String username,
 			int access_id, boolean recursive, ITaskIntegrator taskIntegrator) throws TaskInstallationException {
 		Vector vProblems = new Vector();
+
+ 		IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
+		if (!authManager.checkPermission("createTask", username)){
+			Vector v = new Vector();
+			v.add("You do not have permisison to create or install tasks on this server");
+			throw new TaskInstallationException(v);
+		}
+
 		int i;
 		ZipFile zipFile = null;
 		InputStream is = null;

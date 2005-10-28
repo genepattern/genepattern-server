@@ -6,6 +6,8 @@
  */
 package org.genepattern.server.util;
 
+import java.lang.reflect.*;
+
 
 
 
@@ -18,8 +20,30 @@ public class AuthorizationManagerFactoryImpl implements IAuthorizationManagerFac
 	  
 	public AuthorizationManagerFactoryImpl(){}
 
-	public IAuthorizationManager getAuthorizationManager(){
+	public static IAuthorizationManager getDefaultAuthorizationManager(){
 		return new AuthorizationManager();
+	}
+
+
+	public IAuthorizationManager getAuthorizationManager(){
+
+		String className = System.getProperty("org.genepattern.AuthorizationManagerFactory");
+
+		if (className == null) return getDefaultAuthorizationManager();
+
+		try {
+			Class cl = Class.forName(className);
+			Constructor construct = cl.getConstructor(new Class[0]);
+		
+			IAuthorizationManagerFactory factory = (IAuthorizationManagerFactory)construct.newInstance(new Object[0]);
+	
+			return factory.getAuthorizationManager();
+		} catch (Exception e) {
+			e.printStackTrace();
+
+			return getDefaultAuthorizationManager();
+
+		}
 	}
 
 }
