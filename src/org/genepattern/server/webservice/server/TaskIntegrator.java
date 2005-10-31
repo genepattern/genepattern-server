@@ -720,7 +720,6 @@ public class TaskIntegrator implements ITaskIntegrator {
 
 		try {
 			taskLibDir = DirectoryManager.getLibDir(lsid);
-			System.out.println("getLibDir " + taskLibDir);
 		} catch (Exception e) {
 			throw new WebServiceException(e);
 		}
