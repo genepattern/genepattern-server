@@ -82,7 +82,7 @@ public class AuthorizationHandler extends org.apache.axis.handlers.BasicHandler 
 
 	 	boolean allowed = authManager.isAllowed(methodSig, username);
 
-	  	System.out.println("\n\t AH   handler: " + methodSig + " called by " + username + " ok==>" + allowed);
+	  	//System.out.println("\n\t AH   handler: " + methodSig + " called by " + username + " ok==>" + allowed);
 
 		if (!allowed){
 			throw new AxisFault("User " + username +" does not have permission to execute " + methodSig);
