@@ -89,7 +89,9 @@ public class RunPipeline {
    Properties genepatternProps = new Properties();
    genepatternProps.load(fis);
    fis.close();
-   System.setProperty("javax.net.ssl.trustStore", genepatternProps.getProperty("javax.net.ssl.trustStore"));
+  
+   String trustStore = genepatternProps.getProperty("javax.net.ssl.trustStore");
+   if (trustStore != null) System.setProperty("javax.net.ssl.trustStore", trustStore);
 
 
 
