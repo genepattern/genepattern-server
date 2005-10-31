@@ -4,8 +4,11 @@
 <actionPermissionMap>
 
 	<url link="addTask.jsp" permission="createTask"/>
+	<url link="saveTask.jsp" permission="createTask"/>
 	<url link="pipelineDesigner.jsp" permission="createPipeline"/>
+	<url link="makePipeline.jsp" permission="createPipeline"/>
 	<url link="adminServer.jsp" permission="administrateServer"/>
+	<url link="shutdownServer.jsp" permission="administrateServer"/>
 	<url link="sql.jsp" permission="administrateServer"/>
 	<url link="installSuite.jsp" permission="createSuite"/>
 
