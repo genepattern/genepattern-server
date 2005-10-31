@@ -28,7 +28,7 @@ public class AdminProxy {
 			throws WebServiceException {
 		try {
 			this.endpoint = url;
-			if (!(endpoint.startsWith("http://"))) {
+			if (!(endpoint.startsWith("http://") || endpoint.startsWith("https://"))) {
 				this.endpoint = "http://" + this.endpoint;
 			}
 			this.endpoint = this.endpoint + "/gp/services/Admin";

@@ -305,7 +305,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 				// MacOS X can't resolve localhost when unplugged from network
 				localhost = "127.0.0.1";
 			}
-			URL url = new URL("http://" + localhost + ":" + port
+			URL url = new URL(org.getProtocol() +"://" + localhost + ":" + port
 					+ org.getFile());
 			return url.toString();
 		} catch (UnknownHostException uhe) {

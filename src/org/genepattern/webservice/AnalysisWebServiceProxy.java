@@ -30,7 +30,7 @@ public class AnalysisWebServiceProxy {
      try {
          this.endpoint = url;
          this.endpoint = this.endpoint + "/gp/services/Analysis";
-         if (!(endpoint.startsWith("http://"))) {
+         if (!(  endpoint.startsWith("http://") || endpoint.startsWith("https://")   )) {
             this.endpoint = "http://" + this.endpoint;
          }
          this.service = new Service();

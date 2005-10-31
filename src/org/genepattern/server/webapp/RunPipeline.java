@@ -34,6 +34,14 @@ import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
+// for SSL support
+import javax.net.ssl.SSLSocketFactory;
+import java.security.Security;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
+
+
 public class RunPipeline {
 
 	public static final String STDOUT = GPConstants.STDOUT;
@@ -72,6 +80,39 @@ public class RunPipeline {
 	 */
 	public static void main(String args[]) throws Exception {
 		Properties additionalArguments = new Properties();
+
+		File userHome = new File(System.getProperty("user.home"));
+
+   String genePatternPropertiesFile = System.getProperty("genepattern.properties") +  java.io.File.separator + "genepattern.properties";
+   java.io.FileInputStream fis = new java.io.FileInputStream(genePatternPropertiesFile);
+      
+   Properties genepatternProps = new Properties();
+   genepatternProps.load(fis);
+   fis.close();
+   System.setProperty("javax.net.ssl.trustStore", genepatternProps.getProperty("javax.net.ssl.trustStore"));
+
+
+
+  		//        	// use Sun's reference implementation of a URL handler for the "https" URL protocol type. 
+        //	System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");       
+        	// dynamically register sun's ssl provider
+        	Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());      
+
+
+//
+// Probably best to put this code in a function somewhere...
+//
+HostnameVerifier hv = new HostnameVerifier() {
+    public boolean verify(String urlHostName, SSLSession session) {
+	  if (!(urlHostName.equals(session.getPeerHost())) && (System.getProperty("DEBUG") != null) )
+        	System.out.println("Warning: URL Host: "+urlHostName+" vs. "+session.getPeerHost());
+        return true;
+    }
+};
+ 
+HttpsURLConnection.setDefaultHostnameVerifier(hv);
+
+
 		if (args.length < 2) {
 			System.out.println("usage: RunPipeline pipelineFile username args");
          System.out.println(java.util.Arrays.asList(args));
@@ -115,15 +156,14 @@ public class RunPipeline {
             decorator = (RunPipelineOutputDecoratorIF) (Class
 						.forName(decoratorClass)).newInstance();
       }
-      String genePatternPropertiesFile = System.getProperty("genepattern.properties") +  java.io.File.separator + "genepattern.properties";
-      java.io.FileInputStream fis = new java.io.FileInputStream(genePatternPropertiesFile);
-      
-      Properties genepatternProps = new Properties();
-      genepatternProps.load(fis);
-      fis.close();
-	  String server = "http://"
+   
+ 
+	 URL serverFromFile = new URL(genepatternProps.getProperty("GenePatternURL"));
+
+	  String server = serverFromFile.getProtocol()+ "://"
 					+ InetAddress.getLocalHost().getCanonicalHostName() + ":"
-					+ genepatternProps.getProperty("GENEPATTERN_PORT");
+					+ serverFromFile.getPort();
+
       PipelineModel pipelineModel = getPipelineModel(pipelineFileName, pipelineLSID);
       RunPipeline rp = new RunPipeline(server, userId, jobId, pipelineModel, decorator);
 		rp.runPipeline(additionalArguments);

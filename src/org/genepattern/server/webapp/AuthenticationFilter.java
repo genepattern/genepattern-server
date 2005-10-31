@@ -163,7 +163,7 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 			String serverName = request.getServerName();
 			
 			if (request.getQueryString() != null) URL = URL + ("?" + request.getQueryString());
-			String fqAddress = "http://" + fqHostName + ":"	+ request.getServerPort() + "/gp/login.jsp?origin="+ URLEncoder.encode(URL, UTF8);
+			String fqAddress = request.getScheme() +"://" + fqHostName + ":"	+ request.getServerPort() + "/gp/login.jsp?origin="+ URLEncoder.encode(URL, UTF8);
 
 
 			response.sendRedirect(fqAddress);
@@ -185,7 +185,7 @@ public void redirectToFullyQualifiedHostName(HttpServletRequest request, HttpSer
 		} else {
 			queryString = "?" + queryString;
 		}
-		String fqAddress = "http://" + fqHostName + ":" + request.getServerPort() + request.getRequestURI() + queryString;
+		String fqAddress = request.getScheme() +"://" + fqHostName + ":" + request.getServerPort() + request.getRequestURI() + queryString;
 		response.sendRedirect(fqAddress);
 		return;
 		} catch (IOException ioe) {

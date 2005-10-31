@@ -38,6 +38,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+
+// for SSL support
+import javax.net.ssl.SSLSocketFactory;
+import java.security.Security;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
+
+
+
 /*
  * GenePattern startup servlet
  * 
@@ -73,6 +83,33 @@ public class StartupServlet extends HttpServlet {
 		application.setAttribute("AnalysisManager", AnalysisManager
 				.getInstance());
 		startDaemons(System.getProperties(), application);
+
+
+// SSL
+		File userHome = new File(System.getProperty("user.home"));
+
+
+System.setProperty("javax.net.ssl.trustStore", userHome.getAbsolutePath()+ "/.keystore");
+        	// use Sun's reference implementation of a URL handler for the "https" URL protocol type. 
+       // 	System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");       
+        	// dynamically register sun's ssl provider
+        	Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());      
+
+//
+// Probably best to put this code in a function somewhere...
+//
+HostnameVerifier hv = new HostnameVerifier() {
+    public boolean verify(String urlHostName, SSLSession session) {
+        System.out.println("Warning: URL Host: "+urlHostName+" vs. "+session.getPeerHost());
+        return true;
+    }
+};
+ 
+HttpsURLConnection.setDefaultHostnameVerifier(hv);
+
+
+// END SSL
+
 		announceReady(System.getProperties());
 	}
 
