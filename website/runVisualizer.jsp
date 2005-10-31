@@ -20,16 +20,14 @@
 	String userID= (String)request.getAttribute("userID"); // will force login if necessary
 	if (userID == null) return; // come back after login
 
-System.out.println("RV");
-
 	// create a map of params and attributes in case this call was from a dispatch
 	Properties params = new Properties();
-System.out.println("1.RV");
+
 	for (Enumeration enum = request.getParameterNames(); enum.hasMoreElements(); ){
 		String key = (String) enum.nextElement();
 		params.put(key, request.getParameter(key));
 	}
-System.out.println("2A.RV");
+
 	for (Enumeration enum = request.getAttributeNames(); enum.hasMoreElements(); ){
 		String key = (String) enum.nextElement();
 
@@ -38,7 +36,7 @@ System.out.println("2A.RV");
 			params.put(key, (String)request.getAttribute(key));
 	}
 
-System.out.println("2.RV");
+
 	String name = params.getProperty(GPConstants.NAME);
 	TaskInfo taskInfo = GenePatternAnalysisTask.getTaskInfo(name, userID);
 	String message = params.getProperty("message");
@@ -68,14 +66,14 @@ System.out.println("2.RV");
 <%
 		return;
 	}
-System.out.println("3.RV");
+
 	if (taskInfo == null) {
 %>
 		Can't load task info for <%= name %> for user <%= userID %>.
 <%
 		return;
 	}
-System.out.println("4.RV");
+
 	name = taskInfo.getName();
 	TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
 	String lsid = (String)tia.get(GPConstants.LSID);
@@ -85,7 +83,7 @@ System.out.println("4.RV");
 	File[] supportFiles = new File(libdir).listFiles();
 	int i;
 	String appletName = "a" + ("" + Math.random()).substring(2); // unique name so that multiple instances of applet on a single page will not collide
-System.out.println("5.RV");
+
 
 %>
 <applet code="<%= org.genepattern.visualizer.RunVisualizerApplet.class.getName() %>" archive="runVisualizer.jar" codebase="downloads" width="1" height="1" alt="Your browser refuses to run applets" name="<%= appletName %>">
