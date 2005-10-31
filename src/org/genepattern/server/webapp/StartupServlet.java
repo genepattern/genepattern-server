@@ -425,15 +425,16 @@ HttpsURLConnection.setDefaultHostnameVerifier(hv);
 				File tomcatConf = new File(System.getProperty("tomcat"), "conf");
 				File fileServerXml = new File(tomcatConf, "server.xml");
 				Document doc = DocumentBuilderFactory.newInstance()
-						.newDocumentBuilder().parse(
-								new InputSource(new FileReader(fileServerXml)));
+						.newDocumentBuilder().parse(new InputSource(new FileReader(fileServerXml)));
 				Element root = doc.getDocumentElement();
 
 				HashMap hmProps = new HashMap();
 				processNode(root, hmProps);
-
 				if (hmProps.containsKey("port") && hmProps.containsKey("path")) {
-					props.setProperty("GenePatternURL", "http://127.0.0.1:"
+					String scheme = "http";
+					if (hmProps.containsKey("scheme")) scheme = (String)hmProps.get("scheme");
+
+					props.setProperty("GenePatternURL", scheme + "://127.0.0.1:"
 							+ hmProps.get("port") + hmProps.get("path") + "/");
 				}
 				if (hmProps.containsKey("port")) {
@@ -464,6 +465,10 @@ HttpsURLConnection.setDefaultHostnameVerifier(hv);
 				String port = c_elt.hasAttribute("port") ? c_elt
 						.getAttribute("port") : null;
 				hmProps.put("port", port);
+				String scheme = c_elt.hasAttribute("scheme") ? c_elt
+						.getAttribute("scheme") : null;
+				hmProps.put("scheme", scheme);
+
 			} else if (c_elt.getTagName().equals("Context")) {
 				String path = c_elt.hasAttribute("path") ? c_elt
 						.getAttribute("path") : "";
