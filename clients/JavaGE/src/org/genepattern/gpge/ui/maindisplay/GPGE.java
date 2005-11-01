@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridLayout;
@@ -49,11 +50,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.JWindow;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -1892,6 +1896,10 @@ public class GPGE {
 						Map categoryToAnalysisServices = AnalysisServiceUtil
 								.getCategoryToAnalysisServicesMap(analysisServiceManager
 										.getLatestAnalysisServices());
+
+						if (categoryToAnalysisServices.size() == 0) {
+							showNoModulesInstalledDialog();
+						}
 						analysisMenu.rebuild(categoryToAnalysisServices);
 						visualizerMenu.rebuild(categoryToAnalysisServices);
 						pipelineMenu.rebuild(categoryToAnalysisServices);
@@ -1933,6 +1941,9 @@ public class GPGE {
 					public void run() {
 						Map categoryToAnalysisServices = AnalysisServiceUtil
 								.getCategoryToAnalysisServicesMap(latestTasks);
+						if (categoryToAnalysisServices.size() == 0) {
+							showNoModulesInstalledDialog();
+						}
 						analysisMenu.rebuild(categoryToAnalysisServices);
 						visualizerMenu.rebuild(categoryToAnalysisServices);
 						pipelineMenu.rebuild(categoryToAnalysisServices);
@@ -1950,6 +1961,46 @@ public class GPGE {
 		if (displayMessage) {
 			MessageDialog.getInstance().setVisible(false);
 		}
+	}
+
+	void showNoModulesInstalledDialog() {
+		final JTextPane pane = new JTextPane();
+		pane.setContentType("text/html");
+		pane.addHyperlinkListener(new HyperlinkListener() {
+			public void hyperlinkUpdate(HyperlinkEvent evt) {
+				if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+					URL url = evt.getURL();
+					try {
+						BrowserLauncher.openURL(url.toString());
+					} catch (Exception e) {
+					}
+				} else if (evt.getEventType() == HyperlinkEvent.EventType.ENTERED) {
+					pane.setCursor(Cursor
+							.getPredefinedCursor(Cursor.HAND_CURSOR));
+				} else if (evt.getEventType() == HyperlinkEvent.EventType.EXITED) {
+					pane.setCursor(Cursor.getDefaultCursor());
+				}
+			}
+		});
+
+		try {
+			String server = analysisServiceManager.getServer()
+					+ "/gp/taskCatalog.jsp";
+			String text = "<html><body><font face=\"Arial, Helvetica, sans-serif\">There are no modules installed on the server. Go to "
+					+ "<a href="
+					+ server
+					+ ">"
+					+ server
+					+ "</a> to install modules.<br>After installing modules, click File > Refresh > Modules to retrieve the modules from the server.";
+
+			pane.setText(text);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		pane.setMargin(new Insets(5, 5, 5, 5));
+		pane.setEditable(false);
+		JOptionPane.showMessageDialog(GenePattern.getDialogParent(), pane,
+				"GenePattern", JOptionPane.WARNING_MESSAGE);
 	}
 
 	void createMenus() {
