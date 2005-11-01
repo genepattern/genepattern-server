@@ -86,13 +86,7 @@ public class StartupServlet extends HttpServlet {
 
 
 // SSL
-		File userHome = new File(System.getProperty("user.home"));
 
-
-System.setProperty("javax.net.ssl.trustStore", userHome.getAbsolutePath()+ "/.keystore");
-        	// use Sun's reference implementation of a URL handler for the "https" URL protocol type. 
-       // 	System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");       
-        	// dynamically register sun's ssl provider
         	Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());      
 
 //
@@ -100,7 +94,8 @@ System.setProperty("javax.net.ssl.trustStore", userHome.getAbsolutePath()+ "/.ke
 //
 HostnameVerifier hv = new HostnameVerifier() {
     public boolean verify(String urlHostName, SSLSession session) {
-        System.out.println("Warning: URL Host: "+urlHostName+" vs. "+session.getPeerHost());
+	  if (!urlHostName.equals(session.getPeerHost()))
+	        System.out.println("Warning: URL Host: "+urlHostName+" vs. "+session.getPeerHost());
         return true;
     }
 };
@@ -420,6 +415,8 @@ HttpsURLConnection.setDefaultHostnameVerifier(hv);
 	// read Tomcat's server.xml file and set the GenePatternURL and
 	// GENEPATTERN_PORT properties according to the actual configuration
 	protected void setupWebserverProps(ServletConfig config, Properties props) {
+
+
 		if (config.getServletContext().getServerInfo().indexOf("Apache Tomcat") != -1) {
 			try {
 				File tomcatConf = new File(System.getProperty("tomcat"), "conf");
@@ -436,6 +433,7 @@ HttpsURLConnection.setDefaultHostnameVerifier(hv);
 
 					props.setProperty("GenePatternURL", scheme + "://127.0.0.1:"
 							+ hmProps.get("port") + hmProps.get("path") + "/");
+		
 				}
 				if (hmProps.containsKey("port")) {
 					props.setProperty("GENEPATTERN_PORT", (String) hmProps
@@ -456,6 +454,7 @@ HttpsURLConnection.setDefaultHostnameVerifier(hv);
 		} else {
 			// unknown server
 		}
+	
 	}
 
 	protected void processNode(Node node, HashMap hmProps) {
@@ -470,10 +469,8 @@ HttpsURLConnection.setDefaultHostnameVerifier(hv);
 				hmProps.put("scheme", scheme);
 
 			} else if (c_elt.getTagName().equals("Context")) {
-				String path = c_elt.hasAttribute("path") ? c_elt
-						.getAttribute("path") : "";
-				String docBase = c_elt.hasAttribute("docBase") ? c_elt
-						.getAttribute("docBase") : "";
+				String path = c_elt.hasAttribute("path") ? c_elt.getAttribute("path") : "";
+				String docBase = c_elt.hasAttribute("docBase") ? c_elt.getAttribute("docBase") : "";
 				if (path.indexOf("gp") != -1 || docBase.indexOf("gp") != -1) {
 					hmProps.put("path", path);
 					hmProps.put("docBase", docBase);
