@@ -273,7 +273,7 @@
              document roots in places other than the virtual host's appBase
              directory.  -->
 
-        <Context path="/gp" docBase="gp" debug="0" reloadable="true"/>
+        <!-- Context path="/gp" docBase="gp" debug="0" reloadable="true"/ -->
         <!-- Tomcat Root Context -->
         <!--
           <Context path="" docBase="ROOT" debug="0"/>
