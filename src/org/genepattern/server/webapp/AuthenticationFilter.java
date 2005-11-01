@@ -163,7 +163,7 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 			String serverName = request.getServerName();
 			
 			if (request.getQueryString() != null) URL = URL + ("?" + request.getQueryString());
-			String fqAddress = request.getScheme() +"://" + fqHostName + ":"	+ request.getServerPort() + "/gp/login.jsp?origin="+ URLEncoder.encode(URL, UTF8);
+			String fqAddress = request.getScheme() +"://" + fqHostName + ":"	+ request.getServerPort() + "/"+request.getContextPath()+"/login.jsp?origin="+ URLEncoder.encode(URL, UTF8);
 
 
 			response.sendRedirect(fqAddress);
