@@ -451,9 +451,28 @@ public class PipelineEditorModel {
 					p.setAttributes(attrs);
 				} else if (isPromptWhenRun(i, j)) {
 					p.setAttributes(promptWhenRunAttrs);
+					String paramValue = null;
+					if(isChoiceList(i, j)) {
+						ParameterChoice[] choices = getChoices(i, j);
+						StringBuffer buf = new StringBuffer();
+						for(int k = 0; k < choices.length; k++) {
+							String uiValue = choices[k].getUIValue();
+							String cmdLineValue = choices[k].getValue();
+							if(k > 0) {
+								buf.append(";");
+							}
+							if(uiValue.equals(cmdLineValue)) {
+								buf.append(cmdLineValue + "=" + uiValue);
+							} else {
+								buf.append(cmdLineValue);
+							}
+						}
+					} else {
+						paramValue = getValue(i, j);
+					}
 					ParameterInfo pipelineParam = new ParameterInfo(
 							getTaskName(i) + (i + 1) + "."
-									+ getParameterName(i, j), getValue(i, j),
+									+ getParameterName(i, j), paramValue,
 							"");
 					HashMap attributes = new HashMap(promptWhenRunAttrs);
 					attributes.putAll(getParameterAttributes(i, j));
