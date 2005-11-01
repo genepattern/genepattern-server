@@ -398,7 +398,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 	protected void save() {
 		pipelineChanged = false;
-		save(true);
+		if(!save(true)) {
+			return;
+		}
 		model.resetDocFiles();
 		try {
 			MessageManager.notifyListeners(new TaskInstallMessage(this, model
@@ -427,8 +429,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	 * @param saveTask
 	 *            if <tt>true</tt> save the task on the server, otherwise
 	 *            update the paramter values in the model
+	 * @return true if no errors occurred
 	 */
-	protected void save(boolean saveTask) {
+	protected boolean save(boolean saveTask) {
 		StringBuffer errors = null;
 		if (saveTask) {
 			errors = headerPanel.save();
@@ -495,12 +498,12 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 		}
 
 		if (!saveTask) {
-			return;
+			return true;
 		}
 
 		if (errors.length() > 0) {
 			GenePattern.showErrorDialog(errors.toString());
-			return;
+			return false;
 		}
 		TaskInfo ti = model.toTaskInfo();
 		try {
@@ -520,6 +523,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 							.toArray(new String[0]));
 
 			model.setLSID(lsid);
+			return true;
 		} catch (WebServiceException e1) {
 			e1.printStackTrace();
 			if (!GenePattern.disconnectedFromServer(e1, AnalysisServiceManager
@@ -527,7 +531,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 				GenePattern
 						.showErrorDialog("An error occurred while saving the pipeline.");
 			}
+			return false;
 		}
+
 	}
 
 	void reset() {
