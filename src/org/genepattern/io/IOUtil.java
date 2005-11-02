@@ -1,16 +1,17 @@
 package org.genepattern.io;
 
 import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.genepattern.data.expr.ExpressionData;
 import org.genepattern.data.expr.IExpressionData;
 import org.genepattern.data.matrix.ClassVector;
 import org.genepattern.io.expr.ExpressionDataCreator;
@@ -133,9 +134,9 @@ public class IOUtil {
 	 * @exception ParseException
 	 *                If there is a problem with the data
 	 */
-	public static Object readExpressionData(String pathname) throws IOException,
+	public static ExpressionData readExpressionData(String pathname) throws IOException,
 			ParseException {
-      return readExpressionData(pathname, new ExpressionDataCreator());
+      return (ExpressionData) readExpressionData(pathname, new ExpressionDataCreator());
 	}
 
 	/**
