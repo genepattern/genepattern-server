@@ -29,7 +29,8 @@ public class AnalysisWebServiceProxy {
 			boolean maintainSession) throws WebServiceException {
      try {
          this.endpoint = url;
-         this.endpoint = this.endpoint + "/gp/services/Analysis";
+	   String context = (String)System.getProperty("GP_Path", "/gp");
+         this.endpoint = this.endpoint + context + "/services/Analysis";
          if (!(  endpoint.startsWith("http://") || endpoint.startsWith("https://")   )) {
             this.endpoint = "http://" + this.endpoint;
          }

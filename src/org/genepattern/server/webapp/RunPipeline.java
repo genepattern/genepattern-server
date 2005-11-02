@@ -83,21 +83,19 @@ public class RunPipeline {
 
 		File userHome = new File(System.getProperty("user.home"));
 
-   String genePatternPropertiesFile = System.getProperty("genepattern.properties") +  java.io.File.separator + "genepattern.properties";
-   java.io.FileInputStream fis = new java.io.FileInputStream(genePatternPropertiesFile);
+   		String genePatternPropertiesFile = System.getProperty("genepattern.properties") +  java.io.File.separator + "genepattern.properties";
+   		java.io.FileInputStream fis = new java.io.FileInputStream(genePatternPropertiesFile);
       
-   Properties genepatternProps = new Properties();
-   genepatternProps.load(fis);
-   fis.close();
+   		Properties genepatternProps = new Properties();
+   		genepatternProps.load(fis);
+   		fis.close();
   
-   String trustStore = genepatternProps.getProperty("javax.net.ssl.trustStore");
-   if (trustStore != null) System.setProperty("javax.net.ssl.trustStore", trustStore);
+   		String trustStore = genepatternProps.getProperty("javax.net.ssl.trustStore");
+   		if (trustStore != null) System.setProperty("javax.net.ssl.trustStore", trustStore);
 
-
-
-  		//        	// use Sun's reference implementation of a URL handler for the "https" URL protocol type. 
-        //	System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");       
-        	// dynamically register sun's ssl provider
+		String GP_Path = genepatternProps.getProperty("GP_Path");
+		if (GP_Path != null) System.setProperty("GP_Path", GP_Path);
+System.out.println("GP_Path = " + System.getProperty("GP_Path"));
         	Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());      
 
 
@@ -288,11 +286,12 @@ HttpsURLConnection.setDefaultHostnameVerifier(hv);
             ParameterInfo[] params) {
         try {
             if (params != null) {
+		    String context = System.getProperty("GP_Path", "/gp");
                 for (int i = 0; i < params.length; i++) {
                     String val = params[i].getValue();
                     if (val.startsWith("<GenePatternURL>")) {
                         val = val.replaceAll("<GenePatternURL>", server
-                                + "/gp/");
+                                + context + "/");
 
                         params[i].setValue(val);
                     }
@@ -376,8 +375,10 @@ HttpsURLConnection.setDefaultHostnameVerifier(hv);
 			fileName = URLEncoder.encode(fileName, "UTF-8");
 		} catch (UnsupportedEncodingException uee) {
 			// ignore
-		}
-		String url = server + "/gp/retrieveResults.jsp?job=" + job.getJobNumber()
+		}    
+		String context = System.getProperty("GP_Path", "/gp");
+            
+		String url = server + context + "/retrieveResults.jsp?job=" + job.getJobNumber()
 				+ "&filename=" + fileName;
 		return url;
 	}

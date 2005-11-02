@@ -33,7 +33,8 @@ public class TaskIntegratorProxy {
 			boolean maintainSession) throws WebServiceException {
 		try {
 			this.endpoint = url;
-			this.endpoint = this.endpoint + "/gp/services/TaskIntegrator";
+			String context = (String)System.getProperty("GP_Path", "/gp");
+			this.endpoint = this.endpoint + context +"/services/TaskIntegrator";
 			if (!(endpoint.startsWith("http://"))) {
 				this.endpoint = "http://" + this.endpoint;
 			}

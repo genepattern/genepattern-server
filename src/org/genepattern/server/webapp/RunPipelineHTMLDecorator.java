@@ -299,8 +299,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 				return original;
 			}
 			URL org = new URL(original);
-			String localhost = InetAddress.getLocalHost()
-					.getCanonicalHostName();
+			String localhost = InetAddress.getLocalHost().getCanonicalHostName();
 			if (localhost.equals("localhost")) {
 				// MacOS X can't resolve localhost when unplugged from network
 				localhost = "127.0.0.1";

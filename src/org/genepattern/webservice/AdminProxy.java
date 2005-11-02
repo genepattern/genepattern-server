@@ -31,7 +31,9 @@ public class AdminProxy {
 			if (!(endpoint.startsWith("http://") || endpoint.startsWith("https://"))) {
 				this.endpoint = "http://" + this.endpoint;
 			}
-			this.endpoint = this.endpoint + "/gp/services/Admin";
+			String context = (String)System.getProperty("GP_Path", "/gp");
+			
+			this.endpoint = this.endpoint + context + "/services/Admin";
 			this.service = new Service();
 			proxy = new AdminSoapBindingStub(new URL(endpoint), service);
 			proxy.setUsername(userName);
