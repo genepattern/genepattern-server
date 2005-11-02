@@ -34,6 +34,34 @@ public class ExpressionData implements IExpressionData {
 		}
 	}
 
+	public ExpressionData slice(String[] rowNames, String[] columnNames) {
+		int[] rowIndices = rowNames != null ? new int[rowNames.length] : null;
+		int[] columnIndices = columnNames != null ? new int[columnNames.length]
+				: null;
+		if (rowIndices != null) {
+			for (int i = 0, rows = rowIndices.length; i < rows; i++) {
+				int index = dataset.getRowIndex(rowNames[i]);
+				if (index == -1) {
+					throw new IllegalArgumentException("Row name "
+							+ rowNames[i] + " not found.");
+				}
+				rowIndices[i] = index;
+			}
+		}
+
+		if (columnIndices != null) {
+			for (int i = 0, cols = columnIndices.length; i < cols; i++) {
+				int index = dataset.getColumnIndex(columnNames[i]);
+				if (index == -1) {
+					throw new IllegalArgumentException("Column name "
+							+ columnNames[i] + " not found.");
+				}
+				columnIndices[i] = index;
+			}
+		}
+		return slice(rowIndices, columnIndices);
+	}
+
 	public ExpressionData slice(int[] rowIndices, int[] columnIndices) {
 		if (rowIndices == null) {
 			rowIndices = new int[dataset.getRowCount()];
@@ -250,7 +278,7 @@ public class ExpressionData implements IExpressionData {
 	public void set(String rowName, String columnName, double value) {
 		dataset.set(rowName, columnName, value);
 	}
-	
+
 	/**
 	 * Gets a single element
 	 * 
