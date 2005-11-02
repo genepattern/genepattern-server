@@ -2,6 +2,7 @@
 		 java.util.Enumeration,
 		 java.util.HashMap,
 		 java.io.*,
+		 java.net.URL,
 		 java.util.*,
  		 java.text.*,
  		 java.net.URLEncoder,
@@ -104,9 +105,13 @@ int outFileCount=1;
    }
 
    if(params!=null && params.length > 0) {  
+
 	out.println("<tr><td colspan=2><P><B>Input Parameters</b></td></tr>");  
       for(int j = 0; j < params.length; j++) {
+
          ParameterInfo parameterInfo = params[j];
+System.out.println("Val=" + parameterInfo.getValue());
+
 	  	if (!parameterInfo.isOutputFile()){	
 			out.print("<tr><td align=right>");
 			out.println(parameterInfo.getName());
@@ -114,8 +119,20 @@ int outFileCount=1;
 			if (parameterInfo.isInputFile()) {
 				File f = new File(parameterInfo.getValue());
 				String axisName = f.getName();
-				if (f.exists()){
+				boolean fileExists = f.exists();
+				boolean isURL=false;
+System.out.println("Val=" + parameterInfo.getValue());
+				if (fileExists){
 					out.println("<a href=\"getInputFile.jsp?file="+StringUtils.htmlEncode(axisName)+  "\" target=\"_blank\" > ");
+				} else {
+					try {// see if a URL was passed in
+						URL url = new URL(parameterInfo.getValue());
+						out.println("<a href=\""+ parameterInfo.getValue()+"\" > ");				
+						isURL = true;
+					} catch (Exception e){
+						e.printStackTrace();
+					}
+
 				}
 				String name = axisName;						
 				int idx = axisName.lastIndexOf("axis_");
@@ -124,11 +141,22 @@ int outFileCount=1;
 				}
 
 				out.println(StringUtils.htmlEncode(name));
-				if (f.exists())
+				if (fileExists || isURL)
 					out.println("</a>");
 			} else {
+ 				boolean isURL=false;
+
+				try {// see if a URL was passed in
+					URL url = new URL(parameterInfo.getValue());
+					out.println("<a href=\""+ parameterInfo.getValue()+"\" > ");				
+					isURL = true;
+				} catch (Exception e){
+					//e.printStackTrace();
+				}
+
 				out.println(StringUtils.htmlEncode(parameterInfo.getValue()));
 			
+				if (isURL)out.println("</a>");
 
 			}
 			out.println("  ");
