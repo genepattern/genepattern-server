@@ -30,7 +30,13 @@ public class IntMatrix2D {
 
 	}
 
-	IntMatrix2D(int[][] matrix) {
+	/**
+	 * Creates a new matrix
+	 * 
+	 * @param matrix
+	 *            the data
+	 */
+	public IntMatrix2D(int[][] matrix) {
 		this.matrix = matrix;
 	}
 
@@ -42,7 +48,7 @@ public class IntMatrix2D {
 	public int[][] getArray() {
 		return matrix;
 	}
-	
+
 	/**
 	 * Gets the underlying array at the given row
 	 * 
