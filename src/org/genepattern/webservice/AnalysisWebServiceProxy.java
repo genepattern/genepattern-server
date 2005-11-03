@@ -25,6 +25,10 @@ public class AnalysisWebServiceProxy {
 		this(url, userName, true);
 	}
 
+	public void setTimeout(int timeout) {
+		stub.setTimeout(timeout);
+	}
+	
 	public AnalysisWebServiceProxy(String url, String userName,
 			boolean maintainSession) throws WebServiceException {
      try {
