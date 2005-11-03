@@ -164,15 +164,28 @@ public class ExpressionData implements IExpressionData {
 	}
 
 	/**
-	 * Allocates a new array contains the row descriptions
+	 * Gets the array containing the row descriptions or <tt>null</tt> if no
+	 * row descriptions are set
 	 * 
 	 * @return The row descriptions.
 	 */
 	public String[] getRowDescriptions() {
-		if (rowDescriptions == null) {
-			return new String[getRowCount()];
+		return rowDescriptions;
+	}
+
+	/**
+	 * Sets the row descriptions
+	 * 
+	 * @param descs
+	 * @throws IllegalArgumentException
+	 *             if desc.length != getRowCount()
+	 */
+	public void setRowDescriptions(String[] descs) {
+		if (descs != null && descs.length != getRowCount()) {
+			throw new IllegalArgumentException(
+					"Length of descriptions must be equal to the number of rows.");
 		}
-		return (String[]) rowDescriptions.clone();
+		this.rowDescriptions = descs;
 	}
 
 	/**
@@ -185,15 +198,28 @@ public class ExpressionData implements IExpressionData {
 	}
 
 	/**
-	 * Allocates a new array contains the column descriptions
+	 * Gets the array containing the column descriptions or <tt>null</tt> if
+	 * no column descriptions are set
 	 * 
 	 * @return The column descriptions.
 	 */
 	public String[] getColumnDescriptions() {
-		if (columnDescriptions == null) {
-			return new String[getColumnCount()];
+		return columnDescriptions;
+	}
+
+	/**
+	 * Sets the column descriptions
+	 * 
+	 * @param descs
+	 * @throws IllegalArgumentException
+	 *             if desc.length != getColumnCount()
+	 */
+	public void setColumnDescriptions(String[] descs) {
+		if (descs != null && descs.length != getColumnCount()) {
+			throw new IllegalArgumentException(
+					"Length of descriptions must be equal to the number of columns.");
 		}
-		return (String[]) columnDescriptions.clone();
+		this.columnDescriptions = descs;
 	}
 
 	/**
