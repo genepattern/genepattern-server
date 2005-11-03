@@ -33,7 +33,6 @@ import java.lang.reflect.*;
 
 
 import org.genepattern.util.IGPConstants;
-import org.apache.jasper.servlet.JspServlet;
 import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
 import org.genepattern.server.util.IAuthorizationManager;
 

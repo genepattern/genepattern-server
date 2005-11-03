@@ -36,7 +36,6 @@ import java.net.URLEncoder;
 import java.net.URLDecoder;
 
 import org.genepattern.util.IGPConstants;
-import org.apache.jasper.servlet.JspServlet;
 import org.genepattern.server.util.AccessManager;
 
 /**
