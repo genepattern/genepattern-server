@@ -409,8 +409,7 @@
 	       <include name="PDFBox*.jar"/>
 	       <include name="wsdl4j.jar"/>
 	       <include name="xalan.jar"/>
-          <include name="jasper-compiler.jar"/>
-	    </fileset> 
+          </fileset> 
 	    <fileset dir="${genepattern.build}" includes="${full-jarname}"/>
 	</copy>
 
