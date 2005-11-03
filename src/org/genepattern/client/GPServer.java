@@ -5,13 +5,15 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AdminProxy;
-import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobResult;
 import org.genepattern.webservice.LocalTaskExecutor;
@@ -246,108 +248,123 @@ public class GPServer {
 		}
 	}
 
+	private String sub(ParameterInfo formalParam, String value)
+			throws WebServiceException {
+		// see if parameter belongs to a set of choices, e.g. 1=T-Test.
+		// If so substitute 1 for T-Test, also check to see if value is
+		// valid
+		String choicesString = formalParam.getValue();
+		if (value != null && choicesString != null && !choicesString.equals("")) {
+			String[] choices = choicesString.split(";");
+			boolean validValue = false;
+			for (int j = 0; j < choices.length && !validValue; j++) {
+				String[] choiceValueAndChoiceUIValue = choices[j].split("=");
+				if (value.equals(choiceValueAndChoiceUIValue[0])) {
+					validValue = true;
+				} else if (choiceValueAndChoiceUIValue.length == 2
+						&& value.equals(choiceValueAndChoiceUIValue[1])) {
+					value = choiceValueAndChoiceUIValue[0];
+					validValue = true;
+				}
+			}
+			if (!validValue) {
+				throw new WebServiceException("Illegal value for parameter "
+						+ formalParam.getName() + ": " + value);
+			}
+		}
+		return value;
+	}
+
+	private void setAttributes(ParameterInfo formalParam,
+			ParameterInfo actualParam) {
+
+		if (formalParam.isInputFile()) {
+			HashMap actualAttributes = new HashMap();
+			actualParam.setAttributes(actualAttributes);
+			String value = actualParam.getValue();
+			actualAttributes.put(GPConstants.PARAM_INFO_CLIENT_FILENAME[0],
+					value);
+			if (value != null && new java.io.File(value).exists()) {
+				actualParam.setAsInputFile();
+			} else if (value != null) {
+				actualAttributes.remove("TYPE");
+				actualAttributes.put(ParameterInfo.MODE,
+						ParameterInfo.URL_INPUT_MODE);
+			}
+		}
+	}
+
 	private ParameterInfo[] createParameterInfoArray(TaskInfo taskInfo,
 			Parameter[] parameters) throws WebServiceException {
 
 		ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
-		ParameterInfo[] actualParameters = null;
+		List actualParameters = new ArrayList();
+
+		Map paramName2FormalParam = new HashMap();
 		if (formalParameters != null) {
-			actualParameters = new ParameterInfo[formalParameters.length];
-		} else {
-			actualParameters = new ParameterInfo[0]; // AnalysisWebServiceProxy
-													 // throws a NPE otherwise
-		}
-		Map paramName2ParameterMap = new HashMap();
-		if (parameters != null) {
-			for (int i = 0, length = parameters.length; i < length; i++) {
-				paramName2ParameterMap.put(parameters[i].getName(),
-						parameters[i]);
+			for (int i = 0, length = formalParameters.length; i < length; i++) {
+				paramName2FormalParam.put(formalParameters[i].getName(),
+						formalParameters[i]);
 			}
 		}
 
-		if (formalParameters != null) {
-			for (int i = 0, length = formalParameters.length; i < length; i++) {
-				Parameter param = (Parameter) paramName2ParameterMap
-						.remove(formalParameters[i].getName());
-				Map formalAttributes = formalParameters[i].getAttributes();
+		if (parameters != null) {
+			for (int i = 0, length = parameters.length; i < length; i++) {
+				ParameterInfo formalParam = (ParameterInfo) paramName2FormalParam
+						.remove(parameters[i].getName());
+				if (formalParam == null) {
+					throw new WebServiceException("Unknown parameter: "
+							+ parameters[i].getName());
+				}
+				Map formalAttributes = formalParam.getAttributes();
 				if (formalAttributes == null) {
 					formalAttributes = new HashMap();
 				}
-				String value = null;
-				if (param != null) {
-					value = param.getValue();
-				} else {
-					value = (String) formalAttributes
-							.get((String) TaskExecutor.PARAM_INFO_DEFAULT_VALUE[0]);
-					if ("".equals(value)) {
-						value = null;
-					}
+				String value = parameters[i].getValue();
 
-				}
-            if (value == null || value.trim().equals("")) {  
-               String sOptional = (String) formalAttributes
-						.get(GPConstants.PARAM_INFO_OPTIONAL[0]);
-               boolean optional = (sOptional != null && sOptional.length() > 0);
-               if (!optional) {
-                  throw new WebServiceException(
-                  "Missing value for required parameter "
-                        + formalParameters[i].getName());
-               }
-            }
-            
-
-				// see if parameter belongs to a set of choices, e.g. 1=T-Test.
-				// If so substitute 1 for T-Test, also check to see if value is
-				// valid
-				String choicesString = formalParameters[i].getValue();
-				if (value != null && choicesString != null
-						&& !choicesString.equals("")) {
-					String[] choices = choicesString.split(";");
-					boolean validValue = false;
-					for (int j = 0; j < choices.length && !validValue; j++) {
-						String[] choiceValueAndChoiceUIValue = choices[j]
-								.split("=");
-						if (value.equals(choiceValueAndChoiceUIValue[0])) {
-							validValue = true;
-						} else if (choiceValueAndChoiceUIValue.length == 2
-								&& value.equals(choiceValueAndChoiceUIValue[1])) {
-							value = choiceValueAndChoiceUIValue[0];
-							validValue = true;
-						}
-					}
-					if (!validValue) {
+				if (value == null || value.trim().equals("")) {
+					String sOptional = (String) formalAttributes
+							.get(GPConstants.PARAM_INFO_OPTIONAL[0]);
+					boolean optional = (sOptional != null && sOptional.length() > 0);
+					if (!optional) {
 						throw new WebServiceException(
-								"Illegal value for parameter "
-										+ formalParameters[i].getName() + ": "
-										+ value);
+								"Missing value for required parameter "
+										+ formalParameters[i].getName());
 					}
 				}
 
-				actualParameters[i] = new ParameterInfo(formalParameters[i]
-						.getName(), value, "");
-				HashMap actualAttributes = actualParameters[i].getAttributes();
-				if (actualAttributes == null) {
-					actualAttributes = new HashMap();
-				}
-
-				if (formalParameters[i].isInputFile()) {
-					actualAttributes.put(
-							GPConstants.PARAM_INFO_CLIENT_FILENAME[0], value);
-					if (value != null && new java.io.File(value).exists()) {
-						actualParameters[i].setAsInputFile();
-					} else if (value != null) {
-						actualAttributes.remove("TYPE");
-						actualAttributes.put(ParameterInfo.MODE,
-								ParameterInfo.URL_INPUT_MODE);
-					}
-				}
+				ParameterInfo p = new ParameterInfo(formalParam.getName(),
+						value, "");
+				setAttributes(formalParam, p);
+				actualParameters.add(p);
 			}
 		}
-		if (paramName2ParameterMap.size() > 0) {
-			throw new WebServiceException("Invalid parameter names: "
-					+ paramName2ParameterMap.keySet());
+
+		for (Iterator it = paramName2FormalParam.keySet().iterator(); it
+				.hasNext();) {
+			String name = (String) it.next();
+			ParameterInfo p = (ParameterInfo) paramName2FormalParam.get(name);
+			String value = (String) p.getAttributes().get(
+					(String) TaskExecutor.PARAM_INFO_DEFAULT_VALUE[0]);
+			if (value == null || value.equals("")) {
+				String sOptional = (String) p.getAttributes().get(
+						GPConstants.PARAM_INFO_OPTIONAL[0]);
+				boolean optional = (sOptional != null && sOptional.length() > 0);
+				if (!optional) {
+					throw new WebServiceException(
+							"Missing value for required parameter "
+									+ p.getName());
+				}
+			} else {
+				value = sub(p, value);
+				ParameterInfo actual = new ParameterInfo(p.getName(), value, "");
+				setAttributes(p, actual);
+				actualParameters.add(actual);
+			}
+
 		}
-		return actualParameters;
+
+		return (ParameterInfo[]) actualParameters.toArray(new ParameterInfo[0]);
 	}
 
 	/**
