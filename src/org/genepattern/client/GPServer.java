@@ -199,6 +199,7 @@ public class GPServer {
 			AnalysisWebServiceProxy analysisProxy = null;
 			try {
 				analysisProxy = new AnalysisWebServiceProxy(server, userName);
+				analysisProxy.setTimeout(Integer.MAX_VALUE);
 			} catch (Exception x) {
 				throw new WebServiceException(x);
 			}
