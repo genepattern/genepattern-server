@@ -113,6 +113,13 @@ fullyQualifiedHostName=${HOST}.${DOMAIN}
 
 	</replace>
 
+ 	<replace file="gp/WEB-INF/server-config.wsdd">
+		<replacefilter 
+    			token="../resources" 
+    			value="${INSTALL_DIR}/resources"/>
+	</replace>
+
+
 
 	
   <condition property="R.defined">
