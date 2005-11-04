@@ -4,7 +4,7 @@
 		 java.io.*,
 		 java.util.*,
  		 java.text.*,
- 		 java.net.URLEncoder,
+ 		 java.net.*,
 		org.genepattern.webservice.JobInfo,
 		 org.genepattern.webservice.JobStatus,
 		 org.genepattern.webservice.ParameterInfo,
@@ -30,12 +30,33 @@ response.setDateHeader("Expires", 0);
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 
-</head><body class="bodyNoMargin">
+</head><body class="bodyNoMargin" >
 	
 <script language="JavaScript">
 
 function showJob(job) {
 	window.open('showJob.jsp?jobId=' + job, 'Job ' + job,'toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=240')
+}
+
+
+
+function createPipeline(filename) {
+	
+	var proceed = window.confirm("Create a pipeline that describes how this file was created?");
+	if (proceed == null || proceed == false) {
+		return false;
+	}
+		
+	var pipeName = window.prompt("Name of pipeline", "");
+		
+	// user cancelled?
+	if (pipeName == null || pipeName.length == 0) {
+		return false;
+	}
+
+	window.open("provenanceFinder.jsp?pipelinename="+pipeName+"&filename="+filename);
+	return false;
+	
 }
 
 
@@ -63,6 +84,7 @@ try {
 } catch(WebServiceException wse) {
 	wse.printStackTrace();
 }
+String serverURL = "http://"+ InetAddress.getLocalHost().getCanonicalHostName() + ":"+ System.getProperty("GENEPATTERN_PORT") +"/"+ request.getContextPath();
 
 int numJobsToDisplay = 15; 
 int jobsDisplayed = 0; // increment for each <tr> in this table
@@ -118,8 +140,17 @@ for(int i = 0; i < jobs.length; i++) {
                  
 	     if (!GPConstants.TASKLOG.equals(fileName)){ 
            		out.println("<tr><td></td><td valign='top' colspan=\"3\">");
-           		out.println("<a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\" target=\"_blank\">" + fileName + "</a>");
+
+			String fileUrl = "retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8");
+
+           		out.println("<a href=\""+ fileUrl+ "\" target=\"_blank\" \">" + fileName + "</a>");
    	     		//jobsDisplayed++;
+
+ 				out.print("<span  onClick=\"createPipeline(\'"+URLEncoder.encode(serverURL + fileUrl, "utf-8")+"\')\"><nobr>" );
+   				out.print("&nbsp;");
+    				out.print("<img src='skin/pipe_obj.jpeg'>");
+    				out.print( "  </nobr></span>");
+
 		}
            }
       }

@@ -37,6 +37,7 @@ boolean isDownload = (request.getParameter("download") != null);
 String[] deleteJob = request.getParameterValues("deleteJob");
 String stopTaskID = request.getParameter(STOP);
 String userID = (String)request.getAttribute("userID"); // get userID but don't force login if not defined
+String serverURL = "http://"+ InetAddress.getLocalHost().getCanonicalHostName() + ":"+ System.getProperty("GENEPATTERN_PORT") +"/"+ request.getContextPath();
 
 if(isDownload) {
 	ZipOutputStream zos = null;
@@ -112,6 +113,26 @@ if (isDelete || !isDownload) {
 	function showJob(job) {
 	window.open('showJob.jsp?jobId=' + job, 'Job ' + job,'toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=240')
 	}
+
+function createPipeline(filename) {
+	
+	var proceed = window.confirm("Create a pipeline that describes how this file was created?");
+	if (proceed == null || proceed == false) {
+		return false;
+	}
+		
+	var pipeName = window.prompt("Name of pipeline", "");
+		
+	// user cancelled?
+	if (pipeName == null || pipeName.length == 0) {
+		return false;
+	}
+
+	window.open("provenanceFinder.jsp?pipelinename="+pipeName+"&filename="+filename);
+	return false;
+	
+}
+
 
 	function checkAll(bChecked) {
 		for (f = 0; f < document.forms.length; f++) {
@@ -368,7 +389,7 @@ out.print("<td><font color=" + htColors.get(status)  +">" + status + "</font></t
 					out.println("<tr id=" + id + "><td></td><td colspan=\"4\">");
 					id++;
 					out.println((k+1) + ". " + children[k].getTaskName());
-					writeParameters(userId, paramsList, showAll, "&nbsp;&nbsp;&nbsp;&nbsp;", out);
+					writeParameters(userId, paramsList, showAll, "&nbsp;&nbsp;&nbsp;&nbsp;", serverURL, out);
 				}
 				
 			}
@@ -378,7 +399,7 @@ out.print("<td><font color=" + htColors.get(status)  +">" + status + "</font></t
 			if(paramsList.size() > 0) {
 				hasOutputFiles = true;
 				String userId = StringUtils.htmlEncode(" " + job.getUserId());
-				writeParameters(userId, paramsList, showAll, "", out);
+				writeParameters(userId, paramsList, showAll, "", serverURL, out);
 			}
 		}   	
    	if(hasOutputFiles) {
@@ -407,7 +428,7 @@ out.println("<br>");
 </html>
 <%! 
 
-	public void writeParameters(String encodedUserId, List params, boolean showAll, String prefix, JspWriter out) throws java.io.IOException {
+	public void writeParameters(String encodedUserId, List params, boolean showAll, String prefix, String serverURL, JspWriter out) throws java.io.IOException {
 		for(int i = 0; i < params.size(); i++) {
 			ParameterInfo parameterInfo = (ParameterInfo) params.get(i);
 			String value = parameterInfo.getValue();
@@ -424,8 +445,17 @@ out.println("<br>");
 			out.println("<div id=\"log\" style=\"display:none;\">");
       	} 
 
-           	out.println(prefix + "<input type=\"checkbox\" name=\"dl\" value=\"" + value + "\" checked><a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\">" + fileName + "</a>");
+		String fileURL = "retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8");
+           	out.println(prefix + "<input type=\"checkbox\" name=\"dl\" value=\"" + value + "\" checked><a href=\""+ fileURL+"\">" + fileName + "</a>");
    		
+
+		out.print("<span  onClick=\"createPipeline(\'"+URLEncoder.encode(serverURL + fileURL, "utf-8")+"\')\"><nobr>" );
+   		out.print("&nbsp;");
+    		out.print("<img src='skin/pipe_obj.jpeg'>");
+    		out.print( "  </nobr></span>");
+
+
+
 		if(showAll) {
 			out.println(encodedUserId); 
 			}
