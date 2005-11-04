@@ -6,6 +6,7 @@
 	<url link="addTask.jsp" permission="createTask"/>
 	<url link="saveTask.jsp" permission="createTask"/>
 	<url link="pipelineDesigner.jsp" permission="createPipeline"/>
+	<url link="provenanceFinder.jsp" permission="createPipeline"/>
 	<url link="makePipeline.jsp" permission="createPipeline"/>
 	<url link="adminServer.jsp" permission="administrateServer"/>
 	<url link="shutdownServer.jsp" permission="administrateServer"/>
