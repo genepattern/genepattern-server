@@ -130,3 +130,4 @@ ProteomicsAnalysis.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_modu
 MAGEMLImportViewer.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00055=1
 NMFConsensus.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00057=3
 ProteoArray.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00068=1
+mzXMLToCSV.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00069=1
