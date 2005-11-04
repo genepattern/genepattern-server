@@ -1,26 +1,28 @@
 <%@ page import="java.io.IOException,
-		 java.util.Enumeration,
-		 java.util.HashMap,
-		 java.io.*,
-		 java.util.*,
- 		 java.text.*,
- 		 java.net.*,
+		java.util.Enumeration,
+		java.util.HashMap,
+		java.io.*,
+		java.util.*,
+ 		java.text.*,
+ 		java.net.*,
 		org.genepattern.webservice.JobInfo,
-		 org.genepattern.webservice.JobStatus,
-		 org.genepattern.webservice.ParameterInfo,
-		 org.genepattern.webservice.WebServiceException,
+		org.genepattern.webservice.JobStatus,
+		org.genepattern.webservice.ParameterInfo,
+		org.genepattern.webservice.WebServiceException,
        	org.genepattern.server.webservice.server.local.*,
-		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient , 
-		 org.genepattern.webservice.TaskInfo,
-		 org.genepattern.webservice.TaskInfoAttributes,
-		 org.genepattern.webservice.ParameterFormatConverter,
-		 org.genepattern.webservice.ParameterInfo,
-		 org.genepattern.server.util.AccessManager,
-		 org.genepattern.util.LSID,
-		 org.genepattern.util.StringUtils,
-		 org.genepattern.util.GPConstants,
-		 org.genepattern.webservice.OmnigeneException, 
-		 org.genepattern.data.pipeline.PipelineModel"
+		org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient , 
+		org.genepattern.server.util.AuthorizationManagerFactoryImpl,
+		org.genepattern.server.util.IAuthorizationManager,
+		org.genepattern.webservice.TaskInfo,
+		org.genepattern.webservice.TaskInfoAttributes,
+		org.genepattern.webservice.ParameterFormatConverter,
+		org.genepattern.webservice.ParameterInfo,
+		org.genepattern.server.util.AccessManager,
+		org.genepattern.util.LSID,
+		org.genepattern.util.StringUtils,
+		org.genepattern.util.GPConstants,
+		org.genepattern.webservice.OmnigeneException, 
+		org.genepattern.data.pipeline.PipelineModel"
 	session="false" contentType="text/html" language="Java" %><%
 
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -68,6 +70,8 @@ function createPipeline(filename) {
 
 <%
 String userID = (String)request.getAttribute("userID"); // get userID but don't force login if not defined
+IAuthorizationManager authorizationManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
+
 
 SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss");
 SimpleDateFormat shortDateFormat = new SimpleDateFormat("HH:mm:ss");
@@ -146,11 +150,13 @@ for(int i = 0; i < jobs.length; i++) {
            		out.println("<a href=\""+ fileUrl+ "\" target=\"_blank\" \">" + fileName + "</a>");
    	     		//jobsDisplayed++;
 
+			if (authorizationManager.checkPermission("createPipeline", userID)){
+
  				out.print("<span  onClick=\"createPipeline(\'"+URLEncoder.encode(serverURL + fileUrl, "utf-8")+"\')\"><nobr>" );
    				out.print("&nbsp;");
     				out.print("<img src='skin/pipe_obj.jpeg'>");
     				out.print( "  </nobr></span>");
-
+			}
 		}
            }
       }

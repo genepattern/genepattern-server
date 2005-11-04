@@ -4,7 +4,9 @@
 	       java.text.*,
 	       java.util.*,
 	       java.net.*,
-	 	 org.genepattern.util.GPConstants,
+	 	 org.genepattern.server.util.AuthorizationManagerFactoryImpl,
+		 org.genepattern.server.util.IAuthorizationManager,
+		 org.genepattern.util.GPConstants,
 		 org.genepattern.webservice.JobInfo,
  		 org.genepattern.util.StringUtils,
 		 org.genepattern.webservice.JobStatus,
@@ -429,6 +431,10 @@ out.println("<br>");
 <%! 
 
 	public void writeParameters(String encodedUserId, List params, boolean showAll, String prefix, String serverURL, JspWriter out) throws java.io.IOException {
+
+		IAuthorizationManager authorizationManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
+
+
 		for(int i = 0; i < params.size(); i++) {
 			ParameterInfo parameterInfo = (ParameterInfo) params.get(i);
 			String value = parameterInfo.getValue();
@@ -448,12 +454,13 @@ out.println("<br>");
 		String fileURL = "retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8");
            	out.println(prefix + "<input type=\"checkbox\" name=\"dl\" value=\"" + value + "\" checked><a href=\""+ fileURL+"\">" + fileName + "</a>");
    		
+		if (authorizationManager.checkPermission("createPipeline", encodedUserId)){
 
-		out.print("<span  onClick=\"createPipeline(\'"+URLEncoder.encode(serverURL + fileURL, "utf-8")+"\')\"><nobr>" );
-   		out.print("&nbsp;");
-    		out.print("<img src='skin/pipe_obj.jpeg'>");
-    		out.print( "  </nobr></span>");
-
+			out.print("<span  onClick=\"createPipeline(\'"+URLEncoder.encode(serverURL + fileURL, "utf-8")+"\')\" \" ><nobr>" );
+   			out.print("&nbsp;");
+    			out.print("<img src=skin/pipe_obj.jpeg>");
+    			out.print( "  </nobr></span>");
+		}
 
 
 		if(showAll) {
