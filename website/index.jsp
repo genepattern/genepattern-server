@@ -64,7 +64,7 @@ if (suiteFilterAttr != null) {
 } 
 
 if (allTasks){
-	tmTasks = adminClient.getLatestTasks();
+	tmTasks = adminClient.getTaskCatalog();
 } else {
 	tmTasks = new ArrayList();
 	for (int i=0; i < suites.length; i++){
@@ -245,7 +245,7 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 <td  valign='top' align='left' height='100%'>
 <form name="index" method="post">
 
-<iframe frameborder="0" scrolling="yes" marginwidth="1" src="getRecentJobs.jsp" style="<%=iFrameWidth%> height: 530px" name="iframe" id="iframeid">
+<iframe frameborder="0" scrolling="yes" marginwidth="1" src="getRecentJobs.jsp" style="<%=iFrameWidth%> height: 590px" name="iframe" id="iframeid">
 No &lt;iframes&gt; support  :(
 </iframe>
 

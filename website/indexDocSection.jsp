@@ -8,7 +8,7 @@
 
 
 %>
-<font size=-2>
+<font size=-1>
 <font size='-1'><b>Tasks and Pipelines</b></font><br>
 
 <%
@@ -75,8 +75,8 @@
 				<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_prog_java.html" target="_blank">doc</a>
 	<br>
 &nbsp;&nbsp;&nbsp;R: 	<a href="downloads/GenePattern_0.1-0.zip">.zip</a> &nbsp;
-	<a href="downloads/GenePattern_0.1-0.tar.gz">.tar.gz</a> &nbsp;
-	<a href="GenePattern.R">source</a>
+	<a href="downloads/GenePattern_0.1-0.tar.gz">.tar.gz</a><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<a href="GenePattern.R">source</a>&nbsp;
 	<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_prog_R.html" target="_blank">doc</a>
 <br>
 
