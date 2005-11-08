@@ -130,6 +130,9 @@ String SEARCH = "search";
 IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
 
 
+int height = 120 + 20*suites.length;
+
+
 
 %>
 <!-- begin navbar.jsp -->
@@ -142,7 +145,13 @@ var VIEW = "view";
 var RUN = "run";
 var createTaskPermission = <%= authManager.checkPermission("createTask", userID) %>;
 var createPipelinePermission = <%= authManager.checkPermission("createPipeline", userID) %>;
+var filterSuiteWindow;
 
+function openSuiteFilter(height){
+ filterSuiteWindow = window.open('chooseSuite.jsp', 'Suite Filter','toolbar=no, location=no, status=no, menubar=no, resizable=yes,width=320,height=<%=height%>');
+
+ filterSuiteWindow.focus();
+}
 
 
 // handle focus and blur events for a field
@@ -396,14 +405,10 @@ function checkEnableNavbar() {
 			</script>
 		<% } %>
 
-<%
-	int height = 120 + 20*suites.length;
-%>
 
 &nbsp;&nbsp;&nbsp;
 <a href="#" 
-	onclick="window.open('chooseSuite.jsp', 'Suite Filter',
-	'toolbar=no, location=no, status=no, menubar=no, resizable=yes,width=320, height=<%=height%>')" class="navbarlink"> <nobr>Filter by Suite</nobr></a>
+	onclick="openSuiteFilter()"> <nobr>Filter by Suite</nobr></a>
 
 	</td>
 	<td align="right" valign="top" >
