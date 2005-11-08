@@ -34,8 +34,6 @@ public class ZipSuite extends CommandLineAction {
 	public ZipSuite() {
 	}
 
-	
-
 	public void zipFiles(ZipOutputStream zos, File dir) throws Exception {
 		File[] fileList = dir.listFiles(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
@@ -122,6 +120,7 @@ public class ZipSuite extends CommandLineAction {
 		SuiteInfo suite = null;
 		
 		LocalAdminClient adminClient = new LocalAdminClient(userID);
+		SuiteInfoXMLGenerator.userId = userID;
 
 		suite = adminClient.getSuite(name);
 		return packageSuite(suite, userID);
@@ -129,7 +128,7 @@ public class ZipSuite extends CommandLineAction {
 
 	public File packageSuite(SuiteInfo suiteInfo, String userID) throws Exception {
 		String name = suiteInfo.getName();
-		System.out.println("A");
+
 		// use an LSID-unique name so that different versions of same named task
 		// don't collide within zip file
 		String suffix = "_"
@@ -139,10 +138,10 @@ public class ZipSuite extends CommandLineAction {
 		// create zip file
 		File zipFile = File.createTempFile(name + suffix, ".zip");
 		ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile));
-System.out.println("B " + zipFile.getAbsolutePath());
+
 		// add the manifest
 		zipSuiteManifest(zos, suiteInfo);
-System.out.println("C");
+
 		// insert attachments
 		// find $OMNIGENE_ANALYSIS_ENGINE/taskLib/<taskName> to locate DLLs,
 		// other support files
@@ -151,7 +150,7 @@ System.out.println("C");
 		zipFiles(zos, dir);
 		zos.finish();
 		zos.close();
-System.out.println("D");
+
 		return zipFile;
 	}
 
@@ -162,9 +161,9 @@ System.out.println("D");
 
 
 class SuiteInfoXMLGenerator{
+	static String userId = "";
 
-
-
+	
 	public static void generateXMLFile(SuiteInfo suite, BufferedWriter bout){
 		try {
 			//BufferedWriter bout = new BufferedWriter(new FileWriter(suiteFile));
@@ -215,18 +214,38 @@ class SuiteInfoXMLGenerator{
 		bout.write("</name>");
 		bout.newLine();
 
+		String author = suite.getAuthor();
+		if (author== null) {
+			author= "anonymous";
+		} else if (author.trim().length() == 0) {
+			author= "anonymous";
+		}
+
 		bout.write("<author>");
-		bout.write(suite.getAuthor());
+		bout.write(author);
 		bout.write("</author>");
 		bout.newLine();
 
 		bout.write("<owner>");
-		bout.write(suite.getOwner());
+		String owner = suite.getOwner();
+		if (owner == null) {
+			owner = author;
+		} else if (owner.trim().length() == 0) {
+			owner = author;
+		}
+		bout.write(owner);
 		bout.write("</owner>");
 		bout.newLine();
 
+		String description = suite.getDescription();
+		if (description== null) {
+			description= "no description";
+		} else if (description.trim().length() == 0) {
+			description= "no description";
+		}
+
 		bout.write("<description>");
-		bout.write(suite.getDescription());
+		bout.write(description);
 		bout.write("</description>");
 		bout.newLine();
 
@@ -261,19 +280,31 @@ class SuiteInfoXMLGenerator{
 
 	protected static void writeSuiteModules(BufferedWriter bout, SuiteInfo sv) throws IOException{
 		String[] modules = sv.getModuleLSIDs();
+		LocalAdminClient adminClient = new LocalAdminClient(userId);
+
+
 		for (int i=0; i < modules.length; i++ ){
 			bout.newLine();
 			bout.write("<module>");
 			bout.newLine();
 			String lsid = modules[i];
+			TaskInfo ti = null;
+			try {
+				ti = adminClient.getTask(lsid);
+			} catch (Exception e){
+				e.printStackTrace();
+			}		
+
 			bout.write("<lsid>");
 			bout.write(lsid);
 			bout.write("</lsid>");
 			bout.newLine();
-		//	bout.write("<name>");
-		//	bout.write(mv.getModuleName());
-		//	bout.write("</name>");
-		//	bout.newLine();
+			if (ti != null) {
+				bout.write("<name>");
+				bout.write(ti.getName());
+				bout.write("</name>");
+				bout.newLine();
+			} 
 			bout.write("</module>");
 			bout.newLine();
 		}
