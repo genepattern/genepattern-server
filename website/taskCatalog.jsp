@@ -334,7 +334,7 @@ function changeFilter(fld) {
         	} %>);
         </script>
 
-Select from the following tasks from the <%=messages.get("ApplicationName")%> public access website to download and install:<br><br>
+Select from the following tasks from the <a href="<%= System.getProperty("ModuleRepositoryURL")%>">Module Repository</a> to download and install:<br><br>
 
 <form name="filters">
 <!-- Filters -->
