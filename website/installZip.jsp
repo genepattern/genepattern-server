@@ -188,6 +188,8 @@ try {
 		* allow tasks if doRecursive is true
 		*
 		*/
+		String fileNameForError = attachmentName;
+		if (fileNameForError == null) fileNameForError = fileURL;
 
 		if (isZipOfZips) {
 			if (doRecursive) {
@@ -197,7 +199,7 @@ try {
 						doRecursive = false;
 					} else {
 						throw new WebServiceException
-					("You do not have permission to install tasks on this server: " + attachmentName);	
+					("You do not have permission to install tasks on this server: " + fileNameForError);	
 					}
 				} else {
 					// tasks are to be installed and we are allowed
@@ -209,20 +211,20 @@ try {
 		} else if (isSuiteZip){
 			if (!suiteInstallAllowed) {
 				throw new WebServiceException
-					("You do not have permission to install suites on this server: " + attachmentName);	
+					("You do not have permission to install suites on this server: " + fileNameForError);	
 			} 
 			// do the real installation
 			lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive);
 		} else if (isPipelineZip) {
 			if (!pipelineInstallAllowed) {
 				throw new WebServiceException
-					("You do not have permission to install pipelines on this server: " + attachmentName);
+					("You do not have permission to install pipelines on this server: " + fileNameForError);
 			} 
 			lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive);
 		} else { // must be a task
 			if (!taskInstallAllowed){
 				throw new WebServiceException
-					("You do not have permission to install tasks on this server: " + attachmentName);
+					("You do not have permission to install tasks on this server: " + fileNameForError);
 			}
 			lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive);			
 		}
