@@ -62,6 +62,12 @@ import org.xml.sax.InputSource;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.tools.ant.taskdefs.Expand;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Target;
+
+
+
 import org.genepattern.server.AnalysisServiceException;
 import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.server.indexer.Indexer;
@@ -3231,21 +3237,20 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 						fileList[i].delete();
 					}
 
+// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+   
 					String folder = null;
-					for (Enumeration eEntries = zipFile.entries(); eEntries
-							.hasMoreElements();) {
+					for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
 						zipEntry = (ZipEntry) eEntries.nextElement();
 						if (zipEntry.getName().equals(MANIFEST_FILENAME)) {
 							continue;
 						}
 						is = zipFile.getInputStream(zipEntry);
 						name = zipEntry.getName();
-						if (zipEntry.isDirectory() || name.indexOf("/") != -1
-								|| name.indexOf("\\") != -1) {
+
+						if (zipEntry.isDirectory() || name.indexOf("/") != -1 || name.indexOf("\\") != -1) {
 							// TODO: mkdirs()
-							_cat
-									.warn("installTask: skipping hierarchically-entered name: "
-											+ name);
+							_cat.warn("installTask: skipping hierarchically-entered name: "+ name);
 							continue;
 						}
 
@@ -3283,22 +3288,24 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 											+ outFile.getCanonicalPath() + " to "
 											+ oldVersion.getCanonicalPath());
 							}
-							os = new FileOutputStream(outFile);
-							fileLength = zipEntry.getSize();
-							numRead = 0;
-							byte[] buf = new byte[100000];
-							while ((i = is.read(buf, 0, buf.length)) > 0) {
-								os.write(buf, 0, i);
-								numRead += i;
-							}
-							os.close();
-							os = null;
-							outFile.setLastModified(zipEntry.getTime());
-							if (numRead != fileLength) {
-								vProblems.add("only read " + numRead + " of "
-										+ fileLength + " bytes in " + zipFilename
-										+ "'s " + zipEntry.getName());
-							}
+						//	os = new FileOutputStream(outFile);
+						//	fileLength = zipEntry.getSize();
+						//	numRead = 0;
+						//	byte[] buf = new byte[100000];
+						//	while ((i = is.read(buf, 0, buf.length)) > 0) {
+						//		os.write(buf, 0, i);
+						//		numRead += i;
+						//	}
+						//	os.close();
+						//	os = null;
+						//	outFile.setLastModified(zipEntry.getTime());
+						//	if (numRead != fileLength) {
+						//		vProblems.add("only read " + numRead + " of "
+						//				+ fileLength + " bytes in " + zipFilename
+						//				+ "'s " + zipEntry.getName());
+						//	}
+
+
 						} catch (IOException ioe) {
 							String msg = "error unzipping file " + name + " from "
 									+ zipFilename + ": " + ioe.getMessage();
@@ -3309,7 +3316,20 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 							os.close();
 							os = null;
 						}
+
+
 					}
+					//
+					// unzip using ants classes to allow file permissions to be retained
+ 					//
+System.out.println("EXPANDING THE ZIP FILE: " + zipFilename);
+					Expander expander = new Expander();
+    					expander.setSrc(new File(zipFilename));
+    					expander.setDest(new File(taskDir));
+    					expander.execute();
+
+// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 				}
 			}
 		} catch (Exception e) {
@@ -3333,6 +3353,9 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 		//_cat.debug("installTask: done.");
 		return lsid;
 	}
+
+ 	
+
 
 	public static String installNewTask(String zipFilename, String username,
 			int access_id, ITaskIntegrator taskIntegrator) throws TaskInstallationException {
@@ -4377,6 +4400,22 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 	}
 
 } // end GenePatternAnalysisTask class
+
+
+
+/**
+ * The Expander uses ant's unzip instead of Java's to preserve file permissions
+ */
+final class Expander extends Expand {
+      	public Expander() {
+      		project = new Project();
+            	project.init();
+            	taskType = "unzip";
+            	taskName = "unzip";
+            	target = new Target();
+        	}       
+	}
+
 
 /**
  * The GenePatternTaskDBLoader dynamically creates Omnigene TASK_MASTER table
