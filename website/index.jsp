@@ -37,7 +37,6 @@
 try {
 
 String agent = request.getHeader("USER-AGENT");
- System.out.println("\n\nAGENT=" + agent);
 String iFrameWidth=" width='100%'; ";
 if (agent.indexOf("Safari") >= 0) {
 	iFrameWidth = " width='250px'; ";
