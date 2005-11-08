@@ -1,11 +1,14 @@
 package org.genepattern.data.matrix;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- *  A one-dimensional matrix used to hold class assignment information.
- *
- *@author    Joshua Gould
+ * A one-dimensional matrix used to hold class assignment information.
+ * 
+ * @author Joshua Gould
  */
 public class ClassVector {
 	Map classNumber2IndicesMap;
@@ -16,11 +19,11 @@ public class ClassVector {
 
 	int classCount;
 
-
 	/**
-	 *  Constructs a new class vector from the array of class assignments
-	 *
-	 *@param  x  the class assignments
+	 * Constructs a new class vector from the array of class assignments
+	 * 
+	 * @param x
+	 *            the class assignments
 	 */
 	public ClassVector(String[] x) {
 		this.assignments = new int[x.length];
@@ -29,7 +32,8 @@ public class ClassVector {
 		int maxClassNumber = 0;
 		Map className2ClassNumberMap = new HashMap();
 		for (int i = 0; i < x.length; i++) {
-			Integer classNumberInteger = (Integer) className2ClassNumberMap.get(x[i]);
+			Integer classNumberInteger = (Integer) className2ClassNumberMap
+					.get(x[i]);
 			if (classNumberInteger == null) {
 				classNumberInteger = new Integer(maxClassNumber++);
 				className2ClassNumberMap.put(x[i], classNumberInteger);
@@ -52,13 +56,13 @@ public class ClassVector {
 		this.classCount = classCount;
 	}
 
-
 	/**
-	 *  Constructs a new class vector that is the union of this class vector with
-	 *  the given class vector
-	 *
-	 *@param  classVector  the class vector
-	 *@return              the union
+	 * Constructs a new class vector that is the union of this class vector with
+	 * the given class vector
+	 * 
+	 * @param classVector
+	 *            the class vector
+	 * @return the union
 	 */
 	public ClassVector union(ClassVector classVector) {
 		int[][] lookup = new int[getClassCount()][classVector.getClassCount()];
@@ -71,41 +75,42 @@ public class ClassVector {
 		String[] assignments = new String[size()];
 		for (int i = 0; i < size(); i++) {
 			assignments[i] = "Class "
-					 + lookup[getAssignment(i)][classVector.getAssignment(i)];
+					+ lookup[getAssignment(i)][classVector.getAssignment(i)];
 		}
 		return new ClassVector(assignments);
 	}
 
-
 	/**
-	 *  Gets the number of assignments in this class vector
-	 *
-	 *@return    the number of assignments
+	 * Gets the number of assignments in this class vector
+	 * 
+	 * @return the number of assignments
 	 */
 	public int size() {
 		return assignments.length;
 	}
 
-
 	/**
-	 *  Constructs and returns a new class vector that contains the indicated
-	 *  cells. Indices can be in arbitrary order.
-	 *
-	 *@param  includeSlicedClassOnly  Whether the returned class vector should have
-	 *      a class count equal to the class count in the this class vector, even
-	 *      if the returned class vector only less classes than this class vector.
-	 *@param  order                   the indices
-	 *@return                         the new class vector
+	 * Constructs and returns a new class vector that contains the indicated
+	 * cells. Indices can be in arbitrary order.
+	 * 
+	 * @param includeSlicedClassOnly
+	 *            Whether the returned class vector should have a class count
+	 *            equal to the class count in the this class vector, even if the
+	 *            returned class vector only less classes than this class
+	 *            vector.
+	 * @param order
+	 *            the indices
+	 * @return the new class vector
 	 */
 	public ClassVector slice(int[] order, boolean includeSlicedClassOnly) {
-      if(includeSlicedClassOnly) {
-         String[] x = new String[order.length];
-         for (int i = 0, length = order.length; i < length; i++) {
-            x[i] = this.getClassName(this.assignments[order[i]]);
-         }
-         return new ClassVector(x);
-      }
-      
+		if (includeSlicedClassOnly) {
+			String[] x = new String[order.length];
+			for (int i = 0, length = order.length; i < length; i++) {
+				x[i] = this.getClassName(this.assignments[order[i]]);
+			}
+			return new ClassVector(x);
+		}
+
 		int[] newAssignments = new int[order.length];
 		Map newClassNumber2IndicesMap = new HashMap();
 		for (int i = 0, length = order.length; i < length; i++) {
@@ -114,29 +119,27 @@ public class ClassVector {
 			List newIndices = (List) newClassNumber2IndicesMap.get(assignment);
 			if (newIndices == null) {
 				newIndices = new ArrayList();
-				newClassNumber2IndicesMap.put(assignment,
-						newIndices);
+				newClassNumber2IndicesMap.put(assignment, newIndices);
 
 			}
 			newIndices.add(new Integer(i));
 		}
 		return new ClassVector(newClassNumber2IndicesMap, newAssignments,
-				 classNumber2LabelMap, classCount);
+				classNumber2LabelMap, classCount);
 	}
 
-
 	/**
-	 *  Constructs and returns a new class vector that contains the indicated
-	 *  cells. Indices can be in arbitrary order. The class count in the returned
-	 *  class vector will be the same as this class vector.
-	 *
-	 *@param  order  the indices
-	 *@return        the new class vector
+	 * Constructs and returns a new class vector that contains the indicated
+	 * cells. Indices can be in arbitrary order. The class count in the returned
+	 * class vector will be the same as this class vector.
+	 * 
+	 * @param order
+	 *            the indices
+	 * @return the new class vector
 	 */
 	public ClassVector slice(int[] order) {
 		return slice(order, false);
 	}
-
 
 	public String toAssignmentString() {
 		StringBuffer sb = new StringBuffer();
@@ -148,7 +151,7 @@ public class ClassVector {
 		}
 		return sb.toString();
 	}
-	
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0, length = assignments.length; i < length; i++) {
@@ -160,51 +163,47 @@ public class ClassVector {
 		return sb.toString();
 	}
 
-
 	/**
-	 *  Gets the number of different possible values taken by the class
-	 *  assignments. Note that this can be greater than the actual number of
-	 *  classes contained in this class vector.
-	 *
-	 *@return    The number of classes.
+	 * Gets the number of different possible values taken by the class
+	 * assignments. Note that this can be greater than the actual number of
+	 * classes contained in this class vector.
+	 * 
+	 * @return The number of classes.
 	 */
 	public int getClassCount() {
 		return classCount;
 	}
 
-
 	/**
-	 *  Gets the class name for the specified class number
-	 *
-	 *@param  classNumber  The class number
-	 *@return              The class name.
+	 * Gets the class name for the specified class number
+	 * 
+	 * @param classNumber
+	 *            The class number
+	 * @return The class name.
 	 */
 	public String getClassName(int classNumber) {
 		return (String) classNumber2LabelMap.get(new Integer(classNumber));
 	}
 
-
 	/**
-	 *  Gets the class assignment
-	 *
-	 *@param  index  The index
-	 *@return        The assignment
+	 * Gets the class assignment
+	 * 
+	 * @param index
+	 *            The index
+	 * @return The assignment
 	 */
 	public int getAssignment(int index) {
 		return assignments[index];
 	}
 
-
 	/**
-	 *  Allocates a new array containing the class assignments
-	 *
-	 *@return    The assignments
+	 * Allocates a new array containing the class assignments
+	 * 
+	 * @return The assignments
 	 */
 	public int[] getAssignments() {
 		return (int[]) assignments.clone();
 	}
-	
-	
 
 	/**
 	 * Creates a array containing all one versus all class vectors. For example
@@ -232,7 +231,42 @@ public class ClassVector {
 		}
 		return array;
 	}
-	
+
+	/**
+	 * Creates a array containing all pairwise class vectors. For example if
+	 * this class vector contained the classes 'A', 'B', and 'C', the returned
+	 * array would contain 2 elements: 'A' vs 'B' and 'B' vs 'C'
+	 * 
+	 * @return all pairwise class vectors
+	 */
+	public ClassVector[] getAllPairs() {
+		int n = getClassCount();
+		// int r = 3;
+		// BigInteger nFact = factorial(n);
+		// BigInteger rFact = factorial(r);
+		// BigInteger nminusrFact = factorial(n - r);
+		// BigInteger totalBigInt = nFact.divide(rFact.multiply(nminusrFact));
+		// int total = totalBigInt.intValue();
+		List list = new ArrayList();
+
+		for (int i = 0; i < n; i++) {
+			for (int j = i + 1; j < n; j++) {
+				int[] iIndices = getIndices(i);
+				int[] jIndices = getIndices(j);
+				String[] x = new String[iIndices.length + jIndices.length];
+				for (int k = 0; k < iIndices.length; k++) {
+					x[k] = getClassName(i);
+				}
+				for (int k = 0; k < jIndices.length; k++) {
+					x[k + iIndices.length] = getClassName(j);
+				}
+				ClassVector pair = new ClassVector(x);
+				list.add(pair);
+			}
+		}
+		return (ClassVector[]) list.toArray(new ClassVector[0]);
+	}
+
 	/**
 	 * Gets the indices in the assignments array that have the specified class
 	 * number.
@@ -256,4 +290,3 @@ public class ClassVector {
 	}
 
 }
-
