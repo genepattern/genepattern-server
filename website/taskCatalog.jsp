@@ -36,7 +36,6 @@
 
 	String[] HEADINGS = {
 		"name (version)",
-		InstallTask.STATE,
 		InstallTask.columnNameToHRV(GPConstants.TASK_TYPE),
 		"details",
 	};
@@ -673,7 +672,10 @@ Select from the following tasks from the <a href="<%= System.getProperty("Module
 	<br>source: <%= StringUtils.htmlEncode(authority) %>
 <% } %>
 </span>
+<br><a href="<%=task.getURL()%>"><img border='0' src="skin/zip.jpeg"/>download zip</a>
+
 </td>
+
 </tr>
 
 <tr>
