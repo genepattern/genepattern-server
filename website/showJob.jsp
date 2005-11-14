@@ -11,6 +11,7 @@
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.webservice.WebServiceException,
        	org.genepattern.server.webservice.server.local.*,
+		org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient , 
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
@@ -32,8 +33,14 @@ String userID = (String)request.getAttribute("userID"); // get userID but don't 
 
 JobInfo job = null;
 LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
+ParameterInfo[] formalParamInfos = new ParameterInfo[0];
 try {
       job = analysisClient.getJob((new Integer(jobId)).intValue());
+
+	TaskInfo task = GenePatternAnalysisTask.getTaskInfo(job.getTaskLSID(), userID);
+	formalParamInfos = task.getParameterInfoArray();
+	
+
 } catch(WebServiceException wse) {
 	wse.printStackTrace();
 }
@@ -63,6 +70,7 @@ midnight.set(Calendar.MILLISECOND, 0);
 
 boolean hasLog = false;
 int outFileCount=1;
+HashMap formalParamMap = new HashMap();
 
 //// GET THE EXECUTION LOG FOR WRITING TO THE TEXTAREA
    job = analysisClient.getJob(job.getJobNumber());
@@ -79,15 +87,22 @@ int outFileCount=1;
    
    out.print("<td> completed: " + formatter.format(completed)+"</td>");
    out.println("<tr><td colspan=2><P><B>output Files</b></td></tr>");  
+   for (int k=0; k < formalParamInfos.length; k++){
+		ParameterInfo  formalParam = formalParamInfos[k];
+		formalParamMap.put(formalParam.getName(), formalParam);
+   }
+
+
       
    if(params!=null && params.length > 0) {
      
 	for(int j = 0; j < params.length; j++) {
          ParameterInfo parameterInfo = params[j];
- 
+ 	   ParameterInfo formalParam = (ParameterInfo)formalParamMap.get(parameterInfo.getName());
+	  
          if(parameterInfo.isOutputFile()) {
 
-         String value = parameterInfo.getValue();
+         String value = parameterInfo.getUIValue(formalParam);
            int index = value.lastIndexOf(File.separator);
 	     String altSeperator = "/";
 	     if (index == -1) index = value.lastIndexOf(altSeperator);
@@ -108,9 +123,10 @@ int outFileCount=1;
 
 	out.println("<tr><td colspan=2><P><B>Input Parameters</b></td></tr>");  
       for(int j = 0; j < params.length; j++) {
-
+  	 
          ParameterInfo parameterInfo = params[j];
-System.out.println("Val=" + parameterInfo.getValue());
+   ParameterInfo formalParam = (ParameterInfo)formalParamMap.get(parameterInfo.getName());
+	
 
 	  	if (!parameterInfo.isOutputFile()){	
 			out.print("<tr><td align=right>");
@@ -121,7 +137,6 @@ System.out.println("Val=" + parameterInfo.getValue());
 				String axisName = f.getName();
 				boolean fileExists = f.exists();
 				boolean isURL=false;
-System.out.println("Val=" + parameterInfo.getValue());
 				if (fileExists){
 					out.println("<a href=\"getInputFile.jsp?file="+StringUtils.htmlEncode(axisName)+  "\" target=\"_blank\" > ");
 				} else {
@@ -147,14 +162,14 @@ System.out.println("Val=" + parameterInfo.getValue());
  				boolean isURL=false;
 
 				try {// see if a URL was passed in
-					URL url = new URL(parameterInfo.getValue());
+					URL url = new URL(parameterInfo.getUIValue(formalParam));
 					out.println("<a href=\""+ parameterInfo.getValue()+"\" > ");				
 					isURL = true;
 				} catch (Exception e){
 					//e.printStackTrace();
 				}
 
-				out.println(StringUtils.htmlEncode(parameterInfo.getValue()));
+				out.println(StringUtils.htmlEncode(parameterInfo.getUIValue(formalParam)));
 			
 				if (isURL)out.println("</a>");
 
