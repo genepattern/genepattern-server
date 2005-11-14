@@ -58,8 +58,6 @@ public class HTMLPipelineView implements IPipelineView {
 	public HTMLPipelineView(Writer writer, String submitURL, String userAgent,
 			String pipelineName) throws Exception {
 
-System.out.println("HPV url=" + submitURL);
-
 		this.writer = writer;
 		this.submitURL = submitURL;
 		this.userAgent = userAgent;
