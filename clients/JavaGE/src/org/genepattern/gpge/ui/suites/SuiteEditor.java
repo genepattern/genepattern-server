@@ -467,7 +467,9 @@ public class SuiteEditor extends JPanel {
 
 			privacyComboBox = new JComboBox(
 					new String[] { "Public", "Private" });
-			if (suiteInfo.getAccessId() == GPConstants.ACCESS_PRIVATE) {
+			if (suiteInfo.getAccessId() == GPConstants.ACCESS_PUBLIC) {
+				privacyComboBox.setSelectedIndex(0);
+			} else{
 				privacyComboBox.setSelectedIndex(1);
 			}
 

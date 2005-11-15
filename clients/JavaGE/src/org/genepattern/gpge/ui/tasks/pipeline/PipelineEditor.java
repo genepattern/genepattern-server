@@ -774,7 +774,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 			privacyComboBox = new JComboBox(
 					new String[] { "Public", "Private" });
-			if (model.getPrivacy() == GPConstants.ACCESS_PRIVATE) {
+			if (model.getPrivacy() == GPConstants.ACCESS_PUBLIC) {
+				privacyComboBox.setSelectedIndex(0);
+			} else {
 				privacyComboBox.setSelectedIndex(1);
 			}
 
