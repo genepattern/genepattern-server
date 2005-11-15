@@ -144,7 +144,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 				HttpURLConnection httpConn = (HttpURLConnection) connection;
 				if (httpConn.getResponseCode() == HttpURLConnection.HTTP_GONE) {
 					throw new FileNotFoundException(fileName
-							+ " has been deleted");
+							+ " is not currently available.");
 				}
 			}
 			lastModifiedDate = connection.getHeaderFieldDate("X-lastModified",
