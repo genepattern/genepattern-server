@@ -1,17 +1,29 @@
 package org.genepattern.gpge.ui.tasks;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import javax.xml.parsers.ParserConfigurationException;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
-import org.genepattern.util.GPConstants;
-import org.genepattern.webservice.*;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.gpge.GenePattern;
-import org.xml.sax.SAXException;
+import org.genepattern.gpge.ui.maindisplay.CenteredDialog;
+import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.AnalysisWebServiceProxy;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.JobStatus;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * Runs tasks for the GPGE
@@ -31,7 +43,7 @@ public class TaskLauncher {
 	 * @param username
 	 *            Description of the Parameter
 	 */
-	public static void submitVisualizer(AnalysisService svc,
+public static void submitVisualizer(final AnalysisService svc,
 			ParameterInfo[] paramInfos, String username,
 			AnalysisWebServiceProxy proxy) {
 		try {
@@ -69,9 +81,35 @@ public class TaskLauncher {
 				}
 			}
 
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					final JDialog d = new CenteredDialog(GenePattern.getDialogParent());
+					d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+					JLabel l = new JLabel("Launching " + svc.getTaskInfo().getName()
+							+ "...", JLabel.CENTER);
+					
+					d.getContentPane().add(l);
+					d.setSize(200, 100);
+
+					d.setVisible(true);
+					Timer t = new Timer(1000, new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							d.setVisible(false);
+						}
+					});
+					t.setRepeats(false);
+					t.start();
+				}
+			});
+			
+			
+			
 			new org.genepattern.gpge.ui.tasks.JavaGELocalTaskExecutor(svc
 					.getTaskInfo(), substitutions, username, svc.getServer())
 					.exec();
+			
+			
+
 			JobInfo jobInfo = proxy.recordClientJob(svc.getTaskInfo().getID(),
 					paramInfos);
 			AnalysisJob job = new AnalysisJob(svc.getServer(), jobInfo, true);
@@ -86,7 +124,6 @@ public class TaskLauncher {
 		}
 
 	}
-
 	/**
 	 * @param svc
 	 *            the analysis service to run
