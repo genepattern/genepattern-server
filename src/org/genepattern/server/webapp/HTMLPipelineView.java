@@ -13,12 +13,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.ArrayList;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.util.LSIDUtil;
 import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
@@ -739,6 +741,7 @@ public class HTMLPipelineView implements IPipelineView {
 			int taskNum = 0;
 			boolean stopLoading = false;
 			String missingLSIDs = "";
+			ArrayList loadErrors = new ArrayList();
 			for (Enumeration eTasks = model.getTasks().elements(); eTasks
 					.hasMoreElements(); taskNum++) {
 				s.append("</script><script language=\"Javascript\">\n");
@@ -756,8 +759,7 @@ public class HTMLPipelineView implements IPipelineView {
 					//				System.err.println("HTMLPipelineView.getJavascript:
 					// legacy pipeline " + model.getName() + " uses task " +
 					// jobSubmission.getName() + " but lacks its LSID");
-					for (Iterator itTasks = tmCatalog.iterator(); itTasks
-							.hasNext();) {
+					for (Iterator itTasks = tmCatalog.iterator(); itTasks.hasNext();) {
 						taskInfo = (TaskInfo) itTasks.next();
 						if (taskInfo.getName().equals(jobSubmission.getName())) {
 							break;
@@ -766,16 +768,24 @@ public class HTMLPipelineView implements IPipelineView {
 						}
 					}
 				}
+
+
 				if (taskInfo == null) {
-					System.err
-							.println("HTMLPipelineView.getJavascript: Unable to load "
-									+ jobSubmission.getName()
-									+ " ("
-									+ jobSubmission.getLSID() + ")");
-					s.append("alert('Unable to load "
-									+ jobSubmission.getName()
-									+ " ("
-									+ jobSubmission.getLSID() + "')\n");
+					LSID missingLSID = new LSID(jobSubmission.getLSID());
+					
+					String msg = jobSubmission.getName();
+					String authType = LSIDUtil.getInstance().getAuthorityType(missingLSID);
+
+					if (!(authType.equalsIgnoreCase(LSIDUtil.AUTHORITY_BROAD))){
+						msg += " (" + jobSubmission.getLSID() + ")";
+					} else {
+						msg += "("+ missingLSID.getVersion()+")";
+					}
+
+					//System.err.println("HTMLPipelineView.getJavascript:  " +msg);	
+					//s.append("alert('"+msg+"')\n");
+					loadErrors.add(msg);
+
 					missingLSIDs = missingLSIDs + "&LSID=" + jobSubmission.getLSID();
 					stopLoading = true;
 				}
@@ -877,6 +887,16 @@ public class HTMLPipelineView implements IPipelineView {
 					}
 				}
 			}
+if (loadErrors.size() > 0) {
+	StringBuffer msg = new StringBuffer("Unable to load: ");
+	for (int i=0; i < loadErrors.size(); i++){
+		msg.append(loadErrors.get(i));
+		if (i != (loadErrors.size()-1))
+			msg.append(", ");
+	}
+	s.append("alert('"+msg.toString()+"');");	
+
+}
 			if (stopLoading) {
 				s.append("if (window.confirm('Loading missing tasks?')) window.location='taskCatalog.jsp?checkAll=1" + missingLSIDs + "';\n");
 			}
