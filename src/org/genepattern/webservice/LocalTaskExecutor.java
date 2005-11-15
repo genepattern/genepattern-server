@@ -11,8 +11,10 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +25,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author Joshua Gould
- *
+ * 
  */
 public class LocalTaskExecutor extends TaskExecutor {
 	private final static String JAVA = "java";
@@ -62,8 +64,7 @@ public class LocalTaskExecutor extends TaskExecutor {
 	private static int MAX_FILE_NAME_LENGTH = 255;
 
 	public LocalTaskExecutor(TaskInfo taskInfo, Map substitutions,
-			String username, String server)
-			throws WebServiceException {
+			String username, String server) throws WebServiceException {
 		super(taskInfo, substitutions, username);
 		this.server = server;
 		try {
@@ -181,14 +182,14 @@ public class LocalTaskExecutor extends TaskExecutor {
 		try {
 			if (baseName.indexOf("retrieveResults.jsp") != -1
 					&& (j = file.lastIndexOf("filename=")) != -1) { // for
-																	// http://18.103.3.29:8080/gp/retrieveResults.jsp?job=1122&filename=all_aml_wv_xval.odf
+				// http://18.103.3.29:8080/gp/retrieveResults.jsp?job=1122&filename=all_aml_wv_xval.odf
 				String temp = URLDecoder.decode(file.substring(j
 						+ "filename=".length(), file.length()), "UTF-8");
 				return new java.util.StringTokenizer(temp, "&").nextToken();
 			}
 			if (baseName.indexOf("getFile.jsp") != -1
 					&& (j = file.lastIndexOf("file=")) != -1) { // for
-																// http://cmec5-ea2.broad.mit.edu:8080/gp/getFile.jsp?task=try.SOMClusterViewer.pipeline&file=ten.res
+				// http://cmec5-ea2.broad.mit.edu:8080/gp/getFile.jsp?task=try.SOMClusterViewer.pipeline&file=ten.res
 				String temp = URLDecoder.decode(file.substring(j
 						+ "file=".length(), file.length()), "UTF-8");
 				return new java.util.StringTokenizer(temp, "&").nextToken();
@@ -220,15 +221,15 @@ public class LocalTaskExecutor extends TaskExecutor {
 				}
 				if (formalParameters[i].isInputFile()) {
 					if (value == null || new java.io.File(value).exists()) { // value
-																			 // will
-																			 // be
-																			 // null
-																			 // when
-																			 // it's
-																			 // an
-																			 // optional
-																			 // input
-																			 // file
+						// will
+						// be
+						// null
+						// when
+						// it's
+						// an
+						// optional
+						// input
+						// file
 						continue;
 					}
 					URL url = null;
@@ -271,7 +272,27 @@ public class LocalTaskExecutor extends TaskExecutor {
 		FileOutputStream fos = null;
 		File file = null;
 		try {
-			is = url.openStream();
+			URLConnection conn = url.openConnection();
+			if (conn instanceof HttpURLConnection) {
+				if (((HttpURLConnection) conn).getResponseCode() == HttpURLConnection.HTTP_GONE) {
+					String urlFile = url.getFile();
+					String baseName = urlFile.substring(urlFile
+							.lastIndexOf("/") + 1);
+
+					if (baseName.indexOf("retrieveResults.jsp") != -1
+							&& (urlFile.lastIndexOf("filename=")) != -1) {
+						throw new IOException("The file "
+								+ destinationFile.getName()
+								+ " is not available.");
+					} else {
+						throw new IOException("The url " + url
+								+ " is not available.");
+					}
+
+				}
+
+			}
+			is = conn.getInputStream();
 			fos = new FileOutputStream(destinationFile);
 			byte[] buf = new byte[100000];
 			int j;
@@ -309,18 +330,18 @@ public class LocalTaskExecutor extends TaskExecutor {
 				supportFileDates = taskIntegratorProxy
 						.getLastModificationTimes(taskId, supportFileNames);
 			} catch (WebServiceException wse) {
-            Throwable rootCause = wse.getRootCause();
-            if(rootCause instanceof org.apache.axis.AxisFault) { 
-               org.apache.axis.AxisFault e = (org.apache.axis.AxisFault) rootCause;
-               javax.xml.namespace.QName noService = new javax.xml.namespace.QName(
-                     "http://xml.apache.org/axis/", "Server.NoService");
-               if (e.getFaultCode().equals(noService)) {
-                  oldServer = true;
-               } 
-            } else {
-               throw wse;
-            }
-         }
+				Throwable rootCause = wse.getRootCause();
+				if (rootCause instanceof org.apache.axis.AxisFault) {
+					org.apache.axis.AxisFault e = (org.apache.axis.AxisFault) rootCause;
+					javax.xml.namespace.QName noService = new javax.xml.namespace.QName(
+							"http://xml.apache.org/axis/", "Server.NoService");
+					if (e.getFaultCode().equals(noService)) {
+						oldServer = true;
+					}
+				} else {
+					throw wse;
+				}
+			}
 		}
 		if (oldServer) {
 			InputStream is = null;
@@ -442,13 +463,13 @@ public class LocalTaskExecutor extends TaskExecutor {
 		}
 
 		for (int i = 0; i < downloadSupportFileNames.size(); i++) { // using
-																	// jsps to
-																	// download
-																	// files is
-																	// quicker
-																	// than
-																	// using
-																	// SOAP
+			// jsps to
+			// download
+			// files is
+			// quicker
+			// than
+			// using
+			// SOAP
 			try {
 				String fileName = (String) downloadSupportFileNames.get(i);
 				String task = null;
