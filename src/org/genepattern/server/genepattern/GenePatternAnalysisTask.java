@@ -2218,9 +2218,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 							.add(taskName
 									+ ": "
 									+ actualParams[actual].getName()
-									+ " has been declared as a parameter more than once"
-									+ " for task "
-									+ props.get(IGPConstants.LSID));
+									+ " has been declared as a parameter more than once");
 				}
 				paramNames.add(actualParams[actual].getName());
 				/*
@@ -2249,8 +2247,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 
 				if (!foundFormal) {
 					vProblems.add(taskName + ": supplied parameter " + name
-							+ " is not part of the definition for task "
-							+ props.get(IGPConstants.LSID));
+							+ " is not part of the definition.");
 					continue;
 				}
 
@@ -2264,15 +2261,13 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 								.length() == 0) {
 					if (commandLine.indexOf(name) == -1) {
 						vProblems.add(taskName + ": non-optional parameter "
-								+ name + " is not cited in the command line"
-								+ " for task " + props.get(IGPConstants.LSID));
+								+ name + " is not cited in the command line.");
 					} else if (enforceOptionalNonBlank
 							&& (actualParams[actual].getValue() == null || actualParams[actual]
 									.getValue().length() == 0)
 							&& formalParams[formal].getValue().length() == 0) {
 						vProblems.add(taskName + ": non-optional parameter "
-								+ name + " is blank for task "
-								+ props.get(IGPConstants.LSID));
+								+ name + " is blank.");
 					}
 				}
 				// check that parameter is not named the same as a predefined
@@ -2284,8 +2279,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 								.add(taskName
 										+ ": parameter "
 										+ name
-										+ " is a reserved name and cannot be used as a parameter name for task "
-										+ props.get(IGPConstants.LSID));
+										+ " is a reserved name and cannot be used as a parameter name.");
 					}
 				}
 
@@ -2324,8 +2318,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 						vProblems.add("Default value '" + dflt
 								+ "' for parameter " + name
 								+ " was not found in the choice list '"
-								+ choices + "'" + " for task "
-								+ props.get(IGPConstants.LSID));
+								+ choices + "'.");
 					}
 				}
 
@@ -2356,8 +2349,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 						vProblems.add("Value '" + actualValue
 								+ "' for parameter " + name
 								+ " was not found in the choice list '"
-								+ choices + "'" + " for task "
-								+ props.get(IGPConstants.LSID));
+								+ choices + "'.");
 					}
 				}
 			}
@@ -2437,8 +2429,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 						vProblems.add(taskName
 								+ ": no substitution available for "
 								+ LEFT_DELIMITER + varName + RIGHT_DELIMITER
-								+ " in " + source + " " + commandLine
-								+ " for task " + props.get(IGPConstants.LSID));
+								+ " in " + source + " " + commandLine + ".");
 					}
 				}
 			}
