@@ -94,14 +94,14 @@ function checkAll(frm, bChecked) {
 }
 
 function changeFilter(fld) {
-	//window.alert("changed " + fld.name + " to " + fld.options[fld.selectedIndex].value);
+	window.alert("changed " + fld.name + " to " + fld.options[fld.selectedIndex].value);
 	var frm = fld.form;
 	loc = window.location.href.substring(0, window.location.href.length-window.location.search.length) + "?";
 	loc = loc + "<%= SORT %>=" + escape(frm.elements['<%= SORT %>'].options[frm.elements['<%= SORT %>'].selectedIndex].value);
 	for (col = 0; col < columns.length ; col++) {
 		var selector = frm.elements[columns[col]];
 		for (sel = 0; sel < selector.length; sel++) {
-			if (selector.options[sel].selected && sel != 0) {
+			if (selector.options[sel].selected ) { //&& sel != 0
 			loc = loc + "&" + columns[col] + "=" + escape(selector.options[sel].value);
 			}
 		}
@@ -343,6 +343,7 @@ Select from the following tasks from the <a href="<%= System.getProperty("Module
 <font size="+1"><b>Filters: </b></font>
 </td>
 <td valign="top">
+<table><tr><td>
 <%
 	for (col = 0; col < columns.length; col++) {
 		Vector vCol = (Vector)hmFilter.get(columns[col]); // user requested choices
@@ -351,8 +352,11 @@ Select from the following tasks from the <a href="<%= System.getProperty("Module
 			values = new String[] { InstallTask.NEW, InstallTask.UPDATED, InstallTask.UPTODATE };
 		}
 
-		%><select name="<%= columns[col] %>" onchange="changeFilter(this);" multiple size="<%= values.length+1 %>" style="vertical-align: top">
-		<option value="" style="font-weight: bold"><%= InstallTask.columnNameToHRV(columns[col]) %></option>
+		%>
+
+		<td valign='top'><b><%= InstallTask.columnNameToHRV(columns[col]) %><b><br>
+
+		<select name="<%= columns[col] %>" onchange="changeFilter(this);" multiple size="<%= values.length %>" style="vertical-align: top">
 <%
 
 		for (int val = 0; val < values.length; val++) {
@@ -363,9 +367,11 @@ Select from the following tasks from the <a href="<%= System.getProperty("Module
 			}
 %>
 		</select><%= !(columns[col].equals(GPConstants.LANGUAGE)) ? " " : "&nbsp;" %>
+		</td>
 <%
 	}
 %>
+</tr></table>
 </td>
 </tr>
 <!-- end filters -->
