@@ -68,16 +68,25 @@ ParameterInfo[] parameterInfoArray = null;
 TaskInfoAttributes tia = null;
 
 if (taskName != null && taskName.length() == 0) taskName = null;
-if (taskName != null) {
+
+Vector errors = (Vector) request.getAttribute("errors");
+if(errors!=null) {  
+	taskInfo = (TaskInfo) request.getAttribute("taskInfo");
+	tia = taskInfo.giveTaskInfoAttributes();
+	parameterInfoArray = taskInfo.getParameterInfoArray();
+	taskName = (String) request.getAttribute("taskName"); // task name entered by user
+
+} else if (taskName != null) {
 	try {
 		taskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, userID);
 		if (taskInfo != null) {
 			taskName = taskInfo.getName();
-		        parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
+		   parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
 			tia = taskInfo.giveTaskInfoAttributes();
 			LSID lsid = new LSID((String)tia.get(GPConstants.LSID));
 			viewOnly |= !LSIDManager.getInstance().getAuthorityType(lsid).equals(LSIDUtil.AUTHORITY_MINE);
-		} else {
+} else {
+	
 %>
 <script language="javascript">
 	window.alert("<%= taskName %> does not exist");
@@ -290,7 +299,9 @@ String thisLSIDNoVersion = "";
 if (tia != null) {
 	try {
 		lsid = tia.get(GPConstants.LSID);
-		thisLSIDNoVersion = new LSID(lsid).toStringNoVersion();
+		if(lsid!=null && !lsid.trim().equals("")) {
+			thisLSIDNoVersion = new LSID(lsid).toStringNoVersion();
+		}
 	} catch (MalformedURLException mue) {
 	}
 }
@@ -346,7 +357,7 @@ if (tia != null) {
 			if (versionlessLSID.equals(thisLSIDNoVersion)) {
 				vVersions.add(lsid);
 			}
-
+			
 			versionlessLSID = l.toStringNoVersion();
 			String key = versionlessLSID+"."+name;			
 			if (hmLSIDsWithoutVersions.containsKey(key) &&
@@ -424,6 +435,24 @@ if (tia != null) {
 	</select>
 <% } %>
 </h2>
+<%
+if(errors!=null) {
+%>
+	<h2>
+	<font color="red">
+	There are some problems with the task that need to be fixed:
+	</h2>
+	<ul>
+	<%	
+		for (java.util.Enumeration eProblems = errors.elements(); eProblems.hasMoreElements(); ) {
+	%>
+			<li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
+	<%
+		}
+}
+%>
+</ul>
+</font>
 
 <form name="task" action="saveTask.jsp" method="post" ENCTYPE="multipart/form-data">
 <input type="hidden" name="<%= GPConstants.FORMER_NAME %>" value="<%= taskInfo != null ? taskInfo.getName() : "" %>">
@@ -439,7 +468,7 @@ Please enter the following information to submit a new or updated analysis task 
   <col align="left" width="*">
   <tr title="Task name without spaces, used as the name by which the task will be invoked.">
   <td align="right"><b>Name:</b></td>
-  <td width="*"><% if (!viewOnly) { %><input name="<%= GPConstants.NAME %>" maxlength="100" size="<%= taskInfo != null ? taskInfo.getName().length() + 2: 20 %>" 
+  <td width="*"><% if (!viewOnly) { %><input name="<%= GPConstants.NAME %>" maxlength="100" size="<%= taskInfo != null ? Math.max(taskInfo.getName().length() + 2, 20): 20 %>" 
   value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<a href='help.jsp#Name' target='help'><img border='0' src='skin/help2.jpg'/></a><% } else { %><%= taskInfo.getName() %><% } %>
 &nbsp;&nbsp;&nbsp;&nbsp;
 
@@ -552,7 +581,12 @@ Please enter the following information to submit a new or updated analysis task 
 
 <% 
 if (taskName != null) {
-	File[] docFiles = taskIntegratorClient.getDocFiles(taskInfo);
+	File[] docFiles = null;
+	try {
+		docFiles = taskIntegratorClient.getDocFiles(taskInfo);
+	} catch(org.genepattern.webservice.WebServiceException wse) {
+		docFiles = new File[0];
+	}
 %><tr><td align="right"><%
 	boolean isPipeline = tia != null && tia.get(GPConstants.TASK_TYPE).equals(GPConstants.TASK_TYPE_PIPELINE);
 	boolean hasDoc = docFiles != null && docFiles.length > 0;
@@ -761,8 +795,12 @@ if (taskName != null) {
   <td width="*">
 <%
    if (taskName != null) {
-	   File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
-	   
+	   File[] allFiles = null;
+	   try {
+	   	allFiles = taskIntegratorClient.getAllFiles(taskInfo);
+	   } catch(org.genepattern.webservice.WebServiceException wse) {
+	   	allFiles = new File[0];
+	   }
 	   for (i = 0; i < allFiles.length; i++) { %>
 		<a href="getFile.jsp?task=<%= (String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%= URLEncoder.encode(allFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(allFiles[i].getName()) %></a> 
 <%	   }  %>
@@ -867,7 +905,7 @@ if (taskName != null) {
 
  </form>
 
-<% if (tia != null) { %>
+<% if (tia != null && errors==null) { %>
 <a href="makeZip.jsp?<%= GPConstants.NAME %>=<%= request.getParameter(GPConstants.NAME) %>&includeDependents=1">package this task into a zip file</a><br>
 <% } %>
 <jsp:include page="footer.jsp"></jsp:include>

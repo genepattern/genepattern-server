@@ -34,23 +34,14 @@
 		 org.genepattern.util.LSID"
 	session="false" contentType="text/html" language="Java" %><%
 
-response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
-response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
-response.setDateHeader("Expires", 0);
+
 
 String userID= (String)request.getAttribute("userID"); // will force login if necessary
 if (userID == null) return; // come back after login
 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 %>
 <jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" />
-<html>
-<head>
-<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
-<link rel="SHORTCUT ICON" href="favicon.ico" >
 
-<title>saved GenePattern task</title>
-</head>
-<body>	
 <%
 int i;
 StringBuffer log = null;
@@ -62,7 +53,6 @@ TaskInfo previousTask = null;
 String taskName = null;
 String forward = null;
 
-try {
 
 // mySmartUpload is from http://www.jspsmart.com/
 
@@ -74,32 +64,8 @@ try { 	mySmartUpload.upload();
     }
 requestParameters = mySmartUpload.getRequest();
 
-/*
-out.println("request parameters:<br>");
-for (java.util.Enumeration eNames = requestParameters.getParameterNames(); eNames.hasMoreElements(); ) {
-	String n = (String)eNames.nextElement();
-	out.println(n + "='" + StringUtils.htmlEncode(requestParameters.getParameter(n)) + "'<br>");
-}
-for (java.util.Enumeration eNames = request.getParameterNames(); eNames.hasMoreElements(); ) {
-	String n = (String)eNames.nextElement();
-	out.println(n + "='" + StringUtils.htmlEncode(request.getParameter(n)) + "'<br>");
-}
-out.println("<hr><br>");
-*/
-
 taskName = requestParameters.getParameter(GPConstants.NAME);
 if (taskName == null ) taskName = request.getParameter(GPConstants.NAME);
-if (taskName == null || taskName.trim().length() == 0) {
-%>
-	<jsp:include page="navbar.jsp"></jsp:include>
-	You must specify a task name or LSID.<br>
-	<a href="javascript:history.back()">back</a><br>
-	<jsp:include page="footer.jsp"></jsp:include>
-	</body>
-	</html>
-<%
-	return;
-}
 
 // save the file attachments, if any, before installing the task, so that it is immediately ready to run
 String lsid = requestParameters.getParameter(GPConstants.LSID);
@@ -112,16 +78,18 @@ if (requestParameters.getParameter("delete") != null || request.getParameter("de
 	try {
 		taskIntegratorClient.deleteTask(lsid);
 %>
+		<%writeHeader(response, out);%>
 		<jsp:include page="navbar.jsp"></jsp:include>
 		<%= taskName %> has been deleted.  Any running jobs using that task have been stopped.<br>
 <%
 	} catch (Throwable t) { 
 %>
+		<%writeHeader(response, out);%>
 		<jsp:include page="navbar.jsp"></jsp:include>
 <%
 		out.println(t + " while attempting to delete " + taskName);
 	} finally {
-%>
+%>	
 		<jsp:include page="footer.jsp"></jsp:include>
 		</body>
 		</html>
@@ -159,6 +127,7 @@ if ((requestParameters.getParameter("deleteFiles") != null || request.getParamet
 					response.sendRedirect(forward + "?" + GPConstants.NAME + "=" + lsid);
 					return;
 				} else { %>
+					<%writeHeader(response, out);%>
 					<jsp:include page="navbar.jsp"></jsp:include>
 					Unable to delete <%= filename %> from <%= taskName %> support files.<br>
 					<jsp:include page="footer.jsp"></jsp:include>
@@ -168,7 +137,8 @@ if ((requestParameters.getParameter("deleteFiles") != null || request.getParamet
 					return;
 				}
 			} catch (Throwable t) { 
-%>
+%>	
+				<%writeHeader(response, out);%>
 				<jsp:include page="navbar.jsp"></jsp:include>
 				<%= t %> while attempting to delete <%= filename %>
 				<br>
@@ -197,14 +167,15 @@ if (request.getParameter("clone") != null) {
 		Vector vProblems = wseme.getErrors();
 		if(vProblems != null && vProblems.size() > 0) {
 %>
+			<%writeHeader(response, out);%>
 			<jsp:include page="navbar.jsp"></jsp:include>
 			There are some problems with the <%= cloneName %> task that need to be fixed:<br><ul>
 <%	
 		    	for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
 %>
-				<li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
+					<li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
 <%
-			}
+				}
 %>
 			</ul><a href="javascript:history.back()">back</a>
 <%
@@ -212,6 +183,7 @@ if (request.getParameter("clone") != null) {
 		}
 	}
 %>
+	<%writeHeader(response, out);%>
 	<jsp:include page="navbar.jsp"></jsp:include>
 	Cloned <%= taskName %> as <%= cloneName %>.<br>
 	<a href="addTask.jsp?<%= GPConstants.NAME%>=<%=lsid %>">edit <%= cloneName %></a><br>
@@ -229,7 +201,7 @@ if (request.getParameter("clone") != null) {
 	</html>
 <%
 	return;
-}
+} // end if request.getParameter("clone")
 
 int access_id = requestParameters.getParameter(GPConstants.PRIVACY).equals(GPConstants.PUBLIC) ? GPConstants.ACCESS_PUBLIC : GPConstants.ACCESS_PRIVATE;
 
@@ -365,10 +337,11 @@ try {
 			attachment = new File(dir, attachmentName);
 			if (attachment.exists()) {
 				File oldVersion = new File(dir, attachment.getName() + ".old");
-				out.println("Replaced " + attachmentName + " (" + attachment.length() + " bytes) in <nobr>" + dir.getPath() + "</nobr>.  Renamed old one to " + oldVersion.getName() + "<br><br>");
 				oldVersion.delete(); // delete the previous .old file
 				boolean renamed = attachment.renameTo(oldVersion);
-				if (!renamed) out.println("failed to rename.<br>");
+				Vector v = new Vector();
+				v.add("failed to rename " + oldVersion.getName() +".");
+				throw new WebServiceErrorMessageException(v);
 			}
 			
 			attachedFile.saveAs(dir.getPath() + File.separator + attachmentName);
@@ -384,11 +357,6 @@ try {
 	vProblems = wseme.getErrors();
 }
 
-if (forward == null) {
-%>
-<jsp:include page="navbar.jsp"></jsp:include>
-<%
-}
 
 if(vProblems != null && vProblems.size() > 0) {
 	if (formerName != null && formerName.length() > 0 && !formerName.equals(taskName)) {
@@ -396,23 +364,16 @@ if(vProblems != null && vProblems.size() > 0) {
 		dir.renameTo(new File(DirectoryManager.getTaskLibDir(formerName, lsid, userID)));
 	}
 
-%>
-	There are some problems with the <%= requestParameters.getParameter(GPConstants.NAME) %> 
-	task description that need to be fixed:<br><ul>
-<%	
-	for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
-%>
-		<li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
-<%
-	}
-%>
-	</ul><a href="javascript:history.back()">back</a><br>
-	<jsp:include page="footer.jsp"></jsp:include>
-	</body>
-	</html>
-<%
-	return;
+	tia.put(GPConstants.LSID, requestParameters.getParameter("LSID"));
+	TaskInfo taskInfo = new TaskInfo(-1,	requestParameters.getParameter(GPConstants.NAME), requestParameters.getParameter(GPConstants.DESCRIPTION), "", tia, userID, access_id);
+	taskInfo.setParameterInfoArray(params);
+	request.setAttribute("errors", vProblems);
+	request.setAttribute("taskInfo", taskInfo);
+	request.setAttribute("taskName", requestParameters.getParameter("name"));
+	request.getRequestDispatcher("addTask.jsp").forward(request, response);
 }
+
+
 
 /*********************************
       begin logging of changes
@@ -478,15 +439,13 @@ timeMS dateTime loginId taskType moduleName  manifest supportFilesChanges URLToE
       end logging of changes
  *********************************/
 
-//if (formerName != null && !formerName.equals("") && !formerName.equals(taskName)) {
-//    	ti.deleteTask(formerName, null);
-//}
-
 	if (forward != null) {
 		response.sendRedirect(forward);
 		return;
 	}
 %>
+    <%writeHeader(response, out);%>
+    <jsp:include page="navbar.jsp" />
     Installation of your <a href="addTask.jsp?<%= GPConstants.NAME %>=<%= URLEncoder.encode(lsid, "UTF-8") %>"><%= taskName %></a> task (version <%= new LSID(lsid).getVersion() %>) is complete.<br><br>
 
     If you write R methods to run tasks, you'll find the R wrapper <a href="taskWrapperGenerator.jsp?<%= GPConstants.NAME %>=<%= URLEncoder.encode(lsid, "UTF-8") %>">here</a>.<br>
@@ -498,21 +457,27 @@ timeMS dateTime loginId taskType moduleName  manifest supportFilesChanges URLToE
 	<jsp:param name="noEnvelope" value="1"/>
 </jsp:include>
 
-<% } catch (Exception e) { %>
-	install of <%= taskName %> task failed: <%= e.getMessage() %>
-	<br><pre>
-<%
-	try {
-		java.io.PrintWriter pw = new java.io.PrintWriter(out);
-	   
-		e.printStackTrace(pw);
-		pw.close();
-	} catch(Throwable t){}
-%>
 	</pre><br>
-	<a href="javascript:history.back()">back</a>
-<% } %>
-   
+	<a href="javascript:history.back()">back</a> 
 <jsp:include page="footer.jsp"></jsp:include>
 </body>
 </html>
+
+<%! 
+public void writeHeader(HttpServletResponse response, JspWriter out) {
+	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
+	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
+	response.setDateHeader("Expires", 0);
+	try {
+	out.println("<html>");
+	out.println("<head>");
+	out.println("<link href=\"skin/stylesheet.css\" rel=\"stylesheet\" type=\"text/css\">");
+	out.println("<link rel=\"SHORTCUT ICON\" href=\"favicon.ico\" >");
+
+	out.println("<title>saved GenePattern task</title>");
+	out.println("</head>");
+	out.println("<body>");
+	} catch(java.io.IOException ioe) {}
+
+}
+%>
