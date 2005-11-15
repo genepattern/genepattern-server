@@ -91,6 +91,7 @@ import org.genepattern.gpge.ui.tasks.Sendable;
 import org.genepattern.gpge.ui.tasks.TaskDisplay;
 import org.genepattern.gpge.ui.treetable.SortableTreeTable;
 import org.genepattern.gpge.ui.util.GUIUtil;
+import org.genepattern.gpge.util.BuildProperties;
 import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -435,10 +436,43 @@ public class GPGE {
 			public void run() {
 
 				try {
-					String lsidAuthority = (String) new org.genepattern.webservice.AdminProxy(
+					Map serviceInfo = new org.genepattern.webservice.AdminProxy(
 							analysisServiceManager.getServer(),
 							analysisServiceManager.getUsername(), false)
-							.getServiceInfo().get("lsid.authority");
+							.getServiceInfo();
+					String lsidAuthority = (String) serviceInfo
+							.get("lsid.authority");
+					String serverVersion = (String) serviceInfo
+							.get("genepattern.version");
+					String clientVersion = BuildProperties.FULL_VERSION;
+					String[] serverVersionTokens = serverVersion.split("\\.");
+					String[] clientVersionTokens = clientVersion.split("\\.");
+					if (serverVersionTokens.length < 2
+							|| clientVersionTokens.length < 2) {
+						SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+								GenePattern
+										.showMessageDialog("Warning: This client version has not been tested with the version of the server that you are connecting to.");
+							}
+						});
+					} else {
+						if (!serverVersionTokens[0]
+								.equals(clientVersionTokens[0])
+								|| !serverVersionTokens[1]
+										.equals(clientVersionTokens[1])) {
+							SwingUtilities.invokeLater(new Runnable() {
+								public void run() {
+									GenePattern
+											.showMessageDialog("Warning: This client version has not been tested with the version of the server that you are connecting to.");
+								}
+							});
+
+						}
+					}
+
+					// make sure major and minor version of server is the same
+					// as the client
+
 					System.setProperty("lsid.authority", lsidAuthority);
 					refreshJobs(false);
 				} catch (WebServiceException wse) {
@@ -692,6 +726,7 @@ public class GPGE {
 	public void startUp() {
 		JWindow splash = GenePattern.showSplashScreen();
 		splash.setVisible(true);
+
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit()
 				.getScreenSize();
