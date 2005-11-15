@@ -1,9 +1,14 @@
-<%@ page import="org.genepattern.server.util.AccessManager,org.genepattern.server.genepattern.GenePatternAnalysisTask,
+<%@ page import="org.genepattern.server.util.AccessManager,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.codegenerator.*, org.genepattern.server.webapp.*, org.genepattern.server.webservice.server.local.LocalAdminClient, 
-       org.genepattern.data.pipeline.*,
-       java.io.*, java.util.zip.*, java.util.*"
-	    session="false" language="Java" contentType="text/plain" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><%
+		 org.genepattern.codegenerator.*, 
+		 org.genepattern.server.webapp.*, 		 		       org.genepattern.server.webservice.server.local.LocalAdminClient, 
+       	 org.genepattern.data.pipeline.*,
+       	 java.io.*, java.util.zip.*, java.util.*"
+
+session="false" language="Java" contentType="text/plain" %>
+
+<jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><%
 
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
@@ -76,5 +81,22 @@
 	} catch (Exception e) {
 		System.err.println(e.getMessage() + " while deserializing pipeline model");
 		e.printStackTrace();
+		response.setContentType("text/html");
+
+		%>
+		<html>
+		<head>
+		<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
+		<link rel="SHORTCUT ICON" href="favicon.ico" >
+		<title>GenePattern</title>
+		</head>
+		<body>	
+		<jsp:include page="navbar.jsp"></jsp:include>
+		<P><B><%=taskInfo.getName()%></b> had an error while trying to generate pipeline code.<br> Please load the pipeline into the pipeline designer, fix any problems,  save it, and then try again.
+<p><a href=pipelineDesigner.jsp?name=<%=pipelineName%>>Load in pipeline designer</a>
+		<jsp:include page="footer.jsp"></jsp:include>
+
+		</body>
+		<%
 	}		
 %>
