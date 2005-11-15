@@ -141,16 +141,6 @@ taskTypes = (String[])tsTaskTypes.toArray(new String[0]);
 
 <script language="javascript">
 
-function showFileFormats(sel, i) {
-	val = sel.value;
-	div = document.getElementById("p" + i + "_fileFormatDiv");
-	if(val=="java.io.File") {
-		div.style.display = "block";
-	} else {
-		div.style.display = "none";
-	}
-}
-
 function onPrivacyChange(selector) {
 	if (selector.options[selector.selectedIndex].value == '<%= GPConstants.PRIVATE %>') {
 		// changing from public to private
@@ -450,7 +440,7 @@ Please enter the following information to submit a new or updated analysis task 
   <tr title="Task name without spaces, used as the name by which the task will be invoked.">
   <td align="right"><b>Name:</b></td>
   <td width="*"><% if (!viewOnly) { %><input name="<%= GPConstants.NAME %>" maxlength="100" size="<%= taskInfo != null ? taskInfo.getName().length() + 2: 20 %>" 
-  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<% } else { %><%= taskInfo.getName() %><% } %>
+  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<a href='help.jsp#Name' target='help'><img border='0' src='skin/help2.jpg'/></a><% } else { %><%= taskInfo.getName() %><% } %>
 &nbsp;&nbsp;&nbsp;&nbsp;
 
 <% if (taskInfo != null && !viewOnly) { %>
@@ -507,6 +497,7 @@ Please enter the following information to submit a new or updated analysis task 
    <%} else {
       out.print(taskInfo != null ? StringUtils.htmlEncode(taskInfo.getDescription()) : "");
   } %>
+<a href='help.jsp#Description' target='help'><img border='0' src='skin/help2.jpg'/></a>
   </td>
   </tr>
 
@@ -520,6 +511,8 @@ Please enter the following information to submit a new or updated analysis task 
   <% } else { 
      out.print(taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.AUTHOR)) : "");
    } %>
+<a href='help.jsp#Author' target='help'><img border='0' src='skin/help2.jpg'/></a>
+
        </td>
   </tr>
 
@@ -539,17 +532,22 @@ Please enter the following information to submit a new or updated analysis task 
       	out.print(owner);
    	}
    %>
+<a href='help.jsp#Owner' target='help'><img border='0' src='skin/help2.jpg'/></a>
   </td>
   </tr>
 
   <tr title="Make available to others">
   <td align="right"><b>Privacy:</b></td>
-  <td width="*"><%= createSelection(tia, GPConstants.PRIVACY, privacies, "onchange=\"onPrivacyChange(this)\"", viewOnly) %></td>
+  <td width="*"><%= createSelection(tia, GPConstants.PRIVACY, privacies, "onchange=\"onPrivacyChange(this)\"", viewOnly) %>
+<a href='help.jsp#Privacy' target='help'><img border='0' src='skin/help2.jpg'/></a>
+</td>
   </tr>
 
   <tr title="Readiness for use by others">
   <td align="right"><b>Quality&nbsp;level:</b></td>
-  <td width="*"><%= createSelection(tia, GPConstants.QUALITY, qualities, "", viewOnly) %></td>
+  <td width="*"><%= createSelection(tia, GPConstants.QUALITY, qualities, "", viewOnly) %>
+<a href='help.jsp#Quality' target='help'><img border='0' src='skin/help2.jpg'/></a>
+</td>
   </tr>
 
 <% 
@@ -595,16 +593,20 @@ if (taskName != null) {
   <tr title="the command line used to invoke the application, using &lt;tags&gt; for param &amp; environment variable substitutions.">
   <td align="right" valign="top"><b>command&nbsp;line:</b><br>
    </td>
-  <td valign="top" width="*"><% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="60" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea> * (required) <% } %></td>
+  <td valign="top" width="*"><% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="60" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea> * (required) <a href='help.jsp#Command' target='help'><img border='0' src='skin/help2.jpg'/></a>
+<% } %></td>
   </tr>
 
   <tr>
-  <td align="right"><b>task&nbsp;type:</b></td>
+  <td align="right"><b>task&nbsp;type:</b>
+</td>
   <td width="*">         
   <%= createSelection(tia, GPConstants.TASK_TYPE, taskTypes, "", viewOnly) %>
   <% if (!viewOnly) { %>
 	 <input type="button" onclick="addNewTaskType()" value="new..." class="little">
   <% } %>
+<a href='help.jsp#TaskType' target='help'><img border='0' src='skin/help2.jpg'/></a>
+
   </td>
   </tr>
 
@@ -612,14 +614,16 @@ if (taskName != null) {
   <td align="right"><b>CPU&nbsp;type:</b></td>
   <td width="*">         
 	<%= createSelection(tia, GPConstants.CPU_TYPE, cpuTypes, "", viewOnly) %> (if compiled for a specific one)
-         </td>
+         <a href='help.jsp#cpu' target='help'><img border='0' src='skin/help2.jpg'/></a>
+</td>
    </tr>
 
    <tr>
   <td align="right"><b>operating&nbsp;system:</b></td>
   <td width="*"> 
 	<%= createSelection(tia, GPConstants.OS, oses, "", viewOnly) %> (if operating system-dependent)
-  </td>
+  <a href='help.jsp#os' target='help'><img border='0' src='skin/help2.jpg'/></a>
+</td>
    </tr>
 
 <%--
@@ -635,13 +639,15 @@ if (taskName != null) {
   <td width="*">         
   <%= createSelection(tia, GPConstants.LANGUAGE, languages, "", viewOnly) %> &nbsp;
     <b>min. language version:</b> <% if (!viewOnly) { %><input name="<%= GPConstants.JVM_LEVEL %>" value="<%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %>" size="10"><% } else { %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %><% } %>
-         </td>
+         <a href='help.jsp#Language' target='help'><img border='0' src='skin/help2.jpg'/></a>
+</td>
    </tr>
    
   <td align="right" valign="top"><b>Version&nbsp;comment:</b></td>
   <td width="*">
   	<% if (!viewOnly) { %><textarea name="<%= GPConstants.VERSION %>" cols="50" rows="1"><% } %><%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.VERSION)) : "" %><% if (!viewOnly) { %></textarea><% } %>
-   </td>
+   <a href='help.jsp#VersionComment' target='help'><img border='0' src='skin/help2.jpg'/></a>
+</td>
    </tr>
 
    <tr>
@@ -661,8 +667,7 @@ if (taskName != null) {
 		String[] file_formats = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 		String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[FILE_FORMAT_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
 %>
-		
-		<select  multiple name="<%= GPConstants.FILE_FORMAT %>" size="<%= Math.min(3, tmFileFormats.size()) %>">
+		<select multiple name="<%= GPConstants.FILE_FORMAT %>" size="<%= Math.min(3, tmFileFormats.size()) %>">
 <%
 		for(Iterator itChoices = tmFileFormats.values().iterator(); itChoices.hasNext(); ) {
 			String c = (String)itChoices.next();
@@ -741,7 +746,8 @@ if (taskName != null) {
   <td width="*">
 <font size=-1>
   The actual program plus any required libraries will will be accessible to your command line as 
-  &lt;<%= GPConstants.LIBDIR %>&gt;<file.separator><i>filename</i></font><br>
+  &lt;<%= GPConstants.LIBDIR %>&gt;<file.separator><i>filename</i></font><a href='help.jsp#SupportFiles' target='help'><img border='0' src='skin/help2.jpg'/></a>
+<br>
 
 <% for (i = 1; i <= NUM_ATTACHMENTS; i++) { %>
   	<input type="file" name="file<%= i %>" size="70" class="little"><br>
@@ -775,6 +781,7 @@ if (taskName != null) {
 
 <%   } %>
   <br>
+
   </td>
    </tr>
         
@@ -784,7 +791,8 @@ if (taskName != null) {
 <td>
 <font size=-1>
   The names of these parameters will be available for the command line (above) in the form &lt;name&gt;.<br>
-  Parameters with &quot;filename&quot; in their name will be treated as input filenames.</font><br>
+  Parameters with &quot;filename&quot; in their name will be treated as input filenames.</font>&nbsp;&nbsp;<a href='help.jsp#inputParameters' target='help'><img border='0' src='skin/help2.jpg'/></a>
+<br>
   <table cols="<%= 3+GPConstants.PARAM_INFO_ATTRIBUTES.length %>">
   <tr>
   <td width="20%" valign="bottom"><b>name</b></td>
@@ -793,12 +801,7 @@ if (taskName != null) {
 <% 
   for (int attribute = 0; attribute < GPConstants.PARAM_INFO_ATTRIBUTES.length; attribute++) { 
 		attributeName = ((String)GPConstants.PARAM_INFO_ATTRIBUTES[attribute][GPConstants.PARAM_INFO_NAME_OFFSET]);
-		if (attributeName != null) {
-			attributeName = attributeName.replace(GPConstants.PARAM_INFO_SPACER, ' ');	
-			if(attributeName.equals("fileFormat")) {
-				attributeName = "file format";
-			}
-		}
+		if (attributeName != null) attributeName = attributeName.replace(GPConstants.PARAM_INFO_SPACER, ' ');
 
 %>
   <td valign="bottom"><b><%= attributeName %></b></td>
@@ -981,20 +984,8 @@ for (int i = from; i < to; i++) {
 			
 			if (!viewOnly) {
 			 	String [] items = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-			 	boolean isFileFormat = attributeName.equals("fileFormat");
-				if(isFileFormat) {
-					String display = "block";
-					if(p==null || !p.isInputFile()) {
-						display = "none";
-					}
-					out.append("<div id=\"p" + i + "_fileFormatDiv\" style=\"display:" + display + "\">"); 
-					
-				}
-				if(!isFileFormat) { // type
-					out.append("<select onchange=\"showFileFormats(this," + i + ")\" name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple size=\"" + Math.min(3, choices.length) + "\"" : "") + ">\n");
-				} else { 
-					out.append("<select name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple size=\"" + Math.min(3, choices.length) + "\"" : "") + ">\n");
-				}
+
+				out.append("<select name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple size=\"" + Math.min(3, choices.length) + "\"" : "") + ">\n");
 
 				for (int choice = 0; choice < choices.length; choice++) { 
 					boolean selected = false;
@@ -1012,9 +1003,6 @@ for (int i = from; i < to; i++) {
 						    "</option>\n");
 				}
 				out.append("</select>\n");
-				if(isFileFormat) {
-					out.append("</div>");
-				}
 			} else {
 				if (!multiple) {
 					for (int choice = 0; choice < choices.length; choice++) { 

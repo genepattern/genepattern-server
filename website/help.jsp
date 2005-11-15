@@ -209,7 +209,7 @@ ConsensusClustering example: <span class="example"><i>Added ability to create he
 <hr>
 <h2><a name="supportFiles">Uploading, deleting and viewing support files</a></h2>
 
-<h4>Support Files</h4>
+<a name="SupportFiles"><h4>Support Files</h4></a>
 Any files required by your task, such as scripts, libraries, property files, DLLs, executable programs, etc. should
 be uploaded to the server in the support files section. These files may be referenced in the command line field
 using the <span class="example">&lt;libdir&gt;<i>filename</i></span> nomenclature.<br><br>
