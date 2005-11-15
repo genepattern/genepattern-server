@@ -1,15 +1,13 @@
-
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.Hashtable;
-import java.util.Properties;
+import java.util.List;
 
 /**
  * RunR is a simple interface that translates a command line into something that
@@ -24,13 +22,11 @@ import java.util.Properties;
 
 public class RunR extends Thread {
 
-	static final int JOBID = 0;
+	static final int R_SOURCE = 0;
 
-	static final int R_SOURCE = 1;
+	static final int R_METHOD = 1;
 
-	static final int R_METHOD = 2;
-
-	static final int R_ARGS = 3;
+	static final int R_ARGS = 2;
 
 	static final int MIN_ARGS = R_ARGS;
 
@@ -48,14 +44,11 @@ public class RunR extends Thread {
 	 * stderr from R to this process' version of the same.
 	 * 
 	 * @param args[0]
-	 *            job ID (gives R self-awareness and provides a filename for the
-	 *            stdout output file)
-	 * @param args[1]
 	 *            R script file to source
-	 * @param args[2]
+	 * @param args[1]
 	 *            method to invoke (usually defined within script file or
 	 *            referring to something within it)
-	 * @param args[3]
+	 * @param args[2]
 	 *            beginning of zero or more arguments to the method being
 	 *            invoked
 	 * 
@@ -65,7 +58,7 @@ public class RunR extends Thread {
 		try {
 			if (args.length < MIN_ARGS) {
 				System.err
-						.println("Insufficient arguments to RunR.  Must have job_id, source filename, method name, and optional args.");
+						.println("Insufficient arguments to RunR.  Must have source filename, method name, and optional args.");
 				System.exit(0);
 			}
 
@@ -84,33 +77,43 @@ public class RunR extends Thread {
 		 * 
 		 * 1. java -DR_HOME=path_to_R_home 2. environment variable 3. assume it
 		 * is in the path
-		 *  
+		 * 
 		 */
 		String R_HOME = System.getProperty("R_HOME");
 		if (R_HOME == null) {
 			Hashtable htEnv = getEnv();
 			R_HOME = (String) htEnv.get("R_HOME");
 		}
+
+		String[] rFlags = null;
+		String rFlagsProp = System.getProperty("r_flags");
+		if (rFlagsProp != null && !rFlagsProp.equals("")) {
+			rFlags = System.getProperty("r_flags").split(" ");
+		} else {
+			rFlags = new String[0];
+		}
+		List commandLineList = null;
 		if (bWindows) {
 			if (R_HOME == null) { // assume Rterm is in path
-				commandLine = new String[] { "cmd", "/c", "Rterm", "--no-save",
-						"--quiet", "--slave", "--no-restore" };
+				commandLineList = Arrays.asList(new String[] { "cmd", "/c",
+						"Rterm" });
 			} else {
-				commandLine = new String[] { "cmd", "/c",
-						R_HOME + "\\bin\\Rterm", "--no-save", "--quiet",
-						"--slave", "--no-restore" };
+				commandLineList = Arrays.asList(new String[] { "cmd", "/c",
+						R_HOME + "\\bin\\Rterm" });
+
 			}
 		} else {
 			if (R_HOME == null) { // assume R is in path
-				commandLine = new String[] { "R", "--no-save", "--quiet",
-						"--slave", "--no-restore" };
+				commandLineList = Arrays.asList(new String[] { "R" });
 			} else {
-				commandLine = new String[] { R_HOME + "/bin/R", "--no-save",
-						"--quiet", "--slave", "--no-restore" };
+				commandLineList = Arrays.asList(new String[] { R_HOME
+						+ "/bin/R" });
 			}
 		}
+		commandLineList.addAll(Arrays.asList(rFlags));
+		commandLine = (String[]) commandLineList.toArray(new String[0]);
 		try {
-//			Properties props = new Properties();
+			// Properties props = new Properties();
 
 			// load genepattern.properties file
 			/*
@@ -119,37 +122,36 @@ public class RunR extends Thread {
 			 * in this directory
 			 */
 
-//			String resourceDir = System.getProperty("resources", ".."
-//					+ File.separator + ".." + File.separator + ".."
-//					+ File.separator + "resources");
-//			File propFile = new File(resourceDir, "genepattern.properties");
-//
-//			FileInputStream fis = null;
-//			String GenePatternURL = null;
-//			try {
-//				fis = new FileInputStream(propFile);
-//				props.load(fis);
-//				GenePatternURL = props.getProperty("GenePatternURL",
-//						"http://127.0.0.1:8080/gp");
-//				if (GenePatternURL.endsWith("/"))
-//					GenePatternURL = GenePatternURL.substring(0, GenePatternURL
-//							.length()
-//							- "/".length());
-//				if (GenePatternURL.endsWith("/gp"))
-//					GenePatternURL = GenePatternURL.substring(0, GenePatternURL
-//							.length()
-//							- "/gp".length());
-//			} catch (IOException ioe) {
-//				throw new IOException(propFile.getAbsolutePath()
-//						+ " cannot be loaded.  " + ioe.getMessage());
-//			} finally {
-//				try {
-//					if (fis != null)
-//						fis.close();
-//				} catch (IOException ioe) {
-//				}
-//			}
-
+			// String resourceDir = System.getProperty("resources", ".."
+			// + File.separator + ".." + File.separator + ".."
+			// + File.separator + "resources");
+			// File propFile = new File(resourceDir, "genepattern.properties");
+			//
+			// FileInputStream fis = null;
+			// String GenePatternURL = null;
+			// try {
+			// fis = new FileInputStream(propFile);
+			// props.load(fis);
+			// GenePatternURL = props.getProperty("GenePatternURL",
+			// "http://127.0.0.1:8080/gp");
+			// if (GenePatternURL.endsWith("/"))
+			// GenePatternURL = GenePatternURL.substring(0, GenePatternURL
+			// .length()
+			// - "/".length());
+			// if (GenePatternURL.endsWith("/gp"))
+			// GenePatternURL = GenePatternURL.substring(0, GenePatternURL
+			// .length()
+			// - "/gp".length());
+			// } catch (IOException ioe) {
+			// throw new IOException(propFile.getAbsolutePath()
+			// + " cannot be loaded. " + ioe.getMessage());
+			// } finally {
+			// try {
+			// if (fis != null)
+			// fis.close();
+			// } catch (IOException ioe) {
+			// }
+			// }
 			final Process process = Runtime.getRuntime().exec(commandLine,
 					null, null);
 			Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -159,8 +161,8 @@ public class RunR extends Thread {
 			});
 
 			if (DEBUG) {
-				System.setOut(new PrintStream(new FileOutputStream(args[JOBID]
-						+ ".html")));
+				System.setOut(new PrintStream(
+						new FileOutputStream("r_log.html")));
 			}
 			// create threads to read from the command's stdout and stderr
 			// streams
@@ -175,9 +177,7 @@ public class RunR extends Thread {
 
 			stdin = process.getOutputStream();
 			if (DEBUG) {
-				System.out.println("<html><head><title>job "
-						+ args[JOBID]
-						+ ": "
+				System.out.println("<html><head><title>"
 						+ (args[R_METHOD] != null ? args[R_METHOD]
 								: args[R_SOURCE]) + "</title>");
 				System.out.println("<script language=\"Javascript\">");
@@ -193,7 +193,7 @@ public class RunR extends Thread {
 				System.out.println("</script>");
 				System.out.println("</head>\n<body>\n<pre>");
 			}
-			//sendCmd("defaultServer <<- \"" + GenePatternURL + "\"\n");
+			// sendCmd("defaultServer <<- \"" + GenePatternURL + "\"\n");
 			if (args[R_SOURCE].startsWith("http:")
 					|| args[R_SOURCE].startsWith("https:")) {
 				args[R_SOURCE] = "url(\"" + args[R_SOURCE] + "\")";
@@ -201,10 +201,11 @@ public class RunR extends Thread {
 				args[R_SOURCE] = "\"" + fixPath(args[R_SOURCE]) + "\"";
 			}
 			sendCmd("source(" + args[R_SOURCE] + ")\n");
-		//	sendCmd("runningOnServer <<- TRUE\n");
-		//	sendCmd("jobID <- " + args[JOBID] + "\n");
-		//	sendCmd("lastTaskDir <<- getwd()\n");
-		//	sendCmd("userID <<- \"" + System.getProperty("userid", "") + "\"\n");
+			// sendCmd("runningOnServer <<- TRUE\n");
+			// sendCmd("jobID <- " + args[JOBID] + "\n");
+			// sendCmd("lastTaskDir <<- getwd()\n");
+			// sendCmd("userID <<- \"" + System.getProperty("userid", "") +
+			// "\"\n");
 			// change backslashes to forward slashes
 			// sendCmd("slash <- ifelse(Sys.info()[[\"sysname\"]]==\"Windows\",
 			// \"\\\\\", \"/\")\n");
@@ -222,31 +223,32 @@ public class RunR extends Thread {
 			sendCmd(")\n");
 			// move all of the output files to *my* directory so that they will
 			// appear to have come from me
-		/*
-			sendCmd("if (!is.null(files)) {\n");
-			sendCmd("	if (class(files) != \"list\") files <- list(files)\n");
-			sendCmd("	ignore <- sapply(seq(along=files), function(i) {\n");
-			// change backslash to forward slash
-			sendCmd("		if (class(files[[i]]) == \"character\" && (file.exists(file.path(\"..\", \"..\", files[[i]])) || file.exists(files[[i]]))) {\n");
-			sendCmd("			f <- gsub(\"\\\\\\\\\", \"/\", files[[i]])\n");
-			sendCmd("			newName <- file.path(lastTaskDir, ifelse(is.null(names(files[i])) || nchar(names(files[i])) == \"\", files[[i]], substring(names(files[i]), "
-					+ (".server.".length() + 1) + ")))\n");
-			// output files get associated with this jobID here (in case they
-			// are in some other sandbox)
-			sendCmd("			close(url(paste(\"" + GenePatternURL
-					+ "/gp/updatePipelineStatus.jsp?jobID=" + args[JOBID]
-					+ "&name=\", basename(f), \"&filename=\", f, sep=\"\")))\n");
-			sendCmd("		} else {\n");
-			sendCmd("			newName <- file.path(lastTaskDir, ifelse(is.null(names(files[i])) || nchar(names(files[i])) == \"\", class(files[[i]]), names(files[i])))\n");
-			//sendCmd(" cat(\"saving\", names(files[i]), \", class\",
-			// class(files[[i]]), \") as\", newName, \"\\\n\")\n");
-			sendCmd("			foo <- files[[i]]\n");
-			sendCmd("			names(foo) <- names(files[i])\n");
-			sendCmd("			save(foo, file=newName, ascii=TRUE)\n");
-			sendCmd("		}\n");
-			sendCmd("	} )\n");
-			sendCmd("}\n");
-			*/
+			/*
+			 * sendCmd("if (!is.null(files)) {\n"); sendCmd(" if (class(files) !=
+			 * \"list\") files <- list(files)\n"); sendCmd(" ignore <-
+			 * sapply(seq(along=files), function(i) {\n"); // change backslash
+			 * to forward slash sendCmd(" if (class(files[[i]]) == \"character\" &&
+			 * (file.exists(file.path(\"..\", \"..\", files[[i]])) ||
+			 * file.exists(files[[i]]))) {\n"); sendCmd(" f <-
+			 * gsub(\"\\\\\\\\\", \"/\", files[[i]])\n"); sendCmd(" newName <-
+			 * file.path(lastTaskDir, ifelse(is.null(names(files[i])) ||
+			 * nchar(names(files[i])) == \"\", files[[i]],
+			 * substring(names(files[i]), " + (".server.".length() + 1) +
+			 * ")))\n"); // output files get associated with this jobID here (in
+			 * case they // are in some other sandbox) sendCmd("
+			 * close(url(paste(\"" + GenePatternURL +
+			 * "/gp/updatePipelineStatus.jsp?jobID=" + args[JOBID] + "&name=\",
+			 * basename(f), \"&filename=\", f, sep=\"\")))\n"); sendCmd(" } else
+			 * {\n"); sendCmd(" newName <- file.path(lastTaskDir,
+			 * ifelse(is.null(names(files[i])) || nchar(names(files[i])) ==
+			 * \"\", class(files[[i]]), names(files[i])))\n"); //sendCmd("
+			 * cat(\"saving\", names(files[i]), \", class\", //
+			 * class(files[[i]]), \") as\", newName, \"\\\n\")\n"); sendCmd("
+			 * foo <- files[[i]]\n"); sendCmd(" names(foo) <-
+			 * names(files[i])\n"); sendCmd(" save(foo, file=newName,
+			 * ascii=TRUE)\n"); sendCmd(" }\n"); sendCmd(" } )\n");
+			 * sendCmd("}\n");
+			 */
 			sendCmd("q(save=\"no\")\n");
 			if (DEBUG)
 				System.out.println("</pre>");
@@ -275,7 +277,7 @@ public class RunR extends Thread {
 	 * @param command
 	 *            string to send to R
 	 * @author Jim Lerner
-	 *  
+	 * 
 	 */
 	protected void sendCmd(String command) throws IOException {
 		if (DEBUG)
@@ -290,7 +292,7 @@ public class RunR extends Thread {
 	 *            path to convert to Unix format
 	 * @return String path with delimiters replaced
 	 * @author Jim Lerner
-	 *  
+	 * 
 	 */
 	protected String fixPath(String path) {
 		return path.replace('\\', '/');
@@ -304,7 +306,7 @@ public class RunR extends Thread {
 	 * @param os
 	 *            PrintStream to write to (stdout of this process)
 	 * @author Jim Lerner
-	 *  
+	 * 
 	 */
 	protected Thread streamCopier(InputStream is, PrintStream os)
 			throws IOException {
@@ -371,7 +373,7 @@ public class RunR extends Thread {
 	 * 
 	 * @author Jim Lerner
 	 * @return Hashtable of environment variable name/value pairs
-	 *  
+	 * 
 	 */
 	public Hashtable getEnv() {
 		Hashtable envVariables = new Hashtable();
