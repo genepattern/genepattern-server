@@ -48,18 +48,21 @@ uploaded from the
 
 <h2><a name="taskLevelAttributes">Entering task-level attributes</a></h2>
 
-<h4>Name</h4>
+<a name="Name"><h4>Name</h4></a>
 The name of the task will be used in the drop-down task catalog lists and as a directory name on the server with
 this name.  It should be a short but descriptive name, without spaces or punctuation, and may be mixed
 upper- and lower-case.<br><br> ConsensusClustering example: <span class="example">ConsensusClustering</span>
 
-<h4>Task catalog</h4>
+<a name="catalog"><h4>Task catalog</h4></a>
 This is a drop-down list of the tasks currently installed. You can use this to view or edit the parameters for a currently installed task.
 The "delete..." button gives you the option of deleting the selected task (after confirmation).
 The "clone..." button allows you to copy a task to a new name prior to editing it.  The suggested name
 for a cloned task is copyOf<i>original</i>.<br><br>
 
-<h4>Description</h4>
+<a name="LSID"><h4>LSID</h4></a>
+The Life Science Identifier (LSID) used to uniquely identify a GenePattern task. LSIDs are created automatically by the GenePattern server when a task is saved.
+
+<a name="Description"><h4>Description</h4></a>
 The description is where to explain what your task does, and why someone would want to use it.
 It can be anywhere from a sentence to a short paragraph in length.
 The description, sometimes in abridged form, is displayed in the pipeline designer task choice list,
@@ -68,20 +71,20 @@ It's a very good way for you to document succinctly why your task exists.<br><br
 
 ConsensusClustering example: <span class="example">Resampling-based clustering method</span>
 
-<h4>Author</h4>
+<a name="Author"><h4>Author</h4></a>
 Enter the author&apos;s name and affiliation (company or academic institution).  If you share this task
 with others, they will know how to give the author credit and whom to contact with questions, suggestions,
 or enhancement ideas.<br><br>
 
 ConsensusClustering example: <span class="example">Stefano Monti</span>
 
-<h4>Owner</h4>
+<a name="Owner"><h4>Owner</h4></a>
 The email address (<%=messages.get("ApplicationName")%> user ID) of the person creating the task.
 <br>
 <br>
 ConsensusClustering example: <span class="exampleLink">gp-help@broad.mit.edu</span>
 
-<h4>Privacy</h4>
+<a name="Privacy"><h4>Privacy</h4></a>
 Tasks may be marked as either public or private.  Public tasks are accessible to everyone who uses the server
 on which it resides.  Private tasks may be accessed only by the task's owner, which is the username that the user logged in with.  When a task is first created, the default is to mark it private.  Private tasks are not visible to others building pipelines or running tasks.  You can update your task's privacy at any time.
 
@@ -89,7 +92,7 @@ on which it resides.  Private tasks may be accessed only by the task's owner, wh
 <br>
 ConsensusClustering example: <span class="example">public</span>
 
-<h4>Quality level</h4>
+<a name="Quality"><h4>Quality level</h4></a>
 The quality level is a simple three-level classification that lets the user know what level of confidence the
 author has in the robustness of the task.  The three levels have no strict definitions.  In increasing order of
 quality expectations, they are: are &quot;development&quot;, &quot;preproduction&quot;, and &quot;production&quot;.
@@ -97,7 +100,7 @@ quality expectations, they are: are &quot;development&quot;, &quot;preproduction
 <br>
 ConsensusClustering example: <span class="example">development</span>
 
-<h4>Documentation</h4>
+<a name="Doc"><h4>Documentation</h4></a>
 Task authors should document their work to help make it more accessible to other users.  When you upload
 documentation files, the documentation is made available in conjunction with the task itself. When the task
 is zipped and shared, the documentation will travel with it.  <%=messages.get("ApplicationName")%> doesn't require any specific formats, but
@@ -110,7 +113,7 @@ at least to have a reference to a paper, journal, or book where it is explained.
 <br>
 ConsensusClustering example: <span class="exampleLink" ><a href="docs/help/ConsensusClustering.pdf">ConsensusClustering.pdf</a></span>
 
-<h4>Command line</h4>
+<a name="Command"><h4>Command line</h4></a>
 The crux of adding a task to the <%=messages.get("ApplicationName")%> server is to provide the command line that will be used to
 launch the task, including substitutions for settings that will be specified differently for each invocation.
 In the command line field of the form, you will provide a combination of the fixed text and the dynamically-changed
@@ -163,7 +166,7 @@ asking it to begin execution at the <span class="example">MyTask</span> class us
 
 Here's the Consensus Clustering command line (actually all on one line): <br><span class="example">&lt;java&gt; &lt;java_flags&gt; -DR_HOME=&lt;R_HOME&gt; -cp &lt;libdir&gt;geneweaver.jar edu.mit.wi.genome.geneweaver.clustering.ConsensusClustering &lt;input.filename&gt; &lt;kmax&gt; &lt;niter&gt; &lt;normalize.type&gt; -N &lt;norm.iter&gt; -S &lt;resample&gt; -t &lt;algo&gt; -L &lt;merge.type&gt; -i &lt;descent.iter&gt; -o &lt;out.stub&gt; -s -d &lt;create.heat.map&gt; -z &lt;heat.map.size&gt; -l1 -v</span>
 
-<h4>Task type</h4>
+<a name="TaskType"><h4>Task type</h4></a>
 The task type helps someone who is building a pipeline by creating an organizing theme around the types of tasks.
 If the task type for a new task doesn't fit well within the existing list, click the &quot;new...&quot;
  button and add a new task type
@@ -172,31 +175,36 @@ If the last task of a given type is deleted, that task type will be removed from
 
 ConsensusClustering example: <span class="example">Clustering</span>
 
-<h4>CPU type</h4>
+<a name="cpu"><h4>CPU type</h4></a>
 If your task is compiled for a specific platform (Intel, Alpha, PowerPC, etc.), please indicate that here.
 CPU requirements are enforced when the task is run.<br><br>
 
 ConsensusClustering example: <span class="example">any</span>
 
-<h4>Operating system </h4>
+<a name="os"><h4>Operating system </h4></a>
 If your task requires a specific operating system (Windows, Linux, MacOS, etc.), please indicate that here.
 Operating system requirements are enforced when the task is run.<br><br>
 
 ConsensusClustering example: <span class="example">any</span>
 
-<h4>Language</h4>
+<a name="Language"><h4>Language</h4></a>
 There is no specific language support or requirement enforcement at this time.  However, by describing the
 primary language that a task is implemented in, you give some hints to the prospective user about their
 system requirements.<br><br>
 
 ConsensusClustering example: <span class="example">Java</span>
 
-<h4>min. language level</h4>
+<a name="MinLanguage"><h4>min. language level</h4></a>
 If your task requires at least a certain revision of the language runtime environment, please indicate which (eg.
 <span class="example">1.3.1_07</span>) to use.  This is not currently enforced, but provides useful information to the prospective task
 user.<br><br>
 
 ConsensusClustering example: <span class="example"><i>none specified</i></span>
+
+<a name="VersionComment"><h4>Version Comment</h4></a>
+Describes what has changed since the last version of the module.
+<br><br>
+ConsensusClustering example: <span class="example"><i>Added ability to create heatmap images of clusters</i></span>
 
 <hr>
 <h2><a name="supportFiles">Uploading, deleting and viewing support files</a></h2>
