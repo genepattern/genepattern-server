@@ -1920,15 +1920,14 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 			props.put(R_HOME, props.getProperty(R));
 			// R should be <java> <java_flags> -cp <libdir> -DR_HOME=<R> RunR
 	
-			String webAppDir = props.getProperty("webappDir");
-			if(webAppDir==null) {
-				webAppDir = "../../webapps/gp/";
+			String runRPath = props.getProperty("run_r_path");
+			if(runRPath==null) {
+				runRPath = "../../webapps/gp/WEB-INF/classes";
 			}
-			String classesDir = webAppDir + "WEB-INF/classes";
-			
+		
 			props.put(R, substitute(LEFT_DELIMITER + JAVA + RIGHT_DELIMITER
 					+ " " + LEFT_DELIMITER + "java_flags" + RIGHT_DELIMITER
-					+ " -cp " + classesDir + " -DR_HOME=" + LEFT_DELIMITER
+					+ " -cp " + runRPath + " -DR_HOME=" + LEFT_DELIMITER
 					+ "R_HOME" + RIGHT_DELIMITER + " RunR ", props, null));
 
 			// populate props with the input parameters so that they can be
