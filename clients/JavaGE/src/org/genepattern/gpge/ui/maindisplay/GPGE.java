@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -50,6 +52,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JWindow;
 import javax.swing.KeyStroke;
@@ -79,6 +82,7 @@ import org.genepattern.gpge.ui.preferences.SuitesPreferences;
 import org.genepattern.gpge.ui.project.ProjectDirModel;
 import org.genepattern.gpge.ui.project.ProjectDirectoryListener;
 import org.genepattern.gpge.ui.project.ProjectEvent;
+import org.genepattern.gpge.ui.suites.SuiteEditor;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceUtil;
 import org.genepattern.gpge.ui.tasks.FileInfoComponent;
@@ -104,6 +108,9 @@ import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskIntegratorProxy;
 import org.genepattern.webservice.WebServiceException;
+
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * Main class for GPGE functionality
@@ -2491,6 +2498,8 @@ public class GPGE {
 
 		JMenuItem importTaskMenuItem;
 
+		JMenuItem importSuiteMenuItem;
+
 		JFileChooser projectDirFileChooser;
 
 		public void changeServerActionsEnabled(boolean b) {
@@ -2498,6 +2507,131 @@ public class GPGE {
 			refreshMenu.setEnabled(b);
 			refreshJobsMenuItem.setEnabled(b);
 			refreshModulesMenuItem.setEnabled(b);
+		}
+
+		public void importZip(final boolean isModule) {
+			final JDialog d = new CenteredDialog(GenePattern.getDialogParent());
+			d.setTitle("Import");
+			JLabel label = new JLabel("Zip File:");
+			JPanel filePanel = new JPanel();
+			FormLayout f = new FormLayout(
+					"left:pref:none, 3dlu, left:pref:none, left:pref:none",
+					"pref, 5dlu, pref");
+			filePanel.setLayout(f);
+			final JTextField input = new JTextField(30);
+			JButton btn = new JButton("Browse...");
+			btn.setBackground(getBackground());
+			btn.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					File f = GUIUtil.showOpenDialog("Import Zip File");
+					if (f != null) {
+						try {
+							input.setText(f.getCanonicalPath());
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}
+			});
+			CellConstraints cc = new CellConstraints();
+			filePanel.add(label, cc.xy(1, 1));
+			filePanel.add(input, cc.xy(3, 1));
+			filePanel.add(btn, cc.xy(4, 1));
+
+			JLabel privacyLabel = new JLabel("Privacy:");
+			final JComboBox privacyComboBox = new JComboBox(new String[] {
+					"Public", "Private" });
+			privacyComboBox.setSelectedIndex(1);
+			filePanel.add(privacyLabel, cc.xy(1, 3));
+			filePanel.add(privacyComboBox, cc.xy(3, 3));
+
+			final JButton cancelBtn = new JButton("Cancel");
+			final JButton importBtn = new JButton("Import");
+			JPanel buttonPanel = new JPanel();
+			buttonPanel.add(cancelBtn);
+			buttonPanel.add(importBtn);
+
+			ActionListener l = new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					final String s = input.getText().trim();
+					final File file = new File(s);
+
+					final int privacy = privacyComboBox.getSelectedIndex() == 0 ? GPConstants.ACCESS_PUBLIC
+							: GPConstants.ACCESS_PRIVATE;
+
+					if (e.getSource() == importBtn) {
+						new Thread() {
+							public void run() {
+								try {
+									String lsid = null;
+									if (file.exists()) {
+
+										lsid = new TaskIntegratorProxy(
+												AnalysisServiceManager
+														.getInstance()
+														.getServer(),
+												AnalysisServiceManager
+														.getInstance()
+														.getUsername())
+												.importZip(file, privacy);
+									} else {
+										lsid = new TaskIntegratorProxy(
+												AnalysisServiceManager
+														.getInstance()
+														.getServer(),
+												AnalysisServiceManager
+														.getInstance()
+														.getUsername())
+												.importZipFromURL(s, privacy);
+									}
+									String _message = null;
+									if (isModule) {
+										taskInstalled(new LSID(lsid));
+										AnalysisService svc = AnalysisServiceManager
+												.getInstance()
+												.getAnalysisService(lsid);
+
+										_message = "Successfully installed module "
+												+ svc.getName() + ".";
+
+									} else {
+										MessageManager
+												.notifyListeners(new SuiteInstallMessage(
+														GPGE.this, lsid));
+										_message = "Successfully installed suite.";
+									}
+									final String message = _message;
+									SwingUtilities.invokeLater(new Thread() {
+										public void run() {
+											GenePattern
+													.showMessageDialog(message);
+										}
+									});
+
+								} catch (WebServiceException wse) {
+									wse.printStackTrace();
+									if (!disconnectedFromServer(wse)) {
+										GenePattern
+												.showErrorDialog("An error occurred while importing the zip file.");
+									}
+								} catch (MalformedURLException e) {
+									e.printStackTrace();
+								}
+							}
+						}.start();
+					}
+					d.dispose();
+				}
+
+			};
+			cancelBtn.addActionListener(l);
+			importBtn.addActionListener(l);
+			d.getContentPane().add(filePanel);
+			d.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+			d.pack();
+			d.show();
+
 		}
 
 		public FileMenu() {
@@ -2549,50 +2683,23 @@ public class GPGE {
 			importTaskMenuItem.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
-
-					final File file = GUIUtil.showOpenDialog("Import Module");
-					if (file != null) {
-						new Thread() {
-							public void run() {
-								try {
-									String lsid = new TaskIntegratorProxy(
-											AnalysisServiceManager
-													.getInstance().getServer(),
-											AnalysisServiceManager
-													.getInstance()
-													.getUsername()).importZip(
-											file, GPConstants.ACCESS_PUBLIC);
-
-									taskInstalled(new LSID(lsid));
-									final AnalysisService svc = AnalysisServiceManager
-											.getInstance().getAnalysisService(
-													lsid);
-									SwingUtilities.invokeLater(new Thread() {
-										public void run() {
-											GenePattern
-													.showMessageDialog("Successfully installed module "
-															+ svc.getName()
-															+ ".");
-										}
-									});
-
-								} catch (WebServiceException wse) {
-									wse.printStackTrace();
-									if (!disconnectedFromServer(wse)) {
-										GenePattern
-												.showErrorDialog("An error occurred while importing "
-														+ file.getName());
-									}
-								} catch (MalformedURLException e) {
-									e.printStackTrace();
-								}
-							}
-						}.start();
-					}
+					importZip(true);
 				}
 
 			});
 			add(importTaskMenuItem);
+
+			importSuiteMenuItem = new JMenuItem("Import Suite...", IconManager
+					.loadIcon(IconManager.IMPORT_ICON));
+			importSuiteMenuItem.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					importZip(false);
+				}
+
+			});
+			add(importSuiteMenuItem);
+
 			final javax.swing.JCheckBoxMenuItem showJobCompletedDialogMenuItem = new javax.swing.JCheckBoxMenuItem(
 					"Alert On Job Completion");
 			jobCompletedDialog = new JobCompletedDialog(frame,
