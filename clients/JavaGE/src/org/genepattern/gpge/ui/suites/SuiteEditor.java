@@ -28,7 +28,10 @@ import javax.swing.border.Border;
 
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.message.ChangeViewMessageRequest;
+import org.genepattern.gpge.message.GPGEMessage;
+import org.genepattern.gpge.message.GPGEMessageListener;
 import org.genepattern.gpge.message.MessageManager;
+import org.genepattern.gpge.message.RefreshMessage;
 import org.genepattern.gpge.message.SuiteInstallMessage;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
@@ -60,6 +63,36 @@ public class SuiteEditor extends JPanel {
 	private ArrayList checkBoxes = new ArrayList();
 
 	private SuiteInfo suiteInfo;
+
+	public SuiteEditor() {
+		MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
+
+			public void receiveMessage(GPGEMessage message) {
+				if (message instanceof RefreshMessage && isShowing()) {
+					String lsid = null;
+					if (suiteInfo != null) {
+						lsid = suiteInfo.getLsid();
+					}
+					if (lsid != null && !lsid.equals("")) {
+						try {
+							final AdminProxy proxy = new AdminProxy(
+									AnalysisServiceManager.getInstance()
+											.getServer(),
+									AnalysisServiceManager.getInstance()
+											.getUsername());
+							proxy.getSuite(lsid);
+
+						} catch (WebServiceException e) {
+							GenePattern.showMessageDialog(suiteInfo.getName()
+									+ " has been deleted from the server.");
+						}
+					}
+				}
+			}
+
+		});
+
+	}
 
 	private static String createRowSpec(int rows) {
 		StringBuffer rowBuff = new StringBuffer();
@@ -469,7 +502,7 @@ public class SuiteEditor extends JPanel {
 					new String[] { "Public", "Private" });
 			if (suiteInfo.getAccessId() == GPConstants.ACCESS_PUBLIC) {
 				privacyComboBox.setSelectedIndex(0);
-			} else{
+			} else {
 				privacyComboBox.setSelectedIndex(1);
 			}
 

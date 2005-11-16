@@ -47,7 +47,10 @@ import javax.swing.text.JTextComponent;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.message.ChangeViewMessageRequest;
+import org.genepattern.gpge.message.GPGEMessage;
+import org.genepattern.gpge.message.GPGEMessageListener;
 import org.genepattern.gpge.message.MessageManager;
+import org.genepattern.gpge.message.RefreshMessage;
 import org.genepattern.gpge.message.TaskInstallMessage;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.GroupPanel;
@@ -65,6 +68,7 @@ import org.genepattern.gpge.ui.util.ShadowBorder;
 import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -160,6 +164,28 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	 * 
 	 */
 	public PipelineEditor() {
+		MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
+			public void receiveMessage(GPGEMessage message) {
+				if (message instanceof RefreshMessage && isShowing()) {
+					String lsid = null;
+					if (model != null) {
+						lsid = model.getLSID();
+					}
+					if (lsid != null && !lsid.equals("")) {
+
+						AnalysisService svc = AnalysisServiceManager
+								.getInstance().getAnalysisService(
+										model.getLSID());
+						if (svc == null) {
+							GenePattern.showMessageDialog(model.getPipelineName()
+									+ " has been deleted from the server.");
+						}
+					}
+				}
+			}
+
+		});
+
 		setBackground(Color.white);
 		setMinimumSize(new java.awt.Dimension(100, 100));
 		setLayout(new BorderLayout());
@@ -398,7 +424,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
 	protected void save() {
 		pipelineChanged = false;
-		if(!save(true)) {
+		if (!save(true)) {
 			return;
 		}
 		model.resetDocFiles();

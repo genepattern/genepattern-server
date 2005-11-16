@@ -72,6 +72,7 @@ import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.GPGEMessage;
 import org.genepattern.gpge.message.GPGEMessageListener;
 import org.genepattern.gpge.message.MessageManager;
+import org.genepattern.gpge.message.RefreshMessage;
 import org.genepattern.gpge.message.SuiteInstallMessage;
 import org.genepattern.gpge.message.TaskInstallMessage;
 import org.genepattern.gpge.ui.menu.MenuAction;
@@ -1979,6 +1980,7 @@ public class GPGE {
 
 				inputTypeToMenuItemsMap = SemanticUtil
 						.getInputTypeToMenuItemsMap(latestTasks);
+				MessageManager.notifyListeners(new RefreshMessage(this));
 				SwingUtilities.invokeLater(new Thread() {
 					public void run() {
 						Map categoryToAnalysisServices = AnalysisServiceUtil
