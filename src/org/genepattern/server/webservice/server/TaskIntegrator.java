@@ -154,13 +154,36 @@ public class TaskIntegrator implements ITaskIntegrator {
 			File zipFile = new File(handler.getName() + ".zip");
 			axisFile.renameTo(zipFile);
 			String path = zipFile.getCanonicalPath();
-			// replace task, do not version lsid or replace the lsid in the zip
-			// with a local one
+
+			// determine if we are installing a task or a suite
+			boolean isTask = false;
+			boolean isSuite = false;
+			ZipFile zippedFile = null;
 			try {
-				lsid = GenePatternAnalysisTask.installNewTask(path, username,
-						privacy, recursive, taskIntegrator);
-			} catch (TaskInstallationException tie) {
-				vProblems = tie.getErrors();
+				zippedFile = new ZipFile(path);
+				ZipEntry taskManifestEntry = zippedFile
+						.getEntry(GPConstants.MANIFEST_FILENAME);
+				ZipEntry suiteManifestEntry = zippedFile
+						.getEntry(GPConstants.SUITE_MANIFEST_FILENAME);
+				if (taskManifestEntry != null)
+					isTask = true;
+				if (suiteManifestEntry != null)
+					isSuite = true;
+
+			} catch (IOException ioe) {
+				throw new WebServiceException("Couldn't open " + path + ": "
+						+ ioe.getMessage());
+			}
+
+			if (isSuite) {
+				lsid = tiDao.installSuite(zippedFile);
+			} else {
+				try {
+					lsid = GenePatternAnalysisTask.installNewTask(path,
+							username, privacy, recursive, taskIntegrator);
+				} catch (TaskInstallationException tie) {
+					vProblems = tie.getErrors();
+				}
 			}
 		} catch (Exception e) {
 			throw new WebServiceException("while importing from zip file", e);
@@ -211,19 +234,24 @@ public class TaskIntegrator implements ITaskIntegrator {
 			boolean isZipOfZips = false;
 			try {
 				zippedFile = new ZipFile(path);
-				ZipEntry taskManifestEntry = zippedFile.getEntry(GPConstants.MANIFEST_FILENAME);
-				ZipEntry suiteManifestEntry = zippedFile.getEntry(GPConstants.SUITE_MANIFEST_FILENAME);
+				ZipEntry taskManifestEntry = zippedFile
+						.getEntry(GPConstants.MANIFEST_FILENAME);
+				ZipEntry suiteManifestEntry = zippedFile
+						.getEntry(GPConstants.SUITE_MANIFEST_FILENAME);
 				isZipOfZips = isZipOfZips(url);
-				if (taskManifestEntry != null) isTask = true;
-				if (suiteManifestEntry != null) isSuite = true;
-		
+				if (taskManifestEntry != null)
+					isTask = true;
+				if (suiteManifestEntry != null)
+					isSuite = true;
+
 			} catch (IOException ioe) {
 				throw new WebServiceException("Couldn't open " + path + ": "
 						+ ioe.getMessage());
 			}
 
-			if (!(isTask || isSuite || isZipOfZips )) throw new WebServiceException("Couldn't find task or suite manifest in zip file ");
-
+			if (!(isTask || isSuite || isZipOfZips))
+				throw new WebServiceException(
+						"Couldn't find task or suite manifest in zip file ");
 
 			if (isSuite) {
 				lsid = tiDao.installSuite(zippedFile);
@@ -752,7 +780,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 		return dh;
 	}
 
-	protected File getFile(String url) throws WebServiceException{
+	protected File getFile(String url) throws WebServiceException {
 		File file = null;
 		java.io.OutputStream os = null;
 		java.io.InputStream is = null;
@@ -800,7 +828,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 			return org.genepattern.server.TaskUtil.isZipOfZips(file);
 		} catch (java.io.IOException ioe) {
 			throw new WebServiceException(ioe);
-		} 
+		}
 	}
 
 	public boolean isSuiteZip(String url) throws WebServiceException {
@@ -809,7 +837,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 			return org.genepattern.server.TaskUtil.isSuiteZip(file);
 		} catch (java.io.IOException ioe) {
 			throw new WebServiceException(ioe);
-		} 
+		}
 	}
 
 	public boolean isPipelineZip(String url) throws WebServiceException {
@@ -818,9 +846,8 @@ public class TaskIntegrator implements ITaskIntegrator {
 			return org.genepattern.server.TaskUtil.isPipelineZip(file);
 		} catch (java.io.IOException ioe) {
 			throw new WebServiceException(ioe);
-		} 
+		}
 	}
-
 
 	public void statusMessage(String message) {
 		System.out.println("statusMessage: " + message);
