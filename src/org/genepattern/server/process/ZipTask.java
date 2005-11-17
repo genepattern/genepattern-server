@@ -87,7 +87,7 @@ public class ZipTask extends CommandLineAction {
 	public void zipTaskFiles(ZipOutputStream zos, File dir) throws Exception {
 		File[] fileList = dir.listFiles(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return !name.endsWith(".old") && !name.endsWith(".bak");
+				return !name.endsWith(".old") && !name.endsWith(".bak") && !name.equalsIgnoreCase("manifest");
 			}
 		});
 
