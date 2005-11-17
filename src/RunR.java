@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
@@ -87,27 +88,30 @@ public class RunR extends Thread {
 
 		String[] rFlags = null;
 		String rFlagsProp = System.getProperty("r_flags");
+
 		if (rFlagsProp != null && !rFlagsProp.equals("")) {
 			rFlags = System.getProperty("r_flags").split(" ");
+			System.out.println(Arrays.asList(rFlags));
 		} else {
 			rFlags = new String[0];
 		}
 		List commandLineList = null;
 		if (bWindows) {
 			if (R_HOME == null) { // assume Rterm is in path
-				commandLineList = Arrays.asList(new String[] { "cmd", "/c",
-						"Rterm" });
+				commandLineList = new ArrayList(Arrays.asList(new String[] {
+						"cmd", "/c", "Rterm" }));
 			} else {
-				commandLineList = Arrays.asList(new String[] { "cmd", "/c",
-						R_HOME + "\\bin\\Rterm" });
+				commandLineList = new ArrayList(Arrays.asList(new String[] {
+						"cmd", "/c", R_HOME + "\\bin\\Rterm" }));
 
 			}
 		} else {
 			if (R_HOME == null) { // assume R is in path
-				commandLineList = Arrays.asList(new String[] { "R" });
+				commandLineList = new ArrayList(Arrays
+						.asList(new String[] { "R" }));
 			} else {
-				commandLineList = Arrays.asList(new String[] { R_HOME
-						+ "/bin/R" });
+				commandLineList = new ArrayList(Arrays
+						.asList(new String[] { R_HOME + "/bin/R" }));
 			}
 		}
 		commandLineList.addAll(Arrays.asList(rFlags));
