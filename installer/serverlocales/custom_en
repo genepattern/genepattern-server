@@ -19,7 +19,7 @@
 #
 # Product Name: GenePattern
 # Project File: C:\projects\genepattern\installer\server.iap_xml
-# Generated:    Thu Nov 17 14:23:56 EST 2005
+# Generated:    Thu Nov 17 14:52:30 EST 2005
 
 
 # ASCIIFileManipulator.27389a048c8d.additionalText=
@@ -52,11 +52,11 @@ ASCIIFileManipulator.9c9d2bb985a5.additionalText=
 # ASCIIFileManipulator.9cb004b38637.additionalText=
 ASCIIFileManipulator.9cb004b38637.additionalText=
 
-# ASCIIFileManipulator.d5531da3a535.additionalText=gpServerHostAddress=$HOST_ADDRESS$\r\n\r\n
-ASCIIFileManipulator.d5531da3a535.additionalText=gpServerHostAddress=$HOST_ADDRESS$\r\n\r\n
+# ASCIIFileManipulator.d5531da3a535.additionalText=gpServerHostAddress=$HOST_ADDRESS$\n\n
+ASCIIFileManipulator.d5531da3a535.additionalText=gpServerHostAddress=$HOST_ADDRESS$\n\n
 
-# ASCIIFileManipulator.da094140a30e.additionalText=http.proxyHost=$HTTP_PROXYSERVER$\r\nhttp.proxyPort=$HTTP_PROXYPORT$\r\n\r\n\r\n
-ASCIIFileManipulator.da094140a30e.additionalText=http.proxyHost=$HTTP_PROXYSERVER$\r\nhttp.proxyPort=$HTTP_PROXYPORT$\r\n\r\n\r\n
+# ASCIIFileManipulator.da094140a30e.additionalText=http.proxyHost=$HTTP_PROXYSERVER$\nhttp.proxyPort=$HTTP_PROXYPORT$\n\n\n
+ASCIIFileManipulator.da094140a30e.additionalText=http.proxyHost=$HTTP_PROXYSERVER$\nhttp.proxyPort=$HTTP_PROXYPORT$\n\n\n
 
 # Billboard.72a1c573b1d2.imageName=billboard_default.png
 Billboard.72a1c573b1d2.imageName=billboard_default.png
@@ -163,8 +163,8 @@ CreateShortcut.e36a51a49f00.destinationName=StopGenePatternServer.app
 # CreateShortcut.e36a51a49f00.workingDir=
 CreateShortcut.e36a51a49f00.workingDir=
 
-# DisplayScrollingMessage.1f3de6dba442.messageText=Please install R on your computer before proceeding further with the GenePattern installation.  R is required to run some analysis modules (e.g. SVM) and for the scripting environment.  If you do not install it GenePattern will still function. The next step in the installation will ask you to enter the R_HOME directory where R is installed.  Default installation of R on Linux is /usr/lib/R.\r\n\r\n<ol>\r\n<li>Go to <a href=\"http://www.r-project.org\">http://www.r-project.org/</a></li>\r\n<li>Click on the CRAN link.</li>\r\n<li>Select a mirror.</li>\r\n<li>Click on the Package Sources link under the Software heading.</li>\r\n<li>Click on the XML link to download the package source.</li>\r\n<li>If you are using a version of R which you cannot modify\r\n(because it is a publicly-shared version and you don't have appropriate\r\nprivilege), you can have it load the GenePattern library by setting the\r\nenvironment variable <xmp>R_LIBS=&lt;GenePattern install directory&gt;/R/library</xmp> in your\r\n~/.cshrc, ~/.bashrc, ~/.profile, ~/.login or other shell startup file. R will then load\r\nfrom its usual location, but will also search for and find the GenePattern\r\nlibrary from your installation.</li>\r\n<li>In a shell window, type <xmp>R CMD INSTALL XML_0-2.95-6.tar.gz</xmp> (case-sensitive!) to install the XML library into your R installation.</li>\r\n</ol>
-DisplayScrollingMessage.1f3de6dba442.messageText=Please install R on your computer before proceeding further with the GenePattern installation.  R is required to run some analysis modules (e.g. SVM) and for the scripting environment.  If you do not install it GenePattern will still function. The next step in the installation will ask you to enter the R_HOME directory where R is installed.  Default installation of R on Linux is /usr/lib/R.\r\n\r\n<ol>\r\n<li>Go to <a href=\"http://www.r-project.org\">http://www.r-project.org/</a></li>\r\n<li>Click on the CRAN link.</li>\r\n<li>Select a mirror.</li>\r\n<li>Click on the Package Sources link under the Software heading.</li>\r\n<li>Click on the XML link to download the package source.</li>\r\n<li>If you are using a version of R which you cannot modify\r\n(because it is a publicly-shared version and you don't have appropriate\r\nprivilege), you can have it load the GenePattern library by setting the\r\nenvironment variable <xmp>R_LIBS=&lt;GenePattern install directory&gt;/R/library</xmp> in your\r\n~/.cshrc, ~/.bashrc, ~/.profile, ~/.login or other shell startup file. R will then load\r\nfrom its usual location, but will also search for and find the GenePattern\r\nlibrary from your installation.</li>\r\n<li>In a shell window, type <xmp>R CMD INSTALL XML_0-2.95-6.tar.gz</xmp> (case-sensitive!) to install the XML library into your R installation.</li>\r\n</ol>
+# DisplayScrollingMessage.1f3de6dba442.messageText=Please install R on your computer before proceeding further with the GenePattern installation.  R is required to run some analysis modules (e.g. SVM) and for the scripting environment.  If you do not install it GenePattern will still function. The next step in the installation will ask you to enter the R_HOME directory where R is installed.  Default installation of R on Linux is /usr/lib/R.\n\n<ol>\n<li>Go to <a href=\"http://www.r-project.org\">http://www.r-project.org/</a></li>\n<li>Click on the CRAN link.</li>\n<li>Select a mirror.</li>\n<li>Click on the Package Sources link under the Software heading.</li>\n<li>Click on the XML link to download the package source.</li>\n<li>If you are using a version of R which you cannot modify\n(because it is a publicly-shared version and you don't have appropriate\nprivilege), you can have it load the GenePattern library by setting the\nenvironment variable <xmp>R_LIBS=&lt;GenePattern install directory&gt;/R/library</xmp> in your\n~/.cshrc, ~/.bashrc, ~/.profile, ~/.login or other shell startup file. R will then load\nfrom its usual location, but will also search for and find the GenePattern\nlibrary from your installation.</li>\n<li>In a shell window, type <xmp>R CMD INSTALL XML_0-2.95-6.tar.gz</xmp> (case-sensitive!) to install the XML library into your R installation.</li>\n</ol>
+DisplayScrollingMessage.1f3de6dba442.messageText=Please install R on your computer before proceeding further with the GenePattern installation.  R is required to run some analysis modules (e.g. SVM) and for the scripting environment.  If you do not install it GenePattern will still function. The next step in the installation will ask you to enter the R_HOME directory where R is installed.  Default installation of R on Linux is /usr/lib/R.\n\n<ol>\n<li>Go to <a href=\"http://www.r-project.org\">http://www.r-project.org/</a></li>\n<li>Click on the CRAN link.</li>\n<li>Select a mirror.</li>\n<li>Click on the Package Sources link under the Software heading.</li>\n<li>Click on the XML link to download the package source.</li>\n<li>If you are using a version of R which you cannot modify\n(because it is a publicly-shared version and you don't have appropriate\nprivilege), you can have it load the GenePattern library by setting the\nenvironment variable <xmp>R_LIBS=&lt;GenePattern install directory&gt;/R/library</xmp> in your\n~/.cshrc, ~/.bashrc, ~/.profile, ~/.login or other shell startup file. R will then load\nfrom its usual location, but will also search for and find the GenePattern\nlibrary from your installation.</li>\n<li>In a shell window, type <xmp>R CMD INSTALL XML_0-2.95-6.tar.gz</xmp> (case-sensitive!) to install the XML library into your R installation.</li>\n</ol>
 
 # DisplayScrollingMessage.1f3de6dba442.stepPrompt=Please install R on your computer before proceeding...
 DisplayScrollingMessage.1f3de6dba442.stepPrompt=Please install R on your computer before proceeding...
@@ -172,8 +172,8 @@ DisplayScrollingMessage.1f3de6dba442.stepPrompt=Please install R on your compute
 # DisplayScrollingMessage.1f3de6dba442.title=Install R for your system
 DisplayScrollingMessage.1f3de6dba442.title=Install R for your system
 
-# DisplayScrollingMessage.fedc0849bcbd.messageText=The Installer was unable to launch or confirm the launch of your default web browser. Please open the followign URL in your web browser to walk through the final four steps to complete the installation\r\n\r\nhttp://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp
-DisplayScrollingMessage.fedc0849bcbd.messageText=The Installer was unable to launch or confirm the launch of your default web browser. Please open the followign URL in your web browser to walk through the final four steps to complete the installation\r\n\r\nhttp://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp
+# DisplayScrollingMessage.fedc0849bcbd.messageText=The Installer was unable to launch or confirm the launch of your default web browser. Please open the followign URL in your web browser to walk through the final four steps to complete the installation\n\nhttp://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp
+DisplayScrollingMessage.fedc0849bcbd.messageText=The Installer was unable to launch or confirm the launch of your default web browser. Please open the followign URL in your web browser to walk through the final four steps to complete the installation\n\nhttp://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp
 
 # DisplayScrollingMessage.fedc0849bcbd.stepPrompt=
 DisplayScrollingMessage.fedc0849bcbd.stepPrompt=
@@ -181,8 +181,8 @@ DisplayScrollingMessage.fedc0849bcbd.stepPrompt=
 # DisplayScrollingMessage.fedc0849bcbd.title=Could not launch browser
 DisplayScrollingMessage.fedc0849bcbd.title=Could not launch browser
 
-# DisplayScrollingMessage.fee03dd9bcc0.messageText=The Installer  was unable to start the GenePattern server.  The installation log is available at\r\n\r\n$USER_INSTALL_DIR$/GenePattern_InstallLog.log \r\n\r\nPlease review this and try to install again or contact gp-help@broad.mit.edu.
-DisplayScrollingMessage.fee03dd9bcc0.messageText=The Installer  was unable to start the GenePattern server.  The installation log is available at\r\n\r\n$USER_INSTALL_DIR$/GenePattern_InstallLog.log \r\n\r\nPlease review this and try to install again or contact gp-help@broad.mit.edu.
+# DisplayScrollingMessage.fee03dd9bcc0.messageText=The Installer  was unable to start the GenePattern server.  The installation log is available at\n\n$USER_INSTALL_DIR$/GenePattern_InstallLog.log \n\nPlease review this and try to install again or contact gp-help@broad.mit.edu.
+DisplayScrollingMessage.fee03dd9bcc0.messageText=The Installer  was unable to start the GenePattern server.  The installation log is available at\n\n$USER_INSTALL_DIR$/GenePattern_InstallLog.log \n\nPlease review this and try to install again or contact gp-help@broad.mit.edu.
 
 # DisplayScrollingMessage.fee03dd9bcc0.stepPrompt=
 DisplayScrollingMessage.fee03dd9bcc0.stepPrompt=
@@ -211,8 +211,8 @@ GetUserInput.9c15fc95842d.prompt=Below are the settings that the GenePattern ser
 # GetUserInput.9c15fc95842d.title=GenePattern server configuration
 GetUserInput.9c15fc95842d.title=GenePattern server configuration
 
-# GetUserInput.d9f35ed8a212.prompt=Please provide the proxy server and port for your web (HTTP) proxy.   \r\nIf your proxy requires authentication you will need to provide the username and password to the server at the end of the installation process in order to be able to install GenePattern modules from the catalog.
-GetUserInput.d9f35ed8a212.prompt=Please provide the proxy server and port for your web (HTTP) proxy.   \r\nIf your proxy requires authentication you will need to provide the username and password to the server at the end of the installation process in order to be able to install GenePattern modules from the catalog.
+# GetUserInput.d9f35ed8a212.prompt=Please provide the proxy server and port for your web (HTTP) proxy.   \nIf your proxy requires authentication you will need to provide the username and password to the server at the end of the installation process in order to be able to install GenePattern modules from the catalog.
+GetUserInput.d9f35ed8a212.prompt=Please provide the proxy server and port for your web (HTTP) proxy.   \nIf your proxy requires authentication you will need to provide the username and password to the server at the end of the installation process in order to be able to install GenePattern modules from the catalog.
 
 # GetUserInput.d9f35ed8a212.title=Web Proxy Settings
 GetUserInput.d9f35ed8a212.title=Web Proxy Settings
@@ -400,11 +400,11 @@ InstallFinishAction.72a1c5b9b1d8.installErrorMessage=The installation of $PRODUC
 # InstallFinishAction.72a1c5b9b1d8.installFatalMessage=The installation of $PRODUCT_NAME$ $version.major$.$version.minor$ is finished, but some serious errors occurred during the install.   The install log will be opened for your review  when the installer is closed.
 InstallFinishAction.72a1c5b9b1d8.installFatalMessage=The installation of $PRODUCT_NAME$ $version.major$.$version.minor$ is finished, but some serious errors occurred during the install.   The install log will be opened for your review  when the installer is closed.
 
-# InstallFinishAction.72a1c5b9b1d8.installSuccessMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\r\n     $USER_INSTALL_DIR$\r\nA web page to complete the installation which will open following the installer.  Press \"Done\" to quit the installer.
-InstallFinishAction.72a1c5b9b1d8.installSuccessMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\r\n     $USER_INSTALL_DIR$\r\nA web page to complete the installation which will open following the installer.  Press \"Done\" to quit the installer.
+# InstallFinishAction.72a1c5b9b1d8.installSuccessMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\n     $USER_INSTALL_DIR$\nA web page to complete the installation which will open following the installer.  Press \"Done\" to quit the installer.
+InstallFinishAction.72a1c5b9b1d8.installSuccessMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\n     $USER_INSTALL_DIR$\nA web page to complete the installation which will open following the installer.  Press \"Done\" to quit the installer.
 
-# InstallFinishAction.72a1c5b9b1d8.installWarningMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\r\n     $USER_INSTALL_DIR$\r\nSome warnings were generated during the install. The install log will be opened for your review  when the installer is closed. Press \"Done\" to quit the installer.
-InstallFinishAction.72a1c5b9b1d8.installWarningMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\r\n     $USER_INSTALL_DIR$\r\nSome warnings were generated during the install. The install log will be opened for your review  when the installer is closed. Press \"Done\" to quit the installer.
+# InstallFinishAction.72a1c5b9b1d8.installWarningMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\n     $USER_INSTALL_DIR$\nSome warnings were generated during the install. The install log will be opened for your review  when the installer is closed. Press \"Done\" to quit the installer.
+InstallFinishAction.72a1c5b9b1d8.installWarningMessage=Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:\n     $USER_INSTALL_DIR$\nSome warnings were generated during the install. The install log will be opened for your review  when the installer is closed. Press \"Done\" to quit the installer.
 
 # InstallFinishAction.72a1c5b9b1d8.rebootNotNeededMessage=
 InstallFinishAction.72a1c5b9b1d8.rebootNotNeededMessage=
@@ -454,8 +454,8 @@ InstallSummary.72a1c5afb1d8.title=Pre-Installation Summary
 # InstallUninstaller.72a1c627b1da.destinationName=Uninstall $PRODUCT_NAME$
 InstallUninstaller.72a1c627b1da.destinationName=Uninstall $PRODUCT_NAME$
 
-# IntroAction.72a1c5a5b1d6.message=InstallAnywhere will guide you through the installation of $PRODUCT_NAME$ \r\n\r\nVersion: $version.major$.$version.minor$ ($buildtag$) \r\nBuilt on $builddate$\r\n\r\nClick the 'Next' button to proceed to the next screen. If you want to change something on a previous screen, click the 'Previous' button.\r\n\r\nYou may cancel this installation at any time by clicking the 'Cancel' button.\r\n\r\nGenePattern installs Apache Tomcat, and on some platforms, R and Perl.  You will be presented with the license agreements from each of the relevant software packages to consent to prior to configuring the rest of GenePattern and performing the installation.
-IntroAction.72a1c5a5b1d6.message=InstallAnywhere will guide you through the installation of $PRODUCT_NAME$ \r\n\r\nVersion: $version.major$.$version.minor$ ($buildtag$) \r\nBuilt on $builddate$\r\n\r\nClick the 'Next' button to proceed to the next screen. If you want to change something on a previous screen, click the 'Previous' button.\r\n\r\nYou may cancel this installation at any time by clicking the 'Cancel' button.\r\n\r\nGenePattern installs Apache Tomcat, and on some platforms, R and Perl.  You will be presented with the license agreements from each of the relevant software packages to consent to prior to configuring the rest of GenePattern and performing the installation.
+# IntroAction.72a1c5a5b1d6.message=InstallAnywhere will guide you through the installation of $PRODUCT_NAME$ \n\nVersion: $version.major$.$version.minor$ ($buildtag$) \nBuilt on $builddate$\n\nClick the 'Next' button to proceed to the next screen. If you want to change something on a previous screen, click the 'Previous' button.\n\nYou may cancel this installation at any time by clicking the 'Cancel' button.\n\nGenePattern installs Apache Tomcat, and on some platforms, R and Perl.  You will be presented with the license agreements from each of the relevant software packages to consent to prior to configuring the rest of GenePattern and performing the installation.
+IntroAction.72a1c5a5b1d6.message=InstallAnywhere will guide you through the installation of $PRODUCT_NAME$ \n\nVersion: $version.major$.$version.minor$ ($buildtag$) \nBuilt on $builddate$\n\nClick the 'Next' button to proceed to the next screen. If you want to change something on a previous screen, click the 'Previous' button.\n\nYou may cancel this installation at any time by clicking the 'Cancel' button.\n\nGenePattern installs Apache Tomcat, and on some platforms, R and Perl.  You will be presented with the license agreements from each of the relevant software packages to consent to prior to configuring the rest of GenePattern and performing the installation.
 
 # IntroAction.72a1c5a5b1d6.stepTitle=Introduction
 IntroAction.72a1c5a5b1d6.stepTitle=Introduction
@@ -574,8 +574,8 @@ ShowDialogAction.9b007f4b9827.detailsButtonLabel=Details...
 # ShowDialogAction.9b007f4b9827.label=R GenePattern library will not be installed
 ShowDialogAction.9b007f4b9827.label=R GenePattern library will not be installed
 
-# ShowDialogAction.9b007f4b9827.narrative=You do not have write permission to the folder $R$/library. The Genepattern R library could not be installed. \r\n\r\nYou will need to follow the instructions in the release notes for \"using a version of R that you cannot modify\" in order to run R language modules.  \r\n\r\nAlternatively, after installation is complete download and install the GenePattern R library into R from the GenePattern home page as user root.
-ShowDialogAction.9b007f4b9827.narrative=You do not have write permission to the folder $R$/library. The Genepattern R library could not be installed. \r\n\r\nYou will need to follow the instructions in the release notes for \"using a version of R that you cannot modify\" in order to run R language modules.  \r\n\r\nAlternatively, after installation is complete download and install the GenePattern R library into R from the GenePattern home page as user root.
+# ShowDialogAction.9b007f4b9827.narrative=You do not have write permission to the folder $R$/library. The Genepattern R library could not be installed. \n\nYou will need to follow the instructions in the release notes for \"using a version of R that you cannot modify\" in order to run R language modules.  \n\nAlternatively, after installation is complete download and install the GenePattern R library into R from the GenePattern home page as user root.
+ShowDialogAction.9b007f4b9827.narrative=You do not have write permission to the folder $R$/library. The Genepattern R library could not be installed. \n\nYou will need to follow the instructions in the release notes for \"using a version of R that you cannot modify\" in order to run R language modules.  \n\nAlternatively, after installation is complete download and install the GenePattern R library into R from the GenePattern home page as user root.
 
 # ShowDialogAction.9b007f4b9827.title=Write permission required in $R$/library
 ShowDialogAction.9b007f4b9827.title=Write permission required in $R$/library
@@ -592,8 +592,8 @@ ShowDialogAction.b32d08ccbb95.detailsButtonLabel=Details...
 # ShowDialogAction.b32d08ccbb95.label=Could not launch browser
 ShowDialogAction.b32d08ccbb95.label=Could not launch browser
 
-# ShowDialogAction.b32d08ccbb95.narrative=The Installer was unable to launch or confirm the launch of your default web browser. Please open the followign URL in your web browser to walk through the final four steps to complete the installation\r\n\r\nhttp://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp
-ShowDialogAction.b32d08ccbb95.narrative=The Installer was unable to launch or confirm the launch of your default web browser. Please open the followign URL in your web browser to walk through the final four steps to complete the installation\r\n\r\nhttp://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp
+# ShowDialogAction.b32d08ccbb95.narrative=The Installer was unable to launch or confirm the launch of your default web browser. Please open the followign URL in your web browser to walk through the final four steps to complete the installation\n\nhttp://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp
+ShowDialogAction.b32d08ccbb95.narrative=The Installer was unable to launch or confirm the launch of your default web browser. Please open the followign URL in your web browser to walk through the final four steps to complete the installation\n\nhttp://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp
 
 # ShowDialogAction.b32d08ccbb95.title=Could not launch browser
 ShowDialogAction.b32d08ccbb95.title=Could not launch browser
@@ -640,14 +640,14 @@ UninstallCompleteActionConsole.986089158a4b.message=All items were successfully 
 # UninstallCompleteActionConsole.986089158a4b.title=Uninstall Complete
 UninstallCompleteActionConsole.986089158a4b.title=Uninstall Complete
 
-# UninstallIntroAction.986089148a46.message=About to uninstall...\r\n\r\n$PRODUCT_NAME$\r\n\r\nThis will remove features installed by InstallAnywhere.  It will not remove files and folders created after the installation.
-UninstallIntroAction.986089148a46.message=About to uninstall...\r\n\r\n$PRODUCT_NAME$\r\n\r\nThis will remove features installed by InstallAnywhere.  It will not remove files and folders created after the installation.
+# UninstallIntroAction.986089148a46.message=About to uninstall...\n\n$PRODUCT_NAME$\n\nThis will remove features installed by InstallAnywhere.  It will not remove files and folders created after the installation.
+UninstallIntroAction.986089148a46.message=About to uninstall...\n\n$PRODUCT_NAME$\n\nThis will remove features installed by InstallAnywhere.  It will not remove files and folders created after the installation.
 
 # UninstallIntroAction.986089148a46.stepTitle=Uninstall $PRODUCT_NAME$
 UninstallIntroAction.986089148a46.stepTitle=Uninstall $PRODUCT_NAME$
 
-# UninstallIntroActionConsole.986089148a47.message=About to uninstall...\r\n\r\n$PRODUCT_NAME$\r\n\r\nThis will remove features installed by InstallAnywhere.  It will not remove files and folders created after the installation.
-UninstallIntroActionConsole.986089148a47.message=About to uninstall...\r\n\r\n$PRODUCT_NAME$\r\n\r\nThis will remove features installed by InstallAnywhere.  It will not remove files and folders created after the installation.
+# UninstallIntroActionConsole.986089148a47.message=About to uninstall...\n\n$PRODUCT_NAME$\n\nThis will remove features installed by InstallAnywhere.  It will not remove files and folders created after the installation.
+UninstallIntroActionConsole.986089148a47.message=About to uninstall...\n\n$PRODUCT_NAME$\n\nThis will remove features installed by InstallAnywhere.  It will not remove files and folders created after the installation.
 
 # UninstallIntroActionConsole.986089148a47.stepTitle=Uninstall $PRODUCT_NAME$
 UninstallIntroActionConsole.986089148a47.stepTitle=Uninstall $PRODUCT_NAME$

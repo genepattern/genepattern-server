@@ -20,7 +20,7 @@
 #
 # Product Name: GenePattern
 # Project File: C:\projects\genepattern\installer\server.iap_xml
-# Generated:    Thu Nov 17 14:23:56 EST 2005
+# Generated:    Thu Nov 17 14:52:30 EST 2005
 
 
 ---- PRE-INSTALL ACTIONS ----
@@ -112,9 +112,7 @@
 -- CustomAction.f919e62a9b43 (NoEP)
 -- LaunchDefaultBrowser.9bf31d129263
 -- Exec.fed8b687bcbd
--- DisplayScrollingMessage.fedc0849bcbd
 -- ShowDialogAction.b32d08ccbb95
--- DisplayScrollingMessage.fee03dd9bcc0
 
 
 ---- PRE-UNINSTALL ACTIONS ----
