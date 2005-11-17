@@ -112,7 +112,7 @@ function confirmDeleteSupportFiles() {
 
 		out.println("<option value='"+ privacies[1]);
 		if (selected) out.println(" selected='true' ");
-		out.println("'> "+privacies[1]+"</option>");
+		out.println("'> "+privacies[i]+"</option>");
 }
 %>
 		</select>
