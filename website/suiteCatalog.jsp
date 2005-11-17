@@ -138,7 +138,7 @@ HashMap allSuites = new HashMap();
 </td>
 <td align=center>
 
-<form  action="addSuiteZip.jsp" >
+<form  action="addZip.jsp" >
 		<input type="submit" name="importSuite" value="Import Suite from zip" />
 &nbsp;
 </form>
