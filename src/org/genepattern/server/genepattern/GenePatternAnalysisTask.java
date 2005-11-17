@@ -1925,16 +1925,13 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 			// BUG: this is NOT R_HOME! This is R_HOME/bin/R
 			props.put(R_HOME, props.getProperty(R));
 			// R should be <java> <java_flags> -cp <libdir> -DR_HOME=<R> RunR
-	
-			String runRPath = props.getProperty("run_r_path");
-			if(runRPath==null) {
-				runRPath = "../../webapps/gp/WEB-INF/classes";
-			}
 		
-			props.put(R, substitute(LEFT_DELIMITER + JAVA + RIGHT_DELIMITER
-					+ " " + LEFT_DELIMITER + "java_flags" + RIGHT_DELIMITER
-					+ " -cp " + runRPath + " -DR_HOME=" + LEFT_DELIMITER
-					+ "R_HOME" + RIGHT_DELIMITER + " RunR ", props, null));
+			props.put(R, LEFT_DELIMITER + JAVA + RIGHT_DELIMITER + " "
+					+ LEFT_DELIMITER + "java_flags" + RIGHT_DELIMITER + " -cp "
+					+ LEFT_DELIMITER + "run_r_path" + RIGHT_DELIMITER
+					+ " -DR_HOME=" + LEFT_DELIMITER + "R_HOME"
+					+ RIGHT_DELIMITER + " -Dr_flags=" + LEFT_DELIMITER
+					+ "r_flags" + RIGHT_DELIMITER + " RunR ");
 
 			// populate props with the input parameters so that they can be
 			// looked up by name
