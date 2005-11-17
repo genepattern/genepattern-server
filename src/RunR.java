@@ -91,7 +91,6 @@ public class RunR extends Thread {
 
 		if (rFlagsProp != null && !rFlagsProp.equals("")) {
 			rFlags = System.getProperty("r_flags").split(" ");
-			System.out.println(Arrays.asList(rFlags));
 		} else {
 			rFlags = new String[0];
 		}
