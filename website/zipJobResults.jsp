@@ -343,12 +343,16 @@ for(int i = 0; i < jobs.length; i++) {
    
    out.print("<td>" + formatter.format(submitted));
    Date completed = job.getDateCompleted();
-   if(completed!=null) {
+   String status = job.getStatus();
+   
+   if(completed!=null && !status.equals(JobStatus.PROCESSING)) {
    	formatter = completed.after(midnight.getTime()) ? shortDateFormat : 	dateFormat;
    
    	out.print("<td>" + formatter.format(completed));
+   } else {
+   	out.print("<td></td>");
    }
-   String status = job.getStatus();
+   
    
    if(status.equals(JobStatus.PROCESSING)) {
 	out.print("<td><font color=" + htColors.get(status)  +">" + status + 
