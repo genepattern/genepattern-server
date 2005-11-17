@@ -1526,8 +1526,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 		}
 		ParameterInfo p = null;
 		StringBuffer newString = new StringBuffer(commandLine);
-		while (start < newString.length()
-				&& (start = newString.toString().indexOf(LEFT_DELIMITER, start)) != -1) {
+		while (start < newString.length() && (start = newString.toString().indexOf(LEFT_DELIMITER, start)) != -1) {
 			start += LEFT_DELIMITER.length();
 			end = newString.toString().indexOf(RIGHT_DELIMITER, start);
 			if (end == -1) {
@@ -1558,6 +1557,13 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 				// path
 				replacement = new File(replacement).getAbsolutePath();
 			}
+			if (varName.equals("userid")) { // special treatment to catch spaces in names
+				replacement = props.getProperty(varName);
+				int idx = replacement.indexOf(" ");
+				if (idx >= 0) replacement = "\""+replacement+"\"";
+			}
+
+
 			if (replacement.length() == 0)
 				_cat.debug("GPAT.substitute: replaced " + varName
 						+ " with empty string");
