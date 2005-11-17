@@ -94,7 +94,6 @@ function checkAll(frm, bChecked) {
 }
 
 function changeFilter(fld) {
-	window.alert("changed " + fld.name + " to " + fld.options[fld.selectedIndex].value);
 	var frm = fld.form;
 	loc = window.location.href.substring(0, window.location.href.length-window.location.search.length) + "?";
 	loc = loc + "<%= SORT %>=" + escape(frm.elements['<%= SORT %>'].options[frm.elements['<%= SORT %>'].selectedIndex].value);
