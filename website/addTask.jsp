@@ -690,7 +690,7 @@ if (taskName != null) {
 	<table>
 	<tr>
 	<td valign="top">
-		output file format(s):
+		output file format(s):<a href='help.jsp#OutputDescription' target='help'><img border='0' src='skin/help2.jpg'/></a>
 	</td>
 	<td valign="top">	
 <%
@@ -767,6 +767,7 @@ if (taskName != null) {
   <%// } %>
 	</tr>
 	</table>
+
 
    </td>
    </tr>
