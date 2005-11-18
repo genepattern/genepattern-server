@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.event.TableModelListener;
@@ -18,24 +20,26 @@ public class OdfObject implements TableModel {
 
 	private List keyValuePairs = new ArrayList();
 
-	private String[] columnNames;
+	private List columnNames;
 
-	private Class[] columnClasses;
+	// list of Class objects
+	private List columnClasses;
 
-	private String[] columnTypes;
+	// list of String objects
+	private List columnTypes;
 
-	private Object[][] columns;
+	// list of column arrays
+	private List columns;
 
 	private int dataLines;
 
 	public List getHeaders() {
 		return keyValuePairs;
-
 	}
 
 	public int getColumnIndex(String columnName) {
-		for (int j = 0; j < columnNames.length; j++) {
-			if (columnNames[j].equalsIgnoreCase(columnName)) {
+		for (int j = 0; j < columnNames.size(); j++) {
+			if (((String) columnNames.get(j)).equalsIgnoreCase(columnName)) {
 				return j;
 			}
 		}
@@ -58,13 +62,30 @@ public class OdfObject implements TableModel {
 			}
 		}
 	}
-	
+
+	public void addColumn(int index, String columnName, String columnType,
+			Object[] data) {
+		if (data.length != dataLines) {
+			throw new IllegalArgumentException(
+					"Length of data array must be equal to " + dataLines);
+		}
+		columnNames.add(index, columnName);
+		try {
+			addColumnType(index, columnType);
+		} catch (ParseException e) {
+			throw new IllegalArgumentException("Unknown column type: "
+					+ columnType);
+		}
+		columns.set(index, data);
+	}
+
 	private class MyHandler implements IOdfHandler {
+
 		public void header(String key, String[] values) throws ParseException {
 			if (key.equals("COLUMN_NAMES")) {
-				columnNames = values;
+				columnNames = new ArrayList(Arrays.asList(values));
 			} else if (key.equals("COLUMN_TYPES")) {
-				columnTypes = values;
+				columnTypes = new ArrayList(Arrays.asList(values));
 			}
 		}
 
@@ -75,46 +96,72 @@ public class OdfObject implements TableModel {
 			keyValuePairs.add(new Entry(key, value));
 		}
 
-		public void data(int i, int column, String s) throws ParseException {
-			Object obj = columns[column];
+		public void data(int row, int column, String s) throws ParseException {
+			Object obj = columns.get(column);
 			if (obj instanceof Double[]) {
-				((Double[]) obj)[i] = Double.valueOf(s);
+				((Double[]) obj)[row] = Double.valueOf(s);
 			} else if (obj instanceof Integer[]) {
-				((Integer[]) obj)[i] = Integer.valueOf(s);
+				((Integer[]) obj)[row] = Integer.valueOf(s);
 			} else if (obj instanceof String[]) {
-				((String[]) obj)[i] = s;
+				((String[]) obj)[row] = s;
 			} else if (obj instanceof Boolean[]) {
-				((Boolean[]) obj)[i] = Boolean.valueOf(s);
+				((Boolean[]) obj)[row] = Boolean.valueOf(s);
 			} else {
 				throw new ParseException("Unknown column type");
 			}
 		}
 
 		public void endHeader() throws ParseException {
-			columns = new Object[columnTypes.length][];
-			columnClasses = new Class[columnTypes.length];
-
-			for (int i = 0; i < columnTypes.length; i++) {
-				if (columnTypes[i].equals("String")) {
-					columns[i] = new String[dataLines];
-					columnClasses[i] = String.class;
-				} else if (columnTypes[i].equals("double")
-						|| columnTypes[i].equals("float")) {
-					columns[i] = new Double[dataLines];
-					columnClasses[i] = Double.class;
-				} else if (columnTypes[i].equals("int")) {
-					columns[i] = new Integer[dataLines];
-					columnClasses[i] = Integer.class;
-				} else if (columnTypes[i].equals("boolean")) {
-					columns[i] = new Boolean[dataLines];
-					columnClasses[i] = Boolean.class;
-				} else {
-					throw new ParseException("Unknown column type");
+			if (columnTypes == null) {
+				columnTypes = new ArrayList(columnNames.size());
+				for (int i = 0, cols = columnNames.size(); i < cols; i++) {
+					columnTypes.add("String");
 				}
-
 			}
+			columns = new ArrayList(columnTypes.size());
+			columnClasses = new ArrayList(columnTypes.size());
+			for (int i = 0; i < columnTypes.size(); i++) {
+				addColumnType((String) columnTypes.get(i));
+			}
+
 		}
 
+	}
+
+	private void addColumnType(String type) throws ParseException {
+		if (type.equals("String")) {
+			columns.add(new String[dataLines]);
+			columnClasses.add(String.class);
+		} else if (type.equals("double") || type.equals("float")) {
+			columns.add(new Double[dataLines]);
+			columnClasses.add(Double.class);
+		} else if (type.equals("int")) {
+			columns.add(new Integer[dataLines]);
+			columnClasses.add(Integer.class);
+		} else if (type.equals("boolean")) {
+			columns.add(new Boolean[dataLines]);
+			columnClasses.add(Boolean.class);
+		} else {
+			throw new ParseException("Unknown column type");
+		}
+	}
+
+	private void addColumnType(int index, String type) throws ParseException {
+		if (type.equals("String")) {
+			columns.add(index, new String[dataLines]);
+			columnClasses.add(index, String.class);
+		} else if (type.equals("double") || type.equals("float")) {
+			columns.add(index, new Double[dataLines]);
+			columnClasses.add(index, Double.class);
+		} else if (type.equals("int")) {
+			columns.add(index, new Integer[dataLines]);
+			columnClasses.add(index, Integer.class);
+		} else if (type.equals("boolean")) {
+			columns.add(index, new Boolean[dataLines]);
+			columnClasses.add(index, Boolean.class);
+		} else {
+			throw new ParseException("Unknown column type");
+		}
 	}
 
 	public String getHeader(String key) {
@@ -171,7 +218,8 @@ public class OdfObject implements TableModel {
 	}
 
 	public Object getValueAt(int r, int c) {
-		return columns[c][r];
+		Object[] obj = (Object[]) columns.get(c);
+		return obj[r];
 	}
 
 	public int getRowCount() {
@@ -179,21 +227,30 @@ public class OdfObject implements TableModel {
 	}
 
 	public Class getColumnClass(int c) {
-		return columnClasses[c];
+		return (Class) columnClasses.get(c);
 	}
 
 	public int getColumnCount() {
-		return columns.length;
+		return columns.size();
 	}
 
-	public String getColumnName(int c) {
-		return columnNames[c];
+	public String getColumnName(int j) {
+		return (String) columnNames.get(j);
+	}
+
+	/**
+	 * Gets the column names
+	 * 
+	 * @return a unmodifiable list of column names
+	 */
+	public List getColumnNames() {
+		return Collections.unmodifiableList(columnNames);
 	}
 
 	public Object getArray(String columnName) {
-		for (int i = 0; i < columnNames.length; i++) {
-			if (columnNames[i].equalsIgnoreCase(columnName)) {
-				return columns[i];
+		for (int i = 0; i < columnNames.size(); i++) {
+			if (((String) columnNames.get(i)).equalsIgnoreCase(columnName)) {
+				return columns.get(i);
 			}
 		}
 		return null;
@@ -223,10 +280,6 @@ public class OdfObject implements TableModel {
 			this.key = key;
 			this.value = value;
 		}
-	}
-
-	public String[] getColumnNames() {
-		return columnNames;
 	}
 
 }
