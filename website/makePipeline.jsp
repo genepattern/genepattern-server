@@ -527,7 +527,6 @@ System.out.println("B");
 		</ul>
 		<a href="javascript:history.back()">back</a><br>
 		<script language="javascript">
-			window.resizeTo(600, 500);
 			window.opener.focus();
 			window.toolbar.visibility = false;
 			window.personalbar.visibility = false;
