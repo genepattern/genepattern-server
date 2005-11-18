@@ -150,6 +150,16 @@ taskTypes = (String[])tsTaskTypes.toArray(new String[0]);
 
 <script language="javascript">
 
+function showFileFormats(sel, i) {
+	val = sel.value;
+	div = document.getElementById("p" + i + "_fileFormatDiv");
+	if(val=="java.io.File") {
+		div.style.display = "block";
+	} else {
+		div.style.display = "none";
+	}
+}
+
 function onPrivacyChange(selector) {
 	if (selector.options[selector.selectedIndex].value == '<%= GPConstants.PRIVATE %>') {
 		// changing from public to private
@@ -841,6 +851,9 @@ if (taskName != null) {
   for (int attribute = 0; attribute < GPConstants.PARAM_INFO_ATTRIBUTES.length; attribute++) { 
 		attributeName = ((String)GPConstants.PARAM_INFO_ATTRIBUTES[attribute][GPConstants.PARAM_INFO_NAME_OFFSET]);
 		if (attributeName != null) attributeName = attributeName.replace(GPConstants.PARAM_INFO_SPACER, ' ');
+		if(attributeName.equals("fileFormat")) {
+			attributeName = "file format";
+		}
 
 %>
   <td valign="bottom"><b><%= attributeName %></b></td>
@@ -1023,9 +1036,21 @@ for (int i = from; i < to; i++) {
 			
 			if (!viewOnly) {
 			 	String [] items = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-
-				out.append("<select name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple size=\"" + Math.min(3, choices.length) + "\"" : "") + ">\n");
-
+				boolean isFileFormat = attributeName.equals("fileFormat");
+				if(isFileFormat) {
+					String display = "block";
+					if(p==null || !p.isInputFile()) {
+						display = "none";
+					}
+					out.append("<div id=\"p" + i + "_fileFormatDiv\" style=\"display:" + display + "\">"); 
+					
+				}
+				if(!isFileFormat) {
+					out.append("<select onchange=\"showFileFormats(this," + i + ")\" name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple size=\"" + Math.min(3, choices.length) + "\"" : "") + ">\n");
+				} else { 
+					out.append("<select name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple size=\"" + Math.min(3, choices.length) + "\"" : "") + ">\n");
+				}
+				
 				for (int choice = 0; choice < choices.length; choice++) { 
 					boolean selected = false;
 					for (int sel = 0; sel < items.length; sel++) {
