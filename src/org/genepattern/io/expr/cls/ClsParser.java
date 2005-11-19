@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.genepattern.io.ParseException;
+
 /**
  * Class for reading cls files using callbacks.
  * <P>
@@ -66,7 +68,7 @@ public class ClsParser {
 
 	IClsHandler handler;
 
-	public boolean canDecode(InputStream in) throws IOException {
+	public boolean canDecode(InputStream in) {
 		try {
 			this.reader = new BufferedReader(new java.io.InputStreamReader(in));
 			processHeader();
@@ -97,27 +99,24 @@ public class ClsParser {
 		processHeader();// <num_data> <num_classes> 1
 		String classifierLine = reader.readLine();
 		String[] names = null;
-		int[] levels = null;
 		String dataLine = null;
 		String[] assignments = null;
 		Map classNumber2NameMap = new HashMap();
 
 		if (hasClassNames(classifierLine)) {
-			names = processClassifier(classifierLine, numClasses);
+			names = readClassNamesLine(classifierLine);
 			for (int i = 0, length = names.length; i < length; i++) {
 				classNumber2NameMap.put(new Integer(i), names[i]);
 			}
 			dataLine = reader.readLine();
-			assignments = processData(dataLine, numClasses, numItems,
-					classNumber2NameMap);
+			assignments = processData(dataLine, classNumber2NameMap);
 		} else {// assume classifier line was skipped (second line) so try it as
-				// data
+			// data
 			for (int i = 0; i < numClasses; i++) {
 				classNumber2NameMap.put(new Integer(i), "Class " + i);
 			}
 			dataLine = classifierLine;
-			assignments = processData(dataLine, numClasses, numItems,
-					classNumber2NameMap);
+			assignments = processData(dataLine, classNumber2NameMap);
 		}
 		if (handler != null) {
 			handler.assignments(assignments);
@@ -170,7 +169,7 @@ public class ClsParser {
 
 	}
 
-	private String[] processClassifier(String classifierLine, int num_classes)
+	private String[] readClassNamesLine(String classifierLine)
 			throws org.genepattern.io.ParseException {
 		// optional: class label line, otherwise the data line
 		// # Breast Colon Pancreas ...
@@ -179,11 +178,12 @@ public class ClsParser {
 		classifierLine = classifierLine
 				.substring(classifierLine.indexOf('#') + 1);
 		StringTokenizer st = new StringTokenizer(classifierLine);
-		if (st.countTokens() != num_classes) {
-			throw new org.genepattern.io.ParseException("First line specifies " + num_classes
-					+ " classes, but found " + (st.countTokens()) + ".");
+		if (st.countTokens() != numClasses) {
+			throw new org.genepattern.io.ParseException("First line specifies "
+					+ numClasses + " classes, but found " + (st.countTokens())
+					+ ".");
 		}
-		String[] names = new String[num_classes];
+		String[] names = new String[numClasses];
 		for (int ic = 0; st.hasMoreTokens(); ic++) {
 			names[ic] = st.nextToken();
 		}
@@ -205,58 +205,47 @@ public class ClsParser {
 	 * @exception org.genepattern.io.ParseException
 	 *                Description of the Exception
 	 */
-	private String[] processData(String data_line, int num_classes,
-			int num_data, Map classNumber2ClassNameMap) throws IOException,
-			org.genepattern.io.ParseException {
+	private String[] processData(String data_line, Map classNumber2ClassNameMap)
+			throws IOException, ParseException {
 		// data line <int0> <space> <int1> <space> <int2> <space> ...
 		if (data_line == null) {
-			throw new org.genepattern.io.ParseException(
-					"Missing data (numbers seperated by spaces) in 3rd line");
+			throw new ParseException(
+					"Missing data (numbers seperated by spaces) on 3rd line");
 		}
 		try {
-			String[] assignments = new String[num_data];
-			int dataInd = 0;
-			do {
-				StringTokenizer st = new StringTokenizer(data_line);
-				while (st.hasMoreTokens()) {
-					int classNumber = Integer.parseInt(st.nextToken().trim());
-					if (classNumber >= num_classes || classNumber < 0) {
-						throw new org.genepattern.io.ParseException(
-								"Header specifies "
-										+ num_classes
-										+ " classes, but data line contains a "
-										+ classNumber
-										+ ", a value "
-										+ "that is too "
-										+ (classNumber < 0 ? "small" : "large")
-										+ "."
-										+ " All data for this file must be in the range 0-"
-										+ (num_classes - 1) + ".");
-					}
-					String name = (String) classNumber2ClassNameMap
-							.get(new Integer(classNumber));
+			String[] assignments = new String[numItems];
+			String[] tokens = data_line.split(" ");
 
-					assignments[dataInd++] = name;
+			if (tokens.length != numItems) {
+				throw new org.genepattern.io.ParseException("Header specifies "
+						+ numItems + " data points, but file contains "
+						+ tokens.length + " data points.");
+
+			}
+			for (int i = 0; i < tokens.length; i++) {
+				int classNumber = Integer.parseInt(tokens[i].trim());
+				if (classNumber >= numClasses || classNumber < 0) {
+					throw new org.genepattern.io.ParseException(
+							"Header specifies "
+									+ numClasses
+									+ " classes, but data line contains a "
+									+ classNumber
+									+ ", a value "
+									+ "that is too "
+									+ (classNumber < 0 ? "small" : "large")
+									+ "."
+									+ " All data for this file must be in the range 0-"
+									+ (numClasses - 1) + ".");
 				}
-				data_line = reader.readLine();
-			} while (data_line != null);
-
-			if (dataInd != num_data) {
-				throw new org.genepattern.io.ParseException("Header specifies "
-						+ num_data + " datapoints. But file contains "
-						+ dataInd + " datapoints.");
+				String name = (String) classNumber2ClassNameMap
+						.get(new Integer(classNumber));
+				assignments[i] = name;
 			}
 
-			if (numClasses != num_classes) {
-				throw new org.genepattern.io.ParseException("Header specifies "
-						+ num_classes + " classes. But file contains "
-						+ numClasses + " classes.");
-			}
 			return assignments;
 		} catch (NumberFormatException ex) {
-			throw new org.genepattern.io.ParseException(
-					"All data on the data line(s) (3rd and subsequent lines) "
-							+ "must be numbers");
+			throw new ParseException(
+					"All values on the 3rd lines must be numbers.");
 		}
 	}
 
