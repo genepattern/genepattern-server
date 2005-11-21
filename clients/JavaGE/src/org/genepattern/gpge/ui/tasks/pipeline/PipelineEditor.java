@@ -11,7 +11,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -32,7 +31,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
@@ -61,14 +59,12 @@ import org.genepattern.gpge.ui.tasks.ParameterChoice;
 import org.genepattern.gpge.ui.tasks.Sendable;
 import org.genepattern.gpge.ui.tasks.TaskDisplay;
 import org.genepattern.gpge.ui.tasks.TaskHelpActionListener;
-import org.genepattern.gpge.ui.tasks.TaskNamePanel;
 import org.genepattern.gpge.ui.tasks.VersionComboBox;
 import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.gpge.ui.util.ShadowBorder;
 import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
-import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -1066,8 +1062,15 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			System.err.println("Unknown pipeline event");
 		}
 		enableButtons();
-		tasksPanel.invalidate();
-		tasksPanel.validate();
+		SwingUtilities.invokeLater(new Thread() {
+			public void run() {
+				invalidate();
+				validate();
+				//tasksPanel.invalidate();
+				//tasksPanel.validate();
+			}
+		
+		});
 
 	}
 
