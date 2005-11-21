@@ -38,7 +38,7 @@
 		 java.io.StringWriter"
 
 	session="false" contentType="text/html" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><%
-System.out.println("MAKE_PIPELINE");
+System.out.println("\n\n\nMAKE_PIPELINE\n=======================================");
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
@@ -72,9 +72,8 @@ try {
 	mySmartUpload.initialize(pageContext);
 	mySmartUpload.upload();
 	requestParameters = mySmartUpload.getRequest();
-System.out.println("A");
 	userID = requestParameters.getParameter(GPConstants.USERID);
-System.out.println("B");
+
 	String RUN = "run";
 	String CLONE = "clone";
 
@@ -207,12 +206,13 @@ System.out.println("B");
 		com.jspsmart.upload.File attachedFile = null;
 		for (int i=0;i<mySmartUpload.getFiles().getCount();i++){
 			attachedFile = mySmartUpload.getFiles().getFile(i);
+			if (DEBUG) System.out.println("\n=> "+i + "  '" + attachedFile.getFileName() +"'  "+ attachedFile.isMissing());
+
 			if (attachedFile.isMissing()) continue;
 			attachmentName = attachedFile.getFileName();
 			if (attachmentName.trim().length() == 0) continue;
 			String fieldName = attachedFile.getFieldName();
 			String fullName = attachedFile.getFilePathName();
-			if (DEBUG) System.out.println("makePipeline: " + fieldName + " -> " + fullName);
 			if (fullName.startsWith("http:") || fullName.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
 				// don't bother trying to save a file that is a URL, retrieve it at execution time instead
 				htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
@@ -274,7 +274,9 @@ System.out.println("B");
 				runTimePrompt[i] = (requestParameters.getParameter(taskPrefix + "_prompt_" + i) != null);
                                 
 				String inheritFrom = requestParameters.getParameter(taskPrefix + "_i_" + i);
-				boolean inherited = (inheritFrom != null && inheritFrom.length() > 0 && !inheritFrom.equals("NOT SET"));
+
+System.out.println("\nINHERTING=> " + inheritFrom );
+				boolean inherited = (inheritFrom != null && inheritFrom.length() > 0 && !inheritFrom.equals("NOT SET") && !inheritFrom.startsWith("[tasknotyetselected]")  );
 
 				boolean isOptional = (((String)p.getAttributes().get(GPConstants.PARAM_INFO_OPTIONAL[0])).length() > 0);
 
@@ -318,7 +320,7 @@ System.out.println("B");
 					} else {
 						String shadowName = taskPrefix + "_shadow" + i;
 						String shadow = requestParameters.getParameter(shadowName);
-//System.out.println(shadowName + "=" + shadow);
+
 						//if (shadow == null || shadow.length() == 0) shadow = (String)htFilenames.get(taskName + "1." + taskPrefix+ "_" + p.getName());
 						if (shadow != null && (shadow.startsWith("http:") || shadow.startsWith("https:") || shadow.startsWith("ftp:") || shadow.startsWith("file:") || shadow.startsWith("<GenePatternURL>"))) {
 
