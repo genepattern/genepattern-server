@@ -266,7 +266,7 @@ function addNavbarItem(name, lsid) {
 	// set the class for this option to get the right coloring
 	newOption.className = "navbar-tasks-" + l.authorityType;
 //	if (l.authorityType == "<%= LSIDUtil.AUTHORITY_FOREIGN %>") {
-		newOption.setAttribute("title", l.getAuthority());
+		newOption.setAttribute("title", l.authority);
 //	}
 	selector.options[selector.options.length] = newOption;
 	selector.options[selector.options.length-1].selected = true; // highlight it
@@ -408,7 +408,7 @@ function checkEnableNavbar() {
 
 &nbsp;&nbsp;&nbsp;
 <a href="#" 
-	onclick="openSuiteFilter()"> <nobr>Filter by Suite</nobr></a>
+	onclick="openSuiteFilter()" class="navbarlink"> <nobr>Filter by Suite</nobr></a>
 
 	</td>
 	<td align="right" valign="top" >
