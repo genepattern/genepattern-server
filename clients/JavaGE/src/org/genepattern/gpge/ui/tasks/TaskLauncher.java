@@ -38,7 +38,7 @@ public class TaskLauncher {
 	public static void submitVisualizer(final AnalysisService svc,
 			ParameterInfo[] paramInfos, String username,
 			AnalysisWebServiceProxy proxy) {
-		submitVisualizer(svc, paramInfos, username, proxy, false);
+		submitVisualizer(svc, paramInfos, username, proxy, true);
 	}
 
 	/**
