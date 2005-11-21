@@ -35,6 +35,12 @@ public class TaskLauncher {
 	private TaskLauncher() {
 	}
 
+	public static void submitVisualizer(final AnalysisService svc,
+			ParameterInfo[] paramInfos, String username,
+			AnalysisWebServiceProxy proxy) {
+		submitVisualizer(svc, paramInfos, username, proxy, false);
+	}
+
 	/**
 	 * @param svc
 	 *            the analysis service to run
@@ -43,9 +49,9 @@ public class TaskLauncher {
 	 * @param username
 	 *            Description of the Parameter
 	 */
-public static void submitVisualizer(final AnalysisService svc,
+	public static void submitVisualizer(final AnalysisService svc,
 			ParameterInfo[] paramInfos, String username,
-			AnalysisWebServiceProxy proxy) {
+			AnalysisWebServiceProxy proxy, boolean addToHistory) {
 		try {
 			Map substitutions = new HashMap();
 			substitutions
@@ -83,13 +89,15 @@ public static void submitVisualizer(final AnalysisService svc,
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					final JDialog d = new CenteredDialog(GenePattern.getDialogParent());
+					final JDialog d = new CenteredDialog(GenePattern
+							.getDialogParent());
 					d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-					JLabel l = new JLabel("Launching " + svc.getTaskInfo().getName()
-							+ "...", JLabel.CENTER);
-					
+					JLabel l = new JLabel("Launching "
+							+ svc.getTaskInfo().getName() + "...",
+							JLabel.CENTER);
+
 					d.getContentPane().add(l);
-					d.setSize(200, 100);
+					d.setSize(250, 80);
 
 					d.setVisible(true);
 					Timer t = new Timer(1000, new ActionListener() {
@@ -101,22 +109,21 @@ public static void submitVisualizer(final AnalysisService svc,
 					t.start();
 				}
 			});
-			
-			
-			
+
 			new org.genepattern.gpge.ui.tasks.JavaGELocalTaskExecutor(svc
 					.getTaskInfo(), substitutions, username, svc.getServer())
 					.exec();
-			
-			
 
-			JobInfo jobInfo = proxy.recordClientJob(svc.getTaskInfo().getID(),
-					paramInfos);
-			AnalysisJob job = new AnalysisJob(svc.getServer(), jobInfo, true);
-			job.getJobInfo().setDateCompleted(
-					job.getJobInfo().getDateSubmitted());
-			job.getJobInfo().setStatus(JobStatus.FINISHED);
-			JobModel.getInstance().add(job);
+			if (addToHistory) {
+				JobInfo jobInfo = proxy.recordClientJob(svc.getTaskInfo()
+						.getID(), paramInfos);
+				AnalysisJob job = new AnalysisJob(svc.getServer(), jobInfo,
+						true);
+				job.getJobInfo().setDateCompleted(
+						job.getJobInfo().getDateSubmitted());
+				job.getJobInfo().setStatus(JobStatus.FINISHED);
+				JobModel.getInstance().add(job);
+			}
 		} catch (Throwable t) {
 			t.printStackTrace();
 			GenePattern.showErrorDialog("An error occurred while running "
@@ -124,6 +131,7 @@ public static void submitVisualizer(final AnalysisService svc,
 		}
 
 	}
+
 	/**
 	 * @param svc
 	 *            the analysis service to run
@@ -232,7 +240,7 @@ public static void submitVisualizer(final AnalysisService svc,
 								children[i]).getParameterInfoArray();
 						submitVisualizer(AnalysisServiceManager.getInstance()
 								.getAnalysisService(lsid), params, job
-								.getJobInfo().getUserId(), serviceProxy);
+								.getJobInfo().getUserId(), serviceProxy, false);
 					}
 				}
 			} catch (Exception e) { // don't break out of loop if running
