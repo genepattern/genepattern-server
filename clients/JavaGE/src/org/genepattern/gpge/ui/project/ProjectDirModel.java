@@ -67,8 +67,21 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 	 * @return the index
 	 */
 	public int indexOf(File projectDirectory) {
-		return Collections.binarySearch(root.getChildren(), new ProjectDirNode(
-				projectDirectory), projectComparator);
+		List children = root.getChildren();
+		if (children == null) {
+			return -1;
+		}
+		for (int i = 0; i < children.size(); i++) {
+			ProjectDirNode p = (ProjectDirNode) children.get(i);
+			if (p.directory.equals(projectDirectory)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public boolean contains(File projectDir) {
+		return indexOf(projectDir) >= 0;
 	}
 
 	public void removeProjectDirectoryListener(ProjectDirectoryListener l) {
@@ -126,15 +139,6 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 			}
 		}
 		return sb.toString();
-	}
-
-	public boolean contains(File projectDir) {
-		Vector children = root.getChildren();
-		if (children == null) {
-			return false;
-		}
-		return Collections.binarySearch(children,
-				new ProjectDirNode(projectDir), projectComparator) >= 0;
 	}
 
 	/**
