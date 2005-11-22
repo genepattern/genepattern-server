@@ -63,6 +63,11 @@ boolean taskInstallAllowed = authManager.checkPermission("createTask", username)
 boolean pipelineInstallAllowed = authManager.checkPermission("createPipeline", username);
 boolean suiteInstallAllowed = authManager.checkPermission("createSuite", username);
 
+String agent = request.getHeader("USER-AGENT");
+boolean isIE = false;
+if (agent.indexOf("MSIE") >= 0) {
+	isIE = true;
+} 
 
 
 if (username == null || username.length() == 0) return; // come back after login
@@ -82,6 +87,13 @@ for (Iterator iter = params.iterator(); iter.hasNext();){
 		// it is the file
 		fileCount++;
 		String name = fi.getName();
+		
+		if (isIE){
+			int idx1 = name.lastIndexOf("/");
+			int idx2 = name.lastIndexOf("\\");
+			int idx = Math.max(idx1, idx2);
+			name = name.substring(idx);
+		}		
 		if(name==null || name.equals("")) {
 			continue;
 		}
