@@ -53,12 +53,16 @@ public class SuitesPreferences {
 
 	public SuitesPreferences(Frame parent) {
 		dialog = new CenteredDialog(parent);
-		// JTabbedPane tp = new JTabbedPane();
-		// tp.addTab("Suites", createSuitePanel());
-		// dialog.getContentPane().add(tp);
+		dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+	}
+
+	public void show() {
+		if (dialog.isShowing()) {
+			return;
+		}
+		dialog.getContentPane().removeAll();
 		dialog.getContentPane().add(createSuitePanel());
 		dialog.pack();
-		dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		dialog.show();
 	}
 
@@ -73,7 +77,8 @@ public class SuitesPreferences {
 			if (selectedSuites.size() == 0) {
 				selectedSuites = null;
 			}
-			AnalysisServiceManager.getInstance().setVisibleSuites(selectedSuites);
+			AnalysisServiceManager.getInstance().setVisibleSuites(
+					selectedSuites);
 			GPGE.getInstance().rebuildTasksUI();
 		} else {
 			if (isFilteringInitially) { // only update if initially filtering
@@ -132,7 +137,6 @@ public class SuitesPreferences {
 		ActionListener saveListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dialog.setVisible(false);
-				dialog.dispose();
 				if (e.getSource() == okBtn) {
 					new Thread() {
 						public void run() {
@@ -164,14 +168,16 @@ public class SuitesPreferences {
 		noFilterBtn.addActionListener(btnListener);
 		filterBtn.addActionListener(btnListener);
 
-		List selectedSuites = AnalysisServiceManager.getInstance().getVisibleSuites();
+		List selectedSuites = AnalysisServiceManager.getInstance()
+				.getVisibleSuites();
 		if (selectedSuites != null) {
 			Collections.sort(selectedSuites, new Comparator() {
 
 				public int compare(Object o1, Object o2) {
 					SuiteInfo suite1 = (SuiteInfo) o1;
 					SuiteInfo suite2 = (SuiteInfo) o2;
-					return suite1.getName().compareToIgnoreCase(suite2.getName());
+					return suite1.getName().compareToIgnoreCase(
+							suite2.getName());
 				}
 
 			});
@@ -194,14 +200,14 @@ public class SuitesPreferences {
 					.getInstance().getServer(), AnalysisServiceManager
 					.getInstance().getUsername());
 
-			suites = proxy.getLatestSuites(); 
+			suites = proxy.getLatestSuites();
 			JLabel showSuiteLabel = null;
-			if(suites==null || suites.length==0) {
+			if (suites == null || suites.length == 0) {
 				showSuiteLabel = new JLabel("No suites available");
 			} else {
 				showSuiteLabel = new JLabel("Show suite");
 			}
-			
+
 			showSuiteLabel.setFont(showSuiteLabel.getFont().deriveFont(
 					showSuiteLabel.getFont().getSize2D() - 2));
 
@@ -235,23 +241,6 @@ public class SuitesPreferences {
 		panel.add(buttonPanel, BorderLayout.SOUTH);
 		suitePanel.setVisible(isFilteringInitially);
 		return panel;
-
-	}
-
-	private SuiteInfo[] createSuites() {
-		int numSuites = 5;
-		SuiteInfo[] a = new SuiteInfo[numSuites];
-		for (int i = 0; i < numSuites; i++) {
-			SuiteInfo s = new SuiteInfo();
-			s
-					.setModuleLSIDs(new String[] {
-							"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00001:1",
-							"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00004:3" });
-			s.setName("ASD");
-			a[i] = s;
-		}
-
-		return a;
 
 	}
 
