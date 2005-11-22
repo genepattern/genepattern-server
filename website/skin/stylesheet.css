@@ -70,6 +70,16 @@ input { font-size: 8pt }
 		font-weight: 800; 
 		text-align: center; }
 
+.wideheading { font-family: Arial,Helvetica,sans-serif; 
+		background-image:  url('blueGradWide.jpeg');
+		background-repeat: repeat-y;
+  		background-position: center;
+		color: white; 
+		font-size: 12pt; 
+		font-weight: 800; 
+		text-align: center; }
+
+
 TR.paleBackground, tr.paleBackground,TD.paleBackground, td.paleBackground,table.paleBackground, TABLE.paleBackground   { 
 	background: #EFEFFF; 
 }
