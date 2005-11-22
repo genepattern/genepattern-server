@@ -57,7 +57,7 @@ function createPipeline(filename) {
 		return false;
 	}
 
-	window.open("provenanceFinder.jsp?pipelinename="+pipeName+"&filename="+filename);
+	window.parent.location = "provenanceFinder.jsp?pipelinename="+pipeName+"&filename="+filename;
 	return false;
 	
 }
