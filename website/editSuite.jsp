@@ -87,38 +87,40 @@ function confirmDeleteSupportFiles() {
 
 
 <form action="createSuite.jsp" name='edit' method="post" ENCTYPE="multipart/form-data" >
+<input type='hidden' name='suiteLSID' value="<%=si.getLSID()%>"/>
 
 <%// ENCTYPE="multipart/form-data" %>
 
 
 <table width=100% cellspacing=2>
-<tr><td colspan=3><h2>Create new GenePattern Suite</td></tr>
+<tr><th colspan=2 align='left'><h2>Create new GenePattern Suite</h2></th></tr>
 <tr>
-<td align="right"><input type='hidden' name='suiteLSID' value="<%=si.getLSID()%>">
-<b>Name:</b></td><td><input type='text' name='suiteName' size=60  maxlength="100" value="<%=si.getName()%>">(*required, no spaces)</td></tr>
+<td align="right"><b>Name:</b></td><td><input type='text' name='suiteName' size=60  maxlength="100" value="<%=si.getName()%>">(*required, no spaces)</td></tr>
 
-<tr><td align="right"><b>LSID:</b></td><td><input type="text" name="module_lsid" value="<%=si.getLSID()%>" size="100" readonly style="{ border-style: none; }"></tr>
+<tr><td align="right"><b>LSID:</b></td><td><%=si.getLSID()%></td></tr>
 
-<td align="right"><b>Description:</b></td><td><textArea rows="2" cols="60" name='suiteDescription'><%=si.getDescription()%></textarea> </td></tr>
-<td align="right"><b>Author:</b></td><td><input type='text' name='suiteAuthor' size=80 maxlength="100" value="<%=si.getAuthor()%>">(name, affiliation)</td></tr>
-<td align="right"><b>Owner:</b></td><td><input type='text' name='suiteOwner' size=60 maxlength="100" value="<%=si.getOwner()%>">(email address)</td></tr>
-<td align="right"><b>Privacy:</b></td>
-	<td>
-<select name='privacy'>
-
+<tr><td align="right"><b>Description:</b></td><td><textArea rows="2" cols="60" name='suiteDescription'><%=si.getDescription()%></textarea> </td></tr>
+<tr><td align="right"><b>Author:</b></td><td><input type='text' name='suiteAuthor' size=80 maxlength="100" value="<%=si.getAuthor()%>">(name, affiliation)</td></tr>
+<tr><td align="right"><b>Owner:</b></td><td><input type='text' name='suiteOwner' size=60 maxlength="100" value="<%=si.getOwner()%>">(email address)</td></tr>
+<tr><td align="right"><b>Privacy:</b></td>
+    <td><select name='privacy'>
+		
 <% 
 	for (int i=0; i < privacies.length; i++){
 		boolean selected = (i == si.getAccessId());
 
-		out.println("<option value='"+ privacies[1]);
+		out.println("<option value='"+ privacies[1]+"'");
 		if (selected) out.println(" selected='true' ");
-		out.println("'> "+privacies[i]+"</option>");
+		out.println(" > "+privacies[i]+" </option>");
 }
 %>
 		</select>
 	</td>
 </tr>
-	
+
+<tr>
+<td colspan=2> <hr> </td>	
+</tr>
 
  <tr>
   <td align="right" valign="top"><b>Support&nbsp;files:</b><br>(pdf, doc, <br>data files,<br> etc.)<br>
@@ -349,13 +351,18 @@ for (int k=0; k < docs.length; k++ ){
 
 				String ver = (String )iter3.next();
 %>
-	<option value="<%=ver%>" 
+	<option value='<%=ver%>' 
 <%
-		if (ver.equals(checkVer)) out.println(" selected='true' ");
+				if (ver.equals(checkVer)){
+					 out.println(" selected='true' ");
+				}
+
 %>
-><%=ver%></option>
-<%}%>		
+	><%=ver%></option>
+			<%}%>		
 </select>
+
+
 <% } else {  // only one version available %>
 	<input type='hidden' name='<%=lsidNoVer%>' value='<%=lsid.getVersion()%>'/>&nbsp;(<%=lsid.getVersion()%>)
 
@@ -414,12 +421,12 @@ value="<%=task.getTaskInfoAttributes().get("LSID")%>"/><a href="<%=link%>?view=1
 
 				String ver = (String )iter3.next();
 %>
-	<option value="<%=ver%>" 
+	<option value='<%=ver%>' 
 <%
 		if (ver.equals(checkVer)) out.println(" selected='true' ");
 %>
 
-"><%=ver%></option>
+><%=ver%></option>
 <%}%>		
 </select>
 <% } else {  // only one version available %>
