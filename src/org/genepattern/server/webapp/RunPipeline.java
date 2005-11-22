@@ -95,7 +95,6 @@ public class RunPipeline {
 
 		String GP_Path = genepatternProps.getProperty("GP_Path");
 		if (GP_Path != null) System.setProperty("GP_Path", GP_Path);
-System.out.println("GP_Path = " + System.getProperty("GP_Path"));
         	Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());      
 
 
