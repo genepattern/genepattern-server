@@ -32,12 +32,13 @@ response.setDateHeader("Expires", 0);
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 
-</head><body class="bodyNoMargin" >
+</head><body  >
 	
 <script language="JavaScript">
 
 function showJob(job) {
 	window.open('showJob.jsp?jobId=' + job, 'Job ' + job,'toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=240')
+
 }
 
 
@@ -64,7 +65,7 @@ function createPipeline(filename) {
 
 </script>
 
-<table   margin=0 frame=border width=100% height='100%' class="paleBackground"  valign='top'>
+<table   margin=0  width=100% height='100%' class="paleBackground"  valign='top'>
 
 <tr><td class="heading" colspan=3><span class="heading">Recent Jobs</span></td></tr><tr>
 
@@ -147,7 +148,7 @@ for(int i = 0; i < jobs.length; i++) {
 
 			String fileUrl = "retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8");
 
-           		out.println("<a href=\""+ fileUrl+ "\" target=\"_blank\" \">" + fileName + "</a>");
+           		out.println("<a href=\""+ fileUrl+ "\" target=\"_blank\">" + fileName + "</a>");
    	     		//jobsDisplayed++;
 
 			if (authorizationManager.checkPermission("createPipeline", userID)){

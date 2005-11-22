@@ -31,6 +31,9 @@ response.setDateHeader("Expires", 0);
 String jobId = request.getParameter("jobId");
 String userID = (String)request.getAttribute("userID"); // get userID but don't force login if not defined
 
+
+
+
 JobInfo job = null;
 LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
 ParameterInfo[] formalParamInfos = new ParameterInfo[0];
@@ -48,15 +51,11 @@ try {
 %>
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
-</head>	
-<script language="JavaScript">
+</head>
+<body class="bodyNoMargin">	
+<table  id='jobtable' frame=border xwidth='100%' class="paleBackground"  valign='top' >
 
-
-</script>
-
-<table   frame=border xwidth='100%' class="paleBackground"  valign='top'>
-
-<tr><td align='left' class="heading" colspan=3><span class="heading">Job <%=jobId%> <%= job.getTaskName()%></span></td></tr><tr>
+<tr><td align='left' class="wideheading" colspan=3><span class="heading">Job <%=jobId%> <%= job.getTaskName()%></span></td></tr><tr>
 
 <%
 SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss");
@@ -86,12 +85,14 @@ HashMap formalParamMap = new HashMap();
    DateFormat formatter =  completed.after(midnight.getTime()) ? shortDateFormat : dateFormat;
    
    out.print("<td> completed: " + formatter.format(completed)+"</td>");
-   out.println("<tr><td colspan=2><P><B>output Files</b></td></tr>");  
+   out.println("<tr><td colspan=2><P><B>output Files</b></td></tr>");
+
+if (formalParamInfos!=null){  
    for (int k=0; k < formalParamInfos.length; k++){
 		ParameterInfo  formalParam = formalParamInfos[k];
 		formalParamMap.put(formalParam.getName(), formalParam);
    }
-
+}
 
       
    if(params!=null && params.length > 0) {
@@ -186,3 +187,15 @@ out.println("<p>");
 out.println("</table>");
 
 %>
+<script language="Javascript">
+var item = document.getElementById(['jobtable']);
+//alert("width=" + item.offsetWidth + ", height=" + item.offsetHeight);
+
+iWidth = document.body.clientWidth;
+iHeight =document.body.clientHeight;
+
+iWidth = 20+item.offsetWidth - iWidth;
+iHeight = 10+item.offsetHeight - iHeight;
+window.resizeBy(iWidth, iHeight);
+</script> 
+</body>

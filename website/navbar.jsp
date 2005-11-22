@@ -148,7 +148,12 @@ var createPipelinePermission = <%= authManager.checkPermission("createPipeline",
 var filterSuiteWindow;
 
 function openSuiteFilter(height){
- filterSuiteWindow = window.open('chooseSuite.jsp', 'Suite Filter','toolbar=no, location=no, status=no, menubar=no, resizable=yes,width=320,height=<%=height%>');
+ filterSuiteWindow = window.open('chooseSuite.jsp', 
+		'SuiteFilter',
+		'toolbar=no, location=no, status=no, menubar=no, resizable=yes,width=320,height=<%=height%>');
+// filterSuiteWindow = window.open('chooseSuite.jsp', 
+//		'SuiteFilter','width=320,height=200');
+
 
  filterSuiteWindow.focus();
 }
