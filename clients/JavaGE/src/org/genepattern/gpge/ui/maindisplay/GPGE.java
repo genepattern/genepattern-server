@@ -2430,8 +2430,11 @@ public class GPGE {
 
 			JMenuItem suitesMenuItem = new JMenuItem("Filter...");
 			suitesMenuItem.addActionListener(new ActionListener() {
+				private SuitesPreferences suitesPreferences = new SuitesPreferences(
+						GenePattern.getDialogParent());
+
 				public void actionPerformed(java.awt.event.ActionEvent e) {
-					new SuitesPreferences(GenePattern.getDialogParent());
+					suitesPreferences.show();
 				}
 			});
 			add(suitesMenuItem);
