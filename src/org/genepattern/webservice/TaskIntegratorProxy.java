@@ -33,8 +33,9 @@ public class TaskIntegratorProxy {
 			boolean maintainSession) throws WebServiceException {
 		try {
 			this.endpoint = url;
-			String context = (String)System.getProperty("GP_Path", "/gp");
-			this.endpoint = this.endpoint + context +"/services/TaskIntegrator";
+			String context = (String) System.getProperty("GP_Path", "/gp");
+			this.endpoint = this.endpoint + context
+					+ "/services/TaskIntegrator";
 			if (!(endpoint.startsWith("http://"))) {
 				this.endpoint = "http://" + this.endpoint;
 			}
@@ -66,26 +67,33 @@ public class TaskIntegratorProxy {
 		}
 	}
 
-	public String installSuite(SuiteInfo suiteInfo, File[] files)
-			throws WebServiceException {
+	public String modifySuite(SuiteInfo suiteInfo, File[] files,
+			String[] existingFileNames) throws WebServiceException {
 		try {
 			DataHandler[] handlers = null;
-			String[] fileNames = null;
+			String[] uploadedFileNames = null;
 			if (files != null) {
 				handlers = new DataHandler[files.length];
-				fileNames = new String[files.length];
+				uploadedFileNames = new String[files.length];
 				for (int i = 0; i < handlers.length; i++) {
 					handlers[i] = new DataHandler(new FileDataSource(files[i]));
-					fileNames[i] = files[i].getName();
+					uploadedFileNames[i] = files[i].getName();
 				}
 
 			}
-			return stub.installSuite(suiteInfo, handlers, fileNames);
-			// return stub.modifySuite(suiteInfo.getAccessId(), suiteInfo
-			// .getLsid(), suiteInfo.getName(),
-			// suiteInfo.getDescription(), suiteInfo.getAuthor(),
-			// suiteInfo.getOwner(), suiteInfo.getModuleLsids(), handlers,
-			// fileNames);
+			List fileNames = new ArrayList();
+			if (uploadedFileNames != null) {
+				fileNames.addAll(Arrays.asList(uploadedFileNames));
+			}
+			if (existingFileNames != null) {
+				fileNames.addAll(Arrays.asList(existingFileNames));
+			}
+			
+			return stub.modifySuite(suiteInfo.getAccessId(), suiteInfo
+					.getLsid(), suiteInfo.getName(),
+					suiteInfo.getDescription(), suiteInfo.getAuthor(),
+					suiteInfo.getOwner(), suiteInfo.getModuleLsids(), handlers,
+					(String[]) fileNames.toArray(new String[0]));
 		} catch (RemoteException re) {
 			throw new WebServiceException(re);
 		}
@@ -253,10 +261,11 @@ public class TaskIntegratorProxy {
 		}
 	}
 
-	public void exportSuiteToZip(String lsid, File destination) throws WebServiceException {
+	public void exportSuiteToZip(String lsid, File destination)
+			throws WebServiceException {
 		try {
-			DataHandler dh = stub.exportSuiteToZip(lsid); 
-			copy(dh, destination );
+			DataHandler dh = stub.exportSuiteToZip(lsid);
+			copy(dh, destination);
 		} catch (RemoteException re) {
 			throw new WebServiceException(re);
 		}
