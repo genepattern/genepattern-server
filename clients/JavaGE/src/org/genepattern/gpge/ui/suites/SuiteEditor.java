@@ -123,9 +123,11 @@ public class SuiteEditor extends JPanel {
 	}
 
 	public void display(SuiteInfo _suiteInfo) {
+		checkBoxes.clear();
 		removeAll();
 		if (_suiteInfo == null) {
 			_suiteInfo = new SuiteInfo();
+			_suiteInfo.setLsid(null);
 			AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
 			_suiteInfo.setAuthor(asm.getUsername());
 			_suiteInfo.setOwner(asm.getUsername());
@@ -138,7 +140,7 @@ public class SuiteEditor extends JPanel {
 		}
 		Map categoryToAnalysisServices = AnalysisServiceUtil
 				.getCategoryToAnalysisServicesMap(AnalysisServiceManager
-						.getInstance().getLatestAnalysisServices());
+						.getInstance().getLatestAnalysisServices(true));
 		Map lsid2VersionsMap = AnalysisServiceManager.getInstance()
 				.getLSIDToVersionsMap();
 		CellConstraints cc = new CellConstraints();
@@ -325,9 +327,9 @@ public class SuiteEditor extends JPanel {
 					suiteInfo.setDescription(headerPanel.descriptionField
 							.getText());
 					JComboBox docComboBox = headerPanel.docComboBox;
-					List localDocFiles = new ArrayList();
-					List serverDocFiles = new ArrayList();
-					final List files = new ArrayList();
+					final List localDocFiles = new ArrayList();
+					final List serverDocFiles = new ArrayList();
+
 					for (int i = 0; i < docComboBox.getItemCount(); i++) {
 						Object obj = docComboBox.getItemAt(i);
 						if (obj instanceof String) {
@@ -336,16 +338,13 @@ public class SuiteEditor extends JPanel {
 									.getServer()
 									+ "/gp/getFile.jsp?task="
 									+ suiteInfo.getLSID() + "&file=" + s;
-							serverDocFiles.add(url);
+							serverDocFiles.add(s);
 						} else {
 							LocalFileWrapper fw = (LocalFileWrapper) obj;
-							files.add(fw.file);
-							localDocFiles.add(fw.file.getName());
+							localDocFiles.add(fw.file);
 						}
 					}
-					List docFiles = new ArrayList();
-					docFiles.addAll(localDocFiles);
-					docFiles.addAll(serverDocFiles);
+
 					suiteInfo.setDocumentationFiles((String[]) serverDocFiles
 							.toArray(new String[0]));
 					List moduleLsids = new ArrayList();
@@ -374,9 +373,11 @@ public class SuiteEditor extends JPanel {
 
 								String lsid = new TaskIntegratorProxy(asm
 										.getServer(), asm.getUsername())
-										.installSuite(suiteInfo, (File[]) files
-												.toArray(new File[0]));
-
+										.modifySuite(suiteInfo,
+												(File[]) localDocFiles
+														.toArray(new File[0]),
+												(String[]) serverDocFiles
+														.toArray(new String[0]));
 								suiteInfo.setLsid(lsid);
 								headerPanel.lsidField.setText(lsid);
 								GenePattern.showMessageDialog("Saved "
