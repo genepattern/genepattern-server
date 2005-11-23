@@ -34,6 +34,8 @@ public class AnalysisServiceManager {
 	/** maps lsids to the latest versions of all analysis services */
 	private Map lsid2LatestAnalysisServices;
 
+	private Map filteredTasks = new HashMap();
+
 	/** maps lsids to an older version of an analysis service */
 	private Map lsid2AnalysisServices;
 
@@ -41,6 +43,8 @@ public class AnalysisServiceManager {
 
 	/** Maps a versionless LSID to a list of versions for that LSID */
 	private Map lsid2VersionsMap = new HashMap();
+
+	private Map filteredLsid2VersionsMap = new HashMap();
 
 	private Comparator versionComparator = new ReverseComparator(
 			LSIDVersionComparator.INSTANCE);
@@ -76,17 +80,36 @@ public class AnalysisServiceManager {
 				e.printStackTrace();
 			}
 		} else {
-			lsid2LatestAnalysisServices.clear();
+			filteredTasks.clear();
+			filteredLsid2VersionsMap.clear();
 			for (int i = 0, size = suites.size(); i < size; i++) {
 				SuiteInfo suite = (SuiteInfo) suites.get(i);
 				try {
 					String[] lsids = suite.getModuleLSIDs();
 					for (int j = 0; j < lsids.length; j++) {
+
+						try {
+							LSID l = new LSID(lsids[i]);
+							List versions = (List) filteredLsid2VersionsMap
+									.get(l.toStringNoVersion());
+							if (versions == null) {
+								versions = new ArrayList();
+								filteredLsid2VersionsMap.put(l
+										.toStringNoVersion(), versions);
+							}
+							if (l.getVersion() != null
+									&& !l.getVersion().equals("")) {
+								versions.add(l);
+							}
+						} catch (MalformedURLException e) {
+							e.printStackTrace();
+						}
+
 						TaskInfo task = new org.genepattern.webservice.AdminProxy(
 								server, username, false).getTask(lsids[j]);
 						if (task != null) {
-							lsid2LatestAnalysisServices.put(lsids[j],
-									new AnalysisService(server, task));
+							filteredTasks.put(lsids[j], new AnalysisService(
+									server, task));
 						} else {
 							System.out.println("Can't find " + lsids[j]);
 						}
@@ -151,6 +174,9 @@ public class AnalysisServiceManager {
 			getAnalysisService(lsid.toString()); // adds to
 			// lsid2AnalysisServices
 		}
+		if (suites != null) {
+			setVisibleSuites(suites);
+		}
 	}
 
 	/**
@@ -162,8 +188,9 @@ public class AnalysisServiceManager {
 	 * @return whether the lsid is the latest version
 	 */
 	public boolean isLatestVersion(LSID lsid) {
+		Map map = suites == null ? lsid2VersionsMap : filteredLsid2VersionsMap;
 		String version = lsid.getVersion();
-		List versions = (List) lsid2VersionsMap.get(lsid.toStringNoVersion());
+		List versions = (List) map.get(lsid.toStringNoVersion());
 		if (versions == null || versions.size() == 0) {
 			return true;
 		}
@@ -212,7 +239,7 @@ public class AnalysisServiceManager {
 	 *         descending order (latest version first).
 	 */
 	public Map getLSIDToVersionsMap() {
-		return lsid2VersionsMap;
+		return suites == null ? lsid2VersionsMap : filteredLsid2VersionsMap;
 	}
 
 	/**
@@ -290,7 +317,18 @@ public class AnalysisServiceManager {
 	 * @return the collections of the latest analysis services
 	 */
 	public Collection getLatestAnalysisServices() {
-		return lsid2LatestAnalysisServices.values();
+		return getLatestAnalysisServices(false);
+	}
+
+	/**
+	 * Gets the internal cache of the latest analysis services. Invoke refresh
+	 * to update the internal cache.
+	 * 
+	 * @return the collections of the latest analysis services
+	 */
+	public Collection getLatestAnalysisServices(boolean ignoreFilter) {
+		return suites == null || ignoreFilter ? lsid2LatestAnalysisServices
+				.values() : filteredTasks.values();
 	}
 
 	/**
