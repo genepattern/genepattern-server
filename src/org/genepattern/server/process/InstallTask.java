@@ -242,13 +242,13 @@ public class InstallTask {
 			Object oChoices = attributes.get(name);
 			if (oChoices instanceof String) {
 				if (!attributes.containsKey(name) ||
-				    (!attributes.get(name).equals(value) && !value.equals(GPConstants.ANY))) {
+				    (!attributes.get(name).equals(value) && !value.equals(GPConstants.ANY) && !value.equals(""))) {
 					return false;
 				}
 			} else {
 				// vChoices is a Vector of possible settings. Any one is okay
 				Vector vChoices = (Vector) oChoices;
-				if (!vChoices.contains(value) && !value.equals(GPConstants.ANY)) {
+				if (!vChoices.contains(value) && !value.equals(GPConstants.ANY) && !value.equals("")) {
 					return false;
 				}
 			}
