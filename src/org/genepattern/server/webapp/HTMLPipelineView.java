@@ -692,6 +692,7 @@ public class HTMLPipelineView implements IPipelineView {
 			}
 			if (askName) {
 				//writer.write("var n = window.prompt('Please enter a name for this pipeline.  ' + pipelineInstruction + '\\n\\nPipeline name:', '');\n");
+				writer.write("var n = \"\";\n");
 				writer.write("if (n != null) document.pipeline['pipeline_name'].value = n;\n");
 				writer.write("if (n != null && n.length > 0 && !isRSafe(n)) alert(pipelineInstruction);\n");
 			}
