@@ -159,8 +159,8 @@ public interface ITaskIntegrator {
 	 *            One of GPConstants.ACCESS_PUBLIC or GPConstants.ACCESS_PRIVATE
 	 * @param name
 	 *            The name of the suite
-	 * @param lsid 
-	 *		The LSID of the suite
+	 * @param lsid
+	 *            The LSID of the suite
 	 * @param description
 	 *            The description
 	 * @param author
@@ -175,11 +175,9 @@ public interface ITaskIntegrator {
 	 *            The file names for the <tt>dataHandlers</tt> array. If the
 	 *            array has more elements than the <tt>dataHandlers</tt>
 	 *            array, then the additional elements are assumed to be uploaded
-	 *            files for an existing task with the LSID contained in
-	 *            <tt>taskAttributes</tt> or the the element is of the form 'job
-	 *            #, filename', then the element is assumed to be an output from a job.
+	 *            files for an existing task with the given lsid.
 	 * 
-	 * @return The LSID of the task
+	 * @return The LSID of the suite
 	 * @exception WebServiceException
 	 *                If an error occurs
 	 */
