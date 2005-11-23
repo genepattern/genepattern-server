@@ -283,7 +283,17 @@ function chooseInheritTask(taskNum, param) {
 	var frm = document.forms['pipeline'];
 	frm['t' + taskNum + '_shadow' + param].value="";
 	var ctl = frm['t' + taskNum + '_i_' + param];
-	var inheritFromTaskNum = ctl.options[ctl.options.selectedIndex].value;
+	var idx = ctl.options.selectedIndex;
+
+	//alert("index = " + idx + "  " + ctl.options[idx].text);
+
+	if (idx == 0) return;
+	ctl.options.selectedIndex = 0;
+	ctl.options.selectedIndex = idx;
+	ctl.focus();
+	
+	var inheritFromTaskNum = ctl.options[idx].value;
+
 	var lsid = frm['t' + inheritFromTaskNum + '_taskLSID'].value;
 	var ti = TaskInfos[lsid];
 	var fileFormats = ti.fileFormats;
@@ -979,6 +989,8 @@ function savePipeline(bMustName, cmd) {
 		if (t < 0) break;
 	}
 	var success = true;
+	var missingInheritedFileValue ='';
+
 	if (bMustName) {
 		success = (document.forms['pipeline'].pipeline_name.value.length > 0);
 		if (!success) alert('You must enter a pipeline name');
@@ -991,20 +1003,37 @@ function savePipeline(bMustName, cmd) {
 	// Netscape Navigator loses filename selections in file choosers when layers are modified
 	// although we have shadowed them into a user-visible field, the user needs to paste them back
 	// into the file chooser so that the files will be uploaded to the server upon submission
-
+	
 	var lostFiles = "";
 	for (i=0; i < numTasks; i++) {
 	   var taskLSID = document.forms['pipeline']['t' + i + '_taskLSID'].value;
 	   var task = TaskInfos[taskLSID];
+	   var j = -1;
 	   for (param in task.parameterInfoArray) {
+		j++;
 		var pi = task.parameterInfoArray[param];
 		if (pi.isInputFile) {
 		   var fileChooserValue = document.forms['pipeline']['t' + i + '_' + pi.name];
 		   var shadowValue = document.forms['pipeline']['t' + i + '_shadow' + param].value;
-		   if (shadowValue != '' && fileChooserValue.value != shadowValue && shadowValue.indexOf('http://') != 0
-		       && shadowValue.indexOf('https://') != 0 && shadowValue.indexOf('ftp://') != 0 && shadowValue.indexOf('<GenePatternURL>') != 0) {
+
+		   if (shadowValue != '' 
+				&& fileChooserValue.value != shadowValue 
+				&& shadowValue.indexOf('http://') != 0
+		       	&& shadowValue.indexOf('https://') != 0 
+				&& shadowValue.indexOf('ftp://') != 0 
+				&& shadowValue.indexOf('<GenePatternURL>') != 0) {
 			lostFiles = lostFiles + (i+1) + '. ' + task.name + ': ' + pi.name + ' (was ' + shadowValue + ')\n';
 			success = false;
+		   } else if (shadowValue == ''){
+			// make sure inheritence is set
+// XXXXX
+ 			var inheritTask = document.forms['pipeline']['t' + i + '_i_' + j];
+		  	var inheritFile = document.forms['pipeline']['t' + i + '_if_' + j];
+	
+//alert("FCV=" +pi.name +"  "+ inheritTask.value+ "==" + inheritFile.value);
+			if ((inheritTask.value != null) && (inheritFile.value == '')){
+				missingInheritedFileValue = "task " + i + " inherited value for " + pi.name + " is not fully specified";
+			}
 		   }
 	   	}
 	   }
@@ -1021,6 +1050,11 @@ function savePipeline(bMustName, cmd) {
 		alert("Please copy and paste the input filenames from below each file chooser box into the file chooser above each.\n\n" +
 				   lostFiles);
 	}
+	if (missingInheritedFileValue != '') {
+		success = false;
+		alert(missingInheritedFileValue);
+	}
+
 	if (numTasks == 0) {
 		success = false;
 		alert('No tasks defined in pipeline');
