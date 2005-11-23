@@ -99,14 +99,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 		}
 	}
 
-	private File getFile(DataHandler dh) {
-		javax.activation.DataSource ds = dh.getDataSource();
-		if (ds instanceof FileDataSource) { // if local
-			return ((FileDataSource) ds).getFile();
-		}
-		// if through SOAP org.apache.axis.attachments.ManagedMemoryDataSource
-		return new File(dh.getName());
-	}
+	
 
 	public String importZip(DataHandler handler, int privacy)
 			throws WebServiceException {
@@ -132,7 +125,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 					e.printStackTrace();
 					throw new WebServiceException(e);
 				}
-				File f = getFile(supportFiles[i]);
+				File f = Util.getAxisFile(supportFiles[i]);
 				File dir = new File(attachmentDir);
 				File newFile = new File(dir, fileNames[i]);
 				f.renameTo(newFile);
@@ -150,7 +143,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 		try {
 			Thread.yield();
 			String username = getUserName();
-			File axisFile = getFile(handler);
+			File axisFile = Util.getAxisFile(handler);
 			File zipFile = new File(handler.getName() + ".zip");
 			axisFile.renameTo(zipFile);
 			String path = zipFile.getCanonicalPath();
@@ -503,7 +496,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 			for (int i = 0, length = dataHandlers != null ? dataHandlers.length
 					: 0; i < length; i++) {
 				DataHandler dataHandler = dataHandlers[i];
-				File f = getFile(dataHandler);
+				File f = Util.getAxisFile(dataHandler);
 
 				if (f.isDirectory())
 					continue;
@@ -514,7 +507,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 					f.renameTo(newFile);
 				} else {
 					// copy file, leaving original intact
-					copyFile(f, newFile);
+					Util.copyFile(f, newFile);
 				}
 			}
 
@@ -536,12 +529,12 @@ public class TaskIntegrator implements ITaskIntegrator {
 								text.length()).trim();
 						String jobDir = GenePatternAnalysisTask
 								.getJobDir(jobNumber);
-						copyFile(new File(jobDir, fileName), new File(dir,
+						Util.copyFile(new File(jobDir, fileName), new File(dir,
 								fileName));
 					} else if (oldAttachmentDir != null) { // file from
 						// previous version
 						// of task
-						copyFile(new File(oldAttachmentDir, text), new File(
+						Util.copyFile(new File(oldAttachmentDir, text), new File(
 								dir, text));
 					}
 				}
@@ -616,37 +609,6 @@ public class TaskIntegrator implements ITaskIntegrator {
 			dir.delete();
 		} catch (Throwable e) {
 			throw new WebServiceException("while deleting task " + lsid, e);
-		}
-	}
-
-	private static void copyFile(File source, File dest) {
-		byte[] buf = new byte[100000];
-		int j;
-		FileOutputStream os = null;
-		FileInputStream is = null;
-		try {
-			os = new FileOutputStream(dest);
-			is = new FileInputStream(source);
-			while ((j = is.read(buf, 0, buf.length)) > 0) {
-				os.write(buf, 0, j);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (is != null) {
-					is.close();
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			try {
-				if (os != null) {
-					os.close();
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 
@@ -780,50 +742,9 @@ public class TaskIntegrator implements ITaskIntegrator {
 		return dh;
 	}
 
-	protected File getFile(String url) throws WebServiceException {
-		File file = null;
-		java.io.OutputStream os = null;
-		java.io.InputStream is = null;
-		boolean deleteFile = false;
-		try {
-
-			if (url.startsWith("file://")) {
-				String fileStr = url.substring(7, url.length());
-				file = new File(fileStr);
-			} else {
-				deleteFile = true;
-				file = File.createTempFile("gpz", ".zip");
-				os = new java.io.FileOutputStream(file);
-				is = new java.net.URL(url).openStream();
-				byte[] buf = new byte[100000];
-				int i;
-				while ((i = is.read(buf, 0, buf.length)) > 0) {
-					os.write(buf, 0, i);
-
-				}
-			}
-		} catch (java.io.IOException ioe) {
-			throw new WebServiceException(ioe);
-		} finally {
-			if (os != null) {
-				try {
-					os.close();
-				} catch (java.io.IOException x) {
-				}
-			}
-			if (is != null) {
-				try {
-					is.close();
-				} catch (java.io.IOException x) {
-				}
-			}
-
-		}
-		return file;
-	}
-
+	
 	public boolean isZipOfZips(String url) throws WebServiceException {
-		File file = getFile(url);
+		File file = Util.downloadUrl(url);
 		try {
 			return org.genepattern.server.TaskUtil.isZipOfZips(file);
 		} catch (java.io.IOException ioe) {
@@ -832,7 +753,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 	}
 
 	public boolean isSuiteZip(String url) throws WebServiceException {
-		File file = getFile(url);
+		File file = Util.downloadUrl(url);
 		try {
 			return org.genepattern.server.TaskUtil.isSuiteZip(file);
 		} catch (java.io.IOException ioe) {
@@ -841,7 +762,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 	}
 
 	public boolean isPipelineZip(String url) throws WebServiceException {
-		File file = getFile(url);
+		File file = Util.downloadUrl(url);
 		try {
 			return org.genepattern.server.TaskUtil.isPipelineZip(file);
 		} catch (java.io.IOException ioe) {
