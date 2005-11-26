@@ -5,9 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +53,17 @@ public class OdfWriter extends PrintWriter {
 		String value;
 	}
 
+	static class HeaderArray {
+		public HeaderArray(String key2, String[] value2) {
+			this.key = key2;
+			this.value = value2;
+		}
+
+		String key;
+
+		String[] value;
+	}
+
 	public void addHeader(String key, String value) {
 		headers.add(new Header(key, value));
 	}
@@ -65,6 +74,10 @@ public class OdfWriter extends PrintWriter {
 
 	public void addHeader(String key, double value) {
 		headers.add(new Header(key, String.valueOf(value)));
+	}
+
+	public void addHeader(String key, String[] values) {
+		headers.add(new HeaderArray(key, values));
 	}
 
 	private void printArray(String key, String[] values) {
@@ -80,22 +93,32 @@ public class OdfWriter extends PrintWriter {
 
 	public void printHeader() {
 		this.println("ODF 1.0");
-		int headerLines = headers.size() + 3; // DataLines, COLUMN_NAMES, Model
-		if(columnTypes!=null) {
+		int headerLines = headers.size() + 2; // DataLines, Model
+		if (columnNames != null) {
+			headerLines++;
+		}
+		if (columnTypes != null) {
 			headerLines++;
 		}
 		this.println("HeaderLines=" + headerLines);
-
-		printArray("COLUMN_NAMES", columnNames);
-		if(columnTypes!=null) {
+		if (columnNames != null) {
+			printArray("COLUMN_NAMES", columnNames);
+		}
+		if (columnTypes != null) {
 			printArray("COLUMN_TYPES", columnTypes);
 		}
 		this.println("Model=" + model);
 		for (int i = 0, size = headers.size(); i < size; i++) {
-			Header h = (Header) headers.get(i);
-			this.print(h.key);
-			this.print("=");
-			this.println(h.value);
+			Object obj = headers.get(i);
+			if (obj instanceof Header) {
+				Header h = (Header) obj;
+				this.print(h.key);
+				this.print("=");
+				this.println(h.value);
+			} else {
+				HeaderArray h = (HeaderArray) obj;
+				printArray(h.key, h.value);
+			}
 		}
 		this.println("DataLines=" + dataLines);
 
