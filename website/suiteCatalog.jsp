@@ -75,7 +75,7 @@ boolean catalogAvaliable = false;
 		SuiteInfo[] allOfThem = adminClient.getAllSuites();
 		for (int i=0; i < loaded.length; i++){
 			SuiteInfo si = loaded[i];
-			System.out.println("SI--"+si.getOwner() + "  " + si.getAccessId());
+			System.out.println("SI--"+si.getOwner() + "  " + si.getLSID());
 			if (si.getAccessId() == GPConstants.ACCESS_PRIVATE){
 				if (!userID.equals(si.getOwner())) continue;
 			} 
@@ -89,9 +89,19 @@ boolean catalogAvaliable = false;
 			} 
 
 			LSID lsid = new LSID(si.getLSID());
-			ArrayList verlist = (ArrayList)allSuites.get(lsid.toStringNoVersion());
+			TreeSet verlist = (TreeSet)allSuites.get(lsid.toStringNoVersion());
 			if (verlist == null){
-				verlist = new ArrayList();
+				verlist = new TreeSet(new Comparator(){
+					public int compare(Object o1, Object o2){
+						SuiteInfo s1 = (SuiteInfo)o1;
+						SuiteInfo s2 = (SuiteInfo)o2;
+						String lsid1 = s1.getLSID();
+						String lsid2 = s2.getLSID();
+	
+						return lsid2.compareTo(lsid1);
+					}
+				}
+				);
 				allSuites.put(lsid.toStringNoVersion(), verlist);
 			}
 			verlist.add(si);
@@ -347,7 +357,7 @@ for (int k=0; k < docs.length; k++ ){
 	<select name='suiteLsid'>
 <%
 	String lsidNoVer = (new LSID(suite.getLSID())).toStringNoVersion();
-	ArrayList vers = (ArrayList)allSuites.get(lsidNoVer);
+	TreeSet vers = (TreeSet)allSuites.get(lsidNoVer);
 	for (Iterator iterV = vers.iterator(); iterV.hasNext(); ){
 		SuiteInfo ver = (SuiteInfo)iterV.next();
 		LSID vlsid = new LSID(ver.getLSID());
