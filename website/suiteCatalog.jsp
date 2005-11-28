@@ -67,9 +67,10 @@ SuiteRepository sr = null;
 HashMap suites = new HashMap();
 HashMap loadedSuites = new HashMap();
 HashMap allSuites = new HashMap();
+boolean catalogAvaliable = false;
+
 	try {
-		sr = new SuiteRepository();
-		suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
+
 		SuiteInfo[] loaded = adminClient.getLatestSuites();
 		SuiteInfo[] allOfThem = adminClient.getAllSuites();
 		for (int i=0; i < loaded.length; i++){
@@ -86,30 +87,15 @@ HashMap allSuites = new HashMap();
 			verlist.add(si);
 		}
 
-
-
-	} catch (Exception e) {
-%>
-		Sorry, the <%=messages.get("ApplicationName")%> <a href="<%= System.getProperty("SuiteRepositoryURL") %>" target="_new">suite repository</a> is not currently available.<br>
-		<p>Reason: <code><%= e.getMessage() %></code><br><p>
-		<b>Try to correct this problem</b> by changing <a href="adminServer.jsp">web proxy settings</a> or <a href="adminServer.jsp">Suite Repository URL.</a>
-
-		<jsp:include page="footer.jsp"></jsp:include>
-		</body>
-		</html>
-<%
-		e.printStackTrace();
-		return;
-	} finally {
-		// erase the Fetching... message
-%>
-		<script language="Javascript">
-			document.getElementById("fetching").innerHTML = "";
-		</script>
-<%
-		out.flush();
-	}
-	String motd = sr.getMOTD_message();
+		sr = new SuiteRepository();
+		suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
+		if (suites == null) {
+			catalogAvaliable = false;
+		} else {
+			catalogAvaliable = true;
+		}
+	
+			String motd = sr.getMOTD_message();
 	if (motd.length() > 0) {
 %>
 		<%= motd %><br>
@@ -126,8 +112,32 @@ HashMap allSuites = new HashMap();
 		out.println();
 		out.flush();
 	}	
+
+
+
+	} catch (Exception e) {
 %>
-<br></td></tr>
+		Sorry, the <%=messages.get("ApplicationName")%> <a href="<%= System.getProperty("SuiteRepositoryURL") %>" target="_new">suite repository</a> is not currently available.<br>
+		<p>Reason: <code><%= e.getMessage() %></code><br><p>
+		<b>Try to correct this problem</b> by changing <a href="adminServer.jsp">web proxy settings</a> or <a href="adminServer.jsp">Suite Repository URL.</a>
+
+		<!-- jsp:include page="footer.jsp"></jsp:include -->
+		</body>
+		</html>
+<%
+		e.printStackTrace();
+		// return;
+	} finally {
+		// erase the Fetching... message
+%>
+		<script language="Javascript">
+			document.getElementById("fetching").innerHTML = "";
+		</script>
+<%
+		out.flush();
+	}
+%>
+	<br></td></tr>
 <tr><td align=center>
 
 <form  action="editSuite.jsp" >
