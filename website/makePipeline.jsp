@@ -565,7 +565,7 @@ System.out.println("\nINHERTING=> " + inheritFrom );
 		out.println("</center></form>");
 
 		out.println("<a href=\"pipelineDesigner.jsp?" + GPConstants.NAME + "=" + lsid + "\">modify " + pipelineName + " design</a><br>");
-		out.println("<a href=\"addTask.jsp?" + GPConstants.NAME + "=" + lsid + "\">edit task for " + pipelineName + "</a><br>");
+		//out.println("<a href=\"addTask.jsp?" + GPConstants.NAME + "=" + lsid + "\">edit task for " + pipelineName + "</a><br>");
 	}
 } catch (Exception e) {
 %>
