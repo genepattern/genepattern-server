@@ -206,7 +206,7 @@ public class AdminService implements IAdminService {
 	 */
 	public SuiteInfo[] getLatestSuites() throws WebServiceException {
 		try {
-			return adminDAO.getLatestSuites();
+			return adminDAO.getLatestSuites(getUserName());
 		} catch (AdminDAOSysException e) {
 			throw new WebServiceException(e);
 		}
@@ -222,7 +222,7 @@ public class AdminService implements IAdminService {
 	 */
 	public SuiteInfo[] getAllSuites() throws WebServiceException{
 		try {
-			return adminDAO.getAllSuites();
+			return adminDAO.getAllSuites(getUserName());
 		} catch (AdminDAOSysException e) {
 			throw new WebServiceException(e);
 		}

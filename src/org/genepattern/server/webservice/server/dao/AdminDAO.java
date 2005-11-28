@@ -132,6 +132,8 @@ public interface AdminDAO {
 	 *                If an error occurs
 	 */
 	public SuiteInfo[] getLatestSuites() throws AdminDAOSysException;
+	public SuiteInfo[] getLatestSuites(String userName) throws AdminDAOSysException;
+
 
 	/**
 	 * Gets all versions of all suites
@@ -141,6 +143,8 @@ public interface AdminDAO {
 	 *                If an error occurs
 	 */
 	public SuiteInfo[] getAllSuites() throws AdminDAOSysException;
+	public SuiteInfo[] getAllSuites(String userName) throws AdminDAOSysException;
+
 
 	/**
 	 * Gets all suites this task is a part of

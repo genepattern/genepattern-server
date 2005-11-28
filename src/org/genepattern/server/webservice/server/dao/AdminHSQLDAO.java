@@ -467,6 +467,16 @@ public class AdminHSQLDAO implements AdminDAO {
 	 *                If an error occurs
 	 */
 	public SuiteInfo[] getLatestSuites() throws AdminDAOSysException {
+		ArrayList latestSuites = _getLatestSuites();
+		SuiteInfo[] latest = new SuiteInfo[latestSuites.size()];
+		int i = 0;
+		for (Iterator iter = latestSuites.iterator(); iter.hasNext(); i++) {
+			latest[i] = (SuiteInfo)iter.next();
+		}
+		return latest;
+	}
+
+	protected ArrayList _getLatestSuites() throws AdminDAOSysException {
 		try {
 			SuiteInfo[] allSuites = getAllSuites();
 			TreeMap latestSuites = new TreeMap();
@@ -492,17 +502,37 @@ public class AdminHSQLDAO implements AdminDAO {
 				}
 			}
 
-			SuiteInfo[] latest = new SuiteInfo[latestSuites.size()];
+			ArrayList latest = new ArrayList();
 			int i = 0;
 			for (Iterator iter = latestSuites.keySet().iterator(); iter
 					.hasNext(); i++) {
-				latest[i] = (SuiteInfo) latestSuites.get(iter.next());
+				latest.add( latestSuites.get(iter.next()));
 			}
 			return latest;
 		} catch (Exception mfe) {
 			throw new AdminDAOSysException("A database error occurred", mfe);
 
 		}
+	}
+
+	public SuiteInfo[] getLatestSuites(String userName) throws AdminDAOSysException {
+		ArrayList latestSuites = _getLatestSuites();
+		ArrayList allowedSuites = new ArrayList();		
+		for (Iterator iter = latestSuites.iterator(); iter.hasNext(); ){
+			SuiteInfo si = (SuiteInfo)iter.next();
+			if (si.getAccessId() == GPConstants.ACCESS_PRIVATE){
+				if (!si.getOwner().equals(userName)) continue;
+			}
+			allowedSuites.add(si);
+		}
+
+		SuiteInfo[] latest = new SuiteInfo[allowedSuites.size()];
+		int i = 0;
+		for (Iterator iter = allowedSuites.iterator(); iter.hasNext(); i++) {
+			latest[i] = (SuiteInfo)iter.next();
+		}
+		return latest;
+
 	}
 
 	/**
@@ -513,6 +543,12 @@ public class AdminHSQLDAO implements AdminDAO {
 	 *                If an error occurs
 	 */
 	public SuiteInfo[] getAllSuites() throws AdminDAOSysException {
+
+		ArrayList suites = _getAllSuites();
+		return (SuiteInfo[]) suites.toArray(new SuiteInfo[suites.size()]);
+	}
+
+	protected ArrayList _getAllSuites() throws AdminDAOSysException {
 
 		Connection c = null;
 		PreparedStatement st = null;
@@ -534,7 +570,21 @@ public class AdminHSQLDAO implements AdminDAO {
 			close(rs, st, c);
 		}
 
-		return (SuiteInfo[]) suites.toArray(new SuiteInfo[suites.size()]);
+		return  suites;
+	}
+
+	public SuiteInfo[] getAllSuites(String userName) throws AdminDAOSysException {
+		ArrayList suites = _getAllSuites();
+		ArrayList allowedSuites = new ArrayList();
+		for (Iterator iter = suites.iterator(); iter.hasNext(); ){
+			SuiteInfo si = (SuiteInfo)iter.next();
+			if (si.getAccessId() == GPConstants.ACCESS_PRIVATE){
+				if (!si.getOwner().equals(userName)) continue;
+			}
+			allowedSuites.add(si);
+		}
+
+		return (SuiteInfo[]) allowedSuites.toArray(new SuiteInfo[allowedSuites.size()]);
 	}
 
 	/**

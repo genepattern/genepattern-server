@@ -109,6 +109,7 @@ public class LocalAdminClient {
 	public SuiteInfo[] getAllSuites() throws WebServiceException{
 		return service.getAllSuites();
 	}
+	
 
 	public SuiteInfo[] getSuiteMembership(String lsid) throws WebServiceException{
 		return service.getSuiteMembership(lsid);
