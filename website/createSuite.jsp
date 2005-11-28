@@ -86,8 +86,8 @@
 	LocalTaskIntegratorClient  taskInt = new LocalTaskIntegratorClient(userID, out);
 
 	String accessIdStr = (String)requestParameters.get("privacy");
-	int accessId = 0;
-	if ("public".equalsIgnoreCase(accessIdStr)) accessId = 1;
+	int accessId = GPConstants.ACCESS_PRIVATE;
+	if ("public".equalsIgnoreCase(accessIdStr)) accessId = GPConstants.ACCESS_PUBLIC;
 	
 	String lsid = (String)requestParameters.get("suiteLSID");
 	String name = (String)requestParameters.get("suiteName");
@@ -125,7 +125,7 @@
 	}
 
 	try {
-System.out.println("suite name is " + name);
+System.out.println("suite name is " + name + " IAD=" + accessId);
 		taskInt.modifySuite(accessId, lsid, name, description, author, owner, lsidsWithVersions, 	docFiles);
 	} catch (Throwable t){
 		t.printStackTrace();

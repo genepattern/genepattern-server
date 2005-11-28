@@ -109,7 +109,7 @@ function confirmDeleteSupportFiles() {
 	for (int i=0; i < privacies.length; i++){
 		boolean selected = (i == si.getAccessId());
 
-		out.println("<option value='"+ privacies[1]+"'");
+		out.println("<option value='"+ privacies[i]+"'");
 		if (selected) out.println(" selected='true' ");
 		out.println(" > "+privacies[i]+" </option>");
 }

@@ -214,7 +214,7 @@ public class TaskIntegratorHSQLDAO {
 			st.setString(3, suite.getDescription());
 			st.setString(4, suite.getAuthor());
 			st.setString(5, suite.getOwner());
-			st.setInt(6, 1);
+			st.setInt(6, suite.getAccessId());
 
 			st.executeUpdate();
 			close(null, st, c);

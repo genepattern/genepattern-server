@@ -34,7 +34,7 @@
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
 	String userID= (String)request.getAttribute("userID");
-	LocalAdminClient adminClient = new LocalAdminClient("GenePattern");
+	LocalAdminClient adminClient = new LocalAdminClient(userID);
 try {
 %>
 	<html>
@@ -74,10 +74,20 @@ boolean catalogAvaliable = false;
 		SuiteInfo[] loaded = adminClient.getLatestSuites();
 		SuiteInfo[] allOfThem = adminClient.getAllSuites();
 		for (int i=0; i < loaded.length; i++){
-			loadedSuites.put(loaded[i].getLSID(), loaded[i]);
+			SuiteInfo si = loaded[i];
+			System.out.println("SI--"+si.getOwner() + "  " + si.getAccessId());
+			if (si.getAccessId() == GPConstants.ACCESS_PRIVATE){
+				if (!userID.equals(si.getOwner())) continue;
+			} 
+			loadedSuites.put(si.getLSID(), si);
 		}
 		for (int i=0; i < allOfThem.length; i++){
 			SuiteInfo si = allOfThem[i];
+
+			if (si.getAccessId() == GPConstants.ACCESS_PRIVATE){
+				if (!userID.equals(si.getOwner())) continue;
+			} 
+
 			LSID lsid = new LSID(si.getLSID());
 			ArrayList verlist = (ArrayList)allSuites.get(lsid.toStringNoVersion());
 			if (verlist == null){
