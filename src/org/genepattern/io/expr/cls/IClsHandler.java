@@ -6,5 +6,18 @@ package org.genepattern.io.expr.cls;
  * @author Joshua Gould
  */
 public interface IClsHandler {
+	/**
+	 * 
+	 * @param x
+	 *            the array containing the class name for each sample
+	 */
 	public void assignments(String[] x);
+
+	/**
+	 * 
+	 * @param classes
+	 *            the array containing all the class names contained in the cls
+	 *            document
+	 */
+	public void classes(String[] classes);
 }

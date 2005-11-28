@@ -48,6 +48,44 @@ public class ClassVector {
 		this.classCount = maxClassNumber;
 	}
 
+	/**
+	 * Constructs a new class vector from the array of class assignments
+	 * 
+	 * @param x
+	 *            the class assignments
+	 * @param classes
+	 *            ordered array of class names. The 0th entry will be given the
+	 *            assignment 0, the 1st entry the assignment 1, etc.
+	 */
+	public ClassVector(String[] x, String[] classes) {
+		this.assignments = new int[x.length];
+		this.classNumber2IndicesMap = new HashMap();
+		this.classNumber2LabelMap = new HashMap();
+		int maxClassNumber = classes.length;
+		Map className2ClassNumberMap = new HashMap();
+		for (int i = 0; i < classes.length; i++) {
+			Integer classNumberInteger = new Integer(i);
+			className2ClassNumberMap.put(classes[i], classNumberInteger);
+			classNumber2IndicesMap.put(classNumberInteger, new ArrayList());
+			classNumber2LabelMap.put(classNumberInteger, classes[i]);
+		}
+		for (int i = 0; i < x.length; i++) {
+			Integer classNumberInteger = (Integer) className2ClassNumberMap
+					.get(x[i]);
+			if (classNumberInteger == null) {
+				classNumberInteger = new Integer(maxClassNumber++);
+				className2ClassNumberMap.put(x[i], classNumberInteger);
+				classNumber2IndicesMap.put(classNumberInteger, new ArrayList());
+				classNumber2LabelMap.put(classNumberInteger, x[i]);
+			}
+			assignments[i] = classNumberInteger.intValue();
+			List indices = (List) this.classNumber2IndicesMap
+					.get(classNumberInteger);
+			indices.add(new Integer(i));
+		}
+		this.classCount = maxClassNumber;
+	}
+
 	private ClassVector(Map classNumber2IndicesMap, int[] assignments,
 			Map classNumber2LabelMap, int classCount) {
 		this.classNumber2IndicesMap = classNumber2IndicesMap;
@@ -226,7 +264,9 @@ public class ClassVector {
 					x[j] = "Rest";
 				}
 			}
-			ClassVector oneVersusAll = new ClassVector(x);
+
+			ClassVector oneVersusAll = new ClassVector(x, new String[] {
+					getClassName(i), "Rest" });
 			array[i] = oneVersusAll;
 		}
 		return array;
@@ -260,7 +300,8 @@ public class ClassVector {
 				for (int k = 0; k < jIndices.length; k++) {
 					x[k + iIndices.length] = getClassName(j);
 				}
-				ClassVector pair = new ClassVector(x);
+				ClassVector pair = new ClassVector(x, new String[] {
+						getClassName(i), getClassName(j) });
 				list.add(pair);
 			}
 		}

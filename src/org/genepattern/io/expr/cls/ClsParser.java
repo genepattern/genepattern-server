@@ -112,13 +112,16 @@ public class ClsParser {
 			assignments = processData(dataLine, classNumber2NameMap);
 		} else {// assume classifier line was skipped (second line) so try it as
 			// data
+			names = new String[numClasses];
 			for (int i = 0; i < numClasses; i++) {
-				classNumber2NameMap.put(new Integer(i), "Class " + i);
+				names[i] = "" + i;
+				classNumber2NameMap.put(new Integer(i), "" + i);
 			}
 			dataLine = classifierLine;
 			assignments = processData(dataLine, classNumber2NameMap);
 		}
 		if (handler != null) {
+			handler.classes(names);
 			handler.assignments(assignments);
 		}
 	}

@@ -19,7 +19,7 @@ public class ClsReader extends AbstractReader {
 		super(new String[] { "cls" }, "cls");
 	}
 
-   public ClassVector read(String pathname) throws IOException, ParseException {
+	public ClassVector read(String pathname) throws IOException, ParseException {
 		FileInputStream fis = null;
 		try {
 			fis = new FileInputStream(pathname);
@@ -30,16 +30,16 @@ public class ClsReader extends AbstractReader {
 			}
 		}
 	}
-   
+
 	public ClassVector read(InputStream is) throws IOException, ParseException {
 		ClsParser parser = new ClsParser();
 		MyHandler handler = new MyHandler();
 		parser.setHandler(handler);
-      parser.parse(is);
-		return new ClassVector(handler.x);
+		parser.parse(is);
+		return new ClassVector(handler.x, handler.classes);
 	}
 
-	public boolean canRead(InputStream in) throws IOException {
+	public boolean canRead(InputStream in) {
 		ClsParser parser = new ClsParser();
 		return parser.canDecode(in);
 	}
@@ -50,8 +50,14 @@ public class ClsReader extends AbstractReader {
 	private static class MyHandler implements IClsHandler {
 		String[] x;
 
+		String[] classes;
+
 		public void assignments(String[] x) {
 			this.x = x;
+		}
+
+		public void classes(String[] c) {
+			this.classes = c;
 		}
 	}
 }
