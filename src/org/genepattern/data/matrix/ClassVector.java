@@ -132,38 +132,29 @@ public class ClassVector {
 	 * cells. Indices can be in arbitrary order.
 	 * 
 	 * @param includeSlicedClassOnly
-	 *            Whether the returned class vector should have a class count
-	 *            equal to the class count in the this class vector, even if the
-	 *            returned class vector only less classes than this class
-	 *            vector.
+	 *            If <tt>false</tt> the returned class vector will have a
+	 *            class count equal to the class count in the this class vector,
+	 *            even if the returned class vector has less classes than this
+	 *            class vector and the returned class vector will have the same
+	 *            numerical class encoding as this class vector.
 	 * @param order
 	 *            the indices
 	 * @return the new class vector
 	 */
 	public ClassVector slice(int[] order, boolean includeSlicedClassOnly) {
+		String[] x = new String[order.length];
+		for (int i = 0, length = order.length; i < length; i++) {
+			x[i] = this.getClassName(this.assignments[order[i]]);
+		}
 		if (includeSlicedClassOnly) {
-			String[] x = new String[order.length];
-			for (int i = 0, length = order.length; i < length; i++) {
-				x[i] = this.getClassName(this.assignments[order[i]]);
-			}
 			return new ClassVector(x);
 		}
 
-		int[] newAssignments = new int[order.length];
-		Map newClassNumber2IndicesMap = new HashMap();
-		for (int i = 0, length = order.length; i < length; i++) {
-			newAssignments[i] = this.assignments[order[i]];
-			Integer assignment = new Integer(newAssignments[i]);
-			List newIndices = (List) newClassNumber2IndicesMap.get(assignment);
-			if (newIndices == null) {
-				newIndices = new ArrayList();
-				newClassNumber2IndicesMap.put(assignment, newIndices);
-
-			}
-			newIndices.add(new Integer(i));
+		String[] classes = new String[getClassCount()];
+		for (int i = 0, num = getClassCount(); i < num; i++) {
+			classes[i] = getClassName(i);
 		}
-		return new ClassVector(newClassNumber2IndicesMap, newAssignments,
-				classNumber2LabelMap, classCount);
+		return new ClassVector(x, classes);
 	}
 
 	/**
