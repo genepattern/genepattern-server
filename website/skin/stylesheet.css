@@ -88,6 +88,10 @@ TR.altpaleBackground, tr.altpaleBackground,table.altpaleBackground, TABLE.altpal
 	background: #FFEFEF; 
 }
 
+TR.altpaleBackground2, tr.altpaleBackground2,table.altpaleBackground2, TABLE.altpaleBackground2   { 
+	background: #EFEFEF; 
+}
+
 .majorCell { border-width: 2;  font-size: 10pt; }
 .button  { width: 50; }
 .wideButton  { width: 100; }

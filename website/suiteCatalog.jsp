@@ -52,10 +52,30 @@ function checkSuite(frmName, bChecked) {
 		frm.elements[i].checked = bChecked;
 	}
 }
+
+function toggleVersions(lsidNoVer) {
+	formobj = document.getElementById(lsidNoVer);
+	var visible = formobj.checked;
+
+	formobjs = document.getElementsByName(lsidNoVer);
+	for (i=0; i < formobjs.length; i++){
+		if(!visible) {
+			formobjs[i].style.display = "none";
+		} else {
+			formobjs[i].style.display = "block";
+		}
+	}
+}
+
+
 </script>
 </head><body>
 <table width=100% cellspacing=0>
-<tr><td colspan=3><jsp:include page="navbar.jsp"></jsp:include></td></tr>
+<tr><td colspan=3>
+<jsp:include page="navbar.jsp"></jsp:include>
+
+</td></tr>
+
 <tr><td colspan=2>	
 	<span id="fetching">
 		Fetching suite catalog from <a href="<%= System.getProperty("SuiteRepositoryURL") %>" target="_new"><%= System.getProperty("SuiteRepositoryURL") %></a>...
@@ -141,7 +161,7 @@ boolean catalogAvaliable = false;
 		<p>Reason: <code><%= e.getMessage() %></code><br><p>
 		<b>Try to correct this problem</b> by changing <a href="adminServer.jsp">web proxy settings</a> or <a href="adminServer.jsp">Suite Repository URL.</a>
 
-		<!-- jsp:include page="footer.jsp"></jsp:include -->
+		<jsp:include page="footer.jsp"></jsp:include>
 		</body>
 		</html>
 <%
@@ -297,7 +317,13 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 <%
 	}  // iterating over available suites
 %>
-</tr><tr><td colspan=2 align='center'><hr><font size="+1"><b>Loaded Suites</b></font></td></tr><tr><td>&nbsp;</td></tr>
+</tr>
+<tr><td colspan=2 align='center'>
+	<hr>
+		<font size="+1"><b>Loaded Suites</b></font>
+</td></tr>
+
+<tr><td>&nbsp;</td></tr>
 
 
 <%  
@@ -309,8 +335,16 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 <%
 	}	
 	for (Iterator iter = loadedSuites.keySet().iterator(); iter.hasNext(); ){
-		SuiteInfo suite = (SuiteInfo)loadedSuites.get(iter.next());	
-		LSID lsid = new LSID(suite.getLSID());	
+		SuiteInfo suiteL = (SuiteInfo)loadedSuites.get(iter.next());	
+		LSID lsidL = new LSID(suiteL.getLSID());	
+		String lsidNoVer = lsidL.toStringNoVersion();
+	
+		TreeSet vers = (TreeSet)allSuites.get(lsidNoVer);
+	
+		for (Iterator viter = vers.iterator(); viter.hasNext(); ){
+			SuiteInfo suite = (SuiteInfo)viter.next();
+			LSID lsid = new LSID(suite.getLSID());
+
 		String[] moduleLsids = suite.getModuleLSIDs();
 
 
@@ -319,14 +353,35 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 			TaskInfo ti = adminClient.getTask(moduleLsids[i]);
 			allInstalled  = allInstalled && (ti != null);
 		}
+		boolean latestVer = false;
+		String style = "display: none;";
+		String name = lsid.toStringNoVersion();
+		String bgClass = "altpaleBackground2";
+		if (lsid.toString().equals(lsidL.toString())){
+			style = "display: block;";
+			name="latest";
+			latestVer = true;	
+			bgClass = "altpaleBackground";
+		}
 
 
 %>
-<tr class='altpaleBackground'>
+<tr><td colspan=2>
+<div name="<%=name%>"  style="<%=style%>" >
+<table width='100%' cellspacing=0>
+
+<tr class='<%=bgClass%>'>
+
 <td>
 
 <font size=+1><b><%=suite.getName()%></b></font>(<%=lsid.getVersion()%>)
 <%
+	
+if (latestVer && (vers.size()>1)){
+ 		%>Show older versions<input type='checkbox' id='<%=lsid.toStringNoVersion()%>' onClick="toggleVersions('<%=lsid.toStringNoVersion()%>');"/><%
+		//		
+	}
+
 
 String[] docs = suite.getDocumentationFiles();
 for (int k=0; k < docs.length; k++ ){
@@ -342,32 +397,19 @@ for (int k=0; k < docs.length; k++ ){
 </tr></table>
 </td>
 </tr>
-<tr class='altpaleBackground'>
+<tr class='<%=bgClass%>'>
 <td  colspan=2><%=suite.getDescription()%></td>
 </tr>
 
-<tr class='altpaleBackground'>
+<tr class='<%=bgClass%>'>
 <td valign='top' colspan=2>
 <table width='100%' align='center'>
 <tr>
 
 <td>
 <form name="deleteSuite<%=suite.getName()%>" action="deleteSuite.jsp" >
-	<input type="submit" name="InstallSuite" value="Delete Suite verison" />
-	<select name='suiteLsid'>
-<%
-	String lsidNoVer = (new LSID(suite.getLSID())).toStringNoVersion();
-	TreeSet vers = (TreeSet)allSuites.get(lsidNoVer);
-	for (Iterator iterV = vers.iterator(); iterV.hasNext(); ){
-		SuiteInfo ver = (SuiteInfo)iterV.next();
-		LSID vlsid = new LSID(ver.getLSID());
-		String verStr = vlsid.getVersion();
-
-		out.println("<option value='"+vlsid+"'>"+verStr);
-	}
-%>
-	</select>
-
+	<input type="submit" name="InstallSuite" value="Delete this verison" />
+	<input type="hidden" name="suiteLsid" value="<%=suite.getLSID()%>" >
 &nbsp;
 </form>
 </td>
@@ -444,13 +486,16 @@ for (int i=0; i < moduleLsids.length; i++){
 %>
 
 </form>
-
+</table>
+</div>
+</td></tr>
 <%
+		} //end looping over suite versions
 		// end looping over loaded suites
 	}
 %>
 </tr>
-<tr><td colspan=2><jsp:include page="footer.jsp"></jsp:include></td> 
+<tr><td colspan=2><!-- jsp:include page="footer.jsp"></jsp:include --></td> 
 </tr></table>
 
 <%
