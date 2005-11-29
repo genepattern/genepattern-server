@@ -44,10 +44,10 @@ try {
 	formalParamInfos = task.getParameterInfoArray();
 	
 
-} catch(WebServiceException wse) {
+} catch(Exception wse) {
 	wse.printStackTrace();
-}
 
+}
 %>
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
@@ -71,7 +71,6 @@ boolean hasLog = false;
 int outFileCount=1;
 HashMap formalParamMap = new HashMap();
 
-//// GET THE EXECUTION LOG FOR WRITING TO THE TEXTAREA
    job = analysisClient.getJob(job.getJobNumber());
    hasLog = false;
    StringBuffer buff2 = new StringBuffer();
