@@ -495,7 +495,7 @@ for (int i=0; i < moduleLsids.length; i++){
 	}
 %>
 </tr>
-<tr><td colspan=2><!-- jsp:include page="footer.jsp"></jsp:include --></td> 
+<tr><td colspan=2><jsp:include page="footer.jsp"></jsp:include></td> 
 </tr></table>
 
 <%
