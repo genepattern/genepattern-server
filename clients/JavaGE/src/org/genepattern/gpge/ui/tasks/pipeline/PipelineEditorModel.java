@@ -25,7 +25,7 @@ import org.genepattern.webservice.WebServiceException;
 public class PipelineEditorModel {
 
 	public static final int CHOOSE_TASK_INDEX = Integer.MIN_VALUE;
-	
+
 	/** list of MyTask objects */
 	private List tasks;
 
@@ -47,42 +47,52 @@ public class PipelineEditorModel {
 
 	private EventListenerList listenerList;
 
-	/** list of doc file names that have already been uploaded to the server for this task */
+	/**
+	 * list of doc file names that have already been uploaded to the server for
+	 * this task
+	 */
 	private List serverDocFiles = new ArrayList();
-	
-	/** list of doc file names that have already been uploaded to the server for this task */
+
+	/**
+	 * list of doc file names that have already been uploaded to the server for
+	 * this task
+	 */
 	private List localDocFiles = new ArrayList();
 
 	private List missingJobSubmissions;
-	
+
 	/**
-	 * Gets a list containing <tt>String</tt> instances of existing doc file names
+	 * Gets a list containing <tt>String</tt> instances of existing doc file
+	 * names
+	 * 
 	 * @return the doc files
 	 */
 	public List getServerDocFiles() {
 		return serverDocFiles;
 	}
-	
+
 	/**
-	 * Gets a list containing <tt>File</tt> instances of new uploaded doc files
+	 * Gets a list containing <tt>File</tt> instances of new uploaded doc
+	 * files
+	 * 
 	 * @return the doc files
 	 */
 	public List getLocalDocFiles() {
 		return localDocFiles;
 	}
-	
+
 	public void addLocalDocFile(File file) {
 		localDocFiles.add(file);
 	}
-	
+
 	public void removeLocalDocFile(File file) {
 		localDocFiles.remove(file);
 	}
-	
+
 	public void removeServerDocFile(String s) {
 		serverDocFiles.remove(s);
 	}
-	
+
 	public void addPipelineListener(PipelineListener l) {
 		listenerList.add(PipelineListener.class, l);
 	}
@@ -96,12 +106,12 @@ public class PipelineEditorModel {
 		listenerList = new EventListenerList();
 		this.missingJobSubmissions = new ArrayList();
 	}
-	
+
 	public void resetDocFiles() {
 		try {
-			String[]  fileNames = new TaskIntegratorProxy(AnalysisServiceManager.getInstance()
-					.getServer(), AnalysisServiceManager.getInstance()
-					.getUsername()).getDocFileNames(lsid);
+			String[] fileNames = new TaskIntegratorProxy(AnalysisServiceManager
+					.getInstance().getServer(), AnalysisServiceManager
+					.getInstance().getUsername()).getDocFileNames(lsid);
 			serverDocFiles.clear();
 			serverDocFiles.addAll(Arrays.asList(fileNames));
 			localDocFiles.clear();
@@ -114,7 +124,7 @@ public class PipelineEditorModel {
 		Map attrs = svc.getTaskInfo().getTaskInfoAttributes();
 		this.lsid = (String) attrs.get(GPConstants.LSID);
 		resetDocFiles();
-		
+
 		this.owner = svc.getTaskInfo().getUserId();
 		this.author = model.getAuthor();
 		this.privacy = svc.getTaskInfo().getAccessId();
@@ -136,17 +146,19 @@ public class PipelineEditorModel {
 		List missingLSIDs = new ArrayList();
 		for (int i = 0; i < jobSubmissions.size(); i++) {
 			JobSubmission js = (JobSubmission) jobSubmissions.get(i);
-			 AnalysisService formalAnalysisService = asm.getAnalysisService(js.getLSID());
-			 
+			AnalysisService formalAnalysisService = asm.getAnalysisService(js
+					.getLSID());
+
 			if (formalAnalysisService == null) {
-				if(!missingLSIDs.contains(js.getLSID())) {
+				if (!missingLSIDs.contains(js.getLSID())) {
 					missingLSIDs.add(js.getLSID());
 					missingJobSubmissions.add(js);
 				}
 			}
 			MyTask myTask;
-			if(formalAnalysisService!=null) {
-				myTask = new MyTask(formalAnalysisService.getTaskInfo(), js.getDescription());
+			if (formalAnalysisService != null) {
+				myTask = new MyTask(formalAnalysisService.getTaskInfo(), js
+						.getDescription());
 			} else {
 				myTask = new MyTask(js.getName(), js.getDescription());
 			}
@@ -157,7 +169,9 @@ public class PipelineEditorModel {
 				ParameterInfo p = (ParameterInfo) jsParams.get(j);
 				paramName2ParamIndex.put(p.getName(), new Integer(j));
 			}
-			ParameterInfo[] formalParams = formalAnalysisService!=null?formalAnalysisService.getTaskInfo().getParameterInfoArray():null;
+			ParameterInfo[] formalParams = formalAnalysisService != null ? formalAnalysisService
+					.getTaskInfo().getParameterInfoArray()
+					: null;
 			if (formalParams != null) {
 				for (int j = 0; j < formalParams.length; j++) {
 					ParameterInfo formalParam = formalParams[j];
@@ -176,7 +190,9 @@ public class PipelineEditorModel {
 			} else {
 				for (int j = 0; j < jsParams.size(); j++) {
 					ParameterInfo p = (ParameterInfo) jsParams.get(j);
-					myTask.addParameter(MyParameter.createMissingFormalParam(p));
+					myTask
+							.addParameter(MyParameter
+									.createMissingFormalParam(p));
 				}
 			}
 		}
@@ -185,7 +201,7 @@ public class PipelineEditorModel {
 	public List getMissingJobSubmissions() {
 		return missingJobSubmissions;
 	}
-	
+
 	public void move(int from, int to) {
 		if (from < to) {
 			moveDown(from, to);
@@ -270,21 +286,22 @@ public class PipelineEditorModel {
 		MyTask task = (MyTask) tasks.remove(from);
 		tasks.add(to, task);
 	}
-	
+
 	public void replace(final int taskIndex, TaskInfo t) {
 		MyTask removedTask = (MyTask) tasks.get(taskIndex);
 		remove(taskIndex, false);
 		add(taskIndex, t, false);
-	//	MyTask addedTask = (MyTask) tasks.get(taskIndex);
+		// MyTask addedTask = (MyTask) tasks.get(taskIndex);
 		List removedParameters = removedTask.parameters;
-		
-		for(int i = 0; i < removedParameters.size(); i++) {
+
+		for (int i = 0; i < removedParameters.size(); i++) {
 			MyParameter p = (MyParameter) removedParameters.get(i);
-			for(int j = 0; j < this.getParameterCount(taskIndex); j++) {
-				if(p.name.equals(getParameterName(taskIndex, j))) {
-					if(p.inheritedTaskIndex!=-1) {
-						setInheritedFile(taskIndex, j, p.inheritedTaskIndex, p.inheritedOutputFileName);
-					} else if(p.isPromptWhenRun) {
+			for (int j = 0; j < this.getParameterCount(taskIndex); j++) {
+				if (p.name.equals(getParameterName(taskIndex, j))) {
+					if (p.inheritedTaskIndex != -1) {
+						setInheritedFile(taskIndex, j, p.inheritedTaskIndex,
+								p.inheritedOutputFileName);
+					} else if (p.isPromptWhenRun) {
 						setPromptWhenRun(taskIndex, j);
 					} else {
 						setValue(taskIndex, j, p.value);
@@ -293,13 +310,14 @@ public class PipelineEditorModel {
 				}
 			}
 		}
-		notifyListeners(new PipelineEvent(this, PipelineEvent.REPLACE, taskIndex));
+		notifyListeners(new PipelineEvent(this, PipelineEvent.REPLACE,
+				taskIndex));
 	}
 
 	public void add(final int taskIndex, TaskInfo t) {
 		add(taskIndex, t, true);
 	}
-	
+
 	private void add(final int taskIndex, TaskInfo t, boolean notify) {
 		for (int i = taskIndex + 1; i < getTaskCount(); i++) {
 			MyTask task = (MyTask) tasks.get(i);
@@ -321,23 +339,26 @@ public class PipelineEditorModel {
 
 		ParameterInfo[] formalParams = t.getParameterInfoArray();
 		MyTask myTask = new MyTask(t, t.getDescription());
-		
+
 		tasks.add(taskIndex, myTask);
-		
+
 		if (formalParams != null) {
 			for (int j = 0; j < formalParams.length; j++) {
 				ParameterInfo formalParam = formalParams[j];
 				MyParameter myParam = new MyParameter(formalParam);
 				myTask.addParameter(myParam);
-				if(myParam.isInputFile && myParam.inputTypes!=null) {
-					String inheritedFileName = null;;
+				if (myParam.isInputFile && myParam.inputTypes != null) {
+					String inheritedFileName = null;
+					;
 					int inheritedTaskIndex = -1;
 					boolean unique = true;
-					for(int i = 0; i < taskIndex; i++) {
+					for (int i = 0; i < taskIndex; i++) {
 						List outputs = getOutputFileTypes(i);
-						for(int inputIndex = 0; inputIndex < myParam.inputTypes.length && unique; inputIndex++) {
-							if(outputs.contains(myParam.inputTypes[inputIndex])) {
-								if(inheritedFileName==null) {
+						for (int inputIndex = 0; inputIndex < myParam.inputTypes.length
+								&& unique; inputIndex++) {
+							if (outputs
+									.contains(myParam.inputTypes[inputIndex])) {
+								if (inheritedFileName == null) {
 									inheritedTaskIndex = i;
 									inheritedFileName = myParam.inputTypes[inputIndex];
 								} else { // inherited output is not unique
@@ -347,19 +368,21 @@ public class PipelineEditorModel {
 							}
 						}
 					}
-					if(unique && inheritedFileName!=null) {
-						setInheritedFile(taskIndex, j, inheritedTaskIndex, inheritedFileName);
+					if (unique && inheritedFileName != null) {
+						setInheritedFile(taskIndex, j, inheritedTaskIndex,
+								inheritedFileName);
 					}
 				}
 			}
 		}
 
-		if(notify) {
-			
-			notifyListeners(new PipelineEvent(this, PipelineEvent.INSERT, taskIndex));
+		if (notify) {
+
+			notifyListeners(new PipelineEvent(this, PipelineEvent.INSERT,
+					taskIndex));
 		}
 	}
-	
+
 	protected void notifyListeners(PipelineEvent e) {
 		Object[] listeners = listenerList.getListenerList();
 		// Process the listeners last to first, notifying
@@ -374,7 +397,7 @@ public class PipelineEditorModel {
 	public void remove(final int taskIndex) {
 		remove(taskIndex, true);
 	}
-	
+
 	private void remove(final int taskIndex, boolean notify) {
 		// check if subsequent tasks inherit from removed task or subsequent
 		// tasks
@@ -401,8 +424,9 @@ public class PipelineEditorModel {
 			}
 		}
 		tasks.remove(taskIndex);
-		if(notify) {
-			notifyListeners(new PipelineEvent(this, PipelineEvent.DELETE, taskIndex));
+		if (notify) {
+			notifyListeners(new PipelineEvent(this, PipelineEvent.DELETE,
+					taskIndex));
 		}
 	}
 
@@ -415,9 +439,8 @@ public class PipelineEditorModel {
 		final HashMap promptWhenRunAttrs = new HashMap();
 		promptWhenRunAttrs.put("runTimePrompt", "1");
 
-		
 		HashMap emptyAttrs = new HashMap();
-	
+
 		List pipelineParameterInfoList = new ArrayList();
 		for (int i = 0; i < getTaskCount(); i++) {
 			TaskInfo taskInfo = ((MyTask) tasks.get(i)).formalTaskInfo;
@@ -447,21 +470,23 @@ public class PipelineEditorModel {
 					}
 					attrs.put(PipelineModel.INHERIT_FILENAME, inheritedFile);
 					attrs.put(PipelineModel.INHERIT_TASKNAME, String
-							.valueOf(inheritedTaskIndex)); // gpUseResult indices start at 1
+							.valueOf(inheritedTaskIndex)); // gpUseResult
+					// indices start at
+					// 1
 					p.setAttributes(attrs);
 				} else if (isPromptWhenRun(i, j)) {
 					p.setAttributes(promptWhenRunAttrs);
 					String paramValue = null;
-					if(isChoiceList(i, j)) {
+					if (isChoiceList(i, j)) {
 						ParameterChoice[] choices = getChoices(i, j);
 						StringBuffer buf = new StringBuffer();
-						for(int k = 0; k < choices.length; k++) {
+						for (int k = 0; k < choices.length; k++) {
 							String uiValue = choices[k].getUIValue();
 							String cmdLineValue = choices[k].getValue();
-							if(k > 0) {
+							if (k > 0) {
 								buf.append(";");
 							}
-							if(uiValue.equals(cmdLineValue)) {
+							if (uiValue.equals(cmdLineValue)) {
 								buf.append(cmdLineValue + "=" + uiValue);
 							} else {
 								buf.append(cmdLineValue);
@@ -472,11 +497,10 @@ public class PipelineEditorModel {
 					}
 					ParameterInfo pipelineParam = new ParameterInfo(
 							getTaskName(i) + (i + 1) + "."
-									+ getParameterName(i, j), paramValue,
-							"");
+									+ getParameterName(i, j), paramValue, "");
 					HashMap attributes = new HashMap(promptWhenRunAttrs);
 					attributes.putAll(getParameterAttributes(i, j));
-					
+
 					pipelineParam.setAttributes(attributes);
 					pipelineParameterInfoList.add(pipelineParam);
 					pipelineModel.addInputParameter(pipelineParam.getName(), p);
@@ -485,12 +509,16 @@ public class PipelineEditorModel {
 					if (file.exists()) {
 						value = "<GenePatternURL>getFile.jsp?task=<LSID>&file="
 								+ file.getName();
-					} else if(value.startsWith("job #")) {
-						String jobNumber = value.substring(value.indexOf("#")+1, value.indexOf(",")).trim();
-						String fileName = value.substring(value.indexOf(",")+1, value.length()).trim();
-						value = "<GenePatternURL>getFile.jsp?task=<LSID>&file=" + fileName;
+					} else if (value.startsWith("job #")) {
+						String jobNumber = value.substring(
+								value.indexOf("#") + 1, value.indexOf(","))
+								.trim();
+						String fileName = value.substring(
+								value.indexOf(",") + 1, value.length()).trim();
+						value = "<GenePatternURL>getFile.jsp?task=<LSID>&file="
+								+ fileName;
 					}
-					
+
 					p.setValue(value);
 					p.setAttributes(emptyAttrs);
 				} else {
@@ -508,8 +536,7 @@ public class PipelineEditorModel {
 		pipelineTaskInfo.setDescription(description);
 		pipelineTaskInfo.setUserId(owner);
 		pipelineTaskInfo.setAccessId(privacy);
-		
-		
+
 		pipelineTaskInfo
 				.setParameterInfoArray((ParameterInfo[]) pipelineParameterInfoList
 						.toArray(new ParameterInfo[0]));
@@ -532,8 +559,8 @@ public class PipelineEditorModel {
 		taskInfoAttrs.put("language", "Java");
 		taskInfoAttrs.put(GPConstants.USERID, owner);
 		pipelineTaskInfo.setTaskInfoAttributes(taskInfoAttrs);
-	//	System.out.println(taskInfoAttrs);
-		//System.out.print(pipelineParameterInfoList);
+		// System.out.println(taskInfoAttrs);
+		// System.out.print(pipelineParameterInfoList);
 		return pipelineTaskInfo;
 	}
 
@@ -554,13 +581,15 @@ public class PipelineEditorModel {
 	public String getTaskLSID(int taskIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
 		TaskInfo ti = task.getTaskInfo();
-		return ti !=null ? (String) ti.getTaskInfoAttributes().get(GPConstants.LSID) : "";
+		return ti != null ? (String) ti.getTaskInfoAttributes().get(
+				GPConstants.LSID) : "";
 	}
+
 	public String getTaskDescription(int taskIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
 		return task.description;
 	}
-	
+
 	public void setTaskDescription(int taskIndex, String s) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
 		task.description = s;
@@ -576,18 +605,17 @@ public class PipelineEditorModel {
 		MyParameter p = task.getParameter(parameterIndex);
 		return p.inputTypes;
 	}
-	
+
 	public String getParameterName(int taskIndex, int parameterIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
 		return ((MyParameter) task.parameters.get(parameterIndex)).name;
 	}
-	
+
 	public HashMap getParameterAttributes(int taskIndex, int parameterIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
 		MyParameter p = task.getParameter(parameterIndex);
 		return p.attributes;
 	}
-	
 
 	public int getInheritedTaskIndex(int taskIndex, int parameterIndex) {
 		MyTask task = (MyTask) tasks.get(taskIndex);
@@ -693,7 +721,7 @@ public class PipelineEditorModel {
 		private final String[] inputTypes;
 
 		private final HashMap attributes;
-		
+
 		public String toString() {
 			StringBuffer sb = new StringBuffer();
 			sb.append("name: " + name);
@@ -728,8 +756,11 @@ public class PipelineEditorModel {
 			this.inheritedTaskIndex = taskIndex;
 			value = null;
 			isPromptWhenRun = false;
-			if(_inheritedOutputFileName==null) {
-				inheritedOutputFileName = _inheritedOutputFileName; // user has not selected a value
+			if (_inheritedOutputFileName == null) {
+				inheritedOutputFileName = _inheritedOutputFileName; // user has
+				// not
+				// selected
+				// a value
 			} else if (_inheritedOutputFileName.equals("1")) {
 				inheritedOutputFileName = "1st output";
 			} else if (_inheritedOutputFileName.equals("2")) {
@@ -748,7 +779,6 @@ public class PipelineEditorModel {
 
 		}
 
-		
 		private MyParameter(String name) {
 			isRequired = false;
 			isInputFile = false;
@@ -757,26 +787,29 @@ public class PipelineEditorModel {
 			this.inputTypes = null;
 			this.attributes = new HashMap();
 		}
-		
+
 		/**
 		 * Creates a new instance. Use when missing formal parameter
-		 * @param jobSubmissionParam ParameterInfo returned from JobSubmission
+		 * 
+		 * @param jobSubmissionParam
+		 *            ParameterInfo returned from JobSubmission
 		 */
-		public static MyParameter createMissingFormalParam(ParameterInfo jobSubmissionParam) {
+		public static MyParameter createMissingFormalParam(
+				ParameterInfo jobSubmissionParam) {
 			MyParameter p = new MyParameter(jobSubmissionParam.getName());
 
 			java.util.Map pipelineAttributes = jobSubmissionParam
-			.getAttributes();
+					.getAttributes();
 
 			String taskNumberString = null;
 			if (pipelineAttributes != null) {
 				taskNumberString = (String) pipelineAttributes
-				.get(PipelineModel.INHERIT_TASKNAME);
+						.get(PipelineModel.INHERIT_TASKNAME);
 				if (taskNumberString != null) {
-					int inheritedTaskIndex = Integer
-					.parseInt(taskNumberString.trim());
+					int inheritedTaskIndex = Integer.parseInt(taskNumberString
+							.trim());
 					String outputFileNumber = (String) pipelineAttributes
-					.get(PipelineModel.INHERIT_FILENAME);
+							.get(PipelineModel.INHERIT_FILENAME);
 					p.setInheritOutput(inheritedTaskIndex, outputFileNumber);
 
 				} else {
@@ -785,32 +818,27 @@ public class PipelineEditorModel {
 			}
 			return p;
 		}
-		
+
 		public MyParameter(ParameterInfo formalParam) {
 			name = formalParam.getName();
 			value = (String) formalParam.getAttributes().get(
 					GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 			isInputFile = formalParam.isInputFile();
 			this.attributes = formalParam.getAttributes();
-			ParameterChoice[] _choiceItems = null;
+			
 			if (!isInputFile) {
-				String[] choices = formalParam.getValue().split(
-						GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-				if (choices.length > 1) {
-					_choiceItems = new ParameterChoice[choices.length];
-					for (int i = 0; i < choices.length; i++) {
-						_choiceItems[i] = ParameterChoice
-								.createChoice(choices[i]);
-					}
-				}
+				choiceItems = ParameterChoice.createChoice(formalParam.getValue());
+			} else {
+				choiceItems = null;
 			}
-			String fileFormatString = (String) formalParam.getAttributes().get("fileFormat");
-			if(fileFormatString!=null) {
+			String fileFormatString = (String) formalParam.getAttributes().get(
+					"fileFormat");
+			if (fileFormatString != null) {
 				inputTypes = fileFormatString.split(";");
 			} else {
 				inputTypes = null;
 			}
-			choiceItems = _choiceItems;
+			
 			String optional = (String) formalParam.getAttributes().get(
 					GPConstants.PARAM_INFO_OPTIONAL[0]);
 			isRequired = !"on".equalsIgnoreCase(optional);
@@ -828,13 +856,14 @@ public class PipelineEditorModel {
 			this.name = jobSubmissionParam.getName();
 			this.attributes = formalParam.getAttributes();
 			ParameterChoice[] _choiceItems = null;
-			String fileFormatString = (String) formalParam.getAttributes().get("fileFormat");
-			if(fileFormatString!=null) {
+			String fileFormatString = (String) formalParam.getAttributes().get(
+					"fileFormat");
+			if (fileFormatString != null) {
 				inputTypes = fileFormatString.split(";");
 			} else {
 				inputTypes = null;
 			}
-			
+
 			if (formalParam.isInputFile()) {
 				java.util.Map pipelineAttributes = jobSubmissionParam
 						.getAttributes();
@@ -860,15 +889,7 @@ public class PipelineEditorModel {
 				// line value
 				// can be command line value
 				// instead of UI value
-				String[] choices = formalParam.getValue().split(
-						GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-				if (choices.length > 1) {
-					_choiceItems = new ParameterChoice[choices.length];
-					for (int i = 0; i < choices.length; i++) {
-						_choiceItems[i] = ParameterChoice
-								.createChoice(choices[i]);
-					}
-				}
+				_choiceItems = ParameterChoice.createChoice(formalParam.getValue());
 
 			}
 			boolean[] runtimePrompt = js.getRuntimePrompt();
@@ -896,7 +917,7 @@ public class PipelineEditorModel {
 			this.description = description;
 			parameters = new ArrayList();
 		}
-		
+
 		public MyTask(TaskInfo formalTask, String description) {
 			this.formalTaskInfo = formalTask;
 			this.taskName = formalTaskInfo.getName();
@@ -989,5 +1010,4 @@ public class PipelineEditorModel {
 		this.lsid = lsid2;
 	}
 
-	
 }

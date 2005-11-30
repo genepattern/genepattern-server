@@ -173,7 +173,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 								.getInstance().getAnalysisService(
 										model.getLSID());
 						if (svc == null) {
-							GenePattern.showMessageDialog(model.getPipelineName()
+							GenePattern.showMessageDialog(model
+									.getPipelineName()
 									+ " has been deleted from the server.");
 						}
 					}
@@ -1020,7 +1021,12 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			task.setTaskIndex(i);
 		}
 		addItemsToTaskComboBox();
-		tasksInPipelineComboBox.setSelectedIndex(deletedRow - 1);
+		int selectedIndex = Math.max(deletedRow - 1, 0);
+		try {
+			tasksInPipelineComboBox.setSelectedIndex(selectedIndex);
+		} catch (IllegalArgumentException iae) {
+			// ignore index out of range error
+		}
 		int index = deletedRow - 1;
 		if (index > 0) {
 			scrollTo((TaskPanel) taskDisplayList.get(index));
@@ -1062,15 +1068,25 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 			System.err.println("Unknown pipeline event");
 		}
 		enableButtons();
-		SwingUtilities.invokeLater(new Thread() {
+
+		Runnable r = new Runnable() {
 			public void run() {
+				// tasksLayout.invalidateLayout(tasksPanel);
+				// tasksLayout.layoutContainer(tasksPanel);
 				invalidate();
+				tasksPanel.invalidate();
+				tasksPanel.validate();
 				validate();
-				//tasksPanel.invalidate();
-				//tasksPanel.validate();
+				// tasksPanel.doLayout();
+				tasksPanel.repaint();
+
 			}
-		
-		});
+		};
+		if (SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(r);
+		} else {
+			r.run();
+		}
 
 	}
 
