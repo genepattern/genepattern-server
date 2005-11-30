@@ -274,7 +274,6 @@ try {
                                 
 				String inheritFrom = requestParameters.getParameter(taskPrefix + "_i_" + i);
 
-System.out.println("\nINHERTING=> " + inheritFrom );
 				boolean inherited = (inheritFrom != null && inheritFrom.length() > 0 && !inheritFrom.equals("NOT SET") && !inheritFrom.startsWith("[task")  );
 
 				boolean isOptional = (((String)p.getAttributes().get(GPConstants.PARAM_INFO_OPTIONAL[0])).length() > 0);
