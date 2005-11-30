@@ -442,24 +442,7 @@ public class ParameterInfoPanel extends JPanel {
 		return field;
 	}
 
-	/**
-	 * Parses the String and returns a ParameterChoice
-	 * 
-	 * @param string
-	 *            Description of the Parameter
-	 * @return Description of the Return Value
-	 */
-	private static ParameterChoice createChoiceItem(final String string) {
-		final int index = string.indexOf('=');
-		ParameterChoice choice = null;
-		if (index < 0) {
-			choice = new ParameterChoice(string, string);
-		} else {
-			choice = new ParameterChoice(string.substring(index + 1), string
-					.substring(0, index));
-		}
-		return choice;
-	}
+	
 
 	/**
 	 * creates the default <CODE>ChoiceItem</CODE> for the combo box
@@ -470,7 +453,7 @@ public class ParameterInfoPanel extends JPanel {
 	 */
 	private static ParameterChoice createDefaultChoice(final String default_val) {
 		if (default_val != null && default_val.length() > 0) {
-			return createChoiceItem(default_val);
+			return ParameterChoice.createChoiceItem(default_val);
 		}
 		return null;
 	}
@@ -511,7 +494,7 @@ public class ParameterInfoPanel extends JPanel {
 		list.setBackground(Color.white);
 		for (int i = 0; tokenizer.hasMoreTokens(); i++) {
 			final String token = tokenizer.nextToken();
-			final ParameterChoice item = createChoiceItem(token);
+			final ParameterChoice item = ParameterChoice.createChoiceItem(token);
 			list.addItem(item);
 			if(item.equalsCmdLineOrUIValue(default_val)) {
 				list.setSelectedIndex(i);
