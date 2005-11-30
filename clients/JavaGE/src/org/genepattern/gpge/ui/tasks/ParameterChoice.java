@@ -1,9 +1,13 @@
 package org.genepattern.gpge.ui.tasks;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
 /**
  * 
  * @author Joshua Gould
- *
+ * 
  */
 public class ParameterChoice {
 
@@ -17,24 +21,52 @@ public class ParameterChoice {
 		this.uiText = cmdLineValue;
 		this.commandLineValue = cmdLineValue;
 	}
-	
+
 	public ParameterChoice(final String uiText, final String value) {
 		this.uiText = uiText;
 		this.commandLineValue = value;
 
 	}
-	
+
+	/**
+	 * Parses the String and returns a ParameterChoice
+	 * 
+	 * @param string
+	 *            Description of the Parameter
+	 * @return Description of the Return Value
+	 */
+	public static ParameterChoice createChoiceItem(final String string) {
+		final int index = string.indexOf('=');
+		ParameterChoice choice = null;
+		if (index < 0) {
+			choice = new ParameterChoice(string, string);
+		} else {
+			choice = new ParameterChoice(string.substring(index + 1), string
+					.substring(0, index));
+		}
+		return choice;
+	}
+
 	/**
 	 * Creates a new ParameterChoice by parsing the given string
+	 * 
 	 * @param s
 	 * @return new ParameterChoice
 	 */
-	public static ParameterChoice createChoice(String s) {
-		String[] tokens = s.split("=");
-		if(tokens.length==2) {
-			return new ParameterChoice(tokens[1], tokens[0]);
+	public static ParameterChoice[] createChoice(String s) {
+		final StringTokenizer tokenizer = new StringTokenizer(s, ";");
+		List list = new ArrayList();
+		for (int i = 0; tokenizer.hasMoreTokens(); i++) {
+			final String token = tokenizer.nextToken();
+			ParameterChoice item = createChoiceItem(token);
+			list.add(item);
+
 		}
-		return new ParameterChoice(tokens[0]);
+		if (list.size() == 0) {
+			return null;
+		}
+		return (ParameterChoice[]) list.toArray(new ParameterChoice[0]);
+
 	}
 
 	public final String toString() {
@@ -44,7 +76,7 @@ public class ParameterChoice {
 	public boolean equalsCmdLineOrUIValue(String s) {
 		return uiText.equals(s) || commandLineValue.equals(s);
 	}
-	
+
 	public String getUIValue() {
 		return uiText;
 	}
