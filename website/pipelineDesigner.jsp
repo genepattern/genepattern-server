@@ -1029,10 +1029,15 @@ function savePipeline(bMustName, cmd) {
 // XXXXX
  			var inheritTask = document.forms['pipeline']['t' + i + '_i_' + j];
 		  	var inheritFile = document.forms['pipeline']['t' + i + '_if_' + j];
+			var promptWhenRun = document.forms['pipeline']['t' +i + "_prompt_" + j];
+
 	
-//alert("FCV=" +pi.name +"  "+ inheritTask.value+ "==" + inheritFile.value);
-			if ((inheritTask.value != null) && (inheritFile.value == '')){
-				missingInheritedFileValue = "task " + i + " inherited value for " + pi.name + " is not fully specified";
+			if (!promptWhenRun.checked){
+				if ((inheritTask == null) || (inheritFile == null)) {
+					missingInheritedFileValue = "task " + i + " inherited value for " + pi.name + " is not fully specified";
+				}else if ((inheritTask.value != null) && (inheritFile.value == '')){
+					missingInheritedFileValue = "task " + i + " inherited value for " + pi.name + " is not fully specified";
+				}
 			}
 		   }
 	   	}
