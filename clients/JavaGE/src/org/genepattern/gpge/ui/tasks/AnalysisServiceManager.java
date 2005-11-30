@@ -99,7 +99,7 @@ public class AnalysisServiceManager {
 							}
 							if (l.getVersion() != null
 									&& !l.getVersion().equals("")) {
-								versions.add(l);
+								versions.add(l.getVersion());
 							}
 						} catch (MalformedURLException e) {
 							e.printStackTrace();
