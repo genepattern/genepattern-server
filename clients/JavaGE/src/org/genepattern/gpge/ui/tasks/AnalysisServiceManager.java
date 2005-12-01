@@ -89,7 +89,7 @@ public class AnalysisServiceManager {
 					for (int j = 0; j < lsids.length; j++) {
 
 						try {
-							LSID l = new LSID(lsids[i]);
+							LSID l = new LSID(lsids[j]);
 							List versions = (List) filteredLsid2VersionsMap
 									.get(l.toStringNoVersion());
 							if (versions == null) {
