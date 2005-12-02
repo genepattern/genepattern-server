@@ -5,12 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
+import org.genepattern.data.expr.ExpressionData;
+import org.genepattern.data.matrix.DoubleMatrix2D;
+import org.genepattern.io.ParseException;
 import org.genepattern.io.expr.IExpressionDataHandler;
 import org.genepattern.io.expr.IExpressionDataParser;
 
@@ -42,7 +43,7 @@ public class CdtParser implements IExpressionDataParser {
 	protected List rowDescriptions = new ArrayList();
 
 	protected List values = new ArrayList();
-	
+
 	protected List geneIds = new ArrayList();
 
 	protected IExpressionDataHandler handler;
@@ -52,7 +53,11 @@ public class CdtParser implements IExpressionDataParser {
 	public List getGeneIds() {
 		return geneIds;
 	}
-	
+
+	public String[] getArrayIds() {
+		return arrayIds;
+	}
+
 	boolean hasColumnName() {
 		return name_col;
 	}
@@ -89,30 +94,50 @@ public class CdtParser implements IExpressionDataParser {
 		return false; // FIXME
 	}
 
-	public void parse(InputStream is) throws IOException,
-			org.genepattern.io.ParseException {
+	public void parse(InputStream is) throws IOException, ParseException {
 		LineNumberReader reader = new LineNumberReader(new BufferedReader(
 				new InputStreamReader(is)));
 		_parse(reader);
-		
-		handler.init(rows, columns, true, arrayIds != null, false);
 
+		if (handler != null) {
+			handler.init(rows, columns, true, arrayIds != null, false);
+
+			for (int i = 0; i < rows; i++) {
+				double[] d = (double[]) values.get(i);
+				handler.rowName(i, (String) rowNames.get(i));
+				handler.rowDescription(i, (String) rowDescriptions.get(i));
+
+				for (int j = 0; j < columns; j++) {
+					handler.data(i, j, d[j]);
+				}
+
+			}
+			for (int j = 0; j < columns; j++) {
+				handler.columnName(j, columnNames[j]);
+				if (arrayIds != null) {
+					handler.columnDescription(j, arrayIds[j]);
+				}
+			}
+		}
+	}
+
+	public ExpressionData getExpressionData() {
+		double[][] data = new double[rows][];
 		for (int i = 0; i < rows; i++) {
 			double[] d = (double[]) values.get(i);
-			handler.rowName(i, (String) rowNames.get(i));
-			handler.rowDescription(i, (String) rowDescriptions.get(i));
-
-			for (int j = 0; j < columns; j++) {
-				handler.data(i, j, d[j]);
-			}
-
+			data[i] = d;
 		}
-		for (int j = 0; j < columns; j++) {
-			handler.columnName(j, columnNames[j]);
-			if (arrayIds != null) {
-				handler.columnDescription(j, arrayIds[j]);
-			}
+
+		DoubleMatrix2D matrix = new DoubleMatrix2D(data, (String[]) rowNames
+				.toArray(new String[0]), columnNames);
+
+		String[] rowDescriptionsArray = null;
+		if (rowDescriptions != null
+				&& rowDescriptions.size() == rowNames.size()) {
+			rowDescriptionsArray = (String[]) rowDescriptions
+					.toArray(new String[0]);
 		}
+		return new ExpressionData(matrix, rowDescriptionsArray, null);
 
 	}
 
@@ -231,7 +256,7 @@ public class CdtParser implements IExpressionDataParser {
 		// then count number of gene lines = maxGenes
 		while ((line = infile.readLine()) != null) {
 			line = line.trim();
-			
+
 			if (line.startsWith("AID")) {
 				aid = true;
 				setArrayIds(line);
@@ -335,7 +360,7 @@ public class CdtParser implements IExpressionDataParser {
 			}
 			// first token is gid
 			rowNames.add(tokens.nextToken());
-			
+
 			// get rid of delimiter
 			token = tokens.nextToken();
 
@@ -398,4 +423,5 @@ public class CdtParser implements IExpressionDataParser {
 		}
 		this.values.add(values);
 	}
+
 }
