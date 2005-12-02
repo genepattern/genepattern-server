@@ -57,13 +57,19 @@ function toggleVersions(lsidNoVer) {
 	formobj = document.getElementById(lsidNoVer);
 	var visible = formobj.checked;
 
-	formobjs = document.getElementsByName(lsidNoVer);
-	for (i=0; i < formobjs.length; i++){
-		if(!visible) {
-			formobjs[i].style.display = "none";
-		} else {
-			formobjs[i].style.display = "block";
-		}
+	var thedivs = document.getElementsByTagName("div");
+
+	 for (var i=0; i < thedivs.length; i++ )  {
+	
+ 			if  ( !visible )  {
+				if (thedivs[i].name == lsidNoVer)	thedivs[i].style.display = "none";
+
+			} else {
+
+				if (thedivs[i].name == lsidNoVer) thedivs[i].style.display = "block";
+
+			}
+	
 	}
 }
 
@@ -95,7 +101,6 @@ boolean catalogAvaliable = false;
 		SuiteInfo[] allOfThem = adminClient.getAllSuites();
 		for (int i=0; i < loaded.length; i++){
 			SuiteInfo si = loaded[i];
-			System.out.println("SI--"+si.getOwner() + "  " + si.getLSID());
 			if (si.getAccessId() == GPConstants.ACCESS_PRIVATE){
 				if (!userID.equals(si.getOwner())) continue;
 			} 
@@ -228,12 +233,12 @@ for (Iterator iter2 = docs .iterator(); iter2.hasNext(); ){
 		String doc = (String)iter2.next();
 		int idx = doc.lastIndexOf("/");
 %>
-		<a href='<%=doc%>'><img src="skin/pdf.jpg" border="0" alt="doc" align="top"></a>
+		<a href='<%=doc%>'><img src="skin/pdf.jpg" border="0" alt="doc" align="top"/></a>
 
 <% }%>
 </td> <td>
 <table width=100%><tr>
-<td>Author: <%=suite.get("author")%></td><td> Owner: <%=suite.get("owner")%><td>
+<td>Author: <%=suite.get("author")%></td><td> Owner: <%=suite.get("owner")%></td>
 </tr></table>
 </td></tr>
 <tr class='paleBackground'><td  colspan=2><%=suite.get("description")%></td></tr>
@@ -242,14 +247,14 @@ for (Iterator iter2 = docs .iterator(); iter2.hasNext(); ){
 <td valign='top' align='right'>
 
 <form name="installSuite<%=suite.get("name")%>" action="installSuite.jsp" >
-	<input type="hidden" name="suiteLsid" value="<%=suite.get("lsid")%>" >
+	<input type="hidden" name="suiteLsid" value="<%=suite.get("lsid")%>" />
 	<input type="submit" name="InstallSuite" value="Install Suite" />&nbsp;
 </form>
 
 </td><td valign='top' align='left'>
 
 <form name="install<%=suite.get("name")%>" action="taskCatalog.jsp" >
-	<input type="hidden" name="checkAll" value="1" >
+	<input type="hidden" name="checkAll" value="1" />
 <%
 	if (!allInstalled){
 %>
@@ -286,7 +291,7 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 	<%=mod.get("name")%> (<%=modLsid.getVersion()%>) 
 <%if (docName != null) { %>
 
-<a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
+<a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"/></a> 
 <%}
 	String viewUrl = "addTask.jsp";
 	if (installed){
@@ -294,7 +299,7 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 		if (isPipe) viewUrl = "viewPipeline.jsp";
 	}
 %>
-<a href="<%=viewUrl%>?view=1&name=<%=modLsid.toString()%>"><img src="skin/view.gif" alt="view" border="0" align="texttop"></a> 
+<a href="<%=viewUrl%>?view=1&name=<%=modLsid.toString()%>"><img src="skin/view.gif" alt="view" border="0" align="texttop"/></a> 
 </td>
 
 <% 	} else { %>
@@ -303,7 +308,7 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 <input type="checkbox" name="LSID" value="<%=modLsid.toString()%>"/>
 	<%=mod.get("name")%> (<%=modLsid.getVersion()%>) 
 <%if (docName != null) { %>
-	<a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
+	<a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"/></a> 
 <%}%>
 </td>
 
@@ -378,7 +383,7 @@ for (Iterator iter2 = modules.iterator(); iter2.hasNext(); ){
 <%
 	
 if (latestVer && (vers.size()>1)){
- 		%>Show older versions<input type='checkbox' id='<%=lsid.toStringNoVersion()%>' onClick="toggleVersions('<%=lsid.toStringNoVersion()%>');"/><%
+ 		%>Show older versions<input type='checkbox' id='<%=lsid.toStringNoVersion()%>' onClick="toggleVersions('<%=lsid.toStringNoVersion()%>');" /><%
 		//		
 	}
 
@@ -387,13 +392,13 @@ String[] docs = suite.getDocumentationFiles();
 for (int k=0; k < docs.length; k++ ){
 		String doc = docs[k];
 %>
-		<a href='getSuiteDoc.jsp?name=<%=suite.getLSID()%>&file=<%=doc%>'><img src="skin/pdf.jpg" border="0" alt="doc" align="top"></a>
+		<a href='getSuiteDoc.jsp?name=<%=suite.getLSID()%>&file=<%=doc%>'><img src="skin/pdf.jpg" border="0" alt="doc" align="top"/></a>
 
 <% }%>
 
 </td><td>
 <table width=100%><tr>
-<td>Author: <%=suite.getAuthor()%></td><td> Owner: <%=suite.getOwner()%><td>
+<td>Author: <%=suite.getAuthor()%></td><td> Owner: <%=suite.getOwner()%></td>
 </tr></table>
 </td>
 </tr>
@@ -409,32 +414,33 @@ for (int k=0; k < docs.length; k++ ){
 <td>
 <form name="deleteSuite<%=suite.getName()%>" action="deleteSuite.jsp" >
 	<input type="submit" name="InstallSuite" value="Delete this verison" />
-	<input type="hidden" name="suiteLsid" value="<%=suite.getLSID()%>" >
+	<input type="hidden" name="suiteLsid" value="<%=suite.getLSID()%>" />
 &nbsp;
 </form>
 </td>
 
 <td >
 <form name="editSuite<%=suite.getName()%>" action="editSuite.jsp" >
-	<input type="hidden" name="suiteLsid" value="<%=suite.getLSID()%>" >
+	<input type="hidden" name="suiteLsid" value="<%=suite.getLSID()%>" />
 	<input type="submit" name="EditSuite" value="Edit Suite" />
 &nbsp;
 </form>
 </td>
 <td  >
 <form name="zipSuite<%=suite.getName()%>" action="makeSuiteZip.jsp" >
-	<input type="hidden" name="name" value="<%=suite.getLSID()%>" >
+	<input type="hidden" name="name" value="<%=suite.getLSID()%>" />
 	<input type="submit" name="EditSuite" value="Export Suite" />
 &nbsp;
 </form>
 </td>
 <td valign='top' align='left'>
 <form name="install<%=suite.getName()%>" action="taskCatalog.jsp" >
-	<input type="hidden" name="checkAll" value="1" >
+	<input type="hidden" name="checkAll" value="1" />
 <%	if (!allInstalled) { %>
 	<input type="submit" name="install" value="install checked modules"/>
 	<input type="checkbox" name="checkit" onClick="javascript:checkSuite('install<%=suite.getName()%>', false)"/> Check all
 <% } %>
+
 </td>
 
 </tr>
@@ -466,8 +472,8 @@ for (int i=0; i < moduleLsids.length; i++){
 <td>
 <input type="checkbox" checked="true" name="LSID" disabled="true"/>
 	<%=ti.getName()%> (<%=modLsid.getVersion()%>) 
-<a href='getTaskDoc.jsp?name=<%=modLsid.toString()%>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
-<a href="<%=viewUrl%>?view=1&name=<%=modLsid.toString()%>"><img src="skin/view.gif" alt="view" border="0" align="texttop"></a> 
+<a href='getTaskDoc.jsp?name=<%=modLsid.toString()%>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"/></a> 
+<a href="<%=viewUrl%>?view=1&name=<%=modLsid.toString()%>"><img src="skin/view.gif" alt="view" border="0" align="texttop"/></a> 
 
 </td>
 
@@ -476,7 +482,7 @@ for (int i=0; i < moduleLsids.length; i++){
 <td>
 <input type="checkbox" name="LSID" value="<%=modLsid.toString()%>"/>
 	<%=ti.getName()%> (<%=modLsid.getVersion()%>) 
-	<a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"></a> 
+	<a href='<%= docName %>'><img src="skin/pdf.jpg" border="0" alt="doc" align="texttop"/></a> 
 </td>
 
 <% 	
@@ -505,7 +511,7 @@ for (int i=0; i < moduleLsids.length; i++){
 %>
 
 
-<% // <jsp:include page="footer.jsp"></jsp:include> %>
+
 </body>
 </html>
 <%! public boolean newerServerAvailable(String versionAtBroad, String localVersion) {

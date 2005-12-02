@@ -58,7 +58,8 @@ function confirmDelete() {
 		if (item.type != "checkbox") continue;
 		if (item.value.indexOf('<%= LSID.URN %><%= LSID.DELIMITER %><%= LSID.SCHEME %>') != 0) continue;
 		var readonly = item.getAttribute('readonly');
-		if (readonly != null) continue;
+
+		if (readonly == true)  continue;
 		if (item.checked) {
 			if (selection.length > 0) selection = selection + ', ';
 			selection = selection + item.getAttribute('displayName');
