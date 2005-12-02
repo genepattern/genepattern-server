@@ -110,14 +110,14 @@ public class ProvenanceFinder {
 	 * Given a file URL find the Job that created it or return null.  Must be a job output file
 	 */
 	public JobInfo findJobThatCreatedFile(String fileURL){		
-
 		String jobNoStr = getJobNoFromURL(fileURL);
 		if (jobNoStr == null){
 			try {
 				// maybe just a job # passed in
 				Integer.parseInt(fileURL);
 				jobNoStr = fileURL;
-			} catch (NumberFormatException nfe){}
+			} catch (NumberFormatException nfe){
+			}
 
 		}
 		int jobid = -1;
@@ -267,15 +267,39 @@ public class ProvenanceFinder {
 		if (params != null){
 			for (int i=0; i < params.length; i++){
 				String pvalue = params[i].getValue();
-				
-				if (pvalue.toUpperCase().startsWith(serverURL)) inputFiles.add(pvalue);
-	
+				HashMap attributes = params[i].getAttributes();
+
+				String val = getURLFromParam(params[i]);
+
+
+				if (val != null) inputFiles.add(val);
 			}
 		}
  		return inputFiles;
 	}
 
-	
+
+	public String getURLFromParam(ParameterInfo pinfo){
+		HashMap attributes = pinfo.getAttributes();
+		String pvalue = pinfo.getValue();
+		if (pvalue.toUpperCase().startsWith(serverURL)){
+			return pvalue;
+		} else if ("FILE".equals(attributes.get("TYPE"))){
+
+			if ("CACHED_IN".equals(attributes.get("MODE")) ){
+				int idx = pvalue.indexOf("/");
+				String jobstr = pvalue.substring(0, idx);
+				String filename = pvalue.substring(idx+1);
+
+				return serverURL + "/gp/retrieveResults.jsp?job=" + jobstr + "&filename=" + filename;
+			} else {
+		return pvalue;	
+
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * realing input files from the old job params to the new pipeline. Look for input files matching the request pattern
 	 * like we did to find these jobs and replace with gpUseResult() calls. Create a new ParameterInfo array to return.
@@ -292,8 +316,11 @@ public class ProvenanceFinder {
 			}
 			HashMap attrs = oldJobParam.getAttributes();
 			
-			String value=null;
-			String jobNoStr = getJobNoFromURL( oldJobParam.getValue());
+			String value= getURLFromParam(oldJobParam);
+		
+			String jobNoStr = getJobNoFromURL( value );
+
+
 			if (jobNoStr == null){ 	
 				// for files that are on the server, replace with generic URL with LSID to be substituted at runtime			
 				// for anything else leave it unmodified
@@ -314,7 +341,7 @@ public class ProvenanceFinder {
 				System.out.println("InheritTask: " + pipeNo);
 
 				JobInfo priorJob = service.getJob(jobNo.intValue());
-				String name = getParamFromURL(oldJobParam.getValue() ,"filename");
+				String name = getParamFromURL(value ,"filename");
 				//
 				// XXX use file index for now,  Change to file type when I understand how
 				// to get the right information
