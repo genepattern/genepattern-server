@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -15,7 +14,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -43,48 +42,39 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
-import org.genepattern.server.util.IAuthorizationManager;
-		
+
 import javax.servlet.ServletContext;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.jsp.JspWriter;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
-
-
-
+import org.apache.tools.ant.taskdefs.Execute;
+import org.apache.tools.ant.taskdefs.Expand;
 import org.genepattern.server.AnalysisServiceException;
-import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.server.indexer.Indexer;
 import org.genepattern.server.indexer.IndexerDaemon;
+import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
 import org.genepattern.server.util.BeanReference;
-import org.genepattern.server.webservice.server.ITaskIntegrator;
+import org.genepattern.server.util.IAuthorizationManager;
+import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.webservice.server.ITaskIntegrator;
 import org.genepattern.util.IGPConstants;
 import org.genepattern.util.LSID;
-import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
-import org.genepattern.server.util.AccessManager;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 /**
  * Enables definition, execution, and sharing of AnalysisTasks using extensive
  * metadata descriptions and obviating programming effort by the task creator or
@@ -3316,13 +3306,31 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 
 					}
 					//
-					// unzip using ants classes to allow file permissions to be retained
- 					//
-System.out.println("EXPANDING THE ZIP FILE: " + zipFilename);
-					Expander expander = new Expander();
-    					expander.setSrc(new File(zipFilename));
-    					expander.setDest(new File(taskDir));
-    					expander.execute();
+					// unzip using ants classes to allow file permissions to be
+					// retained
+					boolean useAntUnzip = true;
+					if (!System.getProperty("os.name").toLowerCase()
+							.startsWith("windows")) {
+
+						Execute execute = new Execute();
+						execute.setCommandline(new String[] { "unzip",
+								zipFilename, "-d", taskDir });
+						try {
+							int result = execute.execute();
+							if (result != 0) {
+								useAntUnzip = true;
+							}
+						} catch (IOException ioe) {
+							_cat.error(ioe);
+							useAntUnzip = true;
+						}
+					}
+					if (useAntUnzip) {
+						Expander expander = new Expander();
+						expander.setSrc(new File(zipFilename));
+						expander.setDest(new File(taskDir));
+						expander.execute();
+					}
 
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
