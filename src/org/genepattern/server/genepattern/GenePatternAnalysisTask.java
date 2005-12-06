@@ -14,7 +14,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -3311,7 +3310,7 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 					boolean useAntUnzip = true;
 					if (!System.getProperty("os.name").toLowerCase()
 							.startsWith("windows")) {
-
+						useAntUnzip = false;
 						Execute execute = new Execute();
 						execute.setCommandline(new String[] { "unzip",
 								zipFilename, "-d", taskDir });
