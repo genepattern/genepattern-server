@@ -93,7 +93,7 @@ public class AdminHSQLDAO implements AdminDAO {
 
 		ArrayList mods = getSuiteModules(lsid);
 
-		SuiteInfo suite = new SuiteInfo(lsid, name, description, owner, author,
+		SuiteInfo suite = new SuiteInfo(lsid, name, description, author, owner,
 				mods, access_id, docs);
 
 		return suite;
