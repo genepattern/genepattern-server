@@ -318,7 +318,7 @@ public class SuiteEditor extends JPanel {
 						GenePattern.showErrorDialog("Please supply an author.");
 						return;
 					}
-					suiteInfo.setOwner(headerPanel.authorField.getText());
+					suiteInfo.setOwner(headerPanel.ownerField.getText());
 					if (suiteInfo.getOwner().trim().equals("")) {
 						GenePattern.showErrorDialog("Please supply an owner.");
 						return;
