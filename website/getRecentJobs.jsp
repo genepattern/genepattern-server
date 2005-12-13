@@ -109,12 +109,15 @@ for(int i = 0; i < jobs.length; i++) {
    jobsDisplayed++;
    ParameterInfo[] params = job.getParameterInfoArray();
    
-   out.print("<td valign='center'><span name='"+job.getJobNumber()+"'onClick='showJob("+job.getJobNumber()+")'><nobr>" + job.getTaskName());
+//window.open('showJob.jsp?jobId=' + job.getJobNumber(), 'Job ' + job,'toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=240')
+
+
+   out.print("<td valign='center'><a href='showJob.jsp?jobId="+job.getJobNumber()+"&target=new' border='0' onClick='window.open(this.href, \"Job\" + "+job.getJobNumber()+",\"toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=240\");return false' ><nobr>" + job.getTaskName());
 
    out.print("&nbsp;");
    
-    out.print("<img src='skin/info_obj.gif'>");
-    out.print( "  </nobr></span>");
+    out.print("<img src='skin/info_obj.gif' border='0'>");
+    out.print( "  </nobr></a>");
 
 
    Date completed = job.getDateCompleted();
