@@ -1,3 +1,16 @@
+/*
+  The Broad Institute
+  SOFTWARE COPYRIGHT NOTICE AGREEMENT
+  This software and its documentation are copyright (2003-2006) by the
+  Broad Institute/Massachusetts Institute of Technology. All rights are
+  reserved.
+
+  This software is supplied without any warranty or guaranteed support
+  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+  use, misuse, or functionality.
+*/
+
+
 /*---------------------------------------------------------------------------
  * Copyright (C) 1999,2000 Dallas Semiconductor Corporation, All Rights Reserved.
  *
