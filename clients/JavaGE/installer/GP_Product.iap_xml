@@ -439,7 +439,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[664]]></string>
 							</property>
 							<property name="sourceName">
-								<string><![CDATA[log4j-1.2.4.jar]]></string>
+								<string><![CDATA[log4j-1.2.8.jar]]></string>
 							</property>
 							<property name="overrideUnixPermissions">
 								<boolean>false</boolean>
@@ -451,7 +451,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>true</boolean>
 							</property>
 							<property name="destinationName">
-								<string><![CDATA[log4j-1.2.4.jar]]></string>
+								<string><![CDATA[log4j-1.2.8.jar]]></string>
 							</property>
 							<property name="fileSize">
 								<long>378778</long>
