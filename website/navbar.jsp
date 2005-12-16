@@ -39,6 +39,8 @@
 		org.genepattern.util.LSID,
 		org.genepattern.server.indexer.Indexer" %>
 <% { %>
+<jsp:useBean id="messages" class="org.genepattern.server.util.MessageUtils" scope="page"/>
+
 <% 
 String DIVIDER = "------";
 
@@ -89,6 +91,7 @@ try {
 
 	if (allTasks){
 		tmTasks = adminClient.getLatestTasks();
+System.out.println("AC TT=" + tmTasks.size());
 	} else {
 		tmTasks = new ArrayList();
 		for (int i=0; i < suites.length; i++){
@@ -135,6 +138,7 @@ try {
 	   }
 
 } catch (Exception e) {
+	e.printStackTrace();
 	tmTasks = new HashSet();
 }
 String EMAIL_ADDRESS = "email address";
@@ -386,7 +390,7 @@ function checkEnableNavbar() {
 	<form action="login.jsp" name="login">
 	<table width="100%">
 	<tr>
-		<td valign="top">	<a href="index.jsp" class='logo'><img src='skin/logoSmall.gif' border="0" height=25 width=25 />&nbsp;<B>Gene</B>Pattern</a> &nbsp;
+		<td valign="top">	<a href="index.jsp" class='logo'><img src='skin/logoSmall.gif' border="0" height=25 width=25 />&nbsp;<%=messages.getProperty("ApplicationName", "GenePattern")%></a> &nbsp;
 		</td>
 		<td align="right"  valign="top">
 			<nobr>
@@ -458,6 +462,8 @@ function checkEnableNavbar() {
 	String DIVIDER = "";
 	int maxNameWidth = 0; 
 	int halfLength = Integer.parseInt(System.getProperty("gp.name.halflength", "17"));
+
+System.out.println("TaskCatalog: " + tmTasks.size());
 		
 	for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 		TaskInfo task = (TaskInfo)itTasks.next();
