@@ -91,7 +91,6 @@ try {
 
 	if (allTasks){
 		tmTasks = adminClient.getLatestTasks();
-System.out.println("AC TT=" + tmTasks.size());
 	} else {
 		tmTasks = new ArrayList();
 		for (int i=0; i < suites.length; i++){
@@ -463,7 +462,6 @@ function checkEnableNavbar() {
 	int maxNameWidth = 0; 
 	int halfLength = Integer.parseInt(System.getProperty("gp.name.halflength", "17"));
 
-System.out.println("TaskCatalog: " + tmTasks.size());
 		
 	for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 		TaskInfo task = (TaskInfo)itTasks.next();
