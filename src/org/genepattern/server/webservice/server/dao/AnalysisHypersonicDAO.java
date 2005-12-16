@@ -554,7 +554,7 @@ public class AnalysisHypersonicDAO implements
               sql += " AND job_no <= " + maxJobNumber;  
          }
          if(!allJobs) {
-            sql += " AND deleted IS FALSE";
+            sql += " AND deleted = FALSE";
          }
          sql += " ORDER BY job_no DESC";
         
