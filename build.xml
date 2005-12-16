@@ -10,7 +10,7 @@
    <property location="src" name="src"/>
    <property location="build" name="build"/>
    <property location="." name="dist"/>
-   <property name="classpath" value="${lib}/archiver.jar:${lib}/crimson.jar:${lib}/dom.jar:${lib}/ejb.jar:${lib}/genepattern.properties:${lib}/jaxb-rt-1.0-ea.jar:${lib}/jaxp-api.jar:${lib}/log4j-1.2.4.jar:${lib}/omnigene.jar:${lib}/oromatcher.jar:${lib}/runtask.jar:${lib}/sax.jar:${lib}/trove.jar:${lib}/xalan.jar:${lib}/xercesImpl.jar:${lib}/xsltc.jar:${lib}/image.jar:${lib}/colt.jar"/>
+   <property name="classpath" value="${lib}/archiver.jar:${lib}/crimson.jar:${lib}/dom.jar:${lib}/ejb.jar:${lib}/genepattern.properties:${lib}/jaxb-rt-1.0-ea.jar:${lib}/jaxp-api.jar:${lib}/log4j-1.2.8.jar:${lib}/omnigene.jar:${lib}/oromatcher.jar:${lib}/runtask.jar:${lib}/sax.jar:${lib}/trove.jar:${lib}/xalan.jar:${lib}/xercesImpl.jar:${lib}/xsltc.jar:${lib}/image.jar:${lib}/colt.jar"/>
 
    <property name="common-manifest" value="gp-common.mf"/>
    <property name="uisupport-manifest" value="ui_support.mf"/>
@@ -158,7 +158,7 @@
       <include name="org/genepattern/client/**/*.class"/>
       <include name="org/genepattern/webservice/*.class"/>
 		<manifest>
-				<attribute name="Class-Path" value="./lib/gpwebservice.jar ./lib/broad-cg.jar ./lib/activation.jar ./lib/mail.jar ./lib/axis.jar ./lib/log4j-1.2.4.jar ./lib/jaxrpc.jar ./lib/commons-discovery.jar ./lib/commons-logging.jar ./lib/saaj.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar" />
+				<attribute name="Class-Path" value="./lib/gpwebservice.jar ./lib/broad-cg.jar ./lib/activation.jar ./lib/mail.jar ./lib/axis.jar ./lib/log4j-1.2.8.jar ./lib/jaxrpc.jar ./lib/commons-discovery.jar ./lib/commons-logging.jar ./lib/saaj.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar" />
 			</manifest> 
 		</jar>
 		
@@ -177,7 +177,7 @@
 				<include name="mail.jar"/>
 				<include name="jdom.jar"/>
 				<include name="axis.jar"/> 
-				<include name="log4j-1.2.4.jar"/> 
+				<include name="log4j-1.2.8.jar"/> 
 				<include name="jaxrpc.jar"/> 
 				<include name="commons-discovery.jar"/>  
 				<include name="commons-logging.jar"/> 
@@ -401,7 +401,7 @@
 	       <include name="jdom.jar"/>
 	       <include name="jaxrpc.jar"/>
 	       <include name="jspsmart.jar"/>
-	       <include name="log4j-1.2.4.jar"/>
+	       <include name="log4j-1.2.8.jar"/>
 	       <include name="lucene-*-final.jar"/>
 	       <include name="lucene-demos-*-final.jar"/>
 	       <include name="mail.jar"/>
