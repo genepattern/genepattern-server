@@ -1,0 +1,120 @@
+Dec 21, 2005 7:56:21 AM org.apache.catalina.core.AprLifecycleListener lifecycleEvent
+INFO: The Apache Portable Runtime which allows optimal performance in production environments was not found on the java.library.path: C:\j2sdk1.4.2_08\bin;.;C:\WINXP\System32;C:\WINXP;C:\WINXP\SYSTEM32;C:\WINXP;C:\WINXP\SYSTEM32\WBEM;C:\PROGRAM FILES\COMMON FILES\ADAPTEC SHARED\SYSTEM;C:\DMI\WIN32\BIN;C:\Program Files\Hummingbird\Connectivity\9.00\NFSClient;C:\MATLAB7\bin\win32;C:\Program Files\SecureCRT\;C:\oracle\ora901\bin;C:\Program Files\Oracle\jre\1.1.8\bin;C:\Program Files\MathWorks\MATLAB Component Runtime\v70\runtime\win32;C:\Program Files\MathWorks\MATLAB Component Runtime\v71\runtime\win32;c:\tools\groovy-1.0-jsr-04\bin;c:\tools\cvs;c:\j2sdk1.4.2_03\bin;c:\local\ant1.6.2\bin;c:\local\cvs;C:\WINXP\SYSTEM32;C:\WINXP;C:\WINXP\SYSTEM32\WBEM;C:\PROGRAM FILES\COMMON FILES\ADAPTEC SHARED\SYSTEM;C:\DMI\WIN32\BIN;C:\Program Files\Hummingbird\Connectivity\9.00\NFSClient;C:\MATLAB7\bin\win32;C:\Program Files\SecureCRT\;C:\oracle\ora901\bin;C:\Program Files\Oracle\jre\1.1.8\bin;C:\Program Files\MathWorks\MATLAB Component Runtime\v70\runtime\win32;C:\Program Files\MathWorks\MATLAB Component Runtime\v71\runtime\win32;c:\progra~1\instal~2\;
+Dec 21, 2005 7:56:21 AM org.apache.coyote.http11.Http11BaseProtocol init
+INFO: Initializing Coyote HTTP/1.1 on http-8080
+Dec 21, 2005 7:56:21 AM org.apache.catalina.startup.Catalina load
+INFO: Initialization processed in 1192 ms
+Dec 21, 2005 7:56:21 AM org.apache.catalina.core.StandardService start
+INFO: Starting service Catalina
+Dec 21, 2005 7:56:21 AM org.apache.catalina.core.StandardEngine start
+INFO: Starting Servlet Engine: Apache Tomcat/5.5.12
+Dec 21, 2005 7:56:21 AM org.apache.catalina.core.StandardHost start
+INFO: XML validation disabled
+Dec 21, 2005 7:56:25 AM org.apache.coyote.http11.Http11BaseProtocol start
+INFO: Starting Coyote HTTP/1.1 on http-8080
+Dec 21, 2005 7:56:25 AM org.apache.jk.common.ChannelSocket init
+INFO: JK: ajp13 listening on /0.0.0.0:8009
+Dec 21, 2005 7:56:25 AM org.apache.jk.server.JkMain start
+INFO: Jk running ID=0 time=0/30  config=null
+Dec 21, 2005 7:56:25 AM org.apache.catalina.storeconfig.StoreLoader load
+INFO: Find registry server-registry.xml at classpath resource
+Dec 21, 2005 7:56:25 AM org.apache.catalina.startup.Catalina start
+INFO: Server startup in 4106 ms
+Dec 21, 2005 7:56:45 AM org.apache.coyote.http11.Http11BaseProtocol pause
+INFO: Pausing Coyote HTTP/1.1 on http-8080
+Dec 21, 2005 8:23:44 AM org.apache.catalina.core.AprLifecycleListener lifecycleEvent
+INFO: The Apache Portable Runtime which allows optimal performance in production environments was not found on the java.library.path: C:\j2sdk1.4.2_08\bin;.;C:\WINXP\System32;C:\WINXP;C:\WINXP\SYSTEM32;C:\WINXP;C:\WINXP\SYSTEM32\WBEM;C:\PROGRAM FILES\COMMON FILES\ADAPTEC SHARED\SYSTEM;C:\DMI\WIN32\BIN;C:\Program Files\Hummingbird\Connectivity\9.00\NFSClient;C:\MATLAB7\bin\win32;C:\Program Files\SecureCRT\;C:\oracle\ora901\bin;C:\Program Files\Oracle\jre\1.1.8\bin;C:\Program Files\MathWorks\MATLAB Component Runtime\v70\runtime\win32;C:\Program Files\MathWorks\MATLAB Component Runtime\v71\runtime\win32;c:\tools\groovy-1.0-jsr-04\bin;c:\tools\cvs;c:\j2sdk1.4.2_03\bin;c:\local\ant1.6.2\bin;c:\local\cvs;C:\WINXP\SYSTEM32;C:\WINXP;C:\WINXP\SYSTEM32\WBEM;C:\PROGRAM FILES\COMMON FILES\ADAPTEC SHARED\SYSTEM;C:\DMI\WIN32\BIN;C:\Program Files\Hummingbird\Connectivity\9.00\NFSClient;C:\MATLAB7\bin\win32;C:\Program Files\SecureCRT\;C:\oracle\ora901\bin;C:\Program Files\Oracle\jre\1.1.8\bin;C:\Program Files\MathWorks\MATLAB Component Runtime\v70\runtime\win32;C:\Program Files\MathWorks\MATLAB Component Runtime\v71\runtime\win32;c:\progra~1\instal~2\;
+Dec 21, 2005 8:23:44 AM org.apache.coyote.http11.Http11BaseProtocol init
+INFO: Initializing Coyote HTTP/1.1 on http-8080
+Dec 21, 2005 8:23:44 AM org.apache.catalina.startup.Catalina load
+INFO: Initialization processed in 1192 ms
+Dec 21, 2005 8:23:45 AM org.apache.catalina.core.StandardService start
+INFO: Starting service Catalina
+Dec 21, 2005 8:23:45 AM org.apache.catalina.core.StandardEngine start
+INFO: Starting Servlet Engine: Apache Tomcat/5.5.12
+Dec 21, 2005 8:23:45 AM org.apache.catalina.core.StandardHost start
+INFO: XML validation disabled
+Dec 21, 2005 8:23:47 AM org.apache.coyote.http11.Http11BaseProtocol start
+INFO: Starting Coyote HTTP/1.1 on http-8080
+Dec 21, 2005 8:23:47 AM org.apache.jk.common.ChannelSocket init
+INFO: JK: ajp13 listening on /0.0.0.0:8009
+Dec 21, 2005 8:23:47 AM org.apache.jk.server.JkMain start
+INFO: Jk running ID=0 time=0/50  config=null
+Dec 21, 2005 8:23:47 AM org.apache.catalina.storeconfig.StoreLoader load
+INFO: Find registry server-registry.xml at classpath resource
+Dec 21, 2005 8:23:47 AM org.apache.catalina.startup.Catalina start
+INFO: Server startup in 2884 ms
+Dec 21, 2005 8:23:57 AM org.apache.coyote.http11.Http11BaseProtocol pause
+INFO: Pausing Coyote HTTP/1.1 on http-8080
+Dec 21, 2005 11:23:07 AM org.apache.catalina.core.AprLifecycleListener lifecycleEvent
+INFO: The Apache Portable Runtime which allows optimal performance in production environments was not found on the java.library.path: C:\j2sdk1.4.2_08\bin;.;C:\WINXP\System32;C:\WINXP;C:\WINXP\SYSTEM32;C:\WINXP;C:\WINXP\SYSTEM32\WBEM;C:\PROGRAM FILES\COMMON FILES\ADAPTEC SHARED\SYSTEM;C:\DMI\WIN32\BIN;C:\Program Files\Hummingbird\Connectivity\9.00\NFSClient;C:\MATLAB7\bin\win32;C:\Program Files\SecureCRT\;C:\oracle\ora901\bin;C:\Program Files\Oracle\jre\1.1.8\bin;C:\Program Files\MathWorks\MATLAB Component Runtime\v70\runtime\win32;C:\Program Files\MathWorks\MATLAB Component Runtime\v71\runtime\win32;c:\tools\groovy-1.0-jsr-04\bin;c:\tools\cvs;c:\j2sdk1.4.2_03\bin;c:\local\ant1.6.2\bin;c:\local\cvs;C:\WINXP\SYSTEM32;C:\WINXP;C:\WINXP\SYSTEM32\WBEM;C:\PROGRAM FILES\COMMON FILES\ADAPTEC SHARED\SYSTEM;C:\DMI\WIN32\BIN;C:\Program Files\Hummingbird\Connectivity\9.00\NFSClient;C:\MATLAB7\bin\win32;C:\Program Files\SecureCRT\;C:\oracle\ora901\bin;C:\Program Files\Oracle\jre\1.1.8\bin;C:\Program Files\MathWorks\MATLAB Component Runtime\v70\runtime\win32;C:\Program Files\MathWorks\MATLAB Component Runtime\v71\runtime\win32;c:\progra~1\instal~2\;
+Dec 21, 2005 11:23:07 AM org.apache.coyote.http11.Http11BaseProtocol init
+INFO: Initializing Coyote HTTP/1.1 on http-8080
+Dec 21, 2005 11:23:07 AM org.apache.catalina.startup.Catalina load
+INFO: Initialization processed in 1562 ms
+Dec 21, 2005 11:23:08 AM org.apache.catalina.core.StandardService start
+INFO: Starting service Catalina
+Dec 21, 2005 11:23:08 AM org.apache.catalina.core.StandardEngine start
+INFO: Starting Servlet Engine: Apache Tomcat/5.5.12
+Dec 21, 2005 11:23:08 AM org.apache.catalina.core.StandardHost start
+INFO: XML validation disabled
+Dec 21, 2005 11:23:11 AM org.apache.coyote.http11.Http11BaseProtocol start
+INFO: Starting Coyote HTTP/1.1 on http-8080
+Dec 21, 2005 11:23:11 AM org.apache.jk.common.ChannelSocket init
+INFO: JK: ajp13 listening on /0.0.0.0:8009
+Dec 21, 2005 11:23:11 AM org.apache.jk.server.JkMain start
+INFO: Jk running ID=0 time=0/60  config=null
+Dec 21, 2005 11:23:11 AM org.apache.catalina.storeconfig.StoreLoader load
+INFO: Find registry server-registry.xml at classpath resource
+Dec 21, 2005 11:23:11 AM org.apache.catalina.startup.Catalina start
+INFO: Server startup in 3956 ms
+Dec 21, 2005 12:38:51 PM org.apache.coyote.http11.Http11BaseProtocol pause
+INFO: Pausing Coyote HTTP/1.1 on http-8080
+Dec 21, 2005 12:39:07 PM org.apache.catalina.core.AprLifecycleListener lifecycleEvent
+INFO: The Apache Portable Runtime which allows optimal performance in production environments was not found on the java.library.path: C:\j2sdk1.4.2_08\bin;.;C:\WINXP\System32;C:\WINXP;C:\WINXP\SYSTEM32;C:\WINXP;C:\WINXP\SYSTEM32\WBEM;C:\PROGRAM FILES\COMMON FILES\ADAPTEC SHARED\SYSTEM;C:\DMI\WIN32\BIN;C:\Program Files\Hummingbird\Connectivity\9.00\NFSClient;C:\MATLAB7\bin\win32;C:\Program Files\SecureCRT\;C:\oracle\ora901\bin;C:\Program Files\Oracle\jre\1.1.8\bin;C:\Program Files\MathWorks\MATLAB Component Runtime\v70\runtime\win32;C:\Program Files\MathWorks\MATLAB Component Runtime\v71\runtime\win32;c:\tools\groovy-1.0-jsr-04\bin;c:\tools\cvs;c:\j2sdk1.4.2_03\bin;c:\local\ant1.6.2\bin;c:\local\cvs;C:\WINXP\SYSTEM32;C:\WINXP;C:\WINXP\SYSTEM32\WBEM;C:\PROGRAM FILES\COMMON FILES\ADAPTEC SHARED\SYSTEM;C:\DMI\WIN32\BIN;C:\Program Files\Hummingbird\Connectivity\9.00\NFSClient;C:\MATLAB7\bin\win32;C:\Program Files\SecureCRT\;C:\oracle\ora901\bin;C:\Program Files\Oracle\jre\1.1.8\bin;C:\Program Files\MathWorks\MATLAB Component Runtime\v70\runtime\win32;C:\Program Files\MathWorks\MATLAB Component Runtime\v71\runtime\win32;c:\progra~1\instal~2\;
+Dec 21, 2005 12:39:07 PM org.apache.coyote.http11.Http11BaseProtocol init
+INFO: Initializing Coyote HTTP/1.1 on http-8080
+Dec 21, 2005 12:39:07 PM org.apache.catalina.startup.Catalina load
+INFO: Initialization processed in 861 ms
+Dec 21, 2005 12:39:07 PM org.apache.catalina.core.StandardService start
+INFO: Starting service Catalina
+Dec 21, 2005 12:39:07 PM org.apache.catalina.core.StandardEngine start
+INFO: Starting Servlet Engine: Apache Tomcat/5.5.12
+Dec 21, 2005 12:39:07 PM org.apache.catalina.core.StandardHost start
+INFO: XML validation disabled
+Dec 21, 2005 12:39:09 PM org.apache.coyote.http11.Http11BaseProtocol start
+INFO: Starting Coyote HTTP/1.1 on http-8080
+Dec 21, 2005 12:39:09 PM org.apache.jk.common.ChannelSocket init
+INFO: JK: ajp13 listening on /0.0.0.0:8009
+Dec 21, 2005 12:39:09 PM org.apache.jk.server.JkMain start
+INFO: Jk running ID=0 time=0/50  config=null
+Dec 21, 2005 12:39:09 PM org.apache.catalina.storeconfig.StoreLoader load
+INFO: Find registry server-registry.xml at classpath resource
+Dec 21, 2005 12:39:09 PM org.apache.catalina.startup.Catalina start
+INFO: Server startup in 2574 ms
+Dec 21, 2005 12:39:13 PM org.apache.coyote.http11.Http11BaseProtocol pause
+INFO: Pausing Coyote HTTP/1.1 on http-8080
+Dec 21, 2005 12:40:25 PM org.apache.catalina.core.AprLifecycleListener lifecycleEvent
+INFO: The Apache Portable Runtime which allows optimal performance in production environments was not found on the java.library.path: C:\j2sdk1.4.2_08\bin;.;C:\WINXP\System32;C:\WINXP;C:\WINXP\SYSTEM32;C:\WINXP;C:\WINXP\SYSTEM32\WBEM;C:\PROGRAM FILES\COMMON FILES\ADAPTEC SHARED\SYSTEM;C:\DMI\WIN32\BIN;C:\Program Files\Hummingbird\Connectivity\9.00\NFSClient;C:\MATLAB7\bin\win32;C:\Program Files\SecureCRT\;C:\oracle\ora901\bin;C:\Program Files\Oracle\jre\1.1.8\bin;C:\Program Files\MathWorks\MATLAB Component Runtime\v70\runtime\win32;C:\Program Files\MathWorks\MATLAB Component Runtime\v71\runtime\win32;c:\tools\groovy-1.0-jsr-04\bin;c:\tools\cvs;c:\j2sdk1.4.2_03\bin;c:\local\ant1.6.2\bin;c:\local\cvs;C:\WINXP\SYSTEM32;C:\WINXP;C:\WINXP\SYSTEM32\WBEM;C:\PROGRAM FILES\COMMON FILES\ADAPTEC SHARED\SYSTEM;C:\DMI\WIN32\BIN;C:\Program Files\Hummingbird\Connectivity\9.00\NFSClient;C:\MATLAB7\bin\win32;C:\Program Files\SecureCRT\;C:\oracle\ora901\bin;C:\Program Files\Oracle\jre\1.1.8\bin;C:\Program Files\MathWorks\MATLAB Component Runtime\v70\runtime\win32;C:\Program Files\MathWorks\MATLAB Component Runtime\v71\runtime\win32;c:\progra~1\instal~2\;
+Dec 21, 2005 12:40:25 PM org.apache.coyote.http11.Http11BaseProtocol init
+INFO: Initializing Coyote HTTP/1.1 on http-8080
+Dec 21, 2005 12:40:25 PM org.apache.catalina.startup.Catalina load
+INFO: Initialization processed in 681 ms
+Dec 21, 2005 12:40:25 PM org.apache.catalina.core.StandardService start
+INFO: Starting service Catalina
+Dec 21, 2005 12:40:25 PM org.apache.catalina.core.StandardEngine start
+INFO: Starting Servlet Engine: Apache Tomcat/5.5.12
+Dec 21, 2005 12:40:25 PM org.apache.catalina.core.StandardHost start
+INFO: XML validation disabled
+Dec 21, 2005 12:40:26 PM org.apache.coyote.http11.Http11BaseProtocol start
+INFO: Starting Coyote HTTP/1.1 on http-8080
+Dec 21, 2005 12:40:26 PM org.apache.jk.common.ChannelSocket init
+INFO: JK: ajp13 listening on /0.0.0.0:8009
+Dec 21, 2005 12:40:26 PM org.apache.jk.server.JkMain start
+INFO: Jk running ID=0 time=0/40  config=null
+Dec 21, 2005 12:40:26 PM org.apache.catalina.storeconfig.StoreLoader load
+INFO: Find registry server-registry.xml at classpath resource
+Dec 21, 2005 12:40:26 PM org.apache.catalina.startup.Catalina start
+INFO: Server startup in 1262 ms
+Dec 21, 2005 12:40:42 PM org.apache.coyote.http11.Http11BaseProtocol pause
+INFO: Pausing Coyote HTTP/1.1 on http-8080
