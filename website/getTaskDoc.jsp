@@ -24,7 +24,6 @@
 		 java.util.TreeMap,
 		 java.util.ArrayList,
 		 java.net.MalformedURLException,
-		 com.jspsmart.upload.*,
  		 org.genepattern.util.StringUtils,
 		 org.genepattern.util.LSID,
 		 org.genepattern.webservice.TaskInfo,
@@ -34,7 +33,7 @@
 		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.webservice.server.DirectoryManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
-	session="false" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><% 
+	session="false" language="Java" %><% 
 
 
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -306,7 +305,21 @@ if (contentType == null) contentType = "text/plain";
 
 contentType = contentType + "; name=\"" + filename + "\";";
 response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\";");
-mySmartUpload.initialize(pageContext);
-mySmartUpload.downloadFile(in.getPath(), contentType, filename);
+response.setContentType(contentType);
+      FileInputStream ins = new java.io.FileInputStream(in);
+	byte[] buf = new byte[100000];
+	int i;
+	String s;
+	i = ins.read(buf);
+	while (i > -1) {
+		s = new String(buf, 0, i);
+		out.print(s); // copy input file to response
+		i = ins.read(buf);
+	}
+	ins.close();
+	ins = null;
+
+
+
 return;
 %>

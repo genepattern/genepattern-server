@@ -36,13 +36,13 @@
 	// create a map of params and attributes in case this call was from a dispatch
 	Properties params = new Properties();
 
-	for (Enumeration enum = request.getParameterNames(); enum.hasMoreElements(); ){
-		String key = (String) enum.nextElement();
+	for (Enumeration enumer = request.getParameterNames(); enumer.hasMoreElements(); ){
+		String key = (String) enumer.nextElement();
 		params.put(key, request.getParameter(key));
 	}
 
-	for (Enumeration enum = request.getAttributeNames(); enum.hasMoreElements(); ){
-		String key = (String) enum.nextElement();
+	for (Enumeration enumer = request.getAttributeNames(); enumer.hasMoreElements(); ){
+		String key = (String) enumer.nextElement();
 
 		System.out.println("Key=" + key + "  val=" + (request.getAttribute(key)).getClass());
 		if (!key.startsWith("javax.servlet"))

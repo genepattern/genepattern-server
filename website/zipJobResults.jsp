@@ -27,9 +27,8 @@
 		 org.genepattern.webservice.WebServiceException,
 	       org.genepattern.server.webservice.server.local.*,
 	       org.genepattern.server.util.AccessManager,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
-		 com.jspsmart.upload.*"
-	session="false" contentType="text/html" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><% 
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
+	session="false" contentType="text/html" language="Java" %><% 
 
 	/*********************************************************
 	 NOTE THAT THIS PAGE CANNOT BE MARKED NON-CACHEABLE.
@@ -103,8 +102,26 @@ ioe.printStackTrace();
             try {
                zos.finish();
                zos.close();
-               mySmartUpload.initialize(pageContext);
-               mySmartUpload.downloadFile(zipFile.getPath(), "application/x-zip-compressed", zipFile.getName());
+
+	String contentType = "application/x-zip-compressed" + "; name=\"" + zipFile.getName()+ "\";";
+	response.addHeader("Content-Disposition", "attachment; filename=\"" + zipFile.getName() + "\";");
+	response.setContentType(contentType);
+      FileInputStream ins = new java.io.FileInputStream(zipFile);
+	byte[] buf = new byte[100000];
+	int i;
+	String s;
+	i = ins.read(buf);
+	while (i > -1) {
+		s = new String(buf, 0, i);
+		out.print(s); // copy input file to response
+		i = ins.read(buf);
+	}
+	ins.close();
+	ins = null;
+
+
+
+
                zipFile.delete();
             } catch(IOException x){}
          }

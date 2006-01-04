@@ -28,9 +28,8 @@
 		 java.util.zip.*,
 		 org.genepattern.webservice.OmnigeneException,
 		 org.genepattern.server.util.AccessManager,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
-		 com.jspsmart.upload.*"
-	session="false" contentType="text/html" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><% 
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
+	session="false" contentType="text/html" language="Java" %><% 
 
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
@@ -58,8 +57,24 @@ try {
 	}
         File zipFile = zt.packageTask(ti, userID);
 
-	mySmartUpload.initialize(pageContext);
-        mySmartUpload.downloadFile(zipFile.getPath(),"application/x-zip-compressed", ti.getName()+".zip");
+	String contentType = "application/x-zip-compressed" + "; name=\"" + ti.getName()+".zip" + "\";";
+response.addHeader("Content-Disposition", "attachment; filename=\"" + ti.getName()+".zip" + "\";");
+response.setContentType(contentType);
+      FileInputStream ins = new java.io.FileInputStream(zipFile);
+	byte[] buf = new byte[100000];
+	int i;
+	String s;
+	i = ins.read(buf);
+	while (i > -1) {
+		s = new String(buf, 0, i);
+		out.print(s); // copy input file to response
+		i = ins.read(buf);
+	}
+	ins.close();
+	ins = null;
+
+
+
         zipFile.delete();
         return;
        
