@@ -23,7 +23,6 @@
 		 org.genepattern.webservice.OmnigeneException,  com.jspsmart.upload.*,
 		 org.genepattern.data.pipeline.PipelineModel"
 	session="false" contentType="text/html" language="Java" %>
-<jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" />
 <html>
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
@@ -32,8 +31,6 @@
 </head>
 <body>
 	<jsp:include page="navbar.jsp"></jsp:include>
-
-
 <%
 String taskName = (String)request.getAttribute("name");
 %>

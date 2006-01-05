@@ -23,7 +23,7 @@
 		 org.genepattern.webservice.OmnigeneException,  com.jspsmart.upload.*,
 		 org.genepattern.data.pipeline.PipelineModel"
 	session="false" contentType="text/html" language="Java" %>
-<jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" />
+
 <% String pipelineName = (String)request.getAttribute("name");%>
 <html>
 <head>
@@ -33,9 +33,6 @@
 </head>
 <body>
 	<jsp:include page="navbar.jsp"></jsp:include>
-
- 
-
 <p>
 Unknown pipeline: <%= pipelineName %>
 <p>
