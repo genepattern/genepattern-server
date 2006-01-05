@@ -43,8 +43,10 @@
 		 org.genepattern.server.webapp.*,
 		 org.genepattern.data.pipeline.PipelineModel,
 		 org.genepattern.server.webservice.server.DirectoryManager,
-		 com.jspsmart.upload.*,
-		 org.genepattern.util.LSID"
+		 org.apache.commons.fileupload.DiskFileUpload,
+		 org.apache.commons.fileupload.FileItem,
+		 org.apache.commons.fileupload.FileUpload,
+   	 	 org.genepattern.util.LSID"
 	session="false" contentType="text/html" language="Java" %><%
 
 

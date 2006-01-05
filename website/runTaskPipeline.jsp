@@ -1,16 +1,3 @@
-<!-- /*
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2006) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
-
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
-*/ -->
-
-
 <%@ page import="java.io.IOException,
 		 java.util.StringTokenizer,
 		 java.util.Enumeration,
@@ -24,14 +11,12 @@
  		 java.text.SimpleDateFormat,
 		 java.util.Date,
 		 java.util.Enumeration, 
-		 java.util.ArrayList, 
 		 java.util.GregorianCalendar,
 		 java.text.ParseException,
 		 java.text.DateFormat,
 		
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
- 		 org.genepattern.util.StringUtils,
 		 org.genepattern.webservice.ParameterFormatConverter,
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
@@ -51,8 +36,8 @@ response.setDateHeader("Expires", 0);
 <jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" />
 <html>
 <head>
-<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
-	<link href="skin/favicon.ico" rel="shortcut icon">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+	<link href="favicon.ico" rel="shortcut icon">
 	<title>Running Task</title>
 </head>
 <body>
@@ -84,7 +69,7 @@ try {
 		for (java.util.Enumeration eNames = requestParameters.getParameterNames(); eNames.hasMoreElements(); ) {
 			String n = (String)eNames.nextElement();
                         if (!("code".equals(n)))
-			System.out.println(n + "='" + StringUtils.htmlEncode(requestParameters.getParameter(n)) + "'");
+			System.out.println(n + "='" + GenePatternAnalysisTask.htmlEncode(requestParameters.getParameter(n)) + "'");
 		}
 	}
 	String tmpDirName = null;
@@ -109,7 +94,7 @@ try {
 				String fieldName = attachedFile.getFieldName();
 				String fullName = attachedFile.getFilePathName();
 				if (DEBUG) System.out.println("makePipeline: " + fieldName + " -> " + fullName);
-				if (fullName.startsWith("http:") || fullName.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
+				if (fullName.startsWith("http:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
 				// don't bother trying to save a file that is a URL, retrieve it at execution time instead
 
 					htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
@@ -136,7 +121,7 @@ try {
 	} // loop over files
 
 	// set up the call to the analysis engine
- 	String server = request.getScheme() + "://"+ InetAddress.getLocalHost().getCanonicalHostName() + ":"
+ 	String server = "http://"+ InetAddress.getLocalHost().getCanonicalHostName() + ":"
 					+ System.getProperty("GENEPATTERN_PORT");
 
 	AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, userID);
@@ -149,7 +134,6 @@ try {
 	} else {
 		parmInfos = new ParameterInfo[0];
 	}
-	ArrayList missingReqParams = new ArrayList ();
 	for (int i=0; i < nParams; i++){
 		ParameterInfo pinfo = parmInfos[i];
 		String value;	
@@ -160,7 +144,7 @@ try {
 				value = "";
 				pinfo.getAttributes().put(ParameterInfo.TYPE, "");
 			}
-			if (value.startsWith("http:") || value.startsWith("https:")|| value.startsWith("ftp:") || value.startsWith("file:")) {
+			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
 				HashMap attrs = pinfo.getAttributes();
 				attrs.put(pinfo.MODE , pinfo.URL_INPUT_MODE);
 				attrs.remove(pinfo.TYPE);
@@ -168,30 +152,8 @@ try {
 		} else {
 			value = requestParameters.getParameter(pinfo.getName());
 		}
-
-		//
-		// look for missing required params
-		//
-		if ((value == null) || (value.trim().length() == 0)){
-			HashMap pia = pinfo.getAttributes();
-			boolean isOptional = ((String)pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET])).length() > 0;
-		
-			if (!isOptional){
-				missingReqParams.add(pinfo);
-			}
-		}
+		System.out.println("P=" + pinfo.getName() + "  V=" + value);
 		pinfo.setValue(value);
-	}
-	if (missingReqParams.size() > 0){
-		System.out.println(""+missingReqParams);
-		request.setAttribute("missingReqParams", missingReqParams);
-		(request.getRequestDispatcher("runTaskMissingParams.jsp")).include(request, response);
-%>
-		<jsp:include page="footer.jsp"></jsp:include>
-		</body>
-		</html>
-<%
-		return;
 	}
 
 	JobInfo job = analysisProxy.submitJob(task.getID(), parmInfos);
@@ -226,7 +188,7 @@ function checkAll(frm, bChecked) {
 </form>
 <form name="frmemail" method="POST" target="_blank" action="sendMail.jsp" onsubmit="javascript:return false;">
 		email notification to: <input name="to" class="little" size="70" value="" onkeydown="return suppressEnterKey(event)">
-		<input type="hidden" name="from" value="<%= StringUtils.htmlEncode(userID) %>">
+		<input type="hidden" name="from" value="<%= GenePatternAnalysisTask.htmlEncode(userID) %>">
 		<input type="hidden" name="subject" value="<%= task.getName() %> results for job # <%= jobID %>">
 		<input type="hidden" name="message" value="<html><head><link href='stylesheet.css' rel='stylesheet' type='text/css'><script language='Javascript'>\nfunction checkAll(frm, bChecked) {\n\tfrm = document.forms['results'];\n\tfor (i = 0; i < frm.elements.length; i++) {\n\t\tif (frm.elements[i].type != 'checkbox') continue; \n\t\tfrm.elements[i].checked = bChecked;\n\t}\n}\n</script></head><body>">
 </form>
@@ -267,8 +229,8 @@ for (int i=0; i < parmInfos.length; i++){
 		out.println(pinfo.getName().replace('.',' '));
 		out.println("=");
 		if (pinfo.isInputFile()) {
-			String htmlValue = StringUtils.htmlEncode(pinfo.getValue().trim());		
-			if (value.startsWith("http:") || value.startsWith("https:") || value.startsWith("ftp:") || value.startsWith("file:")) {
+			String htmlValue = GenePatternAnalysisTask.htmlEncode(pinfo.getValue().trim());		
+			if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
 				out.println("<a href='"+ htmlValue + "'>"+htmlValue +"</a>");
 			} else {
 				File f = new File(tmpDirName +"/" + value);
@@ -276,12 +238,12 @@ for (int i=0; i < parmInfos.length; i++){
 				out.println("<a href='getFile.jsp?task=&file="+ URLEncoder.encode(tmpDirName +"/" + value)+"'>"+htmlValue +"</a>");
 	
 			}
-		} else if (value.startsWith("http:") || value.startsWith("https:") || value.startsWith("ftp:") || value.startsWith("file:")) {
+		} else if (value.startsWith("http:") || value.startsWith("ftp:") || value.startsWith("file:")) {
 			out.println("<a href='"+ value + "'>"+value +"</a>");
 
 		} else {
 			String display = pinfo.getUIValue(formalPinfo);
-			out.println(StringUtils.htmlEncode(display));
+			out.println(GenePatternAnalysisTask.htmlEncode(display));
 		}
 		if (i != (parmInfos.length -1))out.println(", ");
 	}
@@ -340,7 +302,7 @@ for (int i=0; i < parmInfos.length; i++){
 		} catch (UnsupportedEncodingException uee) {
 			// ignore
 		}
-		sbOut.append("\">" + StringUtils.htmlEncode(fileName) + "</a></td></tr>");
+		sbOut.append("\">" + GenePatternAnalysisTask.htmlEncode(fileName) + "</a></td></tr>");
 		out.println(sbOut.toString());
 	}
 	out.flush();
