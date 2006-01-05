@@ -17,7 +17,7 @@
          org.genepattern.server.process.ZipTask,
          org.genepattern.server.process.ZipTaskWithDependents,
 		 java.io.ByteArrayOutputStream,
-		 java.io.File,
+		 java.io.*,
 		 java.io.FilenameFilter,
 		 java.io.FileInputStream,
 		 java.io.FileOutputStream,
@@ -61,15 +61,10 @@ try {
 response.addHeader("Content-Disposition", "attachment; filename=\"" + ti.getName()+".zip" + "\";");
 response.setContentType(contentType);
       FileInputStream ins = new java.io.FileInputStream(zipFile);
-	byte[] buf = new byte[100000];
-	int i;
-	String s;
-	i = ins.read(buf);
-	while (i > -1) {
-		s = new String(buf, 0, i);
-		out.print(s); // copy input file to response
-		i = ins.read(buf);
-	}
+	int c = 0;
+  	while ((c = ins.read()) != -1) {
+   		out.write(c);
+  	}
 	ins.close();
 	ins = null;
 

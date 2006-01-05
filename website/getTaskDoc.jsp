@@ -12,7 +12,7 @@
 
 
 <%@ page import="java.io.File,
-		 java.io.FilenameFilter,
+		 java.io.*,
 		 java.io.IOException,
 		 java.net.URLEncoder,
 		 java.util.Collection,
@@ -302,20 +302,16 @@ if (contentType == null) {
 	contentType = (String)htTypes.get(extension.toLowerCase());
 }
 if (contentType == null) contentType = "text/plain";
-
+System.out.println("A");
 contentType = contentType + "; name=\"" + filename + "\";";
 response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\";");
 response.setContentType(contentType);
       FileInputStream ins = new java.io.FileInputStream(in);
-	byte[] buf = new byte[100000];
-	int i;
-	String s;
-	i = ins.read(buf);
-	while (i > -1) {
-		s = new String(buf, 0, i);
-		out.print(s); // copy input file to response
-		i = ins.read(buf);
-	}
+	int c = 0;
+  	while ((c = ins.read()) != -1) {
+   		out.write(c);
+  	}
+	out.flush();
 	ins.close();
 	ins = null;
 

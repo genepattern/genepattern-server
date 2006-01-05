@@ -16,7 +16,7 @@
          	 org.genepattern.server.process.ZipSuite,
          	 org.genepattern.server.process.ZipTaskWithDependents,
 		 org.genepattern.server.webservice.server.local.LocalAdminClient,
-		 java.io.ByteArrayOutputStream,
+		 java.io.*,
 		 java.io.File,
 		 java.io.FilenameFilter,
 		 java.io.FileInputStream,
@@ -68,15 +68,10 @@ String contentType = "application/x-zip-compressed" + "; name=\"" + si.getName()
 response.addHeader("Content-Disposition", "attachment; filename=\"" + si.getName()+".zip" + "\";");
 response.setContentType(contentType);
       FileInputStream ins = new java.io.FileInputStream(zipFile);
-	byte[] buf = new byte[100000];
-	int i;
-	String s;
-	i = ins.read(buf);
-	while (i > -1) {
-		s = new String(buf, 0, i);
-		out.print(s); // copy input file to response
-		i = ins.read(buf);
-	}
+	int c = 0;
+  	while ((c = ins.read()) != -1) {
+   		out.write(c);
+  	}
 	ins.close();
 	ins = null;
 
