@@ -235,17 +235,6 @@ function addNewTaskType() {
 	fld.options.selectedIndex = n;
 }
 
-function prototypeDoc() {
-	var frm = document.forms['task'];
-	var oldTarget = frm.target;
-	var oldAction = frm.action;
-	frm.action = "prototypeTaskDoc.jsp";
-//	frm.target = "_blank";
-	frm.submit();
-	frm.action = oldAction;
-	frm.target = oldTarget;
-}
-
 function addNewFileType(name, desc){
 	if (name == null || name == "") return;
 	if (desc == "") desc = name;
@@ -887,9 +876,6 @@ if (taskName != null) {
 <input type="submit" value="save" name="save" class="little">&nbsp;&nbsp;
 <input type="reset" value="clear" class="little">&nbsp;&nbsp;
 <input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="little">
-<!--
-<input type="button" value="prototype documentation" onclick="prototypeDoc()" class="little">
--->
 </td></tr>
 <tr><td></td></tr>
 

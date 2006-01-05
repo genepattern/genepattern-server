@@ -14,11 +14,10 @@
 		 java.io.IOException,
 		 java.util.Hashtable,
  		 org.genepattern.util.StringUtils,
-
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants"
 
-	session="false" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><% 
+	session="false" language="Java" %><% 
 
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control

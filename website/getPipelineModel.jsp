@@ -16,7 +16,7 @@
 		 java.util.Map,
 		 org.genepattern.server.webapp.*"
 
-	    session="false" language="Java" contentType="text/plain" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><%
+	    session="false" language="Java" contentType="text/plain" %><%
 
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control

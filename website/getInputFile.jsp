@@ -16,9 +16,8 @@
 		 java.util.Hashtable,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.LSID,
-		 org.genepattern.util.GPConstants,
-		 com.jspsmart.upload.*"
-	session="false" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><% 
+		 org.genepattern.util.GPConstants"
+	session="false" language="Java" %><% 
 
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
@@ -49,8 +48,6 @@ if (contentType == null) {
 	if (contentType == null) contentType = "text/plain";
 }
 
-mySmartUpload.initialize(pageContext);
-
 File in = null;
 try {
 		// look in temp for pipelines run without saving
@@ -60,7 +57,15 @@ try {
 }
 response.setDateHeader("X-lastModified", in.lastModified());
 if (in.exists()) {
-	mySmartUpload.downloadFile(in.getPath(), contentType, in.getName());
+	response.setHeader("X-filename", in.getName());
+	response.setContentType(contentType);
+	FileInputStream ins = new java.io.FileInputStream(in);
+	int c = 0;
+  	while ((c = ins.read()) != -1) {
+   		out.write(c);
+  	}
+	ins.close();
+	ins = null;
 } else {
 	out.println("No such file: " + in.getCanonicalPath());
 }
