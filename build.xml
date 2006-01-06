@@ -405,6 +405,7 @@
 	       <include name="lucene-*-final.jar"/>
 	       <include name="lucene-demos-*-final.jar"/>
 	       <include name="mail.jar"/>
+	       <include name="activation.jar"/>
 	       <include name="saaj.jar"/>
 	       <include name="PDFBox*.jar"/>
 	       <include name="wsdl4j.jar"/>
