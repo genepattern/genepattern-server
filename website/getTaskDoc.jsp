@@ -9,8 +9,6 @@
   whatsoever. Neither the Broad Institute nor MIT can be responsible for its
   use, misuse, or functionality.
 */ %>
-
-
 <%@ page import="java.io.File,
 		 java.io.*,
 		 java.io.IOException,

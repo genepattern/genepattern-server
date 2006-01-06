@@ -8,10 +8,7 @@
   This software is supplied without any warranty or guaranteed support
   whatsoever. Neither the Broad Institute nor MIT can be responsible for its
   use, misuse, or functionality.
-*/ -->
-
-
-<%@ page import="java.io.File,
+*/ --><%@ page import="java.io.File,
 		 java.net.URLEncoder,
 		 java.util.Date,
 		 org.genepattern.server.util.BeanReference,
