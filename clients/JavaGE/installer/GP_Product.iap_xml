@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- This script was automatically generated using Zero G's InstallAnywhere 6.1 Enterprise, Build 2325
-     STATUS: Fully-Functional UNLICENSED Trial Edition
-     DATE:   Tue Jul 19 13:30:19 EDT 2005 -->
-<InstallAnywhere_Deployment_Project increments="5520">
+<!-- This script was automatically generated using Macrovision's InstallAnywhere 7.1 Enterprise, Build 2781
+     STATUS: Fully Functional LICENSED Edition
+     DATE:   Mon Jan 09 08:09:50 EST 2006 -->
+<InstallAnywhere_Deployment_Project increments="5673">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
-		<versionID major="6" minor="1" revision="-1"/>
-		<editionID>54,46,49,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,50,51,50,53</editionID>
-		<scriptID>12,42,11,85,78,76,73,67,69,78,83,69,68</scriptID>
-		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,51,46,49,95,48,56,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,83,59,32,67,112,49,50,53,50</buildID>
+		<versionID major="7" minor="1" revision="-1"/>
+		<editionID>55,46,49,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,50,55,56,49</editionID>
+		<scriptID>12,42,11,77,81,50,48,56,55,70,80,83,77,52,83,52</scriptID>
+		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,53,46,48,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,67,112,49,50,53,50</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,0,51,37,80,-48,64,99,70,101,125,121,100,96,105,48,48,49,56,52,67,98,113,112,124,44,81,100,99,62,57,15,14,7,13,53,96,5,1,0,0</authorizationID>
+		<authorizationID>1,0,0,0,-93,70,96,0,80,112,117,98,89,98,113,97,113,65,81,86,58,65,67,66,70,65,64,69,66,69,48,63,71,5,2,5,12,57,111,8,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="430">
+	<installationObjects uniqueObjects="441">
 		<object class="com.zerog.ia.installer.Installer" objectID="7daeb2feafa5">
 			<property name="wizardME">
 				<object class="com.zerog.ia.installer.actions.MakeExecutable" objectID="7e4c8205afeb">
@@ -121,19 +121,6 @@ Relative paths are relative to the launcher.]]></string>
 								</object>
 							</method>
 							<method name="addElement">
-								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="7e4dd08dafec">
-									<property name="propertyValue">
-										<string><![CDATA[$CMD_LINE_ARGUMENTS$]]></string>
-									</property>
-									<property name="propertyName">
-										<string><![CDATA[lax.command.line.args]]></string>
-									</property>
-									<property name="propertyComment">
-										<string><![CDATA[what will be passed to the main method -- be sure to quote arguments with spaces in them]]></string>
-									</property>
-								</object>
-							</method>
-							<method name="addElement">
 								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1d780265afc0">
 									<property name="propertyValue">
 										<string><![CDATA[true]]></string>
@@ -143,6 +130,19 @@ Relative paths are relative to the launcher.]]></string>
 									</property>
 									<property name="propertyComment">
 										<string><![CDATA[Indicates that the client will display graphics]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="7e4dd08dafec">
+									<property name="propertyValue">
+										<string><![CDATA[$CMD_LINE_ARGUMENTS$]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.command.line.args]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[what will be passed to the main method -- be sure to quote arguments with spaces in them]]></string>
 									</property>
 								</object>
 							</method>
@@ -202,19 +202,6 @@ it will search for ones in this list]]></string>
 								</object>
 							</method>
 							<method name="addElement">
-								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="43a619e592ea">
-									<property name="propertyValue">
-										<string><![CDATA[org.genepattern.gpge.GenePattern]]></string>
-									</property>
-									<property name="propertyName">
-										<string><![CDATA[lax.main.class]]></string>
-									</property>
-									<property name="propertyComment">
-										<string><![CDATA[the class that contains the main method for the application]]></string>
-									</property>
-								</object>
-							</method>
-							<method name="addElement">
 								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="ebe843eda34f">
 									<property name="propertyValue">
 										<string><![CDATA[128m]]></string>
@@ -224,6 +211,19 @@ it will search for ones in this list]]></string>
 									</property>
 									<property name="propertyComment">
 										<string><![CDATA[initial heap memory size]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="c2c972ed8627">
+									<property name="propertyValue">
+										<string><![CDATA[org.genepattern.gpge.GenePattern]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.main.class]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[the class that contains the main method for the application]]></string>
 									</property>
 								</object>
 							</method>
@@ -299,7 +299,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[gpge.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>457357</long>
+								<long>626187</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -392,7 +392,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[broad-cg.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>75083</long>
+								<long>84781</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -454,7 +454,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[log4j-1.2.8.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>378778</long>
+								<long>352668</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -516,7 +516,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[runMain.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>3627</long>
+								<long>3622</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -764,7 +764,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[axis.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>1235721</long>
+								<long>1632995</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -826,7 +826,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[commons-logging.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>31605</long>
+								<long>38015</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -888,7 +888,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[jaxrpc.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>36194</long>
+								<long>32062</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1012,7 +1012,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[saaj.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>18463</long>
+								<long>19419</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1043,7 +1043,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[wsdl4j.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>113853</long>
+								<long>126771</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1074,7 +1074,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[ui_support.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>6395</long>
+								<long>5830</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1105,7 +1105,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[gpwebservice.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>154318</long>
+								<long>161185</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -6335,7 +6335,7 @@ The installation log will open after the installer with the details.  Press ""Do
 				<object class="java.util.Properties">
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.linux.novm]]></string>
-						<string><![CDATA[true]]></string>
+						<string><![CDATA[false]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.linux.vm]]></string>
@@ -6375,7 +6375,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.vmpack.windows.path]]></string>
-						<string><![CDATA[SunJRE142_03Win32.vm]]></string>
+						<string><![CDATA[SunJRE150_03iWin32.vm]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.installer.options.valid.vm.list]]></string>
@@ -6383,7 +6383,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.build.last.date]]></string>
-						<string><![CDATA[July 19, 2005 1:30:19 PM EDT]]></string>
+						<string><![CDATA[January 9, 2006 8:09:49 AM EST]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.windows.vm]]></string>
@@ -6403,7 +6403,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.vmpack.linux.path]]></string>
-						<string><![CDATA[SunJRE142_03LinuxINTEL.vm]]></string>
+						<string><![CDATA[SunJRE150_03LinuxINTEL.vm]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.named_unix.vm]]></string>
@@ -6419,7 +6419,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.vmpack.unix.path]]></string>
-						<string><![CDATA[SunJRE142_03LinuxINTEL.vm]]></string>
+						<string><![CDATA[SunJRE150_03LinuxINTEL.vm]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.named_unix.novm]]></string>
@@ -6443,7 +6443,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[July 19, 2005 1:30:19 PM EDT]]></string>
+						<string><![CDATA[January 9, 2006 8:09:49 AM EST]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
@@ -6467,7 +6467,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.installer.options.platform.macosx.vm.version]]></string>
-						<string><![CDATA[1.4*]]></string>
+						<string><![CDATA[1.5*]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.webpage.language]]></string>
@@ -6544,6 +6544,12 @@ The installation log will open after the installer with the details.  Press ""Do
 					</property>
 					<property name="installPanelBackgroundRGB">
 						<int>0</int>
+					</property>
+					<property name="panelBorder">
+						<boolean>true</boolean>
+					</property>
+					<property name="titleTextColorRGB">
+						<int>-16777216</int>
 					</property>
 				</object>
 			</property>
@@ -6811,6 +6817,22 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 			<property name="inputLanguage">
 				<string><![CDATA[en]]></string>
 			</property>
+			<property name="runtimeAccessType">
+				<string><![CDATA[off]]></string>
+			</property>
+			<property name="msiData">
+				<object class="com.zerog.ia.installer.util.MsiData" objectID="c2c971a28609">
+					<property name="newLocation">
+						<string><![CDATA[$IA_HOME$\resource\IANET\simpleProject.iax]]></string>
+					</property>
+					<property name="update">
+						<boolean>false</boolean>
+					</property>
+					<property name="buildMsi">
+						<boolean>false</boolean>
+					</property>
+				</object>
+			</property>
 			<visualChildren>
 				<object class="com.zerog.ia.installer.InstallSet" objectID="7daeb449afa5">
 					<property name="imagePath">
@@ -6984,6 +7006,69 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 												</object>
 											</rules>
 										</object>
+									</property>
+									<property name="dependency">
+										<object class="com.zerog.ia.installer.ComponentDependency" objectID="c2c9740f86d8">
+											<property name="matchesKeyFile">
+												<boolean>false</boolean>
+											</property>
+											<property name="matchingKeyFileReturnVariable">
+												<string><![CDATA[$Common_MATCHED_KEY_FILE$]]></string>
+											</property>
+											<property name="checksLowerBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="checksUpperBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="lowerBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="c2c9740f86d9">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="upperBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="c2c9741086d8">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="parentComponent">
+												<object refID="7daeb44eafa5"/>
+											</property>
+											<property name="dependencyFailedMessage">
+												<string><![CDATA[Common dependency has failed.]]></string>
+											</property>
+											<property name="dependencyFailedMessageVariableName">
+												<string><![CDATA[$Common_DEPENDENCY_STATE_VARIABLE$]]></string>
+											</property>
+										</object>
+									</property>
+									<property name="checksDependency">
+										<boolean>false</boolean>
+									</property>
+									<property name="hasSomethingToInstall">
+										<boolean>true</boolean>
 									</property>
 									<installChildren>
 										<object refID="7e1329d7afa7"/>
@@ -7655,10 +7740,166 @@ and any path to a file to read from that file]]></string>
 									<property name="keyFile">
 										<object refID="7daeb51cafa5"/>
 									</property>
+									<property name="dependency">
+										<object class="com.zerog.ia.installer.ComponentDependency" objectID="c2c9743886e8">
+											<property name="matchesKeyFile">
+												<boolean>false</boolean>
+											</property>
+											<property name="matchingKeyFileReturnVariable">
+												<string><![CDATA[$InstallAnywhere_Uninstall_Component_MATCHED_KEY_FILE$]]></string>
+											</property>
+											<property name="checksLowerBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="checksUpperBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="lowerBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="c2c9743886e9">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="upperBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="c2c9743786e9">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="parentComponent">
+												<object refID="7daeb454afa5"/>
+											</property>
+											<property name="dependencyFailedMessage">
+												<string><![CDATA[InstallAnywhere Uninstall Component dependency has failed.]]></string>
+											</property>
+											<property name="dependencyFailedMessageVariableName">
+												<string><![CDATA[$InstallAnywhere_Uninstall_Component_DEPENDENCY_STATE_VARIABLE$]]></string>
+											</property>
+										</object>
+									</property>
+									<property name="checksDependency">
+										<boolean>false</boolean>
+									</property>
+									<property name="hasSomethingToInstall">
+										<boolean>true</boolean>
+									</property>
 									<installChildren>
 										<object refID="7daeb51cafa5"/>
 										<object refID="7daeb4a8afa5"/>
 									</installChildren>
+								</object>
+								<object class="com.zerog.ia.installer.VMComponent" objectID="c2c9743886ec">
+									<property name="componentName">
+										<string><![CDATA[InstallAnywhere VM Component]]></string>
+									</property>
+									<property name="comment">
+										<string><![CDATA[<Enter Install Component comment here -- do not forget to assign this Component to desired Product Features>]]></string>
+									</property>
+									<property name="shortName">
+										<string><![CDATA[VM]]></string>
+									</property>
+									<property name="uniqueId">
+										<object class="com.zerog.registry.UUID">
+											<method name="update">
+												<string><![CDATA[c2c97441-1eda-11b2-86ee-da79ea24dfc5]]></string>
+											</method>
+										</object>
+									</property>
+									<property name="versionMajor">
+										<int>1</int>
+									</property>
+									<property name="versionMinor">
+										<int>0</int>
+									</property>
+									<property name="versionRevision">
+										<int>0</int>
+									</property>
+									<property name="versionSubRevision">
+										<int>0</int>
+									</property>
+									<property name="dependency">
+										<object class="com.zerog.ia.installer.ComponentDependency" objectID="c2c9743786ed">
+											<property name="matchesKeyFile">
+												<boolean>false</boolean>
+											</property>
+											<property name="matchingKeyFileReturnVariable">
+												<string><![CDATA[$InstallAnywhere_VM_Component_MATCHED_KEY_FILE$]]></string>
+											</property>
+											<property name="checksLowerBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="checksUpperBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="lowerBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="c2c9743786ee">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="upperBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="c2c9743886ed">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="parentComponent">
+												<object refID="c2c9743886ec"/>
+											</property>
+											<property name="dependencyFailedMessage">
+												<string><![CDATA[InstallAnywhere VM Component dependency has failed.]]></string>
+											</property>
+											<property name="dependencyFailedMessageVariableName">
+												<string><![CDATA[$InstallAnywhere_VM_Component_DEPENDENCY_STATE_VARIABLE$]]></string>
+											</property>
+										</object>
+									</property>
+									<property name="checksDependency">
+										<boolean>false</boolean>
+									</property>
+									<property name="hasSomethingToInstall">
+										<boolean>true</boolean>
+									</property>
 								</object>
 							</installChildren>
 						</object>
@@ -7679,6 +7920,7 @@ and any path to a file to read from that file]]></string>
 								<object refID="7daeb434afa5"/>
 								<object refID="7daeb44eafa5"/>
 								<object refID="7daeb454afa5"/>
+								<object refID="c2c9743886ec"/>
 							</installChildren>
 						</object>
 					</installChildren>
@@ -7710,6 +7952,7 @@ and any path to a file to read from that file]]></string>
 				<object refID="7daeb44cafa5"/>
 				<object refID="7daeb44eafa5"/>
 				<object refID="7daeb454afa5"/>
+				<object refID="c2c9743886ec"/>
 				<object class="com.zerog.ia.installer.GhostDirectory" objectID="7daeb42eafa5">
 					<property name="destinationFolder">
 						<object refID="7dacc07fafa5"/>
