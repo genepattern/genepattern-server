@@ -1,21 +1,21 @@
 /*
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2006) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2006) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
 
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
-*/
-
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */
 
 package org.genepattern.io.expr.cls;
 
+import java.io.OutputStream;
 import java.io.PrintWriter;
 
-import org.genepattern.data.matrix.ClassVector;
+import org.genepattern.data.matrix.IClassVector;
 
 /**
  * <P>
@@ -74,11 +74,8 @@ public class ClsWriter {
 	 *            the class vector
 	 * @param os
 	 *            the output stream
-	 * @exception java.io.IOException
-	 *                if an I/O error occurs during writing
 	 */
-	public void write(ClassVector cv, java.io.OutputStream os)
-			throws java.io.IOException {
+	public void write(IClassVector cv, OutputStream os) {
 		PrintWriter pw = new PrintWriter(os);
 		pw.print(cv.size());
 		pw.print(" ");
