@@ -27,6 +27,7 @@ import java.util.Map;
 import org.genepattern.data.expr.ExpressionData;
 import org.genepattern.data.expr.IExpressionData;
 import org.genepattern.data.matrix.ClassVector;
+import org.genepattern.data.matrix.IClassVector;
 import org.genepattern.io.expr.ExpressionDataCreator;
 import org.genepattern.io.expr.IExpressionDataCreator;
 import org.genepattern.io.expr.IExpressionDataReader;
@@ -166,7 +167,7 @@ public class IOUtil {
 	 * @exception IOException
 	 *                If an error occurs while saving the data
 	 */
-	public static String writeCls(ClassVector cv, String pathname,
+	public static String writeCls(IClassVector cv, String pathname,
 			boolean checkFileExtension) throws IOException {
 		FileOutputStream fos = null;
 		try {
