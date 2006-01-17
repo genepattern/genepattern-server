@@ -1,15 +1,14 @@
 /*
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2006) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2006) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
 
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
-*/
-
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */
 
 package org.genepattern.client;
 
@@ -185,6 +184,44 @@ public class GPServer {
 	}
 
 	/**
+	 * Submits the given task with the given parameters.
+	 * 
+	 * @param taskNameOrLSID
+	 *            The task name or LSID. When an LSID is provided that does not
+	 *            include a version, the latest available version of the task
+	 *            identified by the LSID will be used. If a task name is
+	 *            supplied, the latest version of the task with the nearest
+	 *            authority is selected. The nearest authority is the first
+	 *            match in the sequence: local authority, Broad authority, other
+	 *            authority.
+	 * @param parameters
+	 *            The parameters to run the task with.
+	 * @return The job number.
+	 * @throws WebServiceException
+	 *             If an error occurs during the job submission process.
+	 */
+	public int submitJob(String taskNameOrLSID, Parameter[] parameters)
+			throws WebServiceException {
+		try {
+			TaskInfo taskInfo = getTask(taskNameOrLSID);
+			ParameterInfo[] actualParameters = createParameterInfoArray(
+					taskInfo, parameters);
+			AnalysisWebServiceProxy analysisProxy = null;
+			try {
+				analysisProxy = new AnalysisWebServiceProxy(server, userName);
+				analysisProxy.setTimeout(Integer.MAX_VALUE);
+			} catch (Exception x) {
+				throw new WebServiceException(x);
+			}
+			AnalysisJob job = submitJob(analysisProxy, taskInfo,
+					actualParameters);
+			return job.getJobInfo().getJobNumber();
+		} catch (org.genepattern.webservice.WebServiceException wse) {
+			throw new WebServiceException(wse.getMessage(), wse.getRootCause());
+		}
+	}
+
+	/**
 	 * Submits the given task with the given parameters and waits for the job to
 	 * complete.
 	 * 
@@ -200,7 +237,7 @@ public class GPServer {
 	 *            The parameters to run the task with.
 	 * @return The job result.
 	 * @throws WebServiceException
-	 *             If an error occurs during the job submission and job result
+	 *             If an error occurs during the job submission or job result
 	 *             retrieval process.
 	 */
 	public JobResult runAnalysis(String taskNameOrLSID, Parameter[] parameters)
@@ -262,7 +299,7 @@ public class GPServer {
 		}
 	}
 
-	private String sub(ParameterInfo formalParam, String value)
+	private static String sub(ParameterInfo formalParam, String value)
 			throws WebServiceException {
 		// see if parameter belongs to a set of choices, e.g. 1=T-Test.
 		// If so substitute 1 for T-Test, also check to see if value is
@@ -289,7 +326,7 @@ public class GPServer {
 		return value;
 	}
 
-	private void setAttributes(ParameterInfo formalParam,
+	private static void setAttributes(ParameterInfo formalParam,
 			ParameterInfo actualParam) {
 
 		if (formalParam.isInputFile()) {
@@ -308,7 +345,7 @@ public class GPServer {
 		}
 	}
 
-	private ParameterInfo[] createParameterInfoArray(TaskInfo taskInfo,
+	private static ParameterInfo[] createParameterInfoArray(TaskInfo taskInfo,
 			Parameter[] parameters) throws WebServiceException {
 
 		ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
