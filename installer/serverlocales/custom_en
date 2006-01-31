@@ -18,8 +18,8 @@
 #     - see the utility 'native2ascii' distributed with your JDK
 #
 # Product Name: GenePattern
-# Project File: C:\projects\genepattern\installer\server.iap_xml
-# Generated:    Thu Nov 17 14:52:30 EST 2005
+# Project File: E:\genepattern\installer\server.iap_xml
+# Generated:    Tue Jan 31 13:08:10 EST 2006
 
 
 # ASCIIFileManipulator.27389a048c8d.additionalText=
@@ -171,24 +171,6 @@ DisplayScrollingMessage.1f3de6dba442.stepPrompt=Please install R on your compute
 
 # DisplayScrollingMessage.1f3de6dba442.title=Install R for your system
 DisplayScrollingMessage.1f3de6dba442.title=Install R for your system
-
-# DisplayScrollingMessage.fedc0849bcbd.messageText=The Installer was unable to launch or confirm the launch of your default web browser. Please open the followign URL in your web browser to walk through the final four steps to complete the installation\n\nhttp://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp
-DisplayScrollingMessage.fedc0849bcbd.messageText=The Installer was unable to launch or confirm the launch of your default web browser. Please open the followign URL in your web browser to walk through the final four steps to complete the installation\n\nhttp://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp
-
-# DisplayScrollingMessage.fedc0849bcbd.stepPrompt=
-DisplayScrollingMessage.fedc0849bcbd.stepPrompt=
-
-# DisplayScrollingMessage.fedc0849bcbd.title=Could not launch browser
-DisplayScrollingMessage.fedc0849bcbd.title=Could not launch browser
-
-# DisplayScrollingMessage.fee03dd9bcc0.messageText=The Installer  was unable to start the GenePattern server.  The installation log is available at\n\n$USER_INSTALL_DIR$/GenePattern_InstallLog.log \n\nPlease review this and try to install again or contact gp-help@broad.mit.edu.
-DisplayScrollingMessage.fee03dd9bcc0.messageText=The Installer  was unable to start the GenePattern server.  The installation log is available at\n\n$USER_INSTALL_DIR$/GenePattern_InstallLog.log \n\nPlease review this and try to install again or contact gp-help@broad.mit.edu.
-
-# DisplayScrollingMessage.fee03dd9bcc0.stepPrompt=
-DisplayScrollingMessage.fee03dd9bcc0.stepPrompt=
-
-# DisplayScrollingMessage.fee03dd9bcc0.title=Could not launch Genepattern server
-DisplayScrollingMessage.fee03dd9bcc0.title=Could not launch Genepattern server
 
 # Exec.0081260688de.commandLineArgs=chmod 775 $USER_INSTALL_DIR$$/$StartR.app$/$RAqua.app$/$Contents$/$bin$/$*
 Exec.0081260688de.commandLineArgs=chmod 775 $USER_INSTALL_DIR$$/$StartR.app$/$RAqua.app$/$Contents$/$bin$/$*
@@ -372,6 +354,18 @@ Installer.72a1c4b4b1bf.installLabels.13=Installing...
 
 # Installer.72a1c4b4b1bf.installLabels.14=Install Complete
 Installer.72a1c4b4b1bf.installLabels.14=Install Complete
+
+# Installer.72a1c4b4b1bf.installProgressImageName=introImage.png
+Installer.72a1c4b4b1bf.installProgressImageName=introImage.png
+
+# Installer.72a1c4b4b1bf.installProgressImagePath=com/zerog/ia/installer/images/
+Installer.72a1c4b4b1bf.installProgressImagePath=com/zerog/ia/installer/images/
+
+# Installer.72a1c4b4b1bf.panelImageName=introImage.png
+Installer.72a1c4b4b1bf.panelImageName=introImage.png
+
+# Installer.72a1c4b4b1bf.panelImagePath=com/zerog/ia/installer/images/
+Installer.72a1c4b4b1bf.panelImagePath=com/zerog/ia/installer/images/
 
 # Installer.72a1c4b4b1bf.rulesFailedMessage=The installer cannot run on your configuration. It will now quit.
 Installer.72a1c4b4b1bf.rulesFailedMessage=The installer cannot run on your configuration. It will now quit.
