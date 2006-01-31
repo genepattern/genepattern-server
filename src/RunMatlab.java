@@ -9,8 +9,6 @@
   whatsoever. Neither the Broad Institute nor MIT can be responsible for its
   use, misuse, or functionality.
 */
-
-
 /*
  * Created on Aug 6, 2004
  *
@@ -42,7 +40,7 @@ import java.io.*;
  * and then exec matlab -nosplash -nodisplay
  */
 public class RunMatlab {
-
+// make a change
 	public static void main(String[] args) throws Exception {
 		createStartupFile(args);
 
