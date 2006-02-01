@@ -128,8 +128,9 @@ for(int i = 0; i < jobs.length; i++) {
    out.print("<td valign='center'><a href='showJob.jsp?jobId="+job.getJobNumber()+"&target=new' border='0' onClick='window.open(this.href, \"Job\" + "+job.getJobNumber()+",\"toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=240\");return false' ><nobr>" + job.getTaskName());
 
    out.print("&nbsp;");
-   
-    out.print("<img src='skin/info_obj.gif' border='0'>");
+    out.print("</a><a href='showJob.jsp?jobId="+job.getJobNumber()+"&target=new' border='0' onClick='window.open(this.href, \"Job\" + "+job.getJobNumber()+",\"toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=240\");return false' ><nobr>");
+
+    out.print("<img class=\"highlightable\" style=\"vertical-align: top;\" src='skin/info_obj.gif' border='0'>");
     out.print( "  </nobr></a>");
 
 
@@ -169,9 +170,9 @@ for(int i = 0; i < jobs.length; i++) {
 
 			if (authorizationManager.checkPermission("createPipeline", userID)){
 
- 				out.print("<span  onClick=\"createPipeline(\'"+URLEncoder.encode(serverURL + fileUrl, "utf-8")+"\')\"><nobr>" );
+ 				out.print("<span  class=\"rollover\" onClick=\"createPipeline(\'"+URLEncoder.encode(serverURL + fileUrl, "utf-8")+"\')\"><nobr>" );
    				out.print("&nbsp;");
-    				out.print("<img src='skin/pipe_obj.jpeg'>");
+    				out.print("<a href=\"#\" ><img border=\"0\" class=\"highlightable\" style=\"vertical-align: top;\" src='skin/pipe_obj.jpeg'></a>");
     				out.print( "  </nobr></span>");
 			}
 		}
