@@ -1,7 +1,7 @@
 function jobResult = checkCompletion(obj, jobNumber)
 
 
-javaJobResult = obj.javaInstance.checkCompletion(jobNumber);
+javaJobResult = obj.javaInstance.checkCompletion(str2num(jobNumber));
 
 
 if (isempty(javaJobResult)) 
