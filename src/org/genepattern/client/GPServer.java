@@ -181,7 +181,6 @@ public class GPServer {
 		}
 	}
 
-
 	public int runAnalysisNoWait(String taskNameOrLSID, Parameter[] parameters)
 			throws WebServiceException {
 		try {
@@ -197,26 +196,66 @@ public class GPServer {
 			}
 			AnalysisJob job = submitJob(analysisProxy, taskInfo,
 					actualParameters);
-			
-			return job.getJobInfo().getJobNumber();		} catch (org.genepattern.webservice.WebServiceException wse) {
+
+			return job.getJobInfo().getJobNumber();
+		} catch (org.genepattern.webservice.WebServiceException wse) {
 			throw new WebServiceException(wse.getMessage(), wse.getRootCause());
 		}
 
 	}
 
-	public JobResult checkCompletion(int jobNum) throws WebServiceException{
-		AnalysisWebServiceProxy analysisProxy = null;
+	/**
+	 * Checks if the given job is complete.
+	 * 
+	 * @param jobNumber
+	 *            the job number
+	 * @return <tt>true</tt> if the job with the given job number is complete,
+	 *         <tt>false</tt> otherwise
+	 * @throws WebServiceException
+	 *             If an error occurs
+	 */
+	public boolean isComplete(int jobNumber) throws WebServiceException {
 		try {
-			analysisProxy = new AnalysisWebServiceProxy(server, userName);
+			AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(
+					server, userName, false);
 			analysisProxy.setTimeout(Integer.MAX_VALUE);
-			JobInfo info = analysisProxy.checkStatus(jobNum);
-		
-			String status = info.getStatus();
-			if (!(status.equalsIgnoreCase("ERROR") || (status.equalsIgnoreCase("Finished")))) return null; 
+			JobInfo ji = analysisProxy.checkStatus(jobNumber);
+			if (ji == null) {
+				throw new WebServiceException("The job number " + jobNumber
+						+ " was not found.");
+			}
+			return ji.getStatus().equalsIgnoreCase("finished")
+					|| ji.getStatus().equalsIgnoreCase("error");
+		} catch (Exception x) {
+			throw new WebServiceException(x);
+		}
+	}
 
+	/**
+	 * Creates a new <tt>JobResult</tt> instance for the given job number.
+	 * Invoke this method after the job is complete.
+	 * 
+	 * @param jobNumber
+	 *            the job number
+	 * @return <tt>JobResult</tt> instance
+	 * @throws WebServiceException
+	 *             If an error occurs
+	 * @see isComplete
+	 */
+	public JobResult createJobResult(int jobNumber) throws WebServiceException {
+		try {
+			AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(
+					server, userName, false);
+			analysisProxy.setTimeout(Integer.MAX_VALUE);
+			JobInfo info = analysisProxy.checkStatus(jobNumber);
+
+			String status = info.getStatus();
+			if (!(status.equalsIgnoreCase("ERROR") || (status
+					.equalsIgnoreCase("Finished"))))
+				return null;
 
 			TaskInfo taskInfo = getTask(info.getTaskLSID());
-			
+
 			ArrayList resultFiles = new ArrayList();
 			ParameterInfo[] jobParameterInfo = info.getParameterInfoArray();
 			boolean stderr = false;
@@ -245,24 +284,20 @@ public class GPServer {
 				}
 			}
 			try {
-				return new JobResult(new URL(server), info.getJobNumber(), (String[]) resultFiles
-						.toArray(new String[0]), stdout, stderr,
-						(Parameter[]) jobParameters.toArray(new Parameter[0]),
-						(String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
+				return new JobResult(new URL(server), info.getJobNumber(),
+						(String[]) resultFiles.toArray(new String[0]), stdout,
+						stderr, (Parameter[]) jobParameters
+								.toArray(new Parameter[0]), (String) taskInfo
+								.getTaskInfoAttributes().get(GPConstants.LSID));
 			} catch (java.net.MalformedURLException mfe) {
 				throw new Error(mfe);
 			}
 
-
 		} catch (Exception x) {
 			throw new WebServiceException(x);
 		}
-		
-				
-		
+
 	}
-
-
 
 	/**
 	 * Submits the given task with the given parameters.
