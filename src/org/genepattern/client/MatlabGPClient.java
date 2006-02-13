@@ -64,6 +64,8 @@ public class MatlabGPClient extends GPServer {
 			}
 			return services;
 		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println(""+System.getProperties());
 			throw new WebServiceException(e);
 		}
 	}
