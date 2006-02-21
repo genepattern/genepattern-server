@@ -30,7 +30,6 @@
 	<classpathentry kind="lib" path="lib/js.jar"/>
 	<classpathentry kind="lib" path="lib/jspsmart.jar"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.4.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-1.4-final.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-demos-1.4-final.jar"/>
 	<classpathentry kind="lib" path="lib/macos.jar"/>
@@ -47,5 +46,6 @@
 	<classpathentry kind="lib" path="lib/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="lib/xsltc.jar"/>
 	<classpathentry kind="lib" path="installer/gpdist/Tomcat/common/lib/ant.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.8.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
