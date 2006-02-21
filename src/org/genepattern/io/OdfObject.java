@@ -147,16 +147,17 @@ public class OdfObject implements TableModel {
 	}
 
 	private void addColumnType(String type) throws ParseException {
-		if (type.equals("String")) {
+		if (type.equalsIgnoreCase("String")) {
 			columns.add(new String[dataLines]);
 			columnClasses.add(String.class);
-		} else if (type.equals("double") || type.equals("float")) {
+		} else if (type.equalsIgnoreCase("double")
+				|| type.equalsIgnoreCase("float")) {
 			columns.add(new Double[dataLines]);
 			columnClasses.add(Double.class);
-		} else if (type.equals("int")) {
+		} else if (type.equalsIgnoreCase("int")) {
 			columns.add(new Integer[dataLines]);
 			columnClasses.add(Integer.class);
-		} else if (type.equals("boolean")) {
+		} else if (type.equalsIgnoreCase("boolean")) {
 			columns.add(new Boolean[dataLines]);
 			columnClasses.add(Boolean.class);
 		} else {
@@ -165,16 +166,17 @@ public class OdfObject implements TableModel {
 	}
 
 	private void addColumnType(int index, String type) throws ParseException {
-		if (type.equals("String")) {
+		if (type.equalsIgnoreCase("String")) {
 			columns.add(index, new String[dataLines]);
 			columnClasses.add(index, String.class);
-		} else if (type.equals("double") || type.equals("float")) {
+		} else if (type.equalsIgnoreCase("double")
+				|| type.equalsIgnoreCase("float")) {
 			columns.add(index, new Double[dataLines]);
 			columnClasses.add(index, Double.class);
-		} else if (type.equals("int")) {
+		} else if (type.equalsIgnoreCase("int")) {
 			columns.add(index, new Integer[dataLines]);
 			columnClasses.add(index, Integer.class);
-		} else if (type.equals("boolean")) {
+		} else if (type.equalsIgnoreCase("boolean")) {
 			columns.add(index, new Boolean[dataLines]);
 			columnClasses.add(index, Boolean.class);
 		} else {
@@ -276,6 +278,10 @@ public class OdfObject implements TableModel {
 
 	public Boolean[] getBooleanArray(String columnName) {
 		return (Boolean[]) getArray(columnName);
+	}
+
+	public String[] getStringArray(String columnName) {
+		return (String[]) getArray(columnName);
 	}
 
 	public Double[] getDoubleArray(String columnName) {
