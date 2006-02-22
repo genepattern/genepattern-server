@@ -12,6 +12,10 @@
 
 package org.genepattern.client;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -170,5 +174,40 @@ public class Util {
 			}
 		}
 		return value;
+	}
+
+	/**
+	 * Returns the model type of an odf file. The input stream is closed.
+	 * 
+	 * @param is
+	 *            An input stream to an odf file
+	 * @return the odf module type or the empty string if unable to determine
+	 *         the model
+	 */
+	public static String getOdfModelType(InputStream is) {
+		String model = "";
+		BufferedReader inputB = null;
+		try {
+			inputB = new BufferedReader(new InputStreamReader(is));
+			String modelLine = inputB.readLine();
+			while (modelLine != null && !modelLine.startsWith("Model")) {
+				modelLine = inputB.readLine();
+			}
+
+			if (modelLine != null) {
+				model = modelLine.substring(modelLine.indexOf("=") + 1).trim();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (inputB != null) {
+				try {
+					inputB.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return model;
 	}
 }
