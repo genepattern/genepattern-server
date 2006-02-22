@@ -1,15 +1,14 @@
 /*
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2006) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2006) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
 
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
-*/
-
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */
 
 package org.genepattern.webservice;
 
@@ -23,6 +22,8 @@ import java.net.URLEncoder;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
+
+import org.genepattern.client.Util;
 import org.genepattern.util.GPConstants;
 
 /**
@@ -151,6 +152,40 @@ public class JobResult {
 	}
 
 	/**
+	 * Returns the url to download the given file output file type from.
+	 * 
+	 * @param fileType
+	 *            The file type (e.g. gct)
+	 * @return The url to retrieve the file from or <tt>null</tt> if a file
+	 *         with the given type was not found.
+	 */
+	public URL getURLForFileType(String fileType) {
+		for (int i = 0; i < fileNames.length; i++) {
+			String fileName = fileNames[i];
+			int dotIndex = fileName.lastIndexOf(".");
+			if (dotIndex > 0 && (dotIndex + 1) < fileName.length()) {
+				String extension = fileName.substring(dotIndex + 1, fileName
+						.length());
+				if (extension.equalsIgnoreCase(fileType)) {
+					return getURL(fileName);
+				} else if (extension.equalsIgnoreCase("odf")) {
+					try {
+						String modelType = Util
+								.getOdfModelType(getURL(fileName).openStream());
+						if (fileType.equalsIgnoreCase(modelType)) {
+							return getURL(fileName);
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		return null;
+
+	}
+
+	/**
 	 * Tests whether this job wrote to the standard error stream.
 	 * 
 	 * @return <tt>true</> if this job wrote to the standard error stream; <tt>
@@ -226,13 +261,15 @@ public class JobResult {
 			}
 		}
 		if (stdout) {
-			File f = downloadFile(GPConstants.STDOUT, downloadDirectory, overwrite);
+			File f = downloadFile(GPConstants.STDOUT, downloadDirectory,
+					overwrite);
 			if (f != null) {
 				files.add(f);
 			}
 		}
 		if (stderr) {
-			File f = downloadFile(GPConstants.STDERR, downloadDirectory, overwrite);
+			File f = downloadFile(GPConstants.STDERR, downloadDirectory,
+					overwrite);
 			if (f != null) {
 				files.add(f);
 			}
@@ -317,7 +354,8 @@ public class JobResult {
 				return null;
 			}
 
-			lastModifiedDate = connection.getHeaderFieldDate("X-lastModified", lastModifiedDate);
+			lastModifiedDate = connection.getHeaderFieldDate("X-lastModified",
+					lastModifiedDate);
 			is = connection.getInputStream();
 			byte[] b = new byte[100000];
 			int bytesRead = 0;
@@ -362,4 +400,3 @@ public class JobResult {
 		return jobNumber;
 	}
 }
-
