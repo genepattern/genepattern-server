@@ -119,17 +119,17 @@ public class OdfWriter extends PrintWriter {
 	public void printHeader() {
 		this.println("ODF 1.0");
 		int headerLines = headers.size() + 2; // DataLines, Model
-		if (columnNames != null) {
+		if (columnNames != null && columnNames.length > 0) {
 			headerLines++;
 		}
-		if (columnTypes != null) {
+		if (columnTypes != null && columnTypes.length > 0) {
 			headerLines++;
 		}
 		this.println("HeaderLines=" + headerLines);
-		if (columnNames != null) {
+		if (columnNames != null && columnNames.length > 0) {
 			printArray("COLUMN_NAMES", columnNames);
 		}
-		if (columnTypes != null) {
+		if (columnTypes != null && columnTypes.length > 0) {
 			printArray("COLUMN_TYPES", columnTypes);
 		}
 		this.println("Model=" + model);
