@@ -22,7 +22,6 @@
 		BuildLinuxWithoutVM="true"
 		BuildMacOSX="true"
 		BuildWindowsWithVM="true"
-		BuildWindowsWithoutVM="true"
 		BuildWebInstaller="true"
 		IAProjectFile="${basedir}/GP_client.iap_xml"/>
 

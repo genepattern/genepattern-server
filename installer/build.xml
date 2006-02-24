@@ -27,7 +27,6 @@
 		BuildLinuxWithoutVM="true"
 		BuildMacOSX="true"
 		BuildWindowsWithVM="true"
-		BuildWindowsWithoutVM="true"
 		BuildWebInstaller="true"
 		InstallerStdOutRedirect="${basedir}/installerStdOut.txt"
 		InstallerStdErrRedirect="${basedir}/installerStdErr.txt" />
