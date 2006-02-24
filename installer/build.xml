@@ -23,6 +23,12 @@
 
 
       <buildinstaller IAProjectFile="${basedir}/GP_server.iap_xml" 
+		BuildLinuxWithVM="true"
+		BuildLinuxWithoutVM="true"
+		BuildMacOSX="true"
+		BuildWindowsWithVM="true"
+		BuildWindowsWithoutVM="true"
+		BuildWebInstaller="true"
 		InstallerStdOutRedirect="${basedir}/installerStdOut.txt"
 		InstallerStdErrRedirect="${basedir}/installerStdErr.txt" />
 	<copy file="version.txt" tofile="GP_server_Build_Output/Web_Installers/version.txt"/>

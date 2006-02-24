@@ -17,7 +17,14 @@
 	</copy>
 	
 
-      <buildinstaller IAProjectFile="${basedir}/GP_client.iap_xml"/>
+      <buildinstaller 
+		BuildLinuxWithVM="true"
+		BuildLinuxWithoutVM="true"
+		BuildMacOSX="true"
+		BuildWindowsWithVM="true"
+		BuildWindowsWithoutVM="true"
+		BuildWebInstaller="true"
+		IAProjectFile="${basedir}/GP_client.iap_xml"/>
 
 	<delete file="GP_client.iap_xml"/>
 	<delete file="GP_clientBuild.iap_xml"/>
