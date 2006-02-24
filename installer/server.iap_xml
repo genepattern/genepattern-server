@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- This script was automatically generated using Zero G's InstallAnywhere 6.1 Enterprise, Build 2325
-     STATUS: Fully-Functional UNLICENSED Trial Edition
-     DATE:   Thu Nov 17 14:52:29 EST 2005 -->
-<InstallAnywhere_Deployment_Project increments="8644">
+<!-- This script was automatically generated using Macrovision's InstallAnywhere 7.1 Enterprise, Build 2781
+     STATUS: Fully Functional LICENSED Edition
+     DATE:   Fri Feb 24 05:04:48 EST 2006 -->
+<InstallAnywhere_Deployment_Project increments="9759">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
-		<versionID major="6" minor="1" revision="-1"/>
-		<editionID>54,46,49,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,50,51,50,53</editionID>
-		<scriptID>12,42,11,85,78,76,73,67,69,78,83,69,68</scriptID>
-		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,51,46,49,95,48,56,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,83,59,32,67,112,49,50,53,50</buildID>
+		<versionID major="7" minor="1" revision="-1"/>
+		<editionID>55,46,49,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,50,55,56,49</editionID>
+		<scriptID>12,42,11,77,81,50,48,56,55,70,80,83,77,52,83,52</scriptID>
+		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,53,46,48,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,67,112,49,50,53,50</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,0,-109,-52,0,96,64,99,70,101,125,121,100,96,105,48,48,49,56,52,67,98,113,112,124,44,81,100,99,62,57,15,14,9,2,73,111,7,1,0,0</authorizationID>
+		<authorizationID>1,0,0,0,-109,-115,-128,48,80,112,117,98,89,98,113,97,113,65,81,86,58,65,67,66,70,65,64,69,66,69,48,63,71,5,2,5,10,68,107,9,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="448">
+	<installationObjects uniqueObjects="576">
 		<object class="com.zerog.ia.installer.Installer" objectID="72a1c4b4b1bf">
 			<property name="classpath">
 				<object class="java.util.Vector"/>
@@ -1109,6 +1109,9 @@ library from your installation.</li>
 							<property name="agreeWithLicenseByDefault">
 								<boolean>false</boolean>
 							</property>
+							<property name="forceScroll">
+								<boolean>false</boolean>
+							</property>
 							<property name="openExternalLinks">
 								<boolean>true</boolean>
 							</property>
@@ -1151,6 +1154,9 @@ library from your installation.</li>
 								<boolean>true</boolean>
 							</property>
 							<property name="agreeWithLicenseByDefault">
+								<boolean>false</boolean>
+							</property>
+							<property name="forceScroll">
 								<boolean>false</boolean>
 							</property>
 							<property name="openExternalLinks">
@@ -1276,6 +1282,9 @@ library from your installation.</li>
 								<boolean>true</boolean>
 							</property>
 							<property name="agreeWithLicenseByDefault">
+								<boolean>false</boolean>
+							</property>
+							<property name="forceScroll">
 								<boolean>false</boolean>
 							</property>
 							<property name="openExternalLinks">
@@ -1965,6 +1974,280 @@ library from your installation.</li>
 							</property>
 							<property name="useBuildProperties">
 								<boolean>true</boolean>
+							</property>
+							<property name="propertyList">
+								<object class="java.util.Vector">
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba28770">
+											<property name="propertyName">
+												<string><![CDATA[ant-antlr.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba38770">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-bcel.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba28771">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-bsf.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba38771">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-log4j.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba28772">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-oro.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba38772">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-regexp.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba28773">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-resolver.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba38773">
+											<property name="propertyName">
+												<string><![CDATA[ant-commons-logging.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba28774">
+											<property name="propertyName">
+												<string><![CDATA[ant-commons-net.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba38774">
+											<property name="propertyName">
+												<string><![CDATA[ant-icontract.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba28775">
+											<property name="propertyName">
+												<string><![CDATA[ant-jai.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba38775">
+											<property name="propertyName">
+												<string><![CDATA[ant-javamail.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba28776">
+											<property name="propertyName">
+												<string><![CDATA[ant-jdepend.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba38776">
+											<property name="propertyName">
+												<string><![CDATA[ant-jmf.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba28777">
+											<property name="propertyName">
+												<string><![CDATA[ant-jsch.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba38777">
+											<property name="propertyName">
+												<string><![CDATA[ant-junit.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba28778">
+											<property name="propertyName">
+												<string><![CDATA[ant-launcher.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba38778">
+											<property name="propertyName">
+												<string><![CDATA[ant-netrexx.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba28779">
+											<property name="propertyName">
+												<string><![CDATA[ant-nodeps.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba38779">
+											<property name="propertyName">
+												<string><![CDATA[ant-starteam.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba2877a">
+											<property name="propertyName">
+												<string><![CDATA[ant-stylebook.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba3877a">
+											<property name="propertyName">
+												<string><![CDATA[ant-swing.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1ba2877b">
+											<property name="propertyName">
+												<string><![CDATA[ant-trax.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bac877b">
+											<property name="propertyName">
+												<string><![CDATA[ant-vaj.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bad877b">
+											<property name="propertyName">
+												<string><![CDATA[ant-weblogic.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bac877c">
+											<property name="propertyName">
+												<string><![CDATA[ant-xalan1.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bad877c">
+											<property name="propertyName">
+												<string><![CDATA[ant-xslp.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+								</object>
 							</property>
 							<property name="useDefaultTarget">
 								<boolean>false</boolean>
@@ -4018,6 +4301,280 @@ http.proxyPort=$HTTP_PROXYPORT$
 							<property name="useBuildProperties">
 								<boolean>true</boolean>
 							</property>
+							<property name="propertyList">
+								<object class="java.util.Vector">
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87a9">
+											<property name="propertyName">
+												<string><![CDATA[ant-antlr.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87a9">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-bcel.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87aa">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-bsf.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87aa">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-log4j.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87ab">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-oro.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87ab">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-regexp.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87ac">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-resolver.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87ac">
+											<property name="propertyName">
+												<string><![CDATA[ant-commons-logging.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87ad">
+											<property name="propertyName">
+												<string><![CDATA[ant-commons-net.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87ad">
+											<property name="propertyName">
+												<string><![CDATA[ant-icontract.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87ae">
+											<property name="propertyName">
+												<string><![CDATA[ant-jai.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87ae">
+											<property name="propertyName">
+												<string><![CDATA[ant-javamail.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87af">
+											<property name="propertyName">
+												<string><![CDATA[ant-jdepend.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87af">
+											<property name="propertyName">
+												<string><![CDATA[ant-jmf.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87b0">
+											<property name="propertyName">
+												<string><![CDATA[ant-jsch.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87b0">
+											<property name="propertyName">
+												<string><![CDATA[ant-junit.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87b1">
+											<property name="propertyName">
+												<string><![CDATA[ant-launcher.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87b1">
+											<property name="propertyName">
+												<string><![CDATA[ant-netrexx.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87b2">
+											<property name="propertyName">
+												<string><![CDATA[ant-nodeps.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87b2">
+											<property name="propertyName">
+												<string><![CDATA[ant-starteam.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87b3">
+											<property name="propertyName">
+												<string><![CDATA[ant-stylebook.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87b3">
+											<property name="propertyName">
+												<string><![CDATA[ant-swing.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87b4">
+											<property name="propertyName">
+												<string><![CDATA[ant-trax.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87b4">
+											<property name="propertyName">
+												<string><![CDATA[ant-vaj.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87b5">
+											<property name="propertyName">
+												<string><![CDATA[ant-weblogic.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87b5">
+											<property name="propertyName">
+												<string><![CDATA[ant-xalan1.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87b6">
+											<property name="propertyName">
+												<string><![CDATA[ant-xslp.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+								</object>
+							</property>
 							<property name="useDefaultTarget">
 								<boolean>false</boolean>
 							</property>
@@ -4193,6 +4750,280 @@ chmod -R 775 $Rbase$$/$resources$/$bin$/$*
 							</property>
 							<property name="useBuildProperties">
 								<boolean>true</boolean>
+							</property>
+							<property name="propertyList">
+								<object class="java.util.Vector">
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87b9">
+											<property name="propertyName">
+												<string><![CDATA[ant-antlr.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87ba">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-bcel.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87ba">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-bsf.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bca87bb">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-log4j.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bcb87bb">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-oro.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487bb">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-regexp.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587bb">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-resolver.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487bc">
+											<property name="propertyName">
+												<string><![CDATA[ant-commons-logging.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587bc">
+											<property name="propertyName">
+												<string><![CDATA[ant-commons-net.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487bd">
+											<property name="propertyName">
+												<string><![CDATA[ant-icontract.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587bd">
+											<property name="propertyName">
+												<string><![CDATA[ant-jai.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487be">
+											<property name="propertyName">
+												<string><![CDATA[ant-javamail.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587be">
+											<property name="propertyName">
+												<string><![CDATA[ant-jdepend.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487bf">
+											<property name="propertyName">
+												<string><![CDATA[ant-jmf.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587bf">
+											<property name="propertyName">
+												<string><![CDATA[ant-jsch.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487c0">
+											<property name="propertyName">
+												<string><![CDATA[ant-junit.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587c0">
+											<property name="propertyName">
+												<string><![CDATA[ant-launcher.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487c1">
+											<property name="propertyName">
+												<string><![CDATA[ant-netrexx.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587c1">
+											<property name="propertyName">
+												<string><![CDATA[ant-nodeps.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487c2">
+											<property name="propertyName">
+												<string><![CDATA[ant-starteam.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587c2">
+											<property name="propertyName">
+												<string><![CDATA[ant-stylebook.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487c3">
+											<property name="propertyName">
+												<string><![CDATA[ant-swing.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587c3">
+											<property name="propertyName">
+												<string><![CDATA[ant-trax.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487c4">
+											<property name="propertyName">
+												<string><![CDATA[ant-vaj.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587c4">
+											<property name="propertyName">
+												<string><![CDATA[ant-weblogic.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487c5">
+											<property name="propertyName">
+												<string><![CDATA[ant-xalan1.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587c5">
+											<property name="propertyName">
+												<string><![CDATA[ant-xslp.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+								</object>
 							</property>
 							<property name="useDefaultTarget">
 								<boolean>false</boolean>
@@ -4643,6 +5474,280 @@ Some warnings were generated during the install. The install log will be opened 
 							</property>
 							<property name="useBuildProperties">
 								<boolean>true</boolean>
+							</property>
+							<property name="propertyList">
+								<object class="java.util.Vector">
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487cc">
+											<property name="propertyName">
+												<string><![CDATA[ant-antlr.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587cc">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-bcel.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487cd">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-bsf.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587cd">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-log4j.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487ce">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-oro.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587ce">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-regexp.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487cf">
+											<property name="propertyName">
+												<string><![CDATA[ant-apache-resolver.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587cf">
+											<property name="propertyName">
+												<string><![CDATA[ant-commons-logging.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487d0">
+											<property name="propertyName">
+												<string><![CDATA[ant-commons-net.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587d0">
+											<property name="propertyName">
+												<string><![CDATA[ant-icontract.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487d1">
+											<property name="propertyName">
+												<string><![CDATA[ant-jai.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587d1">
+											<property name="propertyName">
+												<string><![CDATA[ant-javamail.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487d2">
+											<property name="propertyName">
+												<string><![CDATA[ant-jdepend.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587d2">
+											<property name="propertyName">
+												<string><![CDATA[ant-jmf.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487d3">
+											<property name="propertyName">
+												<string><![CDATA[ant-jsch.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587d3">
+											<property name="propertyName">
+												<string><![CDATA[ant-junit.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487d4">
+											<property name="propertyName">
+												<string><![CDATA[ant-launcher.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587d4">
+											<property name="propertyName">
+												<string><![CDATA[ant-netrexx.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487d5">
+											<property name="propertyName">
+												<string><![CDATA[ant-nodeps.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587d5">
+											<property name="propertyName">
+												<string><![CDATA[ant-starteam.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487d6">
+											<property name="propertyName">
+												<string><![CDATA[ant-stylebook.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587d6">
+											<property name="propertyName">
+												<string><![CDATA[ant-swing.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487d7">
+											<property name="propertyName">
+												<string><![CDATA[ant-trax.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587d7">
+											<property name="propertyName">
+												<string><![CDATA[ant-vaj.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487d8">
+											<property name="propertyName">
+												<string><![CDATA[ant-weblogic.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd587d8">
+											<property name="propertyName">
+												<string><![CDATA[ant-xalan1.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.DependenciesPropertyData" objectID="aefb1bd487d9">
+											<property name="propertyName">
+												<string><![CDATA[ant-xslp.jar]]></string>
+											</property>
+											<property name="propertyValue">
+												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+											</property>
+										</object>
+									</method>
+								</object>
 							</property>
 							<property name="useDefaultTarget">
 								<boolean>false</boolean>
@@ -5141,7 +6246,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 				<object class="java.util.Properties">
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[November 17, 2005 2:52:29 PM EST]]></string>
+						<string><![CDATA[February 24, 2006 5:04:46 AM EST]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.merge]]></string>
@@ -5157,7 +6262,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.vmpack.unix.path]]></string>
-						<string><![CDATA[SunJRE142_03LinuxINTEL.vm]]></string>
+						<string><![CDATA[SunJRE142_08LinuxINTEL.vm]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.linux.vm]]></string>
@@ -5213,7 +6318,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.vmpack.linux.path]]></string>
-						<string><![CDATA[SunJRE142_03LinuxINTEL.vm]]></string>
+						<string><![CDATA[SunJRE142_08LinuxINTEL.vm]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.vmpack.aix.path]]></string>
@@ -5237,11 +6342,11 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.windows.novm]]></string>
-						<string><![CDATA[false]]></string>
+						<string><![CDATA[true]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.vmpack.windows.path]]></string>
-						<string><![CDATA[SunJRE142_03Win32.vm]]></string>
+						<string><![CDATA[SunJRE142_08iWin32.vm]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.installer.options.valid.vm.list]]></string>
@@ -5334,6 +6439,12 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</property>
 					<property name="installPanelBackgroundRGB">
 						<int>0</int>
+					</property>
+					<property name="panelBorder">
+						<boolean>true</boolean>
+					</property>
+					<property name="titleTextColorRGB">
+						<int>-16777216</int>
 					</property>
 				</object>
 			</property>
@@ -5443,7 +6554,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 				<boolean>true</boolean>
 			</property>
 			<property name="neverReboots">
-				<boolean>false</boolean>
+				<boolean>true</boolean>
 			</property>
 			<property name="suggestedMedias">
 				<object class="com.zerog.resources.Medias" objectID="72a1c4c8b1c0">
@@ -5827,6 +6938,22 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 			<property name="inputLanguage">
 				<string><![CDATA[en]]></string>
 			</property>
+			<property name="runtimeAccessType">
+				<string><![CDATA[off]]></string>
+			</property>
+			<property name="msiData">
+				<object class="com.zerog.ia.installer.util.MsiData" objectID="aefb1b7a8748">
+					<property name="newLocation">
+						<string><![CDATA[$IA_HOME$\resource\IANET\simpleProject.iax]]></string>
+					</property>
+					<property name="update">
+						<boolean>false</boolean>
+					</property>
+					<property name="buildMsi">
+						<boolean>false</boolean>
+					</property>
+				</object>
+			</property>
 			<visualChildren>
 				<object class="com.zerog.ia.installer.InstallSet" objectID="72a1c57eb1d3">
 					<property name="imagePath">
@@ -5979,7 +7106,7 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="b348efdfbb2c">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="af0456a58707">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -6262,6 +7389,69 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												</object>
 											</rules>
 										</object>
+									</property>
+									<property name="dependency">
+										<object class="com.zerog.ia.installer.ComponentDependency" objectID="aefb1be987ee">
+											<property name="matchesKeyFile">
+												<boolean>false</boolean>
+											</property>
+											<property name="matchingKeyFileReturnVariable">
+												<string><![CDATA[$GenePattern_website_MATCHED_KEY_FILE$]]></string>
+											</property>
+											<property name="checksLowerBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="checksUpperBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="lowerBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="aefb1be987ef">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="upperBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="aefb1be887ef">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="parentComponent">
+												<object refID="72a1c588b1d4"/>
+											</property>
+											<property name="dependencyFailedMessage">
+												<string><![CDATA[GenePattern website dependency has failed.]]></string>
+											</property>
+											<property name="dependencyFailedMessageVariableName">
+												<string><![CDATA[$GenePattern_website_DEPENDENCY_STATE_VARIABLE$]]></string>
+											</property>
+										</object>
+									</property>
+									<property name="checksDependency">
+										<boolean>false</boolean>
+									</property>
+									<property name="hasSomethingToInstall">
+										<boolean>true</boolean>
 									</property>
 									<installChildren>
 										<object refID="72b26ed9b6d6"/>
@@ -6675,6 +7865,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[.sql]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -6687,6 +7883,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[genepattern.properties]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -6701,6 +7903,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[omnigene.properties]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -6713,6 +7921,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[build.properties]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -6727,6 +7941,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[messages.properties]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -6739,6 +7959,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[.xml]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -6757,6 +7983,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[CVS]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -6769,6 +8001,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[Entries]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -6783,6 +8021,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[Repository]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -6796,6 +8040,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[Root]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -6808,6 +8058,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[Tag]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -6877,6 +8133,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[.bak]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -6889,6 +8151,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[.class]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -6903,6 +8171,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[Entries]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -6915,6 +8189,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[Repository]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -6929,6 +8209,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[Root]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -6942,6 +8228,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[CVS]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -6954,6 +8246,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[Tag]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -7069,6 +8367,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[.class]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -7081,6 +8385,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[Entries]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -7095,6 +8405,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[Repository]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -7107,6 +8423,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[Root]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -7121,6 +8443,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[.java]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -7133,6 +8461,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[.bak]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -7147,6 +8481,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[CVS]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -7160,6 +8500,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[CVS]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -7172,6 +8518,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[Tag]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -7241,6 +8593,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[CVS]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -7253,6 +8611,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[Entries]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -7267,6 +8631,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[Repository]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -7280,6 +8650,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[Root]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -7292,6 +8668,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[Tag]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -7422,6 +8804,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[DESCRIPTION]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -7434,6 +8822,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[TITLE]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -7448,6 +8842,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[INDEX]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -7460,6 +8860,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[install.R]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -7474,6 +8880,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[GenePattern]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -7486,6 +8898,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[genepattern.properties]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -7500,6 +8918,12 @@ and any path to a file to read from that file]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[runAnalysis.Rd]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -7512,6 +8936,12 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[package.rds]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -7818,7 +9248,7 @@ it will search for ones in this list]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="b348f012bb61">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="af0456cc8740">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -8550,7 +9980,7 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="b348f02fbb74">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="af0456d78753">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -9353,6 +10783,12 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[CVS]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -9365,6 +10801,12 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[Entries]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -9379,6 +10821,12 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[Repository]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -9392,6 +10840,12 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																	<property name="matchString">
 																		<string><![CDATA[Root]]></string>
 																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
 																</object>
 															</method>
 															<method name="addElement">
@@ -9404,6 +10858,12 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																	</property>
 																	<property name="matchString">
 																		<string><![CDATA[Tag]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -10937,6 +12397,69 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 									<property name="keyFile">
 										<object refID="72a1c627b1da"/>
 									</property>
+									<property name="dependency">
+										<object class="com.zerog.ia.installer.ComponentDependency" objectID="aefb1c4d8865">
+											<property name="matchesKeyFile">
+												<boolean>false</boolean>
+											</property>
+											<property name="matchingKeyFileReturnVariable">
+												<string><![CDATA[$InstallAnywhere_Uninstall_Component_MATCHED_KEY_FILE$]]></string>
+											</property>
+											<property name="checksLowerBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="checksUpperBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="lowerBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="aefb1c4d8866">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="upperBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="aefb1c4c8866">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="parentComponent">
+												<object refID="72a1c588b1d5"/>
+											</property>
+											<property name="dependencyFailedMessage">
+												<string><![CDATA[InstallAnywhere Uninstall Component dependency has failed.]]></string>
+											</property>
+											<property name="dependencyFailedMessageVariableName">
+												<string><![CDATA[$InstallAnywhere_Uninstall_Component_DEPENDENCY_STATE_VARIABLE$]]></string>
+											</property>
+										</object>
+									</property>
+									<property name="checksDependency">
+										<boolean>false</boolean>
+									</property>
+									<property name="hasSomethingToInstall">
+										<boolean>true</boolean>
+									</property>
 									<installChildren>
 										<object refID="72a1c627b1da"/>
 										<object refID="72a1c5c4b1d9"/>
@@ -10971,6 +12494,69 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 									<property name="versionSubRevision">
 										<int>0</int>
 									</property>
+									<property name="dependency">
+										<object class="com.zerog.ia.installer.ComponentDependency" objectID="aefb1c4c8868">
+											<property name="matchesKeyFile">
+												<boolean>false</boolean>
+											</property>
+											<property name="matchingKeyFileReturnVariable">
+												<string><![CDATA[$R_MATCHED_KEY_FILE$]]></string>
+											</property>
+											<property name="checksLowerBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="checksUpperBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="lowerBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="aefb1c4c8869">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="upperBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="aefb1c4d8868">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="parentComponent">
+												<object refID="97774e7e8096"/>
+											</property>
+											<property name="dependencyFailedMessage">
+												<string><![CDATA[R dependency has failed.]]></string>
+											</property>
+											<property name="dependencyFailedMessageVariableName">
+												<string><![CDATA[$R_DEPENDENCY_STATE_VARIABLE$]]></string>
+											</property>
+										</object>
+									</property>
+									<property name="checksDependency">
+										<boolean>false</boolean>
+									</property>
+									<property name="hasSomethingToInstall">
+										<boolean>true</boolean>
+									</property>
 								</object>
 								<object class="com.zerog.ia.installer.InstallComponent" objectID="9777adc98096">
 									<property name="componentName">
@@ -11000,6 +12586,69 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 									</property>
 									<property name="versionSubRevision">
 										<int>0</int>
+									</property>
+									<property name="dependency">
+										<object class="com.zerog.ia.installer.ComponentDependency" objectID="aefb1c4d886a">
+											<property name="matchesKeyFile">
+												<boolean>false</boolean>
+											</property>
+											<property name="matchingKeyFileReturnVariable">
+												<string><![CDATA[$Perl_MATCHED_KEY_FILE$]]></string>
+											</property>
+											<property name="checksLowerBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="checksUpperBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="lowerBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="aefb1c4d886b">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="upperBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="aefb1c4c886b">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="parentComponent">
+												<object refID="9777adc98096"/>
+											</property>
+											<property name="dependencyFailedMessage">
+												<string><![CDATA[Perl dependency has failed.]]></string>
+											</property>
+											<property name="dependencyFailedMessageVariableName">
+												<string><![CDATA[$Perl_DEPENDENCY_STATE_VARIABLE$]]></string>
+											</property>
+										</object>
+									</property>
+									<property name="checksDependency">
+										<boolean>false</boolean>
+									</property>
+									<property name="hasSomethingToInstall">
+										<boolean>true</boolean>
 									</property>
 								</object>
 								<object class="com.zerog.ia.installer.InstallComponent" objectID="9777e6838096">
@@ -11031,6 +12680,162 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 									<property name="versionSubRevision">
 										<int>0</int>
 									</property>
+									<property name="dependency">
+										<object class="com.zerog.ia.installer.ComponentDependency" objectID="aefb1c4c886d">
+											<property name="matchesKeyFile">
+												<boolean>false</boolean>
+											</property>
+											<property name="matchingKeyFileReturnVariable">
+												<string><![CDATA[$Tomcat_MATCHED_KEY_FILE$]]></string>
+											</property>
+											<property name="checksLowerBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="checksUpperBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="lowerBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="aefb1c4c886e">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="upperBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="aefb1c4d886d">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="parentComponent">
+												<object refID="9777e6838096"/>
+											</property>
+											<property name="dependencyFailedMessage">
+												<string><![CDATA[Tomcat dependency has failed.]]></string>
+											</property>
+											<property name="dependencyFailedMessageVariableName">
+												<string><![CDATA[$Tomcat_DEPENDENCY_STATE_VARIABLE$]]></string>
+											</property>
+										</object>
+									</property>
+									<property name="checksDependency">
+										<boolean>false</boolean>
+									</property>
+									<property name="hasSomethingToInstall">
+										<boolean>true</boolean>
+									</property>
+								</object>
+								<object class="com.zerog.ia.installer.VMComponent" objectID="aefb1c568870">
+									<property name="componentName">
+										<string><![CDATA[InstallAnywhere VM Component]]></string>
+									</property>
+									<property name="comment">
+										<string><![CDATA[<Enter Install Component comment here -- do not forget to assign this Component to desired Product Features>]]></string>
+									</property>
+									<property name="shortName">
+										<string><![CDATA[VM]]></string>
+									</property>
+									<property name="uniqueId">
+										<object class="com.zerog.registry.UUID">
+											<method name="update">
+												<string><![CDATA[aefb1c56-1edb-11b2-8872-da79ea24dfc5]]></string>
+											</method>
+										</object>
+									</property>
+									<property name="versionMajor">
+										<int>1</int>
+									</property>
+									<property name="versionMinor">
+										<int>0</int>
+									</property>
+									<property name="versionRevision">
+										<int>0</int>
+									</property>
+									<property name="versionSubRevision">
+										<int>0</int>
+									</property>
+									<property name="dependency">
+										<object class="com.zerog.ia.installer.ComponentDependency" objectID="aefb1c578870">
+											<property name="matchesKeyFile">
+												<boolean>false</boolean>
+											</property>
+											<property name="matchingKeyFileReturnVariable">
+												<string><![CDATA[$InstallAnywhere_VM_Component_MATCHED_KEY_FILE$]]></string>
+											</property>
+											<property name="checksLowerBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="checksUpperBound">
+												<boolean>false</boolean>
+											</property>
+											<property name="lowerBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="aefb1c578871">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="upperBoundComponentVersion">
+												<object class="com.zerog.ia.installer.util.ComponentVersion" objectID="aefb1c568871">
+													<property name="versionMajor">
+														<int>1</int>
+													</property>
+													<property name="versionMinor">
+														<int>0</int>
+													</property>
+													<property name="versionRevision">
+														<int>0</int>
+													</property>
+													<property name="versionSubrevision">
+														<int>0</int>
+													</property>
+												</object>
+											</property>
+											<property name="parentComponent">
+												<object refID="aefb1c568870"/>
+											</property>
+											<property name="dependencyFailedMessage">
+												<string><![CDATA[InstallAnywhere VM Component dependency has failed.]]></string>
+											</property>
+											<property name="dependencyFailedMessageVariableName">
+												<string><![CDATA[$InstallAnywhere_VM_Component_DEPENDENCY_STATE_VARIABLE$]]></string>
+											</property>
+										</object>
+									</property>
+									<property name="checksDependency">
+										<boolean>false</boolean>
+									</property>
+									<property name="hasSomethingToInstall">
+										<boolean>true</boolean>
+									</property>
 								</object>
 							</installChildren>
 						</object>
@@ -11054,6 +12859,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 								<object refID="97774e7e8096"/>
 								<object refID="9777adc98096"/>
 								<object refID="9777e6838096"/>
+								<object refID="aefb1c568870"/>
 							</installChildren>
 						</object>
 					</installChildren>
@@ -11065,6 +12871,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 				<object refID="97774e7e8096"/>
 				<object refID="9777adc98096"/>
 				<object refID="72a1c588b1d5"/>
+				<object refID="aefb1c568870"/>
 				<object class="com.zerog.ia.installer.GhostDirectory" objectID="72a1c569b1d2">
 					<property name="destinationFolder">
 						<object refID="7dacc07fafa5"/>
