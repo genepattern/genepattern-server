@@ -43,6 +43,23 @@ input { font-size: 8pt }
   text-decoration: none 
 }
 
+a:hover {
+	color: #FF0000;
+	border: 1;
+}
+
+a:hover img.highlightable{
+	color: #FF0000;
+	border: 1;
+
+border-top: thin solid red;
+border-right: thin solid red;
+border-bottom: thin solid red;
+border-left: thin solid red;
+}
+
+
+
 .navbar {
 	background-image:  url('blueGradWide.jpeg');
 	background-repeat: repeat-y;
@@ -60,6 +77,8 @@ input { font-size: 8pt }
 	font-size: 9pt;
 	border-color: gray 
 }
+
+
 
 .heading { font-family: Arial,Helvetica,sans-serif; 
 		background-image:  url('blueGradNarrow.jpeg');
@@ -91,6 +110,8 @@ TR.altpaleBackground, tr.altpaleBackground,table.altpaleBackground, TABLE.altpal
 TR.altpaleBackground2, tr.altpaleBackground2,table.altpaleBackground2, TABLE.altpaleBackground2   { 
 	background: #EFEFEF; 
 }
+
+
 
 .majorCell { border-width: 2;  font-size: 10pt; }
 .button  { width: 50; }
