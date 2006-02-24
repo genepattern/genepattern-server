@@ -2,6 +2,20 @@
 <project basedir="." default="installer" name="GPGEInstaller">
     <taskdef name="buildinstaller" classname="com.zerog.ia.integration.ant.InstallAnywhereAntTask"/>
    
+   <target name="setup_gui_installer"  >
+	<property file="../../../resources/build.properties"/>
+	<delete verbose="true" file="GP_clientlocales/custom_en"/>
+	<copy file="GP_Product.iap_xml" tofile="GP_client.iap_xml">
+		<filterset>
+      		<filter token="version.major" value="${version.major}"/>
+       		<filter token="version.minor" value="${version.minor}"/>
+      		<filter token="buildrelease" value="${release}"/>
+			<filter token="builddate" value="${date}"/>
+			<filter token="buildtag" value="${build.tag}"/>
+   		</filterset>
+	</copy>
+	</target>
+
 
     <target name="installer"  >
 	<property file="../../../resources/build.properties"/>
