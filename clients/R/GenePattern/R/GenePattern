@@ -461,7 +461,7 @@ function(con, nameSpaces, method, ..., xmlns = NULL)
  con <- textConnection(".foo", open="w")
  writeSOAPEnvelope(con, nameSpaces = nameSpaces)
 
- writeSOAPBody(method, ..., xmlns = xmlns, con = con)
+ writeSOAPBody(method=method, ..., xmlns = xmlns, con = con)
 
  cat("</soapenv:Envelope>\r\n", file=con)
 
@@ -575,9 +575,9 @@ function(method, ..., xmlns= NULL, con)
   else
     argName <- letters[i]
 
-  cat("<", argName, " ", sep="", file=con)
-  if(type != "") 
-    cat("xsi:type=\"", type, "\" ", file=con, sep="")
+  cat("<", argName, sep="", file=con)
+  if(!is.null(type) && type != "") 
+    cat(" xsi:type=\"", type, "\"", file=con, sep="")
   cat(">", file=con)
   toSOAP(args[[i]], con)
   cat("</", argName, ">\r\n", sep="", file=con)  
@@ -662,7 +662,7 @@ itemsPerTask <- 3
 server <- gpNormalizeServer(server)
 
 if (USE.SOAP) {
-	content <- SOAPSendReceive(server, "getTasks", action = "getTasks", xmlns = c(ns1="Admin"), nameSpaces = SOAPNameSpaces(version = "1.2"))
+	content <- SOAPSendReceive(server=server, method="getTasks", action = "getTasks", xmlns = c(ns1="Admin"), nameSpaces = SOAPNameSpaces(version = "1.2"))
 #	if (!class(content) == "list") return (NULL)
 	if (is.null(content)) return (NULL)
 	if (is(content, "SOAPFault")) return(content)
@@ -806,7 +806,10 @@ function(jobID, server=defaultServer)
 {
 	if (missing(jobID)) stop("gpCheckStatus: missing jobID")
 	server <- gpNormalizeServer(server)
-	content <- SOAPSendReceive(server, "checkStatus", as.integer(jobID), action = "checkStatus", xmlns = c(ns1="Analysis"), nameSpaces = SOAPNameSpaces(version = "1.2"))
+	jobID <- as.integer(jobID)
+	content <- SOAPSendReceive(server=server, method="checkStatus", jobID=jobID, action = "checkStatus", xmlns = c(ns1="Analysis"), nameSpaces = SOAPNameSpaces(version = "1.2"))
+
+	# if the server doesn't respond, just say that the job is still busy
 	if (is.null(content)) {
 		status <- new("status", busy=TRUE, jobID=as.integer(jobID), server=server)
 		return (status)
@@ -2255,17 +2258,17 @@ gpQuote <- function(...) {
 	setClass("status", representation(busy="logical", success="logical", error="character", hasOutput="logical", filenames="list", serverFilenames="list", jobID="integer", server="SOAPServer"))
 	setClass("resultFilename", representation(name="character", value="character"))
 
-	if (!exists("defaultServer", envir=globalenv())) {
+#	if (!exists("defaultServer", envir=globalenv())) {
 		defaultServer <<- paste(props[["serverName"]], ":", props[["serverPort"]], sep="", collapse="")
 		startServer <<- props[["startServerCmd"]]
-	}
+#	}
 	handlers <<- SOAPHandlers()
 
 	# fake socket open so that the first real one doesn't fail
 	oldWarn <- options("warn" = -1)[[1]]
 	oldError <- options("show.error.messages"=FALSE)[[1]]
 	tcon <- NULL
-	try (tcon <- socketConnection(defaultServer@host, port = defaultServer@port, open = "w+", blocking = TRUE))
+	try (tcon <- socketConnection(props[["serverName"]], port = props[["serverPort"]], open = "w+", blocking = TRUE))
 	if (!is.null(tcon) && isOpen(tcon)) close(tcon)
 	rm(tcon)
 	options("show.error.messages"=oldError)
