@@ -335,7 +335,7 @@ SOAPTypes <-
 getSOAPType <-
 function(obj)
 {
-  if(is.null(obj) || length(obj) == 0)
+  if(is.null(obj))
     return(SOAPTypes[["NULL"]])
 
   if(length(obj) > 1) {
@@ -834,9 +834,15 @@ function(jobID, server=defaultServer)
 			if (xmlName(response[["Body"]][[item]]) != "multiRef") next
 			i <- response[["Body"]][item][["multiRef"]]
 			if (length(grep(":ParmInfo$", xmlAttrs(i)[["type"]])) == 0) next # only process this if it ends with TaskInfo
-			hasOutputFile <- (xmlValue(i[["outputFile"]]) == "true")
+			val <- xmlValue(i[["outputFile"]])
+			filename <- xmlValue(i[["value"]])
+			hasOutputFile <- (!is.null(val) && (val == "true"))
+			if (is.null(val) && length(filename) != 0) {
+				# Axis 2.1 format
+				id <- xmlAttrs(i[["outputFile"]])[["href"]]
+				hasOutputFile <- (xmlValue(getNodeById(id, response[["Body"]])) == "true")
+			}
 			if (hasOutputFile) {
-				filename <- xmlValue(i[["value"]])
 				names(filename) <- paste(".server.", xmlValue(i[["name"]]), sep="", collapse="")
 				bName <- basename(filename)
 				if (bName == "stderr.txt") stderr = filename
@@ -879,7 +885,8 @@ function(jobID, retrieve=TRUE, server=defaultServer)
 	if (missing(jobID)) stop("gpWaitForResults: missing jobID")
 	if (!exists("runningOnServer", envir=globalenv())) runningOnServer <- FALSE
 	server <- gpNormalizeServer(server)
-	status <- gpCheckStatus(jobID, server=server)
+	jobID <- as.integer(jobID)
+	status <- gpCheckStatus(jobID=jobID, server=server)
 	iterations <- 0
 	while (status@busy) {
 		if (iterations < 10) {
@@ -944,8 +951,8 @@ function(jobID, server=defaultServer)
 		for (i in 1:length(status@filenames)) { 
 			filename <- names(status@filenames[i]);
 			if (file.exists(filename)[1]) filename <- paste("job_", jobID, "_", filename, sep="", collapse="")
-			download.file(url=status@filenames[[i]], filename, quiet=TRUE, mode="wb", cacheOK=FALSE)
-		}
+			download.file(url=status@filenames[[i]], destfile=filename, quiet=TRUE, mode="wb", cacheOK=FALSE)
+ 		}
 		result <- new("result", success=TRUE, filenames=status@filenames, jobID=as.integer(jobID), server=server)
 	}
 	return(result)
@@ -1203,7 +1210,13 @@ if (nchar(txt[[1]]) == 0) stop("No response from server on submitJob ", taskName
    return(fault)
  }
 response <- parseSOAP(content[["content"]], asText = TRUE, reduce = FALSE)
-return(xmlValue(response[["Body"]][["multiRef"]][["jobNumber"]]))
+jobID <- xmlValue(response[["Body"]][["multiRef"]][["jobNumber"]])
+if (is.null(jobID)) {
+	# Axis 2.1 response format
+	id <- xmlAttrs(response[["Body"]][["multiRef"]][["jobNumber"]])[["href"]]
+	jobID <- xmlValue(getNodeById(id, response[["Body"]]))
+}
+return(jobID)
 #return(xmlValue(response[["Body"]][["submitJobResponse"]][["submitJobReturn"]][["jobNumber"]]))
 }
 
