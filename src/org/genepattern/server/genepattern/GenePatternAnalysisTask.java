@@ -340,9 +340,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
 						// TODO: strip Axisnnnnnaxis_ from name
 						int j;
 						String baseName = inFile.getName();
-						j = baseName.indexOf("axis_");
+						j = baseName.indexOf("Axis");
 						// strip off the AxisNNNNNaxis_ prefix
-						if (baseName.indexOf("Axis") == 0 && j != -1) {
+						if (j == 0 && baseName.indexOf("_") != -1) {
 							baseName = baseName
 									.substring(baseName.indexOf("_") + 1);
 							_cat.debug("name without Axis is " + baseName);
@@ -914,17 +914,17 @@ public class GenePatternAnalysisTask implements IGPConstants {
 					String origFullPath = (String)actp.getAttributes().get(ORIGINAL_PATH);
 
 					value = ifn.getName();
-					int idx = value.indexOf("axis_");
-					if (idx >= 0){
-						value = value.substring(idx+5);
+					int idx = value.indexOf("Axis");
+					if (idx == 0 && value.indexOf("_") != -1){
+						value = value.substring(value.indexOf("_")+1);
 					}
 //System.out.println("OFP=" + origFullPath);
 
 					// follow the input filename with the URL to fetch it if available
 					if ((origFullPath!= null) && (origFullPath.length() > 0)){
 						// expect something that looks like this;
-						// C:\Program Files\GenePatternServer\Tomcat\..\temp\attachments\Axis39088axis_all_aml_500.gct
-						// we want ecverything from ..\temp on
+						// C:\Program Files\GenePatternServer\Tomcat\..\temp\attachments\Axis39088.att_all_aml_500.gct
+						// we want everything from ..\temp on
 
 						String substr = ".." + File.separator + "temp" + File.separator + "attachments";
 						int fidx = origFullPath.indexOf(substr);
@@ -1973,9 +1973,8 @@ if (taskIntegrator != null) taskIntegrator.statusMessage("<p>&nbsp;</td></tr></t
 								String baseName = inFile.getName();
 								if (baseName.startsWith("Axis")) {
 									// strip off the AxisNNNNNaxis_ prefix
-									j = baseName.indexOf("axis_");
-									if (j != -1) {
-										baseName = baseName.substring(j + 5);
+									if (baseName.indexOf("_") != -1) {
+										baseName = baseName.substring(baseName.indexOf("_")+1);
 									}
 								}
 								props.put(inputParamName + INPUT_FILE,
