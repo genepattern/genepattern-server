@@ -1,4 +1,4 @@
-<% /*
+<%--
   The Broad Institute
   SOFTWARE COPYRIGHT NOTICE AGREEMENT
   This software and its documentation are copyright (2003-2006) by the
@@ -8,8 +8,8 @@
   This software is supplied without any warranty or guaranteed support
   whatsoever. Neither the Broad Institute nor MIT can be responsible for its
   use, misuse, or functionality.
-*/ 
-%><%@ page import="java.io.File,
+ 
+--%><%@ page import="java.io.File,
 		 java.io.IOException,
 		 java.util.Hashtable,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
