@@ -449,7 +449,7 @@ function(url, host, action, con, ...)
 
  args <- list(...)
  for(i in names(args)) {
-    cat(i, ": ", args[[i]], sep="", file=con)
+    cat(i, ": ", args[[i]], "\r\n", sep="", file=con)
  }
 
 }  
@@ -593,7 +593,7 @@ function(method, ..., xmlns= NULL, con)
 # SOAPServer("www.omegahat.org", "/foo")
 #
 SOAPServer <-
-function(host, url="/gp/servlet/AxisServlet", port = props[["serverPort"]],  s = new(className))
+function(host, url="/gp/services/Analysis", port = props[["serverPort"]],  s = new(className))
 {
 
  if(missing(url)) {
@@ -639,7 +639,7 @@ function(server) {
 #	if (length(split) > 3) {
 #		uri <- paste("/", split[4:length(split)], sep="", collapse="/")
 #	} else {
-		uri = "/gp/servlet/AxisServlet";
+		uri = "/gp/services/Analysis";
 #	}
 
 	server <- SOAPServer(paste("http://", host, sep="", collapse=""), uri, as.integer(port))
@@ -1278,7 +1278,7 @@ function(server, method, ..., action, nameSpaces = SOAPNameSpaces(), xmlns = NUL
 	 if(!is.null(handlers) && !is.na(match("action", names(handlers)))) 
 	   action <- handlers[["action"]](action, method, server, xmlns)
 	 
-	 if (method == "submitJob" || method == "getTasks") {
+	 if (method == "submitJob" || method == "getTasks" || TRUE) {
 		 writeSOAPHeader(server@url, server@host, action, con, "Authorization"=paste("Basic", gpEncodedUserName))
 	 } else {
 		 writeSOAPHeader(server@url, server@host, action, con)
