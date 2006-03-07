@@ -45,18 +45,7 @@ public class OdfObject implements TableModel {
 
 	private int dataLines;
 
-	public List getHeaders() {
-		return keyValuePairs;
-	}
-
-	public int getColumnIndex(String columnName) {
-		for (int j = 0; j < columnNames.size(); j++) {
-			if (((String) columnNames.get(j)).equalsIgnoreCase(columnName)) {
-				return j;
-			}
-		}
-		return -1;
-	}
+	private List arrayHeaders = new ArrayList();;
 
 	public OdfObject(InputStream is) throws ParseException, IOException {
 		OdfParser parser = new OdfParser();
@@ -104,6 +93,8 @@ public class OdfObject implements TableModel {
 				columnNames = new ArrayList(Arrays.asList(values));
 			} else if (key.equals("COLUMN_TYPES")) {
 				columnTypes = new ArrayList(Arrays.asList(values));
+			} else {
+				arrayHeaders.add(new ArrayEntry(key, values));
 			}
 		}
 
@@ -192,6 +183,16 @@ public class OdfObject implements TableModel {
 			}
 		}
 		return "";
+	}
+
+	public String[] getArrayHeader(String key) {
+		for (int i = 0; i < arrayHeaders.size(); i++) {
+			ArrayEntry e = (ArrayEntry) arrayHeaders.get(i);
+			if (e.key.equals(key)) {
+				return e.values;
+			}
+		}
+		return new String[0];
 	}
 
 	public boolean getBooleanHeader(String key) {
@@ -292,9 +293,19 @@ public class OdfObject implements TableModel {
 		return (Integer[]) getArray(columnName);
 	}
 
-	/**
-	 * @author Joshua Gould
-	 */
+	public List getHeaders() {
+		return keyValuePairs;
+	}
+
+	public int getColumnIndex(String columnName) {
+		for (int j = 0; j < columnNames.size(); j++) {
+			if (((String) columnNames.get(j)).equalsIgnoreCase(columnName)) {
+				return j;
+			}
+		}
+		return -1;
+	}
+
 	public static class Entry {
 		public final String key;
 
@@ -303,6 +314,25 @@ public class OdfObject implements TableModel {
 		Entry(String key, String value) {
 			this.key = key;
 			this.value = value;
+		}
+
+		public String toString() {
+			return key + " = " + value;
+		}
+	}
+
+	public static class ArrayEntry {
+		public final String key;
+
+		public final String[] values;
+
+		ArrayEntry(String key, String[] values) {
+			this.key = key;
+			this.values = values;
+		}
+
+		public String toString() {
+			return key + " = " + Arrays.asList(values);
 		}
 	}
 
