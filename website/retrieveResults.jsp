@@ -11,6 +11,7 @@
 */ 
 %><%@page import="java.io.File,
 		 java.io.FileInputStream,
+		 java.io.BufferedInputStream,
 		 java.io.IOException,
 		 java.util.Hashtable,
  		 org.genepattern.util.StringUtils,
@@ -55,6 +56,7 @@ Unable to locate <%= StringUtils.htmlEncode(filename) %> for job <%= tempDir %>.
 response.setDateHeader("X-lastModified", in.lastModified());
 response.setHeader("X-job", tempDir);
 response.setHeader("X-filename", filename);
+response.setHeader("Content-Length", "" + in.length());
 
 String contentType = in.toURL().openConnection().getFileNameMap().getContentTypeFor(filename);
 if (contentType == null) {
@@ -71,7 +73,8 @@ if (contentType == null) {
 }
 
 response.setContentType(contentType);
-FileInputStream ins = new java.io.FileInputStream(in);
+response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+BufferedInputStream ins = new BufferedInputStream(new java.io.FileInputStream(in));
 int c = 0;
   	while ((c = ins.read()) != -1) {
    		out.write(c);
