@@ -122,11 +122,13 @@ public class OdfObject implements TableModel {
 
 		public void endHeader() throws ParseException {
 			if (columnTypes == null) {
-				columnTypes = new ArrayList(columnNames.size());
+				columnTypes = columnNames != null ? new ArrayList(columnNames
+						.size()) : new ArrayList(0);
 				for (int i = 0, cols = columnNames.size(); i < cols; i++) {
 					columnTypes.add("String");
 				}
 			}
+
 			columns = new ArrayList(columnTypes.size());
 			columnClasses = new ArrayList(columnTypes.size());
 			for (int i = 0; i < columnTypes.size(); i++) {
