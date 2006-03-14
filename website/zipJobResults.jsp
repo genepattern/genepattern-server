@@ -1,4 +1,4 @@
-<!-- /*
+<%-- /*
   The Broad Institute
   SOFTWARE COPYRIGHT NOTICE AGREEMENT
   This software and its documentation are copyright (2003-2006) by the
@@ -8,10 +8,7 @@
   This software is supplied without any warranty or guaranteed support
   whatsoever. Neither the Broad Institute nor MIT can be responsible for its
   use, misuse, or functionality.
-*/ -->
-
-
-<%@ page import="java.io.File,
+*/ --%><%@ page import="java.io.File,
 		 java.util.zip.*,
 		 java.io.*,
 	       java.text.*,
@@ -96,7 +93,7 @@ if(isDownload) {
          zos.closeEntry();          
        }
      } catch(IOException ioe) {
-ioe.printStackTrace();
+		ioe.printStackTrace();
      } finally {
          if(zos!=null) {
             try {
@@ -106,7 +103,8 @@ ioe.printStackTrace();
 	String contentType = "application/x-zip-compressed" + "; name=\"" + zipFile.getName()+ "\";";
 	response.addHeader("Content-Disposition", "attachment; filename=\"" + zipFile.getName() + "\";");
 	response.setContentType(contentType);
-      FileInputStream ins = new java.io.FileInputStream(zipFile);
+	response.setHeader("Content-Length", "" + zipFile.length());
+        BufferedInputStream ins = new BufferedInputStream(new java.io.FileInputStream(zipFile));
 	int c = 0;
   	while ((c = ins.read()) != -1) {
    		out.write(c);
