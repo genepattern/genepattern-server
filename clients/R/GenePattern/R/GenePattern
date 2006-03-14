@@ -974,6 +974,7 @@ function(taskName, server=defaultServer, taskID, ...)
  args <- list(...)
  items <- list()
  files <- list()
+ nullFiles <- list()
  contentIDs <- list()
  fileSizes <- 0
  numServerFiles <- 0
@@ -994,7 +995,12 @@ function(taskName, server=defaultServer, taskID, ...)
 	    length(grep("^ftp:", as.character(args[[i]]))) == 0 && 
 	    length(grep("^<GenePatternURL>", as.character(args[[i]]))) == 0) { 
 		if (!isServerFile) {
-			if (is.null(args[[i]]) || nchar(args[[i]]) == 0) next
+			if (is.null(args[[i]]) || nchar(args[[i]]) == 0) {
+				f <- args[i]
+				names(f) <- names(args[i])
+				nullFiles <- c(nullFiles, f)
+				next
+			}
 			if (file.access(args[[i]], 0) == -1) {
 				stop("Input file ", args[[i]], " doesn't exist");
 			}
@@ -1052,16 +1058,16 @@ measuredContent <- paste(
      ' <soapenv:Body>\n',
      '  <ns1:submitJob soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:ns1="Analysis">\n',
 
-     '   <arg0 xsi:type="xsd:int">', idOfTask, '</arg0>\n',
+     '   <taskID xsi:type="xsd:int">', idOfTask, '</taskID>\n',
 
-     '   <arg1 xsi:type="soapenc:Array" soapenc:arrayType="ns1:ParmInfo[', 
-         length(items) + length(files),
+     '   <parameters xsi:type="soapenc:Array" soapenc:arrayType="ns1:ParmInfo[', 
+         length(items) + length(files) + length(nullFiles),
      ']" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">\n',
 
 	paste(sapply(seq(along=args), function(i) { paste('    <item href="#id', names(args[i]), '"/>\n', sep="") }), sep="", collapse=""),
 
-    '   </arg1>\n',
-    '   <arg2 href="#filedescriptions"/>\n',
+    '   </parameters>\n',
+    '   <files href="#filedescriptions"/>\n',
     '  </ns1:submitJob>\n',
 
 # filename map
@@ -1094,9 +1100,14 @@ measuredContent <- paste(
 	    '   <name xsi:type="xsd:string">', names(files[i]), '</name>\n',
 	    '   <value xsi:type="xsd:string">', ifelse(!isServerFile, fname, files[[i]]), '</value>\n',
 	    '   <inputFile xsi:type="xsd:boolean">',ifelse(!isServerFile, 'true', 'false'),'</inputFile>\n',
+	    '   <outputFile xsi:type="xsd:boolean">false</outputFile>\n',
 	    '  </multiRef>\n',
 
 	    '  <multiRef id="fd', names(files[i]), '" soapenc:root="0" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xsi:type="ns2:Map" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:ns2="http://xml.apache.org/xml-soap">\n',
+	    '   <item>\n',
+	    '   <key xsi:type="xsd:string">client_filename</key>\n',
+	    '   <value xsi:type="xsd:string">',files[[i]],'</value>\n',
+	    '   </item>\n',
 	    '   <item>\n',
 	    '   <key xsi:type="xsd:string">MODE</key>\n',
 	    '   <value xsi:type="xsd:string">',ifelse(!isServerFile, 'IN', 'Cached'),'</value>\n',
@@ -1109,16 +1120,40 @@ measuredContent <- paste(
 
 	    sep="", collapse="") }), sep="", collapse=""),
 
+# null files (those not selected)
+	paste(sapply(seq(along=nullFiles), function(i) { 
+	    fname <- names(unlist(nullFiles[i]))
+
+	    paste(
+	    '  <multiRef id="id', fname, '" soapenc:root="0" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xsi:type="ns2:ParmInfo" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:ns2="Analysis">\n',
+	    '   <attributes href="#fd', fname, '"/>\n',
+	    '   <name xsi:type="xsd:string">', fname, '</name>\n',
+	    '   <value xsi:type="xsd:string" xsi:nil="true"/>\n',
+	    '   <inputFile xsi:type="xsd:boolean">false</inputFile>\n',
+	    '   <outputFile xsi:type="xsd:boolean">false</outputFile>\n',
+	    '  </multiRef>\n',
+
+	    '  <multiRef id="fd', fname, '" soapenc:root="0" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xsi:type="ns2:Map" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:ns2="http://xml.apache.org/xml-soap">\n',
+	    '   <item>\n',
+	    '   <key xsi:type="xsd:string">client_filename</key>\n',
+	    '   <value xsi:nil="true"/>\n',
+	    '   </item>\n',
+	    '  </multiRef>\n',
+
+	    sep="", collapse="") }), sep="", collapse=""),
+
 # and do all of the normal parameters too
 	paste(sapply(seq(along=items), function(i) { paste(
 	    '  <multiRef id="id', names(items[i]), '" soapenc:root="0" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xsi:type="ns2:ParmInfo" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:ns2="Analysis">\n',
-	    '   <description xsi:type="xsd:string"></description>\n',
+#	    '   <attributes href="#EmptyMap"/>\n',
+#	    '   <description xsi:type="xsd:string"></description>\n',
 	    '   <name xsi:type="xsd:string">', names(items[i]), '</name>\n',
 	    '   <value xsi:type="xsd:string">', as.character(items[[i]]), '</value>\n',
 	    '  </multiRef>\n',
 	  sep="", collapse="") }), sep="", collapse=""),
 
 	    
+#    '  <multiRef id="EmptyMap" soapenc:root="0" soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xsi:type="ns24:Map" xmlns:ns24="http://xml.apache.org/xml-soap" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"/>\n',
     ' </soapenv:Body>\n',
     '</soapenv:Envelope>\r\n',
 
@@ -1182,7 +1217,6 @@ oldWarn <- options(warn=-1)
 txt <- ""
 err <- try (txt <- readLines(con))
 #cat("back from socket read at", date(), "\n", file=stderr())
-#browser()
 if (class(err[[1]]) == "try-error") {
 	cat("error from readLines\n", file=stderr())
 	if (isWindows) flush.console()
@@ -2239,8 +2273,6 @@ gpQuote <- function(...) {
 	eval(parse(text=gsub("\\\\", "/", gsub("\r\n", "\n", p))))
 	props[["startServerCmd"]] <<- paste("'\"", props[["startServerCmd"]], "'\"", sep="", collapse="")
 	GenePatternVersion <<- props[["genePatternVersion"]]
-
-
 
 	options(echo = TRUE)
 	if (!require("methods", quietly=TRUE)) {
