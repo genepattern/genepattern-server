@@ -192,7 +192,7 @@ public class ClsParser {
         // remove the # because it could be "# CLASS1" or "#CLASS1"
         classifierLine = classifierLine
                 .substring(classifierLine.indexOf('#') + 1);
-        StringTokenizer st = new StringTokenizer(classifierLine);
+        StringTokenizer st = new StringTokenizer(classifierLine, " \t");
         if (st.countTokens() != numClasses) {
             throw new org.genepattern.io.ParseException("First line specifies "
                     + numClasses + " classes, but found " + (st.countTokens())
