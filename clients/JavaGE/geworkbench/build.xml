@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="" default="package" name="GPGEPlugin">	
+	<target name="init">
+		<property name="inclds" value="org/"/>
+		<mkdir dir="classes"/>
+		<path id="library.classpath">
+			<fileset dir="lib" includes="*.jar">		
+			</fileset>
+		</path>
+	</target>
+	
+	<target name="clean">
+		<delete>
+			<fileset dir="classes" includes="**/*.class"/>
+		</delete>
+	</target>
+	
+	<target name="compile" depends="init">
+		<javac debug="true" defaultexcludes="true" deprecation="true" destdir="classes" includes="${inclds}" optimize="false" proceed="false" srcdir="src">
+			<classpath refid="library.classpath"/>
+		</javac>
+	</target>
+   
+</project>
+
