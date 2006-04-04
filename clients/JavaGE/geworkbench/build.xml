@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="" default="compile" name="GPGEPlugin">	
 	<target name="init">
-	<!--	<property name="workbench.dir" value="/Applications/geWorkbench1.0"/> -->
-		<property name="workbench.dir" value="/Users/jgould/geWorkBench-3.1b-src"/>
+		<property name="workbench.dir" value="/Applications/geWorkbench1.0"/>
 		<property name="components.dir" value="${workbench.dir}/components"/>
 		
 		<property name="inclds" value="org/"/>
@@ -26,10 +25,26 @@
 	</target>
 	
 	<target name="publish" depends="init">
+		<delete dir="${components.dir}/genepattern"/>
 		<mkdir dir="${components.dir}/genepattern"/>
-		<copy todir="${components.dir}/genepattern/classes">
+		<copy todir="${components.dir}/genepattern/classes" overwrite="true">
     		<fileset dir="classes"/>
   		</copy>
+  		<copy todir="${components.dir}/genepattern/lib" overwrite="true">
+    		<fileset dir="lib"/>
+  		</copy>
+	</target>
+	
+	<target name="test" depends="init">
+		<java classname="org.genepattern.geworkbench.GPGEPlugin" fork="true">
+			<classpath>
+           <pathelement path="classes"/>
+          <fileset dir="lib">
+        			<include name="*.jar"/>
+      		</fileset>
+         </classpath>
+         
+		</java>
 	</target>
 	
 	<!-- add text below to all.xml 
