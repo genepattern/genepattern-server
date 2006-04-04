@@ -12,11 +12,14 @@
 
 package org.genepattern.geworkbench;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Toolkit;
 
-import javax.swing.JLabel;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.genepattern.gpge.ui.maindisplay.GPGE;
 import org.geworkbench.bison.datastructure.biocollections.DSDataSet;
 import org.geworkbench.bison.datastructure.biocollections.microarrays.DSMicroarraySet;
 import org.geworkbench.engine.config.VisualPlugin;
@@ -25,20 +28,25 @@ import org.geworkbench.engine.management.Subscribe;
 import org.geworkbench.events.ProjectEvent;
 
 @AcceptTypes( { DSMicroarraySet.class })
-public class GPGEPlugin extends JPanel implements VisualPlugin {
+public class GPGEPlugin implements VisualPlugin {
 
     private DSMicroarraySet microarraySet;
 
-    private JLabel infoLabel;
+    private GPGE instance;
+
+    private JPanel panel;
 
     public GPGEPlugin() {
-        infoLabel = new JLabel("");
-        add(infoLabel);
+        instance = GPGE.getInstance();
+        instance.setFrame(new HiddenFrame());
+        instance.startUp(false);
+        panel = new JPanel(new BorderLayout());
+        panel.add(instance.getFrame().getContentPane());
+        panel.add(instance.getFrame().getJMenuBar(), BorderLayout.NORTH);
     }
 
     public Component getComponent() {
-        // In this case, this object is also the GUI component.
-        return this;
+        return panel;
     }
 
     @Subscribe
@@ -47,15 +55,22 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
         // We will act on this object if it is a DSMicroarraySet
         if (dataSet instanceof DSMicroarraySet) {
             microarraySet = (DSMicroarraySet) dataSet;
-            // We just received a new microarray set,
-            // so populate the info label with some basic stats.
-            String htmlText = "<html><body>" + "<h3>"
-                    + microarraySet.getLabel() + "</h3><br>" + "<table>"
-                    + "<tr><td>Arrays:</td><td><b>" + microarraySet.size()
-                    + "</b></td></tr>" + "<tr><td>Markers:</td><td><b>"
-                    + microarraySet.getMarkers().size() + "</b></td></tr>"
-                    + "</table>" + "</body></html>";
-            infoLabel.setText(htmlText);
         }
+    }
+
+    private static class HiddenFrame extends JFrame {
+        public void setVisible(boolean b) {
+        }
+
+        public void show() {
+        }
+    }
+
+    public static void main(String[] args) {
+        GPGEPlugin plugin = new GPGEPlugin();
+        JFrame mainFrame = new JFrame();
+        mainFrame.getContentPane().add(plugin.getComponent());
+        mainFrame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+        mainFrame.setVisible(true);
     }
 }
