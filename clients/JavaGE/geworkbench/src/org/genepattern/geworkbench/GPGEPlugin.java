@@ -28,25 +28,23 @@ import org.geworkbench.engine.management.Subscribe;
 import org.geworkbench.events.ProjectEvent;
 
 @AcceptTypes( { DSMicroarraySet.class })
-public class GPGEPlugin implements VisualPlugin {
+public class GPGEPlugin extends JPanel implements VisualPlugin {
 
     private DSMicroarraySet microarraySet;
 
     private GPGE instance;
 
-    private JPanel panel;
-
     public GPGEPlugin() {
         instance = GPGE.getInstance();
         instance.setFrame(new HiddenFrame());
         instance.startUp(false);
-        panel = new JPanel(new BorderLayout());
-        panel.add(instance.getFrame().getContentPane());
-        panel.add(instance.getFrame().getJMenuBar(), BorderLayout.NORTH);
+        setLayout(new BorderLayout());
+        add(instance.getFrame().getContentPane());
+        add(instance.getFrame().getJMenuBar(), BorderLayout.NORTH);
     }
 
     public Component getComponent() {
-        return panel;
+        return this;
     }
 
     @Subscribe
@@ -73,4 +71,5 @@ public class GPGEPlugin implements VisualPlugin {
         mainFrame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
         mainFrame.setVisible(true);
     }
+
 }
