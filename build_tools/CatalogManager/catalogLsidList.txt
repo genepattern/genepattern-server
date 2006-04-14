@@ -136,3 +136,4 @@ NMFConsensus.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_ana
 ProteoArray.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00068=1
 mzXMLToCSV.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00069=1
 GSEA.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00072=1
+caArrayImportViewer.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00066=0

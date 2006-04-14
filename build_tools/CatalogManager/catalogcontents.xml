@@ -972,5 +972,12 @@
 </cvs>
 <copy file="GSEA.zip" tofile="catalogregen/GSEA.1.zip" />
 
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00066=0 caArrayImportViewer.zip"/>
+	</commandline>
+</cvs>
+<copy file="caArrayImportViewer.zip" tofile="catalogregen/caArrayImportViewer.0.zip" />
+
 </target>
 </project>
