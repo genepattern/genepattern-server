@@ -37,7 +37,7 @@ public class IconManager {
 
 
    public static Icon loadIcon(String name) {
-      java.net.URL imgURL = ClassLoader.getSystemResource("org/genepattern/gpge/resources/icons/" + name);
+      java.net.URL imgURL = ClassLoader.getSystemResource("/org/genepattern/gpge/resources/icons/" + name);
       if(imgURL != null) {
          return new ImageIcon(imgURL);
       } else {
