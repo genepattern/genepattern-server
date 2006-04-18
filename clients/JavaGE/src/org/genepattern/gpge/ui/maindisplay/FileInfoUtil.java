@@ -1,15 +1,14 @@
 /*
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2006) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2006) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
 
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
-*/
-
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */
 
 package org.genepattern.gpge.ui.maindisplay;
 
@@ -40,332 +39,348 @@ import org.genepattern.io.expr.res.*;
  * @author Joshua Gould
  */
 public class FileInfoUtil {
-	static NumberFormat numberFormat;
+    static NumberFormat numberFormat;
 
-	static OdfSummaryHandler odfSummaryHandler = new OdfSummaryHandler();
+    static OdfSummaryHandler odfSummaryHandler = new OdfSummaryHandler();
 
-	static MyIExpressionDataHandler expressionDataHandler = new MyIExpressionDataHandler();
+    static MyIExpressionDataHandler expressionDataHandler = new MyIExpressionDataHandler();
 
-	static {
-		numberFormat = NumberFormat.getInstance();
-		numberFormat.setMaximumFractionDigits(1);
-	}
+    static {
+        numberFormat = NumberFormat.getInstance();
+        numberFormat.setMaximumFractionDigits(1);
+    }
 
-	static Map extensionToReaderMap;
+    static Map extensionToReaderMap;
 
-	static {
-		extensionToReaderMap = new HashMap();
+    static {
+        extensionToReaderMap = new HashMap();
 
-		GctParser gctParser = new GctParser();
-		gctParser.setHandler(expressionDataHandler);
-		extensionToReaderMap.put("gct", gctParser);
+        GctParser gctParser = new GctParser();
+        gctParser.setHandler(expressionDataHandler);
+        extensionToReaderMap.put("gct", gctParser);
 
-		ResParser resParser = new ResParser();
-		resParser.setHandler(expressionDataHandler);
-		extensionToReaderMap.put("res", resParser);
+        ResParser resParser = new ResParser();
+        resParser.setHandler(expressionDataHandler);
+        extensionToReaderMap.put("res", resParser);
 
-		ClsReader clsReader = new ClsReader();
-		extensionToReaderMap.put("cls", clsReader);
+        ClsReader clsReader = new ClsReader();
+        extensionToReaderMap.put("cls", clsReader);
 
-		OdfParser odfParser = new OdfParser();
-		odfParser.setHandler(odfSummaryHandler);
-		extensionToReaderMap.put("odf", odfParser);
-	}
+        OdfParser odfParser = new OdfParser();
+        odfParser.setHandler(odfSummaryHandler);
+        extensionToReaderMap.put("odf", odfParser);
+    }
 
-	private static FileInfo _getInfo(String pathname, InputStream is) {
-		int dotIndex = pathname.lastIndexOf(".");
-		Object parser = null;
-		FileInfo fileInfo = new FileInfo();
+    private static FileInfo _getInfo(String pathname, InputStream is) {
+        int dotIndex = pathname.lastIndexOf(".");
+        Object parser = null;
+        FileInfo fileInfo = new FileInfo();
 
-		if (dotIndex != -1) {// see if file has an extension
-			String suffix = pathname.substring(dotIndex + 1, pathname.length());
-			suffix = suffix.toLowerCase();
-			parser = extensionToReaderMap.get(suffix);
-			fileInfo.setKind(suffix);
-		}
-		try {
-			if (parser instanceof IExpressionDataParser) {
-				((IExpressionDataParser) parser).parse(is);
+        if (dotIndex != -1) {// see if file has an extension
+            String suffix = pathname.substring(dotIndex + 1, pathname.length());
+            suffix = suffix.toLowerCase();
+            parser = extensionToReaderMap.get(suffix);
+            fileInfo.setKind(suffix);
+        }
+        try {
+            if (parser instanceof IExpressionDataParser) {
+                ((IExpressionDataParser) parser).parse(is);
 
-			} else if (parser instanceof ClsReader) {
+            } else if (parser instanceof ClsReader) {
 
-				ClsReader clsReader = (ClsReader) parser;
-				ClassVector cv = clsReader.read(is);
+                ClsReader clsReader = (ClsReader) parser;
+                ClassVector cv = clsReader.read(is);
 
-				// keyValuePairs.add(new KeyValuePair("Number of Classes",
-				// String.valueOf(cv.getClassCount())));
-				fileInfo.setAnnotation(new KeyValuePair("Data Points", String
-						.valueOf(cv.size())));
-			} else if (parser instanceof OdfParser) {
-				((OdfParser) parser).parse(is);
+                // keyValuePairs.add(new KeyValuePair("Number of Classes",
+                // String.valueOf(cv.getClassCount())));
+                fileInfo.setAnnotation(new KeyValuePair("Data Points", String
+                        .valueOf(cv.size())));
+            } else if (parser instanceof OdfParser) {
+                ((OdfParser) parser).parse(is);
 
-			}
-		} catch (EndParseException epe) {// ignore
-			if (parser instanceof IExpressionDataParser) {
-				fileInfo.setAnnotation(expressionDataHandler.getKeyValuePair());
-			} else if (parser instanceof OdfParser) {
-				fileInfo.setKind(odfSummaryHandler.getModel());
-				fileInfo.setAnnotation(odfSummaryHandler.getKeyValuePair());
-			}
-		} catch (ParseException pe) {
-			pe.printStackTrace();
-			String message = pe.getMessage();
-			fileInfo.setAnnotation(new KeyValuePair("Error", message));
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-			fileInfo.setAnnotation(new KeyValuePair("Error",
-					"Unable to parse file"));
-		} catch (Throwable t) {
-			t.printStackTrace();
-			fileInfo.setAnnotation(new KeyValuePair("Error",
-					"Unable to parse file"));
-		}
-		return fileInfo;
-	}
+            }
+        } catch (EndParseException epe) {// ignore
+            if (parser instanceof IExpressionDataParser) {
+                fileInfo.setAnnotation(expressionDataHandler.getKeyValuePair());
+            } else if (parser instanceof OdfParser) {
+                fileInfo.setKind(odfSummaryHandler.getModel());
+                fileInfo.setAnnotation(odfSummaryHandler.getKeyValuePair());
+            }
+        } catch (ParseException pe) {
+            pe.printStackTrace();
+            String message = pe.getMessage();
+            fileInfo.setAnnotation(new KeyValuePair("Error", message));
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            fileInfo.setAnnotation(new KeyValuePair("Error",
+                    "Unable to parse file"));
+        } catch (Throwable t) {
+            t.printStackTrace();
+            fileInfo.setAnnotation(new KeyValuePair("Error",
+                    "Unable to parse file"));
+        }
+        return fileInfo;
+    }
 
-	public static FileInfo getInfo(File file) {
-		if (file == null) {
-			return null;
-		}
+    public static FileInfo getInfo(File file) {
+        if (file == null) {
+            return null;
+        }
+        if (!file.exists()) {
+            String pathname = file.getName();
+            int dotIndex = pathname.lastIndexOf(".");
+            FileInfo fileInfo = new FileInfo();
 
-		String size = getSize(file.length());
-		FileInputStream fis = null;
-		try {
-			fis = new FileInputStream(file);
-			FileInfo fileInfo = _getInfo(file.getName(), fis);
-			fileInfo.setSize(size);
-			return fileInfo;
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		} finally {
-			if (fis != null) {
-				try {
-					fis.close();
-				} catch (IOException x) {
-				}
-			}
-		}
-		return null;
-	}
+            if (dotIndex != -1) {// see if file has an extension
+                String suffix = pathname.substring(dotIndex + 1, pathname
+                        .length());
+                suffix = suffix.toLowerCase();
+                fileInfo.setKind(suffix);
 
-	public static FileInfo getInfo(URL url, String name) {
-		if (url == null) {
-			return null;
-		}
+            } else {
+                fileInfo.setKind(null);
+            }
+            fileInfo.setSize(null);
+            return fileInfo;
+        }
+        String size = getSize(file.length());
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(file);
+            FileInfo fileInfo = _getInfo(file.getName(), fis);
+            fileInfo.setSize(size);
+            return fileInfo;
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException x) {
+                }
+            }
+        }
+        return null;
+    }
 
-		InputStream is = null;
-		try {
-			URLConnection conn = url.openConnection();
-			long length = -1;
-			try {
-				length = Long.parseLong(conn.getHeaderField("content-length"));
-			} catch (Exception e) {
-				length = is.available();
-			}
-			
-			is = conn.getInputStream();
-			String size = getSize(length);
-			FileInfo fileInfo = _getInfo(name, is);
-			fileInfo.setSize(size);
-			return fileInfo;
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		} finally {
-			if (is != null) {
-				try {
-					is.close();
-				} catch (IOException x) {
-				}
-			}
-		}
-		return null;
-	}
+    public static FileInfo getInfo(URL url, String name) {
+        if (url == null) {
+            return null;
+        }
 
-	private static String getSize(long lengthInBytes) {
-		String size = null;
-		if (lengthInBytes >= 1073741824) {
-			double gigabytes = lengthInBytes / 1073741824.0;
-			size = numberFormat.format(gigabytes) + " GB";
-		} else if (lengthInBytes >= 1048576) {
-			double megabytes = lengthInBytes / 1048576.0;
-			size = numberFormat.format(megabytes) + " MB";
-		} else {
-			size = Math.ceil(lengthInBytes / 1024.0) + " KB";
-		}
+        InputStream is = null;
+        try {
+            URLConnection conn = url.openConnection();
+            long length = -1;
+            try {
+                length = Long.parseLong(conn.getHeaderField("content-length"));
+            } catch (Exception e) {
+                length = is.available();
+            }
 
-		return size;
-	}
+            is = conn.getInputStream();
+            String size = getSize(length);
+            FileInfo fileInfo = _getInfo(name, is);
+            fileInfo.setSize(size);
+            return fileInfo;
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException x) {
+                }
+            }
+        }
+        return null;
+    }
 
-	static class KeyValuePair {
-		Object key;
+    private static String getSize(long lengthInBytes) {
+        String size = null;
+        if (lengthInBytes >= 1073741824) {
+            double gigabytes = lengthInBytes / 1073741824.0;
+            size = numberFormat.format(gigabytes) + " GB";
+        } else if (lengthInBytes >= 1048576) {
+            double megabytes = lengthInBytes / 1048576.0;
+            size = numberFormat.format(megabytes) + " MB";
+        } else {
+            size = Math.ceil(lengthInBytes / 1024.0) + " KB";
+        }
 
-		Object value;
+        return size;
+    }
 
-		public KeyValuePair(String key, String value) {
-			this.key = key;
-			this.value = value;
-		}
+    static class KeyValuePair {
+        Object key;
 
-		public String toString() {
-			return key + ": " + value;
-		}
+        Object value;
 
-	}
+        public KeyValuePair(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
 
-	/**
-	 * Description of the Class
-	 * 
-	 * @author Joshua Gould
-	 */
-	public static class FileInfo {
-		private String kind = "";
+        public String toString() {
+            return key + ": " + value;
+        }
 
-		private String size = "";
+    }
 
-		private KeyValuePair annotation = null;
+    /**
+     * Description of the Class
+     * 
+     * @author Joshua Gould
+     */
+    public static class FileInfo {
+        private String kind = "";
 
-		public String getSize() {
-			return size;
-		}
+        private String size = "";
 
-		public String getKind() {
-			return kind;
-		}
+        private KeyValuePair annotation = null;
 
-		public void setSize(String _size) {
-			this.size = _size;
-			if (this.size == null) {
-				this.size = "";
-			}
-		}
+        public String getSize() {
+            return size;
+        }
 
-		public void setKind(String _kind) {
-			this.kind = _kind;
-			if (this.kind == null) {
-				this.kind = "";
-			}
-		}
+        public String getKind() {
+            return kind;
+        }
 
-		public KeyValuePair getAnnotation() {
-			return annotation;
-		}
+        public void setSize(String _size) {
+            this.size = _size;
+            if (this.size == null) {
+                this.size = "";
+            }
+        }
 
-		public void setAnnotation(KeyValuePair s) {
-			annotation = s;
-		}
+        public void setKind(String _kind) {
+            this.kind = _kind;
+            if (this.kind == null) {
+                this.kind = "";
+            }
+        }
 
-		public String toString() {
-			return "kind " + kind + " size " + size;
-		}
-	}
+        public KeyValuePair getAnnotation() {
+            return annotation;
+        }
 
-	private static class MyIExpressionDataHandler implements
-			IExpressionDataHandler {
-		int rows, columns;
+        public void setAnnotation(KeyValuePair s) {
+            annotation = s;
+        }
 
-		public KeyValuePair getKeyValuePair() {
-			return new KeyValuePair("Dimensions", String.valueOf(rows)
-					+ " rows x " + String.valueOf(columns) + " columns");
+        public String toString() {
+            return "kind " + kind + " size " + size;
+        }
+    }
 
-		}
+    private static class MyIExpressionDataHandler implements
+            IExpressionDataHandler {
+        int rows, columns;
 
-		public void init(int rows, int cols, boolean hasRowDescriptions,
-				boolean hasColumnDescriptions, boolean hasCalls)
-				throws ParseException {
-			this.rows = rows;
-			this.columns = cols;
-			throw new EndParseException();
-		}
+        public KeyValuePair getKeyValuePair() {
+            return new KeyValuePair("Dimensions", String.valueOf(rows)
+                    + " rows x " + String.valueOf(columns) + " columns");
 
-		public void data(int i, int j, double d) throws ParseException {
-			throw new EndParseException();
-		}
+        }
 
-		public void call(int i, int j, int call) throws ParseException {
-			throw new EndParseException();
-		}
+        public void init(int rows, int cols, boolean hasRowDescriptions,
+                boolean hasColumnDescriptions, boolean hasCalls)
+                throws ParseException {
+            this.rows = rows;
+            this.columns = cols;
+            throw new EndParseException();
+        }
 
-		public void columnName(int j, String name) throws ParseException {
-			throw new EndParseException();
-		}
+        public void data(int i, int j, double d) throws ParseException {
+            throw new EndParseException();
+        }
 
-		public void rowName(int i, String name) throws ParseException {
-			throw new EndParseException();
-		}
+        public void call(int i, int j, int call) throws ParseException {
+            throw new EndParseException();
+        }
 
-		public void rowDescription(int i, String desc) throws ParseException {
-			throw new EndParseException();
-		}
+        public void columnName(int j, String name) throws ParseException {
+            throw new EndParseException();
+        }
 
-		public void columnDescription(int j, String desc) throws ParseException {
-			throw new EndParseException();
-		}
-	}
+        public void rowName(int i, String name) throws ParseException {
+            throw new EndParseException();
+        }
 
-	private static class EndParseException extends ParseException {
-		public EndParseException() {
-			super("");
-		}
-	}
+        public void rowDescription(int i, String desc) throws ParseException {
+            throw new EndParseException();
+        }
 
-	private static class OdfSummaryHandler implements IOdfHandler {
-		String model;
+        public void columnDescription(int j, String desc) throws ParseException {
+            throw new EndParseException();
+        }
+    }
 
-		String rows, columns;
+    private static class EndParseException extends ParseException {
+        public EndParseException() {
+            super("");
+        }
+    }
 
-		String numFeatures, numErrors, numCorrect;
+    private static class OdfSummaryHandler implements IOdfHandler {
+        String model;
 
-		public OdfSummaryHandler() {
-		}
+        String rows, columns;
 
-		public KeyValuePair getKeyValuePair() {
-			if ("Dataset".equals(model)) {
-				return new KeyValuePair("Dimensions", rows + " rows x "
-						+ columns + " columns");
-			} else if ("Prediction Results".equals(model)) {
-				int total = Integer.parseInt(numCorrect)
-						+ Integer.parseInt(numErrors);
-				return new KeyValuePair("Accuracy", numCorrect + "/" + total
-						+ " correct");
-			} else if ("Prediction Features".equals(model)) {
-				return new KeyValuePair("Features", numFeatures);
-			}
-			return null;
-		}
+        String numFeatures, numErrors, numCorrect;
 
-		public void endHeader() throws ParseException {
-			throw new EndParseException();
-		}
+        public OdfSummaryHandler() {
+        }
 
-		public void header(String key, String[] values) throws ParseException {
-			if (key.equals("COLUMN_NAMES")) {
-				columns = String.valueOf(values.length);
-			}
-		}
+        public KeyValuePair getKeyValuePair() {
+            if ("Dataset".equals(model)) {
+                return new KeyValuePair("Dimensions", rows + " rows x "
+                        + columns + " columns");
+            } else if ("Prediction Results".equals(model)) {
+                int total = Integer.parseInt(numCorrect)
+                        + Integer.parseInt(numErrors);
+                return new KeyValuePair("Accuracy", numCorrect + "/" + total
+                        + " correct");
+            } else if ("Prediction Features".equals(model)) {
+                return new KeyValuePair("Features", numFeatures);
+            }
+            return null;
+        }
 
-		public String getModel() {
-			return model;
-		}
+        public void endHeader() throws ParseException {
+            throw new EndParseException();
+        }
 
-		public void header(String key, String value) throws ParseException {
-			if (key.equalsIgnoreCase("Model")) {
-				model = value;
-			} else if (key.equalsIgnoreCase("DataLines")) {
-				rows = value;
-			} else if (key.equalsIgnoreCase("NumFeatures")) {
-				numFeatures = value;
-			} else if (key.equalsIgnoreCase("NumErrors")) {
-				numErrors = value;
-			} else if (key.equalsIgnoreCase("NumCorrect")) {
-				numCorrect = value;
-			}
+        public void header(String key, String[] values) throws ParseException {
+            if (key.equals("COLUMN_NAMES")) {
+                columns = String.valueOf(values.length);
+            }
+        }
 
-		}
+        public String getModel() {
+            return model;
+        }
 
-		public void data(int row, int column, String s) throws ParseException {
-			throw new EndParseException();
-		}
+        public void header(String key, String value) throws ParseException {
+            if (key.equalsIgnoreCase("Model")) {
+                model = value;
+            } else if (key.equalsIgnoreCase("DataLines")) {
+                rows = value;
+            } else if (key.equalsIgnoreCase("NumFeatures")) {
+                numFeatures = value;
+            } else if (key.equalsIgnoreCase("NumErrors")) {
+                numErrors = value;
+            } else if (key.equalsIgnoreCase("NumCorrect")) {
+                numCorrect = value;
+            }
 
-	}
+        }
+
+        public void data(int row, int column, String s) throws ParseException {
+            throw new EndParseException();
+        }
+
+    }
 
 }
