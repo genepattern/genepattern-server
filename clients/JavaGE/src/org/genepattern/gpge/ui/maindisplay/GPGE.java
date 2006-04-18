@@ -2832,4 +2832,8 @@ public class GPGE {
 
         }
     }
+
+    public ProjectDirModel getProjectDirectoryModel() {
+        return projectDirModel;
+    }
 }
