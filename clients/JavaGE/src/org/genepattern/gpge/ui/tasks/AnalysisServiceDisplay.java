@@ -79,9 +79,6 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
     }
 
     public void showGettingStarted() {
-        // java.net.URL url = ClassLoader
-        // .getSystemResource("org/genepattern/gpge/resources/getting_started.html");
-
         java.net.URL url = AnalysisServiceDisplay.class
                 .getResource("/org/genepattern/gpge/resources/getting_started.html");
         final JTextPane pane = new JTextPane();
