@@ -157,7 +157,7 @@
 		<jar basedir="${genepattern.build}" defaultexcludes="true"  jarfile="${genepattern.build}/${gp-library-jarname}">	
       <include name="org/genepattern/client/**/*.class"/>
 		<manifest>
-				<attribute name="Class-Path" value="./lib/gpwebservice.jar ./lib/broad-cg.jar ./lib/activation.jar ./lib/mail.jar ./lib/axis.jar ./lib/log4j-1.2.8.jar ./lib/jaxrpc.jar ./lib/commons-discovery.jar ./lib/commons-logging.jar ./lib/saaj.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar" />
+				<attribute name="Class-Path" value="./lib/gpwebservice.jar ./lib/broad-cg.jar ./lib/activation.jar ./lib/mail.jar ./lib/axis.jar ./lib/log4j-1.2.8.jar ./lib/jaxrpc.jar ./lib/commons-discovery.jar ./lib/commons-logging.jar ./lib/saaj.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar ./lib/wsdl4j.jar" />
 			</manifest> 
 		</jar>
 		
@@ -184,6 +184,7 @@
 				<include name="jaxb-rt-1.0-ea.jar"/>
 				<include name="Jama-1.0.1.jar"/>
 				<include name="MAGEstk-2003-10-24-v1.1-compatible.jar"/>
+				<include name="wsdl4j.jar"/>
 			</zipfileset>
 			
 			<zipfileset dir="build/doc" prefix="doc"/>
