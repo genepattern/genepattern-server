@@ -244,7 +244,6 @@ public class MAGEMLWriter implements IExpressionDataWriter {
 		pw.println("<!DOCTYPE MAGE-ML>");
 		mageJava.writeMAGEML(pw);
 		pw.flush();
-		pw.close();
 	}
 
 	public void setExternalDataFilenameURI(String externalDataFilenameURI) {

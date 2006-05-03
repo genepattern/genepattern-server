@@ -75,7 +75,6 @@ public class GctWriter implements IExpressionDataWriter {
 		}
 		out.print("\n");
 		out.flush();
-		out.close();
 	}
 
 	public String getFormatName() {

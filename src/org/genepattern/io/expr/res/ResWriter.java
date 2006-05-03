@@ -104,7 +104,6 @@ public class ResWriter implements IExpressionDataWriter {
 			}
 		}
 		out.flush();
-		out.close();
 	}
 
 	public String getFormatName() {

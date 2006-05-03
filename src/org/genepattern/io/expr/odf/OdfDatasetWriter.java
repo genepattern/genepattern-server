@@ -114,7 +114,6 @@ public class OdfDatasetWriter implements IExpressionDataWriter {
 			}
 		}
 		out.flush();
-		out.close();
 	}
 
 	public String getFormatName() {
