@@ -4,7 +4,7 @@
 ]>
 <project basedir="." default="targets" name="genepattern">
    <description>JAR deployment for genepattern</description>
-   
+   <property name="java.target" value="1.4"/>
    <property location="lib" name="lib"/>
    	
    <property location="src" name="src"/>
@@ -12,6 +12,7 @@
    <property location="." name="dist"/>
    <property name="classpath" value="${lib}/archiver.jar:${lib}/crimson.jar:${lib}/dom.jar:${lib}/ejb.jar:${lib}/genepattern.properties:${lib}/jaxb-rt-1.0-ea.jar:${lib}/jaxp-api.jar:${lib}/log4j-1.2.8.jar:${lib}/omnigene.jar:${lib}/oromatcher.jar:${lib}/runtask.jar:${lib}/sax.jar:${lib}/trove.jar:${lib}/xalan.jar:${lib}/xercesImpl.jar:${lib}/xsltc.jar:${lib}/image.jar:${lib}/colt.jar"/>
 
+	
    <property name="common-manifest" value="gp-common.mf"/>
    <property name="uisupport-manifest" value="ui_support.mf"/>
    <property name="common-jarname" value="gp-common.jar"/>
@@ -112,7 +113,8 @@
 		debug="true" 
 		destdir="${genepattern.build}" 
 		srcdir="${src}"
-		target="1.3"
+		target="${java.target}"
+		source="${java.target}"
 		excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**"
 		/>
 
@@ -242,12 +244,12 @@
    </target>
 	
    <target depends="init" name="runtask">
-<!-- compile RunGenePatternTaskMain as JDK 1.3 -->
  <javac classpathref="library.classpath" 
 		debug="true" 
 		destdir="${genepattern.build}" 
 		srcdir="${src}"
-		target="1.3"
+		target="${java.target}"
+		source="${java.target}"
 		includes="org/genepattern/util/RunGenePatternTaskMain.java"
 		/>
 
