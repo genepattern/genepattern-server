@@ -12,11 +12,13 @@
 
 package org.genepattern.io;
 
+import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -245,14 +247,15 @@ public class IOUtil {
         if (checkFileExtension) {
             pathname = writer.checkFileExtension(pathname);
         }
-        FileOutputStream fos = null;
+        OutputStream os = null;
         try {
-            fos = new FileOutputStream(pathname);
-            writer.write(data, fos);
+            os = new BufferedOutputStream(new FileOutputStream(pathname));
+            writer.write(data, os);
         } finally {
             try {
-                if (fos != null) {
-                    fos.close();
+                if (os != null) {
+                    os.flush();
+                    os.close();
                 }
             } catch (IOException ioe) {
             }
