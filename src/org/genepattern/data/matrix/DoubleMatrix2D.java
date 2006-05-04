@@ -191,7 +191,7 @@ public class DoubleMatrix2D {
      *            parameter to null.
      * @return the new matrix
      * @throws IllegalArgumentException
-     *             if an index occcurs more than once.
+     *             if a name occcurs more than once.
      * @see #slice(int[], int[])
      */
     public DoubleMatrix2D slice(String[] rowNames, String[] columnNames) {
