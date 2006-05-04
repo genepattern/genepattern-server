@@ -483,7 +483,7 @@ public class DoubleMatrix2D {
      * @param columnIndex
      *            The column index.
      * @param name
-     *            The new columnName value
+     *            The new column name value
      */
     public void setColumnName(int columnIndex, String name) {
         if (name == null) {
@@ -505,9 +505,9 @@ public class DoubleMatrix2D {
      * Sets the row name at the specified index
      * 
      * @param rowIndex
-     *            The new rowName value
+     *            The row index
      * @param name
-     *            The new rowName value
+     *            The new row name value
      */
     public void setRowName(int rowIndex, String name) {
         if (name == null) {
