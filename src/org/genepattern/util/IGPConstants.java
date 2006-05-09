@@ -313,6 +313,15 @@ public interface IGPConstants {
 	public static String SUITE_NAMESPACE = "genepatternsuites";
 
 	public static final String SUITE_MANIFEST_FILENAME = "suiteManifest.xml";
+    
+    /** token to redirect standard output */
+    public static final String STDOUT_REDIRECT = "\\>";
+    
+    /** token to redirect standard input */
+    public static final String STDIN_REDIRECT = "\\<";
+    
+    /** token to redirect standard error */
+    public static final String STDERR_REDIRECT = "\\>&";
 
 
 
