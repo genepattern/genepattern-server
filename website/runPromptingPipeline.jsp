@@ -158,10 +158,12 @@ try {
 		String value;	
 		if (pinfo.isInputFile()){
 			value = (String)htFilenames.get(pinfo.getName());
-			if (value.startsWith("http:") || value.startsWith("https:")|| value.startsWith("ftp:") || value.startsWith("file:")) {
-				value = value;
-			} else {
-				value = server + "/"+request.getContextPath()+"/getFile.jsp?task=&file="+ value;
+			if(value!=null) {
+				if (value.startsWith("http:") || value.startsWith("https:")|| value.startsWith("ftp:") || value.startsWith("file:")) {
+					value = value;
+				} else {
+					value = server + "/"+request.getContextPath()+"/getFile.jsp?task=&file="+ value;
+				}
 			}
 			HashMap pia = pinfo.getAttributes();
 			pia.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
