@@ -1,14 +1,4 @@
-<% /*
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2006) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
-
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
-*/ %>
+<%@ page contentType="application/download" %>
 <%@ page import="java.io.File,
 		 java.io.*,
 		 java.util.Hashtable,
@@ -17,11 +7,7 @@
 		org.genepattern.server.webservice.server.DirectoryManager"
 	session="false" language="Java" %>
 <% 
-
-response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
-response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
-response.setDateHeader("Expires", 0);
-
+out.clearBuffer();
 String taskName = request.getParameter("task");
 if (taskName == null) {
 	out.println("no such task: " + taskName);
@@ -34,20 +20,6 @@ if (filename == null)  {
 }
 int i = filename.lastIndexOf(File.separator);
 if ((i != -1) && (taskName.trim().length() != 0)) filename = filename.substring(i+1); // disallow absolute paths
-
-String contentType = new File(filename).toURL().openConnection().getFileNameMap().getContentTypeFor(filename);
-if (contentType == null) {
-	final Hashtable htTypes = new Hashtable();
-	htTypes.put(".jar", "application/java-archive");
-	htTypes.put(".zip", "application/zip");
-	htTypes.put("." + GPConstants.TASK_TYPE_PIPELINE, "text/plain");
-	htTypes.put(".class", "application/octet-stream");
-
-	i = filename.lastIndexOf(".");
-	String extension = (i > -1 ? filename.substring(i) : "");
-	contentType = (String)htTypes.get(extension.toLowerCase());
-	if (contentType == null) contentType = "text/plain";
-}
 
 File in = null;
 try {
@@ -65,21 +37,27 @@ try {
 		return;
 	}
 }
-response.setDateHeader("X-lastModified", in.lastModified());
-if (in.exists()) {
-	response.setContentType(contentType);
-      FileInputStream ins = new java.io.FileInputStream(in);
+
+
+if (in!=null && in.exists()) {
+   // javax.activation.FileTypeMap ftm = new javax.activation.MimetypesFileTypeMap();
+   // response.setContentType(ftm.getContentType(filename));
+    response.setHeader("Content-Disposition","attachment; filename=" + in.getName() + ";");
+    response.setHeader("Content-Type", "application/octet-stream"); 
+    response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
+    response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
+    response.setDateHeader("Expires", 0);
+	response.setDateHeader("X-lastModified", in.lastModified());
+    FileInputStream ins = new java.io.FileInputStream(in);
 	int c = 0;
-  	while ((c = ins.read()) != -1) {
-   		out.write(c);
+	
+  	while ((c = ins.read()) >= 0) {
+  	  	out.write(c);
   	}
 	out.flush();
-
-
 	ins.close();
 	ins = null;
 } else {
 	out.println("no such file: " + in.getPath());
 }
-return;
 %>
