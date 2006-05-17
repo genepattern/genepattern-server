@@ -69,11 +69,13 @@ if (contentType == null) {
 	int i = filename.lastIndexOf(".");
 	String extension = (i > -1 ? filename.substring(i) : "");
 	contentType = (String)htTypes.get(extension.toLowerCase());
-	if (contentType == null) contentType = "text/plain";
+	if (contentType == null) contentType = "application/octet-stream";
 }
 
 response.setContentType(contentType);
-response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+if(!contentType.equals("text/html")) { // view html files in browser
+	response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+}
 BufferedInputStream ins = new BufferedInputStream(new java.io.FileInputStream(in));
 int c = 0;
   	while ((c = ins.read()) != -1) {
