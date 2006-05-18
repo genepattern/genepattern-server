@@ -2192,6 +2192,86 @@ public class GenePatternAnalysisTask implements IGPConstants {
     }
 
     /**
+     * Takes care of quotes in command line
+     * 
+     * @param commandLine
+     * @return the new command line
+     */
+    private static String[] translateCommandline(String[] commandLine) {
+        if (commandLine == null || commandLine.length == 0) {
+            // no command? no string
+            return new String[0];
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < commandLine.length; i++) {
+            if (i > 0) {
+                sb.append(" ");
+            }
+            sb.append(commandLine[i]);
+        }
+
+        // parse with a simple finite state machine
+
+        final int normal = 0;
+        final int inQuote = 1;
+        final int inDoubleQuote = 2;
+        int state = normal;
+        String toProcess = sb.toString();
+        StringTokenizer tok = new StringTokenizer(toProcess, "\"\' ", true);
+        ArrayList v = new ArrayList();
+        StringBuffer current = new StringBuffer();
+        boolean lastTokenHasBeenQuoted = false;
+
+        while (tok.hasMoreTokens()) {
+            String nextTok = tok.nextToken();
+            switch (state) {
+            case inQuote:
+                if ("\'".equals(nextTok)) {
+                    lastTokenHasBeenQuoted = true;
+                    state = normal;
+                } else {
+                    current.append(nextTok);
+                }
+                break;
+            case inDoubleQuote:
+                if ("\"".equals(nextTok)) {
+                    lastTokenHasBeenQuoted = true;
+                    state = normal;
+                } else {
+                    current.append(nextTok);
+                }
+                break;
+            default:
+                if ("\'".equals(nextTok)) {
+                    state = inQuote;
+                } else if ("\"".equals(nextTok)) {
+                    state = inDoubleQuote;
+                } else if (" ".equals(nextTok)) {
+                    if (lastTokenHasBeenQuoted || current.length() != 0) {
+                        v.add(current.toString());
+                        current = new StringBuffer();
+                    }
+                } else {
+                    current.append(nextTok);
+                }
+                lastTokenHasBeenQuoted = false;
+                break;
+            }
+        }
+
+        if (lastTokenHasBeenQuoted || current.length() != 0) {
+            v.add(current.toString());
+        }
+
+        if (state == inQuote || state == inDoubleQuote) {
+            throw new IllegalArgumentException("unbalanced quotes in "
+                    + toProcess);
+        }
+
+        return (String[]) v.toArray(new String[0]);
+    }
+
+    /**
      * Spawns a separate process to execute the requested analysis task. It
      * copies the stdout and stderr output streams to StringBuffers so that they
      * can be returned to the invoker. The stdin input stream is closed
@@ -2233,13 +2313,16 @@ public class GenePatternAnalysisTask implements IGPConstants {
             String stdin, StringBuffer stderrBuffer) {
         Process process = null;
         String jobID = null;
+        
         try {
+            commandLine = translateCommandline(commandLine);
             env.remove("SHELLOPTS"); // readonly variable in tcsh and bash,
             // not
             // critical anyway
             String[] envp = hashTableToStringArray(env);
 
             // spawn the command
+            _cat.info(Arrays.asList(commandLine));
             process = Runtime.getRuntime().exec(commandLine, envp, runDir);
 
             // BUG: there is race condition during a tiny time window between
