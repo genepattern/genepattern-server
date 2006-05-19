@@ -350,11 +350,14 @@ try {
 			attachment = new File(dir, attachmentName);
 			if (attachment.exists()) {
 				File oldVersion = new File(dir, attachment.getName() + ".old");
-				oldVersion.delete(); // delete the previous .old file
-				boolean renamed = attachment.renameTo(oldVersion);
-				Vector v = new Vector();
-				v.add("failed to rename " + oldVersion.getName() +".");
-				throw new WebServiceErrorMessageException(v);
+				if(oldVersion.exists()) {
+					oldVersion.delete(); // delete the previous .old file
+				}
+				if(!attachment.renameTo(oldVersion)) {
+					Vector v = new Vector();
+					v.add("failed to rename " + oldVersion.getName() +".");
+					throw new WebServiceErrorMessageException(v);
+				}
 			}
 			
 			attachedFile.saveAs(dir.getPath() + File.separator + attachmentName);
