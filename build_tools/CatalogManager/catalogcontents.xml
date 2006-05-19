@@ -218,6 +218,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00042=2 GEOImporter.zip"/>
+	</commandline>
+</cvs>
+<copy file="GEOImporter.zip" tofile="catalogregen/GEOImporter.2.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00037=4 GeneCruiser.zip"/>
 	</commandline>
 </cvs>
@@ -414,6 +421,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00012=3 KNN.zip"/>
+	</commandline>
+</cvs>
+<copy file="KNN.zip" tofile="catalogregen/KNN.3.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00013=0 KNNXValidation.zip"/>
 	</commandline>
 </cvs>
@@ -425,6 +439,13 @@
 	</commandline>
 </cvs>
 <copy file="KNNXValidation.zip" tofile="catalogregen/KNNXValidation.1.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00013=2 KNNXValidation.zip"/>
+	</commandline>
+</cvs>
+<copy file="KNNXValidation.zip" tofile="catalogregen/KNNXValidation.2.zip" />
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
@@ -537,6 +558,13 @@
 	</commandline>
 </cvs>
 <copy file="PredictionResultsViewer.zip" tofile="catalogregen/PredictionResultsViewer.2.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00019=3 PredictionResultsViewer.zip"/>
+	</commandline>
+</cvs>
+<copy file="PredictionResultsViewer.zip" tofile="catalogregen/PredictionResultsViewer.3.zip" />
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
