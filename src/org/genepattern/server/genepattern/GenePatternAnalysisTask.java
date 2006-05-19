@@ -945,21 +945,18 @@ public class GenePatternAnalysisTask implements IGPConstants {
             File outDir = new File(outDirName);
             File f = new File(outDir, TASKLOG);
             BufferedWriter bw = new BufferedWriter(new FileWriter(f));
-            String line = null;
-            int lineNum = 0;
+
             bw.write("# Created: " + new Date(f.lastModified()) + " by "
                     + jobInfo.getUserId());
             bw.write("\n# Job: " + jobInfo.getJobNumber());
             bw.write("    server:  ");
-            InetAddress addr = InetAddress.getLocalHost();
-            String host_address = addr.getCanonicalHostName();
-            ;
             String GP_URL = System.getProperty("GenePatternURL");
             bw.write(GP_URL);
             bw.write("\n# Task: " + jobInfo.getTaskName() + " "
                     + jobInfo.getTaskLSID());
             bw.write("\n# Parameters: ");
             ParameterInfo pinfos[] = jobInfo.getParameterInfoArray();
+            
             for (int pi = 0; pinfos != null && pi < pinfos.length; pi++) {
                 ParameterInfo pinfo = pinfos[pi];
                 if (!pinfo.isOutputFile()) {
@@ -977,7 +974,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                         if (idx == 0 && value.indexOf("_") != -1) {
                             value = value.substring(value.indexOf("_") + 1);
                         }
-                        // System.out.println("OFP=" + origFullPath);
 
                         // follow the input filename with the URL to fetch it if
                         // available
@@ -993,12 +989,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                             int fidx = origFullPath.indexOf(substr);
                             String inputfilename = origFullPath
                                     .substring(fidx + 20);
-                            // String urlpath = "../" +
-                            // ((origFullPath.substring(fidx)).replace('\\'
-                            // ,'/')) ;
 
-                            // value = value + " " + GP_URL +
-                            // "/getInputFile.jsp?file=" + urlpath;
                             value = value + "    " + GP_URL
                                     + "/getInputFile.jsp?file=" + inputfilename;
 
@@ -1019,8 +1010,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
 
                         String origFullPath = (String) actp.getAttributes()
                                 .get(ORIGINAL_PATH);
-                        // System.out.println("OFP 22=" + actp.getValue() + " "
-                        // + origFullPath );
 
                         if (origFullPath != null) {
                             value = origFullPath;
@@ -1034,15 +1023,16 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     // command
                     // line
                     // substitutions
-                    if (!(value.equals(substitutedValue))) {
+                    if (substitutedValue != null
+                            && !(value.equals(substitutedValue))) {
                         value = substitutedValue + " (" + value + ")";
                     }
+
                     bw.write("\n#    " + pinfo.getName() + " = " + value);
                 }
             }
             bw.write("\n");
             bw.flush();
-
             bw.close();
             return f;
         } catch (Exception e) {
@@ -2313,7 +2303,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
             String stdin, StringBuffer stderrBuffer) {
         Process process = null;
         String jobID = null;
-        
+
         try {
             commandLine = translateCommandline(commandLine);
             env.remove("SHELLOPTS"); // readonly variable in tcsh and bash,
