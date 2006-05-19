@@ -151,7 +151,9 @@ try {
 	// and then forwarding through a requestDispatcher
 	TaskInfo task = GenePatternAnalysisTask.getTaskInfo(lsid, userID);
 	ParameterInfo[] parmInfos = task.getParameterInfoArray();
-
+    if(parmInfos==null) {
+        parmInfos = new ParameterInfo[0];
+    }
 	request.setAttribute("name", lsid);
 	String server = request.getScheme() + "://"+ InetAddress.getLocalHost().getCanonicalHostName() + ":"
 					+ System.getProperty("GENEPATTERN_PORT");
