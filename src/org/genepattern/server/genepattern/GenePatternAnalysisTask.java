@@ -202,6 +202,14 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * wait
      */
     public static int NUM_THREADS = 20;
+    static {
+        try {
+            NUM_THREADS = Integer.parseInt(System.getProperty(
+                    IGPConstants.NUM_THREADS, "20"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     /** hashtable of running jobs. key=jobID (as String), value=Process */
     protected static Hashtable htRunningJobs = new Hashtable();
@@ -3696,6 +3704,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
             zipFile.deleteOnExit();
             FileOutputStream os = new FileOutputStream(zipFile);
             URLConnection uc = new URL(zipURL).openConnection();
+            _cat.info("opened connection");
             long downloadSize = -1;
             Map headerFields = uc.getHeaderFields();
             for (Iterator itHeaders = headerFields.keySet().iterator(); itHeaders
@@ -3745,6 +3754,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 throw new IOException("Nothing downloaded from " + zipURL);
             return zipFile.getPath();
         } catch (IOException ioe) {
+            _cat.info("Error in downloadTask: " + ioe.getMessage());
             zipFile.delete();
             throw ioe;
         } finally {
