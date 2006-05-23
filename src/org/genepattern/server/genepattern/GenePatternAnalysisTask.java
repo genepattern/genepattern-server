@@ -964,7 +964,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     + jobInfo.getTaskLSID());
             bw.write("\n# Parameters: ");
             ParameterInfo pinfos[] = jobInfo.getParameterInfoArray();
-            
+
             for (int pi = 0; pinfos != null && pi < pinfos.length; pi++) {
                 ParameterInfo pinfo = pinfos[pi];
                 if (!pinfo.isOutputFile()) {
@@ -3700,7 +3700,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
         long downloadedBytes = 0;
 
         try {
-            zipFile = File.createTempFile("gpz", ".zip");
+            zipFile = File.createTempFile("task", ".zip");
             zipFile.deleteOnExit();
             FileOutputStream os = new FileOutputStream(zipFile);
             URLConnection uc = new URL(zipURL).openConnection();
@@ -3769,130 +3769,158 @@ public class GenePatternAnalysisTask implements IGPConstants {
     }
 
     /**
-     * return a Vector of TaskInfos of the contents of zip-of-zips file
+     * returns a Vector of TaskInfos of the contents of zip-of-zips file. The 0th
+     * index of the returned vector holds the TaskInfo for the pipeline itself.
+     * Note that the returned <code>TaskInfo</code> instances have getID()
+     * equal to -1, getParameterInfo() will be <code>null</code>, getUserId
+     * is <code>null</code>, and getAccessId is 0.
+     * 
+     * @throws IOException
      */
-    public static Vector getZipOfZipsTaskInfos(File zipf) throws Exception {
+    public static Vector getZipOfZipsTaskInfos(File zipf) throws IOException {
         Vector vTaskInfos = new Vector();
-        ZipFile zipFile = new ZipFile(zipf);
-        InputStream is = null;
-        for (Enumeration eEntries = zipFile.entries(); eEntries
-                .hasMoreElements();) {
-            ZipEntry zipEntry = (ZipEntry) eEntries.nextElement();
-            if (!zipEntry.getName().endsWith(".zip")) {
-                throw new Exception("not a GenePattern zip-of-zips file");
-            }
-            is = zipFile.getInputStream(zipEntry);
-            // there is no way to create a ZipFile from an input stream, so
-            // every file within the
-            // stream must be extracted before it can be processed
-            File outFile = new File(System.getProperty("java.io.tmpdir"),
-                    zipEntry.getName());
-            outFile.deleteOnExit();
-            OutputStream os = new FileOutputStream(outFile);
-            long fileLength = zipEntry.getSize();
-            long numRead = 0;
-            byte[] buf = new byte[100000];
-            int i;
-            while ((i = is.read(buf, 0, buf.length)) > 0) {
-                os.write(buf, 0, i);
-                numRead += i;
-            }
-            os.close();
-            os = null;
-            if (numRead != fileLength) {
-                throw new Exception("only read " + numRead + " of "
-                        + fileLength + " bytes in " + zipf.getName() + "'s "
-                        + zipEntry.getName());
-            }
-            is.close();
-            Properties props = new Properties();
-            ZipFile subZipFile = new ZipFile(outFile);
-            ZipEntry manifestEntry = subZipFile
-                    .getEntry(IGPConstants.MANIFEST_FILENAME);
-            props.load(subZipFile.getInputStream(manifestEntry));
-            subZipFile.close();
-            outFile.delete();
+        ZipFile zipFile = null;
+        try {
+            zipFile = new ZipFile(zipf);
 
-            TaskInfo ti = new TaskInfo();
-            ti.setName((String) props.remove(NAME));
-            ti.setDescription((String) props.remove(DESCRIPTION));
-
-            // ParameterInfo entries consist of name/value/description triplets,
-            // of which the value and description are optional
-            // It is assumed that the names are p[1-n]_name, p[1-n]_value, and
-            // p[1-n]_description
-            // and that the numbering runs consecutively. When there is no
-            // p[m]_name value, then there are m-1 ParameterInfos
-
-            // count ParameterInfo entries
-            int numParameterInfos = 0;
-            String name;
-            String value;
-            String description;
-
-            Vector vParams = new Vector();
-            ParameterInfo pi = null;
-            for (i = 1; i <= MAX_PARAMETERS; i++) {
-                name = (String) props.remove("p" + i + "_name");
-                if (name == null)
-                    continue;
-                if (name == null || name.length() == 0)
-                    throw new Exception("missing parameter name for " + "p" + i
-                            + "_name");
-                value = (String) props.remove("p" + i + "_value");
-                if (value == null)
-                    value = "";
-                description = (String) props.remove("p" + i + "_description");
-                if (description == null)
-                    description = "";
-                pi = new ParameterInfo(name, value, description);
-                HashMap attributes = new HashMap();
-                for (int attribute = 0; attribute < PARAM_INFO_ATTRIBUTES.length; attribute++) {
-                    name = (String) PARAM_INFO_ATTRIBUTES[attribute][0];
-                    value = (String) props.remove("p" + i + "_" + name);
-                    if (value != null) {
-                        attributes.put(name, value);
-                    }
-                    if (name.equals(PARAM_INFO_TYPE[0]) && value != null
-                            && value.equals(PARAM_INFO_TYPE_INPUT_FILE)) {
-                        attributes.put(ParameterInfo.MODE,
-                                ParameterInfo.INPUT_MODE);
-                        attributes.put(ParameterInfo.TYPE,
-                                ParameterInfo.FILE_TYPE);
-                    }
-                }
-
-                for (Enumeration p = props.propertyNames(); p.hasMoreElements();) {
-                    name = (String) p.nextElement();
-                    if (!name.startsWith("p" + i + "_"))
-                        continue;
-                    value = (String) props.remove(name);
-                    // _cat.debug("installTask: " + taskName + ": parameter " +
-                    // name + "=" + value);
-                    name = name.substring(name.indexOf("_") + 1);
-                    attributes.put(name, value);
-                }
-
-                if (attributes.size() > 0) {
-                    pi.setAttributes(attributes);
-                }
-                vParams.add(pi);
-            }
-            ParameterInfo[] params = new ParameterInfo[vParams.size()];
-            ti.setParameterInfoArray((ParameterInfo[]) vParams
-                    .toArray(new ParameterInfo[0]));
-
-            // all remaining properties are assumed to be TaskInfoAttributes
-            TaskInfoAttributes tia = new TaskInfoAttributes();
-            for (Enumeration eProps = props.propertyNames(); eProps
+            for (Enumeration eEntries = zipFile.entries(); eEntries
                     .hasMoreElements();) {
-                name = (String) eProps.nextElement();
-                value = props.getProperty(name);
-                tia.put(name, value);
+                ZipEntry zipEntry = (ZipEntry) eEntries.nextElement();
+                if (!zipEntry.getName().endsWith(".zip")) {
+                    throw new IllegalArgumentException(
+                            "not a GenePattern zip-of-zips file");
+                }
+                InputStream is = null;
+                File subFile = null;
+                OutputStream os = null;
+                try {
+                    is = zipFile.getInputStream(zipEntry);
+                    // there is no way to create a ZipFile from an input stream,
+                    // so
+                    // every file within the
+                    // stream must be extracted before it can be processed
+                    subFile = File.createTempFile("sub", ".zip");
+
+                    os = new FileOutputStream(subFile);
+
+                    byte[] buf = new byte[100000];
+                    int bytesRead;
+                    while ((bytesRead = is.read(buf, 0, buf.length)) >= 0) {
+                        os.write(buf, 0, bytesRead);
+
+                    }
+                    os.close();
+                    Properties props = new Properties();
+                    ZipFile subZipFile = new ZipFile(subFile);
+                    ZipEntry manifestEntry = subZipFile
+                            .getEntry(IGPConstants.MANIFEST_FILENAME);
+                  
+                    props.load(subZipFile
+                            .getInputStream(manifestEntry));
+                    
+                    subZipFile.close();
+                    subFile.delete();
+
+                    TaskInfo ti = new TaskInfo();
+                    ti.setName((String) props.remove(NAME));
+                    ti.setDescription((String) props.remove(DESCRIPTION));
+
+                    // ParameterInfo entries consist of name/value/description
+                    // triplets,
+                    // of which the value and description are optional
+                    // It is assumed that the names are p[1-n]_name,
+                    // p[1-n]_value,
+                    // and
+                    // p[1-n]_description
+                    // and that the numbering runs consecutively. When there is
+                    // no
+                    // p[m]_name value, then there are m-1 ParameterInfos
+
+                    // count ParameterInfo entries
+
+                    String name;
+                    String value;
+                    String description;
+
+                    Vector vParams = new Vector();
+                    ParameterInfo pi = null;
+                    for (int i = 1; i <= MAX_PARAMETERS; i++) {
+                        name = (String) props.remove("p" + i + "_name");
+                        if (name == null)
+                            continue;
+                        if (name == null || name.length() == 0)
+                            throw new IOException("missing parameter name for "
+                                    + "p" + i + "_name");
+                        value = (String) props.remove("p" + i + "_value");
+                        if (value == null)
+                            value = "";
+                        description = (String) props.remove("p" + i
+                                + "_description");
+                        if (description == null)
+                            description = "";
+                        pi = new ParameterInfo(name, value, description);
+                        HashMap attributes = new HashMap();
+                        for (int attribute = 0; attribute < PARAM_INFO_ATTRIBUTES.length; attribute++) {
+                            name = (String) PARAM_INFO_ATTRIBUTES[attribute][0];
+                            value = (String) props.remove("p" + i + "_" + name);
+                            if (value != null) {
+                                attributes.put(name, value);
+                            }
+                            if (name.equals(PARAM_INFO_TYPE[0])
+                                    && value != null
+                                    && value.equals(PARAM_INFO_TYPE_INPUT_FILE)) {
+                                attributes.put(ParameterInfo.MODE,
+                                        ParameterInfo.INPUT_MODE);
+                                attributes.put(ParameterInfo.TYPE,
+                                        ParameterInfo.FILE_TYPE);
+                            }
+                        }
+
+                        for (Enumeration p = props.propertyNames(); p
+                                .hasMoreElements();) {
+                            name = (String) p.nextElement();
+                            if (!name.startsWith("p" + i + "_"))
+                                continue;
+                            value = (String) props.remove(name);
+
+                            name = name.substring(name.indexOf("_") + 1);
+                            attributes.put(name, value);
+                        }
+
+                        if (attributes.size() > 0) {
+                            pi.setAttributes(attributes);
+                        }
+                        vParams.add(pi);
+                    }
+                    ParameterInfo[] params = new ParameterInfo[vParams.size()];
+                    ti.setParameterInfoArray((ParameterInfo[]) vParams
+                            .toArray(new ParameterInfo[0]));
+
+                    // all remaining properties are assumed to be
+                    // TaskInfoAttributes
+                    TaskInfoAttributes tia = new TaskInfoAttributes();
+                    for (Enumeration eProps = props.propertyNames(); eProps
+                            .hasMoreElements();) {
+                        name = (String) eProps.nextElement();
+                        value = props.getProperty(name);
+                        tia.put(name, value);
+                    }
+                    ti.setTaskInfoAttributes(tia);
+                    vTaskInfos.add(ti);
+                } finally {
+                    if (is != null) {
+                        is.close();
+                    }
+                    if (os != null) {
+                        os.close();
+                    }
+                }
+
             }
-            ti.setTaskInfoAttributes(tia);
-            vTaskInfos.add(ti);
+        } finally {
+            zipFile.close();
         }
+
         return vTaskInfos;
     }
 
