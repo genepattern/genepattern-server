@@ -604,8 +604,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 }
             }
 
-            String stdoutFilename = STDOUT;
-            String stderrFilename = STDERR;
+            String stdoutFilename = null;
+            String stderrFilename = null;
             String stdinFilename = null;
             StringBuffer commandLine = new StringBuffer();
             List commandLineList = new ArrayList(commandTokens.length);
@@ -645,7 +645,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 commandLine.append(commandTokens[commandTokens.length - 1]);
             }
 
-            _cat.debug("set standard input to " + stdinFilename);
             commandTokens = (String[]) commandLineList.toArray(new String[0]);
             String lastToken = commandTokens[commandTokens.length - 1];
 
@@ -666,31 +665,50 @@ public class GenePatternAnalysisTask implements IGPConstants {
                         .hasMoreElements();) {
                     stderrBuffer.append(eProblems.nextElement() + "\n");
                 }
-
                 jobStatus = JobStatus.JOB_ERROR;
             } else {
-                taskLog = writeProvenanceFile(outDirName, jobInfo,
-                        formalParameters, params, props);// XXX
                 // run the task and wait for completion.
                 _cat.info("running " + taskName + " (job "
                         + jobInfo.getJobNumber() + ") command: "
                         + commandLine.toString());
+                File stdoutFile;
+                File stderrFile;
+                boolean renameStdout = stdoutFilename == null;
+                if (renameStdout) {
+                    stdoutFile = File.createTempFile("stdout", null);
+                    stdoutFilename = STDOUT;
+                } else {
+                    stdoutFile = new File(outDir, stdoutFilename);
+                }
+
+                boolean renameStderr = stderrFilename == null;
+                if (renameStderr) {
+                    stderrFile = File.createTempFile("stderr", null);
+                    stderrFilename = STDERR;
+                } else {
+                    stderrFile = new File(outDir, stderrFilename);
+                }
                 try {
-                    runCommand(commandTokens, env, outDir, stdoutFilename,
-                            stderrFilename, jobInfo, stdinFilename,
-                            stderrBuffer);
+                    runCommand(commandTokens, env, outDir, stdoutFile,
+                            stderrFile, jobInfo, stdinFilename, stderrBuffer);
                     jobStatus = JobStatus.JOB_FINISHED;
                     _cat.info(taskName + " (" + jobInfo.getJobNumber()
                             + ") done.");
                 } catch (Throwable t) {
                     jobStatus = JobStatus.JOB_ERROR;
-                    // System.err.println(taskName + " (" +
-                    // jobInfo.getJobNumber() + ") done with error: " +
-                    // t.getMessage());
-                    _cat.error(taskName + " (" + jobInfo.getJobNumber()
+                    _cat.info(taskName + " (" + jobInfo.getJobNumber()
                             + ") done with error: " + t.getMessage());
                     t.printStackTrace();
                     stderrBuffer.append(t.getMessage() + "\n\n");
+                } finally {
+                    if (renameStdout) {
+                        stdoutFile.renameTo(new File(outDir, STDOUT));
+                    }
+                    if (renameStderr) {
+                        stderrFile.renameTo(new File(outDir, STDERR));
+                    }
+                    taskLog = writeProvenanceFile(outDirName, jobInfo,
+                            formalParameters, params, props);
                 }
             }
 
@@ -948,12 +966,11 @@ public class GenePatternAnalysisTask implements IGPConstants {
     protected static File writeProvenanceFile(String outDirName,
             JobInfo jobInfo, ParameterInfo[] formalParameters,
             ParameterInfo[] actualParams, Properties props) {
-
+        BufferedWriter bw = null;
         try {
             File outDir = new File(outDirName);
             File f = new File(outDir, TASKLOG);
-            BufferedWriter bw = new BufferedWriter(new FileWriter(f));
-
+            bw = new BufferedWriter(new FileWriter(f));
             bw.write("# Created: " + new Date(f.lastModified()) + " by "
                     + jobInfo.getUserId());
             bw.write("\n# Job: " + jobInfo.getJobNumber());
@@ -978,8 +995,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                 .get(ORIGINAL_PATH);
 
                         value = ifn.getName();
-                        int idx = value.indexOf("Axis");
-                        if (idx == 0 && value.indexOf("_") != -1) {
+
+                        if (value.startsWith("Axis")
+                                && value.indexOf("_") != -1) {
                             value = value.substring(value.indexOf("_") + 1);
                         }
 
@@ -997,10 +1015,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
                             int fidx = origFullPath.indexOf(substr);
                             String inputfilename = origFullPath
                                     .substring(fidx + 20);
-
+          
                             value = value + "    " + GP_URL
-                                    + "/getInputFile.jsp?file=" + inputfilename;
-
+                                    + "getInputFile.jsp?file=" + inputfilename;
                         }
 
                     } else {
@@ -1040,12 +1057,18 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 }
             }
             bw.write("\n");
-            bw.flush();
-            bw.close();
             return f;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        } finally {
+            if (bw != null) {
+                try {
+                    bw.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
     }
@@ -2294,9 +2317,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
      *            The directory in which to start the process running (it will
      *            be a temporary directory with only input files in it).
      * @param stdoutFile
-     *            name of file to capture stdout output from the running process
+     *            file to capture stdout output from the running process
      * @param stderrFile
-     *            name of file to capture stderr output from the running process
+     *            file to capture stderr output from the running process
      * @param jobInfo
      *            JobInfo object for this instance
      * @param stdin
@@ -2307,8 +2330,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * @author Jim Lerner
      */
     protected void runCommand(String commandLine[], Hashtable env, File runDir,
-            String stdoutFile, String stderrFile, JobInfo jobInfo,
-            String stdin, StringBuffer stderrBuffer) {
+            File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin,
+            StringBuffer stderrBuffer) {
         Process process = null;
         String jobID = null;
 
@@ -2358,9 +2381,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
             // create threads to read from the command's stdout and stderr
             // streams
             Thread outputReader = streamToFile(process.getInputStream(),
-                    new File(runDir, stdoutFile));
+                    stdoutFile);
             Thread errorReader = streamToFile(process.getErrorStream(),
-                    new File(runDir, stderrFile));
+                    stderrFile);
 
             // drain the output and error streams
             outputReader.start();
@@ -3769,11 +3792,11 @@ public class GenePatternAnalysisTask implements IGPConstants {
     }
 
     /**
-     * returns a Vector of TaskInfos of the contents of zip-of-zips file. The 0th
-     * index of the returned vector holds the TaskInfo for the pipeline itself.
-     * Note that the returned <code>TaskInfo</code> instances have getID()
-     * equal to -1, getParameterInfo() will be <code>null</code>, getUserId
-     * is <code>null</code>, and getAccessId is 0.
+     * returns a Vector of TaskInfos of the contents of zip-of-zips file. The
+     * 0th index of the returned vector holds the TaskInfo for the pipeline
+     * itself. Note that the returned <code>TaskInfo</code> instances have
+     * getID() equal to -1, getParameterInfo() will be <code>null</code>,
+     * getUserId is <code>null</code>, and getAccessId is 0.
      * 
      * @throws IOException
      */
@@ -3814,10 +3837,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     ZipFile subZipFile = new ZipFile(subFile);
                     ZipEntry manifestEntry = subZipFile
                             .getEntry(IGPConstants.MANIFEST_FILENAME);
-                  
-                    props.load(subZipFile
-                            .getInputStream(manifestEntry));
-                    
+
+                    props.load(subZipFile.getInputStream(manifestEntry));
+
                     subZipFile.close();
                     subFile.delete();
 
