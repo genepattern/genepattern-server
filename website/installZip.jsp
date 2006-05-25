@@ -99,6 +99,7 @@ for (Iterator iter = params.iterator(); iter.hasNext();){
 		}
 		File zipFile = new File(System.getProperty("java.io.tmpdir"),name);
 		fi.write(zipFile);
+
 		requestParameters.put(fi.getFieldName(), zipFile);
 
 	}
@@ -122,6 +123,7 @@ int access_id = (request.getParameter(GPConstants.PRIVACY) != null ? GPConstants
 boolean askedRecursive = (requestParameters.get("askedRecursive") != null);
 boolean doRecursive = (requestParameters.get("inclDependents") != null);
 String fileURL = null;
+boolean deleteFile = true;
 
 if (isEncodedPost) {
 	attachedFile = (File)requestParameters.get("file1");
@@ -186,6 +188,7 @@ try {
   		              	 </body>
                 	        	</html>
 <%
+					deleteFile = false;
 					return;
 
 			}
@@ -252,7 +255,7 @@ try {
 	if (vProblems == null) vProblems = new Vector();
 	vProblems.add("Unable to install " + fullName + ": " + ioe.getMessage());
 } finally {
-	attachedFile.delete(); 
+	if (deleteFile) attachedFile.delete(); 
 }
 
 
