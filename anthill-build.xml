@@ -96,7 +96,7 @@
 	<target name="shutdownServer">
 		<!-- note this will generate an error as the server shuts down while connected -->
 		
-		<get src="http://127.0.0.1:8080/gp/shutdownServer.jsp?userid=ted" dest="sd.txt" ignoreerrors="false" />
+		<get src="http://127.0.0.1:8080/gp/shutdownServer.jsp?userid=ted" dest="sd.txt" ignoreerrors="true" />
 	</target>
 
 	<target name="pruneOldDirs">
