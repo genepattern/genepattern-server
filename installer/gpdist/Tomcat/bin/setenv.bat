@@ -1,0 +1,2 @@
+set JAVA_HOME=%CATALINA_BASE%..\jre
+

@@ -1,3 +1,14 @@
+<% /*
+  The Broad Institute
+  SOFTWARE COPYRIGHT NOTICE AGREEMENT
+  This software and its documentation are copyright (2003-2006) by the
+  Broad Institute/Massachusetts Institute of Technology. All rights are
+  reserved.
+
+  This software is supplied without any warranty or guaranteed support
+  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+  use, misuse, or functionality.
+*/ %>
 <%@ page import="java.io.IOException,
 		 java.net.InetAddress,
 		 java.net.MalformedURLException,
@@ -102,7 +113,6 @@ IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getA
 
 var localAuthority = '<%= LSIDManager.getInstance().getAuthority() %>';
 
-<% if (userIDKnown) { %>
 function jmp(button, url, selector, versionSelector) {
 	if (selector.selectedIndex != 0) {
 		var lsidNoVersion = selector.options[selector.selectedIndex].value;
@@ -203,8 +213,6 @@ function LSID(lsid) {
 	this.version = tokens[5];
 	this.authorityType = (this.authority == '<%= LSIDManager.getInstance().getAuthority() %>'.replace(" ", "+")) ? '<%= LSIDUtil.AUTHORITY_MINE %>' : (this.authority == '<%= LSIDUtil.BROAD_AUTHORITY %>' ? '<%= LSIDUtil.AUTHORITY_BROAD %>' : '<%= LSIDUtil.AUTHORITY_FOREIGN %>');
 }
-
-<% } %> 
 
 <% if (tmTasks.size() == 0) { %>
 function blinkInstallModules() {

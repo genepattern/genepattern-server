@@ -23,6 +23,11 @@
 
 
       <buildinstaller IAProjectFile="${basedir}/GP_server.iap_xml" 
+		BuildLinuxWithVM="true"
+		BuildLinuxWithoutVM="true"
+		BuildMacOSX="true"
+		BuildWindowsWithVM="true"
+		BuildWebInstaller="true"
 		InstallerStdOutRedirect="${basedir}/installerStdOut.txt"
 		InstallerStdErrRedirect="${basedir}/installerStdErr.txt" />
 	<copy file="version.txt" tofile="GP_server_Build_Output/Web_Installers/version.txt"/>
@@ -30,6 +35,24 @@
 	<delete file="GP_server.iap_xml"/>
 	<delete file="GP_serverBuild.iap_xml"/>
  </target>
+
+
+<target name="setup_gui_installer" depends="setVersionFile" >
+	<property file="../resources/build.properties"/>
+	<delete verbose="true" file="GP_serverlocales/custom_en"/>
+	
+
+	<copy file="server.iap_xml" tofile="GP_server.iap_xml">
+		<filterset>
+      		<filter token="version.major" value="${version.major}"/>
+       		<filter token="version.minor" value="${version.minor}"/>
+      		<filter token="buildrelease" value="${release}"/>
+			<filter token="builddate" value="${date}"/>
+			<filter token="buildtag" value="${build.tag}"/>
+   		</filterset>
+	</copy>	
+</target>	
+
 
 <target name="test">
 <copy file="version.txt" tofile="GP_server_Build_Output/Web_Installers/version.txt"/>
