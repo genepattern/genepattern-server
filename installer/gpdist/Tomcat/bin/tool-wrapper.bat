@@ -43,7 +43,7 @@ set BASEDIR=%CATALINA_HOME%
 call "%CATALINA_HOME%\bin\setclasspath.bat"
 
 rem Add on extra jar files to CLASSPATH
-set CLASSPATH=%CLASSPATH%;%CATALINA_HOME%\bin\bootstrap.jar;"%BASEDIR%"\common\lib\jmx.jar;"%BASEDIR%"\common\lib\servlet-api.jar
+set CLASSPATH=%CLASSPATH%;%CATALINA_HOME%\bin\bootstrap.jar
 
 rem Get remaining unshifted command line arguments and save them in the
 set CMD_LINE_ARGS=

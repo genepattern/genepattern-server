@@ -1,24 +1,24 @@
 @echo off
 if "%OS%" == "Windows_NT" setlocal
 rem ---------------------------------------------------------------------------
-rem Stop script for the CATALINA Server
+rem Script to run the Jasper "offline JSP compiler"
 rem
 rem $Id$
 rem ---------------------------------------------------------------------------
 
-rem Guess CATALINA_HOME if not defined
-if not "%CATALINA_HOME%" == "" goto gotHome
-set CATALINA_HOME=.
-if exist "%CATALINA_HOME%\bin\catalina.bat" goto okHome
-set CATALINA_HOME=..
+rem Guess JASPER_HOME if not defined
+if not "%JASPER_HOME%" == "" goto gotHome
+set JASPER_HOME=.
+if exist "%JASPER_HOME%\bin\jspc.bat" goto okHome
+set JASPER_HOME=..
 :gotHome
-if exist "%CATALINA_HOME%\bin\catalina.bat" goto okHome
-echo The CATALINA_HOME environment variable is not defined correctly
+if exist "%JASPER_HOME%\bin\jspc.bat" goto okHome
+echo The JASPER_HOME environment variable is not defined correctly
 echo This environment variable is needed to run this program
 goto end
 :okHome
 
-set EXECUTABLE=%CATALINA_HOME%\bin\catalina.bat
+set EXECUTABLE=%JASPER_HOME%\bin\jasper.bat
 
 rem Check that target executable exists
 if exist "%EXECUTABLE%" goto okExec
@@ -36,6 +36,6 @@ shift
 goto setArgs
 :doneSetArgs
 
-call "%EXECUTABLE%" stop %CMD_LINE_ARGS%
+call "%EXECUTABLE%" jspc %CMD_LINE_ARGS%
 
 :end

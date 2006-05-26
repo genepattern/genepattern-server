@@ -18,10 +18,6 @@
 #                   $CATALINA_BASE/temp.
 #
 #   JAVA_HOME       Must point at your Java Development Kit installation.
-#                   Required to run the with the "debug" or "javac" argument.
-#
-#   JRE_HOME        Must point at your Java Development Kit installation.
-#                   Defaults to JAVA_HOME if empty.
 #
 #   JAVA_OPTS       (Optional) Java runtime options used when the "start",
 #                   "stop", or "run" command is executed.
@@ -65,10 +61,7 @@ done
 
 # Get standard environment variables
 PRGDIR=`dirname "$PRG"`
-
-# Only set CATALINA_HOME if not already set
-[ -z "$CATALINA_HOME" ] && CATALINA_HOME=`cd "$PRGDIR/.." ; pwd`
-
+CATALINA_HOME=`cd "$PRGDIR/.." ; pwd`
 if [ -r "$CATALINA_HOME"/bin/setenv.sh ]; then
   . "$CATALINA_HOME"/bin/setenv.sh
 fi
@@ -76,11 +69,10 @@ fi
 # For Cygwin, ensure paths are in UNIX format before anything is touched
 if $cygwin; then
   [ -n "$JAVA_HOME" ] && JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
-  [ -n "$JRE_HOME" ] && JRE_HOME=`cygpath --unix "$JRE_HOME"`
   [ -n "$CATALINA_HOME" ] && CATALINA_HOME=`cygpath --unix "$CATALINA_HOME"`
   [ -n "$CATALINA_BASE" ] && CATALINA_BASE=`cygpath --unix "$CATALINA_BASE"`
   [ -n "$CLASSPATH" ] && CLASSPATH=`cygpath --path --unix "$CLASSPATH"`
-  [ -n "$JSSE_HOME" ] && JSSE_HOME=`cygpath --absolute --unix "$JSSE_HOME"`
+  [ -n "$JSSE_HOME" ] && JSSE_HOME=`cygpath --path --unix "$JSSE_HOME"`
 fi
 
 # For OS400
@@ -96,29 +88,20 @@ if $os400; then
 fi
 
 # Get standard Java environment variables
-if $os400; then
-  # -r will Only work on the os400 if the files are:
-  # 1. owned by the user
-  # 2. owned by the PRIMARY group of the user
-  # this will not work if the user belongs in secondary groups
+if [ -r "$CATALINA_HOME"/bin/setclasspath.sh ]; then
   BASEDIR="$CATALINA_HOME"
-  . "$CATALINA_HOME"/bin/setclasspath.sh 
+  . "$CATALINA_HOME"/bin/setclasspath.sh
 else
-  if [ -r "$CATALINA_HOME"/bin/setclasspath.sh ]; then
-    BASEDIR="$CATALINA_HOME"
-    . "$CATALINA_HOME"/bin/setclasspath.sh
-  else
-    echo "Cannot find $CATALINA_HOME/bin/setclasspath.sh"
-    echo "This file is needed to run this program"
-    exit 1
-  fi
+  echo "Cannot find $CATALINA_HOME/bin/setclasspath.sh"
+  echo "This file is needed to run this program"
+  exit 1
 fi
 
 # Add on extra jar files to CLASSPATH
 if [ -n "$JSSE_HOME" ]; then
   CLASSPATH="$CLASSPATH":"$JSSE_HOME"/lib/jcert.jar:"$JSSE_HOME"/lib/jnet.jar:"$JSSE_HOME"/lib/jsse.jar
 fi
-CLASSPATH="$CLASSPATH":"$CATALINA_HOME"/bin/bootstrap.jar:"$CATALINA_HOME"/bin/commons-logging-api.jar
+CLASSPATH="$CLASSPATH":"$CATALINA_HOME"/bin/bootstrap.jar
 
 if [ -z "$CATALINA_BASE" ] ; then
   CATALINA_BASE="$CATALINA_HOME"
@@ -131,19 +114,12 @@ fi
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
-  JAVA_HOME=`cygpath --absolute --windows "$JAVA_HOME"`
-  JRE_HOME=`cygpath --absolute --windows "$JRE_HOME"`
-  CATALINA_HOME=`cygpath --absolute --windows "$CATALINA_HOME"`
-  CATALINA_BASE=`cygpath --absolute --windows "$CATALINA_BASE"`
-  CATALINA_TMPDIR=`cygpath --absolute --windows "$CATALINA_TMPDIR"`
+  JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
+  CATALINA_HOME=`cygpath --path --windows "$CATALINA_HOME"`
+  CATALINA_BASE=`cygpath --path --windows "$CATALINA_BASE"`
+  CATALINA_TMPDIR=`cygpath --path --windows "$CATALINA_TMPDIR"`
   CLASSPATH=`cygpath --path --windows "$CLASSPATH"`
-  [ -n "$JSSE_HOME" ] && JSSE_HOME=`cygpath --absolute --windows "$JSSE_HOME"`
-  JAVA_ENDORSED_DIRS=`cygpath --path --windows "$JAVA_ENDORSED_DIRS"`
-fi
-
-# Set juli LogManager if it is present
-if [ -r "$CATALINA_HOME"/bin/tomcat-juli.jar ]; then
-  JAVA_OPTS="$JAVA_OPTS "-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager" "-Djava.util.logging.config.file="$CATALINA_BASE/conf/logging.properties"
+  JSSE_HOME=`cygpath --path --windows "$JSSE_HOME"`
 fi
 
 # ----- Execute The Requested Command -----------------------------------------
@@ -151,11 +127,7 @@ fi
 echo "Using CATALINA_BASE:   $CATALINA_BASE"
 echo "Using CATALINA_HOME:   $CATALINA_HOME"
 echo "Using CATALINA_TMPDIR: $CATALINA_TMPDIR"
-if [ "$1" = "debug" -o "$1" = "javac" ] ; then
-  echo "Using JAVA_HOME:       $JAVA_HOME"
-else
-  echo "Using JRE_HOME:       $JRE_HOME"
-fi
+echo "Using JAVA_HOME:       $JAVA_HOME"
 
 if [ "$1" = "jpda" ] ; then
   if [ -z "$JPDA_TRANSPORT" ]; then
@@ -172,6 +144,7 @@ if [ "$1" = "jpda" ] ; then
 fi
 
 if [ "$1" = "debug" ] ; then
+
   if $os400; then
     echo "Debug command not available on OS400"
     exit 1
@@ -182,7 +155,7 @@ if [ "$1" = "debug" ] ; then
       shift
       exec "$_RUNJDB" $JAVA_OPTS $CATALINA_OPTS \
         -Djava.endorsed.dirs="$JAVA_ENDORSED_DIRS" -classpath "$CLASSPATH" \
-        -sourcepath "$CATALINA_HOME"/../../jakarta-tomcat-catalina/catalina/src/share \
+        -sourcepath "$CATALINA_HOME"/../../jakarta-tomcat-4.0/catalina/src/share \
         -Djava.security.manager \
         -Djava.security.policy=="$CATALINA_BASE"/conf/catalina.policy \
         -Dcatalina.base="$CATALINA_BASE" \
@@ -192,13 +165,24 @@ if [ "$1" = "debug" ] ; then
     else
       exec "$_RUNJDB" $JAVA_OPTS $CATALINA_OPTS \
         -Djava.endorsed.dirs="$JAVA_ENDORSED_DIRS" -classpath "$CLASSPATH" \
-        -sourcepath "$CATALINA_HOME"/../../jakarta-tomcat-catalina/catalina/src/share \
+        -sourcepath "$CATALINA_HOME"/../../jakarta-tomcat-4.0/catalina/src/share \
         -Dcatalina.base="$CATALINA_BASE" \
         -Dcatalina.home="$CATALINA_HOME" \
         -Djava.io.tmpdir="$CATALINA_TMPDIR" \
         org.apache.catalina.startup.Bootstrap "$@" start
     fi
   fi
+
+elif [ "$1" = "embedded" ] ; then
+
+  shift
+  echo "Embedded Classpath: $CLASSPATH"
+  exec "$_RUNJAVA" $JAVA_OPTS $CATALINA_OPTS \
+    -Djava.endorsed.dirs="$JAVA_ENDORSED_DIRS" -classpath "$CLASSPATH" \
+    -Dcatalina.base="$CATALINA_BASE" \
+    -Dcatalina.home="$CATALINA_HOME" \
+    -Djava.io.tmpdir="$CATALINA_TMPDIR" \
+    org.apache.catalina.startup.Embedded "$@"
 
 elif [ "$1" = "run" ]; then
 
@@ -242,7 +226,7 @@ elif [ "$1" = "start" ] ; then
 
       if [ ! -z "$CATALINA_PID" ]; then
         echo $! > $CATALINA_PID
-      fi
+      fi      
   else
     "$_RUNJAVA" $JAVA_OPTS $CATALINA_OPTS \
       -Djava.endorsed.dirs="$JAVA_ENDORSED_DIRS" -classpath "$CLASSPATH" \
@@ -254,37 +238,18 @@ elif [ "$1" = "start" ] ; then
 
       if [ ! -z "$CATALINA_PID" ]; then
         echo $! > $CATALINA_PID
-      fi
+      fi      
   fi
 
 elif [ "$1" = "stop" ] ; then
 
   shift
-  FORCE=0
-  if [ "$1" = "-force" ]; then
-    shift
-    FORCE=1
-  fi
-
-  "$_RUNJAVA" $JAVA_OPTS $CATALINA_OPTS \
+  exec "$_RUNJAVA" $JAVA_OPTS $CATALINA_OPTS \
     -Djava.endorsed.dirs="$JAVA_ENDORSED_DIRS" -classpath "$CLASSPATH" \
     -Dcatalina.base="$CATALINA_BASE" \
     -Dcatalina.home="$CATALINA_HOME" \
     -Djava.io.tmpdir="$CATALINA_TMPDIR" \
     org.apache.catalina.startup.Bootstrap "$@" stop
-
-  if [ $FORCE -eq 1 ]; then
-    if [ ! -z "$CATALINA_PID" ]; then
-       echo "Killing: `cat $CATALINA_PID`"
-       kill -9 `cat $CATALINA_PID`
-    fi
-  fi
-
-elif [ "$1" = "version" ] ; then
-
-    "$_RUNJAVA"   \
-      -classpath "$CATALINA_HOME/server/lib/catalina.jar" \
-      org.apache.catalina.util.ServerInfo
 
 else
 
@@ -297,14 +262,13 @@ else
     echo "  debug             Start Catalina in a debugger"
     echo "  debug -security   Debug Catalina with a security manager"
   fi
+  echo "  embedded          Start Catalina in embedded mode"
   echo "  jpda start        Start Catalina under JPDA debugger"
   echo "  run               Start Catalina in the current window"
   echo "  run -security     Start in the current window with security manager"
   echo "  start             Start Catalina in a separate window"
   echo "  start -security   Start in a separate window with security manager"
   echo "  stop              Stop Catalina"
-  echo "  stop -force       Stop Catalina (followed by kill -KILL)"
-  echo "  version           What version of tomcat are you running?"
   exit 1
 
 fi

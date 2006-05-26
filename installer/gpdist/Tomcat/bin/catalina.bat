@@ -36,14 +36,13 @@ rem
 rem $Id$
 rem ---------------------------------------------------------------------------
 
+set CATALINA_OPTS=%CATALINA_OPTS% -Dsun.io.useCanonCaches=false
+
 rem Guess CATALINA_HOME if not defined
-set CURRENT_DIR=%cd%
 if not "%CATALINA_HOME%" == "" goto gotHome
-set CATALINA_HOME=%CURRENT_DIR%
+set CATALINA_HOME=.
 if exist "%CATALINA_HOME%\bin\catalina.bat" goto okHome
-cd ..
-set CATALINA_HOME=%cd%
-cd %CURRENT_DIR%
+set CATALINA_HOME=..
 :gotHome
 if exist "%CATALINA_HOME%\bin\catalina.bat" goto okHome
 echo The CATALINA_HOME environment variable is not defined correctly
@@ -77,10 +76,6 @@ if not "%CATALINA_TMPDIR%" == "" goto gotTmpdir
 set CATALINA_TMPDIR=%CATALINA_BASE%\temp
 :gotTmpdir
 
-if not exist "%CATALINA_HOME%\bin\tomcat-juli.jar" goto noJuli
-set JAVA_OPTS=%JAVA_OPTS% -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djava.util.logging.config.file="${catalina.base}\conf\logging.properties"
-:noJuli
-
 rem ----- Execute The Requested Command ---------------------------------------
 
 echo Using CATALINA_BASE:   %CATALINA_BASE%
@@ -107,32 +102,37 @@ shift
 :noJpda
 
 if ""%1"" == ""debug"" goto doDebug
+if ""%1"" == ""embedded"" goto doEmbedded
 if ""%1"" == ""run"" goto doRun
 if ""%1"" == ""start"" goto doStart
 if ""%1"" == ""stop"" goto doStop
-if ""%1"" == ""version"" goto doVersion
 
 echo Usage:  catalina ( commands ... )
 echo commands:
 echo   debug             Start Catalina in a debugger
 echo   debug -security   Debug Catalina with a security manager
+echo   embedded          Start Catalina in embedded mode
 echo   jpda start        Start Catalina under JPDA debugger
 echo   run               Start Catalina in the current window
 echo   run -security     Start in the current window with security manager
 echo   start             Start Catalina in a separate window
 echo   start -security   Start in a separate window with security manager
 echo   stop              Stop Catalina
-echo   version           What version of tomcat are you running?
 goto end
 
 :doDebug
 shift
 set _EXECJAVA=%_RUNJDB%
-set DEBUG_OPTS=-sourcepath "%CATALINA_HOME%\..\..\jakarta-tomcat-catalina\catalina\src\share"
+set DEBUG_OPTS=-sourcepath "%CATALINA_HOME%\..\..\jakarta-tomcat-4.0\catalina\src\share"
 if not ""%1"" == ""-security"" goto execCmd
 shift
 echo Using Security Manager
 set SECURITY_POLICY_FILE=%CATALINA_BASE%\conf\catalina.policy
+goto execCmd
+
+:doEmbedded
+shift
+set MAINCLASS=org.apache.catalina.startup.Embedded
 goto execCmd
 
 :doRun
@@ -162,11 +162,6 @@ shift
 set ACTION=stop
 goto execCmd
 
-:doVersion
-%_EXECJAVA% -classpath "%CATALINA_HOME%\server\lib\catalina.jar" org.apache.catalina.util.ServerInfo
-goto end
-
-
 :execCmd
 rem Get remaining unshifted command line arguments and save them in the
 set CMD_LINE_ARGS=
@@ -190,7 +185,7 @@ if not "%SECURITY_POLICY_FILE%" == "" goto doSecurityJpda
 %_EXECJAVA% %JAVA_OPTS% %CATALINA_OPTS% -Xdebug -Xrunjdwp:transport=%JPDA_TRANSPORT%,address=%JPDA_ADDRESS%,server=y,suspend=n %DEBUG_OPTS% -Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%" -classpath "%CLASSPATH%" -Dcatalina.base="%CATALINA_BASE%" -Dcatalina.home="%CATALINA_HOME%" -Djava.io.tmpdir="%CATALINA_TMPDIR%" %MAINCLASS% %CMD_LINE_ARGS% %ACTION%
 goto end
 :doSecurityJpda
-%_EXECJAVA% %JAVA_OPTS% %CATALINA_OPTS% -Xdebug -Xrunjdwp:transport=%JPDA_TRANSPORT%,address=%JPDA_ADDRESS%,server=y,suspend=n %DEBUG_OPTS% -Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%" -classpath "%CLASSPATH%" -Djava.security.manager -Djava.security.policy=="%SECURITY_POLICY_FILE%" -Dcatalina.base="%CATALINA_BASE%" -Dcatalina.home="%CATALINA_HOME%" -Djava.io.tmpdir="%CATALINA_TMPDIR%" %MAINCLASS% %CMD_LINE_ARGS% %ACTION%
+%_EXECJAVA% %JAVA_OPTS% %CATALINA_OPTS% -Xrunjdwp:transport=%JPDA_TRANSPORT%,address=%JPDA_ADDRESS%,server=y,suspend=n %DEBUG_OPTS% -Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%" -classpath "%CLASSPATH%" -Djava.security.manager -Djava.security.policy=="%SECURITY_POLICY_FILE%" -Dcatalina.base="%CATALINA_BASE%" -Dcatalina.home="%CATALINA_HOME%" -Djava.io.tmpdir="%CATALINA_TMPDIR%" %MAINCLASS% %CMD_LINE_ARGS% %ACTION%
 goto end
 
 :end

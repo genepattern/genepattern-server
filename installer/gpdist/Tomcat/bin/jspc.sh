@@ -1,6 +1,6 @@
 #!/bin/sh
 # -----------------------------------------------------------------------------
-# Start Script for the CATALINA Server
+# Script to run the Jasper "offline JSP compiler"
 #
 # $Id$
 # -----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ while [ -h "$PRG" ] ; do
 done
  
 PRGDIR=`dirname "$PRG"`
-EXECUTABLE=catalina.sh
+EXECUTABLE=jasper.sh
 
 # Check that target executable exists
 if [ ! -x "$PRGDIR"/"$EXECUTABLE" ]; then
@@ -28,4 +28,4 @@ if [ ! -x "$PRGDIR"/"$EXECUTABLE" ]; then
   exit 1
 fi
 
-exec "$PRGDIR"/"$EXECUTABLE" start "$@"
+exec "$PRGDIR"/"$EXECUTABLE" jspc "$@"
