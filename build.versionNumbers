@@ -3,4 +3,4 @@
 # Also must change build.version on a release for now
 #
 version.major=2
-version.minor=0.0
+version.minor=0.2

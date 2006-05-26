@@ -19,8 +19,8 @@
 #     property to configure an object when working with the custom_xx files.
 #
 # Product Name: GenePattern
-# Project File: C:\projects\genepattern\installer\server.iap_xml
-# Generated:    Thu Nov 17 14:52:30 EST 2005
+# Project File: F:\tools\anthill\work2\v2_0_1\genepattern\installer\server.iap_xml
+# Generated:    Fri Feb 24 05:53:46 EST 2006
 
 
 ---- PRE-INSTALL ACTIONS ----
@@ -217,6 +217,8 @@ PlugInPanelAction                       ==>      Plug-in
 PrintToConsole                          ==>      Output Text to Console
 PromptUserConsole                       ==>      Console: Show Message Console 'Dialog'
 ReadyToInstallActionConsole             ==>      Console: Ready To Install
+SCMVariableConsole                      ==>      Console: Set Solution Installation Package Variables
+SCMVariableDialog                       ==>      Panel: Set Solution Installation Package Variables
 SetSerialNumber                         ==>      Panel: Get Serial Number
 SetSerialNumberConsole                  ==>      Console: Get Serial Number
 ShortcutLocAction                       ==>      Panel: Choose Alias, Link, Shortcut Folder

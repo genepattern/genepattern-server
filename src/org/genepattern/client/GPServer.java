@@ -1,3 +1,15 @@
+/*
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2006) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
+
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */
+
 package org.genepattern.client;
 
 import java.io.UnsupportedEncodingException;
@@ -5,9 +17,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.genepattern.util.GPConstants;
@@ -171,6 +181,162 @@ public class GPServer {
 		}
 	}
 
+	public int runAnalysisNoWait(String taskNameOrLSID, Parameter[] parameters)
+			throws WebServiceException {
+		try {
+			TaskInfo taskInfo = getTask(taskNameOrLSID);
+			ParameterInfo[] actualParameters = Util.createParameterInfoArray(
+					taskInfo, parameters);
+			AnalysisWebServiceProxy analysisProxy = null;
+			try {
+				analysisProxy = new AnalysisWebServiceProxy(server, userName);
+				analysisProxy.setTimeout(Integer.MAX_VALUE);
+			} catch (Exception x) {
+				throw new WebServiceException(x);
+			}
+			AnalysisJob job = submitJob(analysisProxy, taskInfo,
+					actualParameters);
+
+			return job.getJobInfo().getJobNumber();
+		} catch (org.genepattern.webservice.WebServiceException wse) {
+			throw new WebServiceException(wse.getMessage(), wse.getRootCause());
+		}
+
+	}
+
+	/**
+	 * Checks if the given job is complete.
+	 * 
+	 * @param jobNumber
+	 *            the job number
+	 * @return <tt>true</tt> if the job with the given job number is complete,
+	 *         <tt>false</tt> otherwise
+	 * @throws WebServiceException
+	 *             If an error occurs
+	 */
+	public boolean isComplete(int jobNumber) throws WebServiceException {
+		try {
+			AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(
+					server, userName, false);
+			analysisProxy.setTimeout(Integer.MAX_VALUE);
+			JobInfo ji = analysisProxy.checkStatus(jobNumber);
+			if (ji == null) {
+				throw new WebServiceException("The job number " + jobNumber
+						+ " was not found.");
+			}
+			return ji.getStatus().equalsIgnoreCase("finished")
+					|| ji.getStatus().equalsIgnoreCase("error");
+		} catch (Exception x) {
+			throw new WebServiceException(x);
+		}
+	}
+
+	/**
+	 * Creates a new <tt>JobResult</tt> instance for the given job number.
+	 * Invoke this method after the job is complete.
+	 * 
+	 * @param jobNumber
+	 *            the job number
+	 * @return <tt>JobResult</tt> instance
+	 * @throws WebServiceException
+	 *             If an error occurs
+	 * @see isComplete
+	 */
+	public JobResult createJobResult(int jobNumber) throws WebServiceException {
+		try {
+			AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(
+					server, userName, false);
+			analysisProxy.setTimeout(Integer.MAX_VALUE);
+			JobInfo info = analysisProxy.checkStatus(jobNumber);
+
+			String status = info.getStatus();
+			if (!(status.equalsIgnoreCase("ERROR") || (status
+					.equalsIgnoreCase("Finished"))))
+				return null;
+
+			TaskInfo taskInfo = getTask(info.getTaskLSID());
+
+			ArrayList resultFiles = new ArrayList();
+			ParameterInfo[] jobParameterInfo = info.getParameterInfoArray();
+			boolean stderr = false;
+			boolean stdout = false;
+			ArrayList jobParameters = new ArrayList();
+			for (int j = 0; j < jobParameterInfo.length; j++) {
+				if (jobParameterInfo[j].isOutputFile()) {
+					String fileName = jobParameterInfo[j].getValue();
+					int index1 = fileName.lastIndexOf('/');
+					int index2 = fileName.lastIndexOf('\\');
+					int index = (index1 > index2 ? index1 : index2);
+					if (index != -1) {
+						fileName = fileName.substring(index + 1, fileName
+								.length());
+					}
+					if (fileName.equals(GPConstants.STDOUT)) {
+						stdout = true;
+					} else if (fileName.equals(GPConstants.STDERR)) {
+						stderr = true;
+					} else {
+						resultFiles.add(fileName);
+					}
+				} else {
+					jobParameters.add(new Parameter(jobParameterInfo[j]
+							.getName(), jobParameterInfo[j].getValue()));
+				}
+			}
+			try {
+				return new JobResult(new URL(server), info.getJobNumber(),
+						(String[]) resultFiles.toArray(new String[0]), stdout,
+						stderr, (Parameter[]) jobParameters
+								.toArray(new Parameter[0]), (String) taskInfo
+								.getTaskInfoAttributes().get(GPConstants.LSID));
+			} catch (java.net.MalformedURLException mfe) {
+				throw new Error(mfe);
+			}
+
+		} catch (Exception x) {
+			throw new WebServiceException(x);
+		}
+
+	}
+
+	/**
+	 * Submits the given task with the given parameters.
+	 * 
+	 * @param taskNameOrLSID
+	 *            The task name or LSID. When an LSID is provided that does not
+	 *            include a version, the latest available version of the task
+	 *            identified by the LSID will be used. If a task name is
+	 *            supplied, the latest version of the task with the nearest
+	 *            authority is selected. The nearest authority is the first
+	 *            match in the sequence: local authority, Broad authority, other
+	 *            authority.
+	 * @param parameters
+	 *            The parameters to run the task with.
+	 * @return The job number.
+	 * @throws WebServiceException
+	 *             If an error occurs during the job submission process.
+	 */
+	public int submitJob(String taskNameOrLSID, Parameter[] parameters)
+			throws WebServiceException {
+		try {
+			TaskInfo taskInfo = getTask(taskNameOrLSID);
+			ParameterInfo[] actualParameters = Util.createParameterInfoArray(
+					taskInfo, parameters);
+			AnalysisWebServiceProxy analysisProxy = null;
+			try {
+				analysisProxy = new AnalysisWebServiceProxy(server, userName);
+				analysisProxy.setTimeout(Integer.MAX_VALUE);
+			} catch (Exception x) {
+				throw new WebServiceException(x);
+			}
+			AnalysisJob job = submitJob(analysisProxy, taskInfo,
+					actualParameters);
+			return job.getJobInfo().getJobNumber();
+		} catch (org.genepattern.webservice.WebServiceException wse) {
+			throw new WebServiceException(wse.getMessage(), wse.getRootCause());
+		}
+	}
+
 	/**
 	 * Submits the given task with the given parameters and waits for the job to
 	 * complete.
@@ -187,14 +353,14 @@ public class GPServer {
 	 *            The parameters to run the task with.
 	 * @return The job result.
 	 * @throws WebServiceException
-	 *             If an error occurs during the job submission and job result
+	 *             If an error occurs during the job submission or job result
 	 *             retrieval process.
 	 */
 	public JobResult runAnalysis(String taskNameOrLSID, Parameter[] parameters)
 			throws WebServiceException {
 		try {
 			TaskInfo taskInfo = getTask(taskNameOrLSID);
-			ParameterInfo[] actualParameters = createParameterInfoArray(
+			ParameterInfo[] actualParameters = Util.createParameterInfoArray(
 					taskInfo, parameters);
 			AnalysisWebServiceProxy analysisProxy = null;
 			try {
@@ -249,125 +415,6 @@ public class GPServer {
 		}
 	}
 
-	private String sub(ParameterInfo formalParam, String value)
-			throws WebServiceException {
-		// see if parameter belongs to a set of choices, e.g. 1=T-Test.
-		// If so substitute 1 for T-Test, also check to see if value is
-		// valid
-		String choicesString = formalParam.getValue();
-		if (value != null && choicesString != null && !choicesString.equals("")) {
-			String[] choices = choicesString.split(";");
-			boolean validValue = false;
-			for (int j = 0; j < choices.length && !validValue; j++) {
-				String[] choiceValueAndChoiceUIValue = choices[j].split("=");
-				if (value.equals(choiceValueAndChoiceUIValue[0])) {
-					validValue = true;
-				} else if (choiceValueAndChoiceUIValue.length == 2
-						&& value.equals(choiceValueAndChoiceUIValue[1])) {
-					value = choiceValueAndChoiceUIValue[0];
-					validValue = true;
-				}
-			}
-			if (!validValue) {
-				throw new WebServiceException("Illegal value for parameter "
-						+ formalParam.getName() + ": " + value);
-			}
-		}
-		return value;
-	}
-
-	private void setAttributes(ParameterInfo formalParam,
-			ParameterInfo actualParam) {
-
-		if (formalParam.isInputFile()) {
-			HashMap actualAttributes = new HashMap();
-			actualParam.setAttributes(actualAttributes);
-			String value = actualParam.getValue();
-			actualAttributes.put(GPConstants.PARAM_INFO_CLIENT_FILENAME[0],
-					value);
-			if (value != null && new java.io.File(value).exists()) {
-				actualParam.setAsInputFile();
-			} else if (value != null) {
-				actualAttributes.remove("TYPE");
-				actualAttributes.put(ParameterInfo.MODE,
-						ParameterInfo.URL_INPUT_MODE);
-			}
-		}
-	}
-
-	private ParameterInfo[] createParameterInfoArray(TaskInfo taskInfo,
-			Parameter[] parameters) throws WebServiceException {
-
-		ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
-		List actualParameters = new ArrayList();
-
-		Map paramName2FormalParam = new HashMap();
-		if (formalParameters != null) {
-			for (int i = 0, length = formalParameters.length; i < length; i++) {
-				paramName2FormalParam.put(formalParameters[i].getName(),
-						formalParameters[i]);
-			}
-		}
-
-		if (parameters != null) {
-			for (int i = 0, length = parameters.length; i < length; i++) {
-				ParameterInfo formalParam = (ParameterInfo) paramName2FormalParam
-						.remove(parameters[i].getName());
-				if (formalParam == null) {
-					throw new WebServiceException("Unknown parameter: "
-							+ parameters[i].getName());
-				}
-				Map formalAttributes = formalParam.getAttributes();
-				if (formalAttributes == null) {
-					formalAttributes = new HashMap();
-				}
-				String value = parameters[i].getValue();
-
-				if (value == null || value.trim().equals("")) {
-					String sOptional = (String) formalAttributes
-							.get(GPConstants.PARAM_INFO_OPTIONAL[0]);
-					boolean optional = (sOptional != null && sOptional.length() > 0);
-					if (!optional) {
-						throw new WebServiceException(
-								"Missing value for required parameter "
-										+ formalParameters[i].getName());
-					}
-				}
-
-				ParameterInfo p = new ParameterInfo(formalParam.getName(),
-						value, "");
-				setAttributes(formalParam, p);
-				actualParameters.add(p);
-			}
-		}
-
-		for (Iterator it = paramName2FormalParam.keySet().iterator(); it
-				.hasNext();) {
-			String name = (String) it.next();
-			ParameterInfo p = (ParameterInfo) paramName2FormalParam.get(name);
-			String value = (String) p.getAttributes().get(
-					(String) TaskExecutor.PARAM_INFO_DEFAULT_VALUE[0]);
-			if (value == null || value.equals("")) {
-				String sOptional = (String) p.getAttributes().get(
-						GPConstants.PARAM_INFO_OPTIONAL[0]);
-				boolean optional = (sOptional != null && sOptional.length() > 0);
-				if (!optional) {
-					throw new WebServiceException(
-							"Missing value for required parameter "
-									+ p.getName());
-				}
-			} else {
-				value = sub(p, value);
-				ParameterInfo actual = new ParameterInfo(p.getName(), value, "");
-				setAttributes(p, actual);
-				actualParameters.add(actual);
-			}
-
-		}
-
-		return (ParameterInfo[]) actualParameters.toArray(new ParameterInfo[0]);
-	}
-
 	/**
 	 * Downloads the support files for the given task from the server and
 	 * executes the given task locally.
@@ -388,8 +435,8 @@ public class GPServer {
 	public void runVisualizer(String taskNameOrLSID, Parameter[] parameters)
 			throws WebServiceException {
 		TaskInfo taskInfo = getTask(taskNameOrLSID);
-		ParameterInfo[] actualParameters = createParameterInfoArray(taskInfo,
-				parameters);
+		ParameterInfo[] actualParameters = Util.createParameterInfoArray(
+				taskInfo, parameters);
 		Map paramName2ValueMap = new HashMap();
 		if (actualParameters != null) {
 			for (int i = 0; i < actualParameters.length; i++) {

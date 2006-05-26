@@ -15,7 +15,7 @@ if (strcmp('Visualizer', type))
 end
 	
 
-jobNumber = obj.javaInstance.runAnalysisNoWaiting(taskName,ar);
+jobNumber = obj.javaInstance.runAnalysisNoWait(taskName,ar);
 
 
 

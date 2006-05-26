@@ -47,7 +47,7 @@ for i=0:obj.allModules.size()-1
 
 	altLsid = altTask.getTaskInfo().getTaskInfoAttributes().get('LSID');
 	[ignore, altVer] = stripVersion(obj, altLsid );	
- 	if (ver > altVer) % this one is newer
+ 	if (str2num(ver) > str2num(altVer)) % this one is newer
 		obj.latestModulesByLSID.put(versionlessTaskId , aTask);
 	end
 
