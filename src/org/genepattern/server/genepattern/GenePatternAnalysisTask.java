@@ -1015,7 +1015,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                             int fidx = origFullPath.indexOf(substr);
                             String inputfilename = origFullPath
                                     .substring(fidx + 20);
-          
+
                             value = value + "    " + GP_URL
                                     + "getInputFile.jsp?file=" + inputfilename;
                         }
@@ -2213,80 +2213,45 @@ public class GenePatternAnalysisTask implements IGPConstants {
     }
 
     /**
-     * Takes care of quotes in command line
+     * Takes care of quotes in command line. Ensures that quoted arguments are
+     * placed into a single element in the command array
      * 
      * @param commandLine
      * @return the new command line
      */
     private static String[] translateCommandline(String[] commandLine) {
         if (commandLine == null || commandLine.length == 0) {
-            // no command? no string
-            return new String[0];
+            return commandLine;
         }
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < commandLine.length; i++) {
-            if (i > 0) {
-                sb.append(" ");
-            }
-            sb.append(commandLine[i]);
-        }
-
-        // parse with a simple finite state machine
-
-        final int normal = 0;
-        final int inQuote = 1;
-        final int inDoubleQuote = 2;
-        int state = normal;
-        String toProcess = sb.toString();
-        StringTokenizer tok = new StringTokenizer(toProcess, "\"\' ", true);
         ArrayList v = new ArrayList();
-        StringBuffer current = new StringBuffer();
-        boolean lastTokenHasBeenQuoted = false;
-
-        while (tok.hasMoreTokens()) {
-            String nextTok = tok.nextToken();
-            switch (state) {
-            case inQuote:
-                if ("\'".equals(nextTok)) {
-                    lastTokenHasBeenQuoted = true;
-                    state = normal;
-                } else {
-                    current.append(nextTok);
+        int end = commandLine.length;
+        int i = 0;
+        while (i < end) {
+            // read until find another "
+            if (commandLine[i].charAt(0) == '"'
+                    && commandLine[i].charAt(commandLine[i].length() - 1) != '"') {
+                StringBuffer buf = new StringBuffer();
+                buf
+                        .append(commandLine[i].substring(1, commandLine[i]
+                                .length()));
+                i++;
+                boolean foundEndQuote = false;
+                while (i < end && !foundEndQuote) {
+                    foundEndQuote = commandLine[i].charAt(commandLine[i]
+                            .length() - 1) == '"';
+                    buf.append(" ");
+                    buf.append(commandLine[i].substring(0, commandLine[i]
+                            .length() - 1));
+                    i++;
                 }
-                break;
-            case inDoubleQuote:
-                if ("\"".equals(nextTok)) {
-                    lastTokenHasBeenQuoted = true;
-                    state = normal;
-                } else {
-                    current.append(nextTok);
+                if (!foundEndQuote) {
+                    throw new IllegalArgumentException("Missing end quote");
                 }
-                break;
-            default:
-                if ("\'".equals(nextTok)) {
-                    state = inQuote;
-                } else if ("\"".equals(nextTok)) {
-                    state = inDoubleQuote;
-                } else if (" ".equals(nextTok)) {
-                    if (lastTokenHasBeenQuoted || current.length() != 0) {
-                        v.add(current.toString());
-                        current = new StringBuffer();
-                    }
-                } else {
-                    current.append(nextTok);
-                }
-                lastTokenHasBeenQuoted = false;
-                break;
+                v.add(buf.toString());
+            } else {
+                v.add(commandLine[i]);
+                i++;
             }
-        }
-
-        if (lastTokenHasBeenQuoted || current.length() != 0) {
-            v.add(current.toString());
-        }
-
-        if (state == inQuote || state == inDoubleQuote) {
-            throw new IllegalArgumentException("unbalanced quotes in "
-                    + toProcess);
         }
 
         return (String[]) v.toArray(new String[0]);
@@ -2343,7 +2308,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
             String[] envp = hashTableToStringArray(env);
 
             // spawn the command
-            _cat.info(Arrays.asList(commandLine));
             process = Runtime.getRuntime().exec(commandLine, envp, runDir);
 
             // BUG: there is race condition during a tiny time window between
