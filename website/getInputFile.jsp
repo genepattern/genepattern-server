@@ -9,8 +9,8 @@
   whatsoever. Neither the Broad Institute nor MIT can be responsible for its
   use, misuse, or functionality.
  
---%><%@ page import="java.io.File,
-		 java.io.IOException,
+--%><%@ page import="
+		 java.io.*,
 		 java.util.Hashtable,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.LSID,
