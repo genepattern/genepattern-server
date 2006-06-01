@@ -341,32 +341,22 @@ public class RunR extends Thread {
 	public void run() {
 		BufferedReader in = new BufferedReader(new InputStreamReader(is));
 		String line;
-		boolean bNeedsBreak;
-		boolean isFirst = true;
-
 		try {
 			while ((line = in.readLine()) != null) {
-				// System.out.println(line);
-				if (isFirst) {
-					isFirst = false;
-				}
+				
 				if (line.startsWith("> ") || line.startsWith("+ "))
 					continue;
-				bNeedsBreak = (line.length() > 0 && (line.indexOf("<") == -1 || line
+				boolean bNeedsBreak = (line.length() > 0 && (line.indexOf("<") == -1 || line
 						.indexOf("<-") != -1));
 				os.print(line);
 				if (bNeedsBreak) {
 					if (DEBUG) {
 						os.println("<br>");
-					} else {
-						os.println("");
-					}
+					} 
 				}
-
 				os.flush(); // show it to the user ASAP
 			}
-			if (!isFirst) {
-			}
+			
 		} catch (IOException ioe) {
 			System.err.println(ioe + " while reading from process stream");
 		}
