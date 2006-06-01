@@ -61,6 +61,7 @@ KNN.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=000
 KNNXValidation.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00013=0
 KNNXValidation.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00013=1
 KNNXValidation.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00013=2
+KNNXValidation.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00013=3
 KSscore.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00014=0
 KSscore.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00014=1
 MapChipFeaturesGeneral.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00015=0

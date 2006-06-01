@@ -449,6 +449,13 @@
 
 <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
 	<commandline>
+		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00013=3 KNNXValidation.zip"/>
+	</commandline>
+</cvs>
+<copy file="KNNXValidation.zip" tofile="catalogregen/KNNXValidation.3.zip" />
+
+<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+	<commandline>
 		<argument line="update -r urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00014=0 KSscore.zip"/>
 	</commandline>
 </cvs>
