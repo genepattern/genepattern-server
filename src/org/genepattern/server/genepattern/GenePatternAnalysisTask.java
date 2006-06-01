@@ -2116,10 +2116,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
             }
             // BUG: this is NOT R_HOME! This is R_HOME/bin/R
             props.put(R_HOME, props.getProperty(R));
-            // R should be <java> <java_flags> -cp <libdir> -DR_HOME=<R> RunR
+            // R should be <java> -cp <libdir> -DR_HOME=<R> RunR
 
-            props.put(R, LEFT_DELIMITER + JAVA + RIGHT_DELIMITER + " "
-                    + LEFT_DELIMITER + "java_flags" + RIGHT_DELIMITER + " -cp "
+            props.put(R, LEFT_DELIMITER + JAVA + RIGHT_DELIMITER + " -cp "
                     + LEFT_DELIMITER + "run_r_path" + RIGHT_DELIMITER
                     + " -DR_HOME=" + LEFT_DELIMITER + "R_HOME"
                     + RIGHT_DELIMITER + " -Dr_flags=" + LEFT_DELIMITER
