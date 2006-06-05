@@ -65,7 +65,15 @@ public class DoubleMatrix2D {
     public DoubleMatrix2D(double[][] data, String[] rowNames,
             String[] columnNames) {
         int rows = data.length;
+        if (rows == 0) {
+            throw new IllegalArgumentException(
+                    "Number of rows must be greater than 0");
+        }
         int columns = data[0].length;
+        if (columns == 0) {
+            throw new IllegalArgumentException(
+                    "Number of columns must be greater than 0");
+        }
         this.matrix = new Matrix(data);
         this.rowNameToRowIndexMap = new ObjectIntMap(rows);
         this.columnNameToColumnIndexMap = new ObjectIntMap(columns);
