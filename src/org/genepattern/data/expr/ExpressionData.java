@@ -12,7 +12,11 @@
 
 package org.genepattern.data.expr;
 
+import java.util.HashMap;
+import java.util.Iterator;
+
 import org.genepattern.data.matrix.DoubleMatrix2D;
+import org.genepattern.data.matrix.ObjectMatrix2D;
 
 /**
  * Implementation of IExpressionData interface
@@ -22,9 +26,13 @@ import org.genepattern.data.matrix.DoubleMatrix2D;
 public class ExpressionData implements IExpressionData {
     protected DoubleMatrix2D dataset;
 
-    protected String[] rowDescriptions;
+    protected HashMap matrices;
 
-    protected String[] columnDescriptions;
+    protected MetaData rowMetaData;
+
+    protected MetaData columnMetaData;
+
+    protected static final String DESC = "description";
 
     /**
      * Creates a new <tt>ExpressionData</tt> instance
@@ -39,21 +47,76 @@ public class ExpressionData implements IExpressionData {
     public ExpressionData(DoubleMatrix2D dataset, String[] _rowDescriptions,
             String[] _columnDescriptions) {
         this.dataset = dataset;
+        this.rowMetaData = new MetaData(dataset.getRowCount());
+
         if (_rowDescriptions != null) {
             if (_rowDescriptions.length != dataset.getRowCount()) {
                 throw new IllegalArgumentException(
                         "Length of row descriptions not equal to number of rows in matrix.");
             }
-            this.rowDescriptions = _rowDescriptions;
+            rowMetaData.setMetaData(DESC, _rowDescriptions);
         }
 
+        this.columnMetaData = new MetaData(dataset.getColumnCount());
         if (_columnDescriptions != null) {
             if (_columnDescriptions.length != dataset.getColumnCount()) {
                 throw new IllegalArgumentException(
                         "Length of column descriptions not equal to number of columns in matrix.");
             }
-            this.columnDescriptions = _columnDescriptions;
+            columnMetaData.setMetaData(DESC, _columnDescriptions);
         }
+        matrices = new HashMap();
+    }
+
+    /**
+     * * Creates a new <tt>ExpressionData</tt> instance
+     * 
+     * @param dataset
+     *            The dataset
+     * @param rowMetaData
+     *            the row meta data
+     * @param columnMetaData
+     *            the column meta data
+     */
+    protected ExpressionData(DoubleMatrix2D dataset, MetaData rowMetaData,
+            MetaData columnMetaData, HashMap matrices) {
+        this.dataset = dataset;
+        this.rowMetaData = rowMetaData;
+        this.columnMetaData = columnMetaData;
+        this.matrices = matrices;
+    }
+
+    /**
+     * Gets the matrix for the given key
+     * 
+     * @param key
+     *            The key
+     * @return The matrix or <tt>null</tt> if the key is not found
+     */
+    public ObjectMatrix2D getMatrix(String key) {
+        return (ObjectMatrix2D) matrices.get(key);
+    }
+
+    /**
+     * Sets the matrix for the given key
+     * 
+     * @param key
+     *            The key
+     * @throws IllegalArgumentException
+     *             if matrix.getRowCount != getRowCount() or
+     *             matrix.getColumnCount != getColumnCount()
+     */
+    public void setMatrix(String key, ObjectMatrix2D matrix) {
+        if (matrix.getRowCount() != getRowCount()) {
+            throw new IllegalArgumentException(
+                    "Number of rows in given matrix must be equal to the number of rows.");
+        }
+        if (matrix.getColumnCount() != getColumnCount()) {
+            throw new IllegalArgumentException(
+                    "Number of columns in given matrix must be equal to the number of columns.");
+        }
+
+        matrices.put(key, matrix);
     }
 
     /**
@@ -134,26 +197,18 @@ public class ExpressionData implements IExpressionData {
 
         DoubleMatrix2D newDoubleMatrix2D = dataset.slice(rowIndices,
                 columnIndices);
-        String[] newRowAnnotations = null;
 
-        if (rowDescriptions != null) {
-            newRowAnnotations = new String[rowIndices.length];
-            for (int i = 0, length = rowIndices.length; i < length; i++) {
-                newRowAnnotations[i] = rowDescriptions[rowIndices[i]];
-            }
+        MetaData newRowMetaData = rowMetaData.slice(rowIndices);
+        MetaData newColumnMetaData = columnMetaData.slice(columnIndices);
+        HashMap newMatrices = new HashMap();
+        for (Iterator it = matrices.keySet().iterator(); it.hasNext();) {
+            String key = (String) it.next();
+            ObjectMatrix2D m = (ObjectMatrix2D) matrices.get(key);
+            newMatrices.put(key, m.slice(rowIndices, columnIndices));
         }
 
-        String[] newColumnAnnotations = null;
-
-        if (columnDescriptions != null) {
-            newColumnAnnotations = new String[columnIndices.length];
-            for (int j = 0, length = columnIndices.length; j < length; j++) {
-                newColumnAnnotations[j] = columnDescriptions[columnIndices[j]];
-            }
-        }
-
-        return new ExpressionData(newDoubleMatrix2D, newRowAnnotations,
-                newColumnAnnotations);
+        return new ExpressionData(newDoubleMatrix2D, newRowMetaData,
+                newColumnMetaData, newMatrices);
     }
 
     /**
@@ -165,7 +220,7 @@ public class ExpressionData implements IExpressionData {
      *            The description
      */
     public void setRowDescription(int row, String description) {
-        rowDescriptions[row] = description;
+        rowMetaData.setMetaData(row, DESC, description);
     }
 
     /**
@@ -177,7 +232,7 @@ public class ExpressionData implements IExpressionData {
      *            The description
      */
     public void setColumnDescription(int column, String description) {
-        columnDescriptions[column] = description;
+        columnMetaData.setMetaData(column, DESC, description);
     }
 
     /**
@@ -205,17 +260,68 @@ public class ExpressionData implements IExpressionData {
     }
 
     public String getColumnDescription(int column) {
-        if (columnDescriptions != null) {
-            return columnDescriptions[column];
+        if (columnMetaData.contains(DESC)) {
+            return columnMetaData.getMetaData(column, DESC);
         }
         return null;
     }
 
     public String getRowDescription(int row) {
-        if (rowDescriptions != null) {
-            return rowDescriptions[row];
+        if (rowMetaData.contains(DESC)) {
+            return rowMetaData.getMetaData(row, DESC);
         }
         return null;
+    }
+
+    /**
+     * Gets the array containing the row descriptions or <tt>null</tt> if no
+     * row descriptions are set
+     * 
+     * @return The row descriptions.
+     */
+    public String[] getRowDescriptions() {
+        return rowMetaData.contains(DESC) ? rowMetaData.getArray(DESC) : null;
+    }
+
+    /**
+     * Sets the row descriptions
+     * 
+     * @param descs
+     * @throws IllegalArgumentException
+     *             if desc.length != getRowCount()
+     */
+    public void setRowDescriptions(String[] descs) {
+        if (descs != null && descs.length != getRowCount()) {
+            throw new IllegalArgumentException(
+                    "Length of descriptions must be equal to the number of rows.");
+        }
+        rowMetaData.setMetaData(DESC, descs);
+    }
+
+    /**
+     * Gets the array containing the column descriptions or <tt>null</tt> if
+     * no column descriptions are set
+     * 
+     * @return The column descriptions.
+     */
+    public String[] getColumnDescriptions() {
+        return columnMetaData.contains(DESC) ? columnMetaData.getArray(DESC)
+                : null;
+    }
+
+    /**
+     * Sets the column descriptions
+     * 
+     * @param descs
+     * @throws IllegalArgumentException
+     *             if desc.length != getColumnCount()
+     */
+    public void setColumnDescriptions(String[] descs) {
+        if (descs != null && descs.length != getColumnCount()) {
+            throw new IllegalArgumentException(
+                    "Length of descriptions must be equal to the number of columns.");
+        }
+        columnMetaData.setMetaData(DESC, descs);
     }
 
     public int getRowCount() {
@@ -252,62 +358,12 @@ public class ExpressionData implements IExpressionData {
     }
 
     /**
-     * Gets the array containing the row descriptions or <tt>null</tt> if no
-     * row descriptions are set
-     * 
-     * @return The row descriptions.
-     */
-    public String[] getRowDescriptions() {
-        return rowDescriptions;
-    }
-
-    /**
-     * Sets the row descriptions
-     * 
-     * @param descs
-     * @throws IllegalArgumentException
-     *             if desc.length != getRowCount()
-     */
-    public void setRowDescriptions(String[] descs) {
-        if (descs != null && descs.length != getRowCount()) {
-            throw new IllegalArgumentException(
-                    "Length of descriptions must be equal to the number of rows.");
-        }
-        this.rowDescriptions = descs;
-    }
-
-    /**
      * Allocates a new array contains the column names
      * 
      * @return The column names.
      */
     public String[] getColumnNames() {
         return dataset.getColumnNames();
-    }
-
-    /**
-     * Gets the array containing the column descriptions or <tt>null</tt> if
-     * no column descriptions are set
-     * 
-     * @return The column descriptions.
-     */
-    public String[] getColumnDescriptions() {
-        return columnDescriptions;
-    }
-
-    /**
-     * Sets the column descriptions
-     * 
-     * @param descs
-     * @throws IllegalArgumentException
-     *             if desc.length != getColumnCount()
-     */
-    public void setColumnDescriptions(String[] descs) {
-        if (descs != null && descs.length != getColumnCount()) {
-            throw new IllegalArgumentException(
-                    "Length of descriptions must be equal to the number of columns.");
-        }
-        this.columnDescriptions = descs;
     }
 
     /**
