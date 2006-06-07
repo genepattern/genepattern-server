@@ -78,7 +78,7 @@ public class ExpressionData implements IExpressionData {
      * @param columnMetaData
      *            the column meta data
      */
-    protected ExpressionData(DoubleMatrix2D dataset, MetaData rowMetaData,
+    public ExpressionData(DoubleMatrix2D dataset, MetaData rowMetaData,
             MetaData columnMetaData, HashMap matrices) {
         this.dataset = dataset;
         this.rowMetaData = rowMetaData;
