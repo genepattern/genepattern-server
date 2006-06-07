@@ -296,7 +296,7 @@ public class FileInfoUtil {
             throw new EndParseException();
         }
 
-        public void call(int i, int j, int call) throws ParseException {
+        public void call(int i, int j, String call) throws ParseException {
             throw new EndParseException();
         }
 

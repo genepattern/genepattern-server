@@ -130,7 +130,7 @@ public class ResParser implements IExpressionDataParser {
 							+ columnIndex + " is not a number.");
 				}
 				String callString = dataTokens[tokenIndex + 1];
-				int call = 0;
+				String call = callString;
 
 				if ("P".equals(callString)) {
 					call = ResExpressionData.PRESENT;
@@ -141,9 +141,7 @@ public class ResParser implements IExpressionDataParser {
 				} else {
 					if (verifyCalls) {
 						throw new ParseException("Unknown call, " + callString + ", on line " + reader.getLineNumber());
-					} else {
-						call = ResExpressionData.ABSENT;
-					}
+					} 
 				}
 				if (handler != null) {
 					handler.call(rowIndex, columnIndex, call);

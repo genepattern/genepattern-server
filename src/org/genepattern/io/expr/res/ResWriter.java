@@ -99,7 +99,7 @@ public class ResWriter implements IExpressionDataWriter {
 				out.print("\t");
 				out.print(data.getValueAsString(i, j));
 				out.print("\t");
-				String call = expressionData.getCallAsString(i, j);
+				String call = expressionData.getCall(i, j);
 				out.print(call);
 			}
 		}

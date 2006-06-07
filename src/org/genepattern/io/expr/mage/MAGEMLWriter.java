@@ -166,7 +166,7 @@ public class MAGEMLWriter implements IExpressionDataWriter {
 
 						if (resExpressionData != null) {
 
-							String call = resExpressionData.getCallAsString(i,
+							String call = resExpressionData.getCall(i,
 									j);
 
 							pw.print("\t");
@@ -195,7 +195,7 @@ public class MAGEMLWriter implements IExpressionDataWriter {
 							i, j)));
 					buf.append(" ");
 					if (resExpressionData != null) {
-						String call = resExpressionData.getCallAsString(i, j);
+						String call = resExpressionData.getCall(i, j);
 
 						buf.append(call);
 						buf.append(" ");

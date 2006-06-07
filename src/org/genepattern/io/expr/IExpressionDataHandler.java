@@ -29,7 +29,7 @@ public interface IExpressionDataHandler {
 
 	public void data(int i, int j, double d) throws ParseException;
 
-	public void call(int i, int j, int call) throws ParseException;
+	public void call(int i, int j, String call) throws ParseException;
 
 	public void columnName(int j, String name) throws ParseException;
 
