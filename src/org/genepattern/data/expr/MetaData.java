@@ -144,10 +144,11 @@ public class MetaData {
      */
     protected int getDepth(String name) {
         Integer depth = (Integer) metaDataName2Depth.get(name);
+        
         if (depth == null) {
             depth = new Integer(metaData.size());
-            metaData.ensureCapacity(depth);
-            metaData.set(depth, new String[size]);
+            metaData.ensureCapacity(depth.intValue());
+            metaData.set(depth.intValue(), new String[size]);
             metaDataName2Depth.put(name, depth);
         }
         return depth.intValue();
