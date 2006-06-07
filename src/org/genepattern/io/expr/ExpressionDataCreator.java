@@ -12,7 +12,12 @@
 
 package org.genepattern.io.expr;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import org.genepattern.data.expr.ExpressionData;
+import org.genepattern.data.expr.MetaData;
 import org.genepattern.data.matrix.DoubleMatrix2D;
 import org.genepattern.data.matrix.ObjectMatrix2D;
 import org.genepattern.io.ParseException;
@@ -24,21 +29,27 @@ import org.genepattern.io.ParseException;
  * @author Joshua Gould
  */
 public class ExpressionDataCreator implements IExpressionDataCreator {
-    protected ObjectMatrix2D calls;
+    protected List matrices;
 
     protected double[][] data;
-
-    protected String[] rowDescriptions;
 
     protected String[] rowNames;
 
     protected String[] columnNames;
 
-    protected String[] columnDescriptions;
+    MetaData rowMetaData;
 
-    protected boolean keepRowDescriptions = true;
+    MetaData columnMetaData;
 
-    protected boolean keepColumnDescriptions = true;
+    protected boolean keepRowMetaData = true;
+
+    protected boolean keepColumnMetaData = true;
+
+    protected String[] matrixNames;
+
+    private String[] rowMetaDataNames;
+
+    private String[] columnMetaDataNames;
 
     public ExpressionDataCreator() {
         this(true, true);
@@ -47,38 +58,46 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
     /**
      * Creates a new <tt>ExpressionDataCreator</tt> instance
      * 
-     * @param keepRowDescriptions
+     * @param keepRowMetaData
      *            whether the ExpressionData returned from <tt>
      *      create</tt>
-     *            should include row descriptions
-     * @param keepColumnDescriptions
+     *            should include row meta data
+     * @param keepColumnMetaData
      *            whether the ExpressionData returned from <tt>
      *      create</tt>
-     *            should include column descriptions
+     *            should include column meta data
      */
-    public ExpressionDataCreator(boolean keepRowDescriptions,
+    public ExpressionDataCreator(boolean keepRowMetaData,
             boolean keepColumnDescriptions) {
-        this.keepRowDescriptions = keepRowDescriptions;
-        this.keepColumnDescriptions = keepColumnDescriptions;
+        this.keepRowMetaData = keepRowMetaData;
+        this.keepColumnMetaData = keepColumnMetaData;
     }
 
     public Object create() {
         DoubleMatrix2D matrix = new DoubleMatrix2D(data, rowNames, columnNames);
-        ExpressionData data = new ExpressionData(matrix, rowDescriptions,
-                columnDescriptions);
-
-        if (calls != null) {
-            data.setMatrix("calls", calls);
+        HashMap matrices = new HashMap();
+        for (int i = 0; i < matrices.size(); i++) {
+            matrices.put(matrixNames[i], (ObjectMatrix2D) matrices.get(i));
         }
-        return data;
-    }
-
-    public void call(int row, int column, String call) throws ParseException {
-        calls.set(row, column, call);
+        return new ExpressionData(matrix, rowMetaData, columnMetaData, matrices);
     }
 
     public void data(int row, int column, double d) throws ParseException {
         data[row][column] = d;
+    }
+
+    public void rowMetaData(int row, int depth, String s) throws ParseException {
+        rowMetaData.setMetaData(row, rowMetaDataNames[depth], s);
+    }
+
+    public void columnMetaData(int column, int depth, String s)
+            throws ParseException {
+        columnMetaData.setMetaData(column, columnMetaDataNames[depth], s);
+    }
+
+    public void data(int row, int column, int depth, String s)
+            throws ParseException {
+        ((ObjectMatrix2D) matrices.get(depth)).set(row, column, s);
     }
 
     public void columnName(int j, String s) throws ParseException {
@@ -89,31 +108,21 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
         rowNames[i] = s;
     }
 
-    public void rowDescription(int i, String s) throws ParseException {
-        if (keepRowDescriptions) {
-            rowDescriptions[i] = s;
+    public void init(int rows, int columns, String[] rowMetaDataNames,
+            String[] columnMetaDataNames, String[] matrixNames)
+            throws ParseException {
+        this.data = new double[rows][columns];
+        this.rowMetaDataNames = rowMetaDataNames;
+        this.columnMetaDataNames = columnMetaDataNames;
+        this.rowNames = new String[rows];
+        this.columnNames = new String[columns];
+        this.matrixNames = matrixNames;
+        this.rowMetaData = new MetaData(rows);
+        this.columnMetaData = new MetaData(columns);
+        this.matrices = new ArrayList();
+        for (int i = 0; i < matrixNames.length; i++) {
+            matrices.add(new ObjectMatrix2D(rows, columns));
         }
     }
 
-    public void columnDescription(int j, String s) throws ParseException {
-        if (keepColumnDescriptions) {
-            columnDescriptions[j] = s;
-        }
-    }
-
-    public void init(int rows, int columns, boolean hasRowDesc,
-            boolean hasColDesc, boolean hasCalls) throws ParseException {
-        data = new double[rows][columns];
-        rowNames = new String[rows];
-        columnNames = new String[columns];
-        if (hasRowDesc && keepRowDescriptions) {
-            rowDescriptions = new String[rows];
-        }
-        if (hasColDesc && keepColumnDescriptions) {
-            columnDescriptions = new String[columns];
-        }
-        if (hasCalls) {
-            calls = new ObjectMatrix2D(rows, columns);
-        }
-    }
 }

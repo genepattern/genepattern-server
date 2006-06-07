@@ -284,19 +284,7 @@ public class FileInfoUtil {
 
         }
 
-        public void init(int rows, int cols, boolean hasRowDescriptions,
-                boolean hasColumnDescriptions, boolean hasCalls)
-                throws ParseException {
-            this.rows = rows;
-            this.columns = cols;
-            throw new EndParseException();
-        }
-
         public void data(int i, int j, double d) throws ParseException {
-            throw new EndParseException();
-        }
-
-        public void call(int i, int j, String call) throws ParseException {
             throw new EndParseException();
         }
 
@@ -308,11 +296,26 @@ public class FileInfoUtil {
             throw new EndParseException();
         }
 
-        public void rowDescription(int i, String desc) throws ParseException {
+        public void init(int rows, int columns, String[] rowMetaDataNames,
+                String[] columnMetaDataNames, String[] matrices)
+                throws ParseException {
+            this.rows = rows;
+            this.columns = columns;
             throw new EndParseException();
         }
 
-        public void columnDescription(int j, String desc) throws ParseException {
+        public void data(int row, int column, int depth, String s)
+                throws ParseException {
+            throw new EndParseException();
+        }
+
+        public void rowMetaData(int row, int depth, String s)
+                throws ParseException {
+            throw new EndParseException();
+        }
+
+        public void columnMetaData(int column, int depth, String s)
+                throws ParseException {
             throw new EndParseException();
         }
     }

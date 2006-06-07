@@ -32,15 +32,16 @@ import org.genepattern.data.matrix.ClassVector;
 import org.genepattern.data.matrix.IClassVector;
 import org.genepattern.io.expr.ExpressionDataCreator;
 import org.genepattern.io.expr.IExpressionDataCreator;
-import org.genepattern.io.expr.IExpressionDataReader;
+import org.genepattern.io.expr.IExpressionDataParser;
 import org.genepattern.io.expr.IExpressionDataWriter;
+import org.genepattern.io.expr.ReaderUtil;
 import org.genepattern.io.expr.cls.ClsReader;
 import org.genepattern.io.expr.cls.ClsWriter;
-import org.genepattern.io.expr.gct.GctReader;
+import org.genepattern.io.expr.gct.GctParser;
 import org.genepattern.io.expr.gct.GctWriter;
-import org.genepattern.io.expr.odf.OdfDatasetReader;
 import org.genepattern.io.expr.odf.OdfDatasetWriter;
-import org.genepattern.io.expr.res.ResReader;
+import org.genepattern.io.expr.odf.OdfParserAdapter;
+import org.genepattern.io.expr.res.ResParser;
 import org.genepattern.io.expr.res.ResWriter;
 
 /**
@@ -135,8 +136,8 @@ public class IOUtil {
     public static Object readExpressionData(String pathname,
             IExpressionDataCreator expressionDataCreator) throws IOException,
             ParseException {
-        IExpressionDataReader reader = getExpressionReader(pathname);
-        return reader.read(pathname, expressionDataCreator);
+        IExpressionDataParser parser = getExpressionReader(pathname);
+        return ReaderUtil.read(parser, pathname, expressionDataCreator);
     }
 
     /**
@@ -174,11 +175,12 @@ public class IOUtil {
      */
     public static ExpressionData readExpressionData(String filename,
             InputStream is) throws IOException, ParseException {
-        IExpressionDataReader reader = getExpressionReader(filename, false);
-        if (reader == null) {
+        IExpressionDataParser parser = getExpressionReader(filename, false);
+        if (parser == null) {
             return null;
         }
-        return (ExpressionData) reader.read(is, new ExpressionDataCreator());
+        return (ExpressionData) ReaderUtil.read(parser, is,
+                new ExpressionDataCreator());
 
     }
 
@@ -296,15 +298,15 @@ public class IOUtil {
         }
     }
 
-    private static IExpressionDataReader tryAllReaders(Iterator it,
+    private static IExpressionDataParser tryAllReaders(Iterator it,
             String pathname) throws IOException {
         while (it.hasNext()) {
-            IExpressionDataReader r = (IExpressionDataReader) it.next();
+            IExpressionDataParser r = (IExpressionDataParser) it.next();
             FileInputStream fis = null;
             try {
                 fis = new FileInputStream(pathname);
                 try {
-                    if (r.canRead(fis)) {
+                    if (r.canDecode(fis)) {
                         return r;
                     }
                 } catch (Exception e) {
@@ -341,14 +343,14 @@ public class IOUtil {
      * pathname.endsWith(".grp"); }
      */
     /**
-     * Gets an expression data reader that can read the document at the given
+     * Gets an expression data parser that can read the document at the given
      * pathname or <code>null</code> if no reader is found.
      * 
      * @param pathname
      *            A pathname string
      * @return The expression reader
      */
-    public static IExpressionDataReader getExpressionReader(String pathname) {
+    public static IExpressionDataParser getExpressionReader(String pathname) {
         return getExpressionReader(pathname, true);
     }
 
@@ -363,13 +365,13 @@ public class IOUtil {
      *            deduced from the file extension
      * @return The expression reader
      */
-    public static IExpressionDataReader getExpressionReader(String pathname,
+    public static IExpressionDataParser getExpressionReader(String pathname,
             boolean tryAll) {
-        IExpressionDataReader reader = null;
+        IExpressionDataParser reader = null;
         int dotIndex = pathname.lastIndexOf(".");
         if (dotIndex != -1) {// see if file has an extension
             String suffix = pathname.substring(dotIndex + 1, pathname.length());
-            reader = (IExpressionDataReader) suffix2ExpressionReaders
+            reader = (IExpressionDataParser) suffix2ExpressionReaders
                     .get(suffix);
         }
         if (reader == null && tryAll) {
@@ -421,21 +423,21 @@ public class IOUtil {
     }
 
     static {
-        Iterator defaultReaders = Arrays.asList(
-                new IExpressionDataReader[] { new GctReader(), new ResReader(),
-                        new OdfDatasetReader() }).iterator();// defaults if
+        Iterator defaultParsers = Arrays.asList(
+                new IExpressionDataParser[] { new GctParser(), new ResParser(),
+                        new OdfParserAdapter() }).iterator();// defaults if
         // using java 1.3
-        Iterator it = defaultReaders;// lookupProviders(edu.mit.broad.io.expr.IExpressionDataReader.class,
+        Iterator it = defaultParsers;// lookupProviders(edu.mit.broad.io.expr.IExpressionDataParser.class,
         // defaultReaders);
         suffix2ExpressionReaders = new HashMap();
         while (it.hasNext()) {
-            IExpressionDataReader reader = (IExpressionDataReader) it.next();
-            List suffixes = reader.getFileSuffixes();
+            IExpressionDataParser parser = (IExpressionDataParser) it.next();
+            List suffixes = parser.getFileSuffixes();
             for (int j = 0, cnt = suffixes.size(); j < cnt; j++) {
                 String suffix = (String) suffixes.get(j);
                 // XXX if > 1 reader can read a file with the same suffix, one
                 // of the readers will be 'lost'
-                suffix2ExpressionReaders.put(suffix, reader);
+                suffix2ExpressionReaders.put(suffix, parser);
             }
         }
         String temp = System.getProperty("edu.mit.broad.gp.debug");
