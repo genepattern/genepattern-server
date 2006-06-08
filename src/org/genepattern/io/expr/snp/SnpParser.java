@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.genepattern.data.expr.ExpressionConstants;
 import org.genepattern.io.ParseException;
 import org.genepattern.io.expr.IExpressionDataHandler;
 import org.genepattern.io.expr.IExpressionDataParser;
@@ -50,26 +51,6 @@ public class SnpParser implements IExpressionDataParser {
         }
     }
 
-    /**
-     * Parse a snp document. The application can use this method to instruct the
-     * snp reader to begin parsing a snp document from any valid input source.
-     * Applications may not invoke this method while a parse is in progress
-     * (they should create a new SnpParser instead ). Once a parse is complete,
-     * an application may reuse the same SnpParser object, possibly with a
-     * different input source. During the parse, the SnpParser will provide
-     * information about the snp document through the registered event handler.
-     * This method is synchronous: it will not return until parsing has ended.
-     * If a client application wants to terminate parsing early, it should throw
-     * an exception.
-     * 
-     * @param is
-     *            The input stream
-     * @throws ParseException -
-     *             Any parse exception, possibly wrapping another exception.
-     * @throws IOException -
-     *             An IO exception from the parser, possibly from a byte stream
-     *             or character stream supplied by the application.
-     */
     public void parse(InputStream is) throws ParseException, IOException {
         reader = new LineNumberReader(new BufferedReader(new InputStreamReader(
                 is)));
@@ -78,40 +59,43 @@ public class SnpParser implements IExpressionDataParser {
     }
 
     private void readData() throws ParseException, IOException {
-        int row = 0;
+
         List lines = new ArrayList();
-        for (String s = reader.readLine(); s != null; s = reader.readLine(), row++) {
+        for (String s = reader.readLine(); s != null; s = reader.readLine()) {
             if (s.trim().equals("")) {// ignore blank lines
                 continue;
             }
             lines.add(s);
         }
-        String[] rowMetaData = new String[] { "Chromosome", "PhysicalPosition" };
-        String[] matrices = new String[] { "Calls" };
+        String[] rowMetaData = new String[] { ExpressionConstants.CHROMOSOME,
+                ExpressionConstants.PHYSICAL_POSITION };
+        String[] matrices = new String[] { ExpressionConstants.CALLS };
 
-        handler.init(row, columns / 2, rowMetaData, new String[] {}, matrices);
+        handler.init(lines.size(), columns, rowMetaData, new String[0],
+                matrices);
         for (int i = 3, columnIndex = 0; i < tokens.length; i += 2, columnIndex++) {
             handler.columnName(columnIndex, tokens[i]);
         }
 
-        for (int i = 0; i < row; i++) {
+        for (int i = 0; i < lines.size(); i++) {
+            String[] tokens = ((String) lines.get(i)).split("\t");
 
-            String[] dataTokens = ((String) lines.get(i)).split("\t");
-
-            if (handler != null) {
-                handler.rowMetaData(row, 0, dataTokens[0]);
-            }
-            String rowName = dataTokens[1];
+            String rowName = tokens[0];
 
             if (handler != null) {
-                handler.rowName(row, rowName);
+                handler.rowName(i, rowName);
             }
 
-            for (int columnIndex = 0, tokenIndex = 2; columnIndex < columns; columnIndex++, tokenIndex += 2) {
+            if (handler != null) {
+                handler.rowMetaData(i, 0, tokens[1]);
+            }
+
+            for (int columnIndex = 0, tokenIndex = 3; columnIndex < columns; columnIndex++, tokenIndex += 2) {
                 try {
-                    double data = Double.parseDouble(dataTokens[tokenIndex]);
+                    double data = Double.parseDouble(tokens[tokenIndex]);
                     if (handler != null) {
-                        handler.data(row, columnIndex, data);
+                        handler.data(i, columnIndex, data);
+                        handler.data(i, columnIndex, 0, tokens[tokenIndex + 1]);
                     }
                 } catch (NumberFormatException nfe) {
                     throw new ParseException("Data at line number "
@@ -152,6 +136,7 @@ public class SnpParser implements IExpressionDataParser {
             throw new ParseException(
                     "Number of samples must be greater than zero");
         }
+        columns = columns / 2;
         return true;
     }
 
