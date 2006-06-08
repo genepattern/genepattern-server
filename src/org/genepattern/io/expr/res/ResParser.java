@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.genepattern.data.expr.ResExpressionData;
+import org.genepattern.data.expr.ExpressionConstants;
 import org.genepattern.io.ParseException;
 import org.genepattern.io.expr.IExpressionDataHandler;
 import org.genepattern.io.expr.IExpressionDataParser;
@@ -134,11 +134,11 @@ public class ResParser implements IExpressionDataParser {
                 String call = callString;
 
                 if ("P".equals(callString)) {
-                    call = ResExpressionData.PRESENT;
+                    call = ExpressionConstants.PRESENT;
                 } else if ("A".equals(callString)) {
-                    call = ResExpressionData.ABSENT;
+                    call = ExpressionConstants.ABSENT;
                 } else if ("M".equals(callString)) {
-                    call = ResExpressionData.MARGINAL;
+                    call = ExpressionConstants.MARGINAL;
                 } else {
                     if (verifyCalls) {
                         throw new ParseException("Unknown call, " + callString
