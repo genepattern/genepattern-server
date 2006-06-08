@@ -14,6 +14,7 @@ package org.genepattern.data.expr;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.genepattern.data.matrix.DoubleMatrix2D;
 import org.genepattern.data.matrix.ObjectMatrix2D;
@@ -26,13 +27,11 @@ import org.genepattern.data.matrix.ObjectMatrix2D;
 public class ExpressionData implements IExpressionData {
     protected DoubleMatrix2D dataset;
 
-    protected HashMap matrices;
+    protected Map matrices;
 
     protected MetaData rowMetaData;
 
     protected MetaData columnMetaData;
-
-    protected static final String DESC = "description";
 
     /**
      * Creates a new <tt>ExpressionData</tt> instance
@@ -54,7 +53,7 @@ public class ExpressionData implements IExpressionData {
                 throw new IllegalArgumentException(
                         "Length of row descriptions not equal to number of rows in matrix.");
             }
-            rowMetaData.setMetaData(DESC, _rowDescriptions);
+            rowMetaData.setMetaData(ExpressionConstants.DESC, _rowDescriptions);
         }
 
         this.columnMetaData = new MetaData(dataset.getColumnCount());
@@ -63,7 +62,8 @@ public class ExpressionData implements IExpressionData {
                 throw new IllegalArgumentException(
                         "Length of column descriptions not equal to number of columns in matrix.");
             }
-            columnMetaData.setMetaData(DESC, _columnDescriptions);
+            columnMetaData.setMetaData(ExpressionConstants.DESC,
+                    _columnDescriptions);
         }
         matrices = new HashMap();
     }
@@ -79,11 +79,14 @@ public class ExpressionData implements IExpressionData {
      *            the column meta data
      */
     public ExpressionData(DoubleMatrix2D dataset, MetaData rowMetaData,
-            MetaData columnMetaData, HashMap matrices) {
+            MetaData columnMetaData, Map matrices) {
         this.dataset = dataset;
         this.rowMetaData = rowMetaData;
         this.columnMetaData = columnMetaData;
         this.matrices = matrices;
+        if (this.matrices == null) {
+            this.matrices = new HashMap();
+        }
     }
 
     /**
@@ -220,7 +223,7 @@ public class ExpressionData implements IExpressionData {
      *            The description
      */
     public void setRowDescription(int row, String description) {
-        rowMetaData.setMetaData(row, DESC, description);
+        rowMetaData.setMetaData(row, ExpressionConstants.DESC, description);
     }
 
     /**
@@ -232,7 +235,8 @@ public class ExpressionData implements IExpressionData {
      *            The description
      */
     public void setColumnDescription(int column, String description) {
-        columnMetaData.setMetaData(column, DESC, description);
+        columnMetaData.setMetaData(column, ExpressionConstants.DESC,
+                description);
     }
 
     /**
@@ -260,15 +264,15 @@ public class ExpressionData implements IExpressionData {
     }
 
     public String getColumnDescription(int column) {
-        if (columnMetaData.contains(DESC)) {
-            return columnMetaData.getMetaData(column, DESC);
+        if (columnMetaData.contains(ExpressionConstants.DESC)) {
+            return columnMetaData.getMetaData(column, ExpressionConstants.DESC);
         }
         return null;
     }
 
     public String getRowDescription(int row) {
-        if (rowMetaData.contains(DESC)) {
-            return rowMetaData.getMetaData(row, DESC);
+        if (rowMetaData.contains(ExpressionConstants.DESC)) {
+            return rowMetaData.getMetaData(row, ExpressionConstants.DESC);
         }
         return null;
     }
@@ -280,7 +284,8 @@ public class ExpressionData implements IExpressionData {
      * @return The row descriptions.
      */
     public String[] getRowDescriptions() {
-        return rowMetaData.contains(DESC) ? rowMetaData.getArray(DESC) : null;
+        return rowMetaData.contains(ExpressionConstants.DESC) ? rowMetaData
+                .getArray(ExpressionConstants.DESC) : null;
     }
 
     /**
@@ -295,7 +300,7 @@ public class ExpressionData implements IExpressionData {
             throw new IllegalArgumentException(
                     "Length of descriptions must be equal to the number of rows.");
         }
-        rowMetaData.setMetaData(DESC, descs);
+        rowMetaData.setMetaData(ExpressionConstants.DESC, descs);
     }
 
     /**
@@ -305,7 +310,8 @@ public class ExpressionData implements IExpressionData {
      * @return The column descriptions.
      */
     public String[] getColumnDescriptions() {
-        return columnMetaData.contains(DESC) ? columnMetaData.getArray(DESC)
+        return columnMetaData.contains(ExpressionConstants.DESC) ? columnMetaData
+                .getArray(ExpressionConstants.DESC)
                 : null;
     }
 
@@ -321,7 +327,7 @@ public class ExpressionData implements IExpressionData {
             throw new IllegalArgumentException(
                     "Length of descriptions must be equal to the number of columns.");
         }
-        columnMetaData.setMetaData(DESC, descs);
+        columnMetaData.setMetaData(ExpressionConstants.DESC, descs);
     }
 
     public int getRowCount() {
@@ -460,5 +466,42 @@ public class ExpressionData implements IExpressionData {
      */
     public double get(int row, int column) {
         return dataset.get(row, column);
+    }
+
+    public boolean containsData(String name) {
+        return matrices.containsKey(name);
+    }
+
+    public String[] getDataNames() {
+        return (String[]) matrices.keySet().toArray(new String[0]);
+    }
+
+    public String[] getRowMetadataNames() {
+        return rowMetaData.getNames();
+    }
+
+    public String[] getColumnMetadataNames() {
+        return columnMetaData.getNames();
+    }
+
+    public Object getData(int row, int column, String name) {
+        ObjectMatrix2D matrix = (ObjectMatrix2D) matrices.get(name);
+        return matrix != null ? matrix.get(row, column) : null;
+    }
+
+    public boolean containsRowMetadata(String name) {
+        return rowMetaData.contains(name);
+    }
+
+    public boolean containsColumnMetadata(String name) {
+        return columnMetaData.contains(name);
+    }
+
+    public String getRowMetadata(int row, String name) {
+        return rowMetaData.getMetaData(row, name);
+    }
+
+    public String getColumnMetadata(int column, String name) {
+        return columnMetaData.getMetaData(column, name);
     }
 }

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
+import org.genepattern.data.expr.ExpressionConstants;
 import org.genepattern.data.expr.IExpressionData;
 import org.genepattern.io.expr.IExpressionDataWriter;
 
@@ -63,7 +64,8 @@ public class GctWriter implements IExpressionDataWriter {
 			out.print("\n");
 			out.print(expressionData.getRowName(i));
 			out.print("\t");
-			String rowDescription = expressionData.getRowDescription(i);
+			String rowDescription = expressionData.getRowMetadata(i,
+                    ExpressionConstants.DESC);
 			if (rowDescription == null) {
 				rowDescription = "";
 			}

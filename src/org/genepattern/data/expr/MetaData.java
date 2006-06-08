@@ -14,7 +14,6 @@ package org.genepattern.data.expr;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 
@@ -144,10 +143,12 @@ public class MetaData {
      */
     protected int getDepth(String name) {
         Integer depth = (Integer) metaDataName2Depth.get(name);
-        
+
         if (depth == null) {
             depth = new Integer(metaData.size());
-            metaData.ensureCapacity(depth.intValue());
+            for (int i = 0, size = depth.intValue() + 1; i < size; i++) {
+                metaData.add(null);
+            }
             metaData.set(depth.intValue(), new String[size]);
             metaDataName2Depth.put(name, depth);
         }
@@ -173,5 +174,9 @@ public class MetaData {
      */
     public boolean contains(String name) {
         return metaDataName2Depth.containsKey(name);
+    }
+
+    public String[] getNames() {
+        return (String[]) metaDataName2Depth.keySet().toArray(new String[0]);
     }
 }

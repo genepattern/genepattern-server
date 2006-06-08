@@ -75,11 +75,12 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
 
     public Object create() {
         DoubleMatrix2D matrix = new DoubleMatrix2D(data, rowNames, columnNames);
-        HashMap matrices = new HashMap();
-        for (int i = 0; i < matrices.size(); i++) {
-            matrices.put(matrixNames[i], (ObjectMatrix2D) matrices.get(i));
+        HashMap name2Matrices = new HashMap();
+        for (int i = 0; i < matrixNames.length; i++) {
+            name2Matrices.put(matrixNames[i], matrices.get(i));
         }
-        return new ExpressionData(matrix, rowMetaData, columnMetaData, matrices);
+        return new ExpressionData(matrix, rowMetaData, columnMetaData,
+                name2Matrices);
     }
 
     public void data(int row, int column, double d) throws ParseException {

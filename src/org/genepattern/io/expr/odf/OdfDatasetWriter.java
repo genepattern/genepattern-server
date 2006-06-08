@@ -1,15 +1,14 @@
 /*
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2006) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2006) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
 
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
-*/
-
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */
 
 package org.genepattern.io.expr.odf;
 
@@ -17,9 +16,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
+import org.genepattern.data.expr.ExpressionConstants;
 import org.genepattern.data.expr.IExpressionData;
-import org.genepattern.io.expr.IExpressionDataWriter;
 import org.genepattern.io.OdfWriter;
+import org.genepattern.io.expr.IExpressionDataWriter;
 
 /**
  * Writer for odf datasets
@@ -27,97 +27,99 @@ import org.genepattern.io.OdfWriter;
  * @author Joshua Gould
  */
 public class OdfDatasetWriter implements IExpressionDataWriter {
-	final static String FORMAT_NAME = "odf";
+    final static String FORMAT_NAME = "odf";
 
-	private boolean prependExecutionLog = false;
+    private boolean prependExecutionLog = false;
 
-	public String checkFileExtension(String filename) {
-		if (!filename.toLowerCase().endsWith(".odf")) {
-			filename += ".odf";
-		}
-		return filename;
-	}
+    public String checkFileExtension(String filename) {
+        if (!filename.toLowerCase().endsWith(".odf")) {
+            filename += ".odf";
+        }
+        return filename;
+    }
 
-	public void setPrependExecutionLog(boolean b) {
-		prependExecutionLog = b;
-	}
+    public void setPrependExecutionLog(boolean b) {
+        prependExecutionLog = b;
+    }
 
-	// note old odf parser requires row descriptions and column descriptions
+    // note old odf parser requires row descriptions and column descriptions
 
-	public void write(IExpressionData expressionData, OutputStream os)
-			throws IOException {
-		PrintWriter out = new PrintWriter(os);
-		if (prependExecutionLog) {
-			OdfWriter.appendExecutionLog(out);
-		}
-		int rows = expressionData.getRowCount();
-		int columns = expressionData.getColumnCount();
+    public void write(IExpressionData expressionData, OutputStream os)
+            throws IOException {
+        PrintWriter out = new PrintWriter(os);
+        if (prependExecutionLog) {
+            OdfWriter.appendExecutionLog(out);
+        }
+        int rows = expressionData.getRowCount();
+        int columns = expressionData.getColumnCount();
 
-		out.println("ODF 1.0");
-		int headerLines = 7;
+        out.println("ODF 1.0");
+        int headerLines = 7;
 
-		out.println("HeaderLines=" + headerLines);
-		out.println("Model=Dataset");
-		out.print("COLUMN_NAMES:Name\tDescription\t");
-		for (int j = 0; j < columns - 1; j++) {
-			out.print(expressionData.getColumnName(j));
-			out.print("\t");
-		}
-		out.println(expressionData.getColumnName(columns - 1));
+        out.println("HeaderLines=" + headerLines);
+        out.println("Model=Dataset");
+        out.print("COLUMN_NAMES:Name\tDescription\t");
+        for (int j = 0; j < columns - 1; j++) {
+            out.print(expressionData.getColumnName(j));
+            out.print("\t");
+        }
+        out.println(expressionData.getColumnName(columns - 1));
 
-		out.print("COLUMN_TYPES:");
-		out.print("String\tString");
+        out.print("COLUMN_TYPES:");
+        out.print("String\tString");
 
-		for (int j = 0; j < columns - 1; j++) {
-			out.print("\tfloat");
-		}
-		out.println("\tfloat");
+        for (int j = 0; j < columns - 1; j++) {
+            out.print("\tfloat");
+        }
+        out.println("\tfloat");
 
-		out
-				.print("COLUMN_DESCRIPTIONS:Name for each row\tDescription for each row\t");
+        out
+                .print("COLUMN_DESCRIPTIONS:Name for each row\tDescription for each row\t");
 
-		for (int j = 0; j < columns - 1; j++) {
-			String columnDescription = expressionData.getColumnDescription(j);
-			if (columnDescription == null) {
-				columnDescription = "";
-			}
-			out.print(columnDescription);
-			out.print("\t");
-		}
-		String columnDescription = expressionData
-				.getColumnDescription(columns - 1);
-		if (columnDescription == null) {
-			columnDescription = "";
-		}
+        for (int j = 0; j < columns - 1; j++) {
+            String columnDescription = expressionData.getColumnMetadata(j,
+                    ExpressionConstants.DESC);
+            if (columnDescription == null) {
+                columnDescription = "";
+            }
+            out.print(columnDescription);
+            out.print("\t");
+        }
+        String columnDescription = expressionData.getColumnMetadata(
+                columns - 1, ExpressionConstants.DESC);
+        if (columnDescription == null) {
+            columnDescription = "";
+        }
 
-		out.println(columnDescription);
+        out.println(columnDescription);
 
-		out.println("RowNamesColumn=0");
+        out.println("RowNamesColumn=0");
 
-		out.println("RowDescriptionsColumn=1");
+        out.println("RowDescriptionsColumn=1");
 
-		out.print("DataLines=" + rows);
+        out.print("DataLines=" + rows);
 
-		for (int i = 0; i < rows; i++) {
-			out.println();
-			out.print(expressionData.getRowName(i));
-			out.print("\t");
-			String rowDescription = expressionData.getRowDescription(i);
-			if (rowDescription == null) {
-				rowDescription = "";
-			}
-			out.print(rowDescription);
+        for (int i = 0; i < rows; i++) {
+            out.println();
+            out.print(expressionData.getRowName(i));
+            out.print("\t");
+            String rowDescription = expressionData.getRowMetadata(i,
+                    ExpressionConstants.DESC);
+            if (rowDescription == null) {
+                rowDescription = "";
+            }
+            out.print(rowDescription);
 
-			for (int j = 0; j < columns; j++) {
-				out.print("\t");
-				out.print(expressionData.getValueAsString(i, j));
-			}
-		}
-		out.flush();
-	}
+            for (int j = 0; j < columns; j++) {
+                out.print("\t");
+                out.print(expressionData.getValueAsString(i, j));
+            }
+        }
+        out.flush();
+    }
 
-	public String getFormatName() {
-		return FORMAT_NAME;
-	}
+    public String getFormatName() {
+        return FORMAT_NAME;
+    }
 
 }
