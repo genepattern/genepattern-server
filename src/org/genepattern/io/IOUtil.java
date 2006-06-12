@@ -138,7 +138,7 @@ public class IOUtil {
     public static Object readExpressionData(String pathname,
             IExpressionDataCreator expressionDataCreator) throws IOException,
             ParseException {
-        IExpressionDataParser parser = getExpressionReader(pathname);
+        IExpressionDataParser parser = getExpressionParser(pathname);
         return ReaderUtil.read(parser, pathname, expressionDataCreator);
     }
 
@@ -352,7 +352,7 @@ public class IOUtil {
      *            A pathname string
      * @return The expression reader
      */
-    public static IExpressionDataParser getExpressionReader(String pathname) {
+    public static IExpressionDataParser getExpressionParser(String pathname) {
         return getExpressionReader(pathname, true);
     }
 
