@@ -59,12 +59,8 @@ public class SnpParser implements IExpressionDataParser {
     }
 
     private void readData() throws ParseException, IOException {
-
         List lines = new ArrayList();
         for (String s = reader.readLine(); s != null; s = reader.readLine()) {
-            if (s.trim().equals("")) {// ignore blank lines
-                continue;
-            }
             lines.add(s);
         }
         String[] rowMetaData = new String[] { ExpressionConstants.CHROMOSOME,
@@ -78,8 +74,18 @@ public class SnpParser implements IExpressionDataParser {
         }
 
         for (int i = 0; i < lines.size(); i++) {
-            String[] tokens = ((String) lines.get(i)).split("\t");
-
+            String line = (String) lines.get(i);
+            if (line.equals("")) {
+                continue;
+            }
+            String[] tokens = line.split("\t");
+            int numTokens = tokens.length;
+            int expectedTokens = (columns * 2) + 3;
+            if (numTokens != expectedTokens) {
+                throw new ParseException("Incomplete data on line " + i
+                        + ". Expected " + expectedTokens + ", got " + numTokens
+                        + " tokens.");
+            }
             String rowName = tokens[0];
 
             if (handler != null) {
@@ -98,15 +104,12 @@ public class SnpParser implements IExpressionDataParser {
                         handler.data(i, columnIndex, 0, tokens[tokenIndex + 1]);
                     }
                 } catch (NumberFormatException nfe) {
-                    throw new ParseException("Data at line number "
-                            + reader.getLineNumber() + " and column "
-                            + columnIndex + " is not a number.");
+                    throw new ParseException("Data at line number " + i
+                            + " and column " + columnIndex
+                            + " is not a number.");
                 }
-
             }
-
         }
-
     }
 
     private boolean readHeader(boolean testOnly) throws ParseException,
