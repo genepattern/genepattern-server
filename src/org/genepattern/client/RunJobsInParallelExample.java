@@ -20,11 +20,18 @@ import org.genepattern.webservice.JobResult;
 import org.genepattern.webservice.Parameter;
 
 /**
- * Example of how to run jobs in parallel
+ * Simple example of how to run jobs in parallel
  * 
  * @author Joshua Gould
  */
 public class RunJobsInParallelExample {
+    /**
+     * Runs the program
+     * 
+     * @param args
+     *            command line arguments
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         List submittedJobs = new LinkedList();
         List completedJobs = new ArrayList();
