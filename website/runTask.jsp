@@ -76,17 +76,18 @@ boolean bNoEnvelope = (request.getParameter("noEnvelope") != null);
 
 TaskInfo taskInfo = null;
 try { 
-	
-String lsid = request.getParameter(GPConstants.LSID);
-if (lsid == null ) lsid = taskName;
-taskInfo = GenePatternAnalysisTask.getTaskInfo(lsid, username); } catch (OmnigeneException oe) {}
+	String lsid = request.getParameter(GPConstants.LSID);
+	if (lsid == null ) 
+	    	lsid = taskName;
+	taskInfo = GenePatternAnalysisTask.getTaskInfo(lsid, username); 
+} catch (OmnigeneException oe) {}
+
 TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
 ParameterInfo[] parameterInfoArray = null;
 try {
-        parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
+     parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
 	if (parameterInfoArray == null) parameterInfoArray = new ParameterInfo[0];
-} catch (OmnigeneException oe) {
-}
+} catch (OmnigeneException oe) {}
 
 String taskType = tia.get("taskType");
 boolean isVisualizer = "visualizer".equalsIgnoreCase(taskType);
@@ -99,16 +100,14 @@ if (isVisualizer){
 	formAction = "runPromptingPipeline.jsp";
 	int numParams = parameterInfoArray.length;
 	if (numParams == 0){
-try{
-		RequestDispatcher rd = request.getRequestDispatcher("runPipeline.jsp");
-		rd.forward(request, response);
-		return;
-} catch (Exception e){
-	e.printStackTrace();
-}
-
+		try{
+			RequestDispatcher rd = request.getRequestDispatcher("runPipeline.jsp");
+			rd.forward(request, response);
+			return;
+		} catch (Exception e){
+			e.printStackTrace();
+		}
 	}
-	
 }
 
 
@@ -157,6 +156,51 @@ function resetValues() {
 	// alert('Resetting');
 	window.location = 'runTask.jsp?<%= GPConstants.NAME %>=<%= taskName %>'
 }
+
+function formvalidation(form) {
+	
+	var requiredParams = new Array();
+	<%
+	int count = 0;
+	for (int i = 0; i < parameterInfoArray.length; i++) {
+		ParameterInfo pi = parameterInfoArray[i];
+		HashMap pia = pi.getAttributes();
+		boolean isOptional = ((String)pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET])).length() > 0;
+		if(!isOptional) {
+			out.println("requiredParams[" + count + "] = \"" + pi.getName() + "\";");
+			count++;
+		}
+	}
+	%>
+	var error = false;
+	var missingParams = "<br/>";
+	
+	for (param in requiredParams) {
+	    var formElementName = requiredParams[param];  
+	    var e = form[formElementName];
+	    var type = e.type;
+	    
+	    if(type=="file" || type=="text" || type=="textarea") {
+	   		var value = e.value;
+			if (value==null || value=="") {
+				error = true;
+				var name = e.name;
+				name = name.replace("."," ");
+				missingParams +=  "<br/>" + "<b>" + name + "</b>";
+			}
+		}
+	}
+	d = document.getElementById("errorMessageDiv");
+	t = document.getElementById("errorMessage");
+	
+	if(error) {
+		d.style.display = "inline";
+		t.innerHTML = "<font color=\"red\" size=\"+1\">The task could not be run. The following required parameters need to have values provided:</font>" + missingParams;
+	} else {
+		d.style.display = "hidden";
+	}
+	return !error;
+}
 </script>
 
 
@@ -196,10 +240,13 @@ if (taskName != null) {
 // XXXXXXXXXXXXXXXXXXXXXXXXX
 
 %>
+<div id="errorMessageDiv" style="display:none;">
+<p id = "errorMessage">></p>
+</div>
 </table>
 
 
-	<form name="pipeline" action="<%=formAction%>" method="post" ENCTYPE="multipart/form-data">
+	<form name="pipeline" action="<%=formAction%>" method="post" ENCTYPE="multipart/form-data" onsubmit="return formvalidation(this);">
 	<input type="hidden" name="taskName" value="<%= taskName %>">
 	<input type="hidden" name="taskLSID" value="<%= tia.get(GPConstants.LSID) %>">
 	<input type="hidden" name="<%= GPConstants.USERID %>" value="<%= username %>">
