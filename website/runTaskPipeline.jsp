@@ -16,6 +16,8 @@
 		 java.util.Enumeration,
 		 java.util.HashMap,
 		 java.io.File,
+		 java.net.URL,
+		 java.net.MalformedURLException,
 		 java.util.Date,
 		 java.io.UnsupportedEncodingException,
 		 java.net.InetAddress,
@@ -25,6 +27,8 @@
 		 java.util.Date,
 		 java.util.Enumeration, 
 		 java.util.ArrayList, 
+		 java.util.List,
+		 java.util.Iterator,
 		 java.util.GregorianCalendar,
 		 java.text.ParseException,
 		 java.text.DateFormat,
@@ -40,7 +44,9 @@
 		 org.genepattern.webservice.AnalysisWebServiceProxy,
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.JobInfo,
-		 com.jspsmart.upload.*,
+		 org.apache.commons.fileupload.servlet.*,
+		 org.apache.commons.fileupload.*,
+		 org.apache.commons.fileupload.disk.DiskFileItemFactory,
 		 org.genepattern.data.pipeline.PipelineModel"
 	session="false" contentType="text/html" language="Java" %>
 <%
@@ -48,7 +54,6 @@ response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 %>
-<jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" />
 <html>
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
@@ -60,89 +65,79 @@ response.setDateHeader("Expires", 0);
 <jsp:include page="navbar.jsp"></jsp:include>
 
 <%
-com.jspsmart.upload.Request requestParameters = null;
-String userID = null;
+
+String userID =  null;
+
 
 try {
-	// mySmartUpload is from http://www.jspsmart.com/
-	// Initialization
-	mySmartUpload.initialize(pageContext);
-	mySmartUpload.upload();
-	requestParameters = mySmartUpload.getRequest();
-	userID = requestParameters.getParameter(GPConstants.USERID);
-	String RUN = "run";
-	String CLONE = "clone";
-	HashMap htFilenames = new HashMap();
+    ServletFileUpload fub = new ServletFileUpload(new DiskFileItemFactory());
+    List params = fub.parseRequest(request);
+    
+	HashMap htFilenames = new HashMap(); // map between form field name and filesystem name
 
-	String lsid = requestParameters.getParameter("taskLSID");
-	String taskName = requestParameters.getParameter("taskName");
-
-	boolean DEBUG = false; // (requestParameters.getParameter("debug") != null);
-
-	if (DEBUG) {
-		System.out.println("\n\nRUNTASKPIPELINE Request parameters:<br>");
-		for (java.util.Enumeration eNames = requestParameters.getParameterNames(); eNames.hasMoreElements(); ) {
-			String n = (String)eNames.nextElement();
-                        if (!("code".equals(n)))
-			System.out.println(n + "='" + StringUtils.htmlEncode(requestParameters.getParameter(n)) + "'");
-		}
+	// create a dir for the input files
+	File tempDir = File.createTempFile("runtask", ".gp");
+	tempDir.delete();
+	tempDir.mkdir();
+	String tmpDirName = tempDir.getName();
+	HashMap requestParameters = new HashMap();
+	
+	HashMap nameToFileItemMap = new HashMap();
+	for (Iterator iter = params.iterator(); iter.hasNext();) {
+	    FileItem fi = (FileItem) iter.next();
+	    nameToFileItemMap.put(fi.getFieldName(), fi);
 	}
-	String tmpDirName = null;
-	if (mySmartUpload.getFiles().getCount() > 0) {
+	
+    int fileCount = 0;
+	for (Iterator iter = params.iterator(); iter.hasNext();) {
+         FileItem fi = (FileItem) iter.next();
+         if (!fi.isFormField()) {
+             
+             String fieldName = fi.getFieldName();
+             String fileName = fi.getName();
+             if (fileName == null || fileName.trim().equals("")) {
+                 FileItem shadow = (FileItem) nameToFileItemMap.get("shadow" + fileCount);
+                 fileName = shadow.getString();
+             }
+             fileCount++;
+			if(fileName != null && !fileName.trim().equals("")) {
+	    			try {
+	    			    new URL(fileName);
+	    			    // don't bother trying to save a file that is a URL, retrieve it at execution time instead
+	    				htFilenames.put(fieldName, fileName);    
+	    			} catch(MalformedURLException mfe) {
+	    			    fileName = org.apache.commons.io.FilenameUtils.getName(fileName);
+	    			    File file = new File(tempDir, fileName);
+	    			    fi.write(file);
+	    			    htFilenames.put(fieldName, file.getCanonicalPath()); 
+	    			}
+            }
+         } else {
+             requestParameters.put(fi.getFieldName(), fi.getString());
+         }
 
-		String attachmentDir = null;
-		File dir = null;
-		String attachmentName = null;
-		dir = new File(System.getProperty("java.io.tmpdir"));
-		// create a bogus dir under this for the input files
-		tmpDirName = taskName + "_" + userID + "_" + System.currentTimeMillis();			
-		dir = new File(dir, tmpDirName );
-		dir.mkdir();
-
-		com.jspsmart.upload.File attachedFile = null;
-		for (int i=0;i<mySmartUpload.getFiles().getCount();i++){
-			attachedFile = mySmartUpload.getFiles().getFile(i);
-			if (attachedFile.isMissing()) continue;
-			try {
-				attachmentName = attachedFile.getFileName();
-				if (attachmentName.trim().length() == 0) continue;
-				String fieldName = attachedFile.getFieldName();
-				String fullName = attachedFile.getFilePathName();
-				if (DEBUG) System.out.println("makePipeline: " + fieldName + " -> " + fullName);
-				if (fullName.startsWith("http:") || fullName.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
-				// don't bother trying to save a file that is a URL, retrieve it at execution time instead
-
-					htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
-					continue;
-				}
-					
-								attachmentName = dir.getPath() + File.separator + attachmentName;
-
-				File attachment = new File(attachmentName);
-				if (attachment.exists()) {
-					attachment.delete();
-				}
-						
-				attachedFile.saveAs(attachmentName);
-				
-				htFilenames.put(fieldName, attachmentName ); // map between form field name and filesystem name
-				
-				if (DEBUG) System.out.println(fieldName + "=" + fullName + " (" + attachedFile.getSize() + " bytes) in " + htFilenames.get(fieldName) + "<br>");
-			} catch (SmartUploadException sue) {
-			    	throw new Exception("error saving " + attachmentName  + ": " + sue.getMessage());
-			}
-		}
-		
 	} // loop over files
 
+	
+	String lsid = (String) requestParameters.get("taskLSID");
+	String taskName = (String) requestParameters.get("taskName");
+	if(lsid==null) {
+	    lsid = taskName;   
+	}
+	userID = (String) requestParameters.get(GPConstants.USERID);
 	// set up the call to the analysis engine
  	String server = request.getScheme() + "://"+ InetAddress.getLocalHost().getCanonicalHostName() + ":"
 					+ System.getProperty("GENEPATTERN_PORT");
 
 	AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, userID);
+	
 	TaskInfo task = GenePatternAnalysisTask.getTaskInfo(lsid, userID);
-
+	if(task==null) {
+	 	out.println("Unable to find task " + lsid);   
+	 	return;
+	}
 	ParameterInfo[] parmInfos = task.getParameterInfoArray();
+	
 	int nParams = 0;
 	if (parmInfos != null){ 
 		nParams = parmInfos.length;
@@ -156,17 +151,18 @@ try {
 		if (pinfo.isInputFile()){
 			value = (String)htFilenames.get(pinfo.getName());
 			if (value == null) {
-				System.err.println("no input file specified for " + task.getName() + "'s " + pinfo.getName());
 				value = "";
 				pinfo.getAttributes().put(ParameterInfo.TYPE, "");
 			}
-			if (value.startsWith("http:") || value.startsWith("https:")|| value.startsWith("ftp:") || value.startsWith("file:")) {
-				HashMap attrs = pinfo.getAttributes();
+			try {
+			    new URL(value);
+			    HashMap attrs = pinfo.getAttributes();
 				attrs.put(pinfo.MODE , pinfo.URL_INPUT_MODE);
 				attrs.remove(pinfo.TYPE);
-			}
+			} catch(MalformedURLException mfe) {}
+			
 		} else {
-			value = requestParameters.getParameter(pinfo.getName());
+			value = (String) requestParameters.get(pinfo.getName());
 		}
 
 		//
@@ -233,22 +229,21 @@ function checkAll(frm, bChecked) {
 
 <table width='100%' cellpadding='10'>
 <tr><td>
-Running <a href="addTask.jsp?view=1&name=<%=requestParameters.getParameter("taskLSID")%>"><%=requestParameters.getParameter("taskName")%></a> as job # <a href="getJobResults.jsp?jobID=<%=job.getJobNumber() %>"><%=job.getJobNumber() %></a> on <%=new Date()%> 
+Running <a href="addTask.jsp?view=1&name=<%=requestParameters.get("taskLSID")%>"><%=requestParameters.get("taskName")%></a> as job # <a href="getJobResults.jsp?jobID=<%=job.getJobNumber() %>"><%=job.getJobNumber() %></a> on <%=new Date()%> 
 				
 </tr></td>
 <tr><td>
-<%=requestParameters.getParameter("taskName")%> ( 
+<%=requestParameters.get("taskName")%> ( 
 <%
 
-//XXXXXXXXXXX
-TaskInfoAttributes tia = task.giveTaskInfoAttributes();
+
 ParameterInfo[] formalParameterInfoArray = null;
 try {
         formalParameterInfoArray  = new ParameterFormatConverter().getParameterInfoArray(task.getParameterInfo());
 	if (formalParameterInfoArray == null) formalParameterInfoArray = new ParameterInfo[0];
 } catch (OmnigeneException oe) {
 }
-//XXXXXXXXXXXXXXXXX
+
 
 
 for (int i=0; i < parmInfos.length; i++){
@@ -264,19 +259,24 @@ for (int i=0; i < parmInfos.length; i++){
 		}
 
 		String value = pinfo.getValue();	
+		boolean isURL = false;
+		try {
+		     new URL(value);
+		     isURL = true;
+		} catch(MalformedURLException mfe) {}
+		
 		out.println(pinfo.getName().replace('.',' '));
 		out.println("=");
 		if (pinfo.isInputFile()) {
-			String htmlValue = StringUtils.htmlEncode(pinfo.getValue().trim());		
-			if (value.startsWith("http:") || value.startsWith("https:") || value.startsWith("ftp:") || value.startsWith("file:")) {
+			String htmlValue = StringUtils.htmlEncode(pinfo.getValue().trim());	
+			
+			if (isURL) {
 				out.println("<a href='"+ htmlValue + "'>"+htmlValue +"</a>");
 			} else {
-				File f = new File(tmpDirName +"/" + value);
-
 				out.println("<a href='getFile.jsp?task=&file="+ URLEncoder.encode(tmpDirName +"/" + value)+"'>"+htmlValue +"</a>");
-	
+
 			}
-		} else if (value.startsWith("http:") || value.startsWith("https:") || value.startsWith("ftp:") || value.startsWith("file:")) {
+		} else if (isURL) {
 			out.println("<a href='"+ value + "'>"+value +"</a>");
 
 		} else {
@@ -398,8 +398,9 @@ for (int i=0; i < parmInfos.length; i++){
 	These job results are scheduled to be purged from the server on <%= df.format(purgeTOD.getTime()).toLowerCase() %><br>
 
 <%
-} catch (Exception e){
-	e.printStackTrace();
+} catch (Throwable e){
+    e.printStackTrace();
+    out.println("An error occurred.");
 }
 %>
 <jsp:include page="footer.jsp"></jsp:include>
