@@ -283,24 +283,22 @@ public class DirectoryManager {
 	}
 
 
-	protected static String getLibDir(){
-
-		File f = null;
-		try {
-			if (taskLibDir == null) {
-				taskLibDir = System.getProperty("genepattern.properties");	
-				if (taskLibDir == null)
-					throw new Exception(
-							"GenePatternAnalysisTask.getTaskLibDir: genepattern.properties environment variable not set");
-				f = new File(taskLibDir).getParentFile();
-				f = new File(f, "taskLib");
-				taskLibDir = f.getCanonicalPath();
-			}
-		} catch (Exception ioe){
-			ioe.printStackTrace();
-		}
-		return taskLibDir;
-	}
+	protected static String getLibDir() {
+        if (taskLibDir == null) {
+            taskLibDir = System.getProperty("tasklib");
+            if (taskLibDir == null || !new File(taskLibDir).exists()) {
+                taskLibDir = ".." + File.separator + "taskLib";
+            }
+            File f = new File(taskLibDir);
+            try {
+                taskLibDir = f.getCanonicalPath();
+            } catch (IOException e) {
+                e.printStackTrace();
+                taskLibDir = f.getPath();
+            }
+        }
+        return taskLibDir;
+    }
 
 
 	/**
