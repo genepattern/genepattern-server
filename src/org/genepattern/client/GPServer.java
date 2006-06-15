@@ -145,7 +145,7 @@ public class GPServer {
                 .equalsIgnoreCase("Finished")))) {
             count++;
             try {
-                Thread.currentThread().sleep(sleep);
+                Thread.sleep(sleep);
             } catch (InterruptedException ie) {
             }
             info = handler.checkStatus(job.getJobInfo().getJobNumber());
@@ -214,7 +214,8 @@ public class GPServer {
      * 
      * @param jobNumber
      *            the job number
-     * @return <tt>JobResult</tt> instance
+     * @return <tt>JobResult</tt> instance or <tt>null</tt> if the job is
+     *         not complete
      * @throws WebServiceException
      *             If an error occurs
      * @see isComplete
@@ -225,6 +226,9 @@ public class GPServer {
                     server, userName, false);
             analysisProxy.setTimeout(Integer.MAX_VALUE);
             JobInfo info = analysisProxy.checkStatus(jobNumber);
+            if (info == null) {
+                return null;
+            }
 
             String status = info.getStatus();
             if (!(status.equalsIgnoreCase("ERROR") || (status
