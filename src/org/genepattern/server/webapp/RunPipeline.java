@@ -177,8 +177,12 @@ public class RunPipeline {
         URL serverFromFile = new URL(genepatternProps
                 .getProperty("GenePatternURL"));
 
-        String server = serverFromFile.getProtocol() + "://"
-                + serverFromFile.getHost() + ":" + serverFromFile.getPort();
+        String host = serverFromFile.getHost();
+        if (host.equals("127.0.0.1") || host.equals("localhost")) {
+            host = InetAddress.getLocalHost().getCanonicalHostName();
+        }
+        String server = serverFromFile.getProtocol() + "://" + host + ":"
+                + serverFromFile.getPort();
 
         PipelineModel pipelineModel = getPipelineModel(pipelineFileName,
                 pipelineLSID);
