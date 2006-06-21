@@ -122,8 +122,8 @@ public class TestCallTasksFromProperties extends TestCallTasks {
 		FileInputStream fis = new FileInputStream(propertyFile);
 		props.load(fis);
 
-		for(Enumeration enum = props.propertyNames(); enum.hasMoreElements(); ) {
-			String key = (String) enum.nextElement();
+		for(Enumeration e = props.propertyNames(); e.hasMoreElements(); ) {
+			String key = (String) e.nextElement();
 			if(key.startsWith(DIFF_KEY)) {
 				StringTokenizer st = new StringTokenizer(props.getProperty(key), ";");
 				String outputFile = st.nextToken();
