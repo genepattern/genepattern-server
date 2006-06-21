@@ -90,10 +90,8 @@ public class SnpParser implements IExpressionDataParser {
 
             if (handler != null) {
                 handler.rowName(i, rowName);
-            }
-
-            if (handler != null) {
                 handler.rowMetaData(i, 0, tokens[1]);
+                handler.rowMetaData(i, 1, tokens[2]);
             }
 
             for (int columnIndex = 0, tokenIndex = 3; columnIndex < columns; columnIndex++, tokenIndex += 2) {
