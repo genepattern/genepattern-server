@@ -12,24 +12,26 @@
 
 package org.genepattern.geworkbench;
 
-import java.awt.Component;
-
-import javax.swing.JLabel;
-import javax.xml.namespace.QName;
-
+import org.apache.axis.EngineConfiguration;
 import org.apache.axis.client.Call;
 import org.apache.axis.client.Service;
+import org.apache.axis.configuration.BasicClientConfig;
 import org.geworkbench.bison.datastructure.biocollections.microarrays.DSMicroarraySet;
 import org.geworkbench.engine.config.VisualPlugin;
 import org.geworkbench.engine.management.AcceptTypes;
 
-@AcceptTypes( { DSMicroarraySet.class })
+import javax.swing.JLabel;
+import javax.xml.namespace.QName;
+import java.awt.Component;
+
+@AcceptTypes({DSMicroarraySet.class})
 public class TestPlugin extends JLabel implements VisualPlugin {
 
     public TestPlugin() {
         try {
             String endpoint = "http://localhost:8080/gp/services/Admin";
-            Service service = new Service();
+            EngineConfiguration ec = new BasicClientConfig();
+            Service service = new Service(ec);
             Call call = (Call) service.createCall();
 
             call.setTargetEndpointAddress(new java.net.URL(endpoint));
