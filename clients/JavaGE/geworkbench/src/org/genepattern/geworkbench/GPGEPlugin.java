@@ -43,8 +43,6 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
         try {
             instance = GPGE.getInstance();
             instance.setFrame(new HiddenFrame());
-            System.out.println("here"
-                    + System.getProperty("javax.xml.parsers.SAXParserFactory"));
             instance.startUp(false);
             setLayout(new BorderLayout());
             add(instance.getFrame().getContentPane());
