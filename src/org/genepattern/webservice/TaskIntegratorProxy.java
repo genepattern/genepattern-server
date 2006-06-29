@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.axis.client.Service;
+import org.apache.axis.configuration.BasicClientConfig;
 import org.genepattern.util.GPConstants;
 
 /**
@@ -52,7 +53,7 @@ public class TaskIntegratorProxy {
 			if (!(endpoint.startsWith("http://"))) {
 				this.endpoint = "http://" + this.endpoint;
 			}
-			this.service = new Service();
+			this.service = new Service(new BasicClientConfig());
 			stub = new TaskIntegratorSoapBindingStub(new URL(endpoint), service);
 			stub.setUsername(userName);
 			stub.setMaintainSession(maintainSession);

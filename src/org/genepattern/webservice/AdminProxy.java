@@ -14,14 +14,13 @@
 package org.genepattern.webservice;
 
 import java.net.URL;
+import java.rmi.RemoteException;
+import java.util.Map;
 
 import javax.activation.DataHandler;
 
-import java.rmi.RemoteException;
-
-import java.util.Map;
-
 import org.apache.axis.client.Service;
+import org.apache.axis.configuration.BasicClientConfig;
 
 /**
  * @author Joshua Gould
@@ -47,7 +46,7 @@ public class AdminProxy {
 			String context = (String)System.getProperty("GP_Path", "/gp");
 			
 			this.endpoint = this.endpoint + context + "/services/Admin";
-			this.service = new Service();
+			this.service = new Service(new BasicClientConfig());
 			proxy = new AdminSoapBindingStub(new URL(endpoint), service);
 			proxy.setUsername(userName);
 			proxy.setMaintainSession(maintainSession);

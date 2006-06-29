@@ -22,6 +22,7 @@ import java.util.Iterator;
 import javax.activation.*;
 import java.rmi.RemoteException;
 import org.apache.axis.client.Service;
+import org.apache.axis.configuration.BasicClientConfig;
 
 /**
  * @author Joshua Gould
@@ -51,7 +52,7 @@ public class AnalysisWebServiceProxy {
          if (!(  endpoint.startsWith("http://") || endpoint.startsWith("https://")   )) {
             this.endpoint = "http://" + this.endpoint;
          }
-         this.service = new Service();
+         this.service = new Service(new BasicClientConfig());
          stub = new AnalysisSoapBindingStub(new URL(endpoint), service);
          stub.setUsername(userName);
          stub.setMaintainSession(maintainSession);
