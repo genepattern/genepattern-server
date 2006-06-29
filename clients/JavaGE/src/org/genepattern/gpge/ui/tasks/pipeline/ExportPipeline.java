@@ -17,6 +17,7 @@ import java.io.File;
 
 import javax.swing.JOptionPane;
 
+import org.genepattern.gpge.CLThread;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
 import org.genepattern.gpge.ui.util.GUIUtil;
@@ -64,7 +65,7 @@ public class ExportPipeline {
 			if (destination == null) {
 				return;
 			}
-			new Thread() {
+			new CLThread() {
 				public void run() {
 					try {
 						proxy.exportToZip(selectedService.getLsid(), recursive,

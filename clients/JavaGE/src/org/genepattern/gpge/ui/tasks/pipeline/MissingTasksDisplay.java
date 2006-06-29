@@ -31,6 +31,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
 import org.genepattern.data.pipeline.JobSubmission;
+import org.genepattern.gpge.CLThread;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.MessageManager;
@@ -151,7 +152,7 @@ public class MissingTasksDisplay {
         installFromCatalogBtn.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent arg0) {
-                new Thread() {
+                new CLThread() {
                     private boolean cancel = false;
 
                     public void run() {

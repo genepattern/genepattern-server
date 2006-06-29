@@ -77,6 +77,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.genepattern.gpge.CLThread;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.PropertyManager;
 import org.genepattern.gpge.message.ChangeViewMessage;
@@ -95,7 +96,6 @@ import org.genepattern.gpge.ui.preferences.SuitesPreferences;
 import org.genepattern.gpge.ui.project.ProjectDirModel;
 import org.genepattern.gpge.ui.project.ProjectDirectoryListener;
 import org.genepattern.gpge.ui.project.ProjectEvent;
-import org.genepattern.gpge.ui.suites.SuiteEditor;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceUtil;
 import org.genepattern.gpge.ui.tasks.FileInfoComponent;
@@ -132,6 +132,7 @@ import com.jgoodies.forms.layout.FormLayout;
  */
 public class GPGE {
 
+ 
     AnalysisServiceManager analysisServiceManager;
 
     private final static Color DEFAULT_AUTHORITY_MINE_COLOR = Color.MAGENTA;
@@ -408,7 +409,7 @@ public class GPGE {
 
         if (outputFile != null) {
 
-            new Thread() {
+            new CLThread() {
                 public void run() {
                     try {
                         node.download(outputFile);
@@ -452,7 +453,7 @@ public class GPGE {
 
         setChangeServerActionsEnabled(false);
 
-        new Thread() {
+        new CLThread() {
             public void run() {
 
                 try {
@@ -518,7 +519,7 @@ public class GPGE {
         final String server = getServer();
         final String username = analysisServiceManager.getUsername();
 
-        Thread changeStatusThread = new Thread() {
+        CLThread changeStatusThread = new CLThread() {
             public void run() {
                 frame.setTitle("GPGE - Server: " + server + ",  Username: "
                         + username);
@@ -1042,7 +1043,7 @@ public class GPGE {
                 }
 
                 final TreeNode node = (TreeNode) path.getLastPathComponent();
-                new Thread() {
+                new CLThread() {
                     public void run() {
                         defaultApplication(node);
                     }
@@ -1391,7 +1392,7 @@ public class GPGE {
             }
         });
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
+        Runtime.getRuntime().addShutdownHook(new CLThread() {
             public final void run() {
                 try {
                     PropertyManager.setProperty(PreferenceKeys.WINDOW_LAYOUT,
@@ -1477,7 +1478,7 @@ public class GPGE {
         }
 
         public void setText(final String s) {
-            Thread thread = new Thread() {
+            CLThread thread = new CLThread() {
                 public void run() {
                     label.setText(s);
                     pack();
@@ -1498,7 +1499,7 @@ public class GPGE {
         }
         final List errors = new ArrayList();
 
-        Thread updateJobs = new Thread() {
+        CLThread updateJobs = new CLThread() {
             public void run() {
                 try {
                     jobModel.getJobsFromServer();
@@ -1518,7 +1519,7 @@ public class GPGE {
         };
         updateJobs.start();
 
-        Thread updateHistory = new Thread() {
+        CLThread updateHistory = new CLThread() {
             public void run() {
                 historyMenu.setEnabled(false);
                 String server = AnalysisServiceManager.getInstance()
@@ -1568,7 +1569,7 @@ public class GPGE {
         MenuItemAction projectFileTextViewerMenuItem = new MenuItemAction(
                 "Text Viewer", IconManager.loadIcon(IconManager.TEXT_ICON)) {
             public void actionPerformed(ActionEvent e) {
-                new Thread() {
+                new CLThread() {
                     public void run() {
                         textViewer(selectedProjectDirNode);
                     }
@@ -1580,7 +1581,7 @@ public class GPGE {
         projectFileDefaultAppMenuItem = new MenuItemAction(
                 "Default Application") {
             public void actionPerformed(ActionEvent e) {
-                new Thread() {
+                new CLThread() {
                     public void run() {
                         defaultApplication(selectedProjectDirNode);
                     }
@@ -1653,7 +1654,7 @@ public class GPGE {
                 String message = "Are you sure you want to delete job number "
                         + jobNode.job.getJobInfo().getJobNumber() + "?";
                 if (showConfirmDialog(message)) {
-                    new Thread() {
+                    new CLThread() {
                         public void run() {
                             try {
                                 jobModel.delete(jobNode);
@@ -1679,7 +1680,7 @@ public class GPGE {
 
                 String message = "Are you sure you want to delete all jobs?";
                 if (showConfirmDialog(message)) {
-                    new Thread() {
+                    new CLThread() {
                         public void run() {
                             try {
                                 jobModel.deleteAll();
@@ -1700,7 +1701,7 @@ public class GPGE {
                 .loadIcon(IconManager.STOP_ICON)) {
             public void actionPerformed(ActionEvent e) {
                 final JobModel.JobNode jobNode = (JobModel.JobNode) selectedJobNode;
-                new Thread() {
+                new CLThread() {
                     public void run() {
                         try {
                             AnalysisWebServiceProxy p = new AnalysisWebServiceProxy(
@@ -1790,7 +1791,7 @@ public class GPGE {
                                 .getPath(), IconManager
                                 .loadIcon(IconManager.SAVE_ICON)) {
                             public void actionPerformed(ActionEvent e) {
-                                new Thread() {
+                                new CLThread() {
                                     public void run() {
                                         JobModel.ServerFileNode node = (JobModel.ServerFileNode) selectedJobNode;
                                         File outputFile = new File(dir,
@@ -1871,7 +1872,7 @@ public class GPGE {
                         JOptionPane.QUESTION_MESSAGE);
 
                 if (pipelineName != null) {
-                    new Thread() {
+                    new CLThread() {
                         public void run() {
                             try {
                                 AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(
@@ -1912,7 +1913,7 @@ public class GPGE {
         jobResultFileTextViewerMenuItem = new MenuItemAction("Text Viewer",
                 IconManager.loadIcon(IconManager.TEXT_ICON)) {
             public void actionPerformed(ActionEvent e) {
-                new Thread() {
+                new CLThread() {
                     public void run() {
                         textViewer(selectedJobNode);
                     }
@@ -1924,7 +1925,7 @@ public class GPGE {
         jobResultFileDefaultAppMenuItem = new MenuItemAction(
                 "Default Application") {
             public void actionPerformed(ActionEvent e) {
-                new Thread() {
+                new CLThread() {
                     public void run() {
                         defaultApplication(selectedJobNode);
                     }
@@ -1935,7 +1936,7 @@ public class GPGE {
     }
 
     private void setChangeServerActionsEnabled(final boolean b) {
-        Thread disableActions = new Thread() {
+        CLThread disableActions = new CLThread() {
             public void run() {
                 analysisMenu.setEnabled(b);
                 visualizerMenu.setEnabled(b);
@@ -1957,9 +1958,9 @@ public class GPGE {
                 .getInputTypeToMenuItemsMap(analysisServiceManager
                         .getLatestAnalysisServices());
 
-        new Thread() {
+        new CLThread() {
             public void run() {
-                SwingUtilities.invokeLater(new Thread() {
+                SwingUtilities.invokeLater(new CLThread() {
                     public void run() {
                         Map categoryToAnalysisServices = AnalysisServiceUtil
                                 .getCategoryToAnalysisServicesMap(analysisServiceManager
@@ -1988,7 +1989,7 @@ public class GPGE {
         }
 
         setChangeServerActionsEnabled(false);
-        Thread thread = new Thread() {
+        CLThread thread = new CLThread() {
             public void run() {
                 try {
                     analysisServiceManager.refresh();
@@ -2006,7 +2007,7 @@ public class GPGE {
                 inputTypeToMenuItemsMap = SemanticUtil
                         .getInputTypeToMenuItemsMap(latestTasks);
                 MessageManager.notifyListeners(new RefreshMessage(this));
-                SwingUtilities.invokeLater(new Thread() {
+                SwingUtilities.invokeLater(new CLThread() {
                     public void run() {
                         Map categoryToAnalysisServices = AnalysisServiceUtil
                                 .getCategoryToAnalysisServicesMap(latestTasks);
@@ -2591,7 +2592,7 @@ public class GPGE {
                             : GPConstants.ACCESS_PRIVATE;
 
                     if (e.getSource() == importBtn) {
-                        new Thread() {
+                        new CLThread() {
                             public void run() {
                                 try {
                                     String lsid = null;
@@ -2632,7 +2633,7 @@ public class GPGE {
                                         _message = "Successfully installed suite.";
                                     }
                                     final String message = _message;
-                                    SwingUtilities.invokeLater(new Thread() {
+                                    SwingUtilities.invokeLater(new CLThread() {
                                         public void run() {
                                             GenePattern
                                                     .showMessageDialog(message);
@@ -2794,7 +2795,7 @@ public class GPGE {
             refreshModulesMenuItem = new JMenuItem("Modules");
             refreshModulesMenuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent e) {
-                    new Thread() {
+                    new CLThread() {
                         public void run() {
                             refreshModules(true);
                         }
@@ -2807,7 +2808,7 @@ public class GPGE {
             refreshJobsMenuItem = new JMenuItem("Jobs");
             refreshJobsMenuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent e) {
-                    new Thread() {
+                    new CLThread() {
                         public void run() {
                             refreshJobs(true);
                         }

@@ -56,6 +56,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.JTextComponent;
 
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.gpge.CLThread;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.GPGEMessage;
@@ -1013,7 +1014,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 	}
 
 	private void scrollTo(final TaskPanel task) {
-		Thread t = new Thread() {
+		CLThread t = new CLThread() {
 			public void run() {
 				Point p = task.getParent().getLocation();
 				JViewport jvp = scrollPane.getViewport();

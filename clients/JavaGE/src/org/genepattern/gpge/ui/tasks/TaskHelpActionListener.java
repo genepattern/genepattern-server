@@ -15,10 +15,10 @@ package org.genepattern.gpge.ui.tasks;
 
 import java.awt.event.ActionListener;
 
+import org.genepattern.gpge.CLThread;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.maindisplay.LSIDUtil;
 import org.genepattern.util.GPConstants;
-import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskIntegratorProxy;
 import org.genepattern.webservice.WebServiceException;
@@ -34,7 +34,7 @@ public class TaskHelpActionListener implements ActionListener {
 		this.taskInfo = t;
 		hasDocumentation = true;
 		if (taskInfo != null) {
-			new Thread() {
+			new CLThread() {
 				public void run() {
 					try {
 

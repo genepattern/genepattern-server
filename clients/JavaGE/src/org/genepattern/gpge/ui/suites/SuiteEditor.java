@@ -39,6 +39,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 
+import org.genepattern.gpge.CLThread;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.GPGEMessage;
@@ -288,7 +289,7 @@ public class SuiteEditor extends JPanel {
 
 			public void actionPerformed(ActionEvent e) {
 				if (e.getSource() == exportButton) {
-					new Thread() {
+					new CLThread() {
 						public void run() {
 
 							try {
@@ -380,7 +381,7 @@ public class SuiteEditor extends JPanel {
 
 					final AnalysisServiceManager asm = AnalysisServiceManager
 							.getInstance();
-					new Thread() {
+					new CLThread() {
 						public void run() {
 							try {
 

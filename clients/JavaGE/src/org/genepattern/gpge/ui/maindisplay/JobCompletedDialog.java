@@ -31,13 +31,13 @@ import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
-import org.genepattern.gpge.ui.table.*;
-import org.genepattern.gpge.ui.preferences.PreferenceKeys;
+import org.genepattern.gpge.CLThread;
 import org.genepattern.gpge.PropertyManager;
+import org.genepattern.gpge.ui.preferences.PreferenceKeys;
+import org.genepattern.gpge.ui.table.AlternatingColorTable;
 
 public class JobCompletedDialog {
 	JDialog dialog;
@@ -133,7 +133,7 @@ public class JobCompletedDialog {
 			tableModel.add(new MyJobInfo(jobNumber, taskName, status));
 			dialog.setVisible(true);
 		} else {
-			SwingUtilities.invokeLater(new Thread() {
+			SwingUtilities.invokeLater(new CLThread() {
 				public void run() {
 					tableModel.add(new MyJobInfo(jobNumber, taskName, status));
 					dialog.setVisible(true);

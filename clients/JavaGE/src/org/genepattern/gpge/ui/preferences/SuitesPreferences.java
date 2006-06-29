@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 
+import org.genepattern.gpge.CLThread;
 import org.genepattern.gpge.ui.maindisplay.CenteredDialog;
 import org.genepattern.gpge.ui.maindisplay.GPGE;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
@@ -151,7 +152,7 @@ public class SuitesPreferences {
 			public void actionPerformed(ActionEvent e) {
 				dialog.setVisible(false);
 				if (e.getSource() == okBtn) {
-					new Thread() {
+					new CLThread() {
 						public void run() {
 							save();
 						}

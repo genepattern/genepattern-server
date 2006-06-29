@@ -16,15 +16,14 @@ package org.genepattern.gpge.ui.tasks;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Properties;
 
+import org.genepattern.gpge.CLThread;
 import org.genepattern.webservice.LocalTaskExecutor;
 import org.genepattern.webservice.TaskExecException;
 import org.genepattern.webservice.TaskInfo;
@@ -107,7 +106,7 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
 	 * @author Joshua Gould
 	 * @created May 18, 2004
 	 */
-	static class StreamGobbler extends Thread {
+	static class StreamGobbler extends CLThread {
 		private final InputStream is;   
 		private PrintStream ps;
 		

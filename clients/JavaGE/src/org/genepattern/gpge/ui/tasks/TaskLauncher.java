@@ -26,6 +26,7 @@ import javax.swing.Timer;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.gpge.CLThread;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.maindisplay.CenteredDialog;
 import org.genepattern.util.GPConstants;
@@ -160,7 +161,7 @@ public class TaskLauncher {
 			final ParameterInfo[] paramInfos,
 			final AnalysisWebServiceProxy serviceProxy,
 			final AnalysisService svc) {
-		new Thread() {
+		new CLThread() {
 			public void run() {
 				try {
 					Map taskInfoAttributes = svc.getTaskInfo()
@@ -205,7 +206,7 @@ public class TaskLauncher {
 	 * refreshes jobs from the server and a job is in progress
 	 */
 	public static void waitUntilCompletionInNewThread(final AnalysisJob job) {
-		new Thread() {
+		new CLThread() {
 			public void run() {
 				try {
 					waitUntilCompletion(job, null, null);

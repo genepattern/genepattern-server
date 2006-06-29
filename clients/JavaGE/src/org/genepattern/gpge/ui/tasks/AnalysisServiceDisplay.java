@@ -19,14 +19,12 @@ import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.net.URL;
 import java.util.Iterator;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -38,13 +36,10 @@ import org.genepattern.codegenerator.JavaPipelineCodeGenerator;
 import org.genepattern.codegenerator.MATLABPipelineCodeGenerator;
 import org.genepattern.codegenerator.RPipelineCodeGenerator;
 import org.genepattern.codegenerator.TaskCodeGenerator;
-import org.genepattern.gpge.GenePattern;
+import org.genepattern.gpge.CLThread;
 import org.genepattern.gpge.message.ChangeViewMessageRequest;
-import org.genepattern.gpge.message.GPGEMessage;
-import org.genepattern.gpge.message.GPGEMessageListener;
 import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
-import org.genepattern.gpge.ui.maindisplay.LSIDUtil;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel;
 import org.genepattern.gpge.ui.tasks.pipeline.ExportPipeline;
 import org.genepattern.gpge.ui.util.GUIUtil;
@@ -55,8 +50,6 @@ import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskIntegratorProxy;
-import org.genepattern.webservice.WebServiceException;
 
 /**
  * Displays an <tt>AnalysisService</tt>
@@ -323,7 +316,7 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
             final String username = AnalysisServiceManager.getInstance()
                     .getUsername();
 
-            new Thread() {
+            new CLThread() {
                 public void run() {
                     RunTask rt = new RunTask(selectedService,
                             actualParameterArray, username);
@@ -333,7 +326,7 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
         } finally {
             if (TaskLauncher.isVisualizer(selectedService)) {
                 try {
-                    Thread.sleep(1000);
+                    CLThread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
