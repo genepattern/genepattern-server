@@ -24,6 +24,7 @@ import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.maindisplay.GPGE;
 import org.geworkbench.bison.datastructure.biocollections.DSDataSet;
 import org.geworkbench.bison.datastructure.biocollections.microarrays.DSMicroarraySet;
@@ -42,7 +43,9 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
     public GPGEPlugin() {
         try {
             instance = GPGE.getInstance();
-            instance.setFrame(new HiddenFrame());
+            HiddenFrame f = new HiddenFrame();
+            GenePattern.setDialogParent(f);
+            instance.setFrame(f);
             instance.startUp(false);
             setLayout(new BorderLayout());
             add(instance.getFrame().getContentPane());
