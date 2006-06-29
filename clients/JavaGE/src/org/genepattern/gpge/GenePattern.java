@@ -271,6 +271,10 @@ public final class GenePattern {
 
     }
 
+    public static void setDialogParent(JFrame f) {
+        parentFrame = f;
+    }
+
     /** the java 1.4.1 AWT exception handler property key */
     // public static final String AWT_EXCEPTION_HANDLER_KEY =
     // "sun.awt.exception.handler";
