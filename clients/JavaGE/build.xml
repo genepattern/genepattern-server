@@ -87,7 +87,7 @@ This will create a jar file with the pattern gp-XXXXXXXX.jar where the Xs will b
         
         <echo message="${repos_root}/resources"/>
         <jar basedir="." defaultexcludes="true" excludes="**/*.java **/*.form **/.nbattrs **/.DS_Store" includes="${inclds}" jarfile="${appfile}" manifest="${manifest}">
-            <fileset defaultexcludes="true" dir="${repos_root}/resources" excludes="**/*.java"/>
+            <zipfileset prefix="org/genepattern/resources" defaultexcludes="true" dir="${repos_root}/resources" excludes="**/*.java"/>
         </jar>
 
 	 

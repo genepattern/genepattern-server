@@ -130,7 +130,8 @@ public class BuildProperties {
         PROPERTIES = new Properties();
         InputStream is = null;
         try {
-            URL url = BuildProperties.class.getResource("build.properties");
+            URL url = BuildProperties.class
+                    .getResource("/org/genepattern/resources/build.properties");
             if (url != null) {
                 is = url.openStream();
                 PROPERTIES.load(is);
