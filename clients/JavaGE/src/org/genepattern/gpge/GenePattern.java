@@ -58,43 +58,30 @@ public final class GenePattern {
     }
 
     public GenePattern() {
+        try {
+            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager
+                    .getSystemLookAndFeelClassName());
+
+        } catch (Exception e) {
+        }
+        loadDefaults();
+        parentFrame = GPGE.getInstance().getFrame();
+        GPGE.getInstance().startUp();
+        REPORTER = new ReporterWithGUI(parentFrame);
+    }
+
+    static void loadDefaults() {
         java.net.URL imgURL = GenePattern.class
                 .getResource("/org/genepattern/gpge/resources/GPGE_small.jpg");
         if (imgURL != null) {
             icon = new ImageIcon(imgURL);
         }
-
-        try {
-
-            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager
-                    .getSystemLookAndFeelClassName());
-            if (!GPGE.RUNNING_ON_MAC) {
-                javax.swing.UIDefaults uiDefaults = javax.swing.UIManager
-                        .getDefaults();
-                /*
-                 * uiDefaults.put("Panel.background", new
-                 * javax.swing.plaf.ColorUIResource(Color.white));
-                 * uiDefaults.put("CheckBox.background", new
-                 * javax.swing.plaf.ColorUIResource(Color.white));
-                 * uiDefaults.put("RadioButton.background", new
-                 * javax.swing.plaf.ColorUIResource(Color.white));
-                 * uiDefaults.put("Tree.background", new
-                 * javax.swing.plaf.ColorUIResource(Color.white));
-                 * uiDefaults.put("Table.background", new
-                 * javax.swing.plaf.ColorUIResource(Color.white));
-                 * uiDefaults.put("ScrollPane.background", new
-                 * javax.swing.plaf.ColorUIResource(Color.white));
-                 * uiDefaults.put("SplitPane.background", new
-                 * javax.swing.plaf.ColorUIResource(Color.white));
-                 */
-                uiDefaults.put("Viewport.background",
-                        new javax.swing.plaf.ColorUIResource(Color.white));
-            }
-        } catch (Exception e) {
+        if (!GPGE.RUNNING_ON_MAC) {
+            javax.swing.UIDefaults uiDefaults = javax.swing.UIManager
+                    .getDefaults();
+            uiDefaults.put("Viewport.background",
+                    new javax.swing.plaf.ColorUIResource(Color.white));
         }
-        parentFrame = GPGE.getInstance().getFrame();
-        GPGE.getInstance().startUp();
-        REPORTER = new ReporterWithGUI(parentFrame);
 
     }
 
@@ -272,7 +259,9 @@ public final class GenePattern {
     }
 
     public static void setDialogParent(JFrame f) {
+        loadDefaults();
         parentFrame = f;
+        REPORTER = new ReporterWithGUI(parentFrame);
     }
 
     /** the java 1.4.1 AWT exception handler property key */
