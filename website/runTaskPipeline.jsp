@@ -97,7 +97,9 @@ try {
              String fileName = fi.getName();
              if (fileName == null || fileName.trim().equals("")) {
                  FileItem shadow = (FileItem) nameToFileItemMap.get("shadow" + fileCount);
-                 fileName = shadow.getString();
+              	  if(shadow!=null) {
+              	  		fileName = shadow.getString();
+              	  }
              }
              fileCount++;
 			if(fileName != null && !fileName.trim().equals("")) {
