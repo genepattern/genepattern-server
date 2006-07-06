@@ -132,7 +132,6 @@ import com.jgoodies.forms.layout.FormLayout;
  */
 public class GPGE {
 
- 
     AnalysisServiceManager analysisServiceManager;
 
     private final static Color DEFAULT_AUTHORITY_MINE_COLOR = Color.MAGENTA;
@@ -521,8 +520,8 @@ public class GPGE {
 
         CLThread changeStatusThread = new CLThread() {
             public void run() {
-                frame.setTitle("GPGE - Server: " + server + ",  Username: "
-                        + username);
+                frame.setTitle("GenePattern Graphical Environment - Server: "
+                        + server + ",  Username: " + username);
 
             }
         };
