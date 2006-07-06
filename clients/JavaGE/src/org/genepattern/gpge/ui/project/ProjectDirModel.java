@@ -278,7 +278,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 		}
 	}
 
-	public void add(File projectDir) {
+	public ProjectDirNode add(File projectDir) {
 		ProjectDirNode child = new ProjectDirNode(projectDir);
 		List children = root.getChildren();
 		int insertionIndex = 0;
@@ -294,6 +294,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 		root.insert(child, insertionIndex);
 		nodesWereInserted(root, new int[] { insertionIndex });
 		notifyProjectAdded(projectDir);
+        return child;
 	}
 
 	public void sortOrderChanged(SortEvent e) {

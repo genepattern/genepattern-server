@@ -17,15 +17,19 @@ import java.awt.Component;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FilenameFilter;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.genepattern.data.expr.IExpressionData;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.maindisplay.GPGE;
+import org.genepattern.gpge.ui.project.ProjectDirModel.ProjectDirNode;
+import org.genepattern.io.expr.gct.GctWriter;
 import org.geworkbench.bison.datastructure.biocollections.DSDataSet;
 import org.geworkbench.bison.datastructure.biocollections.microarrays.DSMicroarraySet;
 import org.geworkbench.engine.config.VisualPlugin;
@@ -38,7 +42,7 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
 
     private GPGE instance;
 
-    private GeWorkbenchProject workbenchProject;
+    private static GeWorkbenchProject workbenchProject;
 
     public GPGEPlugin() {
         try {
@@ -55,7 +59,15 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
             t.printStackTrace();
         }
         workbenchProject = new GeWorkbenchProject();
-        instance.getProjectDirectoryModel().add(workbenchProject);
+        if (!instance.getProjectDirectoryModel().contains(workbenchProject)) {
+            final ProjectDirNode node = instance.getProjectDirectoryModel()
+                    .add(workbenchProject);
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() {
+                    instance.getProjectDirectoryModel().remove(node);
+                }
+            });
+        }
     }
 
     public Component getComponent() {
@@ -65,11 +77,99 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
     @Subscribe
     public void receive(ProjectEvent event, Object source) {
         DSDataSet dataSet = event.getDataSet();
+
         // We will act on this object if it is a DSMicroarraySet
         if (dataSet instanceof DSMicroarraySet) {
+            if (!instance.getProjectDirectoryModel().contains(workbenchProject)) {
+                instance.getProjectDirectoryModel().add(workbenchProject);
+            }
+
             DSMicroarraySet microarraySet = (DSMicroarraySet) dataSet;
             workbenchProject.add(microarraySet);
             instance.getProjectDirectoryModel().refresh(workbenchProject);
+        }
+    }
+
+    void toGct(final DSMicroarraySet microarraySet) {
+
+        IExpressionData data = new IExpressionData() {
+
+            public String getValueAsString(int row, int column) {
+                return String.valueOf(microarraySet.getValue(row, column));
+            }
+
+            public boolean containsData(String name) {
+                return false;
+            }
+
+            public Object getData(int row, int column, String name) {
+                return null;
+            }
+
+            public boolean containsRowMetadata(String name) {
+                return false;
+            }
+
+            public boolean containsColumnMetadata(String name) {
+                return false;
+            }
+
+            public String getRowMetadata(int row, String name) {
+                return null;
+            }
+
+            public String getColumnMetadata(int column, String name) {
+                return null;
+            }
+
+            public double getValue(int row, int column) {
+                return microarraySet.getValue(row, column);
+            }
+
+            public String getRowName(int row) {
+                return microarraySet.getMarkers().get(row).toString();
+            }
+
+            public int getRowCount() {
+                return microarraySet.getMarkers().size();
+            }
+
+            public int getColumnCount() {
+                return microarraySet.size();
+            }
+
+            public String getColumnName(int column) {
+                return microarraySet.get(column).toString();
+            }
+
+            public int getRowIndex(String rowName) {
+                return 0;
+            }
+
+            public int getColumnIndex(String columnName) {
+                return 0;
+            }
+
+        };
+        GctWriter writer = new GctWriter();
+        FileOutputStream os = null;
+        try {
+            File f = microarraySet.getFile();
+            String name = f.getName();
+            int dotIndex = name.lastIndexOf(".");
+            if (dotIndex > 0) {
+                name = name.substring(0, dotIndex);
+            }
+            os = new FileOutputStream(new File(name + ".gct"));
+            writer.write(data, os);
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        } finally {
+            try {
+                os.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -97,27 +197,37 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
             System.out.println("got data, file " + microarraySet.getFile()
                     + " label " + microarraySet.getLabel());
             if (!children.contains(microarraySet.getFile())) {
+                System.out.println("Adding file " + microarraySet.getFile()
+                        + " label " + microarraySet.getLabel());
                 children.add(microarraySet.getFile());
             }
         }
 
+        @Override
         public boolean isDirectory() {
             return true;
         }
 
+        @Override
         public boolean exists() {
             return true;
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
         @Override
         public File[] listFiles(FileFilter fileFilter) {
+            for (int i = 0; i < children.size(); i++) {
+                File f = children.get(i);
+                System.out.println(f.exists());
+            }
             return children.toArray(new File[0]);
         }
 
+        @Override
         public long lastModified() {
             return lastModified;
         }
