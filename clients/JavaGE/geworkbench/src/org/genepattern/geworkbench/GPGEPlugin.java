@@ -15,27 +15,23 @@ package org.genepattern.geworkbench;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Toolkit;
+import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.OutputStream;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-
 import org.genepattern.data.expr.IExpressionData;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.maindisplay.GPGE;
-import org.genepattern.gpge.ui.project.ProjectDirModel.ProjectDirNode;
 import org.genepattern.io.expr.gct.GctWriter;
 import org.geworkbench.bison.datastructure.biocollections.DSDataSet;
 import org.geworkbench.bison.datastructure.biocollections.microarrays.DSMicroarraySet;
+import org.geworkbench.bison.datastructure.bioobjects.markers.DSGeneMarker;
 import org.geworkbench.engine.config.VisualPlugin;
 import org.geworkbench.engine.management.AcceptTypes;
 import org.geworkbench.engine.management.Subscribe;
@@ -45,8 +41,6 @@ import org.geworkbench.events.ProjectEvent;
 public class GPGEPlugin extends JPanel implements VisualPlugin {
 
     private GPGE instance;
-
-    // private static GeWorkbenchProject workbenchProject;
 
     private File projectDirectory;
 
@@ -62,11 +56,6 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
         add(instance.getFrame().getContentPane());
         add(instance.getFrame().getJMenuBar(), BorderLayout.NORTH);
 
-        // workbenchProject = new GeWorkbenchProject();
-        // if (!instance.getProjectDirectoryModel().contains(workbenchProject))
-        // {
-        // final ProjectDirNode node = instance.getProjectDirectoryModel()
-        // .add(projectDirectory);
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 File[] files = projectDirectory.listFiles(new FilenameFilter() {
@@ -99,7 +88,6 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
 
             DSMicroarraySet microarraySet = (DSMicroarraySet) dataSet;
             toGct(microarraySet);
-            // workbenchProject.add(microarraySet);
             instance.getProjectDirectoryModel().refresh(projectDirectory);
         }
     }
@@ -141,7 +129,12 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
             }
 
             public String getRowName(int row) {
-                return microarraySet.getMarkers().get(row).toString();
+                Object obj = microarraySet.getMarkers().get(row);
+                if (obj instanceof DSGeneMarker) {
+                    DSGeneMarker marker = (DSGeneMarker) obj;
+                    return marker.getLabel();
+                }
+                return obj.toString();
             }
 
             public int getRowCount() {
@@ -166,7 +159,7 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
 
         };
         GctWriter writer = new GctWriter();
-        BufferedOutputStream os = null;
+        OutputStream os = null;
         try {
             File f = microarraySet.getFile();
             String name = f.getName();
@@ -195,58 +188,6 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
         }
 
         public void show() {
-        }
-    }
-
-    static class GeWorkbenchProject extends File {
-        static String name = "geWorkbench Files";
-
-        List<File> children = new ArrayList<File>();
-
-        private long lastModified;
-
-        public GeWorkbenchProject() {
-            super(name);
-            lastModified = System.currentTimeMillis();
-        }
-
-        public void add(DSMicroarraySet microarraySet) {
-            System.out.println("got data, file " + microarraySet.getFile()
-                    + " label " + microarraySet.getLabel());
-            if (!children.contains(microarraySet.getFile())) {
-                System.out.println("Adding file " + microarraySet.getFile()
-                        + " label " + microarraySet.getLabel());
-                children.add(microarraySet.getFile());
-            }
-        }
-
-        @Override
-        public boolean isDirectory() {
-            return true;
-        }
-
-        @Override
-        public boolean exists() {
-            return true;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public File[] listFiles(FileFilter fileFilter) {
-            for (int i = 0; i < children.size(); i++) {
-                File f = children.get(i);
-                System.out.println(f.exists());
-            }
-            return children.toArray(new File[0]);
-        }
-
-        @Override
-        public long lastModified() {
-            return lastModified;
         }
     }
 
