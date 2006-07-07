@@ -25,6 +25,10 @@ import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+
 import org.genepattern.data.expr.IExpressionData;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.maindisplay.GPGE;
@@ -42,32 +46,42 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
 
     private GPGE instance;
 
-    private static GeWorkbenchProject workbenchProject;
+    // private static GeWorkbenchProject workbenchProject;
+
+    private File projectDirectory;
 
     public GPGEPlugin() {
-        try {
-            instance = GPGE.getInstance();
-            HiddenFrame f = new HiddenFrame();
-            GenePattern.setDialogParent(f);
-            instance.setFrame(f);
-            instance.startUp(false);
-            setLayout(new BorderLayout());
-            add(instance.getFrame().getContentPane());
-            add(instance.getFrame().getJMenuBar(), BorderLayout.NORTH);
+        projectDirectory = new File("geWorkbench");
+        projectDirectory.mkdirs();
+        instance = GPGE.getInstance();
+        HiddenFrame f = new HiddenFrame();
+        GenePattern.setDialogParent(f);
+        instance.setFrame(f);
+        instance.startUp(false);
+        setLayout(new BorderLayout());
+        add(instance.getFrame().getContentPane());
+        add(instance.getFrame().getJMenuBar(), BorderLayout.NORTH);
 
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-        workbenchProject = new GeWorkbenchProject();
-        if (!instance.getProjectDirectoryModel().contains(workbenchProject)) {
-            final ProjectDirNode node = instance.getProjectDirectoryModel()
-                    .add(workbenchProject);
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                public void run() {
-                    instance.getProjectDirectoryModel().remove(node);
+        // workbenchProject = new GeWorkbenchProject();
+        // if (!instance.getProjectDirectoryModel().contains(workbenchProject))
+        // {
+        // final ProjectDirNode node = instance.getProjectDirectoryModel()
+        // .add(projectDirectory);
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                File[] files = projectDirectory.listFiles(new FilenameFilter() {
+                    public boolean accept(File dir, String name) {
+                        return name.toLowerCase().endsWith(".gct");
+                    }
+                });
+                if (files != null) {
+                    for (int i = 0; i < files.length; i++) {
+                        files[i].delete();
+                    }
                 }
-            });
-        }
+            }
+        });
+
     }
 
     public Component getComponent() {
@@ -78,15 +92,15 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
     public void receive(ProjectEvent event, Object source) {
         DSDataSet dataSet = event.getDataSet();
 
-        // We will act on this object if it is a DSMicroarraySet
         if (dataSet instanceof DSMicroarraySet) {
-            if (!instance.getProjectDirectoryModel().contains(workbenchProject)) {
-                instance.getProjectDirectoryModel().add(workbenchProject);
+            if (!instance.getProjectDirectoryModel().contains(projectDirectory)) {
+                instance.getProjectDirectoryModel().add(projectDirectory);
             }
 
             DSMicroarraySet microarraySet = (DSMicroarraySet) dataSet;
-            workbenchProject.add(microarraySet);
-            instance.getProjectDirectoryModel().refresh(workbenchProject);
+            toGct(microarraySet);
+            // workbenchProject.add(microarraySet);
+            instance.getProjectDirectoryModel().refresh(projectDirectory);
         }
     }
 
@@ -152,7 +166,7 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
 
         };
         GctWriter writer = new GctWriter();
-        FileOutputStream os = null;
+        BufferedOutputStream os = null;
         try {
             File f = microarraySet.getFile();
             String name = f.getName();
@@ -160,13 +174,16 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
             if (dotIndex > 0) {
                 name = name.substring(0, dotIndex);
             }
-            os = new FileOutputStream(new File(name + ".gct"));
+            os = new BufferedOutputStream(new FileOutputStream(new File(
+                    projectDirectory, name + ".gct")));
             writer.write(data, os);
         } catch (IOException ioe) {
             ioe.printStackTrace();
         } finally {
             try {
-                os.close();
+                if (os != null) {
+                    os.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
