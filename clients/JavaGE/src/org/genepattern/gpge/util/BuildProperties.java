@@ -124,7 +124,7 @@ public class BuildProperties {
     static {
         long build = 0;
         int count = 0;
-        String name = "GenePattern", full = "0.0.0", release = "?", date = "The Past";
+        String name = "GenePattern", full = "0.0.0", release = "?", date = "Unknown";
         String buildTag = "", major = "", minor = "", revision = "";
 
         PROPERTIES = new Properties();
