@@ -171,14 +171,14 @@ public class FileInfoUtil {
         InputStream is = null;
         try {
             URLConnection conn = url.openConnection();
-            long length = -1;
+            is = conn.getInputStream();
+            long length = 0;
             try {
                 length = Long.parseLong(conn.getHeaderField("content-length"));
             } catch (Exception e) {
                 length = is.available();
             }
 
-            is = conn.getInputStream();
             String size = getSize(length);
             FileInfo fileInfo = _getInfo(name, is);
             fileInfo.setSize(size);
