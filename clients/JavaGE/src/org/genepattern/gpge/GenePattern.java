@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -53,8 +54,14 @@ public final class GenePattern {
     /** where the module error messages go */
     private static ReporterWithGUI REPORTER;
 
+    private static ImageIcon smallIcon;
+
     public static Icon getIcon() {
         return icon;
+    }
+
+    public static Icon getSmallIcon() {
+        return smallIcon;
     }
 
     public GenePattern() {
@@ -71,11 +78,17 @@ public final class GenePattern {
     }
 
     static void loadDefaults() {
-        java.net.URL imgURL = GenePattern.class
+        URL imgURL = GenePattern.class
                 .getResource("/org/genepattern/gpge/resources/GPGE_small.jpg");
         if (imgURL != null) {
             icon = new ImageIcon(imgURL);
         }
+        URL imgURL2 = GenePattern.class
+                .getResource("/org/genepattern/gpge/resources/GPGE_small2.jpg");
+        if (imgURL2 != null) {
+            smallIcon = new ImageIcon(imgURL2);
+        }
+
         if (!GPGE.RUNNING_ON_MAC) {
             javax.swing.UIDefaults uiDefaults = javax.swing.UIManager
                     .getDefaults();
