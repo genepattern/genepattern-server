@@ -66,7 +66,7 @@ ant package
 
 			<fileset refid="base.libs" />
 			<pathelement path="build" />
-
+			<pathelement path="${repos_root}/build" />
 			<filelist refid="build.jars" />
 			<path refid="props.path" />
 		</path>
