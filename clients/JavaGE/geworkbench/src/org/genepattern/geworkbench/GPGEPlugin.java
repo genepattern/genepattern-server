@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.genepattern.data.expr.AbstractExpressionData;
 import org.genepattern.data.expr.IExpressionData;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.ui.maindisplay.GPGE;
@@ -94,35 +95,7 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
 
     void toGct(final DSMicroarraySet microarraySet) {
 
-        IExpressionData data = new IExpressionData() {
-
-            public String getValueAsString(int row, int column) {
-                return String.valueOf(microarraySet.getValue(row, column));
-            }
-
-            public boolean containsData(String name) {
-                return false;
-            }
-
-            public Object getData(int row, int column, String name) {
-                return null;
-            }
-
-            public boolean containsRowMetadata(String name) {
-                return false;
-            }
-
-            public boolean containsColumnMetadata(String name) {
-                return false;
-            }
-
-            public String getRowMetadata(int row, String name) {
-                return null;
-            }
-
-            public String getColumnMetadata(int column, String name) {
-                return null;
-            }
+        IExpressionData data = new AbstractExpressionData() {
 
             public double getValue(int row, int column) {
                 return microarraySet.getValue(row, column);
@@ -147,14 +120,6 @@ public class GPGEPlugin extends JPanel implements VisualPlugin {
 
             public String getColumnName(int column) {
                 return microarraySet.get(column).toString();
-            }
-
-            public int getRowIndex(String rowName) {
-                return 0;
-            }
-
-            public int getColumnIndex(String columnName) {
-                return 0;
             }
 
         };

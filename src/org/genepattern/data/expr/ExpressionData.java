@@ -504,4 +504,28 @@ public class ExpressionData implements IExpressionData {
     public String getColumnMetadata(int column, String name) {
         return columnMetaData.getMetaData(column, name);
     }
+
+    public String getDataName(int index) {
+        return ((String[]) matrices.keySet().toArray(new String[0]))[index];
+    }
+
+    public int getDataCount() {
+        return matrices.size();
+    }
+
+    public String getRowMetadataName(int index) {
+        return rowMetaData.getNames()[index];
+    }
+
+    public int getRowMetadataCount() {
+        return rowMetaData.size();
+    }
+
+    public String getColumnMetadataName(int index) {
+        return columnMetaData.getNames()[index];
+    }
+
+    public int getColumnMetadataCount() {
+        return columnMetaData.size();
+    }
 }

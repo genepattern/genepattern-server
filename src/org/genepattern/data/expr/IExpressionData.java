@@ -31,14 +31,21 @@ public interface IExpressionData extends IMatrix {
     public String getValueAsString(int row, int column);
 
     /**
-     * Tests whether this instance contains data with the given name
+     * Gets the metadata name at the given index
      * 
-     * @param name
-     *            the key for the data
-     * @return <tt>true</tt> if this instance contains the data,
-     *         <tt>false</tt> otherwise
+     * @param index
+     *            The index
+     * @return The metadata name at the given <tt>index</tt>
+     * 
      */
-    public boolean containsData(String name);
+    public String getDataName(int index);
+
+    /**
+     * Gets the number of data names
+     * 
+     * @return The number of data names
+     */
+    public int getDataCount();
 
     /**
      * Gets the data at the given row and column with the given name
@@ -54,24 +61,38 @@ public interface IExpressionData extends IMatrix {
     public Object getData(int row, int column, String name);
 
     /**
-     * Tests whether row metadata is supplied for this name
+     * Gets the row metadata name at the given index
      * 
-     * @param name
-     *            The metadata name
-     * @return <tt>true</tt> if this instance contains the metadata,
-     *         <tt>false</tt> otherwise
+     * @param index
+     *            The index
+     * @return The metadata name at the given <tt>index</tt>
+     * 
      */
-    public boolean containsRowMetadata(String name);
+    public String getRowMetadataName(int index);
 
     /**
-     * Tests whether column metadata is supplied for this name
+     * Gets the number of row meta data names
      * 
-     * @param name
-     *            The metadata name
-     * @return <tt>true</tt> if this instance contains the metadata,
-     *         <tt>false</tt> otherwise
+     * @return The number of names
      */
-    public boolean containsColumnMetadata(String name);
+    public int getRowMetadataCount();
+
+    /**
+     * Gets the column metadata name at the given index
+     * 
+     * @param index
+     *            The index
+     * @return The metadata name at the given <tt>index</tt>
+     * 
+     */
+    public String getColumnMetadataName(int index);
+
+    /**
+     * Gets the number of column meta data names
+     * 
+     * @return The number of names
+     */
+    public int getColumnMetadataCount();
 
     /**
      * Gets the row metadata at the given row for this name

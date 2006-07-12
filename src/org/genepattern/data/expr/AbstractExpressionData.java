@@ -12,6 +12,8 @@
 
 package org.genepattern.data.expr;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 /**
  * @author Joshua Gould
  */
@@ -20,20 +22,32 @@ public abstract class AbstractExpressionData implements IExpressionData {
         return String.valueOf(getValue(row, column));
     }
 
-    public boolean containsData(String name) {
-        return false;
+    public String getDataName(int index) {
+        return null;
+    }
+
+    public int getDataCount() {
+        return 0;
+    }
+
+    public String getRowMetadataName(int index) {
+        return null;
+    }
+
+    public int getRowMetadataCount() {
+        return 0;
+    }
+
+    public String getColumnMetadataName(int index) {
+        return null;
+    }
+
+    public int getColumnMetadataCount() {
+        return 0;
     }
 
     public Object getData(int row, int column, String name) {
         return null;
-    }
-
-    public boolean containsRowMetadata(String name) {
-        return false;
-    }
-
-    public boolean containsColumnMetadata(String name) {
-        return false;
     }
 
     public String getRowMetadata(int row, String name) {
@@ -54,7 +68,11 @@ public abstract class AbstractExpressionData implements IExpressionData {
 
     public abstract String getColumnName(int column);
 
-    public abstract int getRowIndex(String rowName);
+    public int getRowIndex(String rowName) {
+        throw new NotImplementedException();
+    }
 
-    public abstract int getColumnIndex(String columnName);
+    public int getColumnIndex(String columnName) {
+        throw new NotImplementedException();
+    }
 }

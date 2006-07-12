@@ -27,8 +27,9 @@ public class MetaData {
 
     /**
      * Creates a new <tt>MetaData</tt> instance
-     *
-     * @param capacity the capacity
+     * 
+     * @param capacity
+     *            the capacity
      */
     public MetaData(int capacity) {
         this.capacity = capacity;
@@ -38,7 +39,7 @@ public class MetaData {
 
     /**
      * Creates a new <tt>MetaData</tt> instance
-     *
+     * 
      * @param copy
      */
     protected MetaData(MetaData copy) {
@@ -54,13 +55,15 @@ public class MetaData {
     /**
      * Constructs and returns a new <tt>MetaData</tt> instance that contains
      * the indicated cells. Indices can be in arbitrary order.
-     *
-     * @param indices The indices
+     * 
+     * @param indices
+     *            The indices
      * @return the new MetaData
      */
     public MetaData slice(int[] indices) {
         MetaData slicedMetaData = new MetaData(indices.length);
-        slicedMetaData.metaDataName2Depth = (HashMap) this.metaDataName2Depth.clone();
+        slicedMetaData.metaDataName2Depth = (HashMap) this.metaDataName2Depth
+                .clone();
         slicedMetaData.metaDataList = new ArrayList();
         for (int i = 0, size = this.metaDataList.size(); i < size; i++) {
             String[] obj = (String[]) this.metaDataList.get(i);
@@ -73,13 +76,15 @@ public class MetaData {
         return slicedMetaData;
     }
 
-
     /**
      * Sets the meta data at the given index
-     *
-     * @param index The index
-     * @param name  The name of the meta data at the given index
-     * @param value The value of the meta data at the given index
+     * 
+     * @param index
+     *            The index
+     * @param name
+     *            The name of the meta data at the given index
+     * @param value
+     *            The value of the meta data at the given index
      */
     public void setMetaData(int index, String name, String value) {
         getArray(name)[index] = value;
@@ -87,23 +92,28 @@ public class MetaData {
 
     /**
      * Sets the meta data for the given name
-     *
-     * @param name   The name of the meta data
-     * @param values The values of the meta data
+     * 
+     * @param name
+     *            The name of the meta data
+     * @param values
+     *            The values of the meta data
      */
     public void setMetaData(String name, String[] values) {
         if (values.length != capacity) {
             throw new IllegalArgumentException(
-                    "Length of values must be equal to capacity (" + capacity + ")");
+                    "Length of values must be equal to capacity (" + capacity
+                            + ")");
         }
         metaDataList.set(getDepth(name), values);
     }
 
     /**
      * Gets the meta data at the given index
-     *
-     * @param index The index
-     * @param name  The name of the meta data at the given index
+     * 
+     * @param index
+     *            The index
+     * @param name
+     *            The name of the meta data at the given index
      * @return The value of the meta data at the given index
      */
     public String getMetaData(int index, String name) {
@@ -112,8 +122,9 @@ public class MetaData {
 
     /**
      * Gets the meta data for the given name
-     *
-     * @param name The name of the meta data
+     * 
+     * @param name
+     *            The name of the meta data
      * @return The values of the meta data
      */
     public String[] getMetaData(String name) {
@@ -121,7 +132,8 @@ public class MetaData {
     }
 
     /**
-     * @param name The name of the meta data
+     * @param name
+     *            The name of the meta data
      * @return index in metaDataList list
      */
     protected int getDepth(String name) {
@@ -142,7 +154,8 @@ public class MetaData {
     }
 
     /**
-     * @param name The name of the meta data
+     * @param name
+     *            The name of the meta data
      * @return the array for the given name
      */
     protected String[] getArray(String name) {
@@ -151,8 +164,9 @@ public class MetaData {
 
     /**
      * Tests whether this instance contains the given meta data
-     *
-     * @param name The name of the meta data
+     * 
+     * @param name
+     *            The name of the meta data
      * @return <tt>true</tt> if found, <tt>false</tt> otherwise
      */
     public boolean contains(String name) {
@@ -161,5 +175,9 @@ public class MetaData {
 
     public String[] getNames() {
         return (String[]) metaDataName2Depth.keySet().toArray(new String[0]);
+    }
+
+    public int size() {
+        return metaDataName2Depth.size();
     }
 }

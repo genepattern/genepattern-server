@@ -18,6 +18,7 @@ import java.io.PrintWriter;
 
 import org.genepattern.data.expr.ExpressionConstants;
 import org.genepattern.data.expr.IExpressionData;
+import org.genepattern.data.expr.Util;
 import org.genepattern.io.expr.IExpressionDataWriter;
 
 /**
@@ -36,7 +37,7 @@ public class ResWriter implements IExpressionDataWriter {
     }
 
     public void write(IExpressionData data, OutputStream os) throws IOException {
-        if (!(data.containsData(ExpressionConstants.CALLS))) {
+        if (!(Util.containsData(data, ExpressionConstants.CALLS))) {
             throw new IOException(
                     "Can't write in res format. Data does not have calls.");
         }

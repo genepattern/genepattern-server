@@ -41,6 +41,7 @@ import org.biomage.QuantitationType.QuantitationType_package;
 import org.biomage.tools.xmlutils.PCData;
 import org.genepattern.data.expr.ExpressionConstants;
 import org.genepattern.data.expr.IExpressionData;
+import org.genepattern.data.expr.Util;
 import org.genepattern.io.expr.IExpressionDataWriter;
 
 /**
@@ -85,7 +86,7 @@ public class MAGEMLWriter implements IExpressionDataWriter {
         quantitationType_package
                 .addToQuantitationType_list(avgDiffQuantitationType);
 
-        if (expressionData.containsData(ExpressionConstants.CALLS)) {
+        if (Util.containsData(expressionData, ExpressionConstants.CALLS)) {
             PresentAbsent callQuantitationType = new PresentAbsent();
             callQuantitationType
                     .setIdentifier("Affymetrix:QuantitationType:CHPAbsCall");
@@ -159,8 +160,8 @@ public class MAGEMLWriter implements IExpressionDataWriter {
                         }
                         pw.print(expressionData.getValueAsString(i, j));
 
-                        if (expressionData
-                                .containsData(ExpressionConstants.CALLS)) {
+                        if (Util.containsData(expressionData,
+                                ExpressionConstants.CALLS)) {
 
                             Object call = expressionData.getData(i, j,
                                     ExpressionConstants.CALLS);
@@ -190,7 +191,8 @@ public class MAGEMLWriter implements IExpressionDataWriter {
                     buf.append(String.valueOf(expressionData.getValueAsString(
                             i, j)));
                     buf.append(" ");
-                    if (expressionData.containsData(ExpressionConstants.CALLS)) {
+                    if (Util.containsData(expressionData,
+                            ExpressionConstants.CALLS)) {
                         Object call = expressionData.getData(i, j,
                                 ExpressionConstants.CALLS);
 
