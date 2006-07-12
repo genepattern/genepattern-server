@@ -65,7 +65,7 @@ ant package
 			<filelist dir="${repos_root}/lib/" files="jaxrpc.jar mail.jar jdnc-0_6-all.jar macos.jar forms-1.0.5.jar" id="omniview.libs" />
 
 			<fileset refid="base.libs" />
-			<pathelement path="." />
+			<pathelement path="build" />
 
 			<filelist refid="build.jars" />
 			<path refid="props.path" />
