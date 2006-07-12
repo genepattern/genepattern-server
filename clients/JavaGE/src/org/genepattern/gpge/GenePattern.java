@@ -109,16 +109,21 @@ public final class GenePattern {
 
         final java.net.URL url = GenePattern.class
                 .getResource("/org/genepattern/gpge/resources/GenePattern_splash.png");
-        final ImageIcon icon = new ImageIcon(url);
-
         final JWindow window = new JWindow();
-        final Container contaner = window.getContentPane();
-        contaner.add(new JLabel(icon));
-        window.setLocation((screenSize.width - icon.getIconWidth()) / 2,
-                (screenSize.height - icon.getIconHeight()) / 2);
-        window.pack();
-        // window.setSize(400,400);
-        window.show();
+        if (url != null) {
+            final ImageIcon icon = new ImageIcon(url);
+
+            final Container contaner = window.getContentPane();
+            contaner.add(new JLabel(icon));
+            window.setLocation((screenSize.width - icon.getIconWidth()) / 2,
+                    (screenSize.height - icon.getIconHeight()) / 2);
+            window.pack();
+            // window.setSize(400,400);
+            window.setVisible(true);
+        } else {
+            System.err.println("Unable to load splash image");
+        }
+
         return window;
     }
 
