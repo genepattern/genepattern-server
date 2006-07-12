@@ -12,8 +12,6 @@
 
 package org.genepattern.data.expr;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 /**
  * @author Joshua Gould
  */
@@ -69,10 +67,10 @@ public abstract class AbstractExpressionData implements IExpressionData {
     public abstract String getColumnName(int column);
 
     public int getRowIndex(String rowName) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     public int getColumnIndex(String columnName) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 }
