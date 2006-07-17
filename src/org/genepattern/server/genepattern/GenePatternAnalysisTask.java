@@ -408,7 +408,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                             outFile = new File(outDirName, baseName);
                             _cat.info("downloading " + originalPath + " to " + outFile.getAbsolutePath());
                             outFile.deleteOnExit();
-                            FileOutputStream os = new FileOutputStream(outFile);
+
                             URI uri = new URI(originalPath);
                             final String userInfo = uri.getUserInfo();
                             if (userInfo != null) {
@@ -423,13 +423,23 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                     Authenticator.setDefault(null);
                                 }
                             }
-                            InputStream is = uri.toURL().openStream();
-                            byte[] buf = new byte[100000];
-                            while ((j = is.read(buf, 0, buf.length)) > 0) {
-                                os.write(buf, 0, j);
+                            InputStream is = null;
+                            FileOutputStream os = null;
+                            try {
+                                is = uri.toURL().openStream();
+                                os = new FileOutputStream(outFile);
+                                byte[] buf = new byte[100000];
+                                while ((j = is.read(buf, 0, buf.length)) > 0) {
+                                    os.write(buf, 0, j);
+                                }
+                            } finally {
+                                if (is != null) {
+                                    is.close();
+                                }
+                                if (os != null) {
+                                    os.close();
+                                }
                             }
-                            is.close();
-                            os.close();
                             params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
                             params[i].setValue(outFile.getCanonicalPath());
                             inputLastModified[i] = outFile.lastModified();
