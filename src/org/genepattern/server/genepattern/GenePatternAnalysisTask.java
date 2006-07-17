@@ -420,7 +420,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                                     usernamePassword[1].toCharArray());
                                         }
                                     });
-                                    Authenticator.setDefault(null);
+
                                 }
                             }
                             InputStream is = null;
@@ -433,12 +433,16 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                     os.write(buf, 0, j);
                                 }
                             } finally {
+                                if (userInfo != null) {
+                                    Authenticator.setDefault(null);
+                                }
                                 if (is != null) {
                                     is.close();
                                 }
                                 if (os != null) {
                                     os.close();
                                 }
+
                             }
                             params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
                             params[i].setValue(outFile.getCanonicalPath());
