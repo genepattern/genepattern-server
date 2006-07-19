@@ -56,7 +56,6 @@ use, misuse, or functionality.
     try {
 
         Map requestParameters = new HashMap();
-        Map htFilenames = new HashMap();
 
         if (ServletFileUpload.isMultipartContent(new ServletRequestContext(request))) {
             FileItemFactory factory = new DiskFileItemFactory();
@@ -96,13 +95,13 @@ use, misuse, or functionality.
                     if (path.startsWith("http:") || path.startsWith("https:") || path.startsWith("ftp:") ||
                             path.startsWith("file:")) {
                         // don't bother trying to save a file that is a URL, retrieve it at execution time instead
-                        htFilenames.put(name, path); // map between form field name and filesystem name
+                        requestParameters.put(name, path); // map between form field name and filesystem name
                         continue;
                     }
 
                     File output = new File(dir, path);
                     item.write(output);
-                    htFilenames.put(name, output.getCanonicalPath());
+                    requestParameters.put(name, output.getCanonicalPath());
                 }
             }
         }
@@ -133,7 +132,7 @@ use, misuse, or functionality.
             ParameterInfo pinfo = parmInfos[i];
             String value;
             if (pinfo.isInputFile()) {
-                value = (String) htFilenames.get(pinfo.getName());
+                value = (String) requestParameters.get(pinfo.getName());
                 if (value != null) {
                     if (!value.startsWith("http:") && !value.startsWith("https:") && ! value.startsWith("ftp:") ||
                             value.startsWith("file:")) {
