@@ -13,10 +13,13 @@
 
 package org.genepattern.server.handler;
 
+import java.util.List;
 import java.util.Vector;
 
 import org.genepattern.server.NoTaskFoundException;
 import org.genepattern.server.webservice.server.AnalysisJobDataSource;
+import org.genepattern.server.webservice.server.dao.AdminDataService;
+import org.genepattern.server.webservice.server.dao.AnalysisDataService;
 import org.genepattern.server.util.BeanReference;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
@@ -51,14 +54,14 @@ public class GetAvailableTasksHandler extends RequestHandler {
 	 * @throws OmnigeneException
 	 * @return Vector of <CODE>TaskInfo</CODE>
 	 */
-	public Vector executeRequest() throws OmnigeneException,
+	public List executeRequest() throws OmnigeneException,
 			NoTaskFoundException {
-		Vector tasksVector = null;
+        List tasksVector = null;
 		try {
 
 			//Get EJB reference
-			AnalysisJobDataSource ds = BeanReference
-					.getAnalysisJobDataSourceEJB();
+			AdminDataService ds = AdminDataService.getInstance();
+            
 			//Invoke EJB function
 			tasksVector = ds.getTasks(userId);
 			if (tasksVector != null) {
@@ -93,7 +96,7 @@ public class GetAvailableTasksHandler extends RequestHandler {
 	public static void main(String args[]) {
 		GetAvailableTasksHandler arequest = new GetAvailableTasksHandler("");
 		try {
-			Vector taskVector = arequest.executeRequest();
+			List taskVector = arequest.executeRequest();
 			System.out.println("Size " + taskVector.size());
 		} catch (Exception e) {
 			e.printStackTrace();

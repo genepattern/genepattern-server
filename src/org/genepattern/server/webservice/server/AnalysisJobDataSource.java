@@ -15,6 +15,7 @@ package org.genepattern.server.webservice.server;
 
 import java.rmi.RemoteException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Vector;
 
 import org.genepattern.webservice.AnalysisJob;
@@ -25,6 +26,8 @@ import org.genepattern.webservice.TaskInfo;
 
 /**
  * Interface for analysis web service tasks. 
+ * 
+ * @deprecated
  * 
  * @author rajesh kuttan
  */
@@ -44,31 +47,7 @@ public interface AnalysisJobDataSource {
 	public Vector getWaitingJob(int maxJobCount)
 			throws OmnigeneException, RemoteException;
 
-	/**
-	 * Get task id from task name
-	 * 
-	 * @param name the task name
-	 * @throws OmnigeneException
-	 *             Error in db
-	 * @throws RemoteException
-	 *             Error in service
-	 * @return task id
-	 */
-	public int getTaskIDByName(String name, String userID)
-			throws OmnigeneException, RemoteException;
 
-	/**
-	 * Submit a new job
-	 * 
-	 * @param taskID
-	 * @param user_id
-	 * @param parameter_info
-	 * @throws OmnigeneException
-	 * @throws RemoteException
-	 * @return Job ID
-	 */
-	public JobInfo addNewJob(int taskID, String user_id, String parameter_info) throws OmnigeneException, RemoteException;
-   
    /**
 	 * Saves a record of a job that was executed on the client into the database
 	 * 
@@ -94,59 +73,8 @@ public interface AnalysisJobDataSource {
 	public JobInfo recordClientJob(int taskID, String user_id, String parameter_info, int parentJobNumber) throws OmnigeneException, RemoteException;
    
    
-   /**
-	 * Submit a new child job
-	 * 
-	 * @param taskID
-	 * @param user_id
-	 * @param parameter_info
-    * @param parentJobNumber the parent job number
-	 * @throws OmnigeneException
-	 * @throws RemoteException
-	 * @return Job ID
-	 */
-	public JobInfo addNewJob(int taskID, String user_id, String parameter_info, int parentJobNumber) throws OmnigeneException, RemoteException;
-   
-   
-  /**
-	 * Creates an Omnigene database entry in the analysis_job table. Unlike
-	 * other entries (except visualizers), this one is not dispatchable to any known analysis task
-	 * because it has a bogus taskID. Since it is a pipeline, it is actually
-	 * being invoked by a separate process, but is
-	 * using the rest of the infrastructure to get input files, store output
-	 * files, and retrieve status and result files.
 
-	
-	 * @param userID user who owns this pipeline data instance
-	 * @param parameterInfo ParameterInfo array containing pipeline data file output entries
-    * @param pipelineName a name for the temporary pipeline
-    * @param lsid lsid of the pipeline (if it has one)
-	 * @throws OmnigeneException
-	 *             if thrown by Omnigene
-	 * @throws RemoteException
-	 *             if thrown by Omnigene
-	 */
-   public JobInfo createTemporaryPipeline(String user_id, String parameter_info, String pipelineName, String lsid) throws OmnigeneException, RemoteException;
-   
-  
-   /**
-	 * Creates an Omnigene database entry in the analysis_job table. This
-	 * entry is dispatchable to a known analysis task (pipeline)
-	 * in the database. Since it is a pipeline, it is actually
-	 * being invoked by a separate process, but is
-	 * using the rest of the infrastructure to get input files, store output
-	 * files, and retrieve status and result files.
-    * @param taskId the pipeline task id
-	 * @param userID user who owns this pipeline data instance
-	 * @param parameterInfo ParameterInfo array containing pipeline data file output entries
 
-	 * @throws OmnigeneException
-	 *             if thrown by Omnigene
-	 * @throws RemoteException
-	 *             if thrown by Omnigene
-	 */
-   public JobInfo createPipeline(int taskId, String user_id, String parameter_info) throws OmnigeneException, RemoteException;
-   
    /**
    * Gets the task name of a temporary (unsaved) pipeline
    * @throws OmnigeneException
@@ -188,7 +116,7 @@ public interface AnalysisJobDataSource {
 	 * @throws RemoteException
 	 * @return record count of updated records
 	 */
-	public int updateJob(int jobNo, int jobStatusID)
+	public int updateJobStatus(int jobNo, int jobStatusID)
 			throws OmnigeneException, RemoteException;
 
 	/**
@@ -211,48 +139,12 @@ public interface AnalysisJobDataSource {
 	 * @throws OmnigeneException
 	 * @throws RemoteException
 	 * @return <CODE>JobInfo</CODE>
+	 * @throws SQLException 
+	 * @throws OmnigeneException 
 	 */
-	public JobInfo getJobInfo(int jobNo) throws OmnigeneException,
-			RemoteException;
+	public JobInfo getJobInfo(int jobNo) throws  OmnigeneException;
 
-	/**
-	 * Gets task from a task id
-	 * 
-	 * @throws OmnigeneException
-	 * @throws RemoteException
-	 * @return <CODE>TaskInfo</CODE>
-	 */
-	public TaskInfo getTask(int taskID) throws OmnigeneException,
-			RemoteException;
 
-	/**
-	 * Used to get all regular tasks
-	 * 
-	 * @throws OmnigeneException
-	 * @throws RemoteException
-	 * @return Vector of <CODE>TaskInfo</CODE>
-	 */
-	public Vector getTasks() throws OmnigeneException, RemoteException;
-
-	/**
-	 * Used to get all available tasks
-	 * 
-	 * @throws OmnigeneException
-	 * @throws RemoteException
-	 * @return Vector of <CODE>TaskInfo</CODE>
-	 */
-	public Vector getAllTypeTasks() throws OmnigeneException, RemoteException;
-
-	/**
-	 * Used to get all regular public tasks and userid specific task
-	 * 
-	 * @param user_id
-	 * @throws OmnigeneException
-	 * @throws RemoteException
-	 * @return Vector of <CODE>TaskInfo</CODE>
-	 */
-	public Vector getTasks(String user_id) throws OmnigeneException,
-			RemoteException;
 
 	/**
 	 * Fetches list of JobInfo based on completion date on or before a specified
@@ -277,17 +169,8 @@ public interface AnalysisJobDataSource {
 	 */
 	public void deleteJob(int jobNo) throws OmnigeneException, RemoteException;
 
-	/**
-	 * Used to get all public tasks and userid specific task
-	 * 
-	 * @param user_id
-	 * @throws OmnigeneException
-	 * @throws RemoteException
-	 * @return Vector of <CODE>TaskInfo</CODE>
-	 */
-	public Vector getAllTypeTasks(String user_id) throws OmnigeneException,
-			RemoteException;
 
+	 
 	/**
 	 * To create a new regular task
 	 * 
@@ -391,24 +274,6 @@ public interface AnalysisJobDataSource {
    */
    public void setJobDeleted(int jobNumber, boolean deleted) throws OmnigeneException, RemoteException;
    
-	/**
-	 * Starts a running thread of a new task, this method could be called after
-	 * creating a new task
-	 * 
-	 * @param id
-	 *            taskID
-	 * @throws OmnigeneException
-	 */
-	public void startNewTask(int id) throws OmnigeneException, RemoteException;
-
-
-	/**
-	 * Stops the running thread of a task
-	 * 
-	 * @param taskID
-	 *            analysis task ID
-	 */
-	public void stopTask(int taskID) throws RemoteException;
 
 	public boolean resetPreviouslyRunningJobs() throws OmnigeneException,
 			RemoteException;

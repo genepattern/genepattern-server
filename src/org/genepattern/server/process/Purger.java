@@ -19,6 +19,7 @@ import java.util.GregorianCalendar;
 import java.util.TimerTask;
 
 import org.genepattern.server.webservice.server.AnalysisJobDataSource;
+import org.genepattern.server.webservice.server.dao.AnalysisDataService;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.indexer.Indexer;
 import org.genepattern.server.util.BeanReference;
@@ -46,8 +47,7 @@ public class Purger extends TimerTask {
 				System.out.println("Purger: purging jobs completed before "
 						+ gcPurgeDate.getTime());
 
-				AnalysisJobDataSource ds = BeanReference
-						.getAnalysisJobDataSourceEJB();
+				AnalysisDataService ds = AnalysisDataService.getInstance();
 				JobInfo[] purgeableJobs = ds.getJobInfo(gcPurgeDate.getTime());
 
 				// purge expired jobs

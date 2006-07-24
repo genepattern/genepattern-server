@@ -13,10 +13,13 @@
 
 package org.genepattern.server.handler;
 
+import java.util.List;
 import java.util.Vector;
 
 import org.genepattern.server.AnalysisManager;
 import org.genepattern.server.webservice.server.AnalysisJobDataSource;
+import org.genepattern.server.webservice.server.dao.AdminDataService;
+import org.genepattern.server.webservice.server.dao.AnalysisDataService;
 import org.genepattern.server.util.BeanReference;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
@@ -78,12 +81,10 @@ public class AddNewTaskHandler extends RequestHandler {
 		try {
 
 			//Get EJB reference
-			AnalysisJobDataSource ds = BeanReference
-					.getAnalysisJobDataSourceEJB();
 			AnalysisManager analysisManager = AnalysisManager.getInstance();
 
 			GetAvailableTasksHandler th = new GetAvailableTasksHandler();
-			Vector vTasks = th.executeRequest();
+			List vTasks = th.executeRequest();
 			if (vTasks != null) {
 				TaskInfo taskInfo = null;
 				for (int i = 0; i < vTasks.size(); i++) {
@@ -93,7 +94,7 @@ public class AddNewTaskHandler extends RequestHandler {
 						System.out.println("updating existing task ID: "
 								+ taskID);
 						analysisManager.stop(taskInfo.getName());
-						ds.deleteTask(taskID);
+                        AdminDataService.getInstance().deleteTask(taskID);
 						break;
 					}
 				}
@@ -104,7 +105,7 @@ public class AddNewTaskHandler extends RequestHandler {
 
 			//Invoke EJB function
 
-			taskID = ds.addNewTask(taskName, userId, accessId, description,
+			taskID = AdminDataService.getInstance().addNewTask(taskName, userId, accessId, description,
 					parameter_info, taskInfoAttributes);
 			analysisManager.startNewAnalysisTask(taskID);
 
