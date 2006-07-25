@@ -1,0 +1,171 @@
+
+
+CREATE TABLE ANALYSIS_JOB
+(
+  JOB_NO          INTEGER                       NOT NULL,
+  TASK_ID         INTEGER,
+  STATUS_ID       INTEGER,
+  DATE_SUBMITTED  TIMESTAMP(6),
+  DATE_COMPLETED  TIMESTAMP(6),
+  PARAMETER_INFO  VARCHAR2(4000),
+  USER_ID         VARCHAR2(4000),
+  ISINDEXED       CHAR(1 )                  DEFAULT '0'                   NOT NULL,
+  ACCESS_ID       INTEGER,
+  JOB_NAME        VARCHAR2(4000),
+  LSID            VARCHAR2(4000),
+  TASK_LSID       VARCHAR2(4000),
+  TASK_NAME       VARCHAR2(4000),
+  PARENT          INTEGER,
+  DELETED         CHAR(1 )              DEFAULT '0'                   NOT NULL
+);
+
+
+CREATE UNIQUE INDEX ANALYSIS_JOB_PK ON ANALYSIS_JOB
+(JOB_NO);
+
+
+ALTER TABLE ANALYSIS_JOB ADD (
+  CONSTRAINT ANALYSIS_JOB_PK
+ PRIMARY KEY
+ (JOB_NO));
+
+
+
+
+
+CREATE TABLE JOB_STATUS
+(
+  STATUS_ID    INTEGER                          NOT NULL,
+  STATUS_NAME  VARCHAR2(20 BYTE)
+);
+
+
+CREATE UNIQUE INDEX JOB_STATUS_PK ON JOB_STATUS
+(STATUS_ID);
+
+
+ALTER TABLE JOB_STATUS ADD (
+  CONSTRAINT JOB_STATUS_PK
+ PRIMARY KEY
+ (STATUS_ID));
+
+
+
+
+CREATE TABLE TASK_ACCESS
+(
+  ACCESS_ID    INTEGER                          NOT NULL,
+  NAME         VARCHAR2(4000),
+  DESCRIPTION  VARCHAR2(4000)
+);
+
+
+CREATE UNIQUE INDEX TASK_ACCESS_PK ON TASK_ACCESS
+(ACCESS_ID);
+
+
+ALTER TABLE TASK_ACCESS ADD (
+  CONSTRAINT TASK_ACCESS_PK
+ PRIMARY KEY
+ (ACCESS_ID));
+
+
+// Table task_master
+
+
+CREATE TABLE TASK_MASTER
+(
+  TASK_ID               INTEGER                 NOT NULL,
+  TASK_NAME             VARCHAR2(4000 ),
+  DESCRIPTION           VARCHAR2(4000 ),
+  PARAMETER_INFO        VARCHAR2(4000 ),
+  LOAD_FLAG             CHAR(1 )            DEFAULT '0'                   NOT NULL,
+  TYPE_ID               INTEGER,
+  REPEAT_MINUTE         VARCHAR2(4000 ),
+  REPEAT_HOUR           VARCHAR2(4000 ),
+  REPEAT_DAY_OF_MONTH   VARCHAR2(4000 ),
+  REPEAT_MONTH_OF_YEAR  VARCHAR2(4000 ),
+  REPEAT_DAY_OF_WEEK    VARCHAR2(4000 ),
+  TASKINFOATTRIBUTES    VARCHAR2(4000 ),
+  USER_ID               VARCHAR2(4000 ),
+  ACCESS_ID             INTEGER,
+  ISINDEXED             CHAR(1 )            DEFAULT '0'                   NOT NULL,
+  LSID                  VARCHAR2(4000 )
+);
+
+
+CREATE UNIQUE INDEX TASK_MASTER_PK ON TASK_MASTER
+(TASK_ID);
+
+
+CREATE INDEX IDX_USER_ID ON TASK_MASTER
+(USER_ID);
+
+
+CREATE INDEX IDX_ACCESS_ID ON TASK_MASTER
+(ACCESS_ID);
+
+
+CREATE INDEX IDX_TASK_NAME ON TASK_MASTER
+(TASK_NAME);
+
+
+ALTER TABLE TASK_MASTER ADD (
+  CONSTRAINT TASK_MASTER_PK
+ PRIMARY KEY
+ (TASK_ID));
+
+
+
+
+CREATE TABLE SUITE
+(
+  LSID         VARCHAR2(4000)              NOT NULL,
+  NAME         VARCHAR2(4000),
+  AUTHOR       VARCHAR2(4000),
+  OWNER        VARCHAR2(4000),
+  DESCRIPTION  VARCHAR2(4000),
+  ACCESS_ID    INTEGER
+);
+
+
+CREATE UNIQUE INDEX SUITE_PK ON SUITE
+(LSID);
+
+
+ALTER TABLE SUITE ADD (
+  CONSTRAINT SUITE_PK
+ PRIMARY KEY
+ (LSID));
+ 
+ 
+
+CREATE TABLE PROPS
+(
+  KEY        VARCHAR2(4000)   NOT NULL,
+  VALUE      VARCHAR2(4000)   NOT NULL
+);
+
+
+CREATE SEQUENCE lsid_identifier_seq START WITH 1;
+
+CREATE SEQUENCE lsid_suite_identifier_seq  START WITH 1;
+
+
+insert into job_status values(1,'Pending');
+insert into job_status values(2,'Processing');
+insert into job_status values(3,'Finished');
+insert into job_status values(4,'Error');
+
+insert into task_access values(1,'public','public access');
+insert into task_access values(2,'private','access only for the owner');
+
+INSERT INTO PROPS (KEY, VALUE) values ('schemaVersion', '2.1.0');
+
+
+
+
+
+
+
+
