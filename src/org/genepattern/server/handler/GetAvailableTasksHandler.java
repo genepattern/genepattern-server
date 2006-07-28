@@ -18,8 +18,7 @@ import java.util.Vector;
 
 import org.genepattern.server.NoTaskFoundException;
 import org.genepattern.server.webservice.server.AnalysisJobDataSource;
-import org.genepattern.server.webservice.server.dao.AdminDataService;
-import org.genepattern.server.webservice.server.dao.AnalysisDataService;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.server.util.BeanReference;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
@@ -60,7 +59,7 @@ public class GetAvailableTasksHandler extends RequestHandler {
 		try {
 
 			//Get EJB reference
-			AdminDataService ds = AdminDataService.getInstance();
+			AnalysisJobService ds = AnalysisJobService.getInstance();
             
 			//Invoke EJB function
 			tasksVector = ds.getTasks(userId);

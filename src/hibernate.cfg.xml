@@ -15,7 +15,6 @@
     <mapping resource="org/genepattern/server/webservice/server/dao/AnalysisJob.hbm.xml"/>
     <mapping resource="org/genepattern/server/webservice/server/dao/JobStatus.hbm.xml"/>
     <mapping resource="org/genepattern/server/webservice/server/dao/Lsid.hbm.xml"/>
-    <mapping resource="org/genepattern/server/webservice/server/dao/Suite.hbm.xml"/>
     <mapping resource="org/genepattern/server/webservice/server/dao/TaskMaster.hbm.xml"/>
   </session-factory>
 </hibernate-configuration>

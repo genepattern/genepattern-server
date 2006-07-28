@@ -23,7 +23,7 @@ package org.genepattern.server;
 import java.rmi.RemoteException;
 
 import org.genepattern.server.webservice.server.AnalysisJobDataSource;
-import org.genepattern.server.webservice.server.dao.AnalysisDataService;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.server.util.BeanReference;
 import org.genepattern.webservice.OmnigeneException;
 
@@ -47,7 +47,7 @@ public class AnalysisManager {
 			analysisManager = new AnalysisManager();
 			try {
 				analysisManager.startAllAnalysisTask();
-				AnalysisDataService ds = AnalysisDataService.getInstance();
+				AnalysisJobService ds = AnalysisJobService.getInstance();
 				// were there interrupted jobs that need to be restarted?
 				if (ds.resetPreviouslyRunningJobs()) {
 					System.out

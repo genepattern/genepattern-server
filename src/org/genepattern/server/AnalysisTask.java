@@ -16,7 +16,7 @@ import java.rmi.RemoteException;
 import java.util.Vector;
 
 import org.genepattern.server.webservice.server.AnalysisJobDataSource;
-import org.genepattern.server.webservice.server.dao.AnalysisDataService;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.util.BeanReference;
 import org.genepattern.webservice.OmnigeneException;
@@ -31,7 +31,7 @@ import org.genepattern.webservice.OmnigeneException;
 
 public class AnalysisTask implements Runnable {
 
-    AnalysisDataService ds = null;
+    AnalysisJobService ds = null;
 
     private Vector jobQueue = new Vector();
 
@@ -136,7 +136,7 @@ public class AnalysisTask implements Runnable {
             sem = new Semaphore(threadCount);
         }
         try {
-            ds = AnalysisDataService.getInstance();
+            ds = AnalysisJobService.getInstance();
         }
         catch (OmnigeneException oe) {
             log.error(oe);

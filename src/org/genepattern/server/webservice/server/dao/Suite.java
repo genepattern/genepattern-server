@@ -2,7 +2,6 @@
 
 package org.genepattern.server.webservice.server.dao;
 
-import java.math.BigInteger;
 
 public class Suite {
 
@@ -58,6 +57,30 @@ public class Suite {
 		this.owner = owner;
 		this.description = description;
 		this.accessId = accessId;
+	}
+
+	/** auto generated
+	 * @es_generated
+	 */
+	public boolean equals(Object value) {
+		//TODO Implement equals() using Business key equality.	
+		return super.equals(value);
+	}
+
+	/** auto generated
+	 * @es_generated
+	 */
+	public int hashCode() {
+		//TODO Implement hashCode() using Business key equality.	
+		return super.hashCode();
+	}
+
+	/** auto generated
+	 * @es_generated
+	 */
+	public String toString() {
+		//TODO Implement toString().	
+		return super.toString();
 	}
 
 	/** auto generated
@@ -143,6 +166,4 @@ public class Suite {
 	public void setAccessId(Integer value) {
 		this.accessId = value;
 	}
-
-
 }

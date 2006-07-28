@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.FSDirectory;
 import org.genepattern.server.webservice.server.AnalysisJobDataSource;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.server.util.BeanReference;
 
 public class IndexerDaemon implements Runnable {
@@ -90,8 +91,7 @@ public class IndexerDaemon implements Runnable {
 		try {
 			indexer.createIfNecessary(indexDir);
 
-			AnalysisJobDataSource ds = BeanReference
-					.getAnalysisJobDataSourceEJB();
+            AnalysisJobService ds = AnalysisJobService.getInstance();
 			String taskQuery = "select task_id from task_master where isIndexed is null";
 			String jobQuery = "select job_no from analysis_job where isIndexed is null and status_id in (3,4)"; // Finished,
 																												// Error

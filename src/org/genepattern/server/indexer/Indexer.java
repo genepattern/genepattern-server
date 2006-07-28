@@ -54,6 +54,7 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 
 public class Indexer {
 
@@ -245,7 +246,7 @@ public class Indexer {
 
 	public static void indexJobs(IndexWriter writer) throws IOException,
 			OmnigeneException {
-		AnalysisJobDataSource ds = GenePatternAnalysisTask.getDS();
+		AnalysisJobService ds = AnalysisJobService.getInstance();
 		JobInfo[] jobs = ds.getJobInfo(new Date());
 		JobInfo jobInfo = null;
 		for (int i = 0; i < jobs.length; i++) {
@@ -259,13 +260,13 @@ public class Indexer {
 
 	public static void indexJob(IndexWriter writer, int jobID)
 			throws IOException, OmnigeneException {
-		AnalysisJobDataSource ds = GenePatternAnalysisTask.getDS();
+        AnalysisJobService ds = AnalysisJobService.getInstance();
 		JobInfo jobInfo = ds.getJobInfo(jobID);
 		indexJob(writer, jobInfo, ds);
 	}
 
 	public static void indexJob(IndexWriter writer, JobInfo jobInfo,
-			AnalysisJobDataSource ds) throws IOException, OmnigeneException {
+            AnalysisJobService ds) throws IOException, OmnigeneException {
 		synchronized (getConcurrencyLock()) {
 			writer.maxFieldLength = MAX_TERMS_PER_FIELD;
 			String jobStatus = jobInfo.getStatus();
@@ -488,7 +489,7 @@ public class Indexer {
 			throws IOException, OmnigeneException, Exception {
 		synchronized (getConcurrencyLock()) {
 			writer.maxFieldLength = MAX_TERMS_PER_FIELD;
-			AnalysisJobDataSource ds = GenePatternAnalysisTask.getDS();
+			AnalysisJobService ds = GenePatternAnalysisTask.getDS();
 			TaskInfo ti = ds.getTask(taskID);
 
 			// XXX: delete first in case it already exists?

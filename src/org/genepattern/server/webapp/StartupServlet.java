@@ -44,7 +44,7 @@ import org.genepattern.server.process.CreateDatabase;
 import org.genepattern.server.process.JSPPrecompiler;
 import org.genepattern.server.process.JobPurger;
 import org.genepattern.server.util.BeanReference;
-import org.genepattern.server.webservice.server.dao.AnalysisDataService;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -220,9 +220,9 @@ public class StartupServlet extends HttpServlet {
     protected void shutdownDatabase() {
         try {
             log("Checkpointing database");
-            AnalysisDataService.getInstance().executeUpdate("CHECKPOINT");
+            AnalysisJobService.getInstance().executeUpdate("CHECKPOINT");
             log("Checkpointed.");
-            AnalysisDataService.getInstance().executeUpdate("SHUTDOWN");
+            AnalysisJobService.getInstance().executeUpdate("SHUTDOWN");
         }
         catch (Throwable t) {
             t.printStackTrace();

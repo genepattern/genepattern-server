@@ -17,7 +17,7 @@ import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 
 import org.genepattern.server.webservice.server.AnalysisJobDataSource;
-import org.genepattern.server.webservice.server.dao.AnalysisDataService;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.server.util.BeanReference;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
@@ -67,7 +67,7 @@ public class LSIDManager {
 
 	// get the next ID in the sequence from the DB
 	protected synchronized String getNextID(String namespace) throws OmnigeneException,	RemoteException {
-		AnalysisDataService ds = getDS();
+		AnalysisJobService ds = getDS();
 
 	// XXX handle suites as well
 
@@ -78,7 +78,7 @@ public class LSIDManager {
 	// get the next version for a particular LSID identifier from the DB
 	protected synchronized String getNextVersionFromDB(LSID lsid)
 			throws OmnigeneException, RemoteException {
-		AnalysisDataService ds = getDS();
+		AnalysisJobService ds = getDS();
 
 // XXX handle suits as well
 		String nextVersion = ds.getNextLSIDVersion(lsid);
@@ -118,10 +118,10 @@ public class LSIDManager {
 		return lsidUtil.getNearerLSID(lsid1, lsid2); // equal???
 	}
 
-	protected AnalysisDataService getDS() throws OmnigeneException {
-        AnalysisDataService ds;
+	protected AnalysisJobService getDS() throws OmnigeneException {
+        AnalysisJobService ds;
 		try {
-			ds = AnalysisDataService.getInstance();
+			ds = AnalysisJobService.getInstance();
 			return ds;
 		} catch (Exception e) {
 			throw new OmnigeneException(

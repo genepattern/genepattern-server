@@ -49,16 +49,11 @@ import org.genepattern.webservice.WebServiceException;
 /**
  * @author Joshua Gould
  */
-public class AdminHSQLDAO implements AdminDAO {
-	private static String dbURL;
-
-	private static String dbPassword;
-
-	private static String dbUsername;
+public class AdminHSQLDAO extends BaseDAO implements AdminDAO {
 
 	private static int PUBLIC_ACCESS_ID = 1;
 
-	private static Category log = Logger.getInstance(AdminHSQLDAO.class);
+	private static Logger log = Logger.getLogger(AdminHSQLDAO.class);
 
 	protected static TaskInfo taskInfoFromResultSet(ResultSet resultSet)
 			throws SQLException {
@@ -658,21 +653,6 @@ public class AdminHSQLDAO implements AdminDAO {
 		return hmResults;
 	}
 
-	public static String getSchemaVersion() {
-		Map hmProperties = new AdminHSQLDAO().getSchemaProperties();
-		return (String) hmProperties.get("schemaVersion");
-	}
-
-	private Connection getConnection() throws SQLException {
-		try {
-			return DriverManager.getConnection(dbURL, dbUsername, dbPassword);
-		} catch (SQLException se) {
-			System.err.println("AdminHSQLDAO: " + se
-					+ " while getting connection to " + dbURL + ", "
-					+ dbUsername + ", " + dbPassword);
-			throw se;
-		}
-	}
 
 	static class TaskNameComparator implements Comparator {
 
@@ -684,34 +664,18 @@ public class AdminHSQLDAO implements AdminDAO {
 
 	}
 
-	static {
-		Properties props = new Properties();
-		String gpPropsFilename = System.getProperty("genepattern.properties");
-		// System.out.println("GPPropsFile="+ gpPropsFilename);
-		File gpProps = new File(gpPropsFilename, "genepattern.properties");
-		FileInputStream fis = null;
-		try {
-			fis = new FileInputStream(gpProps);
-			props.load(fis);
-		} catch (IOException ioe) {
-			log.error("Error reading genepattern.properties");
-		} finally {
-			try {
-				if (fis != null) {
-					fis.close();
-				}
-			} catch (IOException ioe) {
-			}
-		}
 
-		String driver = props.getProperty("DB.driver", "org.hsqldb.jdbcDriver");
-		try {
-			Class.forName(driver);
-		} catch (ClassNotFoundException cnfe) {
-		}
-		dbURL = props
-				.getProperty("DB.url", "jdbc:hsqldb:hsql://localhost:9001");
-		dbUsername = props.getProperty("DB.username", "sa");
-		dbPassword = props.getProperty("DB.password", "");
-	}
+    public int deleteTask(int taskID) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    public TaskInfo[] getAllTasksForUser(String username) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+
+
 }

@@ -14,12 +14,9 @@ package org.genepattern.server.genepattern;
 
 import java.rmi.RemoteException;
 
-import org.apache.log4j.Logger;
 import org.genepattern.server.AnalysisManager;
-
 import org.genepattern.server.webservice.server.AnalysisJobDataSource;
-import org.genepattern.server.webservice.server.dao.AdminDataService;
-import org.genepattern.server.webservice.server.dao.AnalysisDataService;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.server.util.BeanReference;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.OmnigeneException;
@@ -41,8 +38,6 @@ import org.genepattern.webservice.TaskInfoAttributes;
  */
 
 public abstract class DBLoader {
-    
-    private static Logger log = Logger.getLogger(DBLoader.class);
 
     protected String _name;
 
@@ -86,15 +81,18 @@ public abstract class DBLoader {
         String lsid = getLSIDOrName();
 
         int taskID = -1;
+        AnalysisJobService ds = AnalysisJobService.getInstance();
         try {
             // search for an existing task with the same name
             taskID = getTaskIDByName(lsid, user_id);
         }
         catch (OmnigeneException e) {
-            log.error(e);
-            
+            // this is a new task, no taskID exists
+            // do nothing
         }
-
+        catch (RemoteException re) {
+            throw new OmnigeneException("Unable to load the task: " + re.getMessage());
+        }
         ParameterFormatConverter pfc = new ParameterFormatConverter();
         String parameter_info = pfc.getJaxbString(this._params);
         // task doesn't exist
@@ -102,7 +100,7 @@ public abstract class DBLoader {
             // create new task
             int id;
             try {
-                id = AdminDataService.getInstance().addNewTask(this._name, this.user_id, this.access_id, this._taskDescription, parameter_info,
+                id = ds.addNewTask(this._name, this.user_id, this.access_id, this._taskDescription, parameter_info,
                         this._taskInfoAttributes);
                 System.out.println(this._name + " has been created with id " + id);
             }
@@ -122,7 +120,7 @@ public abstract class DBLoader {
         // task exist, update task
         else {
             try {
-                AdminDataService.getInstance().updateTask(taskID, this._taskDescription, parameter_info, this._taskInfoAttributes, user_id,
+                ds.updateTask(taskID, this._taskDescription, parameter_info, this._taskInfoAttributes, user_id,
                         access_id);
                 System.out.println(this._name + " has been updated.");
             }
@@ -139,6 +137,7 @@ public abstract class DBLoader {
      * @throws OmnigeneException
      */
     public void create() throws OmnigeneException {
+        AnalysisJobService ds = AnalysisJobService.getInstance();
         ParameterFormatConverter pfc = new ParameterFormatConverter();
         String parameter_info = pfc.getJaxbString(this._params);
         /*
@@ -155,7 +154,7 @@ public abstract class DBLoader {
 
         int id;
         try {
-            id = AdminDataService.getInstance().addNewTask(this._name, this.user_id, this.access_id, this._taskDescription, parameter_info,
+            id = ds.addNewTask(this._name, this.user_id, this.access_id, this._taskDescription, parameter_info,
                     this._taskInfoAttributes);
             // System.out.println(this._name+" is created with id "+id);
         }
@@ -196,15 +195,19 @@ public abstract class DBLoader {
      */
     public void update() throws OmnigeneException {
         String lsid = getLSIDOrName();
+        AnalysisJobService ds = AnalysisJobService.getInstance();
         int taskID = -1;
         try {
             // search for an existing task with the same name
             taskID = getTaskIDByName(lsid, user_id);
         }
         catch (OmnigeneException e) {
-            log.info("Exception in DBLoader.update " + e);
+            // this is a new task, no taskID exists
+            // do nothing
         }
-
+        catch (RemoteException re) {
+            throw new OmnigeneException("Unable to load the task: " + re.getMessage());
+        }
         if (taskID == -1) {
             create();
             return;
@@ -214,7 +217,7 @@ public abstract class DBLoader {
         String parameter_info = pfc.getJaxbString(this._params);
         try {
 
-            AdminDataService.getInstance().updateTask(taskID, this._taskDescription, parameter_info, this._taskInfoAttributes, user_id, access_id);
+            ds.updateTask(taskID, this._taskDescription, parameter_info, this._taskInfoAttributes, user_id, access_id);
             System.out.println(this._name + " updated.");
         }
         catch (Exception e) {
@@ -230,6 +233,7 @@ public abstract class DBLoader {
      */
     public void delete() throws OmnigeneException, RemoteException {
         int taskID;
+        AnalysisJobService ds = AnalysisJobService.getInstance();
         String lsid = getLSIDOrName();
         taskID = getTaskIDByName(lsid, user_id);
         if (taskID == -1) {
@@ -241,7 +245,7 @@ public abstract class DBLoader {
         System.out.println("Task " + this._name + " stopped.");
 
         try {
-            AdminDataService.getInstance().deleteTask(taskID);
+            ds.deleteTask(taskID);
             System.out.println("Task " + this._name + " deleted from database.");
         }
         catch (Exception e) {
@@ -277,9 +281,9 @@ public abstract class DBLoader {
 
 
     // search for an existing task with the same name
-    public int getTaskIDByName(String name, String user_id) throws OmnigeneException{
-        AdminDataService ds = AdminDataService.getInstance();
-        int taskID = ds.getTaskId(name, user_id);
+    public int getTaskIDByName(String name, String user_id) throws OmnigeneException, RemoteException {
+        AnalysisJobService ds = AnalysisJobService.getInstance();
+        int taskID = ds.getTaskIDByName(name, user_id);
         return taskID;
     }
 

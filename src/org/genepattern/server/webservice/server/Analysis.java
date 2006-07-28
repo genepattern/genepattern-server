@@ -31,7 +31,7 @@ import org.apache.log4j.Category;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.handler.GetJobStatusHandler;
 import org.genepattern.server.webservice.GenericWebService;
-import org.genepattern.server.webservice.server.dao.AnalysisDataService;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.webservice.FileWrapper;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
@@ -95,7 +95,7 @@ public class Analysis extends GenericWebService {
 
     public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
         try {
-            AnalysisDataService ds = AnalysisDataService.getInstance();
+            AnalysisJobService ds = AnalysisJobService.getInstance();
             return ds.recordClientJob(taskID, getUsernameFromContext(),
                     org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters));
         }
@@ -119,7 +119,7 @@ public class Analysis extends GenericWebService {
     public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters, int parentJobNumber)
             throws WebServiceException {
         try {
-            AnalysisDataService ds = AnalysisDataService.getInstance();
+            AnalysisJobService ds = AnalysisJobService.getInstance();
             return ds.recordClientJob(taskID, getUsernameFromContext(),
                     org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters), parentJobNumber);
         }
@@ -131,7 +131,7 @@ public class Analysis extends GenericWebService {
     public int[] getChildren(int jobId) throws WebServiceException {
 
         try {
-            AnalysisDataService ds = AnalysisDataService.getInstance();
+            AnalysisJobService ds = AnalysisJobService.getInstance();
             JobInfo[] children = ds.getChildren(jobId);
 
             int[] jobs = new int[children.length];
@@ -358,7 +358,7 @@ public class Analysis extends GenericWebService {
             if (p != null) {
                 setJobStatus(jobId, JobStatus.ERROR);
             }
-            AnalysisDataService ds = AnalysisDataService.getInstance();
+            AnalysisJobService ds = AnalysisJobService.getInstance();
             JobInfo[] children = ds.getChildren(jobId);
             for (int i = 0; i < children.length; i++) { // terminate all child
                                                         // jobs
@@ -381,7 +381,7 @@ public class Analysis extends GenericWebService {
     public void purgeJob(int jobId) throws WebServiceException {
         try {
             deleteJob(jobId);
-            AnalysisDataService ds = AnalysisDataService.getInstance();
+            AnalysisJobService ds = AnalysisJobService.getInstance();
             org.genepattern.server.indexer.Indexer.deleteJob(jobId);
             JobInfo[] children = ds.getChildren(jobId);
             ds.deleteJob(jobId);
@@ -416,7 +416,7 @@ public class Analysis extends GenericWebService {
                 }
             }
             jobDir.delete();
-            AnalysisDataService ds = AnalysisDataService.getInstance();
+            AnalysisJobService ds = AnalysisJobService.getInstance();
             ds.setJobDeleted(jobId, true);
             JobInfo[] children = ds.getChildren(jobId);
             for (int i = 0; i < children.length; i++) {
@@ -444,7 +444,7 @@ public class Analysis extends GenericWebService {
 
     public JobInfo getJob(int jobId) throws WebServiceException {
         try {
-            AnalysisDataService ds = AnalysisDataService.getInstance();
+            AnalysisJobService ds = AnalysisJobService.getInstance();
             return ds.getJobInfo(jobId);
         }
         catch (org.genepattern.webservice.OmnigeneException oe) {
@@ -469,7 +469,7 @@ public class Analysis extends GenericWebService {
      */
     public void deleteJobResultFile(int jobId, String value) throws WebServiceException {
         try {
-            AnalysisDataService ds = AnalysisDataService.getInstance();
+            AnalysisJobService ds = AnalysisJobService.getInstance();
             JobInfo jobInfo = ds.getJobInfo(jobId);
             int beforeDeletionLength = 0;
             ParameterInfo[] params = jobInfo.getParameterInfoArray();
@@ -543,7 +543,7 @@ public class Analysis extends GenericWebService {
      */
     public void setJobStatus(int jobId, String status) throws WebServiceException {
         try {
-            AnalysisDataService ds = AnalysisDataService.getInstance();
+            AnalysisJobService ds = AnalysisJobService.getInstance();
             JobInfo jobInfo = ds.getJobInfo(jobId);
             Integer intStatus = (Integer) JobStatus.STATUS_MAP.get(status);
             if (intStatus == null) {
@@ -577,7 +577,7 @@ public class Analysis extends GenericWebService {
     public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs)
             throws WebServiceException {
         try {
-            AnalysisDataService ds = AnalysisDataService.getInstance();
+            AnalysisJobService ds = AnalysisJobService.getInstance();
             return ds.getJobs(username, maxJobNumber, maxEntries, allJobs);
         }
         catch (Exception e) {

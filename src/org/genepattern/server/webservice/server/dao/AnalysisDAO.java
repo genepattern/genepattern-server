@@ -42,7 +42,7 @@ AnalysisDAO extends BaseDAO {
 
     private static Logger log = Logger.getLogger(AnalysisDAO.class);
 
-    private AdminDAO adminDAO = new AdminDAO();
+    private AdminHSQLDAO adminDAO = new AdminHSQLDAO();
 
     /** Creates new AnalysisHypersonicAccess */
     public AnalysisDAO() {

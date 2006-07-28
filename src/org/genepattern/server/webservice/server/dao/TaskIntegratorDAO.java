@@ -107,4 +107,9 @@ public class TaskIntegratorDAO extends BaseDAO {
         }
     }
 
+    private SuiteInfo suiteInfoFromSuite(Suite result) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

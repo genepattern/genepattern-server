@@ -8,24 +8,35 @@ import org.apache.log4j.Logger;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.*;
+import org.hibernate.Session;
 import org.hibernate.Transaction;
 
-public class AnalysisDataService extends BaseService {
+public class AnalysisJobService {
 
-    private static Logger log = Logger.getLogger(AnalysisDataService.class);
+    private static Logger log = Logger.getLogger(AnalysisJobService.class);
 
-    private static AnalysisDataService theInstance = null;
+    private static AnalysisJobService theInstance = null;
 
-    private AnalysisDAO analysisDAO = new AnalysisDAO();
+    private AnalysisHypersonicDAO analysisDAO = new AnalysisHypersonicDAO();
 
     private AdminHSQLDAO adminDAO = new AdminHSQLDAO();
 
-    public static synchronized AnalysisDataService getInstance() {
+    public static synchronized AnalysisJobService getInstance() {
         if (theInstance == null) {
-            theInstance = new AnalysisDataService();
+            theInstance = new AnalysisJobService();
         }
         return theInstance;
 
+    }
+
+    private Session getSession() {
+        return HibernateUtil.getSession();
+    }
+
+    private void cleanupSession() {
+        if (getSession().isOpen() && !getSession().getTransaction().isActive()) {
+            getSession().close();
+        }
     }
 
     /**
@@ -239,6 +250,31 @@ public class AnalysisDataService extends BaseService {
 
     }
 
+    public TaskInfo getTask(int taskId) {
+        Transaction transaction = null;
+        try {
+            if (!getSession().getTransaction().isActive()) {
+                transaction = getSession().beginTransaction();
+            }
+
+            TaskInfo ti = adminDAO.getTask(taskId);
+
+            if (transaction != null) {
+                transaction.commit();
+            }
+
+            return ti;
+        }
+        catch (Exception e) {
+            getSession().getTransaction().rollback();
+            log.error(e);
+            throw new OmnigeneException(e);
+        }
+        finally {
+            cleanupSession();
+        }
+
+    }
 
     /**
      * 
@@ -554,8 +590,253 @@ public class AnalysisDataService extends BaseService {
 
     }
 
+    public List getTasks(String userID) {
+        Transaction transaction = null;
+        try {
+            if (!getSession().getTransaction().isActive()) {
+                transaction = getSession().beginTransaction();
+            }
 
+            TaskInfo[] taskArray = (userID == null ? adminDAO.getAllTasks() : adminDAO.getAllTasks(userID));
 
+            List tasks = Arrays.asList(taskArray);
+
+            if (transaction != null) {
+                transaction.commit();
+            }
+
+            return tasks;
+        }
+        catch (Exception e) {
+            getSession().getTransaction().rollback();
+            log.error(e);
+            throw new OmnigeneException(e.getMessage());
+        }
+        finally {
+            cleanupSession();
+        }
+
+    }
+
+    /**
+     * 
+     * @param name
+     * @param user_id
+     * @return
+     * @throws OmnigeneException
+     */
+    public int getTaskIDByName(String name, String user_id) throws OmnigeneException {
+        Transaction transaction = null;
+        try {
+            if (!getSession().getTransaction().isActive()) {
+                transaction = getSession().beginTransaction();
+            }
+
+            int taskId = adminDAO.getTaskId(name, user_id);
+
+            if (transaction != null) {
+                transaction.commit();
+            }
+
+            return taskId;
+        }
+        catch (Exception e) {
+            getSession().getTransaction().rollback();
+            log.error(e);
+            throw new OmnigeneException(e.getMessage());
+        }
+        finally {
+            cleanupSession();
+        }
+
+    }
+
+    /**
+     * To create a new regular task
+     * 
+     * @param taskName
+     * @param user_id
+     * @param access_id
+     * @param description
+     * @param parameter_info
+     * @throws OmnigeneException
+     * @return task ID
+     */
+    public int addNewTask(String taskName, String user_id, int access_id, String description, String parameter_info,
+            String taskInfoAttributes) {
+        Transaction transaction = null;
+        try {
+            if (!getSession().getTransaction().isActive()) {
+                transaction = getSession().beginTransaction();
+            }
+
+            int taskId = analysisDAO.addNewTask(taskName, user_id, access_id, description, parameter_info,
+                    taskInfoAttributes);
+
+            if (transaction != null) {
+                transaction.commit();
+            }
+
+            return taskId;
+        }
+        catch (Exception e) {
+            getSession().getTransaction().rollback();
+            log.error(e);
+            throw new OmnigeneException(e.getMessage());
+        }
+        finally {
+            cleanupSession();
+        }
+
+    }
+
+    /**
+     * Updates task description and parameters
+     * 
+     * @param taskID
+     *            task ID
+     * @param description
+     *            task description
+     * @param parameter_info
+     *            parameters as a xml string
+     * @return No. of updated records
+     * @throws OmnigeneException
+     * @throws RemoteException
+     */
+    public int updateTask(int taskId, String taskDescription, String parameter_info, String taskInfoAttributes,
+            String user_id, int access_id) throws OmnigeneException {
+        Transaction transaction = null;
+        try {
+            if (!getSession().getTransaction().isActive()) {
+                transaction = getSession().beginTransaction();
+            }
+
+            int updateCount = analysisDAO.updateTask(taskId, taskDescription, parameter_info, taskInfoAttributes,
+                    user_id, access_id);
+
+            if (transaction != null) {
+                transaction.commit();
+            }
+
+            return updateCount;
+        }
+        catch (Exception e) {
+            getSession().getTransaction().rollback();
+            log.error(e);
+            throw new OmnigeneException(e.getMessage());
+        }
+        finally {
+            cleanupSession();
+        }
+
+    }
+
+    /**
+     * Updates task parameters
+     * 
+     * @param taskID
+     *            task ID
+     * @param parameter_info
+     *            parameters as a xml string
+     * @throws OmnigeneException
+     * @throws RemoteException
+     * @return No. of updated records
+     */
+    public int updateTask(int taskId, String parameter_info, String taskInfoAttributes, String user_id, int access_id)
+            throws OmnigeneException {
+        Transaction transaction = null;
+        try {
+            if (!getSession().getTransaction().isActive()) {
+                transaction = getSession().beginTransaction();
+            }
+
+            int updateCount = analysisDAO.updateTask(taskId, parameter_info, taskInfoAttributes, user_id, access_id);
+            if (transaction != null) {
+                transaction.commit();
+            }
+
+            return updateCount;
+        }
+        catch (Exception e) {
+            getSession().getTransaction().rollback();
+            log.error(e);
+            throw new OmnigeneException(e.getMessage());
+        }
+
+    }
+
+    /**
+     * Updates user_id and access_id
+     * 
+     * @param taskID
+     *            task ID
+     * @param user_id
+     * @param access_id
+     * @return No. of updated records
+     * @throws OmnigeneException
+     * @throws RemoteException
+     */
+    public int updateTask(int taskId, String user_id, int access_id) throws OmnigeneException {
+        Transaction transaction = null;
+        try {
+            if (!getSession().getTransaction().isActive()) {
+                transaction = getSession().beginTransaction();
+            }
+
+            int count = analysisDAO.updateTask(taskId, user_id, access_id);
+
+            if (transaction != null) {
+                transaction.commit();
+            }
+
+            return count;
+        }
+        catch (Exception e) {
+            getSession().getTransaction().rollback();
+            log.error(e);
+            throw new OmnigeneException(e.getMessage());
+        }
+        finally {
+            cleanupSession();
+        }
+
+    }
+
+    /**
+     * To remove registered task based on task ID
+     * 
+     * @param taskID
+     * @throws OmnigeneException
+     * @throws RemoteException
+     * @return No. of updated records
+     */
+    public int deleteTask(int taskID) throws OmnigeneException {
+
+        Transaction transaction = null;
+        try {
+            if (!getSession().getTransaction().isActive()) {
+                transaction = getSession().beginTransaction();
+            }
+
+            int count = analysisDAO.deleteTask(taskID);
+
+            if (transaction != null) {
+                transaction.commit();
+            }
+
+            return count;
+        }
+        catch (Exception e) {
+            getSession().getTransaction().rollback();
+            log.error(e);
+            throw new OmnigeneException(e.getMessage());
+        }
+        finally {
+            cleanupSession();
+        }
+
+    }
+    
     public int getNextLSIDIdentifier(String namespace) throws OmnigeneException {
         if (GPConstants.TASK_NAMESPACE.equals(namespace)) {
             return analysisDAO.getNextTaskLSIDIdentifier();
@@ -568,7 +849,9 @@ public class AnalysisDataService extends BaseService {
         }
 
     }
-
+    
+   
+    
     /**
      * get the next available LSID version for a given identifer from the
      * database
@@ -596,29 +879,7 @@ public class AnalysisDataService extends BaseService {
      * @return JobInfo Vector
      */
     public Vector getWaitingJob(int maxJobCount) throws OmnigeneException {
-        Transaction transaction = null;
-        try {
-            if (!getSession().getTransaction().isActive()) {
-                transaction = getSession().beginTransaction();
-            }
-
-            Vector jobs = analysisDAO.getWaitingJob(maxJobCount);
-
-            if (transaction != null) {
-                transaction.commit();
-            }
-
-            return jobs;
-        }
-        catch (Exception e) {
-            getSession().getTransaction().rollback();
-            log.error(e);
-            throw new OmnigeneException(e.getMessage());
-        }
-        finally {
-            cleanupSession();
-        }
-
+        return null;
     }
 
     /**
@@ -633,30 +894,7 @@ public class AnalysisDataService extends BaseService {
      */
     public JobInfo recordClientJob(int taskID, String user_id, String parameter_info, int parentJobNumber)
             throws OmnigeneException {
-        Transaction transaction = null;
-        try {
-            if (!getSession().getTransaction().isActive()) {
-                transaction = getSession().beginTransaction();
-            }
-
-            Integer jobNo = analysisDAO.recordClientJob(taskID, user_id, parameter_info, parentJobNumber);
-            JobInfo clientJob = analysisDAO.getJobInfo(jobNo);
-
-            if (transaction != null) {
-                transaction.commit();
-            }
-
-            return clientJob;
-        }
-        catch (Exception e) {
-            getSession().getTransaction().rollback();
-            log.error(e);
-            throw new OmnigeneException(e.getMessage());
-        }
-        finally {
-            cleanupSession();
-        }
-
+        return null;
     }
 
 }
