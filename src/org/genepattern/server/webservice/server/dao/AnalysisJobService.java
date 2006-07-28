@@ -17,9 +17,9 @@ public class AnalysisJobService {
 
     private static AnalysisJobService theInstance = null;
 
-    private AnalysisHypersonicDAO analysisDAO = new AnalysisHypersonicDAO();
+    private AnalysisDAO analysisDAO = new AnalysisDAO();
 
-    private AdminHSQLDAO adminDAO = new AdminHSQLDAO();
+    private AdminDAO adminDAO = new AdminDAO();
 
     public static synchronized AnalysisJobService getInstance() {
         if (theInstance == null) {
@@ -597,7 +597,7 @@ public class AnalysisJobService {
                 transaction = getSession().beginTransaction();
             }
 
-            TaskInfo[] taskArray = (userID == null ? adminDAO.getAllTasks() : adminDAO.getAllTasks(userID));
+            TaskInfo[] taskArray = (userID == null ? adminDAO.getAllTasks() : adminDAO.getAllTasksForUser(userID));
 
             List tasks = Arrays.asList(taskArray);
 
@@ -632,13 +632,18 @@ public class AnalysisJobService {
                 transaction = getSession().beginTransaction();
             }
 
-            int taskId = adminDAO.getTaskId(name, user_id);
+            TaskInfo task = adminDAO.getTask(name, user_id);
 
             if (transaction != null) {
                 transaction.commit();
             }
 
-            return taskId;
+            if (task == null) {
+                return -1;
+            }
+            else {
+                return task.getID();
+            }
         }
         catch (Exception e) {
             getSession().getTransaction().rollback();
@@ -836,7 +841,7 @@ public class AnalysisJobService {
         }
 
     }
-    
+
     public int getNextLSIDIdentifier(String namespace) throws OmnigeneException {
         if (GPConstants.TASK_NAMESPACE.equals(namespace)) {
             return analysisDAO.getNextTaskLSIDIdentifier();
@@ -849,9 +854,7 @@ public class AnalysisJobService {
         }
 
     }
-    
-   
-    
+
     /**
      * get the next available LSID version for a given identifer from the
      * database

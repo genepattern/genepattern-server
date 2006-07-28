@@ -42,7 +42,7 @@ AnalysisDAO extends BaseDAO {
 
     private static Logger log = Logger.getLogger(AnalysisDAO.class);
 
-    private AdminHSQLDAO adminDAO = new AdminHSQLDAO();
+    private AdminDAO adminDAO = new AdminDAO();
 
     /** Creates new AnalysisHypersonicAccess */
     public AnalysisDAO() {
@@ -904,6 +904,11 @@ AnalysisDAO extends BaseDAO {
             throw new OmnigeneException(e);
         }
 
+    }
+
+    public int deleteTask(int taskID) {
+        // TODO Auto-generated method stub
+        return 0;
     }
 
 }

@@ -39,7 +39,7 @@ import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
 import org.genepattern.server.process.ZipSuite;
-import org.genepattern.server.webservice.server.dao.TaskIntegratorHSQLDAO;
+import org.genepattern.server.webservice.server.dao.TaskIntegratorDataService;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -59,7 +59,7 @@ import org.genepattern.webservice.WebServiceException;
  */
 
 public class TaskIntegrator implements ITaskIntegrator {
-    protected TaskIntegratorHSQLDAO tiDao = new TaskIntegratorHSQLDAO();
+    protected TaskIntegratorDataService tiDao =  TaskIntegratorDataService.getInstance();
 
     protected String getUserName() {
         MessageContext context = MessageContext.getCurrentContext();

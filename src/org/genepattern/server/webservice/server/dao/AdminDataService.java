@@ -14,7 +14,7 @@ public class AdminDataService extends BaseService {
 
     private static AdminDataService theInstance = null;
 
-    private AdminHSQLDAO adminDAO = new AdminHSQLDAO();
+    private AdminDAO adminDAO = new AdminDAO();
     private AnalysisDAO analysisDAO = new AnalysisDAO();
 
     public static synchronized AdminDataService getInstance() {
