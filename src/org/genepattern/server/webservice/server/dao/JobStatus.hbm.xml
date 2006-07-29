@@ -5,7 +5,7 @@
   <class name="JobStatus" table="JOB_STATUS" optimistic-lock="none"> 
     <id name="statusId" type="integer" unsaved-value="null">
       <column name="STATUS_ID" not-null="true" unique="true" precision="22" scale="0"/>
-      <generator class="native"/>
+      <generator class="assigned"/>
     </id>
     <property name="statusName" type="string" column="STATUS_NAME" length="20"/>
   </class>

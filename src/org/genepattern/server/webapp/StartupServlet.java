@@ -43,7 +43,6 @@ import org.genepattern.server.indexer.IndexerDaemon;
 import org.genepattern.server.process.CreateDatabase;
 import org.genepattern.server.process.JSPPrecompiler;
 import org.genepattern.server.process.JobPurger;
-import org.genepattern.server.util.BeanReference;
 import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

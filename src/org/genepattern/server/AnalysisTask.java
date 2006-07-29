@@ -15,10 +15,8 @@ package org.genepattern.server;
 import java.rmi.RemoteException;
 import java.util.Vector;
 
-import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.util.BeanReference;
 import org.genepattern.webservice.OmnigeneException;
 
 /**

@@ -18,11 +18,9 @@ import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.TimerTask;
 
-import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.indexer.Indexer;
-import org.genepattern.server.util.BeanReference;
 import org.genepattern.webservice.JobInfo;
 
 /**

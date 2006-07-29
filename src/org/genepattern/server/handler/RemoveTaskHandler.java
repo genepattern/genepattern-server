@@ -14,9 +14,7 @@
 package org.genepattern.server.handler;
 
 import org.genepattern.server.TaskIDNotFoundException;
-import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.server.webservice.server.dao.AnalysisJobService;
-import org.genepattern.server.util.BeanReference;
 import org.genepattern.webservice.OmnigeneException;
 
 //import edu.mit.wi.omnigene.omnidas.*;

@@ -22,9 +22,7 @@ package org.genepattern.server;
 
 import java.rmi.RemoteException;
 
-import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.server.webservice.server.dao.AnalysisJobService;
-import org.genepattern.server.util.BeanReference;
 import org.genepattern.webservice.OmnigeneException;
 
 public class AnalysisManager {
