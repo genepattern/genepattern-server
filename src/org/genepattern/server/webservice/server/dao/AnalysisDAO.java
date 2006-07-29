@@ -906,9 +906,4 @@ AnalysisDAO extends BaseDAO {
 
     }
 
-    public int deleteTask(int taskID) {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
 }

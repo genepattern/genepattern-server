@@ -7,8 +7,7 @@ import java.util.*;
 import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.webservice.*;
-import org.hibernate.Session;
-import org.hibernate.StatelessSession;
+import org.hibernate.*;
 
 public class BaseDAO {
 
@@ -20,19 +19,11 @@ public class BaseDAO {
 
     public static int JOB_WAITING_STATUS = 1;
 
-    private static String dbURL;
-
-    private static String dbUsername;
-
-    private static String dbPassword;
-
-    protected static TaskInfo taskInfoFromTaskMaster(TaskMaster tm) {
-        return new TaskInfo(tm.getTaskId(), tm.getTaskName(), tm.getDescription(), tm.getParameterInfo(),
-                TaskInfoAttributes.decode(tm.getTaskinfoattributes()), tm.getUserId(), tm.getAccessId());
-
+    protected Session getSession() {
+        return HibernateUtil.getSession();
     }
 
-    public java.sql.Date now() {
+    protected java.sql.Date now() {
         return new java.sql.Date(Calendar.getInstance().getTimeInMillis());
     }
 
@@ -54,48 +45,10 @@ public class BaseDAO {
 
     }
 
-    /**
-     * @deprecated
-     * @param rs
-     * @param st
-     * @param conn
-     */
-    protected void close(ResultSet rs, Statement st, Connection conn) {
-        if (rs != null) {
-            try {
-                rs.close();
-            }
-            catch (SQLException x) {
-            }
-        }
-        if (st != null) {
-            try {
-                st.close();
-            }
-            catch (SQLException x) {
-            }
-        }
-        try {
-            if (conn != null) {
-                conn.close();
-            }
-        }
-        catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
+    protected static TaskInfo taskInfoFromTaskMaster(TaskMaster tm) {
+        return new TaskInfo(tm.getTaskId(), tm.getTaskName(), tm.getDescription(), tm.getParameterInfo(),
+                TaskInfoAttributes.decode(tm.getTaskinfoattributes()), tm.getUserId(), tm.getAccessId());
 
-    protected Session getSession() {
-        return HibernateUtil.getSession();
-    }
-
-    /**
-     * @deprecated
-     * @return
-     */
-    protected Connection getConnection() {
-        return getSession().connection();
     }
 
     protected SuiteInfo suiteInfoFromSuite(Suite suite) throws AdminDAOSysException {
@@ -155,6 +108,24 @@ public class BaseDAO {
             this.cleanupJDBC(rs, st);
         }
         return moduleLSIDs;
+    }
+
+    /**
+     * Unfortunately there is no standard way to query sequences, or rather
+     * there is little adherence to the standard.
+     * 
+     * @return int next identifier in sequence
+     */
+    public int nextSequenceValue(String sequenceName) {
+
+        Query query = getSession().createSQLQuery("select next value for lsid_identifier_seq from dual");
+        Number result = (Number) query.uniqueResult();
+        if (result != null) {
+            return result.intValue();
+        }
+        else {
+            throw new OmnigeneException("Unable to retrieve lsid_identifier_seq");
+        }
     }
 
 }

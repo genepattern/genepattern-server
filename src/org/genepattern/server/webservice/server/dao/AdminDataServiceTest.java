@@ -17,9 +17,10 @@ public class AdminDataServiceTest extends ServiceTestBase {
      * Test method for 'org.genepattern.server.webservice.server.service.AdminDataService.getTaskId(String, String)'
      */
     public void testGetTaskId() throws Exception {
-        int expectedTaskId = 1;
+        int expectedTaskId = 46;
         
         TaskInfo task = service.getTask(expectedTaskId);
+        assertNotNull(task);
         int taskId = service.getTaskId(task.getName(), task.getUserId());
         assertEquals(expectedTaskId, taskId);
         
@@ -141,7 +142,7 @@ public class AdminDataServiceTest extends ServiceTestBase {
      * 
      */
     public void testGetSuite() throws Exception  {
-        String lsid = "";
+        String lsid = "urn:lsid:broad.mit.edu:genepatternsuites:1:1";
         SuiteInfo suite = service.getSuite(lsid);
         assertNotNull(suite);
         assertEquals(lsid, suite.getLsid());
@@ -161,7 +162,7 @@ public class AdminDataServiceTest extends ServiceTestBase {
      * 
      */
     public void testGetLatestSuitesByUser() throws Exception {
-        String user = "twomey";
+        String user = "jlerner@broad.mit.edu";
         SuiteInfo [] suites = service.getLatestSuites(user);
         assertTrue(suites.length > 0);
 
@@ -171,7 +172,7 @@ public class AdminDataServiceTest extends ServiceTestBase {
      * 
      */
     public void testGetAllSuitesByUser() throws Exception {
-        String user = "twomey";
+        String user = "jlerner@broad.mit.edu";
         SuiteInfo [] suites = service.getAllSuites(user);
         assertTrue(suites.length > 0);
     }
@@ -180,42 +181,13 @@ public class AdminDataServiceTest extends ServiceTestBase {
      * AdminHSQLservice#getSuiteMembership(String)
      */
     public void testGetSuiteMembershipByLsid() throws Exception {
-        String lsid = "";
-        SuiteInfo [] suites = service.getSuiteMembership(lsid);
+        String taskLSID = "";
+        SuiteInfo [] suites = service.getSuiteMembership(taskLSID);
         assertTrue(suites.length > 0);
 
     }
     
-    /*
-     * Test method for 'org.genepattern.server.webservice.server.service.AdminDataService.getTask(String, String)'
-     */
-    public void testGetTaskStringString() {
 
-    }
-
-    /*
-     * Test method for 'org.genepattern.server.webservice.server.service.AdminDataService.getAllTasks(String)'
-     */
-    public void testGetAllTasksString() {
-
-    }
-
-
-    /*
-     * Test method for 'org.genepattern.server.webservice.server.service.AdminDataService.getTask(int)'
-     */
-    public void testGetTaskInt() {
-
-    }
-
-
-
-    /*
-     * Test method for 'org.genepattern.server.webservice.server.service.AdminDataService.getLatestSuites(String)'
-     */
-    public void testGetLatestSuitesString() {
-
-    }
 
     /*
      * Test method for 'org.genepattern.server.webservice.server.service.AdminDataService.getAllSuites()'
@@ -226,19 +198,7 @@ public class AdminDataServiceTest extends ServiceTestBase {
         assertTrue(suites.length > 0);
     }
 
-    /*
-     * Test method for 'org.genepattern.server.webservice.server.service.AdminDataService.getAllSuites(String)'
-     */
-    public void testGetAllSuitesString() {
 
-    }
-
-    /*
-     * Test method for 'org.genepattern.server.webservice.server.service.AdminDataService.getSuiteMembership(String)'
-     */
-    public void testGetSuiteMembership() {
-
-    }
     
     /**
      * 

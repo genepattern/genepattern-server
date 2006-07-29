@@ -324,6 +324,7 @@ public class AdminDAO extends BaseDAO  {
             return this.suiteInfoFromSuite(result);
         }
         else {
+            log.error("suite id " + lsid + " not found");
             throw new AdminDAOSysException("suite id " + lsid + " not found");
         }
 

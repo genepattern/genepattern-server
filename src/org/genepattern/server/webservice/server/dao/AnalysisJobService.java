@@ -823,7 +823,7 @@ public class AnalysisJobService {
                 transaction = getSession().beginTransaction();
             }
 
-            int count = analysisDAO.deleteTask(taskID);
+            int count = adminDAO.deleteTask(taskID);
 
             if (transaction != null) {
                 transaction.commit();

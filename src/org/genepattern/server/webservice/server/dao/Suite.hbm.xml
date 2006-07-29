@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
-<hibernate-mapping  package="org.genepattern.server.webservice.server.dao"> 
+<hibernate-mapping package="org.genepattern.server.webservice.server.dao"> 
   <class name="Suite" table="SUITE" optimistic-lock="none"> 
     <id name="lsid" type="string" unsaved-value="null">
       <column name="LSID" not-null="true" unique="true" length="4000"/>
@@ -11,6 +11,6 @@
     <property name="author" type="string" column="AUTHOR" length="4000"/>
     <property name="owner" type="string" column="OWNER" length="4000"/>
     <property name="description" type="string" column="DESCRIPTION" length="4000"/>
-    <property name="accessId" type="big_integer" column="ACCESS_ID" precision="22" scale="0"></property>
+    <property name="accessId" type="integer" column="ACCESS_ID" precision="22" scale="0"/>
   </class>
 </hibernate-mapping>
