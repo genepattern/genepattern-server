@@ -8,12 +8,18 @@
     <property name="hibernate.connection.url">jdbc:oracle:thin:@magnesium.broad.mit.edu:1521:meddev10</property>
     <property name="hibernate.connection.username">gpportal</property>
     <property name="hibernate.default_schema">gpportal</property>
-    <property name="hibernate.dialect">org.hibernate.dialect.Oracle9Dialect</property>
+    <property name="hibernate.dialect">org.genepattern.server.webservice.server.dao.PlatformOracle9Dialect</property>
+    
+    <property name="hibernate.current_session_context_class">thread</property>
+    <property name="hibernate.jdbc.batch_size">20</property>
     <property name="hibernate.show_sql">true</property>
-    <mapping resource="temp/AnalysisJob.hbm.xml"/>
-    <mapping resource="temp/JobStatus.hbm.xml"/>
-    <mapping resource="temp/Suite.hbm.xml"/>
-    <mapping resource="temp/TaskAccess.hbm.xml"/>
-    <mapping resource="temp/TaskMaster.hbm.xml"/>
+    <property name="hibernate.statement_cache.size">0</property>
+    <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
+
+    <mapping resource="org/genepattern/server/webservice/server/dao/AnalysisJob.hbm.xml"/>
+    <mapping resource="org/genepattern/server/webservice/server/dao/JobStatus.hbm.xml"/>
+    <mapping resource="org/genepattern/server/webservice/server/dao/Lsid.hbm.xml"/>
+    <mapping resource="org/genepattern/server/webservice/server/dao/TaskMaster.hbm.xml"/>    
+    <mapping resource="org/genepattern/server/webservice/server/dao/Suite.hbm.xml"/>
   </session-factory>
 </hibernate-configuration>

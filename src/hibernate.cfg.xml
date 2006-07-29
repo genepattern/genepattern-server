@@ -4,10 +4,11 @@
 <hibernate-configuration> 
   <session-factory> 
     <property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
-    <property name="hibernate.connection.url">jdbc:hsqldb:file:/java/cvs/genepattern/resources/GenePatternDB</property>
+    <property name="hibernate.connection.url">jdbc:hsqldb:file:/java/genepattern/genepattern/test/data/GenePatternDB</property>
     <property name="hibernate.connection.username">sa</property>
-    <property name="hibernate.current_session_context_class">thread</property>
     <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
+    
+    <property name="hibernate.current_session_context_class">thread</property>
     <property name="hibernate.jdbc.batch_size">20</property>
     <property name="hibernate.show_sql">true</property>
     <property name="hibernate.statement_cache.size">0</property>
@@ -15,6 +16,7 @@
     <mapping resource="org/genepattern/server/webservice/server/dao/AnalysisJob.hbm.xml"/>
     <mapping resource="org/genepattern/server/webservice/server/dao/JobStatus.hbm.xml"/>
     <mapping resource="org/genepattern/server/webservice/server/dao/Lsid.hbm.xml"/>
-    <mapping resource="org/genepattern/server/webservice/server/dao/TaskMaster.hbm.xml"/>
+    <mapping resource="org/genepattern/server/webservice/server/dao/TaskMaster.hbm.xml"/>    
+    <mapping resource="org/genepattern/server/webservice/server/dao/Suite.hbm.xml"/>
   </session-factory>
 </hibernate-configuration>
