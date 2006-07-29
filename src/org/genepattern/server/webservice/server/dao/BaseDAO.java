@@ -110,22 +110,6 @@ public class BaseDAO {
         return moduleLSIDs;
     }
 
-    /**
-     * Unfortunately there is no standard way to query sequences, or rather
-     * there is little adherence to the standard.
-     * 
-     * @return int next identifier in sequence
-     */
-    public int nextSequenceValue(String sequenceName) {
-
-        Query query = getSession().createSQLQuery("select next value for lsid_identifier_seq from dual");
-        Number result = (Number) query.uniqueResult();
-        if (result != null) {
-            return result.intValue();
-        }
-        else {
-            throw new OmnigeneException("Unable to retrieve lsid_identifier_seq");
-        }
-    }
+ 
 
 }
