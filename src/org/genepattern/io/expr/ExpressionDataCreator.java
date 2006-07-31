@@ -12,20 +12,20 @@
 
 package org.genepattern.io.expr;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import org.genepattern.data.expr.ExpressionData;
 import org.genepattern.data.expr.MetaData;
 import org.genepattern.data.matrix.DoubleMatrix2D;
 import org.genepattern.data.matrix.ObjectMatrix2D;
 import org.genepattern.io.ParseException;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 /**
  * Expression data creator that creates an instance of
  * org.genepattern.data.expr.ExpressionData
- * 
+ *
  * @author Joshua Gould
  */
 public class ExpressionDataCreator implements IExpressionDataCreator {
@@ -37,13 +37,9 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
 
     protected String[] columnNames;
 
-    MetaData rowMetaData;
+    protected MetaData rowMetaData;
 
-    MetaData columnMetaData;
-
-    protected boolean keepRowMetaData = true;
-
-    protected boolean keepColumnMetaData = true;
+    protected MetaData columnMetaData;
 
     protected String[] matrixNames;
 
@@ -51,27 +47,12 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
 
     private String[] columnMetaDataNames;
 
-    public ExpressionDataCreator() {
-        this(true, true);
-    }
-
     /**
      * Creates a new <tt>ExpressionDataCreator</tt> instance
-     * 
-     * @param keepRowMetaData
-     *            whether the ExpressionData returned from <tt>
-     *      create</tt>
-     *            should include row meta data
-     * @param keepColumnMetaData
-     *            whether the ExpressionData returned from <tt>
-     *      create</tt>
-     *            should include column meta data
      */
-    public ExpressionDataCreator(boolean keepRowMetaData,
-            boolean keepColumnDescriptions) {
-        this.keepRowMetaData = keepRowMetaData;
-        this.keepColumnMetaData = keepColumnMetaData;
+    public ExpressionDataCreator() {
     }
+
 
     public Object create() {
         DoubleMatrix2D matrix = new DoubleMatrix2D(data, rowNames, columnNames);
@@ -79,8 +60,7 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
         for (int i = 0; i < matrixNames.length; i++) {
             name2Matrices.put(matrixNames[i], matrices.get(i));
         }
-        return new ExpressionData(matrix, rowMetaData, columnMetaData,
-                name2Matrices);
+        return new ExpressionData(matrix, rowMetaData, columnMetaData, name2Matrices);
     }
 
     public void data(int row, int column, double d) throws ParseException {
@@ -91,13 +71,11 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
         rowMetaData.setMetaData(row, rowMetaDataNames[depth], s);
     }
 
-    public void columnMetaData(int column, int depth, String s)
-            throws ParseException {
+    public void columnMetaData(int column, int depth, String s) throws ParseException {
         columnMetaData.setMetaData(column, columnMetaDataNames[depth], s);
     }
 
-    public void data(int row, int column, int depth, String s)
-            throws ParseException {
+    public void data(int row, int column, int depth, String s) throws ParseException {
         ((ObjectMatrix2D) matrices.get(depth)).set(row, column, s);
     }
 
@@ -109,9 +87,8 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
         rowNames[i] = s;
     }
 
-    public void init(int rows, int columns, String[] rowMetaDataNames,
-            String[] columnMetaDataNames, String[] matrixNames)
-            throws ParseException {
+    public void init(int rows, int columns, String[] rowMetaDataNames, String[] columnMetaDataNames,
+                     String[] matrixNames) throws ParseException {
         this.data = new double[rows][columns];
         this.rowMetaDataNames = rowMetaDataNames;
         this.columnMetaDataNames = columnMetaDataNames;
@@ -125,5 +102,4 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
             matrices.add(new ObjectMatrix2D(rows, columns));
         }
     }
-
 }
