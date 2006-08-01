@@ -42,7 +42,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.FSDirectory;
-import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.server.genepattern.GPLuceneAnalyzer;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;

@@ -4,23 +4,24 @@
 <hibernate-mapping  package="org.genepattern.server.webservice.server.dao"> 
   <class name="AnalysisJob" table="ANALYSIS_JOB" optimistic-lock="none"> 
     <id name="jobNo" type="integer" unsaved-value="null">
-      <column name="JOB_NO" not-null="true" unique="true" precision="22" scale="0"/>
+      <column name="JOB_NO" not-null="true" unique="true" precision="10" scale="0"/>
       <generator class="native"/>
     </id>
-    <property name="taskId" type="integer" column="TASK_ID" precision="22" scale="0"/>
+    <property name="taskId" type="integer" column="TASK_ID" precision="10" scale="0"/>
     <property name="submittedDate" type="timestamp" column="DATE_SUBMITTED"/>
     <property name="completedDate" type="timestamp" column="DATE_COMPLETED"/>
     <property name="parameterInfo" type="string" column="PARAMETER_INFO" length="4000"/>
     <property name="userId" type="string" column="USER_ID" length="4000"/>
-    <property name="accessId" type="integer" column="ACCESS_ID" precision="22" scale="0"/>
+    <property name="accessId" type="integer" column="ACCESS_ID" precision="10" scale="0"/>
     <property name="jobName" type="string" column="JOB_NAME" length="4000"/>
-    <property name="lsid" type="string" column="LSID" length="4000"/>
+    <property name="lsid" type="string" column="LSID" length="4000" index = "idx_analysis_job_lsid"/>
     <property name="taskLsid" type="string" column="TASK_LSID" length="4000"/>
     <property name="taskName" type="string" column="TASK_NAME" length="4000"/>
-    <property name="parent" type="integer" column="PARENT" precision="22" scale="0"/>
-    <property name="deleted" type="boolean" column="DELETED" length="1" not-null="true"/>
+    <property name="parent" type="integer" column="PARENT" precision="10" scale="0" index="idx_analysis_job_parent"/>
+    <property name="deleted" type="boolean" column="DELETED" length="1" not-null="true" index="idx_analysis_job_deleted"/>
     <many-to-one name="jobStatus" lazy="false" entity-name="org.genepattern.server.webservice.server.dao.JobStatus" cascade="none" foreign-key="SYS_C00155799"> 
-      <column name="STATUS_ID" precision="22" scale="0"/>
+      <column name="STATUS_ID" precision="10" scale="0"/>
     </many-to-one>
   </class>
 </hibernate-mapping>
+

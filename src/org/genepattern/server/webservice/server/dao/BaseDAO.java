@@ -45,6 +45,34 @@ public class BaseDAO {
 
     }
 
+    protected void cleanupJDBC(ResultSet rs, Statement st, Connection conn) {
+        if (rs != null) {
+            try {
+                rs.close();
+            }
+            catch (SQLException x) {
+                log.error(x);
+            }
+        }
+        if (st != null) {
+            try {
+                st.close();
+            }
+            catch (SQLException x) {
+                log.error(x);
+            }
+        }
+        if (conn != null)
+            try {
+                conn.close();
+            }
+            catch (SQLException x) {
+                log.error(x);
+            }
+
+    }
+
+  
     protected static TaskInfo taskInfoFromTaskMaster(TaskMaster tm) {
         return new TaskInfo(tm.getTaskId(), tm.getTaskName(), tm.getDescription(), tm.getParameterInfo(),
                 TaskInfoAttributes.decode(tm.getTaskinfoattributes()), tm.getUserId(), tm.getAccessId());
@@ -109,7 +137,5 @@ public class BaseDAO {
         }
         return moduleLSIDs;
     }
-
- 
 
 }

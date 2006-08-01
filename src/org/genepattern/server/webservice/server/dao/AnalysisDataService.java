@@ -16,9 +16,7 @@ public class AnalysisDataService extends BaseService {
 
     private static AnalysisDataService theInstance = null;
 
-    private AnalysisDAO analysisDAO = new AnalysisDAO();
-
-    private AdminDAO adminDAO = new AdminDAO();
+    private AnalysisDAO dao = new AnalysisDAO();
 
     public static synchronized AnalysisDataService getInstance() {
         if (theInstance == null) {
@@ -52,8 +50,8 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            Integer jobNo = analysisDAO.addNewJob(taskID, user_id, parameter_info, null, null, null);
-            JobInfo newJob = analysisDAO.getJobInfo(jobNo);
+            Integer jobNo = dao.addNewJob(taskID, user_id, parameter_info, null, null, null);
+            JobInfo newJob = dao.getJobInfo(jobNo);
 
             if (transaction != null) {
                 transaction.commit();
@@ -83,9 +81,9 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            Integer jobNo = analysisDAO.addNewJob(taskID, user_id, parameter_info, null, new Integer(parentJobNumber),
+            Integer jobNo = dao.addNewJob(taskID, user_id, parameter_info, null, new Integer(parentJobNumber),
                     null);
-            JobInfo newJob = analysisDAO.getJobInfo(jobNo);
+            JobInfo newJob = dao.getJobInfo(jobNo);
 
             if (transaction != null) {
                 transaction.commit();
@@ -109,7 +107,7 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            String name = analysisDAO.getTemporaryPipelineName(jobNumber);
+            String name = dao.getTemporaryPipelineName(jobNumber);
 
             if (transaction != null) {
                 transaction.commit();
@@ -159,9 +157,9 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            Integer jobNo = analysisDAO.addNewJob(BaseDAO.UNPROCESSABLE_TASKID, user_id, parameter_info, pipelineName,
+            Integer jobNo = dao.addNewJob(BaseDAO.UNPROCESSABLE_TASKID, user_id, parameter_info, pipelineName,
                     null, lsid);
-            JobInfo job = analysisDAO.getJobInfo(jobNo);
+            JobInfo job = dao.getJobInfo(jobNo);
 
             if (transaction != null) {
                 transaction.commit();
@@ -190,7 +188,7 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            JobInfo job = analysisDAO.getJobInfo(jobNo);
+            JobInfo job = dao.getJobInfo(jobNo);
 
             if (transaction != null) {
                 transaction.commit();
@@ -220,7 +218,7 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            JobInfo[] jobs = analysisDAO.getJobInfo(date);
+            JobInfo[] jobs = dao.getJobInfo(date);
 
             if (transaction != null) {
                 transaction.commit();
@@ -251,7 +249,7 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            analysisDAO.deleteJob(jobId);
+            dao.deleteJob(jobId);
 
             if (transaction != null) {
                 transaction.commit();
@@ -276,7 +274,7 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            boolean retValue = analysisDAO.resetPreviouslyRunningJobs();
+            boolean retValue = dao.resetPreviouslyRunningJobs();
 
             if (transaction != null) {
                 transaction.commit();
@@ -307,7 +305,7 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            ResultSet resultSet = analysisDAO.executeSQL(sql);
+            ResultSet resultSet = dao.executeSQL(sql);
 
             if (transaction != null) {
                 transaction.commit();
@@ -338,7 +336,7 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            int ret = analysisDAO.executeUpdate(sql);
+            int ret = dao.executeUpdate(sql);
 
             if (transaction != null) {
                 transaction.commit();
@@ -369,7 +367,7 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            JobInfo[] children = analysisDAO.getChildren(jobId);
+            JobInfo[] children = dao.getChildren(jobId);
 
             if (transaction != null) {
                 transaction.commit();
@@ -405,7 +403,7 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            JobInfo[] jobs = analysisDAO.getJobs(username, maxJobNumber, maxEntries, allJobs);
+            JobInfo[] jobs = dao.getJobs(username, maxJobNumber, maxEntries, allJobs);
 
             if (transaction != null) {
                 transaction.commit();
@@ -434,7 +432,7 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            analysisDAO.setJobDeleted(jobNumber, deleted);
+            dao.setJobDeleted(jobNumber, deleted);
 
             if (transaction != null) {
                 transaction.commit();
@@ -464,7 +462,7 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            JobInfo parent = analysisDAO.getParent(jobId);
+            JobInfo parent = dao.getParent(jobId);
 
             if (transaction != null) {
                 transaction.commit();
@@ -499,7 +497,7 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            int count = analysisDAO.updateJobStatus(jobNo, jobStatusID);
+            int count = dao.updateJobStatus(jobNo, jobStatusID);
 
             if (transaction != null) {
                 transaction.commit();
@@ -535,7 +533,7 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            int count = analysisDAO.updateJob(jobNo, parameters, jobStatusID);
+            int count = dao.updateJob(jobNo, parameters, jobStatusID);
 
             if (transaction != null) {
                 transaction.commit();
@@ -558,10 +556,10 @@ public class AnalysisDataService extends BaseService {
 
     public int getNextLSIDIdentifier(String namespace) throws OmnigeneException {
         if (GPConstants.TASK_NAMESPACE.equals(namespace)) {
-            return analysisDAO.getNextTaskLSIDIdentifier();
+            return dao.getNextTaskLSIDIdentifier();
         }
         else if (GPConstants.SUITE_NAMESPACE.equals(namespace)) {
-            return analysisDAO.getNextSuiteLSIDIdentifier();
+            return dao.getNextSuiteLSIDIdentifier();
         }
         else {
             throw new OmnigeneException("unknown Namespace for LSID: " + namespace);
@@ -580,10 +578,10 @@ public class AnalysisDataService extends BaseService {
     public String getNextLSIDVersion(LSID lsid) throws OmnigeneException {
         String namespace = lsid.getNamespace();
         if (GPConstants.SUITE_NAMESPACE.equals(namespace)) {
-            return analysisDAO.getNextSuiteLSIDVersion(lsid);
+            return dao.getNextSuiteLSIDVersion(lsid);
         }
         else {
-            return analysisDAO.getNextTaskLSIDVersion(lsid);
+            return dao.getNextTaskLSIDVersion(lsid);
         }
     }
 
@@ -602,7 +600,7 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            Vector jobs = analysisDAO.getWaitingJob(maxJobCount);
+            Vector jobs = dao.getWaitingJob(maxJobCount);
 
             if (transaction != null) {
                 transaction.commit();
@@ -639,8 +637,8 @@ public class AnalysisDataService extends BaseService {
                 transaction = getSession().beginTransaction();
             }
 
-            Integer jobNo = analysisDAO.recordClientJob(taskID, user_id, parameter_info, parentJobNumber);
-            JobInfo clientJob = analysisDAO.getJobInfo(jobNo);
+            Integer jobNo = dao.recordClientJob(taskID, user_id, parameter_info, parentJobNumber);
+            JobInfo clientJob = dao.getJobInfo(jobNo);
 
             if (transaction != null) {
                 transaction.commit();

@@ -189,10 +189,10 @@ public class AnalysisDataServiceTest extends ServiceTestBase {
      * @see AnalysisDataService#getJobs(String,int,int,boolean)
      */
     public void testGetJobsByUser() throws Exception {
-        int jobCount = service.getJobs("twomey", 10, 10000000, false).length;
+        int jobCount = service.getJobs("jgould", 10000000,  10, false).length;
         assertEquals(10, jobCount);
 
-        jobCount = service.getJobs("twomey", 10, 5, false).length;
+        jobCount = service.getJobs("jgould", 10, 5, false).length;
         assertEquals(5, jobCount);
 
         jobCount = service.getJobs(null, -1, 5, false).length;
@@ -208,8 +208,24 @@ public class AnalysisDataServiceTest extends ServiceTestBase {
     public void testGetWaitingJobs() throws Exception {
         int NUM_THREADS = 20;
         Vector jobVector = null;
+        int waitingStatus = 1;
+        
+        // Set some jobs to "waiting" 
+        JobInfo [] jobs = service.getJobs("jgould", 10000000, 10, true);
+        for(int i=0; i<jobs.length; i++) {
+            service.updateJobStatus(jobs[i].getJobNumber(), BaseDAO.JOB_WAITING_STATUS);
+        }
+        
+        // Get the waiting job
         jobVector = service.getWaitingJob(NUM_THREADS);
-        assertEquals(0, jobVector.size());
+        assertEquals(jobs.length, jobVector.size());
+        
+        // As a side effect, the job status should have been changed to "processing"
+        for(int i=0; i<jobs.length; i++) {
+            JobInfo updatedJob = service.getJobInfo( jobs[i].getJobNumber() );
+            assertEquals("Processing", updatedJob.getStatus());
+        }
+        
     }
 
 

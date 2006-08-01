@@ -21,11 +21,10 @@ import java.util.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.genepattern.server.*;
-import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.*;
-import org.genepattern.webservice.JobStatus;
+// import org.genepattern.webservice.JobStatus;
 import org.hibernate.*;
 
 import com.sun.rowset.CachedRowSetImpl;
@@ -41,8 +40,6 @@ public class
 AnalysisDAO extends BaseDAO {
 
     private static Logger log = Logger.getLogger(AnalysisDAO.class);
-
-    private AdminDAO adminDAO = new AdminDAO();
 
     /** Creates new AnalysisHypersonicAccess */
     public AnalysisDAO() {
@@ -73,14 +70,12 @@ AnalysisDAO extends BaseDAO {
             // assuming once job is submitted, it should be executed even if
             // taskid is removed from task master
 
-            // Query job table for waiting job
-            stat = getSession().connection().prepareStatement(
-                    "SELECT job_no,analysis_job.task_id,analysis_job.parameter_info,analysis_job.user_id, "
-                            + " analysis_job.task_lsid, analysis_job.task_name FROM analysis_job, task_master "
-                            + " where analysis_job.task_id=task_master.task_id and  status_id = ? "
-                            + " order by date_submitted");
-            stat.setInt(1, JOB_WAITING_STATUS);
-            resultSet = stat.executeQuery();
+            String hql = "from org.genepattern.server.webservice.server.dao.AnalysisJob "
+                    + " where jobStatus.statusId = :statusId order by submittedDate ";
+            Query query = getSession().createQuery(hql);
+            query.setInteger("statusId", JOB_WAITING_STATUS);
+
+            List<AnalysisJob> results = query.list();
 
             int jobNo = 0, taskID = 0;
             String parameter_info = "";
@@ -89,22 +84,17 @@ AnalysisDAO extends BaseDAO {
 
             ParameterFormatConverter parameterFormatConverter = new ParameterFormatConverter();
             int i = 1;
+
             // Moves to the next record until no more records
-            while (resultSet.next() && i++ <= maxJobCount) {
-                recordFoundFlag = true;
-                jobNo = resultSet.getInt(1);
-                taskID = resultSet.getInt(2);
-                parameter_info = resultSet.getString(3);
-                lsid = resultSet.getString("task_lsid");
-                String taskName = resultSet.getString("task_name");
-
-                updateJobStatus(jobNo, PROCESSING_STATUS);
-
+            Iterator<AnalysisJob> iter = results.iterator();
+            while (iter.hasNext() && i++ <= maxJobCount) {
+                AnalysisJob aJob = iter.next();
+                JobInfo singleJobInfo = this.jobInfoFromAnalysisJob(aJob);
                 // Add waiting job info to vector, for AnalysisTask
-                ParameterInfo[] params = parameterFormatConverter.getParameterInfoArray(parameter_info);
-                JobInfo singleJobInfo = new JobInfo(jobNo, taskID, null, null, null, params, resultSet.getString(4),
-                        lsid, taskName);
                 jobVector.add(singleJobInfo);
+
+                updateJobStatus(aJob.getJobNo(), PROCESSING_STATUS);
+
             }
 
         }
@@ -145,7 +135,7 @@ AnalysisDAO extends BaseDAO {
                 parent = new Integer(parentJobNumber);
             }
             jobNo = addNewJob(taskID, user_id, parameter_info, null, parent, null);
-            updateJobStatus(jobNo, JobStatus.JOB_FINISHED);
+            updateJobStatus(jobNo, org.genepattern.webservice.JobStatus.JOB_FINISHED);
             setJobDeleted(jobNo, true);
             return jobNo;
         }
@@ -231,22 +221,14 @@ AnalysisDAO extends BaseDAO {
      * @throws RemoteException
      * @return record count of updated records
      */
-    public int updateJobStatus(int jobNo, int jobStatusID) throws OmnigeneException {
+    public int updateJobStatus(Integer jobNo, Integer jobStatusID) throws OmnigeneException {
 
-        Query query = getSession().createQuery(
-                "update org.genepattern.server.webservice.server.dao.AnalysisJob "
-                        + " set jobStatus.statusId = :statusId, completedDate = :completedDate "
-                        + " where jobNo = :jobNo");
-        query.setInteger("statusId", jobStatusID);
-        query.setDate("completedDate", now());
-        query.setInteger("jobNo", jobNo);
-        
-        getSession().flush();
-        getSession().clear();
-        int count = query.executeUpdate();
-        getSession().flush();
-        getSession().clear();
-        return count;
+        AnalysisJob job = (AnalysisJob) getSession().load(AnalysisJob.class, jobNo);
+        org.genepattern.server.webservice.server.dao.JobStatus js = (org.genepattern.server.webservice.server.dao.JobStatus) getSession()
+                .load(JobStatus.class, jobStatusID);
+        job.setJobStatus(js);
+        getSession().update(job);
+        return 1;
 
     }
 
@@ -299,7 +281,6 @@ AnalysisDAO extends BaseDAO {
 
         return jobInfoFromAnalysisJob(aJob);
     }
-
 
     public JobInfo getParent(int jobId) throws OmnigeneException {
 
@@ -465,7 +446,7 @@ AnalysisDAO extends BaseDAO {
         String hqlDelete = "delete org.genepattern.server.webservice.server.dao.AnalysisJob  where jobNo = :jobNo";
         Query query = session.createQuery(hqlDelete);
         query.setInteger("jobNo", jobID);
- 
+
         getSession().flush();
         getSession().clear();
         int updatedRecord = query.executeUpdate();
@@ -575,7 +556,7 @@ AnalysisDAO extends BaseDAO {
             updateQuery.setInteger("taskId", taskId);
 
             getSession().flush();
-            getSession().clear();            
+            getSession().clear();
             int updatedRecord = updateQuery.executeUpdate();
 
             if (oldLSID != null) {
@@ -651,7 +632,7 @@ AnalysisDAO extends BaseDAO {
                 updateQuery.setString("lsid", null);
             }
             updateQuery.setInteger("taskId", taskId);
-            
+
             getSession().flush();
             getSession().clear();
             int updatedRecord = updateQuery.executeUpdate();
@@ -703,7 +684,7 @@ AnalysisDAO extends BaseDAO {
             updateQuery.setString("userId", user_id);
             updateQuery.setInteger("accessId", access_id);
             updateQuery.setInteger("taskId", taskId);
-            
+
             getSession().flush();
             getSession().clear();
             int updatedRecord = updateQuery.executeUpdate();
@@ -733,7 +714,7 @@ AnalysisDAO extends BaseDAO {
         Query query = getSession().createQuery(hql);
         query.setInteger("waitStatus", JOB_WAITING_STATUS);
         query.setInteger("processingStatus", PROCESSING_STATUS);
-        
+
         getSession().flush();
         getSession().clear();
         boolean exist = (query.executeUpdate() > 0);
@@ -800,15 +781,7 @@ AnalysisDAO extends BaseDAO {
      * @return int next identifier in sequence
      */
     public int getNextTaskLSIDIdentifier() {
-
-        Query query = getSession().createSQLQuery("select next value for lsid_identifier_seq from dual");
-        Number result = (Number) query.uniqueResult();
-        if (result != null) {
-            return result.intValue();
-        }
-        else {
-            throw new OmnigeneException("Unable to retrieve lsid_identifier_seq");
-        }
+        return HibernateUtil.getNextSequenceValue("lsid_identifier_seq");
     }
 
     /**
@@ -819,16 +792,7 @@ AnalysisDAO extends BaseDAO {
      * @return int next identifier in sequence
      */
     public int getNextSuiteLSIDIdentifier() throws OmnigeneException {
-        Query query = getSession().createSQLQuery("select next value for lsid_suite_identifier_seq from dual");
-        Number result = (Number) query.uniqueResult();
-
-        // only one record
-        if (result != null) {
-            return result.intValue();
-        }
-        else {
-            throw new OmnigeneException("Unable to retrieve lsid_suite_identifier_seq");
-        }
+        return HibernateUtil.getNextSequenceValue("lsid_suite_identifier_seq");
     }
 
     /**

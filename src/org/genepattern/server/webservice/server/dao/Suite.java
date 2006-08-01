@@ -5,6 +5,7 @@ package org.genepattern.server.webservice.server.dao;
 
 public class Suite {
 
+    private Integer suiteId;
 	private String lsid;
 	private String name;
 	private String author;
@@ -60,4 +61,14 @@ public class Suite {
 	public void setAccessId(Integer value) {
 		this.accessId = value;
 	}
+
+    
+    public Integer getSuiteId() {
+        return suiteId;
+    }
+
+    
+    public void setSuiteId(Integer suiteId) {
+        this.suiteId = suiteId;
+    }
 }

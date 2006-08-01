@@ -35,7 +35,6 @@ public class OmnigeneException extends RuntimeException {
 
 	private int errno = 0;
 
-	private String code = null;
     
     public OmnigeneException(Exception cause) {
         super(cause);
