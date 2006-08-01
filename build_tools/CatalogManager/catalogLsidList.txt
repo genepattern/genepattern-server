@@ -6,6 +6,7 @@ ComparativeMarkerSelection.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepatt
 ComparativeMarkerSelectionViewer.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00045=1
 ComparativeMarkerSelectionViewer.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00045=2
 ComparativeMarkerSelectionViewer.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00045=3
+ComparativeMarkerSelectionViewer.4.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00045=4
 ConsensusClustering.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00030=0
 ConsensusClustering.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00030=1
 ConvertLineEndings.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00002=0
@@ -26,14 +27,18 @@ ExtractRowNames.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_
 FeatureSummaryViewer.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00005=0
 FeatureSummaryViewer.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00005=1
 FeatureSummaryViewer.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00005=2
+FeatureSummaryViewer.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00005=3
 GEOImporter.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00042=0
 GEOImporter.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00042=1
 GEOImporter.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00042=2
+GEOImporter.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00042=3
 GeneCruiser.4.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00037=4
+GeneCruiser.5.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00037=5
 GeneCruiser.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00037=3
 GeneListSignificanceViewer.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00006=0
 GeneListSignificanceViewer.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00006=2
 GeneListSignificanceViewer.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00006=3
+GeneListSignificanceViewer.4.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00006=4
 GeneNeighbors.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00007=0
 GeneNeighbors.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00007=1
 GeneNeighbors.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00007=2
@@ -47,6 +52,8 @@ HeatMapViewer.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_vi
 HeatMapViewer.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00010=1
 HeatMapViewer.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00010=2
 ExpressionFileCreator.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00041=1
+ExpressionFileCreator.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00041=2
+ExpressionFileCreator.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00041=3
 HierarchicalClustering.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00009=2
 AreaChange.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00049=1
 Hu68kHu35kAtoU95.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00011=0
@@ -118,8 +125,10 @@ LocatePeaks.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_anal
 WeightedVoting.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00027=0
 WeightedVoting.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00027=1
 WeightedVoting.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00027=2
+WeightedVoting.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00027=3
 WeightedVotingXValidation.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00028=0
 WeightedVotingXValidation.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00028=2
+WeightedVotingXValidation.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00028=3
 WeightedVotingXValidation.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00028=1
 all_aml_methodology_pipeline.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_pipeline=00001=0
 PNN.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00059=0
@@ -139,8 +148,10 @@ Peaks.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=0
 PlotPeaks.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00053=1
 ProteomicsAnalysis.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00048=1
 MAGEMLImportViewer.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00055=1
+MAGEMLImportViewer.2.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_visualizer=00055=2
 NMFConsensus.3.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00057=3
 ProteoArray.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00068=1
 mzXMLToCSV.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00069=1
 GSEA.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00072=1
 caArrayImportViewer.0.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00066=0
+UniquifyLabels.1.zip=urn=lsid=broad_mit_edu=cancer_software_genepattern_module_analysis=00067=1
