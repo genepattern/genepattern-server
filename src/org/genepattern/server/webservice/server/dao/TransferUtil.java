@@ -1,228 +1,158 @@
 package org.genepattern.server.webservice.server.dao;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.*;
+import java.util.List;
+
+import org.hibernate.*;
+import org.hibernate.cfg.Configuration;
 
 /**
- * Utility class for transferring contents from HSQL to ORACLE.
- * @author jrobinso
- *
+ * Utility class for transferring contents between 2 databases via hibernate
+ * 
  */
-public class TransferUtil
-{
-    static String fromURL = "jdbc:hsqldb:file:/java/cvs/genepattern/resources/GenePatternDB";
-    static String fromUsername = "sa";
-    static String fromPassword = "";
- 
-    static String toUrl = "jdbc:hsqldb:file:/java/cvs/genepattern/resources/TestDB";
-    static String toUsername = "sa";
-    static String toPassword = "";
+public class TransferUtil {
 
-    //static String toUsername = "gpportal";
-    //static String toPassword = "gpportal";
-    static Connection toConnection = null;
-    static Connection fromConnection = null;
+    private static final SessionFactory sessionFactoryFrom;
+    private static final SessionFactory sessionFactoryTo;
 
-
-    public static void main(String[] args) {
- 
+    static {
         try {
-            intitializeDrivers();
 
-            fromConnection = getConnection(fromURL, fromUsername, fromPassword);
-            toConnection = getConnection(toUrl, toUsername, toPassword);
+            sessionFactoryFrom = (new Configuration()).configure("hibernate.cfg.xml").buildSessionFactory();
+            sessionFactoryTo = (new Configuration()).configure("oracle.cfg.xml").buildSessionFactory();
+        }
+        catch (Throwable ex) {
+            // Make sure you log the exception, as it might be swallowed
+            System.err.println("Initial SessionFactory creation failed." + ex);
+            throw new ExceptionInInitializerError(ex);
+        }
+    }
+
+    private static Session getFromSession() {
+        Session s = sessionFactoryFrom.getCurrentSession();
+        if (!s.getTransaction().isActive()) {
+            s.beginTransaction();
+        }
+        return s;
+    }
+
+    private static Session getToSession() {
+        Session s = sessionFactoryTo.getCurrentSession();
+        if (!s.getTransaction().isActive()) {
+            s.beginTransaction();
+        }
+        return s;
+    }
+
+    private static void transferAll() {
+
+        Class[] classes = { JobStatus.class, Lsid.class, Props.class, Sequence.class, TaskAccess.class,
+                AnalysisJob.class, TaskMaster.class, Suite.class, SuiteModules.class };
+
+        for (Class c : classes) {
+            transferClassData(c);
+        }
+
+    }
+
+    private static void transferClassData(Class aClass) {
+
+        try {
+            Query q = getFromSession().createQuery("from " + aClass.getName());
+            q.setFetchSize(100);
+            List results = q.list();
+
+            Session toSession = getToSession();
+            for (Object obj : results) {
+                toSession.replicate(obj, ReplicationMode.OVERWRITE);
+            }
+            getFromSession().getTransaction().rollback();
+            getToSession().getTransaction().commit();
             
-            transferAnalysisJob(fromConnection, toConnection);
-        }
-        catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        finally {
-            try {
-                if (toConnection != null) {
-                	toConnection.close();
-                }
-                if(fromConnection != null) {
-                	fromConnection.close();
-                }
-            }
-            catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-    }
- 
-    public static void transferAnalysisJob(Connection hsqlConnection, Connection oracleConnection) {
-        String selectSql = "select * from analysis_job";
-        String insertSql = 
-            "insert into analysis_job (job_no, task_id, status_id, date_submitted, date_completed,                  " + 
-            " parameter_info, user_id, isindexed, access_id, job_name, lsid, task_lsid, task_name, parent, deleted) " + 
-            " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
-        ResultSet rs = null;
-        PreparedStatement readStatement = null;
-        PreparedStatement in = null;
-        try {
-            readStatement = hsqlConnection.prepareStatement("select * from analysis_job");
-            rs = readStatement.executeQuery();
-            while (rs.next()) {
-                in = oracleConnection.prepareStatement(insertSql);
-                in.setInt(1, rs.getInt("JOB_NO"));
-
-                Number taskId = (Number) rs.getObject("TASK_ID");
-                if (taskId == null) {
-                    in.setNull(2, Types.INTEGER);
-                }
-                else {
-                    in.setInt(2, taskId.intValue());
-                }
-
-                Number statusId = (Number) rs.getObject("STATUS_ID");
-                if (statusId == null) {
-                    in.setNull(3, Types.INTEGER);
-                }
-                else {
-                    in.setInt(3, statusId.intValue()); 
-                }
- 
-                Timestamp dateSubmitted = rs.getTimestamp("DATE_SUBMITTED");
-                if (dateSubmitted == null) {
-                    in.setNull(4, Types.TIMESTAMP);
-                }
-                else {
-                    in.setTimestamp(4, dateSubmitted);
-                }
-                            
-                Timestamp dateCompleted = rs.getTimestamp("DATE_COMPLETED");
-                if (dateCompleted == null) {
-                    in.setNull(5, Types.TIMESTAMP);
-                }
-                else {
-                    in.setTimestamp(5, dateCompleted);
-                }
-                
-                String parameterInfo = rs.getString("PARAMETER_INFO");
-                if (parameterInfo == null) {
-                    in.setNull(6, Types.VARCHAR);
-                }
-                else {
-                    in.setString(6, parameterInfo);
-                }
-               
-                String userId = rs.getString("USER_ID");
-                if (userId == null) {
-                    in.setNull(7, Types.VARCHAR);
-                }
-                else {
-                    in.setString(7, userId);
-                }
-                
-                in.setBoolean(8, rs.getBoolean("ISINDEXED"));
-                               
-                Number accessId = (Number) rs.getObject("ACCESS_ID");
-                if (accessId == null) {
-                    in.setNull(9, Types.INTEGER);
-                }
-                else {
-                    in.setInt(9, accessId.intValue()); 
-                }
-
-                String jobName = rs.getString("JOB_NAME");
-                if (jobName == null) {
-                    in.setNull(10, Types.VARCHAR);
-                }
-                else {
-                    in.setString(10, jobName);
-                }
-
-                String lsid = rs.getString("LSID");
-                if (lsid == null) {
-                    in.setNull(11, Types.VARCHAR);
-                }
-                else {
-                    in.setString(11, lsid);
-                }
-
-                String taskLsid = rs.getString("TASK_LSID");
-                if (taskLsid == null) {
-                    in.setNull(12, Types.VARCHAR);
-                }
-                else {
-                    in.setString(12, taskLsid);
-                }
-
-                String taskName = rs.getString("TASK_NAME");
-                if (taskName == null) {
-                    in.setNull(13, Types.VARCHAR);
-                }
-                else {
-                    in.setString(13, taskName);
-                }
- 
-                Number parent = (Number) rs.getObject("PARENT");
-                if (parent == null) {
-                    in.setNull(14, Types.INTEGER);
-                }
-                else {
-                    in.setInt(14, parent.intValue()); 
-                }
-
-                in.setBoolean(15, rs.getBoolean("DELETED"));
-                
-                in.executeUpdate();
-                in.close();
-                               
-            }
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-        finally {
-            closeResources(rs, readStatement);
-            closeResources(null, in);
-        }
-
-    }
-
-    private static void closeResources(ResultSet rs, Statement statement) {
-        try {
-            if (rs != null)
-                rs.close();
-        }
-        catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        try {
-            if (statement != null)
-                statement.close();
-        }
-        catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-    }
-
-
-    private static Connection getConnection(String dbUrl, String username, String password)
-        throws SQLException {
-
-
-        return DriverManager.getConnection(dbUrl, username, password);
-
-    }
-
-
-    private static void intitializeDrivers() {
-        try {
-            Class.forName("org.hsqldb.jdbcDriver");
         }
         catch (Exception e) {
-            System.out.println("ERROR: failed to load HSQLDB JDBC driver.");
             e.printStackTrace();
+            getFromSession().getTransaction().rollback();
+            getToSession().getTransaction().rollback();
         }
     }
+    
+    private static boolean verifyTransfer() {
+        List<JobStatus> fromJS= getFromSession().createQuery("from " + JobStatus.class.getName() + " order by statusId ").list();
+        List<JobStatus> toJS =getToSession().createQuery("from " + JobStatus.class.getName() + " order by statusId ").list();
+        if(fromJS.size() != toJS.size()) {
+            return false;
+        }
+        for(int i=0; i<fromJS.size(); i++) {
+            if(fromJS.get(i).getStatusId().intValue() != toJS.get(i).getStatusId().intValue()) {
+                System.out.println("JS id differs");
+                return false;
+            }
+        }
+        
+        
+        List<AnalysisJob> fromAJ= getFromSession().createQuery("from " + AnalysisJob.class.getName() + " order by jobNo ").list();
+        List<AnalysisJob> toAJ =getToSession().createQuery("from " + AnalysisJob.class.getName() + " order by jobNo ").list();
+        if(fromJS.size() != toJS.size()) {
+            return false;
+        }
+        for(int i=0; i<fromAJ.size(); i++) {
+            if(fromAJ.get(i).getJobNo().intValue() != toAJ.get(i).getJobNo().intValue()) {
+                System.out.println("AJ id differs");
+                return false;
+            }
+            if( !fromAJ.get(i).getParameterInfo().equals(toAJ.get(i).getParameterInfo())) {
+                System.out.println("AJ parameter info differs");
+                return false;
+            }
+       }
+        return true;
 
+    }
+    
+    //@TODO -- fix sequences
+    /*GPPORTAL.TASK_MASTER_SEQ GPPORTAL.ANALYSIS_JOB_SEQ SUITE_MODULES_SEQ SUITE_SEQ 
+     * 
+     */
+   private static void updateOracleSequences() {
+        
+        // Task master
+        int maxId = ((BigDecimal) getToSession().createSQLQuery("select max(task_id) from task_master").uniqueResult()).intValue();
+        Query seqQuery = getToSession().createSQLQuery("select task_master_seq.nextval from dual");
+        int seq = 0;
+        while(seq < maxId) {
+            seq = ((BigDecimal) seqQuery.uniqueResult()).intValue();
+        }
+        
+        maxId = ((BigDecimal) getToSession().createSQLQuery("select max(job_no) from ANALYSIS_JOB").uniqueResult()).intValue();
+        seqQuery = getToSession().createSQLQuery("select ANALYSIS_JOB_SEQ.nextval from dual");
+        seq = 0;
+        while(seq < maxId) {
+            seq = ((BigDecimal) seqQuery.uniqueResult()).intValue();
+        }
+       
+        maxId = ((BigDecimal) getToSession().createSQLQuery("select max(suite_id) from SUITE").uniqueResult()).intValue();
+        seqQuery = getToSession().createSQLQuery("select SUITE_SEQ.nextval from dual");
+        seq = 0;
+        while(seq < maxId) {
+            seq = ((BigDecimal) seqQuery.uniqueResult()).intValue();
+        }
+ 
+        maxId = ((BigDecimal) getToSession().createSQLQuery("select max(module_id) from SUITE_MODULES").uniqueResult()).intValue();
+        seqQuery = getToSession().createSQLQuery("select SUITE_MODULES_SEQ.nextval from dual");
+        seq = 0;
+        while(seq < maxId) {
+            seq = ((BigDecimal) seqQuery.uniqueResult()).intValue();
+        }
+    }
+    
 
+    public static void main(String[] args) {
+ //       transferAll();
+ //       System.out.println(verifyTransfer());
+        updateOracleSequences();
+
+    }
 }

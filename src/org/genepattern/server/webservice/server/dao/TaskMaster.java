@@ -7,7 +7,6 @@ public class TaskMaster {
     private Integer taskId;
     private String taskName;
     private String description;
-    private String parameterInfo;
     private Integer typeId;
     private String repeatMinute;
     private String repeatHour;
@@ -18,6 +17,7 @@ public class TaskMaster {
     private String userId;
     private Integer accessId;
     private String lsid;
+    private String parameterInfo;
     
     public Integer getTaskId() {
         return this.taskId;
@@ -49,7 +49,9 @@ public class TaskMaster {
 
     public void setParameterInfo(String value) {
         this.parameterInfo = value;
-    }
+        if(parameterInfo.length() > 4000) {
+            System.out.println("Long parameterInfo for task: " + getTaskId());
+        }   }
 
     public Integer getTypeId() {
         return this.typeId;

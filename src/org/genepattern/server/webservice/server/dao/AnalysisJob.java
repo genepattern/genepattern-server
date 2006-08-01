@@ -14,7 +14,6 @@ public class AnalysisJob {
     private int taskId;
     private Date submittedDate;
     private Date completedDate;
-    private String parameterInfo;
     private String userId;
     private Integer accessId;
     private String jobName;
@@ -23,6 +22,7 @@ public class AnalysisJob {
     private String taskName;
     private Integer parent;
     private boolean deleted;
+    private String parameterInfo;
 
     /**
      * auto generated
@@ -332,4 +332,6 @@ public class AnalysisJob {
     public void setJobStatus(JobStatus jobStatus) {
         this.jobStatus = jobStatus;
     }
+    
+
 }
