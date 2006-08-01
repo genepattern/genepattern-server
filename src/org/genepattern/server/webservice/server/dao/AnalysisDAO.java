@@ -43,7 +43,6 @@ AnalysisDAO extends BaseDAO {
 
     /** Creates new AnalysisHypersonicAccess */
     public AnalysisDAO() {
-        log.setLevel((Level) Level.FATAL);
     }
 
     /**
@@ -56,55 +55,34 @@ AnalysisDAO extends BaseDAO {
      */
     public Vector getWaitingJob(int maxJobCount) throws OmnigeneException {
         Vector jobVector = new Vector();
-        PreparedStatement stat = null;
-        ResultSet resultSet = null;
 
         // initializing maxJobCount, if it has invalid value
         if (maxJobCount <= 0) {
             maxJobCount = 1;
         }
 
-        try {
+        // Validating taskID is not done here bcos.
+        // assuming once job is submitted, it should be executed even if
+        // taskid is removed from task master
 
-            // Validating taskID is not done here bcos.
-            // assuming once job is submitted, it should be executed even if
-            // taskid is removed from task master
+        String hql = "from org.genepattern.server.webservice.server.dao.AnalysisJob "
+                + " where jobStatus.statusId = :statusId order by submittedDate ";
+        Query query = getSession().createQuery(hql);
+        query.setInteger("statusId", JOB_WAITING_STATUS);
 
-            String hql = "from org.genepattern.server.webservice.server.dao.AnalysisJob "
-                    + " where jobStatus.statusId = :statusId order by submittedDate ";
-            Query query = getSession().createQuery(hql);
-            query.setInteger("statusId", JOB_WAITING_STATUS);
+        List results = query.list();
 
-            List<AnalysisJob> results = query.list();
+        int i = 1;
+        Iterator iter = results.iterator();
+        JobStatus newStatus = (JobStatus) getSession().get(JobStatus.class, PROCESSING_STATUS);
+        while (iter.hasNext() && i++ <= maxJobCount) {
+            AnalysisJob aJob = (AnalysisJob) iter.next();
+            JobInfo singleJobInfo = this.jobInfoFromAnalysisJob(aJob);
+            // Add waiting job info to vector, for AnalysisTask
+            jobVector.add(singleJobInfo);
 
-            int jobNo = 0, taskID = 0;
-            String parameter_info = "";
-            String lsid = null;
-            boolean recordFoundFlag = false;
+            aJob.setStatus(newStatus);
 
-            ParameterFormatConverter parameterFormatConverter = new ParameterFormatConverter();
-            int i = 1;
-
-            // Moves to the next record until no more records
-            Iterator<AnalysisJob> iter = results.iterator();
-            while (iter.hasNext() && i++ <= maxJobCount) {
-                AnalysisJob aJob = iter.next();
-                JobInfo singleJobInfo = this.jobInfoFromAnalysisJob(aJob);
-                // Add waiting job info to vector, for AnalysisTask
-                jobVector.add(singleJobInfo);
-
-                updateJobStatus(aJob.getJobNo(), PROCESSING_STATUS);
-
-            }
-
-        }
-        catch (Exception e) {
-            log.error("AnalysisHypersonicDAO: getWaitingJob failed", e);
-            throw new OmnigeneException(e.getMessage());
-        }
-
-        finally {
-            cleanupJDBC(resultSet, stat);
         }
 
         return jobVector;
@@ -120,40 +98,6 @@ AnalysisDAO extends BaseDAO {
         Query q = getSession().createQuery(hql);
         q.setInteger("jobNumber", jobNumber);
         return (String) q.uniqueResult();
-    }
-
-    /**
-     * 
-     */
-    public Integer recordClientJob(int taskID, String user_id, String parameter_info, int parentJobNumber)
-            throws OmnigeneException {
-        Integer jobNo = null;
-        try {
-
-            Integer parent = null;
-            if (parentJobNumber != -1) {
-                parent = new Integer(parentJobNumber);
-            }
-            jobNo = addNewJob(taskID, user_id, parameter_info, null, parent, null);
-            updateJobStatus(jobNo, org.genepattern.webservice.JobStatus.JOB_FINISHED);
-            setJobDeleted(jobNo, true);
-            return jobNo;
-        }
-        catch (OmnigeneException e) {
-            if (jobNo != null) {
-                deleteJob(jobNo);
-            }
-            throw e;
-        }
-    }
-
-    /**
-     * 
-     */
-    public JobInfo addNewJob(int taskID, String user_id, String parameter_info, int parentJobNumber)
-            throws OmnigeneException {
-        Integer jobNo = addNewJob(taskID, user_id, parameter_info, null, new Integer(parentJobNumber), null);
-        return this.getJobInfo(jobNo);
     }
 
     /**
@@ -223,11 +167,11 @@ AnalysisDAO extends BaseDAO {
      */
     public int updateJobStatus(Integer jobNo, Integer jobStatusID) throws OmnigeneException {
 
-        AnalysisJob job = (AnalysisJob) getSession().load(AnalysisJob.class, jobNo);
+        AnalysisJob job = (AnalysisJob) getSession().get(AnalysisJob.class, jobNo);
         org.genepattern.server.webservice.server.dao.JobStatus js = (org.genepattern.server.webservice.server.dao.JobStatus) getSession()
-                .load(JobStatus.class, jobStatusID);
+                .get(JobStatus.class, jobStatusID);
         job.setJobStatus(js);
-        getSession().update(job);
+        getSession().update(job); // Not really neccessary
         return 1;
 
     }
@@ -243,20 +187,14 @@ AnalysisDAO extends BaseDAO {
      * @throws RemoteException
      */
     public int updateJob(int jobNo, String parameters, int jobStatusID) throws OmnigeneException {
-        Query query = getSession()
-                .createQuery(
-                        "update org.genepattern.server.webservice.server.dao.AnalysisJob "
-                                + " set jobStatus.statusId = :statusId, parameterInfo = :parameterInfo, completedDate = :completedDate "
-                                + " where jobNo = :jobNo");
-        query.setInteger("statusId", jobStatusID);
-        query.setString("parameterInfo", parameters);
-        query.setDate("completedDate", now());
-        query.setInteger("jobNo", jobNo);
 
-        getSession().flush();
-        getSession().clear();
-        int count = query.executeUpdate();
-        return count;
+        AnalysisJob aJob = (AnalysisJob) getSession().get(AnalysisJob.class, jobNo);
+        JobStatus js = (JobStatus) getSession().get(JobStatus.class, jobStatusID);
+        aJob.setJobStatus(js);
+        aJob.setParameterInfo(parameters);
+        aJob.setCompletedDate(now());
+        getSession().update(aJob); // Not reall neccessary
+        return 1;
 
     }
 
@@ -320,16 +258,10 @@ AnalysisDAO extends BaseDAO {
      * 
      */
     public void setJobDeleted(int jobNumber, boolean deleted) throws OmnigeneException {
-        String hql = "update org.genepattern.server.webservice.server.dao.AnalysisJob "
-                + " set deleted = :deleted where jobNo = :jobNo";
-        Query query = getSession().createQuery(hql);
-        query.setBoolean("deleted", deleted);
-        query.setInteger("jobNo", jobNumber);
 
-        getSession().flush();
-        getSession().clear();
-        query.executeUpdate();
-
+        AnalysisJob aJob = (AnalysisJob) getSession().get(AnalysisJob.class, jobNumber);
+        aJob.setDeleted(deleted);
+        getSession().update(aJob); // Not really neccessary
     }
 
     /**
@@ -407,16 +339,6 @@ AnalysisDAO extends BaseDAO {
      * 
      */
 
-    protected JobInfo jobInfoFromAnalysisJob(org.genepattern.server.webservice.server.dao.AnalysisJob aJob)
-            throws OmnigeneException {
-        ParameterFormatConverter parameterFormatConverter = new ParameterFormatConverter();
-
-        return new JobInfo(aJob.getJobNo().intValue(), aJob.getTaskId(), aJob.getJobStatus().getStatusName(), aJob
-                .getSubmittedDate(), aJob.getCompletedDate(), parameterFormatConverter.getParameterInfoArray(aJob
-                .getParameterInfo()), aJob.getUserId(), aJob.getTaskLsid(), aJob.getTaskName());
-
-    }
-
     /**
      * Removes a job and all it's input and output files based on jobID
      * 
@@ -425,9 +347,6 @@ AnalysisDAO extends BaseDAO {
      * @throws RemoteException
      */
     public void deleteJob(int jobID) throws OmnigeneException {
-        java.sql.Connection conn = null;
-        PreparedStatement stat = null;
-        ResultSet resultSet = null;
         boolean DEBUG = false;
         JobInfo jobInfo = getJobInfo(jobID);
 
@@ -442,20 +361,8 @@ AnalysisDAO extends BaseDAO {
             }
         }
 
-        Session session = getSession();
-        String hqlDelete = "delete org.genepattern.server.webservice.server.dao.AnalysisJob  where jobNo = :jobNo";
-        Query query = session.createQuery(hqlDelete);
-        query.setInteger("jobNo", jobID);
-
-        getSession().flush();
-        getSession().clear();
-        int updatedRecord = query.executeUpdate();
-
-        // If no record updated
-        if (updatedRecord == 0) {
-            log.error("deleteTask Could not delete task, taskID not found");
-            throw new JobIDNotFoundException("AnalysisHypersonicDAO:deleteJob JobID " + jobID + " not a valid jobID ");
-        }
+        AnalysisJob aJob = (AnalysisJob) getSession().get(AnalysisJob.class, jobID);
+        getSession().delete(aJob);
     }
 
     /**
@@ -523,22 +430,16 @@ AnalysisDAO extends BaseDAO {
             String user_id, int access_id) throws OmnigeneException {
 
         try {
-            Query query = getSession().createQuery(
-                    "select lsid from org.genepattern.server.webservice.server.dao.TaskMaster "
-                            + " where taskId = :taskId");
-            query.setInteger("taskId", taskId);
-            String oldLSID = (String) query.uniqueResult();
 
-            String updateHql = "update org.genepattern.server.webservice.server.dao.TaskMaster "
-                    + " set parameterInfo = :parameterInfo, description = :description, "
-                    + " taskInfoAttributes = :taskInfoAttributes, userId = :userId, "
-                    + " accessId = :accessId, lsid = :lsid WHERE taskId = :taskId ";
-            Query updateQuery = getSession().createQuery(updateHql);
-            updateQuery.setString("parameterInfo", parameter_info);
-            updateQuery.setString("description", taskDescription);
-            updateQuery.setString("taskInfoAttributes", taskInfoAttributes);
-            updateQuery.setString("userId", user_id);
-            updateQuery.setInteger("accessId", access_id);
+            TaskMaster task = (TaskMaster) getSession().get(TaskMaster.class, taskId);
+
+            String oldLSID = task.getLsid();
+
+            task.setParameterInfo(parameter_info);
+            task.setDescription(taskDescription);
+            task.setTaskinfoattributes(taskInfoAttributes);
+            task.setUserId(user_id);
+            task.setAccessId(access_id);
 
             TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
             String sLSID = null;
@@ -548,16 +449,13 @@ AnalysisDAO extends BaseDAO {
             }
             if (sLSID != null && !sLSID.equals("")) {
                 lsid = new LSID(sLSID);
-                updateQuery.setString("lsid", sLSID);
+                task.setLsid(sLSID);
             }
             else {
-                updateQuery.setString("lsid", null);
+                task.setLsid(null);
             }
-            updateQuery.setInteger("taskId", taskId);
 
-            getSession().flush();
-            getSession().clear();
-            int updatedRecord = updateQuery.executeUpdate();
+            getSession().update(task); // Not neccessary ?
 
             if (oldLSID != null) {
                 // delete the old LSID record
@@ -579,7 +477,7 @@ AnalysisDAO extends BaseDAO {
             getSession().flush();
             getSession().clear();
 
-            return updatedRecord;
+            return 1;
         }
         catch (Exception e) {
             log.error(e);
@@ -602,22 +500,17 @@ AnalysisDAO extends BaseDAO {
             throws OmnigeneException {
 
         try {
-            Query query = getSession().createQuery(
-                    "select lsid from org.genepattern.server.webservice.server.dao.TaskMaster "
-                            + " where taskId = :taskId");
-            query.setInteger("taskId", taskId);
-            String oldLSID = (String) query.uniqueResult();
+            TaskMaster task = (TaskMaster) getSession().get(TaskMaster.class, taskId);
 
-            // update task
-            String updateHql = "update org.genepattern.server.webservice.server.dao.TaskMaster "
-                    + " set parameterInfo = :parameterInfo,  "
-                    + " taskInfoAttributes = :taskInfoAttributes, userId = :userId, "
-                    + " accessId = :accessId, lsid = :lsid WHERE taskId = :taskId ";
-            Query updateQuery = getSession().createQuery(updateHql);
-            updateQuery.setString("parameterInfo", parameter_info);
-            updateQuery.setString("taskInfoAttributes", taskInfoAttributes);
-            updateQuery.setString("userId", user_id);
-            updateQuery.setInteger("accessId", access_id);
+            String oldLSID = task.getLsid();
+
+
+            task.setParameterInfo(parameter_info);
+            task.setTaskinfoattributes(taskInfoAttributes);
+            task.setUserId(user_id);
+            task.setAccessId(access_id);
+
+
             TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
             String sLSID = null;
             LSID lsid = null;
@@ -626,16 +519,13 @@ AnalysisDAO extends BaseDAO {
             }
             if (sLSID != null && !sLSID.equals("")) {
                 lsid = new LSID(sLSID);
-                updateQuery.setString("lsid", sLSID);
+                task.setLsid(sLSID);
             }
             else {
-                updateQuery.setString("lsid", null);
+                task.setLsid( null);
             }
-            updateQuery.setInteger("taskId", taskId);
-
-            getSession().flush();
-            getSession().clear();
-            int updatedRecord = updateQuery.executeUpdate();
+            
+            getSession().update(task);
 
             if (oldLSID != null) {
                 // delete the old LSID record
@@ -654,10 +544,8 @@ AnalysisDAO extends BaseDAO {
                 getSession().save(lsidHibernate);
 
             }
-            getSession().flush();
-            getSession().clear();
 
-            return updatedRecord;
+            return 1;
         }
         catch (Exception e) {
             log.error(e);
@@ -665,39 +553,6 @@ AnalysisDAO extends BaseDAO {
         }
     }
 
-    /**
-     * Updates user_id and access_id
-     * 
-     * @param taskID
-     *            task ID
-     * @param user_id
-     * @param access_id
-     * @return No. of updated records
-     * @throws OmnigeneException
-     * @throws RemoteException
-     */
-    public int updateTask(int taskId, String user_id, int access_id) throws OmnigeneException {
-        try {
-            String updateHql = "update org.genepattern.server.webservice.server.dao.TaskMaster "
-                    + " set userId = :userId, accessId = :accessId where taskId = :taskId ";
-            Query updateQuery = getSession().createQuery(updateHql);
-            updateQuery.setString("userId", user_id);
-            updateQuery.setInteger("accessId", access_id);
-            updateQuery.setInteger("taskId", taskId);
-
-            getSession().flush();
-            getSession().clear();
-            int updatedRecord = updateQuery.executeUpdate();
-            getSession().flush();
-            getSession().clear();
-            return updatedRecord;
-
-        }
-        catch (Exception e) {
-            log.error("AnalysisHypersonicDAO: updateTask failed " + e);
-            throw new OmnigeneException(e.getMessage());
-        }
-    }
 
     /**
      * reset any previous running (but incomplete) jobs to waiting status, clear
@@ -718,8 +573,6 @@ AnalysisDAO extends BaseDAO {
         getSession().flush();
         getSession().clear();
         boolean exist = (query.executeUpdate() > 0);
-        getSession().flush();
-        getSession().clear();
         return exist;
     }
 

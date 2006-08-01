@@ -10,7 +10,7 @@ import org.hibernate.Transaction;
 
 public class AdminDataService extends BaseService {
 
-    private static Logger log = Logger.getLogger(AnalysisDataService.class);
+    private static Logger log = Logger.getLogger(AdminDataService.class);
 
     private static AdminDataService theInstance = null;
 
@@ -276,46 +276,7 @@ public class AdminDataService extends BaseService {
 
     }
 
-    /**
-     * Updates task description and parameters
-     * 
-     * @param taskID
-     *            task ID
-     * @param description
-     *            task description
-     * @param parameter_info
-     *            parameters as a xml string
-     * @return No. of updated records
-     * @throws OmnigeneException
-     * @throws RemoteException
-     */
-    public int updateTask(int taskId, String taskDescription, String parameter_info, String taskInfoAttributes,
-            String user_id, int access_id) throws OmnigeneException {
-        Transaction transaction = null;
-        try {
-            if (!getSession().getTransaction().isActive()) {
-                transaction = getSession().beginTransaction();
-            }
 
-            int updateCount = analysisDAO.updateTask(taskId, taskDescription, parameter_info, taskInfoAttributes,
-                    user_id, access_id);
-
-            if (transaction != null) {
-                transaction.commit();
-            }
-
-            return updateCount;
-        }
-        catch (Exception e) {
-            getSession().getTransaction().rollback();
-            log.error(e);
-            throw new OmnigeneException(e.getMessage());
-        }
-        finally {
-            cleanupSession();
-        }
-
-    }
 
     /**
      * Updates task parameters

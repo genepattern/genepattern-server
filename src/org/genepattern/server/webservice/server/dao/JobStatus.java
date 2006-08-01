@@ -20,7 +20,6 @@ public class JobStatus {
 	 */
 
 	public JobStatus() {
-		super();
 	}
 
 	/** auto generated

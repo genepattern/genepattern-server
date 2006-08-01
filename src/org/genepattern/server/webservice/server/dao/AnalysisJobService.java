@@ -770,42 +770,7 @@ public class AnalysisJobService {
 
     }
 
-    /**
-     * Updates user_id and access_id
-     * 
-     * @param taskID
-     *            task ID
-     * @param user_id
-     * @param access_id
-     * @return No. of updated records
-     * @throws OmnigeneException
-     * @throws RemoteException
-     */
-    public int updateTask(int taskId, String user_id, int access_id) throws OmnigeneException {
-        Transaction transaction = null;
-        try {
-            if (!getSession().getTransaction().isActive()) {
-                transaction = getSession().beginTransaction();
-            }
-
-            int count = analysisDAO.updateTask(taskId, user_id, access_id);
-
-            if (transaction != null) {
-                transaction.commit();
-            }
-
-            return count;
-        }
-        catch (Exception e) {
-            getSession().getTransaction().rollback();
-            log.error(e);
-            throw new OmnigeneException(e.getMessage());
-        }
-        finally {
-            cleanupSession();
-        }
-
-    }
+ 
 
     /**
      * To remove registered task based on task ID

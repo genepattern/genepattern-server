@@ -104,26 +104,7 @@ public class AdminDataServiceTest extends ServiceTestBase {
 
     }
 
-    /**
-     * 
-     */
-    public void testUpdateTask() throws Exception {
 
-        try {
-            TaskInfo task = service.getTask(1);
-            TaskInfoAttributes tia = new TaskInfoAttributes();
-
-            service.updateTask(task.getID(), null, null, null, null, task.getAccessId());
-            service.updateTask(task.getID(), task.getDescription(), task.getParameterInfo(), task
-                    .giveTaskInfoAttributes().encode(), task.getUserId(), task.getAccessId());
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-
-        }
-
-    }
 
     /**
      * 

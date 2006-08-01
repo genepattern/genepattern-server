@@ -41,8 +41,7 @@ public class AnalysisJobServiceTest extends TestCase {
     }
 
     /**
-     * @see AnalysisHypersonicDAO#addNewJob(int taskID, String user_id, String
-     *      parameter_info, int parent_id)
+     * 
      * @throws Exception
      */
     public void testAddNewJob() throws Exception {
@@ -339,17 +338,6 @@ public class AnalysisJobServiceTest extends TestCase {
         service.updateTask(task.getID(), task.getParameterInfo(), tia.encode(), task.getUserId(), task.getAccessId());
     }
 
-    /**
-     * @see AnalysisJobService#updateTask(int,String,int) updateTask(int taskID,
-     *      String user_id, int access_id)
-     */
-    public void testUpdateTask2() throws Exception {
-        TaskInfo task = service.getTask(1);
-
-        service.updateTask(task.getID(), null, task.getAccessId());
-
-        service.updateTask(task.getID(), task.getUserId(), task.getAccessId());
-    }
 
     /**
      * 

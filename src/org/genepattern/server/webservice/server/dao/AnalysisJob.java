@@ -92,7 +92,7 @@ public class AnalysisJob {
      * 
      * @es_generated
      */
-    public JobStatus getStatusId() {
+    public JobStatus getStatus() {
         return this.jobStatus;
     }
 
@@ -101,7 +101,7 @@ public class AnalysisJob {
      * 
      * @es_generated
      */
-    public void setStatusId(JobStatus value) {
+    public void setStatus(JobStatus value) {
         this.jobStatus = value;
     }
 

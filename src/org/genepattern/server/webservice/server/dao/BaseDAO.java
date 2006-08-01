@@ -138,4 +138,13 @@ public class BaseDAO {
         return moduleLSIDs;
     }
 
+    protected JobInfo jobInfoFromAnalysisJob(org.genepattern.server.webservice.server.dao.AnalysisJob aJob) throws OmnigeneException {
+        ParameterFormatConverter parameterFormatConverter = new ParameterFormatConverter();
+    
+        return new JobInfo(aJob.getJobNo().intValue(), aJob.getTaskId(), aJob.getJobStatus().getStatusName(), aJob
+                .getSubmittedDate(), aJob.getCompletedDate(), parameterFormatConverter.getParameterInfoArray(aJob
+                .getParameterInfo()), aJob.getUserId(), aJob.getTaskLsid(), aJob.getTaskName());
+    
+    }
+
 }
