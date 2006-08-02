@@ -116,6 +116,7 @@
 		target="${java.target}"
 		source="${java.target}"
 		fork="yes"
+		executable="${JAVA_HOME}/bin/javac.exe"
 		excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**"
 		/>
 
