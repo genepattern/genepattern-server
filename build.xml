@@ -4,7 +4,7 @@
 ]>
 <project basedir="." default="targets" name="genepattern">
    <description>JAR deployment for genepattern</description>
-   <property name="java.target" value="1.4"/>
+   <property name="java.target" value="1.5"/>
    <property location="lib" name="lib"/>
    	
    <property location="src" name="src"/>
@@ -147,7 +147,7 @@
    </target>
 
 	<target name="gp-library" depends="init, gp-library-doc">
-		<javac classpathref="library.classpath" debug="true" destdir="build" target="1.4">
+		<javac classpathref="library.classpath" debug="true" destdir="build" target="${java.target}">
 			<src path="src/org/genepattern/"/>
 			<include name="org/genepattern/client/**"/>
 			<include name="org/genepattern/data/**"/>
