@@ -115,6 +115,7 @@
 		srcdir="${src}"
 		target="${java.target}"
 		source="${java.target}"
+		fork="yes"
 		excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**"
 		/>
 
