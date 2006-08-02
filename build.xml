@@ -113,10 +113,8 @@
 		debug="true" 
 		destdir="${genepattern.build}" 
 		srcdir="${src}"
-		target="${java.target}"
+		compiler="javac1.5"
 		source="${java.target}"
-		fork="yes"
-		executable="${JAVA_HOME}/bin/javac.exe"
 		excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**"
 		/>
 
