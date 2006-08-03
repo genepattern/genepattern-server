@@ -780,7 +780,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[664]]></string>
 							</property>
 							<property name="sourceName">
-								<string><![CDATA[commons-discovery.jar]]></string>
+								<string><![CDATA[commons-discovery-0.2.jar]]></string>
 							</property>
 							<property name="overrideUnixPermissions">
 								<boolean>false</boolean>
@@ -792,7 +792,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>true</boolean>
 							</property>
 							<property name="destinationName">
-								<string><![CDATA[commons-discovery.jar]]></string>
+								<string><![CDATA[commons-discovery-0.2.jar]]></string>
 							</property>
 							<property name="fileSize">
 								<long>71442</long>
@@ -811,7 +811,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[664]]></string>
 							</property>
 							<property name="sourceName">
-								<string><![CDATA[commons-logging.jar]]></string>
+								<string><![CDATA[commons-logging-1.0.4.jar]]></string>
 							</property>
 							<property name="overrideUnixPermissions">
 								<boolean>false</boolean>
@@ -823,7 +823,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>true</boolean>
 							</property>
 							<property name="destinationName">
-								<string><![CDATA[commons-logging.jar]]></string>
+								<string><![CDATA[commons-logging-1.0.4.jar]]></string>
 							</property>
 							<property name="fileSize">
 								<long>38015</long>
@@ -1028,7 +1028,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[664]]></string>
 							</property>
 							<property name="sourceName">
-								<string><![CDATA[wsdl4j.jar]]></string>
+								<string><![CDATA[wsdl4j-1.5.1.jar]]></string>
 							</property>
 							<property name="overrideUnixPermissions">
 								<boolean>false</boolean>
@@ -1040,7 +1040,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>true</boolean>
 							</property>
 							<property name="destinationName">
-								<string><![CDATA[wsdl4j.jar]]></string>
+								<string><![CDATA[wsdl4j-1.5.1.jar]]></string>
 							</property>
 							<property name="fileSize">
 								<long>126771</long>
