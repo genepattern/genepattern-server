@@ -63,7 +63,8 @@
 	<property name="genepattern.common" value="${genepattern.root}"/>
 	<property name="genepattern.graphical.environment" value="${genepattern.clients}/JavaGE"/>
 	<property name="genepattern.build" value="${genepattern.root}/build"/>
-
+	<property name="defaultInstallDir" value="c:\progra~1\genepatternserver" />
+	
 	<property name="genepattern.installer" value="${genepattern.root}/installer"/>
 	<property name="genepattern.gpge.installer" value="${genepattern.graphical.environment}/installer"/>
 
@@ -482,6 +483,114 @@
             <entry key="build.tag" operation="=" type="string"  value="${cvsTag}"/>
        </propertyfile>
     </target>
+
+
+<!-- **************** ANTHILL TARGETS *************-->
+
+	<target name="loadModules" depends="">
+		<ant antfile="build.xml" dir="build_tools/ZipUpload" target="compile"/>
+		<ant antfile="build.xml" dir="build_tools/ZipUpload" target="uploadModulesFromDir"/>
+	</target>
+
+
+	<target name="checkForOldInstall" depends="init">
+		<available property="oldInstallpresent" value="true" 
+			file="${defaultInstallDir}" 	/>
+		<available file="${defaultInstallDir}\StopGenePatternServer.exe" property="stopServerPresent"/>
+		<available file="${defaultInstallDir}\UninstallerData\uninst~1.exe" property="uninstallerPresent"/>
+		
+	</target>
+
+	<target name="stoprunningserver" depends="checkForOldInstall" if="stopServerPresent">
+		<exec dir="${defaultInstallDir}\" 
+			executable="${defaultInstallDir}\StopGenePatternServer.exe -i SILENT" 
+			failifexecutionfails="false" failonerror="false"/>
+		<antcall target="shutdownServer" inheritRefs="true"/>
+
+	</target>
+
+	<target name="uninstall" if="uninstallerPresent" depends="init, checkForOldInstall, stoprunningserver">		
+		<exec failifexecutionfails="false" 
+				dir="${defaultInstallDir}\UninstallerData" 
+				executable="${defaultInstallDir}\UninstallerData\uninst~1.exe">
+			<arg line="-i SILENT"/>
+		</exec>
+
+	</target>
+
+
+	<target name="installLocal" depends="init, uninstall">
+		
+		<!-- install the new one -->
+		<exec 
+				dir="." 
+				executable="${basedir}\installer\GP_server_Build_Output\Web_Installers\InstData\Windows\VM\GPServer">
+			<arg line="-i SILENT"/>
+		</exec>
+
+		
+	</target>
+
+
+	<target name="startServer" depends="init">
+		<get src="http://cpb67-896.broad.mit.edu:7080/gpinstalls/restartLocalhost8080.jsp" dest="logs/startup.log" ignoreerrors="true" />
+
+	</target>
+
+
+	<target name="nightlyBuild">
+		<antcall target="pruneOldDirs" inheritRefs="true"/>
+
+		<mkdir dir="logs"/>
+		<!-- checkout sandbox, build & install -->
+		<!-- ant antfile="build.xml" dir="." target="nightlyrelease"/  -->
+		<antcall target="nightlyrelease"/>
+
+
+		<mkdir dir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile"/>
+		<copy file="gp_war.zip" todir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile" />
+
+		<copy overwrite="true"
+			todir="e:/GPInstalls/Tomcat/webapps/gpinstalls/nightlybuild">
+			<fileset dir="installer/GP_server_Build_Output/Web_Installers"/>
+		</copy>
+		<!-- ant antfile="build.xml" dir="." target="publishGPGEinstallerToWWWDev"/  -->
+		<antcall target="publishGPGEinstallerToWWWDev"/>
+
+
+
+	</target>
+
+
+	<target name="publishBuild">
+		
+		<!-- ant antfile="anthill-build.xml" dir="${basedir}" target="installLocal" / -->
+		<antcall target="installLocal" />
+		
+		<!-- load the modules since the installer doesn't - once we can start the server -->
+		<antcall target="startServer" inheritRefs="true"/>
+		<antcall target="loadModules" inheritRefs="true"/>
+
+		
+	</target>	
+
+
+	<target name="shutdownServer">
+		<!-- note this will generate an error as the server shuts down while connected -->
+		
+		<get src="http://127.0.0.1:8080/gp/shutdownServer.jsp" dest="logs/shutdown.log" ignoreerrors="true" />
+	</target>
+
+	<target name="pruneOldDirs">
+      	<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+		<commandline>
+        		<argument line="update -P"/>
+    		</commandline>	 
+	</cvs>
+	</target>
+
+
+
 </project>
 
 
