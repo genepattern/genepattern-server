@@ -1,474 +1,480 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE project [
         <!ENTITY release_targets SYSTEM "file:./releaseTargets.xml">
-]>
+        ]>
 <project basedir="." default="targets" name="genepattern">
-   <description>JAR deployment for genepattern</description>
-   <property name="java.target" value="1.5"/>
-   <property location="lib" name="lib"/>
-   	
-   <property location="src" name="src"/>
-   <property location="build" name="build"/>
-   <property location="." name="dist"/>
-   <property name="classpath" value="${lib}/archiver.jar:${lib}/crimson.jar:${lib}/dom.jar:${lib}/ejb.jar:${lib}/genepattern.properties:${lib}/jaxb-rt-1.0-ea.jar:${lib}/jaxp-api.jar:${lib}/log4j-1.2.8.jar:${lib}/omnigene.jar:${lib}/oromatcher.jar:${lib}/runtask.jar:${lib}/sax.jar:${lib}/trove.jar:${lib}/xalan.jar:${lib}/xercesImpl.jar:${lib}/xsltc.jar:${lib}/image.jar:${lib}/colt.jar"/>
+    <description>JAR deployment for genepattern</description>
+    <property name="java.target" value="1.5"/>
+    <property location="lib" name="lib"/>
 
-	
-   <property name="common-manifest" value="gp-common.mf"/>
-   <property name="uisupport-manifest" value="ui_support.mf"/>
-   <property name="common-jarname" value="gp-common.jar"/>
-   <property name="broad-cg-jarname" value="broad-cg.jar"/>
-   <property name="full-jarname" value="gp-full.jar"/>
-   <property name="uisupport-jarname" value="ui_support.jar"/>
-   <property name="runtask-jarname" value="runMain.jar"/>
-   <property name="gp-library-jarname" value="GenePattern.jar"/>
-   <!-- signed applet stuff for running visualizers from web page -->
-   <property name="runVisualizer-jarname" value="runVisualizer.jar"/>
-   <property name="signingKey" value="gEnEpAtTeRn"/>
-   <property name="keyStore" value="${build}/keystore"/>
-
-   <path id="genepattern.root">
-     <pathelement location="${basedir}"/>
-   </path>
+    <property location="src" name="src"/>
+    <property location="build" name="build"/>
+    <property location="." name="dist"/>
+    <property name="classpath"
+              value="${lib}/archiver.jar:${lib}/crimson.jar:${lib}/dom.jar:${lib}/ejb.jar:${lib}/genepattern.properties:${lib}/jaxb-rt-1.0-ea.jar:${lib}/jaxp-api.jar:${lib}/log4j-1.2.8.jar:${lib}/omnigene.jar:${lib}/oromatcher.jar:${lib}/runtask.jar:${lib}/sax.jar:${lib}/trove.jar:${lib}/xalan.jar:${lib}/xercesImpl.jar:${lib}/xsltc.jar:${lib}/image.jar:${lib}/colt.jar"/>
 
 
-<!-- bring in the release targets from their seperate file -->
-   &release_targets;
+    <property name="common-manifest" value="gp-common.mf"/>
+    <property name="uisupport-manifest" value="ui_support.mf"/>
+    <property name="common-jarname" value="gp-common.jar"/>
+    <property name="broad-cg-jarname" value="broad-cg.jar"/>
+    <property name="full-jarname" value="gp-full.jar"/>
+    <property name="uisupport-jarname" value="ui_support.jar"/>
+    <property name="runtask-jarname" value="runMain.jar"/>
+    <property name="gp-library-jarname" value="GenePattern.jar"/>
+    <!-- signed applet stuff for running visualizers from web page -->
+    <property name="runVisualizer-jarname" value="runVisualizer.jar"/>
+    <property name="signingKey" value="gEnEpAtTeRn"/>
+    <property name="keyStore" value="${build}/keystore"/>
 
-<!-- Get all the files in the /lib directory and add them to the -->
-<!-- Classpath -->
+    <path id="genepattern.root">
+        <pathelement location="${basedir}"/>
+    </path>
 
-  
-   <target name="run-GPGE">
-		<java fork="true" jar="clients/JavaGE/gpge.jar" />
-	</target>
-	
-   <target name="targets">
-     <echo>You probably want to use the following targets:</echo>
-     <echo/>
-	  <echo>broad-cg:           builds broad-cg.jar</echo>
-     <echo>common:           builds gp-common.jar</echo>
-     <echo>uisupport:        builds ui_support.jar</echo>
-     <echo>modules:          builds all the modules</echo>
-     <echo>analysis:         builds omnigene (&quot;analysis&quot;)</echo>
-     <echo>website:          builds website (including R and Java clients)</echo>
-     <echo>tag:		     tags entire repository prior to an official build</echo>
-   </target>
 
-   <target depends="version_updater" name="init">
-	<mkdir dir="${build}"/>
-	<mkdir dir="${build}/jars"/>
-	<property name="genepattern.root" value="${basedir}"/>
-	<property name="genepattern.website" value="${genepattern.root}/website"/>
-	<property name="genepattern.clients" value="${genepattern.root}/clients"/>
-	<property name="genepattern.common" value="${genepattern.root}"/>
-	<property name="genepattern.graphical.environment" value="${genepattern.clients}/JavaGE"/>
-	<property name="genepattern.build" value="${genepattern.root}/build"/>
-	<property name="defaultInstallDir" value="c:\progra~1\genepatternserver" />
-	
-	<property name="genepattern.installer" value="${genepattern.root}/installer"/>
-	<property name="genepattern.gpge.installer" value="${genepattern.graphical.environment}/installer"/>
+    <!-- bring in the release targets from their seperate file -->
+    &release_targets;
 
-	<property name="genepattern.package" value="org/genepattern"/>
-	
-	<tstamp>
-		<format pattern="yyyy-MM-dd HH:mm" property="build.number"/>
-	</tstamp>
-	<property name="build.id" value="${build.number}"/>
-	<property name="version" value="0.1"/>
+    <!-- Get all the files in the /lib directory and add them to the -->
+    <!-- Classpath -->
 
-	
-	<available file="post-compile.xml" property="post-compile.present"/>
-	<available file="${keyStore}" property="keyStore.present"/>
-       
-    <path id="library.classpath">
-	    <fileset dir="${genepattern.common}/lib">
-	       <include name="*.jar"/>
-	       <include name="*.zip"/>
-	    </fileset>
- 	   
-	    <fileset dir="${genepattern.root}">
-	       <include name="*.jar"/>
-	       <include name="*.zip"/>
-	    </fileset>
-	</path>
+
+    <target name="run-GPGE">
+        <java fork="true" jar="clients/JavaGE/gpge.jar"/>
     </target>
 
-   <target name="clean">
-     <delete quiet="true" failonerror="false">
-       	<fileset dir="src/" includes="**/*.class"/>
-       	<fileset dir="build/" includes="**/*"/>
-        <fileset dir="website/" includes="**/*.class"/>
-	    <fileset dir="installer/GP_server_Build_Output/" includes="**/*"/>
-	    <fileset dir="installer/server_Build_Output/" includes="**/*"/>
-	    <fileset dir="installer/" includes=".buildinstaller*.tmp/**"/>
-	    <fileset dir="clients/javage/installer/" includes=".buildinstaller*.tmp/**"/>
-	  </delete>
-	<ant antfile="../build.xml" dir="clients/JavaGE/src" inheritall="true" inheritrefs="true" target="clean"/>
- </target>
+    <target name="targets">
+        <echo>You probably want to use the following targets:</echo>
+        <echo/>
+        <echo>broad-cg: builds broad-cg.jar</echo>
+        <echo>common: builds gp-common.jar</echo>
+        <echo>uisupport: builds ui_support.jar</echo>
+        <echo>modules: builds all the modules</echo>
+        <echo>analysis: builds omnigene (&quot;analysis&quot;)</echo>
+        <echo>website: builds website (including R and Java clients)</echo>
+        <echo>tag: tags entire repository prior to an official build</echo>
+    </target>
+
+    <target depends="version_updater" name="init">
+        <mkdir dir="${build}"/>
+        <mkdir dir="${build}/jars"/>
+        <property name="genepattern.root" value="${basedir}"/>
+        <property name="genepattern.website" value="${genepattern.root}/website"/>
+        <property name="genepattern.clients" value="${genepattern.root}/clients"/>
+        <property name="genepattern.common" value="${genepattern.root}"/>
+        <property name="genepattern.graphical.environment" value="${genepattern.clients}/JavaGE"/>
+        <property name="genepattern.build" value="${genepattern.root}/build"/>
+        <property name="defaultInstallDir" value="c:\progra~1\genepatternserver"/>
+
+        <property name="genepattern.installer" value="${genepattern.root}/installer"/>
+        <property name="genepattern.gpge.installer" value="${genepattern.graphical.environment}/installer"/>
+
+        <property name="genepattern.package" value="org/genepattern"/>
+
+        <tstamp>
+            <format pattern="yyyy-MM-dd HH:mm" property="build.number"/>
+        </tstamp>
+        <property name="build.id" value="${build.number}"/>
+        <property name="version" value="0.1"/>
 
 
+        <available file="post-compile.xml" property="post-compile.present"/>
+        <available file="${keyStore}" property="keyStore.present"/>
 
-   <target depends="init" description="Compiles all the source." name="compile">
+        <path id="library.classpath">
+            <fileset dir="${genepattern.common}/lib">
+                <include name="*.jar"/>
+                <include name="*.zip"/>
+            </fileset>
 
-     <javac classpathref="library.classpath" 
-		debug="true" 
-		destdir="${genepattern.build}" 
-		srcdir="${src}"
-		compiler="javac1.5"
-		source="${java.target}"
-		excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**"
-		/>
+            <fileset dir="${genepattern.root}">
+                <include name="*.jar"/>
+                <include name="*.zip"/>
+            </fileset>
+        </path>
+    </target>
 
-
-   </target>
-
-   <target depends="init" name="get_dependencies">
-     <copy todir="${build}">
-       <fileset dir="${lib}" includes="**/*.jar"/>
-     </copy>
-   </target>
-
-   <target name="gp-library-doc" depends="init" unless="skipdoc">
-	<javadoc destdir="build/doc" Author="no" Public="true" Verbose="false">
-		<classpath>
-			<fileset dir="lib">
-				<include name="**/*.jar"/>
-		  </fileset>
-		  
-		</classpath>
-		<fileset dir="src" defaultexcludes="yes">
-      		<include name="org/genepattern/data/**/*.java"/>
-			<include name="org/genepattern/client/**.java" />
-			<include name="org/genepattern/webservice/**/*.java" />
-			<include name="org/genepattern/util/**.java" />
-			<include name="org/genepattern/io/**/*.java"/>
-			<include name="org/genepattern/module/**/*.java"/>
-		</fileset>
-	</javadoc>
-   </target>
-
-	<target name="gp-library" depends="init, gp-library-doc">
-		<javac classpathref="library.classpath" debug="true" destdir="build" target="${java.target}">
-			<src path="src/org/genepattern/"/>
-			<include name="org/genepattern/client/**"/>
-			<include name="org/genepattern/data/**"/>
-			<include name="org/genepattern/io/**"/>
-			<include name="org/genepattern/module/**"/>
-         <include name="org/genepattern/webservice/**"/>
-		</javac>
-	
-		<jar basedir="${genepattern.build}" defaultexcludes="true"  jarfile="${genepattern.build}/${gp-library-jarname}">	
-      <include name="org/genepattern/client/**/*.class"/>
-		<manifest>
-				<attribute name="Class-Path" value="./lib/gpwebservice.jar ./lib/broad-cg.jar ./lib/activation.jar ./lib/mail.jar ./lib/axis.jar ./lib/log4j-1.2.8.jar ./lib/jaxrpc.jar ./lib/commons-discovery.jar ./lib/commons-logging.jar ./lib/saaj.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar ./lib/wsdl4j.jar" />
-			</manifest> 
-		</jar>
-		
-			<zip destfile="build/GenePattern.zip">
-         <zipfileset dir="build/">
-            <include name="${gp-library-jarname}"/>
-         </zipfileset>
-         
-			<zipfileset dir="build/" prefix="lib">
-				<include name="gpwebservice.jar"/>
-				<include name="broad-cg.jar"/>
-			</zipfileset>
-			
-			<zipfileset dir="lib" prefix="lib">
-				<include name="activation.jar"/>
-				<include name="mail.jar"/>
-				<include name="jdom.jar"/>
-				<include name="axis.jar"/> 
-				<include name="log4j-1.2.8.jar"/> 
-				<include name="jaxrpc.jar"/> 
-				<include name="commons-discovery.jar"/>  
-				<include name="commons-logging.jar"/> 
-				<include name="saaj.jar"/>
-				<include name="jaxb-rt-1.0-ea.jar"/>
-				<include name="Jama-1.0.1.jar"/>
-				<include name="MAGEstk-2003-10-24-v1.1-compatible.jar"/>
-				<include name="wsdl4j.jar"/>
-			</zipfileset>
-			
-			<zipfileset dir="build/doc" prefix="doc"/>
-		</zip> 
-	</target> 
-	
-   <target depends="init,compile" name="common">
-<!-- Makes gp-common.jar -->
-     <jar basedir="${genepattern.build}" 
-		defaultexcludes="true" 
-		excludes="org/genepattern/util/RunGenePatternTaskMain.class org/genepattern/util/GenePatternNetworkClassLoader.class,org/genepattern/server/**,org/genepattern/resources/**,**/*.java,**/*.form,**/*.nbattrs" 
-		includes="org/**/*.class" 
-		jarfile="${genepattern.build}/${common-jarname}"/>
- 
-	<!-- get code fragments for pipeline code generation -->
-    <copy todir="${build}">
-       <fileset dir="${src}" includes="**/*.code"/>
-    </copy>
-
-    <jar basedir="${genepattern.build}" 
-		defaultexcludes="true" 
-		excludes="**/*.form,**/*.nbattrs" 
-		includes="org/**/*.class, edu/mit/genome/gp/ui/analysis/*.class" 
-		jarfile="${genepattern.build}/${full-jarname}"/>
-
-    <jar basedir="${genepattern.build}" 
-		defaultexcludes="true" 
-		excludes="**/*.form,**/*.nbattrs" 
-		includes="edu/mit/genome/gp/ui/analysis/*.class" 
-		jarfile="${genepattern.build}/analysis.jar">
-
-		<manifest>
-            	<attribute name="Class-Path" value="${full-jarname} hsqldb.jar xalan.jar saaj.jar jaxrpc.jar jaxb-rt-1.0-ea.jar" />
-		</manifest>
-
-	</jar>
+    <target name="clean">
+        <delete quiet="true" failonerror="false">
+            <fileset dir="src/" includes="**/*.class"/>
+            <fileset dir="build/" includes="**/*"/>
+            <fileset dir="website/" includes="**/*.class"/>
+            <fileset dir="installer/GP_server_Build_Output/" includes="**/*"/>
+            <fileset dir="installer/server_Build_Output/" includes="**/*"/>
+            <fileset dir="installer/" includes=".buildinstaller*.tmp/**"/>
+            <fileset dir="clients/javage/installer/" includes=".buildinstaller*.tmp/**"/>
+        </delete>
+        <ant antfile="../build.xml" dir="clients/JavaGE/src" inheritall="true" inheritrefs="true" target="clean"/>
+    </target>
 
 
-   </target>
+    <target depends="init" description="Compiles all the source." name="compile">
 
-	<target depends="init,compile,common" name="broad-cg">
-	<!-- Makes broad-cg.jar -->
-     <jar basedir="${genepattern.build}" 
-		defaultexcludes="true" 
-		includes="org/genepattern/data/**/*.class, org/genepattern/io/**/*.class" 
-		jarfile="${genepattern.build}/${broad-cg-jarname}"/>
-   </target>
-	
-	<target name="broad-cg-doc">
-		<javadoc destdir="docs/api" version="true" author="false" use="true">
-			<fileset dir="src" defaultexcludes="yes">
-				<include name="org/genepattern/**"/>
-			</fileset>
-		</javadoc>
-   </target>
-	
-   <target depends="init" name="runtask">
- <javac classpathref="library.classpath" 
-		debug="true" 
-		destdir="${genepattern.build}" 
-		srcdir="${src}"
-		target="${java.target}"
-		source="${java.target}"
-		includes="org/genepattern/util/RunGenePatternTaskMain.java"
-		/>
+        <javac classpathref="library.classpath"
+               debug="true"
+               destdir="${genepattern.build}"
+               srcdir="${src}"
+               compiler="javac1.5"
+               source="${java.target}"
+               excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**"
+                />
 
 
-<!-- Makes runMain.jar -->
-     <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.form,**/*.nbattrs" includes="org/genepattern/util/RunGenePatternTaskMain.class edu/mit/genome/gp/util/GenePatternNetworkClassLoader.class" jarfile="${genepattern.build}/${runtask-jarname}">
+    </target>
+
+    <target depends="init" name="get_dependencies">
+        <copy todir="${build}">
+            <fileset dir="${lib}" includes="**/*.jar"/>
+        </copy>
+    </target>
+
+    <target name="gp-library-doc" depends="init" unless="skipdoc">
+        <javadoc destdir="build/doc" Author="no" Public="true" Verbose="false">
+            <classpath>
+                <fileset dir="lib">
+                    <include name="**/*.jar"/>
+                </fileset>
+
+            </classpath>
+            <fileset dir="src" defaultexcludes="yes">
+                <include name="org/genepattern/data/**/*.java"/>
+                <include name="org/genepattern/client/**.java"/>
+                <include name="org/genepattern/webservice/**/*.java"/>
+                <include name="org/genepattern/util/**.java"/>
+                <include name="org/genepattern/io/**/*.java"/>
+                <include name="org/genepattern/module/**/*.java"/>
+            </fileset>
+        </javadoc>
+    </target>
+
+    <target name="gp-library" depends="init, gp-library-doc">
+        <javac classpathref="library.classpath" debug="true" destdir="build" target="${java.target}">
+            <src path="src/org/genepattern/"/>
+            <include name="org/genepattern/client/**"/>
+            <include name="org/genepattern/data/**"/>
+            <include name="org/genepattern/io/**"/>
+            <include name="org/genepattern/module/**"/>
+            <include name="org/genepattern/webservice/**"/>
+        </javac>
+
+        <jar basedir="${genepattern.build}" defaultexcludes="true" jarfile="${genepattern.build}/${gp-library-jarname}">
+            <include name="org/genepattern/client/**/*.class"/>
+            <manifest>
+                <attribute name="Class-Path"
+                           value="./lib/gpwebservice.jar ./lib/broad-cg.jar ./lib/activation.jar ./lib/mail.jar ./lib/axis.jar ./lib/log4j-1.2.8.jar ./lib/jaxrpc.jar ./lib/commons-discovery.jar ./lib/commons-logging.jar ./lib/saaj.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar ./lib/wsdl4j.jar"/>
+            </manifest>
+        </jar>
+
+        <zip destfile="build/GenePattern.zip">
+            <zipfileset dir="build/">
+                <include name="${gp-library-jarname}"/>
+            </zipfileset>
+
+            <zipfileset dir="build/" prefix="lib">
+                <include name="gpwebservice.jar"/>
+                <include name="broad-cg.jar"/>
+            </zipfileset>
+
+            <zipfileset dir="lib" prefix="lib">
+                <include name="activation.jar"/>
+                <include name="mail.jar"/>
+                <include name="jdom.jar"/>
+                <include name="axis.jar"/>
+                <include name="log4j-1.2.8.jar"/>
+                <include name="jaxrpc.jar"/>
+                <include name="commons-discovery.jar"/>
+                <include name="commons-logging.jar"/>
+                <include name="saaj.jar"/>
+                <include name="jaxb-rt-1.0-ea.jar"/>
+                <include name="Jama-1.0.1.jar"/>
+                <include name="MAGEstk-2003-10-24-v1.1-compatible.jar"/>
+                <include name="wsdl4j.jar"/>
+            </zipfileset>
+
+            <zipfileset dir="build/doc" prefix="doc"/>
+        </zip>
+    </target>
+
+    <target depends="init,compile" name="common">
+        <!-- Makes gp-common.jar -->
+        <jar basedir="${genepattern.build}"
+             defaultexcludes="true"
+             excludes="org/genepattern/util/RunGenePatternTaskMain.class org/genepattern/util/GenePatternNetworkClassLoader.class,org/genepattern/server/**,org/genepattern/resources/**,**/*.java,**/*.form,**/*.nbattrs"
+             includes="org/**/*.class"
+             jarfile="${genepattern.build}/${common-jarname}"/>
+
+        <!-- get code fragments for pipeline code generation -->
+        <copy todir="${build}">
+            <fileset dir="${src}" includes="**/*.code"/>
+        </copy>
+
+        <jar basedir="${genepattern.build}"
+             defaultexcludes="true"
+             excludes="**/*.form,**/*.nbattrs"
+             includes="org/**/*.class, edu/mit/genome/gp/ui/analysis/*.class"
+             jarfile="${genepattern.build}/${full-jarname}"/>
+
+        <jar basedir="${genepattern.build}"
+             defaultexcludes="true"
+             excludes="**/*.form,**/*.nbattrs"
+             includes="edu/mit/genome/gp/ui/analysis/*.class"
+             jarfile="${genepattern.build}/analysis.jar">
+
+            <manifest>
+                <attribute name="Class-Path"
+                           value="${full-jarname} hsqldb.jar xalan.jar saaj.jar jaxrpc.jar jaxb-rt-1.0-ea.jar"/>
+            </manifest>
+
+        </jar>
+
+
+    </target>
+
+    <target depends="init,compile,common" name="broad-cg">
+        <!-- Makes broad-cg.jar -->
+        <jar basedir="${genepattern.build}"
+             defaultexcludes="true"
+             includes="org/genepattern/data/**/*.class, org/genepattern/io/**/*.class"
+             jarfile="${genepattern.build}/${broad-cg-jarname}"/>
+    </target>
+
+    <target name="broad-cg-doc">
+        <javadoc destdir="docs/api" version="true" author="false" use="true">
+            <fileset dir="src" defaultexcludes="yes">
+                <include name="org/genepattern/**"/>
+            </fileset>
+        </javadoc>
+    </target>
+
+    <target depends="init" name="runtask">
+        <javac classpathref="library.classpath"
+               debug="true"
+               destdir="${genepattern.build}"
+               srcdir="${src}"
+               target="${java.target}"
+               source="${java.target}"
+               includes="org/genepattern/util/RunGenePatternTaskMain.java"
+                />
+
+
+        <!-- Makes runMain.jar -->
+        <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.form,**/*.nbattrs"
+             includes="org/genepattern/util/RunGenePatternTaskMain.class edu/mit/genome/gp/util/GenePatternNetworkClassLoader.class"
+             jarfile="${genepattern.build}/${runtask-jarname}">
             <manifest>
                 <attribute name="Main-Class" value="org.genepattern.RunGenePatternTaskMain"/>
             </manifest>
         </jar>
-   </target>
+    </target>
 
-   <target depends="init,compile" name="uisupport">
-     <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.java,**/*.form,**/*.nbattrs" includes="org/genepattern/modules/ui/,org/genepattern/module/" jarfile="${genepattern.build}/${uisupport-jarname}"/>
-   </target>
-   <target depends="common,compile,broad-cg,get_dependencies,init,runtask,uisupport" name="package">
-   </target>
+    <target depends="init,compile" name="uisupport">
+        <jar basedir="${genepattern.build}" defaultexcludes="true" excludes="**/*.java,**/*.form,**/*.nbattrs"
+             includes="org/genepattern/modules/ui/,org/genepattern/module/"
+             jarfile="${genepattern.build}/${uisupport-jarname}"/>
+    </target>
+    <target depends="common,compile,broad-cg,get_dependencies,init,runtask,uisupport" name="package">
+    </target>
 
-   <target depends="init" name="jwhich">
-     <java classname="org.genepattern.debug.JWhich" classpathref="library.classpath" dir="${build}" fork="true">
-       <arg value="javax.ejb.EJBObject"/>
-     </java>
-   </target>
-   <target depends="init" name="prepare-compile" unless="prepare.disable">
-     <mkdir dir="${genepattern.build}"/>
-   </target>
+    <target depends="init" name="jwhich">
+        <java classname="org.genepattern.debug.JWhich" classpathref="library.classpath" dir="${build}" fork="true">
+            <arg value="javax.ejb.EJBObject"/>
+        </java>
+    </target>
+    <target depends="init" name="prepare-compile" unless="prepare.disable">
+        <mkdir dir="${genepattern.build}"/>
+    </target>
 
-  <target depends="init" name="runsuite">
-     <java classname="org.genepattern.server.process.SuiteRepository">
-		<classpath>
-			<fileset dir="lib">
-				<include name="**/*.jar"/>
-		  	</fileset>
-		  	<fileset dir="${build}"/>
-		</classpath>
+    <target depends="init" name="runsuite">
+        <java classname="org.genepattern.server.process.SuiteRepository">
+            <classpath>
+                <fileset dir="lib">
+                    <include name="**/*.jar"/>
+                </fileset>
+                <fileset dir="${build}"/>
+            </classpath>
 
-     </java>
-   </target>
+        </java>
+    </target>
 
-   <target depends="R-client,GPGE, matlabclient" name="clients">
-   </target>
+    <target depends="R-client,GPGE, matlabclient" name="clients">
+    </target>
 
-   <target depends="init" name="R-client">
-   </target>
-   
-   <target depends="init,common,broad-cg,runtask,uisupport,analysis" name="GPGE">
+    <target depends="init" name="R-client">
+    </target>
+
+    <target depends="init,common,broad-cg,runtask,uisupport,analysis" name="GPGE">
         <ant dir="." inheritall="false" inheritrefs="false" target="analysis"/>
         <ant antfile="../build.xml" dir="clients/JavaGE/src" target="package"/>
-   </target>
-	
-	<target name="analysis" depends="init,common,broad-cg,runtask,uisupport">
-	    <jar jarfile="${build}/gpwebservice.jar">
-	        <fileset dir="${build}">
-	            <include name="org/genepattern/webservice/**"/>
-	            <include name="org/genepattern/util/**"/>
-               <include name="org/genepattern/codegenerator/**"/>
-	        </fileset>
-	    </jar>
-	</target>
+    </target>
 
-   	   
-<target name="GPGEinstaller">
-	<ant dir="${genepattern.gpge.installer}" 
-                     inheritall="true"
-	             inheritrefs="true" 
-                     target="installer"/>
-</target>
-
-<target name="setDefaultFTPUser" unless="user" >
-	<property name="user" value="genepattern"/>
-</target>
-
-<target name="publishGPGEinstallerToWWWDev" depends="setDefaultFTPUser, version_updater">
-	
-<ftp server="iftp.broad.mit.edu"
-       remotedir="${version.major}.${version.minor}/"
-       userid="${user}"
-       password="${pass}"
-       depends="yes"
-       binary="yes" >
-
-    <fileset dir="build/Web_Installers">
-      <include name="**/*"/>
-    </fileset>
-  </ftp>
-
-</target>
-
-<target name="test" depends="version_updater">
-	<echo>${version.major}.${version.minor}</echo>
-</target>
+    <target name="analysis" depends="init,common,broad-cg,runtask,uisupport">
+        <jar jarfile="${build}/gpwebservice.jar">
+            <fileset dir="${build}">
+                <include name="org/genepattern/webservice/**"/>
+                <include name="org/genepattern/util/**"/>
+                <include name="org/genepattern/codegenerator/**"/>
+            </fileset>
+        </jar>
+    </target>
 
 
-   <target depends="website, GPGEinstaller" name="installers">
+    <target name="GPGEinstaller">
+        <ant dir="${genepattern.gpge.installer}"
+             inheritall="true"
+             inheritrefs="true"
+             target="installer"/>
+    </target>
 
-	<ant dir="${genepattern.installer}" 
-                     inheritall="true"
-	             inheritrefs="true" 
-                     target="installers"/>
+    <target name="setDefaultFTPUser" unless="user">
+        <property name="user" value="genepattern"/>
+    </target>
 
-   </target>
-   
- <target depends="gp-library, analysis, broad-cg" name="matlabclient">
+    <target name="publishGPGEinstallerToWWWDev" depends="setDefaultFTPUser, version_updater">
 
-	<ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB"/>
+        <ftp server="iftp.broad.mit.edu"
+             remotedir="${version.major}.${version.minor}/"
+             userid="${user}"
+             password="${pass}"
+             depends="yes"
+             binary="yes">
 
-   </target>
-   
+            <fileset dir="build/Web_Installers">
+                <include name="**/*"/>
+            </fileset>
+        </ftp>
+
+    </target>
+
+    <target name="test" depends="version_updater">
+        <echo>${version.major}.${version.minor}</echo>
+    </target>
 
 
-   <!-- =================================================================== -->
-   <!-- Custom post-compilation step                                        -->
-   <!-- =================================================================== -->
-   <target depends="init" if="post-compile.present" name="post-compile">
-     <ant antfile="post-compile.xml" dir="${genepattern.root}"/>
-   </target>
-   <!-- 	       classpathref="library.classpath" -->
+    <target depends="website, GPGEinstaller" name="installers">
+
+        <ant dir="${genepattern.installer}"
+             inheritall="true"
+             inheritrefs="true"
+             target="installers"/>
+
+    </target>
+
+    <target depends="gp-library, analysis, broad-cg" name="matlabclient">
+
+        <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB"/>
+
+    </target>
+
+
+    <!-- =================================================================== -->
+    <!-- Custom post-compilation step                                        -->
+    <!-- =================================================================== -->
+    <target depends="init" if="post-compile.present" name="post-compile">
+        <ant antfile="post-compile.xml" dir="${genepattern.root}"/>
+    </target>
+    <!-- 	       classpathref="library.classpath" -->
     <target depends="init,prepare-compile,common,analysis, clients,makeKeystore" name="website">
-	<mkdir dir="${genepattern.build}/website/classes"/>
-	<mkdir dir="${genepattern.build}/website/lib"/>
-	<ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB"/>
+        <mkdir dir="${genepattern.build}/website/classes"/>
+        <mkdir dir="${genepattern.build}/website/lib"/>
+        <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB"/>
 
-	<javac 
-		destdir="${genepattern.build}/website/classes" 
-		srcdir="${genepattern.website}/WEB-INF/classes"
-	 	classpathref="library.classpath"/>
+        <javac
+                destdir="${genepattern.build}/website/classes"
+                srcdir="${genepattern.website}/WEB-INF/classes"
+                classpathref="library.classpath"/>
 
-	<jar basedir="${genepattern.build}" 
-		defaultexcludes="true" 
-		includes="org/genepattern/visualizer/*.class" 
-		jarfile="${genepattern.build}/${runVisualizer-jarname}">
-			<manifest>
-				<attribute name="Main-Class" value="org.genepattern.visualizer.RunVisualizer"/>
-			</manifest>
-	</jar>
- 	<signjar jar="${genepattern.build}/${runVisualizer-jarname}" alias="Genepattern" storepass="${signingKey}" keypass="${signingKey}" keystore="${keyStore}" />
+        <jar basedir="${genepattern.build}"
+             defaultexcludes="true"
+             includes="org/genepattern/visualizer/*.class"
+             jarfile="${genepattern.build}/${runVisualizer-jarname}">
+            <manifest>
+                <attribute name="Main-Class" value="org.genepattern.visualizer.RunVisualizer"/>
+            </manifest>
+        </jar>
+        <signjar jar="${genepattern.build}/${runVisualizer-jarname}" alias="Genepattern" storepass="${signingKey}"
+                 keypass="${signingKey}" keystore="${keyStore}"/>
 
-	<!-- copy the web sites jar files to build/web-site/lib -->
-	<!-- ***** NOTE THAT THIS IS THE DEFINITIVE LIST ****** -->
-	<copy todir="${genepattern.build}/website/lib" >
-	   <fileset dir="${lib}">
-	       <include name="axis.jar"/>
-	       <include name="axis-ant.jar"/>
-	       <include name="commons-discovery.jar"/>
-	       <include name="commons-logging.jar"/>
-	       <include name="commons-fileupload-1.1.jar"/>
-	       <include name="commons-io-1.2.jar"/>
-	       <include name="crimson.jar"/>
-	       <include name="hsqldb.jar"/>
-	       <include name="jaxb-rt-1.0-ea.jar"/>
-	       <include name="jaxp.jar"/>
-	       <include name="jdom.jar"/>
-	       <include name="jaxrpc.jar"/>
-	       <include name="jspsmart.jar"/>
-	       <include name="log4j-1.2.8.jar"/>
-	       <include name="lucene-*-final.jar"/>
-	       <include name="lucene-demos-*-final.jar"/>
-	       <include name="mail.jar"/>
-	       <include name="activation.jar"/>
-	       <include name="saaj.jar"/>
-	       <include name="PDFBox*.jar"/>
-	       <include name="wsdl4j.jar"/>
-	       <include name="xalan.jar"/>
-          </fileset> 
-	    <fileset dir="${genepattern.build}" includes="${full-jarname}"/>
-	</copy>
+        <!-- copy the web sites jar files to build/web-site/lib -->
+        <!-- ***** NOTE THAT THIS IS THE DEFINITIVE LIST ****** -->
+        <copy todir="${genepattern.build}/website/lib">
+            <fileset dir="${lib}">
+                <include name="activation.jar"/>
+                <include name="axis.jar"/>
+                <include name="axis-ant.jar"/>
+                <include name="commons-discovery-0.2.jar"/>
+                <include name="commons-logging-1.0.4.jar"/>
+                <include name="commons-fileupload-1.1.jar"/>
+                <include name="commons-io-1.2.jar"/>
+                <include name="hsqldb.jar"/>
+                <include name="jaxb-rt-1.0-ea.jar"/>
+                <include name="jaxp.jar"/>
+                <include name="jaxrpc.jar"/>
+                <include name="jdom.jar"/>
+                <include name="jspsmart.jar"/>
+                <include name="log4j-1.2.8.jar"/>
+                <include name="lucene-*-final.jar"/>
+                <include name="lucene-demos-*-final.jar"/>
+                <include name="mail.jar"/>
+                <include name="PDFBox*.jar"/>
+                <include name="saaj.jar"/>
+                <include name="wsdl4j-1.5.1.jar"/>
+                <include name="xalan.jar"/>
+            </fileset>
+            <fileset dir="${genepattern.build}" includes="${full-jarname}"/>
+        </copy>
 
 
-	<!-- Now call any custom post-compilation people want to do -->
-	<antcall target="post-compile" inheritall="true" inheritrefs="true"/>
+        <!-- Now call any custom post-compilation people want to do -->
+        <antcall target="post-compile" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target depends="init,common,analysis,makeKeystore" name="quick-website">
-	<mkdir dir="${genepattern.build}/website/classes"/>
-	<javac destdir="${genepattern.build}/website/classes" srcdir="${genepattern.website}/WEB-INF/classes" 
-		classpathref="library.classpath"/>
-	<jar basedir="${genepattern.build}" 
-		defaultexcludes="true" 
-		includes="org/genepattern/visualizer/*.class" 
-		jarfile="${genepattern.build}/${runVisualizer-jarname}"/>
+        <mkdir dir="${genepattern.build}/website/classes"/>
+        <javac destdir="${genepattern.build}/website/classes" srcdir="${genepattern.website}/WEB-INF/classes"
+               classpathref="library.classpath"/>
+        <jar basedir="${genepattern.build}"
+             defaultexcludes="true"
+             includes="org/genepattern/visualizer/*.class"
+             jarfile="${genepattern.build}/${runVisualizer-jarname}"/>
 
- 	<signjar jar="${genepattern.build}/${runVisualizer-jarname}" alias="Genepattern" storepass="${signingKey}" keypass="${signingKey}" keystore="${keyStore}" />
-	<!-- Now call any custom post-compilation people want to do -->
-	<antcall target="post-compile"/>
+        <signjar jar="${genepattern.build}/${runVisualizer-jarname}" alias="Genepattern" storepass="${signingKey}"
+                 keypass="${signingKey}" keystore="${keyStore}"/>
+        <!-- Now call any custom post-compilation people want to do -->
+        <antcall target="post-compile"/>
     </target>
 
     <target depends="init" name="makeKeystore" unless="keyStore.present">
-	<genkey alias="GenePattern" 
-		keypass="${signingKey}"
-		storepass="${signingKey}"
-		keystore="${keyStore}"
-		keyalg="RSA">
-		<dname>
-			<param name="CN" value="GenePattern"/>
-			<param name="OU" value="Cancer Genomics"/>
-			<param name="O" value="Broad Institute"/>
-			<param name="L" value="Cambridge"/>
-			<param name="S" value="MA"/>
-			<param name="C" value="US"/>
-			<param name="EMAILADDRESS" value="gp-help@broad.mit.edu" />
-		</dname>
-	</genkey>
+        <genkey alias="GenePattern"
+                keypass="${signingKey}"
+                storepass="${signingKey}"
+                keystore="${keyStore}"
+                keyalg="RSA">
+            <dname>
+                <param name="CN" value="GenePattern"/>
+                <param name="OU" value="Cancer Genomics"/>
+                <param name="O" value="Broad Institute"/>
+                <param name="L" value="Cambridge"/>
+                <param name="S" value="MA"/>
+                <param name="C" value="US"/>
+                <param name="EMAILADDRESS" value="gp-help@broad.mit.edu"/>
+            </dname>
+        </genkey>
     </target>
 
 
     <target name="setCvsTagToAnthillVersion" if="version">
-         <property name="cvsTag" value="${version}"/>
+        <property name="cvsTag" value="${version}"/>
     </target>
-    
+
 
     <target name="setCvsTag" unless="cvsTag" depends="setCvsTagToAnthillVersion">
-         <property name="cvsTag" value="This build was not tagged in CVS"/>
+        <property name="cvsTag" value="This build was not tagged in CVS"/>
     </target>
 
     <target description="Sets the program&apos;s version, build,
 	release and etc. properties" name="version_updater" depends="setCvsTag">
 
-		<property file="build.versionNumbers"/>
+        <property file="build.versionNumbers"/>
 
         <propertyfile comment="Created by ANT; defines the build version, date etc." file="resources/build.properties">
             <entry key="build" operation="=" pattern="yyyyMMdd" type="date" value="now"/>
@@ -479,117 +485,116 @@
             <entry default="0" key="count" operation="+" type="int"/>
             <entry key="release" operation="=" type="string" value=""/>
             <entry key="program.name" operation="=" type="string" value="GenePattern Client"/>
-            <entry key="builders.name" operation="=" type="string"  value="${user.name}"/>
-	    
-            <entry key="build.tag" operation="=" type="string"  value="${cvsTag}"/>
-       </propertyfile>
+            <entry key="builders.name" operation="=" type="string" value="${user.name}"/>
+
+            <entry key="build.tag" operation="=" type="string" value="${cvsTag}"/>
+        </propertyfile>
     </target>
 
 
-<!-- **************** ANTHILL TARGETS *************-->
+    <!-- **************** ANTHILL TARGETS *************-->
 
-	<target name="loadModules" depends="">
-		<ant antfile="build.xml" dir="build_tools/ZipUpload" target="compile"/>
-		<ant antfile="build.xml" dir="build_tools/ZipUpload" target="uploadModulesFromDir"/>
-	</target>
-
-
-	<target name="checkForOldInstall" depends="init">
-		<available property="oldInstallpresent" value="true" 
-			file="${defaultInstallDir}" 	/>
-		<available file="${defaultInstallDir}\StopGenePatternServer.exe" property="stopServerPresent"/>
-		<available file="${defaultInstallDir}\UninstallerData\uninst~1.exe" property="uninstallerPresent"/>
-		
-	</target>
-
-	<target name="stoprunningserver" depends="checkForOldInstall" if="stopServerPresent">
-		<exec dir="${defaultInstallDir}\" 
-			executable="${defaultInstallDir}\StopGenePatternServer.exe -i SILENT" 
-			failifexecutionfails="false" failonerror="false"/>
-		<antcall target="shutdownServer" inheritRefs="true"/>
-
-	</target>
-
-	<target name="uninstall" if="uninstallerPresent" depends="init, checkForOldInstall, stoprunningserver">		
-		<exec failifexecutionfails="false" 
-				dir="${defaultInstallDir}\UninstallerData" 
-				executable="${defaultInstallDir}\UninstallerData\uninst~1.exe">
-			<arg line="-i SILENT"/>
-		</exec>
-
-	</target>
+    <target name="loadModules" depends="">
+        <ant antfile="build.xml" dir="build_tools/ZipUpload" target="compile"/>
+        <ant antfile="build.xml" dir="build_tools/ZipUpload" target="uploadModulesFromDir"/>
+    </target>
 
 
-	<target name="installLocal" depends="init, uninstall">
-		
-		<!-- install the new one -->
-		<exec 
-				dir="." 
-				executable="${basedir}\installer\GP_server_Build_Output\Web_Installers\InstData\Windows\VM\GPServer">
-			<arg line="-i SILENT"/>
-		</exec>
+    <target name="checkForOldInstall" depends="init">
+        <available property="oldInstallpresent" value="true"
+                   file="${defaultInstallDir}"/>
+        <available file="${defaultInstallDir}\StopGenePatternServer.exe" property="stopServerPresent"/>
+        <available file="${defaultInstallDir}\UninstallerData\uninst~1.exe" property="uninstallerPresent"/>
 
-		
-	</target>
+    </target>
 
+    <target name="stoprunningserver" depends="checkForOldInstall" if="stopServerPresent">
+        <exec dir="${defaultInstallDir}\"
+              executable="${defaultInstallDir}\StopGenePatternServer.exe -i SILENT"
+              failifexecutionfails="false" failonerror="false"/>
+        <antcall target="shutdownServer" inheritRefs="true"/>
 
-	<target name="startServer" depends="init">
-		<get src="http://cpb67-896.broad.mit.edu:7080/gpinstalls/restartLocalhost8080.jsp" dest="logs/startup.log" ignoreerrors="true" />
+    </target>
 
-	</target>
+    <target name="uninstall" if="uninstallerPresent" depends="init, checkForOldInstall, stoprunningserver">
+        <exec failifexecutionfails="false"
+              dir="${defaultInstallDir}\UninstallerData"
+              executable="${defaultInstallDir}\UninstallerData\uninst~1.exe">
+            <arg line="-i SILENT"/>
+        </exec>
 
-
-	<target name="nightlyBuild">
-		<antcall target="pruneOldDirs" inheritRefs="true"/>
-
-		<mkdir dir="logs"/>
-		<!-- checkout sandbox, build & install -->
-		<!-- ant antfile="build.xml" dir="." target="nightlyrelease"/  -->
-		<antcall target="nightlyrelease"/>
+    </target>
 
 
-		<mkdir dir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile"/>
-		<copy file="gp_war.zip" todir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile" />
+    <target name="installLocal" depends="init, uninstall">
 
-		<copy overwrite="true"
-			todir="e:/GPInstalls/Tomcat/webapps/gpinstalls/nightlybuild">
-			<fileset dir="installer/GP_server_Build_Output/Web_Installers"/>
-		</copy>
-		<!-- ant antfile="build.xml" dir="." target="publishGPGEinstallerToWWWDev"/  -->
-		<antcall target="publishGPGEinstallerToWWWDev"/>
-
+        <!-- install the new one -->
+        <exec
+                dir="."
+                executable="${basedir}\installer\GP_server_Build_Output\Web_Installers\InstData\Windows\VM\GPServer">
+            <arg line="-i SILENT"/>
+        </exec>
 
 
-	</target>
+    </target>
 
 
-	<target name="publishBuild">
-		
-		<!-- ant antfile="anthill-build.xml" dir="${basedir}" target="installLocal" / -->
-		<antcall target="installLocal" />
-		
-		<!-- load the modules since the installer doesn't - once we can start the server -->
-		<antcall target="startServer" inheritRefs="true"/>
-		<antcall target="loadModules" inheritRefs="true"/>
+    <target name="startServer" depends="init">
+        <get src="http://cpb67-896.broad.mit.edu:7080/gpinstalls/restartLocalhost8080.jsp" dest="logs/startup.log"
+             ignoreerrors="true"/>
 
-		
-	</target>	
+    </target>
 
 
-	<target name="shutdownServer">
-		<!-- note this will generate an error as the server shuts down while connected -->
-		
-		<get src="http://127.0.0.1:8080/gp/shutdownServer.jsp" dest="logs/shutdown.log" ignoreerrors="true" />
-	</target>
+    <target name="nightlyBuild">
+        <antcall target="pruneOldDirs" inheritRefs="true"/>
 
-	<target name="pruneOldDirs">
-      	<cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
-		<commandline>
-        		<argument line="update -P"/>
-    		</commandline>	 
-	</cvs>
-	</target>
+        <mkdir dir="logs"/>
+        <!-- checkout sandbox, build & install -->
+        <!-- ant antfile="build.xml" dir="." target="nightlyrelease"/  -->
+        <antcall target="nightlyrelease"/>
 
+
+        <mkdir dir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile"/>
+        <copy file="gp_war.zip" todir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile"/>
+
+        <copy overwrite="true"
+              todir="e:/GPInstalls/Tomcat/webapps/gpinstalls/nightlybuild">
+            <fileset dir="installer/GP_server_Build_Output/Web_Installers"/>
+        </copy>
+        <!-- ant antfile="build.xml" dir="." target="publishGPGEinstallerToWWWDev"/  -->
+        <antcall target="publishGPGEinstallerToWWWDev"/>
+
+
+    </target>
+
+
+    <target name="publishBuild">
+
+        <!-- ant antfile="anthill-build.xml" dir="${basedir}" target="installLocal" / -->
+        <antcall target="installLocal"/>
+
+        <!-- load the modules since the installer doesn't - once we can start the server -->
+        <antcall target="startServer" inheritRefs="true"/>
+        <antcall target="loadModules" inheritRefs="true"/>
+
+
+    </target>
+
+
+    <target name="shutdownServer">
+        <!-- note this will generate an error as the server shuts down while connected -->
+
+        <get src="http://127.0.0.1:8080/gp/shutdownServer.jsp" dest="logs/shutdown.log" ignoreerrors="true"/>
+    </target>
+
+    <target name="pruneOldDirs">
+        <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+            <commandline>
+                <argument line="update -P"/>
+            </commandline>
+        </cvs>
+    </target>
 
 
 </project>
