@@ -45,9 +45,11 @@
 # OS specific support.  $var _must_ be set to either true or false.
 cygwin=false
 os400=false
+darwin=false
 case "`uname`" in
 CYGWIN*) cygwin=true;;
 OS400*) os400=true;;
+Darwin*) darwin=true;;
 esac
 
 # resolve links - $0 may be a softlink
@@ -56,7 +58,7 @@ PRG="$0"
 while [ -h "$PRG" ]; do
   ls=`ls -ld "$PRG"`
   link=`expr "$ls" : '.*-> \(.*\)$'`
-  if expr "$link" : '.*/.*' > /dev/null; then
+  if expr "$link" : '/.*' > /dev/null; then
     PRG="$link"
   else
     PRG=`dirname "$PRG"`/"$link"
@@ -129,6 +131,12 @@ if [ -z "$CATALINA_TMPDIR" ] ; then
   CATALINA_TMPDIR="$CATALINA_BASE"/temp
 fi
 
+# Bugzilla 37848: When no TTY is available, don't output to console
+have_tty=0
+if [ "`tty`" != "not a tty" ]; then
+    have_tty=1
+fi
+
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
   JAVA_HOME=`cygpath --absolute --windows "$JAVA_HOME"`
@@ -148,13 +156,16 @@ fi
 
 # ----- Execute The Requested Command -----------------------------------------
 
-echo "Using CATALINA_BASE:   $CATALINA_BASE"
-echo "Using CATALINA_HOME:   $CATALINA_HOME"
-echo "Using CATALINA_TMPDIR: $CATALINA_TMPDIR"
-if [ "$1" = "debug" -o "$1" = "javac" ] ; then
-  echo "Using JAVA_HOME:       $JAVA_HOME"
-else
-  echo "Using JRE_HOME:       $JRE_HOME"
+# Bugzilla 37848: only output this if we have a TTY
+if [ $have_tty -eq 1 ]; then
+  echo "Using CATALINA_BASE:   $CATALINA_BASE"
+  echo "Using CATALINA_HOME:   $CATALINA_HOME"
+  echo "Using CATALINA_TMPDIR: $CATALINA_TMPDIR"
+  if [ "$1" = "debug" -o "$1" = "javac" ] ; then
+    echo "Using JAVA_HOME:       $JAVA_HOME"
+  else
+    echo "Using JRE_HOME:       $JRE_HOME"
+  fi
 fi
 
 if [ "$1" = "jpda" ] ; then
@@ -277,6 +288,8 @@ elif [ "$1" = "stop" ] ; then
     if [ ! -z "$CATALINA_PID" ]; then
        echo "Killing: `cat $CATALINA_PID`"
        kill -9 `cat $CATALINA_PID`
+    else
+       echo "Kill failed: \$CATALINA_PID not set"
     fi
   fi
 

@@ -10,9 +10,14 @@ CLASSPATH=
 
 # Make sure prerequisite environment variables are set
 if [ -z "$JAVA_HOME" -a -z "$JRE_HOME" ]; then
-  echo "Neither the JAVA_HOME nor the JRE_HOME environment variable is defined"
-  echo "At least one of these environment variable is needed to run this program"
-  exit 1
+  # Bugzilla 37284
+  if $darwin && [ -d "/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home" ]; then
+    export JAVA_HOME="/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home"
+  else
+    echo "Neither the JAVA_HOME nor the JRE_HOME environment variable is defined"
+    echo "At least one of these environment variable is needed to run this program"
+    exit 1
+  fi
 fi
 if [ -z "$JAVA_HOME" -a "$1" = "debug" ]; then
   echo "JAVA_HOME should point to a JDK in order to run in debug mode."

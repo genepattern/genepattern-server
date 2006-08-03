@@ -19,6 +19,10 @@ rem                   the JVM should use (java.io.tmpdir).  Defaults to
 rem                   %CATALINA_BASE%\temp.
 rem
 rem   JAVA_HOME       Must point at your Java Development Kit installation.
+rem                   Required to run the with the "debug" argument.
+rem
+rem   JRE_HOME        Must point at your Java Development Kit installation.
+rem                   Defaults to JAVA_HOME if empty.
 rem
 rem   JAVA_OPTS       (Optional) Java runtime options used when the "start",
 rem                   "stop", or "run" command is executed.
@@ -61,7 +65,8 @@ echo This file is needed to run this program
 goto end
 :okSetclasspath
 set BASEDIR=%CATALINA_HOME%
-call "%CATALINA_HOME%\bin\setclasspath.bat"
+call "%CATALINA_HOME%\bin\setclasspath.bat" %1
+if errorlevel 1 goto end
 
 rem Add on extra jar files to CLASSPATH
 if "%JSSE_HOME%" == "" goto noJsse
@@ -78,7 +83,7 @@ set CATALINA_TMPDIR=%CATALINA_BASE%\temp
 :gotTmpdir
 
 if not exist "%CATALINA_HOME%\bin\tomcat-juli.jar" goto noJuli
-set JAVA_OPTS=%JAVA_OPTS% -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djava.util.logging.config.file="${catalina.base}\conf\logging.properties"
+set JAVA_OPTS=%JAVA_OPTS% -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djava.util.logging.config.file="%CATALINA_BASE%\conf\logging.properties"
 :noJuli
 
 rem ----- Execute The Requested Command ---------------------------------------
@@ -86,7 +91,12 @@ rem ----- Execute The Requested Command ---------------------------------------
 echo Using CATALINA_BASE:   %CATALINA_BASE%
 echo Using CATALINA_HOME:   %CATALINA_HOME%
 echo Using CATALINA_TMPDIR: %CATALINA_TMPDIR%
+if ""%1"" == ""debug"" goto use_jdk
+echo Using JRE_HOME:        %JRE_HOME%
+goto java_dir_displayed
+:use_jdk
 echo Using JAVA_HOME:       %JAVA_HOME%
+:java_dir_displayed
 
 set _EXECJAVA=%_RUNJAVA%
 set MAINCLASS=org.apache.catalina.startup.Bootstrap
