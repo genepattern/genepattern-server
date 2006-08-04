@@ -4,65 +4,64 @@
 <!-- Ant build file -->
 <project basedir="." default="compile" name="ZipUpload">
 
-	<target name="init" depends="setDefaultServer, setDefaultModulesDir">
-		<property name="libpath" value="${repository.root}lib/" />
-		<path id="library.classpath">
-			<fileset dir="lib">
-				<include name="commons-httpclient-2.0-rc2.jar" />
-				<include name="commons-logging.jar" />
-			</fileset>
-			<pathelement path="classes" />
+    <target name="init" depends="setDefaultServer, setDefaultModulesDir">
+        <property name="libpath" value="${repository.root}lib/"/>
+        <property name="build" value="build"/>
+        <path id="library.classpath">
+            <fileset dir="lib">
+                <include name="commons-httpclient-2.0-rc2.jar"/>
+                <include name="commons-logging.jar"/>
+            </fileset>
+        </path>
+    </target>
 
-		</path>
-	</target>
+    <target name="setDefaultServer" unless="genepatternServerUrl">
+        <property name="genepatternServerUrl" value="http://localhost:8080/gp"/>
+    </target>
+    <target name="setDefaultModulesDir" unless="modulesDirectory">
+        <property name="modulesDirectory" value="../../modules/release_archive"/>
+    </target>
 
-	<target name="setDefaultServer" unless="genepatternServerUrl">
-		<property name="genepatternServerUrl" value="http://localhost:8080/gp" />
-	</target>
-	<target name="setDefaultModulesDir" unless="modulesDirectory">
-		<property name="modulesDirectory" value="../../modules/release_archive" />
-	</target>
+    <target name="package" depends="init, clean, compile">
+        <jar basedir="${build}" defaultexcludes="true" includes="**" jarfile="ZipUpload.jar">
+        </jar>
+    </target>
 
-	<target name="package" depends="init, clean, compile">
-		<jar basedir="classes" defaultexcludes="true" includes="**" jarfile="ZipUpload.jar">
-		</jar>
-	</target>
+    <target description="Removes all the .class files" name="clean">
+        <delete>
+            <fileset dir="." includes="${build}/**"/>
+        </delete>
+    </target>
 
-	<target description="Removes all the .class files" name="clean">
-		<delete>
-			<fileset dir="." includes="classes/**/*.class" />
-		</delete>
-	</target>
-
-	<target depends="init" name="compile">
-		<mkdir dir="classes" />
-		<javac debug="true" defaultexcludes="true" deprecation="true" destdir="classes" optimize="false" proceed="false" srcdir="src">
-			<classpath refid="library.classpath" />
-		</javac>
-	</target>
+    <target depends="init" name="compile">
+        <mkdir dir="${build}"/>
+        <javac debug="true" defaultexcludes="true" deprecation="true" destdir="${build}" optimize="false"
+               proceed="false" srcdir="src">
+            <classpath refid="library.classpath"/>
+        </javac>
+    </target>
 
 
+    <target depends="init" name="uploadModulesFromDir">
+        <java classname="edu.mit.genome.gp.util.ZipUpload" classpath="./:${library.classpath}" fork="true">
+            <classpath refid="library.classpath"/>
+            <arg line="${genepatternServerUrl}  ${modulesDirectory}"/>
+        </java>
+    </target>
 
-	<target depends="init" name="uploadModulesFromDir">
-		<java classname="edu.mit.genome.gp.util.ZipUpload" classpath="./:${library.classpath}" fork="true">
-			<classpath refid="library.classpath" />
-			<arg line="${genepatternServerUrl}  ${modulesDirectory}" />
-		</java>
-	</target>
+    <target depends="init" name="testfile">
+        <java classname="edu.mit.genome.gp.util.ZipUpload" classpath="./:${library.classpath}" fork="true">
+            <classpath refid="library.classpath"/>
+            <arg line="http://localhost:8080/gp  ../modules/build/TransposeDataset.zip"/>
+        </java>
+    </target>
 
-	<target depends="init" name="testfile">
-		<java classname="edu.mit.genome.gp.util.ZipUpload" classpath="./:${library.classpath}" fork="true">
-			<classpath refid="library.classpath" />
-			<arg line="http://localhost:8080/gp  ../modules/build/TransposeDataset.zip" />
-		</java>
-	</target>
-
-	<target depends="init" name="catalog">
-		<java classname="edu.mit.genome.gp.util.ZipCatalogUpload" classpath="./:${library.classpath}" fork="true">
-			<classpath refid="library.classpath" />
-			<arg line="http://iwww.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_pubtest.cgi prod ../modules/release_archive/ClassNeighbors.zip" />
-		</java>
-	</target>
+    <target depends="init" name="catalog">
+        <java classname="edu.mit.genome.gp.util.ZipCatalogUpload" classpath="./:${library.classpath}" fork="true">
+            <classpath refid="library.classpath"/>
+            <arg line="http://iwww.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_pubtest.cgi prod ../modules/release_archive/ClassNeighbors.zip"/>
+        </java>
+    </target>
 
 
 </project>
