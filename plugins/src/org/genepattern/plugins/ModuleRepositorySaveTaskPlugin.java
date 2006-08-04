@@ -22,14 +22,22 @@ import java.io.IOException;
  * @author Joshua Gould
  */
 public class ModuleRepositorySaveTaskPlugin implements SaveTaskPlugin {
-    static String url = "http://wwwdev.broad.mit.edu/webservices/3rdpartymodulerepository/uploadForm.jsp";
+    private static final String THIRD_PARTY_URL =
+            "http://wwwdev.broad.mit.edu/webservices/3rdpartymodulerepository/ModuleRepositoryServlet";
+
 
     public void taskSaved(File zipFile) {
         ZipCatalogUpload zipCatalogUpload = new ZipCatalogUpload();
         try {
-            zipCatalogUpload.upload(url, ZipCatalogUpload.MODULE, ZipCatalogUpload.DEV, zipFile.getCanonicalPath());
+            zipCatalogUpload
+                    .upload(THIRD_PARTY_URL, ZipCatalogUpload.MODULE, ZipCatalogUpload.DEV, zipFile.getCanonicalPath());
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) {
+        ModuleRepositorySaveTaskPlugin r = new ModuleRepositorySaveTaskPlugin();
+        r.taskSaved(new File(args[0]));
     }
 }
