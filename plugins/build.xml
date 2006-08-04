@@ -37,4 +37,11 @@
     </target>
 
 
+    <target depends="compile" name="run">
+        <java classname="org.genepattern.plugins.ModuleRepositorySaveTaskPlugin" fork="true" maxmemory="1024m">
+            <arg value="${file}"/>
+            <classpath refid="library.classpath"/>
+            <classpath path="${build}"/>
+        </java>
+    </target>
 </project>
