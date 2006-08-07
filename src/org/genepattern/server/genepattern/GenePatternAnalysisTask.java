@@ -29,13 +29,31 @@ import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.ITaskIntegrator;
 import org.genepattern.util.IGPConstants;
 import org.genepattern.util.LSID;
-import org.genepattern.webservice.*;
-import org.w3c.dom.*;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.JobStatus;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.servlet.ServletContext;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
-import java.net.*;
+import java.net.Authenticator;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -203,7 +221,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * @author Jim Lerner
      */
     public void onJob(Object o) {
-
         JobInfo jobInfo = (JobInfo) o;
         TaskInfo taskInfo = null;
         File inFile;
@@ -214,7 +231,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
         String outDirName = getJobDir(Integer.toString(jobInfo.getJobNumber()));
         JobInfo parentJobInfo = null;
         File taskLog = null;
-
         try {
             /**
              * make directory to hold input and output files
@@ -231,9 +247,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 for (i = 0; old != null && i < old.length; i++) {
                     old[i].delete();
                 }
-
             }
-
             AnalysisJobDataSource ds = getDS();
             taskInfo = ds.getTask(jobInfo.getTaskID());
             if (taskInfo == null) {
@@ -257,7 +271,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
 
             // get environment variables
             Hashtable env = getEnv();
-
             addTaskLibToPath(taskName, env, taskInfoAttributes.get(LSID));
             JobInfo parentJI = getDS().getParent(jobInfo.getJobNumber());
             int parent = -1;
@@ -272,14 +285,12 @@ public class GenePatternAnalysisTask implements IGPConstants {
 
             // move input files into temp directory
             String inputFilename = null;
-
             HashMap attrsActual = null;
             String mode;
             String fileType;
             String originalPath;
             long inputLastModified[] = new long[0];
             long inputLength[] = new long[0];
-
             if (params != null) {
                 inputLastModified = new long[params.length];
                 inputLength = new long[params.length];
@@ -293,7 +304,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     // allow parameter value substitutions within file input
                     // parameters
                     originalPath = substitute(originalPath, props, params);
-
                     if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null &&
                             !mode.equals(ParameterInfo.OUTPUT_MODE)) {
                         _cat.debug("in: mode=" + mode + ", fileType=" + fileType + ", name=" + params[i].getValue() +
@@ -301,7 +311,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                         if (originalPath == null) {
                             throw new IOException(params[i].getName() + " has not been assigned a filename");
                         }
-
                         if (mode.equals("CACHED_IN")) {
                             originalPath = System.getProperty("jobs") + "/" + originalPath;
                         }
@@ -320,7 +329,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
 
                         // borrow input file and put it into the job's directory
                         _cat.debug("borrowing " + inFile.getCanonicalPath() + " to " + outFile.getCanonicalPath());
-
                         if (!inFile.exists() || (!outFile.exists() &&
                                 (bCopyInputFiles ? !copyFile(inFile, outFile) : !rename(inFile, outFile, true)))) {
                             throw new Exception("FAILURE: " + inFile.toString() + " (exists " + inFile.exists() +
@@ -375,40 +383,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                         .startsWith("file:"))) {
                             _cat.debug(
                                     "in: mode=" + mode + ", fileType=" + fileType + ", name=" + params[i].getValue());
-
-                            // derive a filename that is as similar as
-                            // reasonable to the name of the page
-                            String baseName = originalPath
-                                    .substring(originalPath.lastIndexOf("/") + 1);
-                            int j;
-                            j = baseName.lastIndexOf("?");
-                            if (j != -1 && j < baseName.length()) {
-                                baseName = baseName.substring(j + 1);
-                            }
-                            j = baseName.lastIndexOf("&");
-                            if (j != -1 && j < baseName.length()) {
-                                baseName = baseName.substring(j + 1);
-                            }
-                            j = baseName.lastIndexOf("=");
-                            if (j != -1 && j < baseName.length()) {
-                                baseName = baseName.substring(j + 1);
-                            }
-                            j = baseName.indexOf("Axis");
-                            // strip off the AxisNNNNNaxis_ prefix
-                            if (j == 0) {
-                                baseName = baseName.substring(baseName
-                                        .indexOf("_") + 1);
-                            }
-                            if (baseName.length() == 0) {
-                                params[i].setValue("");
-                                continue;
-                            }
-                            baseName = URLDecoder.decode(baseName, UTF8);
-
-                            outFile = new File(outDirName, baseName);
-                            _cat.info("downloading " + originalPath + " to " + outFile.getAbsolutePath());
-                            outFile.deleteOnExit();
-
                             URI uri = new URI(originalPath);
                             final String userInfo = uri.getUserInfo();
                             if (userInfo != null) {
@@ -420,17 +394,21 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                                     usernamePassword[1].toCharArray());
                                         }
                                     });
-
                                 }
                             }
                             InputStream is = null;
                             FileOutputStream os = null;
                             try {
-                                is = uri.toURL().openStream();
+                                URLConnection conn = uri.toURL().openConnection();
+                                is = conn.getInputStream();
+                                outFile = new File(outDirName, getDownloadFileName(conn));
+                                _cat.info("downloading " + originalPath + " to " + outFile.getAbsolutePath());
+                                outFile.deleteOnExit();
                                 os = new FileOutputStream(outFile);
                                 byte[] buf = new byte[100000];
-                                while ((j = is.read(buf, 0, buf.length)) > 0) {
-                                    os.write(buf, 0, j);
+                                int bytesRead;
+                                while ((bytesRead = is.read(buf, 0, buf.length)) > 0) {
+                                    os.write(buf, 0, bytesRead);
                                 }
                             } finally {
                                 if (userInfo != null) {
@@ -442,7 +420,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                 if (os != null) {
                                     os.close();
                                 }
-
                             }
                             params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
                             params[i].setValue(outFile.getCanonicalPath());
@@ -471,13 +448,11 @@ public class GenePatternAnalysisTask implements IGPConstants {
             ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
             Vector vProblems = validateParameters(props, taskName, taskInfoAttributes.get(COMMAND_LINE), params,
                     formalParameters, true);
-
             String c = substitute(substitute(taskInfoAttributes
                     .get(COMMAND_LINE), props, formalParameters), props, formalParameters);
             if (c == null || c.trim().length() == 0) {
                 vProblems.add("Command line not defined");
             }
-
             String lsfPrefix = props.getProperty(COMMAND_PREFIX, null);
             if (lsfPrefix != null && lsfPrefix.length() > 0) {
                 taskInfoAttributes.put(COMMAND_LINE, lsfPrefix + " " + taskInfoAttributes.get(COMMAND_LINE));
@@ -507,7 +482,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 cmdLine = substitute(firstToken, props, formalParameters) + cmdLine.substring(firstToken.length());
                 stCommandLine = new StringTokenizer(cmdLine);
                 commandTokens = new String[stCommandLine.countTokens()];
-
                 for (i = 0; stCommandLine.hasMoreTokens(); i++) {
                     token = stCommandLine.nextToken();
                     commandTokens[i] = substitute(token, props, formalParameters);
@@ -533,7 +507,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     stCommandLine = new StringTokenizer(cmdLine
                             .substring(endQuote + 1));
                     commandTokens = new String[stCommandLine.countTokens() + 1];
-
                     commandTokens[0] = substitute(firstToken, props, formalParameters);
                     for (i = 1; stCommandLine.hasMoreTokens(); i++) {
                         token = stCommandLine.nextToken();
@@ -566,13 +539,11 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     i--;
                 }
             }
-
             String stdoutFilename = null;
             String stderrFilename = null;
             String stdinFilename = null;
             StringBuffer commandLine = new StringBuffer();
             List commandLineList = new ArrayList(commandTokens.length);
-
             boolean addLast = true;
             for (int j = 0; j < commandTokens.length - 1; j++) {
                 if (commandTokens[j].equals(STDOUT_REDIRECT)) {
@@ -607,10 +578,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 commandLineList.add(commandTokens[commandTokens.length - 1]);
                 commandLine.append(commandTokens[commandTokens.length - 1]);
             }
-
             commandTokens = (String[]) commandLineList.toArray(new String[0]);
             String lastToken = commandTokens[commandTokens.length - 1];
-
             if (lastToken.equals(STDOUT_REDIRECT)) {
                 vProblems.add("Missing name for standard output redirect");
             } else if (lastToken.equals(STDERR_REDIRECT)) {
@@ -618,7 +587,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
             } else if (lastToken.equals(STDIN_REDIRECT)) {
                 vProblems.add("Missing name for standard input redirect");
             }
-
             StringBuffer stderrBuffer = new StringBuffer();
             if (vProblems.size() > 0) {
                 stderrBuffer
@@ -642,7 +610,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 } else {
                     stdoutFile = new File(outDir, stdoutFilename);
                 }
-
                 boolean renameStderr = stderrFilename == null;
                 if (renameStderr) {
                     stderrFile = File.createTempFile("stderr", null);
@@ -681,7 +648,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                             .get(ParameterInfo.MODE) : null);
                     if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null &&
                             !mode.equals(ParameterInfo.OUTPUT_MODE)) {
-
                         if (params[i].getValue() == null) {
                             throw new IOException(params[i].getName() + " has no filename association");
                         }
@@ -721,7 +687,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                     errorMessage = errorMessage + "original size: " + inputLength[i] +
                                             ", current size: " + outFile.length() + "\n";
                                 }
-
                                 if (stderrBuffer.length() > 0) {
                                     stderrBuffer.append("\n");
                                 }
@@ -807,19 +772,15 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     return 1;
                 }
             });
-
             parentJobInfo = getDS().getParent(jobInfo.getJobNumber());
             for (i = 0; i < outputFiles.length; i++) {
                 File f = outputFiles[i];
                 _cat.debug("adding output file to output parameters " + f.getName() + " from " + outDirName);
                 addFileToOutputParameters(jobInfo, f.getName(), f.getName(), parentJobInfo);
-
             }
-
             if (new File(outDir, stdoutFilename).exists()) {
                 addFileToOutputParameters(jobInfo, stdoutFilename, stdoutFilename, parentJobInfo);
             }
-
             if (new File(outDir, stderrFilename).exists()) {
                 addFileToOutputParameters(jobInfo, stderrFilename, stderrFilename, parentJobInfo);
             }
@@ -830,7 +791,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
             if (taskLog != null) {
                 addFileToOutputParameters(jobInfo, TASKLOG, TASKLOG, parentJobInfo);
             }
-
             getDS().updateJob(jobInfo.getJobNumber(), jobInfo.getParameterInfo(), jobStatus);
             if (parentJobInfo != null) {
                 getDS().updateJob(parentJobInfo.getJobNumber(), parentJobInfo.getParameterInfo(),
@@ -849,7 +809,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
             System.err.println(taskName + " error: " + e);
             _cat.error(taskName + " error: " + e);
             e.printStackTrace();
-
             try {
                 outFile = writeStringToFile(outDirName, STDERR, e.getMessage() + "\n\n");
                 addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
@@ -866,7 +825,60 @@ public class GenePatternAnalysisTask implements IGPConstants {
             }
             IndexerDaemon.notifyJobComplete(jobInfo.getJobNumber());
         }
+    }
 
+    /**
+     * Gets a filename that is as similar as possible to the given url
+     *
+     * @param conn The connection
+     * @return the filename
+     */
+    public static String getDownloadFileName(URLConnection conn) {
+        String contentDis = conn.getHeaderField("Content-Disposition");
+        if (contentDis != null) {
+            String[] tokens = contentDis.split(";");
+            if (tokens != null) {
+                for (int k = 0, length = tokens.length; k < length; k++) {
+                    if (tokens[k].toLowerCase().startsWith("filename=")) {
+                        String[] filename = tokens[k].split("=");
+                        if (filename.length == 2) {
+                            return filename[1].trim();
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        String url = conn.getURL().toString();
+        String baseName = url
+                .substring(url.lastIndexOf("/") + 1);
+        int j = baseName.lastIndexOf("?");
+        if (j != -1 && j < baseName.length()) {
+            baseName = baseName.substring(j + 1);
+        }
+        j = baseName.lastIndexOf("&");
+        if (j != -1 && j < baseName.length()) {
+            baseName = baseName.substring(j + 1);
+        }
+        j = baseName.lastIndexOf("=");
+        if (j != -1 && j < baseName.length()) {
+            baseName = baseName.substring(j + 1);
+        }
+        j = baseName.indexOf("Axis");
+        // strip off the AxisNNNNNaxis_ prefix
+        if (j == 0) {
+            baseName = baseName.substring(baseName
+                    .indexOf("_") + 1);
+        }
+        if (baseName == null || baseName.length() == 0) {
+            baseName = url;
+        }
+        try {
+            baseName = URLDecoder.decode(baseName, UTF8);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return baseName;
     }
 
     protected static ParameterInfo getParam(String name, ParameterInfo[] params) {
@@ -893,20 +905,16 @@ public class GenePatternAnalysisTask implements IGPConstants {
             bw.write("\n# Task: " + jobInfo.getTaskName() + " " + jobInfo.getTaskLSID());
             bw.write("\n# Parameters: ");
             ParameterInfo pinfos[] = jobInfo.getParameterInfoArray();
-
             for (int pi = 0; pinfos != null && pi < pinfos.length; pi++) {
                 ParameterInfo pinfo = pinfos[pi];
                 if (!pinfo.isOutputFile()) {
                     String value = null;
                     if (pinfo.isInputFile()) {
                         File ifn = new File(pinfo.getValue());
-
                         ParameterInfo actp = getParam(pinfo.getName(), actualParams);
                         String origFullPath = (String) actp.getAttributes()
                                 .get(ORIGINAL_PATH);
-
                         value = ifn.getName();
-
                         if (value.startsWith("Axis") && value.indexOf("_") != -1) {
                             value = value.substring(value.indexOf("_") + 1);
                         }
@@ -918,15 +926,12 @@ public class GenePatternAnalysisTask implements IGPConstants {
                             // C:\Program
                             // Files\GenePatternServer\Tomcat\..\temp\attachments\Axis39088.att_all_aml_500.gct
                             // we want everything from ..\temp on
-
                             String substr = ".." + File.separator + "temp" + File.separator + "attachments";
                             int fidx = origFullPath.indexOf(substr);
                             String inputfilename = origFullPath
                                     .substring(fidx + 20);
-
                             value = value + "    " + GP_URL + "getInputFile.jsp?file=" + inputfilename;
                         }
-
                     } else {
                         ParameterInfo formalPinfo = null;
                         for (int fpidx = 0; fpidx < formalParameters.length; fpidx++) {
@@ -935,12 +940,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                 break;
                             }
                         }
-
                         ParameterInfo actp = getParam(pinfo.getName(), actualParams);
-
                         String origFullPath = (String) actp.getAttributes()
                                 .get(ORIGINAL_PATH);
-
                         if (origFullPath != null) {
                             value = origFullPath;
                         } else {
@@ -956,7 +958,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     if (substitutedValue != null && !(value.equals(substitutedValue))) {
                         value = substitutedValue + " (" + value + ")";
                     }
-
                     bw.write("\n#    " + pinfo.getName() + " = " + value);
                 }
             }
@@ -974,13 +975,11 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 }
             }
         }
-
     }
 
     protected static boolean validateCPU(String expected) throws Exception {
         String actual = System.getProperty("os.arch");
         // eg. "x86", "i386", "ppc", "alpha", "sparc"
-
         if (expected.equals("")) {
             return true;
         }
@@ -990,16 +989,13 @@ public class GenePatternAnalysisTask implements IGPConstants {
         if (expected.equalsIgnoreCase(actual)) {
             return true;
         }
-
         String intelEnding = "86"; // x86, i386, i586, etc.
         if (expected.endsWith(intelEnding) && actual.endsWith(intelEnding)) {
             return true;
         }
-
         if (System.getProperty(COMMAND_PREFIX, null) != null) {
             return true; // don't validate for LSF
         }
-
         throw new Exception(
                 "Cannot run on this platform.  Task requires a " + expected + " CPU, but this is a " + actual);
     }
@@ -1007,7 +1003,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
     protected static boolean validateOS(String expected) throws Exception {
         String actual = System.getProperty("os.name");
         // eg. "Windows XP", "Linux", "Mac OS X", "OSF1"
-
         if (expected.equals("")) {
             return true;
         }
@@ -1017,17 +1012,14 @@ public class GenePatternAnalysisTask implements IGPConstants {
         if (expected.equalsIgnoreCase(actual)) {
             return true;
         }
-
         String MicrosoftBeginning = "Windows"; // Windows XP, Windows ME,
         // Windows XP, Windows 2000, etc.
         if (expected.startsWith(MicrosoftBeginning) && actual.startsWith(MicrosoftBeginning)) {
             return true;
         }
-
         if (System.getProperty(COMMAND_PREFIX, null) != null) {
             return true; // don't validate for LSF
         }
-
         throw new Exception("Cannot run on this platform.  Task requires a " + expected +
                 " operating system, but this server is running " + actual);
     }
@@ -1047,14 +1039,12 @@ public class GenePatternAnalysisTask implements IGPConstants {
         // some patches required, check which are already installed
         String[] requiredPatchLSIDs = requiredPatchLSID.split(",");
         String requiredPatchURL = tia.get(REQUIRED_PATCH_URLS);
-
         String[] patchURLs = (requiredPatchURL != null && requiredPatchURL.length() > 0 ? requiredPatchURL.split(",") :
                 new String[requiredPatchLSIDs.length]);
         if (patchURLs != null && patchURLs.length != requiredPatchLSIDs.length) {
             throw new Exception(taskInfo.getName() + " has " + requiredPatchLSIDs.length + " patch LSIDs but " +
                     patchURLs.length + " URLs");
         }
-
         eachRequiredPatch:
         for (int requiredPatchNum = 0; requiredPatchNum < requiredPatchLSIDs.length; requiredPatchNum++) {
             String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
@@ -1062,12 +1052,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
             if (installedPatches != null) {
                 installedPatchLSIDs = installedPatches.split(",");
             }
-
             requiredPatchLSID = requiredPatchLSIDs[requiredPatchNum];
             LSID requiredLSID = new LSID(requiredPatchLSID);
             _cat.debug("Checking whether " + requiredPatchLSID + " is already installed...");
             for (int p = 0; p < installedPatchLSIDs.length; p++) {
-
                 LSID installedLSID = new LSID(installedPatchLSIDs[p]);
                 if (installedLSID.isEquivalent(requiredLSID)) {
                     // there are installed patches, and there is an LSID match
@@ -1090,7 +1078,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
         if (installedPatches != null) {
             installedPatchLSIDs = installedPatches.split(",");
         }
-
         LSID requiredLSID = new LSID(requiredPatchLSID);
         _cat.debug("Checking whether " + requiredPatchLSID + " is already installed...");
         for (int p = 0; p < installedPatchLSIDs.length; p++) {
@@ -1112,29 +1099,24 @@ public class GenePatternAnalysisTask implements IGPConstants {
     public static void installPatch(String requiredPatchLSID, String requiredPatchURL, ITaskIntegrator taskIntegrator)
             throws Exception {
         LSID patchLSID = new LSID(requiredPatchLSID);
-
         boolean wasNullURL = (requiredPatchURL == null || requiredPatchURL
                 .length() == 0);
         if (wasNullURL) {
             requiredPatchURL = System.getProperty(DEFAULT_PATCH_URL);
         }
-
         HashMap hmProps = new HashMap();
         if (wasNullURL) {
             taskIntegrator.statusMessage("Fetching patch information from " + requiredPatchURL);
             URL url = new URL(requiredPatchURL);
             URLConnection connection = url.openConnection();
             connection.setUseCaches(false);
-
             if (connection instanceof HttpURLConnection) {
                 connection.setDoOutput(true);
                 PrintWriter pw = new PrintWriter(connection.getOutputStream());
                 String[] patchQualifiers = System.getProperty("patchQualifiers", "").split(",");
-
                 pw.print("patch");
                 pw.print("=");
                 pw.print(URLEncoder.encode(requiredPatchLSID, UTF8));
-
                 for (int p = 0; p < patchQualifiers.length; p++) {
                     pw.print("&");
                     pw.print(URLEncoder.encode(patchQualifiers[p], UTF8));
@@ -1143,7 +1125,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 }
                 pw.close();
             }
-
             Document doc = DocumentBuilderFactory.newInstance()
                     .newDocumentBuilder().parse(connection.getInputStream());
             Element root = doc.getDocumentElement();
@@ -1154,13 +1135,11 @@ public class GenePatternAnalysisTask implements IGPConstants {
             }
             requiredPatchURL = (String) hmProps.get("site_module.url");
         }
-
         if (taskIntegrator != null) {
             taskIntegrator.statusMessage("Downloading required patch from " + requiredPatchURL);
         }
         String zipFilename =
                 downloadPatch(requiredPatchURL, taskIntegrator, (String) hmProps.get("site_module.zipfilesize"));
-
         String patchName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() +
                 "." + patchLSID.getVersion();
         File patchDirectory = new File(System.getProperty("patches"), patchName);
@@ -1180,16 +1159,13 @@ public class GenePatternAnalysisTask implements IGPConstants {
         String commandLine = getPatchCommandLine(props);
         // if (taskIntegrator != null) taskIntegrator.statusMessage("Running " +
         // commandLine + " in " + patchDirectory.getAbsolutePath());
-
         if (taskIntegrator != null) {
             taskIntegrator.statusMessage("Running " + nomDePatch + " Installer.<br> ");
         }
-
         String exitValue = "" + executePatch(commandLine, patchDirectory, taskIntegrator);
         if (taskIntegrator != null) {
             taskIntegrator.statusMessage("Patch installed, exit code " + exitValue);
         }
-
         String goodExitValue = props.getProperty(PATCH_SUCCESS_EXIT_VALUE, "0");
         String failureExitValue = props.getProperty(PATCH_ERROR_EXIT_VALUE, "");
         if (exitValue.equals(goodExitValue) || !exitValue.equals(failureExitValue)) {
@@ -1202,7 +1178,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
             if (!new File(patchDirectory, MANIFEST_FILENAME).exists()) {
                 explodePatch(zipFilename, patchDirectory, null, MANIFEST_FILENAME);
                 if (props.getProperty(REQUIRED_PATCH_URLS, null) == null) {
-
                     try {
                         File f = new File(patchDirectory, MANIFEST_FILENAME);
                         Properties mprops = new Properties();
@@ -1219,7 +1194,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     // writePropertiesFile(f, properties);
                 }
             }
-
         } else {
             if (taskIntegrator != null) {
                 taskIntegrator
@@ -1270,7 +1244,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
         ZipFile zipFile = new ZipFile(zipFilename);
         InputStream is = null;
         patchDirectory.mkdirs();
-
         if (zipEntryName == null) {
             // clean out existing directory
             File[] old = patchDirectory.listFiles();
@@ -1278,7 +1251,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 old[i].delete();
             }
         }
-
         for (Enumeration eEntries = zipFile.entries(); eEntries
                 .hasMoreElements();) {
             ZipEntry zipEntry = (ZipEntry) eEntries.nextElement();
@@ -1322,7 +1294,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
     protected static String getPatchCommandLine(Properties props) throws Exception {
         String commandLine = props.getProperty(COMMAND_LINE);
         Properties systemProps = new Properties(System.getProperties());
-
         if (System.getProperty(JAVA, null) == null) {
             systemProps.put(JAVA, System.getProperty("java.home") + System.getProperty("file.separator") + "bin" +
                     System.getProperty("file.separator") + "java");
@@ -1330,7 +1301,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
             systemProps.put(JAVA, System.getProperty(JAVA) + System.getProperty("file.separator") + "bin" +
                     System.getProperty("file.separator") + "java");
         }
-
         if (commandLine == null || commandLine.length() == 0) {
             throw new Exception("No command line defined in " + MANIFEST_FILENAME);
         }
@@ -1369,7 +1339,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
         // This seemed to be
         // the case for Perl 5.0.1 on Wilkins, and might be a problem in
         // other applications as well.
-
         process.getOutputStream().close(); // there is no stdin to feed to
         // the program. So if it asks,
         // let it see EOF!
@@ -1418,13 +1387,11 @@ public class GenePatternAnalysisTask implements IGPConstants {
         // installedPatches);
         // writeGenePatternProperties(properties);
         System.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
-
         Properties props = new Properties();
         props.load(new FileInputStream(new File(System.getProperty("resources"), "genepattern.properties")));
         props.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
         props.store(new FileOutputStream(new File(System
                 .getProperty("resources"), "genepattern.properties")), "added installed patch LSID");
-
     }
 
     /**
@@ -1475,7 +1442,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     hmProps.put(c_elt.getTagName() + "." + attrName, attrValue);
                 }
             }
-
         } else {
             _cat.debug("non-Element node: " + node.getNodeName() + "=" + node.getNodeValue());
         }
@@ -1581,7 +1547,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
         }
         ParameterInfo p = null;
         StringBuffer newString = new StringBuffer(commandLine);
-
         while (start < newString.length() && (start = newString.toString().indexOf(LEFT_DELIMITER, start)) != -1) {
             start += LEFT_DELIMITER.length();
             int index = start - LEFT_DELIMITER.length() - 1;
@@ -1625,7 +1590,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     replacement = "\"" + replacement + "\"";
                 }
             }
-
             if (replacement.length() == 0) {
                 _cat.debug("GPAT.substitute: replaced " + varName + " with empty string");
             }
@@ -1647,7 +1611,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
             if (replacement.indexOf("Program Files") != -1) {
                 replacement = replace(replacement, "Program Files", "Progra~1");
             }
-
             newString = newString.replace(start - LEFT_DELIMITER.length(), end + RIGHT_DELIMITER.length(), replacement);
             start = start + replacement.length() - LEFT_DELIMITER.length();
         }
@@ -1660,7 +1623,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
     /**
      * Deletes a task, by name, from the Omnigene task_master database.
      *
-     * @param name name of task to delete
+     * @param lsid name of task to delete
      * @author Jim Lerner
      */
     public static void deleteTask(String lsid) throws OmnigeneException, RemoteException {
@@ -1816,7 +1779,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
             path = (String) envVariables.get(pathKey);
         }
         String taskDir = DirectoryManager.getTaskLibDir(taskName, sLSID, null);
-
         if (isWindows) {
             // Windows
             path = path + System.getProperty("path.separator") + taskDir;
@@ -1866,7 +1828,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * @param jobNumber          job number of job to be run
      * @param taskID             task ID of job to be run
      * @param taskInfoAttributes TaskInfoAttributes metadata of job to be run
-     * @param parms              actual parameters to substitute for job to be run
+     * @param actuals            actual parameters to substitute for job to be run
      * @param env                Hashtable of environment variables values
      * @param formalParameters   ParameterInfo[] of formal parameter definitions, used to
      *                           determine which parameters are input files (therefore needing
@@ -1878,7 +1840,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
     public Properties setupProps(String taskName, int parentJobNumber, int jobNumber, int taskID,
                                  TaskInfoAttributes taskInfoAttributes, ParameterInfo[] actuals, Hashtable env,
                                  ParameterInfo[] formalParameters, String userID) throws Exception {
-
         Properties props = new Properties();
         try {
             // copy environment variables into props
@@ -1899,7 +1860,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 }
                 props.put(key, value);
             }
-
             props.put(NAME, taskName);
             props.put(JOB_ID, Integer.toString(jobNumber));
             props.put("parent_" + JOB_ID, Integer.toString(parentJobNumber));
@@ -1950,7 +1910,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
             // BUG: this is NOT R_HOME! This is R_HOME/bin/R
             props.put(R_HOME, props.getProperty(R));
             // R should be <java> -cp <libdir> -DR_HOME=<R> RunR
-
             props.put(R, LEFT_DELIMITER + JAVA + RIGHT_DELIMITER + " -cp " + LEFT_DELIMITER + "run_r_path" +
                     RIGHT_DELIMITER + " -DR_HOME=" + LEFT_DELIMITER + "R_HOME" + RIGHT_DELIMITER + " -Dr_flags=" +
                     LEFT_DELIMITER + "r_flags" + RIGHT_DELIMITER + " RunR ");
@@ -1966,12 +1925,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     props.put(actuals[i].getName(), value);
                 }
             }
-
             String inputFilename = null;
             String inputParamName = null;
             String outDirName = getJobDir(Integer.toString(jobNumber));
             new File(outDirName).mkdirs();
-
             int j;
             // find input filenames, create _path, _file, and _basename props
             // for each
@@ -2032,7 +1989,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 }
             }
             return props;
-
         } catch (NullPointerException npe) {
             _cat.error(npe + " in setupProps.  Currently have:\n" + props);
             throw npe;
@@ -2079,7 +2035,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 i++;
             }
         }
-
         return (String[]) v.toArray(new String[0]);
     }
 
@@ -2116,7 +2071,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                               JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
         Process process = null;
         String jobID = null;
-
         try {
             commandLine = translateCommandline(commandLine);
             env.remove("SHELLOPTS"); // readonly variable in tcsh and bash,
@@ -2135,7 +2089,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
             // This seemed to be
             // the case for Perl 5.0.1 on Wilkins, and might be a problem in
             // other applications as well.
-
             OutputStream standardInStream = process.getOutputStream();
             if (stdin == null) {
                 standardInStream.close();
@@ -2154,7 +2107,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     }
                     standardInStream.close();
                 }
-
             }
             jobID = "" + jobInfo.getJobNumber();
             htRunningJobs.put(jobID, process);
@@ -2264,7 +2216,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     .add("'" + taskName +
                             "' is not a legal task name.  It must contain only letters, digits, and periods, and may not begin with a period or digit.\n It must not be a reserved keyword in R ('if', 'else', 'repeat', 'while', 'function', 'for', 'in', 'next', 'break', 'true', 'false', 'null', 'na', 'inf', 'nan').");
         }
-
         if (commandLine.trim().length() == 0) {
             vProblems.add("Command line not defined");
         }
@@ -2304,7 +2255,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                         break;
                     }
                 }
-
                 if (!foundFormal) {
                     vProblems.add(taskName + ": supplied parameter " + name + " is not part of the definition.");
                     continue;
@@ -2473,7 +2423,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * validates that the input parameters are all accounted for. It returns a
      * Vector of error messages to the caller (zero length if all okay).
      *
-     * @param taskname name of task (used in error messages)
+     * @param taskName name of task (used in error messages)
      * @param tia      TaskInfoAttributes (HashMap) containing command line
      * @param params   ParameterInfo array of formal parameter definitions
      * @return Vector of error messages from validation of inputs
@@ -2574,7 +2524,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * @throws OmnigeneException if DBLoader is unhappy when connecting to Omnigene
      * @throws RemoteException   if DBLoader is unhappy when connecting to Omnigene
      * @author Jim Lerner
-     * @see #installTask(String, String, int)
      */
     protected static Vector installTask(String name, String description, ParameterInfo[] params,
                                         TaskInfoAttributes taskInfoAttributes, String username, int access_id,
@@ -2596,7 +2545,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
             System.err.println(e.toString() + " while installing " + name);
             vProblems.add(e.toString());
         }
-
         if (vProblems.size() > 0) {
             return vProblems;
         }
@@ -2610,7 +2558,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
         if (access_id == ACCESS_PRIVATE) {
             taskInfoAttributes.put(USERID, username);
         }
-
         String lsid = taskInfoAttributes.get(LSID);
         if (lsid == null || lsid.equals("")) {
             // System.out.println("installTask: creating new LSID");
@@ -2623,11 +2570,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
         // now too
         GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(name, description, params,
                 taskInfoAttributes.encode(), username, access_id);
-
         int formerID = loader.getTaskIDByName(lsid, originalUsername);
         boolean isNew = (formerID == -1);
         if (!isNew) {
-
             try {
                 // delete the search engine indexes for this task so that it
                 // will be reindexed
@@ -2636,7 +2581,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 _cat.debug("installTask: deleted index");
             } catch (Exception ioe) {
                 _cat.info(ioe + " while deleting search index for task " + name + " during update");
-
                 System.err.println(ioe + " while deleting search index for task " + name + " during update");
             }
         }
@@ -2664,7 +2608,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 // XXX what to do here? Create a new one from scratch!
             }
         }
-
         LSIDManager lsidManager = LSIDManager.getInstance();
         if (taskLSID == null) {
             // System.out.println("installNewTask: creating new LSID");
@@ -2675,7 +2618,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
         taskInfoAttributes.put(IGPConstants.LSID, taskLSID.toString());
         // System.out.println("GPAT.installNewTask: new LSID=" +
         // taskLSID.toString());
-
         Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, taskIntegrator);
         if ((probs != null) && (probs.size() > 0)) {
             throw new TaskInstallationException(probs);
@@ -2702,7 +2644,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
             // XXX what to do here?
             System.err.println("updateTask: " + mue);
         }
-
         if (taskLSID == null) { // old task from 1.1 or earlier
             taskLSID = mgr.createNewID(TASK_NAMESPACE);
             // System.out.println("updateTask: creating new ID: " +
@@ -2729,15 +2670,12 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     .get(IGPConstants.LSID_PROVENANCE);
             provenance = provenance + "  " + taskLSID.toString();
             taskInfoAttributes.put(IGPConstants.LSID_PROVENANCE, provenance);
-
             taskLSID = mgr.createNewID(TASK_NAMESPACE);
             // System.out.println("updateTask: creating new ID for someone
             // else's provenance: " + taskLSID.toString());
             taskInfoAttributes.put(LSID, taskLSID.toString());
         }
-
         Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, null);
-
         if ((probs != null) && (probs.size() > 0)) {
             throw new TaskInstallationException(probs);
         }
@@ -2745,7 +2683,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
     }
 
     public static boolean taskExists(String taskName, String user) throws OmnigeneException {
-
         TaskInfo existingTaskInfo = null;
         try {
             existingTaskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, user);
@@ -2787,7 +2724,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
      *         getSourceForgeTasks(projectName, fileType) for more information.
      * @throws IOException if an error occurs while communicating with SourceForge
      * @author Jim Lerner
-     * @see #getSourceForgeTasks(String, String)
+     * @see #getSourceForgeTasks(String,String)
      */
     public static TreeMap getSourceForgeTasks() throws IOException {
         return getSourceForgeTasks("genepattern", ".zip");
@@ -2829,7 +2766,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
         String END_ENTRY = "</TR>";
         String sPage = null;
         int start, end;
-
         StringBuffer sbFilePage = new StringBuffer(30000);
         try {
             BufferedReader is = new BufferedReader(new InputStreamReader(new URL(sourceForgeURL).openStream()));
@@ -2855,11 +2791,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 .indexOf(START_NAME, start)) {
             end = sPage.indexOf(END_ENTRY, start) + END_ENTRY.length();
             end = sPage.indexOf(END_ENTRY, end) + END_ENTRY.length();
-
             end = sPage.indexOf(END_NAME, start);
             item = sPage.substring(start + START_NAME.length(), end);
             start = end + END_NAME.length();
-
             end = sPage.indexOf(START_FILEDATE, start);
             if (end == -1) {
                 // no releases for this file
@@ -2869,7 +2803,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
             start = end;
             end = sPage.indexOf(END_FILEDATE, start);
             uploadDate = sPage.substring(start + START_FILEDATE.length(), end);
-
             start = sPage.indexOf(HREF_START, end + END_FILEDATE.length());
             if (start == -1) {
                 continue;
@@ -2881,20 +2814,16 @@ public class GenePatternAnalysisTask implements IGPConstants {
             }
             href = sPage.substring(start + HREF_START.length(), end);
             start = end + HREF_END.length();
-
             start = sPage.indexOf(START_SIZE, start);
             end = sPage.indexOf(END_SIZE, start + START_SIZE.length());
             fileSize = sPage.substring(start + START_SIZE.length(), end);
             start = end + END_SIZE.length();
-
             start = sPage.indexOf(END_ENTRY, start) + END_ENTRY.length();
-
             if (fileType != null && !href.endsWith(fileType)) {
                 // not a downloadable task file
                 continue;
             }
             href = finalURL + href;
-
             tmOut.put(item + "," + uploadDate + "  " + fileSize, href);
         }
         return tmOut;
@@ -3019,13 +2948,11 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * @param zipFilename filename of zip file containing task to install
      * @return Vector of String error messages if unsuccessful, null if okay
      * @author Jim Lerner
-     * @see #installTask(String, String, String, ParameterInfo[],
-     *      TaskInfoAttributes, username, access_id)
+     * @see #installTask
      */
     public static String installNewTask(String zipFilename, String username, int access_id, boolean recursive,
                                         ITaskIntegrator taskIntegrator) throws TaskInstallationException {
         Vector vProblems = new Vector();
-
         IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl())
                 .getAuthorizationManager();
         if (!authManager.checkPermission("createTask", username)) {
@@ -3034,7 +2961,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     .add("You do not have permisison to create or install tasks on this server");
             throw new TaskInstallationException(v);
         }
-
         int i;
         ZipFile zipFile = null;
         InputStream is = null;
@@ -3120,10 +3046,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
             // p[1-n]_description
             // and that the numbering runs consecutively. When there is no
             // p[m]_name value, then there are m-1 ParameterInfos
-
             String value;
             String description;
-
             Vector vParams = new Vector();
             ParameterInfo pi = null;
             boolean found = true;
@@ -3157,7 +3081,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                         attributes.put(ParameterInfo.TYPE, ParameterInfo.FILE_TYPE);
                     }
                 }
-
                 for (Enumeration p = props.propertyNames(); p.hasMoreElements();) {
                     name = (String) p.nextElement();
                     if (!name.startsWith("p" + i + "_")) {
@@ -3169,7 +3092,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     name = name.substring(name.indexOf("_") + 1);
                     attributes.put(name, value);
                 }
-
                 if (attributes.size() > 0) {
                     pi.setAttributes(attributes);
                 }
@@ -3216,7 +3138,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     }
 
                     // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
                     String folder = null;
                     for (Enumeration eEntries = zipFile.entries(); eEntries
                             .hasMoreElements();) {
@@ -3226,7 +3147,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                         }
                         is = zipFile.getInputStream(zipEntry);
                         name = zipEntry.getName();
-
                         if (zipEntry.isDirectory() || name.indexOf("/") != -1 || name.indexOf("\\") != -1) {
                             // TODO: mkdirs()
                             _cat
@@ -3254,7 +3174,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                         if (i != -1) {
                             name = name.substring(i + 1);
                         }
-
                         try {
                             // TODO: support directory structure within zip file
                             outFile = new File(taskDir, name);
@@ -3287,7 +3206,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                             // + fileLength + " bytes in " + zipFilename
                             // + "'s " + zipEntry.getName());
                             // }
-
                         } catch (IOException ioe) {
                             String msg =
                                     "error unzipping file " + name + " from " + zipFilename + ": " + ioe.getMessage();
@@ -3298,7 +3216,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                             os.close();
                             os = null;
                         }
-
                     }
                     //
                     // unzip using ants classes to allow file permissions to be
@@ -3327,7 +3244,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     }
 
                     // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
                 }
             }
         } catch (Exception e) {
@@ -3381,7 +3297,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                       boolean verbose) throws IOException {
         File zipFile = null;
         long downloadedBytes = 0;
-
         try {
             zipFile = File.createTempFile("task", ".zip");
             zipFile.deleteOnExit();
@@ -3403,7 +3318,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 // downloadSize = expectedLength;
             } else {
                 downloadSize = expectedLength;
-
             }
             if ((taskIntegrator != null) && (downloadSize != -1) && verbose) {
                 taskIntegrator.statusMessage("Download length: " + (long) downloadSize + " bytes."); // Each dot
@@ -3423,7 +3337,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 // System.out.print(new String(buf, 0, i));
                 if (downloadSize > -1) {
                     long pctComplete = 100 * downloadedBytes / downloadSize;
-
                     if (lastPercent != pctComplete) {
                         if (taskIntegrator != null) {
                             taskIntegrator.continueProgress((int) pctComplete);
@@ -3467,7 +3380,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
         ZipFile zipFile = null;
         try {
             zipFile = new ZipFile(zipf);
-
             for (Enumeration eEntries = zipFile.entries(); eEntries
                     .hasMoreElements();) {
                 ZipEntry zipEntry = (ZipEntry) eEntries.nextElement();
@@ -3484,26 +3396,20 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     // every file within the
                     // stream must be extracted before it can be processed
                     subFile = File.createTempFile("sub", ".zip");
-
                     os = new FileOutputStream(subFile);
-
                     byte[] buf = new byte[100000];
                     int bytesRead;
                     while ((bytesRead = is.read(buf, 0, buf.length)) >= 0) {
                         os.write(buf, 0, bytesRead);
-
                     }
                     os.close();
                     Properties props = new Properties();
                     ZipFile subZipFile = new ZipFile(subFile);
                     ZipEntry manifestEntry = subZipFile
                             .getEntry(IGPConstants.MANIFEST_FILENAME);
-
                     props.load(subZipFile.getInputStream(manifestEntry));
-
                     subZipFile.close();
                     subFile.delete();
-
                     TaskInfo ti = new TaskInfo();
                     ti.setName((String) props.remove(NAME));
                     ti.setDescription((String) props.remove(DESCRIPTION));
@@ -3520,11 +3426,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     // p[m]_name value, then there are m-1 ParameterInfos
 
                     // count ParameterInfo entries
-
                     String name;
                     String value;
                     String description;
-
                     Vector vParams = new Vector();
                     ParameterInfo pi = null;
                     for (int i = 1; i <= MAX_PARAMETERS; i++) {
@@ -3557,7 +3461,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                 attributes.put(ParameterInfo.TYPE, ParameterInfo.FILE_TYPE);
                             }
                         }
-
                         for (Enumeration p = props.propertyNames(); p
                                 .hasMoreElements();) {
                             name = (String) p.nextElement();
@@ -3565,11 +3468,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                 continue;
                             }
                             value = (String) props.remove(name);
-
                             name = name.substring(name.indexOf("_") + 1);
                             attributes.put(name, value);
                         }
-
                         if (attributes.size() > 0) {
                             pi.setAttributes(attributes);
                         }
@@ -3598,12 +3499,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
                         os.close();
                     }
                 }
-
             }
         } finally {
             zipFile.close();
         }
-
         return vTaskInfos;
     }
 
@@ -3617,7 +3516,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * @param jobID job ID number
      * @param p     Process object for running R pipeline
      * @author Jim Lerner
-     * @see #terminateJob(String, Hashtable)
+     * @see #terminateJob(String,Hashtable)
      * @see #terminatePipeline(String)
      */
     public static void startPipeline(String jobID, Process p) {
@@ -3632,13 +3531,13 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * using the rest of the infrastructure to get input files, store output
      * files, and retrieve status and result files.
      *
-     * @param userID        user who owns this pipeline data instance
-     * @param parameterInfo ParameterInfo array containing pipeline data file output
-     *                      entries
+     * @param userID         user who owns this pipeline data instance
+     * @param parameter_info ParameterInfo array containing pipeline data file output
+     *                       entries
      * @throws OmnigeneException if thrown by Omnigene
      * @throws RemoteException   if thrown by Omnigene
      * @author Jim Lerner
-     * @see #startPipeline(String, Process)
+     * @see #startPipeline(String,Process)
      * @see #terminatePipeline(String)
      */
     public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid)
@@ -3684,7 +3583,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 jobInfo.addParameterInfo(additionalParams[i]);
             }
         }
-
         if (jobStatus < JobStatus.JOB_NOT_STARTED) {
             jobStatus = ((Integer) JobStatus.STATUS_MAP
                     .get(jobInfo.getStatus())).intValue();
@@ -3754,7 +3652,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
         String jobID;
         Enumeration eJobs;
         int numTerminated = 0;
-
         for (eJobs = htRunningPipelines.keys(); eJobs.hasMoreElements();) {
             jobID = (String) eJobs.nextElement();
             _cat.warn("Terminating job " + jobID);
@@ -3806,7 +3703,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
         String key;
         String value;
         boolean isWindows = System.getProperty("os.name").startsWith("Windows");
-
         try {
             Process getenv = Runtime.getRuntime().exec(isWindows ? "cmd /c set" : "sh -c set");
             BufferedReader in = new BufferedReader(new InputStreamReader(getenv
@@ -3987,7 +3883,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 to.delete();
             }
         }
-
         for (int retries = 1; retries < 20; retries++) {
             if (from.equals(to) || from.renameTo(to)) {
                 return true;
@@ -4001,7 +3896,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
             } catch (InterruptedException ie) {
             }
         }
-
         try {
             _cat.info("Have to copy, renameTo failed: " + from.getCanonicalPath() + " -> " + to.getCanonicalPath());
         } catch (IOException ioe) {
@@ -4057,7 +3951,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
 
     public static void main(String args[]) {
         try {
-
             if (args.length == 2 && args[0].equals("deleteTask")) {
                 String lsid = args[1];
                 GenePatternAnalysisTask.deleteTask(lsid);
@@ -4089,11 +3982,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
          * TaskInfoAttributes("' || commandline || '",\n"' ||
          * '",null,null,null,null,null,"Java"))' from task_master;
          */
-
         Vector vProblems;
         Enumeration eProblems;
         TaskInfoAttributes tia = new TaskInfoAttributes();
-
         tia.clear();
         tia.put(COMMAND_LINE, "cmd /c copy <input_filename> <output_pattern>");
         tia.put(OS, "Windows NT");
@@ -4104,7 +3995,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 _cat.error(eProblems.nextElement());
             }
         }
-
         tia.clear();
         tia
                 .put(COMMAND_LINE,
@@ -4119,7 +4009,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 _cat.error(eProblems.nextElement());
             }
         }
-
         tia.clear();
         tia
                 .put(COMMAND_LINE,
@@ -4137,7 +4026,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 _cat.error(eProblems.nextElement());
             }
         }
-
         tia.clear();
         tia
                 .put(COMMAND_LINE,
@@ -4153,7 +4041,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 _cat.error(eProblems.nextElement());
             }
         }
-
         tia.clear();
         tia
                 .put(COMMAND_LINE,
@@ -4168,7 +4055,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 _cat.error(eProblems.nextElement());
             }
         }
-
     }
 
     // really boring stuff: constructors and concrete methods overriding
@@ -4205,7 +4091,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
          * (String)tmProps.get(propName); System.out.println(propName + "=" +
          * propValue); }
          */
-
         String pathNames[] = new String[]{PERL, JAVA, R, TOMCAT};
         String oldName;
         String newName;
@@ -4351,6 +4236,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 
     // LHS is what is presented to user, RHS is what java System.getProperty()
     // returns
+
     public static String[] getCPUTypes() {
         return new String[]{ANY, "Alpha=alpha", "Intel=x86", "PowerPC=ppc", "Sparc=sparc"};
     }
@@ -4370,49 +4256,48 @@ public class GenePatternAnalysisTask implements IGPConstants {
         return new String[]{ANY, "C", "C++", "Java", "MATLAB", "Perl", "Python", "R"};
     }
 
-} // end GenePatternAnalysisTask class
+    /**
+     * The Expander uses ant's unzip instead of Java's to preserve file permissions
+     */
+    private static class Expander extends Expand {
+        public Expander() {
+            project = new Project();
+            project.init();
+            taskType = "unzip";
+            taskName = "unzip";
+            target = new Target();
+        }
+    }
 
-/**
- * The Expander uses ant's unzip instead of Java's to preserve file permissions
- */
-final class Expander extends Expand {
-    public Expander() {
-        project = new Project();
-        project.init();
-        taskType = "unzip";
-        taskName = "unzip";
-        target = new Target();
+    /**
+     * The GenePatternTaskDBLoader dynamically creates Omnigene TASK_MASTER table
+     * entries for new or modified GenePatternAnalysisTasks. Each task has a name,
+     * description, array of ParameterInfo declarations, and an XML-encoded form of
+     * TaskInfoAttributes. These are all persisted in the Omnigene database and
+     * recalled when a task is going to be invoked.
+     *
+     * @author Jim Lerner
+     * @see DBLoader;
+     */
+
+    private static class GenePatternTaskDBLoader extends DBLoader {
+        public void setup() {
+        }
+
+        public GenePatternTaskDBLoader(String name, String description, ParameterInfo[] params,
+                                       String taskInfoAttributes, String username, int access_id) {
+            this._name = name;
+            this._taskDescription = description;
+            this._params = params;
+            this._taskInfoAttributes = taskInfoAttributes;
+            this.access_id = access_id;
+            this.user_id = username;
+        }
+
+        public void updateTaskInfoAttributes(String taskInfoAttributes) {
+            this._taskInfoAttributes = taskInfoAttributes;
+        }
     }
 }
 
-/**
- * The GenePatternTaskDBLoader dynamically creates Omnigene TASK_MASTER table
- * entries for new or modified GenePatternAnalysisTasks. Each task has a name,
- * description, array of ParameterInfo declarations, and an XML-encoded form of
- * TaskInfoAttributes. These are all persisted in the Omnigene database and
- * recalled when a task is going to be invoked.
- *
- * @author Jim Lerner
- * @see org.genepattern.server.dbloader.DBLoader;
- */
 
-class GenePatternTaskDBLoader extends DBLoader {
-    public void setup() {
-    }
-
-    public GenePatternTaskDBLoader(String name, String description, ParameterInfo[] params, String taskInfoAttributes,
-                                   String username, int access_id) {
-        this._name = name;
-        this._taskDescription = description;
-        this._params = params;
-        this._taskInfoAttributes = taskInfoAttributes;
-        this.access_id = access_id;
-        this.user_id = username;
-    }
-
-    public void updateTaskInfoAttributes(String taskInfoAttributes) {
-        this._taskInfoAttributes = taskInfoAttributes;
-
-    }
-
-}
