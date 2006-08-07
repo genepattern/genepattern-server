@@ -30,7 +30,8 @@ public class ModuleRepositorySaveTaskPlugin implements SaveTaskPlugin {
         ZipCatalogUpload zipCatalogUpload = new ZipCatalogUpload();
         try {
             zipCatalogUpload
-                    .upload(THIRD_PARTY_URL, ZipCatalogUpload.MODULE, ZipCatalogUpload.DEV, zipFile.getCanonicalPath());
+                    .upload(THIRD_PARTY_URL, ZipCatalogUpload.MODULE, ZipCatalogUpload.PROD,
+                            zipFile.getCanonicalPath());
         } catch (IOException e) {
             e.printStackTrace();
         }
