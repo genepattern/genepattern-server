@@ -12,28 +12,30 @@ use, misuse, or functionality.
 
 
 <%@ page import="
-		 java.util.*,
-		 java.io.*,
-		 org.genepattern.server.util.AccessManager,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
-		 org.genepattern.util.GPConstants,
-		 org.genepattern.server.webservice.server.*,
- 		 org.genepattern.util.StringUtils,
-		 org.genepattern.server.*,
-		 org.genepattern.webservice.*,
-		 org.genepattern.server.handler.*,
-		 org.genepattern.server.webservice.*,
-		 org.genepattern.util.LSID,
-		 org.genepattern.server.TaskUtil,
-		 org.genepattern.util.LSIDUtil,
-		 org.genepattern.server.util.AuthorizationManager,
-		 org.genepattern.server.util.IAuthorizationManager,
 		 org.apache.commons.fileupload.DiskFileUpload,
-		 org.apache.commons.fileupload.FileItem,
-		 org.apache.commons.fileupload.FileUpload,
-		 org.genepattern.server.webservice.server.local.*"
-        session="false" contentType="text/html" language="Java"%>
- <%
+                 org.apache.commons.fileupload.FileItem,
+                 org.apache.commons.fileupload.FileUpload,
+                 org.genepattern.server.genepattern.GenePatternAnalysisTask,
+                 org.genepattern.server.util.AuthorizationManager,
+                 org.genepattern.server.webservice.server.local.LocalAdminClient,
+                 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient,
+                 org.genepattern.util.GPConstants,
+                 org.genepattern.util.LSID,
+                 org.genepattern.util.LSIDUtil,
+                 org.genepattern.util.StringUtils,
+                 org.genepattern.webservice.SuiteInfo,
+                 org.genepattern.webservice.TaskInfo,
+                 org.genepattern.webservice.TaskInfoAttributes,
+                 org.genepattern.webservice.WebServiceErrorMessageException,
+                 org.genepattern.webservice.WebServiceException,
+                 java.io.File,
+                 java.util.Enumeration,
+                 java.util.HashMap,
+                 java.util.Iterator,
+                 java.util.List,
+                 java.util.Vector"
+         session="false" contentType="text/html" language="Java" %>
+<%
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
     response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache control
     response.setDateHeader("Expires", 0);
@@ -47,8 +49,9 @@ use, misuse, or functionality.
 </head>
 
 <body>
-<jsp:include page="navbar.jsp" flush="">
+<jsp:include page="navbar.jsp">
 </jsp:include>
+
 <%
     try {
         int i;
@@ -62,21 +65,15 @@ use, misuse, or functionality.
         String filename = null;
         String lsid = null;
         HashMap requestParameters = new HashMap();
-
         int fileCount = 0;
         String username = (String) request.getAttribute("userID");
-        if (username == null || username.length() == 0)
+        if (username == null || username.length() == 0) {
             return; // come back after login
-            
+        }
         AuthorizationManager authManager = new AuthorizationManager();
-
-        boolean taskInstallAllowed = authManager.checkPermission(
-                "createTask", username);
-        boolean pipelineInstallAllowed = authManager.checkPermission(
-                "createPipeline", username);
-        boolean suiteInstallAllowed = authManager.checkPermission(
-                "createSuite", username);
-
+        boolean taskInstallAllowed = authManager.checkPermission("createTask", username);
+        boolean pipelineInstallAllowed = authManager.checkPermission("createPipeline", username);
+        boolean suiteInstallAllowed = authManager.checkPermission("createSuite", username);
         String agent = request.getHeader("USER-AGENT");
         boolean isIE = false;
         if (agent.indexOf("MSIE") >= 0) {
@@ -84,13 +81,10 @@ use, misuse, or functionality.
         }
 
         // TODO: get values for access_id from task_access table in database
-
-        LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(
-                username, out);
+        LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username, out);
         DiskFileUpload fub = new DiskFileUpload();
         boolean isEncodedPost = FileUpload.isMultipartContent(request);
         List params = fub.parseRequest(request);
-
         for (Iterator iter = params.iterator(); iter.hasNext();) {
             FileItem fi = (FileItem) iter.next();
             if (fi.isFormField()) {
@@ -100,7 +94,6 @@ use, misuse, or functionality.
                 // it is the file
                 fileCount++;
                 String name = fi.getName();
-
                 if (isIE) {
                     int idx1 = name.lastIndexOf("/");
                     int idx2 = name.lastIndexOf("\\");
@@ -110,20 +103,16 @@ use, misuse, or functionality.
                 if (name == null || name.equals("")) {
                     continue;
                 }
-               
-                File zipFile = new File(System .getProperty("java.io.tmpdir"), name);
+                File zipFile = new File(System.getProperty("java.io.tmpdir"), name);
                 requestParameters
-                .put(fi.getFieldName(), zipFile);
+                        .put(fi.getFieldName(), zipFile);
                 fi.write(zipFile);
-				
             }
         }
-
         url = (String) requestParameters.get("url");
-        if (url != null
-                && (url.equals("http://") || (url.length() == 0)))
+        if (url != null && (url.equals("http://") || (url.length() == 0))) {
             url = null;
-
+        }
         if (requestParameters.get("file1") == null && url == null) {
 
 %>
@@ -132,38 +121,31 @@ optional support files
 <br>
 <a href="addSuiteZip.jsp">back</a>
 <br>
-<jsp:include page="footer.jsp" flush="">
+<jsp:include page="footer.jsp">
 </jsp:include>
 </body>
 </html>
 <%
         return;
     }
-
-    int access_id = (request.getParameter(GPConstants.PRIVACY) != null ? GPConstants.ACCESS_PRIVATE
-            : GPConstants.ACCESS_PUBLIC);
+    int access_id = (request.getParameter(GPConstants.PRIVACY) != null ? GPConstants.ACCESS_PRIVATE :
+            GPConstants.ACCESS_PUBLIC);
     boolean askedRecursive = (requestParameters
             .get("askedRecursive") != null);
     boolean doRecursive = (requestParameters.get("inclDependents") != null);
     String fileURL = null;
-
     if (isEncodedPost) {
         attachedFile = (File) requestParameters.get("file1");
-
         if (attachedFile == null) {
-           
             url = (String) requestParameters.get("url");
-
             filename = GenePatternAnalysisTask.downloadTask(url);
             attachedFile = new File(filename);
             taskName = attachmentName;
             fileURL = url;
-
         } else {
             attachmentName = attachedFile.getName();
             taskName = attachmentName;
             fileURL = attachedFile.toURI().toString();
-
         }
     } else {
         if (url != null) {
@@ -174,20 +156,15 @@ optional support files
                     .substring(url.lastIndexOf("/") + 1);
             taskName = url;
         }
-
     }
-    
-   
-   try {     
+    try {
         fullName = attachedFile.toString();
         boolean isZipOfZips = taskIntegratorClient
                 .isZipOfZips(fileURL);
-
         try {
             if (!askedRecursive) {
                 if (taskInstallAllowed && isZipOfZips) {
                     // query user to see if they want just the first thing or all contents and then come back in
-
                     Vector vTaskInfos = GenePatternAnalysisTask
                             .getZipOfZipsTaskInfos(attachedFile);
                     Enumeration vTasks = vTaskInfos.elements();
@@ -220,16 +197,14 @@ optional support files
         </tr>
     </table>
 </form>
-<jsp:include page="footer.jsp" flush="">
+<jsp:include page="footer.jsp">
 </jsp:include>
 <body></body>
 <html></html>
 <%
                     return;
-
                 }
             }
-
             boolean isSuiteZip = taskIntegratorClient
                     .isSuiteZip(fileURL);
             boolean isPipelineZip = taskIntegratorClient
@@ -241,9 +216,9 @@ optional support files
             *
             */
             String fileNameForError = attachmentName;
-            if (fileNameForError == null)
+            if (fileNameForError == null) {
                 fileNameForError = fileURL;
-
+            }
             if (isZipOfZips) {
                 if (doRecursive) {
                     if (!taskInstallAllowed) {
@@ -252,61 +227,49 @@ optional support files
                             doRecursive = false;
                         } else {
                             throw new WebServiceException(
-                                    "You do not have permission to install tasks on this server: "
-                                            + fileNameForError);
+                                    "You do not have permission to install tasks on this server: " + fileNameForError);
                         }
                     } else {
                         // tasks are to be installed and we are allowed
                         // so just jo on and do it
                     }
                 }
-                lsid = taskIntegratorClient.importZipFromURL(
-                        fileURL, access_id, doRecursive);
-
+                lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive);
             } else if (isSuiteZip) {
                 if (!suiteInstallAllowed) {
                     throw new WebServiceException(
-                            "You do not have permission to install suites on this server: "
-                                    + fileNameForError);
+                            "You do not have permission to install suites on this server: " + fileNameForError);
                 }
                 // do the real installation
-                lsid = taskIntegratorClient.importZipFromURL(
-                        fileURL, access_id, doRecursive);
+                lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive);
             } else if (isPipelineZip) {
                 if (!pipelineInstallAllowed) {
                     throw new WebServiceException(
-                            "You do not have permission to install pipelines on this server: "
-                                    + fileNameForError);
+                            "You do not have permission to install pipelines on this server: " + fileNameForError);
                 }
-                lsid = taskIntegratorClient.importZipFromURL(
-                        fileURL, access_id, doRecursive);
+                lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive);
             } else { // must be a task
                 if (!taskInstallAllowed) {
                     throw new WebServiceException(
-                            "You do not have permission to install tasks on this server: "
-                                    + fileNameForError);
+                            "You do not have permission to install tasks on this server: " + fileNameForError);
                 }
-                lsid = taskIntegratorClient.importZipFromURL(
-                        fileURL, access_id, doRecursive);
+                lsid = taskIntegratorClient.importZipFromURL(fileURL, access_id, doRecursive);
             }
-
         } catch (WebServiceErrorMessageException wse) {
             vProblems = wse.getErrors();
         }
-
     } catch (Exception ioe) {
         taskName = "[unknown task name] in " + fullName;
-        if (vProblems == null)
+        if (vProblems == null) {
             vProblems = new Vector();
-        vProblems.add("Unable to install " + fullName + ": "
-                + ioe.getMessage());
-    } 
+        }
+        vProblems.add("Unable to install " + fullName + ": " + ioe.getMessage());
+    }
     if (vProblems != null && vProblems.size() > 0) {
 %>
 There are some problems with the task description for
 <%=taskName%>
-<%=(url != null) ? ("in <a href=\"" + url
-        + "\">" + url + "</a>") : ""%>
+<%=(url != null) ? ("in <a href=\"" + url + "\">" + url + "</a>") : ""%>
 that need to be fixed:
 <br>
 <ul>
@@ -315,7 +278,8 @@ that need to be fixed:
                 .hasMoreElements();) {
     %>
     <li><%=StringUtils.htmlEncode((String) eProblems
-            .nextElement())%></li>
+            .nextElement())%>
+    </li>
     <%
         }
     %>
@@ -325,19 +289,15 @@ that need to be fixed:
 <%
 } else {
     boolean isSuite = LSIDUtil.isSuiteLSID(lsid);
-
     if (!isSuite) {
-
-        TaskInfo ti = GenePatternAnalysisTask.getTaskInfo(lsid,
-                username);
+        TaskInfo ti = GenePatternAnalysisTask.getTaskInfo(lsid, username);
 
 %>
 Installation of the
 <%=ti.getName()%>
 task is complete.
 <%
-    String taskType = ti.giveTaskInfoAttributes().get(
-            GPConstants.TASK_TYPE);
+    String taskType = ti.giveTaskInfoAttributes().get(GPConstants.TASK_TYPE);
     if (!taskType.equals(GPConstants.TASK_TYPE_PIPELINE)) {
 
 %>
@@ -360,8 +320,7 @@ Try it out!
     }
 } else {
     // its a suite we just installed
-    LocalAdminClient adminClient = new LocalAdminClient(
-            username);
+    LocalAdminClient adminClient = new LocalAdminClient(username);
     SuiteInfo suite = adminClient.getSuite(lsid);
 
 %>
@@ -370,7 +329,6 @@ Installation of the
 suite is complete.
 <%
             }
-
         } // end if successfully installed
     } catch (Exception e) {
         out.println("An error occurred while importing the zip file.");
@@ -380,7 +338,7 @@ suite is complete.
 %>
 <a href="addZip.jsp">install another zip file</a>
 <br>
-<jsp:include page="footer.jsp" flush="">
+<jsp:include page="footer.jsp">
 </jsp:include>
 <body></body>
 <html></html>
