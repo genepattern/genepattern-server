@@ -597,6 +597,32 @@
     </target>
 
 
+    <target name="jspc">
+        <property name="webapp.path" value="website"/>
+        <property name="tomcat.home" value="installer/gpdist/Tomcat"/>
+        <taskdef classname="org.apache.jasper.JspC" name="jasper2">
+            <classpath id="jspc.classpath">
+                <pathelement location="${java.home}/../lib/tools.jar"/>
+                <fileset dir="${tomcat.home}/bin">
+                    <include name="*.jar"/>
+                </fileset>
+                <fileset dir="${tomcat.home}/server/lib">
+                    <include name="*.jar"/>
+                </fileset>
+                <fileset dir="${tomcat.home}/common/lib">
+                    <include name="*.jar"/>
+                </fileset>
+                <fileset dir="build" includes="gp-full.jar"/>
+                <fileset dir="lib" includes="*.jar"/>
+            </classpath>
+        </taskdef>
+
+        <jasper2
+                validateXml="false"
+                uriroot="${webapp.path}"
+                webXmlFragment="${webapp.path}/WEB-INF/generated_web.xml"
+                outputDir="${webapp.path}/WEB-INF/src"/>
+    </target>
 </project>
 
 
