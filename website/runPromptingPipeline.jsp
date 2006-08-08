@@ -25,7 +25,11 @@ use, misuse, or functionality.
                  java.io.PrintWriter,
                  java.io.StringWriter,
                  java.net.InetAddress,
-                 java.util.*"
+                 java.util.ArrayList,
+                 java.util.HashMap,
+                 java.util.Iterator,
+                 java.util.List,
+                 java.util.Map"
          session="false" contentType="text/html" language="Java" %>
 <%
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -49,18 +53,12 @@ use, misuse, or functionality.
      * runVisualizer.jsp to actually launch it after we move the params out of the smart upload object into
      * a normal request
      */
-
-
     String userID = null;
-
     try {
-
         Map requestParameters = new HashMap();
-
         if (ServletFileUpload.isMultipartContent(new ServletRequestContext(request))) {
             FileItemFactory factory = new DiskFileItemFactory();
             ServletFileUpload upload = new ServletFileUpload(factory);
-
             List items = upload.parseRequest(request);
             File dir = File.createTempFile("pipeline", null);
             Map name2FileItem = new HashMap();
@@ -71,7 +69,6 @@ use, misuse, or functionality.
             }
             dir.delete();
             dir.mkdirs();
-
             int fileIndex = 0;
             for (Iterator iter = items.iterator(); iter.hasNext();) {
                 FileItem item = (FileItem) iter.next();
@@ -91,27 +88,21 @@ use, misuse, or functionality.
                     if (path == null || path.equals("")) {
                         continue;
                     }
-
                     if (path.startsWith("http:") || path.startsWith("https:") || path.startsWith("ftp:") ||
                             path.startsWith("file:")) {
                         // don't bother trying to save a file that is a URL, retrieve it at execution time instead
                         requestParameters.put(name, path); // map between form field name and filesystem name
                         continue;
                     }
-
                     File output = new File(dir, path);
                     item.write(output);
                     requestParameters.put(name, output.getCanonicalPath());
                 }
             }
         }
-
-
         userID = (String) requestParameters.get(GPConstants.USERID);
         String RUN = "run";
         String CLONE = "clone";
-
-
         String lsid = (String) requestParameters.get("taskLSID");
         String taskName = (String) requestParameters.get("taskName");
 
@@ -119,14 +110,12 @@ use, misuse, or functionality.
         // and then forwarding through a requestDispatcher
         TaskInfo task = GenePatternAnalysisTask.getTaskInfo(lsid, userID);
         ParameterInfo[] parmInfos = task.getParameterInfoArray();
-
         request.setAttribute("name", lsid);
         String server = request.getScheme() + "://" + InetAddress.getLocalHost().getCanonicalHostName() + ":" +
                 System.getProperty("GENEPATTERN_PORT");
         if (parmInfos == null) {
             parmInfos = new ParameterInfo[0];
         }
-
         ArrayList missingReqParams = new ArrayList();
         for (int i = 0; i < parmInfos.length; i++) {
             ParameterInfo pinfo = parmInfos[i];
@@ -134,14 +123,13 @@ use, misuse, or functionality.
             if (pinfo.isInputFile()) {
                 value = (String) requestParameters.get(pinfo.getName());
                 if (value != null) {
-                    if (!value.startsWith("http:") && !value.startsWith("https:") && ! value.startsWith("ftp:") ||
+                    if (!value.startsWith("http:") && !value.startsWith("https:") && !value.startsWith("ftp:") ||
                             value.startsWith("file:")) {
                         value = server + "/" + request.getContextPath() + "/getFile.jsp?task=&file=" + value;
                     }
                 }
                 HashMap pia = pinfo.getAttributes();
                 pia.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
-
             } else {
                 value = (String) requestParameters.get(pinfo.getName());
             }
@@ -153,39 +141,30 @@ use, misuse, or functionality.
                 boolean isOptional =
                         ((String) pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
                                 .length() > 0;
-
                 if (!isOptional) {
                     missingReqParams.add(pinfo);
                 }
             }
-
             pinfo.setValue(value);
-
         }
-
         if (missingReqParams.size() > 0) {
 
 %>
-<jsp:include page="navbar.jsp">
-</jsp:include>
+<jsp:include page="navbar.jsp"/>
 <%
 
     request.setAttribute("missingReqParams", missingReqParams);
     (request.getRequestDispatcher("runTaskMissingParams.jsp")).include(request, response);
 %>
-<jsp:include page="footer.jsp">
-</jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 <%
             return;
         }
-
         request.setAttribute("PipelineParameterInfo", parmInfos);
-
         RequestDispatcher rd = request.getRequestDispatcher("runPipeline.jsp");
         rd.include(request, response);
-
     } catch (Exception e) {
         e.printStackTrace();
         StringWriter sw = new StringWriter();
