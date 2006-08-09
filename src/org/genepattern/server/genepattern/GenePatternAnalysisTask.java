@@ -856,13 +856,11 @@ public class GenePatternAnalysisTask implements IGPConstants {
             String[] tokens = contentDis.split(";");
             if (tokens != null) {
                 for (int k = 0, length = tokens.length; k < length; k++) {
-                    if (tokens[k].toLowerCase().startsWith("filename=")) {
-                        String[] filename = tokens[k].split("=");
-                        if (filename.length == 2) {
-                            return filename[1].trim();
-                        }
-                        break;
+                    String[] filename = tokens[k].split("=");
+                    if (filename.length == 2 && (filename[0].equals("file") || filename[0].equals("filename"))) {
+                        return filename[1].trim();
                     }
+                    break;
                 }
             }
         }
@@ -877,7 +875,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
             path = path.substring(0, path.length() - 1);
         }
         String value = null;
-        if (path != null && (path.matches("getFile.jsp") || path.matches("retrieveResults.jsp"))) {
+        if (path != null && ((path.indexOf("getFile.jsp") >= 0) || (path.indexOf("retrieveResults.jsp") >= 0))) {
             String query = u.getQuery();
             if (query != null && !query.equals("")) {
                 try {
