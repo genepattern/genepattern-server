@@ -908,7 +908,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 int slashIndex = path.lastIndexOf("/");
                 value = slashIndex != -1 ? path.substring(slashIndex + 1) : path;
             } else {
-                value = "index " + System.currentTimeMillis();
+                value = "index" + System.currentTimeMillis();
             }
         }
         int j = value.indexOf("Axis");
