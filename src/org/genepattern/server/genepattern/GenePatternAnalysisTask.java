@@ -873,7 +873,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
             }
         } catch (UnsupportedEncodingException e) {
         }
-        if (path != null && path.charAt(path.length() - 1) == '/') {
+        if (path != null && !path.equals("") && path.charAt(path.length() - 1) == '/') {
             path = path.substring(0, path.length() - 1);
         }
         String value = null;
@@ -908,7 +908,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 int slashIndex = path.lastIndexOf("/");
                 value = slashIndex != -1 ? path.substring(slashIndex + 1) : path;
             } else {
-                value = u.toString();
+                value = "index " + System.currentTimeMillis();
             }
         }
         int j = value.indexOf("Axis");
