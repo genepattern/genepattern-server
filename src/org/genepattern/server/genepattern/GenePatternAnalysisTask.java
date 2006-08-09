@@ -400,8 +400,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
                             }
                             InputStream is = null;
                             FileOutputStream os = null;
+                            URL url = null;
                             try {
-                                URL url = uri.toURL();
+                                url = uri.toURL();
                                 URLConnection conn = url.openConnection();
                                 is = conn.getInputStream();
                                 outFile = new File(outDirName, getDownloadFileName(conn, url));
@@ -412,6 +413,12 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                 while ((bytesRead = is.read(buf, 0, buf.length)) > 0) {
                                     os.write(buf, 0, bytesRead);
                                 }
+                            } catch (IllegalArgumentException iae) {
+                                _cat.error("Invalid URL: " + url);
+                                iae.printStackTrace();
+                            } catch (IOException ioe) {
+                                _cat.error("An error occurred while downloading " + url);
+                                ioe.printStackTrace();
                             } finally {
                                 if (userInfo != null) {
                                     Authenticator.setDefault(null);
