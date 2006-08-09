@@ -401,9 +401,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
                             InputStream is = null;
                             FileOutputStream os = null;
                             try {
-                                URLConnection conn = uri.toURL().openConnection();
+                                URL url = uri.toURL();
+                                URLConnection conn = url.openConnection();
                                 is = conn.getInputStream();
-                                outFile = new File(outDirName, getDownloadFileName(conn));
+                                outFile = new File(outDirName, getDownloadFileName(conn, url));
                                 _cat.info("downloading " + originalPath + " to " + outFile.getAbsolutePath());
                                 os = new FileOutputStream(outFile);
                                 byte[] buf = new byte[100000];
@@ -839,9 +840,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * Gets a filename that is as similar as possible to the given url
      *
      * @param conn The connection
+     * @param u    the URL that the connection was created from
      * @return the filename
      */
-    public static String getDownloadFileName(URLConnection conn) {
+    public static String getDownloadFileName(URLConnection conn, URL u) {
         String contentDis = conn.getHeaderField("Content-Disposition");
         if (contentDis != null) {
             String[] tokens = contentDis.split(";");
@@ -857,7 +859,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 }
             }
         }
-        URL u = conn.getURL();
         String path = u.getPath();
         try {
             if (path != null) {
@@ -865,10 +866,13 @@ public class GenePatternAnalysisTask implements IGPConstants {
             }
         } catch (UnsupportedEncodingException e) {
         }
+        if (path != null && path.charAt(path.length() - 1) == '/') {
+            path = path.substring(0, path.length() - 1);
+        }
         String value = null;
-        if (path != null && (path.contains("getFile.jsp") || path.contains("retrieveResults.jsp"))) {
+        if (path != null && (path.matches("getFile.jsp") || path.matches("retrieveResults.jsp"))) {
             String query = u.getQuery();
-            if (query != null) {
+            if (query != null && !query.equals("")) {
                 try {
                     query = URLDecoder.decode(query, "UTF-8");
                 } catch (UnsupportedEncodingException e) {
@@ -882,18 +886,20 @@ public class GenePatternAnalysisTask implements IGPConstants {
                         int slashIndex = value.lastIndexOf("/");
                         if (slashIndex != -1) {
                             slashIndex = value.lastIndexOf("/");
-                            value = value.substring(slashIndex, value.length());
+                            value = value.substring(slashIndex + 1);
                         }
                         break;
                     }
                 }
             }
-        } else if (path != null) {
-            value = path.substring(path.lastIndexOf("/"), path.length());
+        } else if (path != null && !path.equals("")) {
+            int slashIndex = path.lastIndexOf("/");
+            value = slashIndex != -1 ? path.substring(slashIndex + 1) : path;
         }
         if (value == null) {
-            if (path != null) {
-                value = path.substring(path.lastIndexOf("/"), path.length());
+            if (path != null && !path.equals("")) {
+                int slashIndex = path.lastIndexOf("/");
+                value = slashIndex != -1 ? path.substring(slashIndex + 1) : path;
             } else {
                 value = u.toString();
             }
@@ -901,8 +907,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
         int j = value.indexOf("Axis");
         // strip off the AxisNNNNNaxis_ prefix
         if (j == 0) {
-            value = value.substring(value
-                    .indexOf("_") + 1);
+            value = value.substring(value.indexOf("_") + 1);
         }
         return value;
     }
