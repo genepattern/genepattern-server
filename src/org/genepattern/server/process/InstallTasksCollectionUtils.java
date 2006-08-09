@@ -145,7 +145,7 @@ public class InstallTasksCollectionUtils {
 		TreeSet tsValues = new TreeSet(String.CASE_INSENSITIVE_ORDER);
 		for (int i = 0; i < unfilteredTasks.length; i++) {
 			String val = (String)unfilteredTasks[i].getAttributes().get(attributeName);
-			if (val.length() == 0) val = GPConstants.ANY; // blanks treated as any
+			if ((val == null) || val.length() == 0) val = GPConstants.ANY; // blanks treated as any
 			tsValues.add(val);
 		}
 		return (String[]) tsValues.toArray(new String[0]);
