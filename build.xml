@@ -600,6 +600,11 @@
     <target name="jspc">
         <property name="webapp.path" value="website"/>
         <property name="tomcat.home" value="installer/gpdist/Tomcat"/>
+        <property name="output.dir" value="${webapp.path}/WEB-INF/src"/>
+        <delete>
+            <fileset dir="${output.dir}" includes="**"/>
+        </delete>
+
         <taskdef classname="org.apache.jasper.JspC" name="jasper2">
             <classpath id="jspc.classpath">
                 <pathelement location="${java.home}/../lib/tools.jar"/>
@@ -621,7 +626,7 @@
                 validateXml="false"
                 uriroot="${webapp.path}"
                 webXmlFragment="${webapp.path}/WEB-INF/generated_web.xml"
-                outputDir="${webapp.path}/WEB-INF/src"/>
+                outputDir="${output.dir}"/>
     </target>
 </project>
 
