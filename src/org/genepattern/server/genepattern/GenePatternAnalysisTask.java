@@ -373,14 +373,16 @@ public class GenePatternAnalysisTask implements IGPConstants {
                         // handle http files by downloading them and
                         // substituting the downloaded filename for the URL in
                         // the command line
-
-                        // TODO: handle other protocols: file: (which server?),
-                        // ftp:
+                        boolean isURL = false;
+                        try {
+                            if (originalPath != null) {
+                                new URL(originalPath);
+                                isURL = true;
+                            }
+                        } catch (MalformedURLException mfe) {
+                        }
                         if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null &&
-                                !mode.equals(ParameterInfo.OUTPUT_MODE) && originalPath != null && (
-                                originalPath.startsWith("http://") || originalPath.startsWith("https://") ||
-                                        originalPath.startsWith("ftp:") || originalPath
-                                        .startsWith("file:"))) {
+                                !mode.equals(ParameterInfo.OUTPUT_MODE) && originalPath != null && isURL) {
                             _cat.debug(
                                     "in: mode=" + mode + ", fileType=" + fileType + ", name=" + params[i].getValue());
                             URI uri = new URI(originalPath);
@@ -403,7 +405,6 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                 is = conn.getInputStream();
                                 outFile = new File(outDirName, getDownloadFileName(conn));
                                 _cat.info("downloading " + originalPath + " to " + outFile.getAbsolutePath());
-                                outFile.deleteOnExit();
                                 os = new FileOutputStream(outFile);
                                 byte[] buf = new byte[100000];
                                 int bytesRead;
@@ -421,6 +422,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                     os.close();
                                 }
                             }
+                            outFile.deleteOnExit();
                             params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
                             params[i].setValue(outFile.getCanonicalPath());
                             inputLastModified[i] = outFile.lastModified();
@@ -701,9 +703,15 @@ public class GenePatternAnalysisTask implements IGPConstants {
                         // one of the outputs?
                         originalPath = (String) params[i].getAttributes()
                                 .remove(ORIGINAL_PATH);
-                        if (originalPath != null && (originalPath.startsWith("http://") ||
-                                originalPath.startsWith("https://") || originalPath.startsWith("ftp:") || originalPath
-                                .startsWith("file:"))) {
+                        boolean isURL = false;
+                        if (originalPath != null) {
+                            try {
+                                new URL(originalPath);
+                                isURL = true;
+                            } catch (MalformedURLException e) {
+                            }
+                        }
+                        if (originalPath != null && isURL) {
                             outFile = new File(params[i].getValue());
                             _cat.debug(
                                     "out: mode=" + mode + ", fileType=" + fileType + ", name=" + params[i].getValue());
@@ -849,36 +857,54 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 }
             }
         }
-        String url = conn.getURL().toString();
-        String baseName = url
-                .substring(url.lastIndexOf("/") + 1);
-        int j = baseName.lastIndexOf("?");
-        if (j != -1 && j < baseName.length()) {
-            baseName = baseName.substring(j + 1);
+        URL u = conn.getURL();
+        String path = u.getPath();
+        try {
+            if (path != null) {
+                path = URLDecoder.decode(path, "UTF-8");
+            }
+        } catch (UnsupportedEncodingException e) {
         }
-        j = baseName.lastIndexOf("&");
-        if (j != -1 && j < baseName.length()) {
-            baseName = baseName.substring(j + 1);
+        String value = null;
+        if (path != null && (path.contains("getFile.jsp") || path.contains("retrieveResults.jsp"))) {
+            String query = u.getQuery();
+            if (query != null) {
+                try {
+                    query = URLDecoder.decode(query, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                }
+                String[] tokens = query.split("&");
+                for (int i = 0; i < tokens.length; i++) {
+                    String[] nameValue = tokens[i].split("=");
+                    String name = nameValue[0];
+                    if (name.equalsIgnoreCase("file") || name.equalsIgnoreCase("filename")) {
+                        value = nameValue[1];
+                        int slashIndex = value.lastIndexOf("/");
+                        if (slashIndex != -1) {
+                            slashIndex = value.lastIndexOf("/");
+                            value = value.substring(slashIndex, value.length());
+                        }
+                        break;
+                    }
+                }
+            }
+        } else if (path != null) {
+            value = path.substring(path.lastIndexOf("/"), path.length());
         }
-        j = baseName.lastIndexOf("=");
-        if (j != -1 && j < baseName.length()) {
-            baseName = baseName.substring(j + 1);
+        if (value == null) {
+            if (path != null) {
+                value = path.substring(path.lastIndexOf("/"), path.length());
+            } else {
+                value = u.toString();
+            }
         }
-        j = baseName.indexOf("Axis");
+        int j = value.indexOf("Axis");
         // strip off the AxisNNNNNaxis_ prefix
         if (j == 0) {
-            baseName = baseName.substring(baseName
+            value = value.substring(value
                     .indexOf("_") + 1);
         }
-        if (baseName == null || baseName.length() == 0) {
-            baseName = url;
-        }
-        try {
-            baseName = URLDecoder.decode(baseName, UTF8);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return baseName;
+        return value;
     }
 
     protected static ParameterInfo getParam(String name, ParameterInfo[] params) {
