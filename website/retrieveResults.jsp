@@ -1,3 +1,5 @@
+<%@ page
+        import="org.genepattern.server.genepattern.GenePatternAnalysisTask, org.genepattern.util.StringUtils, java.io.BufferedInputStream, java.io.File, java.io.FileInputStream, java.io.InputStream, java.io.OutputStream" %>
 <% /*
   The Broad Institute
   SOFTWARE COPYRIGHT NOTICE AGREEMENT
@@ -8,82 +10,64 @@
   This software is supplied without any warranty or guaranteed support
   whatsoever. Neither the Broad Institute nor MIT can be responsible for its
   use, misuse, or functionality.
-*/ 
-%><%@page import="java.io.File,
-		 java.io.FileInputStream,
-		 java.io.BufferedInputStream,
-		 java.io.IOException,
-		 java.util.Hashtable,
- 		 org.genepattern.util.StringUtils,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
-		 org.genepattern.util.GPConstants"
+*/
+    String tempDir = request.getParameter("job");
+    if (tempDir == null) {
+        tempDir = request.getParameter("dirName");
+    }
+    String filename = request.getParameter("filename");
+    boolean errorIfNotFound = (request.getParameter("e") != null);
+    if (tempDir == null || filename == null) {
+        out.println("missing input parameter(s)");
+        return;
+    }
+    if (request.getParameter("abs") != null) {
+        // just strip off the /temp prefix and get the job number
+        tempDir = new File(tempDir).getName();
+    }
+    filename = new File(filename).getName();
+    File in = new File(GenePatternAnalysisTask.getJobDir(tempDir), filename);
+    if (!in.exists()) {
+        if (errorIfNotFound) {
+            response.sendError(javax.servlet.http.HttpServletResponse.SC_GONE);
+            return;
+        } else {
+            out.println("Unable to locate " + StringUtils.htmlEncode(filename) + " for job " + tempDir +
+                    ". It may have been deleted already.");
+        }
+        return;
+    }
+    int dotIndex = in.getName().lastIndexOf(".");
+    boolean saveAsDialog = true;
+    if (dotIndex != -1) {
+        String extension = in.getName().substring(dotIndex + 1);
+        if (extension.equalsIgnoreCase("html") || extension.equalsIgnoreCase("htm")) {
+            saveAsDialog = false; // view in browser
+        }
+    }
+    if (saveAsDialog) {
+        response.setHeader("Content-Disposition", "attachment; filename=" + in.getName() + ";");
+    }
+    response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
+    response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
+    response.setDateHeader("Expires", 0);
+    response.setDateHeader("X-lastModified", in.lastModified());
+    OutputStream os = response.getOutputStream();
+    InputStream is = null;
+    try {
+        is = new BufferedInputStream(new FileInputStream(in));
+        byte[] b = new byte[10000];
+        int bytesRead;
+        while ((bytesRead = is.read(b)) != -1) {
+            os.write(b, 0, bytesRead);
+        }
+    } finally {
+        if (os != null) {
+            os.close();
+        }
+        if (is != null) {
+            is.close();
+        }
+    }
 
-	session="false" language="Java" %><% 
-out.clearBuffer();
-response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
-response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
-response.setDateHeader("Expires", 0);
-
-String tempDir = request.getParameter("job");
-if (tempDir == null) tempDir = request.getParameter("dirName");
-String filename = request.getParameter("filename");
-boolean errorIfNotFound = (request.getParameter("e") != null);
-
-if (tempDir == null || filename == null) {
-	out.println("missing input parameter(s)");
-	return;
-}
-
-File in = null;
-if (request.getParameter("abs") != null) {
-	// just strip off the /temp prefix and get the job number
-	tempDir = new File(tempDir).getName();
-}
-
-filename = new File(filename).getName();
-in = new File(GenePatternAnalysisTask.getJobDir(tempDir), filename);
-if (!in.exists()) {
-if(errorIfNotFound) {
-   response.sendError(javax.servlet.http.HttpServletResponse.SC_GONE);
-   return;
-}
-%>
-Unable to locate <%= StringUtils.htmlEncode(filename) %> for job <%= tempDir %>.  It may have been deleted already.
-<%
-	return;
-}
-
-response.setDateHeader("X-lastModified", in.lastModified());
-response.setHeader("X-job", tempDir);
-response.setHeader("X-filename", filename);
-response.setHeader("Content-Length", "" + in.length());
-
-String contentType = in.toURL().openConnection().getFileNameMap().getContentTypeFor(filename);
-if (contentType == null) {
-	final Hashtable htTypes = new Hashtable();
-	htTypes.put(".jar", "application/java-archive");
-	htTypes.put(".zip", "application/zip");
-	htTypes.put("." + GPConstants.TASK_TYPE_PIPELINE, "text/plain");
-	htTypes.put(".class", "application/octet-stream");
-
-	int i = filename.lastIndexOf(".");
-	String extension = (i > -1 ? filename.substring(i) : "");
-	contentType = (String)htTypes.get(extension.toLowerCase());
-	if (contentType == null) contentType = "application/octet-stream";
-}
-
-response.setContentType(contentType);
-if(!contentType.equals("text/html")) { // view html files in browser
-	response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-}
-BufferedInputStream ins = new BufferedInputStream(new java.io.FileInputStream(in));
-int c = 0;
-  	while ((c = ins.read()) != -1) {
-   		out.write(c);
-  	}
-ins.close();
-ins = null;
-
-
-return;
 %>
