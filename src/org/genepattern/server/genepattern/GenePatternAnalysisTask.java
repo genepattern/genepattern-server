@@ -404,10 +404,18 @@ public class GenePatternAnalysisTask implements IGPConstants {
                             try {
                                 url = uri.toURL();
                                 URLConnection conn = url.openConnection();
-                                is = conn.getInputStream();
-                                outFile = new File(outDirName, getDownloadFileName(conn, url));
-                                _cat.info("downloading " + originalPath + " to " + outFile.getAbsolutePath());
+                                String name = getDownloadFileName(conn, url);
+                                outFile = new File(outDirName, name);
+                                if (outFile
+                                        .exists()) { // ensure that 2 file downloads for a job don't have the same name
+                                    if (name.length() < 3) {
+                                        name = "download";
+                                    }
+                                    outFile = File.createTempFile(name, null, new File(outDirName));
+                                }
                                 os = new FileOutputStream(outFile);
+                                _cat.info("downloading " + originalPath + " to " + outFile.getAbsolutePath());
+                                is = conn.getInputStream();
                                 byte[] buf = new byte[100000];
                                 int bytesRead;
                                 while ((bytesRead = is.read(buf, 0, buf.length)) > 0) {
@@ -418,6 +426,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                 iae.printStackTrace();
                             } catch (IOException ioe) {
                                 _cat.error("An error occurred while downloading " + url);
+                                os.write(("An error occurred while downloading " + url).getBytes());
                                 ioe.printStackTrace();
                             } finally {
                                 if (userInfo != null) {
@@ -430,14 +439,12 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                     os.close();
                                 }
                             }
-                            outFile.deleteOnExit();
                             params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
                             params[i].setValue(outFile.getCanonicalPath());
                             inputLastModified[i] = outFile.lastModified();
                             inputLength[i] = outFile.length();
                             _cat.debug("inherited downloaded input file " + outFile.getCanonicalPath() +
                                     " before run: length=" + inputLength[i] + ", lastModified=" + inputLastModified[i]);
-                            // outFile.setReadOnly();
                         }
                     }
                 } // end for each parameter
@@ -851,18 +858,20 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * @return the filename
      */
     public static String getDownloadFileName(URLConnection conn, URL u) {
-        String contentDis = conn.getHeaderField("Content-Disposition");
-        if (contentDis != null) {
-            String[] tokens = contentDis.split(";");
-            if (tokens != null) {
-                for (int k = 0, length = tokens.length; k < length; k++) {
-                    String[] filename = tokens[k].split("=");
-                    if (filename.length == 2 && (filename[0].equals("file") || filename[0].equals("filename"))) {
-                        return filename[1].trim();
+        try {
+            String contentDis = conn.getHeaderField("Content-Disposition");
+            if (contentDis != null) {
+                String[] tokens = contentDis.split(";");
+                if (tokens != null) {
+                    for (int k = 0, length = tokens.length; k < length; k++) {
+                        String[] filename = tokens[k].split("=");
+                        if (filename.length == 2 && (filename[0].equals("file") || filename[0].equals("filename"))) {
+                            return filename[1].trim();
+                        }
                     }
-                    break;
                 }
             }
+        } catch (Throwable t) {
         }
         String path = u.getPath();
         try {
@@ -875,7 +884,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
             path = path.substring(0, path.length() - 1);
         }
         String value = null;
-        if (path != null && ((path.indexOf("getFile.jsp") >= 0) || (path.indexOf("retrieveResults.jsp") >= 0))) {
+        if (path != null && ((path.indexOf("getFile.jsp") >= 0) || (path.indexOf("getInputFile.jsp") >= 0) ||
+                (path.indexOf("retrieveResults.jsp") >= 0))) {
             String query = u.getQuery();
             if (query != null && !query.equals("")) {
                 try {
@@ -906,7 +916,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 int slashIndex = path.lastIndexOf("/");
                 value = slashIndex != -1 ? path.substring(slashIndex + 1) : path;
             } else {
-                value = "index" + System.currentTimeMillis();
+                value = "index";
             }
         }
         int j = value.indexOf("Axis");
