@@ -61,18 +61,18 @@ use, misuse, or functionality.
                 String name = item.getFieldName();
                 name2FileItem.put(name, item);
             }
-            int fileIndex = 0;
+            int parameterCount = 0;
             for (Iterator iter = items.iterator(); iter.hasNext();) {
                 FileItem item = (FileItem) iter.next();
                 String name = item.getFieldName();
+                parameterCount++;
                 if (item.isFormField()) {
                     String value = item.getString();
                     requestParameters.put(name, value);
                 } else {
-                    fileIndex++;
                     String path = item.getName();
                     if (path == null || path.equals("")) {
-                        FileItem shadowItem = (FileItem) name2FileItem.get("shadow" + (fileIndex - 1));
+                        FileItem shadowItem = (FileItem) name2FileItem.get("shadow" + (parameterCount - 1));
                         if (shadowItem != null) {
                             path = shadowItem.getString();
                         }

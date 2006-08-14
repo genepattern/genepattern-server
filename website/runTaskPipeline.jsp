@@ -14,6 +14,7 @@ use, misuse, or functionality.
 <%@ page import="org.apache.commons.fileupload.FileItem,
                  org.apache.commons.fileupload.disk.DiskFileItemFactory,
                  org.apache.commons.fileupload.servlet.ServletFileUpload,
+                 org.apache.commons.io.FilenameUtils,
                  org.genepattern.server.genepattern.GenePatternAnalysisTask,
                  org.genepattern.util.GPConstants,
                  org.genepattern.util.StringUtils,
@@ -74,28 +75,38 @@ use, misuse, or functionality.
             FileItem fi = (FileItem) iter.next();
             nameToFileItemMap.put(fi.getFieldName(), fi);
         }
-        int fileCount = 0;
+        int parameterCount = 0;
         for (Iterator iter = params.iterator(); iter.hasNext();) {
             FileItem fi = (FileItem) iter.next();
+            parameterCount++;
             if (!fi.isFormField()) {
                 String fieldName = fi.getFieldName();
                 String fileName = fi.getName();
                 if (fileName == null || fileName.trim().equals("")) {
-                    FileItem shadow = (FileItem) nameToFileItemMap.get("shadow" + fileCount);
+                    FileItem shadow = (FileItem) nameToFileItemMap.get("shadow" + parameterCount);
                     if (shadow != null) {
                         fileName = shadow.getString();
                     }
                 }
-                fileCount++;
                 if (fileName != null && !fileName.trim().equals("")) {
                     try {
                         new URL(fileName);
                         // don't bother trying to save a file that is a URL, retrieve it at execution time instead
                         htFilenames.put(fieldName, fileName);
                     } catch (MalformedURLException mfe) {
-                        fileName = org.apache.commons.io.FilenameUtils.getName(fileName);
+                        fileName = FilenameUtils.getName(fileName);
                         File file = new File(tempDir, fileName);
-                        fi.write(file);
+                        if (file.exists()) {
+                            if (fileName.length() < 3) {
+                                fileName += "tmp";
+                            }
+                            file = File.createTempFile(fileName, FilenameUtils.getExtension(fileName), tempDir);
+                        }
+                        try {
+                            fi.write(file);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         htFilenames.put(fieldName, file.getCanonicalPath());
                     }
                 }
@@ -132,15 +143,16 @@ use, misuse, or functionality.
             if (pinfo.isInputFile()) {
                 value = (String) htFilenames.get(pinfo.getName());
                 if (value == null) {
-                    value = "";
                     pinfo.getAttributes().put(ParameterInfo.TYPE, "");
                 }
-                try {
-                    new URL(value);
-                    HashMap attrs = pinfo.getAttributes();
-                    attrs.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
-                    attrs.remove(ParameterInfo.TYPE);
-                } catch (MalformedURLException mfe) {
+                if (value != null) {
+                    try {
+                        new URL(value);
+                        HashMap attrs = pinfo.getAttributes();
+                        attrs.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
+                        attrs.remove(ParameterInfo.TYPE);
+                    } catch (MalformedURLException mfe) {
+                    }
                 }
             } else {
                 value = (String) requestParameters.get(pinfo.getName());
