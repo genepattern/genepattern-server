@@ -75,15 +75,13 @@ use, misuse, or functionality.
             FileItem fi = (FileItem) iter.next();
             nameToFileItemMap.put(fi.getFieldName(), fi);
         }
-        int parameterCount = 0;
         for (Iterator iter = params.iterator(); iter.hasNext();) {
             FileItem fi = (FileItem) iter.next();
-            parameterCount++;
             if (!fi.isFormField()) {
                 String fieldName = fi.getFieldName();
                 String fileName = fi.getName();
                 if (fileName == null || fileName.trim().equals("")) {
-                    FileItem shadow = (FileItem) nameToFileItemMap.get("shadow" + parameterCount);
+                    FileItem shadow = (FileItem) nameToFileItemMap.get("shadow" + fieldName);
                     if (shadow != null) {
                         fileName = shadow.getString();
                     }
