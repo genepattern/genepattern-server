@@ -76,7 +76,7 @@ public class SuiteManifestParser {
      * to figure out the classname associated with the specified servlet name
      **/
     public HashMap getSuiteMap() throws JDOMException {
-    	HashMap manifest = new HashMap();
+    	HashMap<String, Object> manifest = new HashMap<String, Object> ();
     	// Get the root element of the document.
         Element root = document.getRootElement();
 
@@ -126,17 +126,15 @@ public class SuiteManifestParser {
         for(Iterator i = root.getChildren("documentationFile").iterator(); i.hasNext(); ) {
             Text docFile = (Text)((Element) i.next()).getContent().get(0);
            
-            System.out.println("\n\tDocFile=" + docFile.getText());
+           // System.out.println("\n\tDocFile=" + docFile.getText());
             docFile.setText(suitebaseUrl + docFile.getText());
         }
        
         for(Iterator i = root.getChildren("module").iterator(); i.hasNext(); ) {
             Element module = (Element) i.next();
             // Get the text of the <servlet-name> tag within the <servlet> tag
-            Text tname = (Text)module.getChild("name").getContent().get(0);
             Text tlsid = (Text)module.getChild("lsid").getContent().get(0);
             
-            String pathToDoc = "";
             String docUrl = (String)moduleDocURLs.get(tlsid.getText());
             if (docUrl != null){
             	if (docUrl.trim().length() != 0){	

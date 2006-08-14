@@ -19,9 +19,12 @@
 	// output a set of name value pairs: taskID/task name, taskID/LSID, and taskID/LSID-without-version-number
 
 	String userID = request.getParameter(GPConstants.USERID);
+	String catalogType = request.getParameter("catalogtype");
 
 	CatalogGenerator cg = new CatalogGenerator(userID);
-
-	out.print(cg.generateModuleCatalog());
-	
+	if ("suite".equalsIgnoreCase(catalogType)){
+		out.print(cg.generateSuiteCatalog());
+	} else {
+		out.print(cg.generateModuleCatalog());
+	}
  %>

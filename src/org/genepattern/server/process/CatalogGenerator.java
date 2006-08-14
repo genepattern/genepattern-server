@@ -6,6 +6,7 @@
  */
 package org.genepattern.server.process;
 
+import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -25,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.StringBufferInputStream;
 
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -52,31 +54,29 @@ public class CatalogGenerator {
 		this.userID = userID;
 	}
 	
-	public String generateSuiteCatalog(String env) throws IOException {
+	public String generateSuiteCatalog()throws IOException, WebServiceException, Exception {
 		StringWriter strwriter = new StringWriter(); // for now just write to the string
 		BufferedWriter buff = new BufferedWriter(strwriter);
-		
+		LocalAdminClient adminClient = new LocalAdminClient(userID);
 		
 		// get the map of module doc files to pass in to the suite
 		// so it can link to the module docs as well
-		String envDir = reposProps.getProperty(env+".gp_module_repos_dir");
-		File catDir = new File(envDir);
-		File[] moduleDirs = catDir.listFiles(new DirFilter()); 
-		for (int i=0; i < moduleDirs.length; i++){
-			getModuleVersionsDocURLs(env, moduleDirs[i]);
-		} 
+		Collection tmTasks = adminClient.getTaskCatalog();
 		
+		for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
+			TaskInfo taskInfo = (TaskInfo)itTasks.next();				
+			getModuleVersionsDocURLs(taskInfo);
+		} 
+		SuiteInfo[] allSuites = adminClient.getAllSuites();
 		
 		buff.write("<?xml version=\"1.0\"?><!DOCTYPE suite_repository><suite_repository >");
 		buff.write(getMOTDxml());
 		
-		envDir = reposProps.getProperty(env+".gp_suite_repos_dir");
+		//envDir = reposProps.getProperty(env+".gp_suite_repos_dir");
 			
-		catDir = new File(envDir);
-		File[] suiteDirs = catDir.listFiles(new DirFilter()); 
-		
-		for (int i=0; i < suiteDirs.length; i++){
-			generateSuiteVersionsXML(env, suiteDirs[i], buff);
+			
+		for (int i=0; i < allSuites.length; i++){
+			writeSuiteXML(allSuites[i], buff);
 		} 
 		
 		buff.write("</suite_repository>");
@@ -94,29 +94,14 @@ public class CatalogGenerator {
 		buff.write("<?xml version=\"1.0\"?><!DOCTYPE module_repository><module_repository >");
 		buff.write(getMOTDxml());
 		
-			
-		//File catDir = new File(envDir);
-		//File[] moduleDirs = catDir.listFiles(new DirFilter()); 
-		
-		//for (int i=0; i < moduleDirs.length; i++){
-		//	generateModuleVersionsXML(env, moduleDirs[i], buff);
-		//} 
-//==============================		
 		Collection tmTasks = new LocalAdminClient(userID).getTaskCatalog();
 		TaskInfo taskInfo = null;
 	
 		for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
-			
-			taskInfo = (TaskInfo)itTasks.next();
-				
+			taskInfo = (TaskInfo)itTasks.next();				
 			writeModuleXML(taskInfo, buff);
-			
-			
 		}
 
-
-
-//====================================
 		buff.write("</module_repository>");
 		buff.flush();
 		buff.close();
@@ -136,84 +121,43 @@ public class CatalogGenerator {
 		
 	}
 	
-	/**
-	 * expect dir structure of the form
-	 * 	   modules/NMF/broad.mit.edu:cancer.software.genepattern.module.analysis/0 
-	 * where we enter this method with 'NMF' as the dir and must drop down the
-	 * two levels to get to the real stuff
-	 */
-	public void generateSuiteVersionsXML(String env, File topSuiteDir, BufferedWriter buff)throws IOException{
-		File[] lsidDirs = topSuiteDir.listFiles(new DirFilter()); 
-		ArrayList subdirs = new ArrayList();
-		subdirs.add(topSuiteDir);
-		for (int i=0; i < lsidDirs.length; i++){
-			subdirs.add(lsidDirs[i]);
-			File[] versionDirs = lsidDirs[i].listFiles(new DirFilter()); 
-			for (int j=0; j < versionDirs.length; j++){
-				subdirs.add(versionDirs[j]);
-				File manifest = new File(versionDirs[j], "suiteManifest.xml");
-				if (manifest.exists()){
-					writeSuiteXML(env, versionDirs[j], buff, subdirs);
-				} else {
-					File[] subVersionDirs = versionDirs[j].listFiles(new DirFilter()); 
-					for (int k=0; k< subVersionDirs.length; k++){
-						File submanifest = new File(subVersionDirs[k], "suiteManifest.xml");
-						if (submanifest.exists()){
-							subdirs.add(subVersionDirs[k]);
-							writeSuiteXML(env, subVersionDirs[k], buff, subdirs);
-							subdirs.remove(subVersionDirs[k]);
-							}
-					}
-				}
-				subdirs.remove(versionDirs[j]);
+
+	
+	
+	
+	
+	public void getModuleVersionsDocURLs(TaskInfo  taskInfo)throws Exception{
+		Map tia = taskInfo.getTaskInfoAttributes();
+		ZipTask zt = new ZipTask();
+		String lsid = (String)tia.get(GPConstants.LSID);
+		String taskDir = DirectoryManager.getTaskLibDir((String) tia.get(IGPConstants.LSID));
+		File dir = new File(taskDir);
+		
+		File[] supportFiles = dir.listFiles(new SupportFileFilter()); 
+		for (int i=0; i < supportFiles.length; i++){
+			String url = getZipDownloadURLBase()+"getTaskDoc.jsp?name=" + lsid + "&amp;file=" + supportFiles[i].getName();
+			
+			if (supportFiles[i].getName().endsWith(".pdf")){
+				moduleDocMap.put(lsid, url);
 			}
-			subdirs.remove(lsidDirs[i]);
 		}
-	}
-	
-	
-	
-	
-	public void getModuleVersionsDocURLs(String env, File topModDir)throws IOException{
-		File[] lsidDirs = topModDir.listFiles(new DirFilter()); 
-		ArrayList subdirs = new ArrayList();
-		subdirs.add(topModDir);
-		for (int i=0; i < lsidDirs.length; i++){
-			subdirs.add(lsidDirs[i]);
-			File[] versionDirs = lsidDirs[i].listFiles(new DirFilter()); 
-			for (int j=0; j < versionDirs.length; j++){
-				subdirs.add(versionDirs[j]);
-				File manifest = new File(versionDirs[j], "manifest");
-				if (manifest.exists()){
-					getModuleDocURL(env, versionDirs[j], subdirs);
-				} else {
-					File[] subVersionDirs = versionDirs[j].listFiles(new DirFilter()); 
-					for (int k=0; k< subVersionDirs.length; k++){
-						File submanifest = new File(subVersionDirs[k], "manifest");
-						if (submanifest.exists()){
-							subdirs.add(subVersionDirs[k]);
-							getModuleDocURL(env, subVersionDirs[k], subdirs);
-							subdirs.remove(subVersionDirs[k]);
-							}
-					}
-				}
-				subdirs.remove(versionDirs[j]);
-			}
-			subdirs.remove(lsidDirs[i]);
-		}
+		
 	}
 	
 	
 	// simply copy the suiteManifest.xml onto the stream unchanged
-	public void writeSuiteXML(String env, File dir, BufferedWriter buff, ArrayList subdirs) throws IOException{
+	public void writeSuiteXML(SuiteInfo suite, BufferedWriter buff) throws Exception{
 		try {
-			String urlBase = reposProps.getProperty(env+".gp_suite_repos_url");
-			for (int i=0; i < subdirs.size(); i++){
-				urlBase = urlBase + "/" + ((File)subdirs.get(i)).getName(); 
-			}
-			urlBase += "/"; // end with a trailing slash
+			String urlBase = getZipDownloadURLBase();
 			
-			SuiteManifestParser suiteManifest = new SuiteManifestParser(new File(dir, "suiteManifest.xml"));
+			
+			StringWriter sbw = new StringWriter();
+			
+			SuiteInfoManifestXMLGenerator.generateXMLFile(suite, new BufferedWriter(sbw));
+			
+			
+			SuiteManifestParser suiteManifest = new SuiteManifestParser(new StringBufferInputStream(sbw.getBuffer().toString()));
+			
 			String suiteManifestString = suiteManifest.getSuiteManifestWithDocURLs(urlBase, moduleDocMap);
 			
 			// strip of the <?xml version=...?>
@@ -323,13 +267,12 @@ public class CatalogGenerator {
 			urlBase = urlBase + "/" + ((File)subdirs.get(i)).getName(); 
 		}
 		
-		File[] supportFiles = dir.listFiles(new SupportFileFilter()); 
-		for (int i=0; i < supportFiles.length; i++){	
+		File[] docFiles = dir.listFiles(new DocFileFilter()); 
+		for (int i=0; i < docFiles.length; i++){	
 			// store the path to the module doc files for suites to use
 			// when generating their catalogs
-			if (supportFiles[i].getName().endsWith(".pdf")){
-				moduleDocMap.put(manifestProps.getProperty("LSID"), urlBase + "/" + supportFiles[i].getName());
-			}
+			moduleDocMap.put(manifestProps.getProperty("LSID"), urlBase + "/" + docFiles[i].getName());
+		
 		}
 	}
 
@@ -414,6 +357,20 @@ class SupportFileFilter implements FileFilter {
 			} catch (Exception e){
 				return true;
 			}
+		}
+	}
+}
+
+class DocFileFilter implements FileFilter {
+	public DocFileFilter(){}
+	public boolean accept(File pathname){
+		String name = pathname.getName();
+		if (pathname.isDirectory()) return false;
+		else if ("manifest".equalsIgnoreCase(name)) return false;
+		else if (name.endsWith(".pdf")) return true;
+		else if (name.endsWith(".doc")) return true;
+		else {
+			return false;
 		}
 	}
 }
