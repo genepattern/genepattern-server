@@ -45,11 +45,11 @@ use, misuse, or functionality.
     <title>run GenePattern task</title>
 </head>
 <body>
-<jsp:include page="navbar.jsp">
-</jsp:include>
+<jsp:include page="navbar.jsp"/>
+
 Must specify task name.<br>
-<jsp:include page="footer.jsp">
-</jsp:include>
+<jsp:include page="footer.jsp"/>
+
 </body>
 </html>
 <%
@@ -139,8 +139,8 @@ Must specify task name.<br>
     </style>
 </head>
 <body>
-<jsp:include page="navbar.jsp">
-</jsp:include>
+<jsp:include page="navbar.jsp"/>
+
 <% } %>
 
 <%
@@ -151,8 +151,8 @@ Must specify task name.<br>
 </script>
 No such task <%= taskName %><br>
 <% if (!bNoEnvelope) { %>
-<jsp:include page="footer.jsp">
-</jsp:include>
+<jsp:include page="footer.jsp"/>
+
 </body>
 </html>
 <% } %>
@@ -275,129 +275,147 @@ No such task <%= taskName %><br>
 <table valign="top">
 
 
+<%
+    int numParams = parameterInfoArray.length;
+    if (numParams > 0) { %>
+<tr>
+    <td align='left' colspan='2'><b>&nbsp;&nbsp;</b></td>
+</tr>
+<% } else { %>
+<tr>
+    <td align='left' colspan='2'><i>has no input parameters</i></td>
+</tr>
+<% }
+    String prefix = "";
+    for (int param = 0; param < parameterInfoArray.length; param++) {
+        out.flush();
+        ParameterInfo pi = parameterInfoArray[param];
+        HashMap pia = pi.getAttributes();
+        String[] choices = null;
+        String[] stChoices = pi.getChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+        String val = pi.getValue();
+        boolean isOptional = ((String) pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
+                .length() > 0;
+        String defaultValue = (request.getParameter(pi.getName()) != null ? request.getParameter(pi.getName()) :
+                (String) pia.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]));
+        if (defaultValue != null) {
+            defaultValue = defaultValue.trim();
+        }
+        String description = pi.getDescription();
+%>
+
+<tr>
+<td align="right" valign="top">
+    <nobr><%= !isOptional ? "<b>" : "" %><%= pi.getName().replace('.', ' ') %>:<%=
+        !isOptional ? "<span style=\"font-size: medium;\"> *</span></b>" : "" %>
+    </nobr>
+</td>
+<td valign="top" align='left'>
+
+    <% 		if (pi.isInputFile()) { %>
+
+    <input type="file"
+           name="<%= pi.getName() %>"
+           size="60"
+           onchange="this.form['shadow<%= pi.getName() %>'].value=this.value;"
+           onblur="javascript:if (this.value.length > 0) { this.form['shadow<%= pi.getName() %>'].value=this.value; }"
+           ondrop="this.form['shadow<%= pi.getName() %>'].value=this.value;"
+           class="little">
+    <input name="shadow<%= pi.getName() %>"
+           type="hidden"
+           value="<%= defaultValue == null ? "" : defaultValue %>"
+           readonly
+           size="90"
+           tabindex="-1"
+           class="shadow"
+           style="{ border-style: none; font-style: italic; font-size:9pt; background-color: transparent }">
+
     <%
-        int numParams = parameterInfoArray.length;
-        if (numParams > 0) { %>
-    <tr>
-        <td align='left' colspan='2'><b>&nbsp;&nbsp;</b></td>
-    </tr>
-    <% } else { %>
-    <tr>
-        <td align='left' colspan='2'><i>has no input parameters</i></td>
-    </tr>
-    <% }
-        String prefix = "";
-        for (int param = 0; param < parameterInfoArray.length; param++) {
-            out.flush();
-            ParameterInfo pi = parameterInfoArray[param];
-            HashMap pia = pi.getAttributes();
-            String[] choices = null;
-            String[] stChoices = pi.getChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-            String val = pi.getValue();
-            boolean isOptional = ((String) pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
-                    .length() > 0;
-            String defaultValue = (request.getParameter(pi.getName()) != null ? request.getParameter(pi.getName()) :
-                    (String) pia.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]));
-            if (defaultValue != null) {
-                defaultValue = defaultValue.trim();
-            }
-            String description = pi.getDescription();
+
+
+
+
+
+
+
+       if (description.length() > 0 && !description.equals(pi.getName().replace('.',' '))) {
+           out.println("<br>" + StringUtils.htmlEncode(description));
+       }
+   } else if (pi.isOutputFile()) {
+   } else if (stChoices.length < 2) {
+
+
+
+
+
+
     %>
-
+<table align="left">
     <tr>
-        <td align="right" valign="top">
-            <nobr><%= !isOptional ? "<b>" : "" %><%= pi.getName().replace('.', ' ') %>:<%=
-                !isOptional ? "<span style=\"font-size: medium;\"> *</span></b>" : "" %>
-            </nobr>
+        <td valign="top">
+            <input name="<%= pi.getName() %>" value="<%=  defaultValue %>">
         </td>
-        <td valign="top" align='left'>
-
-            <% 		if (pi.isInputFile()) { %>
-
-            <input type="file"
-                   name="<%= pi.getName() %>"
-                   size="60"
-                   onchange="this.form['shadow<%= pi.getName() %>'].value=this.value;"
-                   onblur="javascript:if (this.value.length > 0) { this.form['shadow<%= pi.getName() %>'].value=this.value; }"
-                   ondrop="this.form['shadow<%= pi.getName() %>'].value=this.value;"
-                   class="little">
-            <input name="shadow<%= pi.getName() %>"
-                   type="hidden"
-                   value="<%= defaultValue == null ? "" : defaultValue %>"
-                   readonly
-                   size="90"
-                   tabindex="-1"
-                   class="shadow"
-                   style="{ border-style: none; font-style: italic; font-size:9pt; background-color: transparent }">
-
-            <%
-
-               if (description.length() > 0 && !description.equals(pi.getName().replace('.',' '))) {
-                   out.println("<br>" + StringUtils.htmlEncode(description));
-               }
-           } else if (pi.isOutputFile()) {
-           } else if (stChoices.length < 2) {
-            %>
-        <table align="left">
-            <tr>
-                <td valign="top">
-                    <input name="<%= pi.getName() %>" value="<%=  defaultValue %>">
-                </td>
-                <%
-                    if (description.length() > 0) { %>
-                <td valign="top"><%= StringUtils.htmlEncode(description) %>
-                </td>
-                <% } %>
-            </tr>
-        </table>
-        <%		} else { %>
-        <table align="left">
-            <tr>
-                <td valign="top">
-                    <select name="<%= pi.getName() %>">
-                        <%
-                            String display = null;
-                            String option = null;
-                            String choice;
-                            for (int iChoice = 0; iChoice < stChoices.length; iChoice++) {
-                                choice = stChoices[iChoice];
-                                int c = choice.indexOf(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
-                                if (c == -1) {
-                                    display = choice;
-                                    option = choice;
-                                } else {
-                                    option = choice.substring(0, c);
-                                    display = choice.substring(c + 1);
-                                }
-                                display = display.trim();
-                                option = option.trim();
-                        %>
-                        <option value="<%= option %>"<%=
-                            defaultValue.equals(option) || defaultValue.equals(display) ? " selected" : "" %>><%=
-                            display %>
-                        </option>
-                        <% } %>
-                    </select>
-                </td>
-                <td valign="top"><%= StringUtils.htmlEncode(description) %>
-                </td>
-            </tr>
-        </table>
         <%
+            if (description.length() > 0) { %>
+        <td valign="top"><%= StringUtils.htmlEncode(description) %>
+        </td>
+        <% } %>
+    </tr>
+</table>
+<%		} else { %>
+<table align="left">
+    <tr>
+        <td valign="top">
+            <select name="<%= pi.getName() %>">
+                <%
+                    String display = null;
+                    String option = null;
+                    String choice;
+                    for (int iChoice = 0; iChoice < stChoices.length; iChoice++) {
+                        choice = stChoices[iChoice];
+                        int c = choice.indexOf(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
+                        if (c == -1) {
+                            display = choice;
+                            option = choice;
+                        } else {
+                            option = choice.substring(0, c);
+                            display = choice.substring(c + 1);
+                        }
+                        display = display.trim();
+                        option = option.trim();
+                %>
+                <option value="<%= option %>"<%=
+                    defaultValue.equals(option) || defaultValue.equals(display) ? " selected" : "" %>><%=
+                    display %>
+                </option>
+                <% } %>
+            </select>
+        </td>
+        <td valign="top"><%= StringUtils.htmlEncode(description) %>
+        </td>
+    </tr>
+</table>
+<%
 
-                }
-                out.println("</td></tr>");
-            }
 
-        %>
-        <tr>
-            <td></td>
-            <td><input type="submit" name="cmd" value="run"><input type="button" name="reset" value="reset"
-                                                                   onClick="resetValues()"> <input type="button"
-                                                                                                   value="help"
-                                                                                                   onclick="window.open('getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= taskName %>', '_new')">
-            </td>
-        </tr>
+
+
+        }
+        out.println("</td></tr>");
+    }
+
+
+
+
+%>
+<tr>
+    <td></td>
+    <td><input type="submit" name="cmd" value="run"><input type="button" name="reset" value="reset"
+                                                           onClick="resetValues()"> <input type="button"
+                                                                                           value="help"
+                                                                                           onclick="window.open('getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= taskName %>', '_new')">
+    </td>
+</tr>
 
 </table>
 </form>
@@ -407,8 +425,8 @@ No such task <%= taskName %><br>
 </td>
 </tr>
 </table>
-<jsp:include page="footer.jsp">
-</jsp:include>
+<jsp:include page="footer.jsp"/>
+
 </body>
 </html>
 <% } %>
