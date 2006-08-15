@@ -14,7 +14,9 @@
 package org.genepattern.server.util;
 
 
+import java.util.ArrayList;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.Iterator;
 import java.io.FileInputStream;
@@ -126,4 +128,56 @@ public class PropertiesManager {
 		}
 	}
 
+	public static ArrayList getArrayProperty(String key, String defaultValue, String delimiter){
+		
+		ArrayList<String> props = new ArrayList<String>();
+		String propString = System.getProperty(key, defaultValue);
+		StringTokenizer strtok = new StringTokenizer(propString, delimiter);
+		while (strtok.hasMoreTokens()){
+			String p = strtok.nextToken();
+			props.add(p);
+		}
+		return props;
+	}
+	public static boolean appendArrayPropertyAndStore(String key, String val, String delimiter, boolean unique, boolean caseSensitive){
+		String propString = System.getProperty(key);
+		
+		if (unique){
+			ArrayList currentVals = getArrayProperty(key, "", delimiter);
+			Iterator iter = currentVals.iterator();
+			while(iter.hasNext()){
+				String aVal = (String)iter.next();
+				if (caseSensitive){
+					if (aVal.equals(val)) return true;
+				} else {
+					if (aVal.equalsIgnoreCase(val)) return true;
+				}
+			}
+		}
+		propString = propString + delimiter + val;
+		return storeChange(key,propString);
+	}
+
+	public static boolean removeArrayPropertyAndStore(String key, String val, String delimiter, boolean caseSensitive){
+		String propString = "";
+		ArrayList currentVals = getArrayProperty(key, "", delimiter);
+		Iterator iter = currentVals.iterator();
+		boolean first = true;
+		while(iter.hasNext()){
+			String aVal = (String)iter.next();
+			if (caseSensitive){
+				if (aVal.equals(val)) continue;	
+			} else {
+				if (aVal.equalsIgnoreCase(val)) continue;
+			}
+			if (!first) {
+				propString += delimiter;
+			}
+			propString += aVal;
+			first = false;
+		}
+		return storeChange(key,propString);
+		
+	}
+	
 }

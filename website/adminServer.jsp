@@ -38,7 +38,10 @@
 
 
 	String moduleRepository = request.getParameter("moduleRepository");
+	
 	String reposDefault = request.getParameter("submitReposDefault");
+	String clearReposSelection = request.getParameter("clearReposSelection");
+
 	String clearProxy = request.getParameter("submitClearProxy");
 	String defaultModuleRepository = System.getProperty("DefaultModuleRepositoryURL", moduleRepository);
 	String recentHistorySize = request.getParameter("historySize");
@@ -113,8 +116,13 @@
 	if (proxyPort== null) proxyPort= "";
 
 
-	if (moduleRepository != null){
+	if (clearReposSelection != null){
+ 		storeSuccess = PropertiesManager.removeArrayPropertyAndStore("ModuleRepositoryURLs", moduleRepository, ",", false);
+
+	} else if (moduleRepository != null){
 		storeSuccess  = PropertiesManager.storeChange("ModuleRepositoryURL", moduleRepository );
+ 		storeSuccess = storeSuccess && PropertiesManager.appendArrayPropertyAndStore("ModuleRepositoryURLs", moduleRepository, ",", true, false);
+
 	} 
 	moduleRepository = System.getProperty("ModuleRepositoryURL","" );
 	
@@ -189,8 +197,17 @@ function changeJavaFlagFields(obj){
 
 function changeReposFields(obj){
 	obj.form.submitRepos.disabled = (obj.form.moduleRepository.value == "<%=moduleRepository%>")
+	obj.form.clearReposSelection.disabled = (obj.form.moduleRepository.value == "<%=moduleRepository%>")
 	obj.form.submitReposDefault.disabled = (obj.form.moduleRepository.value == "<%=defaultModuleRepository%>")
 }
+
+function selectReposFields(obj){
+	
+	obj.form.moduleRepository.value = obj.form.selectModuleRepository.value;
+	changeReposFields(obj);	
+}
+
+
 
 function changeHistoryField(obj){
 
@@ -334,13 +351,31 @@ onclick="refillField(this);"> These Domains (comma delimited list)<br>
 </tr>
 <% /****************************************************** THIRD ROW *************************************************************/ %>
 
+
+
 <tr>
 <td width='50%' valign='top' align='center'>
 <form action="adminServer.jsp" name="moduleRepositoryForm" method="POST">
 
 <table width='100%'>
 <tr><td class="heading" colspan='2'>Module Repository	</td></tr>
-<tr><td align='right'>Repository URL:</td><td><input type='text' size='40' name="moduleRepository" value='<%=moduleRepository%>' onkeyup="changeReposFields(this)"/>
+
+<tr><td align='right'>Previous Repository URLs:</td><td><select size='3' cols="40" name="selectModuleRepository" onmouseup="selectReposFields(this)">
+<% 
+	
+	ArrayList mrs = PropertiesManager.getArrayProperty("ModuleRepositoryURLs", moduleRepository, ",");
+	for (Iterator iter = mrs.iterator(); iter.hasNext(); ){
+		String repos = (String)iter.next();
+		out.println("<option");
+		if (repos.equals(moduleRepository)) out.print(" selected='selected' ");
+		out.println(">"+repos+"</option>");
+	}
+%>
+
+</select>
+</td></tr>
+
+<tr><td align='right'>Repository URL:</td><td><input type='text' size='50' name="moduleRepository" onkeyup="changeReposFields(this)"/>
 </td></tr>
 <tr><td colspan='2' ALIGN='CENTER'><input type="submit" name="submitRepos" value="submit" class="button"  disabled="true"> 
 <input type="submit" name="submitReposDefault" value="reset to default" 
@@ -351,6 +386,8 @@ onclick="refillField(this);"> These Domains (comma delimited list)<br>
 	disabled="true"> <%
 	}
 %>
+<input type="submit" name="clearReposSelection" value="remove from list" class="wideButton"  disabled="true">
+
 </td></tr>
 <tr><td colspan='2' align='center'><a href="taskCatalog.jsp">Install/Update tasks</a></td></tr>
 </table>
