@@ -108,16 +108,16 @@ public class CatalogGenerator {
 		return strwriter.getBuffer().toString();
 	}
 	
-	protected String getMOTDxml(){
+	protected String getMOTDxml() throws IOException {
 			
 
 	// XXX add link to this server here
 
-		return "<site_motd><motd_message>GenePattern MODULE REPOSITORY</motd_message>\n" +
-			"<motd_url>http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current</motd_url>\" \n"+
+		return "<site_motd><motd_message>GenePattern Server Modules</motd_message>\n" +
+			"<motd_url>"+ getZipDownloadURLBase()+"</motd_url>\" \n"+
 			"<motd_urgency>0</motd_urgency>\n" +
-			"<motd_timestamp>today</motd_timestamp>\n" +
-			"<motd_latestServerVersion>2.0.2</motd_latestServerVersion></site_motd>\n";
+			"<motd_timestamp>"+System.currentTimeMillis()+"</motd_timestamp>\n" +
+			"<motd_latestServerVersion>"+System.getProperty("GenePatternVersion")+"</motd_latestServerVersion></site_motd>\n";
 		
 	}
 	
