@@ -84,7 +84,8 @@ if (origin == null) origin = "";
 <jsp:include page="navbar.jsp"></jsp:include>
 <form name=loginForm target="_top">
 Please enter your username to identify task ownership.  We recommend using your email address to ensure uniqueness, memorability, and consistency.<br>
-Username: <input name=<%= GPConstants.USERID %> size="50">
+Username: <input name=<%= GPConstants.USERID %> size="50"> <br>
+Password: <input type="password" name=<%= GPConstants.PASSWORD %> size="50" > 
 <input type="hidden" name="<%= REFERRER %>" value="<%= origin %>">
 <input type="submit" name="submit" value="sign in" class="little">
 
