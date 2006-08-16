@@ -108,10 +108,10 @@ response.setDateHeader("Expires", 0);
 			props.put("mail.smtp.host", host);
 
 			// Get session
-			Session session = Session.getDefaultInstance(props, null);
+			Session theSession = Session.getDefaultInstance(props, null);
 
 			// Define message
-			MimeMessage message = new MimeMessage(session);
+			MimeMessage message = new MimeMessage(theSession);
 			message.setFrom(new InternetAddress(from));
 			message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
 			message.setSubject(subject);

@@ -11,8 +11,7 @@
 */ --><%@ page import="java.io.File,
 		 java.net.URLEncoder,
 		 java.util.Date,
-		 org.genepattern.server.util.BeanReference,
-		 org.genepattern.server.webservice.server.AnalysisJobDataSource,
+		 org.genepattern.server.webservice.server.dao.AnalysisJobService,
 		 org.genepattern.webservice.JobInfo,
 		 org.genepattern.webservice.JobStatus,
 		 org.genepattern.webservice.ParameterInfo,
@@ -32,7 +31,7 @@ if (userID == null || userID.length() == 0) {
 String JOBID = "jobID";
 String jobID = request.getParameter(JOBID);
 String DOWNLOAD_URL = "zipJobResults.jsp?download=&?name=" + jobID;
-AnalysisJobDataSource ds = BeanReference.getAnalysisJobDataSourceEJB();
+AnalysisJobService ds = AnalysisJobService.getInstance();
 JobInfo jobInfo = null;
 ParameterInfo[] params = null;
 TaskInfo taskInfo = null;
