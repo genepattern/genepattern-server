@@ -98,7 +98,7 @@ midnight.set(Calendar.MILLISECOND, 0);
 JobInfo[] jobs = null;
 LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
 try {
-      jobs = analysisClient.getJobs(userID, -1, Integer.MAX_VALUE, true);
+      jobs = analysisClient.getJobs(userID, -1, Integer.MAX_VALUE, false);
 } catch(WebServiceException wse) {
 	wse.printStackTrace();
 }
