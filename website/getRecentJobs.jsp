@@ -23,7 +23,6 @@
 		org.genepattern.webservice.ParameterInfo,
 		org.genepattern.webservice.WebServiceException,
        	org.genepattern.server.webservice.server.local.*,
-		org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient , 
 		org.genepattern.server.util.AuthorizationManagerFactoryImpl,
 		org.genepattern.server.util.IAuthorizationManager,
 		org.genepattern.webservice.TaskInfo,
@@ -31,6 +30,7 @@
 		org.genepattern.webservice.ParameterFormatConverter,
 		org.genepattern.webservice.ParameterInfo,
 		org.genepattern.server.util.AccessManager,
+		org.genepattern.server.TaskUtil,
 		org.genepattern.util.LSID,
 		org.genepattern.util.StringUtils,
 		org.genepattern.util.GPConstants,
@@ -97,6 +97,8 @@ midnight.set(Calendar.MILLISECOND, 0);
 
 JobInfo[] jobs = null;
 LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
+LocalAdminClient adminClient = new LocalAdminClient(userID);
+
 try {
       jobs = analysisClient.getJobs(userID, -1, Integer.MAX_VALUE, false);
 } catch(WebServiceException wse) {
@@ -122,15 +124,29 @@ for(int i = 0; i < jobs.length; i++) {
    jobsDisplayed++;
    ParameterInfo[] params = job.getParameterInfoArray();
    
-//window.open('showJob.jsp?jobId=' + job.getJobNumber(), 'Job ' + job,'toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=240')
 
 
    out.print("<td valign='center'><a href='showJob.jsp?jobId="+job.getJobNumber()+"&target=new' border='0' onClick='window.open(this.href, \"Job\" + "+job.getJobNumber()+",\"toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=240\");return false' ><nobr>" + job.getTaskName());
 
    out.print("&nbsp;");
-    out.print("</a><a href='showJob.jsp?jobId="+job.getJobNumber()+"&target=new' border='0' onClick='window.open(this.href, \"Job\" + "+job.getJobNumber()+",\"toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=240\");return false' ><nobr>");
+    out.print("</a><a href='showJob.jsp?jobId="+job.getJobNumber()+"&target=new' border='0' onClick='window.open(this.href, \"Job\" + "+job.getJobNumber()+",\"toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=240\");return false' >");
 
     out.print("<img class=\"highlightable\" style=\"vertical-align: top;\" src='skin/info_obj.gif' border='0'>");
+ 
+	boolean showReload = true;
+	// we do not yet have the ability to reload pipelines with params
+	//  so check this is not the case before showing the reload link
+	
+	TaskInfo ti = adminClient.getTask(	job.getTaskLSID() );
+
+
+	if (TaskUtil.isPipeline(ti)){
+		showReload = false;
+	}
+	if (showReload){
+   		out.print("</a>&nbsp;<a href=\"runTask.jsp?name="+job.getTaskLSID()+"&reloadJob="+job.getJobNumber()+"\" onClick='window.parent.location=this.href'><img class=\"highlightable\" style=\"vertical-align: top;\" src='skin/reload_obj.GIF' border='0'>");
+	}
+
     out.print( "  </nobr></a>");
 
 
@@ -166,9 +182,7 @@ for(int i = 0; i < jobs.length; i++) {
 			String fileUrl = "retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8");
 
            		out.println("<a href=\""+ fileUrl+ "\" target=\"_blank\">" + fileName + "</a>");
-   	     		//jobsDisplayed++;
-
-			if (authorizationManager.checkPermission("createPipeline", userID)){
+   	     		if (authorizationManager.checkPermission("createPipeline", userID)){
 
  				out.print("<span  class=\"rollover\" onClick=\"createPipeline(\'"+URLEncoder.encode(serverURL + fileUrl, "utf-8")+"\')\"><nobr>" );
    				out.print("&nbsp;");

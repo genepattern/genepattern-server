@@ -13,16 +13,20 @@ use, misuse, or functionality.
 
 <%@ page import="org.genepattern.server.genepattern.GenePatternAnalysisTask,
                  org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient,
+                 org.genepattern.server.webservice.server.local.LocalAnalysisClient,
                  org.genepattern.util.GPConstants,
                  org.genepattern.util.StringUtils,
-                 org.genepattern.webservice.OmnigeneException,
+                 org.genepattern.server.TaskUtil,
+		     org.genepattern.webservice.OmnigeneException,
                  org.genepattern.webservice.ParameterFormatConverter,
                  org.genepattern.webservice.ParameterInfo,
                  org.genepattern.webservice.TaskInfo,
+                 org.genepattern.webservice.JobInfo,
                  org.genepattern.webservice.TaskInfoAttributes,
                  javax.servlet.RequestDispatcher,
                  java.io.File,
                  java.net.URLEncoder,
+		     java.net.URL,
                  java.util.HashMap"
          session="false" contentType="text/html" language="Java" %>
 <%
@@ -36,6 +40,18 @@ use, misuse, or functionality.
         iFrameWidth = "width=\"250\"";
     }
     String taskName = request.getParameter(GPConstants.NAME);
+    String reloadJobNo = request.getParameter("reloadJob");
+    String username = request.getParameter(GPConstants.USERID);
+    if (username == null || username.length() == 0) {
+        username = (String) request.getAttribute("userID");
+    }
+    JobInfo reloadJob = null;
+    if (reloadJobNo != null) {
+	LocalAnalysisClient ac = new LocalAnalysisClient(username);
+	reloadJob = ac.getJob(Integer.parseInt(reloadJobNo));
+    }
+
+
     if (taskName == null || taskName.length() == 0) {
 %>
 <html>
@@ -55,10 +71,7 @@ Must specify task name.<br>
 <%
         return;
     }
-    String username = request.getParameter(GPConstants.USERID);
-    if (username == null || username.length() == 0) {
-        username = (String) request.getAttribute("userID");
-    }
+   
     boolean bNoEnvelope = (request.getParameter("noEnvelope") != null);
     TaskInfo taskInfo = null;
     try {
@@ -287,6 +300,14 @@ No such task <%= taskName %><br>
 </tr>
 <% }
     String prefix = "";
+    HashMap reloadParamMap = new HashMap();
+    if (reloadJob != null){
+		ParameterInfo[] reloadParams = reloadJob.getParameterInfoArray();
+		for (int i=0; i < reloadParams.length; i++){
+			reloadParamMap.put(reloadParams[i].getName(), reloadParams[i].getValue());
+		}
+    }
+
     for (int param = 0; param < parameterInfoArray.length; param++) {
         out.flush();
         ParameterInfo pi = parameterInfoArray[param];
@@ -301,6 +322,10 @@ No such task <%= taskName %><br>
         if (defaultValue != null) {
             defaultValue = defaultValue.trim();
         }
+	  if (reloadJob != null){
+		defaultValue = (String)reloadParamMap.get(pi.getName());
+
+	  }
         String description = pi.getDescription();
 %>
 
@@ -312,7 +337,53 @@ No such task <%= taskName %><br>
 </td>
 <td valign="top" align='left'>
 
-    <% 		if (pi.isInputFile()) { %>
+    <% 		if (pi.isInputFile()) { 
+
+String urlStr = defaultValue;
+
+			if (defaultValue != null){
+				if (defaultValue.trim().length() > 0){
+
+				File f = new File(defaultValue);
+				String axisName = f.getName();
+				boolean fileExists = f.exists();
+				boolean isURL=false;
+								if (fileExists){
+					String urlBase = request.getRequestURL().toString();
+					String ending = request.getServletPath();
+					urlBase = urlBase.substring(0, urlBase.indexOf(ending));
+					urlStr= urlBase +"/getInputFile.jsp?file="+StringUtils.htmlEncode(axisName);
+				} else {
+					try {// see if a URL was passed in
+						URL url = new URL(defaultValue);
+						isURL = true;
+					} catch (Exception e){
+						e.printStackTrace();
+					}
+
+				}
+				String name = axisName;						
+				int idx = axisName.lastIndexOf("att_");
+				if (idx > 0) {
+					name = axisName.substring(idx+4);
+				}
+			%>
+			
+		<input	
+				name="<%= pi.getName() %>" 
+				value="<%= urlStr %>"
+				size="60" 
+				readOnly="true"
+				class="little"/>
+
+			<%
+				}
+
+			}
+
+
+
+%>
 
     <input type="file"
            name="<%= pi.getName() %>"
