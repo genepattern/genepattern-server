@@ -102,12 +102,8 @@ public class TaskUtil {
             if (zipFile.getEntry(GPConstants.MANIFEST_FILENAME) == null) {
                 return false;
             }
-
             TaskInfo ti = getTaskInfoFromZip(file);
-            String type = (String) ti.getTaskInfoAttributes().get(
-                    IGPConstants.TASK_TYPE);
-
-            return type.endsWith(".pipeline");
+            return isPipeline(ti);
         } finally {
             if (zipFile != null) {
                 zipFile.close();
@@ -115,7 +111,13 @@ public class TaskUtil {
         }
     }
 
-   
+	public static boolean isPipeline(TaskInfo ti){
+  		String type = (String) ti.getTaskInfoAttributes().get(IGPConstants.TASK_TYPE);
+
+            return type.endsWith("pipeline");
+
+	}   
+
 
     /**
      * Creates a new <code>TaskInfo</code> instance from the given zip file.
