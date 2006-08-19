@@ -66,7 +66,7 @@ function changeTypes(fld) {
 
 </head>
 <body onload="document.forms['find'].search.focus();">
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 
 <% if (q != null && q.length() > 0 && request.getParameter(Indexer.MANUAL) != null) { %>
 	<form name="google" target="_blank" action="http://www.google.com/search">
@@ -273,6 +273,6 @@ if (q != null && q.length() > 0) {
 // <form action="testIndexer.jsp"><input type="submit" name="reindex" value="re-index" class="little"></form>
 %>
 
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>

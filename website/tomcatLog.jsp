@@ -52,7 +52,7 @@
 <title><%= what %> log file from <%= request.getServerName() %> on <%= cal.getTime() %></title>
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <pre>
 <% if (f == null || !f.exists()) { %>
 	No logs exist.
@@ -80,6 +80,6 @@
 <% } %>
 <br>
 <a href="tomcatLog.jsp<%= doGP ? "?tomcat=1" : "" %>">view <%= doGP ? "web server" : "GenePattern" %> log</a><br>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>

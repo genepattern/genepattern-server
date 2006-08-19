@@ -137,7 +137,7 @@ function runpipeline( url) {
 
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <%
 String displayName = task.getName();
 if(displayName.endsWith(".pipeline")) {
@@ -394,6 +394,6 @@ out.println("<table width='100%'><tr><td align='center'><input type=\"button\" v
 }
 
 %>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>

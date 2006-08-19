@@ -26,7 +26,7 @@
 <title>about <%=messages.get("ApplicationName")%></title>
 </head>
 <body>	
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 
 <img src="skin/logoBig.jpg" width="460" height="68" border="0" alt="<%=messages.get("ApplicationName")%> logo" /><br><br>
 <%
@@ -58,6 +58,6 @@ if (!(appName.indexOf("GenePattern") >= 0)) {
 
 <br>
 
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>

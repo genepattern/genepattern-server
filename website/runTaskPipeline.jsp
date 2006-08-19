@@ -62,7 +62,7 @@ response.setDateHeader("Expires", 0);
 </head>
 <body>
 	
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 
 <%
 
@@ -185,7 +185,7 @@ try {
 		request.setAttribute("missingReqParams", missingReqParams);
 		(request.getRequestDispatcher("runTaskMissingParams.jsp")).include(request, response);
 %>
-		<jsp:include page="footer.jsp"></jsp:include>
+		<jsp:include page="footer.jsp"/>
 		</body>
 		</html>
 <%
@@ -233,7 +233,7 @@ function checkAll(frm, bChecked) {
 <tr><td>
 Running <a href="addTask.jsp?view=1&name=<%=requestParameters.get("taskLSID")%>"><%=requestParameters.get("taskName")%></a> as job # <a href="getJobResults.jsp?jobID=<%=job.getJobNumber() %>"><%=job.getJobNumber() %></a> on <%=new Date()%> 
 				
-</tr></td>
+</td></tr>
 <tr><td>
 <%=requestParameters.get("taskName")%> ( 
 <%
@@ -405,7 +405,7 @@ for (int i=0; i < parmInfos.length; i++){
     out.println("An error occurred.");
 }
 %>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 
 </body>
 </html>

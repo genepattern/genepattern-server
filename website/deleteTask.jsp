@@ -87,7 +87,7 @@ function confirmDelete() {
 </head>
 <body>
 
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <h2>Delete tasks</h2>
 
 <%
@@ -323,7 +323,7 @@ for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext(); ) {
 <br>
 
 </form>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 
 </body>
 </html>

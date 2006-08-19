@@ -81,7 +81,7 @@ if (origin == null) origin = "";
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 </head>
 <body onload=sf()>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <form name=loginForm target="_top">
 Please enter your username to identify task ownership.  We recommend using your email address to ensure uniqueness, memorability, and consistency.<br>
 Username: <input name=<%= GPConstants.USERID %> size="50"> <br>
@@ -95,7 +95,7 @@ function sf(){document.loginForm.userid.focus();}
 
 </script>
 
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 <%! void addUserIDCookies(HttpServletResponse response, HttpServletRequest request, String userID) {

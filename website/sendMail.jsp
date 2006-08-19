@@ -31,7 +31,7 @@ response.setDateHeader("Expires", 0);
 <title>send email messages</title>
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <br>
 <%
 	String from = request.getParameter("from");
@@ -188,6 +188,6 @@ response.setDateHeader("Expires", 0);
 <%
 	}
 %>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>

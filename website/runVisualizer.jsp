@@ -60,14 +60,14 @@
 		<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 		<link href="skin/favicon.ico" rel="shortcut icon">
 		<body>
-		<jsp:include page="navbar.jsp"></jsp:include>
+		<jsp:include page="navbar.jsp"/>
 		<%= StringUtils.htmlEncode(message) %><br>
 		<br>
 <% 		if (taskInfo != null) { %>
 			<a href="addTask.jsp?<%= GPConstants.NAME %>=<%= name %>&view=1">view/edit <%= taskInfo.getName() %> task</a><br>
 			<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= name %>">view <%= taskInfo.getName() %> documentation</a><br>
 <%		} %>
-		<jsp:include page="footer.jsp"></jsp:include>
+		<jsp:include page="footer.jsp"/>
 		</body>
 		</html>
 <%

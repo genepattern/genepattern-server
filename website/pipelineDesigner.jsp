@@ -1260,7 +1260,7 @@ nextTask:
 %>
               </head>
               <body>
-              <jsp:include page="navbar.jsp"></jsp:include>
+              <jsp:include page="navbar.jsp"/>
               Sorry, Internet Explorer for Mac doesn't work right on this page.
               We recommend Netscape Navigator 7.1 or later for Macs, which you 
 	      can download from the
@@ -1294,6 +1294,6 @@ nextTask:
 	}
 %>
 
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>

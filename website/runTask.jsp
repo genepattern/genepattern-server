@@ -60,9 +60,9 @@ if (taskName == null || taskName.length() == 0) {
 	<title>run GenePattern task</title>
 	</head>
 	<body>	
-	<jsp:include page="navbar.jsp"></jsp:include>
+	<jsp:include page="navbar.jsp"/>
 	Must specify task name.<br>
-	<jsp:include page="footer.jsp"></jsp:include>
+	<jsp:include page="footer.jsp"/>
 	</body>
 	</html>
 <%
@@ -127,7 +127,7 @@ td { padding-left: 5; }
 </style>
 	</head>
 	<body>	
-	<jsp:include page="navbar.jsp"></jsp:include>
+	<jsp:include page="navbar.jsp"/>
 <% } %>
 
 <%
@@ -138,7 +138,7 @@ if (taskInfo == null) {
 	</script>
 	No such task <%= taskName %><br>
 	<% if (!bNoEnvelope) { %>
-		<jsp:include page="footer.jsp"></jsp:include>
+		<jsp:include page="footer.jsp"/>
 		</body>
 		</html>
 	<% } %>
@@ -356,7 +356,7 @@ if (taskName != null) {
 
 <% if (!bNoEnvelope) { %>
 	</td></tr></table>
-      <jsp:include page="footer.jsp"></jsp:include>
+      <jsp:include page="footer.jsp"/>
 	</body>
 	</html>
 <% } %>

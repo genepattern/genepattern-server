@@ -54,7 +54,7 @@ session="false" language="Java" contentType="text/plain" %>
 		<title>GenePattern</title>
 		</head>
 		<body>	
-		<jsp:include page="navbar.jsp"></jsp:include>
+		<jsp:include page="navbar.jsp"/>
 		<% 
 		out.println("<p>" + taskInfo.getName() + " was created using an older version of GenePattern. Please load the pipeline into the pipeline designer, save it, and then try again.");
 		out.println("<p><a href=pipelineDesigner.jsp?name=" + pipelineName + ">Load in pipeline designer</a>");
@@ -104,10 +104,10 @@ session="false" language="Java" contentType="text/plain" %>
 		<title>GenePattern</title>
 		</head>
 		<body>	
-		<jsp:include page="navbar.jsp"></jsp:include>
+		<jsp:include page="navbar.jsp"/>
 		<P><B><%=taskInfo.getName()%></b> had an error while trying to generate pipeline code.<br> Please load the pipeline into the pipeline designer, fix any problems,  save it, and then try again.
 <p><a href=pipelineDesigner.jsp?name=<%=pipelineName%>>Load in pipeline designer</a>
-		<jsp:include page="footer.jsp"></jsp:include>
+		<jsp:include page="footer.jsp"/>
 
 		</body>
 		<%

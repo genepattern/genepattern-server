@@ -242,7 +242,7 @@ You may select and install tasks from the <a href="taskCatalog.jsp">Broad websit
 
 <table cellpadding="0" cellspacing="0" width="100%" border="0" >
 <tr><td colspan=3>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 
 
 </td></tr>
@@ -288,7 +288,7 @@ No &lt;iframes&gt; support  :(
 taskSelect(document.forms['index'].pipeline, 'pipeline');
 taskSelect(document.forms['index'].task, 'task');
 </script>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 
 </body>
 </html>

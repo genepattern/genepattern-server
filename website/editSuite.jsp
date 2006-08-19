@@ -96,7 +96,7 @@ function confirmDeleteSupportFiles() {
 
 
 </head><body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 
 
 <form action="createSuite.jsp" name='edit' method="post" ENCTYPE="multipart/form-data" >
@@ -466,6 +466,6 @@ value="<%=task.getTaskInfoAttributes().get("LSID")%>"/><a href="<%=link%>?view=1
 %>
 </form>
 
-<jsp:include page="footer.jsp"></jsp:include> 
+<jsp:include page="footer.jsp"/> 
 </body>
 </html>

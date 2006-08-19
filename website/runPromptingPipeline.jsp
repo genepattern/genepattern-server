@@ -166,15 +166,13 @@ use, misuse, or functionality.
         if (missingReqParams.size() > 0) {
 
 %>
-<jsp:include page="navbar.jsp">
-</jsp:include>
+<jsp:include page="navbar.jsp"/>
 <%
 
     request.setAttribute("missingReqParams", missingReqParams);
     (request.getRequestDispatcher("runTaskMissingParams.jsp")).include(request, response);
 %>
-<jsp:include page="footer.jsp">
-</jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 <%

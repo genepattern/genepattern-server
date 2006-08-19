@@ -11,7 +11,8 @@
 */ -->
 
 
-<%@ page import="java.io.IOException,
+<%@ page
+	import="java.io.IOException,
 		 java.util.StringTokenizer,
 		 java.util.Enumeration,
 		 java.util.HashMap,
@@ -43,23 +44,24 @@
 		 org.genepattern.webservice.JobInfo,
 		 com.jspsmart.upload.*,
 		 org.genepattern.data.pipeline.PipelineModel"
-	session="false" contentType="text/html" language="Java" %>
+	session="false" contentType="text/html" language="Java"%>
 <%
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 %>
-<jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" />
+<jsp:useBean id="mySmartUpload" scope="page"
+	class="com.jspsmart.upload.SmartUpload" />
 
 <html>
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
-	<link href="skin/favicon.ico" rel="shortcut icon">
-	<title>Running Task</title>
+<link href="skin/favicon.ico" rel="shortcut icon">
+<title>Running Task</title>
 </head>
 <body>
-	
-<jsp:include page="navbar.jsp"></jsp:include>
+
+<jsp:include page="navbar.jsp"/>
 
 
 <%
@@ -202,9 +204,9 @@ try {
 		request.setAttribute("missingReqParams", missingReqParams);
 		(request.getRequestDispatcher("runTaskMissingParams.jsp")).include(request, response);
 %>
-		<jsp:include page="footer.jsp"></jsp:include>
-		</body>
-		</html>
+<jsp:include page="footer.jsp"/>
+</body>
+</html>
 <%
 		return;
 	}
@@ -216,13 +218,12 @@ try {
 %>
 
 <table width='100%' cellpadding='10'>
-<tr><td>
-Running <a href="addTask.jsp?view=1&name=<%= lsid %>"><%=requestParameters.getParameter("taskName")%></a> version <%= new LSID(lsid).getVersion() %> on <%=new Date()%> 
-				
-</tr></td>
-<tr><td>
-<%=requestParameters.getParameter("taskName")%> ( 
-<%
+	<tr>
+		<td>Running <a href="addTask.jsp?view=1&name=<%= lsid %>"><%=requestParameters.getParameter("taskName")%></a>
+		version <%= new LSID(lsid).getVersion() %> on <%=new Date()%></td>
+	</tr>
+	<tr>
+		<td><%=requestParameters.getParameter("taskName")%> ( <%
 for (int i=0; i < parmInfos.length; i++){
 		ParameterInfo pinfo = parmInfos[i];
 		String value = pinfo.getValue();	
@@ -246,10 +247,12 @@ for (int i=0; i < parmInfos.length; i++){
 	e.printStackTrace();
 }
 
-%>
-)<br></td></tr></table>
+%> )<br>
+		</td>
+	</tr>
+</table>
 
 
 
 
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>

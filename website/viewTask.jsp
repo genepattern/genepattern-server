@@ -268,7 +268,7 @@ function addNewDomainType(name, desc){
 
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <% if (taskName != null && taskInfo == null) { %>
 	<script language="javascript">
 	alert('no such task <%= taskName %>');
@@ -859,7 +859,7 @@ if (taskName != null) {
 <% if (tia != null) { %>
 <a href="makeZip.jsp?<%= GPConstants.NAME %>=<%= request.getParameter(GPConstants.NAME) %>&includeDependents=1">package this task into a zip file</a><br>
 <% } %>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 <% } catch (Throwable t) {

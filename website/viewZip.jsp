@@ -55,7 +55,7 @@
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <h2><%= props.getProperty(GPConstants.NAME) %> task details</h2>
 <h3>Source: <a href="<%= url %>"><%= url %></a></h3>
 download size: <%= nf.format(Long.parseLong(props.getProperty("size"))) %> bytes, uploaded <%= new Date(Long.parseLong(props.getProperty("created"))) %>
@@ -80,6 +80,6 @@ download size: <%= nf.format(Long.parseLong(props.getProperty("size"))) %> bytes
 <input type="hidden" name="url" value="<%= url %>">
 <input type="submit" value="install <%= props.getProperty("name") %> on GenePattern server <%= request.getServerName() %>:<%= request.getServerPort() %>">
 </form>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>

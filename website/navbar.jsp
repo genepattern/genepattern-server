@@ -37,9 +37,10 @@
 		org.genepattern.server.util.AuthorizationManagerFactoryImpl,
 		org.genepattern.util.StringUtils,
 		org.genepattern.util.LSID,
-		org.genepattern.server.indexer.Indexer" %>
+		org.genepattern.server.indexer.Indexer"%>
 <% { %>
-<jsp:useBean id="messages" class="org.genepattern.server.util.MessageUtils" scope="page"/>
+<jsp:useBean id="messages"
+	class="org.genepattern.server.util.MessageUtils" scope="page" />
 
 <% 
 String DIVIDER = "------";
@@ -386,69 +387,57 @@ function checkEnableNavbar() {
 </script>
 
 <div id="navbar" class="navbar">
-	<form action="login.jsp" name="login">
-	<table width="100%">
+<form action="login.jsp" name="login">
+<table width="100%">
 	<tr>
-		<td valign="top">	<a href="index.jsp" class='logo'><img src='skin/logoSmall.gif' border="0" height=25 width=25 />&nbsp;<%=messages.getProperty("ApplicationName", "GenePattern")%></a> &nbsp;
-		</td>
-		<td align="right"  valign="top">
-			<nobr>
-			<% if (request.getAttribute(GPConstants.USER_LOGGED_OFF) == null) { %>
-				<% if (userUnknown) { %>
-					<input type="text" class="little" size="30" name="<%= GPConstants.USERID %>" value="<%= EMAIL_ADDRESS %>" onfocus="ufocus(this, true, '<%= EMAIL_ADDRESS %>')" onblur="ufocus(this, false, '<%= EMAIL_ADDRESS %>')"> 
-					<input type="submit" value="sign in" class="little">
-				<% } else { %>
-					<a href="login.jsp" class="navbarlink">sign out</a> <%= StringUtils.htmlEncode(userID) %>
-				<% } %>
-			<% } %>
-			</nobr>
-			<br>
-			<a href="about.jsp" class="navbarlink">about</a>
-		</td>
+		<td valign="top"><a href="index.jsp" class='logo'><img
+			src='skin/logoSmall.gif' border="0" height=25 width=25 />&nbsp;<%=messages.getProperty("ApplicationName", "GenePattern")%></a>
+		&nbsp;</td>
+		<td align="right" valign="top"><nobr> <% if (request.getAttribute(GPConstants.USER_LOGGED_OFF) == null) { %>
+		<% if (userUnknown) { %> <input type="text" class="little" size="30"
+			name="<%= GPConstants.USERID %>" value="<%= EMAIL_ADDRESS %>"
+			onfocus="ufocus(this, true, '<%= EMAIL_ADDRESS %>')"
+			onblur="ufocus(this, false, '<%= EMAIL_ADDRESS %>')"> <input
+			type="submit" value="sign in" class="little"> <% } else { %> <a
+			href="login.jsp" class="navbarlink">sign out</a> <%= StringUtils.htmlEncode(userID) %>
+		<% } %> <% } %> </nobr> <br>
+		<a href="about.jsp" class="navbarlink">about</a></td>
 	</tr>
-	</form>
-	</table>
+</table>
+</form>
 
-	<form action="search.jsp" name="searchForm">
 
-	<table width="100%">
+<form action="search.jsp" name="searchForm">
+
+<table width="100%">
 	<tr>
-	<td  valign="top">
-		<% if (!userUnknown) { %>
-			<%= _taskCatalog(tmTasks, recentPipes, "Pipeline", "changePipeline();", GPConstants.TASK_TYPE_PIPELINE, userID, request.getParameter(GPConstants.NAME)) %>
-			<%= _taskCatalog(tmTasks, recentTasks, "Task", "changeTask();", null, userID, request.getParameter(GPConstants.NAME)) %>
-			<nobr>
-				<input type="button" value="run" name="navbarrun" onclick="jumpTo(this)" disabled> 
-				<input type="button" value="edit" name="navbaredit" onclick="jumpTo(this)" disabled>
-			</nobr>
-			<script language="Javascript">
+		<td valign="top">
+		<% if (!userUnknown) { %> <%= _taskCatalog(tmTasks, recentPipes, "Pipeline", "changePipeline();", GPConstants.TASK_TYPE_PIPELINE, userID, request.getParameter(GPConstants.NAME)) %>
+		<%= _taskCatalog(tmTasks, recentTasks, "Task", "changeTask();", null, userID, request.getParameter(GPConstants.NAME)) %>
+		<nobr> <input type="button" value="run" name="navbarrun"
+			onclick="jumpTo(this)" disabled> <input type="button"
+			value="edit" name="navbaredit" onclick="jumpTo(this)" disabled>
+		</nobr> <script language="Javascript">
 				checkEnableNavbar();
-			</script>
-		<% } %>
-
-
-&nbsp;&nbsp;&nbsp;
-<a href="#" 
-	onclick="openSuiteFilter()" class="navbarlink"> <nobr>Filter by Suite</nobr></a>
-
-	</td>
-	<td align="right" valign="top" >
-			<nobr><input type="text" class="little" size="10" name="search" 
-			      value="<%= request.getParameter("search") != null ? 
-				request.getParameter("search") : SEARCH %>" onfocus="ufocus(this, true, '<%= SEARCH %>')" 
-				onblur="ufocus(this, false, '<%= SEARCH %>')"><input type="image" src="skin/search.jpeg" 
-				alt="search" value="?" onclick="this.form.submit()" align="top" 
-				class="little"></nobr>
-			<input type="hidden" name="<%= Indexer.TASK %>" value="1">
-			<input type="hidden" name="<%= Indexer.TASK_DOC %>" value="1">
-			<input type="hidden" name="<%= Indexer.TASK_SCRIPTS %>" value="1">
-			<input type="hidden" name="<%= Indexer.JOB_PARAMETERS %>" value="1">
-			<input type="hidden" name="<%= Indexer.JOB_OUTPUT %>" value="1">
-			<input type="hidden" name="<%= Indexer.MANUAL %>" value="1">
-	</td>
+			</script> <% } %> &nbsp;&nbsp;&nbsp; <a href="#" onclick="openSuiteFilter()"
+			class="navbarlink"> <nobr>Filter by Suite</nobr></a></td>
+		<td align="right" valign="top"><nobr><input type="text"
+			class="little" size="10" name="search"
+			value="<%= request.getParameter("search") != null ? 
+				request.getParameter("search") : SEARCH %>"
+			onfocus="ufocus(this, true, '<%= SEARCH %>')"
+			onblur="ufocus(this, false, '<%= SEARCH %>')"><input
+			type="image" src="skin/search.jpeg" alt="search" value="?"
+			onclick="this.form.submit()" align="top" class="little"></nobr> <input
+			type="hidden" name="<%= Indexer.TASK %>" value="1"> <input
+			type="hidden" name="<%= Indexer.TASK_DOC %>" value="1"> <input
+			type="hidden" name="<%= Indexer.TASK_SCRIPTS %>" value="1"> <input
+			type="hidden" name="<%= Indexer.JOB_PARAMETERS %>" value="1">
+		<input type="hidden" name="<%= Indexer.JOB_OUTPUT %>" value="1">
+		<input type="hidden" name="<%= Indexer.MANUAL %>" value="1"></td>
 	</tr>
-	</table>
-	</form>
+</table>
+</form>
 </div>
 
 <!-- end navbar.jsp -->

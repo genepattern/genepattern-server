@@ -47,8 +47,7 @@ use, misuse, or functionality.
 </head>
 
 <body>
-<jsp:include page="navbar.jsp" flush="">
-</jsp:include>
+<jsp:include page="navbar.jsp" flush=""/>
 <%
     try {
         int i;
@@ -132,8 +131,7 @@ optional support files
 <br>
 <a href="addSuiteZip.jsp">back</a>
 <br>
-<jsp:include page="footer.jsp" flush="">
-</jsp:include>
+<jsp:include page="footer.jsp" flush=""/>
 </body>
 </html>
 <%
@@ -220,8 +218,7 @@ optional support files
         </tr>
     </table>
 </form>
-<jsp:include page="footer.jsp" flush="">
-</jsp:include>
+<jsp:include page="footer.jsp" flush=""/>
 <body></body>
 <html></html>
 <%
@@ -380,7 +377,6 @@ suite is complete.
 %>
 <a href="addZip.jsp">install another zip file</a>
 <br>
-<jsp:include page="footer.jsp" flush="">
-</jsp:include>
+<jsp:include page="footer.jsp" flush=""/>
 <body></body>
 <html></html>

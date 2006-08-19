@@ -43,7 +43,7 @@
 <title>Zip public GenePattern tasks</title>
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <% 
 try {
 	String dirName = request.getParameter("dir");
@@ -161,7 +161,7 @@ try {
 } finally { %>
 
 done<br>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 

@@ -126,7 +126,7 @@ function changeFilter(fld) {
 </script>
 	</head>
 	<body>
-	<jsp:include page="navbar.jsp"></jsp:include>
+	<jsp:include page="navbar.jsp"/>
 	<span id="fetching">
 		Fetching task catalog from <a href="<%= System.getProperty("ModuleRepositoryURL") %>" target="_new"><%= System.getProperty("ModuleRepositoryURL") %></a>...
 	</span>
@@ -147,7 +147,7 @@ function changeFilter(fld) {
 		<p>
 		<b>Try to correct this problem</b> by changing <a href="adminServer.jsp">web proxy settings</a> or <a href="adminServer.jsp">Module Repository URL.</a>
 
-		<jsp:include page="footer.jsp"></jsp:include>
+		<jsp:include page="footer.jsp"/>
 		</body>
 		</html>
 <%
@@ -246,7 +246,7 @@ function changeFilter(fld) {
 <br>
 <a href="taskCatalog.jsp<%= initialInstall ? "?initialInstall=1" : "" %>">install more tasks</a><br>
 
-		<jsp:include page="footer.jsp"></jsp:include>
+		<jsp:include page="footer.jsp"/>
 		</body>
 		</html>
 <%
@@ -717,7 +717,7 @@ Select from the following tasks from the <a href="<%= System.getProperty("Module
 
 </form>
 
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 <%! public String fixupLinksInText(String description) {

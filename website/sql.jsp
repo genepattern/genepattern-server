@@ -37,7 +37,7 @@ TD.little { font-size: 9pt }
 </style>
 </head>
 <body onLoad="javascript:sql.query.focus();">
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <h1>SQL</h1>
 <%
 	if (message != null) { %>
@@ -133,7 +133,7 @@ if (query.length() > 0 && request.getParameter("submit") != null) {
 <%
 }
 %>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 <%! public static String createTable(ResultSet rs, String noRowsMessage, String url) throws SQLException {

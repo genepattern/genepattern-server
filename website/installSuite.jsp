@@ -75,7 +75,7 @@
 </head>
 <body>
 
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 
 Installing Suite - 	<font size=+1><b><%= hm.get("name") %></b></font>
 ...done.<br>
@@ -160,7 +160,7 @@ No tasks installed.  You do not have permission to install tasks on this server.
 <br>
 <a href="suiteCatalog.jsp<%= initialInstall ? "?initialInstall=1" : "" %>">install more suites</a><br>
 
-		<jsp:include page="footer.jsp"></jsp:include>
+		<jsp:include page="footer.jsp"/>
 		</body>
 		</html>
 

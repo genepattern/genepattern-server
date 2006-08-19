@@ -25,7 +25,7 @@
 <jsp:useBean id="messages" class="org.genepattern.server.util.MessageUtils" scope="page"/>
 
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <h2><%=messages.get("ApplicationName")%> add/update analysis task help</h2>
 
 <h4>Adding a new task to the <%=messages.get("ApplicationName")%> server</h4>
@@ -351,6 +351,6 @@ ConsensusClustering example: <select><option>text</option><option>integer</optio
 When you select a parameter type of input file, a drop-down list of file formats appears in the file format column. Select the valid file format(s) for this parameter. To select multiple file formats, use CTRL-click. If your task requires an input file format not included in the list, scroll back to the Output Description field and click New to add that format to the list.
 
 <br>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
