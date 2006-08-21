@@ -68,7 +68,7 @@
 </head>
 <body>
 
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 
 Deleting Suite - 	<font size=+1><b><%= si.getName() %></b></font>
 <%
@@ -85,7 +85,7 @@ try {
 <br>
 <a href="suiteCatalog.jsp<%= initialInstall ? "?initialInstall=1" : "" %>">back to suites</a><br>
 
-		<jsp:include page="footer.jsp"></jsp:include>
+		<jsp:include page="footer.jsp"/>
 		</body>
 		</html>
 

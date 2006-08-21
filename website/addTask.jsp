@@ -285,7 +285,7 @@ function addNewDomainType(name, desc){
 
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <% if (taskName != null && taskInfo == null) { %>
 	<script language="javascript">
 	alert('no such task <%= taskName %>');
@@ -450,8 +450,8 @@ if (tia != null) {
 <%
 if(errors!=null) {
 %>
-	<h2>
 	<font color="red">
+	<h2>
 	There are some problems with the task that need to be fixed:
 	</h2>
 	<ul>
@@ -689,6 +689,7 @@ if (taskName != null) {
 </td>
    </tr>
    
+   <tr>
   <td align="right" valign="top"><b>Version&nbsp;comment:</b></td>
   <td width="*">
   	<% if (!viewOnly) { %><textarea name="<%= GPConstants.VERSION %>" cols="50" rows="1"><% } %><%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.VERSION)) : "" %><% if (!viewOnly) { %></textarea><% } %>
@@ -914,14 +915,14 @@ if (taskName != null) {
 </table>
 
  </td></tr></table>
-   </p>
+   <p/>
 
  </form>
 
 <% if (tia != null && errors==null) { %>
 <a href="makeZip.jsp?<%= GPConstants.NAME %>=<%= request.getParameter(GPConstants.NAME) %>&includeDependents=1">package this task into a zip file</a><br>
 <% } %>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 <% } catch (Throwable t) {

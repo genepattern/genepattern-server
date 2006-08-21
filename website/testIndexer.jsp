@@ -51,7 +51,7 @@ String filename = request.getParameter(FILENAME);
 <title>test Indexer</title>
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <form>
 
 <table width="90%" cols="2">
@@ -146,6 +146,6 @@ if (cmd != null && indexType != null) {
 </pre>
 <a href="search.jsp">search</a><br>
 
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>

@@ -72,7 +72,9 @@ public class CommandLineAction {
 			//		System.setProperty("user.dir", new
 			// File(props.getProperty("Tomcat")).getCanonicalPath());
 			//		System.setProperty("user.dir", resourcesDir);
-			hadToStartDB = connectDatabase(resourcesDir, props);
+			
+			// Database startup handled by hibernate JTR
+			// hadToStartDB = connectDatabase(resourcesDir, props);
 
 		} catch (Throwable e) {
 			System.err.println(e.getMessage());

@@ -32,11 +32,11 @@
 	<title>Can't find <%= pipelineName %></title>
 </head>
 <body>
-	<jsp:include page="navbar.jsp"></jsp:include>
+	<jsp:include page="navbar.jsp"/>
 <p>
 Unknown pipeline: <%= pipelineName %>
 <p>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 

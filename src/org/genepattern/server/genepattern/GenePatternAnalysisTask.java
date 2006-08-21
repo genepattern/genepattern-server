@@ -22,9 +22,10 @@ import org.genepattern.server.AnalysisServiceException;
 import org.genepattern.server.indexer.Indexer;
 import org.genepattern.server.indexer.IndexerDaemon;
 import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
-import org.genepattern.server.util.BeanReference;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.server.util.IAuthorizationManager;
-import org.genepattern.server.webservice.server.AnalysisJobDataSource;
+
+
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.ITaskIntegrator;
 import org.genepattern.util.IGPConstants;
@@ -248,7 +249,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     old[i].delete();
                 }
             }
-            AnalysisJobDataSource ds = getDS();
+            AnalysisJobService ds = AnalysisJobService.getInstance();
             taskInfo = ds.getTask(jobInfo.getTaskID());
             if (taskInfo == null) {
                 throw new Exception("No such taskID (" + jobInfo.getTaskID() + " for job " + jobInfo.getJobNumber());
@@ -1710,14 +1711,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
         return getTasks(null);
     }
 
-    public static AnalysisJobDataSource getDS() throws OmnigeneException {
-        AnalysisJobDataSource ds;
-        try {
-            ds = BeanReference.getAnalysisJobDataSourceEJB();
-            return ds;
-        } catch (Exception e) {
-            throw new OmnigeneException("Unable to find analysisJobDataSource: " + e.getMessage());
-        }
+    public static AnalysisJobService getDS() {
+        return AnalysisJobService.getInstance();
     }
 
     /**
@@ -1761,8 +1756,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
     }
 
     public static List getTasks(String userID) throws OmnigeneException, RemoteException {
-        Vector vTasks = getDS().getTasks(userID); // get vector of TaskInfos
-        return vTasks;
+       return getDS().getTasks(userID); // get vector of TaskInfos
+
     }
 
     /**
@@ -1778,7 +1773,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
         TaskInfo taskInfo = null;
         try {
             int taskID = -1;
-            AnalysisJobDataSource ds = getDS();
+            AnalysisJobService ds = getDS();
             try {
                 if (org.genepattern.util.LSID.isLSID(taskName)) {
                     taskName = new LSID(taskName).toString();
@@ -3622,7 +3617,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
      */
     public static void updatePipelineStatus(int jobNumber, int jobStatus, ParameterInfo[] additionalParams)
             throws OmnigeneException, RemoteException {
-        AnalysisJobDataSource ds = getDS();
+    	AnalysisJobService ds = getDS();
         JobInfo jobInfo = ds.getJobInfo(jobNumber);
         if (additionalParams != null) {
             for (int i = 0; i < additionalParams.length; i++) {

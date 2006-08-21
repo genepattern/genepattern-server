@@ -92,18 +92,18 @@ if (requestParameters.getParameter("delete") != null || request.getParameter("de
 		taskIntegratorClient.deleteTask(lsid);
 %>
 		<%writeHeader(response, out);%>
-		<jsp:include page="navbar.jsp"></jsp:include>
+		<jsp:include page="navbar.jsp"/>
 		<%= taskName %> has been deleted.  Any running jobs using that task have been stopped.<br>
 <%
 	} catch (Throwable t) { 
 %>
 		<%writeHeader(response, out);%>
-		<jsp:include page="navbar.jsp"></jsp:include>
+		<jsp:include page="navbar.jsp"/>
 <%
 		out.println(t + " while attempting to delete " + taskName);
 	} finally {
 %>	
-		<jsp:include page="footer.jsp"></jsp:include>
+		<jsp:include page="footer.jsp"/>
 		</body>
 		</html>
 <%
@@ -141,9 +141,9 @@ if ((requestParameters.getParameter("deleteFiles") != null || request.getParamet
 					return;
 				} else { %>
 					<%writeHeader(response, out);%>
-					<jsp:include page="navbar.jsp"></jsp:include>
+					<jsp:include page="navbar.jsp"/>
 					Unable to delete <%= filename %> from <%= taskName %> support files.<br>
-					<jsp:include page="footer.jsp"></jsp:include>
+					<jsp:include page="footer.jsp"/>
 					</body>
 					</html>
 <% 				
@@ -152,10 +152,10 @@ if ((requestParameters.getParameter("deleteFiles") != null || request.getParamet
 			} catch (Throwable t) { 
 %>	
 				<%writeHeader(response, out);%>
-				<jsp:include page="navbar.jsp"></jsp:include>
+				<jsp:include page="navbar.jsp"/>
 				<%= t %> while attempting to delete <%= filename %>
 				<br>
-				<jsp:include page="footer.jsp"></jsp:include>
+				<jsp:include page="footer.jsp"/>
 				</body>
 				</html>
 <%
@@ -181,7 +181,7 @@ if (request.getParameter("clone") != null) {
 		if(vProblems != null && vProblems.size() > 0) {
 %>
 			<%writeHeader(response, out);%>
-			<jsp:include page="navbar.jsp"></jsp:include>
+			<jsp:include page="navbar.jsp"/>
 			There are some problems with the <%= cloneName %> task that need to be fixed:<br><ul>
 <%	
 		    	for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
@@ -197,7 +197,7 @@ if (request.getParameter("clone") != null) {
 	}
 %>
 	<%writeHeader(response, out);%>
-	<jsp:include page="navbar.jsp"></jsp:include>
+	<jsp:include page="navbar.jsp"/>
 	Cloned <%= taskName %> as <%= cloneName %>.<br>
 	<a href="addTask.jsp?<%= GPConstants.NAME%>=<%=lsid %>">edit <%= cloneName %></a><br>
 	<script language="javascript">
@@ -209,7 +209,7 @@ if (request.getParameter("clone") != null) {
 	%>
 	
 	</script>
-	<jsp:include page="footer.jsp"></jsp:include>
+	<jsp:include page="footer.jsp"/>
 	</body>
 	</html>
 <%
@@ -475,7 +475,7 @@ timeMS dateTime loginId taskType moduleName  manifest supportFilesChanges URLToE
 
 	</pre><br>
 	<a href="javascript:history.back()">back</a> 
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 

@@ -223,7 +223,7 @@ function changeHistoryField(obj){
 </script>
 </head>
 <body>	
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 
 
 <table class="majorCell" width="100%" class="navbar"  border="1" rules="all" frame="border" cellpadding="10">
@@ -465,6 +465,6 @@ onclick="refillField(this);"> These Domains (comma delimited list)<br>
 
 
 
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>

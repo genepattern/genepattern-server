@@ -26,14 +26,10 @@ import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
 import org.apache.axis.MessageContext;
-import org.genepattern.server.webservice.server.dao.AdminDAO;
-import org.genepattern.server.webservice.server.dao.AdminDAOSysException;
-import org.genepattern.server.webservice.server.dao.AdminHSQLDAO;
+import org.genepattern.server.webservice.server.dao.*;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.SuiteInfo;
-import org.genepattern.webservice.WebServiceException;
+import org.genepattern.webservice.*;
 
 /**
  * AdminService Web Service. Do a Thread.yield at beginning of each method-
@@ -45,10 +41,10 @@ import org.genepattern.webservice.WebServiceException;
 public class AdminService implements IAdminService {
 	static Map serviceInfoMap;
 
-	AdminDAO adminDAO;
+	AdminDataService dataService;
 
 	public AdminService() {
-		adminDAO = new AdminHSQLDAO();
+        dataService = AdminDataService.getInstance();
 	}
 
 	protected String getUserName() {
@@ -108,7 +104,7 @@ public class AdminService implements IAdminService {
 	public TaskInfo[] getAllTasks() throws WebServiceException {
 		Thread.yield();
 		try {
-			return adminDAO.getAllTasks(getUserName());
+			return dataService.getAllTasksForUser(getUserName());
 		} catch (AdminDAOSysException e) {
 			throw new WebServiceException(e);
 		}
@@ -117,8 +113,8 @@ public class AdminService implements IAdminService {
 	public TaskInfo getTask(String lsidOrTaskName) throws WebServiceException {
 		Thread.yield();
 		try {
-			return adminDAO.getTask(lsidOrTaskName, getUserName());
-		} catch (AdminDAOSysException e) {
+			return dataService.getTask(lsidOrTaskName, getUserName());
+		} catch (OmnigeneException e) {
 			throw new WebServiceException(e);
 		}
 	}
@@ -126,7 +122,7 @@ public class AdminService implements IAdminService {
 	public TaskInfo[] getLatestTasks() throws WebServiceException {
 		Thread.yield();
 		try {
-			return adminDAO.getLatestTasks(getUserName());
+			return dataService.getLatestTasks(getUserName());
 		} catch (AdminDAOSysException e) {
 			throw new WebServiceException(e);
 		}
@@ -135,7 +131,7 @@ public class AdminService implements IAdminService {
 	public TaskInfo[] getLatestTasksByName() throws WebServiceException {
 		Thread.yield();
 		try {
-			return adminDAO.getLatestTasksByName(getUserName());
+			return dataService.getLatestTasksByName(getUserName());
 		} catch (AdminDAOSysException e) {
 			throw new WebServiceException(e);
 		}
@@ -145,7 +141,7 @@ public class AdminService implements IAdminService {
 		Map suiteLsid2VersionsMap = new HashMap();
 		SuiteInfo[] allSuites;
 		try {
-			allSuites = adminDAO.getAllSuites();
+			allSuites = dataService.getAllSuites();
 		} catch (AdminDAOSysException e1) {
 			throw new WebServiceException(e1);
 		}
@@ -176,7 +172,7 @@ public class AdminService implements IAdminService {
 		Map lsid2VersionsMap = new HashMap();
 		TaskInfo[] tasks = null;
 		try {
-			tasks = adminDAO.getAllTasks(getUserName());
+			tasks = dataService.getAllTasksForUser(getUserName());
 		} catch (AdminDAOSysException e) {
 			throw new WebServiceException(e);
 		}
@@ -204,7 +200,7 @@ public class AdminService implements IAdminService {
 
 	public SuiteInfo getSuite(String lsid) throws WebServiceException {
 		try {	
-			return adminDAO.getSuite(lsid);
+			return dataService.getSuite(lsid);
 		} catch (AdminDAOSysException e) {
 			throw new WebServiceException(e);
 		}
@@ -219,7 +215,7 @@ public class AdminService implements IAdminService {
 	 */
 	public SuiteInfo[] getLatestSuites() throws WebServiceException {
 		try {
-			return adminDAO.getLatestSuites(getUserName());
+			return dataService.getLatestSuites(getUserName());
 		} catch (AdminDAOSysException e) {
 			throw new WebServiceException(e);
 		}
@@ -235,7 +231,7 @@ public class AdminService implements IAdminService {
 	 */
 	public SuiteInfo[] getAllSuites() throws WebServiceException{
 		try {
-			return adminDAO.getAllSuites(getUserName());
+			return dataService.getAllSuites(getUserName());
 		} catch (AdminDAOSysException e) {
 			throw new WebServiceException(e);
 		}
@@ -251,7 +247,7 @@ public class AdminService implements IAdminService {
 	 */
 	public SuiteInfo[] getSuiteMembership(String taskLsid) throws WebServiceException{
 		try {
-			return  adminDAO.getSuiteMembership(taskLsid);
+			return  dataService.getSuiteMembership(taskLsid);
 		} catch (AdminDAOSysException e) {
 			throw new WebServiceException(e);
 		}

@@ -65,7 +65,7 @@
 			<title>Delete pipeline</title>
 			</head>
 			<body>
-			<jsp:include page="navbar.jsp"></jsp:include>
+			<jsp:include page="navbar.jsp"/>
 		Error: must submit from <a href="pipelineDesigner.jsp">pipelineDesigner.jsp</a>
 <jsp:include page="footer.jsp"></jsp:include>
 <%
@@ -132,7 +132,7 @@ try {
 			<title>Delete pipeline</title>
 			</head>
 			<body>
-			<jsp:include page="navbar.jsp"></jsp:include>
+			<jsp:include page="navbar.jsp"/>
 			Stopped and deleted <%= taskInfo.getName() %> along with its support files.<br><br>
 <%
 		} catch (Throwable t) { 
@@ -156,7 +156,7 @@ try {
 		<title>Delete pipeline</title>
 		</head>
 		<body>
-		<jsp:include page="navbar.jsp"></jsp:include>
+		<jsp:include page="navbar.jsp"/>
 		Error: pipeline must be named.  
 		<a href="javascript:window.close()">back</a>
 <%
@@ -381,7 +381,7 @@ try {
 		<script language="Javascript">window.focus();</script>
 		</head>
 		<body>
-		<jsp:include page="navbar.jsp"></jsp:include>
+		<jsp:include page="navbar.jsp"/>
 <%
 	}
    PipelineController controller = new PipelineController(model);
@@ -591,7 +591,7 @@ try {
 } finally {
 	if (!bClone) {
 %>
-		<jsp:include page="footer.jsp"></jsp:include>
+		<jsp:include page="footer.jsp"/>
 		</body>
 		</html>
 <%

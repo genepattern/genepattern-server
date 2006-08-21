@@ -30,14 +30,14 @@
 	<title>Cannot Run Pipeline</title>
 </head>
 <body>
-	<jsp:include page="navbar.jsp"></jsp:include>
+	<jsp:include page="navbar.jsp"/>
 <%
 String taskName = (String)request.getAttribute("name");
 %>
 <p>
 The <%=taskName%> cannot be run as the pipeline environment cannot prompt for runtime parameters.<p>	
 
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 

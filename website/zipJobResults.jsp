@@ -238,7 +238,7 @@ if (isDelete) {
 
    </head>
    <body>
-   <jsp:include page="navbar.jsp"></jsp:include>
+   <jsp:include page="navbar.jsp"/>
 <%
    LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
    if (attachmentNames != null) {
@@ -319,7 +319,7 @@ if (!isDelete) {
 
    </head>
    <body>
-   <jsp:include page="navbar.jsp"></jsp:include>
+   <jsp:include page="navbar.jsp"/>
 <% } %>
 
 
@@ -452,7 +452,7 @@ out.println("</table>");
 out.println("<br>");
 
 %>
- <jsp:include page="footer.jsp"></jsp:include>
+ <jsp:include page="footer.jsp"/>
 </body>
 </html>
 <%! 

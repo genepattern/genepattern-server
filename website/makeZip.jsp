@@ -83,13 +83,13 @@ response.setContentType(contentType);
 <style>
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <font color="red">
 <pre>
 <%= e.getMessage() %>
 </pre>
 </font>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 <%

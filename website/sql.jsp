@@ -16,9 +16,8 @@
 <%@ page import="java.util.*" %>
 <%@ page import="java.net.*" %>
 <%@ page import="java.sql.*" %>
-<%@ page import="org.genepattern.server.util.BeanReference,
-		  		 org.genepattern.util.StringUtils,
- 		org.genepattern.server.webservice.server.AnalysisJobDataSource" %>
+<%@ page import="org.genepattern.server.webservice.server.dao.AnalysisJobService,
+		  		 org.genepattern.util.StringUtils" %>
 <% 
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
@@ -38,7 +37,7 @@ TD.little { font-size: 9pt }
 </style>
 </head>
 <body onLoad="javascript:sql.query.focus();">
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <h1>SQL</h1>
 <%
 	if (message != null) { %>
@@ -73,7 +72,7 @@ while (query.length() > 0 && Character.isWhitespace(query.charAt(query.length()-
 
 if (query.length() > 0 && request.getParameter("submit") != null) { 
 	try {
-	        AnalysisJobDataSource ds = BeanReference.getAnalysisJobDataSourceEJB();
+	        AnalysisJobService ds = AnalysisJobService.getInstance();
 		java.util.Date startTime = new java.util.Date();
 		if (query.toLowerCase().startsWith("select")) {
 			ResultSet rs = ds.executeSQL(query);
@@ -134,7 +133,7 @@ if (query.length() > 0 && request.getParameter("submit") != null) {
 <%
 }
 %>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 <%! public static String createTable(ResultSet rs, String noRowsMessage, String url) throws SQLException {

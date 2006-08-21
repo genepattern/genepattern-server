@@ -14,8 +14,7 @@
 package org.genepattern.server.handler;
 
 import org.genepattern.server.JobIDNotFoundException;
-import org.genepattern.server.webservice.server.AnalysisJobDataSource;
-import org.genepattern.server.util.BeanReference;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
@@ -60,8 +59,7 @@ public class GetJobStatusHandler extends RequestHandler {
 		try {
 
 			//Get EJB reference
-			AnalysisJobDataSource ds = BeanReference
-					.getAnalysisJobDataSourceEJB();
+			AnalysisJobService ds = AnalysisJobService.getInstance();
 			//Invoke EJB function
 			ji = ds.getJobInfo(jobNo);
 			ParameterFormatConverter pfc = new ParameterFormatConverter();

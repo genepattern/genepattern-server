@@ -13,11 +13,11 @@
 
 package org.genepattern.server.handler;
 
+import java.util.List;
 import java.util.Vector;
 
 import org.genepattern.server.AnalysisManager;
-import org.genepattern.server.webservice.server.AnalysisJobDataSource;
-import org.genepattern.server.util.BeanReference;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
@@ -78,12 +78,11 @@ public class AddNewTaskHandler extends RequestHandler {
 		try {
 
 			//Get EJB reference
-			AnalysisJobDataSource ds = BeanReference
-					.getAnalysisJobDataSourceEJB();
+			AnalysisJobService ds = AnalysisJobService.getInstance();
 			AnalysisManager analysisManager = AnalysisManager.getInstance();
 
 			GetAvailableTasksHandler th = new GetAvailableTasksHandler();
-			Vector vTasks = th.executeRequest();
+			List vTasks = th.executeRequest();
 			if (vTasks != null) {
 				TaskInfo taskInfo = null;
 				for (int i = 0; i < vTasks.size(); i++) {

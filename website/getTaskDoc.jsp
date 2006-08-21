@@ -71,7 +71,7 @@ function toggleVersions(divname) {
 </script>
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <table>
 <tr>
 <td valign="top">
@@ -223,7 +223,7 @@ out.println("</div></td></tr>");
 %>
 </tbody>
 </table>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 <%
@@ -254,9 +254,9 @@ if (filename == null) {
 	<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 	</head>
 	<body>
-	<jsp:include page="navbar.jsp"></jsp:include>
+	<jsp:include page="navbar.jsp"/>
 	Sorry, no documentation available for <a href="addTask.jsp?<%= GPConstants.NAME %>=<%= name %>&view=1"><%= ti.getName() %></a>.<br>
-	<jsp:include page="footer.jsp"></jsp:include>
+	<jsp:include page="footer.jsp"/>
 	</body>
 	</html>
 <%
@@ -277,9 +277,9 @@ if (!in.exists()) {
 	<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 	</head>
 	<body>
-	<jsp:include page="navbar.jsp"></jsp:include>
+	<jsp:include page="navbar.jsp"/>
 	Sorry, no such file <%= filename %> for <a href="addTask.jsp?<%= GPConstants.NAME %>=<%= tia.get(GPConstants.LSID) %>&view=1"><%= ti.getName() %></a>.<br>
-	<jsp:include page="footer.jsp"></jsp:include>
+	<jsp:include page="footer.jsp"/>
 	</body>
 	</html>
 <%

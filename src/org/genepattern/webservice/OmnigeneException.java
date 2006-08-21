@@ -31,11 +31,14 @@ import java.util.Date;
  * @version 1.1, 11/06/2001
  */
 
-public class OmnigeneException extends Exception {
+public class OmnigeneException extends RuntimeException {
 
 	private int errno = 0;
 
-	private String code = null;
+    
+    public OmnigeneException(Exception cause) {
+        super(cause);
+    }
 
 	/**
 	 * Constructs a <code>OmnigeneException</code> with no detail message.

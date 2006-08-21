@@ -129,6 +129,8 @@ public interface IGPConstants {
     /** TaskInfoAttributes userID key */
     public static final String USERID = "userid";
 
+    public static final String PASSWORD = "password";
+
     /** TaskInfoAttributes version key */
     public static final String VERSION = "version";
 

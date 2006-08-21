@@ -31,7 +31,7 @@
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <h2>Install from zip file</h2>
 Please choose a GenePattern zip file to submit to the GenePattern server.<br><br>
 
@@ -80,6 +80,6 @@ Or download the zip file from a website:</td></tr>
 </td></tr>
 </table>
 
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>

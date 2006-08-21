@@ -50,7 +50,7 @@ if (request.getParameter("noenvelope") == null) {
 <title>generated wrapper code for GenePattern</title>
 </head>
 <body>	
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <% } // if noenvelope == null %>
 
 <% 
@@ -313,7 +313,7 @@ if (docFiles != null && docFiles.length > 0) { %>
 }
 %>    
 <% if (request.getParameter("noenvelope") == null) { %>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 <% } %>

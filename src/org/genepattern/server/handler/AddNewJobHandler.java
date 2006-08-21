@@ -14,8 +14,7 @@
 package org.genepattern.server.handler;
 
 import org.genepattern.server.TaskIDNotFoundException;
-import org.genepattern.server.webservice.server.AnalysisJobDataSource;
-import org.genepattern.server.util.BeanReference;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
@@ -101,8 +100,7 @@ public class AddNewJobHandler extends RequestHandler {
 			ParameterFormatConverter pfc = new ParameterFormatConverter();
 			parameter_info = pfc.getJaxbString(parameterInfoArray);
 			//Get EJB reference
-			AnalysisJobDataSource ds = BeanReference
-					.getAnalysisJobDataSourceEJB();
+			AnalysisJobService ds = AnalysisJobService.getInstance();
 			//Invoke EJB function
          if(hasParent) {
             ji = ds.addNewJob(taskID, userID, parameter_info, parentJobID);

@@ -11,8 +11,7 @@
 */ --><%@ page import="java.io.File,
 		 java.net.URLEncoder,
 		 java.util.Date,
-		 org.genepattern.server.util.BeanReference,
-		 org.genepattern.server.webservice.server.AnalysisJobDataSource,
+		 org.genepattern.server.webservice.server.dao.AnalysisJobService,
 		 org.genepattern.webservice.JobInfo,
 		 org.genepattern.webservice.JobStatus,
 		 org.genepattern.webservice.ParameterInfo,
@@ -32,7 +31,7 @@ if (userID == null || userID.length() == 0) {
 String JOBID = "jobID";
 String jobID = request.getParameter(JOBID);
 String DOWNLOAD_URL = "zipJobResults.jsp?download=&?name=" + jobID;
-AnalysisJobDataSource ds = BeanReference.getAnalysisJobDataSourceEJB();
+AnalysisJobService ds = AnalysisJobService.getInstance();
 JobInfo jobInfo = null;
 ParameterInfo[] params = null;
 TaskInfo taskInfo = null;
@@ -46,7 +45,7 @@ if (jobID == null) {
 <title>download job results</title>
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <h2>Get job results</h2>
 jobs: <%
 	JobInfo[] jobs = ds.getJobInfo(new Date());
@@ -90,7 +89,7 @@ job #: <input name="<%= JOBID %>" size="8"> <input type="submit" name="submit" v
 <br>Job numbers without links indicate no output is available yet.<br>
 <s>Jobs which are done but have no output</s>.<br>
 </font>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>
 <%
@@ -113,7 +112,7 @@ job #: <input name="<%= JOBID %>" size="8"> <input type="submit" name="submit" v
 			<form>
 			job #: <input name="<%= JOBID %>" size="8"> <input type="submit" name="submit" value="download results" class="little">
 			</form>
-			<jsp:include page="footer.jsp"></jsp:include>
+			<jsp:include page="footer.jsp"/>
 			</body>
 			</html>
 <%
@@ -148,7 +147,7 @@ job #: <input name="<%= JOBID %>" size="8"> <input type="submit" name="submit" v
 <title>download job results</title>
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <h2>Get job results</h2>
 			no output from job <%= jobID %><br>
 			<br>
@@ -156,7 +155,7 @@ job #: <input name="<%= JOBID %>" size="8"> <input type="submit" name="submit" v
 			<form>
 			job #: <input name="<%= JOBID %>" size="8"> <input type="submit" name="submit" value="download results" class="little">
 			</form>
-			<jsp:include page="footer.jsp"></jsp:include>
+			<jsp:include page="footer.jsp"/>
 			</body>
 			</html>
 <%			return;

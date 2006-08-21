@@ -36,7 +36,7 @@
 <title><%= filename %> from <%= request.getServerName() %></title>
 </head>
 <body>
-<jsp:include page="navbar.jsp"></jsp:include>
+<jsp:include page="navbar.jsp"/>
 <pre>
 <%= f.getCanonicalPath() %> on <%= request.getServerName() %>
 <hr>
@@ -83,6 +83,6 @@
 <script language="javascript">
 //	if (<%= numErrors %> == 0) window.close();
 </script>
-<jsp:include page="footer.jsp"></jsp:include>
+<jsp:include page="footer.jsp"/>
 </body>
 </html>

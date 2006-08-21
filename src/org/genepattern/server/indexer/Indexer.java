@@ -27,8 +27,8 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.store.FSDirectory;
 import org.genepattern.server.genepattern.GPLuceneAnalyzer;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.webservice.server.AnalysisJobDataSource;
 import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.JobInfo;
@@ -239,7 +239,7 @@ public class Indexer {
     }
 
     public static void indexJobs(IndexWriter writer) throws IOException, OmnigeneException {
-        AnalysisJobDataSource ds = GenePatternAnalysisTask.getDS();
+    	AnalysisJobService ds = GenePatternAnalysisTask.getDS();
         JobInfo[] jobs = ds.getJobInfo(new Date());
         JobInfo jobInfo = null;
         for (int i = 0; i < jobs.length; i++) {
@@ -252,12 +252,12 @@ public class Indexer {
     }
 
     public static void indexJob(IndexWriter writer, int jobID) throws IOException, OmnigeneException {
-        AnalysisJobDataSource ds = GenePatternAnalysisTask.getDS();
+    	AnalysisJobService ds = GenePatternAnalysisTask.getDS();
         JobInfo jobInfo = ds.getJobInfo(jobID);
         indexJob(writer, jobInfo, ds);
     }
 
-    public static void indexJob(IndexWriter writer, JobInfo jobInfo, AnalysisJobDataSource ds)
+    public static void indexJob(IndexWriter writer, JobInfo jobInfo, AnalysisJobService ds)
             throws IOException, OmnigeneException {
         if (!IndexerDaemon.isIndexingEnabled()) {
             return;
@@ -476,7 +476,7 @@ public class Indexer {
         }
         synchronized (getConcurrencyLock()) {
             writer.maxFieldLength = MAX_TERMS_PER_FIELD;
-            AnalysisJobDataSource ds = GenePatternAnalysisTask.getDS();
+            AnalysisJobService ds = GenePatternAnalysisTask.getDS();
             TaskInfo ti = ds.getTask(taskID);
 
             // XXX: delete first in case it already exists?

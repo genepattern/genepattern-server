@@ -1,24 +1,22 @@
 /*
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2006) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2006) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
 
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
-*/
-
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */
 
 package org.genepattern.server;
 
 import java.rmi.RemoteException;
 import java.util.Vector;
 
-import org.genepattern.server.webservice.server.AnalysisJobDataSource;
+import org.genepattern.server.webservice.server.dao.AnalysisJobService;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.util.BeanReference;
 import org.genepattern.webservice.OmnigeneException;
 
 /**
@@ -30,153 +28,154 @@ import org.genepattern.webservice.OmnigeneException;
  */
 
 public class AnalysisTask implements Runnable {
-	AnalysisJobDataSource ds = null;
 
-	private Vector jobQueue = new Vector();
+    AnalysisJobService ds = null;
 
-	//Semaphore to maintain simultaneous job count
-	private Semaphore sem = null;
+    private Vector jobQueue = new Vector();
 
-	private static org.apache.log4j.Category log = org.apache.log4j.Logger
-			.getInstance(AnalysisTask.class);
+    // Semaphore to maintain simultaneous job count
+    private Semaphore sem = null;
 
-	volatile boolean runFlag = true;
+    private static org.apache.log4j.Category log = org.apache.log4j.Logger.getInstance(AnalysisTask.class);
 
-	private final static String TASK_NAME = GenePatternAnalysisTask.TASK_NAME;
+    volatile boolean runFlag = true;
 
-	private GenePatternAnalysisTask genePattern = new GenePatternAnalysisTask();
+    private final static String TASK_NAME = GenePatternAnalysisTask.TASK_NAME;
 
-	private static AnalysisTask instance;
+    private GenePatternAnalysisTask genePattern = new GenePatternAnalysisTask();
 
-	private AnalysisTask() {
-	}
+    private static AnalysisTask instance;
 
-	public String getTaskName() {
-		return TASK_NAME;
-	}
+    private AnalysisTask() {
+    }
 
-	/**
-	 * Add an object to queue
-	 * 
-	 * @param o
-	 *            The feature to be added to the JobToQueue attribute
-	 */
-	public void addJobToQueue(Object o) {
-		jobQueue.add(o);
-	}
+    public String getTaskName() {
+        return TASK_NAME;
+    }
 
-	/** Clears the AnalysisTask's queue. */
-	public void clear() {
-		jobQueue.clear();
-	}
+    /**
+     * Add an object to queue
+     * 
+     * @param o
+     *            The feature to be added to the JobToQueue attribute
+     */
+    public void addJobToQueue(Object o) {
+        jobQueue.add(o);
+    }
 
-	/** Main AnalysisTask's thread method. */
-	public void run() {
+    /** Clears the AnalysisTask's queue. */
+    public void clear() {
+        jobQueue.clear();
+    }
 
-		while (true) {
+    /** Main AnalysisTask's thread method. */
+    public void run() {
 
-			//Load input data to input queue
-			synchronized (ds) {
+        while (true) {
 
-				if (jobQueue.isEmpty()) {
-					jobQueue = genePattern.getWaitingJobs();
+            // Load input data to input queue
+            synchronized (ds) {
 
-				}
-				if (jobQueue.isEmpty()) {
-					try {
-						ds.wait();
-					} catch (InterruptedException ie) {
-					}
-				}
-			}
+                if (jobQueue.isEmpty()) {
+                    jobQueue = genePattern.getWaitingJobs();
 
-			Object o = null;
+                }
+                if (jobQueue.isEmpty()) {
+                    try {
+                        ds.wait();
+                    }
+                    catch (InterruptedException ie) {
+                    }
+                }
+            }
 
-			if (!jobQueue.isEmpty()) {
-				o = jobQueue.remove(0);
-			}
+            Object o = null;
 
-			if (o == null) {
-				continue;
-			}
+            if (!jobQueue.isEmpty()) {
+                o = jobQueue.remove(0);
+            }
 
-			try {
-				onJobProcessFrameWork(o);
+            if (o == null) {
+                continue;
+            }
 
-			} catch (Exception ex) {
-				log.error(ex);
-			}
+            try {
+                onJobProcessFrameWork(o);
 
-		}
+            }
+            catch (Exception ex) {
+                log.error(ex);
+            }
 
-	}
+        }
 
-	/**
-	 * This is placeholder for doing process, which should be done in begining
-	 * and end of each job
-	 * 
-	 * @param o
-	 *            Description of the Parameter
-	 */
-	public void onJobProcessFrameWork(Object o) {
-		doAcquire();//if max job running, then wait until some thread to finish
-		new JobThread(o).start();
-	}
+    }
 
-	public String toString() {
-		return TASK_NAME;
-	}
+    /**
+     * This is placeholder for doing process, which should be done in begining
+     * and end of each job
+     * 
+     * @param o
+     *            Description of the Parameter
+     */
+    public void onJobProcessFrameWork(Object o) {
+        doAcquire();// if max job running, then wait until some thread to finish
+        new JobThread(o).start();
+    }
 
-	private AnalysisTask(int threadCount) {
+    public String toString() {
+        return TASK_NAME;
+    }
 
-		//create semaphore when thread count >0
-		if (threadCount > 0) {
-			sem = new Semaphore(threadCount);
-		}
-		try {
-			ds = BeanReference.getAnalysisJobDataSourceEJB();
-		} catch (RemoteException re) {
-			log.error(re);
-		} catch (OmnigeneException oe) {
-			log.error(oe);
-		}
+    private AnalysisTask(int threadCount) {
 
-	}
+        // create semaphore when thread count >0
+        if (threadCount > 0) {
+            sem = new Semaphore(threadCount);
+        }
+        try {
+            ds = AnalysisJobService.getInstance();
+        }
+        catch (OmnigeneException oe) {
+            log.error(oe);
+        }
 
-	private void doAcquire() {
-		if (sem != null) {
-			sem.acquire();
-		}
-	}
+    }
 
-	private void doRelease() {
-		if (sem != null) {
-			sem.release();
-		}
-	}
+    private void doAcquire() {
+        if (sem != null) {
+            sem.acquire();
+        }
+    }
 
-	public static AnalysisTask getInstance() {
-		return instance;
-	}
+    private void doRelease() {
+        if (sem != null) {
+            sem.release();
+        }
+    }
 
-	private class JobThread extends Thread {
-		Object obj = null;
+    public static AnalysisTask getInstance() {
+        return instance;
+    }
 
-		public JobThread(Object o) {
-			this.obj = o;
-		}
+    private class JobThread extends Thread {
 
-		public void run() {
-			genePattern.onJob(obj);//run job
-			doRelease();//signal completion of thread
-		}
-	}
+        Object obj = null;
 
-	static {
-		instance = new AnalysisTask(GenePatternAnalysisTask.NUM_THREADS);
-		Thread runner = new Thread(instance);
-		runner.start();
-	}
+        public JobThread(Object o) {
+            this.obj = o;
+        }
+
+        public void run() {
+            genePattern.onJob(obj);// run job
+            doRelease();// signal completion of thread
+        }
+    }
+
+    static {
+        instance = new AnalysisTask(GenePatternAnalysisTask.NUM_THREADS);
+        Thread runner = new Thread(instance);
+        runner.start();
+    }
 
 }
-
