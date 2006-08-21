@@ -56,6 +56,10 @@ ant package
 				<include name="*.jar" />
 				<include name="*.zip" />
 			</fileset>
+			<fileset dir="${repos_root}/website/WEB-INF/lib" id="base.libs">
+				<include name="*.jar" />
+				<include name="*.zip" />
+			</fileset>
 
 			<filelist dir="${repos_root}/build" id="build.jars" files="gpwebservice.jar broad-cg.jar ui_support.jar, runMain.jar" />
 			<path id="props.path" path="${repos_root}/resources" />
