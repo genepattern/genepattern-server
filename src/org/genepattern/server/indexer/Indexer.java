@@ -61,40 +61,24 @@ public class Indexer {
 
 	// field names used in Lucene index files
 	public static String URL = "url";
-
 	public static String FILENAME = "filename";
-
 	public static String TASKNAME = "taskName";
-
 	public static String CONTENTS = "contents";
-
 	public static String JOBID = "jobID";
-
 	public static String JOB_HAS_OUTPUT = "jobHasOutput";
-
 	public static String TYPE = "type";
-
 	public static String TASKID = "taskid";
-
 	public static String FILEID = "fileid";
-
 	public static String TITLE = "title";
-
 	public static String LSID = "lsid";
 
 	// names for fields that the user will be selecting for searches
 	public static String TASK = "tasks";
-
 	public static String TASK_DOC = "taskDocumentation";
-
 	public static String TASK_SCRIPTS = "taskScripts";
-
 	public static String JOB_PARAMETERS = "jobParameters";
-
 	public static String JOB_OUTPUT = "jobOutput";
-
 	public static String MANUAL = "manual";
-
 	protected static PrintWriter out = new PrintWriter(System.out, true);
 
 	// BUG: This won't handle large job output files.

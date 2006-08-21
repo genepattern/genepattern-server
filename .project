@@ -6,12 +6,58 @@
 	</projects>
 	<buildSpec>
 		<buildCommand>
+			<name>org.eclipse.wst.common.project.facet.core.builder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
 			<name>org.eclipse.jdt.core.javabuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>org.eclipse.wst.validation.validationbuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>com.exadel.verification.verifybuilder</name>
 			<arguments>
 			</arguments>
 		</buildCommand>
 	</buildSpec>
 	<natures>
+		<nature>org.eclipse.jem.workbench.JavaEMFNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
+		<nature>org.eclipse.wst.common.modulecore.ModuleCoreNature</nature>
+		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
+		<nature>com.exadel.jsf.jsfnature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>classes</name>
+			<type>2</type>
+			<location>C:/java/genepattern/website/WEB-INF/classes</location>
+		</link>
+		<link>
+			<name>WEB-ROOT</name>
+			<type>2</type>
+			<location>C:/java/genepattern/website</location>
+		</link>
+		<link>
+			<name>WEB-INF</name>
+			<type>2</type>
+			<location>C:/java/genepattern/website/WEB-INF</location>
+		</link>
+		<link>
+			<name>src</name>
+			<type>2</type>
+			<location>C:/java/genepattern/src</location>
+		</link>
+		<link>
+			<name>lib</name>
+			<type>2</type>
+			<location>C:/java/genepattern/website/WEB-INF/lib</location>
+		</link>
+	</linkedResources>
 </projectDescription>

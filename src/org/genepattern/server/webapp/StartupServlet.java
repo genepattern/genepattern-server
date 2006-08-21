@@ -81,10 +81,9 @@ public class StartupServlet extends HttpServlet {
         ServletContext application = config.getServletContext();
         application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
         loadProperties(config);
-        // start HSQL
+        
         launchTasks();
-        // make sure that database exists
-        new CreateDatabase().run(new String[] { "." });
+
         // get a single instance of AnalysisManager so that it doesn't get
         // re-instantiated with every invocation of GP
         application.setAttribute("AnalysisManager", AnalysisManager.getInstance());
@@ -114,9 +113,9 @@ public class StartupServlet extends HttpServlet {
     }
 
     protected void startDaemons(Properties props, ServletContext application) throws ServletException {
-        startJobPurger(props);
-        startIndexerDaemon(props);
-        startJSPCompiler(props, application);
+        //startJobPurger(props);
+        //startIndexerDaemon(props);
+        //startJSPCompiler(props, application);
         Thread.currentThread().yield(); // allow a bit of runtime to the
         // independent threads
     }

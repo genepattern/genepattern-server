@@ -177,7 +177,7 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 			// read from the gp resources directory the following files
 			// permissionMap.xml, userGroups.xml, actionPermissionMap.xml
 			//
-			System.setProperty(DBF,	"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+//			System.setProperty(DBF,	"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
 			initPermissionMap();
 			initActionPermissionMap();
 			initUserGroupMap();
@@ -187,8 +187,8 @@ public class AuthorizationManager implements IAuthorizationManager, IGPConstants
 		} catch (JDOMException ioe) {
 			throw new IOException(ioe.getMessage() + " while reading authorization files");
 		} finally {
-			if (oldDocumentBuilderFactory != null)
-				System.setProperty(DBF, oldDocumentBuilderFactory);
+//			if (oldDocumentBuilderFactory != null)
+//				System.setProperty(DBF, oldDocumentBuilderFactory);
 		}
 
 	}

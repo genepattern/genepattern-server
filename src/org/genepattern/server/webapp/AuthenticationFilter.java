@@ -19,37 +19,15 @@
  */
 package org.genepattern.server.webapp;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.*;
 
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.TreeMap;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import javax.servlet.*;
+import javax.servlet.http.*;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.Filter;
-import javax.servlet.FilterConfig;
-import javax.servlet.FilterChain;
-import javax.servlet.http.Cookie;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.net.URLEncoder;
-import java.net.URLDecoder;
-
+import org.genepattern.util.GPConstants;
 import org.genepattern.util.IGPConstants;
-import org.genepattern.server.util.AccessManager;
 
 /**
  * @author Liefeld
@@ -104,6 +82,8 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 		if (!(isLogin || isResultFetch )) {
 
 			userId = _getUserID((HttpServletRequest) request);	  
+            String password = request.getParameter(GPConstants.PASSWORD);
+            System.out.println("password = " + password);
 			//System.out.println("UserID=" + userId);    
 			if (userId == null){	
 				setLoginPageRedirect((HttpServletRequest)request, (HttpServletResponse )response);

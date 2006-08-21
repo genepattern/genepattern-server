@@ -770,8 +770,6 @@ public class AnalysisJobService {
 
     }
 
- 
-
     /**
      * To remove registered task based on task ID
      * 
@@ -847,7 +845,30 @@ public class AnalysisJobService {
      * @return JobInfo Vector
      */
     public Vector getWaitingJob(int maxJobCount) throws OmnigeneException {
-        return null;
+
+        Transaction transaction = null;
+        try {
+            if (!getSession().getTransaction().isActive()) {
+                transaction = getSession().beginTransaction();
+            }
+
+            Vector jobs = analysisDAO.getWaitingJob(maxJobCount);
+
+            if (transaction != null) {
+                transaction.commit();
+            }
+
+            return jobs;
+        }
+        catch (Exception e) {
+            getSession().getTransaction().rollback();
+            log.error(e);
+            throw new OmnigeneException(e.getMessage());
+        }
+        finally {
+            cleanupSession();
+        }
+
     }
 
     /**

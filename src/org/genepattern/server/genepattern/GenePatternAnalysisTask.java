@@ -122,24 +122,9 @@ import java.util.zip.ZipInputStream;
 
 public class GenePatternAnalysisTask implements IGPConstants {
 
-    /** used by log4j logging */
-    static {
-        String log4jConfiguration = System.getProperty("log4j.configuration");
-        if (log4jConfiguration == null) {
-            log4jConfiguration = "/webapps/gp/WEB-INF/classes/log4j.properties";
-        }
-        File l4jconf = new File(log4jConfiguration);
-
-        // System.out.println("GPAT static init: log4j.configuration=" +
-        // log4jConfiguration + ", user.dir=" + System.getProperty("user.dir") +
-        // ", l4jconf.length=" + l4jconf.length());
-        if (l4jconf.exists()) {
-            PropertyConfigurator.configure(log4jConfiguration);
-        }
-    }
 
     private static Logger _cat = Logger
-            .getLogger("edu.mit.wi.omnigene.service.analysis.genepattern.GenePatternAnalysisTask");
+            .getLogger(GenePatternAnalysisTask.class);
 
     protected static final String CLASSPATH = "classpath";
 
