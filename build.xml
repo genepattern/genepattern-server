@@ -318,10 +318,10 @@
     </target>
 
 
-    <target name="GPGEinstaller">
+    <target depends="init" name="GPGEinstaller">
         <ant dir="${genepattern.gpge.installer}"
-             inheritall="true"
-             inheritrefs="true"
+             inheritall="false"
+             inheritrefs="false"
              target="installer"/>
     </target>
 
