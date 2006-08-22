@@ -353,8 +353,8 @@
     <target depends="website, GPGEinstaller" name="installers">
 
         <ant dir="${genepattern.installer}"
-             inheritall="true"
-             inheritrefs="true"
+             inheritall="false"
+             inheritrefs="false"
              target="installers"/>
 
     </target>
