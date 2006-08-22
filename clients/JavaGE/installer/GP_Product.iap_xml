@@ -321,7 +321,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -352,7 +352,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -414,7 +414,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -445,7 +445,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -476,7 +476,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -538,7 +538,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -569,7 +569,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -600,7 +600,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -631,7 +631,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -662,7 +662,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -693,7 +693,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -724,7 +724,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -755,7 +755,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -780,13 +780,13 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[664]]></string>
 							</property>
 							<property name="sourceName">
-								<string><![CDATA[commons-discovery-0.2.jar]]></string>
+								<string><![CDATA[commons-discovery.jar]]></string>
 							</property>
 							<property name="overrideUnixPermissions">
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -817,7 +817,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -879,7 +879,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -910,7 +910,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -941,7 +941,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -972,7 +972,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -1003,7 +1003,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -1028,13 +1028,13 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[664]]></string>
 							</property>
 							<property name="sourceName">
-								<string><![CDATA[wsdl4j-1.5.1.jar]]></string>
+								<string><![CDATA[wsdl4j.jar]]></string>
 							</property>
 							<property name="overrideUnixPermissions">
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -1127,7 +1127,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -1158,7 +1158,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -1189,7 +1189,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -7657,7 +7657,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
