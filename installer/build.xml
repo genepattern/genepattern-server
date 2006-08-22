@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="installer" name="ServerInstaller">
-    <taskdef name="buildinstaller" classname="com.zerog.ia.integration.ant.InstallAnywhereAntTask"/>
-    
+    <taskdef name="buildinstaller" classname="com.zerog.ia.integration.ant.InstallAnywhereAntTask">
+	<classpath>   
+		<pathelement location="e:/ant_165/lib/iaant.jar"/>
+	</classpath>
+    </taskdef>
+ 
 
 <target name="installers" depends="installer"/>
 
