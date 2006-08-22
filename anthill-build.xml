@@ -75,10 +75,34 @@
 			todir="e:/GPInstalls/Tomcat/webapps/gpinstalls/nightlybuild">
 			<fileset dir="installer/GP_server_Build_Output/Web_Installers"/>
 		</copy>
-		<ant antfile="build.xml" dir="." target="publishGPGEinstallerToWWWDev"/>
+		<!-- ant antfile="build.xml" dir="." target="publishGPGEinstallerToWWWDev"/  -->
+		<antcall target="publishGPGEinstallerToWWWDev"/>
+
 
 
 	</target>
+	
+      <target name="setDefaultFTPUser" unless="user">
+           <property name="user" value="genepattern"/>
+      </target>
+
+    <target name="publishGPGEinstallerToWWWDev" depends="setDefaultFTPUser">
+	  <property file="resources/build.properties"/>
+
+        <ftp server="iftp.broad.mit.edu"
+             remotedir="${version.major}.${version.minor}/"
+             userid="${user}"
+             password="${pass}"
+             depends="yes"
+             binary="yes">
+
+            <fileset dir="build/Web_Installers">
+                <include name="**/*"/>
+            </fileset>
+        </ftp>
+
+    </target>
+
 
 
 	<target name="publishBuild">
