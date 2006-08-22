@@ -88,7 +88,7 @@
 
 	<copy todir="wartemp/WEB-INF/classes">
     		<fileset dir="build">
-			<include name="RunR.class"/>
+			<include name="Run*.class"/>
 		</fileset>
   	</copy>
 	<copy todir="wartemp/WEB-INF/lib">
