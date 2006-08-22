@@ -66,6 +66,8 @@ import javax.net.ssl.SSLSession;
 
 public class StartupServlet extends HttpServlet {
 
+    public static boolean INITIALIZED = false;
+
     public static String NAME = "GenePatternStartupServlet";
 
     SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -74,48 +76,54 @@ public class StartupServlet extends HttpServlet {
 
     boolean DEBUG = false;
 
+    public StartupServlet() {
+        System.out.println("Creating StartupServlet");
+
+    }
+
     public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-        log("StartupServlet: user.dir=" + System.getProperty("user.dir"));
+        try {
+            super.init(config);
+            System.out.println("StartupServlet.init thread = " + Thread.currentThread().getName());
+            System.out.flush();
 
-        ServletContext application = config.getServletContext();
-        application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
-        loadProperties(config);
-        
-        launchTasks();
+            if (!INITIALIZED) {
+                log("StartupServlet: user.dir=" + System.getProperty("user.dir"));
+                ServletContext application = config.getServletContext();
+                application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
+                loadProperties(config);
+                launchTasks();
+                // get a single instance of AnalysisManager so that it doesn't
+                // get
+                // re-instantiated with every invocation of GP
+                application.setAttribute("AnalysisManager", AnalysisManager.getInstance());
+                startDaemons(System.getProperties(), application);
+                Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+                //
+                // Probably best to put this code in a function somewhere...
+                //
+                HostnameVerifier hv = new HostnameVerifier() {
 
-        // get a single instance of AnalysisManager so that it doesn't get
-        // re-instantiated with every invocation of GP
-        application.setAttribute("AnalysisManager", AnalysisManager.getInstance());
-        startDaemons(System.getProperties(), application);
-
-        // SSL
-
-        Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-
-        //
-        // Probably best to put this code in a function somewhere...
-        //
-        HostnameVerifier hv = new HostnameVerifier() {
-
-            public boolean verify(String urlHostName, SSLSession session) {
-                if (!urlHostName.equals(session.getPeerHost()))
-                    System.out.println("Warning: URL Host: " + urlHostName + " vs. " + session.getPeerHost());
-                return true;
+                    public boolean verify(String urlHostName, SSLSession session) {
+                        if (!urlHostName.equals(session.getPeerHost())) System.out.println("Warning: URL Host: "
+                                + urlHostName + " vs. " + session.getPeerHost());
+                        return true;
+                    }
+                };
+                HttpsURLConnection.setDefaultHostnameVerifier(hv);
+                announceReady(System.getProperties());
+                INITIALIZED = true;
             }
-        };
-
-        HttpsURLConnection.setDefaultHostnameVerifier(hv);
-
-        // END SSL
-
-        announceReady(System.getProperties());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     protected void startDaemons(Properties props, ServletContext application) throws ServletException {
-        //startJobPurger(props);
-        //startIndexerDaemon(props);
-        //startJSPCompiler(props, application);
+        // startJobPurger(props);
+        // startIndexerDaemon(props);
+        // startJSPCompiler(props, application);
         Thread.currentThread().yield(); // allow a bit of runtime to the
         // independent threads
     }
@@ -247,16 +255,17 @@ public class StartupServlet extends HttpServlet {
                 taskName = stTasks.nextToken();
                 String expectedThreadName = props.getProperty(taskName + ".taskName", taskName);
                 for (int t = 0; t < threads.length; t++) {
-                    if (threads[t] == null)
-                        continue;
+                    if (threads[t] == null) continue;
                     String threadName = threads[t].getName();
-                    if (threadName == null)
-                        continue;
+                    if (threadName == null) continue;
                     if (threadName.startsWith(expectedThreadName)) {
                         System.out.println(expectedThreadName + " is already running");
                         continue nextTask;
                     }
                 }
+               
+                // Optionally use a new class loader.
+
                 className = props.getProperty(taskName + ".class");
                 classPath = props.getProperty(taskName + ".classPath", "");
                 StringTokenizer classPathElements = new StringTokenizer(classPath, ";");
@@ -392,8 +401,7 @@ public class StartupServlet extends HttpServlet {
         }
         finally {
             try {
-                if (fis != null)
-                    fis.close();
+                if (fis != null) fis.close();
             }
             catch (IOException ioe) {
             }
@@ -402,45 +410,34 @@ public class StartupServlet extends HttpServlet {
 
     // read Tomcat's server.xml file and set the GenePatternURL and
     // GENEPATTERN_PORT properties according to the actual configuration
+
+    // Why are we doing this? This is weird. JTR.
     protected void setupWebserverProps(ServletConfig config, Properties props) {
 
-        if (config.getServletContext().getServerInfo().indexOf("Apache Tomcat") != -1) {
-            try {
-                File tomcatConf = new File(System.getProperty("tomcat"), "conf");
-                File fileServerXml = new File(tomcatConf, "server.xml");
-                Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-                        new InputSource(new FileReader(fileServerXml)));
-                Element root = doc.getDocumentElement();
-
-                HashMap hmProps = new HashMap();
-                processNode(root, hmProps);
-                if (hmProps.containsKey("port") && hmProps.containsKey("path")) {
-                    String scheme = "http";
-                    if (hmProps.containsKey("scheme"))
-                        scheme = (String) hmProps.get("scheme");
-
-                    props.setProperty("GenePatternURL", scheme + "://127.0.0.1:" + hmProps.get("port")
-                            + hmProps.get("path") + "/");
-
-                }
-                if (hmProps.containsKey("port")) {
-                    props.setProperty("GENEPATTERN_PORT", (String) hmProps.get("port"));
-                }
-                if (hmProps.containsKey("path")) {
-                    props.setProperty("GP_Path", (String) hmProps.get("path"));
-                }
-                if (hmProps.containsKey("docBase")) {
-                    props.setProperty("GP_docBase", (String) hmProps.get("docBase"));
-                }
-
-            }
-            catch (Exception e) {
-                System.err.println(e.getMessage() + " in StartupServlet.parseTomcatServerXml");
-            }
-        }
-        else {
-            // unknown server
-        }
+        /*
+         * if (config.getServletContext().getServerInfo().indexOf("Apache
+         * Tomcat") != -1) { try { File tomcatConf = new
+         * File(System.getProperty("tomcat"), "conf"); File fileServerXml = new
+         * File(tomcatConf, "server.xml"); Document doc =
+         * DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new
+         * InputSource(new FileReader(fileServerXml))); Element root =
+         * doc.getDocumentElement();
+         * 
+         * HashMap hmProps = new HashMap(); processNode(root, hmProps); if
+         * (hmProps.containsKey("port") && hmProps.containsKey("path")) { String
+         * scheme = "http"; if (hmProps.containsKey("scheme")) scheme = (String)
+         * hmProps.get("scheme");
+         * 
+         * props.setProperty("GenePatternURL", scheme + "://127.0.0.1:" +
+         * hmProps.get("port") + hmProps.get("path") + "/");
+         *  } if (hmProps.containsKey("port")) {
+         * props.setProperty("GENEPATTERN_PORT", (String) hmProps.get("port")); }
+         * if (hmProps.containsKey("path")) { props.setProperty("GP_Path",
+         * (String) hmProps.get("path")); } if (hmProps.containsKey("docBase")) {
+         * props.setProperty("GP_docBase", (String) hmProps.get("docBase")); }
+         *  } catch (Exception e) { System.err.println(e.getMessage() + " in
+         * StartupServlet.parseTomcatServerXml"); } } else { // unknown server }
+         */
 
     }
 
@@ -481,10 +478,8 @@ public class StartupServlet extends HttpServlet {
         Thread t = null;
         for (int i = 0; i < numThreads; i++) {
             t = threads[i];
-            if (t == null)
-                continue;
-            if (!t.isAlive())
-                continue;
+            if (t == null) continue;
+            if (!t.isAlive()) continue;
             log(t.getName() + " is running at " + t.getPriority() + " priority.  " + (t.isDaemon() ? "Is" : "Is not")
                     + " daemon.  " + (t.isInterrupted() ? "Is" : "Is not") + " interrupted.  ");
         }

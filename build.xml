@@ -5,7 +5,8 @@
 <project basedir="." default="targets" name="genepattern">
     <description>JAR deployment for genepattern</description>
     <property name="java.target" value="1.5"/>
-    <property location="lib" name="lib"/>
+    <property location="lib" name="lib_compile"/>
+    <property location="website/WEB-INF/lib" name="lib"/>
 
     <property location="src" name="src"/>
     <property location="build" name="build"/>
@@ -82,7 +83,11 @@
         <available file="${keyStore}" property="keyStore.present"/>
 
         <path id="library.classpath">
-            <fileset dir="${genepattern.common}/lib">
+            <fileset dir="${lib_compile}">
+                <include name="*.jar"/>
+                <include name="*.zip"/>
+            </fileset>
+            <fileset dir="${lib}">
                 <include name="*.jar"/>
                 <include name="*.zip"/>
             </fileset>
@@ -130,12 +135,7 @@
 
     <target name="gp-library-doc" depends="init" unless="skipdoc">
         <javadoc destdir="build/doc" Author="no" Public="true" Verbose="false">
-            <classpath>
-                <fileset dir="lib">
-                    <include name="**/*.jar"/>
-                </fileset>
-
-            </classpath>
+            <classpath id="${library.classpath}"/>
             <fileset dir="src" defaultexcludes="yes">
                 <include name="org/genepattern/data/**/*.java"/>
                 <include name="org/genepattern/client/**.java"/>

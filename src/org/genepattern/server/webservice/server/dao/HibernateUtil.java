@@ -13,25 +13,29 @@ public class HibernateUtil {
 
     private static Logger log = Logger.getLogger(HibernateUtil.class);
 
-    private static final SessionFactory sessionFactory;
+    private static  SessionFactory sessionFactory = null;;
 
-    static {
+    public static synchronized SessionFactory getSessionFactory() {
+        if(sessionFactory == null) {
+            createSessionFactory();
+        }
+        return sessionFactory;
+    }
+
+
+    static void createSessionFactory() {
         try {
-            // Create the SessionFactory from hibernate.cfg.xml
+             // Create the SessionFactory from hibernate.cfg.xml
             Configuration config = new Configuration();
             // config.configure("oracle.cfg.xml");
             config.configure("hibernate.cfg.xml");
             sessionFactory = config.buildSessionFactory();
-        }
+         }
         catch (Throwable ex) {
             // Make sure you log the exception, as it might be swallowed
             System.err.println("Initial SessionFactory creation failed." + ex);
             throw new ExceptionInInitializerError(ex);
         }
-    }
-
-    public static SessionFactory getSessionFactory() {
-        return sessionFactory;
     }
 
     public static Session getSession() {

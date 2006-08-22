@@ -104,20 +104,12 @@
    <param-name>genepattern.properties</param-name>
    <param-value>../resources</param-value>
   </init-param>
-  <init-param>
-   <param-name>log4j.configuration</param-name>
-   <param-value>webapps/gp/WEB-INF/classes/log4j.properties</param-value>
-  </init-param>
   <load-on-startup>30</load-on-startup>
  </servlet>
  <servlet>
   <display-name>Apache-Axis Servlet</display-name>
   <servlet-name>AxisServlet</servlet-name>
   <servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
-  <init-param>
-   <param-name>log4j.configuration</param-name>
-   <param-value>webapps/gp/WEB-INF/classes/log4j.properties</param-value>
-  </init-param>
   <load-on-startup>20</load-on-startup>
  </servlet>
  <servlet-mapping>

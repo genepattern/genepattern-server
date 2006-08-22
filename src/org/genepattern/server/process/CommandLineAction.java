@@ -95,43 +95,7 @@ public class CommandLineAction {
 
 	}
 
-	boolean connectDatabase(String resourceDir, Properties props)
-			throws ClassNotFoundException, SQLException, IOException, Exception {
-		for (int i = 0; conn == null && i < 4; i++) {
-			try {
-				conn = getConnection(props);
-			} catch (SQLException se) {
-				// sleep 1 second and try again
-				Thread.currentThread().sleep(1000);
-			}
-		}
-		if (conn == null) {
-			hadToStartDB = startDB(props);
-			conn = getConnection(props);
-		}
-		if (!checkSchema(resourceDir, props)) {
-			createSchema(resourceDir, props);
-			if (!checkSchema(resourceDir, props)) {
-				System.err.println("schema didn't check after creating");
-				if (hadToStartDB) {
-					System.out.println("stopping database because I started it");
-					try {
-						Connection conn = getConnection(props);
-						Statement stmt = conn.createStatement();
-						stmt.executeUpdate("SHUTDOWN COMPACT");
-						stmt.close();
-						conn.close();
-					} catch (SQLException se) {
-						// ignore
-					}
-				}
-				throw new IOException(
-						"unable to successfully create task_master table.  Other tables also suspect.");
 
-			}
-		}
-		return hadToStartDB;
-	}
 
 	//Returns Connection from connection pool based on DAO settings
 	private Connection getConnection(Properties props)
