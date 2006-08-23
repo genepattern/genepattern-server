@@ -103,17 +103,11 @@
 
     </target>
 
-
-
 	<target name="publishBuild">
-		
 		<ant antfile="anthill-build.xml" dir="${basedir}" target="installLocal" />
-		
 		<!-- load the modules since the installer doesn't - once we can start the server -->
 		<antcall target="startServer" inheritRefs="true"/>
 		<antcall target="loadModules" inheritRefs="true"/>
-
-		
 	</target>	
 
 
