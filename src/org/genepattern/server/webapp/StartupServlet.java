@@ -66,15 +66,11 @@ import javax.net.ssl.SSLSession;
 
 public class StartupServlet extends HttpServlet {
 
-    public static boolean INITIALIZED = false;
-
     public static String NAME = "GenePatternStartupServlet";
 
     SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static Vector vThreads = new Vector();
-
-    boolean DEBUG = false;
 
     public StartupServlet() {
         System.out.println("Creating StartupServlet");
@@ -82,42 +78,48 @@ public class StartupServlet extends HttpServlet {
     }
 
     public void init(ServletConfig config) throws ServletException {
-        try {
-            super.init(config);
-            System.out.println("StartupServlet.init thread = " + Thread.currentThread().getName());
-            System.out.flush();
 
-            if (!INITIALIZED) {
-                log("StartupServlet: user.dir=" + System.getProperty("user.dir"));
-                ServletContext application = config.getServletContext();
-                application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
-                loadProperties(config);
-                launchTasks();
-                // get a single instance of AnalysisManager so that it doesn't
-                // get
-                // re-instantiated with every invocation of GP
-                application.setAttribute("AnalysisManager", AnalysisManager.getInstance());
-                startDaemons(System.getProperties(), application);
-                Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-                //
-                // Probably best to put this code in a function somewhere...
-                //
-                HostnameVerifier hv = new HostnameVerifier() {
+        super.init(config);
 
-                    public boolean verify(String urlHostName, SSLSession session) {
-                        if (!urlHostName.equals(session.getPeerHost())) System.out.println("Warning: URL Host: "
-                                + urlHostName + " vs. " + session.getPeerHost());
-                        return true;
-                    }
-                };
-                HttpsURLConnection.setDefaultHostnameVerifier(hv);
-                announceReady(System.getProperties());
-                INITIALIZED = true;
+        System.out.println("StartupServlet.init thread = " + Thread.currentThread().getName());
+        System.out.flush();
+
+        log("StartupServlet: user.dir=" + System.getProperty("user.dir"));
+        ServletContext application = config.getServletContext();
+        application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
+        loadProperties(config);
+
+        // @TODO -- temporary hack for testing.
+        //try {
+        //    String[] args = { "-database.0", "file:../resources/GenePatternDB", "-dbname.0", "xdb" };
+        //    org.hsqldb.Server.main(args);
+        //}
+        //catch (Exception e) {
+        //    // TODO Auto-generated catch block
+        //    e.printStackTrace();
+        //}
+
+        launchTasks();
+        // get a single instance of AnalysisManager so that it doesn't
+        // get
+        // re-instantiated with every invocation of GP
+        application.setAttribute("AnalysisManager", AnalysisManager.getInstance());
+        startDaemons(System.getProperties(), application);
+        Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+        //
+        // Probably best to put this code in a function somewhere...
+        //
+        HostnameVerifier hv = new HostnameVerifier() {
+
+            public boolean verify(String urlHostName, SSLSession session) {
+                if (!urlHostName.equals(session.getPeerHost())) System.out.println("Warning: URL Host: " + urlHostName
+                        + " vs. " + session.getPeerHost());
+                return true;
             }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+        };
+        HttpsURLConnection.setDefaultHostnameVerifier(hv);
+        announceReady(System.getProperties());
+
     }
 
     protected void startDaemons(Properties props, ServletContext application) throws ServletException {
@@ -263,23 +265,26 @@ public class StartupServlet extends HttpServlet {
                         continue nextTask;
                     }
                 }
-               
+
                 // Optionally use a new class loader.
 
                 className = props.getProperty(taskName + ".class");
-                classPath = props.getProperty(taskName + ".classPath", "");
-                StringTokenizer classPathElements = new StringTokenizer(classPath, ";");
-                URL[] classPathURLs = new URL[classPathElements.countTokens()];
-                int i = 0;
+                // classPath = props.getProperty(taskName + ".classPath", "");
+                // StringTokenizer classPathElements = new
+                // StringTokenizer(classPath, ";");
+                // URL[] classPathURLs = new
+                // URL[classPathElements.countTokens()];
+                // int i = 0;
                 // log(taskName + " has classpath URLs: ");
-                while (classPathElements.hasMoreTokens()) {
-                    classPathURLs[i++] = new File(classPathElements.nextToken()).toURL();
-                    // log(classPathURLs[i-1].toString());
-                }
+                // while (classPathElements.hasMoreTokens()) {
+                // classPathURLs[i++] = new
+                // File(classPathElements.nextToken()).toURL();
+                // log(classPathURLs[i-1].toString());
+                // }
                 String args = props.getProperty(taskName + ".args", "");
                 StringTokenizer stArgs = new StringTokenizer(args, " ");
                 String[] argsArray = new String[stArgs.countTokens()];
-                i = 0;
+                int i = 0;
                 // log(" and args ");
                 while (stArgs.hasMoreTokens()) {
                     argsArray[i++] = stArgs.nextToken();
@@ -289,13 +294,15 @@ public class StartupServlet extends HttpServlet {
                 System.setProperty("user.dir", userDir);
                 // log(" in directory " + System.getProperty("user.dir"));
 
-                URLClassLoader classLoader = new URLClassLoader(classPathURLs, null);
+                // URLClassLoader classLoader = new
+                // URLClassLoader(classPathURLs, null);
                 // log("Looking for " + className + ".main(String[] args)");
-                Class theClass = Class.forName(className, true, classLoader);
+                Class theClass = Class.forName(className);
                 if (theClass == null) {
-                    throw new ClassNotFoundException("unable to find class " + className + " using classpath "
-                            + classPathElements);
+                    throw new ClassNotFoundException("unable to find class " + className);
+                    // + " using classpath " + classPathElements);
                 }
+
                 Method main = theClass.getMethod("main", new Class[] { String[].class });
                 // log("found main, creating LaunchThread");
                 LaunchThread thread = new LaunchThread(taskName, main, argsArray, this);
@@ -312,9 +319,9 @@ public class StartupServlet extends HttpServlet {
             catch (SecurityException se) {
                 log("unable to launch " + taskName, se);
             }
-            catch (MalformedURLException mue) {
-                log("Bad URL: ", mue);
-            }
+            // catch (MalformedURLException mue) {
+            // log("Bad URL: ", mue);
+            // }
             catch (ClassNotFoundException cnfe) {
                 log("Can't find class " + className, cnfe);
             }
@@ -429,13 +436,13 @@ public class StartupServlet extends HttpServlet {
          * hmProps.get("scheme");
          * 
          * props.setProperty("GenePatternURL", scheme + "://127.0.0.1:" +
-         * hmProps.get("port") + hmProps.get("path") + "/");
-         *  } if (hmProps.containsKey("port")) {
-         * props.setProperty("GENEPATTERN_PORT", (String) hmProps.get("port")); }
-         * if (hmProps.containsKey("path")) { props.setProperty("GP_Path",
-         * (String) hmProps.get("path")); } if (hmProps.containsKey("docBase")) {
-         * props.setProperty("GP_docBase", (String) hmProps.get("docBase")); }
-         *  } catch (Exception e) { System.err.println(e.getMessage() + " in
+         * hmProps.get("port") + hmProps.get("path") + "/"); } if
+         * (hmProps.containsKey("port")) { props.setProperty("GENEPATTERN_PORT",
+         * (String) hmProps.get("port")); } if (hmProps.containsKey("path")) {
+         * props.setProperty("GP_Path", (String) hmProps.get("path")); } if
+         * (hmProps.containsKey("docBase")) { props.setProperty("GP_docBase",
+         * (String) hmProps.get("docBase")); } } catch (Exception e) {
+         * System.err.println(e.getMessage() + " in
          * StartupServlet.parseTomcatServerXml"); } } else { // unknown server }
          */
 
