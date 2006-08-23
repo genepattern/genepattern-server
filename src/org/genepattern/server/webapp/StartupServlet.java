@@ -90,14 +90,15 @@ public class StartupServlet extends HttpServlet {
         loadProperties(config);
 
         // @TODO -- temporary hack for testing.
-        //try {
-        //    String[] args = { "-database.0", "file:../resources/GenePatternDB", "-dbname.0", "xdb" };
-        //    org.hsqldb.Server.main(args);
-        //}
-        //catch (Exception e) {
-        //    // TODO Auto-generated catch block
-        //    e.printStackTrace();
-        //}
+        // try {
+        // String[] args = { "-database.0", "file:../resources/GenePatternDB",
+        // "-dbname.0", "xdb" };
+        // org.hsqldb.Server.main(args);
+        // }
+        // catch (Exception e) {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // }
 
         launchTasks();
         // get a single instance of AnalysisManager so that it doesn't
@@ -123,8 +124,8 @@ public class StartupServlet extends HttpServlet {
     }
 
     protected void startDaemons(Properties props, ServletContext application) throws ServletException {
-        // startJobPurger(props);
-        // startIndexerDaemon(props);
+        startJobPurger(props);
+        startIndexerDaemon(props);
         // startJSPCompiler(props, application);
         Thread.currentThread().yield(); // allow a bit of runtime to the
         // independent threads
@@ -265,26 +266,20 @@ public class StartupServlet extends HttpServlet {
                         continue nextTask;
                     }
                 }
-
-                // Optionally use a new class loader.
-
                 className = props.getProperty(taskName + ".class");
-                // classPath = props.getProperty(taskName + ".classPath", "");
-                // StringTokenizer classPathElements = new
-                // StringTokenizer(classPath, ";");
-                // URL[] classPathURLs = new
-                // URL[classPathElements.countTokens()];
-                // int i = 0;
+                classPath = props.getProperty(taskName + ".classPath", "");
+                StringTokenizer classPathElements = new StringTokenizer(classPath, ";");
+                URL[] classPathURLs = new URL[classPathElements.countTokens()];
+                int i = 0;
                 // log(taskName + " has classpath URLs: ");
-                // while (classPathElements.hasMoreTokens()) {
-                // classPathURLs[i++] = new
-                // File(classPathElements.nextToken()).toURL();
-                // log(classPathURLs[i-1].toString());
-                // }
+                while (classPathElements.hasMoreTokens()) {
+                    classPathURLs[i++] = new File(classPathElements.nextToken()).toURL();
+                    // log(classPathURLs[i-1].toString());
+                }
                 String args = props.getProperty(taskName + ".args", "");
                 StringTokenizer stArgs = new StringTokenizer(args, " ");
                 String[] argsArray = new String[stArgs.countTokens()];
-                int i = 0;
+                i = 0;
                 // log(" and args ");
                 while (stArgs.hasMoreTokens()) {
                     argsArray[i++] = stArgs.nextToken();
@@ -294,15 +289,13 @@ public class StartupServlet extends HttpServlet {
                 System.setProperty("user.dir", userDir);
                 // log(" in directory " + System.getProperty("user.dir"));
 
-                // URLClassLoader classLoader = new
-                // URLClassLoader(classPathURLs, null);
+                URLClassLoader classLoader = new URLClassLoader(classPathURLs, null);
                 // log("Looking for " + className + ".main(String[] args)");
-                Class theClass = Class.forName(className);
+                Class theClass = Class.forName(className, true, classLoader);
                 if (theClass == null) {
-                    throw new ClassNotFoundException("unable to find class " + className);
-                    // + " using classpath " + classPathElements);
+                    throw new ClassNotFoundException("unable to find class " + className + " using classpath "
+                            + classPathElements);
                 }
-
                 Method main = theClass.getMethod("main", new Class[] { String[].class });
                 // log("found main, creating LaunchThread");
                 LaunchThread thread = new LaunchThread(taskName, main, argsArray, this);
@@ -319,9 +312,9 @@ public class StartupServlet extends HttpServlet {
             catch (SecurityException se) {
                 log("unable to launch " + taskName, se);
             }
-            // catch (MalformedURLException mue) {
-            // log("Bad URL: ", mue);
-            // }
+            catch (MalformedURLException mue) {
+                log("Bad URL: ", mue);
+            }
             catch (ClassNotFoundException cnfe) {
                 log("Can't find class " + className, cnfe);
             }
