@@ -135,8 +135,7 @@ AnalysisDAO extends BaseDAO {
             lsid = (String) results[1];
         }
         else {
-            if (task_lsid != null)
-                lsid = task_lsid;
+            if (task_lsid != null) lsid = task_lsid;
         }
 
         AnalysisJob aJob = new AnalysisJob();
@@ -214,8 +213,8 @@ AnalysisDAO extends BaseDAO {
         query.setInteger("jobNo", jobNo);
         AnalysisJob aJob = (AnalysisJob) query.uniqueResult();
         // If jobNo not found
-        if (aJob == null)
-            throw new JobIDNotFoundException("AnalysisHypersonicDAO:getJobInfo JobID " + jobNo + " not found");
+        if (aJob == null) throw new JobIDNotFoundException("AnalysisHypersonicDAO:getJobInfo JobID " + jobNo
+                + " not found");
 
         return jobInfoFromAnalysisJob(aJob);
     }
@@ -354,8 +353,7 @@ AnalysisDAO extends BaseDAO {
         if (pia != null) {
             for (int i = 0; i < pia.length; i++) {
                 if (pia[i].isOutputFile() || pia[i].isInputFile()) {
-                    if (DEBUG)
-                        System.out.println("deleting " + pia[i].getValue());
+                    if (DEBUG) System.out.println("deleting " + pia[i].getValue());
                     new File(pia[i].getValue()).delete();
                 }
             }
@@ -504,12 +502,10 @@ AnalysisDAO extends BaseDAO {
 
             String oldLSID = task.getLsid();
 
-
             task.setParameterInfo(parameter_info);
             task.setTaskinfoattributes(taskInfoAttributes);
             task.setUserId(user_id);
             task.setAccessId(access_id);
-
 
             TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
             String sLSID = null;
@@ -522,9 +518,9 @@ AnalysisDAO extends BaseDAO {
                 task.setLsid(sLSID);
             }
             else {
-                task.setLsid( null);
+                task.setLsid(null);
             }
-            
+
             getSession().update(task);
 
             if (oldLSID != null) {
@@ -552,7 +548,6 @@ AnalysisDAO extends BaseDAO {
             throw new OmnigeneException(e);
         }
     }
-
 
     /**
      * reset any previous running (but incomplete) jobs to waiting status, clear
@@ -620,12 +615,23 @@ AnalysisDAO extends BaseDAO {
         getSession().flush();
         getSession().clear();
 
-        Query query = getSession().createSQLQuery(sql);
-        int ret = query.executeUpdate();
-        getSession().flush();
-        getSession().clear();
-        return ret;
+        Statement updateStatement = null;
 
+        try {
+            updateStatement = getSession().connection().createStatement();
+            return updateStatement.executeUpdate(sql);
+        }
+        catch (HibernateException e) {
+            log.error(e);
+            throw new OmnigeneException(e);
+        }
+        catch (SQLException e) {
+            log.error(e);
+            throw new OmnigeneException(e);
+        }
+        finally {
+            cleanupJDBC(null, updateStatement);
+        }
     }
 
     /**
