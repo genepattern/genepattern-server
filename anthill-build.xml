@@ -131,9 +131,4 @@
 	</cvs>
 	</target>
 
-	<target name="foo">
-		<ant antfile="build.xml" dir="." target="foo"/>
-		
-	</target>
-
 </project>
