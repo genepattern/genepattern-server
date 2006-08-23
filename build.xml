@@ -123,7 +123,10 @@
                source="${java.target}"
                excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**"
                 />
-
+	
+	  <copy todir="${genepattern.build}">
+            <fileset dir="${src}" includes="**/*.xml"/>
+        </copy>
 
     </target>
 
@@ -211,7 +214,7 @@
         <jar basedir="${genepattern.build}"
              defaultexcludes="true"
              excludes="**/*.form,**/*.nbattrs"
-             includes="org/**/*.class, edu/mit/genome/gp/ui/analysis/*.class"
+             includes="org/**/*.class, edu/mit/genome/gp/ui/analysis/*.class, **/*.xml"
              jarfile="${genepattern.build}/${full-jarname}"/>
 
         <jar basedir="${genepattern.build}"
