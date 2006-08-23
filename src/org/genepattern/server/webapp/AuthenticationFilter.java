@@ -37,10 +37,9 @@ import java.net.URLEncoder;
 public class AuthenticationFilter implements Filter, IGPConstants {
     private FilterConfig filterConfig;
 
-    private static final String[] NO_LOGIN_REQUIRED_PAGES = {"retrieveResults.jsp", "getFile.jsp", "getInputFile.jsp"};
+    private static final String[] NO_AUTH_REQUIRED_PAGES = {"retrieveResults.jsp", "getFile.jsp", "getInputFile.jsp", "login.jsp"};
 
-    private static final String LOGIN_PAGE = "login.jsp";
-
+  
     public void init(FilterConfig filterConfig) throws ServletException {
         this.filterConfig = filterConfig;
     }
@@ -52,50 +51,88 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        HttpServletRequest req = (HttpServletRequest) request;
-        String requestedURI = req.getRequestURI();
-        String rh = req.getRemoteHost();
-        String p = req.getParameter("jsp_precompile");
-        int numParams = req.getParameterMap().keySet().size();
 
+        HttpServletRequest req = (HttpServletRequest) request;
+	  String fqHostName = getFQHostName();
+     	  String requestedURI = req.getRequestURI();
+        
         // allow jsp precompilation
-        if ((p != null) && ("localhost".equals(rh)) && (numParams == 1)) {
+        if (isJspPrecompile(req)) {
             chain.doFilter(request, response);
             return;
         }
-        String fqHostName = System.getProperty("fullyQualifiedHostName");
-        if (fqHostName == null) {
-            fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
-        }
-        if (fqHostName.equals("localhost")) {
-            fqHostName = "127.0.0.1";
-        }
+
+        // always use the fqHostName so that only one cookie needs to be written 
         String serverName = request.getServerName();
         if (!fqHostName.equalsIgnoreCase(serverName)) {
             redirectToFullyQualifiedHostName((HttpServletRequest) request, (HttpServletResponse) response);
             return;
         }
-        boolean isLogin = requestedURI.indexOf(LOGIN_PAGE) >= 0;
-        boolean isResultFetch = false;
-        for (int i = 0, length = NO_LOGIN_REQUIRED_PAGES.length; i < length; i++) {
-            if (requestedURI.indexOf(NO_LOGIN_REQUIRED_PAGES[i]) >= 0) {
-                isResultFetch = true;
-                break;
+       
+	  // escape valve for some pages that do not require authentication
+	  for (int i = 0, length = NO_AUTH_REQUIRED_PAGES.length; i < length; i++) {
+            if (requestedURI.indexOf(NO_AUTH_REQUIRED_PAGES[i]) >= 0) {
+            	chain.doFilter(request, response);
+            	return;
             }
         }
-        if (!(isLogin || isResultFetch)) {
-            String userId = _getUserID((HttpServletRequest) request);
-            if (userId == null) {
-                setLoginPageRedirect((HttpServletRequest) request, (HttpServletResponse) response);
-                return;
-            }
-            request.setAttribute("userID", userId);
-            chain.doFilter(request, response);
-        } else { // looking for userID
-            chain.doFilter(request, response);
-            return;
-        }
+
+        boolean authenticated = authenticateAndSaveUser(request, response, chain);
+
+        if (authenticated) {
+         	chain.doFilter(request, response);
+	  } else {
+		setLoginPageRedirect((HttpServletRequest) request, (HttpServletResponse) response);
+	  }
     }
+
+
+
+	/**
+	 * Authenticate the user.  If they are authenticated, save them in the request attribute,
+	 * otherwise just return false
+	 */
+    	protected boolean authenticateAndSaveUser(ServletRequest request, ServletResponse response, FilterChain chain){
+	 	String userId = _getUserID((HttpServletRequest) request);
+       	
+		if (userId == null){ // not authenticated
+			return false;
+		} else { // authenticated
+	       	request.setAttribute("userID", userId);
+			return true;
+		}
+	}
+
+	/**
+	 * check whether this is just the servlet engine precompiling jsp pages.  This
+	 * must be a request coming from the localhost, with only the one parameter
+	 * set 'jsp_precompile'
+	 */
+    protected boolean isJspPrecompile(HttpServletRequest request){
+  		String rh = request.getRemoteHost();
+        	String p = request.getParameter("jsp_precompile");
+
+        	int numParams = request.getParameterMap().keySet().size();
+
+        	// allow jsp precompilation
+        	return ((p != null) && ("localhost".equals(rh)) && (numParams == 1));
+    }
+
+	/**
+	 * get fully qualified host name from the machine.  If this was set in system
+	 * properties (from the genepattern.properties file) use that since some machines
+	 * have multiple aliases
+	 */
+	protected String getFQHostName() throws IOException{
+		String fqHostName = System.getProperty("fullyQualifiedHostName");
+        	if (fqHostName == null) {
+        	    fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
+        	}
+        	if (fqHostName.equals("localhost")) {
+        	    fqHostName = "127.0.0.1";
+        	}
+		return fqHostName;
+	}
 
 
     public String _getUserID(HttpServletRequest request) {
