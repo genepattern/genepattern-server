@@ -137,6 +137,7 @@ public class AuthenticationFilter implements Filter, IGPConstants {
 
     public String _getUserID(HttpServletRequest request) {
         String userID = null;
+   
         if (request.getAttribute(USER_LOGGED_OFF) != null) {
             return userID;
         }
@@ -158,13 +159,13 @@ public class AuthenticationFilter implements Filter, IGPConstants {
             // strip surrounding quotes, if they exist
             if (userID.startsWith("\"")) {
                 userID = userID.substring(1, userID.length() - 1);
-                try {
-                    userID = URLDecoder.decode(userID, UTF8);
-                } catch (UnsupportedEncodingException uee) { /* ignore */
-                }
             }
             if (userID.length() == 0) {
                 userID = null;
+            }
+  		try {
+                userID = URLDecoder.decode(userID, UTF8);
+            } catch (UnsupportedEncodingException uee) { /* ignore */
             }
         }
         return userID;
