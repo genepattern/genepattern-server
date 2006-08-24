@@ -1916,6 +1916,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
             props.put("parent_" + JOB_ID, Integer.toString(parentJobNumber));
             props.put(TASK_ID, Integer.toString(taskID));
             props.put(USERID, "" + userID);
+            props.put(PIPELINE_ARG_STOP_AFTER_TASK_NUM, ""); // should be overridden by actuals if provided
+
+
             String sLSID = taskInfoAttributes.get(LSID);
             props.put(LSID, sLSID);
 

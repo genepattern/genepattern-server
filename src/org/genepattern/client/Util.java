@@ -76,8 +76,14 @@ public class Util {
 				ParameterInfo formalParam = (ParameterInfo) paramName2FormalParam
 						.remove(parameters[i].getName());
 				if (formalParam == null) {
-					throw new WebServiceException("Unknown parameter: "
+					if (parameters[i].getName().equals(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM)){
+						formalParam = new ParameterInfo(parameters[i].getName(), parameters[i].getValue(), "");
+
+					} else {
+
+						throw new WebServiceException("Unknown parameter: "
 							+ parameters[i].getName());
+					}
 				}
 				Map formalAttributes = formalParam.getAttributes();
 				if (formalAttributes == null) {
