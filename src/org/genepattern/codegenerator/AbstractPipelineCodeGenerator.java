@@ -115,6 +115,8 @@ public abstract class AbstractPipelineCodeGenerator {
 				.append(" -Ddecorator=<pipeline.decorator>");
 		commandLine.append(" -Dgenepattern.properties=<resources>");
 		commandLine.append(" -D" + GPConstants.LSID + "=<LSID>");
+		commandLine.append(" -D" + GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM + "=<"+GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM+">");
+
 
 		// class to run
 		commandLine.append(" <pipeline.main>");
