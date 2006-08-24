@@ -178,7 +178,7 @@
                 <include name="broad-cg.jar"/>
             </zipfileset>
 
-            <zipfileset dir="lib" prefix="lib">
+            <zipfileset dir="website/WEB-INF/lib" prefix="lib">
                 <include name="activation.jar"/>
                 <include name="mail.jar"/>
                 <include name="jdom.jar"/>
