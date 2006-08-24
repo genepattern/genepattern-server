@@ -73,13 +73,21 @@ public class TaskIntegratorDataService extends BaseService {
     }
 
     public String installSuite(SuiteInfo suiteInfo) throws WebServiceException {
-
+        Transaction transaction = null;
         try {
             if (suiteInfo.getLSID() != null)
                 if (suiteInfo.getLSID().trim().length() == 0)
                     suiteInfo.setLSID(null);
 
+            if (!getSession().getTransaction().isActive()) {
+                transaction = getSession().beginTransaction();
+            }
+
             dao.createSuite(suiteInfo);
+
+            if (transaction != null) {
+                transaction.commit();
+            }
 
             String suiteDir = DirectoryManager.getSuiteLibDir(suiteInfo.getName(), suiteInfo.getLSID(), suiteInfo
                     .getOwner());
@@ -115,6 +123,7 @@ public class TaskIntegratorDataService extends BaseService {
             return suiteInfo.getLSID();
         }
         catch (Exception e) {
+            getSession().getTransaction().rollback();
             logger.error(e);
             throw new WebServiceException(e);
         }

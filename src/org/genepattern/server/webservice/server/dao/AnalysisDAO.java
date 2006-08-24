@@ -27,7 +27,6 @@ import org.genepattern.webservice.*;
 // import org.genepattern.webservice.JobStatus;
 import org.hibernate.*;
 
-import com.sun.rowset.CachedRowSetImpl;
 
 /**
  * AnalysisHypersonicDAO.java
@@ -39,7 +38,7 @@ public class
 
 AnalysisDAO extends BaseDAO {
 
-    private static Logger log = Logger.getLogger(AnalysisDAO.class);
+    static Logger log = Logger.getLogger(AnalysisDAO.class);
 
     /** Creates new AnalysisHypersonicAccess */
     public AnalysisDAO() {
@@ -569,69 +568,6 @@ AnalysisDAO extends BaseDAO {
         getSession().clear();
         boolean exist = (query.executeUpdate() > 0);
         return exist;
-    }
-
-    /**
-     * execute arbitrary SQL on database, returning ResultSet
-     * 
-     * @param sql
-     * @throws OmnigeneException
-     * @throws RemoteException
-     * @return ResultSet
-     */
-    public ResultSet executeSQL(String sql) throws OmnigeneException {
-
-        Statement stat = null;
-        ResultSet resultSet = null;
-
-        try {
-            Connection conn = getSession().connection();
-            stat = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-            resultSet = stat.executeQuery(sql);
-            CachedRowSetImpl crs = new CachedRowSetImpl();
-            crs.populate(resultSet);
-            return crs;
-        }
-        catch (Exception e) {
-            log.error("AnalysisHypersonicDAO: executeSQL for " + sql + " failed " + e);
-            throw new OmnigeneException(e.getMessage());
-        }
-
-        finally {
-            cleanupJDBC(resultSet, stat);
-        }
-
-    }
-
-    /**
-     * execute arbitrary SQL on database, returning int
-     * 
-     * @param sql
-     * @throws OmnigeneException
-     * @throws RemoteException
-     * @return int number of rows returned
-     */
-    public int executeUpdate(String sql) {
-        getSession().flush();
-        getSession().clear();
-
-        Statement updateStatement = null;
-
-        try {
-            updateStatement = getSession().connection().createStatement();
-            return updateStatement.executeUpdate(sql);
-        }
-        catch (HibernateException e) {
-            log.error(e);
-            throw new OmnigeneException(e);
-        }
-        catch (SQLException e) {
-            log.error(e);
-            throw new OmnigeneException(e);
-        }
-        finally {
-            cleanupJDBC(null, updateStatement);
-        }
     }
 
     /**

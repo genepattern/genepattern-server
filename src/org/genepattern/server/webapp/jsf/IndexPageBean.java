@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 
-import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
@@ -34,7 +33,7 @@ import org.genepattern.webservice.WebServiceException;
  * @author jrobinso
  * 
  */
-public class IndexPageBean {
+public class IndexPageBean extends BackingBeanBase {
 
     private Collection<TaskInfo> tmTasks;
     
@@ -127,14 +126,6 @@ public class IndexPageBean {
 
     private String getUserId() {
         return (String) getRequestMap().get("userID");
-    }
-
-    private Map getSessionMap() {
-        return FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
-    }
-
-    private Map getRequestMap() {
-        return FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
     }
 
     public Map<String, String> getLsidVersionMap() {
@@ -259,12 +250,6 @@ public class IndexPageBean {
             t.printStackTrace();
             return null;
         }
-    }
-
-    private HttpServletRequest getRequest() {
-        HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext()
-                .getRequest();
-        return request;
     }
 
     public List<SelectItem> getTaskCatalog(Collection<TaskInfo> tmTasks, HashMap latestTaskMap, String type,

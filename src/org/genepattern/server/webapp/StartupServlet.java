@@ -89,17 +89,7 @@ public class StartupServlet extends HttpServlet {
         application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
         loadProperties(config);
 
-        // @TODO -- temporary hack for testing.
-        // try {
-        // String[] args = { "-database.0", "file:../resources/GenePatternDB",
-        // "-dbname.0", "xdb" };
-        // org.hsqldb.Server.main(args);
-        // }
-        // catch (Exception e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
-
+ 
         launchTasks();
         // get a single instance of AnalysisManager so that it doesn't
         // get
@@ -291,7 +281,7 @@ public class StartupServlet extends HttpServlet {
 
                 URLClassLoader classLoader = new URLClassLoader(classPathURLs, null);
                 // log("Looking for " + className + ".main(String[] args)");
-                Class theClass = Class.forName(className, true, classLoader);
+                Class theClass = Class.forName(className); //, true, classLoader);
                 if (theClass == null) {
                     throw new ClassNotFoundException("unable to find class " + className + " using classpath "
                             + classPathElements);
