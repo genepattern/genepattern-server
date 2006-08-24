@@ -137,7 +137,8 @@ for(int i = 0; i < jobs.length; i++) {
 	// we do not yet have the ability to reload pipelines with params
 	//  so check this is not the case before showing the reload link
 	
-	TaskInfo ti = adminClient.getTask(	job.getTaskLSID() );
+	TaskInfo ti = adminClient.getTask( job.getTaskLSID() );
+	if (ti == null) ti = adminClient.getTask( job.getTaskName() );
 
 
 	if (TaskUtil.isPipeline(ti)){
