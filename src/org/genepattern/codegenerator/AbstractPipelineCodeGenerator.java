@@ -116,6 +116,7 @@ public abstract class AbstractPipelineCodeGenerator {
 		commandLine.append(" -Dgenepattern.properties=<resources>");
 		commandLine.append(" -D" + GPConstants.LSID + "=<LSID>");
 		commandLine.append(" -D" + GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM + "=<"+GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM+">");
+		commandLine.append(" " + System.getProperty("pipeline.vmargs","") + " ");
 
 
 		// class to run
