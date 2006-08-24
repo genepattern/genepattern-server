@@ -255,6 +255,12 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 throw new Exception("No such taskID (" + jobInfo.getTaskID() + " for job " + jobInfo.getJobNumber());
             }
             taskName = taskInfo.getName();
+		int formalParamsLength = 0;
+		ParameterInfo[] formalParams = taskInfo.getParameterInfoArray();
+		if (formalParams != null){
+	 	      formalParamsLength = formalParams.length;
+		}
+
             TaskInfoAttributes taskInfoAttributes = taskInfo
                     .giveTaskInfoAttributes();
             if (taskInfoAttributes == null || taskInfoAttributes.size() == 0) {
@@ -347,7 +353,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                     inputLength[i] + ", lastModified=" + inputLastModified[i]);
                             // outFile.setReadOnly();
                         }
-                    } else if (i >= taskInfo.getParameterInfoArray().length) {
+                    } else if (i >= formalParamsLength) {
                         // _cat.debug("params[" + i + "]=" + params[i].getName()
                         // + " has no formal defined");
                     } else {
@@ -940,6 +946,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
     protected static File writeProvenanceFile(String outDirName, JobInfo jobInfo, ParameterInfo[] formalParameters,
                                               ParameterInfo[] actualParams, Properties props) {
         BufferedWriter bw = null;
+	  int formalParamsLength = 0;
+	  if (formalParameters != null){
+		formalParamsLength = formalParameters.length;
+	  }
         try {
             File outDir = new File(outDirName);
             File f = new File(outDir, TASKLOG);
@@ -981,7 +991,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                         }
                     } else {
                         ParameterInfo formalPinfo = null;
-                        for (int fpidx = 0; fpidx < formalParameters.length; fpidx++) {
+                        for (int fpidx = 0; fpidx < formalParamsLength; fpidx++) {
                             if (formalParameters[fpidx].getName().equals(pinfo.getName())) {
                                 formalPinfo = formalParameters[fpidx];
                                 break;
@@ -1963,7 +1973,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     if (value == null) {
                         value = "";
                     }
-                    props.put(actuals[i].getName(), value);
+ 			 
+                   props.put(actuals[i].getName(), value);
+			 
                 }
             }
             String inputFilename = null;
@@ -1975,6 +1987,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
             // for each
             if (actuals != null) {
                 for (int i = 0; i < actuals.length; i++) {
+			
                     for (int f = 0; f < formalParameters.length; f++) {
                         if (actuals[i].getName().equals(formalParameters[f].getName())) {
                             if (formalParameters[f].isInputFile()) {
@@ -2250,7 +2263,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
         Vector vProblems = new Vector();
         String name;
         boolean runtimeValidation = (actualParams != formalParams);
-
+	  int formalParamsLength = 0;
+	  if (formalParams != null){
+		formalParamsLength = formalParams.length;
+	  }
         // validate R-safe task name
         if (!isRSafe(taskName)) {
             vProblems
@@ -2289,13 +2305,15 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 HashMap hmAttributes = null;
                 boolean foundFormal = false;
                 int formal;
-                for (formal = 0; formal < formalParams.length; formal++) {
+                for (formal = 0; formal < formalParamsLength; formal++) {
                     if (formalParams[formal].getName().equals(actualParams[actual].getName())) {
                         hmAttributes = formalParams[formal].getAttributes();
                         foundFormal = true;
                         break;
                     }
                 }
+		    
+
                 if (!foundFormal) {
                     vProblems.add(taskName + ": supplied parameter " + name + " is not part of the definition.");
                     continue;
