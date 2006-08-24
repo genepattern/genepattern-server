@@ -234,7 +234,13 @@ public class RunPipeline {
 	  String stopAfterTaskStr =	System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
 	  int stopAfterTask = Integer.MAX_VALUE;
 	  if (stopAfterTaskStr != null){
-		stopAfterTask = Integer.parseInt(stopAfterTaskStr);
+		if (stopAfterTaskStr.trim().length() > 0){
+			try {
+				stopAfterTask = Integer.parseInt(stopAfterTaskStr);
+			} catch (NumberFormatException nfe){
+				// ignore
+			}
+		}
 	  }
         Vector vTasks = model.getTasks();
         JobSubmission jobSubmission = null;
