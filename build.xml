@@ -137,8 +137,8 @@
     </target>
 
     <target name="gp-library-doc" depends="init" unless="skipdoc">
-        <javadoc destdir="build/doc" Author="no" Public="true" Verbose="false">
-            <classpath id="${library.classpath}"/>
+        <javadoc destdir="build/doc" Author="no" Public="true" Verbose="false" classpathref="library.classpath" >
+            
             <fileset dir="src" defaultexcludes="yes">
                 <include name="org/genepattern/data/**/*.java"/>
                 <include name="org/genepattern/client/**.java"/>
