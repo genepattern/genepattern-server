@@ -347,4 +347,7 @@ public interface IGPConstants {
      */
     public static final String NUM_THREADS = "num.threads";
 
+
+    public static final String PIPELINE_ARG_STOP_AFTER_TASK_NUM = "PIPELINE_ARG.StopAfterTask";
+
 }

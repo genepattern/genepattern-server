@@ -231,7 +231,11 @@ public class RunPipeline {
     public void runPipeline(Map args) throws Exception {
 
         setStatus(JobStatus.PROCESSING);
-
+	  String stopAfterTaskStr =	System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
+	  int stopAfterTask = Integer.MAX_VALUE;
+	  if (stopAfterTaskStr != null){
+		stopAfterTask = Integer.parseInt(stopAfterTaskStr);
+	  }
         Vector vTasks = model.getTasks();
         JobSubmission jobSubmission = null;
         TaskInfo taskInfo = null;
@@ -260,9 +264,11 @@ public class RunPipeline {
         JobInfo results[] = new JobInfo[vTasks.size()];
         decorator.beforePipelineRuns(model);
         try {
-            for (Enumeration eTasks = vTasks.elements(); eTasks
-                    .hasMoreElements(); taskNum++) {
+            for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
                 jobSubmission = (JobSubmission) eTasks.nextElement();
+                
+		    if (taskNum >= stopAfterTask) break; // stop and execute no further
+                
                 try {
 
                     parameterInfo = jobSubmission.giveParameterInfoArray();
