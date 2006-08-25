@@ -8,10 +8,7 @@
   This software is supplied without any warranty or guaranteed support
   whatsoever. Neither the Broad Institute nor MIT can be responsible for its
   use, misuse, or functionality.
-*/ %>
-
-
-<%@ page import="org.genepattern.server.util.AccessManager,org.genepattern.server.genepattern.GenePatternAnalysisTask, org.genepattern.webservice.TaskInfo,
+*/ %><%@ page import="org.genepattern.server.util.AccessManager,org.genepattern.server.genepattern.GenePatternAnalysisTask, org.genepattern.webservice.TaskInfo,
 		 org.genepattern.util.GPConstants,
 		 java.util.Map,
 		 org.genepattern.server.webapp.*"

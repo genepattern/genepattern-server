@@ -463,11 +463,11 @@ public class GenePatternAnalysisTask implements IGPConstants {
             // name from the properties
             // (ParameterInfo[], System properties, environment variables, and
             // built-ins merged)
-
             // build props again, now that downloaded files are set
             props = setupProps(taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(), taskInfoAttributes,
                     params, env, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
 
+		params = stripOutSpecialParams(params);
             // check that all parameters are used in the command line
             // and that all non-optional parameters that are cited actually
             // exist
@@ -565,8 +565,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     i--;
                 }
             }
-            String stdoutFilename = null;
-            String stderrFilename = null;
+            String stdoutFilename = STDOUT;
+            String stderrFilename = STDERR;
             String stdinFilename = null;
             StringBuffer commandLine = new StringBuffer();
             List commandLineList = new ArrayList(commandTokens.length);
@@ -810,6 +810,11 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 _cat.debug("adding output file to output parameters " + f.getName() + " from " + outDirName);
                 addFileToOutputParameters(jobInfo, f.getName(), f.getName(), parentJobInfo);
             }
+
+		if (stdoutFilename == null) stdoutFilename = STDOUT;
+		if (stderrFilename== null) stderrFilename = STDERR;
+
+
             if (new File(outDir, stdoutFilename).exists()) {
                 addFileToOutputParameters(jobInfo, stdoutFilename, stdoutFilename, parentJobInfo);
             }
@@ -858,6 +863,25 @@ public class GenePatternAnalysisTask implements IGPConstants {
             IndexerDaemon.notifyJobComplete(jobInfo.getJobNumber());
         }
     }
+
+
+/**
+ * remove special params that should not be added 
+ */
+public static ParameterInfo[] stripOutSpecialParams(ParameterInfo[] inParams){
+	ArrayList<ParameterInfo> strippedParams = new ArrayList<ParameterInfo>();
+
+	for (int i=0; i < inParams.length; i++){
+		ParameterInfo pi = inParams[i];
+
+		if (pi.getName().equals(PIPELINE_ARG_STOP_AFTER_TASK_NUM)) continue;
+
+		strippedParams.add(pi);
+	}
+	return (ParameterInfo[])strippedParams.toArray(new ParameterInfo[strippedParams.size()]);
+
+}
+	
 
     /**
      * Gets a filename that is as similar as possible to the given url
@@ -1000,8 +1024,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
                             }
                         }
                         ParameterInfo actp = getParam(pinfo.getName(), actualParams);
-                        String origFullPath = (String) actp.getAttributes()
-                                .get(ORIGINAL_PATH);
+                        String origFullPath = null;
+				if (actp != null){
+					origFullPath = (String) actp.getAttributes().get(ORIGINAL_PATH);
+				}
                         if (origFullPath != null) {
                             value = origFullPath;
                         } else {
@@ -1896,6 +1922,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                  TaskInfoAttributes taskInfoAttributes, ParameterInfo[] actuals, Hashtable env,
                                  ParameterInfo[] formalParameters, String userID) throws Exception {
         Properties props = new Properties();
+	  int formalParamsLength = 0;
+	  if (formalParameters != null){
+		formalParamsLength = formalParameters.length;
+	  }
         try {
             // copy environment variables into props
             String key = null;
@@ -1993,9 +2023,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
             // find input filenames, create _path, _file, and _basename props
             // for each
             if (actuals != null) {
-                for (int i = 0; i < actuals.length; i++) {
-			
-                    for (int f = 0; f < formalParameters.length; f++) {
+                for (int i = 0; i < actuals.length; i++) {			
+                    for (int f = 0; f < formalParamsLength ; f++) {
                         if (actuals[i].getName().equals(formalParameters[f].getName())) {
                             if (formalParameters[f].isInputFile()) {
                                 inputFilename = actuals[i].getValue();
@@ -2415,6 +2444,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 
         // check that each substitution variable listed in the command line is
         // actually in props
+
         vProblems = validateSubstitutions(props, taskName, commandLine, "command line", vProblems, formalParams);
         return vProblems;
     }
