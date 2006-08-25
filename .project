@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>genepattern</name>
+	<name>gp</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -25,6 +25,11 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+		<buildCommand>
+			<name>com.exadel.orm2.core.OrmHibernateBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.jem.workbench.JavaEMFNature</nature>
@@ -32,5 +37,6 @@
 		<nature>org.eclipse.wst.common.modulecore.ModuleCoreNature</nature>
 		<nature>com.exadel.jsf.jsfnature</nature>
 		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
+		<nature>com.exadel.orm2.core.OrmHibernateNature</nature>
 	</natures>
 </projectDescription>

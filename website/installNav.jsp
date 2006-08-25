@@ -29,7 +29,7 @@ server:</b>
 	If you want to install all available modules, click the <b>install checked</b> button.<br><br></li>
 <li><a href="<%= System.getProperty("JavaGEInstallerURL") %>?version=<%= System.getProperty("GenePatternVersion") %>&server=<%= URLEncoder.encode(request.getScheme()+"://" + request.getServerName() + ":" + request.getServerPort()) %>">Install the Graphical Client</a><br><br></li>
 <li><a href="installDatasets.htm">Download sample datasets</a><br><br></li>
-<li><a href="login.jsp?referrer=index.jsp" target="_parent">Login and begin using GenePattern</a></li>
+<li><a href="pages/login.jsf?referrer=index.jsp" target="_parent">Login and begin using GenePattern</a></li>
 </ol>
 
 Problems? Questions?  Suggestions? <a href="mailto:gp-help@broad.mit.edu">Contact us</a>.

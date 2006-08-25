@@ -1,0 +1,22 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk">
+      
+ 		<head>
+		<title><ui:insert name="pageTitle">Page Title</ui:insert></title>
+		<t:stylesheet path="/skin/stylesheet.css">
+			
+		</t:stylesheet>
+		</head>
+
+		<body>
+		<ui:insert name="pageHeader">Page  Header</ui:insert>
+		<br/><br/>
+		<p><ui:insert name="body">Page Body</ui:insert></p>
+		<br/><br/>
+		<ui:insert name="pageFooter">Page  Footer</ui:insert>
+		</body>
+</html>

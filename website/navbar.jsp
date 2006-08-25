@@ -358,7 +358,7 @@ function checkEnableNavbar() {
 </script>
 
 <div id="navbar" class="navbar">
-    <form action="login.jsp" name="login">
+    <form action="pages/login.jsf" name="login">
         <table width="100%">
             <tr>
                 <td valign="top"><a href="index.jsp" class='logo'><img src='skin/logoSmall.gif' border="0" height=25
@@ -375,7 +375,7 @@ function checkEnableNavbar() {
                                onblur="ufocus(this, false, '<%= EMAIL_ADDRESS %>')">
                         <input type="submit" value="sign in" class="little">
                         <% } else { %>
-                        <a href="login.jsp" class="navbarlink">sign out</a> <%= StringUtils.htmlEncode(userID) %>
+                        <a href="pages/login.jsf" class="navbarlink">sign out</a> <%= StringUtils.htmlEncode(userID) %>
                         <% } %>
                         <% } %>
                     </nobr>
