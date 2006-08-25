@@ -63,8 +63,7 @@ public class LoginBean extends BackingBeanBase {
 
         try {
             HttpServletRequest request = getRequest();
-            HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext()
-                    .getResponse();
+            HttpServletResponse response = getResponse();
 
             if (referrer == null || referrer.length() == 0) referrer = request.getContextPath() + "/index.jsp";
 
@@ -76,7 +75,7 @@ public class LoginBean extends BackingBeanBase {
                 addUserIDCookies(response, request, userID);
                 referrer += (referrer.indexOf('?') > 0 ? "&" : "?");
                 referrer += username;
-                response.sendRedirect(referrer);
+                getResponse().sendRedirect(referrer);
 
             }
         }

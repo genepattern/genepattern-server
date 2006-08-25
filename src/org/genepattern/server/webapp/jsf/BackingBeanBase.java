@@ -2,8 +2,10 @@ package org.genepattern.server.webapp.jsf;
 
 import java.util.Map;
 
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class BackingBeanBase {
 
@@ -15,10 +17,17 @@ public class BackingBeanBase {
         return FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
     }
 
+    protected ExternalContext getExternalContext() {
+        return FacesContext.getCurrentInstance().getExternalContext();
+    }
+
     protected HttpServletRequest getRequest() {
-        HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext()
-                .getRequest();
+        HttpServletRequest request = (HttpServletRequest) getExternalContext().getRequest();
         return request;
+    }
+
+    protected HttpServletResponse getResponse() {
+        return (HttpServletResponse) getExternalContext().getResponse();
     }
 
 }
