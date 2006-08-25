@@ -23,6 +23,7 @@ import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.*;
+import org.hibernate.HibernateException;
 import org.hibernate.Query;
 
 /**
@@ -36,7 +37,7 @@ public class AdminDAO extends BaseDAO  {
     static Logger log = Logger.getLogger(AdminDAO.class);
 
     // FIXME see doc for AdminDAO.getTaskId
-    public TaskInfo getTask(String lsidOrTaskName, String username) throws AdminDAOSysException {
+    public TaskInfo getTask(String lsidOrTaskName, String username) throws OmnigeneException {
         if (lsidOrTaskName == null || lsidOrTaskName.trim().equals("")) {
             return null;
         }
@@ -138,7 +139,7 @@ public class AdminDAO extends BaseDAO  {
                 latestTasks = getLatestTasks((TaskInfo[]) tasksWithGivenName.toArray(new TaskInfo[0])).values();
             }
             catch (MalformedURLException e1) {
-                throw new AdminDAOSysException("A database error occured.", e1);
+                throw new OmnigeneException(e1);
             }
 
             TaskInfo latestTask = null;
@@ -181,19 +182,25 @@ public class AdminDAO extends BaseDAO  {
         return allTasks;
     }
 
-    public TaskInfo[] getAllTasksForUser(String username) throws AdminDAOSysException {
+    public TaskInfo[] getAllTasksForUser(String username) throws OmnigeneException {
 
-        String hql = "from org.genepattern.server.webservice.server.dao.TaskMaster where userId = :userId or accessId = :accessId";
-        Query query = getSession().createQuery(hql);
-        query.setString("userId", username);
-        query.setInteger("accessId", PUBLIC_ACCESS_ID);
-        List<TaskMaster> results = query.list();
+        try {
+            String hql = "from org.genepattern.server.webservice.server.dao.TaskMaster where userId = :userId or accessId = :accessId";
+            Query query = getSession().createQuery(hql);
+            query.setString("userId", username);
+            query.setInteger("accessId", PUBLIC_ACCESS_ID);
+            List<TaskMaster> results = query.list();
 
-        TaskInfo[] allTasks = new TaskInfo[results.size()];
-        for (int i = 0; i < allTasks.length; i++) {
-            allTasks[i] = taskInfoFromTaskMaster(results.get(i));
+            TaskInfo[] allTasks = new TaskInfo[results.size()];
+            for (int i = 0; i < allTasks.length; i++) {
+                allTasks[i] = taskInfoFromTaskMaster(results.get(i));
+            }
+            return allTasks;
         }
-        return allTasks;
+        catch (HibernateException e) {
+            log.error(e);
+            throw new OmnigeneException(e);
+        }
     }
 
     private static Map getLatestTasks(TaskInfo[] tasks) throws MalformedURLException {
@@ -265,7 +272,7 @@ public class AdminDAO extends BaseDAO  {
         }
     }
 
-    TaskInfo getTask(int taskId) throws AdminDAOSysException {
+    public TaskInfo getTask(int taskId) throws OmnigeneException {
 
         String hql = "from org.genepattern.server.webservice.server.dao.TaskMaster where  taskId = :taskId";
         Query query = getSession().createQuery(hql);
@@ -274,7 +281,7 @@ public class AdminDAO extends BaseDAO  {
         if (tm != null) {
             return taskInfoFromTaskMaster(tm);
         }
-        throw new AdminDAOSysException("task id " + taskId + " not found");
+        throw new OmnigeneException("task id " + taskId + " not found");
     }
     
     /**
@@ -314,7 +321,7 @@ public class AdminDAO extends BaseDAO  {
     }
 
 
-    public SuiteInfo getSuite(String lsid) throws AdminDAOSysException {
+    public SuiteInfo getSuite(String lsid) throws OmnigeneException {
 
         String hql = "from org.genepattern.server.webservice.server.dao.Suite where lsid = :lsid ";
         Query query = getSession().createQuery(hql);
@@ -325,7 +332,7 @@ public class AdminDAO extends BaseDAO  {
         }
         else {
             log.error("suite id " + lsid + " not found");
-            throw new AdminDAOSysException("suite id " + lsid + " not found");
+            throw new OmnigeneException("suite id " + lsid + " not found");
         }
 
     }
@@ -454,7 +461,7 @@ public class AdminDAO extends BaseDAO  {
      * @exception WebServiceException
      *                If an error occurs
      */
-    SuiteInfo[] getSuiteMembership(String taskLsid) throws AdminDAOSysException {
+    public SuiteInfo[] getSuiteMembership(String taskLsid) throws OmnigeneException {
         PreparedStatement st = null;
         ResultSet rs = null;
         ArrayList suites = new ArrayList();
@@ -468,7 +475,7 @@ public class AdminDAO extends BaseDAO  {
             }
         }
         catch (SQLException e) {
-            throw new AdminDAOSysException("A database error occurred", e);
+            throw new OmnigeneException( e);
         }
         finally {
             cleanupJDBC(rs, st);

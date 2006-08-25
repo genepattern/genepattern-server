@@ -22,7 +22,9 @@ import org.genepattern.server.AnalysisServiceException;
 import org.genepattern.server.indexer.Indexer;
 import org.genepattern.server.indexer.IndexerDaemon;
 import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
-import org.genepattern.server.webservice.server.dao.AnalysisJobService;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.genepattern.server.util.IAuthorizationManager;
 
 
@@ -249,7 +251,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     old[i].delete();
                 }
             }
-            AnalysisJobService ds = AnalysisJobService.getInstance();
+            AdminDAO ds = new AdminDAO();
             taskInfo = ds.getTask(jobInfo.getTaskID());
             if (taskInfo == null) {
                 throw new Exception("No such taskID (" + jobInfo.getTaskID() + " for job " + jobInfo.getJobNumber());
@@ -770,7 +772,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 
             // reload jobInfo to pick up any output parameters were added by the
             // job explicitly (eg. pipelines)
-            jobInfo = ds.getJobInfo(jobInfo.getJobNumber());
+            jobInfo = (new AnalysisDAO()).getJobInfo(jobInfo.getJobNumber());
 
             // touch the taskLog file to make sure it is the oldest/last file
             if (taskLog != null) {
@@ -1721,8 +1723,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
         return getTasks(null);
     }
 
-    public static AnalysisJobService getDS() {
-        return AnalysisJobService.getInstance();
+    public static AnalysisDAO getDS() {
+        return new AnalysisDAO();
     }
 
     /**
@@ -1766,7 +1768,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
     }
 
     public static List getTasks(String userID) throws OmnigeneException, RemoteException {
-       return getDS().getTasks(userID); // get vector of TaskInfos
+        AdminDAO adminDAO = new AdminDAO();
+        TaskInfo[] taskArray = (userID == null ? adminDAO.getAllTasks() : adminDAO.getAllTasksForUser(userID));
+        return Arrays.asList(taskArray);
 
     }
 
@@ -1783,7 +1787,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
         TaskInfo taskInfo = null;
         try {
             int taskID = -1;
-            AnalysisJobService ds = getDS();
+   
             try {
                 if (org.genepattern.util.LSID.isLSID(taskName)) {
                     taskName = new LSID(taskName).toString();
@@ -1793,7 +1797,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(taskName, null, null, null, username, 0);
                 taskID = loader.getTaskIDByName(taskName, username);
                 if (taskID != -1) {
-                    taskInfo = ds.getTask(taskID);
+                    taskInfo =  (new AdminDAO()).getTask(taskID);
                 }
             } catch (OmnigeneException e) {
                 // this is a new task, no taskID exists
@@ -3604,8 +3608,13 @@ public class GenePatternAnalysisTask implements IGPConstants {
      */
     public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid)
             throws OmnigeneException, RemoteException {
-        JobInfo jobInfo = getDS().createTemporaryPipeline(userID, parameter_info, pipelineName, lsid);
-        return jobInfo;
+
+
+        Integer jobNo = getDS().addNewJob(BaseDAO.UNPROCESSABLE_TASKID, userID, parameter_info, pipelineName,
+                null, lsid);
+        JobInfo job = getDS().getJobInfo(jobNo);
+
+        return job;
     }
 
     public static JobInfo createVisualizerJob(String userID, String parameter_info, String visualizerName, String lsid)
@@ -3613,8 +3622,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
         try {
             int taskId =
                     new org.genepattern.server.webservice.server.local.LocalAdminClient(userID).getTask(lsid).getID();
-            JobInfo jobInfo = getDS().recordClientJob(taskId, userID, parameter_info);
-            return jobInfo;
+            Integer jobNo = getDS().recordClientJob(taskId, userID, parameter_info, -1);
+            return getDS().getJobInfo(jobNo);
+            
         } catch (org.genepattern.webservice.WebServiceException wse) {
             throw new OmnigeneException("Unable to record job");
         }
@@ -3638,8 +3648,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
      */
     public static void updatePipelineStatus(int jobNumber, int jobStatus, ParameterInfo[] additionalParams)
             throws OmnigeneException, RemoteException {
-    	AnalysisJobService ds = getDS();
-        JobInfo jobInfo = ds.getJobInfo(jobNumber);
+
+        JobInfo jobInfo = getDS().getJobInfo(jobNumber);
         if (additionalParams != null) {
             for (int i = 0; i < additionalParams.length; i++) {
                 jobInfo.addParameterInfo(additionalParams[i]);
@@ -3649,7 +3659,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
             jobStatus = ((Integer) JobStatus.STATUS_MAP
                     .get(jobInfo.getStatus())).intValue();
         }
-        ds.updateJob(jobNumber, jobInfo.getParameterInfo(), jobStatus);
+        getDS().updateJob(jobNumber, jobInfo.getParameterInfo(), jobStatus);
     }
 
     /**

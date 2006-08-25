@@ -15,7 +15,7 @@ package org.genepattern.server;
 import java.rmi.RemoteException;
 import java.util.Vector;
 
-import org.genepattern.server.webservice.server.dao.AnalysisJobService;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.OmnigeneException;
 
@@ -29,7 +29,7 @@ import org.genepattern.webservice.OmnigeneException;
 
 public class AnalysisTask implements Runnable {
 
-    AnalysisJobService ds = null;
+    AnalysisDAO ds = null;
 
     private Vector jobQueue = new Vector();
 
@@ -134,7 +134,7 @@ public class AnalysisTask implements Runnable {
             sem = new Semaphore(threadCount);
         }
         try {
-            ds = AnalysisJobService.getInstance();
+            ds =new AnalysisDAO();;
         }
         catch (OmnigeneException oe) {
             log.error(oe);

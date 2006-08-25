@@ -27,7 +27,6 @@ import org.genepattern.webservice.*;
 // import org.genepattern.webservice.JobStatus;
 import org.hibernate.*;
 
-
 /**
  * AnalysisHypersonicDAO.java
  * 
@@ -97,6 +96,40 @@ AnalysisDAO extends BaseDAO {
         Query q = getSession().createQuery(hql);
         q.setInteger("jobNumber", jobNumber);
         return (String) q.uniqueResult();
+    }
+
+    /**
+     * 
+     */
+    public Integer recordClientJob(int taskID, String user_id, String parameter_info, int parentJobNumber)
+            throws OmnigeneException {
+        Integer jobNo = null;
+        try {
+
+            Integer parent = null;
+            if (parentJobNumber != -1) {
+                parent = new Integer(parentJobNumber);
+            }
+            jobNo = addNewJob(taskID, user_id, parameter_info, null, parent, null);
+            updateJobStatus(jobNo, JobStatus.JOB_FINISHED);
+            setJobDeleted(jobNo, true);
+            return jobNo;
+        }
+        catch (OmnigeneException e) {
+            if (jobNo != null) {
+                deleteJob(jobNo);
+            }
+            throw e;
+        }
+    }
+
+    /**
+     * 
+     */
+    public JobInfo addNewJob(int taskID, String user_id, String parameter_info, int parentJobNumber) {
+        Integer jobNo = addNewJob(taskID, user_id, parameter_info, null, new Integer(parentJobNumber), null);
+        return getJobInfo(jobNo);
+
     }
 
     /**

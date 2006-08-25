@@ -15,12 +15,10 @@ import com.sun.rowset.CachedRowSetImpl;
 public class BaseDAO {
 
     private static Logger log = Logger.getLogger(TaskIntegratorDAO.class);
-
     public static final int UNPROCESSABLE_TASKID = -1;
-
     public int PROCESSING_STATUS = 2;
-
     public static int JOB_WAITING_STATUS = 1;
+
 
     protected Session getSession() {
         return HibernateUtil.getSession();
@@ -82,7 +80,7 @@ public class BaseDAO {
 
     }
 
-    protected SuiteInfo suiteInfoFromSuite(Suite suite) throws AdminDAOSysException {
+    protected SuiteInfo suiteInfoFromSuite(Suite suite) throws OmnigeneException {
 
         String lsid = suite.getLsid();
         int access_id = suite.getAccessId();
@@ -117,7 +115,7 @@ public class BaseDAO {
 
     }
 
-    private ArrayList getSuiteModules(String lsid) throws AdminDAOSysException {
+    private ArrayList getSuiteModules(String lsid) throws OmnigeneException {
         PreparedStatement st = null;
         ResultSet rs = null;
         ArrayList moduleLSIDs = new ArrayList();
@@ -133,7 +131,7 @@ public class BaseDAO {
             }
         }
         catch (SQLException e) {
-            throw new AdminDAOSysException("A database error occurred", e);
+            throw new OmnigeneException(e);
         }
         finally {
             this.cleanupJDBC(rs, st);

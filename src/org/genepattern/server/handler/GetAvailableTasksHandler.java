@@ -13,11 +13,13 @@
 
 package org.genepattern.server.handler;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
 import org.genepattern.server.NoTaskFoundException;
-import org.genepattern.server.webservice.server.dao.AnalysisJobService;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.TaskInfo;
@@ -57,10 +59,14 @@ public class GetAvailableTasksHandler extends RequestHandler {
 		try {
 
 			//Get EJB reference
-			AnalysisJobService ds = AnalysisJobService.getInstance();
+			AdminDAO ds = new AdminDAO();
             
 			//Invoke EJB function
-			tasksVector = ds.getTasks(userId);
+            TaskInfo[] taskArray = (userId == null ? ds.getAllTasks() : ds.getAllTasksForUser(userId));
+
+            tasksVector = Arrays.asList(taskArray);
+
+                
 			if (tasksVector != null) {
 				TaskInfo taskInfo = null;
 				for (int i = 0; i < tasksVector.size(); i++) {

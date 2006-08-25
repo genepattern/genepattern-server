@@ -11,7 +11,8 @@
 */ --><%@ page import="java.io.File,
 		 java.net.URLEncoder,
 		 java.util.Date,
-		 org.genepattern.server.webservice.server.dao.AnalysisJobService,
+		 org.genepattern.server.webservice.server.dao.AnalysisDAO,
+		 org.genepattern.server.webservice.server.dao.AdminDAO,
 		 org.genepattern.webservice.JobInfo,
 		 org.genepattern.webservice.JobStatus,
 		 org.genepattern.webservice.ParameterInfo,
@@ -31,7 +32,7 @@ if (userID == null || userID.length() == 0) {
 String JOBID = "jobID";
 String jobID = request.getParameter(JOBID);
 String DOWNLOAD_URL = "zipJobResults.jsp?download=&?name=" + jobID;
-AnalysisJobService ds = AnalysisJobService.getInstance();
+AnalysisDAO ds = new AnalysisDAO();
 JobInfo jobInfo = null;
 ParameterInfo[] params = null;
 TaskInfo taskInfo = null;
@@ -53,7 +54,7 @@ jobs: <%
 		jobInfo = jobs[i];
 		// very slow to get return to user when it ask for task name!
 		int taskID = -1; // jobInfo.getTaskID();
-		taskInfo = (taskID == -1 ? null : ds.getTask(taskID));
+		taskInfo = (taskID == -1 ? null : (new AdminDAO()).getTask(taskID));
 		params = jobInfo.getParameterInfoArray();
 		boolean hasOutputFiles = false;
 		if (params != null) {

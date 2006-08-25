@@ -28,7 +28,8 @@ import org.apache.lucene.store.FSDirectory;
 import org.genepattern.server.genepattern.GPLuceneAnalyzer;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.DirectoryManager;
-import org.genepattern.server.webservice.server.dao.AnalysisJobService;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.JobInfo;
@@ -239,7 +240,7 @@ public class Indexer {
     }
 
     public static void indexJobs(IndexWriter writer) throws IOException, OmnigeneException {
-    	AnalysisJobService ds = GenePatternAnalysisTask.getDS();
+    	AnalysisDAO ds = GenePatternAnalysisTask.getDS();
         JobInfo[] jobs = ds.getJobInfo(new Date());
         JobInfo jobInfo = null;
         for (int i = 0; i < jobs.length; i++) {
@@ -252,12 +253,12 @@ public class Indexer {
     }
 
     public static void indexJob(IndexWriter writer, int jobID) throws IOException, OmnigeneException {
-    	AnalysisJobService ds = GenePatternAnalysisTask.getDS();
+        AnalysisDAO ds = GenePatternAnalysisTask.getDS();
         JobInfo jobInfo = ds.getJobInfo(jobID);
         indexJob(writer, jobInfo, ds);
     }
 
-    public static void indexJob(IndexWriter writer, JobInfo jobInfo, AnalysisJobService ds)
+    public static void indexJob(IndexWriter writer, JobInfo jobInfo, AnalysisDAO ds)
             throws IOException, OmnigeneException {
         if (!IndexerDaemon.isIndexingEnabled()) {
             return;
@@ -273,7 +274,7 @@ public class Indexer {
             int jobID = jobInfo.getJobNumber();
             try {
                 if (taskID != -1) {
-                    taskInfo = ds.getTask(taskID);
+                    taskInfo = (new AdminDAO()).getTask(taskID);
                 }
             } catch (OmnigeneException oe) {
                 // NoTaskFoundException
@@ -476,7 +477,7 @@ public class Indexer {
         }
         synchronized (getConcurrencyLock()) {
             writer.maxFieldLength = MAX_TERMS_PER_FIELD;
-            AnalysisJobService ds = GenePatternAnalysisTask.getDS();
+            AdminDAO ds = new AdminDAO(); 
             TaskInfo ti = ds.getTask(taskID);
 
             // XXX: delete first in case it already exists?

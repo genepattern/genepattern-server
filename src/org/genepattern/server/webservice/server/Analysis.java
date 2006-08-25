@@ -31,7 +31,7 @@ import org.apache.log4j.Category;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.handler.GetJobStatusHandler;
 import org.genepattern.server.webservice.GenericWebService;
-import org.genepattern.server.webservice.server.dao.AnalysisJobService;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.FileWrapper;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
@@ -95,9 +95,10 @@ public class Analysis extends GenericWebService {
 
     public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
         try {
-            AnalysisJobService ds = AnalysisJobService.getInstance();
-            return ds.recordClientJob(taskID, getUsernameFromContext(),
-                    org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters));
+            AnalysisDAO dao = new AnalysisDAO();
+            int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(),
+                    org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters), -1);
+            return dao.getJobInfo(jobNo);
         }
         catch (Exception e) {
             throw new WebServiceException(e);
@@ -119,9 +120,11 @@ public class Analysis extends GenericWebService {
     public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters, int parentJobNumber)
             throws WebServiceException {
         try {
-            AnalysisJobService ds = AnalysisJobService.getInstance();
-            return ds.recordClientJob(taskID, getUsernameFromContext(),
+            AnalysisDAO dao = new AnalysisDAO();
+            int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(),
                     org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters), parentJobNumber);
+            return dao.getJobInfo(jobNo);
+
         }
         catch (Exception e) {
             throw new WebServiceException(e);
@@ -131,7 +134,7 @@ public class Analysis extends GenericWebService {
     public int[] getChildren(int jobId) throws WebServiceException {
 
         try {
-            AnalysisJobService ds = AnalysisJobService.getInstance();
+            AnalysisDAO ds = new AnalysisDAO();
             JobInfo[] children = ds.getChildren(jobId);
 
             int[] jobs = new int[children.length];
@@ -176,43 +179,42 @@ public class Analysis extends GenericWebService {
 
     // find any input files and concat axis name with original file name.
     private void renameInputFiles(ParameterInfo[] parameters, Map files) throws WebServiceException {
-        if (parameters != null)
-            for (int x = 0; x < parameters.length; x++) {
-                if (parameters[x].isInputFile()) {
-                    String orgFilename = parameters[x].getValue();
-                    Object obj = files.get(orgFilename);
-                    DataHandler dataHandler = null;
-                    if (obj instanceof AttachmentPart) {
-                        AttachmentPart ap = (AttachmentPart) obj;
-                        try {
-                            dataHandler = ap.getDataHandler();
-                        }
-                        catch (SOAPException se) {
-                            throw new WebServiceException("Error while processing files");
-                        }
+        if (parameters != null) for (int x = 0; x < parameters.length; x++) {
+            if (parameters[x].isInputFile()) {
+                String orgFilename = parameters[x].getValue();
+                Object obj = files.get(orgFilename);
+                DataHandler dataHandler = null;
+                if (obj instanceof AttachmentPart) {
+                    AttachmentPart ap = (AttachmentPart) obj;
+                    try {
+                        dataHandler = ap.getDataHandler();
                     }
-                    else {
-                        dataHandler = (DataHandler) obj;
+                    catch (SOAPException se) {
+                        throw new WebServiceException("Error while processing files");
                     }
+                }
+                else {
+                    dataHandler = (DataHandler) obj;
+                }
 
-                    String newFilename = dataHandler.getName() + "_" + orgFilename;
-                    File f = new File(dataHandler.getName());
-                    File newFile = new File(newFilename);
-                    boolean renamed = f.renameTo(newFile);
-                    // reset parameter's value with new filename
-                    if (renamed) {
-                        parameters[x].setValue(newFilename);
+                String newFilename = dataHandler.getName() + "_" + orgFilename;
+                File f = new File(dataHandler.getName());
+                File newFile = new File(newFilename);
+                boolean renamed = f.renameTo(newFile);
+                // reset parameter's value with new filename
+                if (renamed) {
+                    parameters[x].setValue(newFilename);
+                }
+                else {
+                    try {
+                        parameters[x].setValue(f.getCanonicalPath());
                     }
-                    else {
-                        try {
-                            parameters[x].setValue(f.getCanonicalPath());
-                        }
-                        catch (IOException ioe) {
-                            throw new WebServiceException(ioe);
-                        }
+                    catch (IOException ioe) {
+                        throw new WebServiceException(ioe);
                     }
                 }
             }
+        }
     }
 
     /**
@@ -323,8 +325,7 @@ public class Analysis extends GenericWebService {
             if (parameters != null) {
                 for (int x = 0; x < parameters.length; x++) {
                     if (parameters[x].isOutputFile()) {
-                        if (filenames == null)
-                            filenames = new ArrayList();
+                        if (filenames == null) filenames = new ArrayList();
                         filenames.add(System.getProperty("jobs") + "/" + parameters[x].getValue());
                     }
                 }
@@ -358,10 +359,10 @@ public class Analysis extends GenericWebService {
             if (p != null) {
                 setJobStatus(jobId, JobStatus.ERROR);
             }
-            AnalysisJobService ds = AnalysisJobService.getInstance();
+            AnalysisDAO ds = new AnalysisDAO();
             JobInfo[] children = ds.getChildren(jobId);
             for (int i = 0; i < children.length; i++) { // terminate all child
-                                                        // jobs
+                // jobs
                 terminateJob(children[i].getJobNumber());
             }
         }
@@ -381,7 +382,7 @@ public class Analysis extends GenericWebService {
     public void purgeJob(int jobId) throws WebServiceException {
         try {
             deleteJob(jobId);
-            AnalysisJobService ds = AnalysisJobService.getInstance();
+            AnalysisDAO ds = new AnalysisDAO();
             org.genepattern.server.indexer.Indexer.deleteJob(jobId);
             JobInfo[] children = ds.getChildren(jobId);
             ds.deleteJob(jobId);
@@ -416,7 +417,7 @@ public class Analysis extends GenericWebService {
                 }
             }
             jobDir.delete();
-            AnalysisJobService ds = AnalysisJobService.getInstance();
+            AnalysisDAO ds = new AnalysisDAO();
             ds.setJobDeleted(jobId, true);
             JobInfo[] children = ds.getChildren(jobId);
             for (int i = 0; i < children.length; i++) {
@@ -444,7 +445,7 @@ public class Analysis extends GenericWebService {
 
     public JobInfo getJob(int jobId) throws WebServiceException {
         try {
-            AnalysisJobService ds = AnalysisJobService.getInstance();
+            AnalysisDAO ds = new AnalysisDAO();
             return ds.getJobInfo(jobId);
         }
         catch (org.genepattern.webservice.OmnigeneException oe) {
@@ -469,7 +470,7 @@ public class Analysis extends GenericWebService {
      */
     public void deleteJobResultFile(int jobId, String value) throws WebServiceException {
         try {
-            AnalysisJobService ds = AnalysisJobService.getInstance();
+            AnalysisDAO ds = new AnalysisDAO();
             JobInfo jobInfo = ds.getJobInfo(jobId);
             int beforeDeletionLength = 0;
             ParameterInfo[] params = jobInfo.getParameterInfoArray();
@@ -543,7 +544,7 @@ public class Analysis extends GenericWebService {
      */
     public void setJobStatus(int jobId, String status) throws WebServiceException {
         try {
-            AnalysisJobService ds = AnalysisJobService.getInstance();
+            AnalysisDAO ds = new AnalysisDAO();
             JobInfo jobInfo = ds.getJobInfo(jobId);
             Integer intStatus = (Integer) JobStatus.STATUS_MAP.get(status);
             if (intStatus == null) {
@@ -577,7 +578,7 @@ public class Analysis extends GenericWebService {
     public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs)
             throws WebServiceException {
         try {
-            AnalysisJobService ds = AnalysisJobService.getInstance();
+            AnalysisDAO ds = new AnalysisDAO();
             return ds.getJobs(username, maxJobNumber, maxEntries, allJobs);
         }
         catch (Exception e) {
@@ -596,8 +597,7 @@ public class Analysis extends GenericWebService {
         // get the context then the username from the soap header
         context = MessageContext.getCurrentContext();
         String username = context.getUsername();
-        if (username == null)
-            username = "";
+        if (username == null) username = "";
         return username;
     }
 

@@ -16,7 +16,7 @@
 <%@ page import="java.util.*" %>
 <%@ page import="java.net.*" %>
 <%@ page import="java.sql.*" %>
-<%@ page import="org.genepattern.server.webservice.server.dao.AnalysisJobService,
+<%@ page import="org.genepattern.server.webservice.server.dao.AdminDAO,
 		  		 org.genepattern.util.StringUtils" %>
 <% 
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -72,7 +72,7 @@ while (query.length() > 0 && Character.isWhitespace(query.charAt(query.length()-
 
 if (query.length() > 0 && request.getParameter("submit") != null) { 
 	try {
-	        AnalysisJobService ds = AnalysisJobService.getInstance();
+	        AdminDAO ds = new AdminDAO();
 		java.util.Date startTime = new java.util.Date();
 		if (query.toLowerCase().startsWith("select")) {
 			ResultSet rs = ds.executeSQL(query);

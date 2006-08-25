@@ -31,60 +31,58 @@
   <param-value>true</param-value>
  </context-param>
  <context-param>
-  <param-name>facelets.LIBRARIES</param-name> 
-  <param-value>/WEB-INF/tomahawk.taglib.xml</param-value> 
+  <param-name>facelets.LIBRARIES</param-name>
+  <param-value>/WEB-INF/tomahawk.taglib.xml</param-value>
  </context-param>
-
-  <filter>
-      <filter-name>AuthenticationFilter</filter-name>
-      <filter-class>org.genepattern.server.webapp.AuthenticationFilter</filter-class>
-  </filter>
-  <filter>
-      <filter-name>ConnectionFilter</filter-name>
-      <filter-class>org.genepattern.server.webapp.ConnectionFilter</filter-class>
-  </filter>
-  <filter>
-      <filter-name>AuthorizationFilter</filter-name>
-      <filter-class>org.genepattern.server.webapp.AuthorizationFilter</filter-class>
-	<init-param>
-		<param-name>org.genepattern.AuthorizationManagerFactory</param-name>
-		<param-value>org.genepattern.server.util.AuthorizationManagerFactoryImpl</param-value>
-	</init-param>
-	<init-param>
-		<param-name>genepattern.properties</param-name>
-		<param-value>../resources</param-value>
-	</init-param>
-
-  </filter>
-
-   <filter-mapping>
-      <filter-name>ConnectionFilter</filter-name>
-      <url-pattern>/*</url-pattern>
-   </filter-mapping>  
-   <filter-mapping>
-      <filter-name>AuthenticationFilter</filter-name>
-      <url-pattern>*.jsp</url-pattern>
-   </filter-mapping>  
-   <filter-mapping>
-      <filter-name>AuthorizationFilter</filter-name>
-      <url-pattern>/services/*</url-pattern>
-   </filter-mapping>  
-   <filter-mapping>
-      <filter-name>AuthorizationFilter</filter-name>
-      <url-pattern>*.jsp</url-pattern>
-   </filter-mapping>  
-
+ <filter>
+  <filter-name>AuthenticationFilter</filter-name>
+  <filter-class>org.genepattern.server.webapp.AuthenticationFilter</filter-class>
+ </filter>
+ <filter>
+  <filter-name>ConnectionFilter</filter-name>
+  <filter-class>org.genepattern.server.webapp.ConnectionFilter</filter-class>
+ </filter>
+ <filter>
+  <filter-name>AuthorizationFilter</filter-name>
+  <filter-class>org.genepattern.server.webapp.AuthorizationFilter</filter-class>
+  <init-param>
+   <param-name>org.genepattern.AuthorizationManagerFactory</param-name>
+   <param-value>org.genepattern.server.util.AuthorizationManagerFactoryImpl</param-value>
+  </init-param>
+  <init-param>
+   <param-name>genepattern.properties</param-name>
+   <param-value>../resources</param-value>
+  </init-param>
+ </filter>
+ <filter>
+  <filter-name>HibernateFilter</filter-name>
+  <filter-class>org.genepattern.server.webapp.HibernateSessionRequestFilter</filter-class>
+ </filter>
+ <filter-mapping>
+  <filter-name>ConnectionFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+ </filter-mapping>
+ <filter-mapping>
+  <filter-name>AuthenticationFilter</filter-name>
+  <url-pattern>*.jsp</url-pattern>
+ </filter-mapping>
+ <filter-mapping>
+  <filter-name>AuthorizationFilter</filter-name>
+  <url-pattern>/services/*</url-pattern>
+ </filter-mapping>
+ <filter-mapping>
+  <filter-name>AuthorizationFilter</filter-name>
+  <url-pattern>*.jsp</url-pattern>
+ </filter-mapping>
+ <filter-mapping>
+  <filter-name>HibernateFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+ </filter-mapping>
  <servlet>
   <servlet-name>Faces Servlet</servlet-name>
   <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
   <load-on-startup>1</load-on-startup>
  </servlet>
- <servlet-mapping>
-  <servlet-name>Faces Servlet</servlet-name>
-  <url-pattern>*.jsf</url-pattern>
- </servlet-mapping>
-
-  
  <servlet>
   <servlet-name>StartupServlet</servlet-name>
   <servlet-class>org.genepattern.server.webapp.StartupServlet</servlet-class>
@@ -110,13 +108,16 @@
   </init-param>
   <load-on-startup>1</load-on-startup>
  </servlet>
- 
  <servlet>
   <display-name>Apache-Axis Servlet</display-name>
   <servlet-name>AxisServlet</servlet-name>
   <servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
   <load-on-startup>20</load-on-startup>
  </servlet>
+ <servlet-mapping>
+  <servlet-name>Faces Servlet</servlet-name>
+  <url-pattern>*.jsf</url-pattern>
+ </servlet-mapping>
  <servlet-mapping>
   <servlet-name>AxisServlet</servlet-name>
   <url-pattern>/servlet/AxisServlet</url-pattern>
@@ -129,7 +130,6 @@
   <servlet-name>AxisServlet</servlet-name>
   <url-pattern>/services/*</url-pattern>
  </servlet-mapping>
-
  <welcome-file-list>
   <welcome-file>index.jsp</welcome-file>
  </welcome-file-list>

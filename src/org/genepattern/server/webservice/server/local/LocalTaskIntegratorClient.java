@@ -24,6 +24,7 @@ import java.util.ArrayList;
 
 import org.genepattern.server.webservice.server.ITaskIntegrator;
 import org.genepattern.server.webservice.server.TaskIntegrator;
+import org.genepattern.server.webservice.server.dao.TaskIntegratorDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -59,7 +60,7 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIn
 			String author, String owner, ArrayList moduleLsids, ArrayList files)
 			throws WebServiceException{
 
-		return tiDao.modifySuite(access_id, lsid, name, description, author, owner, moduleLsids, files);
+		return modifySuite(access_id, lsid, name, description, author, owner, moduleLsids, files);
 
 	}
 
@@ -218,4 +219,7 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIn
 		out.println();
 		out.flush();
 	}
+    
+    
+    
 }

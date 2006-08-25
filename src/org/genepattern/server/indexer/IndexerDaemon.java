@@ -15,7 +15,7 @@ package org.genepattern.server.indexer;
 
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.FSDirectory;
-import org.genepattern.server.webservice.server.dao.AnalysisJobService;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 
 import java.io.File;
 import java.io.IOException;
@@ -94,7 +94,7 @@ public class IndexerDaemon implements Runnable {
         ResultSet rs = null;
         try {
             indexer.createIfNecessary(indexDir);
-            AnalysisJobService ds = AnalysisJobService.getInstance();
+            AnalysisDAO ds = new AnalysisDAO();
             
             String taskQuery = "select task_id from task_master where isIndexed is null";
             String jobQuery =

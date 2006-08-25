@@ -7,7 +7,8 @@ import java.util.Collection;
 
 public class JobStatus {
 
-	/** auto generated
+	public static final Integer JOB_FINISHED = 3;
+    /** auto generated
 	 * @es_generated
 	 */
 	private Integer statusId;

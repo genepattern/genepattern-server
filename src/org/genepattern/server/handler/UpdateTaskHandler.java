@@ -12,7 +12,7 @@
 
 package org.genepattern.server.handler;
 
-import org.genepattern.server.webservice.server.dao.AnalysisJobService;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
@@ -72,7 +72,7 @@ public class UpdateTaskHandler extends RequestHandler {
             ParameterFormatConverter pfc = new ParameterFormatConverter();
             String parameter_info = pfc.getJaxbString(_parameterInfoArray);
 
-            AnalysisJobService ds = AnalysisJobService.getInstance();
+            AnalysisDAO ds = new AnalysisDAO();
 
             updatedRecord = ds.updateTask(_taskID, parameter_info, _taskInfoAttributeString, _user_id, _access_id);
 

@@ -17,7 +17,8 @@ import java.util.List;
 import java.util.Vector;
 
 import org.genepattern.server.AnalysisManager;
-import org.genepattern.server.webservice.server.dao.AnalysisJobService;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
@@ -78,7 +79,7 @@ public class AddNewTaskHandler extends RequestHandler {
 		try {
 
 			//Get EJB reference
-			AnalysisJobService ds = AnalysisJobService.getInstance();
+            AdminDAO ds = new AdminDAO();
 			AnalysisManager analysisManager = AnalysisManager.getInstance();
 
 			GetAvailableTasksHandler th = new GetAvailableTasksHandler();
@@ -103,7 +104,7 @@ public class AddNewTaskHandler extends RequestHandler {
 
 			//Invoke EJB function
 
-			taskID = ds.addNewTask(taskName, userId, accessId, description,
+			taskID = (new AnalysisDAO()).addNewTask(taskName, userId, accessId, description,
 					parameter_info, taskInfoAttributes);
 			analysisManager.startNewAnalysisTask(taskID);
 

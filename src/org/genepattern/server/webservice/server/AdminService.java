@@ -41,10 +41,10 @@ import org.genepattern.webservice.*;
 public class AdminService implements IAdminService {
 	static Map serviceInfoMap;
 
-	AdminDataService dataService;
+	AdminDAO dataService;
 
 	public AdminService() {
-        dataService = AdminDataService.getInstance();
+        dataService = new AdminDAO();
 	}
 
 	protected String getUserName() {
@@ -105,7 +105,7 @@ public class AdminService implements IAdminService {
 		Thread.yield();
 		try {
 			return dataService.getAllTasksForUser(getUserName());
-		} catch (AdminDAOSysException e) {
+		} catch (OmnigeneException e) {
 			throw new WebServiceException(e);
 		}
 	}
@@ -173,7 +173,7 @@ public class AdminService implements IAdminService {
 		TaskInfo[] tasks = null;
 		try {
 			tasks = dataService.getAllTasksForUser(getUserName());
-		} catch (AdminDAOSysException e) {
+		} catch (OmnigeneException e) {
 			throw new WebServiceException(e);
 		}
 		for (int i = 0, length = tasks.length; i < length; i++) {
@@ -201,7 +201,7 @@ public class AdminService implements IAdminService {
 	public SuiteInfo getSuite(String lsid) throws WebServiceException {
 		try {	
 			return dataService.getSuite(lsid);
-		} catch (AdminDAOSysException e) {
+		} catch (OmnigeneException e) {
 			throw new WebServiceException(e);
 		}
 	}
@@ -248,7 +248,7 @@ public class AdminService implements IAdminService {
 	public SuiteInfo[] getSuiteMembership(String taskLsid) throws WebServiceException{
 		try {
 			return  dataService.getSuiteMembership(taskLsid);
-		} catch (AdminDAOSysException e) {
+		} catch (OmnigeneException e) {
 			throw new WebServiceException(e);
 		}
 	}

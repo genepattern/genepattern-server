@@ -50,7 +50,7 @@ public class TaskIntegratorDAO extends BaseDAO {
 
     private static Category log = Logger.getInstance(TaskIntegratorDAO.class);
 
-    void deleteSuite(String lsid) throws WebServiceException {
+    public void deleteSuite(String lsid) throws WebServiceException {
 
         getSession().flush();
         getSession().clear();
@@ -65,7 +65,7 @@ public class TaskIntegratorDAO extends BaseDAO {
 
     }
 
-    void createSuite(SuiteInfo suiteInfo) {
+    public void createSuite(SuiteInfo suiteInfo) {
         Suite s = new Suite();
         s.setLsid(suiteInfo.getLSID());
         s.setName(suiteInfo.getName());
@@ -83,7 +83,7 @@ public class TaskIntegratorDAO extends BaseDAO {
         deleteQuery.executeUpdate();
     }
 
-    void installSuiteModule(String lsid, String mod_lsid) throws WebServiceException {
+    public void installSuiteModule(String lsid, String mod_lsid) throws WebServiceException {
         getSession().flush();
         getSession().clear();
         
@@ -94,7 +94,7 @@ public class TaskIntegratorDAO extends BaseDAO {
 
     }
 
-    SuiteInfo getSuite(String lsid) throws AdminDAOSysException {
+    public SuiteInfo getSuite(String lsid) throws AdminDAOSysException {
         String hql = "from  org.genepattern.server.webservice.server.dao.Suite where lsid = :lsid";
         Query query = getSession().createQuery(hql);
         query.setString("lsid", lsid);

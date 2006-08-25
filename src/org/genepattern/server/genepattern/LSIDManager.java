@@ -16,7 +16,8 @@ package org.genepattern.server.genepattern;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 
-import org.genepattern.server.webservice.server.dao.AnalysisJobService;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.OmnigeneException;
@@ -62,26 +63,51 @@ public class LSIDManager {
 					+ mue.getMessage());
 		}
 	}
+    
+
+    private static synchronized int getNextLSIDIdentifier(String namespace) throws OmnigeneException {
+        if (GPConstants.TASK_NAMESPACE.equals(namespace)) {
+            return getDS().getNextTaskLSIDIdentifier();
+        }
+        else if (GPConstants.SUITE_NAMESPACE.equals(namespace)) {
+            return getDS().getNextSuiteLSIDIdentifier();
+        }
+        else {
+            throw new OmnigeneException("unknown Namespace for LSID: " + namespace);
+        }
+
+    }
 
 	// get the next ID in the sequence from the DB
-	protected synchronized String getNextID(String namespace) throws OmnigeneException,	RemoteException {
-		AnalysisJobService ds = getDS();
+	protected synchronized String getNextID(String namespace) throws OmnigeneException {
 
 	// XXX handle suites as well
 
-		int nextId = ds.getNextLSIDIdentifier(namespace);
+		int nextId = getNextLSIDIdentifier(namespace);
 		return "" + nextId;
 	}
 
-	// get the next version for a particular LSID identifier from the DB
-	protected synchronized String getNextVersionFromDB(LSID lsid)
-			throws OmnigeneException, RemoteException {
-		AnalysisJobService ds = getDS();
+   
+    
+    /**
+     * get the next available LSID version for a given identifer from the
+     * database
+     * 
+     * @throws OmnigeneException
+     * @throws RemoteException
+     * @return int next version in sequence
+     */
+    protected static synchronized String getNextLSIDVersion(LSID lsid) throws OmnigeneException {
+        String namespace = lsid.getNamespace();
+        if (GPConstants.SUITE_NAMESPACE.equals(namespace)) {
+            return getDS().getNextSuiteLSIDVersion(lsid);
+        }
+        else {
+            return getDS().getNextTaskLSIDVersion(lsid);
+        }
+    }
 
-// XXX handle suits as well
-		String nextVersion = ds.getNextLSIDVersion(lsid);
-		return nextVersion;
-	}
+    
 
 	public LSID getNextIDVersion(String id) throws OmnigeneException,
 			RemoteException {
@@ -96,9 +122,9 @@ public class LSIDManager {
 	}
 
 	public LSID getNextIDVersion(LSID lsid) throws OmnigeneException,
-			RemoteException, MalformedURLException {
+			 MalformedURLException {
 		// go to DB and get the next version for this identifier
-		lsid.setVersion(getNextVersionFromDB(lsid));
+		lsid.setVersion(getNextLSIDVersion(lsid));
 		return lsid;
 	}
 
@@ -116,10 +142,10 @@ public class LSIDManager {
 		return lsidUtil.getNearerLSID(lsid1, lsid2); // equal???
 	}
 
-	protected AnalysisJobService getDS() throws OmnigeneException {
-        AnalysisJobService ds;
+	protected static AnalysisDAO getDS() throws OmnigeneException {
+        AnalysisDAO ds;
 		try {
-			ds = AnalysisJobService.getInstance();
+			ds = new AnalysisDAO();
 			return ds;
 		} catch (Exception e) {
 			throw new OmnigeneException(

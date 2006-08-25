@@ -14,7 +14,8 @@
 package org.genepattern.server.handler;
 
 import org.genepattern.server.TaskIDNotFoundException;
-import org.genepattern.server.webservice.server.dao.AnalysisJobService;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.OmnigeneException;
 
 //import edu.mit.wi.omnigene.omnidas.*;
@@ -56,7 +57,7 @@ public class RemoveTaskHandler extends RequestHandler {
 		try {
 
 			//Get EJB reference
-			AnalysisJobService ds = AnalysisJobService.getInstance();
+            AdminDAO ds = new AdminDAO();
 			//Invoke EJB function
 			recordDeleted = ds.deleteTask(taskID);
 		} catch (TaskIDNotFoundException taskEx) {

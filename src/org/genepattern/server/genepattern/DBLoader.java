@@ -15,7 +15,8 @@ package org.genepattern.server.genepattern;
 import java.rmi.RemoteException;
 
 import org.genepattern.server.AnalysisManager;
-import org.genepattern.server.webservice.server.dao.AnalysisJobService;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
@@ -79,7 +80,7 @@ public abstract class DBLoader {
         String lsid = getLSIDOrName();
 
         int taskID = -1;
-        AnalysisJobService ds = AnalysisJobService.getInstance();
+        AnalysisDAO ds = new AnalysisDAO();
         try {
             // search for an existing task with the same name
             taskID = getTaskIDByName(lsid, user_id);
@@ -135,7 +136,7 @@ public abstract class DBLoader {
      * @throws OmnigeneException
      */
     public void create() throws OmnigeneException {
-        AnalysisJobService ds = AnalysisJobService.getInstance();
+        AnalysisDAO ds = new AnalysisDAO();
         ParameterFormatConverter pfc = new ParameterFormatConverter();
         String parameter_info = pfc.getJaxbString(this._params);
         /*
@@ -193,7 +194,7 @@ public abstract class DBLoader {
      */
     public void update() throws OmnigeneException {
         String lsid = getLSIDOrName();
-        AnalysisJobService ds = AnalysisJobService.getInstance();
+        AnalysisDAO ds = new AnalysisDAO();
         int taskID = -1;
         try {
             // search for an existing task with the same name
@@ -231,7 +232,7 @@ public abstract class DBLoader {
      */
     public void delete() throws OmnigeneException, RemoteException {
         int taskID;
-        AnalysisJobService ds = AnalysisJobService.getInstance();
+        AdminDAO ds = new AdminDAO();
         String lsid = getLSIDOrName();
         taskID = getTaskIDByName(lsid, user_id);
         if (taskID == -1) {
@@ -280,8 +281,8 @@ public abstract class DBLoader {
 
     // search for an existing task with the same name
     public int getTaskIDByName(String name, String user_id) throws OmnigeneException, RemoteException {
-        AnalysisJobService ds = AnalysisJobService.getInstance();
-        int taskID = ds.getTaskIDByName(name, user_id);
+        AdminDAO ds = new AdminDAO();
+        int taskID = ds.getTask(name, user_id).getID();
         return taskID;
     }
 
