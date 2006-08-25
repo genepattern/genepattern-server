@@ -3,14 +3,13 @@
 
 <hibernate-configuration> 
   <session-factory> 
-    <!--    <property name="c3p0.minPoolSize">5</property>
+    <property name="c3p0.minPoolSize">5</property>
     <property name="c3p0.timeout">1000</property>
     <property name="connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
-    -->
     <property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
     <property name="hibernate.connection.shutdown">true</property>
     <!-- <property name="hibernate.connection.url">jdbc:hsqldb:file:C:/java/genepattern_workspace/genepattern/local/resources/GenePatternDB</property>  -->
-    <property name="hibernate.connection.url">jdbc:hsqldb:hsql://localhost/xdb</property> 
+    <property name="hibernate.connection.url">jdbc:hsqldb:hsql://localhost/xdb</property>
     <property name="hibernate.connection.username">sa</property>
     <property name="hibernate.current_session_context_class">thread</property>
     <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
