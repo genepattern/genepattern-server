@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core">
+
+<f:loadBundle basename="resources" var="msg" />
+
+<ui:composition template="/templates/common.xhtml">
+
+	<ui:define name="pageTitle">GenePattern sign-in</ui:define>
+
+	<ui:define name="pageHeader">
+		<div id="navbar" class="navbar">
+		<form action="login.jsp" name="login">
+		<table width="100%">
+			<tr>
+				<td valign="top" class="logo">
+				  <h:graphicImage value="/skin/logoSmall.gif" border="0" height="25" width="25" />&#160;<B>Gene</B>Pattern 3.0&nbsp;</td>
+				<td align="right" valign="top"><nobr> </nobr> <br />
+				<a href="about.jsp" class="navbarlink">about</a></td>
+			</tr>
+			<tr />
+			<tr />
+			<tr />
+			<tr />
+		</table>
+		<p />
+		</form>
+		</div>
+	</ui:define>
+
+	<ui:define name="body">
+		<h:form>
+		Please enter your username to identify task ownership.  We recommend using your email address to ensure uniqueness, memorability, and consistency.<br />
+			<table>
+				<tr>
+					<td>Username:</td> 
+					<td><h:inputText size="50" value="#{loginBean.username}" id="usernameField" required="true" requiredMessage="Username is required."/></td>
+					 <td><h:message style="color: red; font-weight: bold;" for="usernameField"/></td>
+					 <td rowspan="2"><h:commandButton value="sign in" class="little" actionListener="#{loginBean.submitLogin}"/></td>				
+				</tr>
+				<tr>
+					<td>Password:</td> 
+					<td><h:inputSecret size="50" value="#{loginBean.password}" id="passwordField" required="true" requiredMessage="Password is required."/></td>
+					<td><h:message style="color: red; font-weight: bold;" for="passwordField"/></td>
+				</tr>
+			</table>
+			<h:inputHidden name="referrer" value="#{loginBean.referrer}" />
+
+		</h:form>
+	</ui:define>
+
+	<ui:define name="pageFooter">
+		<div class="navbar">
+
+
+		<table width="100%">
+			<tr>
+				<td align="left" valign="top">
+				  <a href="index.jsp" class="navbarlink"> </a> 
+				  <a href="http://www.broad.mit.edu" class="navbarlink">
+				    <h:graphicImage value="/skin/broadLogo.gif"  border='1' height="16" width="16" />
+				    <f:verbatim>&#160;&#169; 2003-2006 Broad Institute, MIT</f:verbatim>
+				 </a>
+				</td>
+				<td align="right" valign="top">
+				  <a href="mailto:gp-help@broad.mit.edu" class="navbarlink"><nobr>report bugs</nobr></a> | 
+				  <a href="mailto:gp-help@broad.mit.edu" class="navbarlink"><nobr>request help</nobr></a>
+				</td>
+			</tr>
+		</table>
+		</div>
+	</ui:define>
+
+</ui:composition>
+</html>
