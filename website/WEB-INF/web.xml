@@ -30,6 +30,10 @@
   <param-name>com.sun.faces.verifyObjects</param-name>
   <param-value>true</param-value>
  </context-param>
+ <context-param>
+  <param-name>facelets.LIBRARIES</param-name> 
+  <param-value>/WEB-INF/tomahawk.taglib.xml</param-value> 
+ </context-param>
 
   <filter>
       <filter-name>AuthenticationFilter</filter-name>
@@ -80,9 +84,9 @@
   <url-pattern>*.jsf</url-pattern>
  </servlet-mapping>
 
-
+  
  <servlet>
-  <servlet-name>GenePatternStartupServlet</servlet-name>
+  <servlet-name>StartupServlet</servlet-name>
   <servlet-class>org.genepattern.server.webapp.StartupServlet</servlet-class>
   <init-param>
    <param-name>javax.xml.parsers.DocumentBuilderFactory</param-name>
@@ -104,8 +108,9 @@
    <param-name>genepattern.properties</param-name>
    <param-value>../resources</param-value>
   </init-param>
-  <load-on-startup>30</load-on-startup>
+  <load-on-startup>1</load-on-startup>
  </servlet>
+ 
  <servlet>
   <display-name>Apache-Axis Servlet</display-name>
   <servlet-name>AxisServlet</servlet-name>
@@ -124,6 +129,7 @@
   <servlet-name>AxisServlet</servlet-name>
   <url-pattern>/services/*</url-pattern>
  </servlet-mapping>
+
  <welcome-file-list>
   <welcome-file>index.jsp</welcome-file>
  </welcome-file-list>
