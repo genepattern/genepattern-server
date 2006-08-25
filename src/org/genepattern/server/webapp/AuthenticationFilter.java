@@ -193,7 +193,7 @@ public class AuthenticationFilter implements Filter, IGPConstants {
                 URL = URL + ("?" + request.getQueryString());
             }
             String fqAddress = request.getScheme() + "://" + fqHostName + ":" + request.getServerPort() + "/" +
-                    request.getContextPath() + "/login.jsp?origin=" + URLEncoder.encode(URL, UTF8);
+                    request.getContextPath() + "/pages/login.jsf?origin=" + URLEncoder.encode(URL, UTF8);
             response.sendRedirect(fqAddress);
         } catch (IOException ioe) {
             ioe.printStackTrace();
