@@ -33,10 +33,6 @@ import java.io.UnsupportedEncodingException;
 import java.io.*;
 import java.util.*;
 
-import org.jdom.*;
-import org.jdom.input.SAXBuilder;
-
-
 
 /**
  * @author Liefeld

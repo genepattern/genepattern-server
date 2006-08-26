@@ -420,10 +420,7 @@ public class PipelineModel implements Serializable {
 			IllegalArgumentException, IllegalAccessException,
 			InvocationTargetException, NoSuchMethodException,
 			SecurityException, OmnigeneException, Exception {
-		//String DBF = "javax.xml.parsers.DocumentBuilderFactory";
-		//String oldDocumentBuilderFactory = System.getProperty(DBF);
-		//System.setProperty(DBF,
-		// "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+
 		Document doc = DocumentBuilderFactory.newInstance()
 				.newDocumentBuilder().parse(inputXMLSource);
 		//if (oldDocumentBuilderFactory != null)

@@ -1,45 +1,43 @@
 /*
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2006) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2006) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
 
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
-*/
-
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */
 
 package org.genepattern.server.indexer;
 
+import org.apache.log4j.Logger;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.FSDirectory;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.server.webservice.server.dao.HibernateUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
 
 public class IndexerDaemon implements Runnable {
+    
+    private static Logger log = Logger.getLogger(IndexerDaemon.class);
 
     public static Object indexLock = new Object();
-
     protected File indexDir = null;
-
     protected Indexer indexer = new Indexer(System.out);
-
     protected static IndexerDaemon daemon = null;
-
     public static boolean DEBUG = false;
-
     protected static IndexWriter writer = null;
     public static final String DISABLE_GP_INDEXING = "disable.gp.indexing";
 
     public static void main(String[] args) {
         try {
-            System.setProperty("genepattern.properties",
-                    System.getProperty("genepattern.properties", "C:/Program Files/GenePattern/Tomcat"));
+            System.setProperty("genepattern.properties", System.getProperty("genepattern.properties",
+                    "C:/Program Files/GenePattern/Tomcat"));
             IndexerDaemon daemon = IndexerDaemon.getDaemon();
             Thread t = new Thread(daemon, "IndexerDaemon");
             t.setPriority(Thread.NORM_PRIORITY - 3);
@@ -59,7 +57,8 @@ public class IndexerDaemon implements Runnable {
             if (DEBUG) {
                 System.out.println("IndexerDaemon done");
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             System.err.println(t);
             t.printStackTrace();
         }
@@ -70,7 +69,8 @@ public class IndexerDaemon implements Runnable {
         // if an old lock file was left around, delete it
         try {
             indexer.createIfNecessary(indexDir);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             System.err.println(e + " during IndexerDaemon creation");
         }
         FSDirectory.getDirectory(indexDir, false).makeLock(IndexWriter.WRITE_LOCK_NAME).release();
@@ -91,14 +91,13 @@ public class IndexerDaemon implements Runnable {
         if (!isIndexingEnabled()) {
             return;
         }
-        ResultSet rs = null;
+        
         try {
             indexer.createIfNecessary(indexDir);
             AnalysisDAO ds = new AnalysisDAO();
-            
+
             String taskQuery = "select task_id from task_master where isIndexed is null";
-            String jobQuery =
-                    "select job_no from analysis_job where isIndexed is null and status_id in (3,4)"; // Finished,
+            String jobQuery = "select job_no from analysis_job where isIndexed is null and status_id in (3,4)"; // Finished,
             // Error
             String taskIndexedUpdate = "update task_master set isIndexed=true where task_id=";
             String jobIndexedUpdate = "update analysis_job set isIndexed=true where job_no=";
@@ -106,15 +105,19 @@ public class IndexerDaemon implements Runnable {
             int jobID = 0;
             boolean didWork = false;
             if (DEBUG) {
-                System.out.println("IndexerDaemon running on " + Thread.currentThread().getName() + " at priority " +
-                        Thread.currentThread().getPriority());
+                System.out.println("IndexerDaemon running on " + Thread.currentThread().getName() + " at priority "
+                        + Thread.currentThread().getPriority());
             }
             while (true) {
                 do {
                     didWork = false;
 
-                    // index tasks
+                    HibernateUtil.getSession().beginTransaction();
+                    ResultSet rs = null;
+                    
+                    
                     try {
+                        // index tasks
                         rs = ds.executeSQL(taskQuery);
                         while (rs.next()) {
                             synchronized (Indexer.getConcurrencyLock()) {
@@ -122,12 +125,11 @@ public class IndexerDaemon implements Runnable {
                                 try {
                                     taskID = rs.getInt("task_id");
                                     indexer.indexTask(writer, taskID);
-                                    ds
-                                            .executeUpdate(taskIndexedUpdate + taskID);
+                                    ds.executeUpdate(taskIndexedUpdate + taskID);
                                     didWork = true;
-                                } catch (Throwable t) {
-                                    System.err
-                                            .println(t + " in IndexerDaemon.run while processing task " + taskID);
+                                }
+                                catch (Throwable t) {
+                                    System.err.println(t + " in IndexerDaemon.run while processing task " + taskID);
                                     t.printStackTrace();
                                 }
                                 writer = Indexer.releaseWriter();
@@ -135,12 +137,8 @@ public class IndexerDaemon implements Runnable {
                         }
                         rs.close();
                         rs = null;
-                    } catch (Exception e) {
-                        System.err.println(e.getMessage());
-                    }
-
-                    // index jobs
-                    try {
+  
+                        // index jobs
                         rs = ds.executeSQL(jobQuery);
                         while (rs.next()) {
                             synchronized (Indexer.getConcurrencyLock()) {
@@ -150,9 +148,9 @@ public class IndexerDaemon implements Runnable {
                                     indexer.indexJob(writer, jobID);
                                     ds.executeUpdate(jobIndexedUpdate + jobID);
                                     didWork = true;
-                                } catch (Throwable t) {
-                                    System.err
-                                            .println(t + " in IndexerDaemon.run while processing job " + jobID);
+                                }
+                                catch (Throwable t) {
+                                    System.err.println(t + " in IndexerDaemon.run while processing job " + jobID);
                                     t.printStackTrace();
                                 }
                                 writer = Indexer.releaseWriter();
@@ -160,27 +158,37 @@ public class IndexerDaemon implements Runnable {
                         }
                         rs.close();
                         rs = null;
-                    } catch (Exception e) {
-                        System.err.println(e.getMessage());
+                        HibernateUtil.getSession().getTransaction().commit();
                     }
-                } while (didWork);
+                    catch (Exception e) {
+                        log.error(e);
+                        HibernateUtil.getSession().getTransaction().rollback();
+                    }
+                    finally {
+                        if(rs != null) rs.close();
+                        if(HibernateUtil.getSession().isOpen()) {
+                            HibernateUtil.getSession().close();
+                        }
+                    }
+                }
+                while (didWork);
 
                 // sleep until notified that there is more to do
                 synchronized (indexLock) {
                     if (DEBUG) {
-                        System.out
-                                .println("IndexerDaemon: waiting for notification on lock " + indexLock.hashCode());
+                        System.out.println("IndexerDaemon: waiting for notification on lock " + indexLock.hashCode());
                     }
                     indexLock.wait();
                     if (DEBUG) {
-                        System.out
-                                .println("IndexerDaemon: awakening from notification");
+                        System.out.println("IndexerDaemon: awakening from notification");
                     }
                 }
             }
-        } catch (InterruptedException ie) {
+        }
+        catch (InterruptedException ie) {
             System.err.println("IndexerDaemon shutting down");
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             System.err.println(t);
             t.printStackTrace();
         }
@@ -201,18 +209,17 @@ public class IndexerDaemon implements Runnable {
         try {
             Object lock = getDaemon().indexLock;
             if (DEBUG) {
-                System.out
-                        .println("IndexerDaemon.notifyDaemon: waking up daemon for indexing, using lock " +
-                                lock.hashCode());
+                System.out.println("IndexerDaemon.notifyDaemon: waking up daemon for indexing, using lock "
+                        + lock.hashCode());
             }
             synchronized (lock) {
                 lock.notify();
             }
             if (DEBUG) {
-                System.out
-                        .println("IndexerDaemon.notifyDaemon: woke up daemon for indexing");
+                System.out.println("IndexerDaemon.notifyDaemon: woke up daemon for indexing");
             }
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe) {
             System.err.println(ioe + " while notifying IndexerDaemon");
         }
     }

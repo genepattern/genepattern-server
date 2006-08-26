@@ -58,7 +58,7 @@ public class SuiteManifestParser {
     public SuiteManifestParser(File configfile) throws IOException, JDOMException {
         // JDOM can build JDOM trees from a variety of input sources.  One
         // of those input sources is a SAX parser.  
-        SAXBuilder builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser");
+        SAXBuilder builder = new SAXBuilder();
         // Parse the specified file and convert it to a JDOM document
         document = builder.build(configfile);
     }
@@ -66,7 +66,7 @@ public class SuiteManifestParser {
     public SuiteManifestParser(InputStream suiteConfig) throws Exception {
         // JDOM can build JDOM trees from a variety of input sources.  One
         // of those input sources is a SAX parser.  
-        SAXBuilder builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser");
+        SAXBuilder builder = new SAXBuilder();
         // Parse the specified file and convert it to a JDOM document
         document = builder.build(suiteConfig);
     }
