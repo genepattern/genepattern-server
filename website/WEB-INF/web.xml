@@ -87,16 +87,8 @@
   <servlet-name>StartupServlet</servlet-name>
   <servlet-class>org.genepattern.server.webapp.StartupServlet</servlet-class>
   <init-param>
-   <param-name>javax.xml.parsers.DocumentBuilderFactory</param-name>
-   <param-value>org.apache.xerces.jaxp.DocumentBuilderFactoryImpl</param-value>
-  </init-param>
-  <init-param>
    <param-name>java.io.tmpdir</param-name>
    <param-value>./temp</param-value>
-  </init-param>
-  <init-param>
-   <param-name>javax.xml.parsers.SAXParserFactory</param-name>
-   <param-value>org.apache.xerces.jaxp.SAXParserFactoryImpl</param-value>
   </init-param>
   <init-param>
    <param-name>omnigene.conf</param-name>
