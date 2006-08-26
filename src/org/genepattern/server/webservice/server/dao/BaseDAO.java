@@ -170,7 +170,7 @@ public class BaseDAO {
             return crs;
         }
         catch (Exception e) {
-            log.error("AnalysisHypersonicDAO: executeSQL for " + sql + " failed " + e);
+            log.error("AnalysisHypersonicDAO: executeSQL for " + sql + " failed ", e);
             throw new OmnigeneException(e.getMessage());
         }
     
