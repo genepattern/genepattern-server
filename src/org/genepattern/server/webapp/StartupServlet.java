@@ -91,9 +91,7 @@ public class StartupServlet extends HttpServlet {
 
  
         launchTasks();
-        // get a single instance of AnalysisManager so that it doesn't
-        // get re-instantiated with every invocation of GP
-        application.setAttribute("AnalysisManager", AnalysisManager.getInstance());
+
         startDaemons(System.getProperties(), application);
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         //
