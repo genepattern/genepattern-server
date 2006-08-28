@@ -12,6 +12,7 @@
 
 package org.genepattern.server.handler;
 
+import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
@@ -109,10 +110,10 @@ public class AddNewJobHandler extends RequestHandler {
             if (ji == null) throw new OmnigeneException(
                     "AddNewJobRequest:executeRequest Operation failed, null value returned for JobInfo");
 
-            synchronized (ds) {
+            synchronized (AnalysisTask.getJobQueueSynchro()) {
                 // System.out.println("AddNewJobHandler: notifying ds about new
                 // job to run");
-                ds.notify();
+                AnalysisTask.getJobQueueSynchro().notify();
             }
             // Reparse parameter_info before sending to client
             ji.setParameterInfoArray(pfc.getParameterInfoArray(parameter_info));

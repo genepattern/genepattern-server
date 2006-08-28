@@ -16,8 +16,10 @@ import java.rmi.RemoteException;
 import java.util.Vector;
 
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.server.webservice.server.dao.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.OmnigeneException;
+import org.hibernate.HibernateException;
 
 /**
  * Runnable AnalysisTask - Adapts a Runnable to run within a pre-created thread.
@@ -29,7 +31,9 @@ import org.genepattern.webservice.OmnigeneException;
 
 public class AnalysisTask implements Runnable {
 
-    AnalysisDAO ds = null;
+    static private Object jobQueueSynchro = new Object();
+
+    AnalysisDAO ds = new AnalysisDAO();
 
     private Vector jobQueue = new Vector();
 
@@ -68,26 +72,42 @@ public class AnalysisTask implements Runnable {
         jobQueue.clear();
     }
 
+    // Wake up the job que thread.
+    public static Object getJobQueueSynchro() {
+        return jobQueueSynchro;
+    }
+
     /** Main AnalysisTask's thread method. */
     public void run() {
+        log.info("Starting AnalysisTask thread");
 
         while (true) {
 
             // Load input data to input queue
-            synchronized (ds) {
+            synchronized (jobQueueSynchro) {
 
-                if (jobQueue.isEmpty()) {
-                    jobQueue = genePattern.getWaitingJobs();
-
-                }
                 if (jobQueue.isEmpty()) {
                     try {
-                        ds.wait();
+                        HibernateUtil.getSession().beginTransaction();
+                        jobQueue = genePattern.getWaitingJobs();
+                        HibernateUtil.getSession().getTransaction().commit();
+                    } finally {
+                        if (HibernateUtil.getSession().isOpen()) {
+                            HibernateUtil.getSession().close();
+                        }
                     }
-                    catch (InterruptedException ie) {
+
+                }
+
+                if (jobQueue.isEmpty()) {
+                    try {
+                        jobQueueSynchro.wait();
+                    } catch (InterruptedException ie) {
                     }
                 }
             }
+
+            log.info("Stopping AnalysisTask thread");
 
             Object o = null;
 
@@ -102,8 +122,7 @@ public class AnalysisTask implements Runnable {
             try {
                 onJobProcessFrameWork(o);
 
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 log.error(ex);
             }
 
@@ -134,9 +153,9 @@ public class AnalysisTask implements Runnable {
             sem = new Semaphore(threadCount);
         }
         try {
-            ds =new AnalysisDAO();;
-        }
-        catch (OmnigeneException oe) {
+            ds = new AnalysisDAO();
+            ;
+        } catch (OmnigeneException oe) {
             log.error(oe);
         }
 
@@ -167,8 +186,16 @@ public class AnalysisTask implements Runnable {
         }
 
         public void run() {
-            genePattern.onJob(obj);// run job
-            doRelease();// signal completion of thread
+            try {
+                HibernateUtil.getSession().beginTransaction();
+                genePattern.onJob(obj);// run job
+                doRelease();// signal completion of thread
+                HibernateUtil.getSession().getTransaction().commit();
+            } finally {
+                if (HibernateUtil.getSession().isOpen()) {
+                    HibernateUtil.getSession().close();
+                }
+            }
         }
     }
 

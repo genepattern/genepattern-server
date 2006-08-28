@@ -21,6 +21,7 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 
 /**
@@ -282,8 +283,8 @@ public abstract class DBLoader {
     // search for an existing task with the same name
     public int getTaskIDByName(String name, String user_id) throws OmnigeneException, RemoteException {
         AdminDAO ds = new AdminDAO();
-        int taskID = ds.getTask(name, user_id).getID();
-        return taskID;
+        TaskInfo taskInfo = ds.getTask(name, user_id);
+        return (taskInfo == null ? -1 : taskInfo.getID());
     }
 
     /**
