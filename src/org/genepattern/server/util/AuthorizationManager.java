@@ -1,14 +1,15 @@
 /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2006) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
+  The Broad Institute
+  SOFTWARE COPYRIGHT NOTICE AGREEMENT
+  This software and its documentation are copyright (2003-2006) by the
+  Broad Institute/Massachusetts Institute of Technology. All rights are
+  reserved.
 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */
+  This software is supplied without any warranty or guaranteed support
+  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+  use, misuse, or functionality.
+*/
+
 
 /*
  * Created on Feb 16, 2005
@@ -25,300 +26,287 @@ import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Cookie;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import java.net.URLEncoder;
 import java.net.URLDecoder;
 import org.genepattern.util.IGPConstants;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
+import java.io.UnsupportedEncodingException;
 import java.io.*;
 import java.util.*;
+
+import org.jdom.*;
+import org.jdom.input.SAXBuilder;
+
+
 
 /**
  * @author Liefeld
  * 
- * checks permissions files to see if a given user is allowed to pereform a
- * given action defaults to allowing anything not specifically disallowed
- * 
- * basically answers the question, can userX do action Y and also can return a
- * string representing the link, or a failure string to put in place of the link
+ * checks permissions files to see if a given user is allowed to pereform a given action
+ * defaults to allowing anything not specifically disallowed
+ *
+ * basically answers the question, can userX do action Y
+ * and also can return a string representing the link, or a failure string to put in place of the link
  */
 
 public class AuthorizationManager implements IAuthorizationManager, IGPConstants {
+	  
 
-    public static void main(String[] args) throws Exception {
-        // test here
-        if (System.getProperty("genepattern.properties") == null) {
-            System.setProperty("genepattern.properties", "../resources/");
-        }
-        (new AuthorizationManager()).init();
+	public static void main(String[] args) throws Exception{
+		// test here
+		if (System.getProperty("genepattern.properties") == null){
+			System.setProperty("genepattern.properties", "c:/progra~1/genepatternserver/resources/");
+		}
+		(new AuthorizationManager()).init();
 
-    }
 
-    public AuthorizationManager() {
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
-    protected HashMap userGroups = new HashMap();
-    protected HashMap groupUsers = new HashMap();
+	}
 
-    protected HashMap actionPermission = new HashMap();
-    protected HashMap groupPermission = new HashMap();
 
-    public String getCheckedLink(String link, String userID, String failureNote) {
-        // to pass to isAllowed we want everything before the ?
-        int idx = link.indexOf("?");
-        String uri = link;
-        if (idx >= 0) {
-            uri = link.substring(0, idx);
-        }
+	public AuthorizationManager(){
+		try {
+			init();
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+	}
 
-        if (isAllowed(uri, userID)) return link;
-        else
-            return failureNote;
+	protected HashMap userGroups = new HashMap();
+	protected HashMap groupUsers = new HashMap();
 
-    }
+	protected HashMap actionPermission = new HashMap();
+	protected HashMap groupPermission = new HashMap();
+	
 
-    public String getCheckedLink(String permName, String link, String userID, String failureNote) {
-        // to pass to isAllowed we want everything before the ?
-        int idx = link.indexOf("?");
-        if (checkPermission(permName, userID)) return link;
-        else
-            return failureNote;
 
-    }
+	public String getCheckedLink(String link, String userID, String failureNote){
+		// to pass to isAllowed we want everything before the ?
+		int idx = link.indexOf("?");
+		String uri = link;
+		if (idx >= 0) {
+			uri = link.substring(0, idx);
+		} 
 
-    public boolean isAllowed(String urlOrSoapMethod, String userID) {
-        boolean allow = _isAllowed(urlOrSoapMethod, userID);
-        // System.out.println("AM IA: " + urlOrSoapMethod + " --> " + userID + "
-        // == " + allow);
-        return allow;
-    }
+		if (isAllowed(uri, userID)) return link;
+		else return failureNote;
 
-    public boolean _isAllowed(String urlOrSoapMethod, String userID) {
+	}
+	public String getCheckedLink(String permName, String link, String userID, String failureNote){
+		// to pass to isAllowed we want everything before the ?
+		int idx = link.indexOf("?");
+		if (checkPermission(permName, userID)) return link;
+		else return failureNote;
 
-        // convert link name to permission name and then check permission
-        HashSet permNames = getPermissionNameForLink(urlOrSoapMethod);
-        if (permNames == emptySet) return true;
+	}
 
-        for (Iterator iter = permNames.iterator(); iter.hasNext();) {
-            String permName = (String) iter.next();
-            boolean allowed = checkPermission(permName, userID);
-            if (allowed) return true;
-        }
-        return false;
-    }
+	public boolean isAllowed(String urlOrSoapMethod, String userID){
+		boolean allow = _isAllowed(urlOrSoapMethod,userID);
+		//System.out.println("AM IA: " + urlOrSoapMethod + " --> " + userID + "  == " + allow);
+		return allow;		
+	}
 
-    public boolean checkPermission(String permissionName, String userID) {
-        // System.out.println("AM CP: ");
+	public boolean _isAllowed(String urlOrSoapMethod, String userID){
 
-        boolean allow = _checkPermission(permissionName, userID);
-        // System.out.println("AM CP: " + permissionName+ " --> " + userID + "
-        // == " + allow);
-        return allow;
+		//convert link name to permission name and then check permission
+		HashSet permNames = getPermissionNameForLink(urlOrSoapMethod);
+		if (permNames == emptySet) return true;
 
-    }
+		for (Iterator iter = permNames.iterator(); iter.hasNext(); ){
+			String permName = (String)iter.next();
+			boolean allowed = checkPermission(permName, userID); 
+			if (allowed) return true;
+		}
+		return false;
+	}
 
-    public boolean _checkPermission(String permissionName, String userID) {
-        HashSet usersGroups = (HashSet) userGroups.get(userID);
-        HashSet openGroups = (HashSet) userGroups.get("*");
+	public boolean checkPermission(String permissionName, String userID){
+		//System.out.println("AM CP: ");
 
-        if (usersGroups == null) usersGroups = emptySet;
-        if (openGroups == null) openGroups = emptySet;
-        boolean allowed = false;
+		boolean allow = _checkPermission(permissionName,userID);
+	//	System.out.println("AM CP: " + permissionName+ " --> " + userID + "  == " + allow);
+		return allow;	
 
-        HashSet allowedGroups = (HashSet) groupPermission.get(permissionName);
+	}
+	public boolean _checkPermission(String permissionName, String userID){
+		HashSet usersGroups = (HashSet )userGroups.get(userID);
+		HashSet openGroups = (HashSet )userGroups.get("*");
+		
+		if (usersGroups == null) usersGroups = emptySet;
+		if (openGroups == null) openGroups = emptySet;
+		boolean allowed = false;		
 
-        // the file says anyone may connect if it has a group named '*'
-        // or if no restriction is specified
-        if (allowedGroups == null) return true;
-        if (allowedGroups.contains("*")) return true;
-        if (allowedGroups == emptySet) return true;
+		HashSet allowedGroups = (HashSet)groupPermission.get(permissionName);
 
-        // System.out.println("Allowed Groups for " + permissionName + " is " +
-        // allowedGroups);
-        for (Iterator iter = usersGroups.iterator(); iter.hasNext();) {
-            String groupName = (String) iter.next();
+		// the file says anyone may connect if it has a group named '*'
+		// or if no restriction is specified
+		if (allowedGroups == null) return true;
+		if (allowedGroups.contains("*")) return true;
+		if (allowedGroups == emptySet) return true;
 
-            if (allowedGroups.contains(groupName)) return true;
-        }
-        for (Iterator iter = openGroups.iterator(); iter.hasNext();) {
-            String groupName = (String) iter.next();
+//System.out.println("Allowed Groups for " + permissionName + " is " + allowedGroups); 
+		for (Iterator iter = usersGroups.iterator(); iter.hasNext(); ){
+			String groupName = (String)iter.next();
 
-            if (allowedGroups.contains(groupName)) return true;
-        }
+			if (allowedGroups.contains(groupName)) return true;
+		}
+		for (Iterator iter = openGroups.iterator(); iter.hasNext(); ){
+			String groupName = (String)iter.next();
 
-        return false;
-    }
+			if (allowedGroups.contains(groupName)) return true;
+		}
 
-    private final HashSet emptySet = new HashSet();
+		return false;
+	}
 
-    protected HashSet getPermissionNameForLink(String link) {
-        HashSet perms = (HashSet) actionPermission.get(link);
-        if (perms == null) return emptySet;
-        else
-            return perms;
-    }
+	private final HashSet emptySet = new HashSet();
 
-    protected static String DBF = "javax.xml.parsers.DocumentBuilderFactory";
+	protected HashSet getPermissionNameForLink(String link){
+		HashSet perms =  (HashSet)actionPermission.get(link);
+		if (perms == null) return emptySet;
+		else return perms;
+	}
 
-    public void init() throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException,
-            SecurityException, ParserConfigurationException, SAXException {
-        String oldDocumentBuilderFactory = System.getProperty(DBF);
-        try {
-            //
-            // read from the gp resources directory the following files
-            // permissionMap.xml, userGroups.xml, actionPermissionMap.xml
-            //
-            initPermissionMap();
-            initActionPermissionMap();
-            initUserGroupMap();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-            throw ioe;
-        } finally {
-            // if (oldDocumentBuilderFactory != null)
-            // System.setProperty(DBF, oldDocumentBuilderFactory);
-        }
 
-    }
 
-    public void initActionPermissionMap() throws IOException, ParserConfigurationException, SAXException {
+	public void init() throws IOException, IllegalArgumentException, IllegalAccessException,
+			NoSuchMethodException, SecurityException {
+		try {
+			//
+			// read from the gp resources directory the following files
+			// permissionMap.xml, userGroups.xml, actionPermissionMap.xml
+			//
+			initPermissionMap();
+			initActionPermissionMap();
+			initUserGroupMap();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+			throw ioe;
+		} catch (JDOMException ioe) {
+			throw new IOException(ioe.getMessage() + " while reading authorization files");
+		} 
 
-        File actionPermissionMapFile = new File(System.getProperty("genepattern.properties"), "actionPermissionMap.xml");
-        if (!actionPermissionMapFile.exists()) return;
+	}
+	
+	public void initActionPermissionMap() throws IOException, JDOMException {
+		InputStream is = null;
+		org.jdom.Document document = null;
 
-        InputStream is = new FileInputStream(actionPermissionMapFile);
+		File actionPermissionMapFile = new File(System.getProperty("genepattern.properties"),"actionPermissionMap.xml");
+		if (!actionPermissionMapFile.exists()) return;
 
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document document = builder.parse(is);
-        Element root = document.getDocumentElement();
+  		is = new FileInputStream(actionPermissionMapFile);
 
-        NodeList urlNodes = root.getElementsByTagName("url");
-        for (int i = 0; i < urlNodes.getLength(); i++) {
-            Node controlledUrl = urlNodes.item(i);
+		SAXBuilder builder = new SAXBuilder();
+        	// Parse the specified file and convert it to a JDOM document
+        	document = builder.build(is);
+		Element root = document.getRootElement();
+		
+		for(Iterator i = root.getChildren("url").iterator(); i.hasNext(); ) {
+            	Element controlledUrl = (Element) i.next();
+			String link = controlledUrl.getAttribute("link").getValue();
 
-            String link = controlledUrl.getAttributes().getNamedItem("link").getNodeValue();
+			HashSet actionPerms = (HashSet)actionPermission.get(link);
+			if (actionPerms == null) {
+				actionPerms = new HashSet();
+				actionPermission.put(link, actionPerms);
+			}
+		      String perm = controlledUrl.getAttribute("permission").getValue();
+      		actionPerms.add(perm);
 
-            HashSet actionPerms = (HashSet) actionPermission.get(link);
-            if (actionPerms == null) {
-                actionPerms = new HashSet();
-                actionPermission.put(link, actionPerms);
-            }
+		}
+ 		for(Iterator i = root.getChildren("SOAPmethod").iterator(); i.hasNext(); ) {
+            	Element controlledUrl = (Element) i.next();
+			// XXX
+  			String meth = controlledUrl.getAttribute("name").getValue();
+		      
+			HashSet actionPerms = (HashSet)actionPermission.get(meth);
+			if (actionPerms == null) {
+				actionPerms = new HashSet();
+				actionPermission.put(meth, actionPerms);
+			}
+			String perm = controlledUrl.getAttribute("permission").getValue();
+      		actionPerms.add(perm);
+		}
 
-            String perm = controlledUrl.getAttributes().getNamedItem("permission").getNodeValue();
-            actionPerms.add(perm);
+		// loop over SOAP methods next
+		is.close();
+	}
 
-        }
+	public void initUserGroupMap() throws IOException, JDOMException {
+		InputStream is = null;
+		org.jdom.Document document = null;
 
-        NodeList soapNodes = root.getElementsByTagName("SOAPmethod");
-        for (int i = 0; i < soapNodes.getLength(); i++) {
-            Node controlledUrl = soapNodes.item(i);
+		File userGroupMapFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
+		if (!userGroupMapFile.exists()) return; 
+ 		is = new FileInputStream(userGroupMapFile);
 
-            String meth = controlledUrl.getAttributes().getNamedItem("name").getNodeValue();
+		SAXBuilder builder = new SAXBuilder();
+        	// Parse the specified file and convert it to a JDOM document
+        	document = builder.build(is);
+		Element root = document.getRootElement();
+		
+ 		for(Iterator i = root.getChildren("group").iterator(); i.hasNext(); ) {
+            	Element group = (Element) i.next();
 
-            HashSet actionPerms = (HashSet) actionPermission.get(meth);
-            if (actionPerms == null) {
-                actionPerms = new HashSet();
-                actionPermission.put(meth, actionPerms);
-            }
-            String perm = controlledUrl.getAttributes().getNamedItem("permission").getNodeValue();
-            actionPerms.add(perm);
-        }
+  			String groupName = group.getAttribute("name").getValue();
 
-        // loop over SOAP methods next
-        is.close();
-    }
+			HashSet groupMembers = (HashSet )groupUsers.get(groupName);
+			if (groupMembers == null){
+				groupMembers = new HashSet ();
+				groupUsers.put(groupName, groupMembers);
 
-    public void initUserGroupMap() throws IOException, ParserConfigurationException, SAXException {
+			}
+		 	for(Iterator i2 = group.getChildren("user").iterator(); i2.hasNext(); ) {
+	            	Element user = (Element) i2.next();
+	  			String userName = user.getAttribute("name").getValue();
+				HashSet usersGroups = (HashSet )userGroups.get(userName);
+				if (usersGroups== null){
+					usersGroups= new HashSet ();
+					userGroups.put(userName, usersGroups);
+				}
+	
+				usersGroups.add(groupName);
+				groupMembers.add(userName);
+			}
+		}
+		// loop over SOAP methods next
+		is.close();
 
-        File userGroupMapFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
-        if (!userGroupMapFile.exists()) return;
-        InputStream is = new FileInputStream(userGroupMapFile);
+//System.out.println("UG=" + userGroups);
+	}
+	public void initPermissionMap() throws IOException, JDOMException {
+		InputStream is = null;
+		org.jdom.Document document = null;
 
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document document = builder.parse(is);
-        Element root = document.getDocumentElement();
+		File permissionMapFile = new File(System.getProperty("genepattern.properties"), "permissionMap.xml");
+  		if (!permissionMapFile.exists()) return;
+		is = new FileInputStream(permissionMapFile);
 
-        NodeList groupNodes = root.getElementsByTagName("group");
-        for (int i = 0; i < groupNodes.getLength(); i++) {
-            Element group = (Element) groupNodes.item(i);
+		SAXBuilder builder = new SAXBuilder();
+        	// Parse the specified file and convert it to a JDOM document
+        	document = builder.build(is);
+		Element root = document.getRootElement();
+		
+ 		for(Iterator i = root.getChildren("permission").iterator(); i.hasNext(); ) {
+            	Element permission = (Element) i.next();
+			Attribute permissionNameText = (Attribute)permission.getAttribute("name");
+			String pName = permissionNameText.getValue();
+			HashSet perm = (HashSet)groupPermission.get(pName);
+			if (perm == null){
+				perm = new HashSet();
+				groupPermission.put(pName, perm);
 
-            String groupName = group.getAttributes().getNamedItem("name").getNodeValue();
+			}
+			for(Iterator i2 = permission.getChildren("group").iterator(); i2.hasNext(); ) {
+	  			Element group = (Element) i2.next();
+				String groupName = group.getAttribute("name").getValue();
+				perm.add(groupName);
+			}
 
-            HashSet groupMembers = (HashSet) groupUsers.get(groupName);
-            if (groupMembers == null) {
-                groupMembers = new HashSet();
-                groupUsers.put(groupName, groupMembers);
-            }
+		}
+		// loop over SOAP methods next
+		is.close();
+	}
 
-            NodeList userNodes = group.getElementsByTagName("user");
-            for (int j = 0; j < userNodes.getLength(); j++) {
-                Node userNode = userNodes.item(j);
-                String userName = userNode.getAttributes().getNamedItem("name").getNodeValue();
-                HashSet usersGroups = (HashSet) userGroups.get(userName);
-                if (usersGroups == null) {
-                    usersGroups = new HashSet();
-                    userGroups.put(userName, usersGroups);
-
-                    usersGroups.add(groupName);
-                    groupMembers.add(userName);
-                }
-            }
-        }
-        // loop over SOAP methods next
-        is.close();
-
-        // System.out.println("UG=" + userGroups);
-    }
-
-    public void initPermissionMap() throws IOException, ParserConfigurationException, SAXException {
-
-        File permissionMapFile = new File(System.getProperty("genepattern.properties"), "permissionMap.xml");
-        if (!permissionMapFile.exists()) return;
-        InputStream is = new FileInputStream(permissionMapFile);
-
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document document = builder.parse(is);
-        Element root = document.getDocumentElement();
-
-        NodeList permissionNodes = root.getElementsByTagName("permission");
-        for (int i = 0; i < permissionNodes.getLength(); i++) {
-            Element permNode = (Element) permissionNodes.item(i);
-            Node nameNode = permNode.getAttributes().getNamedItem("name");
-            String pName = nameNode.getNodeValue();
-            HashSet perm = (HashSet) groupPermission.get(pName);
-            if (perm == null) {
-                perm = new HashSet();
-                groupPermission.put(pName, perm);
-
-            }
-
-            NodeList children = permNode.getElementsByTagName("group");
-            for (int j = 0; j < children.getLength(); j++) {
-                Node groupNode = children.item(j);
-                String groupName = groupNode.getAttributes().getNamedItem("name").getNodeValue();
-                perm.add(groupName);
-
-            }
-
-        }
-        // loop over SOAP methods next
-        is.close();
-    }
 
 }

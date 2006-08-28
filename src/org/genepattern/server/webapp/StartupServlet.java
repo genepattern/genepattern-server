@@ -44,6 +44,7 @@ import org.genepattern.server.process.CreateDatabase;
 import org.genepattern.server.process.JSPPrecompiler;
 import org.genepattern.server.process.JobPurger;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.server.webservice.server.dao.DatabaseUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -80,7 +81,10 @@ public class StartupServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
 
         super.init(config);
-
+        
+        launchTasks();
+ 
+        //new CreateDatabase().run(new String[] { "." });
         System.out.println("StartupServlet.init thread = " + Thread.currentThread().getName());
         System.out.flush();
 
@@ -88,10 +92,12 @@ public class StartupServlet extends HttpServlet {
         ServletContext application = config.getServletContext();
         application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
         loadProperties(config);
-
+        
+        DatabaseUtil.startDatabase();
+        
+        // This starts an analysis task thread through a chain of side effects.  Do not remove!
+        AnalysisManager.getInstance();
  
-        launchTasks();
-
         startDaemons(System.getProperties(), application);
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         //
@@ -113,7 +119,7 @@ public class StartupServlet extends HttpServlet {
     protected void startDaemons(Properties props, ServletContext application) throws ServletException {
         startJobPurger(props);
         startIndexerDaemon(props);
-        // startJSPCompiler(props, application);
+        //startJSPCompiler(props, application);
         Thread.currentThread().yield(); // allow a bit of runtime to the
         // independent threads
     }
