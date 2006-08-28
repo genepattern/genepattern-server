@@ -157,6 +157,10 @@ public class BaseDAO {
      * @return ResultSet
      */
     public ResultSet executeSQL(String sql) throws OmnigeneException {
+        return executeSQL(sql, true);
+    }
+
+    public ResultSet executeSQL(String sql, boolean logError) throws OmnigeneException {
     
         Statement stat = null;
         ResultSet resultSet = null;
@@ -170,7 +174,7 @@ public class BaseDAO {
             return crs;
         }
         catch (Exception e) {
-            log.error("AnalysisHypersonicDAO: executeSQL for " + sql + " failed ", e);
+            if(logError) log.error("AnalysisHypersonicDAO: executeSQL for " + sql + " failed ", e);
             throw new OmnigeneException(e.getMessage());
         }
     

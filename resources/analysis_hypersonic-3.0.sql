@@ -19,4 +19,6 @@ INSERT INTO SEQUENCE_TABLE (ID, NAME, NEXT_VALUE)
 
 INSERT INTO SEQUENCE_TABLE (ID, NAME, NEXT_VALUE) 
   VALUES(2, 'lsid_suite_identifier_seq',  SELECT NEXT VALUE FOR LSID_SUITE_IDENTIFIER_SEQ FROM DUAL);
+
+update props set value='3.0' where key='schemaVersion';
   

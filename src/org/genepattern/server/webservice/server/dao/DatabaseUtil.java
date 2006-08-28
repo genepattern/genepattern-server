@@ -82,6 +82,12 @@ public class DatabaseUtil {
         return props;
     }
 
+    /**
+     * 
+     * @param resourceDir
+     * @param props
+     * @return
+     */
     private static boolean checkSchema(String resourceDir, Properties props) {
         log.debug("checking schema");
         boolean upToDate = false;
@@ -93,7 +99,7 @@ public class DatabaseUtil {
 
         try {
             BaseDAO dao = new BaseDAO();
-            ResultSet resultSet = dao.executeSQL(sql);
+            ResultSet resultSet = dao.executeSQL(sql, false);
             if (resultSet.next()) {
                 dbSchemaVersion = resultSet.getString(1);
                 upToDate = (requiredSchemaVersion.compareTo(dbSchemaVersion) <= 0);
@@ -102,8 +108,10 @@ public class DatabaseUtil {
                 dbSchemaVersion = "";
                 upToDate = false;
             }
-        } catch (SQLException e) {
-            log.error(e);
+        } catch (Exception e) {
+            // 
+            log.info("Database tables not found.  Create new database");
+            dbSchemaVersion = "";
         }
 
         props.setProperty("dbSchemaVersion", dbSchemaVersion);
@@ -112,6 +120,12 @@ public class DatabaseUtil {
         return upToDate;
     }
 
+    /**
+     * 
+     * @param resourceDir
+     * @param props
+     * @throws IOException
+     */
     private static void createSchema(String resourceDir, final Properties props) throws IOException {
         File[] schemaFiles = new File(resourceDir).listFiles(new FilenameFilter() {
             // INNER CLASS !!!
