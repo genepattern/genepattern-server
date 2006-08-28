@@ -22,10 +22,14 @@ package org.genepattern.server;
 
 import java.rmi.RemoteException;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.server.webservice.server.dao.HibernateUtil;
 import org.genepattern.webservice.OmnigeneException;
 
 public class AnalysisManager {
+    
+    private static Logger log = Logger.getLogger(AnalysisManager.class);
 
 	public static int defPriority = Thread.NORM_PRIORITY;
 
@@ -44,6 +48,8 @@ public class AnalysisManager {
 			// System.out.println("creating new AnalysisManager");
 			analysisManager = new AnalysisManager();
 			try {
+                HibernateUtil.getSession().beginTransaction();
+                
 				analysisManager.startAllAnalysisTask();
 				AnalysisDAO ds = new AnalysisDAO();
 				// were there interrupted jobs that need to be restarted?
@@ -56,8 +62,12 @@ public class AnalysisManager {
 						ds.notify();
 					}
 				}
+                
+                HibernateUtil.getSession().getTransaction().commit();
+                
 			} catch (OmnigeneException oe) {
-				// TODO: ??? report exception
+				log.error(oe);
+                 HibernateUtil.getSession().getTransaction().rollback();
 			} 
 		}
 		return analysisManager;
