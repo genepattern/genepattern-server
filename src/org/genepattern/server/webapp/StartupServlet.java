@@ -45,6 +45,7 @@ import org.genepattern.server.process.JSPPrecompiler;
 import org.genepattern.server.process.JobPurger;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.dao.DatabaseUtil;
+import org.genepattern.server.webservice.server.dao.HibernateUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -82,12 +83,7 @@ public class StartupServlet extends HttpServlet {
 
         super.init(config);
         
-        launchTasks();
  
-        //new CreateDatabase().run(new String[] { "." });
-        System.out.println("StartupServlet.init thread = " + Thread.currentThread().getName());
-        System.out.flush();
-
         log("StartupServlet: user.dir=" + System.getProperty("user.dir"));
         ServletContext application = config.getServletContext();
         application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
@@ -95,6 +91,8 @@ public class StartupServlet extends HttpServlet {
         
         DatabaseUtil.startDatabase();
         
+        launchTasks();
+       
         // This starts an analysis task thread through a chain of side effects.  Do not remove!
         AnalysisManager.getInstance();
  
@@ -119,7 +117,7 @@ public class StartupServlet extends HttpServlet {
     protected void startDaemons(Properties props, ServletContext application) throws ServletException {
         startJobPurger(props);
         startIndexerDaemon(props);
-        //startJSPCompiler(props, application);
+        startJSPCompiler(props, application);
         Thread.currentThread().yield(); // allow a bit of runtime to the
         // independent threads
     }
@@ -221,15 +219,20 @@ public class StartupServlet extends HttpServlet {
 
     protected void shutdownDatabase() {
         try {
+            HibernateUtil.getSession().beginTransaction();
             log("Checkpointing database");
             AnalysisDAO dao = new AnalysisDAO();
             dao.executeUpdate("CHECKPOINT");
             log("Checkpointed.");
             dao.executeUpdate("SHUTDOWN");
+            HibernateUtil.getSession().getTransaction().commit();
         }
         catch (Throwable t) {
             t.printStackTrace();
             log("checkpoint database in StartupServlet.destroy", t);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
         }
     }
 

@@ -42,6 +42,12 @@ public class HibernateUtil {
 
         return getSessionFactory().getCurrentSession();
     }
+    
+    public static void closeCurrentSession() {
+        if(getSession().isOpen()) {
+            getSession().close();
+        }
+    }
 
     /**
      * get the next available sequence. Sequences are not part of the sql 92
