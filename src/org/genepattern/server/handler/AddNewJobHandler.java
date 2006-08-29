@@ -110,11 +110,8 @@ public class AddNewJobHandler extends RequestHandler {
             if (ji == null) throw new OmnigeneException(
                     "AddNewJobRequest:executeRequest Operation failed, null value returned for JobInfo");
 
-            synchronized (AnalysisTask.getJobQueueSynchro()) {
-                // System.out.println("AddNewJobHandler: notifying ds about new
-                // job to run");
-                AnalysisTask.getJobQueueSynchro().notify();
-            }
+           AnalysisTask.getInstance().wakeupJobQueue();
+           
             // Reparse parameter_info before sending to client
             ji.setParameterInfoArray(pfc.getParameterInfoArray(parameter_info));
         }

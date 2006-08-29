@@ -31,10 +31,9 @@ import org.hibernate.HibernateException;
 
 public class AnalysisTask implements Runnable {
 
-    static private Object jobQueueSynchro = new Object();
+    private Object jobQueueWaitObject = new Object();
 
     AnalysisDAO ds = new AnalysisDAO();
-
     private Vector jobQueue = new Vector();
 
     // Semaphore to maintain simultaneous job count
@@ -72,19 +71,24 @@ public class AnalysisTask implements Runnable {
         jobQueue.clear();
     }
 
-    // Wake up the job que thread.
-    public static Object getJobQueueSynchro() {
-        return jobQueueSynchro;
+    /**
+     * Wake up the job queue thread. The object is synchronized to obtain
+     * ownership of the monitor.
+     */
+    public void wakeupJobQueue() {
+        synchronized (jobQueueWaitObject) {
+            jobQueueWaitObject.notify();
+        }
     }
 
     /** Main AnalysisTask's thread method. */
     public void run() {
-        log.info("Starting AnalysisTask thread");
+        log.debug("Starting AnalysisTask thread");
 
         while (true) {
 
             // Load input data to input queue
-            synchronized (jobQueueSynchro) {
+            synchronized (jobQueueWaitObject) {
 
                 if (jobQueue.isEmpty()) {
                     try {
@@ -101,13 +105,11 @@ public class AnalysisTask implements Runnable {
 
                 if (jobQueue.isEmpty()) {
                     try {
-                        jobQueueSynchro.wait();
+                        jobQueueWaitObject.wait();
                     } catch (InterruptedException ie) {
                     }
                 }
             }
-
-            log.info("Stopping AnalysisTask thread");
 
             Object o = null;
 
