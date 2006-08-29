@@ -301,7 +301,7 @@ AnalysisDAO extends BaseDAO {
     public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs)
             throws OmnigeneException {
 
-        String hql = " from org.genepattern.server.webservice.server.dao.AnalysisJob where parent = null ";
+        String hql = " from org.genepattern.server.webservice.server.dao.AnalysisJob where ((parent = null) OR (parent = -1)) ";
         if (username != null) {
             hql += " AND userId = :username ";
         }
