@@ -11,6 +11,8 @@
   whatsoever. Neither the Broad Institute nor MIT can be responsible for its
   use, misuse, or functionality.
 */
+
+try {
     String tempDir = request.getParameter("job");
     if (tempDir == null) {
         tempDir = request.getParameter("dirName");
@@ -37,6 +39,7 @@
         }
         return;
     }
+
     int dotIndex = in.getName().lastIndexOf(".");
     boolean saveAsDialog = true;
     if (dotIndex != -1) {
@@ -52,9 +55,10 @@
     response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
     response.setDateHeader("Expires", 0);
     response.setDateHeader("X-lastModified", in.lastModified());
+
     OutputStream os = response.getOutputStream();
     InputStream is = null;
-    try {
+   try {
         is = new BufferedInputStream(new FileInputStream(in));
         byte[] b = new byte[10000];
         int bytesRead;
@@ -63,11 +67,16 @@
         }
     } finally {
         if (os != null) {
-            os.close();
+           // os.close();
         }
         if (is != null) {
             is.close();
         }
     }
 
+} catch (Exception e){
+	//e.printStackTrace();
+}
+out.clear();
+out = pageContext.pushBody(); 
 %>
