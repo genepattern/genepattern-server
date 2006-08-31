@@ -75,8 +75,6 @@ String taskName = request.getParameter(GPConstants.NAME);
 String attributeName = null;
 String attributeValue = null;
 String attributeType = null;
-boolean viewOnly = true;
-
 TaskInfo taskInfo = null;
 ParameterInfo[] parameterInfoArray = null;
 TaskInfoAttributes tia = null;
@@ -87,17 +85,13 @@ if (taskName != null) {
 		taskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, userID);
 		if (taskInfo != null) {
 			taskName = taskInfo.getName();
-		        parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
+		      parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
 			tia = taskInfo.giveTaskInfoAttributes();
 			LSID lsid = new LSID((String)tia.get(GPConstants.LSID));
-			viewOnly |= !LSIDManager.getInstance().getAuthorityType(lsid).equals(LSIDUtil.AUTHORITY_MINE);
 		} else {
-%>
-<script language="javascript">
-	window.alert("<%= taskName %> does not exist");
-</script>
-<%
-			taskName = null;
+
+			response.sendRedirect("addTask.jsp?name=" +request.getParameter(GPConstants.NAME));
+			return;
 		}
 	} catch (OmnigeneException oe) {
 	}
@@ -147,10 +141,11 @@ taskTypes = (String[])tsTaskTypes.toArray(new String[0]);
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link href="skin/favicon.ico" rel="shortcut icon">
-<title><%= taskName == null ? "add GenePattern task" : ((!viewOnly ? "update " : "") + taskName + " version " + new LSID(tia.get(GPConstants.LSID)).getVersion()) %></title>
-<% if (viewOnly) { %>
+
+<title><%= taskName == null ? "add GenePattern task" : ( taskName + " version " + new LSID(tia.get(GPConstants.LSID)).getVersion()) %></title>
+
 <style>.hideable { border-style: none; readonly: true; }</style>
-<% } %>
+
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 
 <script language="javascript">
@@ -413,9 +408,9 @@ if (tia != null) {
 
 %>
 
-<h2><%= taskName == null ? "Create new "+ messages.get("ApplicationName") +" task" : ((!viewOnly ? "Update " : "") + taskName  + " version ") %>
+<h2><%= taskName == null ? "Create new "+ messages.get("ApplicationName") +" task" : ( taskName  + " version ") %>
 <% if (taskName != null) { %>
-	<select name="notused" onchange="javascript:window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'" style="font-weight: bold; font-size: medium; outline-style: none;">
+	<select name="notused" onchange="javascript:window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= "&view=1"  %>'" style="font-weight: bold; font-size: medium; outline-style: none;">
 <%
 	for (Iterator itVersions = vVersions.iterator(); itVersions.hasNext(); ) {
 		String vLSID = (String)itVersions.next();
@@ -435,7 +430,7 @@ if (tia != null) {
 
 Please enter the following information to submit a new or updated analysis task to <%= messages.get("ApplicationName") %>.
 &nbsp;&nbsp;<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="button">
-<% if (viewOnly && LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
+<% if (LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
 
 <br><br>
   <table cols="2" valign="top">
@@ -443,14 +438,10 @@ Please enter the following information to submit a new or updated analysis task 
   <col align="left" width="*">
   <tr title="Task name without spaces, used as the name by which the task will be invoked.">
   <td align="right"><b>Name:</b></td>
-  <td width="*"><% if (!viewOnly) { %><input name="<%= GPConstants.NAME %>" maxlength="100" size="<%= taskInfo != null ? taskInfo.getName().length() + 2: 20 %>" 
-  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<% } else { %><%= taskInfo.getName() %><% } %>
+  <td width="*"><%= taskInfo.getName() %>
+
 &nbsp;&nbsp;&nbsp;&nbsp;
 
-<% if (taskInfo != null && !viewOnly) { %>
-  <input type="button" value="<%= DELETE %>..." name="<%= DELETE %>" class="little"
-   onclick="if (window.confirm('Really delete the ' + document.forms['task'].<%= GPConstants.NAME %>.value + ' task?')) { window.location='saveTask.jsp?delete=1&<%= GPConstants.NAME %>=' + document.forms['task'].<%= GPConstants.NAME %>.value + '&<%= GPConstants.LSID %>=' + document.forms['task'].<%= GPConstants.LSID %>.value; }">
-<% } %>
 <% if (taskInfo != null) { %>
   <input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
 
@@ -460,7 +451,7 @@ Please enter the following information to submit a new or updated analysis task 
 
 <% } %>
 
-   &nbsp;&nbsp;&nbsp;<select onchange="javascript:if (this.options[this.selectedIndex].value != '<%= DONT_JUMP %>') window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'">
+   &nbsp;&nbsp;&nbsp;<select onchange="javascript:if (this.options[this.selectedIndex].value != '<%= DONT_JUMP %>') window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '&view=1'">
   <option value="<%= DONT_JUMP %>">task catalog</option>
 	<option value="">new task</option>
 	<%= publicTasks.toString() %>  
@@ -469,7 +460,7 @@ Please enter the following information to submit a new or updated analysis task 
 	<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
 	<%= otherTasks.toString() %>
   </select>
-  <select name="notused" onchange="javascript:window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'">
+  <select name="notused" onchange="javascript:window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '&view=1'">
 <%
 	for (Iterator itVersions = vVersions.iterator(); itVersions.hasNext(); ) {
 		String vLSID = (String)itVersions.next();
@@ -487,67 +478,39 @@ Please enter the following information to submit a new or updated analysis task 
   <tr title="LSID">
   <td align="right"><b>LSID:</b></td>
   <td width="*">
- <% if(!viewOnly) { %>
-   <input type="text" name="<%= GPConstants.LSID %>" value="<%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.LSID)) : "" %>" size="100" readonly style="{ border-style: none; }">
-  <% } else {
-   out.print(taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.LSID)) : "");
-  }
-  %>
+ <%=  taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.LSID)) : "" %>
   </td>
   </tr>
 
   <tr title="A verbose description of the purpose of the program, especially useful to someone who hasn't run the program before to determine whether it is suited to their problem.">
   <td align="right"><b>Description:</b></td>
   <td width="*">
-  <% if(!viewOnly) { %>
-  <input name="<%= GPConstants.DESCRIPTION %>" size="80" class="hideable"
-       value="<%= taskInfo != null ? StringUtils.htmlEncode(taskInfo.getDescription()) : "" %>">
-   <%} else {
-      out.print(taskInfo != null ? StringUtils.htmlEncode(taskInfo.getDescription()) : "");
-  } %>
+  <%= taskInfo != null ? StringUtils.htmlEncode(taskInfo.getDescription()) : "" %>
   </td>
   </tr>
 
   <tr title="Author's name, affiliation, email address">
   <td align="right"><b>Author:</b></td>
   <td width="*">
-  <%
-  if(!viewOnly) { %>
-  <input name="<%= GPConstants.AUTHOR %>" size="80" class="hideable"
-       value="<%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.AUTHOR)) : "" %>"> (name, affiliation)
-  <% } else { 
-     out.print(taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.AUTHOR)) : "");
-   } %>
-       </td>
+  <%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.AUTHOR)) : "" %>
+  </td>
   </tr>
 
   <tr title="Your user ID">
   <td align="right"><b>Owner:</b></td>
   <td width="*">
-<% 
-   String owner = (tia == null ? userID : tia.get(GPConstants.USERID)); 
-  	if(!viewOnly) { %>
-   <input name="<%= GPConstants.USERID %>" size="50" class="hideable"
-	       value="<%= owner %>" 
-		
-	       <%= (tia == null || owner.equals("") || userID.equals(owner) || userID.equals(taskInfo.getUserId())) ? "" : "readonly" %>>
-	       (email address)
-   <%
-	} else {
-      	out.print(owner);
-   	}
-   %>
+<%= (tia == null ? userID : tia.get(GPConstants.USERID))   %>
   </td>
   </tr>
 
   <tr title="Make available to others">
   <td align="right"><b>Privacy:</b></td>
-  <td width="*"><%= createSelection(tia, GPConstants.PRIVACY, privacies, "onchange=\"onPrivacyChange(this)\"", viewOnly) %></td>
+  <td width="*"><%= tia.get(GPConstants.PRIVACY) %>	</td>
   </tr>
 
   <tr title="Readiness for use by others">
   <td align="right"><b>Quality&nbsp;level:</b></td>
-  <td width="*"><%= createSelection(tia, GPConstants.QUALITY, qualities, "", viewOnly) %></td>
+  <td width="*"><%= tia.get(GPConstants.QUALITY) %></td>
   </tr>
 
 <% 
@@ -574,71 +537,49 @@ if (taskName != null) {
 </td></tr>
 <% } %>
 
-<% if (!viewOnly) { %>
-  <tr>
-  <td align="right" valign="top">
-   </td>
-  <td width="*"><br>    <font size=-1>
-  Use &lt;<%= GPConstants.JAVA %>&gt; for launching a JVM, 
-  &lt;<%= GPConstants.LIBDIR %>&gt; for accessing EXEs, DLLS, JARs, etc., <br>
-  &lt;<i>your_param_name</i>&gt; to substitute your own parameters (listed below),<br>
-  &lt;<i>java.system.property.name</i>&gt; to substitute from java.lang.System.getProperties().<br>
-  You may also use environment variables and settings from your GenePatternServer/resources/genepattern.properties file.<br>
-  Useful ones: &lt;path.separator&gt;, &lt;file.separator&gt;, &lt;os.name&gt;, &lt;perl&gt;, &lt;java&gt;, &lt;libdir&gt;
-</font>
-</td>
-  </tr>
-<% } %>
 
   <tr title="the command line used to invoke the application, using &lt;tags&gt; for param &amp; environment variable substitutions.">
   <td align="right" valign="top"><b>command&nbsp;line:</b><br>
    </td>
-  <td valign="top" width="*"><% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="60" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea> * (required) <% } %></td>
+  <td valign="top" width="*"><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) : "" %></td>
   </tr>
 
   <tr>
   <td align="right"><b>task&nbsp;type:</b></td>
-  <td width="*">         
-  <%= createSelection(tia, GPConstants.TASK_TYPE, taskTypes, "", viewOnly) %>
-  <% if (!viewOnly) { %>
-	 <input type="button" onclick="addNewTaskType()" value="new..." class="little">
-  <% } %>
+  <td width="*"> <%= tia.get(GPConstants.TASK_TYPE) %>       
   </td>
   </tr>
 
    <tr>
   <td align="right"><b>CPU&nbsp;type:</b></td>
-  <td width="*">         
-	<%= createSelection(tia, GPConstants.CPU_TYPE, cpuTypes, "", viewOnly) %> (if compiled for a specific one)
-         </td>
-   </tr>
+  <td width="*">    <%= tia.get(GPConstants.CPU_TYPE) %> (if compiled for a specific one)
+  </td>
+  </tr>
 
    <tr>
   <td align="right"><b>operating&nbsp;system:</b></td>
-  <td width="*"> 
-	<%= createSelection(tia, GPConstants.OS, oses, "", viewOnly) %> (if operating system-dependent)
+  <td width="*"><%= tia.get(GPConstants.OS) %> (if operating system-dependent)
   </td>
    </tr>
 
 <%--
    <tr>
   <td align="right"><b>Java&nbsp;JVM&nbsp;level:</b></td>
-  <td width="*">         
-	<%= createSelection(tia, GPConstants.JVM_LEVEL, jvms, "", viewOnly) %> (if Java is used)
+  <td width="*">   <%= tia.get(GPConstants.JVM_LEVEL) %>(if Java is used)
          </td>
    </tr>
 --%>
    <tr>
   <td align="right"><b>Language:</b></td>
-  <td width="*">         
-  <%= createSelection(tia, GPConstants.LANGUAGE, languages, "", viewOnly) %> &nbsp;
-    <b>min. language version:</b> <% if (!viewOnly) { %><input name="<%= GPConstants.JVM_LEVEL %>" value="<%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %>" size="10"><% } else { %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %><% } %>
+  <td width="*">         <%= tia.get(GPConstants.LANGUAGE) %>
+  &nbsp;
+    <b>min. language version: </b><%= StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) %>
          </td>
    </tr>
    
   <td align="right" valign="top"><b>Version&nbsp;comment:</b></td>
   <td width="*">
-  	<% if (!viewOnly) { %><textarea name="<%= GPConstants.VERSION %>" cols="50" rows="1"><% } %><%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.VERSION)) : "" %><% if (!viewOnly) { %></textarea><% } %>
+  	<%= StringUtils.htmlEncode(tia.get(GPConstants.VERSION)) %>
    </td>
    </tr>
 
@@ -655,122 +596,39 @@ if (taskName != null) {
 		attributeValue = (tia != null ? tia.get(GPConstants.FILE_FORMAT) : "");
 		if (attributeValue == null) attributeValue = "";
 %>
-<% if (!viewOnly) { 
-		String[] file_formats = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-		String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[FILE_FORMAT_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
-%>
-		<select multiple name="<%= GPConstants.FILE_FORMAT %>" size="<%= Math.min(3, tmFileFormats.size()) %>">
-<%
-		for(Iterator itChoices = tmFileFormats.values().iterator(); itChoices.hasNext(); ) {
-			String c = (String)itChoices.next();
-			boolean isSelected = false;
-			for (i = 0; i < file_formats.length; i++) {
-				if (c.equals(file_formats[i])) {
-					isSelected = true;
-					break;
-				}
-			}
-			out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + StringUtils.htmlEncode(c) + "</option>");
-		}
-%>
-		</select>
-<% } else { %>
 		<%= attributeValue %>
-<% } %>
-	</td>
-  <% if (!viewOnly) { %>
-  	<td valign="top">         
-	 <input type="button" onclick="window.open('newFileType.html', 'newFileType', 'width=200,height=200').focus()" value="new..." class="little">
-  	</td>
-   <% }%>
-<!--	 <td valign="top">
-	domain(s):
-	</td> 
-	<td valign="top"> 
-<%
-		//attributeValue = (tia != null ? tia.get(GPConstants.DOMAIN) : "");
-		//if (attributeValue == null) attributeValue = "";
-%>
-  <% //if (!viewOnly) { %>
-	//<select multiple name="<%= GPConstants.DOMAIN %>">
-<%
-	/*{
-		String[] taskDomains = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-		String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[DOMAIN_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
 
-		//System.out.println("domain offset: " + DOMAIN_PARAM_OFFSET);
-		for(Iterator itChoices = tmDomains.values().iterator(); itChoices.hasNext(); ) {
-			String c = (String)itChoices.next();
-			boolean isSelected = false;
-			for (i = 0; i < taskDomains.length; i++) {
-				if (c.equals(taskDomains[i])) {
-					isSelected = true;
-					break;
-				}
-			}
-		
-			out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + StringUtils.htmlEncode(c) + "</option>");
-		}
-	}*/
-%>
-	</select>
-<% //} else { %>
-	//	<%= attributeValue %>
-<% //} %>
-<!--	</td> -->
-  <% //if (!viewOnly) { %>
-  <!--	<td valign="top">         
-	 <input type="button" onclick="javascript:window.open('newDomain.html', 'newDomain', 'width=200,height=200').focus()"  value="new..." class="little">
-  	</td> -->
-  <%// } %>
-	</tr>
+	</td>
+ 
+
+<!--	 <td valign="top"></td> 
+	<td valign="top"> 
+
+  
+
+   <!--	<td valign="top"> </td> -->
+ 	</tr>
 	</table>
+
+
 
    </td>
    </tr>
    <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_LSIDS %>" value="<%= tia != null ? tia.get(GPConstants.REQUIRED_PATCH_LSIDS) : "" %>">
    <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_URLS %>" value="<%= tia != null ? tia.get(GPConstants.REQUIRED_PATCH_URLS) : "" %>">
    
-  <% if (!viewOnly) { %>
-   <tr>
-  <td align="right" valign="top"><b>Support&nbsp;files:</b><br>(jar, dll, exe, pl, doc, etc.)<br>
-  </td>
-  <td width="*">
-<font size=-1>
-  The actual program plus any required libraries will will be accessible to your command line as 
-  &lt;<%= GPConstants.LIBDIR %>&gt;<file.separator><i>filename</i></font><br>
-
-<% for (i = 1; i <= NUM_ATTACHMENTS; i++) { %>
-  	<input type="file" name="file<%= i %>" size="70" class="little"><br>
-<% } %>
-  </td>
-  </tr>
-<% } %>
+  
 
   <tr>
   <td align="right" valign="top"><b>Current&nbsp;files:</b></td>
   <td width="*">
 <%
-   if (taskName != null) {
-	   File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
+  	   File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
 	   
 	   for (i = 0; i < allFiles.length; i++) { %>
 		<a href="getFile.jsp?task=<%= (String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%= URLEncoder.encode(allFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(allFiles[i].getName()) %></a> 
 <%	   }  %>
 
-<%	   if (allFiles != null && allFiles.length > 0 && !viewOnly) { %>
-		   <br>
-		   <select name="deleteFiles">
-		   <option value="">delete support files...</option>
-<%		   for (i = 0; i < allFiles.length; i++) { %>
-			<option value="<%= StringUtils.htmlEncode(allFiles[i].getName()) %>"><%= allFiles[i].getName() %></option> 
-<%		   }  %>
-		   </select>
-		   <input type="hidden" name="deleteSupportFiles" value="">
-		   <input type="button" value="<%= DELETE %>..." class="little" onclick="confirmDeleteSupportFiles()">
-<%	   } %>
-
-<%   } %>
   <br>
   </td>
    </tr>
@@ -803,34 +661,19 @@ if (taskName != null) {
   <td><i>2</i></td>
   </tr>
 
-<%= createParameterEntries(0, NUM_PARAMETERS, parameterInfoArray, taskInfo, viewOnly) %>
+<%= createParameterEntries(0, NUM_PARAMETERS, parameterInfoArray, taskInfo) %>
 
-<% if (!viewOnly) { %>
-<tr><td></td></tr>
-<tr><td colspan="3" align="center">
-<input type="submit" value="save" name="save" class="little">&nbsp;&nbsp;
-<input type="reset" value="clear" class="little">&nbsp;&nbsp;
-<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="little">
 
-</td></tr>
-<tr><td></td></tr>
-
-<% } %>
 <!--
 <tr><td>
-<p onclick="document.all.parameters.style.display=(document.all.parameters.style.display=='none' ? '' : 'none')"><u><font color="blue">more parameters...</font></u></p>
 </td></tr>
 <div id="parameters" style="display: none">
 -->
-<%= createParameterEntries(NUM_PARAMETERS, GPConstants.MAX_PARAMETERS, parameterInfoArray, taskInfo, viewOnly) %>
+<%= createParameterEntries(NUM_PARAMETERS, GPConstants.MAX_PARAMETERS, parameterInfoArray, taskInfo) %>
 
 <tr><td></td></tr>
 <tr><td colspan="3" align="center">
-<% if (!viewOnly) { %>
-<input type="submit" value="save" name="save" class="little">&nbsp;&nbsp;
-<input type="reset" value="clear" class="little">&nbsp;&nbsp;
-<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="little">
-<% } else { 
+<% 
 	lsid = tia.get(GPConstants.LSID);
 	l = new LSID(lsid);
 	authorityType = LSIDManager.getInstance().getAuthorityType(l);
@@ -843,7 +686,7 @@ if (taskName != null) {
   <input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
 <%		}
  	} 
-  }
+  
 %>
 </td></tr>
 
@@ -867,59 +710,8 @@ if (taskName != null) {
 	t.printStackTrace(new java.io.PrintWriter(out));
    }
 %>
-<%! public String createSelection(TaskInfoAttributes tia, String name, String[] values, String eventHandlers, boolean viewOnly) {
-	StringBuffer sbOut = new StringBuffer();
-	String value = (tia != null ? tia.get(name) : "");
-	boolean found = false;
-	if (!viewOnly) {
-	        sbOut.append("<select name=\"" + name + "\"");
-		sbOut.append(" " + eventHandlers);
-		sbOut.append(">\n");
-	}
-	String optionValue;
-	String optionDisplay;
-	int delimiter;
-	for (int i = 0; i < values.length; i++) {
-		optionDisplay = values[i];
-		optionValue = optionDisplay;
-		delimiter = optionDisplay.indexOf("=");
-		if (delimiter != -1) {
-			optionDisplay = optionDisplay.substring(0, delimiter);
-			optionValue = optionValue.substring(delimiter+1);
-		}
-		if (value.equals(values[i])) {
-			found = true;
-		}
-		if (!viewOnly) {
-			sbOut.append("<option value=\"");
-			sbOut.append(optionValue);
-			sbOut.append("\"");
-			if (value.equals(values[i])) {
-				sbOut.append(" selected");
-			}
-			sbOut.append(">");
-		}
-		if (!viewOnly || value.equals(values[i])) {
-			sbOut.append(StringUtils.htmlEncode(optionDisplay));
-		}
-		if (!viewOnly) {
-			sbOut.append("</option>\n");
-		}
-	}
-	if (!found && value.length() > 0) {
-		// add unexpected entry to the selection list
-		sbOut.append("<option selected>");
-		sbOut.append(StringUtils.htmlEncode(value));
-		sbOut.append("</option>\n");
-	}
 
-	if (!viewOnly) {
-	        sbOut.append("</select>");
-	}
-	return sbOut.toString();
-    }
-%>
-<%! public String createParameterEntries(int from, int to, ParameterInfo[] parameterInfoArray, TaskInfo taskInfo, boolean viewOnly) throws Exception {
+<%! public String createParameterEntries(int from, int to, ParameterInfo[] parameterInfoArray, TaskInfo taskInfo) throws Exception {
 
 StringBuffer out = new StringBuffer();
 ParameterInfo p = null;
@@ -930,17 +722,17 @@ String attributeType = null;
 
 for (int i = from; i < to; i++) { 
 	p = (parameterInfoArray != null && i < parameterInfoArray.length) ? parameterInfoArray[i] : null;
-	if (viewOnly && p == null) continue;
+	if ( p == null) continue;
 	attributes = null;
 	if (p != null) attributes = p.getAttributes();
 	if (attributes == null) attributes = new HashMap();
 
 	out.append("<tr>\n");
-	out.append("<td valign=\"top\">" + (!viewOnly ? ("<input name=\"p" + i + "_" + GPConstants.NAME+ "\"" + ((p == null) ? "" : ("\" value=\"" + StringUtils.htmlEncode(p.getName()) + "\"")) + ">") : ((p == null) ? "" : StringUtils.htmlEncode(p.getName()))) + "</td>\n");
-	out.append("<td valign=\"top\">" + (!viewOnly ? ("<input name=\"p" + i + "_" + GPConstants.DESCRIPTION + "\" size=\"50\"" + ((p == null || p.getDescription() == null) ? "" : ("\" value=\"" + StringUtils.htmlEncode(p.getDescription()) + "\"")) + ">") : ((p == null || p.getDescription() == null) ? "" : (StringUtils.htmlEncode(p.getDescription())))) + "</td>\n");
-	out.append("<td valign=\"top\">" + (!viewOnly ? ("<input name=\"p" + i + "_" + "value\" size=\"30\"" + ((p == null || p.getValue() == null) ? "" : ("\" value=\"" + StringUtils.htmlEncode(p.getValue()) + "\"")) + ">") : (((p == null || p.getValue() == null) ? "" : StringUtils.htmlEncode(GenePatternAnalysisTask.replace(p.getValue(), GenePatternAnalysisTask.PARAM_INFO_CHOICE_DELIMITER, GenePatternAnalysisTask.PARAM_INFO_CHOICE_DELIMITER+" "))))) + "</td>\n");
+	out.append("<td valign=\"top\">" + StringUtils.htmlEncode(p.getName()) + "</td>\n");
+	out.append("<td valign=\"top\">" + (( p.getDescription() == null) ? "" : (StringUtils.htmlEncode(p.getDescription()))) + "</td>\n");
+	out.append("<td valign=\"top\">" + ((((p.getValue() == null) ? "" : StringUtils.htmlEncode(GenePatternAnalysisTask.replace(p.getValue(), GenePatternAnalysisTask.PARAM_INFO_CHOICE_DELIMITER, GenePatternAnalysisTask.PARAM_INFO_CHOICE_DELIMITER+" "))))) + "</td>\n");
 
-	if (p != null && (p.isInputFile() || p.getName().indexOf("filename") != -1)) {
+	if ( (p.isInputFile() || p.getName().indexOf("filename") != -1)) {
 		attributes.put(GPConstants.PARAM_INFO_TYPE[GPConstants.PARAM_INFO_TYPE_NAME_OFFSET], GPConstants.PARAM_INFO_TYPE_INPUT_FILE);
 	}
 
@@ -954,13 +746,9 @@ for (int i = from; i < to; i++) {
 			if (attributeValue == null) {
 				attributeValue = "";
 			}
-			if (!viewOnly) {
-				out.append("<input name=\"p" + i + "_" + attributeName + "\" size=\"10\" value=\"");
-			}
+			
 			out.append(StringUtils.htmlEncode(attributeValue));
-			if (!viewOnly) {
-				out.append("\">\n");
-			}
+			
 
 		} else if (attributeType.equals(GPConstants.PARAM_INFO_CHOICE)) {			
 			attributeValue = (String)attributes.get(attributeName);
@@ -971,38 +759,17 @@ for (int i = from; i < to; i++) {
 			choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
 			boolean multiple = (GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum].length > GPConstants.PARAM_INFO_CHOICE_TYPES_MULTIPLE_OFFSET);
 			
-			if (!viewOnly) {
-			 	String [] items = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-
-				out.append("<select name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple size=\"" + Math.min(3, choices.length) + "\"" : "") + ">\n");
-
+			
+			if (!multiple) {
 				for (int choice = 0; choice < choices.length; choice++) { 
-					boolean selected = false;
-					for (int sel = 0; sel < items.length; sel++) {
-
-						if (choices[choice][GPConstants.PARAM_INFO_TYPE_OFFSET].equals(items[sel])) {
-							selected = true;
-							break;
-						}
-					}
-					out.append("<option value=\"" + 
-						    choices[choice][GPConstants.PARAM_INFO_TYPE_OFFSET] + "\"" + 
-						    (selected ? " selected" : "") + ">" + 
-						    StringUtils.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]) +
-						    "</option>\n");
+				    if (choices[choice][1].equals(attributeValue)) {
+					out.append(StringUtils.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]));
+				    }
 				}
-				out.append("</select>\n");
 			} else {
-				if (!multiple) {
-					for (int choice = 0; choice < choices.length; choice++) { 
-					    if (choices[choice][1].equals(attributeValue)) {
-						out.append(StringUtils.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]));
-					    }
-					}
-				} else {
-					out.append(StringUtils.htmlEncode(attributeValue));
-				}
+				out.append(StringUtils.htmlEncode(attributeValue));
 			}
+			
 
 		} else if (attributeType.equals(GPConstants.PARAM_INFO_CHECKBOX)) {
 			attributeValue = (String)attributes.get(attributeName);
@@ -1010,7 +777,7 @@ for (int i = from; i < to; i++) {
 				attributeValue = "";
 			}
 
-			out.append("<input name=\"p" + i + "_" + attributeName + "\" type=\"checkbox\"" + (attributeValue.length() > 0 ? " checked" : "") + (viewOnly ? " disabled" : "") + ">\n");
+			out.append("<input name=\"p" + i + "_" + attributeName + "\" type=\"checkbox\"" + (attributeValue.length() > 0 ? " checked" : "") + " disabled >\n");
 		} else {
 			throw new Exception("Unknown attribute type " + attributeType);
 		}
