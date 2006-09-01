@@ -16,8 +16,12 @@ public interface IGPConstants {
 
     // strings which are shared with addTask.jsp and saveTask.jsp
 
-    /** TaskInfo.name */
+    /** TaskInfo,ParamInfo.name */
     public static final String NAME = "name";
+
+    /** Alternative name key for a ParameterInfo */
+    public static final String ALTNAME = "altName";
+
 
     /** TaskInfo.description */
     public static final String DESCRIPTION = "description";

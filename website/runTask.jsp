@@ -327,11 +327,18 @@ No such task <%= taskName %><br>
 
 	  }
         String description = pi.getDescription();
+	
+	// use the alternative name if provided.  this is to allow pipelines to rename input parameters in the UI
+	// while still maintining the chain of where the param is to go in the real pipeline name
+	// i.e. I am too lazy to rewrite all the pipeline code to add this feature (JTL)
+	  String displayName =  (String)pia.get("altName");
+	  if (displayName == null) displayName = pi.getName();
+	  System.out.println("display Name=" + pia.get("displayName"));
 %>
 
 <tr>
 <td align="right" valign="top">
-    <nobr><%= !isOptional ? "<b>" : "" %><%= pi.getName().replace('.', ' ') %>:<%=
+    <nobr><%= !isOptional ? "<b>" : "" %><%= displayName.replace('.', ' ') %>:<%=
         !isOptional ? "<span style=\"font-size: medium;\"> *</span></b>" : "" %>
     </nobr>
 </td>
