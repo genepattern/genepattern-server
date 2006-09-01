@@ -32,31 +32,39 @@
 	</ui:define>
 
 	<ui:define name="body">
-		<h:form>
-		Please enter your username to identify task ownership.  We recommend using your email address to ensure uniqueness, memorability, and consistency.<br />
-			<h:panelGrid columns="1" rendered="#{loginBean.unknownUser}">
-			  <h:outputText value="Unknown username. "/><h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf">
-			  	<f:verbatim>Click to register</f:verbatim>			  	  
-			  </h:outputLink>
+		<h:panelGrid styleClass="group" columns="2" cellpadding="2"
+			cellspacing="0" width="100%" rowClasses="vertAlignTop"
+			rendered="#{! empty facesContext.maximumSeverity}">
+			<h:graphicImage value="#{pageMessages.messageImage}"
+				style="float: left; vertical-align: top;" />
+			<h:panelGrid columns="1" cellpadding="2" cellspacing="2"
+				columnClasses="leftAlignCol" rowClasses="vertAlignTop" width="100%">
+				<h:outputText value="#{pageMessages.messageHeader}" escape="false"
+					rendered="#{pageMessages.renderMessage}" />
+				<h:messages errorClass="errorMessage" infoClass="infoMessage"
+					layout="table" globalOnly="true" showDetail="false"
+					showSummary="true" />
 			</h:panelGrid>
-			<table>
-				<tr>
-					<td>Username:</td>
-					<td><h:inputText size="50" value="#{loginBean.username}"
-						id="username" required="true" /></td>
-					<td><h:message style="color: red; font-weight: bold;"
-						for="username" /></td>
-					<td rowspan="2"><h:commandButton value="sign in"
-						class="little" actionListener="#{loginBean.submitLogin}" /></td>
-				</tr>
-				<tr>
-					<td>Password:</td>
-					<td><h:inputSecret size="50" value="#{loginBean.password}"
-						id="password" required="true" /></td>
-					<td><h:message style="color: red; font-weight: bold;"
-						for="password" /></td>
-				</tr>
-			</table>
+		</h:panelGrid>
+		<h:form>
+		    Enter a username and password.
+			<h:panelGrid columns="3"> 
+			     Username:
+				<h:inputText size="50" value="#{loginBean.username}" id="username"
+					required="true" validator="#{loginBean.validateNewUsername}" />
+				<h:message style="color: red; font-weight: bold;" for="username" />
+
+				Password:
+					<h:inputSecret size="50" value="#{loginBean.password}"
+					id="password" required="true" />
+				<h:message style="color: red; font-weight: bold;" for="password" />
+
+				<h:commandButton value="register" class="little"
+					actionListener="#{loginBean.registerUser}" />
+				<h:outputText value="" />
+				<h:outputText value="" />
+
+			</h:panelGrid>
 			<h:inputHidden name="referrer" value="#{loginBean.referrer}" />
 
 		</h:form>

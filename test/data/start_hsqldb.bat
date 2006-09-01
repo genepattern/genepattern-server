@@ -1,1 +1,1 @@
-java -cp C:/java/genepattern_workspace/genepattern/website/WEB-INF/lib/hsqldb.jar org.hsqldb.Server -database.0 file:GenePatternDB -dbname.0 xdb
+java -cp C:/java/genepattern_workspace/gp/website/WEB-INF/lib/hsqldb.jar org.hsqldb.Server -database.0 file:GenePatternDB -dbname.0 xdb

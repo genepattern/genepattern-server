@@ -33,7 +33,7 @@ import org.genepattern.webservice.WebServiceException;
  * @author jrobinso
  * 
  */
-public class IndexPageBean extends BackingBeanBase {
+public class IndexPageBean extends AbstractUIBean {
 
     private Collection<TaskInfo> tmTasks;
     

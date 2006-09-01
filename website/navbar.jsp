@@ -375,7 +375,7 @@ function checkEnableNavbar() {
                                onblur="ufocus(this, false, '<%= EMAIL_ADDRESS %>')">
                         <input type="submit" value="sign in" class="little">
                         <% } else { %>
-                        <a href="pages/login.jsf" class="navbarlink">sign out</a> <%= StringUtils.htmlEncode(userID) %>
+                        <a href="pages/login.jsf" class="navbarlink" >sign out</a> <%= StringUtils.htmlEncode(userID) %>
                         <% } %>
                         <% } %>
                     </nobr>

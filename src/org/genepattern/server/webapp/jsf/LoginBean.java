@@ -4,13 +4,19 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.validator.ValidatorException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.UserPassword;
+import org.genepattern.server.UserPasswordHome;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 
@@ -20,12 +26,19 @@ import org.genepattern.util.GPConstants;
  * @author jrobinso
  * 
  */
-public class LoginBean extends BackingBeanBase {
+public class LoginBean extends AbstractUIBean {
 
     private static Logger log = Logger.getLogger(LoginBean.class);
     private String username;
     private String password;
     private String referrer;
+    private boolean unknownUser = false;
+    private boolean invalidPassword = false;
+    private boolean usernameTaken = false;
+
+    public boolean isUsernameTaken() {
+        return usernameTaken;
+    }
 
     public String getPassword() {
         return password;
@@ -51,6 +64,14 @@ public class LoginBean extends BackingBeanBase {
         this.referrer = referrer;
     }
 
+    public boolean isInvalidPassword() {
+        return invalidPassword;
+    }
+
+    public boolean isUnknownUser() {
+        return unknownUser;
+    }
+
     /**
      * Submit the user / password. For now this uses an action listener since we
      * are redirecting to a page outside of the JSF framework. This should be
@@ -62,52 +83,101 @@ public class LoginBean extends BackingBeanBase {
     public void submitLogin(ActionEvent event) {
 
         try {
+            assert username != null;
+            assert password != null;
             HttpServletRequest request = getRequest();
-            HttpServletResponse response = getResponse();
 
             if (referrer == null || referrer.length() == 0) referrer = request.getContextPath() + "/index.jsp";
 
-            if (username != null && username.length() > 0) {
-
-                request.setAttribute("userID", username);
-
-                String userID = "\"" + URLEncoder.encode(username.replaceAll("\"", "\\\""), "utf-8") + "\"";
-                addUserIDCookies(response, request, userID);
-                referrer += (referrer.indexOf('?') > 0 ? "&" : "?");
-                referrer += username;
-                getResponse().sendRedirect(referrer);
+            UserPassword up = (new UserPasswordHome()).findByUsername(username);
+            if (up == null) {
+                unknownUser = true;
+            }
+            else {
+                if (password.equals(up.getPassword())) {
+                    setUserAndRedirect(request, getResponse());
+                }
+                else {
+                    System.out.println("Invalid password");
+                }
 
             }
-        }
-        catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException e) {
             log.error(e);
             throw new RuntimeException(e); // @TODO -- wrap in gp system
-                                            // exeception.
-        }
-        catch (IOException e) {
+            // exeception.
+        } catch (IOException e) {
             log.error(e);
             throw new RuntimeException(e); // @TODO -- wrap in gp system
-                                            // exeception.
+            // exeception.
         }
 
+    }
+
+    public void validateNewUsername(FacesContext context, UIComponent component, Object value)
+            throws ValidatorException {
+        // you are free to call this method at your choice, it has to be conform
+        // with your validator attribute
+        // queue the message in this method, make sure to call
+        // component.setValid(false)
+        UserPassword up = (new UserPasswordHome()).findByUsername(value.toString());
+        if (up != null) {
+            String message = "Duplicate user name. Username already exists";
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_FATAL, message, message);
+            ((UIInput) component).setValid(false);
+            getFacesContext().addMessage(null, facesMessage);
+            throw new ValidatorException(facesMessage);
+        }
     }
 
     /**
-     * Validate the username and password.
+     * Register a new user. For now this uses an action listener since we are
+     * redirecting to a page outside of the JSF framework. This should be
+     * changed to an action to use jsf navigation in the future.
      * 
-     * @TODO -- implementation, for now accepts anything
-     * @return
+     * @param event --
+     *            ignored
      */
-    private boolean validateUser() {
-        return (username != null && username.length() > 0 && password != null && password.length() > 0);
+    public void registerUser(ActionEvent event) {
+
+        try {
+            assert username != null;
+            assert password != null;
+
+            HttpServletRequest request = getRequest();
+            if (referrer == null || referrer.length() == 0) referrer = request.getContextPath() + "/index.jsp";
+
+            UserPassword up = (new UserPasswordHome()).findByUsername(username);
+            if (up != null) {
+                usernameTaken = true;
+            }
+            else {
+                UserPassword newUser = new UserPassword();
+                newUser.setUsername(username);
+                newUser.setPassword(password);
+                (new UserPasswordHome()).persist(newUser);
+                setUserAndRedirect(getRequest(), getResponse());
+            }
+        } catch (Exception e) {
+            log.error(e);
+            throw new RuntimeException(e);
+        }
+
     }
 
-    private void addUserIDCookies(HttpServletResponse response, HttpServletRequest request, String userID) {
-        // no explicit domain
+    private void setUserAndRedirect(HttpServletRequest request, HttpServletResponse response)
+            throws UnsupportedEncodingException, IOException {
+        request.setAttribute("userID", username);
+
+        String userID = "\"" + URLEncoder.encode(username.replaceAll("\"", "\\\""), "utf-8") + "\"";
         Cookie cookie4 = new Cookie(GPConstants.USERID, userID);
-        cookie4.setPath(request.getContextPath());
+        cookie4.setPath(getRequest().getContextPath());
         cookie4.setMaxAge(Integer.MAX_VALUE);
-        response.addCookie(cookie4);
+        getResponse().addCookie(cookie4);
+
+        referrer += (referrer.indexOf('?') > 0 ? "&" : "?");
+        referrer += username;
+        getResponse().sendRedirect(referrer);
     }
 
 }
