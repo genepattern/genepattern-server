@@ -116,16 +116,11 @@ public class LoginBean extends AbstractUIBean {
 
     public void validateNewUsername(FacesContext context, UIComponent component, Object value)
             throws ValidatorException {
-        // you are free to call this method at your choice, it has to be conform
-        // with your validator attribute
-        // queue the message in this method, make sure to call
-        // component.setValid(false)
         UserPassword up = (new UserPasswordHome()).findByUsername(value.toString());
         if (up != null) {
-            String message = "Duplicate user name. Username already exists";
-            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_FATAL, message, message);
+            String message = "An account with this username already exist.  Please choose another.";
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
             ((UIInput) component).setValid(false);
-            getFacesContext().addMessage(null, facesMessage);
             throw new ValidatorException(facesMessage);
         }
     }
