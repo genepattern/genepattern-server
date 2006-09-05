@@ -579,7 +579,7 @@
 
         <!-- load the modules since the installer doesn't - once we can start the server -->
         <antcall target="startServer" inheritRefs="true"/>
-        <antcall target="loadModules" inheritRefs="true"/>
+        <!-- antcall target="loadModules" inheritRefs="true"/  -->
 
 
     </target>
