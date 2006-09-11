@@ -38,7 +38,6 @@
 		 org.genepattern.webservice.AnalysisWebServiceProxy,
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.JobInfo,
-		 com.jspsmart.upload.*,
 		 org.genepattern.data.pipeline.PipelineModel"
 	session="false" contentType="text/html" language="Java" %>
 

@@ -20,7 +20,7 @@
 		 org.genepattern.webservice.ParameterFormatConverter,
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
-		 org.genepattern.webservice.OmnigeneException,  com.jspsmart.upload.*,
+		 org.genepattern.webservice.OmnigeneException,  
 		 org.genepattern.data.pipeline.PipelineModel"
 	session="false" contentType="text/html" language="Java" %>
 

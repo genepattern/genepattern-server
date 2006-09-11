@@ -329,7 +329,10 @@ function chooseInheritTask(taskNum, param) {
 function promptOnRunChecked(checkbox, taskNum, param, paramName) {
 	var frm = checkbox.form;
 	if (checkbox.checked) {
-		
+		spanner = document.getElementById('span_' + taskNum + '_' + param);
+		spanner.style.display = "inline";
+	
+
 		if (paramName != '') {
 			ctl = frm['t' + taskNum + '_' + paramName];
 			if (ctl.type == 'text') {
@@ -355,6 +358,10 @@ function promptOnRunChecked(checkbox, taskNum, param, paramName) {
 			}
 		}
 	} else {
+		spanner = document.getElementById('span_' + taskNum + '_' + param);
+		spanner.style.display = "none";
+	
+
 		// unchecked the box
 		if (paramName != '') {
 			ctl = frm['t' + taskNum + '_' + paramName];
@@ -656,7 +663,10 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 	} else {
 		taskFields = taskFields + '<tr><td></td><td colspan="2"><i>' + task.name + ' has no input parameters</i>';
 	}
+	
+	var pnum = -1;
 	for (param in task.parameterInfoArray) {
+		pnum = pnum + 1;
 		var pi = task.parameterInfoArray[param];
 		var choices = ((pi.value != null && pi.value != 'null' && pi.value.length > 0) ? pi.value.split(";") : "");
 
@@ -668,9 +678,19 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		taskFields = taskFields + '></td>\n';
 
 		// label for the field
-		taskFields = taskFields + '<td align="right" width="10%" valign="top"><nobr>' + pi.name.replace(/\./g,' ').replace(/\_/g,' ') + ':</nobr></td>\n';
+		taskFields = taskFields + '<td align="right" width="10%" valign="top">';
+		taskFields = taskFields + '<nobr>' + pi.name.replace(/\./g,' ').replace(/\_/g,' ') + ':</nobr>';
 
-		// input area for the field
+
+		// XXX add ability to submit an alternate name for prompt when run params
+  		taskFields = taskFields + '<span id="span_'+taskNum+'_'+pnum+'" style="display:none">'
+		taskFields = taskFields + '<input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/>';
+		taskFields = taskFields + '  </span>';
+		// XXX END: add ability to submit an alternate name for prompt when run params
+
+		taskFields = taskFields + '</td>\n';
+		
+				// input area for the field
 		taskFields = taskFields + '	<td valign="top">';
 		if (pi.isInputFile) {
 			taskFields = taskFields + '<input type="file" name="t' + taskNum + '_' + pi.name + 

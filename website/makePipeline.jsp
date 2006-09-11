@@ -26,6 +26,7 @@
 		 java.util.Collection,
 		 java.util.Enumeration,
 		 java.util.HashMap,
+		 java.util.Properties,
 		 java.util.Hashtable,
 		 java.util.Iterator,
 		 java.util.List,
@@ -33,6 +34,7 @@
 		 java.util.StringTokenizer,
 		 java.util.TreeMap,
 		 java.util.Vector,
+		 java.nio.channels.FileChannel,
 		 org.genepattern.webservice.ParameterFormatConverter,
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.webservice.TaskInfo,
@@ -47,16 +49,21 @@
 		 org.genepattern.util.GPConstants,
  		 org.genepattern.util.StringUtils,
 		 org.genepattern.codegenerator.*,
-		 com.jspsmart.upload.*,
+ 		 org.apache.commons.fileupload.DiskFileUpload,
+             org.apache.commons.fileupload.FileItem,
+             org.apache.commons.fileupload.FileUpload,
 		 java.io.StringWriter"
 
-	session="false" contentType="text/html" language="Java" %><jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" /><%
+	session="false" contentType="text/html" language="Java" %>
+<%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
-	com.jspsmart.upload.Request requestParameters = null;
 
-	if (!request.getMethod().equalsIgnoreCase("post")) {
+      Properties requestParameters = new Properties();
+	HashMap  requestFiles = new HashMap();
+
+  	if (!request.getMethod().equalsIgnoreCase("post")) {
 %>
 			<html>
 			<head>
@@ -72,6 +79,36 @@
 		return;
 	}
 
+//***************************************************
+        DiskFileUpload fub = new DiskFileUpload();
+        boolean isEncodedPost = FileUpload.isMultipartContent(request);
+        List rParams = fub.parseRequest(request);
+	  int fileCount = 0;
+
+        for (Iterator iter = rParams.iterator(); iter.hasNext();) {
+            FileItem fi = (FileItem) iter.next();
+
+            if (fi.isFormField()) {
+           		requestParameters.put(fi.getFieldName(), fi.getString());
+			System.out.println("TestP " +  fi.getFieldName()+" = "+ fi.getString());
+
+            } else {
+                // it is the file
+                fileCount++;
+                String name = fi.getName();
+                
+                if (name == null || name.equals("")) {
+                    continue;
+                }
+                File aFile = new File(System.getProperty("java.io.tmpdir"), name);
+                requestFiles.put(fi.getFieldName(), aFile);
+                fi.write(aFile);
+		    System.out.println("TestF " +  fi.getFieldName()+" = "+ aFile);			
+            }
+        }
+//***************************************************
+
+
 String serverPort = System.getProperty("GENEPATTERN_PORT");
 String userID = null;
 boolean bRun = false;
@@ -81,36 +118,29 @@ boolean bDelete = false;
 try {
 	// mySmartUpload is from http://www.jspsmart.com/
 	// Initialization
-	mySmartUpload.initialize(pageContext);
-	mySmartUpload.upload();
-	requestParameters = mySmartUpload.getRequest();
-	userID = requestParameters.getParameter(GPConstants.USERID);
+	userID = requestParameters.getProperty(GPConstants.USERID);
 
 	String RUN = "run";
 	String CLONE = "clone";
 
-	boolean DEBUG = false; // (requestParameters.getParameter("debug") != null);
+	boolean DEBUG = false; // (requestParameters.getProperty("debug") != null);
 
 	if (DEBUG) {
 		System.out.println("\n\nMAKEPIPELINE Request parameters:<br>");
-		for (java.util.Enumeration eNames = requestParameters.getParameterNames(); eNames.hasMoreElements(); ) {
-			String n = (String)eNames.nextElement();
-                        if (!("code".equals(n)))
-			System.out.println(n + "='" + StringUtils.htmlEncode(requestParameters.getParameter(n)) + "'");
-		}
-		out.println("<hr><br>");
+		System.out.println(requestParameters);
+		System.out.println(requestFiles);
 	}
 
-	bRun = requestParameters.getParameter("cmd").equals(RUN);
-	bClone = requestParameters.getParameter("cmd").equals(CLONE);
-	bDelete = requestParameters.getParameter("delete") != null;
+	bRun = requestParameters.getProperty("cmd").equals(RUN);
+	bClone = requestParameters.getProperty("cmd").equals(CLONE);
+	bDelete = requestParameters.getProperty("delete") != null;
 
-	String pipelineName = requestParameters.getParameter("pipeline_name");
+	String pipelineName = requestParameters.getProperty("pipeline_name");
 	if (bDelete) {
 		try {
-			TaskInfo taskInfo = GenePatternAnalysisTask.getTaskInfo(requestParameters.getParameter("changePipeline"), userID);
+			TaskInfo taskInfo = GenePatternAnalysisTask.getTaskInfo(requestParameters.getProperty("changePipeline"), userID);
 			String lsid = (String)taskInfo.getTaskInfoAttributes().get(GPConstants.LSID);
-			String attachmentDir = DirectoryManager.getTaskLibDir(requestParameters.getParameter("pipeline_name"), lsid, userID); // + "." + GPConstants.TASK_TYPE_PIPELINE);
+			String attachmentDir = DirectoryManager.getTaskLibDir(requestParameters.getProperty("pipeline_name"), lsid, userID); // + "." + GPConstants.TASK_TYPE_PIPELINE);
 			File dir = new File(attachmentDir);
 			try {
 				GenePatternAnalysisTask.deleteTask(lsid);
@@ -175,13 +205,13 @@ try {
 	TaskInfo pTaskInfo = new TaskInfo();
 	TaskInfoAttributes pTia = null;
 	Vector vProblems = new Vector();
-	Map taskCatalog = new LocalAdminClient(requestParameters.getParameter(GPConstants.USERID)).getTaskCatalogByLSID();
+	Map taskCatalog = new LocalAdminClient(requestParameters.getProperty(GPConstants.USERID)).getTaskCatalogByLSID();
 
 	PipelineModel model = new PipelineModel();
 	// NB: could use any language Fcode generator here
-	String language = requestParameters.getParameter(GPConstants.LANGUAGE);
+	String language = requestParameters.getProperty(GPConstants.LANGUAGE);
 	if (language == null) language = "R";
-	String version = requestParameters.getParameter(GPConstants.VERSION);
+	String version = requestParameters.getProperty(GPConstants.VERSION);
 	
 	JobSubmission jobSubmission = null;
 	String paramName = null;
@@ -194,37 +224,39 @@ try {
 		}
 	}
 	model.setName(modelName);
-	model.setDescription(requestParameters.getParameter("pipeline_description"));
-	model.setAuthor(requestParameters.getParameter("pipeline_author"));
-	String lsid = requestParameters.getParameter(GPConstants.LSID);
+	model.setDescription(requestParameters.getProperty("pipeline_description"));
+	model.setAuthor(requestParameters.getProperty("pipeline_author"));
+	String lsid = requestParameters.getProperty(GPConstants.LSID);
 	boolean isTemp = modelName.startsWith("try.") || bRun;
 	if (lsid == null) {
 		lsid = "";
 	}
 	model.setLsid(lsid);
 	model.setVersion(version);
-	String display = requestParameters.getParameter("display");
-	if (display == null || display.length() == 0) display = requestParameters.getParameter("custom");
-	model.setUserID(requestParameters.getParameter(GPConstants.USERID));
-	String privacy = requestParameters.getParameter(GPConstants.PRIVACY);
+	String display = requestParameters.getProperty("display");
+	if (display == null || display.length() == 0) display = requestParameters.getProperty("custom");
+	model.setUserID(requestParameters.getProperty(GPConstants.USERID));
+	String privacy = requestParameters.getProperty(GPConstants.PRIVACY);
 	model.setPrivacy(privacy != null && privacy.equals(GPConstants.PRIVATE));
 
 	// save uploaded files as part of pipeline definition
-	if (mySmartUpload.getFiles().getCount() > 0) {
+	if (fileCount > 0) {
 		String attachmentDir = null;
 		File dir = null;
 		String attachmentName = null;
 
-		com.jspsmart.upload.File attachedFile = null;
-		for (int i=0;i<mySmartUpload.getFiles().getCount();i++){
-			attachedFile = mySmartUpload.getFiles().getFile(i);
-			if (DEBUG) System.out.println("\n=> "+i + "  '" + attachedFile.getFileName() +"'  "+ attachedFile.isMissing());
+		File attachedFile = null;
+		for (Iterator iter = requestFiles.keySet().iterator(); iter.hasNext(); ){
+			key = (String)iter.next();
+			
+			attachedFile = (File)requestFiles.get(key);
+			if (DEBUG) System.out.println("\n=>   '" + attachedFile.getName() +"'  "+ attachedFile.exists());
 
-			if (attachedFile.isMissing()) continue;
-			attachmentName = attachedFile.getFileName();
+			if (!attachedFile.exists()) continue;
+			attachmentName = attachedFile.getName();
 			if (attachmentName.trim().length() == 0) continue;
-			String fieldName = attachedFile.getFieldName();
-			String fullName = attachedFile.getFilePathName();
+			String fieldName = key;
+			String fullName = fieldName; // attachedFile.getFilePathName();
 			if (fullName.startsWith("http:") || fullName.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
 				// don't bother trying to save a file that is a URL, retrieve it at execution time instead
 				htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
@@ -243,8 +275,8 @@ try {
 
 	for (int taskNum = 0; ; taskNum++) {
 		taskPrefix = "t" + taskNum;
-		taskLSID = requestParameters.getParameter(taskPrefix + "_taskLSID");
-		taskName = requestParameters.getParameter(taskPrefix + "_taskName");
+		taskLSID = requestParameters.getProperty(taskPrefix + "_taskLSID");
+		taskName = requestParameters.getProperty(taskPrefix + "_taskName");
 		if (taskName == null) break;
 //System.out.println("\ntask " + taskNum + ": " + taskName);
 		TaskInfo mTaskInfo = null;
@@ -273,40 +305,43 @@ try {
 				paramName = p.getName();
 				origValue = p.getValue();
 //System.out.println("LOOK FOR: "+ taskPrefix + "_" + paramName);
-				String val = requestParameters.getParameter(taskPrefix + "_" + paramName);
+				String val = requestParameters.getProperty(taskPrefix + "_" + paramName);
         
 				if (val == null) {
-					val = requestParameters.getParameter(taskName + (taskNum+1) + "." + 
+					val = requestParameters.getProperty(taskName + (taskNum+1) + "." + 
 						taskPrefix + "_" + paramName);
 				}
 				if (val != null) val = GenePatternAnalysisTask.replace(val, "\\", "\\\\");
                                 
 				p.setValue(val);
 
-				runTimePrompt[i] = (requestParameters.getParameter(taskPrefix + "_prompt_" + i) != null);
+				runTimePrompt[i] = (requestParameters.getProperty(taskPrefix + "_prompt_" + i) != null);
                                 
-				String inheritFrom = requestParameters.getParameter(taskPrefix + "_i_" + i);
+				String inheritFrom = requestParameters.getProperty(taskPrefix + "_i_" + i);
 
 				boolean inherited = (inheritFrom != null && inheritFrom.length() > 0 && !inheritFrom.equals("NOT SET") && !inheritFrom.startsWith("[task")  );
 
 				boolean isOptional = (((String)p.getAttributes().get(GPConstants.PARAM_INFO_OPTIONAL[0])).length() > 0);
 
-//System.out.println(taskName + ": " + paramName + "=" + val + ", prompt= " + runTimePrompt[i] + ", optional=" + isOptional + ", inherited=" + inherited + " (" + requestParameters.getParameter(taskPrefix + "_i_" + i) + "), isInputFile=" + p.isInputFile());
+//System.out.println(taskName + ": " + paramName + "=" + val + ", prompt= " + runTimePrompt[i] + ", optional=" + isOptional + ", inherited=" + inherited + " (" + requestParameters.getProperty(taskPrefix + "_i_" + i) + "), isInputFile=" + p.isInputFile());
 				// inheritance has priority over run time prompt
 				if (inherited) {
 					runTimePrompt[i] = false;
-					inheritedTaskNum = requestParameters.getParameter(taskPrefix + "_i_" + i);
-					inheritedFilename = null;
+					inheritedTaskNum = requestParameters.getProperty(taskPrefix + "_i_" + i);
+					inheritedFilename = "";
+					inheritedFilename += requestParameters.getProperty(taskPrefix + "_if_" + i);
 
-					String[] values = requestParameters.getParameterValues(taskPrefix + "_if_" + i);
-					for (int x=0; values!=null && x < values.length ; x++){
-					 	if (x > 0) {
-							inheritedFilename = inheritedFilename + GPConstants.PARAM_INFO_CHOICE_DELIMITER;
-						} else {
-							inheritedFilename = "";
-						}
-						inheritedFilename += values[x];
-					}
+//AAAAAAAAAAAAAAAAAAAAa
+//					String[] values = requestParameters.getParameterValues(taskPrefix + "_if_" + i);
+//					for (int x=0; values!=null && x < values.length ; x++){
+//					 	if (x > 0) {
+//							inheritedFilename = inheritedFilename + GPConstants.PARAM_INFO_CHOICE_DELIMITER;
+//						} else {
+//							inheritedFilename = "";
+//						}
+//						inheritedFilename += values[x];
+//					}
+// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 				}
 
 				if (runTimePrompt[i]) {
@@ -315,8 +350,8 @@ try {
 				}
 
 				if (inheritedTaskNum != null || inheritedFilename != null) {
-					if (DEBUG) out.println(taskPrefix + "_i_" + i + "=" + requestParameters.getParameter(taskPrefix + "_i_" + i) + "<br>");
-					if (DEBUG) out.println(taskPrefix + "_if_" + i + "=" + requestParameters.getParameter(taskPrefix + "_if_" + i) + "<br>");
+					if (DEBUG) out.println(taskPrefix + "_i_" + i + "=" + requestParameters.getProperty(taskPrefix + "_i_" + i) + "<br>");
+					if (DEBUG) out.println(taskPrefix + "_if_" + i + "=" + requestParameters.getProperty(taskPrefix + "_if_" + i) + "<br>");
 				}
 				if (DEBUG) out.println(paramName + " is " + (inherited ? "" : "not ") + " inherited and is " + (runTimePrompt[i] ? "" : "not ") + " runtime-prompted<br>");
 
@@ -324,15 +359,15 @@ try {
 				if (inherited || runTimePrompt[i]) {
 					p.setValue("");
 				}
+//AAAAAAAAAAAAAAAAAAAAAAAAAAa
 				if (p.isInputFile()) {
 					if (inherited) {
 						p.getAttributes().put(AbstractPipelineCodeGenerator.INHERIT_FILENAME, inheritedFilename);
 						p.getAttributes().put(AbstractPipelineCodeGenerator.INHERIT_TASKNAME, inheritedTaskNum);
 					} else {
 						String shadowName = taskPrefix + "_shadow" + i;
-						String shadow = requestParameters.getParameter(shadowName);
+						String shadow = requestParameters.getProperty(shadowName);
 
-						//if (shadow == null || shadow.length() == 0) shadow = (String)htFilenames.get(taskName + "1." + taskPrefix+ "_" + p.getName());
 						if (shadow != null && (shadow.startsWith("http:") || shadow.startsWith("https:") || shadow.startsWith("ftp:") || shadow.startsWith("file:") || shadow.startsWith("<GenePatternURL>"))) {
 
 							// if this is a URL that is in the taskLib, repoint it to the cloned taskLib
@@ -346,9 +381,7 @@ try {
 							}
 							htFilenames.put(taskPrefix + "_" + paramName, shadow);
 						}
-                                                String filenameKey = taskPrefix + "_" + paramName;
-                                                //System.out.println("shadow: isInputFile: " + htFilenames.get(filenameKey));
-
+                                    String filenameKey = taskPrefix + "_" + paramName;
 						p.setValue((String)htFilenames.get(filenameKey));
 					}
 				}
@@ -390,7 +423,7 @@ try {
 	if (vProblems.size() == 0) {
 		String oldLSID = lsid;
 		if (bClone) {
-			model.setName(requestParameters.getParameter("cloneName"));
+			model.setName(requestParameters.getProperty("cloneName"));
 			// TODO: change URLs that are task-relative to point to the new task
 			String oldUser = model.getUserID();
 			String requestUserID = (String)request.getAttribute("userID");
@@ -420,7 +453,7 @@ try {
 		}
 
 		// save uploaded files as part of pipeline definition
-		if (mySmartUpload.getFiles().getCount() > 0) {
+		if (fileCount > 0) {
 			String attachmentDir = null;
 			File dir = null;
 			String attachmentName = null;
@@ -430,15 +463,17 @@ try {
 				dir = new File(attachmentDir);
 				dir.mkdir();
 			}
-			com.jspsmart.upload.File attachedFile = null;
-			for (int i=0;i<mySmartUpload.getFiles().getCount();i++){
-				attachedFile = mySmartUpload.getFiles().getFile(i);
-				if (attachedFile.isMissing()) continue;
+			File attachedFile = null;
+		
+			for (Iterator iter = requestFiles.keySet().iterator(); iter.hasNext(); ){
+				key = (String)iter.next();
+				attachedFile = (File)requestFiles.get(key);
+				if (!attachedFile.exists()) continue;
 				try {
-					attachmentName = attachedFile.getFileName();
+					attachmentName = attachedFile.getName();
 					if (attachmentName.trim().length() == 0) continue;
-					String fieldName = attachedFile.getFieldName();
-					String fullName = attachedFile.getFilePathName();
+					String fieldName = key;
+					String fullName = attachedFile.getCanonicalPath();
 					if (DEBUG) System.out.println("makePipeline: " + fieldName + " -> " + fullName);
 					if (fullName.startsWith("http:") || fullName.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
 						// don't bother trying to save a file that is a URL, retrieve it at execution time instead
@@ -459,11 +494,20 @@ try {
 					if (attachment.exists()) {
 						attachment.delete();
 					}
-						
-					attachedFile.saveAs(attachmentName);
 
-					if (DEBUG) System.out.println(fieldName + "=" + fullName + " (" + attachedFile.getSize() + " bytes) in " + htFilenames.get(fieldName) + "<br>");
-				} catch (SmartUploadException sue) {
+					FileChannel inChannel = null, outChannel = null;
+					try	{
+						inChannel = new FileInputStream(attachedFile).getChannel();
+						outChannel = new FileOutputStream(attachment).getChannel();
+						outChannel.transferFrom(inChannel, 0, inChannel.size());
+					} finally {
+						if (inChannel != null) 	inChannel.close();
+						if (outChannel != null)	outChannel.close();
+					}
+	 
+	//	attachedFile.rename(attachmentName);
+
+				} catch (IOException sue) {
 				    	throw new Exception("error saving " + attachmentName  + ": " + sue.getMessage());
 				}
 			}
@@ -491,17 +535,18 @@ try {
 
 			request.setAttribute("taskInfo", pTaskInfo);
 			request.setAttribute("serverPort", serverPort);
-			taskName = requestParameters.getParameter("taskName");
+			taskName = requestParameters.getProperty("taskName");
 			request.setAttribute("taskName", taskName);
 			if (taskName != null) {
 				String singleTaskRun = taskName + "1.t0_";
 
-				for (java.util.Enumeration eNames = requestParameters.getParameterNames(); eNames.hasMoreElements(); ) {
-					String n = (String)eNames.nextElement();
+				for (Iterator iter = requestFiles.keySet().iterator(); iter.hasNext(); ){
+		
+					String n = (String)iter.next();
 					if (n.indexOf(singleTaskRun) != -1) {
 						String n2 = taskName + "1." + n.substring(singleTaskRun.length());
 						n2 = n2.substring(taskName.length() + ".".length() + 1);
-						request.setAttribute(n2, requestParameters.getParameter(n));
+						request.setAttribute(n2, requestParameters.getProperty(n));
 					}
 				}
 				for (java.util.Enumeration eNames = htFilenames.keys(); eNames.hasMoreElements(); ) {
@@ -561,12 +606,12 @@ try {
       out.println(model.getName() + " version " + new org.genepattern.util.LSID(model.getLsid()).getVersion()  + " has been saved.");
 		new File(dir, model.getName() + ".r").delete();
 
-		if (requestParameters.getParameter("cmd").equals(CLONE)) {
+		if (requestParameters.getProperty("cmd").equals(CLONE)) {
 			response.sendRedirect("pipelineDesigner.jsp?" + GPConstants.NAME + "=" + lsid);
 			return;
 		}
 
-		if (requestParameters.getParameter("autoSave").length() > 0) {
+		if (requestParameters.getProperty("autoSave").length() > 0) {
 			out.println("<script language=\"Javascript\">window.close();</script>");
 		}
 
@@ -577,7 +622,7 @@ try {
 		out.println("</center></form>");
 
 		out.println("<a href=\"pipelineDesigner.jsp?" + GPConstants.NAME + "=" + lsid + "\">modify " + pipelineName + " design</a><br>");
-		//out.println("<a href=\"addTask.jsp?" + GPConstants.NAME + "=" + lsid + "\">edit task for " + pipelineName + "</a><br>");
+
 	}
 } catch (Exception e) {
 %>
