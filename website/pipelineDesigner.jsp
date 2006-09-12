@@ -684,7 +684,8 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 
 		// XXX add ability to submit an alternate name for prompt when run params
   		taskFields = taskFields + '<span id="span_'+taskNum+'_'+pnum+'" style="display:none">'
-		taskFields = taskFields + '<input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/>';
+		taskFields = taskFields + '<br>Name:<input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/>';
+		taskFields = taskFields + '<br>Desc:<input name="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/>';
 		taskFields = taskFields + '  </span>';
 		// XXX END: add ability to submit an alternate name for prompt when run params
 
