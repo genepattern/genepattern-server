@@ -20,7 +20,11 @@ import java.util.GregorianCalendar;
 import java.util.Timer;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
+
 public class JobPurger implements Runnable {
+
+    private static Logger log = Logger.getLogger(JobPurger.class);
 
 	final static int DEFAULT_PURGE_JOBS_INTERVAL = 7;
 
@@ -49,7 +53,7 @@ public class JobPurger implements Runnable {
 		String purgeTime = props.getProperty("purgeTime", "23:00");
 
 		String daemonName = "JobPurger";
-		System.out.println("starting " + daemonName + " to purge jobs older than "
+		log.info("starting " + daemonName + " to purge jobs older than "
 				+ purgeJobsAfter + " days at " + purgeTime);
 		purgerThread= new Thread(new JobPurger(purgeJobsAfter,
 				purgeTime), daemonName);
@@ -97,7 +101,7 @@ public class JobPurger implements Runnable {
 			nextPurgeTime.add(GregorianCalendar.DATE, 1);
 		}
 		if (DEBUG)
-			System.out.println("next purge will be at "
+			log.info("next purge will be at "
 					+ nextPurgeTime.getTime());
 		long MILLISECONDS_IN_A_DAY = 24 * 60 * 60 * 1000;
 		purger = new Purger(this.purgeInterval);
@@ -115,7 +119,7 @@ public class JobPurger implements Runnable {
 				this.wait();
 			}
 		} catch (InterruptedException ie) {
-			System.err.println("JobPurger shutting down");
+			log.error("JobPurger shutting down");
 			timer.cancel();
 		}
 	}
@@ -125,12 +129,12 @@ public class JobPurger implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		System.out.println(new Date() + ": Starting JobPurger");
+		log.info(new Date() + ": Starting JobPurger");
 		try {
 			JobPurger jobPurger = new JobPurger("7", "23:00");
 			jobPurger.runPurger();
 		} catch (Exception e) {
-			System.err.println(e);
+			log.error(e);
 		}
 	}
 }
