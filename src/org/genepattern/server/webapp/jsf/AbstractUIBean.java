@@ -1,5 +1,6 @@
 package org.genepattern.server.webapp.jsf;
 
+import java.util.Enumeration;
 import java.util.Map;
 
 import javax.faces.application.FacesMessage;
@@ -45,6 +46,30 @@ public abstract class AbstractUIBean {
 
     protected void setInfoMessage(UIComponent component, String summary) {
         getFacesContext().addMessage(component.getClientId(getFacesContext()), new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
+    }
+
+    protected void printAttributes() {
+        System.out.println("Attributes:");
+        Enumeration en = getRequest().getAttributeNames();
+        while(en.hasMoreElements()) {
+            String name = (String) en.nextElement();
+            System.out.print(name + " -> ");
+            System.out.println(getRequest().getAttribute(name));
+            
+        }
+    }
+
+    protected void printParameters() {
+        System.out.println("Parameters: ");
+        Enumeration en = getRequest().getParameterNames();
+        while(en.hasMoreElements()) {
+            String name  = (String) en.nextElement();
+            System.out.print(name + " -> ");
+            for(String value : getRequest().getParameterValues(name)) {
+                System.out.print(value + " ");
+            }
+            System.out.println();
+        }
     }
 
 }
