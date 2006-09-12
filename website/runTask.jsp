@@ -327,7 +327,10 @@ No such task <%= taskName %><br>
 
 	  }
         String description = pi.getDescription();
-	
+	  String displayDesc =  (String)pia.get("altDescription");
+	  if (displayDesc != null) description = displayDesc;
+
+
 	// use the alternative name if provided.  this is to allow pipelines to rename input parameters in the UI
 	// while still maintining the chain of where the param is to go in the real pipeline name
 	// i.e. I am too lazy to rewrite all the pipeline code to add this feature (JTL)

@@ -79,7 +79,6 @@
 		return;
 	}
 
-//***************************************************
         DiskFileUpload fub = new DiskFileUpload();
         boolean isEncodedPost = FileUpload.isMultipartContent(request);
         List rParams = fub.parseRequest(request);
@@ -90,7 +89,7 @@
 
             if (fi.isFormField()) {
            		requestParameters.put(fi.getFieldName(), fi.getString());
-			System.out.println("TestP " +  fi.getFieldName()+" = "+ fi.getString());
+		//	System.out.println("TestP " +  fi.getFieldName()+" = "+ fi.getString());
 
             } else {
                 // it is the file
@@ -103,11 +102,9 @@
                 File aFile = new File(System.getProperty("java.io.tmpdir"), name);
                 requestFiles.put(fi.getFieldName(), aFile);
                 fi.write(aFile);
-		    System.out.println("TestF " +  fi.getFieldName()+" = "+ aFile);			
+		 //    System.out.println("TestF " +  fi.getFieldName()+" = "+ aFile);			
             }
         }
-//***************************************************
-
 
 String serverPort = System.getProperty("GENEPATTERN_PORT");
 String userID = null;
@@ -304,12 +301,16 @@ try {
 				p = params[i];
 				paramName = p.getName();
 				origValue = p.getValue();
-//System.out.println("LOOK FOR: "+ taskPrefix + "_" + paramName);
-				String val = requestParameters.getProperty(taskPrefix + "_" + paramName);
+
+				String paramKey = taskPrefix + "_" + paramName;
+				
+				System.out.println("LOOK FOR: "+ paramKey);
+
+				String val = requestParameters.getProperty(paramKey);
         
 				if (val == null) {
-					val = requestParameters.getProperty(taskName + (taskNum+1) + "." + 
-						taskPrefix + "_" + paramName);
+					paramKey = taskName + (taskNum+1) + "." + taskPrefix + "_" + paramName;
+					val = requestParameters.getProperty(paramKey);
 				}
 				if (val != null) val = GenePatternAnalysisTask.replace(val, "\\", "\\\\");
                                 
@@ -317,6 +318,22 @@ try {
 
 				runTimePrompt[i] = (requestParameters.getProperty(taskPrefix + "_prompt_" + i) != null);
                                 
+				if (runTimePrompt[i]){
+					// get an alternate name for the param
+					String altNameKey = taskPrefix + "_" + paramName + "_altName";
+					String altName = requestParameters.getProperty(altNameKey);				
+					String altDescKey = taskPrefix + "_" + paramName + "_altDescription";
+					String altDesc = requestParameters.getProperty(altDescKey);				
+					
+					if (altName != null){
+						p.getAttributes().put("altName", altName);
+					}
+					if (altDesc != null){
+						p.getAttributes().put("altDescription", altDesc);
+					}
+					
+				}
+
 				String inheritFrom = requestParameters.getProperty(taskPrefix + "_i_" + i);
 
 				boolean inherited = (inheritFrom != null && inheritFrom.length() > 0 && !inheritFrom.equals("NOT SET") && !inheritFrom.startsWith("[task")  );
