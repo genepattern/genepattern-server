@@ -31,10 +31,29 @@ public class LoginBean extends AbstractUIBean {
     private static Logger log = Logger.getLogger(LoginBean.class);
     private String username;
     private String password;
+    private String passwordConfirm;
     private String referrer;
     private boolean unknownUser = false;
     private boolean invalidPassword = false;
     private boolean usernameTaken = false;
+    private boolean passwordMismatch = false;
+    private UIInput passwordConfirmComponent;
+
+    public UIInput getPasswordConfirmComponent() {
+        return passwordConfirmComponent;
+    }
+
+    public void setPasswordConfirmComponent(UIInput passwordConfirmComponent) {
+        this.passwordConfirmComponent = passwordConfirmComponent;
+    }
+
+    public boolean isPasswordMismatch() {
+        return passwordMismatch;
+    }
+
+    public void setPasswordMismatch(boolean passwordMismatch) {
+        this.passwordMismatch = passwordMismatch;
+    }
 
     public boolean isUsernameTaken() {
         return usernameTaken;
@@ -102,11 +121,13 @@ public class LoginBean extends AbstractUIBean {
                 }
 
             }
-        } catch (UnsupportedEncodingException e) {
+        }
+        catch (UnsupportedEncodingException e) {
             log.error(e);
             throw new RuntimeException(e); // @TODO -- wrap in gp system
             // exeception.
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             log.error(e);
             throw new RuntimeException(e); // @TODO -- wrap in gp system
             // exeception.
@@ -119,6 +140,16 @@ public class LoginBean extends AbstractUIBean {
         UserPassword up = (new UserPasswordHome()).findByUsername(value.toString());
         if (up != null) {
             String message = "An account with this username already exist.  Please choose another.";
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
+            ((UIInput) component).setValid(false);
+            throw new ValidatorException(facesMessage);
+        }
+    }
+
+    public void validatePassword(FacesContext context, UIComponent component, Object value)
+            throws ValidatorException {
+        if (! value.equals(passwordConfirmComponent.getSubmittedValue())) {
+            String message = "Password entries do not match.";
             FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
             ((UIInput) component).setValid(false);
             throw new ValidatorException(facesMessage);
@@ -146,6 +177,9 @@ public class LoginBean extends AbstractUIBean {
             if (up != null) {
                 usernameTaken = true;
             }
+            else if (!password.equals(passwordConfirm)) {
+                passwordMismatch = true;
+            }
             else {
                 UserPassword newUser = new UserPassword();
                 newUser.setUsername(username);
@@ -153,7 +187,8 @@ public class LoginBean extends AbstractUIBean {
                 (new UserPasswordHome()).persist(newUser);
                 setUserAndRedirect(getRequest(), getResponse());
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.error(e);
             throw new RuntimeException(e);
         }
@@ -173,6 +208,14 @@ public class LoginBean extends AbstractUIBean {
         referrer += (referrer.indexOf('?') > 0 ? "&" : "?");
         referrer += username;
         getResponse().sendRedirect(referrer);
+    }
+
+    public String getPasswordConfirm() {
+        return passwordConfirm;
+    }
+
+    public void setPasswordConfirm(String passwordConfirm) {
+        this.passwordConfirm = passwordConfirm;
     }
 
 }

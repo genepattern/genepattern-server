@@ -13,10 +13,16 @@
 		</head>
 
 		<body>
-		<ui:insert name="pageHeader">Page  Header</ui:insert>
-		<br/><br/>
+		<ui:insert name="pageHeader">
+		  <ui:include src="/pages/header.xhtml" />
+		</ui:insert>
+		<br/>
+		<ui:include src="/pages/messages.xhtml" />
+		<br/>
 		<p><ui:insert name="body">Page Body</ui:insert></p>
 		<br/><br/>
-		<ui:insert name="pageFooter">Page  Footer</ui:insert>
+		<ui:insert name="pageFooter">
+		  <ui:include src="/pages/footer.xhtml" />
+		</ui:insert>
 		</body>
 </html>

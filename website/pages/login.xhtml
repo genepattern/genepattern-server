@@ -4,32 +4,11 @@
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core">
 
-<f:loadBundle basename="resources" var="msg" />
 
 <ui:composition template="/templates/common.xhtml">
 
 	<ui:define name="pageTitle">GenePattern sign-in</ui:define>
 
-	<ui:define name="pageHeader">
-		<div id="navbar" class="navbar">
-		<form action="login.jsp" name="login">
-		<table width="100%">
-			<tr>
-				<td valign="top" class="logo"><h:graphicImage
-					value="/skin/logoSmall.gif" border="0" height="25" width="25" />&#160;<B>Gene</B>Pattern
-				3.0&nbsp;</td>
-				<td align="right" valign="top"><nobr> </nobr> <br />
-				<a href="about.jsp" class="navbarlink">about</a></td>
-			</tr>
-			<tr />
-			<tr />
-			<tr />
-			<tr />
-		</table>
-		<p />
-		</form>
-		</div>
-	</ui:define>
 
 	<ui:define name="body">
 		<h:form>
@@ -62,25 +41,6 @@
 		</h:form>
 	</ui:define>
 
-	<ui:define name="pageFooter">
-		<div class="navbar">
-
-
-		<table width="100%">
-			<tr>
-				<td align="left" valign="top"><a href="index.jsp"
-					class="navbarlink"> </a> <a href="http://www.broad.mit.edu"
-					class="navbarlink"> <h:graphicImage value="/skin/broadLogo.gif"
-					border='1' height="16" width="16" /> <f:verbatim>&#160;&#169; 2003-2006 Broad Institute, MIT</f:verbatim>
-				</a></td>
-				<td align="right" valign="top"><a
-					href="mailto:gp-help@broad.mit.edu" class="navbarlink"><nobr>report
-				bugs</nobr></a> | <a href="mailto:gp-help@broad.mit.edu" class="navbarlink"><nobr>request
-				help</nobr></a></td>
-			</tr>
-		</table>
-		</div>
-	</ui:define>
 
 </ui:composition>
 </html>

@@ -4,48 +4,14 @@
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core">
 
-<f:loadBundle basename="resources" var="msg" />
 
 <ui:composition template="/templates/common.xhtml">
 
-	<ui:define name="pageTitle">GenePattern sign-in</ui:define>
-
-	<ui:define name="pageHeader">
-		<div id="navbar" class="navbar">
-		<form action="login.jsp" name="login">
-		<table width="100%">
-			<tr>
-				<td valign="top" class="logo"><h:graphicImage
-					value="/skin/logoSmall.gif" border="0" height="25" width="25" />&#160;<B>Gene</B>Pattern
-				3.0&nbsp;</td>
-				<td align="right" valign="top"><nobr> </nobr> <br />
-				<a href="about.jsp" class="navbarlink">about</a></td>
-			</tr>
-			<tr />
-			<tr />
-			<tr />
-			<tr />
-		</table>
-		<p />
-		</form>
-		</div>
-	</ui:define>
+	<ui:define name="pageTitle">Register User</ui:define>
 
 	<ui:define name="body">
-		<h:panelGrid styleClass="group" columns="2" cellpadding="2"
-			cellspacing="0" width="100%" rowClasses="vertAlignTop"
-			rendered="#{! empty facesContext.maximumSeverity}">
-			<h:graphicImage value="#{pageMessages.messageImage}"
-				style="float: left; vertical-align: top;" />
-			<h:panelGrid columns="1" cellpadding="2" cellspacing="2"
-				columnClasses="leftAlignCol" rowClasses="vertAlignTop" width="100%">
-				<h:outputText value="#{pageMessages.messageHeader}" escape="false"
-					rendered="#{pageMessages.renderMessage}" />
-				<h:messages errorClass="errorMessage" infoClass="infoMessage"
-					layout="table" globalOnly="true" showDetail="false"
-					showSummary="true" />
-			</h:panelGrid>
-		</h:panelGrid>
+
+
 		<h:form>
 		    Enter a username and password.
 			<h:panelGrid columns="3"> 
@@ -56,9 +22,14 @@
 
 				Password:
 					<h:inputSecret size="50" value="#{loginBean.password}"
-					id="password" required="true" />
-				<h:message style="color: red; font-weight: bold;" for="password" />
-
+					id="password" required="true" validator="#{loginBean.validatePassword}"/>
+				 <h:message style="color: red; font-weight: bold;" for="password" />
+				 
+				 Re-enter password:
+					<h:inputSecret size="50" value="#{loginBean.passwordConfirm}"
+					required="true" binding="#{loginBean.passwordConfirmComponent}"/>
+				<h:outputText></h:outputText>
+				 
 				<h:commandButton value="register" class="little"
 					actionListener="#{loginBean.registerUser}" />
 				<h:outputText value="" />
@@ -70,25 +41,6 @@
 		</h:form>
 	</ui:define>
 
-	<ui:define name="pageFooter">
-		<div class="navbar">
-
-
-		<table width="100%">
-			<tr>
-				<td align="left" valign="top"><a href="index.jsp"
-					class="navbarlink"> </a> <a href="http://www.broad.mit.edu"
-					class="navbarlink"> <h:graphicImage value="/skin/broadLogo.gif"
-					border='1' height="16" width="16" /> <f:verbatim>&#160;&#169; 2003-2006 Broad Institute, MIT</f:verbatim>
-				</a></td>
-				<td align="right" valign="top"><a
-					href="mailto:gp-help@broad.mit.edu" class="navbarlink"><nobr>report
-				bugs</nobr></a> | <a href="mailto:gp-help@broad.mit.edu" class="navbarlink"><nobr>request
-				help</nobr></a></td>
-			</tr>
-		</table>
-		</div>
-	</ui:define>
 
 </ui:composition>
 </html>
