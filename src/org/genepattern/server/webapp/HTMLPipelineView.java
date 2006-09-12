@@ -727,6 +727,10 @@ public class HTMLPipelineView implements IPipelineView {
 	 */
 	public String getJavascript(PipelineModel model) {
 		try {
+			TaskInfo ptask = new LocalAdminClient(userID).getTask(pipelineName);
+			ParameterInfo tpi[] = new ParameterFormatConverter()
+							.getParameterInfoArray(ptask.getParameterInfo());
+
 			StringBuffer s = new StringBuffer();
 			s.append("	setField(\"pipeline_name\", \""
 					+ javascriptEncode(model.getName()) + "\");\n");
@@ -842,10 +846,6 @@ public class HTMLPipelineView implements IPipelineView {
 						continue;
 					}
 
-					//System.out.println("getPersistentDesign: " + pi.getName()
-					// + ", " + pi.getDescription() + ", " + pi.getValue() + ",
-					// formal: " + piFormal.getValue());
-
 					if (pi.isOutputFile()) {
 						// do nothing
 					} else if (piFormal.isInputFile()) {
@@ -857,21 +857,17 @@ public class HTMLPipelineView implements IPipelineView {
 									+ "\");\n");
 						}
 
-						if (pia
-								.get(AbstractPipelineCodeGenerator.INHERIT_TASKNAME) != null) {
+						if (pia.get(AbstractPipelineCodeGenerator.INHERIT_TASKNAME) != null) {
 
 							// set inherited properties
-							s
-									.append("	setFileInheritance("
+							s.append("	setFileInheritance("
 											+ taskNum
 											+ ", "
 											+ formalP
 											+ ", "
-											+ pia
-													.get(AbstractPipelineCodeGenerator.INHERIT_TASKNAME)
+											+ pia.get(AbstractPipelineCodeGenerator.INHERIT_TASKNAME)
 											+ ", \""
-											+ pia
-													.get(AbstractPipelineCodeGenerator.INHERIT_FILENAME)
+											+ pia.get(AbstractPipelineCodeGenerator.INHERIT_FILENAME)
 											+ "\");\n");
 						}
 					} else if (pi.getValue() != null
@@ -895,6 +891,34 @@ public class HTMLPipelineView implements IPipelineView {
 						// set checkbox
 						s.append("	setCheckbox(\"t" + taskNum + "_prompt_"
 								+ formalP + "\", true);\n");
+
+// XXXXXXXXXXXXXXXx set altName and altDescription nto the boxes xxXXXXXXXXXXXXXXXXXXXXXXXXX
+						int count = i+1;
+						String pname = taskInfo.getName() + count +"." + pi.getName();
+						
+						for (int k=0; k < tpi.length; k++){
+							ParameterInfo atpi = tpi[k];
+							if (atpi.getName().equals(pname)){
+								HashMap atts = atpi.getAttributes();
+								// System.out.println("PIA=" + atpi.getName() + "  --- " + pname);
+								pi.getAttributes().put("altName", atts.get("altName"));
+								pi.getAttributes().put("altDescription", atts.get("altDescription"));
+							
+								
+								s.append("	setParameter(" + taskNum + ", \""
+									+ pi.getName() + "_altName\", \""
+									+ javascriptEncode((String)atts.get("altName"))
+									+ "\");\n");
+								
+								s.append("	setParameter(" + taskNum + ", \""
+									+ pi.getName() + "_altDescription\", \""
+									+ javascriptEncode((String)atts.get("altDescription"))
+									+ "\");\n");
+								
+								s.append(" document.getElementById('span_"+taskNum+"_"+i +"').style.display=\"inline\";   ");
+
+							}
+						}
 					}
 				}
 			}
