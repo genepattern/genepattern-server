@@ -18,7 +18,7 @@ public class TableNameSequenceGenerator extends SequenceGenerator {
         if (params.getProperty(SEQUENCE) == null || params.getProperty(SEQUENCE).length() == 0) {
             String tableName = params.getProperty(PersistentIdentifierGenerator.TABLE);
             if (tableName != null) {
-                String seqName = "seq_" + tableName;
+                String seqName = tableName + "_SEQ";
                 params.setProperty(SEQUENCE, seqName);
             }
         }
