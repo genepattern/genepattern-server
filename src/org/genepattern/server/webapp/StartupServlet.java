@@ -116,8 +116,8 @@ public class StartupServlet extends HttpServlet {
 
     protected void startDaemons(Properties props, ServletContext application) throws ServletException {
         startJobPurger(props);
-        startIndexerDaemon(props);
-        startJSPCompiler(props, application);
+        //startIndexerDaemon(props);
+        //startJSPCompiler(props, application);
         Thread.currentThread().yield(); // allow a bit of runtime to the
         // independent threads
     }
