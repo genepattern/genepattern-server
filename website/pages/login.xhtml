@@ -3,7 +3,7 @@
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:t="http://myfaces.apache.org/tomahawk">
+	xmlns:t="http://myfaces.apache.org/tomahawk">
 
 
 <ui:composition template="/templates/common.xhtml">
@@ -15,22 +15,30 @@
 		<h:form>
 		Please enter your username to identify task ownership.  We recommend using your email address to ensure uniqueness, memorability, and consistency.<br />
 			<h:panelGrid columns="1" rendered="#{loginBean.unknownUser}">
-			  <h:outputText value="Unknown username. "/><h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf">
-			  	<f:verbatim>Click to register</f:verbatim>			  	  
-			  </h:outputLink>
+				<h:outputText value="Unknown username. " />
+				<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf">
+					Click to register
+				</h:outputLink>
 			</h:panelGrid>
-			<h:panelGrid columns="3"> 
-			    <h:outputLabel value="Username:" for="username"></h:outputLabel>			
-				<h:inputText size="50" value="#{loginBean.username}" binding="#{loginBean.usernameComponent}"
-						id="username" required="true" />
+			<h:panelGrid columns="3">
+
+				<h:outputLabel value="Username:" for="username"></h:outputLabel>
+				<h:inputText size="50" value="#{loginBean.username}"
+					binding="#{loginBean.usernameComponent}" id="username"
+					required="true" />
 				<h:message style="color: red; font-weight: bold;" for="username" />
 
-				<h:outputLabel value="Password:" for="password"></h:outputLabel>	
-				<h:inputSecret size="50" value="#{loginBean.password}"
-						id="password" required="true" validator="#{loginBean.validateLogin}"/>
+
+				<h:outputLabel value="Password:" for="password" rendered="#{loginBean.passwordRequired}"></h:outputLabel>
+				<h:inputSecret size="50" value="#{loginBean.password}" id="password"
+					required="true" rendered="#{loginBean.passwordRequired}"
+					validator="#{loginBean.validateLogin}" />
 				<h:message style="color: red; font-weight: bold;" for="password" />
+
+
+
 			</h:panelGrid>
-			<t:commandButton actionListener="#{loginBean.submitLogin}" value="login"/>
+			<h:commandButton actionListener="#{loginBean.submitLogin}" value="login" styleClass="little"/>
 
 		</h:form>
 	</ui:define>
