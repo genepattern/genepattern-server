@@ -17,6 +17,11 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.PageMessages</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
+ <managed-bean>
+  <managed-bean-name>registrationBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.RegistrationBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
  <navigation-rule>
   <from-view-id>*</from-view-id>
   <navigation-case>
