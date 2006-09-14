@@ -38,7 +38,7 @@ public class LoginBean extends AbstractUIBean {
     private boolean invalidPassword = false;
 
     public LoginBean() {
-        String prop = System.getProperty("require.password").toLowerCase();
+        String prop = System.getProperty("require.password", "false").toLowerCase();
         passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
     }
 
