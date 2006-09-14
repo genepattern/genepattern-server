@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core">
+
+
+<ui:composition template="/templates/common.xhtml">
+
+	<ui:define name="pageTitle">GenePattern Command Prefix Admini</ui:define>
+
+
+	<ui:define name="body">
+		<h:form>
+			<table>
+				<tr>
+					<td>CommandPrefixes:</td>
+				</tr>
+				<tr>
+				
+				<h:dataTable value="#{commandPrefixBean.commandPrefixes}"  var="aPrefix">
+				  <h:column>
+						  <h:outputText value="#{aPrefix.key}"/>
+				    </h:column>
+				    <h:column>
+				        <h:outputText value="#{aPrefix.value}"/>
+				    </h:column>
+				</h:dataTable>
+				</tr>
+				<tr>	
+					<td><h:inputText size="50"
+						value="#{commandPrefixBean.newPrefix}" id="newPrefix"
+						required="true" /></td>
+				</tr>
+				<tr>
+					<td><h:message style="color: red; font-weight: bold;"
+						for="newPrefix" /></td>
+				</tr>
+				<tr>
+					<td rowspan="2"><h:commandButton value="Submit" class="little"
+						actionListener="#{commandPrefixBean.saveCommandPrefixes}" /></td>
+				</tr>
+
+			</table>
+
+		</h:form>
+	</ui:define>
+
+
+</ui:composition>
+</html>
