@@ -35,7 +35,7 @@ public class LoginBean extends AbstractUIBean {
     private boolean passwordRequired;
 
     private boolean unknownUser = false;
-    private UIInput usernameComponent;
+    private boolean invalidPassword = false;
 
     public LoginBean() {
         String prop = System.getProperty("require.password").toLowerCase();
@@ -66,6 +66,10 @@ public class LoginBean extends AbstractUIBean {
         return unknownUser;
     }
 
+    public boolean isInvalidPassword() {
+        return invalidPassword;
+    }
+
     /**
      * Submit the user / password. For now this uses an action listener since we
      * are redirecting to a page outside of the JSF framework. This should be
@@ -86,13 +90,15 @@ public class LoginBean extends AbstractUIBean {
                 unknownUser = true;
             }
             else {
-                if (password.equals(up.getPassword())) {
-                    setUserAndRedirect(request, getResponse(), username);
+                Base64 decoder = new Base64();
+                String actualPassword = new String(decoder.decode(up.getPassword().getBytes()));
+
+                if (!actualPassword.equals(password)) {
+                    invalidPassword = true;
                 }
+
                 else {
-                    // We should never get here, the validatot (validateLogin)
-                    // should catch this case.
-                    log.error("Invalid password");
+                    setUserAndRedirect(request, getResponse(), username);
                 }
             }
         }
@@ -109,46 +115,6 @@ public class LoginBean extends AbstractUIBean {
 
     }
 
-    public void validateLogin(FacesContext context, UIComponent component, Object value) {
-
-        String name = (String) usernameComponent.getValue();
-
-        // Get the password associated with the username from the database.
-        UserPassword up = (new UserPasswordHome()).findByUsername(name);
-        if (up == null) {
-            // No user object with this name.  This is being handled at the submit stage, nothing to do here
-        }
-        else {
-            Base64 decoder = new Base64();
-            String actualPassword = new String(decoder.decode(up.getPassword().getBytes())).trim();
-System.out.println(actualPassword);
-System.out.println(value);
-            if (!actualPassword.equals(value.toString().trim())) {
-                String message = "Invalid password";
-                System.out.println(message);
-                FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
-                ((UIInput) component).setValid(false);
-                throw new ValidatorException(facesMessage);
-            }
-        }
-    }
-
-    public UIInput getUsernameComponent() {
-        return usernameComponent;
-    }
-
-    public void setUsernameComponent(UIInput passwordComponent) {
-        this.usernameComponent = passwordComponent;
-    }
-
-    protected String getReferrer(HttpServletRequest request) {
-        String referrer = request.getParameter("referrer");
-        if (referrer == null || referrer.length() == 0) {
-            referrer = request.getContextPath() + "/index.jsp";
-        }
-        return referrer;
-
-    }
 
     protected void setUserAndRedirect(HttpServletRequest request, HttpServletResponse response, String username)
             throws UnsupportedEncodingException, IOException {
@@ -166,16 +132,12 @@ System.out.println(value);
         getResponse().sendRedirect(referrer);
     }
 
-    public static void main(String[] args) {
-        Base64 coder = new Base64();
-        String test = "abc";
-        String t1 = new String(coder.encode((new String(test)).getBytes()));
-
-        String t2 = new String(coder.decode(t1.getBytes()));
-
-        System.out.println(t1);
-        System.out.println(t2);
-        System.out.println(test.equals(t2));
+    protected String getReferrer(HttpServletRequest request) {
+        String referrer = request.getParameter("referrer");
+        if (referrer == null || referrer.length() == 0) {
+            referrer = request.getContextPath() + "/index.jsp";
+        }
+        return referrer;
 
     }
 

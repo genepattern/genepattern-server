@@ -12,33 +12,32 @@
 
 
 	<ui:define name="body">
-		<h:form>
 		Please enter your username to identify task ownership.  We recommend using your email address to ensure uniqueness, memorability, and consistency.<br />
-			<h:panelGrid columns="1" rendered="#{loginBean.unknownUser}">
-				<h:outputText value="Unknown username. " />
-				<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf">
+        
+		<h:form>
+			<h:panelGroup rendered="#{loginBean.unknownUser}">
+				<h:outputText value="Unknown username." />
+				<h:outputLink
+					value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf">
 					Click to register
-				</h:outputLink>
-			</h:panelGrid>
+				  </h:outputLink>
+			</h:panelGroup>
+			<h:outputText value="Invalid password" rendered="#{loginBean.invalidPassword}"
+				style="color: red; font-weight: old;" />
+
 			<h:panelGrid columns="3">
-
 				<h:outputLabel value="Username:" for="username"></h:outputLabel>
-				<h:inputText size="50" value="#{loginBean.username}"
-					binding="#{loginBean.usernameComponent}" id="username"
-					required="true" />
+				<h:inputText size="50" value="#{loginBean.username}" id="username" required="true" />
 				<h:message style="color: red; font-weight: bold;" for="username" />
-
-
+				
 				<h:outputLabel value="Password:" for="password" rendered="#{loginBean.passwordRequired}"></h:outputLabel>
 				<h:inputSecret size="50" value="#{loginBean.password}" id="password"
-					required="true" rendered="#{loginBean.passwordRequired}"
-					validator="#{loginBean.validateLogin}" />
-				<h:message style="color: red; font-weight: bold;" for="password" />
-
-
+					required="true" rendered="#{loginBean.passwordRequired}" />
+			    <h:message style="color: red; font-weight: bold;" for="password" />
 
 			</h:panelGrid>
-			<h:commandButton actionListener="#{loginBean.submitLogin}" value="login" styleClass="little"/>
+			<h:commandButton actionListener="#{loginBean.submitLogin}"
+				value="sign in" styleClass="little" />
 
 		</h:form>
 	</ui:define>
