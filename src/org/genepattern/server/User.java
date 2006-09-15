@@ -38,6 +38,34 @@ public class User {
 	public void setUsername(String username) {
 		this.username = username;
 	}
+
+    public Date getLastLoginDate() {
+        return lastLoginDate;
+    }
+
+    public void setLastLoginDate(Date lastLoginDate) {
+        this.lastLoginDate = lastLoginDate;
+    }
+
+    public String getLastLoginIP() {
+        return lastLoginIP;
+    }
+
+    public void setLastLoginIP(String lastLoginIP) {
+        this.lastLoginIP = lastLoginIP;
+    }
+
+    public int getTotalLoginCount() {
+        return totalLoginCount;
+    }
+
+    public void setTotalLoginCount(int totalLoginCount) {
+        this.totalLoginCount = totalLoginCount;
+    }
+    
+    public void incrementLoginCount() {
+        totalLoginCount++;
+    }
 	
 
 }
