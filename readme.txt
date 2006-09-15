@@ -1,4 +1,4 @@
-adddGenePattern directory structure:
+addddGenePattern directory structure:
 
 /: Top level build.xml, readme, license information
 
