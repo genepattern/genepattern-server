@@ -4,21 +4,15 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.faces.validator.ValidatorException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
-import org.genepattern.server.UserPassword;
-import org.genepattern.server.UserPasswordHome;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.User;
+import org.genepattern.server.UserHome;
 import org.genepattern.util.GPConstants;
 
 /**
@@ -85,11 +79,20 @@ public class LoginBean extends AbstractUIBean {
             assert password != null;
             HttpServletRequest request = getRequest();
 
-            UserPassword up = (new UserPasswordHome()).findByUsername(username);
+            User up = (new UserHome()).findByUsername(username);
             if (up == null) {
-                unknownUser = true;
+                if (passwordRequired) {
+                    unknownUser = true;
+                }
+                else {
+                    User newUser = new User();
+                    newUser.setUsername(username);
+                    newUser.setPassword(null);
+                    (new UserHome()).persist(newUser);
+                    setUserAndRedirect(request, getResponse(), username);
+                }
             }
-            else {
+            else if (passwordRequired) {
                 Base64 decoder = new Base64();
                 String actualPassword = new String(decoder.decode(up.getPassword().getBytes()));
 
@@ -100,6 +103,9 @@ public class LoginBean extends AbstractUIBean {
                 else {
                     setUserAndRedirect(request, getResponse(), username);
                 }
+            }
+            else {
+                setUserAndRedirect(request, getResponse(), username);
             }
         }
         catch (UnsupportedEncodingException e) {
@@ -114,7 +120,6 @@ public class LoginBean extends AbstractUIBean {
         }
 
     }
-
 
     protected void setUserAndRedirect(HttpServletRequest request, HttpServletResponse response, String username)
             throws UnsupportedEncodingException, IOException {
