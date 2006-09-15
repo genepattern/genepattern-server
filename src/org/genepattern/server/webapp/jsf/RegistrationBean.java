@@ -18,8 +18,8 @@ import javax.servlet.http.*;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
-import org.genepattern.server.UserPassword;
-import org.genepattern.server.UserPasswordHome;
+import org.genepattern.server.User;
+import org.genepattern.server.UserHome;
 import org.genepattern.util.GPConstants;
 
 /**
@@ -67,8 +67,8 @@ public class RegistrationBean extends AbstractUIBean {
 
     public void validateNewUsername(FacesContext context, UIComponent component, Object value)
             throws ValidatorException {
-        UserPassword up = (new UserPasswordHome()).findByUsername(value.toString());
-        if (up != null) {
+        User user = (new UserHome()).findByUsername(value.toString());
+        if (user != null) {
             String message = "An account with this username already exist.  Please choose another.";
             FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
             ((UIInput) component).setValid(false);
@@ -113,10 +113,12 @@ public class RegistrationBean extends AbstractUIBean {
             String encodedPassword = new String( encoder.encode(password.getBytes()));
             
             
-            UserPassword newUser = new UserPassword();
+            User newUser = new User();
             newUser.setUsername(username);
             newUser.setPassword(encodedPassword);
-            (new UserPasswordHome()).persist(newUser);
+            newUser.incrementLoginCount();
+            
+            (new UserHome()).persist(newUser);
             setUserAndRedirect(getRequest(), getResponse(), username);
 
         }
