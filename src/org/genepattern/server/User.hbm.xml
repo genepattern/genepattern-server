@@ -7,7 +7,7 @@
       <generator class="native"/>
     </id>
     <property name="username" type="string" column="username"/>
-    <property name="password" type="string" column="password"/>
+    <property name="password" type="string" column="gp_password"/>
     <property name="email" type="string" column="email"/>
     <property name="lastLoginDate" type="timestamp" column="last_login_date"/>
     <property name="lastLoginIP" type="string" column="last_login_ip"/>
