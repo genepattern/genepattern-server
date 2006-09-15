@@ -11,39 +11,102 @@
 
 
 	<ui:define name="body">
-		<h:form>
+	<h:messages/>
+	
+	
+		
+		<h2> Command Prefixes </h2>
 			<table>
 				<tr>
-					<td>CommandPrefixes:</td>
-				</tr>
-				<tr>
+				<h:dataTable value="#{commandPrefixBean.commandPrefixes}"  var="aPrefix" binding="#{commandPrefixBean.prefixTable}">
 				
-				<h:dataTable value="#{commandPrefixBean.commandPrefixes}"  var="aPrefix">
 				  <h:column>
+				  	<f:facet name="header">
+						<h:panelGroup>
+							<h:outputText value="Name" />
+						</h:panelGroup>
+					</f:facet>
+				  
 						  <h:outputText value="#{aPrefix.key}"/>
 				    </h:column>
 				    <h:column>
+				    	<f:facet name="header">
+						<h:panelGroup>
+							<h:outputText value="Value" />
+						</h:panelGroup>
+					</f:facet>
 				        <h:outputText value="#{aPrefix.value}"/>
 				    </h:column>
+				     <h:column>
+				  	 <h:form>
+				     	<h:commandButton actionListener="#{commandPrefixBean.deletePrefix}" value="delete"/>
+				     </h:form>
+				     </h:column>
 				</h:dataTable>
 				</tr>
+				<h:form>
 				<tr>	
-					<td><h:inputText size="50"
-						value="#{commandPrefixBean.newPrefix}" id="newPrefix"
-						required="true" /></td>
+					<td>prefix name=<h:inputText size="50"
+						value="#{commandPrefixBean.newPrefixName}" id="newPrefixName"
+						required="true" />
+						Content=<h:inputText size="50"
+						value="#{commandPrefixBean.newPrefixValue}" id="newPrefixVal"
+						required="true" />
+						</td>
 				</tr>
+				
 				<tr>
-					<td><h:message style="color: red; font-weight: bold;"
-						for="newPrefix" /></td>
+					<td rowspan="2"><h:commandButton value="Submit Prefix" class="little"
+						actionListener="#{commandPrefixBean.saveCommandPrefixes}" />
+					</td>
 				</tr>
+				</h:form>
 				<tr>
-					<td rowspan="2"><h:commandButton value="Submit" class="little"
-						actionListener="#{commandPrefixBean.saveCommandPrefixes}" /></td>
+				<td>
+				<h:dataTable value="#{commandPrefixBean.taskPrefixMapping}"  var="aPrefixMap">
+				  <h:column>
+				  	<f:facet name="header">
+						<h:panelGroup>
+							<h:outputText value="Module" />
+						</h:panelGroup>
+					</f:facet>
+						  <h:outputText value="#{aPrefixMap.key}"/>
+				    </h:column>
+				    <h:column>
+				    <f:facet name="header">
+						<h:panelGroup>
+							<h:outputText value="Command Prefix Name" />
+						</h:panelGroup>
+					</f:facet>
+				        <h:outputText value="#{aPrefixMap.value}"/>
+				    </h:column>
+				</h:dataTable>
+				</td>
+				</tr>
+				<h:form>
+				<tr>	
+					<td>for module ... 
+						<h:selectOneMenu value="#{commandPrefixBean.newMappingLSID}">
+							<f:selectItems value="#{moduleListBean.latestModules}" />
+						</h:selectOneMenu>
+						... use prefix...
+						
+						<h:selectOneMenu value="#{commandPrefixBean.newMappingPrefix}">
+							<f:selectItems value="#{commandPrefixBean.commandPrefixesAsSelectItems}" />
+						</h:selectOneMenu>
+						
+						</td>
 				</tr>
 
+				<tr>
+				<td rowspan="2">
+				<h:commandButton value="Submit Mapping" class="little"
+						actionListener="#{commandPrefixBean.savePrefixTaskMapping}" /></td>
+				</tr>
+				</h:form>
 			</table>
 
-		</h:form>
+		
 	</ui:define>
 
 
