@@ -24,7 +24,7 @@
     <property name="hibernate.jdbc.batch_size">20</property>
     <property name="hibernate.statement_cache.size">0</property>
     <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
-    <mapping resource="org/genepattern/server/UserPassword.hbm.xml"/>
+    <mapping resource="org/genepattern/server/User.hbm.xml"/>
     <mapping resource="org/genepattern/server/webservice/server/dao/AnalysisJob.hbm.xml"/>
     <mapping resource="org/genepattern/server/webservice/server/dao/JobStatus.hbm.xml"/>
     <mapping resource="org/genepattern/server/webservice/server/dao/Lsid.hbm.xml"/>
