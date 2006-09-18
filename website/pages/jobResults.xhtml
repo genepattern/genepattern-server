@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk">
+	<ui:composition template="/templates/common.xhtml">
+		<ui:define name="pageTitle">
+			Job Results
+		</ui:define>
+		<ui:define name="body">
+			<h:form>
+					
+			<h2>
+				Job Results
+			</h2>
+			<h:dataTable id="jobs" value="#{jobResultsBean.jobs}" var="job" border="0">
+				<h:column>
+					<f:facet name="header">
+						<h:outputText value="Job Number" />
+					</f:facet>
+					<h:outputText value="#{job.jobNumber}" />
+				</h:column>
+				<h:column>
+					<f:facet name="header">
+						<h:outputText value="Name" />
+					</f:facet>
+					<h:outputText value="#{job.taskName}" />
+				</h:column>
+				<h:column>
+					<f:facet name="header">
+						<h:outputText value="Status" />
+					</f:facet>
+					<h:outputText value="#{job.status}" />
+				</h:column>
+			</h:dataTable>
+		<!--  </h:panelGroup>  -->	
+	</h:form>
+</ui:define>
+</ui:composition>
+</html>
