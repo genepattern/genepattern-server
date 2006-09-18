@@ -23,7 +23,7 @@ public abstract class AbstractUIBean {
     protected Map getRequestMap() {
         return FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
     }
-    
+
     protected FacesContext getFacesContext() {
         return FacesContext.getCurrentInstance();
     }
@@ -40,42 +40,59 @@ public abstract class AbstractUIBean {
     protected HttpServletResponse getResponse() {
         return (HttpServletResponse) getExternalContext().getResponse();
     }
-  
-    
+
     protected void setInfoMessage(String summary) {
         getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
     }
 
-
-
     protected void setInfoMessage(UIComponent component, String summary) {
-        getFacesContext().addMessage(component.getClientId(getFacesContext()), new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
+        getFacesContext().addMessage(component.getClientId(getFacesContext()),
+                new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
     }
 
     protected void printAttributes() {
         System.out.println("Attributes:");
         Enumeration en = getRequest().getAttributeNames();
-        while(en.hasMoreElements()) {
+        while (en.hasMoreElements()) {
             String name = (String) en.nextElement();
             System.out.print(name + " -> ");
             System.out.println(getRequest().getAttribute(name));
-            
+
         }
     }
 
     protected void printParameters() {
         System.out.println("Parameters: ");
         Enumeration en = getRequest().getParameterNames();
-        while(en.hasMoreElements()) {
-            String name  = (String) en.nextElement();
+        while (en.hasMoreElements()) {
+            String name = (String) en.nextElement();
             System.out.print(name + " -> ");
-            for(String value : getRequest().getParameterValues(name)) {
+            for (String value : getRequest().getParameterValues(name)) {
                 System.out.print(value + " ");
             }
             System.out.println();
         }
     }
 
+    protected String getReferrer(HttpServletRequest request) {
+        String referrer = request.getParameter("referrer");
+        if (referrer == null || referrer.length() == 0) {
+            referrer = request.getContextPath() + "/index.jsp";
+        }
+        return referrer;
 
+    }
+
+    protected String getUserId() {
+        // return (String) getRequestMap().get("userID");
+        Cookie[] cookies = getRequest().getCookies();
+        for (int i = 0; i < cookies.length; i++) {
+            if ("userid".equals(cookies[i].getName())) {
+                return cookies[i].getValue();
+            }
+
+        }
+        return null;
+    }
 
 }
