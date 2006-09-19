@@ -17,24 +17,35 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.PageMessages</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
-
  <managed-bean>
   <managed-bean-name>commandPrefixBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.CommandPrefixBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
-
  <managed-bean>
   <managed-bean-name>registrationBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.RegistrationBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
-
+ <managed-bean>
+  <managed-bean-name>moduleListBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.ModuleListBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
  <navigation-rule>
   <from-view-id>*</from-view-id>
   <navigation-case>
    <from-outcome>logout</from-outcome>
    <to-view-id>/pages/login.xhtml</to-view-id>
+  </navigation-case>
+ </navigation-rule>
+ <navigation-rule>
+  <display-name>commadPrefixAdmin</display-name>
+  <from-view-id>/pages/commandPrefixAdmin.xhtml</from-view-id>
+  <navigation-case>
+   <from-action>*</from-action>
+   <from-outcome>*</from-outcome>
+   <to-view-id>/pages/commandPrefixAdmin.xhtml</to-view-id>
   </navigation-case>
  </navigation-rule>
  <application>
