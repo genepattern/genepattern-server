@@ -124,7 +124,7 @@ public class IndexPageBean extends AbstractUIBean {
         return tmTasks;
     }
 
-    private String getUserId() {
+    protected String getUserId() {
         return (String) getRequestMap().get("userID");
     }
 
