@@ -137,13 +137,4 @@ public class LoginBean extends AbstractUIBean {
         getResponse().sendRedirect(referrer);
     }
 
-    protected String getReferrer(HttpServletRequest request) {
-        String referrer = request.getParameter("referrer");
-        if (referrer == null || referrer.length() == 0) {
-            referrer = request.getContextPath() + "/index.jsp";
-        }
-        return referrer;
-
-    }
-
 }
