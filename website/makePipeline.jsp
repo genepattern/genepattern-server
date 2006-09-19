@@ -113,7 +113,6 @@ boolean bClone = false;
 boolean bDelete = false;
 
 try {
-	// mySmartUpload is from http://www.jspsmart.com/
 	// Initialization
 	userID = requestParameters.getProperty(GPConstants.USERID);
 
