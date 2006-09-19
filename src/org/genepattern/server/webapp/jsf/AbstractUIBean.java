@@ -95,4 +95,9 @@ public abstract class AbstractUIBean {
         return null;
     }
 
+    protected String getUserName(){
+    	return (String)getRequest().getAttribute("userID");
+    }
+
+
 }
