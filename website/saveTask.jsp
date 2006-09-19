@@ -26,7 +26,14 @@
 		 java.util.HashMap,
 		 java.util.TreeMap,
 		 java.util.Vector,
+		 java.util.Properties,
+		 java.nio.channels.FileChannel,
+		 java.util.List,
+		 java.util.Iterator,		
 		 java.util.Enumeration,
+		 org.apache.commons.fileupload.DiskFileUpload,
+             org.apache.commons.fileupload.FileItem,
+             org.apache.commons.fileupload.FileUpload,
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.webservice.ParameterInfo,
@@ -43,7 +50,6 @@
 		 org.genepattern.server.webapp.*,
 		 org.genepattern.data.pipeline.PipelineModel,
 		 org.genepattern.server.webservice.server.DirectoryManager,
-		 com.jspsmart.upload.*,
 		 org.genepattern.util.LSID"
 	session="false" contentType="text/html" language="Java" %><%
 
@@ -53,41 +59,66 @@ String userID= (String)request.getAttribute("userID"); // will force login if ne
 if (userID == null) return; // come back after login
 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 %>
-<jsp:useBean id="mySmartUpload" scope="page" class="com.jspsmart.upload.SmartUpload" />
-
 <%
 int i;
 StringBuffer log = null;
 
 String logFilename = System.getProperty("taskLog", null);
-com.jspsmart.upload.Request requestParameters = null;
+//com.jspsmart.upload.Request requestParameters = null;
+Properties requestParameters = new Properties();
+HashMap requestMultiValueParameters = new HashMap();
+HashMap  requestFiles = new HashMap();
+
+
 StringBuffer sbAttachments = new StringBuffer();
 TaskInfo previousTask = null;
 String taskName = null;
 String forward = null;
+DiskFileUpload fub = new DiskFileUpload();
+boolean isEncodedPost = FileUpload.isMultipartContent(request);
+List rParams = fub.parseRequest(request);
+int fileCount = 0;
 
+for (Iterator iter = rParams.iterator(); iter.hasNext();) {
+    FileItem fi = (FileItem) iter.next();
 
-// mySmartUpload is from http://www.jspsmart.com/
+    if (fi.isFormField()) {
+		// check for multiple values and append if true
+		String val = requestParameters.get(fi.getFieldName());
+		if ( val != null) {
+ 			val = val + GPConstants.PARAM_INFO_CHOICE_DELIMITER + fi.getString();
+	   		requestParameters.put(fi.getFieldName(), val);
 
-// Initialization
-mySmartUpload.initialize(pageContext);
-try { 	mySmartUpload.upload(); 
-    } catch (NegativeArraySizeException nase) {
-	// ignore
+		}else {
+	   		requestParameters.put(fi.getFieldName(), fi.getString());
+		}
+
+    } else {
+        // it is the file
+        fileCount++;
+        String name = fi.getName();
+        
+        if (name == null || name.equals("")) {
+            continue;
+        }
+        File aFile = new File(System.getProperty("java.io.tmpdir"), name);
+        requestFiles.put(fi.getFieldName(), aFile);
+        fi.write(aFile);
     }
-requestParameters = mySmartUpload.getRequest();
+ }
 
-taskName = requestParameters.getParameter(GPConstants.NAME);
-if (taskName == null ) taskName = request.getParameter(GPConstants.NAME);
+
+taskName = requestParameters.getProperty(GPConstants.NAME);
+if (taskName == null ) taskName = requestParameters.getProperty(GPConstants.NAME);
 
 // save the file attachments, if any, before installing the task, so that it is immediately ready to run
-String lsid = requestParameters.getParameter(GPConstants.LSID);
-if (lsid == null ) lsid = request.getParameter(GPConstants.LSID);
+String lsid = requestParameters.getProperty(GPConstants.LSID);
+if (lsid == null ) lsid = requestParameters.getProperty(GPConstants.LSID);
 String attachmentDir = null;
 File dir = null;
 
 // delete task
-if (requestParameters.getParameter("delete") != null || request.getParameter("delete") != null) {
+if (requestParameters.getProperty("delete") != null || requestParameters.getProperty("delete") != null) {
 	try {
 		taskIntegratorClient.deleteTask(lsid);
 %>
@@ -113,17 +144,17 @@ if (requestParameters.getParameter("delete") != null || request.getParameter("de
 
 // delete support file
 
-if ((requestParameters.getParameter("deleteFiles") != null || request.getParameter("deleteFiles") != null) ||
-    (requestParameters.getParameter("deleteSupportFiles") != null || request.getParameter("deleteSupportFiles") != null)) {
+if ((requestParameters.getProperty("deleteFiles") != null || requestParameters.getProperty("deleteFiles") != null) ||
+    (requestParameters.getProperty("deleteSupportFiles") != null || requestParameters.getProperty("deleteSupportFiles") != null)) {
 
 
-	if ((requestParameters.getParameter("deleteSupportFiles") != null && requestParameters.getParameter("deleteSupportFiles").length() > 0) ||
-	    (request.getParameter("deleteSupportFiles") != null && request.getParameter("deleteSupportFiles").length() > 0)) {
+	if ((requestParameters.getProperty("deleteSupportFiles") != null && requestParameters.getProperty("deleteSupportFiles").length() > 0) ||
+	    (requestParameters.getProperty("deleteSupportFiles") != null && requestParameters.getProperty("deleteSupportFiles").length() > 0)) {
 
-		String filename = requestParameters.getParameter("deleteFiles");
-		if (filename == null) filename = request.getParameter("deleteFiles");
+		String filename = requestParameters.getProperty("deleteFiles");
+		if (filename == null) filename = requestParameters.getProperty("deleteFiles");
 
-		forward = request.getParameter("forward");
+		forward = requestParameters.getProperty("forward");
 		if (forward== null) forward = "addTask.jsp";
 
 
@@ -166,8 +197,8 @@ if ((requestParameters.getParameter("deleteFiles") != null || request.getParamet
 }
 
 // clone task
-if (request.getParameter("clone") != null) {
-	String cloneName = request.getParameter("cloneName");
+if (requestParameters.getProperty("clone") != null) {
+	String cloneName = requestParameters.getProperty("cloneName");
 	try {
 		StringBuffer sbURL = request.getRequestURL();
 		String queryString = request.getQueryString();
@@ -201,7 +232,7 @@ if (request.getParameter("clone") != null) {
 	Cloned <%= taskName %> as <%= cloneName %>.<br>
 	<a href="addTask.jsp?<%= GPConstants.NAME%>=<%=lsid %>">edit <%= cloneName %></a><br>
 	<script language="javascript">
-	<% if("1".equals(request.getParameter("pipeline"))) {
+	<% if("1".equals(requestParameters.getProperty("pipeline"))) {
 		%> window.location = "pipelineDesigner.jsp?<%= GPConstants.NAME %>=<%= lsid %>"; <%
 	} else { %>
 		window.location = "addTask.jsp?<%= GPConstants.NAME %>=<%= lsid %>";
@@ -214,11 +245,11 @@ if (request.getParameter("clone") != null) {
 	</html>
 <%
 	return;
-} // end if request.getParameter("clone")
+} // end if requestParameters.getProperty("clone")
 
-int access_id = requestParameters.getParameter(GPConstants.PRIVACY).equals(GPConstants.PUBLIC) ? GPConstants.ACCESS_PUBLIC : GPConstants.ACCESS_PRIVATE;
+int access_id = requestParameters.getProperty(GPConstants.PRIVACY).equals(GPConstants.PUBLIC) ? GPConstants.ACCESS_PUBLIC : GPConstants.ACCESS_PRIVATE;
 
-String formerName = requestParameters.getParameter(GPConstants.FORMER_NAME);
+String formerName = requestParameters.getProperty(GPConstants.FORMER_NAME);
 if (formerName != null && formerName.length() > 0 && !formerName.equals(taskName)) {
 	try {
 		previousTask = GenePatternAnalysisTask.getTaskInfo(formerName, userID);
@@ -233,7 +264,7 @@ if (formerName != null && formerName.length() > 0 && !formerName.equals(taskName
 	dir.delete(); // delete the just created directory
 
 	// renaming task, need to rename taskLib directory for this task
-	formerName = requestParameters.getParameter(GPConstants.FORMER_NAME);
+	formerName = requestParameters.getProperty(GPConstants.FORMER_NAME);
 	File oldDir = new File(DirectoryManager.getTaskLibDir(formerName, lsid, userID));
 	oldDir.renameTo(dir);
 
@@ -255,27 +286,21 @@ String value = null;
 String[] values = null;
 for (numParameterInfos = 0; ; numParameterInfos++) {
 	key = "p" + numParameterInfos + "_name";
-	value = requestParameters.getParameter(key);
+	value = requestParameters.getProperty(key);
 	if (value == null || value.length() == 0) break;
 }
 
 ParameterInfo[] params = new ParameterInfo[numParameterInfos];
 for (i = 0; i < numParameterInfos; i++) {
-	ParameterInfo pi = new ParameterInfo(requestParameters.getParameter("p" + i + "_name"), 
-					     requestParameters.getParameter("p" + i + "_value"), 
-					     requestParameters.getParameter("p" + i + "_description"));
+	ParameterInfo pi = new ParameterInfo(requestParameters.getProperty("p" + i + "_name"), 
+					     requestParameters.getProperty("p" + i + "_value"), 
+					     requestParameters.getProperty("p" + i + "_description"));
 	if (GPConstants.PARAM_INFO_ATTRIBUTES.length > 0) {
 		HashMap attributes = new HashMap();
 		for (int attributeNum = 0; attributeNum < GPConstants.PARAM_INFO_ATTRIBUTES.length; attributeNum++) {
 			String attributeName = (String)GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum][GPConstants.PARAM_INFO_NAME_OFFSET];
-			values = requestParameters.getParameterValues("p" + i + "_" + attributeName);
-			value = "";
-			for (int x=0; values!=null && x < values.length ; x++){
-			 	if (x > 0) {
-					value = value + GPConstants.PARAM_INFO_CHOICE_DELIMITER;
-				}
-				value += values[x];
-			}
+
+			value = requestParameters.getProperty("p" + i + "_" + attributeName);
 	
 			attributes.put(attributeName, value);
 		}
@@ -291,28 +316,20 @@ for (i = 0; i < numParameterInfos; i++) {
 TaskInfoAttributes tia = new TaskInfoAttributes();
 for (i = 0; i < GPConstants.TASK_INFO_ATTRIBUTES.length; i++) {
 	key = GPConstants.TASK_INFO_ATTRIBUTES[i];
-	values = requestParameters.getParameterValues(key);
-	value = "";
-	for (int x=0; values!=null && x < values.length ; x++){
-	 	if (x > 0) {
-			value = value + GPConstants.PARAM_INFO_CHOICE_DELIMITER;
-		}
-		value += values[x];
-	}
-	
+	value = requestParameters.getProperty(key);
 	tia.put(key, value);
 }
 
 File attachment = null;
 String attachmentName = null;
-com.jspsmart.upload.File attachedFile = null;
+File attachedFile = null;
 
 // TODO: get values for access_id from task_access table in database
 //
 // check if this task already exists (byName) and use updateTask instead of installNewTask if it does
 //
 
-access_id = requestParameters.getParameter(GPConstants.PRIVACY).equals(GPConstants.PUBLIC) ? GPConstants.ACCESS_PUBLIC : GPConstants.ACCESS_PRIVATE;
+access_id = requestParameters.getProperty(GPConstants.PRIVACY).equals(GPConstants.PUBLIC) ? GPConstants.ACCESS_PUBLIC : GPConstants.ACCESS_PRIVATE;
 
 Vector vProblems = null;
 try {
@@ -328,8 +345,8 @@ try {
    
 	lsid = (String)tia.get(GPConstants.LSID);
 	lsid = taskIntegratorClient.modifyTask(access_id, 
-				requestParameters.getParameter(GPConstants.NAME), 
-				requestParameters.getParameter(GPConstants.DESCRIPTION), 
+				requestParameters.getProperty(GPConstants.NAME), 
+				requestParameters.getProperty(GPConstants.DESCRIPTION), 
 				params,
 				tia,
 				supportFiles, 
@@ -337,15 +354,18 @@ try {
 
 	// make $GenePatternHome/taskLib/<taskName> to store DLLs, etc.
 
-	attachmentDir = DirectoryManager.getTaskLibDir(requestParameters.getParameter(GPConstants.NAME), lsid, userID);
-	dir = new File(attachmentDir);
 
-	for (i=0;i<mySmartUpload.getFiles().getCount();i++){
-		attachedFile = mySmartUpload.getFiles().getFile(i);
-		if (attachedFile.isMissing()) continue;
+	attachmentDir = DirectoryManager.getTaskLibDir(requestParameters.getProperty(GPConstants.NAME), lsid, userID);
+	dir = new File(attachmentDir);
+	
+	for (Iterator iter = requestFiles.keySet().iterator(); iter.hasNext(); ){
+		key = (String)iter.next();
+			
+		attachedFile = (File)requestFiles.get(key);
+		if (!attachedFile.exists()) continue;
 
 		try {
-			attachmentName = attachedFile.getFileName();
+			attachmentName = attachedFile.getName();
 			if (attachmentName.trim().length() == 0) continue;
 			attachment = new File(dir, attachmentName);
 			if (attachment.exists()) {
@@ -360,15 +380,22 @@ try {
 				}
 			}
 			
-			attachedFile.saveAs(dir.getPath() + File.separator + attachmentName);
+			FileChannel inChannel = null, outChannel = null;
+			try	{
+				inChannel = new FileInputStream(attachedFile).getChannel();
+				outChannel = new FileOutputStream(attachment).getChannel();
+				outChannel.transferFrom(inChannel, 0, inChannel.size());
+			} finally {
+				if (inChannel != null) 	inChannel.close();
+				if (outChannel != null)	outChannel.close();
+			}
+
 			if (sbAttachments.length() > 0) sbAttachments.append(",");
 			sbAttachments.append(attachmentName);
-	//		out.println("saved " + dir.getPath() + File.separator + attachmentName + " (" + attachedFile.getSize() + " bytes)<br>");
-		} catch (SmartUploadException sue) {
+		} catch (Exception sue) {
 		    	throw new Exception("error saving " + dir.getPath() + File.separator + attachmentName + " in " + dir.getPath() +":<br>" + sue.getMessage());
 		}
 	}
-
 } catch (WebServiceErrorMessageException wseme) {
 	vProblems = wseme.getErrors();
 }
@@ -380,12 +407,12 @@ if(vProblems != null && vProblems.size() > 0) {
 		dir.renameTo(new File(DirectoryManager.getTaskLibDir(formerName, lsid, userID)));
 	}
 
-	tia.put(GPConstants.LSID, requestParameters.getParameter("LSID"));
-	TaskInfo taskInfo = new TaskInfo(-1,	requestParameters.getParameter(GPConstants.NAME), requestParameters.getParameter(GPConstants.DESCRIPTION), "", tia, userID, access_id);
+	tia.put(GPConstants.LSID, requestParameters.getProperty("LSID"));
+	TaskInfo taskInfo = new TaskInfo(-1,	requestParameters.getProperty(GPConstants.NAME), requestParameters.getProperty(GPConstants.DESCRIPTION), "", tia, userID, access_id);
 	taskInfo.setParameterInfoArray(params);
 	request.setAttribute("errors", vProblems);
 	request.setAttribute("taskInfo", taskInfo);
-	request.setAttribute("taskName", requestParameters.getParameter("name"));
+	request.setAttribute("taskName", requestParameters.getProperty("name"));
 	request.getRequestDispatcher("addTask.jsp").forward(request, response);
 }
 
