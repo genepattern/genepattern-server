@@ -60,7 +60,6 @@ public class JobResultsBean extends AbstractUIBean {
                 }
             }
         }
-
         return "Success";
     }
 
@@ -119,6 +118,7 @@ public class JobResultsBean extends AbstractUIBean {
     }
 
     public JobInfo[] getJobs() {
+        updateJobs();
         sort(getSort());
         return jobs;
     }
