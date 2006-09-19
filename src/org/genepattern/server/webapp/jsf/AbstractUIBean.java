@@ -82,20 +82,20 @@ public abstract class AbstractUIBean {
         return referrer;
 
     }
+//
+//    protected String getUserId() {
+//        // return (String) getRequestMap().get("userID");
+//        Cookie[] cookies = getRequest().getCookies();
+//        for (int i = 0; i < cookies.length; i++) {
+//            if ("userid".equals(cookies[i].getName())) {
+//                return cookies[i].getValue();
+//            }
+//
+//        }
+//        return null;
+//    }
 
-    protected String getUserId() {
-        // return (String) getRequestMap().get("userID");
-        Cookie[] cookies = getRequest().getCookies();
-        for (int i = 0; i < cookies.length; i++) {
-            if ("userid".equals(cookies[i].getName())) {
-                return cookies[i].getValue();
-            }
-
-        }
-        return null;
-    }
-
-    protected String getUserName(){
+    protected String getUserId(){
     	return (String)getRequest().getAttribute("userID");
     }
 
