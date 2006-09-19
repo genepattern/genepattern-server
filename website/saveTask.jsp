@@ -84,7 +84,7 @@ for (Iterator iter = rParams.iterator(); iter.hasNext();) {
 
     if (fi.isFormField()) {
 		// check for multiple values and append if true
-		String val = requestParameters.get(fi.getFieldName());
+		String val = requestParameters.getProperty(fi.getFieldName());
 		if ( val != null) {
  			val = val + GPConstants.PARAM_INFO_CHOICE_DELIMITER + fi.getString();
 	   		requestParameters.put(fi.getFieldName(), val);

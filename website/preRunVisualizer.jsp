@@ -17,6 +17,8 @@
 		 java.util.Enumeration,
 		 java.util.HashMap,
 		 java.io.File,
+		 java.io.FileInputStream,
+		 java.io.FileOutputStream,
 		 java.util.Date,
 		 java.io.UnsupportedEncodingException,
 		 java.net.InetAddress,
@@ -29,6 +31,15 @@
 		 java.util.GregorianCalendar,
 		 java.text.ParseException,
 		 java.text.DateFormat,
+		 java.util.Properties,
+		 java.nio.channels.FileChannel,
+		 java.util.List,
+		 java.util.Iterator,		
+		 java.util.Enumeration,
+		 org.apache.commons.fileupload.DiskFileUpload,
+             org.apache.commons.fileupload.FileItem,
+             org.apache.commons.fileupload.FileUpload,
+		
  		 org.genepattern.util.StringUtils,
 		
 		 org.genepattern.webservice.TaskInfo,
@@ -42,7 +53,6 @@
 		 org.genepattern.webservice.AnalysisWebServiceProxy,
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.JobInfo,
-		 com.jspsmart.upload.*,
 		 org.genepattern.data.pipeline.PipelineModel"
 	session="false" contentType="text/html" language="Java"%>
 <%
@@ -50,8 +60,6 @@ response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 %>
-<jsp:useBean id="mySmartUpload" scope="page"
-	class="com.jspsmart.upload.SmartUpload" />
 
 <html>
 <head>
@@ -65,63 +73,98 @@ response.setDateHeader("Expires", 0);
 
 
 <%
+
 /**
  * To run a visualizer, we first upload the files here to get them a URL and then call
- * runVisualizer.jsp to actually launch it after we move the params out of the smart upload object into
+ * runVisualizer.jsp to actually launch it after we move the params out of the file upload into
  * a normal request
  */
 
 
-com.jspsmart.upload.Request requestParameters = null;
+Properties requestParameters = new Properties();
+HashMap requestFiles = new HashMap();
+
 String userID = null;
 
 try {
-	// mySmartUpload is from http://www.jspsmart.com/
-	// Initialization
-	mySmartUpload.initialize(pageContext);
-	try {
-		mySmartUpload.upload();
-	} catch (NegativeArraySizeException nase) {
-		// ???
-	}
-	requestParameters = mySmartUpload.getRequest();
-	userID = requestParameters.getParameter(GPConstants.USERID);
+
+
+DiskFileUpload fub = new DiskFileUpload();
+boolean isEncodedPost = FileUpload.isMultipartContent(request);
+List rParams = fub.parseRequest(request);
+int fileCount = 0;
+
+for (Iterator iter = rParams.iterator(); iter.hasNext();) {
+    FileItem fi = (FileItem) iter.next();
+
+    if (fi.isFormField()) {
+		// check for multiple values and append if true
+		String val = (String)requestParameters.get(fi.getFieldName());
+		if ( val != null) {
+ 			val = val + GPConstants.PARAM_INFO_CHOICE_DELIMITER + fi.getString();
+	   		requestParameters.put(fi.getFieldName(), val);
+
+		}else {
+	   		requestParameters.put(fi.getFieldName(), fi.getString());
+		}
+
+    } else {
+        // it is the file
+        fileCount++;
+        String name = fi.getName();
+        
+        if (name == null || name.equals("")) {
+            continue;
+        }
+        File aFile = new File(System.getProperty("java.io.tmpdir"), name);
+        requestFiles.put(fi.getFieldName(), aFile);
+        fi.write(aFile);
+    }
+ }
+
+
+	userID = requestParameters.getProperty(GPConstants.USERID);
 	String RUN = "run";
 	String CLONE = "clone";
 	HashMap htFilenames = new HashMap();
 
-	String lsid = requestParameters.getParameter("taskLSID");
-	String taskName = requestParameters.getParameter("taskName");
+	String lsid = requestParameters.getProperty("taskLSID");
+	String taskName = requestParameters.getProperty("taskName");
 
-	boolean DEBUG = false; // (requestParameters.getParameter("debug") != null);
+	boolean DEBUG = false; // (requestParameters.getProperty("debug") != null);
 
 	if (DEBUG) {
 		System.out.println("\n\nPRERUN VISUALIZER Request parameters:<br>");
-		for (java.util.Enumeration eNames = requestParameters.getParameterNames(); eNames.hasMoreElements(); ) {
-			String n = (String)eNames.nextElement();
+		for (Iterator eNames = requestParameters.keySet().iterator(); eNames.hasNext(); ) {
+			String n = (String)eNames.next();
                         if (!("code".equals(n)))
-			System.out.println(n + "='" + StringUtils.htmlEncode(requestParameters.getParameter(n)) + "'");
+			System.out.println(n + "='" + StringUtils.htmlEncode(requestParameters.getProperty(n)) + "'");
 		}
 	}
 	String tmpDirName = null;
-	if (mySmartUpload.getFiles().getCount() > 0) {
+	if (fileCount > 0) {
 
 		String attachmentDir = null;
 		File dir = null;
 		String attachmentName = null;
 
-		com.jspsmart.upload.File attachedFile = null;
-		for (int i=0;i<mySmartUpload.getFiles().getCount();i++){
-			attachedFile = mySmartUpload.getFiles().getFile(i);
-			if (attachedFile.isMissing()) continue;
+		File attachedFile = null;
+
+		for (Iterator iter = requestFiles.keySet().iterator(); iter.hasNext(); ){
+			String key = (String)iter.next();
+			
+			attachedFile = (File)requestFiles.get(key);
+			if (!attachedFile.exists()) continue;
+
 			try {
-				attachmentName = attachedFile.getFileName();
+				attachmentName = attachedFile.getName();
 				if (attachmentName.trim().length() == 0) continue;
-				String fieldName = attachedFile.getFieldName();
-				String fullName = attachedFile.getFilePathName();
+				String fieldName = key;
+				String fullName = attachedFile.getCanonicalPath();
+
 				if (DEBUG) System.out.println("makePipeline: " + fieldName + " -> " + fullName);
 				if (fullName.startsWith("http:") || fullName.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
-				// don't bother trying to save a file that is a URL, retrieve it at execution time instead
+					// don't bother trying to save a file that is a URL, retrieve it at execution time instead
 					htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
 					continue;
 				}
@@ -137,12 +180,22 @@ try {
 					attachment.delete();
 				}
 						
-				attachedFile.saveAs(attachmentName);
+				
+				FileChannel inChannel = null, outChannel = null;
+				try	{
+					inChannel = new FileInputStream(attachedFile).getChannel();
+					outChannel = new FileOutputStream(attachment).getChannel();
+					outChannel.transferFrom(inChannel, 0, inChannel.size());
+				} finally {
+					if (inChannel != null) 	inChannel.close();
+					if (outChannel != null)	outChannel.close();
+				}
+
 				String encodedName = URLEncoder.encode(attachment.getName(), "utf-8");
 				htFilenames.put(fieldName, tmpDirName + "/" + encodedName  ); // map between form field name and filesystem name
 				
-				if (DEBUG) System.out.println(fieldName + "=" + fullName + " (" + attachedFile.getSize() + " bytes) in " + htFilenames.get(fieldName) + "<br>");
-			} catch (SmartUploadException sue) {
+				if (DEBUG) System.out.println(fieldName + "=" + fullName + " (? bytes) in " + htFilenames.get(fieldName) + "<br>");
+			} catch (Exception sue) {
 			    	throw new Exception("error saving " + attachmentName  + ": " + sue.getMessage());
 			}
 		}
@@ -181,7 +234,7 @@ try {
 				value = server + "/"+request.getContextPath()+"/getFile.jsp?task=&file="+ value;
 			}
 		} else {
-			value = requestParameters.getParameter(pinfo.getName());
+			value = requestParameters.getProperty(pinfo.getName());
 		}
 		request.setAttribute(pinfo.getName(), value);
 
@@ -219,11 +272,11 @@ try {
 
 <table width='100%' cellpadding='10'>
 	<tr>
-		<td>Running <a href="addTask.jsp?view=1&name=<%= lsid %>"><%=requestParameters.getParameter("taskName")%></a>
+		<td>Running <a href="addTask.jsp?view=1&name=<%= lsid %>"><%=requestParameters.getProperty("taskName")%></a>
 		version <%= new LSID(lsid).getVersion() %> on <%=new Date()%></td>
 	</tr>
 	<tr>
-		<td><%=requestParameters.getParameter("taskName")%> ( <%
+		<td><%=requestParameters.getProperty("taskName")%> ( <%
 for (int i=0; i < parmInfos.length; i++){
 		ParameterInfo pinfo = parmInfos[i];
 		String value = pinfo.getValue();	
