@@ -4,6 +4,7 @@
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jstl/core"
 	>
 
 
@@ -12,10 +13,10 @@
 		Job Results
 	</ui:define>
 	<ui:define name="scriptCode">
-		
-<![CDATA[ 		
+	
 <script type="text/javascript" language="javascript">
-
+	
+<![CDATA[	
 	function toggleCheckBoxes(maincheckbox) {
 		alert("in toggleCheckBoxes");
 		var bChecked = maincheckbox.state.selected;
@@ -28,9 +29,11 @@
 			}
 		}
 	}
- 
-</script>
 ]]>
+
+</script>
+
+
 
 	</ui:define>
 	<ui:define name="body">
@@ -84,19 +87,23 @@
 			<h:column>
 				<f:facet name="header">
 					<t:commandSortHeader columnName="Submitted" arrow="true" id="h4"> 
-						<t:outputText value="Submitted" id="o4"/> 	
+						<t:outputText value="Submitted" id="o4"/>	
 					</t:commandSortHeader>
 				</f:facet>
-				<h:outputText value="#{job.dateSubmitted}" />
+				<h:outputText value="#{job.dateSubmitted}">
+					<f:convertDateTime type="date" pattern="EEE, MMM d, ''yy h:mm a"/>				
+				</h:outputText>
 			</h:column>
 			
 			<h:column>
 				<f:facet name="header">
 					<t:commandSortHeader columnName="Completed" arrow="true" id="h5"> 
-						<t:outputText value="Completed" id="o5"/> 	
+						<t:outputText value="Completed" id="o5" />					 	
 					</t:commandSortHeader>
 				</f:facet>
-				<h:outputText value="#{job.dateCompleted}" />
+				<h:outputText value="#{job.dateCompleted}">
+					<f:convertDateTime type="date" pattern="EEE, MMM d, ''yy h:mm a"/>
+				</h:outputText>
 			</h:column>
 			
 		</t:dataTable>
