@@ -104,8 +104,7 @@
                 requestFiles.put(fi.getFieldName(), aFile);
                 fi.write(aFile);
 
-		    System.out.println("TestF " +  fi.getFieldName()+" = "+ aFile + "  " + aFile.exists());			
-            }
+           }
         }
 
 String serverPort = System.getProperty("GENEPATTERN_PORT");
@@ -203,6 +202,8 @@ try {
 	TaskInfo pTaskInfo = new TaskInfo();
 	TaskInfoAttributes pTia = null;
 	Vector vProblems = new Vector();
+	File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+
 	Map taskCatalog = new LocalAdminClient(requestParameters.getProperty(GPConstants.USERID)).getTaskCatalogByLSID();
 
 	PipelineModel model = new PipelineModel();
@@ -266,7 +267,7 @@ try {
 				// leave the task name blank for getFile and put the file into the temp directory
 				model.setLsid("");
 				// it's for a temporary pipeline
-				dir = new File(System.getProperty("java.io.tmpdir"));
+				dir = tmpDir;
 			}
 			htFilenames.put(fieldName, "<GenePatternURL>getFile.jsp?task=" + GPConstants.LEFT_DELIMITER + GPConstants.LSID + GPConstants.RIGHT_DELIMITER + "&file=" + URLEncoder.encode(attachmentName)); // map between form field name and filesystem name
 		}
@@ -479,7 +480,7 @@ try {
 				dir.mkdir();
 			} else {
 				model.setLsid("");	
-				dir = new File(System.getProperty("java.io.tmpdir"));
+				dir = tmpDir;
 			}
 			File attachedFile = null;
 			for (Iterator iter = requestFiles.keySet().iterator(); iter.hasNext(); ){
@@ -500,6 +501,24 @@ try {
 					}
 					
 					htFilenames.put(fieldName, "<GenePatternURL>getFile.jsp?task=" + GPConstants.LEFT_DELIMITER + GPConstants.LSID + GPConstants.RIGHT_DELIMITER + "&file=" + URLEncoder.encode(attachmentName)); // map between form field name and filesystem name
+
+
+					if (dir != tmpDir){
+					File attachment = new File(dir, attachedFile.getName());
+					if (attachment.exists()) attachment.delete();
+					
+					FileChannel inChannel = null, outChannel = null;
+					try	{
+						inChannel = new FileInputStream(attachedFile).getChannel();
+						outChannel = new FileOutputStream(attachment).getChannel();
+						outChannel.transferFrom(inChannel, 0, inChannel.size());
+					} finally {
+						if (inChannel != null) 	inChannel.close();
+						if (outChannel != null)	outChannel.close();
+					}
+
+					}
+
 
 				} catch (IOException sue) {
 				    	throw new Exception("error saving " + attachmentName  + ": " + sue.getMessage());
