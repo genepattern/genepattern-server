@@ -12,55 +12,82 @@
 
 package org.genepattern.server.webapp.jsf;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
+
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.WebServiceException;
 
-public class JobResultsBean extends AbstractUIBean {
+public class JobResultsBean {
     private JobInfo[] jobs;
-    private boolean empty;
     private boolean ascending;
+    private boolean warnBeforeDeletingJobs;
+    private boolean showAllJobs;
+    /** name of column we're sorting on */
     private String sort;
+    /** column that was last used for sorting */
+    private String lastSort;
 
     public JobResultsBean() {
         updateJobs();
-        sort = "Job Number";
-        ascending = false;
+        warnBeforeDeletingJobs = true; // TODO get from property
+        showAllJobs = false; // TODO get from property
+
     }
 
     private void updateJobs() {
-        String userId = getUserId();
+        String userId = UIBeanHelper.getUserId();
         LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
         try {
-            jobs = analysisClient.getJobs(userId, -1, Integer.MAX_VALUE, false);
+            jobs = analysisClient.getJobs(showAllJobs ? null : userId, -1, Integer.MAX_VALUE, false);
         }
         catch (WebServiceException wse) {
             wse.printStackTrace();
         }
-        empty = jobs == null || jobs.length == 0;
     }
 
-    public String deleteJobs() {
-        String[] deleteJob = getRequest().getParameterValues("deleteJobId");
-        LocalAnalysisClient analysisClient = new LocalAnalysisClient(getUserId());
+    public void deleteJobs() {
+        String[] deleteJob = UIBeanHelper.getRequest().getParameterValues("deleteJobId");
+        LocalAnalysisClient analysisClient = new LocalAnalysisClient(UIBeanHelper.getUserId());
+        List<Integer> jobErrors = new ArrayList<Integer>();
+
         if (deleteJob != null) {
             for (String job : deleteJob) {
+                int jobNumber = Integer.parseInt(job);
                 try {
-                    System.out.println("Deleted job " + job);
-                    analysisClient.deleteJob(Integer.parseInt(job));
+                    analysisClient.deleteJob(jobNumber);
+                    System.out.println("deleted job " + jobNumber);
                 }
                 catch (NumberFormatException e) {
-                    e.printStackTrace();
+                    e.printStackTrace(); // ignore
                 }
                 catch (WebServiceException e) {
-                    e.printStackTrace();
+                    jobErrors.add(jobNumber);
                 }
             }
         }
-        return "Success";
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0, size = jobErrors.size(); i < size; i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append(jobErrors.get(i));
+        }
+        if (jobErrors.size() > 0) {
+            String msg = "An error occurred while deleting job(s) " + sb.toString() + ".";
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg));
+        }
+        updateJobs();
+        lastSort = null;
+        sort();
+
     }
 
     public String getSort() {
@@ -69,6 +96,7 @@ public class JobResultsBean extends AbstractUIBean {
 
     public void setSort(String sort) {
         this.sort = sort;
+        sort();
     }
 
     public boolean isAscending() {
@@ -80,7 +108,8 @@ public class JobResultsBean extends AbstractUIBean {
 
     }
 
-    public void sort(final String column) {
+    public void sort() {
+        final String column = getSort();
         Comparator comparator = new Comparator() {
 
             public int compare(Object o1, Object o2) {
@@ -114,24 +143,30 @@ public class JobResultsBean extends AbstractUIBean {
                 }
             }
         };
-        Arrays.sort(jobs, comparator);
+        if (column != null && !column.equals(lastSort)) {
+            Arrays.sort(jobs, comparator);
+        }
+        lastSort = column;
+
     }
 
     public JobInfo[] getJobs() {
-        updateJobs();
-        sort(getSort());
         return jobs;
     }
 
-    public void setJobs(JobInfo[] jobs) {
-        this.jobs = jobs;
+    public boolean isShowAllJobs() {
+        return showAllJobs;
     }
 
-    public boolean isEmpty() {
-        return empty;
+    public void setShowAllJobs(boolean showAllJobs) {
+        this.showAllJobs = showAllJobs;
     }
 
-    public void setEmpty(boolean empty) {
-        this.empty = empty;
+    public boolean isWarnBeforeDeletingJobs() {
+        return warnBeforeDeletingJobs;
+    }
+
+    public void setWarnBeforeDeletingJobs(boolean warnBeforeDeletingJobs) {
+        this.warnBeforeDeletingJobs = warnBeforeDeletingJobs;
     }
 }
