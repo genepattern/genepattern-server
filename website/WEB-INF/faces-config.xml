@@ -32,6 +32,11 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.ModuleListBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
+ <managed-bean>
+  <managed-bean-name>jobResultsBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.JobResultsBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
  <navigation-rule>
   <from-view-id>*</from-view-id>
   <navigation-case>
