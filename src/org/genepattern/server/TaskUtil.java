@@ -112,7 +112,7 @@ public class TaskUtil {
     }
 
 	public static boolean isPipeline(TaskInfo ti){
-		HashMap tia = ti.getTaskInfoAttributes();
+		Map tia = ti.getTaskInfoAttributes();
 		if (tia == null) return false; //default to false if unknown
 
   		String type = (String) tia.get(IGPConstants.TASK_TYPE);
