@@ -220,11 +220,15 @@ public interface IGPConstants {
 
     public static final String PARAM_INFO_STRING = "string";
 
+    public static final String PARAM_INFO_PASSWORD = "string";
+
     public static final String PARAM_INFO_CHECKBOX = "checkbox";
 
     public static final String PARAM_INFO_TYPE_INTEGER = "java.lang.Integer";
 
     public static final String PARAM_INFO_TYPE_TEXT = "java.lang.String";
+
+    public static final String PARAM_INFO_TYPE_PASSWORD = "java.lang.String";
 
     public static final String PARAM_INFO_TYPE_FLOAT = "java.lang.Float";
 
@@ -233,7 +237,6 @@ public interface IGPConstants {
     public static final int PARAM_INFO_TYPE_NAME_OFFSET = 0; // offset into
 
     // one
-
     // of the following
     // array entries
 
@@ -243,7 +246,8 @@ public interface IGPConstants {
             { "text", PARAM_INFO_TYPE_TEXT },
             { "integer", PARAM_INFO_TYPE_INTEGER },
             { "floating point", PARAM_INFO_TYPE_FLOAT },
-            { "input file", PARAM_INFO_TYPE_INPUT_FILE } };
+            { "input file", PARAM_INFO_TYPE_INPUT_FILE },
+            { "password", PARAM_INFO_TYPE_PASSWORD }};
 
     // well-known ParameterInfo attributes
     public static final int PARAM_INFO_NAME_OFFSET = 0; // offset into one of
