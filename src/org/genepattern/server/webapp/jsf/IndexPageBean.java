@@ -33,7 +33,7 @@ import org.genepattern.webservice.WebServiceException;
  * @author jrobinso
  * 
  */
-public class IndexPageBean extends AbstractUIBean {
+public class IndexPageBean {
 
     private Collection<TaskInfo> tmTasks;
     
@@ -75,7 +75,7 @@ public class IndexPageBean extends AbstractUIBean {
     private Collection<TaskInfo> getTmTasks() {
         try {
             if (tmTasks == null) {
-                HttpServletRequest request = getRequest();
+                HttpServletRequest request = UIBeanHelper.getRequest();
 
                 String userID = getUserId();
                 boolean userIDKnown = !(userID == null || userID.length() == 0);
@@ -83,7 +83,7 @@ public class IndexPageBean extends AbstractUIBean {
                 LocalAdminClient adminClient = new LocalAdminClient(userID);
                 Collection tmTasks = null;
                 Collection latestTmTasks = adminClient.getLatestTasks();
-                ArrayList suiteFilterAttr = (ArrayList) getSessionMap().get("suiteSelection");
+                ArrayList suiteFilterAttr = (ArrayList) UIBeanHelper.getSessionMap().get("suiteSelection");
 
                 boolean allTasks = true;
                 SuiteInfo[] suites = adminClient.getAllSuites();
@@ -125,7 +125,7 @@ public class IndexPageBean extends AbstractUIBean {
     }
 
     protected String getUserId() {
-        return (String) getRequestMap().get("userID");
+        return (String) UIBeanHelper.getRequestMap().get("userID");
     }
 
     public Map<String, String> getLsidVersionMap() {
@@ -133,7 +133,7 @@ public class IndexPageBean extends AbstractUIBean {
 
             Map versionMap = new HashMap<String, String>();
 
-            HttpServletRequest request = getRequest();
+            HttpServletRequest request = UIBeanHelper.getRequest();
 
             String userID = (String) request.getAttribute("userID");
             boolean userIDKnown = !(userID == null || userID.length() == 0);

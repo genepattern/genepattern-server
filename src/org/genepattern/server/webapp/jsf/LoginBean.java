@@ -21,7 +21,7 @@ import org.genepattern.util.GPConstants;
  * @author jrobinso
  * 
  */
-public class LoginBean extends AbstractUIBean {
+public class LoginBean {
 
     private static Logger log = Logger.getLogger(LoginBean.class);
     private String username;
@@ -77,7 +77,7 @@ public class LoginBean extends AbstractUIBean {
         try {
             assert username != null;
             assert password != null;
-            HttpServletRequest request = getRequest();
+            HttpServletRequest request = UIBeanHelper.getRequest();
 
             User up = (new UserHome()).findByUsername(username);
             if (up == null) {
@@ -89,7 +89,7 @@ public class LoginBean extends AbstractUIBean {
                     newUser.setUsername(username);
                     newUser.setPassword(null);
                     (new UserHome()).persist(newUser);
-                    setUserAndRedirect(request, getResponse(), username);
+                    setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
                 }
             }
             else if (passwordRequired) {
@@ -101,11 +101,11 @@ public class LoginBean extends AbstractUIBean {
                 }
 
                 else {
-                    setUserAndRedirect(request, getResponse(), username);
+                    setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
                 }
             }
             else {
-                setUserAndRedirect(request, getResponse(), username);
+                setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
             }
         }
         catch (UnsupportedEncodingException e) {
@@ -127,14 +127,14 @@ public class LoginBean extends AbstractUIBean {
 
         String userID = "\"" + URLEncoder.encode(username.replaceAll("\"", "\\\""), "utf-8") + "\"";
         Cookie cookie4 = new Cookie(GPConstants.USERID, userID);
-        cookie4.setPath(getRequest().getContextPath());
+        cookie4.setPath(UIBeanHelper.getRequest().getContextPath());
         cookie4.setMaxAge(Integer.MAX_VALUE);
-        getResponse().addCookie(cookie4);
+        UIBeanHelper.getResponse().addCookie(cookie4);
 
-        String referrer = getReferrer(request);
+        String referrer = UIBeanHelper.getReferrer(request);
         referrer += (referrer.indexOf('?') > 0 ? "&" : "?");
         referrer += username;
-        getResponse().sendRedirect(referrer);
+        UIBeanHelper.getResponse().sendRedirect(referrer);
     }
 
 }

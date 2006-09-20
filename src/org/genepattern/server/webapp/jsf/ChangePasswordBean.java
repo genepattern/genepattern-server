@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.User;
 import org.genepattern.server.UserHome;
 
-public class ChangePasswordBean extends AbstractUIBean {
+public class ChangePasswordBean {
     private static Logger log = Logger.getLogger(ChangePasswordBean.class);
     private String currentPassword;
     private String newPassword;
@@ -32,7 +32,7 @@ public class ChangePasswordBean extends AbstractUIBean {
     private boolean passwordSet;
 
     public ChangePasswordBean() {
-        User user = (new UserHome()).findByUsername(getUserId());
+        User user = (new UserHome()).findByUsername(UIBeanHelper.getUserId());
         // password will be null if server was initially configured not to
         // require password
         if (user != null) { // FIXME
@@ -51,7 +51,7 @@ public class ChangePasswordBean extends AbstractUIBean {
 
     public void validateCurrentPassword(FacesContext context, UIComponent component, Object value)
             throws ValidatorException {
-        User user = (new UserHome()).findByUsername(getUserId());
+        User user = (new UserHome()).findByUsername(UIBeanHelper.getUserId());
        
         if (!value.toString().equals(user.getPassword())) {
             String message = "Please specify the correct current password.";
@@ -62,7 +62,7 @@ public class ChangePasswordBean extends AbstractUIBean {
     }
 
     public String changePassword() {
-        User user = (new UserHome()).findByUsername(getUserId());
+        User user = (new UserHome()).findByUsername(UIBeanHelper.getUserId());
         user.setPassword(newPassword);
         (new UserHome()).persist(user);
         return "success";

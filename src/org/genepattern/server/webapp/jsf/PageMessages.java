@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 import javax.faces.application.FacesMessage;
 import javax.faces.application.FacesMessage.Severity;
 
-public class PageMessages extends AbstractUIBean {
+public class PageMessages {
 
     Logger log = Logger.getLogger(PageMessages.class.getName());
     private String messageHeader;
@@ -17,7 +17,7 @@ public class PageMessages extends AbstractUIBean {
         messageHeader = null;
 
         // See if there are messages queued for the page
-        severityLevel = getFacesContext().getMaximumSeverity();
+        severityLevel = UIBeanHelper.getFacesContext().getMaximumSeverity();
 
         if (null != severityLevel) {
             log.debug("Severity Level Trapped: level = '" + severityLevel.toString() + "'");

@@ -28,7 +28,7 @@ import org.genepattern.util.GPConstants;
  * @author jrobinso
  * 
  */
-public class RegistrationBean extends AbstractUIBean {
+public class RegistrationBean {
 
     private static Logger log = Logger.getLogger(RegistrationBean.class);
     private String username;
@@ -107,7 +107,7 @@ public class RegistrationBean extends AbstractUIBean {
             assert username != null;
             assert password != null;
 
-            HttpServletRequest request = getRequest();
+            HttpServletRequest request = UIBeanHelper.getRequest();
             
             Base64 encoder = new Base64();
             String encodedPassword = new String( encoder.encode(password.getBytes()));
@@ -119,7 +119,7 @@ public class RegistrationBean extends AbstractUIBean {
             newUser.incrementLoginCount();
             
             (new UserHome()).persist(newUser);
-            setUserAndRedirect(getRequest(), getResponse(), username);
+            setUserAndRedirect(UIBeanHelper.getRequest(), UIBeanHelper.getResponse(), username);
 
         }
         catch (Exception e) {
@@ -159,14 +159,14 @@ public class RegistrationBean extends AbstractUIBean {
     
         String userID = "\"" + URLEncoder.encode(username.replaceAll("\"", "\\\""), "utf-8") + "\"";
         Cookie cookie4 = new Cookie(GPConstants.USERID, userID);
-        cookie4.setPath(getRequest().getContextPath());
+        cookie4.setPath(UIBeanHelper.getRequest().getContextPath());
         cookie4.setMaxAge(Integer.MAX_VALUE);
-        getResponse().addCookie(cookie4);
+        UIBeanHelper.getResponse().addCookie(cookie4);
     
         String referrer = getReferrer(request);
         referrer += (referrer.indexOf('?') > 0 ? "&" : "?");
         referrer += username;
-        getResponse().sendRedirect(referrer);
+        UIBeanHelper.getResponse().sendRedirect(referrer);
     }
 
     public String getEmail() {
