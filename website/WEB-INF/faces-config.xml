@@ -49,6 +49,10 @@
   </navigation-case>
  </navigation-rule>
  <application>
-  <view-handler>com.sun.facelets.FaceletViewHandler</view-handler>
- </application>
+  <!-- Use the Trinidad RenderKit -->
+  <default-render-kit-id>
+    org.apache.myfaces.trinidad.core
+  </default-render-kit-id>
+</application>
+
 </faces-config>

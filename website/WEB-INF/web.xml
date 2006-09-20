@@ -34,6 +34,13 @@
   <param-name>facelets.LIBRARIES</param-name>
   <param-value>/WEB-INF/tomahawk.taglib.xml</param-value>
  </context-param>
+ 
+ <!-- FaceletViewHandler configuration -->
+<context-param>
+  <param-name>org.apache.myfaces.trinidad.ALTERNATE_VIEW_HANDLER</param-name>
+  <param-value>com.sun.facelets.FaceletViewHandler</param-value>
+</context-param>
+ 
  <filter>
   <filter-name>AuthenticationFilter</filter-name>
   <filter-class>org.genepattern.server.webapp.AuthenticationFilter</filter-class>
@@ -58,6 +65,20 @@
   <filter-name>HibernateFilter</filter-name>
   <filter-class>org.genepattern.server.webapp.HibernateSessionRequestFilter</filter-class>
  </filter>
+ 
+   <filter>
+    <filter-name>trinidad</filter-name>
+    <filter-class>org.apache.myfaces.trinidad.webapp.TrinidadFilter</filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>trinidad</filter-name>
+    <!-- This assumes that the FacesServlet has been registered -->
+    <!-- under the name "faces" -->
+    <servlet-name>Faces Servlet</servlet-name>
+  </filter-mapping>
+
+ 
  <filter-mapping>
   <filter-name>ConnectionFilter</filter-name>
   <url-pattern>/*</url-pattern>
@@ -106,6 +127,18 @@
   <servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
   <load-on-startup>20</load-on-startup>
  </servlet>
+ 
+  <servlet>
+  <servlet-name>resources</servlet-name>
+  <servlet-class>org.apache.myfaces.trinidad.webapp.ResourceServlet</servlet-class>
+ </servlet>
+
+<!-- This cannot be configured currently -->
+<servlet-mapping>
+    <servlet-name>resources</servlet-name>
+    <url-pattern>/adf/*</url-pattern>
+</servlet-mapping>
+
  <servlet-mapping>
   <servlet-name>Faces Servlet</servlet-name>
   <url-pattern>*.jsf</url-pattern>
