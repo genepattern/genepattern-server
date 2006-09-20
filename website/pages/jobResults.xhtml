@@ -49,7 +49,7 @@
 				onclick="return confirmDelete();" />
 
 			<t:dataTable id="jobs" value="#{jobResultsBean.jobs}" var="job"
-				forceIdIndexFormula="#{job.jobNumber}" styleClass="datagrid">
+				forceIdIndexFormula="#{job.jobNumber}" styleClass="datagrid" rowClasses="row1, row2">
 
 				<h:column>
 					<f:facet name="header">
