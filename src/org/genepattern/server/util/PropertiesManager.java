@@ -15,6 +15,8 @@ package org.genepattern.server.util;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -24,8 +26,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.File;
 
-public class PropertiesManager {
+import org.genepattern.util.IGPConstants;
 
+public class PropertiesManager implements IGPConstants {
+	private static PropertiesManager inst = null;
+	
+	private PropertiesManager(){
+		
+	}
+	
+	public static PropertiesManager getInstance(){
+		if (inst == null){
+			inst = new PropertiesManager();
+			
+		}
+		return inst;
+	}
 
 	public static boolean storeChange(String key, String value){
 		boolean storeSuccess = false;
@@ -178,6 +194,64 @@ public class PropertiesManager {
 		}
 		return storeChange(key,propString);
 		
+	}
+	
+		
+	public static String getPropsDir(){
+		return System.getProperty("genepattern.properties"); // props dir
+	}
+	
+	private Map<String, Properties> propertiesMap = new HashMap<String, Properties>();
+
+	
+	public boolean saveProperties(String name, Properties props){
+		boolean storeSuccess = false;
+			
+		//getRequest().getSession().setAttribute(name, props);	
+		propertiesMap.put(name,props);
+		try {
+			File propFile = new File(getPropsDir(), name + ".properties");
+			FileOutputStream fos = new FileOutputStream(propFile);
+			props.store(fos, " ");
+			fos.close();			
+			fos = null;
+			storeSuccess = true;
+		} catch (Exception e){
+			storeSuccess = false;
+		} 
+		
+		return storeSuccess;
+	}
+	
+	public void reloadCommandPrefixesFromDisk() throws IOException {
+		  Properties commandPrefixes = new Properties();
+		  Properties taskPrefixMapping = new Properties();
+		  File cpFile = new File(getPropsDir(), COMMAND_PREFIX +".properties");
+		  File tpmFile = new File(getPropsDir(), TASK_PREFIX_MAPPING +".properties");
+		  
+		  if (cpFile.exists()) commandPrefixes.load(new FileInputStream(cpFile));
+		  if (tpmFile.exists())taskPrefixMapping.load(new FileInputStream(tpmFile));
+		  
+		  propertiesMap.put(COMMAND_PREFIX, commandPrefixes);
+		  propertiesMap.put(TASK_PREFIX_MAPPING, taskPrefixMapping);
+	}
+
+	public Properties getProperties(String name){
+		return propertiesMap.get(name);
+	}
+	
+	public Properties getCommandPrefixes(){
+		return propertiesMap.get(COMMAND_PREFIX);
+	}
+	public void  setCommandPrefixes(Properties p){
+		propertiesMap.put(COMMAND_PREFIX, p);
+	}
+	
+	public Properties getTaskPrefixMapping(){
+		return propertiesMap.get(TASK_PREFIX_MAPPING);
+	}
+	public void  setTaskPrefixMapping(Properties p){
+		propertiesMap.put(TASK_PREFIX_MAPPING, p);
 	}
 	
 }
