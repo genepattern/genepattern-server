@@ -43,7 +43,7 @@ public class CommandPrefixBean extends AbstractUIBean implements IGPConstants {
 	  
 	  public CommandPrefixBean(){
 		  try {
-			  admin = new LocalAdminClient(getUserName());
+			  admin = new LocalAdminClient(getUserId());
 	  
 			  commandPrefixes = (Properties)getRequest().getSession().getAttribute(CP_Name);
 			  taskPrefixMapping = (Properties)getRequest().getSession().getAttribute(TPM_Name);

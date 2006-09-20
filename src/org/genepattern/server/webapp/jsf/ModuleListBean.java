@@ -19,7 +19,7 @@ public class ModuleListBean extends AbstractUIBean {
 	
 	public List getLatestModules(){
 		
-		LocalAdminClient admin = new LocalAdminClient(getUserName());
+		LocalAdminClient admin = new LocalAdminClient(getUserId());
 		
 		try {
 			return  asSelectItemList(admin.getLatestTasks());
@@ -34,7 +34,7 @@ public class ModuleListBean extends AbstractUIBean {
 	
 	public List getAllModules(){
 		
-		LocalAdminClient admin = new LocalAdminClient(getUserName());
+		LocalAdminClient admin = new LocalAdminClient(getUserId());
 		
 		try {
 			return asSelectItemList(admin.getTaskCatalog());
