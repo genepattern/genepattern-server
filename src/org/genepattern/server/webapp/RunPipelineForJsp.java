@@ -272,18 +272,7 @@ public class RunPipelineForJsp {
             String key = (String) iter.next();
             Object obj = commandLineParams.get(key);
             String val = "";
-            if (obj instanceof com.jspsmart.upload.File) {
-                com.jspsmart.upload.File attachedFile = (com.jspsmart.upload.File) commandLineParams
-                        .get(key);
-                java.io.File file = new java.io.File(tempDir, attachedFile
-                        .getFilePathName());
-                attachedFile.saveAs(file.getAbsolutePath());
-                try {
-                    val = baseURL + "getFile.jsp?task=&file=" +
-                            URLEncoder.encode(tempDir.getName() + "/" + file.getName(), "UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-                }
-            } else if (obj instanceof FileItem) {
+            if (obj instanceof FileItem) {
                 FileItem fi = (FileItem) obj;
                 java.io.File file = new java.io.File(tempDir, fi
                         .getName());
