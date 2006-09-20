@@ -99,10 +99,12 @@
                 if (name == null || name.equals("")) {
                     continue;
                 }
+
                 File aFile = new File(System.getProperty("java.io.tmpdir"), name);
                 requestFiles.put(fi.getFieldName(), aFile);
                 fi.write(aFile);
-		 //    System.out.println("TestF " +  fi.getFieldName()+" = "+ aFile);			
+
+		    System.out.println("TestF " +  fi.getFieldName()+" = "+ aFile + "  " + aFile.exists());			
             }
         }
 
@@ -235,6 +237,7 @@ try {
 	String privacy = requestParameters.getProperty(GPConstants.PRIVACY);
 	model.setPrivacy(privacy != null && privacy.equals(GPConstants.PRIVATE));
 
+
 	// save uploaded files as part of pipeline definition
 	if (fileCount > 0) {
 		String attachmentDir = null;
@@ -274,7 +277,6 @@ try {
 		taskLSID = requestParameters.getProperty(taskPrefix + "_taskLSID");
 		taskName = requestParameters.getProperty(taskPrefix + "_taskName");
 		if (taskName == null) break;
-//System.out.println("\ntask " + taskNum + ": " + taskName);
 		TaskInfo mTaskInfo = null;
 		if (taskLSID != null && taskLSID.length() > 0) {
 			mTaskInfo = (TaskInfo)taskCatalog.get(taskLSID);
@@ -303,8 +305,6 @@ try {
 
 				String paramKey = taskPrefix + "_" + paramName;
 				
-				System.out.println("LOOK FOR: "+ paramKey);
-
 				String val = requestParameters.getProperty(paramKey);
         
 				if (val == null) {
@@ -375,7 +375,6 @@ try {
 				if (inherited || runTimePrompt[i]) {
 					p.setValue("");
 				}
-//AAAAAAAAAAAAAAAAAAAAAAAAAAa
 				if (p.isInputFile()) {
 					if (inherited) {
 						p.getAttributes().put(AbstractPipelineCodeGenerator.INHERIT_FILENAME, inheritedFilename);
@@ -478,12 +477,15 @@ try {
 				attachmentDir = DirectoryManager.getTaskLibDir(modelName + "." + GPConstants.TASK_TYPE_PIPELINE, lsid, userID);
 				dir = new File(attachmentDir);
 				dir.mkdir();
+			} else {
+				model.setLsid("");	
+				dir = new File(System.getProperty("java.io.tmpdir"));
 			}
 			File attachedFile = null;
-		
 			for (Iterator iter = requestFiles.keySet().iterator(); iter.hasNext(); ){
 				key = (String)iter.next();
 				attachedFile = (File)requestFiles.get(key);
+
 				if (!attachedFile.exists()) continue;
 				try {
 					attachmentName = attachedFile.getName();
@@ -497,31 +499,7 @@ try {
 						continue;
 					}
 					
-					if (isTemp) {
-						// leave the task name blank for getFile and put the file into the temp directory
-						model.setLsid("");
-						// it's for a temporary pipeline
-						dir = new File(System.getProperty("java.io.tmpdir"));
-					}
 					htFilenames.put(fieldName, "<GenePatternURL>getFile.jsp?task=" + GPConstants.LEFT_DELIMITER + GPConstants.LSID + GPConstants.RIGHT_DELIMITER + "&file=" + URLEncoder.encode(attachmentName)); // map between form field name and filesystem name
-
-					attachmentName = dir.getPath() + File.separator + attachmentName;
-					File attachment = new File(attachmentName);
-					if (attachment.exists()) {
-						attachment.delete();
-					}
-
-					FileChannel inChannel = null, outChannel = null;
-					try	{
-						inChannel = new FileInputStream(attachedFile).getChannel();
-						outChannel = new FileOutputStream(attachment).getChannel();
-						outChannel.transferFrom(inChannel, 0, inChannel.size());
-					} finally {
-						if (inChannel != null) 	inChannel.close();
-						if (outChannel != null)	outChannel.close();
-					}
-	 
-	//	attachedFile.rename(attachmentName);
 
 				} catch (IOException sue) {
 				    	throw new Exception("error saving " + attachmentName  + ": " + sue.getMessage());
