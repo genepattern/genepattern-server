@@ -446,13 +446,32 @@ onclick="refillField(this);"> These Domains (comma delimited list)<br>
 %>
 ><input type="button" name="proxyHelp" value="Help" class="button" onclick="alert('Proxy settings are needed only to connect to the Module Repository, and only if your organization has a web proxy between you and the internet. \nUsername and password are required only if your proxy requires authentication. \nThe username and password values will not be saved to the config file for security reasons and need to be re-entered after a server restart.')">
 
-</td></tr>
+</td>
+
+</tr>
+
+
 </table>
 </form>
 
 		</td>
+<td valign="top">
 
+<table width='100%'>
+<tr><td  valign="top" class="heading" colspan='2'>Command Prefix</td></tr>
 
+<tr><td align="center">
+<a href="pages/commandPrefixAdmin.jsf">Command Prefix Administration</a>
+</td></tr>
+<tr>
+
+<td align="center"><input type="button" name="proxyHelp" value="Help" class="button" onclick="alert('The command prefix is inserted at the\nbeginning of a module command line allowing\nmodules to be submitted to a queuing\nsystem on the server if available .')">
+
+</td>
+</tr>
+</table>
+
+</td>
 </tr>
 <tr>
 			<td valign="middle" align='center' colspan="2">
