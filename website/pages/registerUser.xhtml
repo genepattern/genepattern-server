@@ -34,12 +34,12 @@
 				<h:outputText></h:outputText>
 
 				<h:outputLabel value="Email:" for="email"></h:outputLabel >	
-				<h:inputSecret size="50" value="#{registrationBean.email}"
+				<h:inputText size="50" value="#{registrationBean.email}"
 					id="email" required="true" validator="#{registrationBean.validateEmail}"/>
 				<h:message style="color: red; font-weight: bold;" for="email" />
 				 
 				<h:outputLabel value="Re-enter email" for="emailConfirm"></h:outputLabel>
-				<h:inputSecret size="50" value="#{registrationBean.emailConfirm}"
+				<h:inputText size="50" value="#{registrationBean.emailConfirm}"
 					 id="emailConfirm" required="true" binding="#{registrationBean.emailConfirmComponent}"/>
 				<h:outputText></h:outputText>
 
