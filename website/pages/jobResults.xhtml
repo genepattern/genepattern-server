@@ -5,7 +5,7 @@
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk"
 	xmlns:c="http://java.sun.com/jstl/core"
-	>
+	xmlns:tr="http://myfaces.apache.org/trinidad">
 
 
 <ui:composition template="/templates/common.xhtml">
@@ -13,102 +13,104 @@
 		Job Results
 	</ui:define>
 	<ui:define name="scriptCode">
-	
-<script type="text/javascript" language="javascript">
-	
-<![CDATA[	
-	function toggleCheckBoxes(maincheckbox) {
-		alert("in toggleCheckBoxes");
-		var bChecked = maincheckbox.state.selected;
-		for (f = 0; f < document.forms.length; f++) {
-			var frm = document.forms[f];
-			for (i = 0; i < frm.elements.length; i++) {
-				if (frm.elements[i].type != "checkbox") continue;
-				if (frm.elements[i].name != "deleteJobID") continue;
-				frm.elements[i].checked = bChecked;
-			}
+	<script type="text/javascript"
+		src="#{facesContext.externalContext.requestContextPath}/js/MochiKit/MochiKit.js"></script>
+	<script type="text/javascript"
+		src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"></script>	
+	<script type="text/javascript" language="javascript">
+
+/* <![CDATA[ */
+	function toggleCheckBoxes(maincheckbox, theForm, cbId) {		
+		var isChecked = maincheckbox.checked;
+		var elements = Form.getInputs(theForm , 'checkbox', cbId)	
+		for (i = 0; i < elements.length; i++) {			
+			elements[i].checked = isChecked;
 		}
 	}
-]]>
-
-</script>
-
-
-
-	</ui:define>
-	<ui:define name="body">
-	<h:form>
-	
-		<h2>
-			Job Results
-		</h2>
 		
-		<h:commandButton action="#{jobResultsBean.deleteJobs}"
-				value="Delete" styleClass="little" onclick="if (!confirm('Are you sure you want to delete the selected jobs?')) return false;"/>
-				
-		<t:dataTable id="jobs" value="#{jobResultsBean.jobs}" var="job" sortColumn="#{jobResultsBean.sort}" 
-			sortAscending="#{jobResultsBean.ascending}" preserveDataModel="false" preserveSort="true" width="100%" cellpadding="2" cellspacing="0" border="0">
-			
-			<h:column>
-				<f:facet name="header">
-					<input type="checkbox" value="" onclick="toggleCheckBoxes(this);"/>                     	
-				</f:facet>
-				<input type="checkbox" name="deleteJobId" value="#{job.jobNumber}" />
-				<!--   <s:selectBooleanCheckbox id="#{job.jobNumber}" value=""/> -->
-			</h:column>
-			
-			<h:column>
-				<f:facet name="header">
-					<t:commandSortHeader columnName="Job Number" arrow="true" id="h1"> 
-						<t:outputText value="Job Number" id="o1"/> 	
-					</t:commandSortHeader>		                        	
-				</f:facet>
-				<h:outputText value="#{job.jobNumber}" />
-			</h:column>
-			
-			<h:column>
-				<f:facet name="header">		
-					<t:commandSortHeader columnName="Name" arrow="true" id="h2"> 
-						<t:outputText value="Name" id="o2"/> 	
-					</t:commandSortHeader> 	
-				</f:facet>
-				<h:outputText value="#{job.taskName}" />
-			</h:column>
-			
-			<h:column>
-				<f:facet name="header">
-					<t:commandSortHeader columnName="Status" arrow="true" id="h3"> 
-						<t:outputText value="Status" id="o3"/> 	
-					</t:commandSortHeader>
-				</f:facet>
-				<h:outputText value="#{job.status}" />
-			</h:column>
-			
-			<h:column>
-				<f:facet name="header">
-					<t:commandSortHeader columnName="Submitted" arrow="true" id="h4"> 
-						<t:outputText value="Submitted" id="o4"/>	
-					</t:commandSortHeader>
-				</f:facet>
-				<h:outputText value="#{job.dateSubmitted}">
-					<f:convertDateTime type="date" pattern="EEE, MMM d, ''yy h:mm a"/>				
-				</h:outputText>
-			</h:column>
-			
-			<h:column>
-				<f:facet name="header">
-					<t:commandSortHeader columnName="Completed" arrow="true" id="h5"> 
-						<t:outputText value="Completed" id="o5" />					 	
-					</t:commandSortHeader>
-				</f:facet>
-				<h:outputText value="#{job.dateCompleted}">
-					<f:convertDateTime type="date" pattern="EEE, MMM d, ''yy h:mm a"/>
-				</h:outputText>
-			</h:column>
-			
-		</t:dataTable>
+		
+	function confirmDelete() {
+		var warn = #{jobResultsBean.warnBeforeDeletingJobs};
+		if (warn && !confirm('Are you sure you want to delete the selected job(s)?')) return false;
+		return true;
+	}
 	
-	</h:form>
+/* ]]> */
+
+	</script>
+	</ui:define>
+	
+	<ui:define name="body">
+		<h:form id="form1">
+
+			<h2>Job Results</h2>
+
+			<h:commandButton action="#{jobResultsBean.deleteJobs}" value="Delete"
+				onclick="return confirmDelete();" />
+
+			<t:dataTable id="jobs" value="#{jobResultsBean.jobs}" var="job"
+				forceIdIndexFormula="#{job.jobNumber}" styleClass="datagrid">
+
+				<h:column>
+					<f:facet name="header">
+						<input type="checkbox" value=""
+							onclick="toggleCheckBoxes(this, 'form1', 'deleteJobId');" />
+					</f:facet>
+					<input type="checkbox" name="deleteJobId" value="#{job.jobNumber}" />
+				</h:column>
+
+				<h:column>
+					<f:facet name="header">
+						<t:commandSortHeader columnName="Job Number" arrow="true" id="h1">
+							<t:outputText value="Job Number" id="o1" />
+						</t:commandSortHeader>
+					</f:facet>
+					<h:outputText value="#{job.jobNumber}" />
+				</h:column>
+
+				<h:column>
+					<f:facet name="header">
+						<t:commandSortHeader columnName="Name" arrow="true" id="h2">
+							<t:outputText value="Name" id="o2" />
+						</t:commandSortHeader>
+					</f:facet>
+					<h:outputText value="#{job.taskName}" />
+				</h:column>
+
+				<h:column>
+					<f:facet name="header">
+						<t:commandSortHeader columnName="Status" arrow="true" id="h3">
+							<t:outputText value="Status" id="o3" />
+						</t:commandSortHeader>
+					</f:facet>
+					<h:outputText value="#{job.status}" />
+				</h:column>
+
+				<h:column>
+					<f:facet name="header">
+						<t:commandSortHeader columnName="Submitted" arrow="true" id="h4">
+							<t:outputText value="Submitted" id="o4" />
+						</t:commandSortHeader>
+					</f:facet>
+					<h:outputText value="#{job.dateSubmitted}">
+						<f:convertDateTime type="date" pattern="EEE, MMM d, ''yy h:mm a" />
+					</h:outputText>
+				</h:column>
+
+				<h:column>
+					<f:facet name="header">
+						<t:commandSortHeader columnName="Completed" arrow="true" id="h5">
+							<t:outputText value="Completed" id="o5" />
+						</t:commandSortHeader>
+					</f:facet>
+					<h:outputText value="#{job.dateCompleted}">
+						<f:convertDateTime type="date" pattern="EEE, MMM d, ''yy h:mm a" />
+					</h:outputText>
+				</h:column>
+
+			</t:dataTable>
+
+		</h:form>
 	</ui:define>
 </ui:composition>
 </html>
