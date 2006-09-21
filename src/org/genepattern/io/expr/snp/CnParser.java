@@ -41,10 +41,10 @@ public class CnParser implements IExpressionDataParser {
 
     private int columns;
 
-    private String type = "cn";
+    private boolean cn = true;;
 
-    public CnParser(String type) {
-        this.type = type;
+    public CnParser(boolean cn) {
+        this.cn = cn;
     }
 
     public boolean canDecode(InputStream is) throws IOException {
@@ -69,9 +69,10 @@ public class CnParser implements IExpressionDataParser {
             lines.add(s);
         }
         String[] rowMetaData = new String[] { ExpressionConstants.CHROMOSOME, ExpressionConstants.PHYSICAL_POSITION };
+        String[] matrices = cn ? null : new String[] { "Data"};
 
         // <snp_id>\t<Chromosome>\t<Position>\t<sample1>\t<sample2>\t<sample3>\t....
-        handler.init(lines.size(), columns, rowMetaData, new String[0], null);
+        handler.init(lines.size(), columns, rowMetaData, new String[0], matrices);
         for (int i = 3, columnIndex = 0; i < tokens.length; i++, columnIndex++) {
             handler.columnName(columnIndex, tokens[i]);
         }
@@ -98,9 +99,16 @@ public class CnParser implements IExpressionDataParser {
 
             for (int columnIndex = 0, tokenIndex = 3; columnIndex < columns; columnIndex++, tokenIndex++) {
                 try {
-                    double data = Double.parseDouble(tokens[tokenIndex]);
-                    if (handler != null) {
-                        handler.data(i, columnIndex, data);
+                    if (cn) {
+                        double data = Double.parseDouble(tokens[tokenIndex]);
+                        if (handler != null) {
+                            handler.data(i, columnIndex, data);
+                        }
+                    }
+                    else {
+                        if (handler != null) {
+                            handler.data(i, columnIndex, 0, tokens[tokenIndex]);
+                        }
                     }
                 }
                 catch (NumberFormatException nfe) {
@@ -136,10 +144,10 @@ public class CnParser implements IExpressionDataParser {
     }
 
     public String getFormatName() {
-        return type;
+        return cn ? "cn" : "loh";
     }
 
     public List getFileSuffixes() {
-        return Collections.unmodifiableList(Arrays.asList(new String[] { type }));
+        return Collections.unmodifiableList(Arrays.asList(new String[] { cn ? "cn" : "loh" }));
     }
 }
