@@ -43,6 +43,8 @@ import org.genepattern.io.expr.odf.OdfDatasetWriter;
 import org.genepattern.io.expr.odf.OdfParserAdapter;
 import org.genepattern.io.expr.res.ResParser;
 import org.genepattern.io.expr.res.ResWriter;
+import org.genepattern.io.expr.snp.CnParser;
+import org.genepattern.io.expr.snp.CnWriter;
 import org.genepattern.io.expr.snp.SnpParser;
 import org.genepattern.io.expr.snp.SnpWriter;
 
@@ -405,7 +407,7 @@ public class IOUtil {
     static {
         List defaultWriters = Arrays.asList(new IExpressionDataWriter[] {
                 new ResWriter(), new GctWriter(), new OdfDatasetWriter(),
-                new SnpWriter() });
+                new SnpWriter(), new CnWriter("cn"), new CnWriter("loh") });
         try {
             defaultWriters.add(new org.genepattern.io.expr.mage.MAGEMLWriter());// don't
             // require
@@ -428,7 +430,7 @@ public class IOUtil {
     static {
         Iterator defaultParsers = Arrays.asList(
                 new IExpressionDataParser[] { new GctParser(), new ResParser(),
-                        new OdfParserAdapter(), new SnpParser() }).iterator();// defaults
+                        new OdfParserAdapter(), new SnpParser(), new CnParser(true), new CnParser(false) }).iterator();// defaults
         // if
         // using java 1.3
         Iterator it = defaultParsers;// lookupProviders(edu.mit.broad.io.expr.IExpressionDataParser.class,
