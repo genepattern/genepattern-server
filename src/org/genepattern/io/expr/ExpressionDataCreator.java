@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Expression data creator that creates an instance of
  * org.genepattern.data.expr.ExpressionData
- *
+ * 
  * @author Joshua Gould
  */
 public class ExpressionDataCreator implements IExpressionDataCreator {
@@ -53,12 +53,13 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
     public ExpressionDataCreator() {
     }
 
-
     public Object create() {
         DoubleMatrix2D matrix = new DoubleMatrix2D(data, rowNames, columnNames);
         HashMap name2Matrices = new HashMap();
-        for (int i = 0; i < matrixNames.length; i++) {
-            name2Matrices.put(matrixNames[i], matrices.get(i));
+        if (matrixNames != null) {
+            for (int i = 0; i < matrixNames.length; i++) {
+                name2Matrices.put(matrixNames[i], matrices.get(i));
+            }
         }
         return new ExpressionData(matrix, rowMetaData, columnMetaData, name2Matrices);
     }
@@ -88,7 +89,7 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
     }
 
     public void init(int rows, int columns, String[] rowMetaDataNames, String[] columnMetaDataNames,
-                     String[] matrixNames) throws ParseException {
+            String[] matrixNames) throws ParseException {
         this.data = new double[rows][columns];
         this.rowMetaDataNames = rowMetaDataNames;
         this.columnMetaDataNames = columnMetaDataNames;
@@ -98,8 +99,10 @@ public class ExpressionDataCreator implements IExpressionDataCreator {
         this.rowMetaData = new MetaData(rows);
         this.columnMetaData = new MetaData(columns);
         this.matrices = new ArrayList();
-        for (int i = 0; i < matrixNames.length; i++) {
-            matrices.add(new ObjectMatrix2D(rows, columns));
+        if (matrixNames != null) {
+            for (int i = 0; i < matrixNames.length; i++) {
+                matrices.add(new ObjectMatrix2D(rows, columns));
+            }
         }
     }
 }
