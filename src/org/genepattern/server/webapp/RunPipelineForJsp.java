@@ -23,7 +23,7 @@ import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
 import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.JobStatus;
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;

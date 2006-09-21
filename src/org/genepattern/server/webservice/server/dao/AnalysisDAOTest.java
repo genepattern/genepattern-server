@@ -3,6 +3,7 @@ package org.genepattern.server.webservice.server.dao;
 import java.sql.ResultSet;
 import java.util.*;
 
+import org.genepattern.server.util.HibernateUtil;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.IGPConstants;
 import org.genepattern.webservice.*;

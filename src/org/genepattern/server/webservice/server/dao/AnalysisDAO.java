@@ -17,10 +17,15 @@ import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.genepattern.server.*;
+import org.genepattern.server.domain.*;
+import org.genepattern.server.domain.AnalysisJob;
+import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.util.HibernateUtil;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.*;
@@ -63,7 +68,7 @@ AnalysisDAO extends BaseDAO {
         // assuming once job is submitted, it should be executed even if
         // taskid is removed from task master
 
-        String hql = "from org.genepattern.server.webservice.server.dao.AnalysisJob "
+        String hql = "from org.genepattern.server.domain.AnalysisJob "
                 + " where jobStatus.statusId = :statusId order by submittedDate ";
         Query query = getSession().createQuery(hql);
         query.setInteger("statusId", JOB_WAITING_STATUS);
@@ -92,7 +97,7 @@ AnalysisDAO extends BaseDAO {
      */
     public String getTemporaryPipelineName(int jobNumber) throws OmnigeneException {
 
-        String hql = "select taskName from org.genepattern.server.webservice.server.dao.AnalysisJob where jobNo = :jobNumber";
+        String hql = "select taskName from org.genepattern.server.domain.AnalysisJob where jobNo = :jobNumber";
         Query q = getSession().createQuery(hql);
         q.setInteger("jobNumber", jobNumber);
         return (String) q.uniqueResult();
@@ -159,7 +164,7 @@ AnalysisDAO extends BaseDAO {
 
         // Check taskID is valid
         if (taskID != UNPROCESSABLE_TASKID) {
-            String hqlString = "select taskName, lsid from org.genepattern.server.webservice.server.dao.TaskMaster where taskId = :taskId";
+            String hqlString = "select taskName, lsid from org.genepattern.server.domain.TaskMaster where taskId = :taskId";
             Query query = getSession().createQuery(hqlString);
             query.setInteger("taskId", taskID);
             Object[] results = (Object[]) query.uniqueResult();
@@ -172,7 +177,7 @@ AnalysisDAO extends BaseDAO {
 
         AnalysisJob aJob = new AnalysisJob();
         aJob.setTaskId(taskID);
-        org.genepattern.server.webservice.server.dao.JobStatus js = new org.genepattern.server.webservice.server.dao.JobStatus();
+        org.genepattern.server.domain.JobStatus js = new org.genepattern.server.domain.JobStatus();
         js.setStatusId(JOB_WAITING_STATUS);
         aJob.setJobStatus(js);
         aJob.setSubmittedDate(Calendar.getInstance().getTime());
@@ -199,7 +204,7 @@ AnalysisDAO extends BaseDAO {
     public int updateJobStatus(Integer jobNo, Integer jobStatusID) throws OmnigeneException {
 
         AnalysisJob job = (AnalysisJob) getSession().get(AnalysisJob.class, jobNo);
-        org.genepattern.server.webservice.server.dao.JobStatus js = (org.genepattern.server.webservice.server.dao.JobStatus) getSession()
+        org.genepattern.server.domain.JobStatus js = (org.genepattern.server.domain.JobStatus) getSession()
                 .get(JobStatus.class, jobStatusID);
         job.setJobStatus(js);
         getSession().update(job); // Not really neccessary
@@ -224,7 +229,7 @@ AnalysisDAO extends BaseDAO {
         aJob.setJobStatus(js);
         aJob.setParameterInfo(parameters);
         aJob.setCompletedDate(now());
-        getSession().update(aJob); // Not reall neccessary
+        getSession().update(aJob); // Not really neccessary
         return 1;
 
     }
@@ -240,7 +245,7 @@ AnalysisDAO extends BaseDAO {
      */
     public JobInfo getJobInfo(int jobNo) {
 
-        String hql = " from org.genepattern.server.webservice.server.dao.AnalysisJob where jobNo = :jobNo";
+        String hql = " from org.genepattern.server.domain.AnalysisJob where jobNo = :jobNo";
         Query query = getSession().createQuery(hql);
         query.setInteger("jobNo", jobNo);
         AnalysisJob aJob = (AnalysisJob) query.uniqueResult();
@@ -253,8 +258,8 @@ AnalysisDAO extends BaseDAO {
 
     public JobInfo getParent(int jobId) throws OmnigeneException {
 
-        String hql = " select parent from org.genepattern.server.webservice.server.dao.AnalysisJob as parent, "
-                + " org.genepattern.server.webservice.server.dao.AnalysisJob as child "
+        String hql = " select parent from org.genepattern.server.domain.AnalysisJob as parent, "
+                + " org.genepattern.server.domain.AnalysisJob as child "
                 + " where child.jobNo = :jobNo and parent.jobNo = child.parent ";
         Query query = getSession().createQuery(hql);
         query.setInteger("jobNo", jobId);
@@ -273,7 +278,7 @@ AnalysisDAO extends BaseDAO {
 
         java.util.List results = new java.util.ArrayList();
 
-        String hql = " from org.genepattern.server.webservice.server.dao.AnalysisJob  where parent = :jobNo ";
+        String hql = " from org.genepattern.server.domain.AnalysisJob  where parent = :jobNo ";
         Query query = getSession().createQuery(hql);
         query.setInteger("jobNo", jobId);
         query.setFetchSize(50);
@@ -301,7 +306,7 @@ AnalysisDAO extends BaseDAO {
     public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs)
             throws OmnigeneException {
 
-        String hql = " from org.genepattern.server.webservice.server.dao.AnalysisJob where ((parent = null) OR (parent = -1)) ";
+        String hql = " from org.genepattern.server.domain.AnalysisJob where ((parent = null) OR (parent = -1)) ";
         if (username != null) {
             hql += " AND userId = :username ";
         }
@@ -349,7 +354,7 @@ AnalysisDAO extends BaseDAO {
 
         Vector jobVector = new Vector();
 
-        String hql = " from org.genepattern.server.webservice.server.dao.AnalysisJob where completedDate < :completedDate ";
+        String hql = " from org.genepattern.server.domain.AnalysisJob where completedDate < :completedDate ";
         Query query = getSession().createQuery(hql);
         query.setDate("completedDate", date);
         query.setFetchSize(50);
@@ -489,7 +494,7 @@ AnalysisDAO extends BaseDAO {
 
             if (oldLSID != null) {
                 // delete the old LSID record
-                String deleteHql = "delete from org.genepattern.server.webservice.server.dao.Lsid where lsid = :lsid";
+                String deleteHql = "delete from org.genepattern.server.domain.Lsid where lsid = :lsid";
                 Query deleteQuery = getSession().createQuery(deleteHql);
                 deleteQuery.setString("lsid", oldLSID);
                 deleteQuery.executeUpdate();
@@ -557,7 +562,7 @@ AnalysisDAO extends BaseDAO {
 
             if (oldLSID != null) {
                 // delete the old LSID record
-                String deleteHql = "delete from org.genepattern.server.webservice.server.dao.Lsid where lsid = :lsid";
+                String deleteHql = "delete from org.genepattern.server.domain.Lsid where lsid = :lsid";
                 Query deleteQuery = getSession().createQuery(deleteHql);
                 deleteQuery.setString("lsid", oldLSID);
                 deleteQuery.executeUpdate();
@@ -591,7 +596,7 @@ AnalysisDAO extends BaseDAO {
      */
     public boolean resetPreviouslyRunningJobs() {
 
-        String hql = "update org.genepattern.server.webservice.server.dao.AnalysisJob set "
+        String hql = "update org.genepattern.server.domain.AnalysisJob set "
                 + " jobStatus.statusId = :waitStatus where jobStatus.statusId = :processingStatus ";
         Query query = getSession().createQuery(hql);
         query.setInteger("waitStatus", JOB_WAITING_STATUS);

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="org.genepattern.server.domain"> 
+  <class name="JobStatus" table="JOB_STATUS" optimistic-lock="none"> 
+    <id name="statusId" type="integer" unsaved-value="null">
+      <column name="STATUS_ID" not-null="true" unique="true" precision="22" scale="0"/>
+      <generator class="assigned"/>
+    </id>
+    <property name="statusName" type="string" column="STATUS_NAME" length="20"/>
+  </class>
+</hibernate-mapping>

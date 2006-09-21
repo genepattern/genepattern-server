@@ -34,7 +34,7 @@ import org.genepattern.server.webservice.GenericWebService;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.FileWrapper;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.JobStatus;
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -61,6 +61,8 @@ public class Analysis extends GenericWebService {
     public Analysis() {
         Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
         // sometimes empty
+        
+    
     }
 
     /**

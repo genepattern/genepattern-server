@@ -6,6 +6,9 @@ import java.sql.*;
 import java.util.*;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.domain.Suite;
+import org.genepattern.server.domain.TaskMaster;
+import org.genepattern.server.util.HibernateUtil;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.webservice.*;
 import org.hibernate.*;
@@ -139,7 +142,7 @@ public class BaseDAO {
         return moduleLSIDs;
     }
 
-    protected JobInfo jobInfoFromAnalysisJob(org.genepattern.server.webservice.server.dao.AnalysisJob aJob) throws OmnigeneException {
+    protected JobInfo jobInfoFromAnalysisJob(org.genepattern.server.domain.AnalysisJob aJob) throws OmnigeneException {
         ParameterFormatConverter parameterFormatConverter = new ParameterFormatConverter();
     
         return new JobInfo(aJob.getJobNo().intValue(), aJob.getTaskId(), aJob.getJobStatus().getStatusName(), aJob

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="org.genepattern.server.user"> 
+  <class name="JobCompletionEvent" table="job_completion_event" optimistic-lock="none"> 
+    <id name="userID" access="field" type="string" unsaved-value="null" column="userid">
+      <generator class="native"/>
+    </id>
+    <property name="id" access="field" type="integer" column="id"/>
+  </class>
+</hibernate-mapping>

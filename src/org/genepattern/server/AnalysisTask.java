@@ -15,8 +15,8 @@ package org.genepattern.server;
 import java.rmi.RemoteException;
 import java.util.Vector;
 
+import org.genepattern.server.util.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
-import org.genepattern.server.webservice.server.dao.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.OmnigeneException;
 import org.hibernate.HibernateException;
@@ -95,7 +95,8 @@ public class AnalysisTask implements Runnable {
                         HibernateUtil.getSession().beginTransaction();
                         jobQueue = genePattern.getWaitingJobs();
                         HibernateUtil.getSession().getTransaction().commit();
-                    } finally {
+                    }
+                    finally {
                         if (HibernateUtil.getSession().isOpen()) {
                             HibernateUtil.getSession().close();
                         }
@@ -106,7 +107,8 @@ public class AnalysisTask implements Runnable {
                 if (jobQueue.isEmpty()) {
                     try {
                         jobQueueWaitObject.wait();
-                    } catch (InterruptedException ie) {
+                    }
+                    catch (InterruptedException ie) {
                     }
                 }
             }
@@ -124,7 +126,8 @@ public class AnalysisTask implements Runnable {
             try {
                 onJobProcessFrameWork(o);
 
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 log.error(ex);
             }
 
@@ -157,7 +160,8 @@ public class AnalysisTask implements Runnable {
         try {
             ds = new AnalysisDAO();
             ;
-        } catch (OmnigeneException oe) {
+        }
+        catch (OmnigeneException oe) {
             log.error(oe);
         }
 
@@ -188,16 +192,8 @@ public class AnalysisTask implements Runnable {
         }
 
         public void run() {
-            try {
-                HibernateUtil.getSession().beginTransaction();
-                genePattern.onJob(obj);// run job
-                doRelease();// signal completion of thread
-                HibernateUtil.getSession().getTransaction().commit();
-            } finally {
-                if (HibernateUtil.getSession().isOpen()) {
-                    HibernateUtil.getSession().close();
-                }
-            }
+            genePattern.onJob(obj);// run job
+            doRelease();// signal completion of thread
         }
     }
 

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="org.genepattern.server.user"> 
+  <class name="User" table="GP_USER" optimistic-lock="none"> 
+    <id name="userId" type="string" unsaved-value="null">
+      <column name="USER_ID" not-null="true" unique="true"/>
+      <generator class="assigned"/>
+    </id>
+    <property name="password" type="string" column="gp_password"/>
+    <property name="email" type="string" column="email"/>
+    <property name="lastLoginDate" type="timestamp" column="last_login_date"/>
+    <property name="lastLoginIP" type="string" column="last_login_ip"/>
+    <property name="totalLoginCount" type="integer" column="total_login_count"/>
+  </class>
+</hibernate-mapping>

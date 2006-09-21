@@ -16,23 +16,27 @@
     <property name="hibernate.connection.username">cgenome</property>
     <property name="hibernate.connection.password">mutation</property>
     <property name="hibernate.default_schema">cgenome</property>
-    <property name="hibernate.dialect">org.genepattern.server.webservice.server.dao.PlatformOracle9Dialect</property>
+    <property name="hibernate.dialect">org.genepattern.server.util.PlatformOracle9Dialect</property>
     <property name="hibernate.connection.SetBigStringTryClob">true</property>
  -->
+ 
+    <property name="show_sql">true</property>
+ 
     <property name="hibernate.current_session_context_class">thread</property>
     <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
     <property name="hibernate.jdbc.batch_size">20</property>
     <property name="hibernate.statement_cache.size">0</property>
     <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
-    <mapping resource="org/genepattern/server/User.hbm.xml"/>
-    <mapping resource="org/genepattern/server/webservice/server/dao/AnalysisJob.hbm.xml"/>
-    <mapping resource="org/genepattern/server/webservice/server/dao/JobStatus.hbm.xml"/>
-    <mapping resource="org/genepattern/server/webservice/server/dao/Lsid.hbm.xml"/>
-    <mapping resource="org/genepattern/server/webservice/server/dao/Props.hbm.xml"/>
-    <mapping resource="org/genepattern/server/webservice/server/dao/Sequence.hbm.xml"/>
-    <mapping resource="org/genepattern/server/webservice/server/dao/Suite.hbm.xml"/>
-    <mapping resource="org/genepattern/server/webservice/server/dao/SuiteModules.hbm.xml"/>
-    <mapping resource="org/genepattern/server/webservice/server/dao/TaskAccess.hbm.xml"/>
-    <mapping resource="org/genepattern/server/webservice/server/dao/TaskMaster.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/AnalysisJob.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/JobStatus.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/Lsid.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/Props.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/Sequence.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/Suite.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/SuiteModules.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/TaskAccess.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/TaskMaster.hbm.xml"/>
+    <mapping resource="org/genepattern/server/user/JobCompletionEvent.hbm.xml"/>
+    <mapping resource="org/genepattern/server/user/User.hbm.xml"/>
   </session-factory>
 </hibernate-configuration>

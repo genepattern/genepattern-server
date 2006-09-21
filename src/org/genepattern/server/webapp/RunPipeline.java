@@ -43,7 +43,7 @@ import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.JobStatus;
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;

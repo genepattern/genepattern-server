@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="org.genepattern.server.domain"> 
+  <class name="TaskMaster" table="TASK_MASTER" optimistic-lock="none"> 
+    <id name="taskId" type="integer" unsaved-value="null">
+      <column name="TASK_ID" not-null="true" unique="true" precision="10" scale="0"/>
+      <generator class="native"/>
+    </id>
+    <property name="taskName" type="string" column="TASK_NAME" length="4000"/>
+    <property name="description" type="string" column="DESCRIPTION" length="4000"/>
+    <property name="typeId" type="integer" column="TYPE_ID" precision="10" scale="0"/>
+    <property name="repeatMinute" type="string" column="REPEAT_MINUTE" length="4000"/>
+    <property name="repeatHour" type="string" column="REPEAT_HOUR" length="4000"/>
+    <property name="repeatDayOfMonth" type="string" column="REPEAT_DAY_OF_MONTH" length="4000"/>
+    <property name="repeatMonthOfYear" type="string" column="REPEAT_MONTH_OF_YEAR" length="4000"/>
+    <property name="repeatDayOfWeek" type="string" column="REPEAT_DAY_OF_WEEK" length="4000"/>
+    <property name="taskinfoattributes" type="string" column="TASKINFOATTRIBUTES" length="4000"/>
+    <property name="userId" type="string" column="USER_ID" length="4000"/>
+    <property name="accessId" type="integer" column="ACCESS_ID" precision="10" scale="0"/>
+    <property name="lsid" type="string" column="LSID" length="4000"/>
+    <property name="parameterInfo" type="string"> 
+      <column name="PARAMETER_INFO" sql-type="LONGVARCHAR"/>
+    </property>
+  </class>
+</hibernate-mapping>

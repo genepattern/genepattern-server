@@ -43,9 +43,9 @@ import org.genepattern.server.indexer.IndexerDaemon;
 import org.genepattern.server.process.CreateDatabase;
 import org.genepattern.server.process.JSPPrecompiler;
 import org.genepattern.server.process.JobPurger;
+import org.genepattern.server.util.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.dao.DatabaseUtil;
-import org.genepattern.server.webservice.server.dao.HibernateUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -195,6 +195,9 @@ public class StartupServlet extends HttpServlet {
     }
 
     public void destroy() {
+
+        shutdownDatabase();
+
         log("StartupServlet: destroy called");
         for (Enumeration eThreads = vThreads.elements(); eThreads.hasMoreElements();) {
             Thread t = (Thread) eThreads.nextElement();
@@ -211,7 +214,6 @@ public class StartupServlet extends HttpServlet {
             }
         }
         vThreads.removeAllElements();
-        shutdownDatabase();
         GenePatternAnalysisTask.terminateAll("--> Shutting down server");
         log("StartupServlet: destroy done");
         dumpThreads();

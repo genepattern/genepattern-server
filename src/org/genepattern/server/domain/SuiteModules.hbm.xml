@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="org.genepattern.server.domain"> 
+  <class name="SuiteModules" table="SUITE_MODULES" optimistic-lock="none"> 
+    <id name="id" type="integer" unsaved-value="null">
+      <column name="ID" not-null="true" unique="true" precision="10" scale="0"/>
+      <generator class="native"/>
+    </id>
+    <property name="lsid" type="string" column="LSID"/>
+    <property name="moduleLsid" type="string" column="MODULE_LSID"/>
+  </class>
+</hibernate-mapping>

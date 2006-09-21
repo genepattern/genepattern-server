@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.util.HibernateUtil;
 
 
 public class DatabaseUtil {
@@ -35,7 +36,7 @@ public class DatabaseUtil {
     }
 
     private static void updateSchema() {
-        try {
+        /*       try {
             String resourceDir = new File(System.getProperty("resources")).getCanonicalPath();
             log.debug("resourcesDir=" + new File(resourceDir).getCanonicalPath());
 
@@ -59,7 +60,7 @@ public class DatabaseUtil {
             }
         } catch (IOException e) {
             log.error(e);
-        }
+        }*/
 
     }
 

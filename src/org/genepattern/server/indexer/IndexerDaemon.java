@@ -15,8 +15,8 @@ package org.genepattern.server.indexer;
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.FSDirectory;
+import org.genepattern.server.util.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
-import org.genepattern.server.webservice.server.dao.HibernateUtil;
 
 import java.io.File;
 import java.io.IOException;

@@ -5,7 +5,7 @@ import java.io.IOException;
 import javax.servlet.*;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.webservice.server.dao.HibernateUtil;
+import org.genepattern.server.util.HibernateUtil;
 import org.hibernate.SessionFactory;
 import org.hibernate.StaleObjectStateException;
 

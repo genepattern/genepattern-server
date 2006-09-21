@@ -18,8 +18,8 @@ import java.util.GregorianCalendar;
 import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.util.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
-import org.genepattern.server.webservice.server.dao.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.indexer.Indexer;
 import org.genepattern.webservice.JobInfo;

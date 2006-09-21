@@ -3,6 +3,7 @@ package org.genepattern.server.webservice.server.dao;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.genepattern.server.util.HibernateUtil;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.SuiteInfo;

@@ -19,7 +19,10 @@ import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
+import org.genepattern.server.domain.Suite;
+import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.genepattern.LSIDManager;
+import org.genepattern.server.util.HibernateUtil;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.*;
@@ -42,14 +45,20 @@ public class AdminDAO extends BaseDAO  {
             return null;
         }
 
+        boolean startTransaction = false;
         try {
+            
+            if(!HibernateUtil.getSession().getTransaction().isActive()) {
+                HibernateUtil.getSession().beginTransaction();
+            }
+            
             LSID lsid = new LSID(lsidOrTaskName);
             String version = lsid.getVersion();
 
             Query query = null;
             if (version != null && !version.equals("")) {
                 if (username != null) {
-                    String hql = "from org.genepattern.server.webservice.server.dao.TaskMaster where lsid = :lsid"
+                    String hql = "from org.genepattern.server.domain.TaskMaster where lsid = :lsid"
                             + " and (userId = :userId or accessId = :accessId)";
                     query = getSession().createQuery(hql);
                     query.setString("lsid", lsidOrTaskName);
@@ -59,7 +68,7 @@ public class AdminDAO extends BaseDAO  {
                 else {
                     // sql = "SELECT * FROM task_Master WHERE lsid='" +
                     // lsidOrTaskName + "'";
-                    String hql = "from org.genepattern.server.webservice.server.dao.TaskMaster where lsid = :lsid";
+                    String hql = "from org.genepattern.server.domain.TaskMaster where lsid = :lsid";
                     query = getSession().createQuery(hql);
                     query.setString("lsid", lsidOrTaskName);
                 }
@@ -71,7 +80,7 @@ public class AdminDAO extends BaseDAO  {
                     // lsidOrTaskName + "%' AND (user_id='"
                     // + username + "' OR access_id=" +
                     // GPConstants.ACCESS_PUBLIC + ")";
-                    String hql = "from org.genepattern.server.webservice.server.dao.TaskMaster where lsid like :lsid"
+                    String hql = "from org.genepattern.server.domain.TaskMaster where lsid like :lsid"
                             + " and (userId = :userId or accessId = :accessId)";
                     query = getSession().createQuery(hql);
                     query.setString("lsid", lsidOrTaskName + "%");
@@ -81,7 +90,7 @@ public class AdminDAO extends BaseDAO  {
                 else {
                     // sql = "SELECT * FROM task_master WHERE LSID LIKE '" +
                     // lsidOrTaskName + "%'";
-                    String hql = "from org.genepattern.server.webservice.server.dao.TaskMaster where lsid like :lsid";
+                    String hql = "from org.genepattern.server.domain.TaskMaster where lsid like :lsid";
                     query = getSession().createQuery(hql);
                     query.setString("lsid", lsidOrTaskName + "%");
                 }
@@ -113,7 +122,7 @@ public class AdminDAO extends BaseDAO  {
                 // sql = "SELECT * FROM task_master WHERE task_name='" +
                 // lsidOrTaskName + "' AND (user_id='" + username
                 // + "' OR access_id=" + GPConstants.ACCESS_PUBLIC + ")";
-                String hql = "from org.genepattern.server.webservice.server.dao.TaskMaster where taskName = :taskName "
+                String hql = "from org.genepattern.server.domain.TaskMaster where taskName = :taskName "
                         + " and (userId = :userId or accessId = :accessId)";
                 query = getSession().createQuery(hql);
                 query.setString("taskName", lsidOrTaskName);
@@ -123,7 +132,7 @@ public class AdminDAO extends BaseDAO  {
             }
             else {
                 //sql = "SELECT * FROM task_master WHERE task_name='" + lsidOrTaskName + "'";
-                String hql = "from org.genepattern.server.webservice.server.dao.TaskMaster where lsid = :taskName";
+                String hql = "from org.genepattern.server.domain.TaskMaster where lsid = :taskName";
                 query = getSession().createQuery(hql);
                 query.setString("taskName", lsidOrTaskName);
 
@@ -163,15 +172,28 @@ public class AdminDAO extends BaseDAO  {
                 }// shouldn't happen
 
             }
+            
+            if(startTransaction) {
+                HibernateUtil.getSession().getTransaction().commit();
+            }
+           
             return latestTask;
         }
+        
+        catch(RuntimeException e) {
+            if(startTransaction) {
+                HibernateUtil.getSession().getTransaction().rollback();
+            }
+            throw e;
+        }
+        
     }
 
 
 
     public TaskInfo[] getAllTasks() {
 
-        String hql = "from org.genepattern.server.webservice.server.dao.TaskMaster";
+        String hql = "from org.genepattern.server.domain.TaskMaster";
         Query query = getSession().createQuery(hql);
         List<TaskMaster> results = query.list();
 
@@ -185,7 +207,7 @@ public class AdminDAO extends BaseDAO  {
     public TaskInfo[] getAllTasksForUser(String username) throws OmnigeneException {
 
         try {
-            String hql = "from org.genepattern.server.webservice.server.dao.TaskMaster where userId = :userId or accessId = :accessId";
+            String hql = "from org.genepattern.server.domain.TaskMaster where userId = :userId or accessId = :accessId";
             Query query = getSession().createQuery(hql);
             query.setString("userId", username);
             query.setInteger("accessId", PUBLIC_ACCESS_ID);
@@ -274,7 +296,7 @@ public class AdminDAO extends BaseDAO  {
 
     public TaskInfo getTask(int taskId) throws OmnigeneException {
 
-        String hql = "from org.genepattern.server.webservice.server.dao.TaskMaster where  taskId = :taskId";
+        String hql = "from org.genepattern.server.domain.TaskMaster where  taskId = :taskId";
         Query query = getSession().createQuery(hql);
         query.setInteger("taskId", taskId);
         TaskMaster tm = (TaskMaster) query.uniqueResult();
@@ -296,7 +318,7 @@ public class AdminDAO extends BaseDAO  {
 
         try {
 
-            String hql = "delete from org.genepattern.server.webservice.server.dao.TaskMaster  where taskId = :taskId ";
+            String hql = "delete from org.genepattern.server.domain.TaskMaster  where taskId = :taskId ";
             Query query = getSession().createQuery(hql);
             query.setInteger("taskId", taskID);
             
@@ -323,7 +345,7 @@ public class AdminDAO extends BaseDAO  {
 
     public SuiteInfo getSuite(String lsid) throws OmnigeneException {
 
-        String hql = "from org.genepattern.server.webservice.server.dao.Suite where lsid = :lsid ";
+        String hql = "from org.genepattern.server.domain.Suite where lsid = :lsid ";
         Query query = getSession().createQuery(hql);
         query.setString("lsid", lsid);
         Suite result = (Suite) query.uniqueResult();
@@ -424,7 +446,7 @@ public class AdminDAO extends BaseDAO  {
     public SuiteInfo[] getAllSuites() throws AdminDAOSysException {
 
 
-        String hql = "from org.genepattern.server.webservice.server.dao.Suite ";
+        String hql = "from org.genepattern.server.domain.Suite ";
         Query query = getSession().createQuery(hql);
         List<Suite> results = query.list();
         SuiteInfo[] suites = new SuiteInfo[results.size()];
@@ -437,7 +459,7 @@ public class AdminDAO extends BaseDAO  {
 
 
     public SuiteInfo[] getAllSuites(String userName) throws AdminDAOSysException {
-        String hql = "from org.genepattern.server.webservice.server.dao.Suite " +
+        String hql = "from org.genepattern.server.domain.Suite " +
                 " where accessId = :publicAccessId  or  (accessId = :privateAccessId and owner = :userId)";
         Query query = getSession().createQuery(hql);
         query.setInteger("publicAccessId", GPConstants.ACCESS_PUBLIC);
