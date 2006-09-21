@@ -336,7 +336,11 @@ No such task <%= taskName %><br>
 	// i.e. I am too lazy to rewrite all the pipeline code to add this feature (JTL)
 	  String displayName =  (String)pia.get("altName");
 	  if (displayName == null) displayName = pi.getName();
-	  System.out.println("display Name=" + pia.get("displayName"));
+	  
+	  if (pi.getAttributes() != null && pi.getAttributes().containsKey(pi.TYPE)) {
+			String type = (String)pi.getAttributes().get(pi.TYPE);
+			System.out.println("T2=" + type);
+		}
 %>
 
 <tr>
@@ -349,7 +353,7 @@ No such task <%= taskName %><br>
 
     <% 		if (pi.isInputFile()) { 
 
-String urlStr = defaultValue;
+			String urlStr = defaultValue;
 
 			if (defaultValue != null){
 				if (defaultValue.trim().length() > 0){
@@ -423,12 +427,23 @@ String urlStr = defaultValue;
            out.println("<br>" + StringUtils.htmlEncode(description));
        }
    } else if (pi.isOutputFile()) {
+   } else if (pi.isPassword()){
+%>
+	   <table align="left">
+	    <tr>
+	        <td valign="top">
+	            <input type="password" name="<%= pi.getName() %>" value="<%=  defaultValue %>">
+	        </td>
+	        <%
+	            if (description.length() > 0) { %>
+	        <td valign="top"><%= StringUtils.htmlEncode(description) %>
+	        </td>
+	        <% } %>
+	    </tr>
+	</table>
+	<%    
+	   
    } else if (stChoices.length < 2) {
-
-
-
-
-
 
     %>
 <table align="left">

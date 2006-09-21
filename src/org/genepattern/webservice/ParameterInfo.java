@@ -149,6 +149,25 @@ public class ParameterInfo implements Serializable {
 	}
 
 	/**
+	 * Checks to see if this parameter is used to specify a password from
+	 * client.
+	 * 
+	 * @return true if this is a uploaded file from client
+	 */
+	public boolean isPassword() {
+		System.out.println("Attr=" + attributes + "  " + this.attributes.get(TYPE) + " - " + this.attributes.get(TYPE.toLowerCase()));
+		if (attributes != null && (attributes.containsKey(TYPE)|| attributes.containsKey(TYPE.toLowerCase()))) {
+			String type = (String) this.attributes.get(TYPE);
+			if (type == null) type = (String) this.attributes.get(TYPE.toLowerCase());
+			if (type.equals(GPConstants.PARAM_INFO_PASSWORD)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	
+	/**
 	 * Sets this as an input file parameter.
 	 */
 	public void setAsInputFile() {

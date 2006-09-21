@@ -220,7 +220,7 @@ public interface IGPConstants {
 
     public static final String PARAM_INFO_STRING = "string";
 
-    public static final String PARAM_INFO_PASSWORD = "string";
+    public static final String PARAM_INFO_PASSWORD = "PASSWORD";
 
     public static final String PARAM_INFO_CHECKBOX = "checkbox";
 
@@ -228,7 +228,7 @@ public interface IGPConstants {
 
     public static final String PARAM_INFO_TYPE_TEXT = "java.lang.String";
 
-    public static final String PARAM_INFO_TYPE_PASSWORD = "java.lang.String";
+    public static final String PARAM_INFO_TYPE_PASSWORD = "PASSWORD";
 
     public static final String PARAM_INFO_TYPE_FLOAT = "java.lang.Float";
 
