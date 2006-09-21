@@ -155,7 +155,6 @@ public class ParameterInfo implements Serializable {
 	 * @return true if this is a uploaded file from client
 	 */
 	public boolean isPassword() {
-		System.out.println("Attr=" + attributes + "  " + this.attributes.get(TYPE) + " - " + this.attributes.get(TYPE.toLowerCase()));
 		if (attributes != null && (attributes.containsKey(TYPE)|| attributes.containsKey(TYPE.toLowerCase()))) {
 			String type = (String) this.attributes.get(TYPE);
 			if (type == null) type = (String) this.attributes.get(TYPE.toLowerCase());
