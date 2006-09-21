@@ -20,10 +20,10 @@ import javax.faces.validator.ValidatorException;
 import javax.servlet.http.Cookie;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.User;
-import org.genepattern.server.UserHome;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserHome;
 
-public class ChangePasswordBean {
+public class ChangePasswordBean  {
     private static Logger log = Logger.getLogger(ChangePasswordBean.class);
     private String currentPassword;
     private String newPassword;
@@ -32,7 +32,8 @@ public class ChangePasswordBean {
     private boolean passwordSet;
 
     public ChangePasswordBean() {
-        User user = (new UserHome()).findByUsername(UIBeanHelper.getUserId());
+        User user = (new UserHome()).findById(UIBeanHelper.getUserId());
+
         // password will be null if server was initially configured not to
         // require password
         if (user != null) { // FIXME
@@ -51,7 +52,8 @@ public class ChangePasswordBean {
 
     public void validateCurrentPassword(FacesContext context, UIComponent component, Object value)
             throws ValidatorException {
-        User user = (new UserHome()).findByUsername(UIBeanHelper.getUserId());
+        User user = (new UserHome()).findById(UIBeanHelper.getUserId());
+
        
         if (!value.toString().equals(user.getPassword())) {
             String message = "Please specify the correct current password.";
@@ -62,9 +64,8 @@ public class ChangePasswordBean {
     }
 
     public String changePassword() {
-        User user = (new UserHome()).findByUsername(UIBeanHelper.getUserId());
+        User user = (new UserHome()).findById(UIBeanHelper.getUserId());
         user.setPassword(newPassword);
-        (new UserHome()).persist(user);
         return "success";
     }
 

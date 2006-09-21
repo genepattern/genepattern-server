@@ -18,8 +18,8 @@ import javax.servlet.http.*;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
-import org.genepattern.server.User;
-import org.genepattern.server.UserHome;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserHome;
 import org.genepattern.util.GPConstants;
 
 /**
@@ -28,7 +28,7 @@ import org.genepattern.util.GPConstants;
  * @author jrobinso
  * 
  */
-public class RegistrationBean {
+public class RegistrationBean extends AbstractUIBean  {
 
     private static Logger log = Logger.getLogger(RegistrationBean.class);
     private String username;
@@ -107,19 +107,19 @@ public class RegistrationBean {
             assert username != null;
             assert password != null;
 
-            HttpServletRequest request = UIBeanHelper.getRequest();
+            HttpServletRequest request = getRequest();
             
             Base64 encoder = new Base64();
             String encodedPassword = new String( encoder.encode(password.getBytes()));
             
             
             User newUser = new User();
-            newUser.setUsername(username);
+            newUser.setUserId(username);
             newUser.setPassword(encodedPassword);
             newUser.incrementLoginCount();
             
-            (new UserHome()).persist(newUser);
-            setUserAndRedirect(UIBeanHelper.getRequest(), UIBeanHelper.getResponse(), username);
+            (new UserHome()).merge(newUser);
+            setUserAndRedirect(getRequest(), getResponse(), username);
 
         }
         catch (Exception e) {
@@ -159,14 +159,14 @@ public class RegistrationBean {
     
         String userID = "\"" + URLEncoder.encode(username.replaceAll("\"", "\\\""), "utf-8") + "\"";
         Cookie cookie4 = new Cookie(GPConstants.USERID, userID);
-        cookie4.setPath(UIBeanHelper.getRequest().getContextPath());
+        cookie4.setPath(getRequest().getContextPath());
         cookie4.setMaxAge(Integer.MAX_VALUE);
-        UIBeanHelper.getResponse().addCookie(cookie4);
+        getResponse().addCookie(cookie4);
     
         String referrer = getReferrer(request);
         referrer += (referrer.indexOf('?') > 0 ? "&" : "?");
         referrer += username;
-        UIBeanHelper.getResponse().sendRedirect(referrer);
+        getResponse().sendRedirect(referrer);
     }
 
     public String getEmail() {

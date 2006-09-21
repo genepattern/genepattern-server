@@ -11,8 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
-import org.genepattern.server.User;
-import org.genepattern.server.UserHome;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserHome;
 import org.genepattern.util.GPConstants;
 
 /**
@@ -21,7 +21,7 @@ import org.genepattern.util.GPConstants;
  * @author jrobinso
  * 
  */
-public class LoginBean {
+public class LoginBean extends AbstractUIBean {
 
     private static Logger log = Logger.getLogger(LoginBean.class);
     private String username;
@@ -77,19 +77,21 @@ public class LoginBean {
         try {
             assert username != null;
             assert password != null;
-            HttpServletRequest request = UIBeanHelper.getRequest();
+            HttpServletRequest request = getRequest();
 
-            User up = (new UserHome()).findByUsername(username);
+            User up = (new UserHome()).findById(username);
             if (up == null) {
                 if (passwordRequired) {
                     unknownUser = true;
                 }
                 else {
                     User newUser = new User();
-                    newUser.setUsername(username);
+                    newUser.setUserId(username);
                     newUser.setPassword(null);
-                    (new UserHome()).persist(newUser);
-                    setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
+
+                    (new UserHome()).merge(newUser);
+                    setUserAndRedirect(request, getResponse(), username);
+
                 }
             }
             else if (passwordRequired) {
@@ -101,11 +103,11 @@ public class LoginBean {
                 }
 
                 else {
-                    setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
+                    setUserAndRedirect(request, getResponse(), username);
                 }
             }
             else {
-                setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
+                setUserAndRedirect(request, getResponse(), username);
             }
         }
         catch (UnsupportedEncodingException e) {
@@ -127,14 +129,14 @@ public class LoginBean {
 
         String userID = "\"" + URLEncoder.encode(username.replaceAll("\"", "\\\""), "utf-8") + "\"";
         Cookie cookie4 = new Cookie(GPConstants.USERID, userID);
-        cookie4.setPath(UIBeanHelper.getRequest().getContextPath());
+        cookie4.setPath(getRequest().getContextPath());
         cookie4.setMaxAge(Integer.MAX_VALUE);
-        UIBeanHelper.getResponse().addCookie(cookie4);
+        getResponse().addCookie(cookie4);
 
-        String referrer = UIBeanHelper.getReferrer(request);
+        String referrer = getReferrer(request);
         referrer += (referrer.indexOf('?') > 0 ? "&" : "?");
         referrer += username;
-        UIBeanHelper.getResponse().sendRedirect(referrer);
+        getResponse().sendRedirect(referrer);
     }
 
 }
