@@ -106,7 +106,7 @@
 <param name="<%= RunVisualizerConstants.CPU_TYPE %>" value="<%= StringUtils.htmlEncode(tia.get(GPConstants.CPU_TYPE)) %>">
 <param name="<%= RunVisualizerConstants.LIBDIR %>" value="<%= StringUtils.htmlEncode(libdir) %>">
 
-<param name="<%= RunVisualizerConstants.JAVA_FLAGS %>" value="<%= StringUtils.htmlEncode(System.getProperty(RunVisualizerConstants.JAVA_FLAGS)) %>">
+<param name="<%= RunVisualizerConstants.JAVA_FLAGS_VALUE %>" value="<%= StringUtils.htmlEncode(System.getProperty(RunVisualizerConstants.JAVA_FLAGS_VALUE)) %>">
 
 
 <param name="<%= RunVisualizerConstants.PARAM_NAMES %>" value="<%

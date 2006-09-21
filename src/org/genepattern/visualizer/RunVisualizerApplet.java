@@ -47,7 +47,7 @@ public class RunVisualizerApplet extends Applet {
 			for (int i = 0; i < wellKnownNames.length; i++) {
 				setParameter(wellKnownNames[i], getParameter(wellKnownNames[i]));
 			}
-			setParameter(RunVisualizerConstants.JAVA_FLAGS,getParameter(RunVisualizerConstants.JAVA_FLAGS));
+			setParameter(RunVisualizerConstants.JAVA_FLAGS_NAME,getParameter(RunVisualizerConstants.JAVA_FLAGS_VALUE));
 			StringTokenizer stParameterNames = new StringTokenizer(
 					getParameter(RunVisualizerConstants.PARAM_NAMES), ", ");
 			while (stParameterNames.hasMoreTokens()) {
