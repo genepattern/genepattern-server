@@ -14,7 +14,9 @@
 package org.genepattern.visualizer;
 
 public class RunVisualizerConstants {
-	public static final String JAVA_FLAGS = "visualizer_java_flags";
+	public static final String JAVA_FLAGS_VALUE = "visualizer_java_flags";
+	public static final String JAVA_FLAGS_NAME = "java_flags";
+
 
 
 	public static String PARAM_NAMES = "gp_paramNames"; // CSV list of input
