@@ -97,8 +97,15 @@ public class CnParser implements IExpressionDataParser {
             }
 
             for (int columnIndex = 0, tokenIndex = 3; columnIndex < columns; columnIndex++, tokenIndex++) {
-                if (handler != null) {
-                    handler.data(i, columnIndex, 0, tokens[tokenIndex]);
+                try {
+                    double data = Double.parseDouble(tokens[tokenIndex]);
+                    if (handler != null) {
+                        handler.data(i, columnIndex, data);
+                    }
+                }
+                catch (NumberFormatException nfe) {
+                    throw new ParseException("Data at line number " + i + " and column " + columnIndex
+                            + " is not a number.");
                 }
             }
         }
