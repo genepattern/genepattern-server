@@ -69,7 +69,7 @@ public class CnParser implements IExpressionDataParser {
             lines.add(s);
         }
         String[] rowMetaData = new String[] { ExpressionConstants.CHROMOSOME, ExpressionConstants.PHYSICAL_POSITION };
-        String[] matrices = cn ? null : new String[] { "Data"};
+        String[] matrices = cn ? new String[0] : new String[] { "Data" };
 
         // <snp_id>\t<Chromosome>\t<Position>\t<sample1>\t<sample2>\t<sample3>\t....
         handler.init(lines.size(), columns, rowMetaData, new String[0], matrices);
