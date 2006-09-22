@@ -14,73 +14,70 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.genepattern.server.util.HibernateUtil;
 
-
 public class DatabaseUtil {
 
     private static Logger log = Logger.getLogger(DatabaseUtil.class);
 
+    /**
+     * 
+     */
     public static void startDatabase() {
         // @todo - get from properites file
-        String[] args = new String[] { "-port", "9001", "-database.0", "file:../resources/GenePatternDB", "-dbname.0",
-                "xdb" };
+        String port = System.getProperty("HSQL_port", "9001");
+        String dbUrl = System.getProperty("HSQL_dbUrl", "file:../resources/GenePatternDB");
+        String dbName = System.getProperty("HSQL_dbName", "xdb");
+        String[] args = new String[] { "-port", port, "-database.0", dbUrl, "-dbname.0", dbName };
         org.hsqldb.Server.main(args);
+
         HibernateUtil.getSession().beginTransaction();
         updateSchema();
         HibernateUtil.getSession().getTransaction().commit();
     }
 
     public static void shutdownDatabase() {
-        BaseDAO dao = new BaseDAO();
-        dao.executeUpdate("SHUTDOWN COMPACT");
+        
+        try {
+            HibernateUtil.getSession().beginTransaction();
+            log.info("Checkpointing database");
+            AnalysisDAO dao = new AnalysisDAO();
+            dao.executeUpdate("CHECKPOINT");
+            log.info("Checkpointed.");
+            dao.executeUpdate("SHUTDOWN");
+            HibernateUtil.getSession().getTransaction().commit();
+        }
+        catch (Throwable t) {
+            t.printStackTrace();
+            log.info("checkpoint database in StartupServlet.destroy", t);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+
 
     }
 
     private static void updateSchema() {
-        /*       try {
+
+        try {
             String resourceDir = new File(System.getProperty("resources")).getCanonicalPath();
             log.debug("resourcesDir=" + new File(resourceDir).getCanonicalPath());
 
-            Properties props = loadProps(resourceDir);
-            log.debug(props);
+            if (!checkSchema(resourceDir)) {
 
-            System.setProperty("genepattern.properties", resourceDir);
-            System.setProperty("omnigene.conf", resourceDir);
+                createSchema(resourceDir);
 
-            if (!checkSchema(resourceDir, props)) {
-
-                createSchema(resourceDir, props);
-
-                if (!checkSchema(resourceDir, props)) {
+                if (!checkSchema(resourceDir)) {
                     System.err.println("schema didn't check after creating");
 
-                    throw new IOException(
-                            "unable to successfully create task_master table.  Other tables also suspect.");
-
+                    throw new IOException("unable to successfully create task_master table. Other tables also suspect.");
                 }
             }
-        } catch (IOException e) {
-            log.error(e);
-        }*/
-
-    }
-
-    private static Properties loadProps(String propsDir) throws IOException {
-        File propFile = new File(propsDir, "genepattern.properties");
-        FileInputStream fis = null;
-        Properties props = new Properties();
-        try {
-            fis = new FileInputStream(propFile);
-            props.load(fis);
-        } catch (IOException ioe) {
-            throw new IOException("InstallTasks.loadProps: " + propFile.getCanonicalPath() + " cannot be loaded.  "
-                    + ioe.getMessage());
-        } finally {
-            try {
-                if (fis != null) fis.close();
-            } catch (IOException ioe) {
-            }
         }
-        return props;
+        catch (IOException e) {
+            log.error(e);
+        }
+
+
     }
 
     /**
@@ -89,11 +86,11 @@ public class DatabaseUtil {
      * @param props
      * @return
      */
-    private static boolean checkSchema(String resourceDir, Properties props) {
+    private static boolean checkSchema(String resourceDir) {
         log.debug("checking schema");
         boolean upToDate = false;
         String dbSchemaVersion = "";
-        String requiredSchemaVersion = props.getProperty("GenePatternVersion");
+        String requiredSchemaVersion = System.getProperty("GenePatternVersion");
         // check schemaVersion
 
         String sql = "select value from props where key='schemaVersion'";
@@ -109,13 +106,14 @@ public class DatabaseUtil {
                 dbSchemaVersion = "";
                 upToDate = false;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             // 
             log.info("Database tables not found.  Create new database");
             dbSchemaVersion = "";
         }
 
-        props.setProperty("dbSchemaVersion", dbSchemaVersion);
+        System.setProperty("dbSchemaVersion", dbSchemaVersion);
         System.out.println("schema up-to-date: " + upToDate + ": " + requiredSchemaVersion + " required, "
                 + dbSchemaVersion + " current");
         return upToDate;
@@ -127,11 +125,11 @@ public class DatabaseUtil {
      * @param props
      * @throws IOException
      */
-    private static void createSchema(String resourceDir, final Properties props) throws IOException {
+    private static void createSchema(String resourceDir) throws IOException {
         File[] schemaFiles = new File(resourceDir).listFiles(new FilenameFilter() {
             // INNER CLASS !!!
             public boolean accept(File dir, String name) {
-                return name.endsWith(".sql") && name.startsWith(props.getProperty("DB.schema"));
+                return name.endsWith(".sql") && name.startsWith(System.getProperty("DB.schema"));
             }
         });
         Arrays.sort(schemaFiles, new Comparator() {
@@ -139,22 +137,22 @@ public class DatabaseUtil {
                 File f1 = (File) o1;
                 File f2 = (File) o2;
                 String name1 = f1.getName();
-                String version1 = name1.substring(props.getProperty("DB.schema").length(), name1.length()
+                String version1 = name1.substring(System.getProperty("DB.schema").length(), name1.length()
                         - ".sql".length());
                 String name2 = f2.getName();
-                String version2 = name2.substring(props.getProperty("DB.schema").length(), name2.length()
+                String version2 = name2.substring(System.getProperty("DB.schema").length(), name2.length()
                         - ".sql".length());
                 return version1.compareToIgnoreCase(version2);
             }
         });
-        String expectedSchemaVersion = props.getProperty("GenePatternVersion");
-        String dbSchemaVersion = (String) props.remove("dbSchemaVersion");
+        String expectedSchemaVersion = System.getProperty("GenePatternVersion");
+        String dbSchemaVersion = (String) System.getProperty("dbSchemaVersion");
         for (int f = 0; f < schemaFiles.length; f++) {
             File schemaFile = schemaFiles[f];
             String name = schemaFile.getName();
-            String version = name.substring(props.getProperty("DB.schema").length(), name.length() - ".sql".length());
+            String version = name.substring(System.getProperty("DB.schema").length(), name.length() - ".sql".length());
             if (version.compareTo(expectedSchemaVersion) <= 0 && version.compareTo(dbSchemaVersion) > 0) {
-                log.info("processing" + name + " (" + version + ")" );
+                log.info("processing" + name + " (" + version + ")");
                 processSchemaFile(schemaFile);
             }
             else {
@@ -163,7 +161,7 @@ public class DatabaseUtil {
         }
     }
 
-    protected static void processSchemaFile(File schemaFile) throws  IOException {
+    protected static void processSchemaFile(File schemaFile) throws IOException {
         log.info("updating database from schema " + schemaFile.getCanonicalPath());
         String all = readFile(schemaFile);
         while (!all.equals("")) {
@@ -189,7 +187,8 @@ public class DatabaseUtil {
             try {
                 log.debug("-> " + sql);
                 (new BaseDAO()).executeUpdate(sql);
-            } catch (Exception se) {
+            }
+            catch (Exception se) {
                 log.error(se);
             }
         }
@@ -208,12 +207,15 @@ public class DatabaseUtil {
                 }
                 b.append(buffer, 0, i);
             }
-        } catch (IOException ioe) {
-        } finally {
+        }
+        catch (IOException ioe) {
+        }
+        finally {
             if (reader != null) {
                 try {
                     reader.close();
-                } catch (IOException ioe) {
+                }
+                catch (IOException ioe) {
                 }
             }
         }
@@ -225,7 +227,8 @@ public class DatabaseUtil {
         startDatabase();
         try {
             System.in.read();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
