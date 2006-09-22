@@ -96,7 +96,7 @@ public class TaskAccessHome {
     public TaskAccess findById(java.lang.Integer id) {
         log.debug("getting TaskAccess instance with id: " + id);
         try {
-            TaskAccess instance = (TaskAccess) sessionFactory.getCurrentSession().get(
+            TaskAccess instance = (TaskAccess) HibernateUtil.getSession().get(
                     "org.genepattern.server.domain.TaskAccess", id);
             if (instance == null) {
                 log.debug("get successful, no instance found");

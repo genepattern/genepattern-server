@@ -12,5 +12,11 @@
     <property name="lastLoginDate" type="timestamp" column="last_login_date"/>
     <property name="lastLoginIP" type="string" column="last_login_ip"/>
     <property name="totalLoginCount" type="integer" column="total_login_count"/>
+ 
+     <bag name="props" inverse="false" cascade="all-delete-orphan">
+        <key column="gp_user_id" />
+        <one-to-many class="org.genepattern.server.user.UserProp"/>
+    </bag>   
+
   </class>
 </hibernate-mapping>

@@ -34,7 +34,7 @@ public class UserHomeTest extends TestCase {
         user.setLastLoginIP("127.0.0.1");
         user.setTotalLoginCount(10);
         
-        home.persist(user);
+        home.merge(user);
         HibernateUtil.getSession().flush();
         
         User user2 = home.findById(id);

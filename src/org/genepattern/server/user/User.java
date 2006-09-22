@@ -1,6 +1,7 @@
 package org.genepattern.server.user;
 
 import java.util.Date;
+import java.util.List;
 
 public class User {
 
@@ -10,8 +11,17 @@ public class User {
     Date lastLoginDate;
     String lastLoginIP;
     int totalLoginCount;
+    List<UserProp> props;
 
-	public String getEmail() {
+	public List<UserProp> getProps() {
+        return props;
+    }
+
+    public void setProps(List<UserProp> props) {
+        this.props = props;
+    }
+
+    public String getEmail() {
         return email;
     }
 

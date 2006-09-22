@@ -7,5 +7,12 @@
       <generator class="native"/>
     </id>
     <property name="id" access="field" type="integer" column="id"/>
+    <property name="type" type="string" column="type"/>
+    <property name="jobNumber" type="integer" column="job_number"/>
+    <property name="parentJobNumber" type="integer" column="parent_job_number"/>
+    <property name="taskName" type="string" column="task_name"/>
+    <property name="completionDate" type="date" column="completion_date"/>
+    <property name="elapsedTime" type="long" column="elapsed_time"/>
+    <property name="taskLsid" access="field" type="string" column="task_lsid"/>
   </class>
 </hibernate-mapping>

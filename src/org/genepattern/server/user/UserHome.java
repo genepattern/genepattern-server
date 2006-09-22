@@ -19,7 +19,9 @@ import org.hibernate.criterion.Example;
 public class UserHome {
 
 	private static final Log log = LogFactory.getLog(UserHome.class);
-
+	/** auto generated
+	 * @es_generated
+	 */
 
 
 	public void persist(User transientInstance) {
@@ -120,4 +122,5 @@ public class UserHome {
         return findById(username);
 
     }
+
 }
