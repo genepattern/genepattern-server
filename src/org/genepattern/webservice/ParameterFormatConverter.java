@@ -181,6 +181,23 @@ public class ParameterFormatConverter {
 
 	}
 
+	public static ParameterInfo[] stripPasswords(ParameterInfo[] params){
+		for (int i=0; i < params.length; i++){
+			ParameterInfo p = params[i];
+			if (p.isPassword()){
+				p.setValue("");
+			}
+		}
+		return params;
+	}
+	
+	
+	public static String stripPasswords(String jxbParameterInfoString){
+		ParameterInfo[] params = getParameterInfoArray(jxbParameterInfoString);
+		return getJaxbString(stripPasswords(params));
+	}
+	
+	
 	/**
 	 * @param args
 	 */

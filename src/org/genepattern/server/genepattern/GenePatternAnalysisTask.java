@@ -88,6 +88,7 @@ import org.genepattern.util.IGPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -951,7 +952,14 @@ public class GenePatternAnalysisTask implements IGPConstants {
 
             AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
             aJob.setJobNo(jobInfo.getJobNumber());
-            aJob.setParameterInfo(jobInfo.getParameterInfo());
+            
+            String paramString = jobInfo.getParameterInfo();
+            if (jobStatus==JobStatus.JOB_ERROR || jobStatus == JobStatus.JOB_FINISHED || jobStatus == JobStatus.JOB_PROCESSING ){
+            	paramString = ParameterFormatConverter.stripPasswords(paramString);
+            }
+                       
+            
+            aJob.setParameterInfo(paramString);
             aJob.setJobStatus(new JobStatus(jobStatus));
             aJob.setCompletedDate(now);
 
