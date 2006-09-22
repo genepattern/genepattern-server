@@ -185,7 +185,7 @@ AnalysisDAO extends BaseDAO {
         aJob.setUserId(user_id);
         aJob.setTaskName(taskName);
         aJob.setParent(parentJobNumber);
-        aJob.setTaskLsid(task_lsid);
+        aJob.setTaskLsid(lsid);
 
         return (Integer) getSession().save(aJob);
 
