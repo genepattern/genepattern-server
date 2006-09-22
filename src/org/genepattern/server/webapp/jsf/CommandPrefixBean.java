@@ -145,13 +145,22 @@ public class CommandPrefixBean extends AbstractUIBean implements IGPConstants {
 
     public void deletePrefix(ActionEvent event) {
     	Map.Entry row = (Map.Entry)prefixTable.getRowData();
+    	String prefixToDelete = (String)row.getKey();
+    	Properties cp = pm.getCommandPrefixes();
+    	cp.remove(prefixToDelete);
+    	pm.saveProperties(COMMAND_PREFIX, cp);
     	
-    	Properties p = pm.getCommandPrefixes();
-    	p.remove(row.getKey());
-    	pm.saveProperties(COMMAND_PREFIX, p);
-    	
-    	System.out.println("delete -->"+row.getKey());
-    	
+    	Properties tpm = pm.getTaskPrefixMapping();
+    	boolean tpmChanged = false;
+    	for (Object oKey : tpm.keySet() ){
+    		String key = (String)oKey;
+    		String prefixInUse = tpm.getProperty(key);
+    		if (prefixInUse.equals(prefixToDelete)){
+    			tpm.remove(key);
+    			tpmChanged = true;
+    		}
+    	}
+    	if (tpmChanged) pm.saveProperties(TASK_PREFIX_MAPPING, tpm);   	
     }
 	
     public void saveDefaultCommandPrefix(ActionEvent event) {
