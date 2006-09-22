@@ -3,110 +3,140 @@
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core">
-
-
+	
 <ui:composition template="/templates/common.xhtml">
-
-	<ui:define name="pageTitle">GenePattern Command Prefix Admini</ui:define>
-
+	<ui:define name="pageTitle">GenePattern Command Prefix Administration</ui:define>
 
 	<ui:define name="body">
-	<h:messages/>
-	
-	
-		
-		<h2> Command Prefixes </h2>
-			<table>
-				<tr>
-				<h:dataTable value="#{commandPrefixBean.commandPrefixes}"  var="aPrefix" binding="#{commandPrefixBean.prefixTable}">
-				
-				  <h:column>
-				  	<f:facet name="header">
-						<h:panelGroup>
-							<h:outputText value="Name" />
-						</h:panelGroup>
-					</f:facet>
-				  
-						  <h:outputText value="#{aPrefix.key}"/>
-				    </h:column>
-				    <h:column>
-				    	<f:facet name="header">
-						<h:panelGroup>
-							<h:outputText value="Value" />
-						</h:panelGroup>
-					</f:facet>
-				        <h:outputText value="#{aPrefix.value}"/>
-				    </h:column>
-				     <h:column>
-				  	 <h:form>
-				     	<h:commandButton actionListener="#{commandPrefixBean.deletePrefix}" value="delete"/>
-				     </h:form>
-				     </h:column>
-				</h:dataTable>
-				</tr>
+		<h:messages />
+		<h2>Command Prefixes</h2>
+		<table width="80%">
+			<tr>
 				<h:form>
-				<tr>	
-					<td>prefix name=<h:inputText size="50"
+				<td>Default Command Prefix:<h:inputText size="50"
+					value="#{commandPrefixBean.defaultCommandPrefix}"
+					id="defaultPrefix" required="false" /> <h:commandButton
+					actionListener="#{commandPrefixBean.saveDefaultCommandPrefix}"
+					value="update" /></td>
+				</h:form>
+			</tr>
+			<tr><td><br></br>
+			The default command prefix is used for all modules that do not have an explicit prefix setting below.<p></p>
+			</td></tr>
+			
+			<tr><td><br></br>&nbsp; <hr /><br></br></td></tr>
+			
+			<tr>
+				<h:dataTable value="#{commandPrefixBean.commandPrefixes}"
+					var="aPrefix" binding="#{commandPrefixBean.prefixTable}" width="80%" >
+					<f:facet name="header">
+					Additional command prefixes		
+					</f:facet>
+					<h:column>
+						<f:facet name="header">
+							<h:panelGroup>
+								<h:outputText value="Name" />
+							</h:panelGroup>
+						</f:facet>
+
+						<h:outputText value="#{aPrefix.key}" />
+					</h:column>
+					<h:column>
+						<f:facet name="header">
+							<h:panelGroup>
+								<h:outputText value="Content" />
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText value="#{aPrefix.value}" />
+					</h:column>
+					<h:column>
+						<h:form>
+							<h:commandButton
+								actionListener="#{commandPrefixBean.deletePrefix}"
+								value="delete" />
+						</h:form>
+					</h:column>
+				</h:dataTable>
+			</tr>
+			
+			<tr>
+			<td><p></p>
+			<b>Add New Prefix:</b>
+			</td>
+			</tr>
+			<h:form>	<tr>
+					<td>
+						name: <h:inputText size="20"
 						value="#{commandPrefixBean.newPrefixName}" id="newPrefixName"
-						required="true" />
-						Content=<h:inputText size="50"
+						required="true" /> 
+						content: <h:inputText size="50"
 						value="#{commandPrefixBean.newPrefixValue}" id="newPrefixVal"
 						required="true" />
-						</td>
-				</tr>
-				
-				<tr>
-					<td rowspan="2"><h:commandButton value="Submit Prefix" class="little"
-						actionListener="#{commandPrefixBean.saveCommandPrefixes}" />
 					</td>
 				</tr>
-				</h:form>
+
 				<tr>
-				<td>
-				<h:dataTable value="#{commandPrefixBean.taskPrefixMapping}"  var="aPrefixMap">
-				  <h:column>
-				  	<f:facet name="header">
-						<h:panelGroup>
-							<h:outputText value="Module" />
-						</h:panelGroup>
-					</f:facet>
-						  <h:outputText value="#{aPrefixMap.key}"/>
-				    </h:column>
-				    <h:column>
-				    <f:facet name="header">
-						<h:panelGroup>
-							<h:outputText value="Command Prefix Name" />
-						</h:panelGroup>
-					</f:facet>
-				        <h:outputText value="#{aPrefixMap.value}"/>
-				    </h:column>
+					<td rowspan="2"><h:commandButton value="Submit Prefix"
+						class="little"
+						actionListener="#{commandPrefixBean.saveCommandPrefixes}" /></td>
+				</tr>
+			</h:form>
+			<tr><td><br></br>&nbsp; <hr /><br></br></td></tr>
+			<tr>
+				<td><p></p>
+				<h:dataTable value="#{commandPrefixBean.taskPrefixMapping}" 
+					binding="#{commandPrefixBean.tpmappingTable}"
+					width="80%"
+					var="aPrefixMap">
+					<h:column>
+						<f:facet name="header">
+							<h:panelGroup>
+								<h:outputText value="Module" />
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText value="#{aPrefixMap.key}" />
+					</h:column>
+					<h:column>
+						<f:facet name="header">
+							<h:panelGroup>
+								<h:outputText value="Command Prefix Name" />
+							</h:panelGroup>
+						</f:facet>
+						<h:outputText value="#{aPrefixMap.value}" />
+					</h:column>
+					<h:column>
+						<h:form>
+							<h:commandButton
+								actionListener="#{commandPrefixBean.deleteTaskPrefixMapping}"
+								class="little"
+								value="delete" />
+						</h:form>
+					</h:column>
 				</h:dataTable>
 				</td>
-				</tr>
-				<h:form>
-				<tr>	
-					<td>for module ... 
-						<h:selectOneMenu value="#{commandPrefixBean.newMappingLSID}">
-							<f:selectItems value="#{moduleListBean.latestModules}" />
-						</h:selectOneMenu>
-						... use prefix...
-						
-						<h:selectOneMenu value="#{commandPrefixBean.newMappingPrefix}">
-							<f:selectItems value="#{commandPrefixBean.commandPrefixesAsSelectItems}" />
-						</h:selectOneMenu>
-						
-						</td>
+			</tr>
+			<h:form>
+			
+				<tr>
+					<td><p></p>for modules ...<br></br> <h:selectManyListbox size="6"
+						value="#{commandPrefixBean.newMappingLSID}">
+						<f:selectItems value="#{moduleListBean.latestModules}" />
+					</h:selectManyListbox> ... use prefix... <h:selectOneMenu
+						value="#{commandPrefixBean.newMappingPrefix}">
+						<f:selectItems
+							value="#{commandPrefixBean.commandPrefixesAsSelectItems}" />
+					</h:selectOneMenu></td>
 				</tr>
 
 				<tr>
-				<td rowspan="2">
-				<h:commandButton value="Submit Mapping" class="little"
+					<td rowspan="2"><h:commandButton value="Submit Mapping"
+						class="little"
 						actionListener="#{commandPrefixBean.savePrefixTaskMapping}" /></td>
 				</tr>
-				</h:form>
-			</table>
+			</h:form>
+		</table>
 
-		
+
 	</ui:define>
 
 

@@ -14,14 +14,11 @@
 package org.genepattern.webservice;
 
 import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.apache.log4j.Category;
 
 /**
  * @author Jim Lerner
@@ -29,8 +26,6 @@ import org.apache.log4j.Category;
  */
 public class TaskInfoAttributes extends HashMap implements Serializable {
 
-	private static Category _cat = Category
-			.getInstance(TaskInfoAttributes.class.getName());
 
 	private static String NAME_START = "<void property=\"";
 

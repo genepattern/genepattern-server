@@ -78,6 +78,7 @@ import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
 import org.genepattern.server.util.HibernateUtil;
 import org.genepattern.server.util.IAuthorizationManager;
+import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.ITaskIntegrator;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -501,10 +502,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
             if (c == null || c.trim().length() == 0) {
                 vProblems.add("Command line not defined");
             }
-            String lsfPrefix = props.getProperty(COMMAND_PREFIX, null);
-            if (lsfPrefix != null && lsfPrefix.length() > 0) {
-                taskInfoAttributes.put(COMMAND_LINE, lsfPrefix + " " + taskInfoAttributes.get(COMMAND_LINE));
-            }
+            
+            
+            setCommandPrefix(taskInfoAttributes, props);
 
             // create an array of Strings for Runtime.exec to fix bug 55
             // (filenames in spaces cause invalid command line)
@@ -881,6 +881,44 @@ public class GenePatternAnalysisTask implements IGPConstants {
             IndexerDaemon.notifyJobComplete(jobInfo.getJobNumber());
         }
     }
+
+    /**
+     * Get the appropriate command prefix to use for this module. The hierarchy goes like this;
+     * 1. task version specific entry in task prefix mapping
+     * 2. task versionless entry in task prefix mapping
+     * 3. default command prefix
+     * 
+     * @param taskInfoAttributes
+     * @param props
+     */
+	protected void setCommandPrefix(TaskInfoAttributes taskInfoAttributes, Properties props) throws MalformedURLException{
+		String lsidStr = taskInfoAttributes.get(LSID);
+		PropertiesManager pm  = PropertiesManager.getInstance(); 
+		Properties tpm = pm.getTaskPrefixMapping();
+		Properties prefixes = pm.getCommandPrefixes();
+		
+		String commandPrefixName = tpm.getProperty(lsidStr);
+		String commandPrefix = null;
+		
+		if (commandPrefixName == null) {
+			LSID lsid = new LSID(lsidStr);
+			lsidStr = lsid.toStringNoVersion();
+			commandPrefixName = tpm.getProperty(lsidStr);
+		
+		}
+		if (commandPrefixName != null){
+			commandPrefix = prefixes.getProperty(commandPrefixName);
+		}
+		
+		if (commandPrefix == null){
+			commandPrefix = props.getProperty(COMMAND_PREFIX, null);
+		}
+		
+		
+		if (commandPrefix != null && commandPrefix.length() > 0) {
+		    taskInfoAttributes.put(COMMAND_LINE, commandPrefix + " " + taskInfoAttributes.get(COMMAND_LINE));
+		}
+	}
 
     private TaskInfo getTaskInfo(JobInfo jobInfo) throws Exception {
         try {

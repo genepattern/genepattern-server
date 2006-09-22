@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -17,6 +18,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.IGPConstants;
 import org.genepattern.util.LSID;
@@ -29,46 +31,47 @@ public class CommandPrefixBean extends AbstractUIBean implements IGPConstants {
 	  LocalAdminClient admin;
 		
 	  HtmlDataTable prefixTable = null;
+	  HtmlDataTable tpmappingTable = null;
 		
-	  private Properties commandPrefixes;
-	  private Properties taskPrefixMapping;
-	  private static final String TPM_Name = TASK_PREFIX_MAPPING;
-	  private static final String CP_Name = COMMAND_PREFIX;
+	  private String defaultCommandPrefix;
 	  
 	  private String newPrefixName;
 	  private String newPrefixValue;
 	  
-	  private String newMappingLSID;
+	  private List newMappingLSID;
 	  private String newMappingPrefix;
 	  
-	  public CommandPrefixBean(){
-		  try {
-			  admin = new LocalAdminClient(getUserId());
+	  PropertiesManager pm = null;
 	  
-			  commandPrefixes = (Properties)getRequest().getSession().getAttribute(CP_Name);
-			  taskPrefixMapping = (Properties)getRequest().getSession().getAttribute(TPM_Name);
-			  
-			  if ((commandPrefixes == null) || (taskPrefixMapping==null)) {  
-				  reloadFromDisk();
-			  }
-			  
-		  }catch (IOException e){
-			  log.error(e);
-			  commandPrefixes = new Properties();
-			  taskPrefixMapping = new Properties();
-		  }
-		 
+	  public CommandPrefixBean(){
+		  
+		  admin = new LocalAdminClient(getUserId());
+		  pm = PropertiesManager.getInstance(); 
+		  defaultCommandPrefix = System.getProperty(COMMAND_PREFIX);
 	  }
 	  
 	  
 	  
+	public String getDefaultCommandPrefix() {
+		return defaultCommandPrefix;
+	}
+
+
+
+	public void setDefaultCommandPrefix(String defaultCommandPrefix) {
+		this.defaultCommandPrefix = defaultCommandPrefix;
+	}
+
+
+
 	public List getCommandPrefixes() {
-		 return new ArrayList(commandPrefixes.entrySet());
+		
+		 return new ArrayList(pm.getCommandPrefixes().entrySet());
 	}
 
 	public List<SelectItem> getCommandPrefixesAsSelectItems() {
 		ArrayList out = new ArrayList<SelectItem>();
-		for (Iterator iter = commandPrefixes.keySet().iterator(); iter.hasNext(); ){
+		for (Iterator iter = pm.getCommandPrefixes().keySet().iterator(); iter.hasNext(); ){
 			String key = (String)iter.next();
 			out.add(new SelectItem(key, key));
 		}
@@ -82,13 +85,14 @@ public class CommandPrefixBean extends AbstractUIBean implements IGPConstants {
 	 */
 	public List getTaskPrefixMapping() throws WebServiceException{
 		ArrayList out = new ArrayList();
+		Properties taskPrefixMapping = pm.getTaskPrefixMapping();
+		
 		//return tastPrefixMapping; by name not LSID as we really keep it
 		for (Object lsidStr : taskPrefixMapping.keySet() ){
 			String name = nameFromLSID((String)lsidStr);	
-			out.add(new KeyValuePair(name, taskPrefixMapping.getProperty((String)lsidStr)));
+			out.add(new KeyValuePair(name, (String)lsidStr, taskPrefixMapping.getProperty((String)lsidStr)));
 		}
-		
-		 return out;
+		return out;
 	}
 
 	
@@ -111,11 +115,11 @@ public class CommandPrefixBean extends AbstractUIBean implements IGPConstants {
 	}
 	
 	
-	 public String getNewMappingLSID() {
+	 public List getNewMappingLSID() {
 		return newMappingLSID;
 	}
 
-	public void setNewMappingLSID(String newMappingLSID) {
+	public void setNewMappingLSID(List newMappingLSID) {
 		this.newMappingLSID = newMappingLSID;
 	}
 
@@ -134,31 +138,55 @@ public class CommandPrefixBean extends AbstractUIBean implements IGPConstants {
      *            ignored
      */
     public void saveCommandPrefixes(ActionEvent event) {
-    	commandPrefixes.setProperty(newPrefixName, newPrefixValue);
-    	storeChanges(CP_Name, commandPrefixes);
+    	Properties p = pm.getCommandPrefixes();
+    	p.setProperty(newPrefixName, newPrefixValue);
+    	pm.saveProperties(COMMAND_PREFIX, p);
     }
 
     public void deletePrefix(ActionEvent event) {
-    	System.out.println("-->"+prefixTable.getRowIndex());
-    	System.out.println("-->"+prefixTable.getRowData().getClass());
+    	Map.Entry row = (Map.Entry)prefixTable.getRowData();
     	
-    	//commandPrefixes.setProperty(newPrefixName, newPrefixValue);
-    	//storeChanges(CP_Name, commandPrefixes);
+    	Properties p = pm.getCommandPrefixes();
+    	p.remove(row.getKey());
+    	pm.saveProperties(COMMAND_PREFIX, p);
+    	
+    	System.out.println("delete -->"+row.getKey());
+    	
     }
 	
+    public void saveDefaultCommandPrefix(ActionEvent event) {
+    	
+    	pm.storeChange(COMMAND_PREFIX, defaultCommandPrefix);
+    	System.setProperty(COMMAND_PREFIX, defaultCommandPrefix);
+    	System.out.println("set " + defaultCommandPrefix +"  to " + System.getProperty(COMMAND_PREFIX));
+    }
+    
     /**
      * Save the mappings between a task and a prefix
      * 
      * @param event -- ignored
      */
     public void savePrefixTaskMapping(ActionEvent event) throws MalformedURLException, WebServiceException{
-      	log.info("savePrefixTaskMappings");
-		String lsid = lsidFromName(newMappingLSID);
-		taskPrefixMapping.setProperty(lsid, newMappingPrefix);
-        storeChanges(TPM_Name, taskPrefixMapping);
+      	Properties p = pm.getTaskPrefixMapping();
+      	
+      	for (String anLsid : (List<String>)newMappingLSID){
+      		String lsid = lsidFromName(anLsid);
+      		
+      		p.setProperty(lsid, newMappingPrefix);
+      	}
+      	pm.saveProperties(TASK_PREFIX_MAPPING, p);
     }
-
     
+    public void deleteTaskPrefixMapping(ActionEvent event)  throws MalformedURLException, WebServiceException{
+    	KeyValuePair row = (KeyValuePair)tpmappingTable.getRowData();
+    	
+    	Properties p = pm.getTaskPrefixMapping();
+    	String k = lsidFromName(row.getAltKey());
+    	p.remove(k);
+    	pm.saveProperties(TASK_PREFIX_MAPPING, p);
+    	
+    }
+   
     
 	protected String nameFromLSID(String lsid) throws WebServiceException {
 		
@@ -181,43 +209,7 @@ public class CommandPrefixBean extends AbstractUIBean implements IGPConstants {
 		}
 	}
     
-	public static String getPropsDir(){
-		return System.getProperty("genepattern.properties"); // props dir
-	}
 	
-	public boolean storeChanges(String name, Properties props){
-		boolean storeSuccess = false;
-			
-		getRequest().getSession().setAttribute(name, props);		
-		try {
-			File propFile = new File(getPropsDir(), name + ".properties");
-			FileOutputStream fos = new FileOutputStream(propFile);
-			props.store(fos, " ");
-			fos.close();			
-			fos = null;
-			storeSuccess = true;
-		} catch (Exception e){
-			storeSuccess = false;
-		} 
-		
-		return storeSuccess;
-	}
-	
-	public void reloadFromDisk() throws IOException {
-		  commandPrefixes = new Properties();
-		  taskPrefixMapping = new Properties();
-		  File cpFile = new File(getPropsDir(), CP_Name+".properties");
-		  File tpmFile = new File(getPropsDir(), TPM_Name +".properties");
-		  
-		  if (cpFile.exists()) commandPrefixes.load(new FileInputStream(cpFile));
-		  if (tpmFile.exists())taskPrefixMapping.load(new FileInputStream(tpmFile));
-		  
-		  getRequest().getSession().setAttribute(CP_Name, commandPrefixes);		
-		  getRequest().getSession().setAttribute(TPM_Name, taskPrefixMapping);		  	 
-	}
-
-
-
 	public HtmlDataTable getPrefixTable() {
 		return prefixTable;
 	}
@@ -226,6 +218,18 @@ public class CommandPrefixBean extends AbstractUIBean implements IGPConstants {
 
 	public void setPrefixTable(HtmlDataTable prefixTable) {
 		this.prefixTable = prefixTable;
+	}
+
+
+
+	public HtmlDataTable getTpmappingTable() {
+		return tpmappingTable;
+	}
+
+
+
+	public void setTpmappingTable(HtmlDataTable tpmappingTable) {
+		this.tpmappingTable = tpmappingTable;
 	}
 	
 }

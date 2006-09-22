@@ -35,10 +35,14 @@ public class PropertiesManager implements IGPConstants {
 		
 	}
 	
-	public static PropertiesManager getInstance(){
+	public static PropertiesManager getInstance() {
 		if (inst == null){
 			inst = new PropertiesManager();
-			
+			try {
+				inst.reloadCommandPrefixesFromDisk();
+			} catch (IOException ioe){
+				throw new RuntimeException(ioe);
+			}
 		}
 		return inst;
 	}
