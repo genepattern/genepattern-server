@@ -21,17 +21,6 @@ public class AnalysisJobHome {
 
     private static final Log log = LogFactory.getLog(AnalysisJobHome.class);
 
-    private final SessionFactory sessionFactory = getSessionFactory();
-
-    protected SessionFactory getSessionFactory() {
-        try {
-            return (SessionFactory) new InitialContext().lookup("SessionFactory");
-        }
-        catch (Exception e) {
-            log.error("Could not locate SessionFactory in JNDI", e);
-            throw new IllegalStateException("Could not locate SessionFactory in JNDI");
-        }
-    }
 
     public void persist(AnalysisJob transientInstance) {
         log.debug("persisting AnalysisJob instance");
@@ -84,7 +73,7 @@ public class AnalysisJobHome {
     public AnalysisJob merge(AnalysisJob detachedInstance) {
         log.debug("merging AnalysisJob instance");
         try {
-            AnalysisJob result = (AnalysisJob) sessionFactory.getCurrentSession().merge(detachedInstance);
+            AnalysisJob result = (AnalysisJob) HibernateUtil.getSession().merge(detachedInstance);
             log.debug("merge successful");
             return result;
         }
@@ -97,7 +86,7 @@ public class AnalysisJobHome {
     public AnalysisJob findById(java.lang.Integer id) {
         log.debug("getting AnalysisJob instance with id: " + id);
         try {
-            AnalysisJob instance = (AnalysisJob) sessionFactory.getCurrentSession().get(
+            AnalysisJob instance = (AnalysisJob) HibernateUtil.getSession().get(
                     "org.genepattern.server.domain.AnalysisJob", id);
             if (instance == null) {
                 log.debug("get successful, no instance found");
