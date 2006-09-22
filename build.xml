@@ -606,7 +606,7 @@
     </target>
 
     <target name="pruneOldDirs">
-        <cvs cvsRoot=":ext:darwin:/xchip/software/mprcvs/" failonerror="true">
+        <cvs cvsRoot=":ext:phosphorus:/xchip/software/mprcvs/" failonerror="true">
             <commandline>
                 <argument line="update -P"/>
             </commandline>
