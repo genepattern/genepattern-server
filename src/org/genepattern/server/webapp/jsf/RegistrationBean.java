@@ -67,7 +67,7 @@ public class RegistrationBean   {
 
     public void validateNewUsername(FacesContext context, UIComponent component, Object value)
             throws ValidatorException {
-        User user = (new UserHome()).findByUsername(value.toString());
+        User user = (new UserHome()).findById(value.toString());
         if (user != null) {
             String message = "An account with this username already exist.  Please choose another.";
             FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
