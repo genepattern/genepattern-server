@@ -33,6 +33,10 @@ public class TaskAccess {
     public TaskAccess() {
         super();
     }
+    
+    public TaskAccess(Integer id) {
+        this.accessId = id;
+    }
 
     /**
      * auto generated
