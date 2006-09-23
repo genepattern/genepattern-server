@@ -15,8 +15,8 @@ package org.genepattern.server;
 import java.rmi.RemoteException;
 import java.util.Vector;
 
-import org.genepattern.server.util.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.OmnigeneException;
 import org.hibernate.HibernateException;

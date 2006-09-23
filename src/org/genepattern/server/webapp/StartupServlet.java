@@ -38,14 +38,14 @@ import javax.servlet.http.HttpServlet;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.genepattern.server.AnalysisManager;
+import org.genepattern.server.database.HsqlDbUtil;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.indexer.IndexerDaemon;
 import org.genepattern.server.process.CreateDatabase;
 import org.genepattern.server.process.JSPPrecompiler;
 import org.genepattern.server.process.JobPurger;
-import org.genepattern.server.util.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
-import org.genepattern.server.webservice.server.dao.DatabaseUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -89,7 +89,7 @@ public class StartupServlet extends HttpServlet {
         application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
         loadProperties(config);
         
-        DatabaseUtil.startDatabase();
+        HsqlDbUtil.startDatabase();
         
         launchTasks();
        
@@ -196,7 +196,7 @@ public class StartupServlet extends HttpServlet {
 
     public void destroy() {
 
-        shutdownDatabase();
+        HsqlDbUtil.shutdownDatabase();
 
         log("StartupServlet: destroy called");
         for (Enumeration eThreads = vThreads.elements(); eThreads.hasMoreElements();) {

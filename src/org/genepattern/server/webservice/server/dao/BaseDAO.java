@@ -6,9 +6,9 @@ import java.sql.*;
 import java.util.*;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.TaskMaster;
-import org.genepattern.server.util.HibernateUtil;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.webservice.*;
 import org.hibernate.*;

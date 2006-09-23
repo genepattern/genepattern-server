@@ -23,7 +23,7 @@ package org.genepattern.server;
 import java.rmi.RemoteException;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.util.HibernateUtil;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.OmnigeneException;
 
