@@ -5,31 +5,13 @@ package org.genepattern.server.domain;
 public class TaskMaster {
 
     private Integer taskId;
-
     private String taskName;
-
     private String description;
-
     private Integer typeId;
-
-    private String repeatMinute;
-
-    private String repeatHour;
-
-    private String repeatDayOfMonth;
-
-    private String repeatMonthOfYear;
-
-    private String repeatDayOfWeek;
-
     private String taskinfoattributes;
-
     private String userId;
-
     private Integer accessId;
-
     private String lsid;
-
     private String parameterInfo;
 
     public Integer getTaskId() {
@@ -70,46 +52,6 @@ public class TaskMaster {
 
     public void setTypeId(Integer value) {
         this.typeId = value;
-    }
-
-    public String getRepeatMinute() {
-        return this.repeatMinute;
-    }
-
-    public void setRepeatMinute(String value) {
-        this.repeatMinute = value;
-    }
-
-    public String getRepeatHour() {
-        return this.repeatHour;
-    }
-
-    public void setRepeatHour(String value) {
-        this.repeatHour = value;
-    }
-
-    public String getRepeatDayOfMonth() {
-        return this.repeatDayOfMonth;
-    }
-
-    public void setRepeatDayOfMonth(String value) {
-        this.repeatDayOfMonth = value;
-    }
-
-    public String getRepeatMonthOfYear() {
-        return this.repeatMonthOfYear;
-    }
-
-    public void setRepeatMonthOfYear(String value) {
-        this.repeatMonthOfYear = value;
-    }
-
-    public String getRepeatDayOfWeek() {
-        return this.repeatDayOfWeek;
-    }
-
-    public void setRepeatDayOfWeek(String value) {
-        this.repeatDayOfWeek = value;
     }
 
     public String getTaskinfoattributes() {

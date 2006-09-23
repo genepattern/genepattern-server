@@ -10,11 +10,6 @@
     <property name="taskName" type="string" column="TASK_NAME" length="4000"/>
     <property name="description" type="string" column="DESCRIPTION" length="4000"/>
     <property name="typeId" type="integer" column="TYPE_ID" precision="10" scale="0"/>
-    <property name="repeatMinute" type="string" column="REPEAT_MINUTE" length="4000"/>
-    <property name="repeatHour" type="string" column="REPEAT_HOUR" length="4000"/>
-    <property name="repeatDayOfMonth" type="string" column="REPEAT_DAY_OF_MONTH" length="4000"/>
-    <property name="repeatMonthOfYear" type="string" column="REPEAT_MONTH_OF_YEAR" length="4000"/>
-    <property name="repeatDayOfWeek" type="string" column="REPEAT_DAY_OF_WEEK" length="4000"/>
     <property name="taskinfoattributes" type="string" column="TASKINFOATTRIBUTES" length="4000"/>
     <property name="userId" type="string" column="USER_ID" length="4000"/>
     <property name="accessId" type="integer" column="ACCESS_ID" precision="10" scale="0"/>
