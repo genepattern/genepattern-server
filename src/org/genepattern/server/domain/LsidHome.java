@@ -6,8 +6,8 @@ import java.util.List;
 import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.genepattern.server.util.HibernateUtil;
-import org.hibernate.LockMode;
+import org.genepattern.server.database.AbstractHome;
+import org.genepattern.server.database.HibernateUtil;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Example;
 
@@ -17,57 +17,9 @@ import org.hibernate.criterion.Example;
  * @see org.genepattern.server.domain.Lsid
  * @author Hibernate Tools
  */
-public class LsidHome {
+public class LsidHome extends AbstractHome {
 
-    private static final Log log = LogFactory.getLog(LsidHome.class);
-
-    public void persist(Lsid transientInstance) {
-        log.debug("persisting Lsid instance");
-        try {
-            HibernateUtil.getSession().persist(transientInstance);
-            log.debug("persist successful");
-        }
-        catch (RuntimeException re) {
-            log.error("persist failed", re);
-            throw re;
-        }
-    }
-
-    public void attachDirty(Lsid instance) {
-        log.debug("attaching dirty Lsid instance");
-        try {
-            HibernateUtil.getSession().saveOrUpdate(instance);
-            log.debug("attach successful");
-        }
-        catch (RuntimeException re) {
-            log.error("attach failed", re);
-            throw re;
-        }
-    }
-
-    public void attachClean(Lsid instance) {
-        log.debug("attaching clean Lsid instance");
-        try {
-            HibernateUtil.getSession().lock(instance, LockMode.NONE);
-            log.debug("attach successful");
-        }
-        catch (RuntimeException re) {
-            log.error("attach failed", re);
-            throw re;
-        }
-    }
-
-    public void delete(Lsid persistentInstance) {
-        log.debug("deleting Lsid instance");
-        try {
-            HibernateUtil.getSession().delete(persistentInstance);
-            log.debug("delete successful");
-        }
-        catch (RuntimeException re) {
-            log.error("delete failed", re);
-            throw re;
-        }
-    }
+    public static final Log log = LogFactory.getLog(LsidHome.class);
 
     public Lsid merge(Lsid detachedInstance) {
         log.debug("merging Lsid instance");

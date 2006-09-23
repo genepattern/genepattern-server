@@ -2,8 +2,8 @@ package org.genepattern.server.user;
 
 import java.util.Date;
 
-import org.genepattern.server.util.HibernateUtil;
-import org.genepattern.server.webservice.server.dao.DatabaseUtil;
+import org.genepattern.server.database.HsqlDbUtil;
+import org.genepattern.server.database.HibernateUtil;
 
 import junit.framework.TestCase;
 
@@ -13,7 +13,7 @@ public class UserHomeTest extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        DatabaseUtil.startDatabase();
+        HsqlDbUtil.startDatabase();
         HibernateUtil.getSession().beginTransaction();
     }
 

@@ -6,7 +6,9 @@ import java.util.List;
 import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.genepattern.server.util.HibernateUtil;
+import org.apache.log4j.Logger;
+import org.genepattern.server.database.AbstractHome;
+import org.genepattern.server.database.HibernateUtil;
 import org.hibernate.LockMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Example;
@@ -17,58 +19,9 @@ import org.hibernate.criterion.Example;
  * @see org.genepattern.server.domain.AnalysisJob
  * @author Hibernate Tools
  */
-public class AnalysisJobHome {
+public class AnalysisJobHome extends AbstractHome {
 
-    private static final Log log = LogFactory.getLog(AnalysisJobHome.class);
-
-
-    public void persist(AnalysisJob transientInstance) {
-        log.debug("persisting AnalysisJob instance");
-        try {
-            HibernateUtil.getSession().persist(transientInstance);
-            log.debug("persist successful");
-        }
-        catch (RuntimeException re) {
-            log.error("persist failed", re);
-            throw re;
-        }
-    }
-
-    public void attachDirty(AnalysisJob instance) {
-        log.debug("attaching dirty AnalysisJob instance");
-        try {
-            HibernateUtil.getSession().saveOrUpdate(instance);
-            log.debug("attach successful");
-        }
-        catch (RuntimeException re) {
-            log.error("attach failed", re);
-            throw re;
-        }
-    }
-
-    public void attachClean(AnalysisJob instance) {
-        log.debug("attaching clean AnalysisJob instance");
-        try {
-            HibernateUtil.getSession().lock(instance, LockMode.NONE);
-            log.debug("attach successful");
-        }
-        catch (RuntimeException re) {
-            log.error("attach failed", re);
-            throw re;
-        }
-    }
-
-    public void delete(AnalysisJob persistentInstance) {
-        log.debug("deleting AnalysisJob instance");
-        try {
-            HibernateUtil.getSession().delete(persistentInstance);
-            log.debug("delete successful");
-        }
-        catch (RuntimeException re) {
-            log.error("delete failed", re);
-            throw re;
-        }
-    }
+    private static final Logger log = Logger.getLogger(AnalysisJobHome.class);
 
     public AnalysisJob merge(AnalysisJob detachedInstance) {
         log.debug("merging AnalysisJob instance");

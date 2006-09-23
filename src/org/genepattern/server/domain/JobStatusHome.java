@@ -6,7 +6,8 @@ import java.util.List;
 import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.genepattern.server.util.HibernateUtil;
+import org.apache.log4j.Logger;
+import org.genepattern.server.database.HibernateUtil;
 import org.hibernate.LockMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Example;
@@ -19,55 +20,7 @@ import org.hibernate.criterion.Example;
  */
 public class JobStatusHome {
 
-    private static final Log log = LogFactory.getLog(JobStatusHome.class);
-
-    public void persist(JobStatus transientInstance) {
-        log.debug("persisting JobStatus instance");
-        try {
-            HibernateUtil.getSession().persist(transientInstance);
-            log.debug("persist successful");
-        }
-        catch (RuntimeException re) {
-            log.error("persist failed", re);
-            throw re;
-        }
-    }
-
-    public void attachDirty(JobStatus instance) {
-        log.debug("attaching dirty JobStatus instance");
-        try {
-            HibernateUtil.getSession().saveOrUpdate(instance);
-            log.debug("attach successful");
-        }
-        catch (RuntimeException re) {
-            log.error("attach failed", re);
-            throw re;
-        }
-    }
-
-    public void attachClean(JobStatus instance) {
-        log.debug("attaching clean JobStatus instance");
-        try {
-            HibernateUtil.getSession().lock(instance, LockMode.NONE);
-            log.debug("attach successful");
-        }
-        catch (RuntimeException re) {
-            log.error("attach failed", re);
-            throw re;
-        }
-    }
-
-    public void delete(JobStatus persistentInstance) {
-        log.debug("deleting JobStatus instance");
-        try {
-            HibernateUtil.getSession().delete(persistentInstance);
-            log.debug("delete successful");
-        }
-        catch (RuntimeException re) {
-            log.error("delete failed", re);
-            throw re;
-        }
-    }
+    private static final Logger log = Logger.getLogger(JobStatusHome.class);
 
     public JobStatus merge(JobStatus detachedInstance) {
         log.debug("merging JobStatus instance");
