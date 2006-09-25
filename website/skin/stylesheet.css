@@ -45,13 +45,10 @@ input { font-size: 8pt }
 
 a:hover {
 	color: #FF0000;
-	border: 1;
 }
 
 a:hover img.highlightable{
 	color: #FF0000;
-	border: 1;
-
 border-top: thin solid red;
 border-right: thin solid red;
 border-bottom: thin solid red;
@@ -65,14 +62,12 @@ border-left: thin solid red;
 	background-repeat: repeat-y;
   	background-position: center;
 	color: white;
-	font-color: white;
 	border-color: #0E0166;
 	font-size: 9pt
 }
 
 .navbarlink {
 	color: white;
-	font-color: white;
 	border-color: #0E0166;
 	font-size: 9pt;
 	border-color: gray 

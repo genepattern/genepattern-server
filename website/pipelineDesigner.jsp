@@ -380,6 +380,32 @@ function promptOnRunChecked(checkbox, taskNum, param, paramName) {
 	}
 }
 
+var ie5=document.all&&document.getElementById
+var ns6=document.getElementById&&!document.all
+var xpos="30px"
+var ypos="30px"
+
+function openWindow(divid){
+     	document.getElementById(divid).style.display=''
+     	document.getElementById(divid).style.width=initialwidth="250px"
+     	document.getElementById(divid).style.height=initialheight="140px"
+     	document.getElementById(divid).style.left=xpos 
+     	document.getElementById(divid).style.top=ypos    
+}
+
+function setPosition(e, divid){
+    xpos=(ie5? event.clientX : e.clientX) + "px"
+    ypos=((ie5? event.clientX : e.clientX)+200)+"px"
+    document.getElementById(divid).style.left=xpos 
+    document.getElementById(divid).style.top=ypos    
+
+}
+
+function closeit(divid){
+	document.getElementById(divid).style.display="none"
+}
+
+
 function inverseOrder(a, b) {
 	return (a > b ? a : b);
 }
@@ -675,19 +701,40 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		taskFields = taskFields + '<input type="checkbox" name="t' + taskNum + '_prompt_' + param + '"';
 //		taskFields = taskFields + '\n onchange=\"promptOnRunChecked(this, ' + taskNum + ', ' + param + ', \'' + (pi.isInputFile ? "" : pi.name) + '\');\"';
 		taskFields = taskFields + '\n  onclick=\"promptOnRunChecked(this, ' + taskNum + ', ' + param + ', \'' + (pi.isInputFile ? "" : pi.name) + '\');\"';
-		taskFields = taskFields + '></td>\n';
+		taskFields = taskFields + '>';
+
+		
+		// XXX add ability to submit an alternate name for prompt when run params
+  		taskFields = taskFields + '<span id="span_'+taskNum+'_'+pnum+'" style="display:none">'
+		//taskFields = taskFields + '<br>Name:<input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/>';
+		//taskFields = taskFields + '<br>Desc:<input name="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/>';
+
+taskFields = taskFields + '<div id="div_'+taskNum+'_'+pnum+'" style="position:absolute;background-color:#EBEBEB;left:0px;top:0px;display:none" onSelectStart="return false">';
+
+taskFields = taskFields + '<div align="right" class="navbar">';
+taskFields = taskFields + '<img src="skin/close.gif" onClick="closeit(\'div_'+taskNum+'_'+pnum+'\')">';
+taskFields = taskFields + '</div><div id="dwindowcontent" style="height:100%;text-align:center;">';
+taskFields = taskFields + 'Define alternative name and description to display when prompting for this input.<br>';
+taskFields = taskFields + '<br><table><tr><td>Alt. Name:</td><td><input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/></td></tr>';
+taskFields = taskFields + '<tr><td>Alt. Description:</td><td><input name="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/></td></tr>';
+taskFields = taskFields + '<tr><td colspan=2 align="center"><input type="button" value="close" onclick="closeit(\'div_'+taskNum+'_'+pnum+'\')"/></td></tr>';
+taskFields = taskFields + '</table>';
+
+taskFields = taskFields + '</div></div>';
+
+		taskFields = taskFields + '<a onMouseDown="setPosition(event,\'div_'+taskNum+'_'+pnum+'\')" href="javascript:openWindow(\'div_'+taskNum+'_'+pnum+'\')" ><img src="skin/info_obj.gif" style="border:0;"/></a>';
+		taskFields = taskFields + '  </span>';
+
+		// XXX END: add ability to submit an alternate name for prompt when run params
+
+		taskFields = taskFields + '</td>\n';
+
 
 		// label for the field
 		taskFields = taskFields + '<td align="right" width="10%" valign="top">';
-		taskFields = taskFields + '<nobr>' + pi.name.replace(/\./g,' ').replace(/\_/g,' ') + ':</nobr>';
+		taskFields = taskFields + '<nobr>';
+		taskFields = taskFields + pi.name.replace(/\./g,' ').replace(/\_/g,' ') + ':</nobr>';
 
-
-		// XXX add ability to submit an alternate name for prompt when run params
-  		taskFields = taskFields + '<span id="span_'+taskNum+'_'+pnum+'" style="display:none">'
-		taskFields = taskFields + '<br>Name:<input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/>';
-		taskFields = taskFields + '<br>Desc:<input name="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/>';
-		taskFields = taskFields + '  </span>';
-		// XXX END: add ability to submit an alternate name for prompt when run params
 
 		taskFields = taskFields + '</td>\n';
 		
