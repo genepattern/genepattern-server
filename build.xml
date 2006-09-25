@@ -237,6 +237,18 @@
 		  <mkdir dir="build-cg" />
         <javac classpathref="library.classpath"
                debug="true"
+               destdir="build"
+               srcdir="${src}"
+               target="${java.target}"
+               source="${java.target}"				
+               includes="org/genepattern/data/expr/*.java, org/genepattern/data/matrix/*.java, org/genepattern/io/**/*.java"
+          />
+	  </target>
+	  
+	  <target depends="init" description="Compiles files for broad-cg jar" name="compile-cg-1-4">
+		  <mkdir dir="build-cg" />
+        <javac classpathref="library.classpath"
+               debug="true"
                destdir="build-cg"
                srcdir="${src}"
                target="1.4"
@@ -245,12 +257,20 @@
           />
 	  </target>
     
-    <target depends="init,compile-cg" name="broad-cg">
+     <target depends="init,compile-cg" name="broad-cg-1-4">
         <!-- Makes broad-cg.jar -->
         <jar basedir="build-cg"
              defaultexcludes="true"
              includes="org/genepattern/data/**/*.class, org/genepattern/io/**/*.class"
              jarfile="build-cg/${broad-cg-jarname}"/>
+    </target>
+    
+    <target depends="init,compile-cg" name="broad-cg">
+        <!-- Makes broad-cg.jar -->
+        <jar basedir="build"
+             defaultexcludes="true"
+             includes="org/genepattern/data/**/*.class, org/genepattern/io/**/*.class"
+             jarfile="build/${broad-cg-jarname}"/>
     </target>
     
     <target name="broad-cg-doc" depends="init">
