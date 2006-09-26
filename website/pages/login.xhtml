@@ -15,13 +15,14 @@
 		Sign in to GenePattern<br />
         
 		<h:form>
-			<h:panelGroup rendered="#{loginBean.unknownUser}">
-				<h:outputText value="Unknown username." />
-				<h:outputLink
-					value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf">
-					Click to register
-				  </h:outputLink>
-			</h:panelGroup>
+			<h:outputText value="Unknown username.  Click the registration link to create a new account." 
+			   style="color: red; font-weight: old;" rendered="#{loginBean.unknownUser}"/>
+			<br/>
+			<h:outputLink
+			  value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf">
+			  Click to register
+			</h:outputLink>
+			
 			<h:outputText value="Invalid password" rendered="#{loginBean.invalidPassword}"
 				style="color: red; font-weight: old;" />
 
