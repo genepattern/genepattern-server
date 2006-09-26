@@ -23,6 +23,23 @@ body.paleBackground {
 	margin-right: 2% }
 
 
+.standardTable {
+	font-family : verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	color: #000000;
+    padding: 2;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.standardTable_Header {
+	color: black;
+	background-color: #EADAFF;
+	padding: 3;
+    text-align: center;
+    border: 1px;
+}
+
 td { font-family: Arial,Helvetica,sans-serif; 
 	font-size: 12px;
 	padding-left: 5;}
