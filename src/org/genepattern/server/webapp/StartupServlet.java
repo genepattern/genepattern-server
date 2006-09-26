@@ -89,6 +89,7 @@ public class StartupServlet extends HttpServlet {
         application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
         loadProperties(config);
         
+        // @todo -- make the hsql startup conditional on a property
         HsqlDbUtil.startDatabase();
         
         launchTasks();
@@ -219,24 +220,7 @@ public class StartupServlet extends HttpServlet {
         dumpThreads();
     }
 
-    protected void shutdownDatabase() {
-        try {
-            HibernateUtil.getSession().beginTransaction();
-            log("Checkpointing database");
-            AnalysisDAO dao = new AnalysisDAO();
-            dao.executeUpdate("CHECKPOINT");
-            log("Checkpointed.");
-            dao.executeUpdate("SHUTDOWN");
-            HibernateUtil.getSession().getTransaction().commit();
-        }
-        catch (Throwable t) {
-            t.printStackTrace();
-            log("checkpoint database in StartupServlet.destroy", t);
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
-        }
-    }
+
 
     // read a CSV list of tasks from the launchTask property. For each entry,
     // lookup properties and
