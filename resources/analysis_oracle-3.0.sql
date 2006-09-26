@@ -164,7 +164,7 @@ CREATE TABLE GP_USER
   USER_ID            VARCHAR2(255 CHAR),
   GP_PASSWORD        VARCHAR2(255 CHAR),
   EMAIL              VARCHAR2(255 CHAR),
-  LAST_LOGIN_DATE    TIMESTAMP(6),
+  LAST_LOGIN_DATE    TIMESTAMP,
   LAST_LOGIN_IP      VARCHAR2(255 BYTE),
   TOTAL_LOGIN_COUNT  INTEGER  DEFAULT 0  NOT NULL,
   PRIMARY KEY (USERNAME)
@@ -188,6 +188,31 @@ CREATE SEQUENCE GP_USER_PROP_SEQ
   NOCACHE
   NOORDER;
 
+
+
+/* Event logging */
+create table job_completion_event 
+(
+  ID NUMBER(10) NOT NULL, 
+  user_id varchar2(255),
+  type varchar2(255), 
+  job_number number(10), 
+  parent_job_number number(10), 
+  task_lsid varchar2(255), 
+  task_name varchar2(255), 
+  completion_status varchar2(255), 
+  completion_date timestamp, 
+  elapsed_time number(10), 
+  primary key (id)
+);
+
+CREATE SEQUENCE job_completion_event_SEQ
+  START WITH 0
+  MAXVALUE 999999999999999999999999999
+  MINVALUE 0
+  NOCYCLE
+  NOCACHE
+  NOORDER;
 
 
 

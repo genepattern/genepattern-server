@@ -116,8 +116,12 @@ AnalysisDAO extends BaseDAO {
                 parent = new Integer(parentJobNumber);
             }
             jobNo = addNewJob(taskID, user_id, parameter_info, null, parent, null);
-            updateJobStatus(jobNo, JobStatus.JOB_FINISHED);
-            setJobDeleted(jobNo, true);
+            
+            AnalysisJobHome aHome = new AnalysisJobHome();
+            org.genepattern.server.domain.AnalysisJob aJob = aHome.findById(jobNo);
+            aJob.setStatus(new JobStatus(JobStatus.JOB_FINISHED));
+            aJob.setDeleted(true);
+
             return jobNo;
         }
         catch (OmnigeneException e) {
@@ -253,7 +257,7 @@ AnalysisDAO extends BaseDAO {
         if (aJob == null) throw new JobIDNotFoundException("AnalysisHypersonicDAO:getJobInfo JobID " + jobNo
                 + " not found");
 
-        return jobInfoFromAnalysisJob(aJob);
+        return new JobInfo(aJob);
     }
 
     public JobInfo getParent(int jobId) throws OmnigeneException {
