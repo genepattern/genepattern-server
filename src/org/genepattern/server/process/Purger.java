@@ -88,7 +88,7 @@ public class Purger extends TimerTask {
                         ds.deleteJob(jobID);
                     }
                     catch (Exception e) {
-                        System.err.println(e + " while purging jobs");
+                        log.error(" while purging jobs", e);
                     }
                 }
 
@@ -98,7 +98,7 @@ public class Purger extends TimerTask {
                     Indexer.optimize(Indexer.getIndexDir());
                 }
                 catch (IOException ioe) {
-                    System.err.println(ioe + " while optimizing search index");
+                    log.error(" while optimizing search index", ioe);
                 }
 
                 long dateCutoff = gcPurgeDate.getTime().getTime();
@@ -147,11 +147,11 @@ public class Purger extends TimerTask {
                             moreFiles[i].delete();
                         }
                         catch (SecurityException se) {
-                            log.error("unable to delete " + moreFiles[i].getPath());
+                            log.error("unable to delete " + moreFiles[i].getPath(), se);
                         }
                     }
                     catch (SecurityException se) {
-                        log.error("unable to browse " + moreFiles[i].getPath());
+                        log.error("unable to browse " + moreFiles[i].getPath(), se);
                     }
                 }
             }
