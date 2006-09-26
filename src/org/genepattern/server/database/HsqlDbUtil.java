@@ -24,9 +24,10 @@ public class HsqlDbUtil {
      */
     public static void startDatabase() {
         // @todo - get from properites file
-        String port = System.getProperty("HSQL_port", "9001");
-        String dbUrl = System.getProperty("HSQL_dbUrl", "file:../resources/GenePatternDB");
-        String dbName = System.getProperty("HSQL_dbName", "xdb");
+        String port = System.getProperty("HSQL.port", "9001");
+        String dbFile = System.getProperty("HSQL.dbfile", "../resources/GenePatternDB");
+        String dbUrl = "file:" + dbFile;
+        String dbName = System.getProperty("HSQL.dbName", "xdb");
         String[] args = new String[] { "-port", port, "-database.0", dbUrl, "-dbname.0", dbName };
         org.hsqldb.Server.main(args);
 
@@ -127,10 +128,11 @@ public class HsqlDbUtil {
      * @throws IOException
      */
     private static void createSchema(String resourceDir) throws IOException {
+        final String schemaPrefix = System.getProperty("HSQL.schema", "analysis_hypersonic-");
         File[] schemaFiles = new File(resourceDir).listFiles(new FilenameFilter() {
             // INNER CLASS !!!
             public boolean accept(File dir, String name) {
-                return name.endsWith(".sql") && name.startsWith(System.getProperty("DB.schema"));
+                return name.endsWith(".sql") && name.startsWith(schemaPrefix);
             }
         });
         Arrays.sort(schemaFiles, new Comparator() {
@@ -138,10 +140,10 @@ public class HsqlDbUtil {
                 File f1 = (File) o1;
                 File f2 = (File) o2;
                 String name1 = f1.getName();
-                String version1 = name1.substring(System.getProperty("DB.schema").length(), name1.length()
+                String version1 = name1.substring(schemaPrefix.length(), name1.length()
                         - ".sql".length());
                 String name2 = f2.getName();
-                String version2 = name2.substring(System.getProperty("DB.schema").length(), name2.length()
+                String version2 = name2.substring(schemaPrefix.length(), name2.length()
                         - ".sql".length());
                 return version1.compareToIgnoreCase(version2);
             }
@@ -151,7 +153,7 @@ public class HsqlDbUtil {
         for (int f = 0; f < schemaFiles.length; f++) {
             File schemaFile = schemaFiles[f];
             String name = schemaFile.getName();
-            String version = name.substring(System.getProperty("DB.schema").length(), name.length() - ".sql".length());
+            String version = name.substring(schemaPrefix.length(), name.length() - ".sql".length());
             if (version.compareTo(expectedSchemaVersion) <= 0 && version.compareTo(dbSchemaVersion) > 0) {
                 log.info("processing" + name + " (" + version + ")");
                 processSchemaFile(schemaFile);
