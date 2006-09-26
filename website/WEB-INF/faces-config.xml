@@ -2,62 +2,109 @@
 <!DOCTYPE faces-config PUBLIC "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"
                               "http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
 <faces-config>
- <managed-bean>
-  <managed-bean-name>indexPageBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.jsf.IndexPageBean</managed-bean-class>
-  <managed-bean-scope>request</managed-bean-scope>
- </managed-bean>
- <managed-bean>
-  <managed-bean-name>loginBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.jsf.LoginBean</managed-bean-class>
-  <managed-bean-scope>request</managed-bean-scope>
- </managed-bean>
- <managed-bean>
-  <managed-bean-name>pageMessages</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.jsf.PageMessages</managed-bean-class>
-  <managed-bean-scope>request</managed-bean-scope>
- </managed-bean>
- <managed-bean>
-  <managed-bean-name>commandPrefixBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.jsf.CommandPrefixBean</managed-bean-class>
-  <managed-bean-scope>request</managed-bean-scope>
- </managed-bean>
- <managed-bean>
-  <managed-bean-name>registrationBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.jsf.RegistrationBean</managed-bean-class>
-  <managed-bean-scope>request</managed-bean-scope>
- </managed-bean>
- <managed-bean>
-  <managed-bean-name>moduleListBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.jsf.ModuleListBean</managed-bean-class>
-  <managed-bean-scope>request</managed-bean-scope>
- </managed-bean>
- <managed-bean>
-  <managed-bean-name>jobResultsBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.jsf.JobResultsBean</managed-bean-class>
-  <managed-bean-scope>request</managed-bean-scope>
- </managed-bean>
- <navigation-rule>
-  <from-view-id>*</from-view-id>
-  <navigation-case>
-   <from-outcome>logout</from-outcome>
-   <to-view-id>/pages/login.xhtml</to-view-id>
-  </navigation-case>
- </navigation-rule>
- <navigation-rule>
-  <display-name>commadPrefixAdmin</display-name>
-  <from-view-id>/pages/commandPrefixAdmin.xhtml</from-view-id>
-  <navigation-case>
-   <from-action>*</from-action>
-   <from-outcome>*</from-outcome>
-   <to-view-id>/pages/commandPrefixAdmin.xhtml</to-view-id>
-  </navigation-case>
- </navigation-rule>
- <application>
-  <!-- Use the Trinidad RenderKit -->
-  <default-render-kit-id>
-    org.apache.myfaces.trinidad.core
-  </default-render-kit-id>
-</application>
+	<managed-bean>
+		<managed-bean-name>indexPageBean</managed-bean-name>
+		<managed-bean-class>org.genepattern.server.webapp.jsf.IndexPageBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
+	<managed-bean>
+		<managed-bean-name>loginBean</managed-bean-name>
+		<managed-bean-class>org.genepattern.server.webapp.jsf.LoginBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
+	<managed-bean>
+		<managed-bean-name>pageMessages</managed-bean-name>
+		<managed-bean-class>org.genepattern.server.webapp.jsf.PageMessages</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
+	<managed-bean>
+		<managed-bean-name>commandPrefixBean</managed-bean-name>
+		<managed-bean-class>org.genepattern.server.webapp.jsf.CommandPrefixBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
+	<managed-bean>
+		<managed-bean-name>registrationBean</managed-bean-name>
+		<managed-bean-class>org.genepattern.server.webapp.jsf.RegistrationBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
+	<managed-bean>
+		<managed-bean-name>moduleListBean</managed-bean-name>
+		<managed-bean-class>org.genepattern.server.webapp.jsf.ModuleListBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
+	<managed-bean>
+		<managed-bean-name>jobResultsBean</managed-bean-name>
+		<managed-bean-class>org.genepattern.server.webapp.jsf.JobResultsBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
+	<managed-bean>
+		<managed-bean-name>userPrefsBean</managed-bean-name>
+		<managed-bean-class>org.genepattern.server.webapp.jsf.UserPrefsBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
+	<managed-bean>
+		<managed-bean-name>changePasswordBean</managed-bean-name>
+		<managed-bean-class>org.genepattern.server.webapp.jsf.ChangePasswordBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
+
+	<navigation-rule>
+		<from-view-id>*</from-view-id>
+		<navigation-case>
+			<from-outcome>logout</from-outcome>
+			<to-view-id>/pages/login.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<display-name>commandPrefixAdmin</display-name>
+		<from-view-id>/pages/commandPrefixAdmin.xhtml</from-view-id>
+		<navigation-case>
+			<from-action>*</from-action>
+			<from-outcome>*</from-outcome>
+			<to-view-id>/pages/commandPrefixAdmin.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+
+	<navigation-rule>
+		<from-view-id>*</from-view-id>
+		<navigation-case>
+			<from-outcome>accountInfo</from-outcome>
+			<to-view-id>/pages/accountInfo.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+
+	<navigation-rule>
+		<navigation-case>
+			<from-outcome>changePassword</from-outcome>
+			<to-view-id>/pages/changePassword.xhtml</to-view-id>
+		</navigation-case>
+
+		<navigation-case>
+			<from-outcome>visualizerMemory</from-outcome>
+			<to-view-id>/pages/visualizerMemory.xhtml</to-view-id>
+		</navigation-case>
+
+	</navigation-rule>
+
+	<navigation-rule>
+		<from-view-id>/pages/visualizerMemory.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>*</from-outcome>
+			<to-view-id>/pages/accountInfo.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+
+	<navigation-rule>
+		<from-view-id>/pages/changePassword.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>success</from-outcome>
+			<to-view-id>/pages/accountInfo.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+
+	<application>
+		<!-- Use the Trinidad RenderKit -->
+		<default-render-kit-id>org.apache.myfaces.trinidad.core</default-render-kit-id>
+	</application>
 
 </faces-config>
