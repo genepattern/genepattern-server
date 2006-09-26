@@ -22,6 +22,7 @@
 		 org.genepattern.visualizer.RunVisualizerConstants,
 		 org.genepattern.util.GPConstants,
  		 org.genepattern.util.StringUtils,
+ 		 org.genepattern.server.webservice.server.local.LocalAdminClient,
 		 java.util.Enumeration,
 		 java.util.Properties,
 		 java.io.File" 
@@ -31,8 +32,7 @@
 	response.setDateHeader("Expires", 0);
 
 	String userID= (String)request.getAttribute("userID"); // will force login if necessary
-	if (userID == null) return; // come back after login
-
+	
 	// create a map of params and attributes in case this call was from a dispatch
 	Properties params = new Properties();
 
@@ -55,7 +55,8 @@
 	String message = params.getProperty("message");
    	if (message != null) {
 %>
-		<html>
+		<%@page import="org.genepattern.server.user.UserPropKey"%>
+<html>
 		<head>
 		<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 		<link href="skin/favicon.ico" rel="shortcut icon">
@@ -96,7 +97,10 @@
 	File[] supportFiles = new File(libdir).listFiles();
 	int i;
 	String appletName = "a" + ("" + Math.random()).substring(2); // unique name so that multiple instances of applet on a single page will not collide
-
+	String javaFlags = new LocalAdminClient(userID).getUserProperty(UserPropKey.VISUALIZER_JAVA_FLAGS);
+	if(javaFlags==null) {
+	    javaFlags = System.getProperty(RunVisualizerConstants.JAVA_FLAGS_VALUE);
+	}
 
 %>
 <applet code="<%= org.genepattern.visualizer.RunVisualizerApplet.class.getName() %>" archive="runVisualizer.jar" codebase="downloads" width="1" height="1" alt="Your browser refuses to run applets" name="<%= appletName %>">
@@ -105,8 +109,7 @@
 <param name="<%= RunVisualizerConstants.OS %>" value="<%= StringUtils.htmlEncode(tia.get(GPConstants.OS)) %>">
 <param name="<%= RunVisualizerConstants.CPU_TYPE %>" value="<%= StringUtils.htmlEncode(tia.get(GPConstants.CPU_TYPE)) %>">
 <param name="<%= RunVisualizerConstants.LIBDIR %>" value="<%= StringUtils.htmlEncode(libdir) %>">
-
-<param name="<%= RunVisualizerConstants.JAVA_FLAGS_VALUE %>" value="<%= StringUtils.htmlEncode(System.getProperty(RunVisualizerConstants.JAVA_FLAGS_VALUE)) %>">
+<param name="<%= RunVisualizerConstants.JAVA_FLAGS_VALUE %>" value="<%= StringUtils.htmlEncode(javaFlags) %>">
 
 
 <param name="<%= RunVisualizerConstants.PARAM_NAMES %>" value="<%
