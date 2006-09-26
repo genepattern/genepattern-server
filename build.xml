@@ -241,10 +241,20 @@
                srcdir="${src}"
                target="${java.target}"
                source="${java.target}"				
-               includes="org/genepattern/data/expr/*.java, org/genepattern/data/matrix/*.java, org/genepattern/io/**/*.java"
+               includes="org/genepattern/data/**/*.java, org/genepattern/io/**/*.java, org/genepattern/server/domain/**/*.java"
           />
 	  </target>
 	  
+	   <target depends="init,compile-cg" name="broad-cg">
+        <!-- Makes broad-cg.jar -->
+        <jar basedir="build"
+             defaultexcludes="true"
+             includes="org/genepattern/data/**/*.class, org/genepattern/io/**/*.class, org/genepattern/server/domain/**/*.class"
+             jarfile="build/${broad-cg-jarname}"/>
+    </target>
+    
+    
+    
 	  <target depends="init" description="Compiles files for broad-cg jar" name="compile-cg-1-4">
 		  <mkdir dir="build-cg" />
         <javac classpathref="library.classpath"
@@ -265,13 +275,7 @@
              jarfile="build-cg/${broad-cg-jarname}"/>
     </target>
     
-    <target depends="init,compile-cg" name="broad-cg">
-        <!-- Makes broad-cg.jar -->
-        <jar basedir="build"
-             defaultexcludes="true"
-             includes="org/genepattern/data/**/*.class, org/genepattern/io/**/*.class"
-             jarfile="build/${broad-cg-jarname}"/>
-    </target>
+   
     
     <target name="broad-cg-doc" depends="init">
         <javadoc classpathref="library.classpath" destdir="docs/api" version="true" author="false" use="true">
