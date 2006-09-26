@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk">
+
+
+<ui:composition template="/templates/common.xhtml">
+
+	<ui:define name="pageTitle">Visualizer Memory</ui:define>
+
+
+	<ui:define name="body">
+		<h2>Visualizer Memory</h2>
+
+		<h:form>
+
+			<h:panelGrid columns="3">
+
+				<h:outputLabel value="Java Flags:" for="javaFlags"></h:outputLabel>
+				<h:inputText size="50" id="javaFlags" required="false"
+					value="#{userPrefsBean.javaFlags.value}" />
+				<h:message style="color: red; font-weight: bold;" for="javaFlags" />
+
+			</h:panelGrid>
+			<h:commandButton action="#{userPrefsBean.save}" value="Save"
+				styleClass="little" />
+			<h:commandButton action="cancel" value="Cancel" styleClass="little" />
+
+		</h:form>
+	</ui:define>
+
+
+</ui:composition>
+</html>
