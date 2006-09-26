@@ -2,37 +2,37 @@ package org.genepattern.server.user;
 
 import java.util.Date;
 
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.webservice.JobInfo;
 
 public class JobCompletionEvent {
 
     Integer id;
-    String userID;
+    String userId;
+    
+    /**
+     * Recognized values are TASK and PIPELINE
+     */
     String type;
+    
     int jobNumber;
     int parentJobNumber;
     String taskLsid;
     String taskName;
     Date completionDate;
+    String completionStatus;
     long elapsedTime;
 
     public JobCompletionEvent() {
 
     }
 
-    public JobCompletionEvent(JobInfo jobInfo, JobInfo parentJobInfo, Date completionDate, long elapsedTime) {
-        userID = jobInfo.getUserId();
-        // type
+    public String getCompletionStatus() {
+        return completionStatus;
+    }
 
-        jobNumber = jobInfo.getJobNumber();
-        if (parentJobInfo != null) {
-            parentJobNumber = parentJobInfo.getJobNumber();
-        }
-        taskLsid = jobInfo.getTaskLSID();
-        taskName = jobInfo.getTaskName();
-        this.completionDate = completionDate;
-        this.elapsedTime = elapsedTime;
-
+    public void setCompletionStatus(String completionStatus) {
+        this.completionStatus = completionStatus;
     }
 
     public Date getCompletionDate() {
@@ -99,12 +99,12 @@ public class JobCompletionEvent {
         this.type = type;
     }
 
-    public String getUserID() {
-        return userID;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setUserID(String userID) {
-        this.userID = userID;
+    public void setUserId(String userID) {
+        this.userId = userID;
     }
 
 }

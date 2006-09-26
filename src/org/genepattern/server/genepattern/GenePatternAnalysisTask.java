@@ -503,8 +503,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
             if (c == null || c.trim().length() == 0) {
                 vProblems.add("Command line not defined");
             }
-            
-            
+
             setCommandPrefix(taskInfoAttributes, props);
 
             // create an array of Strings for Runtime.exec to fix bug 55
@@ -851,8 +850,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 addFileToOutputParameters(jobInfo, TASKLOG, TASKLOG, parentJobInfo);
             }
 
-            long elapsedTime = System.currentTimeMillis() - jobStartTime;
-            updateJobInfo(jobInfo, parentJobInfo, jobStatus, elapsedTime);
+            recordJobCompletion(jobInfo, parentJobInfo, jobStatus, jobStartTime);
 
             if (outputFiles.length == 0 && !new File(outDir, stderrFilename).exists()
                     && !new File(outDir, stdoutFilename).exists()) {
@@ -871,8 +869,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 File outFile = writeStringToFile(outDirName, STDERR, e.getMessage() + "\n\n");
                 addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
 
-                long elapsedTime = System.currentTimeMillis() - jobStartTime;
-                updateJobInfo(jobInfo, parentJobInfo, JobStatus.JOB_ERROR, elapsedTime);
+                recordJobCompletion(jobInfo, parentJobInfo, JobStatus.JOB_ERROR, jobStartTime);
             }
             catch (Exception e2) {
                 // System.err.println(taskName + " error: unable to update job
@@ -884,42 +881,67 @@ public class GenePatternAnalysisTask implements IGPConstants {
     }
 
     /**
-     * Get the appropriate command prefix to use for this module. The hierarchy goes like this;
-     * 1. task version specific entry in task prefix mapping
-     * 2. task versionless entry in task prefix mapping
-     * 3. default command prefix
+     * Record job completion status in the database.
+     * 
+     * @param jobInfo
+     * @param parentJobInfo
+     * @param jobStatus
+     * @param jobStartTime
+     */
+    private void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, long jobStartTime) {
+        try {
+            HibernateUtil.getSession().beginTransaction();
+            long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
+            Date now = new Date(Calendar.getInstance().getTimeInMillis());
+            updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
+            UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
+            HibernateUtil.getSession().getTransaction().commit();
+        }
+        catch (RuntimeException e) {
+            log.error(e);
+            HibernateUtil.getSession().getTransaction().rollback();
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+    }
+
+    /**
+     * Get the appropriate command prefix to use for this module. The hierarchy
+     * goes like this; 1. task version specific entry in task prefix mapping 2.
+     * task versionless entry in task prefix mapping 3. default command prefix
      * 
      * @param taskInfoAttributes
      * @param props
      */
-	protected void setCommandPrefix(TaskInfoAttributes taskInfoAttributes, Properties props) throws MalformedURLException{
-		String lsidStr = taskInfoAttributes.get(LSID);
-		PropertiesManager pm  = PropertiesManager.getInstance(); 
-		Properties tpm = pm.getTaskPrefixMapping();
-		Properties prefixes = pm.getCommandPrefixes();
-		
-		String commandPrefixName = tpm.getProperty(lsidStr);
-		String commandPrefix = null;
-		
-		if (commandPrefixName == null) {
-			LSID lsid = new LSID(lsidStr);
-			lsidStr = lsid.toStringNoVersion();
-			commandPrefixName = tpm.getProperty(lsidStr);
-		
-		}
-		if (commandPrefixName != null){
-			commandPrefix = prefixes.getProperty(commandPrefixName);
-		}
-		
-		if (commandPrefix == null){
-			commandPrefix = props.getProperty(COMMAND_PREFIX, null);
-		}
-		
-		
-		if (commandPrefix != null && commandPrefix.length() > 0) {
-		    taskInfoAttributes.put(COMMAND_LINE, commandPrefix + " " + taskInfoAttributes.get(COMMAND_LINE));
-		}
-	}
+    protected void setCommandPrefix(TaskInfoAttributes taskInfoAttributes, Properties props)
+            throws MalformedURLException {
+        String lsidStr = taskInfoAttributes.get(LSID);
+        PropertiesManager pm = PropertiesManager.getInstance();
+        Properties tpm = pm.getTaskPrefixMapping();
+        Properties prefixes = pm.getCommandPrefixes();
+
+        String commandPrefixName = tpm.getProperty(lsidStr);
+        String commandPrefix = null;
+
+        if (commandPrefixName == null) {
+            LSID lsid = new LSID(lsidStr);
+            lsidStr = lsid.toStringNoVersion();
+            commandPrefixName = tpm.getProperty(lsidStr);
+
+        }
+        if (commandPrefixName != null) {
+            commandPrefix = prefixes.getProperty(commandPrefixName);
+        }
+
+        if (commandPrefix == null) {
+            commandPrefix = props.getProperty(COMMAND_PREFIX, null);
+        }
+
+        if (commandPrefix != null && commandPrefix.length() > 0) {
+            taskInfoAttributes.put(COMMAND_LINE, commandPrefix + " " + taskInfoAttributes.get(COMMAND_LINE));
+        }
+    }
 
     private TaskInfo getTaskInfo(JobInfo jobInfo) throws Exception {
         try {
@@ -943,41 +965,26 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * @param parentJobInfo
      * @param jobStatus
      */
-    private void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, long elapsedTime) {
+    private void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
 
-        try {
-            HibernateUtil.getSession().beginTransaction();
-            AnalysisJobHome home = new AnalysisJobHome();
-            Date now = new Date(Calendar.getInstance().getTimeInMillis());
+        AnalysisJobHome home = new AnalysisJobHome();
 
-            AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
-            aJob.setJobNo(jobInfo.getJobNumber());
-            
-            String paramString = jobInfo.getParameterInfo();
-            if (jobStatus==JobStatus.JOB_ERROR || jobStatus == JobStatus.JOB_FINISHED || jobStatus == JobStatus.JOB_PROCESSING ){
-            	paramString = ParameterFormatConverter.stripPasswords(paramString);
-            }
-                       
-            
-            aJob.setParameterInfo(paramString);
-            aJob.setJobStatus(new JobStatus(jobStatus));
-            aJob.setCompletedDate(now);
+        AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
+        aJob.setJobNo(jobInfo.getJobNumber());
 
-            if (parentJobInfo != null) {
-                AnalysisJob parentJob = home.findById(parentJobInfo.getJobNumber());
-                parentJob.setCompletedDate(now);
-            }
-
-            UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
-
-            HibernateUtil.getSession().getTransaction().commit();
+        String paramString = jobInfo.getParameterInfo();
+        if (jobStatus == JobStatus.JOB_ERROR || jobStatus == JobStatus.JOB_FINISHED
+                || jobStatus == JobStatus.JOB_PROCESSING) {
+            paramString = ParameterFormatConverter.stripPasswords(paramString);
         }
-        catch (RuntimeException e) {
-            log.error(e);
-            HibernateUtil.getSession().getTransaction().rollback();
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
+
+        aJob.setParameterInfo(paramString);
+        aJob.setJobStatus(new JobStatus(jobStatus));
+        aJob.setCompletedDate(completionDate);
+
+        if (parentJobInfo != null) {
+            AnalysisJob parentJob = home.findById(parentJobInfo.getJobNumber());
+            parentJob.setCompletedDate(completionDate);
         }
 
     }

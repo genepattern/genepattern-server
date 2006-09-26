@@ -3,10 +3,9 @@
 
 <hibernate-mapping package="org.genepattern.server.user"> 
   <class name="JobCompletionEvent" table="job_completion_event" optimistic-lock="none"> 
-    <id name="userID" access="field" type="string" unsaved-value="null" column="userid">
+    <id name="id" type="integer" unsaved-value="null" column="id">
       <generator class="native"/>
     </id>
-    <property name="id" access="field" type="integer" column="id"/>
     <property name="type" type="string" column="type"/>
     <property name="jobNumber" type="integer" column="job_number"/>
     <property name="parentJobNumber" type="integer" column="parent_job_number"/>
@@ -14,5 +13,7 @@
     <property name="completionDate" type="date" column="completion_date"/>
     <property name="elapsedTime" type="long" column="elapsed_time"/>
     <property name="taskLsid" access="field" type="string" column="task_lsid"/>
+    <property name="completionStatus" type="string" column="completion_status"/>
+    <property name="userId" type="string" column="user_id"/>
   </class>
 </hibernate-mapping>
