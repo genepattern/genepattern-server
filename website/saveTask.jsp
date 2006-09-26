@@ -76,9 +76,10 @@ String taskName = null;
 String forward = null;
 DiskFileUpload fub = new DiskFileUpload();
 boolean isEncodedPost = FileUpload.isMultipartContent(request);
-List rParams = fub.parseRequest(request);
 int fileCount = 0;
 
+if (isEncodedPost){
+List rParams = fub.parseRequest(request);
 for (Iterator iter = rParams.iterator(); iter.hasNext();) {
     FileItem fi = (FileItem) iter.next();
 
@@ -106,7 +107,15 @@ for (Iterator iter = rParams.iterator(); iter.hasNext();) {
         fi.write(aFile);
     }
  }
+} else {
+	for (Enumeration en = request.getParameterNames(); en.hasMoreElements(); ){
+		String pname = (String)en.nextElement();
+		String val = request.getParameter(pname);
 
+		requestParameters.put(pname, val);
+
+	}
+}
 
 taskName = requestParameters.getProperty(GPConstants.NAME);
 if (taskName == null ) taskName = requestParameters.getProperty(GPConstants.NAME);
