@@ -34,6 +34,7 @@ import org.genepattern.server.webservice.GenericWebService;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.FileWrapper;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.server.domain.AnalysisJobHome;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
@@ -419,8 +420,12 @@ public class Analysis extends GenericWebService {
                 }
             }
             jobDir.delete();
+            
+            AnalysisJobHome aHome = new AnalysisJobHome();
+            org.genepattern.server.domain.AnalysisJob aJob = aHome.findById(jobId);
+            aJob.setDeleted(true);
+            
             AnalysisDAO ds = new AnalysisDAO();
-            ds.setJobDeleted(jobId, true);
             JobInfo[] children = ds.getChildren(jobId);
             for (int i = 0; i < children.length; i++) {
                 deleteJob(children[i].getJobNumber());
