@@ -50,7 +50,7 @@ public class AuthenticationHandler extends org.apache.axis.handlers.BasicHandler
      */
     private boolean validateUserPassword(String user, String password) {
         
-        return user != null && user.length() > 0;
+        return true;
         
     }
 }
