@@ -69,10 +69,12 @@
   <parameter name="allowedMethods" value="getVersion"/>
   <parameter name="className" value="org.apache.axis.Version"/>
  </service>
+
  <transport name="http">
   <requestFlow>
    <handler type="URLMapper"/>
    <handler type="java:org.apache.axis.handlers.http.HTTPAuthHandler"/>
+   <handler name="Authentication" type="java:org.genepattern.server.webservice.AuthenticationHandler"/>
    <handler name="GPAuth" type="java:org.genepattern.server.webservice.AuthorizationHandler">
 	  <parameter name="org.genepattern.AuthorizationManagerFactory" value="org.genepattern.server.util.AuthorizationManagerFactoryImpl"/>
 	  <parameter name="genepattern.properties" value="../resources" />
@@ -83,6 +85,7 @@
  <transport name="local">
   <responseFlow>
    <handler type="java:org.apache.axis.transport.local.LocalResponder"/>
+   <handler name="Authentication" type="java:org.genepattern.server.webservice.AuthenticationHandler"/>
    <handler name="GPAuth" type="java:org.genepattern.server.webservice.AuthorizationHandler">
 	  <parameter name="org.genepattern.AuthorizationManagerFactory" value="org.genepattern.server.util.AuthorizationManagerFactoryImpl"/>
 	  <parameter name="genepattern.properties" value="../resources" />
