@@ -16,9 +16,11 @@ package org.genepattern.server.webservice;
 import org.apache.axis.AxisFault;
 import org.apache.axis.Message;
 import org.apache.axis.MessageContext;
+import org.apache.log4j.Logger;
 
 public class AuthenticationHandler extends org.apache.axis.handlers.BasicHandler {
 
+    private static Logger log = Logger.getLogger(AuthenticationHandler.class);
 	public void init(){
 
         // Placeholder -- nothing to do
@@ -36,7 +38,7 @@ public class AuthenticationHandler extends org.apache.axis.handlers.BasicHandler
 		
 	  	//System.out.println("\n\t AH   handler: " + methodSig + " called by " + username + " ok==>" + allowed);
 
-		if (validateUserPassword(username, password)){
+		if (!validateUserPassword(username, password)){
 			throw new AxisFault("Error: Unknown user or invalid password.");
 			
 		}
@@ -49,6 +51,9 @@ public class AuthenticationHandler extends org.apache.axis.handlers.BasicHandler
      * @return
      */
     private boolean validateUserPassword(String user, String password) {
+        
+        
+        log.info("AM: Validate user: " + user);
         
         return true;
         
