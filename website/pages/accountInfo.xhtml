@@ -13,8 +13,12 @@
 
 		<h:form>
 			<h:panelGrid columns="1">
-				<h:commandLink action="changePassword">Change Password</h:commandLink>
-				<h:commandLink action="visualizerMemory">Change Memory Allocated for Visualizers</h:commandLink>
+				<h:outputLink
+					value="#{facesContext.externalContext.requestContextPath}/pages/changePassword.jsf">
+				Change Password</h:outputLink>
+				<h:outputLink
+					value="#{facesContext.externalContext.requestContextPath}/pages/visualizerMemory.jsf">
+				Change Memory Allocated for Visualizers</h:outputLink>
 			</h:panelGrid>
 		</h:form>
 	</ui:define>
