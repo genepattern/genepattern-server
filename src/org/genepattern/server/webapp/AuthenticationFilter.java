@@ -78,7 +78,11 @@ public class AuthenticationFilter implements Filter {
      * is set
      */
     protected boolean isAuthenticated(ServletRequest request) {
-        return ((HttpServletRequest) request).getSession().getAttribute("userID") != null;
+        String userId = (String) ((HttpServletRequest) request).getSession().getAttribute("userID");
+        if (userId != null) {
+            request.setAttribute("userID", userId);
+        }
+        return userId != null;
     }
 
     /**
@@ -133,7 +137,7 @@ public class AuthenticationFilter implements Filter {
                 URL = URL + ("?" + request.getQueryString());
             }
             String contextPath = request.getContextPath();
-            if (contextPath.charAt(contextPath.length() - 1) != '/') {
+            if (contextPath != null && contextPath.charAt(contextPath.length() - 1) != '/') {
                 contextPath += "/";
             }
             String fqAddress = request.getScheme() + "://" + fqHostName + ":" + request.getServerPort() + "/"
