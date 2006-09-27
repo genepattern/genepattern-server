@@ -13,6 +13,7 @@
 
 package org.genepattern.server.webservice.server.local;
 
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webservice.server.Analysis;
 
@@ -104,15 +105,30 @@ public class LocalAnalysisClient {
     	return service.submitJob(taskID, parameters, files);
     }
 
+    /**
+     * 
+     * @param jobID
+     * @return
+     * @throws WebServiceException
+     */
  	public JobInfo checkStatus(int jobID) throws WebServiceException {
  		try {
+            if(HibernateUtil.getSession().getTransaction().isActive()) {
+                HibernateUtil.getSession().getTransaction().commit();
+                HibernateUtil.closeCurrentSession();
+            }
+            HibernateUtil.getSession().beginTransaction();
  			JobInfo j =  service.checkStatus(jobID);
- 			return j;
+            HibernateUtil.getSession().getTransaction().commit();
+            return j;
  			
  		} catch (Exception e){
  			e.printStackTrace();
  			throw new WebServiceException(e);
  		}
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
  		}
 
 
