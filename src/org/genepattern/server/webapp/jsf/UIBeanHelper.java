@@ -10,9 +10,11 @@ import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.genepattern.util.GPConstants;
 
@@ -40,6 +42,14 @@ public class UIBeanHelper {
     public static HttpServletRequest getRequest() {
         HttpServletRequest request = (HttpServletRequest) getExternalContext().getRequest();
         return request;
+    }
+
+    public static HttpSession getSession() {
+        return getRequest().getSession();
+    }
+
+    public static HttpSession getSession(boolean create) {
+        return getRequest().getSession(create);
     }
 
     public static HttpServletResponse getResponse() {
@@ -91,7 +101,6 @@ public class UIBeanHelper {
     public static String getUserId() {
         return (String) getRequest().getAttribute("userID");
     }
-    
 
     public static void setUserAndRedirect(HttpServletRequest request, HttpServletResponse response, String username)
             throws UnsupportedEncodingException, IOException {
@@ -107,7 +116,7 @@ public class UIBeanHelper {
         referrer += (referrer.indexOf('?') > 0 ? "&" : "?");
         referrer += username;
         getResponse().sendRedirect(referrer);
-        
+
     }
 
 }
