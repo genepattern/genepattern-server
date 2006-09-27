@@ -148,8 +148,8 @@ public class AuthenticationFilter implements Filter {
             if (contextPath != null && contextPath.charAt(contextPath.length() - 1) != '/') {
                 contextPath += "/";
             }
-            String fqAddress = request.getScheme() + "://" + fqHostName + ":" + request.getServerPort() + "/"
-                    + contextPath + "pages/login.jsf?origin=" + URLEncoder.encode(URL, GPConstants.UTF8);
+            String fqAddress = request.getScheme() + "://" + fqHostName + ":" + request.getServerPort() + contextPath
+                    + "pages/login.jsf?origin=" + URLEncoder.encode(URL, GPConstants.UTF8);
             response.sendRedirect(fqAddress);
         }
         catch (IOException ioe) {
