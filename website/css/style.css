@@ -413,6 +413,9 @@ a:visited {
 .sidebarhead-bkg {
 	background-color: #DFDFB9;
 	height: 55px;
+	border-bottom-color: #CCCC99;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
 }
 .sidebarhead {
 	font-weight: bold;
@@ -434,6 +437,9 @@ a:visited {
 	background-color: #DFDFB9;
 	height: 32px;
 	valign: middle;
+	border-bottom-color: #CCCC99;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
 }
 
 
@@ -478,7 +484,7 @@ a:visited {
 	font-size: 10px;
 	line-height: 16px;
 	font-weight: normal;
-	color: #999999;
+	color: #666666;
 	text-decoration: none;
 	background-color: #DFDFB9;
 	vertical-align: middle;
@@ -488,7 +494,7 @@ a:visited {
 	border-width: 1px;
 }
 .footer a:link {
-	color: #999999;
+	color: #666666;
 	text-decoration: none;
 }
 .footer a:hover {
@@ -500,6 +506,6 @@ a:visited {
 	text-decoration:  none;
 }
 .footer a:visited {
-	color: #999999;
+	color: #666666;
 	text-decoration: none;
 }
