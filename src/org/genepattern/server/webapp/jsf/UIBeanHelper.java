@@ -1,5 +1,8 @@
 package org.genepattern.server.webapp.jsf;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -7,8 +10,11 @@ import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.genepattern.util.GPConstants;
 
 public class UIBeanHelper {
 
@@ -84,6 +90,24 @@ public class UIBeanHelper {
 
     public static String getUserId() {
         return (String) getRequest().getAttribute("userID");
+    }
+    
+
+    public static void setUserAndRedirect(HttpServletRequest request, HttpServletResponse response, String username)
+            throws UnsupportedEncodingException, IOException {
+        request.setAttribute("userID", username);
+
+        String userID = "\"" + URLEncoder.encode(username.replaceAll("\"", "\\\""), "utf-8") + "\"";
+        Cookie cookie4 = new Cookie(GPConstants.USERID, userID);
+        cookie4.setPath(UIBeanHelper.getRequest().getContextPath());
+        cookie4.setMaxAge(Integer.MAX_VALUE);
+        getResponse().addCookie(cookie4);
+
+        String referrer = UIBeanHelper.getReferrer(request);
+        referrer += (referrer.indexOf('?') > 0 ? "&" : "?");
+        referrer += username;
+        getResponse().sendRedirect(referrer);
+        
     }
 
 }

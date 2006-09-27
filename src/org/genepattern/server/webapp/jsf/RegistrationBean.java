@@ -65,6 +65,30 @@ public class RegistrationBean   {
         this.username = username;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getEmailConfirm() {
+        return emailConfirm;
+    }
+
+    public void setEmailConfirm(String emailConfirm) {
+        this.emailConfirm = emailConfirm;
+    }
+
+    public UIInput getEmailConfirmComponent() {
+        return emailConfirmComponent;
+    }
+
+    public void setEmailConfirmComponent(UIInput emailConfirmComponent) {
+        this.emailConfirmComponent = emailConfirmComponent;
+    }
+    
     public void validateNewUsername(FacesContext context, UIComponent component, Object value)
             throws ValidatorException {
         User user = (new UserHome()).findById(value.toString());
@@ -119,7 +143,7 @@ public class RegistrationBean   {
             newUser.incrementLoginCount();
             
             (new UserHome()).merge(newUser);
-            setUserAndRedirect(UIBeanHelper.getRequest(), UIBeanHelper.getResponse(), username);
+            UIBeanHelper.setUserAndRedirect(UIBeanHelper.getRequest(), UIBeanHelper.getResponse(), username);
 
         }
         catch (Exception e) {
@@ -137,14 +161,7 @@ public class RegistrationBean   {
         this.passwordConfirm = passwordConfirm;
     }
 
-/*    public UIInput getPasswordComponent() {
-        return passwordComponent;
-    }
 
-    public void setPasswordComponent(UIInput passwordComponent) {
-        this.passwordComponent = passwordComponent;
-    }
-*/
     
     protected String getReferrer(HttpServletRequest request) {
         String referrer = request.getParameter("referrer");
@@ -154,42 +171,4 @@ public class RegistrationBean   {
         return referrer;
     }
 
-    protected void setUserAndRedirect(HttpServletRequest request, HttpServletResponse response, String username) throws UnsupportedEncodingException, IOException {
-        request.setAttribute("userID", username);
-    
-        String userID = "\"" + URLEncoder.encode(username.replaceAll("\"", "\\\""), "utf-8") + "\"";
-        Cookie cookie4 = new Cookie(GPConstants.USERID, userID);
-        cookie4.setPath(UIBeanHelper.getRequest().getContextPath());
-        cookie4.setMaxAge(Integer.MAX_VALUE);
-        UIBeanHelper.getResponse().addCookie(cookie4);
-    
-        String referrer = getReferrer(request);
-        referrer += (referrer.indexOf('?') > 0 ? "&" : "?");
-        referrer += username;
-        UIBeanHelper.getResponse().sendRedirect(referrer);
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getEmailConfirm() {
-        return emailConfirm;
-    }
-
-    public void setEmailConfirm(String emailConfirm) {
-        this.emailConfirm = emailConfirm;
-    }
-
-    public UIInput getEmailConfirmComponent() {
-        return emailConfirmComponent;
-    }
-
-    public void setEmailConfirmComponent(UIInput emailConfirmComponent) {
-        this.emailConfirmComponent = emailConfirmComponent;
-    }
 }

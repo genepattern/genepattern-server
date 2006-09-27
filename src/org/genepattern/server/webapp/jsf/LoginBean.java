@@ -90,7 +90,7 @@ public class LoginBean  {
                     newUser.setPassword(null);
 
                     (new UserHome()).merge(newUser);
-                    setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
+                    UIBeanHelper.setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
 
                 }
             }
@@ -103,11 +103,11 @@ public class LoginBean  {
                 }
 
                 else {
-                    setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
+                    UIBeanHelper.setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
                 }
             }
             else {
-                setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
+                UIBeanHelper.setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
             }
         }
         catch (UnsupportedEncodingException e) {
@@ -123,20 +123,6 @@ public class LoginBean  {
 
     }
 
-    protected void setUserAndRedirect(HttpServletRequest request, HttpServletResponse response, String username)
-            throws UnsupportedEncodingException, IOException {
-        request.setAttribute("userID", username);
 
-        String userID = "\"" + URLEncoder.encode(username.replaceAll("\"", "\\\""), "utf-8") + "\"";
-        Cookie cookie4 = new Cookie(GPConstants.USERID, userID);
-        cookie4.setPath(UIBeanHelper.getRequest().getContextPath());
-        cookie4.setMaxAge(Integer.MAX_VALUE);
-        UIBeanHelper.getResponse().addCookie(cookie4);
-
-        String referrer = UIBeanHelper.getReferrer(request);
-        referrer += (referrer.indexOf('?') > 0 ? "&" : "?");
-        referrer += username;
-        UIBeanHelper.getResponse().sendRedirect(referrer);
-    }
 
 }
