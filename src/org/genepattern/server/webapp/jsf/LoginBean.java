@@ -2,18 +2,14 @@ package org.genepattern.server.webapp.jsf;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.security.NoSuchAlgorithmException;
 
 import javax.faces.event.ActionEvent;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserHome;
-import org.genepattern.util.GPConstants;
 
 /**
  * Backing bean for pages/login.
@@ -21,7 +17,7 @@ import org.genepattern.util.GPConstants;
  * @author jrobinso
  * 
  */
-public class LoginBean  {
+public class LoginBean {
 
     private static Logger log = Logger.getLogger(LoginBean.class);
     private String username;
@@ -95,13 +91,9 @@ public class LoginBean  {
                 }
             }
             else if (passwordRequired) {
-                Base64 decoder = new Base64();
-                String actualPassword = new String(decoder.decode(up.getPassword().getBytes()));
-
-                if (!actualPassword.equals(password)) {
+                if (!EncryptionUtil.encrypt(password).equals(up.getPassword())) {
                     invalidPassword = true;
                 }
-
                 else {
                     UIBeanHelper.setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
                 }
@@ -120,9 +112,17 @@ public class LoginBean  {
             throw new RuntimeException(e); // @TODO -- wrap in gp system
             // exeception.
         }
+        catch (NoSuchAlgorithmException e) {
+            log.error(e);
+            throw new RuntimeException(e); // @TODO -- wrap in gp system
+            // exeception.
 
+        }
     }
 
-
+    public String logout() {
+        UIBeanHelper.logout();
+        return "logout";
+    }
 
 }
