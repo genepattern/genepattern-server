@@ -73,6 +73,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobHome;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.domain.JobStatusHome;
 import org.genepattern.server.indexer.Indexer;
 import org.genepattern.server.indexer.IndexerDaemon;
 import org.genepattern.server.user.UsageLog;
@@ -978,8 +979,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
             paramString = ParameterFormatConverter.stripPasswords(paramString);
         }
 
+        JobStatus newJobStatus = (new JobStatusHome()).findById(jobStatus);
         aJob.setParameterInfo(paramString);
-        aJob.setJobStatus(new JobStatus(jobStatus));
+        aJob.setJobStatus(newJobStatus);
         aJob.setCompletedDate(completionDate);
 
         if (parentJobInfo != null) {
