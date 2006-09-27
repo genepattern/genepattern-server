@@ -39,7 +39,7 @@ use, misuse, or functionality.
                  java.util.GregorianCalendar,
                  java.util.HashMap,
                  java.util.Iterator,
-                 java.util.List"
+                 java.util.*"
          session="false" contentType="text/html" language="Java" %>
 <%
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -61,7 +61,6 @@ use, misuse, or functionality.
     String userID;
     try {
         ServletFileUpload fub = new ServletFileUpload(new DiskFileItemFactory());
-        List params = fub.parseRequest(request);
         HashMap htFilenames = new HashMap(); // map between form field name and filesystem name
 
         // create a dir for the input files
@@ -71,6 +70,10 @@ use, misuse, or functionality.
         String tmpDirName = tempDir.getName();
         HashMap requestParameters = new HashMap();
         HashMap nameToFileItemMap = new HashMap();
+        
+        if (fub.isMultipartContent(request)) {
+        	 List params = fub.parseRequest(request);
+             
         for (Iterator iter = params.iterator(); iter.hasNext();) {
             FileItem fi = (FileItem) iter.next();
             nameToFileItemMap.put(fi.getFieldName(), fi);
@@ -112,6 +115,13 @@ use, misuse, or functionality.
                 requestParameters.put(fi.getFieldName(), fi.getString());
             }
         } // loop over files
+        } else {
+        	for (Enumeration en = request.getParameterNames(); en.hasMoreElements(); ){
+        		String k = (String)en.nextElement();
+        		String v = request.getParameter(k);
+        		requestParameters.put(k,v);
+        	}
+        }
         String lsid = (String) requestParameters.get("taskLSID");
         String taskName = (String) requestParameters.get("taskName");
         if (lsid == null) {
