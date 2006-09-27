@@ -12,17 +12,6 @@ public class JobStatus {
     public JobStatus() {
     }
 
-    public JobStatus(Integer statusId) {
-        super();
-        this.statusId = statusId;
-    }
-
-    public JobStatus(Integer statusId, String statusName) {
-        super();
-        this.statusId = statusId;
-        this.statusName = statusName;
-    }
-
     public Integer getStatusId() {
         return this.statusId;
     }
