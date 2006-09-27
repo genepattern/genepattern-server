@@ -3901,7 +3901,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 jobInfo.addParameterInfo(additionalParams[i]);
             }
         }
-        if (jobStatus < JobStatus.JOB_NOT_STARTED) {
+        if (jobStatus < JobStatus.JOB_PENDING) {
             jobStatus = ((Integer) JobStatus.STATUS_MAP.get(jobInfo.getStatus())).intValue();
         }
         getDS().updateJob(jobNumber, jobInfo.getParameterInfo(), jobStatus);
@@ -4226,7 +4226,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
             }
         }
         for (int retries = 1; retries < 20; retries++) {
-            if (from.equals(to) || from.renameTo(to)) {
+            if (from.renameTo(to)) {
                 return true;
             }
             log.info("GenePatternAnalysisTask.rename: sleeping before retrying rename from " + from.toString() + " to "

@@ -40,7 +40,7 @@ public class JobStatus {
     }
 
     /** Static members */
-    public static int JOB_NOT_STARTED = 1;
+    public static int JOB_PENDING = 1;
 
     public static int JOB_PROCESSING = 2;
 
@@ -48,7 +48,7 @@ public class JobStatus {
 
     public static int JOB_ERROR = 4;
 
-    public static String NOT_STARTED = "Pending";
+    public static String PENDING = "Pending";
 
     public static String PROCESSING = "Processing";
 
@@ -64,7 +64,7 @@ public class JobStatus {
 
     static {
         Map statusHash = new HashMap();
-        statusHash.put(NOT_STARTED, new Integer(JOB_NOT_STARTED));
+        statusHash.put(PENDING, new Integer(JOB_PENDING));
         statusHash.put(PROCESSING, new Integer(JOB_PROCESSING));
         statusHash.put(FINISHED, new Integer(JOB_FINISHED));
         statusHash.put(ERROR, new Integer(JOB_ERROR));
