@@ -82,21 +82,24 @@ public class StartupServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
 
         super.init(config);
-        
- 
+
         log("StartupServlet: user.dir=" + System.getProperty("user.dir"));
         ServletContext application = config.getServletContext();
         application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
         loadProperties(config);
-        
+
         // @todo -- make the hsql startup conditional on a property
-        HsqlDbUtil.startDatabase();
-        
+        String dbVendor = System.getProperty("database.vendor", "HSQL");
+        if (dbVendor.equals("HSQL")) {
+            HsqlDbUtil.startDatabase();
+        }
+
         launchTasks();
-       
-        // This starts an analysis task thread through a chain of side effects.  Do not remove!
+
+        // This starts an analysis task thread through a chain of side effects.
+        // Do not remove!
         AnalysisManager.getInstance();
- 
+
         startDaemons(System.getProperties(), application);
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         //
@@ -117,8 +120,8 @@ public class StartupServlet extends HttpServlet {
 
     protected void startDaemons(Properties props, ServletContext application) throws ServletException {
         startJobPurger(props);
-        //startIndexerDaemon(props);
-        //startJSPCompiler(props, application);
+        startIndexerDaemon(props);
+        // startJSPCompiler(props, application);
         Thread.currentThread().yield(); // allow a bit of runtime to the
         // independent threads
     }
@@ -220,8 +223,6 @@ public class StartupServlet extends HttpServlet {
         dumpThreads();
     }
 
-
-
     // read a CSV list of tasks from the launchTask property. For each entry,
     // lookup properties and
     // launch the task in a separate thread in this JVM
@@ -274,7 +275,8 @@ public class StartupServlet extends HttpServlet {
 
                 URLClassLoader classLoader = new URLClassLoader(classPathURLs, null);
                 // log("Looking for " + className + ".main(String[] args)");
-                Class theClass = Class.forName(className); //, true, classLoader);
+                Class theClass = Class.forName(className); // , true,
+                                                            // classLoader);
                 if (theClass == null) {
                     throw new ClassNotFoundException("unable to find class " + className + " using classpath "
                             + classPathElements);
