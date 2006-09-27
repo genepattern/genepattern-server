@@ -51,10 +51,7 @@ public class AuthenticationHandler extends org.apache.axis.handlers.BasicHandler
      * @return
      */
     private boolean validateUserPassword(String user, String password) {
-        
-        
-        log.info("AM: Validate user: " + user);
-        
+                
         return true;
         
     }
