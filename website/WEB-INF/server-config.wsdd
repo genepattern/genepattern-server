@@ -85,7 +85,6 @@
  <transport name="local">
   <responseFlow>
    <handler type="java:org.apache.axis.transport.local.LocalResponder"/>
-   <handler name="Authentication" type="java:org.genepattern.server.webservice.AuthenticationHandler"/>
    <handler name="GPAuth" type="java:org.genepattern.server.webservice.AuthorizationHandler">
 	  <parameter name="org.genepattern.AuthorizationManagerFactory" value="org.genepattern.server.util.AuthorizationManagerFactoryImpl"/>
 	  <parameter name="genepattern.properties" value="../resources" />
