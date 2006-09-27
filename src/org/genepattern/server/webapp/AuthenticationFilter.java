@@ -35,7 +35,7 @@ import org.genepattern.util.GPConstants;
 public class AuthenticationFilter implements Filter {
 
     private static final String[] NO_AUTH_REQUIRED_PAGES = { "retrieveResults.jsp", "getFile.jsp", "getInputFile.jsp",
-            "login.jsp", "login.jsf", "registerUser.jsf" };
+            "login.jsp", "login.jsf", "registerUser.jsf", "forgotPassword.jsf" };
     /** Forward to home page if logged in user requests these pages */
     private static final String[] LOGIN_PAGES = { "login.jsf", "registerUser.jsf", "forgotPassword.jsf" };
     private static final String HOME_PAGE = "/pages/index.jsf";
@@ -134,9 +134,9 @@ public class AuthenticationFilter implements Filter {
             targetURL = currentURL.substring(firstSlash + 1, currentURL.length());
         }
 
-//        if (targetURL != null && request.getQueryString() != null) {
-//            targetURL = targetURL + ("?" + request.getQueryString());
-//        }
+        // if (targetURL != null && request.getQueryString() != null) {
+        // targetURL = targetURL + ("?" + request.getQueryString());
+        // }
 
         // redirect to the fully-qualified host name to make sure that the
         // cookie that we are allowed to write is useful
@@ -156,7 +156,7 @@ public class AuthenticationFilter implements Filter {
             String basePath = request.getScheme() + "://" + fqHostName + ":" + request.getServerPort() + contextPath;
             String fqAddress = basePath + "pages/login.jsf";
             targetURL = basePath + targetURL;
-            
+
             if (targetURL != null && !targetURL.contains("login.jsf")) { // don't
                 // redirect
                 // back to
