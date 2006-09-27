@@ -12,16 +12,24 @@
 
 
 	<ui:define name="body">
-		Sign in to GenePattern<br />
         
 		<h:form>
+		  <table width="330">
+		  <tr>
+		    <td ><span style="font-weight: bold;"> Sign in to GenePattern</span></td>
+		    <td align="right">
+			  <h:outputLink
+			    value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf"
+			    rendered="#{loginBean.passwordRequired}">
+			    Click to register
+			  </h:outputLink>
+			</td>
+		  </tr>
+		  </table>
+
 			<h:outputText value="Unknown username.  Click the registration link to create a new account." 
 			   style="color: red; font-weight: old;" rendered="#{loginBean.unknownUser}"/>
-			<br/>
-			<h:outputLink
-			  value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf">
-			  Click to register
-			</h:outputLink>
+			
 			
 			<h:outputText value="Invalid password" rendered="#{loginBean.invalidPassword}"
 				style="color: red; font-weight: old;" />
