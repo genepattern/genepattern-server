@@ -3,24 +3,17 @@
  */
 package org.genepattern.server.webapp.jsf;
 
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.validator.ValidatorException;
-import javax.servlet.http.*;
+import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserHome;
-import org.genepattern.util.GPConstants;
 
 /**
  * Backing bean for pages/login.
@@ -28,7 +21,7 @@ import org.genepattern.util.GPConstants;
  * @author jrobinso
  * 
  */
-public class RegistrationBean   {
+public class RegistrationBean {
 
     private static Logger log = Logger.getLogger(RegistrationBean.class);
     private String username;
@@ -37,7 +30,7 @@ public class RegistrationBean   {
     private String email;
     private String emailConfirm;
 
-//    private UIInput passwordComponent;
+    // private UIInput passwordComponent;
     private UIInput passwordConfirmComponent;
     private UIInput emailConfirmComponent;
 
@@ -88,7 +81,7 @@ public class RegistrationBean   {
     public void setEmailConfirmComponent(UIInput emailConfirmComponent) {
         this.emailConfirmComponent = emailConfirmComponent;
     }
-    
+
     public void validateNewUsername(FacesContext context, UIComponent component, Object value)
             throws ValidatorException {
         User user = (new UserHome()).findById(value.toString());
@@ -117,6 +110,7 @@ public class RegistrationBean   {
             throw new ValidatorException(facesMessage);
         }
     }
+
     /**
      * Register a new user. For now this uses an action listener since we are
      * redirecting to a page outside of the JSF framework. This should be
@@ -131,17 +125,11 @@ public class RegistrationBean   {
             assert username != null;
             assert password != null;
 
-            HttpServletRequest request = UIBeanHelper.getRequest();
-            
-            Base64 encoder = new Base64();
-            String encodedPassword = new String( encoder.encode(password.getBytes()));
-            
-            
             User newUser = new User();
             newUser.setUserId(username);
-            newUser.setPassword(encodedPassword);
+            newUser.setPassword(EncryptionUtil.encrypt(password));
             newUser.incrementLoginCount();
-            
+
             (new UserHome()).merge(newUser);
             UIBeanHelper.setUserAndRedirect(UIBeanHelper.getRequest(), UIBeanHelper.getResponse(), username);
 
@@ -160,15 +148,4 @@ public class RegistrationBean   {
     public void setPasswordConfirm(String passwordConfirm) {
         this.passwordConfirm = passwordConfirm;
     }
-
-
-    
-    protected String getReferrer(HttpServletRequest request) {
-        String referrer = request.getParameter("referrer");
-        if (referrer == null || referrer.length() == 0) {
-            referrer = request.getContextPath() + "/index.jsp";
-        }
-        return referrer;
-    }
-
 }

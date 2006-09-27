@@ -12,12 +12,13 @@
 
 package org.genepattern.server.webapp.jsf;
 
+import java.security.NoSuchAlgorithmException;
+
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
-import javax.servlet.http.Cookie;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.user.User;
@@ -53,7 +54,14 @@ public class ChangePasswordBean {
             throws ValidatorException {
         User user = (new UserHome()).findById(UIBeanHelper.getUserId());
 
-        if (!value.toString().equals(user.getPassword())) {
+        boolean correctPassword = false;
+        try {
+            correctPassword = EncryptionUtil.encrypt(value.toString()).equals(user.getPassword());
+        }
+        catch (NoSuchAlgorithmException e) {
+            log.error(e);
+        }
+        if (!correctPassword) {
             String message = "Please specify the correct current password.";
             FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
             ((UIInput) component).setValid(false);
@@ -63,7 +71,14 @@ public class ChangePasswordBean {
 
     public String changePassword() {
         User user = (new UserHome()).findById(UIBeanHelper.getUserId());
-        user.setPassword(newPassword);
+        try {
+            user.setPassword(EncryptionUtil.encrypt(newPassword));
+        }
+        catch (NoSuchAlgorithmException e) {
+            log.error(e);
+            UIBeanHelper.setInfoMessage("An error occurred while saving your password");
+            return "error";
+        }
         String message = "Your new password has been saved";
         UIBeanHelper.setInfoMessage(message);
         return "success";
