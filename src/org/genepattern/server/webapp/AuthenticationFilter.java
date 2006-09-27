@@ -36,6 +36,9 @@ public class AuthenticationFilter implements Filter {
 
     private static final String[] NO_AUTH_REQUIRED_PAGES = { "retrieveResults.jsp", "getFile.jsp", "getInputFile.jsp",
             "login.jsp", "login.jsf", "registerUser.jsf" };
+    /** Forward to home page if logged in user requests these pages */
+    private static final String[] LOGIN_PAGES = { "login.jsf", "registerUser.jsf", "forgotPassword.jsf" };
+    private static final String HOME_PAGE = "/pages/index.jsf";
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
             ServletException {
@@ -57,18 +60,23 @@ public class AuthenticationFilter implements Filter {
             return;
         }
 
-        // escape valve for some pages that do not require authentication
-        for (int i = 0, length = NO_AUTH_REQUIRED_PAGES.length; i < length; i++) {
-            if (requestedURI.indexOf(NO_AUTH_REQUIRED_PAGES[i]) >= 0) {
-                chain.doFilter(request, response);
-                return;
-            }
-        }
-
         if (isAuthenticated(request)) {
+            for (int i = 0, length = LOGIN_PAGES.length; i < length; i++) {
+                if (requestedURI.indexOf(LOGIN_PAGES[i]) >= 0) {
+                    ((HttpServletResponse) response).sendRedirect(req.getContextPath() + HOME_PAGE);
+                    return;
+                }
+            }
             chain.doFilter(request, response);
         }
         else {
+            // escape valve for some pages that do not require authentication
+            for (int i = 0, length = NO_AUTH_REQUIRED_PAGES.length; i < length; i++) {
+                if (requestedURI.indexOf(NO_AUTH_REQUIRED_PAGES[i]) >= 0) {
+                    chain.doFilter(request, response);
+                    return;
+                }
+            }
             setLoginPageRedirect((HttpServletRequest) request, (HttpServletResponse) response);
         }
     }
