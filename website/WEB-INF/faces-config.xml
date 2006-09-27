@@ -47,6 +47,11 @@
 		<managed-bean-class>org.genepattern.server.webapp.jsf.ChangePasswordBean</managed-bean-class>
 		<managed-bean-scope>request</managed-bean-scope>
 	</managed-bean>
+	<managed-bean>
+		<managed-bean-name>forgotPasswordBean</managed-bean-name>
+		<managed-bean-class>org.genepattern.server.webapp.jsf.ForgotPasswordBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
 
 	<navigation-rule>
 		<from-view-id>*</from-view-id>
@@ -55,6 +60,7 @@
 			<to-view-id>/pages/login.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
+
 	<navigation-rule>
 		<display-name>commandPrefixAdmin</display-name>
 		<from-view-id>/pages/commandPrefixAdmin.xhtml</from-view-id>
@@ -66,30 +72,13 @@
 	</navigation-rule>
 
 	<navigation-rule>
-		<from-view-id>*</from-view-id>
-		<navigation-case>
-			<from-outcome>accountInfo</from-outcome>
-			<to-view-id>/pages/accountInfo.xhtml</to-view-id>
-		</navigation-case>
-	</navigation-rule>
-
-	<navigation-rule>
-		<navigation-case>
-			<from-outcome>changePassword</from-outcome>
-			<to-view-id>/pages/changePassword.xhtml</to-view-id>
-		</navigation-case>
-
-		<navigation-case>
-			<from-outcome>visualizerMemory</from-outcome>
-			<to-view-id>/pages/visualizerMemory.xhtml</to-view-id>
-		</navigation-case>
-
-	</navigation-rule>
-
-	<navigation-rule>
 		<from-view-id>/pages/visualizerMemory.xhtml</from-view-id>
 		<navigation-case>
-			<from-outcome>*</from-outcome>
+			<from-outcome>success</from-outcome>
+			<to-view-id>/pages/accountInfo.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>cancel</from-outcome>
 			<to-view-id>/pages/accountInfo.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
@@ -100,10 +89,29 @@
 			<from-outcome>success</from-outcome>
 			<to-view-id>/pages/accountInfo.xhtml</to-view-id>
 		</navigation-case>
+		<navigation-case>
+			<from-outcome>cancel</from-outcome>
+			<to-view-id>/pages/accountInfo.xhtml</to-view-id>
+		</navigation-case>
 	</navigation-rule>
 
+	<navigation-rule>
+
+		<from-view-id>/pages/forgotPassword.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>cancel</from-outcome>
+			<to-view-id>/pages/login.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>success</from-outcome>
+			<to-view-id>/pages/login.xhtml</to-view-id>
+		</navigation-case>
+
+	</navigation-rule>
+
+	<!-- Use the Trinidad RenderKit -->
 	<application>
-		<!-- Use the Trinidad RenderKit -->
+
 		<default-render-kit-id>org.apache.myfaces.trinidad.core</default-render-kit-id>
 	</application>
 
