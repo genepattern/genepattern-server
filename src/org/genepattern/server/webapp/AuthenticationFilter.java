@@ -125,10 +125,18 @@ public class AuthenticationFilter implements Filter {
     }
 
     public void setLoginPageRedirect(HttpServletRequest request, HttpServletResponse response) {
-        String URL = request.getRequestURI();
-        if (response == null) {
-            return;
+        String currentURL = request.getRequestURI();
+        // get everything after the context root
+        int firstSlash = currentURL.indexOf("/", 1); // jump past the
+        // starting slash
+        String targetURL = null;
+        if (firstSlash != -1) {
+            targetURL = currentURL.substring(firstSlash + 1, currentURL.length());
         }
+
+//        if (targetURL != null && request.getQueryString() != null) {
+//            targetURL = targetURL + ("?" + request.getQueryString());
+//        }
 
         // redirect to the fully-qualified host name to make sure that the
         // cookie that we are allowed to write is useful
@@ -141,15 +149,21 @@ public class AuthenticationFilter implements Filter {
                 }
             }
 
-            if (request.getQueryString() != null) {
-                URL = URL + ("?" + request.getQueryString());
-            }
             String contextPath = request.getContextPath();
             if (contextPath != null && contextPath.charAt(contextPath.length() - 1) != '/') {
                 contextPath += "/";
             }
-            String fqAddress = request.getScheme() + "://" + fqHostName + ":" + request.getServerPort() + contextPath
-                    + "pages/login.jsf?origin=" + URLEncoder.encode(URL, GPConstants.UTF8);
+            String basePath = request.getScheme() + "://" + fqHostName + ":" + request.getServerPort() + contextPath;
+            String fqAddress = basePath + "pages/login.jsf";
+            targetURL = basePath + targetURL;
+            
+            if (targetURL != null && !targetURL.contains("login.jsf")) { // don't
+                // redirect
+                // back to
+                // login
+                // page
+                request.getSession().setAttribute("origin", targetURL);
+            }
             response.sendRedirect(fqAddress);
         }
         catch (IOException ioe) {

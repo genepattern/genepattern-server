@@ -90,7 +90,8 @@ public class UIBeanHelper {
     }
 
     public static String getReferrer(HttpServletRequest request) {
-        String referrer = request.getParameter("referrer");
+        String referrer = (String) request.getSession().getAttribute("origin");
+        request.getSession().removeAttribute("origin");
         if (referrer == null || referrer.length() == 0) {
             referrer = request.getContextPath() + "/index.jsp";
         }
@@ -113,7 +114,7 @@ public class UIBeanHelper {
 
     public static void setUserAndRedirect(HttpServletRequest request, HttpServletResponse response, String username)
             throws UnsupportedEncodingException, IOException {
-        UIBeanHelper.getSession(true).setAttribute("userID", username);
+        UIBeanHelper.getSession().setAttribute("userID", username);
         // if(rememberUsername) {
         // String userID = "\"" + URLEncoder.encode(username.replaceAll("\"",
         // "\\\""), "utf-8") + "\"";
