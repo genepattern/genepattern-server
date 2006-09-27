@@ -91,9 +91,7 @@ use, misuse, or functionality.
                     }
                 }
                 
-                System.out.println("File " + fieldName + " = " + fileName);
-                
-                
+                               
                 if (fileName != null && !fileName.trim().equals("")) {
                     try {
                         new URL(fileName);
@@ -209,19 +207,10 @@ use, misuse, or functionality.
         return;
     }   
         
-        for (int i=0; i < parmInfos.length; i++){
-        	ParameterInfo pi = parmInfos[i];
-        	if (pi.isInputFile()){
-        		
-        		System.out.println("SUBMIT" + pi.getName() + "=" + pi.getValue());
-        		System.out.println("\texists  " + (new File(pi.getValue())));
-        		
-        	}
-        }
+       
         
  //   JobInfo job = analysisProxy.submitJob(task.getID(), parmInfos);
     JobInfo job = analysisClient.submitJob(task.getID(), parmInfos);
-    System.out.println("Job=" + job);
     String jobID = "" + job.getJobNumber();
 
 %>
@@ -334,7 +323,7 @@ use, misuse, or functionality.
 
 
     <%
-        for (int i = 0; i < 8 * 1024; i++) {
+         for (int i = 0; i < 8 * 1024; i++) {
             out.print(" ");
         }
         out.println();
@@ -343,8 +332,15 @@ use, misuse, or functionality.
         while (!(status.equalsIgnoreCase("ERROR") || (status
                 .equalsIgnoreCase("Finished")))) {
             Thread.sleep(500);
+           // System.out.println("Job=" + job);
             
-            job = analysisProxy.checkStatus(job.getJobNumber());
+            job = analysisClient.checkStatus(job.getJobNumber());
+          //  System.out.println("\tLocal Job=" + job);
+            
+           // job = analysisProxy.checkStatus(job.getJobNumber());
+            //System.out.println("\tRemote Job=" + job);
+            
+            
             if (job != null)
 	            status = job.getStatus();
             

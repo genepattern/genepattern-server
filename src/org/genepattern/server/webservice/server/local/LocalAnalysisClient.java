@@ -106,7 +106,9 @@ public class LocalAnalysisClient {
 
  	public JobInfo checkStatus(int jobID) throws WebServiceException {
  		try {
- 			return service.checkStatus(jobID);
+ 			JobInfo j =  service.checkStatus(jobID);
+ 			return j;
+ 			
  		} catch (Exception e){
  			e.printStackTrace();
  			throw new WebServiceException(e);
