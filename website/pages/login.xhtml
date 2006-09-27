@@ -9,8 +9,6 @@
 <ui:composition template="/templates/common.xhtml">
 
 	<ui:define name="pageTitle">GenePattern sign-in</ui:define>
-
-
 	<ui:define name="body">
 
 		<h:form>
@@ -50,7 +48,7 @@
 
 			</h:panelGrid>
 			<h:commandButton actionListener="#{loginBean.submitLogin}"
-				value="sign in" styleClass="little" />
+				value="Sign In" />
 			<br />
 			<h:outputLink
 				value="#{facesContext.externalContext.requestContextPath}/pages/forgotPassword.jsf"
