@@ -102,9 +102,10 @@ Job Results </a> &#160;&#160;&#160;&#160;&#160;&#160; <a
 		class="loginsettings">
 		<tr valign="top">
 			<td><a
-				href="#{facesContext.externalContext.requestContextPath}/pages/accountOptions.jsf">
-			My Settings </a> | <a href="logout"> Sign Out </a>
-			${sessionScope.userID}&#160;&#160;&#160;</td>
+				href="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">
+			My Settings </a> | <h:form style="display: inline;">
+				<h:commandLink id="logoutLink" action="#{loginBean.logout}"> Sign Out </h:commandLink>
+			</h:form> ${sessionScope.userID}&#160;&#160;&#160;</td>
 			<td>
 			<form name="form1" method="post" action=""><input
 				name="textfield" type="text" size="15" /></form>
