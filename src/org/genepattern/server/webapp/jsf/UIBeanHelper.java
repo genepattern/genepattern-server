@@ -99,24 +99,30 @@ public class UIBeanHelper {
     }
 
     public static String getUserId() {
-        return (String) getRequest().getAttribute("userID");
+        return (String) getSession().getAttribute("userID");
+    }
+
+    public static void logout() {
+        UIBeanHelper.getSession().removeAttribute("userID");
+        UIBeanHelper.getSession().invalidate();
     }
 
     public static void setUserAndRedirect(HttpServletRequest request, HttpServletResponse response, String username)
             throws UnsupportedEncodingException, IOException {
-        request.setAttribute("userID", username);
-
-        String userID = "\"" + URLEncoder.encode(username.replaceAll("\"", "\\\""), "utf-8") + "\"";
-        Cookie cookie4 = new Cookie(GPConstants.USERID, userID);
-        cookie4.setPath(UIBeanHelper.getRequest().getContextPath());
-        cookie4.setMaxAge(Integer.MAX_VALUE);
-        getResponse().addCookie(cookie4);
+        UIBeanHelper.getSession(true).setAttribute("userID", username);
+        // if(rememberUsername) {
+        // String userID = "\"" + URLEncoder.encode(username.replaceAll("\"",
+        // "\\\""), "utf-8") + "\"";
+        // Cookie cookie = new Cookie(GPConstants.USERID, userID);
+        // cookie.setPath(UIBeanHelper.getRequest().getContextPath());
+        // cookie.setMaxAge(Integer.MAX_VALUE);
+        // UIBeanHelper.getResponse().addCookie(cookie);
+        // }
 
         String referrer = UIBeanHelper.getReferrer(request);
         referrer += (referrer.indexOf('?') > 0 ? "&" : "?");
         referrer += username;
-        getResponse().sendRedirect(referrer);
-
+        UIBeanHelper.getResponse().sendRedirect(referrer);
     }
 
 }
