@@ -53,7 +53,8 @@
 				value="sign in" styleClass="little" />
 			<br />
 			<h:outputLink
-				value="#{facesContext.externalContext.requestContextPath}/pages/forgotPassword.jsf">
+				value="#{facesContext.externalContext.requestContextPath}/pages/forgotPassword.jsf"
+				rendered="#{loginBean.passwordRequired}">
 			  Forgot your password?
 			</h:outputLink>
 
