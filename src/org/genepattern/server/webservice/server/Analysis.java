@@ -13,6 +13,7 @@
 package org.genepattern.server.webservice.server;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import java.util.TreeSet;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
+import javax.activation.DataSource;
 import javax.xml.soap.SOAPException;
 
 import org.apache.axis.MessageContext;
@@ -179,7 +181,34 @@ public class Analysis extends GenericWebService {
             throw new WebServiceException(e);
         }
     }
+    
+    // in this submission, we do not expect files to all be data handlers, but rather to really be files
+    // that do not need to be renamed
+    public JobInfo submitLocalJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
+        Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
+        // sometimes empty
 
+        // get the username
+        String username = getUsernameFromContext();
+
+        JobInfo jobInfo = null;
+
+       // renameInputFiles(parameters, files);
+
+        try {
+            AddNewJobHandler req = new AddNewJobHandler(taskID, username, parameters);
+            jobInfo = req.executeRequest();
+        } catch (Throwable t) {
+            _cat.error(t.getMessage());
+            t.printStackTrace();
+            throw new WebServiceException(t);
+        }
+
+        return jobInfo;
+    }
+    
+    
+    
     // find any input files and concat axis name with original file name.
     private void renameInputFiles(ParameterInfo[] parameters, Map files) throws WebServiceException {
         if (parameters != null) for (int x = 0; x < parameters.length; x++) {

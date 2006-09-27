@@ -19,6 +19,7 @@ use, misuse, or functionality.
                  org.genepattern.util.GPConstants,
                  org.genepattern.util.StringUtils,
                  org.genepattern.webservice.AnalysisWebServiceProxy,
+                 org.genepattern.server.webservice.server.local.*,
                  org.genepattern.webservice.JobInfo,
                  org.genepattern.webservice.OmnigeneException,
                  org.genepattern.webservice.ParameterFormatConverter,
@@ -89,12 +90,18 @@ use, misuse, or functionality.
                         fileName = shadow.getString();
                     }
                 }
+                
+                System.out.println("File " + fieldName + " = " + fileName);
+                
+                
                 if (fileName != null && !fileName.trim().equals("")) {
                     try {
                         new URL(fileName);
                         // don't bother trying to save a file that is a URL, retrieve it at execution time instead
                         htFilenames.put(fieldName, fileName);
                     } catch (MalformedURLException mfe) {
+                    	File oldFile = new File(fileName);
+                    	
                         fileName = FilenameUtils.getName(fileName);
                         File file = new File(tempDir, fileName);
                         if (file.exists()) {
@@ -102,9 +109,14 @@ use, misuse, or functionality.
                                 fileName += "tmp";
                             }
                             file = File.createTempFile(fileName, FilenameUtils.getExtension(fileName), tempDir);
-                        }
+                        } 
                         try {
-                            fi.write(file);
+                           fi.write(file);
+                           // deal with reload files that are not uploaded and so for which
+                           // the write leaves an empty file
+                           if (file.length() == 0){
+                        	   file = oldFile;
+                           }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -122,6 +134,8 @@ use, misuse, or functionality.
         		requestParameters.put(k,v);
         	}
         }
+        
+        //http://cp21e-789.broad.mit.edu:8080/gp/getInputFile.jsp?file=Axis62355.att_all_aml_train.res
         String lsid = (String) requestParameters.get("taskLSID");
         String taskName = (String) requestParameters.get("taskName");
         if (lsid == null) {
@@ -129,9 +143,12 @@ use, misuse, or functionality.
         }
         userID = (String) requestParameters.get(GPConstants.USERID);
         // set up the call to the analysis engine
-        String server = request.getScheme() + "://" + InetAddress.getLocalHost().getCanonicalHostName() + ":" +
-                System.getProperty("GENEPATTERN_PORT");
+        String server = request.getScheme() + "://" + InetAddress.getLocalHost().getCanonicalHostName() + ":" + System.getProperty("GENEPATTERN_PORT");
+   
         AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, userID);
+        
+        LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
+        
         TaskInfo task = GenePatternAnalysisTask.getTaskInfo(lsid, userID);
         if (task == null) {
             out.println("Unable to find task " + lsid);
@@ -190,8 +207,21 @@ use, misuse, or functionality.
 </html>
 <%
         return;
-    }
-    JobInfo job = analysisProxy.submitJob(task.getID(), parmInfos);
+    }   
+        
+        for (int i=0; i < parmInfos.length; i++){
+        	ParameterInfo pi = parmInfos[i];
+        	if (pi.isInputFile()){
+        		
+        		System.out.println("SUBMIT" + pi.getName() + "=" + pi.getValue());
+        		System.out.println("\texists  " + (new File(pi.getValue())));
+        		
+        	}
+        }
+        
+ //   JobInfo job = analysisProxy.submitJob(task.getID(), parmInfos);
+    JobInfo job = analysisClient.submitJob(task.getID(), parmInfos);
+    System.out.println("Job=" + job);
     String jobID = "" + job.getJobNumber();
 
 %>
@@ -277,6 +307,10 @@ use, misuse, or functionality.
                     if (isURL) {
                         out.println("<a href='" + htmlValue + "'>" + htmlValue + "</a>");
                     } else {
+                    	// replace full path with just the name
+                    	File f = new File(value);
+                    	value = f.getName();
+                    	htmlValue = StringUtils.htmlEncode(value.trim());
                         out.println("<a href='getFile.jsp?task=&file=" +
                                 URLEncoder.encode(tmpDirName + "/" + value, "UTF-8") + "'>" + htmlValue + "</a>");
                     }
@@ -309,8 +343,11 @@ use, misuse, or functionality.
         while (!(status.equalsIgnoreCase("ERROR") || (status
                 .equalsIgnoreCase("Finished")))) {
             Thread.sleep(500);
+            
             job = analysisProxy.checkStatus(job.getJobNumber());
-            status = job.getStatus();
+            if (job != null)
+	            status = job.getStatus();
+            
         }
 
         // after task completes jobInfo is the same as job

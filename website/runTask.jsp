@@ -324,7 +324,19 @@ No such task <%= taskName %><br>
         }
 	  if (reloadJob != null){
 		defaultValue = (String)reloadParamMap.get(pi.getName());
-
+		
+		// convert reloaded files to URLs
+	//	 File f = new File(defaultValue);
+	//	 boolean fileExists = f.exists();
+	//	if (fileExists){
+	//		defaultValue="file://" + StringUtils..htmlEncode(f.getCanonicalPath());
+	//		String urlBase = request.getRequestURL().toString();
+	//		String ending = request.getServletPath();
+	//		urlBase = urlBase.substring(0, urlBase.indexOf(ending));
+	//		defaultValue= urlBase +"/getInputFile.jsp?file="+StringUtils.htmlEncode(f.getName());	
+	//	}
+		
+		System.out.println("DV=" + defaultValue);
 	  }
         String description = pi.getDescription();
 	  String displayDesc =  (String)pia.get("altDescription");
@@ -362,11 +374,12 @@ No such task <%= taskName %><br>
 				String axisName = f.getName();
 				boolean fileExists = f.exists();
 				boolean isURL=false;
-								if (fileExists){
+				if (fileExists){
 					String urlBase = request.getRequestURL().toString();
 					String ending = request.getServletPath();
 					urlBase = urlBase.substring(0, urlBase.indexOf(ending));
 					urlStr= urlBase +"/getInputFile.jsp?file="+StringUtils.htmlEncode(axisName);
+					
 				} else {
 					try {// see if a URL was passed in
 						URL url = new URL(defaultValue);

@@ -13,9 +13,11 @@
 
 package org.genepattern.server.webservice.server.local;
 
+import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webservice.server.Analysis;
 
 import org.genepattern.webservice.*;
+import java.util.Map;
 
 /**
  *  local Analysis client
@@ -88,6 +90,28 @@ public class LocalAnalysisClient {
 		return childJobs;
 	}
 
+
+	 // XXX Where should files be located?
+    public JobInfo submitJob(int taskID, ParameterInfo[] parameters)
+            throws WebServiceException {
+    	
+    	return service.submitLocalJob(taskID, parameters);
+
+    }
+    
+    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files)
+    		throws WebServiceException {
+    	return service.submitJob(taskID, parameters, files);
+    }
+
+ 	public JobInfo checkStatus(int jobID) throws WebServiceException {
+ 		try {
+ 			return service.checkStatus(jobID);
+ 		} catch (Exception e){
+ 			e.printStackTrace();
+ 			throw new WebServiceException(e);
+ 		}
+ 		}
 
 
 }
