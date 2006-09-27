@@ -119,7 +119,9 @@ AnalysisDAO extends BaseDAO {
             
             AnalysisJobHome aHome = new AnalysisJobHome();
             org.genepattern.server.domain.AnalysisJob aJob = aHome.findById(jobNo);
-            aJob.setStatus(new JobStatus(JobStatus.JOB_FINISHED));
+            
+            JobStatus newStatus = (JobStatus) getSession().get(JobStatus.class, JobStatus.JOB_FINISHED);
+            aJob.setStatus(newStatus);
             aJob.setDeleted(true);
 
             return jobNo;
@@ -181,15 +183,16 @@ AnalysisDAO extends BaseDAO {
 
         AnalysisJob aJob = new AnalysisJob();
         aJob.setTaskId(taskID);
-        org.genepattern.server.domain.JobStatus js = new org.genepattern.server.domain.JobStatus();
-        js.setStatusId(JOB_WAITING_STATUS);
-        aJob.setJobStatus(js);
         aJob.setSubmittedDate(Calendar.getInstance().getTime());
         aJob.setParameterInfo(parameter_info);
         aJob.setUserId(user_id);
         aJob.setTaskName(taskName);
         aJob.setParent(parentJobNumber);
         aJob.setTaskLsid(lsid);
+        
+        JobStatus js = (new JobStatusHome()).findById(JobStatus.JOB_PENDING);
+        aJob.setJobStatus(js);
+
 
         return (Integer) getSession().save(aJob);
 
