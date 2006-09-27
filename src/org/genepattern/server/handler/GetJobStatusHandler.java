@@ -57,10 +57,10 @@ public class GetJobStatusHandler extends RequestHandler {
 			OmnigeneException {
 		JobInfo ji = null;
 		try {
-
-			//Get EJB reference
+            
+			
 			AnalysisDAO ds = new AnalysisDAO();
-			//Invoke EJB function
+			
 			ji = ds.getJobInfo(jobNo);
 			ParameterFormatConverter pfc = new ParameterFormatConverter();
 			ji.setParameterInfoArray(pfc.getParameterInfoArray(ji
