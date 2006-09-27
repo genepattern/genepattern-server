@@ -102,6 +102,10 @@ public class UIBeanHelper {
         return (String) getSession().getAttribute("userID");
     }
 
+    public static boolean isLoggedIn() {
+        return getUserId() != null;
+    }
+
     public static void logout() {
         UIBeanHelper.getSession().removeAttribute("userID");
         UIBeanHelper.getSession().invalidate();
@@ -120,8 +124,6 @@ public class UIBeanHelper {
         // }
 
         String referrer = UIBeanHelper.getReferrer(request);
-        referrer += (referrer.indexOf('?') > 0 ? "&" : "?");
-        referrer += username;
         UIBeanHelper.getResponse().sendRedirect(referrer);
     }
 
