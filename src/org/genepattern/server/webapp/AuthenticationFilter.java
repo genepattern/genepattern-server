@@ -59,13 +59,13 @@ public class AuthenticationFilter implements Filter {
         }
 
         if (isAuthenticated((HttpServletRequest) request)) {
-
+            /*  commented out -- not working (no index.xhtml page is checked in) JTR
             for (int i = 0, length = LOGIN_PAGES.length; i < length; i++) {
                 if (requestedURI.contains(LOGIN_PAGES[i])) {
                     ((HttpServletResponse) response).sendRedirect(req.getContextPath() + HOME_PAGE);
                     return;
                 }
-            }
+            } */
             chain.doFilter(request, response);
         }
         else {
