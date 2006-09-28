@@ -112,12 +112,14 @@ public class UIBeanHelper {
         if (cookies != null) {
             for (Cookie c : cookies) {
                 if ("userID".equals(c.getName())) {
-                    UIBeanHelper.getRequest().removeAttribute("userID");
                     c.setMaxAge(0);
+                    c.setPath(getRequest().getContextPath());
                     UIBeanHelper.getResponse().addCookie(c);
+                    break;
                 }
             }
         }
+        UIBeanHelper.getRequest().removeAttribute("userID");
         UIBeanHelper.getSession().invalidate();
     }
 
@@ -131,8 +133,9 @@ public class UIBeanHelper {
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    public static void setUserAndRedirect(String username, boolean sessionOnly) throws UnsupportedEncodingException, IOException {
-  
+    public static void setUserAndRedirect(String username, boolean sessionOnly) throws UnsupportedEncodingException,
+            IOException {
+
         Cookie cookie = new Cookie("userID", username);
         cookie.setPath(getRequest().getContextPath());
         if (!sessionOnly) {
