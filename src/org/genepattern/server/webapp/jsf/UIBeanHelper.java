@@ -132,7 +132,9 @@ public class UIBeanHelper {
      * @throws IOException
      */
     public static void setUserAndRedirect(String username, boolean sessionOnly) throws UnsupportedEncodingException, IOException {
+  
         Cookie cookie = new Cookie("userID", username);
+        cookie.setPath(getRequest().getContextPath());
         if (!sessionOnly) {
             cookie.setMaxAge(Integer.MAX_VALUE);
         }
