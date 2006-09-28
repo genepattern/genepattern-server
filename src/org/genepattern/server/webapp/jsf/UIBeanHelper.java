@@ -100,7 +100,7 @@ public class UIBeanHelper {
     }
 
     public static String getUserId() {
-        return (String) getSession().getAttribute("userID");
+        return (String) getRequest().getAttribute("userID");
     }
 
     public static boolean isLoggedIn() {
@@ -108,22 +108,36 @@ public class UIBeanHelper {
     }
 
     public static void logout() {
-        UIBeanHelper.getSession().removeAttribute("userID");
+        Cookie[] cookies = UIBeanHelper.getRequest().getCookies();
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if ("userID".equals(c.getName())) {
+                    UIBeanHelper.getRequest().removeAttribute("userID");
+                    c.setMaxAge(0);
+                    UIBeanHelper.getResponse().addCookie(c);
+                }
+            }
+        }
         UIBeanHelper.getSession().invalidate();
     }
 
-    public static void setUserAndRedirect(HttpServletRequest request, HttpServletResponse response, String username)
-            throws UnsupportedEncodingException, IOException {
-        UIBeanHelper.getSession().setAttribute("userID", username);
-        // if(rememberUsername) {
-        // String userID = "\"" + URLEncoder.encode(username.replaceAll("\"",
-        // "\\\""), "utf-8") + "\"";
-        // Cookie cookie = new Cookie(GPConstants.USERID, userID);
-        // cookie.setPath(UIBeanHelper.getRequest().getContextPath());
-        // cookie.setMaxAge(Integer.MAX_VALUE);
-        // UIBeanHelper.getResponse().addCookie(cookie);
-        // }
-
+    /**
+     * 
+     * @param request
+     * @param response
+     * @param username
+     * @param sessionOnly
+     *            whether the login cookie should be set for the session only
+     * @throws UnsupportedEncodingException
+     * @throws IOException
+     */
+    public static void setUserAndRedirect(HttpServletRequest request, HttpServletResponse response, String username,
+            boolean sessionOnly) throws UnsupportedEncodingException, IOException {
+        Cookie cookie = new Cookie("userID", username);
+        if (!sessionOnly) {
+            cookie.setMaxAge(Integer.MAX_VALUE);
+        }
+        UIBeanHelper.getResponse().addCookie(cookie);
         String referrer = UIBeanHelper.getReferrer(request);
         UIBeanHelper.getResponse().sendRedirect(referrer);
     }

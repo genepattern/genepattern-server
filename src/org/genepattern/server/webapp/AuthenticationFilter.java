@@ -14,7 +14,6 @@ package org.genepattern.server.webapp;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.URLEncoder;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -22,10 +21,9 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.genepattern.util.GPConstants;
 
 /**
  * Servlet filter that requires user to log in to access certain pages
@@ -60,9 +58,10 @@ public class AuthenticationFilter implements Filter {
             return;
         }
 
-        if (isAuthenticated(request)) {
+        if (isAuthenticated((HttpServletRequest) request)) {
+
             for (int i = 0, length = LOGIN_PAGES.length; i < length; i++) {
-                if (requestedURI.indexOf(LOGIN_PAGES[i]) >= 0) {
+                if (requestedURI.contains(LOGIN_PAGES[i])) {
                     ((HttpServletResponse) response).sendRedirect(req.getContextPath() + HOME_PAGE);
                     return;
                 }
@@ -72,7 +71,7 @@ public class AuthenticationFilter implements Filter {
         else {
             // escape valve for some pages that do not require authentication
             for (int i = 0, length = NO_AUTH_REQUIRED_PAGES.length; i < length; i++) {
-                if (requestedURI.indexOf(NO_AUTH_REQUIRED_PAGES[i]) >= 0) {
+                if (requestedURI.contains(NO_AUTH_REQUIRED_PAGES[i])) {
                     chain.doFilter(request, response);
                     return;
                 }
@@ -82,15 +81,21 @@ public class AuthenticationFilter implements Filter {
     }
 
     /**
-     * Authenticate the user by checking to see if the session attribute userID
-     * is set
+     * Authenticate the user by checking to see if the cookie userID is set
      */
-    protected boolean isAuthenticated(ServletRequest request) {
-        String userId = (String) ((HttpServletRequest) request).getSession().getAttribute("userID");
-        if (userId != null) {
-            request.setAttribute("userID", userId);
+    protected boolean isAuthenticated(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if ("userID".equals(c.getName())) {
+                    String userId = c.getValue();
+                    request.setAttribute("userID", userId);
+                    return true;
+                }
+            }
         }
-        return userId != null;
+
+        return false;
     }
 
     /**
