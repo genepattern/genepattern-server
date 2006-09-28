@@ -7,7 +7,7 @@
 		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.server.genepattern.LSIDManager,
 		 org.genepattern.webservice.TaskInfo"
-	session="false" contentType="text/html" language="Java" buffer="100kb" %>
+	session="true" contentType="text/html" language="Java" buffer="100kb" %>
 <%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
