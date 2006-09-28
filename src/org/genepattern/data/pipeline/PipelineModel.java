@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
@@ -555,8 +555,10 @@ public class PipelineModel implements Serializable {
 				hmParams.put(paramName, value);
 			}
 
-			taskInfo = GenePatternAnalysisTask.getTaskInfo(
-					(lsid.length() > 0 ? lsid : taskName), getUserID());
+			LocalAdminClient adminClient = new LocalAdminClient(getUserID());
+			taskInfo = adminClient.getTask((lsid.length() > 0 ? lsid : taskName));
+			//taskInfo = GenePatternAnalysisTask.getTaskInfo(
+			//		(lsid.length() > 0 ? lsid : taskName), getUserID());
 			if (taskInfo == null) {
 				throw new Exception("No such task: " + taskName);
 			}
@@ -589,8 +591,11 @@ public class PipelineModel implements Serializable {
 		ParameterInfo[] formalParameters = null;
 		if (taskInfo == null) {
 			try {
-				taskInfo = GenePatternAnalysisTask.getTaskInfo(
-						(lsid.length() > 0 ? lsid : taskName), getUserID());
+				//taskInfo = GenePatternAnalysisTask.getTaskInfo(
+				//		(lsid.length() > 0 ? lsid : taskName), getUserID());
+				LocalAdminClient adminClient = new LocalAdminClient(getUserID());
+				taskInfo = adminClient.getTask((lsid.length() > 0 ? lsid : taskName));
+				
 			} catch (Throwable t) {
 
 			} // old pipelines don't have hsqldb.jar on classpath

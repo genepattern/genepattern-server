@@ -17,7 +17,13 @@ import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webservice.server.Analysis;
 
 import org.genepattern.webservice.*;
+
+import java.rmi.RemoteException;
+import java.util.HashMap;
 import java.util.Map;
+
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 
 /**
  * local Analysis client
@@ -95,6 +101,55 @@ public class LocalAnalysisClient {
     }
 
     /**
+     * Submits an analysis job to be processed. The job is a child job of the
+     * supplied parent job.
+     * 
+     * @param taskID
+     *            the ID of the task to run.
+     * @param parmInfo
+     *            the parameters to process
+     * @param files
+     *            a HashMap of input files sent as attachments
+     * @param the
+     *            parent job number
+     * @return the job information for this process
+     * @exception is
+     *                thrown if problems are encountered
+     */
+// copied from AnalysisWebServicepProxy
+    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, int parentJobNumber)
+		throws WebServiceException {
+	try {
+		HashMap files = null;
+		// loop through parameters array looking for any parm of type FILE
+		for (int x = 0; x < parameters.length; x++) {
+			final ParameterInfo param = parameters[x];
+			if (parameters[x].isInputFile()) {
+				String filename = parameters[x].getValue();
+				DataHandler dataHandler = new DataHandler(
+						new FileDataSource(filename));
+				if (filename != null) {
+					if (files == null) {
+						files = new HashMap();
+					}
+					parameters[x].setValue(dataHandler.getName());// pass
+																  // only
+																  // name &
+																  // not
+																  // path
+					files.put(dataHandler.getName(), dataHandler);
+				}
+			}
+		}
+
+		return service.submitJob(taskID, parameters, files, parentJobNumber);
+	} catch (Exception re) {
+		throw new WebServiceException(re);
+	}
+}
+    
+    
+    /**
      * Check the status of the current job.  This method is called repeatedly
      * from the run task jsp until the job status changes to "finished".  
      * It is wrapped in its own transaction to (a) release database resources
@@ -123,5 +178,13 @@ public class LocalAnalysisClient {
             HibernateUtil.closeCurrentSession();
         }
     }
-
+    public JobInfo recordClientJob(int taskID, ParameterInfo[] params, int parentJobNumber) throws WebServiceException {
+         return service.recordClientJob(taskID, params, parentJobNumber); 	
+     }
+    
+    public void setJobStatus(int parentJobId, String status) throws WebServiceException {
+		
+         service.setJobStatus(parentJobId, status);
+		
+	}
 }
