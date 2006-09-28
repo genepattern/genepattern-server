@@ -88,7 +88,6 @@ public class StartupServlet extends HttpServlet {
         application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
         loadProperties(config);
 
-        // @todo -- make the hsql startup conditional on a property
         String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
             HsqlDbUtil.startDatabase();
@@ -200,9 +199,13 @@ public class StartupServlet extends HttpServlet {
 
     public void destroy() {
 
-        HsqlDbUtil.shutdownDatabase();
-
         log("StartupServlet: destroy called");
+
+        String dbVendor = System.getProperty("database.vendor", "HSQL");
+        if (dbVendor.equals("HSQL")) {
+            HsqlDbUtil.shutdownDatabase();
+        }
+
         for (Enumeration eThreads = vThreads.elements(); eThreads.hasMoreElements();) {
             Thread t = (Thread) eThreads.nextElement();
             try {
