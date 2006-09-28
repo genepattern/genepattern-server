@@ -25,6 +25,7 @@ import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -328,11 +329,27 @@ public class RunPipelineForJsp {
         return jobID;
     }
 
+    
+    protected static String  paramsAsString(ParameterInfo[] params, HashMap commandLineParams){
+    	
+    	for (ParameterInfo p : params){
+    		String k = (String)p.getName();
+    		String val = (String) commandLineParams.get(k);
+    		p.setValue(val);
+    	}
+    	
+    	return ParameterFormatConverter.getJaxbString(params);
+    }
+    
     public static Process runPipeline(TaskInfo taskInfo, String name, String baseURL, String decorator, String userID,
                                       HashMap commandLineParams) throws Exception {
         Map tia = taskInfo.getTaskInfoAttributes();
         String lsid = (String) tia.get(GPConstants.LSID);
-        JobInfo jobInfo = GenePatternAnalysisTask.createPipelineJob(userID, "", taskInfo.getName(), lsid);
+
+        String params = paramsAsString(taskInfo.getParameterInfoArray(), commandLineParams);
+        
+        JobInfo jobInfo = GenePatternAnalysisTask.createPipelineJob(userID, params, taskInfo.getName(), lsid);
+
         jobID = jobInfo.getJobNumber();
         String pipelineShortName = taskInfo.getName();
         if (pipelineShortName != null) {
