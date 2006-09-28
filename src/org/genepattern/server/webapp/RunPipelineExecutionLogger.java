@@ -130,7 +130,9 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 			logFile = new File(jobDir, model.getName() + "_execution_log.html");
 			try {
 				logWriter = new PrintWriter(new FileWriter(logFile));
-			} catch (IOException ioe) {}
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
+			}
 		}
 		init();
 
