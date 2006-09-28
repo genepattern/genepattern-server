@@ -131,14 +131,13 @@ public class UIBeanHelper {
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    public static void setUserAndRedirect(HttpServletRequest request, HttpServletResponse response, String username,
-            boolean sessionOnly) throws UnsupportedEncodingException, IOException {
+    public static void setUserAndRedirect(String username, boolean sessionOnly) throws UnsupportedEncodingException, IOException {
         Cookie cookie = new Cookie("userID", username);
         if (!sessionOnly) {
             cookie.setMaxAge(Integer.MAX_VALUE);
         }
         UIBeanHelper.getResponse().addCookie(cookie);
-        String referrer = UIBeanHelper.getReferrer(request);
+        String referrer = UIBeanHelper.getReferrer(getRequest());
         UIBeanHelper.getResponse().sendRedirect(referrer);
     }
 

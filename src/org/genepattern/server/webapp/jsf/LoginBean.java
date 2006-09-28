@@ -86,7 +86,7 @@ public class LoginBean {
                     newUser.setPassword(null);
 
                     (new UserHome()).merge(newUser);
-                    UIBeanHelper.setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
+                    UIBeanHelper.setUserAndRedirect(username, true);
 
                 }
             }
@@ -95,11 +95,11 @@ public class LoginBean {
                     invalidPassword = true;
                 }
                 else {
-                    UIBeanHelper.setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
+                    UIBeanHelper.setUserAndRedirect(username, true);
                 }
             }
             else {
-                UIBeanHelper.setUserAndRedirect(request, UIBeanHelper.getResponse(), username);
+                UIBeanHelper.setUserAndRedirect(username, false);
             }
         }
         catch (UnsupportedEncodingException e) {

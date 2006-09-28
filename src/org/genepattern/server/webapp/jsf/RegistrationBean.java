@@ -131,7 +131,7 @@ public class RegistrationBean {
             newUser.incrementLoginCount();
 
             (new UserHome()).merge(newUser);
-            UIBeanHelper.setUserAndRedirect(UIBeanHelper.getRequest(), UIBeanHelper.getResponse(), username);
+            UIBeanHelper.setUserAndRedirect(username, true);
 
         }
         catch (Exception e) {
