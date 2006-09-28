@@ -3,8 +3,8 @@
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
-    xmlns:t="http://myfaces.apache.org/tomahawk"
-    xmlns:b="http://broad.mit.edu/jsf">
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:b="http://broad.mit.edu/jsf">
 
 
 <ui:composition template="/templates/common.xhtml">
@@ -14,41 +14,50 @@
 	<ui:define name="body">
 
 		<h:form>
-		    <h2>Enter the following information to create an account.</h2>
-            <b/>
-			<h:panelGrid columns="3"> 
-			    
-			    <h:outputLabel value="Username:" for="username"></h:outputLabel>			
-				<h:inputText size="50" value="#{registrationBean.username}" id="username"
-					required="true" validator="#{registrationBean.validateNewUsername}" />
+			<h2>Enter the following information to create an account.</h2>
+			<b />
+			<h:panelGrid columns="3">
+
+				<h:outputLabel value="Username:" for="username"></h:outputLabel>
+				<h:inputText size="50" value="#{registrationBean.username}"
+					id="username" required="true"
+					validator="#{registrationBean.validateNewUsername}" />
 				<h:message style="color: red; font-weight: bold;" for="username" />
 
-				<h:outputLabel value="Password:" for="password"></h:outputLabel>	
-				 <h:inputSecret size="50" value="#{registrationBean.password}"
-					id="password" required="true" validator="#{registrationBean.validatePassword}"/>
-				 <h:message style="color: red; font-weight: bold;" for="password" />
-				 
-				 <h:outputLabel value="Re-enter password:" for="passwordConfirm"></h:outputLabel>
-				 <h:inputSecret size="50" value="#{registrationBean.passwordConfirm}"
-					 id="passwordConfirm" required="true" binding="#{registrationBean.passwordConfirmComponent}"/>
+				<h:outputLabel value="Password:" for="password"></h:outputLabel>
+				<h:inputSecret size="50" value="#{registrationBean.password}"
+					id="password" required="true"
+					validator="#{registrationBean.validatePassword}" />
+				<h:message style="color: red; font-weight: bold;" for="password" />
+
+				<h:outputLabel value="Re-enter password:" for="passwordConfirm"></h:outputLabel>
+				<h:inputSecret size="50" value="#{registrationBean.passwordConfirm}"
+					id="passwordConfirm" required="true"
+					binding="#{registrationBean.passwordConfirmComponent}" />
 				<h:outputText></h:outputText>
 
-				<h:outputLabel value="Email:" for="email"></h:outputLabel >	
-				<h:inputText size="50" value="#{registrationBean.email}"
-					id="email" required="true" validator="#{registrationBean.validateEmail}"/>
+				<h:outputLabel value="Email:" for="email"></h:outputLabel>
+				<h:inputText size="50" value="#{registrationBean.email}" id="email"
+					required="true" validator="#{registrationBean.validateEmail}">
+					<t:validateEmail />
+				</h:inputText>
 				<h:message style="color: red; font-weight: bold;" for="email" />
-				 
+
 				<h:outputLabel value="Re-enter email" for="emailConfirm"></h:outputLabel>
 				<h:inputText size="50" value="#{registrationBean.emailConfirm}"
-					 id="emailConfirm" required="true" binding="#{registrationBean.emailConfirmComponent}"/>
+					id="emailConfirm" required="true"
+					binding="#{registrationBean.emailConfirmComponent}">
+					<t:validateEmail />
+				</h:inputText>
 				<h:outputText></h:outputText>
 
 			</h:panelGrid>
-			
-			<h:commandButton value="Create account" class="little" actionListener="#{registrationBean.registerUser}" />
-				
 
-			
+			<h:commandButton value="Create account" class="little"
+				actionListener="#{registrationBean.registerUser}" />
+
+
+
 
 		</h:form>
 	</ui:define>
