@@ -110,7 +110,7 @@ public class HibernateUtil {
             session.beginTransaction();
 
             Query query = session
-                    .createQuery("from org.genepattern.server.webservice.server.dao.Sequence where name = :name");
+                    .createQuery("from org.genepattern.server.domain.Sequence where name = :name");
             query.setString("name", sequenceName);
             Sequence seq = (Sequence) query.uniqueResult();
             if (seq != null) {
