@@ -14,24 +14,23 @@ public class HibernateUtil {
 
     private static Logger log = Logger.getLogger(HibernateUtil.class);
 
-    private static  SessionFactory sessionFactory = null;;
+    private static SessionFactory sessionFactory = null;;
 
     public static synchronized SessionFactory getSessionFactory() {
-        if(sessionFactory == null) {
+        if (sessionFactory == null) {
             createSessionFactory();
         }
         return sessionFactory;
     }
 
-
     static void createSessionFactory() {
         try {
-             // Create the SessionFactory from hibernate.cfg.xml
+            // Create the SessionFactory from hibernate.cfg.xml
             Configuration config = new Configuration();
             // config.configure("oracle.cfg.xml");
             config.configure("hibernate.cfg.xml");
             sessionFactory = config.buildSessionFactory();
-         }
+        }
         catch (Throwable ex) {
             // Make sure you log the exception, as it might be swallowed
             System.err.println("Initial SessionFactory creation failed." + ex);
@@ -43,11 +42,50 @@ public class HibernateUtil {
 
         return getSessionFactory().getCurrentSession();
     }
-    
+
+    /**
+     * Close the current session, if open.
+     * 
+     */
     public static void closeCurrentSession() {
-        if(getSession().isOpen()) {
+        if (getSession().isOpen()) {
             getSession().close();
         }
+    }
+
+    /**
+     * If the current session has an open transaction commit it and close
+     * the current session, otherwise do nothing.
+     * 
+     */
+    public static void commitTransaction() {
+
+        if (getSession().getTransaction().isActive()) {
+            getSession().getTransaction().commit();
+            closeCurrentSession();
+        }
+    }
+
+    /**
+     * If the current session has an open transaction roll it back and close
+     * the current session, otherwise do nothing.
+     * 
+     */
+    public static void rollbackTransaction() {
+
+        if (getSession().getTransaction().isActive()) {
+            getSession().getTransaction().rollback();
+            closeCurrentSession();
+        }
+    }
+
+    /**
+     * Begin a new transaction.
+     * 
+     * @return
+     */
+    public static void beginTransaction() {
+        getSession().beginTransaction();
     }
 
     /**

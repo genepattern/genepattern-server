@@ -18,39 +18,29 @@ public class HibernateSessionRequestFilter implements Filter {
 
         try {
             log.debug("Starting a database transaction");
-            HibernateUtil.getSessionFactory().getCurrentSession().beginTransaction();
+            HibernateUtil.beginTransaction();
 
             // Call the next filter (continue request processing)
             chain.doFilter(request, response);
 
             // Commit and cleanup
             log.debug("Committing the database transaction");
-            if (HibernateUtil.getSession().getTransaction().isActive()) {
-                HibernateUtil.getSessionFactory().getCurrentSession().getTransaction().commit();
-            }
+            HibernateUtil.commitTransaction();
+            
 
         }
         catch (StaleObjectStateException staleEx) {
             log.error("This interceptor does not implement optimistic concurrency control!");
             log.error("Your application will not work until you add compensation actions!");
-            // Rollback, close everything, possibly compensate for any permanent
-            // changes
-            // during the conversation, and finally restart business
-            // conversation. Maybe
-            // give the user of the application a chance to merge some of his
-            // work with
-            // fresh data... what you do here depends on your applications
-            // design.
+            HibernateUtil.rollbackTransaction();              
+
             throw staleEx;
         }
         catch (Throwable ex) {
             // Rollback only
-            ex.printStackTrace();
+            log.error(ex);
             try {
-                if (HibernateUtil.getSessionFactory().getCurrentSession().getTransaction().isActive()) {
-                    log.debug("Trying to rollback database transaction after exception");
-                    HibernateUtil.getSessionFactory().getCurrentSession().getTransaction().rollback();
-                }
+                HibernateUtil.rollbackTransaction();              
             }
             catch (Throwable rbEx) {
                 log.error("Could not rollback transaction after exception!", rbEx);
