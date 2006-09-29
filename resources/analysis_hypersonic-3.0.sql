@@ -55,6 +55,10 @@ create table job_completion_event
 )
 
 
+/* Index status on analysis job */
+create index idx_analysis_job_status on analysis_job(status_id);
+
+
 
 INSERT INTO SEQUENCE_TABLE (ID, NAME, NEXT_VALUE) 
   VALUES(1, 'lsid_identifier_seq',  SELECT NEXT VALUE FOR LSID_IDENTIFIER_SEQ FROM DUAL);
