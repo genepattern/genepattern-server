@@ -617,7 +617,7 @@ public class RunPipeline {
             }
         }
         TaskInfo tinfo = svc.getTaskInfo();
-        final JobInfo job = analysisClient.submitJob(tinfo.getID(), parmInfos, jobId);
+        final JobInfo job = analysisClient.submitJobNoWakeup(tinfo.getID(), parmInfos, jobId);
         final AnalysisJob aJob = new AnalysisJob(svc.getServer(), job);
         return aJob;
     }
