@@ -58,6 +58,10 @@ Job Results </a> &#160;&#160;&#160;&#160;&#160;&#160; <a
 		</c:if>
 		<!-- end left hand nav bar -->
 
+		<c:if test="${!empty centerNav}">
+			<ui:insert name="centerNav" />
+		</c:if>
+		
 		<!-- right nav -->
 		<c:if test="${!empty rightNav}">
 			<td width="203" rowspan="2" valign="top" class="recentjobs"
@@ -97,7 +101,7 @@ Job Results </a> &#160;&#160;&#160;&#160;&#160;&#160; <a
 </table>
 </div>
 <!-- top of page login and search items -->
-<c:if test="${!empty sessionScope.userID}">
+<c:if test="${!empty requestScope.userID}">
 	<table height="30" border="0" cellpadding="0" cellspacing="0"
 		class="loginsettings">
 		<tr valign="top">
@@ -105,7 +109,7 @@ Job Results </a> &#160;&#160;&#160;&#160;&#160;&#160; <a
 				href="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">
 			My Settings </a> | <h:form style="display: inline;">
 				<h:commandLink id="logoutLink" action="#{loginBean.logout}"> Sign Out </h:commandLink>
-			</h:form> ${sessionScope.userID}&#160;&#160;&#160;</td>
+			</h:form> ${requestScope.userID}&#160;&#160;&#160;</td>
 			<td>
 			<form name="form1" method="post" action=""><input
 				name="textfield" type="text" size="15" /></form>
