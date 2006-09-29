@@ -117,7 +117,7 @@ public class LocalAnalysisClient {
      *                thrown if problems are encountered
      */
 // copied from AnalysisWebServicepProxy
-    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, int parentJobNumber)
+    public JobInfo _submitJob(int taskID, ParameterInfo[] parameters, int parentJobNumber)
 		throws WebServiceException {
 	try {
 		HashMap files = null;
@@ -147,7 +147,27 @@ public class LocalAnalysisClient {
 		throw new WebServiceException(re);
 	}
 }
-    
+    public JobInfo submitJobNoWakeup(int taskID, ParameterInfo[] parameters, int parentJobNumber)
+			throws WebServiceException {
+		
+		 try {
+             HibernateUtil.commitTransaction();
+             HibernateUtil.beginTransaction();
+
+             JobInfo j = service.submitLocalJobNoWakeup(taskID, parameters, parentJobNumber); 
+             
+             HibernateUtil.commitTransaction();
+             return j;
+         }
+         catch (Exception e) {
+             e.printStackTrace();
+             throw new WebServiceException(e);
+         }
+         finally {
+             HibernateUtil.closeCurrentSession();
+         }
+}
+
     
     /**
      * Check the status of the current job.  This method is called repeatedly
@@ -183,8 +203,22 @@ public class LocalAnalysisClient {
      }
     
     public void setJobStatus(int parentJobId, String status) throws WebServiceException {
-		
-         service.setJobStatus(parentJobId, status);
-		
+    	
+         try {
+             HibernateUtil.commitTransaction();
+             HibernateUtil.beginTransaction();
+
+             service.setJobStatus(parentJobId, status);
+             
+             HibernateUtil.commitTransaction();
+             
+         }
+         catch (Exception e) {
+             e.printStackTrace();
+             throw new WebServiceException(e);
+         }
+         finally {
+             HibernateUtil.closeCurrentSession();
+         }
 	}
 }

@@ -1,15 +1,3 @@
-/*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2006) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
-
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */
-
 package org.genepattern.server.handler;
 
 import org.genepattern.server.AnalysisTask;
@@ -20,31 +8,10 @@ import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 
-// import edu.mit.wi.omnigene.omnidas.*;
+public class AddNewJobHandlerNoWakeup extends AddNewJobHandler {
 
-/**
- * AddNewJobHandler to submit a job request and get back <CODE>JobInfo</CODE>
- * 
- * @author rajesh kuttan
- * @version 1.0
- */
-
-public class AddNewJobHandler extends RequestHandler {
-
-    protected int taskID = 1;
-
-    protected String parameter_info = "", inputFileName = "";
-
-    protected ParameterInfo[] parameterInfoArray = null;
-
-    protected String userID;
-
-    protected int parentJobID;
-
-    protected boolean hasParent = false;
-
-    /** Creates new GetAvailableTasksHandler */
-    public AddNewJobHandler() {
+	   /** Creates new GetAvailableTasksHandler */
+    public AddNewJobHandlerNoWakeup() {
         super();
     }
 
@@ -58,10 +25,9 @@ public class AddNewJobHandler extends RequestHandler {
      * @param inputFileName
      *            String
      */
-    public AddNewJobHandler(int taskID, String userID, ParameterInfo[] parameterInfoArray) {
-        this.taskID = taskID;
-        this.userID = userID;
-        this.parameterInfoArray = parameterInfoArray;
+    public AddNewJobHandlerNoWakeup(int taskID, String userID, ParameterInfo[] parameterInfoArray) {
+        super(taskID, userID, parameterInfoArray);
+        
     }
 
     /**
@@ -76,15 +42,12 @@ public class AddNewJobHandler extends RequestHandler {
      * @param parentJobID
      *            the parent job number
      */
-    public AddNewJobHandler(int taskID, String userID, ParameterInfo[] parameterInfoArray, int parentJobID) {
-        this.taskID = taskID;
-        this.userID = userID;
-        this.parameterInfoArray = parameterInfoArray;
-        this.parentJobID = parentJobID;
-        hasParent = true;
+    public AddNewJobHandlerNoWakeup(int taskID, String userID, ParameterInfo[] parameterInfoArray, int parentJobID) {
+       super(taskID, userID, parameterInfoArray, parentJobID);
+    	
     }
 
-    /**
+	   /**
      * Creates job. Call this fun. if you need JobInfo object
      * 
      * @throws TaskIDNotFoundException
@@ -110,8 +73,10 @@ public class AddNewJobHandler extends RequestHandler {
             if (ji == null) throw new OmnigeneException(
                     "AddNewJobRequest:executeRequest Operation failed, null value returned for JobInfo");
 
-           AnalysisTask.getInstance().wakeupJobQueue();
-           
+            // don't wake up the Queue.  This is what seperates this from its superclass
+            //AnalysisTask.getInstance().wakeupJobQueue();
+            //
+            
             // Reparse parameter_info before sending to client
             ji.setParameterInfoArray(pfc.getParameterInfoArray(parameter_info));
         }
@@ -127,4 +92,5 @@ public class AddNewJobHandler extends RequestHandler {
 
         return ji;
     }
+	
 }

@@ -31,6 +31,7 @@ import org.apache.axis.MessageContext;
 import org.apache.axis.attachments.AttachmentPart;
 import org.apache.log4j.Category;
 import org.genepattern.server.handler.AddNewJobHandler;
+import org.genepattern.server.handler.AddNewJobHandlerNoWakeup;
 import org.genepattern.server.handler.GetJobStatusHandler;
 import org.genepattern.server.webservice.GenericWebService;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -221,7 +222,7 @@ public class Analysis extends GenericWebService {
          throw new WebServiceException(t);
     }
     
-    public JobInfo submitLocalJob(int taskID, ParameterInfo[] parameters, int parentId) throws WebServiceException {
+    public JobInfo submitLocalJobNoWakeup(int taskID, ParameterInfo[] parameters, int parentId) throws WebServiceException {
         Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
         // sometimes empty
 
@@ -233,7 +234,7 @@ public class Analysis extends GenericWebService {
        // renameInputFiles(parameters, files);
 
         try {
-            AddNewJobHandler req = new AddNewJobHandler(taskID, username, parameters, parentId);
+            AddNewJobHandler req = new AddNewJobHandlerNoWakeup(taskID, username, parameters, parentId);
             jobInfo = req.executeRequest();
         } catch (Throwable t) {
           logAndThrow(t);
