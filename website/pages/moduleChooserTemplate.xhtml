@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jstl/core">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+	<tr>
+		<td colspan="7" class="sidebarhead-bkg">
+		<div class="sidebarhead">Tasks &amp; Pipelines<br />
+		<div class="viewchoice"><input name="viewchoice" type="radio"
+			value="category" checked="checked" /> category&#160;&#160; <input
+			name="viewchoice" type="radio" value="suite" /> suite&#160;&#160; <input
+			name="viewchoice" type="radio" value="all" /> all</div>
+		</div>
+		</td>
+	</tr>
+
+	<tr>
+		<td height="6" colspan="7"><img
+			src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
+			width="1" height="6" /></td>
+	</tr>
+
+	<tr class="task-categories">
+		<td>&nbsp;</td>
+		<td valign="top"><img
+			src="#{facesContext.externalContext.requestContextPath}/images/arrow-down.gif"
+			width="7" height="7" vspace="3" /></td>
+
+		<td>&nbsp;</td>
+		<td colspan="4"><a href="#">Clustering</a></td>
+	</tr>
+
+	<tr class="tasks_on">
+		<td>&nbsp;</td>
+		<td valign="top">&nbsp;</td>
+
+		<td>&nbsp;</td>
+		<td width="4" valign="middle"><img
+			src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif"
+			width="4" height="4" /></td>
+		<td width="4"><img
+			src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
+			width="4" height="1" /></td>
+		<td><a href="#">ConsensusClustering</a></td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+
+		<td valign="top">&nbsp;</td>
+		<td>&nbsp;</td>
+		<td valign="middle"><img
+			src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif"
+			width="4" height="4" /></td>
+		<td>&nbsp;</td>
+		<td><a href="#">HierarchicalClustering</a></td>
+		<td>&nbsp;</td>
+	</tr>
+
+</table>
+</html>
