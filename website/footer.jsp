@@ -29,7 +29,7 @@
 </div>
 <!-- top of page login and search items -->
 <%
-String userId = request.getParameter("userID");
+String userId = (String) request.getAttribute("userID");
 if(userId!=null) {
 %>
 
@@ -37,7 +37,7 @@ if(userId!=null) {
 		class="loginsettings">
 		<tr valign="top">
 			<td><a
-				href="/genepattern/pages/accountInfo.jsf">
+				href="<%=cp%>pages/accountInfo.jsf">
 			My Settings </a> | <h:form style="display: inline;">
 				<a href="logout.jsp"> Sign Out </a>
 			</h:form> <%=userId %>&#160;&#160;&#160;</td>
@@ -46,13 +46,13 @@ if(userId!=null) {
 				name="textfield" type="text" size="15" /></form>
 			</td>
 			<td width="10"><img
-				src="/genepattern/images/spacer.gif"
+				src="<%=cp%>images/spacer.gif"
 				width="10" height="1" /></td>
 			<td><a href="search"> <img
-				src="/genepattern/images/searchicon-1.gif"
+				src="<%=cp%>images/searchicon-1.gif"
 				name="Image1" height="14" hspace="0" vspace="4" border="0"
 				id="Image1"
-				onmouseover="MM_swapImage('Image1','','/genepattern/images/searchicon-1-over.gif',1)"
+				onmouseover="MM_swapImage('Image1','','<%=cp%>images/searchicon-1-over.gif',1)"
 				onmouseout="MM_swapImgRestore()" /> </a></td>
 		</tr>
 	</table>
