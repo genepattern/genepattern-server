@@ -1,11 +1,13 @@
-<%String cp = request.getContextPath(); %>
-<link href="<%=cp%>/css/style.css" rel="stylesheet" type="text/css" />
-<script language="JavaScript" src="<%=cp%>/js/menu.js"></script>
 
+<%
+String cp = request.getContextPath();
+%>
+<link href="<%=cp%>/css/style.css" rel="stylesheet" type="text/css" />
+
+<script language="JavaScript" src="<%=cp%>/js/menu.js"></script>
 <script language="JavaScript" src="<%=cp%>/js/mm_menu.js"></script>
-</head>
-<body
-	onload="MM_preloadImages('<%=cp%>/images/searchicon-1-over.gif','<%=cp%>/images/menuicon-over.gif')">
+<script language="JavaScript1.2">MM_preloadImages('<%=cp%>/images/searchicon-1-over.gif','<%=cp%>/images/menuicon-over.gif');</script>
+
 <script language="JavaScript1.2">mmLoadMenus();</script>
 <!-- top band with the logo -->
 <div id="topband" class="topband"><a href="index.html"
@@ -54,5 +56,5 @@ Job Results </a> &#160;&#160;&#160;&#160;&#160;&#160; <a
 	<!-- main content area.  -->
 	<tr>
 		<td valign="top" class="maincontent" id="maincontent">
-</body>
-</html>
+		</body>
+		</html>
