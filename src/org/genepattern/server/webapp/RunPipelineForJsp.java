@@ -13,6 +13,7 @@
 package org.genepattern.server.webapp;
 
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -331,11 +332,17 @@ public class RunPipelineForJsp {
 
     
     protected static String  paramsAsString(ParameterInfo[] params, HashMap commandLineParams){
+    	if (params == null) return "";
+    	if (params.length == 0) return "";
     	
     	for (ParameterInfo p : params){
     		String k = (String)p.getName();
-    		String val = (String) commandLineParams.get(k);
-    		p.setValue(val);
+    		Object val = commandLineParams.get(k);
+    		String value = val.toString();
+    		if (val instanceof DiskFileItem){
+    			value = ((DiskFileItem)val).getName();
+    		}
+    		p.setValue(value);
     	}
     	
     	return ParameterFormatConverter.getJaxbString(params);
