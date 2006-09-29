@@ -39,13 +39,13 @@ public class HsqlDbUtil {
     public static void shutdownDatabase() {
         
         try {
-            HibernateUtil.getSession().beginTransaction();
+            HibernateUtil.beginTransaction();
             log.info("Checkpointing database");
             AnalysisDAO dao = new AnalysisDAO();
             dao.executeUpdate("CHECKPOINT");
             log.info("Checkpointed.");
             dao.executeUpdate("SHUTDOWN");
-            HibernateUtil.getSession().getTransaction().commit();
+            HibernateUtil.commitTransaction();
         }
         catch (Throwable t) {
             t.printStackTrace();
