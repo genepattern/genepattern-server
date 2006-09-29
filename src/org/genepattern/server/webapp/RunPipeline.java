@@ -38,30 +38,16 @@ import javax.net.ssl.SSLSession;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.GPConstants;
-
-import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
+import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.AnalysisService;
-
+import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 import org.xml.sax.InputSource;
-
-/**
- * Note that RunPipeline may only be run on the server side in the context of a GenePattern installation
- * as it needs to connect natively to the DB (via LocalAnalysisClient and LocalAdminClient).  This is done 
- * to prevent the need to pass a users Password into this code in order to execute the pipeline
- * tasks as that user.
- * 
- *  If needed, we could easily make a remote version (using remote interfaces) but this does not seem
- *  to be necessary.
- * @author liefeld
- *
- */
 
 public class RunPipeline {
 
@@ -79,21 +65,16 @@ public class RunPipeline {
     /** job id for the pipeline */
     int jobId;
 
-   // AnalysisWebServiceProxy analysisProxy;
-    LocalAnalysisClient analysisClient;
-    
- //   AdminProxy adminProxy;
-    LocalAdminClient adminClient;
-    
+    AnalysisWebServiceProxy analysisProxy;
+
+    AdminProxy adminProxy;
+
     public RunPipeline(String server, String userID, int jobId,
             PipelineModel model, RunPipelineOutputDecoratorIF decorator)
             throws Exception {
 
-        //this.analysisProxy = new AnalysisWebServiceProxy(server, userID);
-        this.analysisClient = new LocalAnalysisClient(userID);
-         //  this.adminProxy = new AdminProxy(server, userID);
-        this.adminClient = new LocalAdminClient(userID);
-        
+        this.analysisProxy = new AnalysisWebServiceProxy(server, userID);
+        this.adminProxy = new AdminProxy(server, userID);
         this.server = server;
         System.setProperty("userID", userID);
         this.jobId = jobId;
@@ -229,7 +210,7 @@ public class RunPipeline {
                         .getInputStream()));
             } else {
                 reader = new BufferedReader(new FileReader(pipelineFileName));
-                //file.deleteOnExit();
+                file.deleteOnExit();
             }
             model = PipelineModel.toPipelineModel(new InputSource(reader),
                     false);
@@ -269,7 +250,7 @@ public class RunPipeline {
         boolean okayToRun = true;
         for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
             jobSubmission = (JobSubmission) eTasks.nextElement();
-            taskInfo = adminClient.getTask(jobSubmission.getLSID());
+            taskInfo = adminProxy.getTask(jobSubmission.getLSID());
             if (taskInfo == null) {
                 okayToRun = false;
                 System.err.println("No such task " + jobSubmission.getName()
@@ -334,7 +315,7 @@ public class RunPipeline {
      * Notify the server of the pipeline's status (Process, Finished, etc)
      */
     protected void setStatus(String status) throws Exception {
-        analysisClient.setJobStatus(jobId, status);
+        analysisProxy.setJobStatus(jobId, status);
     }
 
     protected JobInfo executeVisualizer(AnalysisService svc,
@@ -353,7 +334,8 @@ public class RunPipeline {
 
                 }
             }
-            analysisClient.recordClientJob(svc.getTaskInfo().getID(), params, jobId);
+            analysisProxy.recordClientJob(svc.getTaskInfo().getID(), params,
+                    jobId);
         } catch (WebServiceException e) {
             e.printStackTrace();
         }
@@ -371,7 +353,7 @@ public class RunPipeline {
         if (lsidOrTaskName == null || lsidOrTaskName.equals("")) {
             lsidOrTaskName = jobSubmission.getName();
         }
-        TaskInfo task = adminClient.getTask(lsidOrTaskName);
+        TaskInfo task = adminProxy.getTask(lsidOrTaskName);
 
         if (task == null) {
             System.err.println("Task " + lsidOrTaskName + " not found."); // write
@@ -617,7 +599,8 @@ public class RunPipeline {
             }
         }
         TaskInfo tinfo = svc.getTaskInfo();
-        final JobInfo job = analysisClient.submitJob(tinfo.getID(), parmInfos, jobId);
+        final JobInfo job = analysisProxy.submitJob(tinfo.getID(), parmInfos,
+                jobId);
         final AnalysisJob aJob = new AnalysisJob(svc.getServer(), job);
         return aJob;
     }
@@ -645,7 +628,7 @@ public class RunPipeline {
                 .equalsIgnoreCase("Finished")))) {
             count++;
             Thread.currentThread().sleep(sleep);
-            info = analysisClient.checkStatus(job.getJobInfo().getJobNumber());
+            info = analysisProxy.checkStatus(job.getJobInfo().getJobNumber());
             status = info.getStatus();
             // if (count > maxTries) break;
             sleep = incrementSleep(initialSleep, maxTries, count);
