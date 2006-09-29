@@ -197,10 +197,12 @@ public class AnalysisTask implements Runnable {
         }
     }
 
-    static {
-        instance = new AnalysisTask(GenePatternAnalysisTask.NUM_THREADS);
-        Thread runner = new Thread(instance);
-        runner.start();
+    public static void startQueue() {
+    	if (instance == null){
+    		instance = new AnalysisTask(GenePatternAnalysisTask.NUM_THREADS);
+    		Thread runner = new Thread(instance);
+    		runner.start();
+    	}
     }
 
 }

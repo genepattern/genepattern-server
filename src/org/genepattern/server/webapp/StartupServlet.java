@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServlet;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.genepattern.server.AnalysisManager;
+import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -98,7 +99,8 @@ public class StartupServlet extends HttpServlet {
         // This starts an analysis task thread through a chain of side effects.
         // Do not remove!
         AnalysisManager.getInstance();
-
+        AnalysisTask.startQueue();
+        
         startDaemons(System.getProperties(), application);
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         //
