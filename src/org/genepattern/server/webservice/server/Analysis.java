@@ -55,8 +55,17 @@ public class Analysis extends GenericWebService {
 
     private MessageContext context = null;
 
-    private static Category _cat = Category.getInstance(Analysis.class.getName());
+    private static Category _cat;
 
+    { 
+    	try {
+    		_cat = Category.getInstance(Analysis.class.getName());
+    	}catch (Exception e){
+    		System.err.println("Could not create Analysis log file");
+    	}
+    
+    }
+    
     /**
      * Default constructor. Constructs a <code>Analysis</code> web service
      * object.
@@ -199,12 +208,17 @@ public class Analysis extends GenericWebService {
             AddNewJobHandler req = new AddNewJobHandler(taskID, username, parameters);
             jobInfo = req.executeRequest();
         } catch (Throwable t) {
-            _cat.error(t.getMessage());
-            t.printStackTrace();
-            throw new WebServiceException(t);
+          logAndThrow(t);
         }
 
         return jobInfo;
+    }
+    
+    private static void logAndThrow(Throwable t) throws WebServiceException {
+    	
+    	 if (_cat != null) _cat.error(t.getMessage());
+         t.printStackTrace();
+         throw new WebServiceException(t);
     }
     
     public JobInfo submitLocalJob(int taskID, ParameterInfo[] parameters, int parentId) throws WebServiceException {
@@ -222,9 +236,7 @@ public class Analysis extends GenericWebService {
             AddNewJobHandler req = new AddNewJobHandler(taskID, username, parameters, parentId);
             jobInfo = req.executeRequest();
         } catch (Throwable t) {
-            _cat.error(t.getMessage());
-            t.printStackTrace();
-            throw new WebServiceException(t);
+          logAndThrow(t);
         }
 
         return jobInfo;
@@ -297,16 +309,8 @@ public class Analysis extends GenericWebService {
         try {
             AddNewJobHandler req = new AddNewJobHandler(taskID, username, parameters);
             jobInfo = req.executeRequest();
-        }
-        catch (org.genepattern.webservice.OmnigeneException oe) {
-            _cat.error(oe.getMessage());
-            oe.printStackTrace();
-            throw new WebServiceException(oe);
-        }
-        catch (Throwable t) {
-            _cat.error(t.getMessage());
-            t.printStackTrace();
-            throw new WebServiceException(t);
+        } catch (Throwable t) {
+          logAndThrow(t);
         }
 
         return jobInfo;
@@ -330,15 +334,8 @@ public class Analysis extends GenericWebService {
         try {
             GetJobStatusHandler req = new GetJobStatusHandler(jobID);
             jobInfo = req.executeRequest();
-        }
-        catch (org.genepattern.webservice.OmnigeneException oe) {
-            _cat.error(oe.getMessage());
-            throw new WebServiceException(oe);
-        }
-        catch (Throwable t) {
-            _cat.error(t.getMessage());
-            t.printStackTrace();
-            throw new WebServiceException(t);
+        } catch (Throwable t) {
+          logAndThrow(t);
         }
 
         return jobInfo;
@@ -363,14 +360,8 @@ public class Analysis extends GenericWebService {
         try {
             GetJobStatusHandler req = new GetJobStatusHandler(jobID);
             jobInfo = req.executeRequest();
-        }
-        catch (org.genepattern.webservice.OmnigeneException oe) {
-            _cat.error(oe.getMessage());
-            throw new WebServiceException(oe);
-        }
-        catch (Throwable t) {
-            _cat.error(t.getMessage());
-            throw new WebServiceException(t);
+        } catch (Throwable t) {
+          logAndThrow(t);
         }
 
         if (jobInfo != null) {
@@ -575,10 +566,8 @@ public class Analysis extends GenericWebService {
             }
             try {
                 org.genepattern.server.indexer.Indexer.deleteJobFile(fileCreationJobNumber, fileName);
-            }
-            catch (IOException ioe) {
-                // ignore Lucene Lock obtain timed out exceptions
-                _cat.debug(ioe + " while deleting search indices for job " + jobId);
+            } catch (Throwable t) {
+                logAndThrow(t);
             }
         }
         catch (org.genepattern.server.JobIDNotFoundException jnfe) {
