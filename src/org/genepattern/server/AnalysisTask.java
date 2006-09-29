@@ -84,7 +84,8 @@ public class AnalysisTask implements Runnable {
     /** Main AnalysisTask's thread method. */
     public void run() {
         log.debug("Starting AnalysisTask thread");
-
+        int waitTime = Integer.parseInt(System.getProperty("AnalysisTaskQueuePollingFrequency", "1000"));
+        
         while (true) {
 
             // Load input data to input queue
@@ -106,7 +107,7 @@ public class AnalysisTask implements Runnable {
 
                 if (jobQueue.isEmpty()) {
                     try {
-                        jobQueueWaitObject.wait();
+                        jobQueueWaitObject.wait(waitTime);
                     }
                     catch (InterruptedException ie) {
                     }
