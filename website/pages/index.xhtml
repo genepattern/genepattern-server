@@ -8,6 +8,10 @@
 
 <ui:composition template="/templates/common.xhtml">
 	<ui:define name="pageTitle">GenePattern</ui:define>
+	<ui:param name="leftNav" value="1" />
+	<ui:define name="leftNav">
+		<ui:include src="moduleChooserTemplate.xhtml" />
+	</ui:define>
 	<ui:define name="body">
 		<p><a
 			href="#{facesContext.externalContext.requestContextPath}/index.jsp">Go
