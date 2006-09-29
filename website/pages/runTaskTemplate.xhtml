@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jstl/core">
+
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0"
+	class="barhead-task">
+	<tr>
+		<td>#{runTaskBean.name} <span class="barhead-version">version
+		#{runTaskBean.version}</span></td>
+	</tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="3" class="attribute"
+	valign="top">
+	<tbody>
+		<tr>
+			<td colspan="3"><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="1"
+				height="4" /></td>
+		</tr>
+
+		<c:forEach items="#{runTaskBean.parameters}" var="p">
+			<tr>
+				<c:choose>
+					<c:when test="#{p.optional==false}">
+						<td valign="top" class="attribute-required"><nobr>#{p.displayName}*</nobr></td>
+					</c:when>
+					<c:otherwise>
+						<td valign="top"><nobr>#{p.displayName}</nobr></td>
+					</c:otherwise>
+				</c:choose>
+				
+				<c:choose>
+					<c:when test="#{p.inputType!='select'}">
+						<td valign="top"><input name="#{p.name}" type="#{p.inputType}" /></td>
+					</c:when>
+					<c:otherwise>
+						<td valign="top"><select name="#{p.name}"></select></td>
+					</c:otherwise>
+				</c:choose>		
+				<td valign="top" class="description">#{p.displayDescription}</td>
+			</tr>
+			<tr>
+				<td colspan="3"><img src="#{facesContext.externalContext.requestContextPath}/images/peramdivider-1.gif"
+					width="100%" height="1" vspace="4" /></td>
+			</tr>
+		</c:forEach>
+
+
+		<tr>
+			<td>&#160;</td>
+			<td>&#160;</td>
+			<td>&#160;</td>
+		</tr>
+		<tr>
+			<td>&#160;</td>
+			<td><input name="cmd" value="run" type="submit" /><input
+				name="reset" value="reset" onclick="resetValues()" type="button" /><input
+				value="help"
+				onclick="window.open('getTaskDoc.jsp?name=ConsensusClustering', '_new')"
+				type="button" /></td>
+			<td>&#160;</td>
+		</tr>
+	</tbody>
+</table>
+<p>&#160;</p>
+
+</html>

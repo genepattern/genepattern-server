@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk">
+
+
+<ui:composition template="/templates/common.xhtml">
+	<ui:define name="pageTitle">GenePattern</ui:define>
+	<ui:param name="centerNav" value="1" />
+	<ui:define name="centerNav">
+		<!-- task navigation items. these are the functions associated with each task or pipeline the user is working on. -->
+		<td valign="top" class="maintasknav" id="maintasknav"><a
+			href="link">view info</a>&#160;|&#160;<a href="link">export</a>&#160;|&#160;<a
+			href="link">clone</a>&#160;|&#160;<a href="link">documentation</a>&#160;|&#160;<a
+			href="link">help</a></td>
+	</ui:define>
+	<ui:define name="body">
+		<ui:include src="runTaskTemplate.xhtml" />
+	</ui:define>
+
+</ui:composition>
+</html>
