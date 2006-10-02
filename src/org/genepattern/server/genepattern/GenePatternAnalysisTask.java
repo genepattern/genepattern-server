@@ -255,7 +255,13 @@ public class GenePatternAnalysisTask implements IGPConstants {
      */
     public void onJob(Object o) {
         JobInfo jobInfo = (JobInfo) o;
-        JobInfo parentJobInfo = null;
+ 
+	  // pipelines run from the webapp show up as BaseDAO.UNPROCESSABLE_TASKID and are being
+	  // run by other means so bail out now
+
+	  if (jobInfo.getTaskID() == BaseDAO.UNPROCESSABLE_TASKID) return;
+
+       JobInfo parentJobInfo = null;
         int jobStatus = JobStatus.JOB_ERROR;
         String outDirName = getJobDir(Integer.toString(jobInfo.getJobNumber()));
         File taskLog = null;
