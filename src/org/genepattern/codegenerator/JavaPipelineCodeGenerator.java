@@ -49,16 +49,14 @@ import org.genepattern.webservice.TaskInfoAttributes;
  * @author Ted Liefeld
  * @created April 26, 2004
  */
-public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
-        implements TaskCodeGenerator {
+public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator implements TaskCodeGenerator {
     int numPrompts = 0;
 
     int numNonVisualizersSeen = 0;
 
     java.util.Map taskNum2ResultsArrayIndex = new java.util.HashMap();
 
-    public JavaPipelineCodeGenerator(PipelineModel model, String server,
-            List jobSubmissionTaskInfos) {
+    public JavaPipelineCodeGenerator(PipelineModel model, String server, List jobSubmissionTaskInfos) {
         super(model, server, jobSubmissionTaskInfos);
     }
 
@@ -67,8 +65,8 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
     }
 
     public String emitUserInstructions() {
-        return model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE
-                + " has been saved as a pipeline task on " + server + ".";
+        return model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE + " has been saved as a pipeline task on "
+                + server + ".";
     }
 
     /**
@@ -81,11 +79,52 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
      * @author Jim Lerner
      */
     public String emitProlog() throws GenePatternException {
-        StringBuffer prolog = new StringBuffer();
         Vector vProblems = new Vector();
+        int numNonVisualizerTasks = 0;
+
+        // check for input parameters that must be specified at runtime
+        ArrayList prompts = new ArrayList();
+        int taskNum = 0;
+        for (Enumeration eTasks = model.getTasks().elements(); eTasks.hasMoreElements(); taskNum++) {
+            JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
+            String taskName = jobSubmission.getName();
+            String tName = javaEncodeName(taskName);
+            ParameterInfo[] parameterInfo = jobSubmission.giveParameterInfoArray();
+            if (!jobSubmission.isVisualizer()) {
+                taskNum2ResultsArrayIndex.put(new Integer(taskNum), new Integer(numNonVisualizerTasks));
+                numNonVisualizerTasks++;
+            }
+            for (int i = 0; i < parameterInfo.length; i++) {
+                if (parameterInfo != null) {
+                    HashMap pia = parameterInfo[i].getAttributes();
+                    if (pia == null) {
+                        pia = new HashMap();
+                    }
+                    // check that all required parameters have been supplied
+                    if (pia.size() > 0
+                            && pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]) == null
+                            && !jobSubmission.getRuntimePrompt()[i] && parameterInfo[i].getValue().equals("")
+                            && pia.get(INHERIT_TASKNAME) == null
+                            && pia.get(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET]) == null) {
+                        vProblems.add("Missing required parameter " + parameterInfo[i].getName() + " for task "
+                                + taskName + taskNum + "\npi: " + parameterInfo[i]);
+                    }
+                    if (jobSubmission.getRuntimePrompt()[i]) {
+                        prompts.add("Enter " + parameterInfo[i].getName().replace('.', ' ') + " for task " + taskName
+                                + ": ");
+                    }
+                }
+            }
+        }
+
+        StringBuffer prolog = new StringBuffer();
         prolog.append("import org.genepattern.client.GPServer;\n");
         prolog.append("import org.genepattern.webservice.JobResult;\n");
         prolog.append("import org.genepattern.webservice.Parameter;\n");
+        if (prompts.size() > 0) {
+            prolog.append("import org.genepattern.client.Util;\n");
+        }
+
         prolog.append("/**\n");
         prolog.append(" * " + model.getName() + ".pipeline");
         if (model.getDescription().length() > 0) {
@@ -99,9 +138,8 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
         prolog.append("\n * generated: ");
         prolog.append(new Date().toString());
         prolog.append("\n * regenerate with: ");
-        prolog.append(getFullServerURL() + "getPipelineCode.jsp?"
-                + GPConstants.LANGUAGE + "=Java&" + GPConstants.NAME + "="
-                + model.getLsid());
+        prolog.append(getFullServerURL() + "getPipelineCode.jsp?" + GPConstants.LANGUAGE + "=Java&" + GPConstants.NAME
+                + "=" + model.getLsid());
         if (model.getAuthor() != null && !model.getAuthor().trim().equals("")) {
             prolog.append("\n * @author\t");
             prolog.append(model.getAuthor());
@@ -112,84 +150,30 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
 
         prolog.append("\n * To compile:");
         prolog.append("\n * <ul>");
-        prolog
-                .append("\n * <li>On Windows: javac -classpath GenePattern.jar;. "
-                        + javaEncodeName(model.getName()) + ".java");
-        prolog.append("\n * <li>On Unix: javac -classpath GenePattern.jar:. "
-                + javaEncodeName(model.getName()) + ".java");
+        prolog.append("\n * <li>On Windows: javac -classpath GenePattern.jar;. " + javaEncodeName(model.getName())
+                + ".java");
+        prolog.append("\n * <li>On Unix: javac -classpath GenePattern.jar:. " + javaEncodeName(model.getName())
+                + ".java");
         prolog.append("\n * </ul>");
 
         prolog.append("\n * To run:");
         prolog.append("\n * <ul>:");
-        prolog.append("\n * <li>On Windows: java -classpath GenePattern.jar;. "
-                + javaEncodeName(model.getName()));
-        prolog.append("\n * <li>On Unix: java -classpath GenePattern.jar:. "
-                + javaEncodeName(model.getName()));
+        prolog.append("\n * <li>On Windows: java -classpath GenePattern.jar;. " + javaEncodeName(model.getName()));
+        prolog.append("\n * <li>On Unix: java -classpath GenePattern.jar:. " + javaEncodeName(model.getName()));
         prolog.append("\n * </ul>");
 
         prolog.append("\n *");
         prolog.append("\n*/\n");
 
-        prolog.append("public class " + javaEncodeName(model.getName())
-                + " {\n");
-        prolog
-                .append("\tpublic static void main(String[] args) throws Exception {\n");
+        prolog.append("public class " + javaEncodeName(model.getName()) + " {\n");
+        prolog.append("\tpublic static void main(String[] args) throws Exception {\n");
 
-        int numNonVisualizerTasks = 0;
-
-        // check for input parameters that must be specified at runtime
-        ArrayList prompts = new ArrayList();
-        int taskNum = 0;
-        for (Enumeration eTasks = model.getTasks().elements(); eTasks
-                .hasMoreElements(); taskNum++) {
-            JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
-            String taskName = jobSubmission.getName();
-            String tName = javaEncodeName(taskName);
-            ParameterInfo[] parameterInfo = jobSubmission
-                    .giveParameterInfoArray();
-            if (!jobSubmission.isVisualizer()) {
-                taskNum2ResultsArrayIndex.put(new Integer(taskNum),
-                        new Integer(numNonVisualizerTasks));
-                numNonVisualizerTasks++;
-            }
-            for (int i = 0; i < parameterInfo.length; i++) {
-                if (parameterInfo != null) {
-                    HashMap pia = parameterInfo[i].getAttributes();
-                    if (pia == null) {
-                        pia = new HashMap();
-                    }
-                    // check that all required parameters have been supplied
-                    if (pia.size() > 0
-                            && pia
-                                    .get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]) == null
-                            && !jobSubmission.getRuntimePrompt()[i]
-                            && parameterInfo[i].getValue().equals("")
-                            && pia.get(INHERIT_TASKNAME) == null
-                            && pia
-                                    .get(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET]) == null) {
-                        vProblems.add("Missing required parameter "
-                                + parameterInfo[i].getName() + " for task "
-                                + taskName + taskNum + "\npi: "
-                                + parameterInfo[i]);
-                    }
-                    if (jobSubmission.getRuntimePrompt()[i]) {
-                        prompts.add("Enter "
-                                + parameterInfo[i].getName().replace('.', ' ')
-                                + " for task " + taskName + ": ");
-                    }
-                }
-            }
-        }
-
-        prolog.append("\t\tGPServer gpServer = new GPServer(\"" + server
-                + "\", \"" + model.getUserID() + "\");\n");
+        prolog.append("\t\tGPServer gpServer = new GPServer(\"" + server + "\", \"" + model.getUserID() + "\");\n");
 
         if (prompts.size() > 0) {
-            prolog.append("\t\tString[] prompts = new String[" + prompts.size()
-                    + "];\n");
+            prolog.append("\t\tString[] prompts = new String[" + prompts.size() + "];\n");
             for (int i = 0, size = prompts.size(); i < size; i++) {
-                prolog.append("\t\tprompts[" + i + "] = Util.prompt(\""
-                        + prompts.get(i) + "\");\n");
+                prolog.append("\t\tprompts[" + i + "] = Util.prompt(\"" + prompts.get(i) + "\");\n");
             }
         }
 
@@ -197,8 +181,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
             throw new GenePatternException("Cannot create pipeline", vProblems);
         }
         if (numNonVisualizerTasks > 0) {
-            prolog.append("\t\tJobResult[] results = new JobResult["
-                    + numNonVisualizerTasks + "];\n");
+            prolog.append("\t\tJobResult[] results = new JobResult[" + numNonVisualizerTasks + "];\n");
         }
         return prolog.toString();
     }
@@ -214,7 +197,8 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
         invocation.append("gpServer.");
         if (visualizer) {
             invocation.append("runVisualizer(new Parameter[]{");
-        } else {
+        }
+        else {
             invocation.append("runAnalysis(new Parameter[]{");
         }
         invocation.append("\"" + lsid + "\", ");
@@ -250,8 +234,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
      *                Description of the Exception
      * @author Jim Lerner
      */
-    public String emitTask(JobSubmission jobSubmission, TaskInfo taskInfo,
-            ParameterInfo[] actualParams, int taskNum)
+    public String emitTask(JobSubmission jobSubmission, TaskInfo taskInfo, ParameterInfo[] actualParams, int taskNum)
             throws GenePatternException {
 
         StringBuffer out = new StringBuffer();
@@ -261,17 +244,15 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
         invocation.append("gpServer.");
 
         if (jobSubmission.isVisualizer()) {
-            invocation.append("runVisualizer(\"" + jobSubmission.getLSID()
-                    + "\", new Parameter[]{");
-        } else {
-            invocation.append("runAnalysis(\"" + jobSubmission.getLSID()
-                    + "\", new Parameter[]{");
+            invocation.append("runVisualizer(\"" + jobSubmission.getLSID() + "\", new Parameter[]{");
+        }
+        else {
+            invocation.append("runAnalysis(\"" + jobSubmission.getLSID() + "\", new Parameter[]{");
         }
         HashMap paramName2ActaulParam = new HashMap();
         if (actualParams != null) {
             for (int i = 0, length = actualParams.length; i < length; i++) {
-                paramName2ActaulParam.put(actualParams[i].getName(),
-                        actualParams[i]);
+                paramName2ActaulParam.put(actualParams[i].getName(), actualParams[i]);
             }
         }
         // ParameterInfo[] formalParams = taskInfo.getParameterInfoArray(); //
@@ -280,8 +261,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
         if (formalParams != null) {
             for (int i = 0; i < formalParams.length; i++) {
                 ParameterInfo formal = formalParams[i];
-                ParameterInfo actual = (ParameterInfo) paramName2ActaulParam
-                        .get(formal.getName());
+                ParameterInfo actual = (ParameterInfo) paramName2ActaulParam.get(formal.getName());
 
                 HashMap actualAttributes = null;
                 if (actual != null) {
@@ -296,38 +276,40 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
                 }
 
                 if (jobSubmission.getRuntimePrompt()[i]) {
-                    invocation.append("new Parameter(\"" + formal.getName()
-                            + "\", prompts[" + numPrompts + "])");
+                    invocation.append("new Parameter(\"" + formal.getName() + "\", prompts[" + numPrompts + "])");
                     numPrompts++;
-                } else if (actualAttributes.get(INHERIT_FILENAME) != null) {
-                    int inheritedTaskNum = Integer
-                            .parseInt((String) actualAttributes
-                                    .get(INHERIT_TASKNAME));// task number of
+                }
+                else if (actualAttributes.get(INHERIT_FILENAME) != null) {
+                    int inheritedTaskNum = Integer.parseInt((String) actualAttributes.get(INHERIT_TASKNAME));// task
+                    // number
+                    // of
                     // task to get
                     // output from
                     actualAttributes.remove("TYPE");
-                    actualAttributes.put(ParameterInfo.MODE,
-                            ParameterInfo.URL_INPUT_MODE);
-                    invocation.append("new Parameter(\"" + formal.getName()
-                            + "\", ");
-                    String fname = (String) actualAttributes
-                            .get(INHERIT_FILENAME);// can either by a number of
+                    actualAttributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
+                    invocation.append("new Parameter(\"" + formal.getName() + "\", ");
+                    String fname = (String) actualAttributes.get(INHERIT_FILENAME);// can
+                    // either
+                    // by a
+                    // number
+                    // of
                     // stdout, stderr
-                    int resultsIndex = ((Integer) (taskNum2ResultsArrayIndex
-                            .get(new Integer(inheritedTaskNum)))).intValue();
+                    int resultsIndex = ((Integer) (taskNum2ResultsArrayIndex.get(new Integer(inheritedTaskNum))))
+                            .intValue();
                     try {
                         fname = String.valueOf(Integer.parseInt(fname) - 1);// 0th
                         // index
                         // is
                         // 1st
                         // output
-                    } catch (NumberFormatException nfe) {
+                    }
+                    catch (NumberFormatException nfe) {
                         fname = "\"" + fname + "\"";
                     }
-                    invocation.append("results[" + resultsIndex + "].getURL("
-                            + fname);
+                    invocation.append("results[" + resultsIndex + "].getURL(" + fname);
                     invocation.append(").toString())");
-                } else {
+                }
+                else {
                     appendParameter(actual, invocation);
                 }
 
@@ -337,18 +319,17 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
 
         invocation.append("}); // " + jobSubmission.getName());
         if (!jobSubmission.isVisualizer()) {
-            out.append("\n\t\tresults[" + numNonVisualizersSeen + "] = "
-                    + invocation.toString() + "\n");
+            out.append("\n\t\tresults[" + numNonVisualizersSeen + "] = " + invocation.toString() + "\n");
             numNonVisualizersSeen++;
-        } else {
+        }
+        else {
             out.append("\n\t\t" + invocation.toString() + "\n");
         }
 
         return out.toString();
     }
 
-    public String emitTaskFunction(JobSubmission jobSubmission,
-            TaskInfo taskInfo, ParameterInfo[] parameterInfo)
+    public String emitTaskFunction(JobSubmission jobSubmission, TaskInfo taskInfo, ParameterInfo[] parameterInfo)
             throws GenePatternException {
         return "";// wrappers are generated in an additional file
     }
@@ -384,8 +365,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
         }
         if (val == null) {
             if (pia != null) {
-                val = (String) actualAttributes
-                        .get((String) GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
+                val = (String) actualAttributes.get((String) GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
             }
             if (val == null) {
                 val = "";
@@ -406,8 +386,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
         String getFile = "getFile.jsp?";
         int index = -1;
         if ((index = val.indexOf(getFile)) > 0) {
-            String query = val
-                    .substring(index + getFile.length(), val.length());
+            String query = val.substring(index + getFile.length(), val.length());
             String[] queries = query.split("&");
             String task = null;
             String file = null;
@@ -423,21 +402,21 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator
                             task = model.getLsid();
                         }
                     }
-                } catch (UnsupportedEncodingException uee) {
+                }
+                catch (UnsupportedEncodingException uee) {
                     // ignore
                 }
             }
             if (task != null && file != null) {
-                invocation.append("new Parameter(\"" + actual.getName()
-                        + "\", gpServer.getTaskFileURL(\"" + task + "\", \""
-                        + file + "\").toString())");
-            } else {
-                invocation.append("new Parameter(\"" + actual.getName()
-                        + "\", \"" + val + "\")");
+                invocation.append("new Parameter(\"" + actual.getName() + "\", gpServer.getTaskFileURL(\"" + task
+                        + "\", \"" + file + "\").toString())");
             }
-        } else {
-            invocation.append("new Parameter(\"" + actual.getName() + "\", \""
-                    + val + "\")");
+            else {
+                invocation.append("new Parameter(\"" + actual.getName() + "\", \"" + val + "\")");
+            }
+        }
+        else {
+            invocation.append("new Parameter(\"" + actual.getName() + "\", \"" + val + "\")");
         }
     }
 
