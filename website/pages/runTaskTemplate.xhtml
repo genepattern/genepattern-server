@@ -5,37 +5,43 @@
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk"
 	xmlns:c="http://java.sun.com/jstl/core">
-
+<script type="text/javascript"
+		src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"></script>	
+ 
 <script type="text/javascript" language="javascript">
 <h:outputText>
-	var requiredParams = new Array();
+	var requiredIds = new Array();
+	var requiredNames = new Array();
 </h:outputText>
 <c:forEach items="#{runTaskBean.parameters}" var="p" varStatus="s">
 	<c:if test="#{p.optional==false}">
-    	requiredParams[#{s.index}] = '#{p.name}';
+	requiredIds['#{s.index}'] = '#{p.name}';
+    requiredNames['#{s.index}'] = '#{p.displayName}';
 	</c:if>
  </c:forEach>
      	
 /* <![CDATA[ */
 function validateForm() {
-        var error = true;
+        var error = false;
         var missingParams = "<br/>";
-        for (param in requiredParams) {
-            var formElementName = requiredParams[param];                
-            var e = $(formElementName);
+        for(var i = 0; i < requiredIds.length; i++) {
+            var elementId = requiredIds[i];   
+            var displayName = requiredNames[i];          
+            var e = $(elementId);
             var type = e.type;
+            
             if (type == "file" || type == "text" || type == "textarea") {
                 var value = e.value;
                 if (value == null || value == "") {
-                    error = true;
-                    var name = e.name;
-                    name = name.replace(".", " ");
-                    missingParams += "<br/>" + "<b>" + name + "</b>";
+                   error = true;
+                   missingParams += "<br/>" + "<b>" + displayName + "</b>";
                 }
             }
         }
-        d = $("errorMessageDiv");
-        t = $("errorMessage");
+       
+        var d = $("errorMessageDiv");
+        var t = $("errorMessage");
+        
         if (error) {
             d.style.display = "inline";
             t.innerHTML =
@@ -44,6 +50,7 @@ function validateForm() {
         } else {
             d.style.display = "hidden";
         }
+        
         return !error;
     }
  /* ]]> */
