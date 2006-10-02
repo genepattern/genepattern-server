@@ -1338,7 +1338,7 @@ nextTask:
 		try {
 			PipelineModel model = new PipelineModel();
 			model.setUserID(userID);
-			HTMLPipelineView viewer = new HTMLPipelineView(out, request.getScheme()+"://" + request.getServerName() + ":" + request.getServerPort() +request.getContextPath()+"/makePipeline.jsp", request.getHeader("User-Agent"), request.getParameter("name"));
+			HTMLPipelineView viewer = new HTMLPipelineView(out, request.getScheme(), request.getServerName(), ""+request.getServerPort(), request.getContextPath(), request.getHeader("User-Agent"), request.getParameter("name"));
 			PipelineController controller = new PipelineController(viewer, model);
 			
 			controller.init();

@@ -66,29 +66,31 @@ public class HTMLPipelineView implements IPipelineView {
 	String userAgent = null;
 
 	String pipelineName = null;
-
+	String contextPath = null;
 	String userID = null;
 
 	Map tmTasksByLSID = null;
 
-	public HTMLPipelineView(Writer writer, String submitURL, String userAgent,
+	
+	public HTMLPipelineView(Writer writer, String scheme, String serverName, String serverPort, String contextPath, String userAgent,
 			String pipelineName) throws Exception {
 
+		this.submitURL = scheme+"://" + serverName + ":" + serverPort + contextPath +"/makePipeline.jsp";
 		this.writer = writer;
-		this.submitURL = submitURL;
 		this.userAgent = userAgent;
 		if (LSID.isLSID(pipelineName)) pipelineName = new LSID(pipelineName).toString();
 		this.pipelineName = pipelineName;
-
+		this.contextPath = contextPath;
+		
 		if (userAgent.indexOf("Mozilla/4") > -1
 				&& userAgent.indexOf("MSIE") == -1) {
 			System.err.println("userAgent=" + userAgent);
 			throw new Exception(
 					"Cannot design pipelines using Netscape Navigator 4.x.  Try Netscape Navigator version 7 or Internet Explorer instead.");
 		}
-
 	}
-
+	
+	
 	public void init(Collection tmCatalog, String userID) {
 		this.userID = userID;
 		this.tmCatalog = tmCatalog;
@@ -332,13 +334,28 @@ public class HTMLPipelineView implements IPipelineView {
 		writer.write("</head>\n");
 		writer.write("<body>\n");
 
-		// simulate <jsp:include page="navbar.jsp">
-		
-		
-		String navbarURL = submitURL + "/../navbar.jsp?"+ GenePatternAnalysisTask.USERID + "=" + userID;
-		
-		//writer.write("<div><iframe src=\""+ navbarURL +"\"/> </div>");
-		
+		// simulate <jsp:include page="navbar.jsp">	
+		// this will fail for 
+		try {
+			String rootDir = System.getProperty("webappDir", "./webapps/"+contextPath);
+			File f = new File(rootDir+"/navBar.html");
+			System.out.println("F=" + f.getCanonicalPath() + "  " + f.exists());
+		InputStream is = new FileInputStream(f);
+		if (is == null) {
+			System.err.println("null connection to navbar.jsp");
+		} else {
+			byte[] buf = new byte[2000];
+			int numRead;
+			while ((numRead = is.read(buf)) != -1) {
+				String s = new String(buf, 0, numRead);
+				writer.write(s);
+				System.out.println("S=" + s);
+			}
+		}
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+				
 		
 		writer.write("<form name=\"pipeline\" action=\""
 						+ submitURL
