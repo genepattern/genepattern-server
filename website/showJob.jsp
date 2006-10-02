@@ -19,12 +19,12 @@
 		 java.util.*,
  		 java.text.*,
  		 java.net.URLEncoder,
-		org.genepattern.webservice.JobInfo,
+		 org.genepattern.webservice.JobInfo,
 		 org.genepattern.webservice.JobStatus,
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.webservice.WebServiceException,
-       	org.genepattern.server.webservice.server.local.*,
-		org.genepattern.server.genepattern.GenePatternAnalysisTask,
+       	 org.genepattern.server.webservice.server.local.*,
+		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient , 
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
@@ -32,6 +32,7 @@
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.util.LSID,
+		 java.net.*, 
 		 org.genepattern.util.StringUtils,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.webservice.OmnigeneException, 
@@ -53,6 +54,7 @@ ParameterInfo[] formalParamInfos = new ParameterInfo[0];
 try {
       job = analysisClient.getJob((new Integer(jobId)).intValue());
 
+System.out.println("\n\nJob=" + job);
 	TaskInfo task = GenePatternAnalysisTask.getTaskInfo(job.getTaskLSID(), userID);
 	formalParamInfos = task.getParameterInfoArray();
 	
@@ -78,6 +80,8 @@ midnight.set(Calendar.HOUR_OF_DAY, 0);
 midnight.set(Calendar.MINUTE, 0);
 midnight.set(Calendar.SECOND, 0);
 midnight.set(Calendar.MILLISECOND, 0);
+String serverURL = "http://"+ InetAddress.getLocalHost().getCanonicalHostName() + ":"+ System.getProperty("GENEPATTERN_PORT") +"/"+ request.getContextPath();
+
 
 
 boolean hasLog = false;
@@ -91,7 +95,8 @@ HashMap formalParamMap = new HashMap();
 			
    out.print("<tr>");
    ParameterInfo[] params = job.getParameterInfoArray();
-
+   JobInfo[] children = analysisClient.getChildren(job.getJobNumber());
+			
   
    Date completed = job.getDateCompleted();
    DateFormat formatter =  completed.after(midnight.getTime()) ? shortDateFormat : dateFormat;
@@ -112,7 +117,6 @@ if (formalParamInfos!=null){
 	for(int j = 0; j < params.length; j++) {
          ParameterInfo parameterInfo = params[j];
  	   ParameterInfo formalParam = (ParameterInfo)formalParamMap.get(parameterInfo.getName());
-	  
          if(parameterInfo.isOutputFile()) {
 
          String value = parameterInfo.getUIValue(formalParam);
@@ -124,21 +128,39 @@ if (formalParamInfos!=null){
            String fileName = value.substring(index + 1, value.length());
                  
 	     if (!GPConstants.TASKLOG.equals(fileName)){ 
-           		out.println("<tr><td align=right >"+outFileCount++ +".</td><td valign='top' colspan=\"3\">");
-           		out.println("<a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\" target=\"_blank\">" + fileName + "</a>");
+           		out.println("<tr><td valign='top' colspan=\"3\">");
+           		out.println("<a href=\"retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8") + "\" target=\"_blank\">" + fileName + "</a></td></tr>");
    	    
 		}
            }
       }
    }
 
+// JTL 10/2/06 add files from the pipelines children
+	if(children.length > 0) {
+		//boolean isPipeline = true;
+		int childNum = 0;
+		for(int k = 0; k < children.length; k++) {
+			List paramsList = getOutputParameters(children[k]);
+			if(paramsList.size() > 0) {
+				out.println("<tr align='left' id=" + childNum + "><td colspan=\"2\">");
+				childNum++;
+				out.println((k+1) + ". " + children[k].getTaskName());
+out.println("</td></tr>");
+				writeParameters(paramsList,  "&nbsp;&nbsp;&nbsp;&nbsp;", serverURL, out);
+			}
+		
+		}
+	}		
+		
+
    if(params!=null && params.length > 0) {  
 
 	out.println("<tr><td colspan=2><P><B>Input Parameters</b></td></tr>");  
       for(int j = 0; j < params.length; j++) {
-  	 
-         ParameterInfo parameterInfo = params[j];
-   ParameterInfo formalParam = (ParameterInfo)formalParamMap.get(parameterInfo.getName());
+  	 	
+         	ParameterInfo parameterInfo = params[j];
+   		ParameterInfo formalParam = (ParameterInfo)formalParamMap.get(parameterInfo.getName());
 	
 
 	  	if (!parameterInfo.isOutputFile()){	
@@ -148,12 +170,16 @@ if (formalParamInfos!=null){
 			if (parameterInfo.isInputFile()) {
 				File f = new File(parameterInfo.getValue());
 				String axisName = f.getName();
+
+System.out.println("\tPI=" + parameterInfo.getName()+" "+f.getCanonicalPath());
+
 				boolean fileExists = f.exists();
 				boolean isURL=false;
 				if (fileExists){
 					out.println("<a href=\"getInputFile.jsp?file="+StringUtils.htmlEncode(axisName)+  "\" target=\"_blank\" > ");
 				} else {
 					try {// see if a URL was passed in
+System.out.println("\tPI=" + parameterInfo.getName()+" "+parameterInfo.getValue());
 						URL url = new URL(parameterInfo.getValue());
 						out.println("<a href=\""+ parameterInfo.getValue()+"\" > ");				
 						isURL = true;
@@ -211,3 +237,44 @@ iHeight = 10+item.offsetHeight - iHeight;
 window.resizeBy(iWidth, iHeight);
 </script> 
 </body>
+<%! 
+
+public void writeParameters(List params, String prefix, String serverURL, JspWriter out) throws 	java.io.IOException {
+		
+for(int i = 0; i < params.size(); i++) {
+	ParameterInfo parameterInfo = (ParameterInfo) params.get(i);
+	String value = parameterInfo.getValue();
+ 	int index = value.lastIndexOf(File.separator);
+	String altSeperator = "/";
+
+	if (index == -1) index = value.lastIndexOf(altSeperator);
+
+    	String jobNumber = value.substring(0, index);
+      String fileName = value.substring(index + 1, value.length());
+    	      
+      out.println("<tr><td colspan=\"3\">");
+
+	String fileURL = "retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8");
+      out.println(prefix + "<a href=\""+ fileURL+"\">" + fileName + "</a>");
+ 
+	out.println("</td></tr>");
+
+	}	
+}
+	
+	public List getOutputParameters(JobInfo job)  {
+		ParameterInfo[] params = job.getParameterInfoArray();
+		List paramsList = new ArrayList();
+		if(params!=null && params.length > 0) {
+  
+			for(int j = 0; j < params.length; j++) {
+				ParameterInfo parameterInfo = params[j];
+
+				if(parameterInfo.isOutputFile()) {
+					paramsList.add(parameterInfo);
+				}
+			}
+		}
+		return paramsList;
+	}
+%>
