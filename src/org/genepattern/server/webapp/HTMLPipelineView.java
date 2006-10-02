@@ -14,6 +14,7 @@
 package org.genepattern.server.webapp;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
@@ -332,22 +333,14 @@ public class HTMLPipelineView implements IPipelineView {
 		writer.write("<body>\n");
 
 		// simulate <jsp:include page="navbar.jsp">
-		String navbarURL = submitURL + "/../navbar.jsp?"
-				+ GenePatternAnalysisTask.USERID + "=" + userID;
-		URL url = new URL(navbarURL);
-		InputStream is = url.openStream();
-		if (is == null) {
-			System.err.println("null connection to navbar.jsp");
-		} else {
-			byte[] buf = new byte[2000];
-			int numRead;
-			while ((numRead = is.read(buf)) != -1) {
-				writer.write(new String(buf, 0, numRead));
-			}
-		}
-
-		writer
-				.write("<form name=\"pipeline\" action=\""
+		
+		
+		String navbarURL = submitURL + "/../navbar.jsp?"+ GenePatternAnalysisTask.USERID + "=" + userID;
+		
+		//writer.write("<div><iframe src=\""+ navbarURL +"\"/> </div>");
+		
+		
+		writer.write("<form name=\"pipeline\" action=\""
 						+ submitURL
 						+ "\"  method=\"post\" ENCTYPE=\"multipart/form-data\">\n");
 		
