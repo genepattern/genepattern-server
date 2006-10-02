@@ -192,28 +192,8 @@ public class Analysis extends GenericWebService {
         }
     }
     
-    // in this submission, we do not expect files to all be data handlers, but rather to really be files
-    // that do not need to be renamed
-    public JobInfo submitLocalJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
-        Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
-        // sometimes empty
-
-        // get the username
-        String username = getUsernameFromContext();
-
-        JobInfo jobInfo = null;
-
-       // renameInputFiles(parameters, files);
-
-        try {
-            AddNewJobHandler req = new AddNewJobHandler(taskID, username, parameters);
-            jobInfo = req.executeRequest();
-        } catch (Throwable t) {
-          logAndThrow(t);
-        }
-
-        return jobInfo;
-    }
+    
+   
     
     private static void logAndThrow(Throwable t) throws WebServiceException {
     	
@@ -222,26 +202,7 @@ public class Analysis extends GenericWebService {
          throw new WebServiceException(t);
     }
     
-    public JobInfo submitLocalJobNoWakeup(int taskID, ParameterInfo[] parameters, int parentId) throws WebServiceException {
-        Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
-        // sometimes empty
-
-        // get the username
-        String username = getUsernameFromContext();
-
-        JobInfo jobInfo = null;
-
-       // renameInputFiles(parameters, files);
-
-        try {
-            AddNewJobHandler req = new AddNewJobHandlerNoWakeup(taskID, username, parameters, parentId);
-            jobInfo = req.executeRequest();
-        } catch (Throwable t) {
-          logAndThrow(t);
-        }
-
-        return jobInfo;
-    }
+   
     
     // find any input files and concat axis name with original file name.
     private void renameInputFiles(ParameterInfo[] parameters, Map files) throws WebServiceException {

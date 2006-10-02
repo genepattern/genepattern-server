@@ -14,6 +14,7 @@ package org.genepattern.server.webservice.server.local;
 
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.handler.AddNewJobHandler;
+import org.genepattern.server.handler.AddNewJobHandlerNoWakeup;
 import org.genepattern.server.webservice.server.Analysis;
 
 import org.genepattern.webservice.*;
@@ -90,9 +91,20 @@ public class LocalAnalysisClient {
     }
 
     // XXX Where should files be located?
+//  in this submission, we do not expect files to all be data handlers, but rather to really be files
+    // that do not need to be renamed
     public JobInfo submitJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
 
-        return service.submitLocalJob(taskID, parameters);
+    	 Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
+         // sometimes empty
+
+         JobInfo jobInfo = null;
+
+        
+         AddNewJobHandler req = new AddNewJobHandler(taskID, userName, parameters);
+         jobInfo = req.executeRequest();
+        
+         return jobInfo;
 
     }
 
@@ -154,10 +166,20 @@ public class LocalAnalysisClient {
              HibernateUtil.commitTransaction();
              HibernateUtil.beginTransaction();
 
-             JobInfo j = service.submitLocalJobNoWakeup(taskID, parameters, parentJobNumber); 
-             
+             Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
+             // sometimes empty
+
+             // get the username
+            
+             JobInfo jobInfo = null;
+
+            // renameInputFiles(parameters, files);
+
+            AddNewJobHandler req = new AddNewJobHandlerNoWakeup(taskID, userName, parameters, parentJobNumber);
+            jobInfo = req.executeRequest();
+           
              HibernateUtil.commitTransaction();
-             return j;
+             return jobInfo;   
          }
          catch (Exception e) {
              e.printStackTrace();
