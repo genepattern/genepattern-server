@@ -40,8 +40,19 @@ public class RunTaskBean {
     private static Logger log = Logger.getLogger(RunTaskBean.class);
 
     public RunTaskBean() {
-        setTask("ConvertLineEndings"); // FIXME
+        setTask("PreprocessDataset"); // FIXME
 
+    }
+
+    public String getFormAction() {
+        if (visualizer) {
+            return "preRunVisualizer.jsp";
+
+        }
+        else if (pipeline) {
+            return "runPromptingPipeline.jsp";
+        }
+        return "runTaskPipeline.jsp";
     }
 
     public void setTaskInfo(TaskInfo taskInfo) {
@@ -103,9 +114,26 @@ public class RunTaskBean {
         return visualizer;
     }
 
+    public static class DefaultValueSelectItem extends SelectItem {
+        private boolean defaultOption;
+
+        public DefaultValueSelectItem(String value, String label, boolean defaultOption) {
+            super(value, label);
+            this.defaultOption = defaultOption;
+        }
+
+        public boolean isDefaultOption() {
+            return defaultOption;
+        }
+
+        public String getSelected() {
+            return defaultOption ? "true" : "false";
+        }
+    }
+
     public static class Parameter {
 
-        private SelectItem[] choices;
+        private DefaultValueSelectItem[] choices;
         private boolean optional;
         private String displayDesc;
         private String displayName;
@@ -115,24 +143,36 @@ public class RunTaskBean {
 
         private Parameter(ParameterInfo pi) {
             HashMap pia = pi.getAttributes();
+            this.optional = ((String) pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
+                    .length() > 0;
+            this.defaultValue = (String) pia.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 
-            String[] choicesArray = pi.getChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-            if (choices != null) {
+            if (defaultValue == null) {
+                defaultValue = "";
+            }
+            defaultValue = defaultValue.trim();
+
+            String[] choicesArray = pi.hasChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER) ? pi
+                    .getChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER) : null;
+            if (choicesArray != null) {
+                choices = new DefaultValueSelectItem[choicesArray.length];
                 for (int i = 0; i < choicesArray.length; i++) {
                     String choice = choicesArray[i];
                     String display, option;
-                    int c = choice.indexOf(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
-                    if (c == -1) {
+
+                    int equalsCharIndex = choice.indexOf(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
+                    if (equalsCharIndex == -1) {
                         display = choice;
                         option = choice;
                     }
                     else {
-                        option = choice.substring(0, c);
-                        display = choice.substring(c + 1);
+                        option = choice.substring(0, equalsCharIndex);
+                        display = choice.substring(equalsCharIndex + 1);
                     }
                     display = display.trim();
                     option = option.trim();
-                    choices[i] = new SelectItem(option, display);
+                    boolean defaultOption = defaultValue.equals(display) || defaultValue.equals(option);
+                    choices[i] = new DefaultValueSelectItem(option, display, defaultOption);
                 }
             }
             if (pi.isPassword()) {
@@ -148,14 +188,6 @@ public class RunTaskBean {
                 inputType = "text";
             }
 
-            this.optional = ((String) pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
-                    .length() > 0;
-            this.defaultValue = (String) pia.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
-
-            if (defaultValue != null) {
-                defaultValue = defaultValue.trim();
-            }
-
             this.displayDesc = (String) pia.get("altDescription");
             if (displayDesc == null) {
                 displayDesc = pi.getDescription();
@@ -163,11 +195,12 @@ public class RunTaskBean {
             this.displayName = (String) pia.get("altName");
             if (displayName == null) {
                 displayName = pi.getName();
+                displayName = displayName.replaceAll("\\.", " ");
             }
             this.name = pi.getName();
         }
 
-        public SelectItem[] getChoices() {
+        public DefaultValueSelectItem[] getChoices() {
             return choices;
         }
 
