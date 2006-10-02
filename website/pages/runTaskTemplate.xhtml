@@ -59,9 +59,9 @@
 		<tr>
 			<td>&#160;</td>
 			<td><input name="cmd" value="run" type="submit" /><input
-				name="reset" value="reset" onclick="resetValues()" type="button" /><input
+				name="reset" value="reset" onclick="window.location.reload()" type="button" /><input
 				value="help"
-				onclick="window.open('getTaskDoc.jsp?name=ConsensusClustering', '_new')"
+				onclick="window.open('#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.name}', '_new')"
 				type="button" /></td>
 			<td>&#160;</td>
 		</tr>
