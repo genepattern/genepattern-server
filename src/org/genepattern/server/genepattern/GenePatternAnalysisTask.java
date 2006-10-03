@@ -433,12 +433,13 @@ public class GenePatternAnalysisTask implements IGPConstants {
                             InputStream is = null;
                             FileOutputStream os = null;
                             URL url = null;
+                             File outFile = null;
                             try {
                                 url = uri.toURL();
                                 URLConnection conn = url.openConnection();
                                 String name = getDownloadFileName(conn, url);
-                                File outFile = new File(outDirName, name);
-                                if (outFile.exists()) { // ensure that 2 file
+                                outFile = new File(outDirName, name);
+                                 if (outFile.exists()) { // ensure that 2 file
                                     // downloads for a job
                                     // don't have the same
                                     // name
@@ -484,6 +485,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                 if (os != null) {
                                     os.close();
                                 }
+                                // don't set this until after the close...
+                                if (outFile != null)
+                                	inputLastModified[i] = outFile.lastModified();
+                                
                             }
                         }
                     }
@@ -694,7 +699,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     if (renameStderr) {
                         stderrFile.renameTo(new File(outDir, STDERR));
                     }
-                    taskLog = writeProvenanceFile(outDirName, jobInfo, formalParameters, params, props);
+                   taskLog = writeProvenanceFile(outDirName, jobInfo, formalParameters, params, props);
                 }
             }
 
@@ -727,6 +732,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                                     + outFile.toString() + " (exists " + outFile.exists() + ")");
                         }
                         else {
+                       	
                             if (inputLastModified[i] != outFile.lastModified() || inputLength[i] != outFile.length()) {
                                 log.debug("inherited input file " + outFile.getCanonicalPath() + " after run: length="
                                         + inputLength[i] + ", lastModified=" + inputLastModified[i]);
@@ -3616,7 +3622,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
             for (Iterator itHeaders = headerFields.keySet().iterator(); itHeaders.hasNext();) {
                 String name = (String) itHeaders.next();
                 String value = uc.getHeaderField(name);
-                System.out.println(name + "=" + value);
+               // System.out.println(name + "=" + value);
             }
             if (uc instanceof HttpURLConnection) {
                 downloadSize = ((HttpURLConnection) uc).getHeaderFieldInt("Content-Length", -1);
