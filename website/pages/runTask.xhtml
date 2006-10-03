@@ -4,7 +4,8 @@
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core">>
+	xmlns:c="http://java.sun.com/jstl/core">
+>
 
 <script type="text/javascript" language="javascript">
 
@@ -25,46 +26,36 @@ function exportPipeline(lsid, title) {
 
 <ui:composition template="/templates/common.xhtml">
 	<ui:define name="pageTitle">GenePattern - #{runTaskBean.name}</ui:define>
-	<ui:define name="centerNav">
-	  
-	<c:choose>
-		<c:when test="#{runTaskBean.missing==false}">
-		<td valign="top" class="maintasknav" id="maintasknav">
-	  	<h:outputLink
-			target="_blank"
-			value="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp">help
-			<f:param name="name" value="#{runTaskBean.lsid}" />
-		</h:outputLink>&#160;|&#160; 
-	  	<h:outputLink
-			value="#{facesContext.externalContext.requestContextPath}/viewTask.jsp">
-			<h:outputText value="view info" />
-			<f:param name="view" value="1" />
-			<f:param name="name" value="#{runTaskBean.lsid}" />
-		</h:outputLink>&#160;|&#160; 
 
-		<c:choose>
-			<c:when test="#{runTaskBean.pipeline==true}">
-				<a href="#" onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>
-			</c:when>
-			<c:otherwise>
-				<h:outputLink
-				value="#{facesContext.externalContext.requestContextPath}/makeZip.jsp">export
-					<f:param name="name" value="#{runTaskBean.lsid}" />		
-				</h:outputLink>
-			</c:otherwise>
-		</c:choose>
-		</td>
-		</c:when>
-		<c:otherwise>
-			<p>Task does not exist.</p>
-		</c:otherwise>
-	</c:choose>
-	</ui:define>
+	<c:if test="#{runTaskBean.missing==false}">
+		<ui:define name="centerNav">
+			<td valign="top" class="maintasknav" id="maintasknav"><h:outputLink
+				target="_blank"
+				value="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp">help
+			<f:param name="name" value="#{runTaskBean.lsid}" />
+			</h:outputLink>&#160;|&#160; <h:outputLink
+				value="#{facesContext.externalContext.requestContextPath}/viewTask.jsp">
+				<h:outputText value="view info" />
+				<f:param name="view" value="1" />
+				<f:param name="name" value="#{runTaskBean.lsid}" />
+			</h:outputLink>&#160;|&#160; <c:choose>
+				<c:when test="#{runTaskBean.pipeline==true}">
+					<a href="#"
+						onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>
+				</c:when>
+				<c:otherwise>
+					<h:outputLink
+						value="#{facesContext.externalContext.requestContextPath}/makeZip.jsp">export
+					<f:param name="name" value="#{runTaskBean.lsid}" />
+					</h:outputLink>
+				</c:otherwise>
+			</c:choose></td>
+		</ui:define>
+	</c:if>
+
 	<ui:define name="body">
 		<ui:include src="runTaskTemplate.xhtml" />
 	</ui:define>
-	
-
 </ui:composition>
 </html>
 

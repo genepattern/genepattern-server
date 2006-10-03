@@ -59,6 +59,9 @@ function validateForm() {
 <div id="errorMessageDiv" style="display:none;">
 	<p id="errorMessage"></p>
 </div>
+
+<c:choose>
+<c:when test="#{runTaskBean.missing==false}">
 <table width="100%" border="0" cellpadding="0" cellspacing="0"
 	class="barhead-task">
 	<tr>
@@ -151,5 +154,10 @@ function validateForm() {
 </table>
 </form>
 <p>&#160;</p>
+</c:when>
+<c:otherwise>
+<h3>Task not found.</h3>
+</c:otherwise>
+</c:choose>
 
 </html>
