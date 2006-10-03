@@ -15,6 +15,7 @@ package org.genepattern.server.webapp.jsf;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.faces.model.SelectItem;
 
@@ -38,6 +39,7 @@ public class RunTaskBean {
     private String version;
     private boolean missing;
     private static Logger log = Logger.getLogger(RunTaskBean.class);
+    private List<String> versions;
 
     public RunTaskBean() {
         setTask(UIBeanHelper.getRequest().getParameter("lsid"));
@@ -105,7 +107,10 @@ public class RunTaskBean {
             HashMap pia = pi.getAttributes();
             this.optional = ((String) pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
                     .length() > 0;
-            this.defaultValue = (String) pia.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
+
+            String passedDefaultValue = UIBeanHelper.getRequest().getParameter(pi.getName());
+            this.defaultValue = passedDefaultValue != null ? passedDefaultValue : (String) pia
+                    .get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 
             if (defaultValue == null) {
                 defaultValue = "";
@@ -214,6 +219,7 @@ public class RunTaskBean {
             missing = true;
             return;
         }
+
         missing = false;
         ParameterInfo[] pi = taskInfo.getParameterInfoArray();
         this.parameters = new Parameter[pi != null ? pi.length : 0];
@@ -230,10 +236,15 @@ public class RunTaskBean {
         this.name = taskInfo.getName();
         this.lsid = taskInfo.getLsid();
         try {
-            this.version = new LSID(lsid).getVersion();
+            LSID l = new LSID(lsid);
+            this.version = l.getVersion();
+            versions = new LocalAdminClient(UIBeanHelper.getUserId()).getVersions(l);
+            versions.remove(version);
         }
         catch (MalformedURLException e) {
             log.error("LSID:" + lsid, e);
+            versions = null;
+            this.version = null;
         }
         File[] docFiles = null;
         try {
@@ -258,6 +269,10 @@ public class RunTaskBean {
 
     public void setMissing(boolean missing) {
         this.missing = missing;
+    }
+
+    public List<String> getVersions() {
+        return versions;
     }
 
 }
