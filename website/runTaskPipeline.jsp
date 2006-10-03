@@ -223,8 +223,9 @@ use, misuse, or functionality.
         window.open("runPipeline.jsp?cmd=stop&jobID=<%= job.getJobNumber() %>", "_blank", "height=100, width=100, directories=no, menubar=no, statusbar=no, resizable=no");
         pipelineStopped = true;
     }
-    function checkAll(frm, bChecked) {
-        frm = document.forms["results"];
+    function checkAll(cb) {
+        var frm = document.forms["results"];
+        var bChecked = cb.checked;
         for (i = 0; i < frm.elements.length; i++) {
             if (frm.elements[i].type != "checkbox") continue;
             frm.elements[i].checked = bChecked;
@@ -248,7 +249,7 @@ use, misuse, or functionality.
            value="<html><head><link href='stylesheet.css' rel='stylesheet' type='text/css'><script language='Javascript'>\nfunction checkAll(frm, bChecked) {\n\tfrm = document.forms['results'];\n\tfor (i = 0; i < frm.elements.length; i++) {\n\t\tif (frm.elements[i].type != 'checkbox') continue; \n\t\tfrm.elements[i].checked = bChecked;\n\t}\n}\n</script></head><body>">
 </form>
 
-<table width='100%' cellpadding='10'>
+<table width='100%' cellpadding="0">
     <tr>
         <td>
             Running <a href="addTask.jsp?view=1&name=<%=requestParameters.get("taskLSID")%>"><%=
@@ -258,6 +259,8 @@ use, misuse, or functionality.
 
     </tr>
 </td>
+<tr><td>&nbsp;</td></tr>
+
 <tr>
     <td>
         <%=requestParameters.get("taskName")%> (
@@ -316,17 +319,15 @@ use, misuse, or functionality.
         %>
         )<br></td>
 </tr>
+<tr><td>&nbsp;</td></tr>
 
-<form name="results" action="zipJobResults.jsp">
+<form id="results" name="results" action="zipJobResults.jsp">
     <input type="hidden" name="name" value="<%=task.getName()%>"/>
     <input type="hidden" name="jobID" value="<%=jobID%>"/>
 
 
     <%
-         for (int i = 0; i < 8 * 1024; i++) {
-            out.print(" ");
-        }
-        out.println();
+     
         out.flush();
         String status = "started";
         while (!(status.equalsIgnoreCase("ERROR") || (status
@@ -349,6 +350,10 @@ use, misuse, or functionality.
         // after task completes jobInfo is the same as job
         JobInfo jobInfo = job;
         ParameterInfo[] jobParams = jobInfo.getParameterInfoArray();
+        
+        out.println("<tr><td><input type=\"checkbox\" checked value=\"\" onclick=checkAll(this)");
+        
+
         StringBuffer sbOut = new StringBuffer();
         for (int j = 0; j < jobParams.length; j++) {
             if (!jobParams[j].isOutputFile()) {
@@ -374,17 +379,19 @@ use, misuse, or functionality.
             } catch (UnsupportedEncodingException uee) {
                 // ignore
             }
+            
             sbOut.append("\">" + StringUtils.htmlEncode(fileName) + "</a></td></tr>");
             out.println(sbOut.toString());
+            
         }
+    out.println("<tr><td>&nbsp;</td></tr>");
+    out.println("<tr><td><input type=\"submit\" name=\"download\" value=\"download selected results\">&nbsp;&nbsp;");
+   	out.print("<input type=\"submit\" name=\"delete\" value=\"delete selected results\"");
+	out.println(" onclick=\"return confirm(\'Really delete the selected files?\')\">");
+
         out.flush();
-        out.println(
-                "<tr><td><center><input type=\"submit\" name=\"download\" value=\"download selected results\">&nbsp;&nbsp;");
-        out.println("<a href=\"javascript:checkAll(this.form, true)\">check all</a> &nbsp;&nbsp;");
-        out.println("<a href=\"javascript:checkAll(this.form, false)\">uncheck all</a></center><br><center>");
-        out.println("<input type=\"submit\" name=\"delete\" value=\"delete selected results\"");
-        out.println(" onclick=\"return confirm(\'Really delete the selected files?\')\">");
-        out.println("</form></td></tr>");
+        
+         out.println("</form></td></tr>");
 
 
     %>
