@@ -53,10 +53,12 @@
         }
     } finally {
         if (os != null) {
-            os.close();
+          //  os.close();
         }
         if (is != null) {
             is.close();
         }
     }
+    out.clear();
+    out = pageContext.pushBody(); 
 %>
