@@ -29,7 +29,6 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
 
 public class RunTaskBean {
-
     private boolean visualizer;
     private boolean pipeline;
     private String name;
@@ -41,8 +40,7 @@ public class RunTaskBean {
     private static Logger log = Logger.getLogger(RunTaskBean.class);
 
     public RunTaskBean() {
-        setTask("PreprocessDataset"); // FIXME
-
+        setTask(UIBeanHelper.getRequest().getParameter("lsid"));
     }
 
     public String getFormAction() {
@@ -230,7 +228,7 @@ public class RunTaskBean {
         this.visualizer = "visualizer".equalsIgnoreCase(taskType);
         this.pipeline = "pipeline".equalsIgnoreCase(taskType);
         this.name = taskInfo.getName();
-        this.lsid = taskInfo.getLsid(); 
+        this.lsid = taskInfo.getLsid();
         try {
             this.version = new LSID(lsid).getVersion();
         }
