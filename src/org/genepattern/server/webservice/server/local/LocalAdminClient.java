@@ -27,7 +27,9 @@ import org.genepattern.server.user.UserHome;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.webservice.server.AdminService;
 import org.genepattern.server.webservice.server.IAdminService;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -44,6 +46,10 @@ public class LocalAdminClient {
                 return userName;
             }
         };
+    }
+
+    public List<String> getVersions(LSID lsid) {
+        return new AdminDAO().getVersions(lsid, userName);
     }
 
     public TreeMap getTaskCatalogByLSID(Collection tasks) throws WebServiceException {
