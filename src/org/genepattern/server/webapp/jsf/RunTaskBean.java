@@ -155,8 +155,8 @@ public class RunTaskBean {
             this.displayName = (String) pia.get("altName");
             if (displayName == null) {
                 displayName = pi.getName();
-                displayName = displayName.replaceAll("\\.", " ");
             }
+            displayName = displayName.replaceAll("\\.", " ");
             this.name = pi.getName();
         }
 
