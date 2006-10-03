@@ -14,6 +14,7 @@
 package org.genepattern.server.webapp;
 
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Iterator;
@@ -153,9 +154,7 @@ public class PipelineController {
 	public static void main(String args[]) {
 		try {
 			HTMLPipelineView viewer = new HTMLPipelineView(
-					new OutputStreamWriter(System.out),
-					"http://localhost:8080/gp/makePipeline.jsp",
-					"Mozilla/4.78", null);
+					new OutputStreamWriter(System.out), "http:", "localhost", "8080", "gp", "Mozilla/4.78", null);
 			PipelineModel model = new PipelineModel();
 			PipelineController controller = new PipelineController(viewer,
 					model);
