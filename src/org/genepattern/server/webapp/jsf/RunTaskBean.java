@@ -37,6 +37,7 @@ public class RunTaskBean {
     private String[] documentationFilenames;
     private Parameter[] parameters;
     private String version;
+    private boolean missing;
     private static Logger log = Logger.getLogger(RunTaskBean.class);
 
     public RunTaskBean() {
@@ -53,45 +54,6 @@ public class RunTaskBean {
             return "runPromptingPipeline.jsp";
         }
         return "runTaskPipeline.jsp";
-    }
-
-    public void setTaskInfo(TaskInfo taskInfo) {
-        ParameterInfo[] pi = taskInfo.getParameterInfoArray();
-        this.parameters = new Parameter[pi != null ? pi.length : 0];
-        if (pi != null) {
-
-            for (int i = 0; i < pi.length; i++) {
-                parameters[i] = new Parameter(pi[i]);
-            }
-        }
-        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-
-        String taskType = tia.get("taskType");
-        this.visualizer = "visualizer".equalsIgnoreCase(taskType);
-        this.pipeline = "pipeline".equalsIgnoreCase(taskType);
-        this.name = taskInfo.getName();
-        this.lsid = taskInfo.getLsid();
-        try {
-            this.version = new LSID(lsid).getVersion();
-        }
-        catch (MalformedURLException e) {
-            log.error(e);
-        }
-        File[] docFiles = null;
-        try {
-            LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
-            docFiles = taskIntegratorClient.getDocFiles(taskInfo);
-        }
-        catch (WebServiceException e) {
-            e.printStackTrace();
-        }
-        this.documentationFilenames = new String[docFiles != null ? docFiles.length : 0];
-        if (docFiles != null) {
-            for (int i = 0; i < docFiles.length; i++) {
-                documentationFilenames[i] = docFiles[i].getName();
-            }
-        }
-
     }
 
     public String[] getDocumentationFilenames() {
@@ -242,14 +204,62 @@ public class RunTaskBean {
         return version;
     }
 
-    public void setTask(String lsid) {
+    public void setTask(String taskNameOrLsid) {
+        TaskInfo taskInfo = null;
         try {
-            TaskInfo taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(lsid);
-            setTaskInfo(taskInfo);
+            taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(taskNameOrLsid);
         }
         catch (WebServiceException e) {
-            e.printStackTrace();
+            log.error(e);
         }
+        if (taskInfo == null) {
+            missing = true;
+            return;
+        }
+        missing = false;
+        ParameterInfo[] pi = taskInfo.getParameterInfoArray();
+        this.parameters = new Parameter[pi != null ? pi.length : 0];
+        if (pi != null) {
+            for (int i = 0; i < pi.length; i++) {
+                parameters[i] = new Parameter(pi[i]);
+            }
+        }
+        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+
+        String taskType = tia.get("taskType");
+        this.visualizer = "visualizer".equalsIgnoreCase(taskType);
+        this.pipeline = "pipeline".equalsIgnoreCase(taskType);
+        this.name = taskInfo.getName();
+        this.lsid = taskInfo.getLsid(); 
+        try {
+            this.version = new LSID(lsid).getVersion();
+        }
+        catch (MalformedURLException e) {
+            log.error("LSID:" + lsid, e);
+        }
+        File[] docFiles = null;
+        try {
+            LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
+            docFiles = taskIntegratorClient.getDocFiles(taskInfo);
+        }
+        catch (WebServiceException e) {
+            log.error(e);
+        }
+        this.documentationFilenames = new String[docFiles != null ? docFiles.length : 0];
+        if (docFiles != null) {
+            for (int i = 0; i < docFiles.length; i++) {
+                documentationFilenames[i] = docFiles[i].getName();
+            }
+        }
+
+    }
+
+    public boolean isMissing() {
+        return missing;
+    }
+
+    public void setMissing(boolean missing) {
+        this.missing = missing;
     }
 
 }
