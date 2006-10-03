@@ -77,9 +77,9 @@ public class TaskInfo implements Serializable {
         return this.accessId;
     }
 
-    public Map getTaskInfoAttributes() {
+    public TaskInfoAttributes getTaskInfoAttributes() {
         // JL
-        return (Map) taskInfoAttributes;
+        return (TaskInfoAttributes) taskInfoAttributes;
     }
 
     public TaskInfoAttributes giveTaskInfoAttributes() {
@@ -89,14 +89,12 @@ public class TaskInfo implements Serializable {
     }
 
     public void setTaskInfoAttributes(Map taskInfoAttributes) {
-        try {
-            TaskInfoAttributes tia = (TaskInfoAttributes) taskInfoAttributes;
-            this.taskInfoAttributes = tia;
+        if (taskInfoAttributes instanceof TaskInfoAttributes) {
+            this.taskInfoAttributes = (TaskInfoAttributes) taskInfoAttributes;
         }
-        catch (ClassCastException cce) {
+        else {
             this.taskInfoAttributes = new TaskInfoAttributes(taskInfoAttributes);
         }
-
     }
 
     public String getName() {
