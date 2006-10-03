@@ -233,8 +233,10 @@ public class RunPipelineForJsp {
         classPath.append(tomcatLibDir + "saaj.jar" + File.pathSeparator);
         classPath.append(tomcatLibDir + "jaxrpc.jar" + File.pathSeparator);
         String[] jars = new File(webappLibDir).list();
-        for (int i = 0; i < jars.length; i++) {
-            classPath.append(webappLibDir + jars[i] + File.pathSeparator);
+        if(jars!=null) {
+            for (int i = 0; i < jars.length; i++) {
+                classPath.append(webappLibDir + jars[i] + File.pathSeparator);
+            }
         }
         cmdLine.add(classPath.toString());
         cmdLine.add("-Ddecorator=" + decorator);
