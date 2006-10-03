@@ -179,7 +179,7 @@
 			out.flush();
 			if (command.equals(RUN)) {
 		String serializedModel = (String) taskInfo
-				.getTaskInfoAttributes().get(
+				.giveTaskInfoAttributes().get(
 				GPConstants.SERIALIZED_MODEL);
 		PipelineModel model = null;
 		try {
