@@ -26,8 +26,10 @@ function exportPipeline(lsid, title) {
 <ui:composition template="/templates/common.xhtml">
 	<ui:define name="pageTitle">GenePattern - #{runTaskBean.name}</ui:define>
 	<ui:define name="centerNav">
-		
-	  <td valign="top" class="maintasknav" id="maintasknav">
+	  
+	<c:choose>
+		<c:when test="#{runTaskBean.missing==false}">
+		<td valign="top" class="maintasknav" id="maintasknav">
 	  	<h:outputLink
 			target="_blank"
 			value="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp">help
@@ -41,7 +43,7 @@ function exportPipeline(lsid, title) {
 		</h:outputLink>&#160;|&#160; 
 
 		<c:choose>
-			<c:when test="#{runTaskBean.pipeline}">
+			<c:when test="#{runTaskBean.pipeline==true}">
 				<a href="#" onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>
 			</c:when>
 			<c:otherwise>
@@ -51,11 +53,17 @@ function exportPipeline(lsid, title) {
 				</h:outputLink>
 			</c:otherwise>
 		</c:choose>
-	</td>
+		</td>
+		</c:when>
+		<c:otherwise>
+			<p>Task does not exist.</p>
+		</c:otherwise>
+	</c:choose>
 	</ui:define>
 	<ui:define name="body">
 		<ui:include src="runTaskTemplate.xhtml" />
 	</ui:define>
+	
 
 </ui:composition>
 </html>
