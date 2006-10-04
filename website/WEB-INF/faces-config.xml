@@ -57,6 +57,11 @@
 		<managed-bean-class>org.genepattern.server.webapp.jsf.RunTaskBean</managed-bean-class>
 		<managed-bean-scope>request</managed-bean-scope>
 	</managed-bean>
+	<managed-bean>
+		<managed-bean-name>taskCatalogBean</managed-bean-name>
+		<managed-bean-class>org.genepattern.server.webapp.jsf.TaskCatalogBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
 
 	<navigation-rule>
 		<from-view-id>*</from-view-id>
@@ -115,9 +120,9 @@
 	</navigation-rule>
 
 	<!-- Use the Trinidad RenderKit -->
-	<application>
+<!-- <application>
 
 		<default-render-kit-id>org.apache.myfaces.trinidad.core</default-render-kit-id>
 	</application>
-
+ -->	
 </faces-config>
