@@ -404,7 +404,7 @@ public class TaskIntegrator implements ITaskIntegrator {
         try {
             InstallTask[] tasks = utils.getAvailableModules();
             for (int i = 0; i < tasks.length; i++) {
-                if (tasks[i].getLSID().equalsIgnoreCase(lsid)) {
+                if (tasks[i].getLsid().equalsIgnoreCase(lsid)) {
                     tasks[i].install(getUserName(), GPConstants.ACCESS_PUBLIC, this);
                 }
             }
