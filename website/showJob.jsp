@@ -171,15 +171,12 @@ out.println("</td></tr>");
 				File f = new File(parameterInfo.getValue());
 				String axisName = f.getName();
 
-System.out.println("\tPI=" + parameterInfo.getName()+" "+f.getCanonicalPath());
-
 				boolean fileExists = f.exists();
 				boolean isURL=false;
 				if (fileExists){
 					out.println("<a href=\"getInputFile.jsp?file="+StringUtils.htmlEncode(axisName)+  "\" target=\"_blank\" > ");
 				} else {
 					try {// see if a URL was passed in
-System.out.println("\tPI=" + parameterInfo.getName()+" "+parameterInfo.getValue());
 						URL url = new URL(parameterInfo.getValue());
 						out.println("<a href=\""+ parameterInfo.getValue()+"\" > ");				
 						isURL = true;
