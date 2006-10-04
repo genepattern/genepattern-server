@@ -141,9 +141,10 @@ for(int i = 0; i < jobs.length; i++) {
 	if (ti == null) ti = adminClient.getTask( job.getTaskName() );
 
 
-	if (TaskUtil.isPipeline(ti)){
-		showReload = false;
-	}
+	//if (TaskUtil.isPipeline(ti)){
+	//	showReload = false;
+	//}
+	
 	if (showReload){
    		out.print("</a>&nbsp;<a href=\"runTask.jsp?name="+job.getTaskLSID()+"&reloadJob="+job.getJobNumber()+"\" onClick='window.parent.location=this.href'><img class=\"highlightable\" style=\"vertical-align: top;\" src='skin/reload_obj.GIF' border='0'>");
 	}
