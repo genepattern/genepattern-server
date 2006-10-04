@@ -21,6 +21,9 @@ use, misuse, or functionality.
                  org.genepattern.webservice.TaskInfo,
                  javax.servlet.RequestDispatcher,
                  java.io.PrintWriter,
+                 java.io.File,
+                 org.apache.commons.io.FilenameUtils,
+              	  org.apache.commons.fileupload.FileItem,
                  java.net.MalformedURLException,
                  java.net.URL,
                  java.util.ArrayList,
@@ -51,6 +54,10 @@ use, misuse, or functionality.
      * File parameters are stored as FileItems, all other parameters as strings
      */
     Map name2FileItem = new HashMap();
+	File tempDir = File.createTempFile("runTaskPipeline", null);
+	
+	tempDir.delete();
+	tempDir.mkdir();
     try {
         Map requestParameters = new HashMap();
         if (ServletFileUpload.isMultipartContent(new ServletRequestContext(request))) {
@@ -79,9 +86,13 @@ use, misuse, or functionality.
                         continue;
                     }
                     requestParameters.put(name, path);
+                    
                 }
             }
         }
+        
+        
+        
         String userID = (String) requestParameters.get(GPConstants.USERID);
         String lsid = (String) requestParameters.get("taskLSID");
         TaskInfo task = GenePatternAnalysisTask.getTaskInfo(lsid, userID);
@@ -108,8 +119,38 @@ use, misuse, or functionality.
                     } catch (MalformedURLException mfe) {
                     }
                     if (!isURL) {
-                        request.setAttribute(pinfo.getName(), name2FileItem.get(
-                                pinfo.getName())); // RunPipelineForJsp handles setting the proper value for this parameter
+                        
+                        FileItem fi = (FileItem) name2FileItem.get(pinfo.getName());
+                        // RunPipelineForJsp handles setting the proper value for this parameter
+						String fileName = fi.getName();
+                
+                        fileName = FilenameUtils.getName(fileName);
+                        File oldFile = new File(fileName);
+                    	
+                        File file = new File(tempDir, fileName);
+                        if (file.exists()) {
+                            if (fileName.length() < 3) {
+                                fileName += "tmp";
+                            }
+                            file = File.createTempFile(fileName, FilenameUtils.getExtension(fileName), tempDir);
+                        } 
+                        try {
+                           fi.write(file);
+                           // deal with reload files that are not uploaded and so for which
+                           // the write leaves an empty file
+                           if (file.length() == 0){
+                        	   file = oldFile;
+                           }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                     
+                       
+                        request.setAttribute(pinfo.getName(), file); 
+                        
+                        //request.setAttribute(pinfo.getName(), value);
+                        
+                        
                     } else {
                         request.setAttribute(pinfo.getName(), value);
                     }

@@ -333,17 +333,22 @@ public class RunPipelineForJsp {
     }
 
     
-    protected static String  paramsAsString(ParameterInfo[] params, HashMap commandLineParams){
+    protected static String  paramsAsString(ParameterInfo[] params, HashMap commandLineParams, String baseURL){
     	if (params == null) return "";
     	if (params.length == 0) return "";
+    	
     	
     	for (ParameterInfo p : params){
     		String k = (String)p.getName();
     		Object val = commandLineParams.get(k);
     		String value = val.toString();
-    		if (val instanceof DiskFileItem){
-    			value = ((DiskFileItem)val).getName();
-    		}
+    		
+    		if (val instanceof File){
+    			File f = (File)val;
+    			value = baseURL + "getFile.jsp?task=&file=" + f.getParentFile().getName() + File.separator + f.getName();
+    		} 
+    		
+     		System.out.println("P= " + p.getName() + "=" + value);
     		p.setValue(value);
     	}
     	
@@ -355,7 +360,7 @@ public class RunPipelineForJsp {
         Map tia = taskInfo.getTaskInfoAttributes();
         String lsid = (String) tia.get(GPConstants.LSID);
 
-        String params = paramsAsString(taskInfo.getParameterInfoArray(), commandLineParams);
+        String params = paramsAsString(taskInfo.getParameterInfoArray(), commandLineParams, baseURL);
         
         JobInfo jobInfo = GenePatternAnalysisTask.createPipelineJob(userID, params, taskInfo.getName(), lsid);
 
