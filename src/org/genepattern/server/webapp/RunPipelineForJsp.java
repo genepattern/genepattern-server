@@ -345,7 +345,7 @@ public class RunPipelineForJsp {
     		
     		if (val instanceof File){
     			File f = (File)val;
-    			value = baseURL + "getFile.jsp?task=&file=" + f.getParentFile().getName() + File.separator + f.getName();
+    			value = baseURL + "getFile.jsp?task=&file=" + f.getParentFile().getName() +"/" + f.getName();
     		} 
     		
      		System.out.println("P= " + p.getName() + "=" + value);
