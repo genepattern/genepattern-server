@@ -178,13 +178,18 @@ a:visited {
 	text-decoration: none;
 }
 .tasks_on a:hover {
-	color: #6666CC;
+	color: #6666FF;
 	text-decoration: none;
 }
 .tasks_on a:active {
 	color: #6666FF;
 	text-decoration: none;
 }
+.tasks_on a:visited {
+	color: #6666FF;
+	text-decoration: none;
+}
+
 
 .task-categories {
 	font-size: 10px;
@@ -209,6 +214,33 @@ a:visited {
 }
 .task-categories a:visited {
 	color: #333366;
+	text-decoration: none;
+}
+
+
+.task-mine {
+	font-size: 10px;
+	line-height: 12px;
+	font-weight: normal;
+	color: #990000;
+	text-decoration: none;
+}
+.task-mine a:link{
+	color: #990000;
+	text-decoration: none;
+}
+.task-mine a:hover {
+	color: #6666FF;
+	text-decoration:  none;
+	background-color: #FAFAF3;
+}
+.task-mine a:active {
+	color: #3333CC;
+	text-decoration: none;
+	background-color: #FAFAF3;
+}
+.task-mine a:visited {
+	color: #990000;
 	text-decoration: none;
 }
 
@@ -288,7 +320,7 @@ a:visited {
 	text-indent: 6px;
 	height: 21px;
 	width: 100%;
-	line-height: 12px;
+	line-height: 16px;
 	vertical-align: top;
 }
 .barhead-pipeline {
@@ -299,7 +331,7 @@ a:visited {
 	text-indent: 6px;
 	height: 21px;
 	width: 100%;
-	line-height: 12px;
+	line-height: 16px;
 	vertical-align: top;
 }
 .barhead-other {
@@ -310,7 +342,7 @@ a:visited {
 	text-indent: 6px;
 	height: 21px;
 	width: 100%;
-	line-height: 12px;
+	line-height: 16px;
 	vertical-align: top;
 }
 .barhead-version {
@@ -328,7 +360,7 @@ a:visited {
 }
 .description {
 	font-size: 9px;
-	color: #333366;
+	color: #000000;
 }
 .alternatingtablebkg {
 	background-color: #E8E8F9;
@@ -508,4 +540,43 @@ a:visited {
 .footer a:visited {
 	color: #666666;
 	text-decoration: none;
+}
+
+
+.taskperameter {
+	background-color: #FFFFFF;
+}
+.taskperameter td{
+	background-color: #FFFFFF;
+ 	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-bottom-color: #CCCCFF;
+}
+
+.settingperameter {
+	background-color: #FFFFFF;
+}
+.settingperameter td{
+	background-color: #FFFFFF;
+ 	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-bottom-color: #CCCCFF;
+}
+.smalltype {font-size: 9px;}
+.tableheader-row {
+	color: #666633;
+	font-weight: bold;
+	line-height: 18px;
+	font-size: 11px;
+}
+.tableheader-row td{
+	color: #666633;
+	font-weight: bold;
+	border-top-style: solid;
+	border-top-width: 2px;
+	border-top-color: #CCCC99;
+	border-bottom-style: solid;
+	border-bottom-width: 2px;
+	border-bottom-color: #CCCC99;
+	background-color: #FFFFFF;
 }
