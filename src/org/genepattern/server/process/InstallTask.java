@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
@@ -259,8 +260,8 @@ public class InstallTask {
 					return false;
 				}
 			} else {
-				// vChoices is a Vector of possible settings. Any one is okay
-				Vector vChoices = (Vector) oChoices;
+				// vChoices is a List of possible settings. Any one is okay
+				List vChoices = (List) oChoices;
 				if (!vChoices.contains(value) && !value.equals(GPConstants.ANY) && !value.equals("")) {
 					return false;
 				}
