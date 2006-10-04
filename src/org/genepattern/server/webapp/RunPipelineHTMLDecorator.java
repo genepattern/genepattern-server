@@ -15,6 +15,7 @@ package org.genepattern.server.webapp;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -53,9 +54,11 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
 	protected static String GET_JOB_JSP = "getJobResults.jsp?jobID=";
 
-	protected static String GET_TASK_JSP = "addTask.jsp?view=1&name=";
+	protected static String GET_TASK_JSP = "viewTask.jsp?view=1&name=";
 
 	protected static String GET_TASK_FILE = "retrieveResults.jsp?";
+	protected static String GET_FILE = "getFile.jsp?task=&file=";
+	
 
 	public static final String STDOUT = GPConstants.STDOUT;
 
@@ -148,17 +151,22 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
 			out.print(aParam.getName().replace('.',' '));
 			out.print("=");
+			String value = aParam.getValue();
+
 			if (isInputFile) {
 				// convert from "localhost" to the actual host name so that
 				// it can be referenced from anywhere (eg. visualizer on
 				// non-local client)
-				aParam.setValue(localizeURL(aParam.getValue()));
+				value = localizeURL(value);
 				out.print("<a href=\"");
-				out.print(aParam.getValue());
+				out.print(value);
 				out.print("\">");
-
+				
+				value = getFileUrlDisplayValue(value);
 			}
-			out.print(htmlEncode(aParam.getValue()));
+			
+			
+			out.print(htmlEncode(value));
 
 			if (isInputFile) {
 				out.println("</a>");
@@ -237,8 +245,6 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 			int idx = fileJobDirAndName.indexOf("/");
 			String realJobId = fileJobDirAndName.substring(0, idx);
 
-//System.out.println("PI=" + jobParams[j] + " -- " + fileName + "  == " + jobParams[j].getValue());
-
 			String jobNumber = realJobId; //jobInfo.getJobNumber()
 
 			sbOut.append("<tr><td></td><td><input type=\"checkbox\" value=\"");
@@ -306,6 +312,15 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 				+ GENEPATTERN_URL + GPConstants.RIGHT_DELIMITER, System
 				.getProperty("GenePatternURL"));
 		try {
+			File f = new File(original);
+			if (f.exists()){
+				try {
+					return getFileURL(f);
+				} catch (IOException ioe){
+					return original;
+				}
+			} 
+			
 			// one of ours?
 			if (!original.startsWith("http://localhost:" + port)
 					&& !original.startsWith("http://127.0.0.1:" + port)) {
@@ -323,8 +338,66 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 		} catch (UnknownHostException uhe) {
 			return original;
 		} catch (MalformedURLException mue) {
+			// check if it is local file and write the URL for it
+			
 			return original;
 		}
 	}
 
+	public String getFileURL(File theFile) throws IOException{
+		
+		// if it exists and lives under /temp, the parent dir where we are running, we can
+		// create a getFile link for it
+		File tempDir = new File(System.getProperty("user.dir"), "here");
+		tempDir = tempDir.getParentFile().getParentFile();
+		
+		
+		StringBuffer pathBuffer = new StringBuffer();
+		File parent = theFile;
+		boolean foundCommonParent = false;
+		
+		while ((parent!= null) && (!foundCommonParent)){
+			if (parent.equals(tempDir)){
+				foundCommonParent = true;
+				break;
+			}
+			pathBuffer.insert(0, "/" + parent.getName());
+			parent = parent.getParentFile();
+		}
+		if (foundCommonParent) return GET_FILE + pathBuffer.substring(1); // strip leading slash
+		else return theFile.getName();
+		
+	}
+	
+	
+	// look for the file name.  If it is a genepattern local url, then there will be a file=
+	// in it somewhere, we want to return what the file name is but not any parent dir
+	// information which is most likely a tempDir
+	
+	protected String getFileUrlDisplayValue(String original) {
+		if (original == null) return "";
+		
+		try {
+			// this throws an exception if not a URL and then we just return it as is
+			
+			String queryPart = original;
+			int idx = queryPart.indexOf("file=");
+			if (idx == -1) return original;
+			
+			idx = idx+5;
+			int endIdx = queryPart.indexOf("&", idx);
+			if (endIdx == -1) endIdx = queryPart.length();
+			
+			String filePath = queryPart.substring(idx, endIdx); 
+			
+			if ((idx = filePath.indexOf("/")) != -1){
+				filePath = filePath.substring(idx+1);
+			}
+			return filePath;
+		
+		} catch (Exception mue) {
+			return original;
+		}
+	}
+	
 }
