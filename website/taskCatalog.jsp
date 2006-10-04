@@ -68,7 +68,7 @@
 	<head>
 	<link href="css/style.css" rel="stylesheet" type="text/css">
 	<link href="skin/favicon.ico" rel="shortcut icon">
-<title>Installable tasks</title>
+<title>GenePattern - Install/Update Tasks</title>
 <style>
 td { font-size: 8pt }
 </style>
