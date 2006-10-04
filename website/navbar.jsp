@@ -56,5 +56,4 @@ Job Results </a> &#160;&#160;&#160;&#160;&#160;&#160; <a
 	<!-- main content area.  -->
 	<tr>
 		<td valign="top" class="maincontent" id="maincontent">
-		</body>
-		</html>
+		
