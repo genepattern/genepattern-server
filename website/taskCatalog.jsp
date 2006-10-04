@@ -173,7 +173,7 @@ function changeFilter() {
 				System.getProperty("GenePatternVersion") + ")<br>") :
 			 "" %>
 		<br>
-		<hr>
+		
 <%
 		for (int ii = 0; ii < 8*1024; ii++) out.print(" ");
 		out.println();
@@ -403,12 +403,11 @@ function changeFilter() {
 	missingLSIDList.remove(lsidStr); // to look for LSIDs requested but absent
   }
   if (missingLSIDList.size() > 0){
-  	out.println("<hr><font size=\"+1\" color=\"red\"><b>");
+  	out.println("<font size=\"+1\" color=\"red\"><b>");
   	out.println("The following requested tasks could not be found in the Broad Task Catalog;</b></font><br>");
 	for (int module=0; module < missingLSIDList.size(); module++){
 		out.println("<tab>"+missingLSIDList.get(module) + "<br>");
 	}
-	if (tasks.length > 0) out.println("<hr>");
   }
 
   if (tasks.length == 0) { 
@@ -424,7 +423,6 @@ function changeFilter() {
 		selectedStates = selectedStates + vState.elementAt(s);
 	}	
 %>
-	<hr>
 	<font size="+1">No  <%= selectedStates %> tasks match filter criteria.</font>
 <% } else { 
 	// sort tasks by name, then by LSID descending order
