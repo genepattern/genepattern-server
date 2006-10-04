@@ -69,9 +69,6 @@
 	<link href="css/style.css" rel="stylesheet" type="text/css">
 	<link href="skin/favicon.ico" rel="shortcut icon">
 <title>GenePattern - Install/Update Tasks</title>
-<style>
-td { font-size: 8pt }
-</style>
 
 <script language="Javascript">
 var ie4 = (document.all) ? true : false;
@@ -128,7 +125,7 @@ function changeFilter() {
 	</head>
 	<body>
 	<jsp:include page="navbar.jsp"/>
-	<span id="fetching">
+	<span id="fetching" style="font-size:8pt;">
 		Fetching task catalog from the module repository...
 	</span>
 <%
@@ -348,12 +345,10 @@ function changeFilter() {
           <tr>
             <td>Install/Update Tasks </td>
           </tr>
-
         </table>
-        <p></p>
          <table width="100%"  border="0" cellpadding="10" cellspacing="0">
             <tr valign="top"  >
-              <td colspan="2">Select from the following tasks from the Module
+              <td colspan="2" style="font-size:8pt;">Select from the following tasks from the Module
               Repository to download and install: </td>
             </tr>
             <tr valign="top"  >
@@ -370,7 +365,7 @@ function changeFilter() {
 
 		%>
 
-		<td valign='top'><b><%= InstallTask.columnNameToHRV(columns[col]) %><b><br>
+		<td style="font-size:8pt;" valign='top'><b><%= InstallTask.columnNameToHRV(columns[col]) %><b><br>
 
 		<select name="<%= columns[col] %>" multiple size="<%= values.length %>" style="vertical-align: top">
 <%
@@ -392,7 +387,7 @@ function changeFilter() {
 <tr><td align="left"><input type="button" value="Refresh" onclick="changeFilter();"/>
 </td>
 </tr>
-</table>
+
 </form>
 <% out.flush(); %>
 
@@ -484,6 +479,7 @@ function changeFilter() {
 		}
 	}
 %>
+</table>
 <p class="recentjobs-sh">&nbsp;</p>
 
           <table width="100%"  border="0" cellpadding="0" cellspacing="0" class="barhead-task">
@@ -576,12 +572,12 @@ function changeFilter() {
 		<nobr><%= StringUtils.htmlEncode((String)attributes.get(GPConstants.TASK_TYPE)) %></nobr>
 		</td>
 
-		<td valign="top" colspan="<%= columns.length-HEADINGS.length %>" rowspan="2">
-		<table>
+		<td valign="top" height="1" colspan="<%= columns.length-HEADINGS.length %>" rowspan="2">
+		<table cellpadding="5" cellspacing="0" class="smalltype">
 
 		<tr>
-		<td valign="top" align="right">documentation:</td>
-		<td valign="top">
+		<td valign="top" align="right" height="1">documentation:</td>
+		<td valign="top" height="1">
 <%
 		String[] docURLs = task.getDocURLs();
 		for (int doc = 0; doc < docURLs.length; doc++) {
@@ -595,13 +591,13 @@ function changeFilter() {
 		</td></tr>
 
 		<tr>
-		<td valign="top" align="right">author:</td>
-		<td valign="top"><%= fixupLinksInText((String)attributes.get(GPConstants.AUTHOR)) %></td>
+		<td valign="top" align="right" height="1">author:</td>
+		<td valign="top" height="1"><%= fixupLinksInText((String)attributes.get(GPConstants.AUTHOR)) %></td>
 		</tr>
 
 		<tr>
-		<td valign="top" align="right">quality:</td>
-		<td valign="top"><%= StringUtils.htmlEncode((String)attributes.get(GPConstants.QUALITY)) %></td>
+		<td valign="top" align="right" height="1">quality:</td>
+		<td valign="top" height="1"><%= StringUtils.htmlEncode((String)attributes.get(GPConstants.QUALITY)) %></td>
 		</tr>
 
 <%
@@ -612,7 +608,7 @@ function changeFilter() {
 		languageLevel = " " + languageLevel;
 	}
 %>
-		<tr><td valign="top" align="right">requirements:</td>
+		<tr><td valign="top" align="right" height="1">requirements:</td>
 		<td valign="top">
 <nobr><%= StringUtils.htmlEncode((String)attributes.get(GPConstants.LANGUAGE)) %><%= languageLevel %></nobr>,
 <nobr><%= StringUtils.htmlEncode((String)attributes.get(GPConstants.OS)) %> operating system</nobr>,
