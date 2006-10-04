@@ -66,7 +66,7 @@
 %>
 	<html>
 	<head>
-	<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
+	<link href="css/style.css" rel="stylesheet" type="text/css">
 	<link href="skin/favicon.ico" rel="shortcut icon">
 <title>Installable tasks</title>
 <style>
@@ -98,18 +98,19 @@ function writeToLayer(lay,txt) {
 
 }
 
-function checkAll(frm, bChecked) {
-	frm = document.forms['install'];
+function toggle(maincb) {
+	var frm = document.forms['install'];
+	var bChecked = maincb.checked;
 	for (i = 0; i < frm.elements.length; i++) {
 		if (frm.elements[i].type != "checkbox") continue;
 		frm.elements[i].checked = bChecked;
 	}
 }
 
-function changeFilter(fld) {
-	var frm = fld.form;
+function changeFilter() {
+	var frm = document.forms['filters'];
 	loc = window.location.href.substring(0, window.location.href.length-window.location.search.length) + "?";
-	loc = loc + "<%= SORT %>=" + escape(frm.elements['<%= SORT %>'].options[frm.elements['<%= SORT %>'].selectedIndex].value);
+	//loc = loc + "<%= SORT %>=" + escape(frm.elements['<%= SORT %>'].options[frm.elements['<%= SORT %>'].selectedIndex].value);
 	for (col = 0; col < columns.length ; col++) {
 		var selector = frm.elements[columns[col]];
 		for (sel = 0; sel < selector.length; sel++) {
@@ -128,7 +129,7 @@ function changeFilter(fld) {
 	<body>
 	<jsp:include page="navbar.jsp"/>
 	<span id="fetching">
-		Fetching task catalog from <a href="<%= System.getProperty("ModuleRepositoryURL") %>" target="_new"><%= System.getProperty("ModuleRepositoryURL") %></a>...
+		Fetching task catalog from the module repository...
 	</span>
 <%
 	out.flush();
@@ -163,7 +164,8 @@ function changeFilter(fld) {
 		out.flush();
 	}
 	String motd = collection.getMOTD_message();
-	if (motd.length() > 0) {
+	boolean showMotd = false;
+	if (showMotd && motd.length() > 0) {
 %>
 		<%= motd %><br>
 		<font size="1">updated <%= DateFormat.getDateInstance().format(collection.getMOTD_timestamp()) %>.  
@@ -327,12 +329,7 @@ function changeFilter(fld) {
 
 	String columns[] = new String[]{
 		InstallTask.STATE,
-		GPConstants.TASK_TYPE,
-		GPConstants.QUALITY,
-		GPConstants.CPU_TYPE,
-		GPConstants.OS,
-		GPConstants.LANGUAGE,
-		GPConstants.JVM_LEVEL
+		GPConstants.OS
 	};
 	
 %>
@@ -345,17 +342,24 @@ function changeFilter(fld) {
         	} %>);
         </script>
 
-Select from the following tasks from the <a href="<%= System.getProperty("ModuleRepositoryURL")%>">Module Repository</a> to download and install:<br><br>
+<form id="filters" name="filters">
 
-<form name="filters">
-<!-- Filters -->
-<table>
-<tr>
-<td valign="top" align="right" width="15%">
-<font size="+1"><b>Filters: </b></font>
-</td>
-<td valign="top">
-<table><tr><td>
+<table width="100%"  border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+          <tr>
+            <td>Install/Update Tasks </td>
+          </tr>
+
+        </table>
+        <p></p>
+         <table width="100%"  border="0" cellpadding="10" cellspacing="0">
+            <tr valign="top"  >
+              <td colspan="2">Select from the following tasks from the Module
+              Repository to download and install: </td>
+            </tr>
+            <tr valign="top"  >
+              <td><table>
+                <tr>
+                  <td></td>
 <%
 	for (col = 0; col < columns.length; col++) {
 		Vector vCol = (Vector)hmFilter.get(columns[col]); // user requested choices
@@ -368,7 +372,7 @@ Select from the following tasks from the <a href="<%= System.getProperty("Module
 
 		<td valign='top'><b><%= InstallTask.columnNameToHRV(columns[col]) %><b><br>
 
-		<select name="<%= columns[col] %>" onchange="changeFilter(this);" multiple size="<%= values.length %>" style="vertical-align: top">
+		<select name="<%= columns[col] %>" multiple size="<%= values.length %>" style="vertical-align: top">
 <%
 
 		for (int val = 0; val < values.length; val++) {
@@ -383,58 +387,11 @@ Select from the following tasks from the <a href="<%= System.getProperty("Module
 <%
 	}
 %>
-</tr></table>
+
+</table>
+<tr><td align="left"><input type="button" value="Refresh" onclick="changeFilter();"/>
 </td>
 </tr>
-<!-- end filters -->
-
-<!-- sorting -->
-<tr>
-<td valign="top" align="right">
-<font size="+1"><b>Sort by: &nbsp;</b></font>
-</td>
-<td valign="top">
-<select name="<%= SORT %>" onchange="changeFilter(this);">
-<%
-	String[] fields = collection.getAttributeNames();
-	for (int i = 0; i < fields.length; i++) {
-		if (!fields[i].equals(GPConstants.DESCRIPTION) &&
-			!fields[i].equals(GPConstants.VERSION) &&
-			!fields[i].equals(InstallTask.REFRESHABLE)) {
-%>
-			<option value="<%= fields[i] %>"<%= sort.equals(fields[i]) ? " selected" : "" %>><%= InstallTask.columnNameToHRV(fields[i]) %></option>
-<%
-		}
-	}
-%>
-	</select>
-</td>
-</tr>
-<!-- end sorting -->
-
-<!-- task selection -->
-<tr>
-<td valign="top" align="right">
-<font size="+1"><b>Scroll to:</b> &nbsp;</font>
-</td>
-<td valign="top">
-<%
-	TreeSet tsTasks = new TreeSet(String.CASE_INSENSITIVE_ORDER);
-	for (int module = 0; module < tasks.length; module++) {
-		tsTasks.add(tasks[module].getName());
-	}
-	String[] taskNames = (String[])tsTasks.toArray(new String[0]);
-	for (int module = 0; module < taskNames.length; module++) {
-%>
-		<a href="#<%= taskNames[module] %>"><%= taskNames[module] %></a>
-<%
-	}
-
-%>
-</td>
-</tr>
-<!-- end task selection -->
-
 </table>
 </form>
 <% out.flush(); %>
@@ -527,43 +484,28 @@ Select from the following tasks from the <a href="<%= System.getProperty("Module
 		}
 	}
 %>
+<p class="recentjobs-sh">&nbsp;</p>
 
-<br>
-<table>
-<tr>
-<td width="80%">
-<font size="+1"><b><%= numRefreshable %> of <%= numUniqueTasks %> tasks are new or updated</b></font>
-</td>
-<td>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</td>
-<td>
-<input type="submit" name="<%= INSTALL_BUTTON %>" value="install checked"> &nbsp;&nbsp;
-<nobr><a href="javascript:checkAll(this.form, true)">check all</a> &nbsp;&nbsp;
-<a href="javascript:checkAll(this.form, false)">uncheck all</a></nobr>
-</td>
-</tr>
-</table>
+          <table width="100%"  border="0" cellpadding="0" cellspacing="0" class="barhead-task">
+            <tr>
+              <td class="barhead-version"><%= numRefreshable %> of <%= numUniqueTasks %> tasks are new or updated</td>
+            </tr>
+          </table>          <p>
+            <input type="submit" name="<%= INSTALL_BUTTON %>" value="install checked" />
+</p>
+          <table cellpadding="5" cellspacing="0" class="smalltype">
 
-<table cellspacing="5">
-
-<tr>
-<td colspan="<%= (HEADINGS.length+1) %>"><hr></td>
-</tr>
+            <tr class="tableheader-row">
+              <td valign="top"><input type="checkbox" name="ALL" value="ALL" onclick="toggle(this);"/></td>
+              <td valign="top"><b>name (version)</b> </td>
+              <td valign="top"><b>task type</b> </td>
+              <td valign="top"><b>details</b> </td>
+            </tr>
+            <tr class="tableheader-row">
 
 
-<tr>
-<td valign="top"></td>
-<%
-	for (col = 0; col < HEADINGS.length; col++) {
-%>
-		<td valign="top">
-		<b><u><%= HEADINGS[col] %></u></b>
-		</td>
-<%
-	}
-%>
-</tr>
+<tr  class="settingperameter"><td colspan="4" >&nbsp;</td></tr>
+
 <%
 	String ver;
 	LSIDManager lsidManager = LSIDManager.getInstance();
@@ -696,18 +638,13 @@ Select from the following tasks from the <a href="<%= System.getProperty("Module
 
 </tr>
 
-<tr>
-<td colspan="<%= (HEADINGS.length+1) %>"><hr></td>
-</tr>
+<tr class="settingperameter"><td colspan="4" >&nbsp;</td></tr>
 
 <%
 	}
 %>
 <tr>
 <td colspan="<%= (columns.length+1) %>" align="center">
-<input type="submit" name="<%= INSTALL_BUTTON %>" value="install checked"> &nbsp;&nbsp;
-<a href="javascript:checkAll(this.form, true)">check all</a> &nbsp;&nbsp;
-<a href="javascript:checkAll(this.form, false)">uncheck all</a>
 </td>
 </tr>
 
