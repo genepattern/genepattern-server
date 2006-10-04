@@ -50,6 +50,7 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 import org.xml.sax.InputSource;
+import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Note that RunPipeline may only be run on the server side in the context of a GenePattern installation
@@ -102,12 +103,31 @@ public class RunPipeline {
                 : decorator;
     }
 
+    public static void setupLog4jConfig(){
+    	String override = System.getProperty("log4j.properties");
+    	if (override != null) return;
+    	
+    	Properties log4jconfig = new Properties();
+    	log4jconfig.setProperty("log4j.rootLogger", "error, R");
+    	log4jconfig.setProperty("log4j.appender.R", "org.apache.log4j.RollingFileAppender");
+    	log4jconfig.setProperty("log4j.appender.R.File", "pipelineErrors.log");
+    	log4jconfig.setProperty("log4j.appender.R.MaxFileSize", "100KB");
+    	log4jconfig.setProperty("log4j.appender.R.MaxBackupIndex", "2");
+    	log4jconfig.setProperty("log4j.appender.R.layout", "org.apache.log4j.PatternLayout");
+    	log4jconfig.setProperty("log4j.appender.R.layout.ConversionPattern", "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] (%F:%L) - %m%n");
+    	   	
+    	PropertyConfigurator.configure(log4jconfig);
+    }
+    
+    
     /**
      * expects minimum of two args. pipeline name, username, args to pipeline
      * Additionally the system properties jobID, LSID, genepattern.properties
      * are required, while the decorator system property is optional
      */
     public static void main(String args[]) throws Exception {
+    	setupLog4jConfig();
+    	
         Properties additionalArguments = new Properties();
         String genePatternPropertiesFile = System
                 .getProperty("genepattern.properties")
