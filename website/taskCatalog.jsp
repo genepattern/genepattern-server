@@ -182,7 +182,7 @@ function changeFilter() {
 	// build HashMap of associations between LSIDs and InstallTask objects
 	HashMap hmLSIDToInstallTask = new HashMap();
 	for (int t = 0; t < tasks.length; t++) {
-		hmLSIDToInstallTask.put(tasks[t].getLSID(), tasks[t]);
+		hmLSIDToInstallTask.put(tasks[t].getLsid(), tasks[t]);
 	}
 
 	if (request.getParameter(INSTALL_BUTTON) != null) {
@@ -221,9 +221,9 @@ function changeFilter() {
 			try {
 				boolean wasInstalled = installTask.install(userID, GPConstants.ACCESS_PUBLIC, taskIntegrator);
 %>
-				<%= wasInstalled ? "Overwrote" : "Installed" %> <a href="addTask.jsp?name=<%= installTask.getLSID() %>"><%= installTask.getName() %></a> version <%= new LSID(installTask.getLSID()).getVersion() %><br>
+				<%= wasInstalled ? "Overwrote" : "Installed" %> <a href="addTask.jsp?name=<%= installTask.getLsid() %>"><%= installTask.getName() %></a> version <%= new LSID(installTask.getLsid()).getVersion() %><br>
 				<script language="Javascript">
-				addNavbarItem("<%= installTask.getName() %>", "<%= installTask.getLSID() %>");
+				addNavbarItem("<%= installTask.getName() %>", "<%= installTask.getLsid() %>");
 				</script>
 <%
 			} catch (TaskInstallationException tie) {
@@ -471,8 +471,8 @@ function changeFilter() {
 		while (true) { // skip lower-versions of same module
 			// see if there are more modules of the same name but different LSID version number
 			if ((module+1) == tasks.length) break;
-			LSID l = new LSID(tasks[module+1].getLSID());
-			if (!l.isSimilar(new LSID(task.getLSID()))) break;
+			LSID l = new LSID(tasks[module+1].getLsid());
+			if (!l.isSimilar(new LSID(task.getLsid()))) break;
 			module++;
 		}
 	}
@@ -541,12 +541,12 @@ function changeFilter() {
 				ver = "";
 			}
 %>
-			<option value="<%= StringUtils.htmlEncode(tasks[module].getLSID()) %>"<%= selected ? " selected" : ""%> title="<%= StringUtils.htmlEncode(ver) + " - " + tasks[module].getLSID() %>"><%= (!tasks[module].getLSIDVersion().equals("") ? (StringUtils.htmlEncode(tasks[module].getLSIDVersion())) : "") %><%= (!ver.equals("") ? (" - " + StringUtils.htmlEncode(ver.substring(0, Math.min(ver.length(), 50)))) : "") %></option>
+			<option value="<%= StringUtils.htmlEncode(tasks[module].getLsid()) %>"<%= selected ? " selected" : ""%> title="<%= StringUtils.htmlEncode(ver) + " - " + tasks[module].getLsid() %>"><%= (!tasks[module].getLsidVersion().equals("") ? (StringUtils.htmlEncode(tasks[module].getLsidVersion())) : "") %><%= (!ver.equals("") ? (" - " + StringUtils.htmlEncode(ver.substring(0, Math.min(ver.length(), 50)))) : "") %></option>
 <%
 			// see if there are more modules of the same name but different LSID version number
 			if ((module+1) == tasks.length) break;
-			LSID l = new LSID(tasks[module+1].getLSID());
-			if (!l.isSimilar(new LSID(task.getLSID()))) break;
+			LSID l = new LSID(tasks[module+1].getLsid());
+			if (!l.isSimilar(new LSID(task.getLsid()))) break;
 			module++;
 		    }
 %>
@@ -577,7 +577,7 @@ function changeFilter() {
 		<td valign="top" align="right" height="1">documentation:</td>
 		<td valign="top" height="1">
 <%
-		String[] docURLs = task.getDocURLs();
+		String[] docURLs = task.getDocUrls();
 		for (int doc = 0; doc < docURLs.length; doc++) {
 			String filename = new File(docURLs[doc]).getName();
 			if (filename.equals("version.txt")) continue;
@@ -626,7 +626,7 @@ function changeFilter() {
 	<br>source: <%= StringUtils.htmlEncode(authority) %>
 <% } %>
 </span>
-<br><a href="<%=task.getURL()%>"><img border='0' src="skin/zip.jpeg"/>download zip</a>
+<br><a href="<%=task.getUrl()%>"><img border='0' src="skin/zip.jpeg"/>download zip</a>
 
 </td>
 
