@@ -70,6 +70,8 @@ public class RunPipeline {
 
     public static final String STDERR = GPConstants.STDERR;
 
+    public static String logFile = "pipelineErrors.log";
+
     RunPipelineOutputDecoratorIF decorator;
 
     PipelineModel model;
@@ -110,7 +112,7 @@ public class RunPipeline {
     	Properties log4jconfig = new Properties();
     	log4jconfig.setProperty("log4j.rootLogger", "error, R");
     	log4jconfig.setProperty("log4j.appender.R", "org.apache.log4j.RollingFileAppender");
-    	log4jconfig.setProperty("log4j.appender.R.File", "pipelineErrors.log");
+    	log4jconfig.setProperty("log4j.appender.R.File", logFile);
     	log4jconfig.setProperty("log4j.appender.R.MaxFileSize", "100KB");
     	log4jconfig.setProperty("log4j.appender.R.MaxBackupIndex", "2");
     	log4jconfig.setProperty("log4j.appender.R.layout", "org.apache.log4j.PatternLayout");
@@ -228,6 +230,13 @@ public class RunPipeline {
         RunPipeline rp = new RunPipeline(server, userId, jobId, pipelineModel,
                 decorator);
         rp.runPipeline(additionalArguments);
+	
+	  // if there are no errors and the log file is empty, then delete it
+	  File log = new File(logFile);
+	  if (log.exists()){
+		if (log.length() < 1L) log.delete();
+	  }
+
     }
 
     /**
