@@ -16,14 +16,17 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -103,12 +106,11 @@ public class RunTaskBean {
         private String inputType;
         private String name;
 
-        private Parameter(ParameterInfo pi) {
+        private Parameter(ParameterInfo pi, String passedDefaultValue) {
             HashMap pia = pi.getAttributes();
             this.optional = ((String) pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
                     .length() > 0;
 
-            String passedDefaultValue = UIBeanHelper.getRequest().getParameter(pi.getName());
             this.defaultValue = passedDefaultValue != null ? passedDefaultValue : (String) pia
                     .get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 
@@ -221,13 +223,42 @@ public class RunTaskBean {
         }
 
         missing = false;
+
+        Map<String, String> reloadValues = new HashMap<String, String>();
+        if (UIBeanHelper.getRequest().getParameter("reloadJob") != null) {
+            try {
+                int reloadJobNumber = Integer.parseInt(UIBeanHelper.getRequest().getParameter("reloadJob"));
+                LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
+                JobInfo reloadJob = ac.getJob(reloadJobNumber);
+                // can only reload own jobs
+                if (UIBeanHelper.getUserId().equals(reloadJob.getUserId())) {
+                    ParameterInfo[] reloadParams = reloadJob.getParameterInfoArray();
+                    if (reloadParams != null) {
+                        for (int i = 0; i < reloadParams.length; i++) {
+                            reloadValues.put(reloadParams[i].getName(), reloadParams[i].getValue());
+                        }
+                    }
+                }
+            }
+            catch (NumberFormatException nfe) {
+                log.error(nfe);
+            }
+            catch (WebServiceException e) {
+                log.error(e);
+            }
+        }
         ParameterInfo[] pi = taskInfo.getParameterInfoArray();
         this.parameters = new Parameter[pi != null ? pi.length : 0];
         if (pi != null) {
             for (int i = 0; i < pi.length; i++) {
-                parameters[i] = new Parameter(pi[i]);
+                String defaultValue = reloadValues.get(pi[i].getName());
+                if (defaultValue == null) {
+                    defaultValue = UIBeanHelper.getRequest().getParameter(pi[i].getName());
+                }
+                parameters[i] = new Parameter(pi[i], defaultValue);
             }
         }
+
         TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
 
         String taskType = tia.get("taskType");
