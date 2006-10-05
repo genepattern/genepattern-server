@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" 
+      xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
+  <head>
+    <t:stylesheet path="/css/style.css"/>
+  </head>
+  <body>
+    <h:form>
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+      
+        <!-- tasks and pipelines area -->
+        <tr>
+          <td width="242" rowspan="2" valign="top" class="tasks" id="tasks">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td colspan="5" class="sidebarhead-bkg">
+                  <div class="sidebarhead">Tasks &amp; Pipelines<br/>
+                    <t:selectOneRadio value="#{moduleChooserBean.mode}" styleClass="viewchoice">
+                      <f:selectItem itemValue="category" itemLabel="category"/>
+                      <f:selectItem itemValue="suite" itemLabel="suite"/>
+                      <f:selectItem itemValue="all" itemLabel="all"/>
+                    </t:selectOneRadio>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="5">
+                  <t:graphicImage value="/images/divider-pix1.gif" width="100%" height="1"/>
+                </td>
+              </tr>
+              <tr>
+                <td height="6" colspan="5">
+                  <t:graphicImage value="/images/spacer.gif" width="1" height="6"/>
+                </td>
+              </tr>
+              <tr>
+              
+              
+                <!-- Task List.   Task items have a blue bullet: "bullet-task.gif" -->
+                <t:dataList var="taskInfo" value="#{moduleChooserBean.allTasks}">
+                	<h:outputText value="#{taskInfo.name}"/>
+                </t:dataList>
+                <t:dataTable var="taskInfo" value="#{moduleChooserBean.allTasks}" id="moduleList">
+                  <t:column>&#160;</t:column>
+                  <t:column>
+                    <t:graphicImage value="/images/bullet-task.gif" width="4" height="4" rendered="#{not taskInfo.pipeline}"/>
+                    <t:graphicImage value="/images/bullet-pipeline.gif" width="4" height="4" rendered="#{taskInfo.pipeline}"/>
+                  </t:column>
+                  <t:column>
+                    <a4j:commandLink value="#{taskInfo.name}" actionListener="#{moduleChooserBean.moduleClicked}" reRender="taskPanel">
+                      <f:param name="task" value="#{taskInfo.name}"/>
+                    </a4j:commandLink>
+                  </t:column>
+                  <t:column>&#160;</t:column>
+                </t:dataTable>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </h:form>
+  </body>
+</html>
