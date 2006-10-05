@@ -22,6 +22,8 @@ package org.genepattern.webservice;
 import java.io.*;
 import java.util.Map;
 
+import org.genepattern.util.IGPConstants;
+
 public class TaskInfo implements Serializable {
 
     private int taskID = 0;
@@ -207,6 +209,17 @@ public class TaskInfo implements Serializable {
 
     public String getLsid() {
         return (String) giveTaskInfoAttributes().get("LSID");
+    }
+    
+    public  boolean isPipeline(){
+        Map tia = getTaskInfoAttributes();
+        if (tia == null) return false; //default to false if unknown
+
+        String type = (String) tia.get(IGPConstants.TASK_TYPE);
+        if (type == null) return false; // default to false if unknown
+
+            return type.endsWith("pipeline");
+
     }
 
 }
