@@ -10,12 +10,12 @@ String cp = request.getContextPath();
 
 <script language="JavaScript1.2">mmLoadMenus();</script>
 <!-- top band with the logo -->
-<div id="topband" class="topband"><a href="index.html"
+<div id="topband" class="topband"><a href="index.jsp"
 	target="_top"> <img src="<%=cp%>/images/GP-logo.gif"
 	alt="GenePattern Portal" width="296" height="77" border="0" /> </a></div>
 <!-- horizontal navigation band -->
 <div id="navband1" class="navband1"><font class="navband1-on">
-<a href="index.html"> Tasks &amp; Pipelines </a>
+<a href="index.jsp"> Tasks &amp; Pipelines </a>
 &#160;&#160;&#160;&#160;&#160;&#160; </font> <a href="job_results.html">
 Job Results </a> &#160;&#160;&#160;&#160;&#160;&#160; <a
 	href="create_pipeline.html"> Create Pipeline </a>
