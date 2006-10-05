@@ -12,22 +12,69 @@
 
 package org.genepattern.server.webapp.jsf;
 
+import static org.genepattern.server.webapp.jsf.UIBeanHelper.getRequest;
+import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
 public class ModuleChooserBean {
     Logger log = Logger.getLogger(ModuleChooserBean.class);
-    private Category[] categories;
+ 
+    
+    private String mode = "all";   //@todo - externalize or make enum
+    private String selectedModule = "";
+    
+    
+    public TaskInfo [] getAllTasks() {
+        System.out.println("Starting get tasks");
+        String user = getUserId();       
+        TaskInfo[]  tasks = (new AdminDAO()).getAllTasksForUser(user);
+        System.out.println("Ending get tasks");
+        return tasks;
+    }
+    
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
+    public String getSelectedModule() {
+        return selectedModule;
+    }
+
+
+    public void setSelectedModule(String selectedModule) {
+        this.selectedModule = selectedModule;
+    }
+    
+    public void modeChanged(ActionEvent event) {
+        // @todo -- reload page contents for new mode
+    }
+    
+    public void moduleClicked(ActionEvent event) {   
+        setSelectedModule(getRequest().getParameter("task"));
+    }
+
+   
+    
+    
+    
+    /*private Category[] categories;
     private List<SelectItem> modules;
 
     public ModuleChooserBean() {
@@ -87,5 +134,5 @@ public class ModuleChooserBean {
         }
 
         return out;
-    }
+    }*/
 }
