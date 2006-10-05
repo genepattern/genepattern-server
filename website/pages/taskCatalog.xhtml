@@ -46,35 +46,39 @@
 				correct</p>
 			</c:when>
 			<c:otherwise>
-		<table width="100%" border="0" cellpadding="10" cellspacing="0">
+				<table width="100%" border="0" cellpadding="10" cellspacing="0">
 					<tr valign="top">
 						<td colspan="2">Filter tasks by:</td>
 					</tr>
 					<tr valign="top">
-						<td><h:form id="filterForm">
+						
+						<td><f:view><h:form id="filterForm">
 							<table>
 								<tr>
 									<td></td>
 									<td valign='top'><b>state</b><br />
 
 									<h:selectManyListbox
-										value="#{taskCatalogBean.statesSelectedValues}" name="state"
+										value="#{taskCatalogBean.selectedStates}" name="state"
 										forceid="true" id="state">
 										<f:selectItems value="#{taskCatalogBean.states}" />
 									</h:selectManyListbox></td>
 									<td valign='top'><b>OS</b><br />
 									<h:selectManyListbox
-										value="#{taskCatalogBean.operatingSystemsSelectedValues}"
+										value="#{taskCatalogBean.selectedOperatingSystems}"
 										name="os" id="os">
 										<f:selectItems value="#{taskCatalogBean.operatingSystems}" />
 									</h:selectManyListbox></td>
+									<td valign='top'><br /><h:selectBooleanCheckbox id="latestOnly"
+										value="#{taskCatalogBean.showingLatestVersionOnly}">Show latest versions of tasks only</h:selectBooleanCheckbox>
+									</td>
 								</tr>
 							</table>
 							<tr>
 								<td><h:commandButton
 									action="#{taskCatalogBean.updateFilters}" value="Refresh" /></td>
 							</tr>
-						</h:form></td>
+						</h:form></f:view></td>
 					</tr>
 				</table>
 				<p class="recentjobs-sh">&nbsp;</p>
@@ -109,7 +113,8 @@
 									value="lsid_version" checked="checked" /></td>
 
 								<td valign="top" height="1"><span class="tasks-broad">
-								<a name="#{t.lsid}" id="#{t.lsid}"></a> <b><nobr>#{t.name}</nobr></b></span> (#{t.lsidVersion})</td>
+								<a name="#{t.lsid}" id="#{t.lsid}"></a> <b><nobr>#{t.name}</nobr></b></span>
+								(#{t.lsidVersion})</td>
 
 								<td valign="top" height="1"><nobr>#{t.taskType}</nobr></td>
 								<td valign="top" colspan="4" rowspan="2">

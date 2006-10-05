@@ -35,18 +35,22 @@ import org.genepattern.util.LSID;
 
 public class TaskCatalogBean {
     private InstallTask[] tasks;
-    private SelectItem[] operatingSystems;
-    private SelectItem[] states;
+    private SelectItem[] operatingSystems = new SelectItem[] { new SelectItem("any") };
+    private SelectItem[] states = new SelectItem[] { new SelectItem("new", "new"),
+            new SelectItem("updated", "updated"), new SelectItem("up to date", "up to date") };;
     private HashSet missingLsids;
+    private boolean showingLatestVersionOnly = true;
+
     private static Logger log = Logger.getLogger(TaskCatalogBean.class);
     private boolean error;
-    // Map of filters. key=filter name, value=List of settings
-    private Map<String, List> filterKeyToValuesMap;
     private InstallTasksCollectionUtils collection;
     private Map<String, InstallTask> lsidToTaskMap;
+    private List<String> selectedStates = Collections.EMPTY_LIST;
+    private List<String> selectedOperatingSystems = Collections.EMPTY_LIST;
     private static final Comparator DESC_COMPARATOR = new DescendingVersionComparator();
 
     public TaskCatalogBean() {
+        System.out.println("constructor " + UIBeanHelper.getRequest().getParameterMap());
         boolean initialInstall = (UIBeanHelper.getRequest().getParameter("initialInstall") != null);
         try {
             collection = new InstallTasksCollectionUtils(UIBeanHelper.getUserId(), initialInstall);
@@ -62,16 +66,14 @@ public class TaskCatalogBean {
             log.error(e);
             return;
         }
-
-        updateFilters();
     }
 
     public InstallTask[] getTasks() {
         return tasks;
     }
 
-    public List<String> getOperatingSystemsSelectedValues() {
-        return filterKeyToValuesMap.get("os");
+    public List<String> getSelectedOperatingSystems() {
+        return selectedOperatingSystems;
     }
 
     public SelectItem[] getOperatingSystems() {
@@ -82,8 +84,8 @@ public class TaskCatalogBean {
         return this.states;
     }
 
-    public List<String> getStatesSelectedValues() {
-        return filterKeyToValuesMap.get("state");
+    public List<String> getSelectedStates() {
+        return selectedStates;
     }
 
     public int getNumberOfTasks() {
@@ -122,8 +124,9 @@ public class TaskCatalogBean {
     }
 
     public void updateFilters() {
-        filterKeyToValuesMap = new HashMap<String, List>();
-
+        System.out.println("updateFilters");
+        Map<String, List> filterKeyToValuesMap = new HashMap<String, List>();
+        this.showingLatestVersionOnly = "true".equals(UIBeanHelper.getRequest().getParameter("filterForm:latestOnly"));
         String[] requestedLsidsArray = UIBeanHelper.getRequest().getParameterValues(GPConstants.LSID);
 
         // if a specific list of LSIDs is requested, display just those
@@ -141,38 +144,46 @@ public class TaskCatalogBean {
             }
         }
         else {
-            String[] filters = { "os", "state" };
 
-            for (String filter : filters) {
-                String[] filterValues = UIBeanHelper.getRequest().getParameterValues("filterForm:" + filter);
-                if (filterValues != null && filterValues.length > 0) {
-                    filterKeyToValuesMap.put(filter, Arrays.asList(filterValues));
-                }
+            selectedOperatingSystems = UIBeanHelper.getRequest().getParameterValues("filterForm:os") != null ? Arrays
+                    .asList(UIBeanHelper.getRequest().getParameterValues("filterForm:os")) : null;
+
+            selectedStates = UIBeanHelper.getRequest().getParameterValues("filterForm:state") != null ? Arrays
+                    .asList(UIBeanHelper.getRequest().getParameterValues("filterForm:state")) : null;
+
+            if (selectedOperatingSystems != null && selectedOperatingSystems.size() > 0) {
+                filterKeyToValuesMap.put("os", selectedOperatingSystems);
+            }
+            if (selectedStates != null && selectedStates.size() > 0) {
+                filterKeyToValuesMap.put("state", selectedStates);
             }
 
-            List<String> osFilter = filterKeyToValuesMap.get("os");
-
-            if (osFilter == null) { // user did not select a field for OS, set
+            if (selectedOperatingSystems == null && selectedOperatingSystems.size() > 0) { // user
+                // did
+                // not
+                // select
+                // a
+                // field for OS, set
                 // the
                 // default
                 boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
                 boolean isMac = System.getProperty("mrj.version") != null;
                 boolean isLinux = System.getProperty("os.name").toLowerCase().startsWith("linux");
 
-                osFilter = new ArrayList<String>();
-                filterKeyToValuesMap.put("os", osFilter);
+                selectedOperatingSystems = new ArrayList<String>();
+                filterKeyToValuesMap.put("os", selectedOperatingSystems);
                 if (isWindows) { // remove all tasks that are not windows or
                     // any
-                    osFilter.add("Windows");
+                    selectedOperatingSystems.add("Windows");
                 }
                 else if (isMac) {
-                    osFilter.add("Mac OS X");
+                    selectedOperatingSystems.add("Mac OS X");
                 }
                 else if (isLinux) {
-                    osFilter.add("Linux");
+                    selectedOperatingSystems.add("Linux");
                 }
 
-                osFilter.add("any");
+                selectedOperatingSystems.add("any");
 
             }
 
@@ -183,21 +194,18 @@ public class TaskCatalogBean {
                 operatingSystems[i] = new SelectItem(os);
             }
 
-            List<String> stateFilterValues = filterKeyToValuesMap.get("state");
-            states = new SelectItem[] { new SelectItem("new", "new"), new SelectItem("updated", "updated"),
-                    new SelectItem("up to date", "up to date") };
-
-            if (stateFilterValues == null || stateFilterValues.size() == 0) {
-                stateFilterValues = new ArrayList<String>(2);
-                stateFilterValues.add(InstallTask.NEW);
-                stateFilterValues.add(InstallTask.UPDATED);
-                filterKeyToValuesMap.put("state", stateFilterValues);
+            if (selectedStates == null && selectedStates.size() > 0) {
+                selectedStates = new ArrayList<String>(2);
+                selectedStates.add(InstallTask.NEW);
+                selectedStates.add(InstallTask.UPDATED);
+                filterKeyToValuesMap.put("state", selectedStates);
             }
 
         }
         this.tasks = collection.filterTasks(filterKeyToValuesMap);
 
-        if (!filterKeyToValuesMap.get("state").contains("up to date")) {
+        System.out.println("showingLatestVersionOnly " + showingLatestVersionOnly);
+        if (this.showingLatestVersionOnly) {
             // remove all earlier versions of modules
             // build HashMap of associations between LSIDs and InstallTask
             // objects
@@ -218,7 +226,7 @@ public class TaskCatalogBean {
             }
             this.tasks = new InstallTask[baseLsidToTasksMap.size()];
             int i = 0;
-            System.out.println(baseLsidToTasksMap);
+
             for (String baseLsid : baseLsidToTasksMap.keySet()) {
                 List<InstallTask> taskList = baseLsidToTasksMap.get(baseLsid);
                 Collections.sort(taskList, DESC_COMPARATOR);
@@ -239,6 +247,15 @@ public class TaskCatalogBean {
             return new Integer(Integer.parseInt(t2.getLsidVersion())).compareTo(Integer.parseInt(t1.getLsidVersion()));
         }
 
+    }
+
+    public boolean isShowingLatestVersionOnly() {
+        return showingLatestVersionOnly;
+    }
+
+    public void setShowingLatestVersionOnly(boolean showLatestVersionOnly) {
+        System.out.println("set showingLatestVersionOnly to " + showingLatestVersionOnly);
+        this.showingLatestVersionOnly = showLatestVersionOnly;
     }
 
 }
