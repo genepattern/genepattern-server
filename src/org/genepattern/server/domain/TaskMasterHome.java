@@ -45,7 +45,7 @@ public class TaskMasterHome extends AbstractHome {
         }
     }
 
-    public List<Props> findByExample(TaskMaster instance) {
+    public List<TaskMaster> findByExample(TaskMaster instance) {
         log.debug("finding TaskMaster instance by example");
         try {
             return HibernateUtil.getSession().createCriteria("org.genepattern.server.domain.TaskMaster").add(
@@ -56,4 +56,16 @@ public class TaskMasterHome extends AbstractHome {
             throw re;
         }
     }
+    
+    public List<TaskMaster> findAll() {
+        try {
+            return HibernateUtil.getSession().createQuery("from org.genepattern.server.domain.TaskMaster").list();
+            
+        }
+        catch (RuntimeException re) {
+            log.error("get failed", re);
+            throw re;
+        }
+    }
+
 }
