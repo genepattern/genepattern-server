@@ -296,7 +296,7 @@ public class AdminDAO extends BaseDAO {
         return (TaskInfo[]) map.values().toArray(new TaskInfo[0]);
     }
 
-    public TaskInfo[] getLatestTasks(String username) throws AdminDAOSysException {
+    public TaskInfo[] getLatestTasks(String username) {
 
         TaskInfo[] tasks = this.getAllTasksForUser(username);
         if (tasks == null) {
@@ -309,7 +309,8 @@ public class AdminDAO extends BaseDAO {
             return tasksArray;
         }
         catch (MalformedURLException mfe) {
-            throw new AdminDAOSysException("A database error occurred.", mfe);
+            log.error(mfe);
+            throw new OmnigeneException("Error fetching task:  Malformed URL: " + mfe.getMessage());
         }
     }
 

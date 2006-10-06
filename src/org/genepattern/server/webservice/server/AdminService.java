@@ -123,7 +123,7 @@ public class AdminService implements IAdminService {
 		Thread.yield();
 		try {
 			return dataService.getLatestTasks(getUserName());
-		} catch (AdminDAOSysException e) {
+		} catch (Exception e) {
 			throw new WebServiceException(e);
 		}
 	}
