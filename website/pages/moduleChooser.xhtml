@@ -13,7 +13,7 @@
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
       
         <!-- tasks and pipelines area -->
-        <tr>
+        <tr class="#{moduleChooserBean.userId}">
           <td width="242" rowspan="2" valign="top" class="tasks" id="tasks">
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
               <tr>
@@ -41,27 +41,29 @@
               
               
                 <!-- Task List.   Task items have a blue bullet: "bullet-task.gif" -->
-                <t:dataList var="taskInfo" value="#{moduleChooserBean.allTasks}">
-                	<h:outputText value="#{taskInfo.name}"/>
-                </t:dataList>
-                <t:dataTable var="taskInfo" value="#{moduleChooserBean.allTasks}" id="moduleList">
-                  <t:column>&#160;</t:column>
-                  <t:column>
-                    <t:graphicImage value="/images/bullet-task.gif" width="4" height="4" rendered="#{not taskInfo.pipeline}"/>
-                    <t:graphicImage value="/images/bullet-pipeline.gif" width="4" height="4" rendered="#{taskInfo.pipeline}"/>
-                  </t:column>
-                  <t:column>
-                    <a4j:commandLink value="#{taskInfo.name}" actionListener="#{moduleChooserBean.moduleClicked}" reRender="taskPanel">
-                      <f:param name="task" value="#{taskInfo.name}"/>
-                    </a4j:commandLink>
-                  </t:column>
-                  <t:column>&#160;</t:column>
-                </t:dataTable>
+                
+ 
+                  <t:dataList var="taskInfo" value="#{moduleChooserBean.allTasks}">         
+                    <tr class="#{taskInfo.name == moduleChooserBean.selectedModule ? 'tasks_on' : (taskInfo.userId == moduleChooserBean.userId ? 'task-mine' : '')}">
+                      <td>&#160;</td>
+                      <td>
+                        <t:graphicImage value="#{taskInfo.pipeline ? '/images/bullet-pipeline.gif' : '/images/bullet-task.gif'}"/>
+                      </td>
+                      <td>
+                        <h:commandLink value="#{taskInfo.name}" actionListener="#{moduleChooserBean.moduleClicked}">
+                          <f:param name="task" value="#{taskInfo.name}"/>
+                        </h:commandLink>
+                      </td>
+                      <td>&#160;</td>
+                    </tr>
+                  </t:dataList>
+
               </tr>
             </table>
           </td>
         </tr>
       </table>
+      <h:outputText value="SM = #{moduleChooserBean.selectedModule}" id = "moduleOutputId"/>
     </h:form>
   </body>
 </html>
