@@ -32,21 +32,20 @@ import org.genepattern.webservice.WebServiceException;
 
 public class ModuleChooserBean {
     Logger log = Logger.getLogger(ModuleChooserBean.class);
- 
-    
-    private String mode = "all";   //@todo - externalize or make enum
+    List<Category> categories = null;
+
+    private String mode = "all"; // @todo - externalize or make enum
     private String selectedModule = "";
-    
-    
-    public TaskInfo [] getAllTasks() {
-        System.out.println("Starting get tasks");
-        System.out.println("Selected module=" + this.getSelectedModule());
-        String user = getUserId();       
-        TaskInfo[]  tasks = (new AdminDAO()).getAllTasksForUser(user);
-        System.out.println("Ending get tasks");
-        return tasks;
+
+    public List<Category> getAllTasks() {
+        if (categories == null) {
+            categories = new ArrayList<Category>();
+            categories.add(getRecentlyUsed());
+            categories.add(getAll());
+        }
+        return categories;
     }
-    
+
     public String getMode() {
         return mode;
     }
@@ -54,67 +53,43 @@ public class ModuleChooserBean {
     public void setMode(String mode) {
         this.mode = mode;
     }
+
     public String getSelectedModule() {
         return selectedModule;
     }
 
-
     public void setSelectedModule(String selectedModule) {
         this.selectedModule = selectedModule;
     }
-    
+
     public void modeChanged(ActionEvent event) {
         // @todo -- reload page contents for new mode
     }
-    
-    public void moduleClicked(ActionEvent event) {   
+
+    public void moduleClicked(ActionEvent event) {
         setSelectedModule(getRequest().getParameter("task"));
-        System.out.println("Set module to: " + selectedModule);
     }
 
-  
     public String getUserId() {
         return UIBeanHelper.getUserId();
     }
-    
-    
-    /*private Category[] categories;
-    private List<SelectItem> modules;
 
-    public ModuleChooserBean() {
-        LocalAdminClient admin = new LocalAdminClient(UIBeanHelper.getUserId());
-
-        try {
-            Map taskTypes = admin.getLatestTasksByType();
-            modules = asSelectItemList(admin.getLatestTasks());
-            this.categories = new Category[taskTypes.size()];
-            int i = 0;
-            for (Iterator it = taskTypes.keySet().iterator(); it.hasNext();) {
-                String key = (String) it.next();
-                Collection tasks = (Collection) taskTypes.get(key);
-                categories[i++] = new Category(key, asSelectItemList(tasks));
-            }
-
-        }
-        catch (WebServiceException e) {
-            log.error(e);
-        }
+    private Category getRecentlyUsed() {
+        AdminDAO dao = new AdminDAO();
+        return new Category("Recently Used", dao.getLatestTasks(getUserId()));
     }
 
-    public List<SelectItem> getLatestModules() {
-        return modules;
-
+    private Category getAll() {
+        AdminDAO dao = new AdminDAO();
+        return new Category("All", dao.getAllTasksForUser(getUserId()));
     }
 
-    public Category[] getCategories() {
-        return categories;
-    }
-
-    public static class Category {
+    public class Category {
+        private boolean expanded = true;
         private String name;
-        private List<SelectItem> modules;
+        private TaskInfo[] modules;
 
-        public Category(String name, List<SelectItem> modules) {
+        public Category(String name, TaskInfo[] modules) {
             this.name = name;
             this.modules = modules;
         }
@@ -123,20 +98,23 @@ public class ModuleChooserBean {
             return name;
         }
 
-        public List<SelectItem> getModules() {
+        public TaskInfo[] getModules() {
             return modules;
+        }
+
+        public boolean isExpanded() {
+            return expanded;
+        }
+
+        public void setExpanded(boolean exp) {
+            expanded = exp;
+        }
+
+        public void toggleExpanded(ActionEvent event) {
+            expanded = !expanded;
+            System.out.println("toggle");
         }
 
     }
 
-    protected List<SelectItem> asSelectItemList(Collection in) {
-        ArrayList<SelectItem> out = new ArrayList<SelectItem>();
-
-        for (Iterator iter = in.iterator(); iter.hasNext();) {
-            TaskInfo ti = (TaskInfo) iter.next();
-            out.add(new SelectItem(ti.getTaskInfoAttributes().get("LSID"), ti.getName()));
-        }
-
-        return out;
-    }*/
 }
