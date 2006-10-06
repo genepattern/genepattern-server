@@ -339,7 +339,7 @@ public class HTMLPipelineView implements IPipelineView {
 		try {
 			String rootDir = System.getProperty("webappDir", "./webapps/"+contextPath);
 			File f = new File(rootDir+"/navBar.html");
-			System.out.println("F=" + f.getCanonicalPath() + "  " + f.exists());
+			//System.out.println("F=" + f.getCanonicalPath() + "  " + f.exists());
 		InputStream is = new FileInputStream(f);
 		if (is == null) {
 			System.err.println("null connection to navbar.jsp");
@@ -349,7 +349,7 @@ public class HTMLPipelineView implements IPipelineView {
 			while ((numRead = is.read(buf)) != -1) {
 				String s = new String(buf, 0, numRead);
 				writer.write(s);
-				System.out.println("S=" + s);
+				//System.out.println("S=" + s);
 			}
 		}
 		} catch (Exception e){
@@ -626,7 +626,7 @@ public class HTMLPipelineView implements IPipelineView {
 
 			// remove this line when visualization is enabled again
 			writer
-					.write("<br><hr><input type=\"hidden\" name=\"display\" value=\"\"><br>\n");
+					.write("<br><hr class=\"pipelineDesigner\"><input type=\"hidden\" name=\"display\" value=\"\"><br>\n");
 
 			writer.write("<center>");
 			writer
@@ -926,6 +926,7 @@ public class HTMLPipelineView implements IPipelineView {
 									+ "\");\n");
 								
 								s.append(" document.getElementById('span_"+taskNum+"_"+i +"').style.display=\"inline\";   ");
+								s.append(" document.getElementById('span_input_"+taskNum+"_"+i +"').style.display=\"inline\";   ");
 
 							}
 						}

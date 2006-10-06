@@ -331,8 +331,11 @@ function promptOnRunChecked(checkbox, taskNum, param, paramName) {
 	if (checkbox.checked) {
 		spanner = document.getElementById('span_' + taskNum + '_' + param);
 		spanner.style.display = "inline";
+		spannerInput = document.getElementById('span_input_' + taskNum + '_' + param);
+		spannerInput.style.display = "none";
+		spannerInput = document.getElementById('span_altinputdisplay_' + taskNum + '_' + param);
+		spannerInput.style.display = "inline";
 	
-
 		if (paramName != '') {
 			ctl = frm['t' + taskNum + '_' + paramName];
 			if (ctl.type == 'text') {
@@ -360,6 +363,11 @@ function promptOnRunChecked(checkbox, taskNum, param, paramName) {
 	} else {
 		spanner = document.getElementById('span_' + taskNum + '_' + param);
 		spanner.style.display = "none";
+		spannerInput = document.getElementById('span_input_' + taskNum + '_' + param);
+		spannerInput.style.display = "inline";
+		spannerInput = document.getElementById('span_altinputdisplay_' + taskNum + '_' + param);
+		spannerInput.style.display = "none";
+		
 	
 
 		// unchecked the box
@@ -395,7 +403,7 @@ function openWindow(divid){
 
 function setPosition(e, divid){
     xpos=(ie5? event.clientX : e.clientX) + "px"
-    ypos=((ie5? event.clientX : e.clientX)+200)+"px"
+    ypos=((ie5? event.clientY : e.clientY)+200)+"px"
     document.getElementById(divid).style.left=xpos 
     document.getElementById(divid).style.top=ypos    
 
@@ -643,11 +651,11 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		alert('no such task \"' + taskLSID + '\".  Aborting pipeline loading.');
 		stopLoading = true;
 		window.stop();	
-		return ('<hr>no such task \"' + taskLSID + '\".  Aborting pipeline loading.');
+		return ('<hr class="pipelineDesigner">no such task \"' + taskLSID + '\".  Aborting pipeline loading.');
 	}
 	taskFields = taskFields + '<a name="t' + taskNum + '">\n';
 	taskFields = taskFields + '<input type="hidden" name="t' + taskNum + '_taskName" value="' + task.name + '">';
-	taskFields = taskFields + '<hr>\n';
+	taskFields = taskFields + '<hr class="pipelineDesigner">\n';
 	taskFields = taskFields + '<table><tr><td valign="top"><font size="+1"><b>' + (taskNum+1) + '.&nbsp;<a name="' + task.name + '" href="addTask.jsp?name=' + task.lsid + '" target="_new">' + task.name + '</a>:</b></font>&nbsp;</td><td valign="top">' + task.description + "</td></tr></table>";
 	taskFields = taskFields + '<table cols="3" valign="top" width="100%"><col align="center" width="10%"><col align="right" width="10%"><col align="left" width="*">';
 	taskFields = taskFields + '<tr><td>&nbsp;</td><td align="right"><b>LSID:</b></td><td>\n';
@@ -706,23 +714,16 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		
 		// XXX add ability to submit an alternate name for prompt when run params
   		taskFields = taskFields + '<span id="span_'+taskNum+'_'+pnum+'" style="display:none">'
-		//taskFields = taskFields + '<br>Name:<input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/>';
-		//taskFields = taskFields + '<br>Desc:<input name="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/>';
-
-taskFields = taskFields + '<div id="div_'+taskNum+'_'+pnum+'" style="position:absolute;background-color:#EBEBEB;left:0px;top:0px;display:none" onSelectStart="return false">';
-
-taskFields = taskFields + '<div align="right" class="navbar">';
-taskFields = taskFields + '<img src="skin/close.gif" onClick="closeit(\'div_'+taskNum+'_'+pnum+'\')">';
-taskFields = taskFields + '</div><div id="dwindowcontent" style="height:100%;text-align:center;">';
-taskFields = taskFields + 'Define alternative name and description to display when prompting for this input.<br>';
-taskFields = taskFields + '<br><table><tr><td>Alt. Name:</td><td><input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/></td></tr>';
-taskFields = taskFields + '<tr><td>Alt. Description:</td><td><input name="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/></td></tr>';
-taskFields = taskFields + '<tr><td colspan=2 align="center"><input type="button" value="close" onclick="closeit(\'div_'+taskNum+'_'+pnum+'\')"/></td></tr>';
-taskFields = taskFields + '</table>';
-
-taskFields = taskFields + '</div></div>';
-
-		taskFields = taskFields + '<a onMouseDown="setPosition(event,\'div_'+taskNum+'_'+pnum+'\')" href="javascript:openWindow(\'div_'+taskNum+'_'+pnum+'\')" ><img src="skin/info_obj.gif" style="border:0;"/></a>';
+		
+		taskFields = taskFields + '<div id="div_'+taskNum+'_'+pnum+'" style="position:absolute;background-color:#EBEBEB;left:0px;top:0px;display:none" onSelectStart="return false">';
+		taskFields = taskFields + '<div align="right" class="navbar">';
+		taskFields = taskFields + '<img src="skin/close.gif" onClick="closeit(\'div_'+taskNum+'_'+pnum+'\')">';
+		taskFields = taskFields + '</div><div id="dwindowcontent" style="height:100%;text-align:center;">';
+		taskFields = taskFields + 'Define alternative name and description to display when prompting for this input.<br>';
+		taskFields = taskFields + '<br><table><tr><td>Alt. Name:</td><td><input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/></td></tr>';
+		taskFields = taskFields + '<tr><td>Alt. Description:</td><td><input name="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/></td></tr>';
+		taskFields = taskFields + '<tr><td colspan=2 align="center"><input type="button" value="close" onclick="closeit(\'div_'+taskNum+'_'+pnum+'\')"/></td></tr>';
+		taskFields = taskFields + '</table></div></div>';
 		taskFields = taskFields + '  </span>';
 
 		// XXX END: add ability to submit an alternate name for prompt when run params
@@ -739,7 +740,7 @@ taskFields = taskFields + '</div></div>';
 		taskFields = taskFields + '</td>\n';
 		
 				// input area for the field
-		taskFields = taskFields + '	<td valign="top">';
+		taskFields = taskFields + '	<td valign="top"> <span id="span_input_'+taskNum+'_'+pnum+'" style="display:inline">';
 		if (pi.isInputFile) {
 			taskFields = taskFields + '<input type="file" name="t' + taskNum + '_' + pi.name + 
 						  '" size="60" ' +
@@ -783,7 +784,14 @@ taskFields = taskFields + '</div></div>';
 				taskFields = taskFields + ' &nbsp;' + pi.description;
 			}
 		}
-		taskFields = taskFields + "</td></tr>\n";
+		taskFields = taskFields + "</span>";
+		
+		taskFields= taskFields + '<span id="span_altinputdisplay_'+ taskNum +'_'+pnum+'" style="display:none">';
+		
+		taskFields= taskFields + '<a onMouseDown="setPosition(event,\'div_'+taskNum+'_'+pnum+'\')"  href="javascript:openWindow(\'div_'+taskNum+'_'+pnum+'\')">set prompt when run display settings...</a>';
+		
+		taskFields = taskFields + "</span></td></tr>\n";
+		
 	}
 	taskFields = taskFields + '</table>\n';
 	taskFields = taskFields + '<br><center>\n';
@@ -1232,7 +1240,7 @@ function sortSuggested(task1, task2) {
 // when a new task is requested, generate the inital task type selection HTML
 function newTaskHTML(taskNum) {
 	var newTask = '';
-	newTask = newTask + '<hr>\n';
+	newTask = newTask + '<hr class="pipelineDesigner">\n'; 
 	newTask = newTask + '<a name="' + (taskNum+1) + '">\n'; // anchor for each task
 
 	// build a list of tasks whose input file formats potentially match the output formats of tasks already in the pipeline
