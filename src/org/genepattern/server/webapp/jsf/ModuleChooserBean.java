@@ -40,6 +40,7 @@ public class ModuleChooserBean {
     
     public TaskInfo [] getAllTasks() {
         System.out.println("Starting get tasks");
+        System.out.println("Selected module=" + this.getSelectedModule());
         String user = getUserId();       
         TaskInfo[]  tasks = (new AdminDAO()).getAllTasksForUser(user);
         System.out.println("Ending get tasks");
@@ -68,10 +69,13 @@ public class ModuleChooserBean {
     
     public void moduleClicked(ActionEvent event) {   
         setSelectedModule(getRequest().getParameter("task"));
+        System.out.println("Set module to: " + selectedModule);
     }
 
-   
-    
+  
+    public String getUserId() {
+        return UIBeanHelper.getUserId();
+    }
     
     
     /*private Category[] categories;
