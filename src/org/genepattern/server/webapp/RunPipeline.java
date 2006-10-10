@@ -234,7 +234,7 @@ public class RunPipeline {
 	  // if there are no errors and the log file is empty, then delete it
 	  File log = new File(logFile);
 	  if (log.exists()){
-		if (log.length() < 1L) log.delete();
+		if (log.length() < 2L) log.deleteOnExit();
 	  }
 
     }
