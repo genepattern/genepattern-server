@@ -92,7 +92,7 @@ Installing Modules:<br>
 	InstallTask[] tasks = collection.getAvailableModules();
 	HashMap hmLSIDToInstallTask = new HashMap();
 	for (int t = 0; t < tasks.length; t++) {
-		hmLSIDToInstallTask.put(tasks[t].getLSID(), tasks[t]);
+		hmLSIDToInstallTask.put(tasks[t].getLsid(), tasks[t]);
 	}
 
 
@@ -131,9 +131,9 @@ Installing Modules:<br>
 			try {
 				boolean wasInstalled = installTask.install(userID, GPConstants.ACCESS_PUBLIC, taskIntegrator);
 %>
-				&nbsp;&nbsp;&nbsp;&nbsp;<%= wasInstalled ? "Overwrote" : "Installed" %> <a href="addTask.jsp?name=<%= installTask.getLSID() %>"><%= installTask.getName() %></a> version <%= new LSID(installTask.getLSID()).getVersion() %><br>
+				&nbsp;&nbsp;&nbsp;&nbsp;<%= wasInstalled ? "Overwrote" : "Installed" %> <a href="addTask.jsp?name=<%= installTask.getLsid() %>"><%= installTask.getName() %></a> version <%= new LSID(installTask.getLsid()).getVersion() %><br>
 				<script language="Javascript">
-				addNavbarItem("<%= installTask.getName() %>", "<%= installTask.getLSID() %>");
+				addNavbarItem("<%= installTask.getName() %>", "<%= installTask.getLsid() %>");
 				</script>
 <%
 			} catch (TaskInstallationException tie) {

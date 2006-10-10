@@ -61,21 +61,21 @@ try {
 for (int i=0; i < tasks.length; i++){
 	InstallTask task = tasks[i];
 
-	String lsidnv = (new LSID(task.getLSID())).toStringNoVersion();
-	String v2 = task.getLSIDVersion();
+	String lsidnv = (new LSID(task.getLsid())).toStringNoVersion();
+	String v2 = task.getLsidVersion();
 
 	InstallTask altTask = (InstallTask)latestVersions.get(lsidnv);
 	if (altTask == null) {
 		latestVersions.put(lsidnv, task);
 	} else {
-		String v1 = altTask.getLSIDVersion();
+		String v1 = altTask.getLsidVersion();
 		if ((new Integer(v2)).intValue() > (new Integer(v1)).intValue()) latestVersions.put(lsidnv, task);
 	}
 }
 for (Iterator iter = latestVersions.keySet().iterator(); iter.hasNext(); ){
 	String key  = (String)iter.next();
 	InstallTask task = (InstallTask)latestVersions.get(key);
-	String zipFile = downloadZip(moduleZipDir , task.getName(), task.getURL()); 
+	String zipFile = downloadZip(moduleZipDir , task.getName(), task.getUrl()); 
 
 	out.println("<br>" + task.getName() + "   " + zipFile);
 
