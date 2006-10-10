@@ -402,12 +402,13 @@ function openWindow(divid){
 }
 
 function setPosition(e, divid){
-    xpos=(ie5? event.clientX : e.clientX) + "px"
-    ypos=((ie5? event.clientY : e.clientY)+200)+"px"
+   
+    xpos=(document.body.scrollLeft + (ie5? event.clientX : e.clientX)) + "px"
+    ypos=(document.body.scrollTop - 100  + ((ie5? event.clientY : e.clientY)))+"px"
     document.getElementById(divid).style.left=xpos 
-    document.getElementById(divid).style.top=ypos    
+    document.getElementById(divid).style.top=ypos  
 
-}
+   }
 
 function closeit(divid){
 	document.getElementById(divid).style.display="none"
@@ -476,7 +477,7 @@ function changeTaskType(selectorTaskType, taskNum) {
 	taskSelector.options.length = 0;
 	if (selectorTaskType.selectedIndex == 0) return; // user chose the "choose task" heading, item 0
 	var type = selectorTaskType.options[selectorTaskType.selectedIndex].value;
-	taskSelector.options[0] = new Option("Choose a " + selectorTaskType.options[selectorTaskType.selectedIndex].text + " task", "");
+	taskSelector.options[0] = new Option("- Task -", "");
 	taskSelector.options[0].style['fontWeight'] = "bold";
 	var versionlessLSIDs = new Array();
  	for (i in TaskTypes[type]) {
@@ -498,6 +499,9 @@ function changeTaskType(selectorTaskType, taskNum) {
 		taskSelector.options[taskSelector.options.length] = new Option(optionText, task.lsid);
 		var t = taskSelector.options.length-1;
 		taskSelector.options[t].setAttribute('class', "tasks-" + taskLSID.authorityType);
+		taskSelector.options[t].style['fontWeight'] = "normal";
+	
+	
 	}
 }
 
@@ -653,13 +657,14 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		window.stop();	
 		return ('<hr class="pipelineDesigner">no such task \"' + taskLSID + '\".  Aborting pipeline loading.');
 	}
+	
 	taskFields = taskFields + '<a name="t' + taskNum + '">\n';
 	taskFields = taskFields + '<input type="hidden" name="t' + taskNum + '_taskName" value="' + task.name + '">';
 	taskFields = taskFields + '<hr class="pipelineDesigner">\n';
-	taskFields = taskFields + '<table><tr><td valign="top"><font size="+1"><b>' + (taskNum+1) + '.&nbsp;<a name="' + task.name + '" href="addTask.jsp?name=' + task.lsid + '" target="_new">' + task.name + '</a>:</b></font>&nbsp;</td><td valign="top">' + task.description + "</td></tr></table>";
+	taskFields = taskFields + '<table><tr><td valign="top"><font size="+1"><b>' + (taskNum+1) + '.&nbsp;' + task.name + ':</b></font>&nbsp;</td><td valign="top">' + task.description + "</td></tr></table>";
 	taskFields = taskFields + '<table cols="3" valign="top" width="100%"><col align="center" width="10%"><col align="right" width="10%"><col align="left" width="*">';
-	taskFields = taskFields + '<tr><td>&nbsp;</td><td align="right"><b>LSID:</b></td><td>\n';
-	taskFields = taskFields + '<input type="hidden" name="t' + taskNum + '_taskLSID" value="' + task.lsid + '" size="80">' + task.lsid + '<br>';
+	taskFields = taskFields + '<tr><td>&nbsp;</td><td></td><td>\n';
+	taskFields = taskFields + '<input type="hidden" name="t' + taskNum + '_taskLSID" value="' + task.lsid + '" size="80"><br>';
 	taskFields = taskFields + '</td></tr>\n';
 
 	// create selector showing all versions of this task (same authority/namespace/identifier)
@@ -1304,8 +1309,8 @@ nextTask:
 
 	newTask = newTask + '<table>\n';
 	newTask = newTask + '<tr><td valign="top">\n';
-	newTask = newTask + '<select onchange="changeTaskType(this, ' + taskNum + ')" name="notused" size="' + (TaskTypesList.length+1) + '">\n';
-	newTask = newTask + '<option value="" selected style="font-weight: bold">task types</option>\n';
+	newTask = newTask + 'Choose <select onchange="changeTaskType(this, ' + taskNum + ')" name="notused" >\n';
+	newTask = newTask + '<option value="" selected style="font-weight: bold">- Category -</option>\n';
 
 	if (numSuggested > 0) {
 		newTask = newTask + '<option value="' + suggested + '">' + suggested + '</option>\n';
@@ -1317,8 +1322,11 @@ nextTask:
 		newTask = newTask + '<option value="' + TaskTypesList[taskType] + '">' + name + '</option>\n';
 	}
 	newTask = newTask + '</select></td>\n';
-	newTask = newTask + '<td valign="top"><font size="+3">&#8594;</font></td>';
+	newTask = newTask + '<td valign="top"></td>';
 	newTask = newTask + '<td valign="top"><select name="t' + taskNum + '" onchange="chgTask(this, ' + taskNum + ')">\n';
+	<!-- /* newTask = newTask + '<option value="" selected style="font-weight: bold">- Task -</option>'; */ -->
+	
+	
 	newTask = newTask + '</select></td></tr></table>\n';
 	newTask = newTask + '<input type="hidden" name="t' + taskNum + '_taskName" value="' + NOT_SET + '">';
 	if (taskNum > 0) {
