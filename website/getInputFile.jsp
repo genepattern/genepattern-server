@@ -73,5 +73,7 @@
             is.close();
         }
     }
+    out.clear();
+    out = pageContext.pushBody(); 
 
 %>
