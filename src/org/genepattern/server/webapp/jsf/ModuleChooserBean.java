@@ -17,6 +17,7 @@ import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,27 @@ public class ModuleChooserBean {
     private String selectedModule = "";
 
     public List<Category> getAllTasks() {
+        tasksByCatgory();
+        if (categories == null) {
+            categories = new ArrayList<Category>();
+            categories.add(getRecentlyUsed());
+            categories.add(getAll());
+        }
+        return categories;
+    }
+    
+    public List<Category> getTaskByCategory() {
+        
+        if (categories == null) {
+            categories = new ArrayList<Category>();
+            categories.add(getRecentlyUsed());
+            categories.add(getAll());
+        }
+        return categories;
+    }
+
+    public List<Category> getTaskBySuite() {
+        
         if (categories == null) {
             categories = new ArrayList<Category>();
             categories.add(getRecentlyUsed());
@@ -82,6 +104,27 @@ public class ModuleChooserBean {
     private Category getAll() {
         AdminDAO dao = new AdminDAO();
         return new Category("All", dao.getAllTasksForUser(getUserId()));
+    }
+    
+    private void tasksByCatgory() {
+        
+        TaskInfo[] alltasks = (new AdminDAO()).getAllTasksForUser(getUserId());
+        Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
+        
+        for(int i=0; i<alltasks.length; i++) {
+            TaskInfo ti = alltasks[i];
+            String taskType = ti.getTaskInfoAttributes().get("taskType");
+            List<TaskInfo> tasks = taskMap.get(taskType);
+            if(tasks == null) {
+                tasks = new ArrayList<TaskInfo>();
+                taskMap.put(taskType, tasks);
+            }
+            tasks.add(ti);
+        }
+        
+        List<String> categories = new ArrayList(taskMap.keySet());
+        
+        
     }
 
     public class Category {

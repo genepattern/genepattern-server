@@ -45,7 +45,13 @@ public class RunTaskBean {
     private List<String> versions;
 
     public RunTaskBean() {
-        setTask(UIBeanHelper.getRequest().getParameter("lsid"));
+        // Get the ModuleChooserBean.  This is a session scoped bean containing the currently 
+        // selected task.
+        ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper.getManagedBean("#{moduleChooserBean}");
+        if(chooser != null) {
+            setTask(chooser.getSelectedModule());
+        }
+        //setTask(UIBeanHelper.getRequest().getParameter("lsid"));
     }
 
     public String getFormAction() {

@@ -26,17 +26,19 @@ import org.genepattern.util.IGPConstants;
 
 public class TaskInfo implements Serializable {
 
+    // The maximum size of the "short name"
+    private static int shortNameLimit = 37;
+
     private int taskID = 0;
-
-    private String taskName = "", description = "", parameter_info = "";
-
+    private String taskName = "";
+    private String description = "";
+    private String parameter_info = "";
+    private String shortName = null;
     private int accessId = 0;
-
     private String userId = null;
 
     // JL
     private Map taskInfoAttributes = null;
-
     private ParameterInfo[] parameterInfoArray = null;
 
     /** Creates new TaskInfo */
@@ -101,6 +103,21 @@ public class TaskInfo implements Serializable {
 
     public String getName() {
         return taskName;
+    }
+
+    public String getShortName() {
+        if (shortName == null) {
+            if (taskName.length() <= shortNameLimit) {
+                shortName = taskName;
+            }
+            else {
+                int stop1 = shortNameLimit / 2;
+                int start2 = taskName.length() - stop1 + 3;
+                shortName = taskName.substring(0, stop1) + "..." + taskName.substring(start2);
+            }
+        }
+        return shortName;
+
     }
 
     public void setName(java.lang.String taskName) {
@@ -210,15 +227,15 @@ public class TaskInfo implements Serializable {
     public String getLsid() {
         return (String) giveTaskInfoAttributes().get("LSID");
     }
-    
-    public  boolean isPipeline(){
+
+    public boolean isPipeline() {
         Map tia = getTaskInfoAttributes();
-        if (tia == null) return false; //default to false if unknown
+        if (tia == null) return false; // default to false if unknown
 
         String type = (String) tia.get(IGPConstants.TASK_TYPE);
         if (type == null) return false; // default to false if unknown
 
-            return type.endsWith("pipeline");
+        return type.endsWith("pipeline");
 
     }
 
