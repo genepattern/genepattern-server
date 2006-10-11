@@ -21,30 +21,45 @@ import org.genepattern.server.user.UserPropKey;
 
 public class UserPrefsBean {
     private UserProp javaFlagsProp;
+    private UserProp recentJobsProp;
 
-    public UserPrefsBean() {
+    public UserPrefsBean() {     
+        javaFlagsProp = getProp(UserPropKey.VISUALIZER_JAVA_FLAGS, System.getProperty("visualizer_java_flags"));
+        recentJobsProp = getProp(UserPropKey.RECENT_JOBS_TO_SHOW, "4");
+    }
+
+    public static UserProp getProp(String name, String defaultValue) {
         User user = (new UserHome()).findById(UIBeanHelper.getUserId());
         assert user != null;
         List<UserProp> props = user.getProps();
-
+        UserProp userProp = null;
         for (UserProp p : props) {
-            if (UserPropKey.VISUALIZER_JAVA_FLAGS.equals(p.getKey())) {
-                javaFlagsProp = p;
+            if (name.equals(p.getKey())) {
+                userProp = p;
                 break;
             }
         }
 
-        if (javaFlagsProp == null) {
-            javaFlagsProp = new UserProp();
-            javaFlagsProp.setKey(UserPropKey.VISUALIZER_JAVA_FLAGS);
-            javaFlagsProp.setValue(System.getProperty("visualizer_java_flags"));
-            props.add(javaFlagsProp);
+        if (userProp == null) {
+            userProp = new UserProp();
+            userProp.setKey(name);
+            userProp.setValue(defaultValue);
+            props.add(userProp);
         }
+        return userProp;
     }
 
     public String save() {
         UIBeanHelper.setInfoMessage("Property successfully updated");
         return "success";
+    }
+
+    public UserProp getNumberOfRecentJobs() {
+        return recentJobsProp;
+    }
+
+    public void setNumberOfRecentJobs(UserProp p) {
+        recentJobsProp = p;
     }
 
     public UserProp getJavaFlags() {
