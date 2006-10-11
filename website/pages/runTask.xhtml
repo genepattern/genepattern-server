@@ -27,6 +27,9 @@ function exportPipeline(lsid, title) {
 <ui:composition template="/templates/common.xhtml">
 	<ui:define name="pageTitle">GenePattern - #{runTaskBean.name}</ui:define>
 
+    <ui:define name="leftNav">
+      <ui:include src="moduleChooser.xhtml"/>
+    </ui:define>
 
 	<ui:define name="centerNav">
 		<td valign="top" class="maintasknav" id="maintasknav"><h:outputLink
@@ -54,7 +57,7 @@ function exportPipeline(lsid, title) {
 
 
 	<ui:define name="body">
-		<ui:include src="runTaskTemplate.xhtml" />
+		<ui:include src="runTaskBody.xhtml" />
 	</ui:define>
 </ui:composition>
 </html>
