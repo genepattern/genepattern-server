@@ -4,18 +4,18 @@ body {
 	line-height: 14px;
 	color: #000000;
 	text-decoration: none;
-	background-color: #CCCC99;
+	background-color: #FFFFFF;
 }
 a:link {
 	color: #000099;
 	text-decoration: none;
 }
 a:hover {
-	color: #000099;
+	color: #6666FF;
 	text-decoration:  none;
 }
 a:active {
-	color: #000099;
+	color: #CCCCFF;
 	text-decoration: none;
 }
 a:visited {
@@ -36,7 +36,7 @@ a:visited {
 	color: #FFFFFF;
 	text-decoration: none;
 	background-color: #6666FF;
-	background-image: url(../images/headerbar-bkg.gif);
+	background-image: url(images/headerbar-bkg.gif);
 	background-repeat: repeat-x;
 }
 .topband a:link {
@@ -353,18 +353,30 @@ a:visited {
 	text-indent: 6px;
 	height: 21px;
 	width: 100%;
-	line-height: 16px;
+	line-height: 20px;
 	vertical-align: top;
+}
+.barhead-task a:link {
+	color: #333366;
+}
+.barhead-task a:hover {
+	color: #6666FF;
+}
+.barhead-task a:active {
+	color: #FFFFFF;
+}
+.barhead-task a:visited {
+	color: #333366;
 }
 .barhead-pipeline {
 	font-weight: bold;
 	font-size: 14px;
 	color: #333366;
-	background-color: #FF9966;
+	background-color: #CCCCFF;
 	text-indent: 6px;
 	height: 21px;
 	width: 100%;
-	line-height: 16px;
+	line-height: 20px;
 	vertical-align: top;
 }
 .barhead-other {
@@ -375,7 +387,7 @@ a:visited {
 	text-indent: 6px;
 	height: 21px;
 	width: 100%;
-	line-height: 16px;
+	line-height: 20px;
 	vertical-align: top;
 }
 .barhead-version {
@@ -394,6 +406,7 @@ a:visited {
 .description {
 	font-size: 9px;
 	color: #000000;
+	line-height: 11px;
 }
 .alternatingtablebkg {
 	background-color: #E8E8F9;
@@ -658,4 +671,18 @@ h6 {
 	font-weight: bold;
 	font-size: 12px;
 	line-height: 14px;
+}
+.pipeline_item {
+	border-style: dotted;
+	border-color: #9999CC;
+	border-width: 2px;
+}
+.pipeline_item2 {
+	border-style: solid;
+	border-color: #9999CC;
+	border-width: 2px;
+}
+.purge_notice {
+	font-weight: bold;
+	color: #990000;
 }
