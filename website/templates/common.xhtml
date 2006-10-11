@@ -1,131 +1,133 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core">
-<head>
-
-<!-- created by rebecca fagan, fagandesign -->
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<title><ui:insert name="pageTitle">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
+  <head>
+    <!-- created by rebecca fagan, fagandesign -->
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+    <title>
+      <ui:insert name="pageTitle">
 				GenePattern
-			</ui:insert></title>
-<link
-	href="#{facesContext.externalContext.requestContextPath}/css/style.css"
-	rel="stylesheet" type="text/css" />
-<ui:insert name="headText" />
-<script language="JavaScript"
-	src="#{facesContext.externalContext.requestContextPath}/js/menu.js"></script>
+			</ui:insert>
+    </title>
+    <link href="#{facesContext.externalContext.requestContextPath}/css/style.css" rel="stylesheet" type="text/css"/>
+    <ui:insert name="headText"/>
+    <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/menu.js"/>
+    <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/mm_menu.js"/>
+  </head>
+  <body onload="MM_preloadImages('#{facesContext.externalContext.requestContextPath}/images/searchicon-1-over.gif','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif')">
+    <script language="JavaScript1.2">mmLoadMenus();</script>
+    
+    
+    <!-- top band with the logo -->
+    <div id="topband" class="topband">
+      <a href="index.jsp" target="_top">
+        <img src="#{facesContext.externalContext.requestContextPath}/images/GP-logo.gif" alt="GenePattern Portal" width="296" height="77" border="0"/>
+      </a>
+    </div>
 
-<script language="JavaScript"
-	src="#{facesContext.externalContext.requestContextPath}/js/mm_menu.js"></script>
-</head>
-<body
-	onload="MM_preloadImages('#{facesContext.externalContext.requestContextPath}/images/searchicon-1-over.gif','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif')">
-<script language="JavaScript1.2">mmLoadMenus();</script>
-<!-- top band with the logo -->
-<div id="topband" class="topband"><a href="index.jsp"
-	target="_top"> <img
-	src="#{facesContext.externalContext.requestContextPath}/images/GP-logo.gif"
-	alt="GenePattern Portal" width="296" height="77" border="0" /> </a></div>
-<!-- horizontal navigation band -->
-<div id="navband1" class="navband1"><font class="navband1-on">
-<a href="index.jsp"> Tasks &amp; Pipelines </a>
-&#160;&#160;&#160;&#160;&#160;&#160; </font> <a href="job_results.html">
-Job Results </a> &#160;&#160;&#160;&#160;&#160;&#160; <a
-	href="create_pipeline.html"> Create Pipeline </a>
-&#160;&#160;&#160;&#160;&#160;&#160; <a href="documentation.html"
-	name="link2" id="link1"
-	onmouseover="MM_showMenu(window.mm_menu_0925165148_0,0,14,null,'link2')"
-	onmouseout="MM_startTimeout();"> Documentation </a>
-&#160;&#160;&#160;&#160;&#160;&#160; <a href="resources.html"
-	name="link4" id="link3"
-	onmouseover="MM_showMenu(window.mm_menu_0925171310_0,0,14,null,'link4')"
-	onmouseout="MM_startTimeout();"> Resources </a>
-&#160;&#160;&#160;&#160;&#160;&#160; <a href="downloads.html"
-	name="link6" id="link5"
-	onmouseover="MM_showMenu(window.mm_menu_0925171536_0,0,14,null,'link6')"
-	onmouseout="MM_startTimeout();"> Downloads </a></div>
-<!-- begin content area. this area contains three columns in an adjustable table, including tasks & pipeline, the center working space, and recent jobs. -->
-<div id="content" class="content">
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-	<tr>
-		<!-- left nav -->
-		<c:if test="${!empty leftNav}">
-			<td width="242" rowspan="2" valign="top" class="tasks" id="tasks">
-			<ui:insert name="leftNav" /></td>
-		</c:if>
-		<!-- end left hand nav bar -->
+    <!-- horizontal navigation band -->
+    <div id="navband1" class="navband1">
+      <font class="navband1-on">
+        <a href="index.jsp"> Tasks &amp; Pipelines </a>
+&#160;&#160;&#160;&#160;&#160;&#160; </font>
+      <a href="job_results.html">
+Job Results </a> &#160;&#160;&#160;&#160;&#160;&#160; <a href="create_pipeline.html"> Create Pipeline </a>
+&#160;&#160;&#160;&#160;&#160;&#160; <a href="documentation.html" name="link2" id="link1" onmouseover="MM_showMenu(window.mm_menu_0925165148_0,0,14,null,'link2')" onmouseout="MM_startTimeout();"> Documentation </a>
+&#160;&#160;&#160;&#160;&#160;&#160; <a href="resources.html" name="link4" id="link3" onmouseover="MM_showMenu(window.mm_menu_0925171310_0,0,14,null,'link4')" onmouseout="MM_startTimeout();"> Resources </a>
+&#160;&#160;&#160;&#160;&#160;&#160; <a href="downloads.html" name="link6" id="link5" onmouseover="MM_showMenu(window.mm_menu_0925171536_0,0,14,null,'link6')" onmouseout="MM_startTimeout();"> Downloads </a>
+    </div>
+    
+    <!-- begin content area. this area contains three columns in an adjustable table, including tasks & pipeline, the center working space, and recent jobs. -->
+    <div id="content" class="content">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+ 
+          <!-- left nav 
+          <c:if test="${!empty leftNav}">  -->
+            <td rowspan="2" valign="top" class="tasks" id="tasks">
+              <ui:insert name="leftNav"/>
+            </td>
+     <!--     </c:if>
+           end left hand nav bar -->
+          
+          <ui:insert name="centerNav"/>
+          
+          <!-- right nav -->
+          <c:if test="${!empty rightNav}">
+            <td width="203" rowspan="2" valign="top" class="recentjobs" id="recentjobs">
+              <ui:insert name="rightNav"/>
+            </td>
+            <!--  end right nav -->
+          </c:if>
+        </tr>
 
-		
-		<ui:insert name="centerNav"></ui:insert>
-	
-		
-		<!-- right nav -->
-		<c:if test="${!empty rightNav}">
-			<td width="203" rowspan="2" valign="top" class="recentjobs"
-				id="recentjobs"><ui:insert name="rightNav" /></td>
-			<!--  end right nav -->
-		</c:if>
-	</tr>
-	<!-- main content area.  -->
-	<tr>
-		<td valign="top" class="maincontent" id="maincontent"><ui:include
-			src="/pages/messages.xhtml" /><ui:insert name="body" /></td>
-	</tr>
-	<!-- footer area -->
-	<tr>
-		<td colspan="3" class="footer">
-		<table width="100%" border="0" cellspacing="0" cellpadding="0">
-			<tr>
-				<td><a href="link"> Job Results </a> | <a href="link">
-				Create Pipeline </a> | <a href="link"> Documentation </a> | <a
-					href="link"> Resources </a> | <a href="link"> Downloads </a> <br />
-				<a href="link"> About GenePattern </a> | <a href="link"> Report
-				Bugs </a> | <a href="link"> Request Help </a> | <a href="link">
-				Contact Us </a> <br />
-				</td>
-				<td>
-				<div align="right">&copy; 2003-2006 <a
-					href="http://www.broad.mit.edu/"> Broad Institute, MIT </a></div>
-				<!-- we will be adding the Broad logo here --></td>
-				<td width="10">&#160;</td>
-				<td width="27"><a href="http://www.broad.mit.edu/"> <img
-					src="#{facesContext.externalContext.requestContextPath}/images/broad-symbol.gif"
-					width="27" height="30" border="0" /> </a></td>
-			</tr>
-		</table>
-		</td>
-	</tr>
-</table>
-</div>
-<!-- top of page login and search items -->
-<c:if test="${!empty requestScope.userID}">
-	<table height="30" border="0" cellpadding="0" cellspacing="0"
-		class="loginsettings">
-		<tr valign="top">
-			<td><a
-				href="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">
-			My Settings </a> | <h:form style="display: inline;">
-				<h:commandLink id="logoutLink" action="#{loginBean.logout}"> Sign Out </h:commandLink>
-			</h:form> ${requestScope.userID}&#160;&#160;&#160;</td>
-			<td>
-			<form name="form1" method="post" action=""><input
-				name="textfield" type="text" size="15" /></form>
-			</td>
-			<td width="10"><img
-				src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
-				width="10" height="1" /></td>
-			<td><a href="search"> <img
-				src="#{facesContext.externalContext.requestContextPath}/images/searchicon-1.gif"
-				name="Image1" height="14" hspace="0" vspace="4" border="0"
-				id="Image1"
-				onmouseover="MM_swapImage('Image1','','#{facesContext.externalContext.requestContextPath}/images/searchicon-1-over.gif',1)"
-				onmouseout="MM_swapImgRestore()" /> </a></td>
-		</tr>
-	</table>
-</c:if>
-</body>
+        <!-- main content area.  -->
+        <tr>
+          <td valign="top" class="maincontent" id="maincontent">
+            <ui:include src="/pages/messages.xhtml"/>
+            <ui:insert name="body"/>
+          </td>
+        </tr>
+
+        <!-- footer area -->
+        <tr>
+          <td colspan="3" class="footer">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td>
+                  <a href="link"> Job Results </a> | 
+                  <a href="link"> Create Pipeline </a> | 
+                  <a href="link"> Documentation </a> | 
+                  <a href="link"> Resources </a> | 
+                  <a href="link"> Downloads </a>
+                  <br/>
+                  <a href="link"> About GenePattern </a> | 
+                  <a href="link"> Report Bugs </a> | 
+                  <a href="link"> Request Help </a> | 
+                  <a href="link"> Contact Us </a>
+                  <br/>
+                </td>
+                <td>
+                  <div align="right">&copy; 2003-2006 <a href="http://www.broad.mit.edu/"> Broad Institute, MIT </a>
+                  </div>
+                  <!-- we will be adding the Broad logo here -->
+                </td>
+                <td width="10">&#160;</td>
+                <td width="27">
+                  <a href="http://www.broad.mit.edu/">
+                    <img src="#{facesContext.externalContext.requestContextPath}/images/broad-symbol.gif" width="27" height="30" border="0"/>
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+    
+    <!-- top of page login and search items -->
+    <c:if test="${!empty requestScope.userID}">
+      <table height="30" border="0" cellpadding="0" cellspacing="0" class="loginsettings">
+        <tr valign="top">
+          <td>
+            <a href="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf"> My Settings </a> | 
+            <h:form style="display: inline;">
+              <h:commandLink id="logoutLink" action="#{loginBean.logout}"> Sign Out </h:commandLink>
+            </h:form> ${requestScope.userID}&#160;&#160;&#160;</td>
+          <td>
+            <form name="form1" method="post" action="">
+              <input name="textfield" type="text" size="15"/>
+            </form>
+          </td>
+          <td width="10">
+            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="10" height="1"/>
+          </td>
+          <td>
+            <a href="search">
+              <img src="#{facesContext.externalContext.requestContextPath}/images/searchicon-1.gif" name="Image1" height="14" hspace="0" vspace="4" border="0" id="Image1" onmouseover="MM_swapImage('Image1','','#{facesContext.externalContext.requestContextPath}/images/searchicon-1-over.gif',1)" onmouseout="MM_swapImgRestore()"/>
+            </a>
+          </td>
+        </tr>
+      </table>
+    </c:if>
+  </body>
 </html>
