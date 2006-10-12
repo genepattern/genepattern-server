@@ -6,25 +6,15 @@
     <property name="c3p0.minPoolSize">5</property>
     <property name="c3p0.timeout">1000</property>
     <property name="connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
-    <!-- Oracle setup  
-    <property name="hibernate.connection.url">jdbc:oracle:thin:@magnesium.broad.mit.edu:1521:meddev10</property>
-    <property name="hibernate.connection.driver_class">oracle.jdbc.OracleDriver</property>
-    <property name="hibernate.connection.username">gpportal</property>
-    <property name="hibernate.connection.password">gpportal</property>
-    <property name="hibernate.default_schema">gpportal</property>
-    <property name="hibernate.dialect">org.genepattern.server.database.PlatformOracle9Dialect</property>
-    <property name="hibernate.connection.SetBigStringTryClob">true</property>
-     -->
-     
-    <!--  <property name="hibernate.connection.username">cgenome</property>
-         <property name="hibernate.connection.password">mutation</property>  -->
-    <!-- HSQL setup -->
+
+
+    <!-- HSQL setup.  These values can be overriden in genepattern.properties  -->
     <property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
     <property name="hibernate.connection.shutdown">true</property>
     <property name="hibernate.connection.url">jdbc:hsqldb:hsql://localhost/xdb</property>
     <property name="hibernate.connection.username">sa</property>
     <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
-    
+   
     
     <property name="hibernate.current_session_context_class">thread</property>
     <property name="hibernate.jdbc.batch_size">20</property>
