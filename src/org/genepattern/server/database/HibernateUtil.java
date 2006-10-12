@@ -29,13 +29,28 @@ public class HibernateUtil {
             Configuration config = new Configuration();
             // config.configure("oracle.cfg.xml");
             config.configure("hibernate.cfg.xml");
+            mergeSystemProperties(config);
             sessionFactory = config.buildSessionFactory();
+            
         }
         catch (Throwable ex) {
             // Make sure you log the exception, as it might be swallowed
             log.error("Initial SessionFactory creation failed.",ex);
             throw new ExceptionInInitializerError(ex);
         }
+    }
+    
+    private static void mergeSystemProperties(Configuration config) {
+        
+        Properties props = System.getProperties();
+        for(Object key : props.keySet()) {
+            String name = (String) key;
+            if(name.startsWith("hibernate.")) {
+                config.setProperty(name, (String)props.get(name)); 
+            }
+            
+        }
+        
     }
 
     public static Session getSession() {
