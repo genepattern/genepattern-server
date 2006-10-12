@@ -6,7 +6,7 @@
     <property name="c3p0.minPoolSize">5</property>
     <property name="c3p0.timeout">1000</property>
     <property name="connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
-    <!-- Oracle setup 
+    <!-- Oracle setup  
     <property name="hibernate.connection.url">jdbc:oracle:thin:@magnesium.broad.mit.edu:1521:meddev10</property>
     <property name="hibernate.connection.driver_class">oracle.jdbc.OracleDriver</property>
     <property name="hibernate.connection.username">gpportal</property>
@@ -14,7 +14,8 @@
     <property name="hibernate.default_schema">gpportal</property>
     <property name="hibernate.dialect">org.genepattern.server.database.PlatformOracle9Dialect</property>
     <property name="hibernate.connection.SetBigStringTryClob">true</property>
-   -->
+     -->
+     
     <!--  <property name="hibernate.connection.username">cgenome</property>
          <property name="hibernate.connection.password">mutation</property>  -->
     <!-- HSQL setup -->
@@ -22,8 +23,10 @@
     <property name="hibernate.connection.shutdown">true</property>
     <property name="hibernate.connection.url">jdbc:hsqldb:hsql://localhost/xdb</property>
     <property name="hibernate.connection.username">sa</property>
-    <property name="hibernate.current_session_context_class">thread</property>
     <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
+    
+    
+    <property name="hibernate.current_session_context_class">thread</property>
     <property name="hibernate.jdbc.batch_size">20</property>
     <property name="hibernate.statement_cache.size">0</property>
     <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
