@@ -23,6 +23,7 @@
 <html>
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
+<link href="css/style.css" rel="stylesheet" type="text/css">
 <link href="skin/favicon.ico" rel="shortcut icon">
 
 <style>
@@ -658,19 +659,19 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		return ('<hr class="pipelineDesigner">no such task \"' + taskLSID + '\".  Aborting pipeline loading.');
 	}
 	
+	taskFields = taskFields + "<br/><div class=\"pipeline_item\">";
+
 	taskFields = taskFields + '<a name="t' + taskNum + '">\n';
 	taskFields = taskFields + '<input type="hidden" name="t' + taskNum + '_taskName" value="' + task.name + '">';
-	taskFields = taskFields + '<hr class="pipelineDesigner">\n';
-	taskFields = taskFields + '<table><tr><td valign="top"><font size="+1"><b>' + (taskNum+1) + '.&nbsp;' + task.name + ':</b></font>&nbsp;</td><td valign="top">' + task.description + "</td></tr></table>";
-	taskFields = taskFields + '<table cols="3" valign="top" width="100%"><col align="center" width="10%"><col align="right" width="10%"><col align="left" width="*">';
-	taskFields = taskFields + '<tr><td>&nbsp;</td><td></td><td>\n';
-	taskFields = taskFields + '<input type="hidden" name="t' + taskNum + '_taskLSID" value="' + task.lsid + '" size="80"><br>';
-	taskFields = taskFields + '</td></tr>\n';
+	taskFields = taskFields + '<table class=\"barhead-task\"><tr><td valign="top">' + (taskNum+1) + '.&nbsp;' + task.name + ':&nbsp;</td>';
+	
 
-	// create selector showing all versions of this task (same authority/namespace/identifier)
+
+// create selector showing all versions of this task (same authority/namespace/identifier)
 	var latestVersion = new LSID(task.lsid).version
-	taskFields = taskFields + '<tr><td>&nbsp;</td><td align="right"><b>LSID version:</b></td><td>\n';
-	taskFields = taskFields + '<select name="t' + taskNum + '_taskLSIDv" onchange="chgLSIDVer(' + taskNum + ', this)">\n';
+
+
+taskFields = taskFields + '<td align="right">version <select name="t' + taskNum + '_taskLSIDv" onchange="chgLSIDVer(' + taskNum + ', this)">\n';
 	var wildcard = task.lsid.substring(0, task.lsid.length - latestVersion.length);
 	var sameTasks = new Array();
 	for (t in TaskInfos) {
@@ -683,11 +684,22 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 			     (sameTasks[t] == latestVersion ? ' selected' : '') +
 			     '>' + sameTasks[t] + (t == 0 ? " (latest)" : "") + '</option>\n';
 	}
-	taskFields = taskFields + '</select>\n';
+	taskFields = taskFields + '</select></td>\n';
+// end version selector
+
+	taskFields = taskFields + '</tr></table>';
+
+	taskFields = taskFields + '<table cols="3" valign="top" width="100%"><col align="center" width="10%"><col align="right" width="10%"><col align="left" width="*">';
+	taskFields = taskFields + '<tr><td>&nbsp;</td><td></td><td>\n';
+	taskFields = taskFields + '<input type="hidden" name="t' + taskNum + '_taskLSID" value="' + task.lsid + '" size="80"><br>';
 	taskFields = taskFields + '</td></tr>\n';
 
+taskFields = taskFields + '<tr><td>&nbsp;</td><td colspan="2" class="description">'+task.description+'</td><td>\n';
+	
+
+
 	if (task.docs.length > 0 || task.taskType == PIPELINE) {
-		taskFields = taskFields + '<tr><td>&nbsp;</td><td align="right"><b>documentation:</b> </td><td>\n';
+		taskFields = taskFields + '<tr><td>&nbsp;</td><td>documentation: </td><td>\n';
 		for (doc in task.docs) {
 			if (task.docs[doc] == "version.txt") continue;
 			taskFields = taskFields + '<a href="getTaskDoc.jsp?name=' + task.lsid + '&file=' + task.docs[doc] + '" target="_new">' + task.docs[doc] + '</a> ';
@@ -698,7 +710,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		taskFields = taskFields + '</td></tr>\n';
 	}
 	if (task.parameterInfoArray.length > 0) {
-		taskFields = taskFields + '<tr><td align="center" valign="bottom"><b>prompt<br>when run</b></td><td align="right" valign="bottom" width="10%"><b>parameter name</b></td><td valign="bottom"><b>value</b></td></tr>';
+		taskFields = taskFields + '<tr class="tableheader-row2"><td class="smalltype2">prompt when run</td><td>parameter name</td><td>value</td><td>description</td></tr>';
 	} else {
 		taskFields = taskFields + '<tr><td></td><td colspan="2"><i>' + task.name + ' has no input parameters</i>';
 	}
@@ -710,7 +722,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		var choices = ((pi.value != null && pi.value != 'null' && pi.value.length > 0) ? pi.value.split(";") : "");
 
 		// prompt-when-run
-		taskFields = taskFields + '<tr><td align="center" valign="top">\n';
+		taskFields = taskFields + '<tr class=\"taskperameter\"><td valign="top">\n';
 		taskFields = taskFields + '<input type="checkbox" name="t' + taskNum + '_prompt_' + param + '"';
 //		taskFields = taskFields + '\n onchange=\"promptOnRunChecked(this, ' + taskNum + ', ' + param + ', \'' + (pi.isInputFile ? "" : pi.name) + '\');\"';
 		taskFields = taskFields + '\n  onclick=\"promptOnRunChecked(this, ' + taskNum + ', ' + param + ', \'' + (pi.isInputFile ? "" : pi.name) + '\');\"';
@@ -737,45 +749,40 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 
 
 		// label for the field
-		taskFields = taskFields + '<td align="right" width="10%" valign="top">';
-		taskFields = taskFields + '<nobr>';
+		taskFields = taskFields + '<td valign="top"><nobr>';
 		taskFields = taskFields + pi.name.replace(/\./g,' ').replace(/\_/g,' ') + ':</nobr>';
-
-
 		taskFields = taskFields + '</td>\n';
 		
-				// input area for the field
-		taskFields = taskFields + '	<td valign="top"> <span id="span_input_'+taskNum+'_'+pnum+'" style="display:inline">';
+		// input area for the field
+		taskFields = taskFields + '<td> <span id="span_input_'+taskNum+'_'+pnum+'" style="display:inline">';
 		if (pi.isInputFile) {
 			taskFields = taskFields + '<input type="file" name="t' + taskNum + '_' + pi.name + 
-						  '" size="60" ' +
+						  '" size="30" ' +
 						  'onchange="changeFile(this, ' + taskNum + ', ' + param + ')" ' + 
 						  'onblur="blurFile(this, ' + taskNum + ', ' + param + ')" ' +
 						  'ondrop="dropFile(this, ' + taskNum + ', ' + param + ')" ' +
 						  'class="little">';
 			taskFields = taskFields + '<br><input name="t' + taskNum + '_shadow' + param + 
-				     '" type="text" readonly size="130" tabindex="-1" class="shadow">';
+				     '" type="text" readonly size="10" tabindex="-1" class="shadow">';
 			if (taskNum > 0) {
-				taskFields = taskFields + '<br><table><tr><td valign="top"><nobr>or use output from <select name="t' + taskNum + '_i_' + param + 
+				taskFields = taskFields + '<br><nobr>or use output from <select name="t' + taskNum + '_i_' + param + 
 							  '" onchange="chooseInheritTask(' + taskNum + ', ' + param + ')"><option value=' + NOT_SET + '" disabled>Choose task</option>\n';
 				for (t = 0; t < taskNum; t++) {
 					taskFields = taskFields + '<option value="' + t + '">' + (t+1) + '.  ' + 
 						     document.forms['pipeline']['t' + t + '_taskName'].value + '</option>\n';
 				}
 				taskFields = taskFields + ' </select>\n';
-				if (pi.description.length > 0 && pi.description != pi.name.replace(/\./g,' ').replace(/\_/g,' ')) taskFields = taskFields + '<br><br>' + pi.description;
-				taskFields = taskFields + ' </td><td valign="top">';
+				
+				taskFields = taskFields + ' &nbsp;';
 				taskFields = taskFields + '<select name="t' + taskNum + '_if_' + param + '"' +
-					' onChange="changeTaskInheritFile(this, ' + taskNum + ', ' + param + ', \'' + pi.name + '\')" multiple size="6">\n';
+					' onChange="changeTaskInheritFile(this, ' + taskNum + ', ' + param + ', \'' + pi.name + '\')" >\n';
 				// this selector will be filled in dynamically by chooseInheritTask when the task is selected
-				taskFields = taskFields + ' </select></nobr></td></td></table>\n';
+				taskFields = taskFields + ' </select></nobr>\n';
 			}
 		} else if (pi.isOutputFile) {
 			// should never happen
 		} else if (choices.length < 2) {
-			taskFields = taskFields + "<table><tr><td valign='top'><input name='t" + taskNum + "_" + pi.name + "' value='" + pi.defaultValue + "'> &nbsp;</td>";
-			if (pi.description.length > 0) taskFields = taskFields + '<td valign="top">' + pi.description + '</td>';
-			taskFields = taskFields + '</tr></table>';
+			taskFields = taskFields + "<input name='t" + taskNum + "_" + pi.name + "' value='" + pi.defaultValue + "'> ";
 		} else {
 			taskFields = taskFields + "	<select name='t" + taskNum + "_" + pi.name + 
 					"' onchange='changeChoice(this, " + taskNum + ", " + param + ")'>\n";
@@ -785,9 +792,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 				taskFields = taskFields + '		<option value="' + c[0] + '"' + (pi.defaultValue == c[0] || pi.defaultValue == c[1] ? ' selected' : '') + '>' + c[1] + '</option>\n';
 			}
 			taskFields = taskFields + "	</select>\n";
-			if (pi.description.length > 0) {
-				taskFields = taskFields + ' &nbsp;' + pi.description;
-			}
+			taskFields = taskFields + ' ';
 		}
 		taskFields = taskFields + "</span>";
 		
@@ -795,7 +800,9 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		
 		taskFields= taskFields + '<a onMouseDown="setPosition(event,\'div_'+taskNum+'_'+pnum+'\')"  href="javascript:openWindow(\'div_'+taskNum+'_'+pnum+'\')">set prompt when run display settings...</a>';
 		
-		taskFields = taskFields + "</span></td></tr>\n";
+		taskFields = taskFields + "</span></td><td valign=\"top\">";
+		if (pi.description.length > 0)  taskFields = taskFields + pi.description;
+		taskFields = taskFields + "</td></tr>\n";
 		
 	}
 	taskFields = taskFields + '</table>\n';
@@ -835,6 +842,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		   	}
 		}
 	}
+	taskFields = taskFields + "</div>";
 	return taskFields;
 }
 
