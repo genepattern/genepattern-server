@@ -86,7 +86,7 @@ public class ModuleChooserBean {
 
     private Category getRecentlyUsed() {
         AdminDAO dao = new AdminDAO();
-        return new Category("Recently Used", dao.getLatestTasks(getUserId()));
+        return new Category("Recently Used", dao.getRecentlyRunTasksForUser(getUserId()));
     }
 
     private Category getAll() {
