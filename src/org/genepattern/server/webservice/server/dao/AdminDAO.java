@@ -243,6 +243,30 @@ public class AdminDAO extends BaseDAO {
             throw new OmnigeneException(e);
         }
     }
+    
+    public TaskInfo[] getRecentlyRunTasksForUser(String username) {
+        
+        try {
+            String hql = "select distinct tm  from org.genepattern.server.domain.TaskMaster tm," +
+                    " org.genepattern.server.domain.AnalysisJob aJob where (tm.userId = :userId or tm.accessId = :accessId)" +
+                    " and tm.taskId = aJob.taskId  ";
+            Query query = getSession().createQuery(hql);
+            query.setString("userId", username);
+            query.setInteger("accessId", PUBLIC_ACCESS_ID);
+            List<TaskMaster> results = query.list();
+
+            TaskInfo[] allTasks = new TaskInfo[results.size()];
+            for (int i = 0; i < allTasks.length; i++) {
+                allTasks[i] = taskInfoFromTaskMaster(results.get(i));
+            }
+            return allTasks;
+        }
+        catch (HibernateException e) {
+            log.error(e);
+            throw new OmnigeneException(e);
+        }
+        
+    }
 
     private static Map getLatestTasks(TaskInfo[] tasks) throws MalformedURLException {
         Map latestTasks = new HashMap();
