@@ -8,11 +8,13 @@
                     <td colspan="7" class="sidebarhead-bkg">
                       <div class="sidebarhead"> Tasks &amp; Pipelines<br/>
                         <div class="viewchoice">
-                          <t:selectOneRadio value="#{moduleChooserBean.mode}" styleClass="viewchoice">
+                          <h:selectOneRadio value="#{moduleChooserBean.mode}" styleClass="viewchoice" 
+                                            valueChangeListener="#{moduleChooserBean.modeChanged}" 
+                                            onchange="submit();">
                             <f:selectItem itemValue="category" itemLabel="category"/>
                             <f:selectItem itemValue="suite" itemLabel="suite"/>
                             <f:selectItem itemValue="all" itemLabel="all"/>
-                          </t:selectOneRadio>
+                          </h:selectOneRadio>
                         </div>
                       </div>
                     </td>

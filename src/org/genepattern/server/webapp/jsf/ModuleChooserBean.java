@@ -17,12 +17,14 @@ import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.faces.event.ActionEvent;
+import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
@@ -35,35 +37,21 @@ public class ModuleChooserBean {
     Logger log = Logger.getLogger(ModuleChooserBean.class);
     List<Category> categories = null;
 
-    private String mode = "all"; // @todo - externalize or make enum
+    private String mode = "category"; // @todo - externalize or make enum
     private String selectedModule = "";
 
     public List<Category> getAllTasks() {
-        tasksByCatgory();
         if (categories == null) {
             categories = new ArrayList<Category>();
             categories.add(getRecentlyUsed());
-            categories.add(getAll());
-        }
-        return categories;
-    }
-    
-    public List<Category> getTaskByCategory() {
-        
-        if (categories == null) {
-            categories = new ArrayList<Category>();
-            categories.add(getRecentlyUsed());
-            categories.add(getAll());
-        }
-        return categories;
-    }
-
-    public List<Category> getTaskBySuite() {
-        
-        if (categories == null) {
-            categories = new ArrayList<Category>();
-            categories.add(getRecentlyUsed());
-            categories.add(getAll());
+            if (mode.equals("all")) {
+                categories.add(getAll());
+            }
+            else if (mode.equals("category")) {
+                for (Category cat : getTasksByCategory()) {
+                    categories.add(cat);
+                }
+            }
         }
         return categories;
     }
@@ -84,8 +72,8 @@ public class ModuleChooserBean {
         this.selectedModule = selectedModule;
     }
 
-    public void modeChanged(ActionEvent event) {
-        // @todo -- reload page contents for new mode
+    public void modeChanged(ValueChangeEvent  event) {
+        categories = null;
     }
 
     public void moduleClicked(ActionEvent event) {
@@ -105,26 +93,33 @@ public class ModuleChooserBean {
         AdminDAO dao = new AdminDAO();
         return new Category("All", dao.getAllTasksForUser(getUserId()));
     }
-    
-    private void tasksByCatgory() {
-        
+
+    private List<Category> getTasksByCategory() {
+
+        List<Category> categories = new ArrayList<Category>();
         TaskInfo[] alltasks = (new AdminDAO()).getAllTasksForUser(getUserId());
         Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
-        
-        for(int i=0; i<alltasks.length; i++) {
+
+        for (int i = 0; i < alltasks.length; i++) {
             TaskInfo ti = alltasks[i];
             String taskType = ti.getTaskInfoAttributes().get("taskType");
             List<TaskInfo> tasks = taskMap.get(taskType);
-            if(tasks == null) {
+            if (tasks == null) {
                 tasks = new ArrayList<TaskInfo>();
                 taskMap.put(taskType, tasks);
             }
             tasks.add(ti);
         }
-        
-        List<String> categories = new ArrayList(taskMap.keySet());
-        
-        
+
+        List<String> categoryNames = new ArrayList(taskMap.keySet());
+        Collections.sort(categoryNames);
+        for (String categoryName : categoryNames) {
+            TaskInfo[] modules = new TaskInfo[taskMap.get(categoryName).size()];
+            modules = taskMap.get(categoryName).toArray(modules);
+            categories.add(new Category(categoryName, modules));
+        }
+        return categories;
+
     }
 
     public class Category {
