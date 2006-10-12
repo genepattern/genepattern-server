@@ -28,6 +28,11 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.ArrayList;
+import java.util.List;
+
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserHome;
+import org.genepattern.server.user.UserProp;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
@@ -464,6 +469,18 @@ public class HTMLPipelineView implements IPipelineView {
 
 		// XXX get the showLSID param from a users prefs
 		boolean showLSID = false;
+		User user = (new UserHome()).findById(userID);
+		if (user != null){
+	        	List<UserProp> props = user.getProps();
+			UserProp userProp = null;
+	        	for (UserProp p : props) {
+	            	if (p.getKey().equals("showLSIDs")) {
+	              	  userProp = p;
+	            	    break;
+      	    	  }
+      	  	}
+			if (userProp != null) showLSID = Boolean.parseBoolean(userProp.getValue());
+		}
 		if (showLSID){
 		writer.write("<tr><td align=\"right\" width=\"1\">LSID:</td><td width=\"*\"><input type=\"text\" name=\""
 						+ GPConstants.LSID
