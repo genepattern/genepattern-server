@@ -267,7 +267,7 @@
           />
 	  </target>
     
-     <target depends="init,compile-cg" name="broad-cg-1-4">
+     <target depends="init,compile-cg-1-4" name="broad-cg-1-4">
         <!-- Makes broad-cg.jar -->
         <jar basedir="build-cg"
              defaultexcludes="true"
