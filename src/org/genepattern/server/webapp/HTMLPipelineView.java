@@ -481,10 +481,14 @@ public class HTMLPipelineView implements IPipelineView {
       	  	}
 			if (userProp != null) showLSID = Boolean.parseBoolean(userProp.getValue());
 		}
-		if (showLSID){
+		if (!showLSID){
+			writer.write("<div style=\"display: none;\">");
+		}
 		writer.write("<tr><td align=\"right\" width=\"1\">LSID:</td><td width=\"*\"><input type=\"text\" name=\""
 						+ GPConstants.LSID
 						+ "\" value=\"\" size=\"80\" readonly style=\"border-style: none\"></td></tr>\n");
+		if (!showLSID){
+			writer.write("</div>");
 		}
 
 		// TODO: great place for a summary of the tasks! Eg. Threshold -> Slice
