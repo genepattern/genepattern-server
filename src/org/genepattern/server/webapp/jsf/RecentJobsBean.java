@@ -13,7 +13,6 @@
 package org.genepattern.server.webapp.jsf;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.webservice.JobInfo;
@@ -21,24 +20,25 @@ import org.genepattern.webservice.WebServiceException;
 
 public class RecentJobsBean {
     private JobInfo[] jobs;
+    private boolean noJobsToDisplay = true;
 
     private static Logger log = Logger.getLogger(RecentJobsBean.class);
 
     public RecentJobsBean() {
-        updateJobs();
-
-    }
-
-    private void updateJobs() {
         String userId = UIBeanHelper.getUserId();
-        UserProp recentJobsToShow = UserPrefsBean.getProp(UserPropKey.RECENT_JOBS_TO_SHOW, "4");
+        int recentJobsToShow = Integer.parseInt(UserPrefsBean.getProp(UserPropKey.RECENT_JOBS_TO_SHOW, "4").getValue());
         LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
         try {
-            jobs = analysisClient.getJobs(userId, -1, Integer.parseInt(recentJobsToShow.getValue()), false);
+            jobs = analysisClient.getJobs(userId, -1, recentJobsToShow, false);
+            noJobsToDisplay = jobs == null || jobs.length == 0;
         }
         catch (WebServiceException wse) {
             log.error(wse);
         }
+    }
+
+    public boolean isNoJobsToDisplay() {
+        return noJobsToDisplay;
     }
 
     public JobInfo[] getJobs() {

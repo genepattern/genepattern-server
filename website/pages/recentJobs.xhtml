@@ -1,15 +1,12 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http:/www.w3.org/1999/xhtml"
+	xmlns:ui="http:/java.sun.com/jsf/facelets"
+	xmlns:h="http:/java.sun.com/jsf/html"
+	xmlns:f="http:/java.sun.com/jsf/core"
+	xmlns:t="http:/myfaces.apache.org/tomahawk"
+	xmlns:c="http:/java.sun.com/jstl/core">
 
-<html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
 
-
-<td width="203" rowspan="2" valign="top" class="recentjobs"
-	id="recentjobs">
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 	<tr>
 		<td colspan="5" class="sidebarhead-bkg2">
@@ -17,55 +14,66 @@
 		</td>
 	</tr>
 	<tr>
-		<td height="6" colspan="5"><img src="images/spacer.gif" width="1"
-			height="6" /></td>
+		<td height="6" colspan="5"><t:graphicImage
+			src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
+			width="1" height="6" /></td>
 	</tr>
 
 	<h:form>
 		<t:dataList var="job" value="#{recentJobsBean.jobs}">
-
 			<tr>
+				<td>asdf</td>
+				<td width="9"><t:graphicImage
+					src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
+					width="9" height="1" /></td>
+				<td valign="top" class="recentjobs-sh"><a>#{job.jobNumber}</a></td>
+				<td width="9"><t:graphicImage
+					src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
+					width="9" height="1" /></td>
 
-				<td width="9"><img src="images/spacer.gif" width="9" height="1" /></td>
-				<td valign="top" class="recentjobs-sh"><a href="link">105</a></td>
-				<td width="9"><img src="images/spacer.gif" width="9" height="1" /></td>
 
-
-				<td><font class="recentjobs-sh"><a href="link">AreaChange</a></font>
-				<img src="images/menuicon-1.gif" name="Image2" width="14"
-					height="14" border="0" align="top" id="Image2"
+				<td><font class="recentjobs-sh">#{job.taskName}</font> <t:graphicImage
+					src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif"
+					name="Image2" width="14" height="14" border="0" align="top"
+					id="Image2"
 					onclick="MM_showMenu(window.mm_menu_0925155656_0,11,11,null,'Image2')"
-					onmouseover="MM_swapImage('Image2','','images/menuicon-over.gif',1)"
-					onmouseout="MM_swapImgRestore();MM_startTimeout();" /><br />
-				Sep 05 13:25:52 <br />
-				<a href="link">stdout.txt</a> <img src="images/menuicon-2.gif"
-					name="Image3" width="14" height="14" border="0" align="top"
-					id="Image3"
-					onclick="MM_showMenu(window.mm_menu_0925160045_0,11,11,null,'Image3')"
-					onmouseover="MM_swapImage('Image3','','images/menuicon-over.gif',1)"
-					onmouseout="MM_swapImgRestore();MM_startTimeout();" /><br />
+					onmouseover="MM_swapImage('Image2','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)"
+					onmouseout="MM_swapt:graphicImageRestore();MM_startTimeout();" /><br />
+				<h:outputText value="#{job.dateCompleted}">
+					<f:convertDateTime type="date" pattern="EEE, MMM d, ''yy h:mm a" />
+				</h:outputText><br />
+				<t:dataList var="p" value="#{job.parameterInfoArray}">
+					<h:outputLink
+						value="#{facesContext.externalContext.requestContextPath}/retrieveResults.jsp">#{p.name}
+							<f:param name="job" value="#{job.jobNumber}" />
+						<f:param name="filename" value="#{p.name}" />
+					</h:outputLink>
+					<t:graphicImage
+						src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif"
+						name="Image3" width="14" height="14" border="0" align="top"
+						id="Image3"
+						onclick="MM_showMenu(window.mm_menu_0925160045_0,11,11,null,'Image3')"
+						onmouseover="MM_swapImage('Image3','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)"
+						onmouseout="MM_swapt:graphicImageRestore();MM_startTimeout();" />
+					<br />
 
-				<a href="link">stderr.txt</a> <img src="images/menuicon-2.gif"
-					name="Image4" width="14" height="14" border="0" align="top"
-					id="Image4"
-					onmouseover="MM_swapImage('Image4','','images/menuicon-over.gif',1)"
-					onmouseout="MM_swapImgRestore()" /><br />
-				</td>
-				<td width="9"><img src="images/spacer.gif" width="9" height="1" /></td>
-			</tr>
-			<tr>
-				<td colspan="5"><img src="images/divider-pix2.gif" width="100%"
-					height="1" vspace="5" /></td>
+
+				</t:dataList></td>
+				<td width="9"><t:graphicImage
+					src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
+					width="9" height="1" /></td>
 			</tr>
 		</t:dataList>
 	</h:form>
 
-
 	<tr>
-		<td colspan="5"><img src="images/divider-pix2.gif" width="100%"
-			height="1" vspace="5" /></td>
+		<td colspan="5"><t:graphicImage
+			src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif"
+			width="100%" height="1" vspace="5" /></td>
 	</tr>
 </table>
+
+
 <p><br />
 </p>
 <p><br />
@@ -76,5 +84,5 @@
 </p>
 <p><br />
 </p>
-</td>
+
 </html>
