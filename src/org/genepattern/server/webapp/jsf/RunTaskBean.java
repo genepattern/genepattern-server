@@ -93,12 +93,8 @@ public class RunTaskBean {
             this.defaultOption = defaultOption;
         }
 
-        public boolean isDefaultOption() {
+        public boolean isSelected() {
             return defaultOption;
-        }
-
-        public String getSelected() {
-            return defaultOption ? "true" : "false";
         }
     }
 
