@@ -396,8 +396,8 @@ var ypos="30px"
 
 function openWindow(divid){
      	document.getElementById(divid).style.display=''
-     	document.getElementById(divid).style.width=initialwidth="250px"
-     	document.getElementById(divid).style.height=initialheight="140px"
+     	document.getElementById(divid).style.width=initialwidth="270px"
+     	document.getElementById(divid).style.height=initialheight="120px"
      	document.getElementById(divid).style.left=xpos 
      	document.getElementById(divid).style.top=ypos    
 }
@@ -415,6 +415,27 @@ function closeit(divid){
 	document.getElementById(divid).style.display="none"
 }
 
+
+function reset(taskNum, name, descrip){
+	document.getElementById('t'+taskNum+'_'+pi.name+'_altDescription').value = descrip;
+	document.getElementById('t'+taskNum+'_'+pi.name+'_altName').value = name;
+
+//Display Name: <input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/>
+//Display Description: <input name="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/>
+
+}
+
+function collapseTask(taskNum){
+	document.getElementById('div_collapsable_task_'+ taskNum).style.display="none";
+	document.getElementById('hideArrow_'+ taskNum).style.display="none";
+	document.getElementById('showArrow_'+ taskNum).style.display="inline";
+}
+
+function expandTask(taskNum){
+	document.getElementById('div_collapsable_task_'+ taskNum).style.display="inline";
+	document.getElementById('hideArrow_'+ taskNum).style.display="inline";
+	document.getElementById('showArrow_'+ taskNum).style.display="none";
+}
 
 function inverseOrder(a, b) {
 	return (a > b ? a : b);
@@ -661,17 +682,20 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 	
 	taskFields = taskFields + "<br/><div class=\"pipeline_item\">";
 
-	taskFields = taskFields + '<a name="t' + taskNum + '">\n';
 	taskFields = taskFields + '<input type="hidden" name="t' + taskNum + '_taskName" value="' + task.name + '">';
-	taskFields = taskFields + '<table class=\"barhead-task\"><tr><td valign="top">' + (taskNum+1) + '.&nbsp;' + task.name + ':&nbsp;</td>';
+	taskFields = taskFields + '<table class=\"barhead-task\"><tr><td valign="top">';
+
+	taskFields = taskFields + '<div id="hideArrow_'+taskNum+'" style="display: inline;"><a name="t' + taskNum + '" onClick="collapseTask('+taskNum+')"><img src="images/arrow-pipelinetask-down.gif"/></a></div> \n';
+	taskFields = taskFields + '<div id="showArrow_'+taskNum+'" style="display: none;"><a name="t' + taskNum + '" onClick="expandTask('+taskNum+')"><img src="images/arrow-pipelinetask-right.gif"/></a> </div>\n';
+
+
+	taskFields = taskFields + (taskNum+1) + '.&nbsp;' + task.name + ':&nbsp;</td>';
 	
 
 
 // create selector showing all versions of this task (same authority/namespace/identifier)
 	var latestVersion = new LSID(task.lsid).version
-
-
-taskFields = taskFields + '<td align="right">version <select name="t' + taskNum + '_taskLSIDv" onchange="chgLSIDVer(' + taskNum + ', this)">\n';
+	taskFields = taskFields + '<td align="right">version <select name="t' + taskNum + '_taskLSIDv" onchange="chgLSIDVer(' + taskNum + ', this)">\n';
 	var wildcard = task.lsid.substring(0, task.lsid.length - latestVersion.length);
 	var sameTasks = new Array();
 	for (t in TaskInfos) {
@@ -689,12 +713,15 @@ taskFields = taskFields + '<td align="right">version <select name="t' + taskNum 
 
 	taskFields = taskFields + '</tr></table>';
 
-	taskFields = taskFields + '<table cols="3" valign="top" width="100%"><col align="center" width="10%"><col align="right" width="10%"><col align="left" width="*">';
+	taskFields = taskFields + '<div id="div_collapsable_task_'+ taskNum +'" >';
+
+
+	taskFields = taskFields + '<table cols="3" cellspacing="0" valign="top" width="100%"><col align="center" width="10%"><col align="right" width="10%"><col align="left" width="*">';
 	taskFields = taskFields + '<tr><td>&nbsp;</td><td></td><td>\n';
 	taskFields = taskFields + '<input type="hidden" name="t' + taskNum + '_taskLSID" value="' + task.lsid + '" size="80"><br>';
 	taskFields = taskFields + '</td></tr>\n';
 
-taskFields = taskFields + '<tr><td>&nbsp;</td><td colspan="2" class="description">'+task.description+'</td><td>\n';
+	taskFields = taskFields + '<tr><td>&nbsp;</td><td colspan="2" class="description">'+task.description+'</td><td>\n';
 	
 
 
@@ -709,8 +736,11 @@ taskFields = taskFields + '<tr><td>&nbsp;</td><td colspan="2" class="description
 	  	}
 		taskFields = taskFields + '</td></tr>\n';
 	}
+
+	taskFields = taskFields + '<tr><td class="smalltype2">prompt when run</td></tr>';
+
 	if (task.parameterInfoArray.length > 0) {
-		taskFields = taskFields + '<tr class="tableheader-row2"><td class="smalltype2">prompt when run</td><td>parameter name</td><td>value</td><td>description</td></tr>';
+		taskFields = taskFields + '<tr class="tableheader-row2"><td>&nbsp;</td><td>parameter name</td><td>value</td><td>description</td></tr>';
 	} else {
 		taskFields = taskFields + '<tr><td></td><td colspan="2"><i>' + task.name + ' has no input parameters</i>';
 	}
@@ -732,15 +762,13 @@ taskFields = taskFields + '<tr><td>&nbsp;</td><td colspan="2" class="description
 		// XXX add ability to submit an alternate name for prompt when run params
   		taskFields = taskFields + '<span id="span_'+taskNum+'_'+pnum+'" style="display:none">'
 		
-		taskFields = taskFields + '<div id="div_'+taskNum+'_'+pnum+'" style="position:absolute;background-color:#EBEBEB;left:0px;top:0px;display:none" onSelectStart="return false">';
-		taskFields = taskFields + '<div align="right" class="navbar">';
-		taskFields = taskFields + '<img src="skin/close.gif" onClick="closeit(\'div_'+taskNum+'_'+pnum+'\')">';
-		taskFields = taskFields + '</div><div id="dwindowcontent" style="height:100%;text-align:center;">';
+		taskFields = taskFields + '<div id="div_'+taskNum+'_'+pnum+'" class="prompt-window" style="position:absolute;background-color:#FFFFFF;left:0px;top:0px;display:none" onSelectStart="return false">';
+		taskFields = taskFields + '<div id="dwindowcontent" style="height:100%;text-align:center;">';
 		taskFields = taskFields + 'Define alternative name and description to display when prompting for this input.<br>';
-		taskFields = taskFields + '<br><table><tr><td>Alt. Name:</td><td><input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/></td></tr>';
-		taskFields = taskFields + '<tr><td>Alt. Description:</td><td><input name="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/></td></tr>';
-		taskFields = taskFields + '<tr><td colspan=2 align="center"><input type="button" value="close" onclick="closeit(\'div_'+taskNum+'_'+pnum+'\')"/></td></tr>';
-		taskFields = taskFields + '</table></div></div>';
+		taskFields = taskFields + '<br><table class="prompt-table" border="0" cellspacing="0" cellpadding="0"><tr border="0" ><td>Display Name:</td><td><input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/></td></tr>';
+		taskFields = taskFields + '<tr><td>Display Description:</td><td><input name="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/></td></tr>';
+		taskFields = taskFields + '</table><center><input type="button" value="save" onclick="closeit(\'div_'+taskNum+'_'+pnum+'\')"/><input type="button" value="reset" onclick="reset(\''+taskNum+'\', \''+pi.name+'\',\''+pi.description+'\')"/></center>';
+		taskFields = taskFields + '</div></div>';
 		taskFields = taskFields + '  </span>';
 
 		// XXX END: add ability to submit an alternate name for prompt when run params
@@ -806,6 +834,8 @@ taskFields = taskFields + '<tr><td>&nbsp;</td><td colspan="2" class="description
 		
 	}
 	taskFields = taskFields + '</table>\n';
+	taskFields = taskFields + '</div>\n';
+
 	taskFields = taskFields + '<br><center>\n';
 	if ((taskNum+1) < MAX_TASKS) {
 		taskFields = taskFields + '<input type="button" value="add another task" onClick="addAnother(' + (taskNum+1) + 

@@ -673,7 +673,7 @@ h6 {
 	line-height: 14px;
 }
 .pipeline_item {
-	border-style: dotted;
+	border-style: solid;
 	border-color: #9999CC;
 	border-width: 2px;
 }
@@ -685,4 +685,20 @@ h6 {
 .purge_notice {
 	font-weight: bold;
 	color: #990000;
+}
+
+.prompt-window {
+	background-color: #FFFFFF;
+	border: solid #666633 2px;
+	height: auto;
+	padding: 10px;
+	color: #666633;
+	font-size: 10px;
+	font-weight: normal;
+	line-height: 13px;
+}
+
+.prompt-table {
+	background-color: #FFFFFF;
+	border: none;
 }
