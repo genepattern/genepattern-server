@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk">
+  <head>
+    <!-- created by rebecca fagan, fagandesign -->
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+    <title>GenePattern | Create New GenePattern Suite</title>
+    <t:stylesheet path="/css/style.css"></t:stylesheet>
+  </head>
+  <body>
+    <!-- begin content area. this area contains three columns in an adjustable table, including tasks & pipeline, the center working space, and recent jobs. -->
+    <div id="content" class="content">
+      <h:form>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+          <tr>
+            <td>Create New GenePattern Suite </td>
+          </tr>
+        </table>
+        <table width="100%" cellpadding="3" cellspacing="0" cols="2">
+          <tr class="taskperameter">
+            <td valign="top" class="attribute-required">Name:*</td>
+            <td>
+              <h:inputText value="#{createSuiteBean.name}" size="40" requiredMessage="Name is a required field" required="true" id="nameField"/>
+                &#160;
+                <h:message for="nameField" class="validation-error"/>
+            </td>
+          </tr>
+          <tr class="taskperameter">
+            <td>Description:</td>
+            <td>
+              <h:inputTextarea value="#{createSuiteBean.description}" width="85%" cols="60"/>
+            </td>
+          </tr>
+          <tr class="taskperameter">
+            <td>Author:</td>
+            <td>
+              <h:inputText value="#{createSuiteBean.author}" size="40"/>
+              <span class="description">name, affiliation</span>
+            </td>
+          </tr>
+          <tr class="taskperameter">
+            <td>Privacy:</td>
+            <td>
+              <h:selectOneMenu value="#{createSuiteBean.accessId}">
+                <f:selectItem itemLabel="public" itemValue="1"/>
+                <f:selectItem itemLabel="private" itemValue="2"/>
+              </h:selectOneMenu>
+            </td>
+          </tr>
+          <input type="radio" name="language" style="visibility: hidden"/>
+          <tr class="taskperameter">
+            <td>Support Files:<br/>
+            </td>
+            <td>
+              <span class="description">Any documentation or data files you
+                wish to bundle with the suite</span>
+              <br/>
+              <input type="file" name="doc"/>
+              <span class="description"> (pdf, doc, data files, etc.) </span>
+            </td>
+          </tr>
+          
+          <tr class="smalltype">
+            <td>
+              <a href="link">open all</a> | <a href="link">close all</a>
+            </td>
+            <td>&#160;</td>
+          </tr>
+          
+        </table>
+        
+        <!-- Module selection -->
+        <table width="100%" border="0" cellspacing="0" cellpadding="5">
+        
+          <t:dataList var="category" value="#{moduleChooserBean.allTasks}">
+           <tr valign="top">
+            <td width="50%">
+              <div class="pipeline_item">
+                <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
+                  <tr>
+                    <td width="8">
+                      <h:commandLink actionListener="#{category.toggleExpanded}">
+                        <h:graphicImage value="#{category.expanded ? '/images/arrow-pipelinetask-down.gif' : '/images/arrow-pipelinetask-up.gif'}" width="8" height="8" vspace="3" border="0"/>
+                      </h:commandLink>
+                    </td>
+                    <td>
+                      <a href="#">#{category.name}</a>
+                    </td>
+                  </tr>
+                </table>
+ 
+                <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top">
+                  <tbody>
+                    <tr class="tableheader-row2">
+                      <td width="30">
+                        <div align="center">
+                          <input type="checkbox" name="checkbox" value="checkbox"/>
+                        </div>
+                      </td>
+                      <td>task name </td>
+                      <td>&#160;</td>
+                      <td width="60">
+                        <div align="center">version</div>
+                      </td>
+                    </tr>
+                    <tr class="taskperameter">
+                      <td valign="top">
+                        <div align="center">
+                          <input type="checkbox" name="checkbox" value="checkbox"/>
+                        </div>
+                      </td>
+                      <td valign="top">
+                        <a href="#">GeneCruiser</a>
+                      </td>
+                      <td valign="top">&#160;</td>
+                      <td valign="top" class="description">
+                        <div align="center">
+                          <select name="menu1" onchange="MM_jumpMenu('parent',this,0)">
+                            <option selected="selected">latest</option>
+                            <option>3</option>
+                            <option>2</option>
+                            <option>1</option>
+                          </select>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>                </tr>
+                  </tbody>
+                </table>
+              </div>
+              <br/>
+              <div class="pipeline_item">
+                <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
+                  <tr>
+                    <td width="8">
+                      <a href="#">
+                        <t:graphicImage value="/images/arrow-pipelinetask-right.gif" alt="hide task" width="8" height="8" vspace="3" border="0"/>
+                      </a>
+                    </td>
+                    <td>
+                      <a href="#"> Uncategorized </a>
+                    </td>
+                  </tr>
+                </table>
+                <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top">
+                  <tbody>
+                    <tr>                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </td>
+          </tr>
+          </t:dataList>
+        </table>
+        <div align="center">
+          <br/>
+          <t:graphicImage value="/images/divider-pix1.gif" width="100%" height="2" vspace="5"/>
+          <h:commandButton action="submit" value="save"/>
+          &#160;
+          <input name="cmd" value="clear" type="submit"/>
+        </div>
+      </h:form>
+    </div>
+  </body>
+</html>
