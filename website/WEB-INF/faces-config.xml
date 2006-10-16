@@ -67,9 +67,14 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.ModuleChooserBean</managed-bean-class>
   <managed-bean-scope>session</managed-bean-scope>
  </managed-bean>
-  <managed-bean>
+ <managed-bean>
   <managed-bean-name>recentJobsBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.RecentJobsBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
+  <managed-bean-name>createSuiteBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.CreateSuiteBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <navigation-rule>
