@@ -35,20 +35,20 @@ import org.genepattern.webservice.WebServiceException;
 
 public class ModuleChooserBean {
     Logger log = Logger.getLogger(ModuleChooserBean.class);
-    List<Category> categories = null;
+    List<ModuleCategory> categories = null;
 
     private String mode = "category"; // @todo - externalize or make enum
     private String selectedModule = "";
 
-    public List<Category> getAllTasks() {
+    public List<ModuleCategory> getAllTasks() {
         if (categories == null) {
-            categories = new ArrayList<Category>();
+            categories = new ArrayList<ModuleCategory>();
             categories.add(getRecentlyUsed());
             if (mode.equals("all")) {
                 categories.add(getAll());
             }
             else if (mode.equals("category")) {
-                for (Category cat : getTasksByCategory()) {
+                for (ModuleCategory cat : getTasksByType()) {
                     categories.add(cat);
                 }
             }
@@ -84,19 +84,19 @@ public class ModuleChooserBean {
         return UIBeanHelper.getUserId();
     }
 
-    private Category getRecentlyUsed() {
+    private ModuleCategory getRecentlyUsed() {
         AdminDAO dao = new AdminDAO();
-        return new Category("Recently Used", dao.getRecentlyRunTasksForUser(getUserId()));
+        return new ModuleCategory("Recently Used", dao.getRecentlyRunTasksForUser(getUserId()));
     }
 
-    private Category getAll() {
+    private ModuleCategory getAll() {
         AdminDAO dao = new AdminDAO();
-        return new Category("All", dao.getAllTasksForUser(getUserId()));
+        return new ModuleCategory("All", dao.getAllTasksForUser(getUserId()));
     }
 
-    private List<Category> getTasksByCategory() {
+    private List<ModuleCategory> getTasksByType() {
 
-        List<Category> categories = new ArrayList<Category>();
+        List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
         TaskInfo[] alltasks = (new AdminDAO()).getAllTasksForUser(getUserId());
         Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
 
@@ -116,43 +116,12 @@ public class ModuleChooserBean {
         for (String categoryName : categoryNames) {
             TaskInfo[] modules = new TaskInfo[taskMap.get(categoryName).size()];
             modules = taskMap.get(categoryName).toArray(modules);
-            categories.add(new Category(categoryName, modules));
+            categories.add(new ModuleCategory(categoryName, modules));
         }
         return categories;
 
     }
 
-    public class Category {
-        private boolean expanded = true;
-        private String name;
-        private TaskInfo[] modules;
 
-        public Category(String name, TaskInfo[] modules) {
-            this.name = name;
-            this.modules = modules;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public TaskInfo[] getModules() {
-            return modules;
-        }
-
-        public boolean isExpanded() {
-            return expanded;
-        }
-
-        public void setExpanded(boolean exp) {
-            expanded = exp;
-        }
-
-        public void toggleExpanded(ActionEvent event) {
-            expanded = !expanded;
-            System.out.println("toggle");
-        }
-
-    }
 
 }
