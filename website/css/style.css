@@ -702,3 +702,8 @@ h6 {
 	background-color: #FFFFFF;
 	border: none;
 }
+
+.validation-error {
+	color: red; 
+	font-weight: bold;
+}
