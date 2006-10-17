@@ -305,7 +305,7 @@ function writeMenus(container) {
 			container.menus[x].menuLayer = "menuLayer" + x;
 			menuLayer.Menu = container.menus[x];
 			menuLayer.Menu.container = "menuLayer" + x;
-			menuLayer.style.zindex = 1;
+			menuLayer.style.zindex = 100;
 		    var s = menuLayer.style;
 			s.pixeltop = -300;
 			s.pixelleft = -300;
@@ -442,10 +442,10 @@ function onMenuItemOver(e, l) {
 		}
 		if (l.hilite) {
 			l.document.bgColor = l.menuHiliteBgColor;
-			l.zIndex = 1;
+			l.zIndex = 100;
 			l.hilite.visibility = "inherit";
-			l.hilite.zIndex = 2;
-			l.document.layers[1].zIndex = 1;
+			l.hilite.zIndex = 102;
+			l.document.layers[1].zIndex = 100;
 			l.focusItem.zIndex = this.zIndex +2;
 		}
 		if (l.Menu.bgImageOver) l.background.src = l.Menu.bgImageOver;
@@ -462,7 +462,7 @@ function onMenuItemOver(e, l) {
 			if (a.Menu.bgImageUp) a.style.background = "url(" + a.Menu.bgImageUp +")";;
 		} 
 		l.style.backgroundColor = l.menuHiliteBgColor;
-		l.zIndex = 1;
+		l.zIndex = 100;
 		if (l.Menu.bgImageOver) l.style.background = "url(" + l.Menu.bgImageOver +")";
 		if (l.hilite) {
 			l.hilite.style.visibility = "inherit";
