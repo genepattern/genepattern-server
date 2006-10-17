@@ -36,7 +36,7 @@ a:visited {
 	color: #FFFFFF;
 	text-decoration: none;
 	background-color: #6666FF;
-	background-image: url(/gp/images/headerbar-bkg.gif);
+	background-image: url(../images/headerbar-bkg.gif);
 	background-repeat: repeat-x;
 }
 .topband a:link {
@@ -121,6 +121,7 @@ a:visited {
 	right:0px;
 	top:100px;
 	width: 100%;
+	z-index:2;
 }
 
 
@@ -401,7 +402,7 @@ a:visited {
 }
 .attribute-required {
 	font-size: 11px;
-	font-weight: bold;
+	font-weight: normal;
 }
 .description {
 	font-size: 9px;
@@ -690,20 +691,26 @@ h6 {
 .prompt-window {
 	background-color: #FFFFFF;
 	border: solid #666633 2px;
+	position:absolute;
+	z-index:300;
+	width: 300px;
 	height: auto;
 	padding: 10px;
 	color: #666633;
 	font-size: 10px;
 	font-weight: normal;
 	line-height: 13px;
+	visibility: hidden;
+	left: 20%;
+	top: 600px;
 }
-
-.prompt-table {
+.download_code {
 	background-color: #FFFFFF;
-	border: none;
-}
+	border: solid #CCCCFF 2px;
+	padding: 10px;
+	color: #666633;
+	font-size: 10px;
+	font-weight: normal;
+	line-height: 13px;
 
-.validation-error {
-	color: red; 
-	font-weight: bold;
 }
