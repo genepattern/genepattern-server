@@ -15,6 +15,7 @@ package org.genepattern.server.webapp.jsf;
 import static org.genepattern.server.webapp.jsf.UIBeanHelper.getRequest;
 import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,6 +31,7 @@ import javax.faces.model.SelectItem;
 import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
@@ -103,6 +105,9 @@ public class ModuleChooserBean {
         for (int i = 0; i < alltasks.length; i++) {
             TaskInfo ti = alltasks[i];
             String taskType = ti.getTaskInfoAttributes().get("taskType");
+            if(taskType == null || taskType.length() == 0) {
+                taskType = "Uncategorized";
+            }
             List<TaskInfo> tasks = taskMap.get(taskType);
             if (tasks == null) {
                 tasks = new ArrayList<TaskInfo>();
@@ -120,6 +125,19 @@ public class ModuleChooserBean {
         }
         return categories;
 
+    }
+    
+    private String getVersion(TaskInfo ti) {
+        
+        try {
+            LSID lsid = new LSID(ti.getLsid());
+            return lsid.getVersion();
+        }
+        catch (MalformedURLException e) {
+            log.error("Bad LSID", e);
+            throw new RuntimeException(e);
+        }
+        
     }
 
 

@@ -1,164 +1,176 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
   <head>
     <!-- created by rebecca fagan, fagandesign -->
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
     <title>GenePattern | Create New GenePattern Suite</title>
-    <t:stylesheet path="/css/style.css"></t:stylesheet>
+    <t:stylesheet path="/css/style.css"/>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
+    <script type="text/javascript" language="javascript">
+
+/* <![CDATA[ */
+	function toggleCheckBoxes(maincheckbox, parentId) {	
+		var isChecked = maincheckbox.checked;
+		var parentElement = document.getElementById(parentId);   // prototype equivalent of document.getElementById
+
+		var elements = parentElement.getElementsByTagName("input");
+		for (i = 0; i < elements.length; i++) {	
+		    if(elements[i].type="checkbox") {		
+			  elements[i].checked = isChecked;
+			}
+		}
+	}
+		
+/* ]]> */
+
+    </script>
   </head>
   <body>
-    <!-- begin content area. this area contains three columns in an adjustable table, including tasks & pipeline, the center working space, and recent jobs. -->
-    <div id="content" class="content">
-      <h:form>
-        <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
-          <tr>
-            <td>Create New GenePattern Suite </td>
-          </tr>
-        </table>
-        <table width="100%" cellpadding="3" cellspacing="0" cols="2">
-          <tr class="taskperameter">
-            <td valign="top" class="attribute-required">Name:*</td>
-            <td>
-              <h:inputText value="#{createSuiteBean.name}" size="40" requiredMessage="Name is a required field" required="true" id="nameField"/>
+    <h:form id="form1">
+      <t:saveState value="#{createSuiteBean}"/>
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+        <tr>
+          <td>Create New GenePattern Suite </td>
+        </tr>
+      </table>
+      <table width="100%" cellpadding="3" cellspacing="0" cols="2">
+        <tr class="taskperameter">
+          <td valign="top" class="attribute-required">Name:*</td>
+          <td>
+            <h:inputText value="#{createSuiteBean.name}" size="40" requiredMessage="Name is a required field" required="true" id="nameField"/>
                 &#160;
-                <h:message for="nameField" class="validation-error"/>
-            </td>
-          </tr>
-          <tr class="taskperameter">
-            <td>Description:</td>
-            <td>
-              <h:inputTextarea value="#{createSuiteBean.description}" width="85%" cols="60"/>
-            </td>
-          </tr>
-          <tr class="taskperameter">
-            <td>Author:</td>
-            <td>
-              <h:inputText value="#{createSuiteBean.author}" size="40"/>
-              <span class="description">name, affiliation</span>
-            </td>
-          </tr>
-          <tr class="taskperameter">
-            <td>Privacy:</td>
-            <td>
-              <h:selectOneMenu value="#{createSuiteBean.accessId}">
-                <f:selectItem itemLabel="public" itemValue="1"/>
-                <f:selectItem itemLabel="private" itemValue="2"/>
-              </h:selectOneMenu>
-            </td>
-          </tr>
-          <input type="radio" name="language" style="visibility: hidden"/>
-          <tr class="taskperameter">
-            <td>Support Files:<br/>
-            </td>
-            <td>
-              <span class="description">Any documentation or data files you
-                wish to bundle with the suite</span>
-              <br/>
-              <input type="file" name="doc"/>
-              <span class="description"> (pdf, doc, data files, etc.) </span>
-            </td>
-          </tr>
-          
-          <tr class="smalltype">
-            <td>
-              <a href="link">open all</a> | <a href="link">close all</a>
-            </td>
-            <td>&#160;</td>
-          </tr>
-          
-        </table>
-        
-        <!-- Module selection -->
-        <table width="100%" border="0" cellspacing="0" cellpadding="5">
-        
-          <t:dataList var="category" value="#{moduleChooserBean.allTasks}">
-           <tr valign="top">
+              <h:message for="nameField" class="validation-error"/>
+          </td>
+        </tr>
+        <tr class="taskperameter">
+          <td>Description:</td>
+          <td width="85%">
+            <t:inputTextarea value="#{createSuiteBean.description}" cols="60"/>
+          </td>
+        </tr>
+        <tr class="taskperameter">
+          <td>Author:</td>
+          <td>
+            <h:inputText value="#{createSuiteBean.author}" size="40"/>
+            <span class="description">name, affiliation</span>
+          </td>
+        </tr>
+        <tr class="taskperameter">
+          <td>Privacy:</td>
+          <td>
+            <h:selectOneMenu value="#{createSuiteBean.accessId}">
+              <f:selectItem itemLabel="public" itemValue="1"/>
+              <f:selectItem itemLabel="private" itemValue="2"/>
+            </h:selectOneMenu>
+          </td>
+        </tr>
+        <input type="radio" name="language" style="visibility: hidden"/>
+        <tr class="taskperameter">
+          <td>Support Files:<br/>
+          </td>
+          <td>
+            <span class="description">Any documentation or data files you wish to bundle with the suite</span>
+            <br/>
+            <input type="file" name="doc"/>
+            <span class="description"> (pdf, doc, data files, etc.) </span>
+          </td>
+        </tr>
+        <tr class="smalltype">
+          <td>
+            <h:commandLink actionListener="#{createSuiteBean.openAll}" immediate="true">open all</h:commandLink> | 
+              <h:commandLink actionListener="#{createSuiteBean.closeAll}" immediate="true">close all</h:commandLink>
+          </td>
+          <td>&#160;</td>
+        </tr>
+      </table>
+      
+      <!-- Module selection -->
+      <table width="100%" border="0" cellspacing="0" cellpadding="5">
+        <tr valign="top">
+          <t:dataList var="col" value="#{createSuiteBean.categoryColumns}">
             <td width="50%">
-              <div class="pipeline_item">
-                <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
-                  <tr>
-                    <td width="8">
-                      <h:commandLink actionListener="#{category.toggleExpanded}">
-                        <h:graphicImage value="#{category.expanded ? '/images/arrow-pipelinetask-down.gif' : '/images/arrow-pipelinetask-up.gif'}" width="8" height="8" vspace="3" border="0"/>
-                      </h:commandLink>
-                    </td>
-                    <td>
-                      <a href="#">#{category.name}</a>
-                    </td>
-                  </tr>
-                </table>
- 
-                <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top">
-                  <tbody>
-                    <tr class="tableheader-row2">
-                      <td width="30">
-                        <div align="center">
-                          <input type="checkbox" name="checkbox" value="checkbox"/>
-                        </div>
+              <t:dataList var="category" value="#{col}">
+              
+                <!-- Category header -->
+                <div class="pipeline_item">
+                  <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
+                    <tr>
+                      <td width="8">
+                        <t:commandLink actionListener="#{category.toggleExpanded}" immediate="true">
+                          <t:graphicImage value="#{category.expanded ? '/images/arrow-pipelinetask-down.gif' : '/images/arrow-pipelinetask-right.gif'}" width="8" height="8" border="0"/>
+                        </t:commandLink>
                       </td>
-                      <td>task name </td>
-                      <td>&#160;</td>
-                      <td width="60">
-                        <div align="center">version</div>
+                      <td>
+                        <h:commandLink actionListener="#{category.toggleExpanded}" immediate="true">#{category.name}</h:commandLink>
                       </td>
                     </tr>
-                    <tr class="taskperameter">
-                      <td valign="top">
-                        <div align="center">
-                          <input type="checkbox" name="checkbox" value="checkbox"/>
-                        </div>
-                      </td>
-                      <td valign="top">
-                        <a href="#">GeneCruiser</a>
-                      </td>
-                      <td valign="top">&#160;</td>
-                      <td valign="top" class="description">
-                        <div align="center">
-                          <select name="menu1" onchange="MM_jumpMenu('parent',this,0)">
-                            <option selected="selected">latest</option>
-                            <option>3</option>
-                            <option>2</option>
-                            <option>1</option>
-                          </select>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>                </tr>
-                  </tbody>
-                </table>
-              </div>
-              <br/>
-              <div class="pipeline_item">
-                <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
-                  <tr>
-                    <td width="8">
-                      <a href="#">
-                        <t:graphicImage value="/images/arrow-pipelinetask-right.gif" alt="hide task" width="8" height="8" vspace="3" border="0"/>
-                      </a>
-                    </td>
-                    <td>
-                      <a href="#"> Uncategorized </a>
-                    </td>
-                  </tr>
-                </table>
-                <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top">
-                  <tbody>
-                    <tr>                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                  </table>
+                  
+                  <!--  The module list.  The list is conditionally rendered based on the categories "expanded" property -->
+                  	  
+                 
+			      <h:panelGroup rendered="#{category.expanded}">
+                    <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top" id="#{category.name}_table">
+                      <tbody>
+                        
+                        <!--  Header Row -->
+                        <tr class="tableheader-row2">
+                          <td width="30">
+                            <div align="center">
+                              <h:selectBooleanCheckbox value="" onclick="toggleCheckBoxes(this, '#{category.name}_table');"/>
+                            </div>
+                          </td>
+                          <td>task name </td>
+                          <td>&#160;</td>
+                          <td width="60">
+                            <div align="center">version</div>
+                          </td>
+                        </tr>
+                        
+                        <!--  Modules -->
+                        <t:dataList var="module" value="#{category.modules}">
+                          <tr class="taskperameter">
+                            <td valign="top">
+                              <div align="center">
+                                <h:selectBooleanCheckbox value="#{module.selected}" immediate="true"/>
+                              </div>
+                            </td>
+                            <td valign="top">
+                              <a href="#">#{module.name}</a>
+                            </td>
+                            <td valign="top">&#160;</td>
+                            <td valign="top" class="description">
+                              <div align="center">
+                                 <t:selectOneMenu value="#{module.selectedVersion}">
+                                  <f:selectItem  itemLabel="latest" itemValue="-1"/>
+                                  <f:selectItems value="#{module.versionSelectItems}"/>
+                                  <c:forEach var="version" items="#{module.versions}">
+                                    <f:selectItem itemLabel="version" itemValue="1"/>
+                                  </c:forEach>
+                                </t:selectOneMenu>
+                              </div>
+                            </td>
+                          </tr>
+                        </t:dataList>
+                        <tr/>
+                      </tbody>
+                    </table>
+                  </h:panelGroup>
+                </div>
+                <br/>
+              </t:dataList>
             </td>
-          </tr>
           </t:dataList>
-        </table>
-        <div align="center">
-          <br/>
-          <t:graphicImage value="/images/divider-pix1.gif" width="100%" height="2" vspace="5"/>
-          <h:commandButton action="submit" value="save"/>
+        </tr>
+      </table>
+      <div align="center">
+        <br/>
+        <t:graphicImage value="/images/divider-pix1.gif" width="100%" height="2" vspace="5"/>
+        <h:commandButton action="submit" value="save"/>
           &#160;
           <input name="cmd" value="clear" type="submit"/>
-        </div>
-      </h:form>
-    </div>
+      </div>
+    </h:form>
   </body>
 </html>

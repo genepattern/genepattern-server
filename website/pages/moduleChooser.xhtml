@@ -1,72 +1,70 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
-      <h:form>
-            <!-- tasks and pipelines area -->
-
-                <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                  <tr>
-                    <td colspan="7" class="sidebarhead-bkg">
-                      <div class="sidebarhead"> Tasks &amp; Pipelines<br/>
-                        <div class="viewchoice">
-                          <h:selectOneRadio value="#{moduleChooserBean.mode}" styleClass="viewchoice" 
-                                            valueChangeListener="#{moduleChooserBean.modeChanged}" 
-                                            onchange="submit();">
-                            <f:selectItem itemValue="category" itemLabel="category"/>
-                            <f:selectItem itemValue="suite" itemLabel="suite"/>
-                            <f:selectItem itemValue="all" itemLabel="all"/>
-                          </h:selectOneRadio>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colspan="5">
-                      <t:graphicImage value="/images/divider-pix1.gif" width="100%" height="1"/>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td height="6" colspan="5">
-                      <t:graphicImage value="/images/spacer.gif" width="1" height="6"/>
-                    </td>
-                  </tr>
-                  <tr>
-                    <!-- Module List  -->
-                    <t:dataList var="category" value="#{moduleChooserBean.allTasks}">
-                      <tr class="task-categories">
-                        <td width="9" valign="middle">
-                          <t:graphicImage value="/images/spacer.gif" width="8" height="8"/>
-                        </td>
-                        <td width="7" valign="top">
-                          <h:commandLink actionListener="#{category.toggleExpanded}">
-                            <h:graphicImage value="#{category.expanded ? '/images/arrow-down.gif' : '/images/arrow-right.gif'}" width="7" height="7" vspace="3" border="0"/>
-                          </h:commandLink>
-                        </td>
-                        <td width="4">
-                          <t:graphicImage value="/images/spacer.gif" width="4" height="1"/>
-                        </td>
-                        <td colspan="3" halign="left">
-                          <h:commandLink value="#{category.name}" actionListener="#{category.toggleExpanded}"/>
-                        </td>
-                      </tr>
-                      <t:dataList var="taskInfo" value="#{category.modules}" rendered="#{category.expanded}">
-                        <tr class="#{taskInfo.name == moduleChooserBean.selectedModule ? 'tasks_on' : (taskInfo.userId == moduleChooserBean.userId ? 'task-mine' : '')}">
-                          <td>&#160;</td>
-                          <td valign="top">&#160;</td>
-                          <td width="4" valign="middle">
-                            <t:graphicImage value="#{taskInfo.pipeline ? '/images/bullet-pipeline.gif' : '/images/bullet-task.gif'}"  width="4" height="4" />
-                          </td>
-                          <td width="4"><t:graphicImage src="/images/spacer.gif" width="4" height="1" /></td>
-                          <td>
-                            <h:commandLink value="#{taskInfo.shortName}" actionListener="#{moduleChooserBean.moduleClicked}">
-                              <f:param name="task" value="#{taskInfo.name}"/>
-                            </h:commandLink>
-                          </td>
-                          <td>&#160;</td>
-                        </tr>
-                      </t:dataList>
-                    </t:dataList>
-                  </tr>
-                </table>
-
-      </h:form>
+  <h:form>
+    <!-- tasks and pipelines area -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td colspan="7" class="sidebarhead-bkg">
+          <div class="sidebarhead">Tasks &amp; Pipelines<br/>
+            <div class="viewchoice">
+              <h:selectOneRadio value="#{moduleChooserBean.mode}" styleClass="viewchoice" valueChangeListener="#{moduleChooserBean.modeChanged}" onchange="submit();">
+                <f:selectItem itemValue="category" itemLabel="category"/>
+                <f:selectItem itemValue="suite" itemLabel="suite"/>
+                <f:selectItem itemValue="all" itemLabel="all"/>
+              </h:selectOneRadio>
+            </div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="5">
+          <t:graphicImage value="/images/divider-pix1.gif" width="100%" height="1"/>
+        </td>
+      </tr>
+      <tr>
+        <td height="6" colspan="5">
+          <t:graphicImage value="/images/spacer.gif" width="1" height="6"/>
+        </td>
+      </tr>
+      <tr>
+        <!-- Module List  -->
+        <t:dataList var="category" value="#{moduleChooserBean.allTasks}">
+          <tr class="task-categories">
+            <td width="9" valign="middle">
+              <t:graphicImage value="/images/spacer.gif" width="8" height="8"/>
+            </td>
+            <td width="7" valign="top">
+              <h:commandLink actionListener="#{category.toggleExpanded}">
+                <h:graphicImage value="#{category.expanded ? '/images/arrow-down.gif' : '/images/arrow-right.gif'}" width="7" height="7" vspace="3" border="0"/>
+              </h:commandLink>
+            </td>
+            <td width="4">
+              <t:graphicImage value="/images/spacer.gif" width="4" height="1"/>
+            </td>
+            <td colspan="3" halign="left">
+              <h:commandLink value="#{category.name}" actionListener="#{category.toggleExpanded}"/>
+            </td>
+          </tr>
+          <t:dataList var="taskInfo" value="#{category.modules}" rendered="#{category.expanded}">
+            <tr class="#{taskInfo.name == moduleChooserBean.selectedModule ? 'tasks_on' : (taskInfo.userId == moduleChooserBean.userId ? 'task-mine' : '')}">
+              <td>&#160;</td>
+              <td valign="top">&#160;</td>
+              <td width="4" valign="middle">
+                <t:graphicImage value="#{taskInfo.pipeline ? '/images/bullet-pipeline.gif' : '/images/bullet-task.gif'}" width="4" height="4"/>
+              </td>
+              <td width="4">
+                <t:graphicImage src="/images/spacer.gif" width="4" height="1"/>
+              </td>
+              <td>
+                <h:commandLink value="#{taskInfo.shortName}" actionListener="#{moduleChooserBean.moduleClicked}">
+                  <f:param name="task" value="#{taskInfo.name}"/>
+                </h:commandLink>
+              </td>
+              <td>&#160;</td>
+            </tr>
+          </t:dataList>
+        </t:dataList>
+      </tr>
+    </table>
+  </h:form>
 </html>
