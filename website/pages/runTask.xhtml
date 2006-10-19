@@ -27,12 +27,16 @@ function exportPipeline(lsid, title) {
 <ui:composition template="/templates/common.xhtml">
 	<ui:define name="pageTitle">GenePattern - #{runTaskBean.name}</ui:define>
 
-    <ui:define name="leftNav">
-      <ui:include src="moduleChooser.xhtml"/>
-    </ui:define>
+	<ui:define name="leftPanel">
+		<ui:include src="moduleChooser.xhtml" />	
+	</ui:define>
+	
+	 <ui:define name="rightPanel">
+		<ui:include src="recentJobs.xhtml" />
+	</ui:define>
 
-	<ui:define name="centerNav">
-		<td valign="top" class="maintasknav" id="maintasknav"><h:outputLink
+	<ui:define name="mainNav">
+		<h:outputLink
 			target="_blank"
 			value="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp">help
 			<f:param name="name" value="#{runTaskBean.lsid}" />
@@ -52,13 +56,13 @@ function exportPipeline(lsid, title) {
 					<f:param name="name" value="#{runTaskBean.lsid}" />
 				</h:outputLink>
 			</c:otherwise>
-		</c:choose></td>
+		</c:choose>
 	</ui:define>
-
-
+	
 	<ui:define name="body">
 		<ui:include src="runTaskBody.xhtml" />
 	</ui:define>
+	
 </ui:composition>
 </html>
 
