@@ -143,11 +143,7 @@
                             <td valign="top" class="description">
                               <div align="center">
                                  <t:selectOneMenu value="#{module.selectedVersion}">
-                                  <f:selectItem  itemLabel="latest" itemValue="-1"/>
                                   <f:selectItems value="#{module.versionSelectItems}"/>
-                                  <c:forEach var="version" items="#{module.versions}">
-                                    <f:selectItem itemLabel="version" itemValue="1"/>
-                                  </c:forEach>
                                 </t:selectOneMenu>
                               </div>
                             </td>

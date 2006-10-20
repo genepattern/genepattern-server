@@ -14,7 +14,7 @@ public class ModuleCategory implements java.io.Serializable {
 
     private boolean expanded = true;
     private String name;
-    private List modules;
+    private List<Module> modules;
 
     public ModuleCategory(String name, TaskInfo[] taskInfos) {
         this.name = name;
@@ -26,13 +26,12 @@ public class ModuleCategory implements java.io.Serializable {
         for(TaskInfo ti : taskInfos) {
             try {
                 LSID lsid = new LSID(ti.getLsid());
-                int version = Integer.parseInt(lsid.getVersion());            
                 Module module = tmp.get(ti.getName());
                 if(module == null) {
-                    tmp.put(ti.getName(), new Module(ti, version));
+                    tmp.put(ti.getName(), new Module(ti, lsid));
                 }
                 else {
-                    module.addVersion(version);  
+                    module.addVersion(lsid);  
                 }
             }
             catch (NumberFormatException e) {
@@ -57,7 +56,7 @@ public class ModuleCategory implements java.io.Serializable {
         return name;
     }
 
-    public List getModules() {
+    public List<Module> getModules() {
         return modules;
     }
 

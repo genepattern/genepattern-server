@@ -4,6 +4,7 @@ import java.util.*;
 
 import javax.faces.model.SelectItem;
 
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -18,27 +19,31 @@ public class Module implements java.io.Serializable {
     private String shortName;
     private String userId;
     boolean pipeline;
-    private List<Integer> versions = new ArrayList<Integer>();
-    private int selectedVersion = -1;
+    private List<SelectItem> versions = new ArrayList<SelectItem>();
+    private String selectedVersion = "latest";  // LSID of selected version
     
-    public int getSelectedVersion() {
+    public String getSelectedVersion() {
         return selectedVersion;
     }
 
-    public void setSelectedVersion(int selectedVersion) {
+    public void setSelectedVersion(String selectedVersion) {
         this.selectedVersion = selectedVersion;
     }
 
-    public Module(TaskInfo ti, int version) {
+    public Module(TaskInfo ti, LSID lsid) {
         this.userId = ti.getUserId();
         this.name = ti.getName();
         this.shortName = ti.getShortName();
         pipeline = ti.isPipeline();
-        versions.add(version);
+        
+        // Add the "latest" version option by stripping out the version #
+        versions.add(new SelectItem(lsid.toStringNoVersion(), "latest"));
+                    
+        versions.add(new SelectItem(lsid.toString(), lsid.getVersion()));
     }
     
-    public void addVersion(int version) {
-        versions.add(version);
+    public void addVersion(LSID lsid) {
+        versions.add(new SelectItem(lsid.toString(), lsid.getVersion()));
    }
 
     public String getName() {
@@ -63,7 +68,7 @@ public class Module implements java.io.Serializable {
         this.selected = selected;
     }
 
-    public List<Integer> getVersions() {
+    public List<SelectItem> getVersions() {
         return versions;
     }
 
@@ -76,17 +81,16 @@ public class Module implements java.io.Serializable {
     public List<SelectItem> getVersionSelectItems() {
         Collections.sort(versions, new Comparator() {           
             public int compare(Object o1, Object o2) {
-                return ((Number) o2).intValue() - ((Number) o1).intValue();
+                String v1 = ((SelectItem) o1).getLabel();
+                String v2 = ((SelectItem) o2).getLabel();
+                if(v1.toLowerCase().equals("latest")) return -1;
+                else if(v2.toLowerCase().equals("latest")) return 1;
+                else return Integer.parseInt(v2) - Integer.parseInt(v1);
             }
 
         });
- 
-        List<SelectItem> items = new ArrayList();
-        for(Integer version : versions) {
-            
-            items.add(new SelectItem(version, version.toString()));
-        }
-        return items;
+        return versions;
+        
     }
 
 
