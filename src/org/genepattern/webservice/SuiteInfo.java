@@ -21,10 +21,7 @@ package org.genepattern.webservice;
  */
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 
 public class SuiteInfo implements Serializable {
@@ -42,7 +39,7 @@ public class SuiteInfo implements Serializable {
 	public SuiteInfo () {
 	}
 
-	public SuiteInfo (String lsid, String name, String description, String author, String owner, ArrayList modules, int access_id, ArrayList docs) {
+	public SuiteInfo (String lsid, String name, String description, String author, String owner, List modules, int access_id, List docs) {
 		this.lsid = lsid;
 		this.name = name;
 		this.author = author;
@@ -190,5 +187,13 @@ public class SuiteInfo implements Serializable {
 	public void setModuleLsids(String[] moduleLsids) {
 		this.moduleLsids = moduleLsids;
 	}
+    
+    public void setModuleLsids(List<String> moduleList) {
+        
+        this.moduleLsids = new String[moduleList.size()];
+        for(int i=0; i<moduleList.size(); i++) {
+            moduleLsids[i] = moduleList.get(i);
+        }
+    }
 
 }
