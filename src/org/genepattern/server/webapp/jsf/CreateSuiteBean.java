@@ -10,8 +10,11 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.event.ActionEvent;
+import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
+import org.apache.myfaces.custom.fileupload.HtmlInputFileUpload;
+import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.genepattern.server.webservice.server.TaskIntegrator;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.webservice.SuiteInfo;
@@ -26,11 +29,16 @@ import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
  */
 public class CreateSuiteBean implements java.io.Serializable  {
 
-	String name;
-	String description;
-	String author;
-	Integer accessId = 1; // Public
-	List<ModuleCategory> categories = null;
+
+    private static final long serialVersionUID = 352540582209631173l;
+    private String name;
+    private String description;
+    private String author;
+    private Integer accessId = 1; // Public
+    private UploadedFile supportFile1;
+    private UploadedFile supportFile2;
+    private UploadedFile supportFile3;   
+    private List<ModuleCategory> categories = null;
 
 	public Integer getAccessId() {
 		return accessId;
@@ -106,7 +114,6 @@ public class CreateSuiteBean implements java.io.Serializable  {
     }
 
 	private List<ModuleCategory> getTasksByType() {
-
 		if (categories == null) {
             System.out.println("Creating categories");
 			categories = new ArrayList<ModuleCategory>();
@@ -137,6 +144,22 @@ public class CreateSuiteBean implements java.io.Serializable  {
 		return categories;
 	}
     
+    /** 
+     * This value change listenser neccessary to prevent loosing the value when posting a category expand/select
+     * @param event
+     */
+    public void fileUploadChange1(ValueChangeEvent event) {
+        this.supportFile1 = (UploadedFile) event.getNewValue();
+        
+    }
+    public void fileUploadChange2(ValueChangeEvent event) {
+        this.supportFile2 = (UploadedFile) event.getNewValue(); 
+    } 
+    public void fileUploadChange3(ValueChangeEvent event) {
+        this.supportFile3 = (UploadedFile) event.getNewValue();
+    }   
+    
+    
     public String save() {
         SuiteInfo suiteInfo = new SuiteInfo();
         
@@ -166,6 +189,30 @@ public class CreateSuiteBean implements java.io.Serializable  {
         }
         
         return null;
+    }
+
+    public UploadedFile getSupportFile1() {
+        return supportFile1;
+    }
+
+    public void setSupportFile1(UploadedFile supportFile1) {
+        this.supportFile1 = supportFile1;
+    }
+
+    public UploadedFile getSupportFile2() {
+        return supportFile2;
+    }
+
+    public void setSupportFile2(UploadedFile supportFile2) {
+        this.supportFile2 = supportFile2;
+    }
+
+    public UploadedFile getSupportFile3() {
+        return supportFile3;
+    }
+
+    public void setSupportFile3(UploadedFile supportFile3) {
+        this.supportFile3 = supportFile3;
     }
 	
 }

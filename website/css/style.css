@@ -714,3 +714,10 @@ h6 {
 	line-height: 13px;
 
 }
+
+.validation-error {
+      color: red;
+      font-weight: bold;
+}
+
+

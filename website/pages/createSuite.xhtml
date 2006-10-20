@@ -6,6 +6,9 @@
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
     <title>GenePattern | Create New GenePattern Suite</title>
     <t:stylesheet path="/css/style.css"/>
+    <style type="text/css">
+      img.invisible {display:none}
+    </style>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
     <script type="text/javascript" language="javascript">
 
@@ -21,13 +24,23 @@
 			}
 		}
 	}
+	
+	function toggleVisibility(id) {
+	    var element = document.getElementById(id);
+	    if(element.style.display == "none") {
+	      element.style.display = "";
+	    }
+	    else {
+	      element.style.display = "none";
+	    }
+	}
 		
 /* ]]> */
 
     </script>
   </head>
   <body>
-    <h:form id="form1">
+    <h:form id="form1" enctype="multipart/form-data">
       <t:saveState value="#{createSuiteBean}"/>
       <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
         <tr>
@@ -70,10 +83,11 @@
           <td>Support Files:<br/>
           </td>
           <td>
-            <span class="description">Any documentation or data files you wish to bundle with the suite</span>
+            <span class="description">Any documentation or data files you wish to bundle with the suite (pdf, doc, data files, etc.) </span>
             <br/>
-            <input type="file" name="doc"/>
-            <span class="description"> (pdf, doc, data files, etc.) </span>
+            <br/><t:inputFileUpload storage="file" size="60" immediate="true" valueChangeListener="#{createSuiteBean.fileUploadChange1}" />    
+            <br/><t:inputFileUpload storage="file" size="60"  immediate="true" valueChangeListener="#{createSuiteBean.fileUploadChange2}" />    
+            <br/><t:inputFileUpload storage="file" size="60"  immediate="true" valueChangeListener="#{createSuiteBean.fileUploadChange3}"/>         
           </td>
         </tr>
         <tr class="smalltype">
@@ -97,20 +111,18 @@
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
                     <tr>
                       <td width="8">
-                        <t:commandLink actionListener="#{category.toggleExpanded}" immediate="true">
-                          <t:graphicImage value="#{category.expanded ? '/images/arrow-pipelinetask-down.gif' : '/images/arrow-pipelinetask-right.gif'}" width="8" height="8" border="0"/>
-                        </t:commandLink>
+                        <a href="#">
+                          <img id="#{category.name}_expanded_img" src="/gp/images/arrow-pipelinetask-down.gif"  width="8" height="8" border="0"/>
+                          <img id="#{category.name}_collapsed_img" src="/gp/images/arrow-pipelinetask-right.gif" width="8" height="8" border="0" style.display="none"/>
+                        </a>
                       </td>
                       <td>
-                        <h:commandLink actionListener="#{category.toggleExpanded}" immediate="true">#{category.name}</h:commandLink>
+                        <a onclick="toggleVisibility('#{category.name}_table'); toggleVisibility('#{category.name}_expanded_img'); toggleVisibility('#{category.name}_collapsed_img')" href="#">#{category.name}</a>
                       </td>
                     </tr>
                   </table>
                   
-                  <!--  The module list.  The list is conditionally rendered based on the categories "expanded" property -->
-                  	  
-                 
-			      <h:panelGroup rendered="#{category.expanded}">
+                  <!--  The module list.  The list is conditionally displayed based on the categories "expanded" property -->              
                     <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top" id="#{category.name}_table">
                       <tbody>
                         
@@ -152,7 +164,7 @@
                         <tr/>
                       </tbody>
                     </table>
-                  </h:panelGroup>
+                 
                 </div>
                 <br/>
               </t:dataList>
