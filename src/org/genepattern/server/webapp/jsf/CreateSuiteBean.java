@@ -140,7 +140,22 @@ public class CreateSuiteBean implements java.io.Serializable  {
     public String save() {
         SuiteInfo suiteInfo = new SuiteInfo();
         
-        //@todo -- populate suiteInfo
+        suiteInfo.setName(name);
+        suiteInfo.setDescription(description);
+        suiteInfo.setAccessId(accessId);
+        suiteInfo.setAuthor(author);
+        suiteInfo.setOwner(getUserId());
+
+        List<String> selectedLSIDs = new ArrayList<String>();
+        for(ModuleCategory cat : categories) {
+            for(Module mod : cat.getModules()) {
+                    if(mod.isSelected()) {
+                        selectedLSIDs.add(mod.getSelectedVersion());
+                        suiteInfo.setModuleLsids(selectedLSIDs);
+                    }
+            }
+        }
+        
         
         try {
             (new TaskIntegrator()).installSuite(suiteInfo);
