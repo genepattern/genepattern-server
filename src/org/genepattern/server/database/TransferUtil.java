@@ -49,7 +49,7 @@ public class TransferUtil {
     private static void transferAll() {
 
         Class[] classes = { JobStatus.class, Lsid.class, Props.class, Sequence.class, TaskAccess.class,
-                AnalysisJob.class, TaskMaster.class, Suite.class,  SuiteModules.class };
+                AnalysisJob.class, TaskMaster.class, Suite.class };
 
         for (Class c : classes) {
             transferClassData(c);
