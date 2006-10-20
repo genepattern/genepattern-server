@@ -12,8 +12,11 @@ import java.util.Map;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
+import org.genepattern.server.webservice.server.TaskIntegrator;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
 
@@ -133,5 +136,21 @@ public class CreateSuiteBean implements java.io.Serializable  {
 		}
 		return categories;
 	}
+    
+    public String save() {
+        SuiteInfo suiteInfo = new SuiteInfo();
+        
+        //@todo -- populate suiteInfo
+        
+        try {
+            (new TaskIntegrator()).installSuite(suiteInfo);
+        }
+        catch (WebServiceException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
 	
 }
