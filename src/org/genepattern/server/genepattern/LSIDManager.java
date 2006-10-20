@@ -52,7 +52,7 @@ public class LSIDManager {
 	}
 
 	
-	public LSID createNewID(String namespace) throws OmnigeneException, RemoteException {
+	public LSID createNewID(String namespace) throws OmnigeneException {
 		try {
 			LSID newLSID = new LSID(getAuthority(), namespace,
 					getNextID(namespace), initialVersion);
