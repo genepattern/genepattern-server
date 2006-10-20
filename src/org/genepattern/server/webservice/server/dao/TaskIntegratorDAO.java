@@ -31,6 +31,7 @@ import java.util.zip.ZipFile;
 import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Suite;
+import org.genepattern.server.domain.SuiteHome;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.process.SuiteRepository;
@@ -38,6 +39,7 @@ import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.Util;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.WebServiceException;
 import org.hibernate.HibernateException;
@@ -45,54 +47,36 @@ import org.hibernate.Query;
 
 /**
  * @author Ted Liefeld eventually some of the GenePatternAnalysisTask stuff
- *         should move here
+ *         should move here. Modified by JTR to use Hibernate
  */
 public class TaskIntegratorDAO extends BaseDAO {
 
-    private static Category log = Logger.getInstance(TaskIntegratorDAO.class);
+    private static Logger log = Logger.getLogger(TaskIntegratorDAO.class);
 
     public void deleteSuite(String lsid) throws WebServiceException {
 
-        getSession().flush();
-        getSession().clear();
-
-        Query q1 = getSession().createSQLQuery("delete FROM suite where lsid = :lsid");
-        q1.setString("lsid", lsid);
-        q1.executeUpdate();
-
-        Query q2 = getSession().createSQLQuery("delete FROM suite_modules where lsid = :lsid");
-        q2.setString("lsid", lsid);
-        q2.executeUpdate();
+        Suite s = (Suite) getSession().get(org.genepattern.server.domain.Suite.class, lsid);
+        getSession().delete(s);
 
     }
 
     public void createSuite(SuiteInfo suiteInfo) {
+
+        String lsid = suiteInfo.getLsid();
+        if (lsid == null || lsid.length() == 0) {
+            LSID lsidObj = LSIDManager.getInstance().createNewID(org.genepattern.util.IGPConstants.SUITE_NAMESPACE);
+            lsid = lsidObj.toString();
+        }
+
         Suite s = new Suite();
-        s.setLsid(suiteInfo.getLSID());
+        s.setLsid(lsid);
         s.setName(suiteInfo.getName());
         s.setDescription(suiteInfo.getDescription());
         s.setAuthor(suiteInfo.getAuthor());
         s.setOwner(suiteInfo.getOwner());
         s.setAccessId(suiteInfo.getAccessId());
+        s.setModules(Arrays.asList(suiteInfo.getModuleLsids()));
         getSession().save(s);
-
-        getSession().flush();
-        getSession().clear();
-        
-        Query deleteQuery = getSession().createSQLQuery("delete FROM suite_modules where lsid = :lsid");
-        deleteQuery.setString("lsid", suiteInfo.getLSID());
-        deleteQuery.executeUpdate();
-    }
-
-    public void installSuiteModule(String lsid, String mod_lsid) throws WebServiceException {
-        getSession().flush();
-        getSession().clear();
-        
-        Query deleteQuery = getSession().createSQLQuery("insert  into suite_modules (lsid, module_lsid) values (?, ?)");
-        deleteQuery.setString(1, lsid);
-        deleteQuery.setString(2, mod_lsid);
-        deleteQuery.executeUpdate();
-
     }
 
     public SuiteInfo getSuite(String lsid) throws AdminDAOSysException {
