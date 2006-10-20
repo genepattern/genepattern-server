@@ -110,7 +110,7 @@ public class BaseDAO {
             log.error(e);
         }
 
-        ArrayList mods = getSuiteModules(lsid);
+        List mods = suite.getModules();
 
         SuiteInfo suiteInfo = new SuiteInfo(lsid, name, description, author, owner, mods, access_id, docs);
 
@@ -118,29 +118,7 @@ public class BaseDAO {
 
     }
 
-    private ArrayList getSuiteModules(String lsid) throws OmnigeneException {
-        PreparedStatement st = null;
-        ResultSet rs = null;
-        ArrayList moduleLSIDs = new ArrayList();
 
-        try {
-
-            st = getSession().connection().prepareStatement("SELECT * FROM suite_modules where lsid =?");
-            st.setString(1, lsid);
-            rs = st.executeQuery();
-            while (rs.next()) {
-                String modlsid = rs.getString("module_lsid");
-                moduleLSIDs.add(modlsid);
-            }
-        }
-        catch (SQLException e) {
-            throw new OmnigeneException(e);
-        }
-        finally {
-            this.cleanupJDBC(rs, st);
-        }
-        return moduleLSIDs;
-    }
 
     protected JobInfo jobInfoFromAnalysisJob(org.genepattern.server.domain.AnalysisJob aJob) throws OmnigeneException {
         ParameterFormatConverter parameterFormatConverter = new ParameterFormatConverter();

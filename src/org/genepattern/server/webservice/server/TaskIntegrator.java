@@ -123,6 +123,7 @@ public class TaskIntegrator implements ITaskIntegrator {
         try {
             TaskIntegratorDAO dao = new TaskIntegratorDAO();
             dao.createSuite(suiteInfo);
+
             String lsid = suiteInfo.getLSID();
             String suiteDir = DirectoryManager.getSuiteLibDir(suiteInfo.getName(), suiteInfo.getLSID(), suiteInfo
                     .getOwner());
@@ -148,10 +149,7 @@ public class TaskIntegrator implements ITaskIntegrator {
                 }
 
             }
-            String[] modLsids = suiteInfo.getModuleLSIDs();
-            for (int i = 0; i < modLsids.length; i++) {
-                dao.installSuiteModule(suiteInfo.getLSID(), modLsids[i]);
-            }
+
             if (supportFiles != null) {
                 for (int i = 0; i < supportFiles.length; i++) {
                     String attachmentDir;
@@ -282,11 +280,13 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public String installSuite(SuiteInfo suiteInfo) throws WebServiceException {
-        Transaction transaction = null;
-        try {
-            if (suiteInfo.getLSID() != null) if (suiteInfo.getLSID().trim().length() == 0) suiteInfo.setLSID(null);
 
-            ( new TaskIntegratorDAO()).createSuite(suiteInfo);
+        try {
+            if (suiteInfo.getLSID() != null) {
+                if (suiteInfo.getLSID().trim().length() == 0) suiteInfo.setLSID(null);
+            }
+
+            (new TaskIntegratorDAO()).createSuite(suiteInfo);
 
             String suiteDir = DirectoryManager.getSuiteLibDir(suiteInfo.getName(), suiteInfo.getLSID(), suiteInfo
                     .getOwner());
@@ -312,11 +312,6 @@ public class TaskIntegrator implements ITaskIntegrator {
 
                 }
 
-            }
-
-            String[] modLsids = suiteInfo.getModuleLSIDs();
-            for (int i = 0; i < modLsids.length; i++) {
-                ( new TaskIntegratorDAO()).installSuiteModule(suiteInfo.getLSID(), modLsids[i]);
             }
 
             return suiteInfo.getLSID();
@@ -431,13 +426,6 @@ public class TaskIntegrator implements ITaskIntegrator {
         else {
             deleteTask(lsid);
         }
-    }
-
-    public String modifySuite(int access_id, String lsid, String name, String description, String author, String owner,
-            String[] moduleLsids, javax.activation.DataHandler[] dataHandlers, String[] fileNames)
-            throws WebServiceException {
-        return modifySuite(access_id, lsid, name, description, author, owner, moduleLsids, dataHandlers,
-                fileNames);
     }
 
     protected String importZipFromURL(String url, int privacy, ITaskIntegrator taskIntegrator)
@@ -659,11 +647,11 @@ public class TaskIntegrator implements ITaskIntegrator {
             String username = getUserName();
             TaskInfo taskInfo = new LocalAdminClient(username).getTask(lsid);
             Vector lAttachments = new Vector(Arrays.asList(getSupportFileNames(lsid))); // Vector
-                                                                                        // of
-                                                                                        // String
+            // of
+            // String
             Vector lDataHandlers = new Vector(Arrays.asList(getSupportFiles(lsid))); // Vector
-                                                                                        // of
-                                                                                        // DataHandler
+            // of
+            // DataHandler
             for (int i = 0; i < fileNames.length; i++) {
                 int exclude = lAttachments.indexOf(fileNames[i]);
                 lAttachments.remove(exclude);
@@ -878,7 +866,12 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public String clone(String lsid, String name) throws WebServiceException {
-        // TODO Auto-generated method stub
-        return null;
+        throw new WebServiceException("clone is not implemented");
+    }
+
+    public String modifySuite(int access_id, String lsid, String name, String description, String author, String owner,
+            String[] moduleLsids, DataHandler[] dataHandlers, String[] fileNames) throws WebServiceException {
+        throw new WebServiceException("ModifySuite is not implemented");
+
     }
 }
