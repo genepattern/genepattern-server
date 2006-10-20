@@ -1,169 +1,177 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
-	<display-name>GenePattern</display-name>
-	<context-param>
-		<param-name>javax.faces.DEFAULT_SUFFIX</param-name>
-		<param-value>.xhtml</param-value>
-	</context-param>
-	<context-param>
-		<param-name>facelets.REFRESH_PERIOD</param-name>
-		<param-value>2</param-value>
-	</context-param>
-	<context-param>
-		<param-name>facelets.DEVELOPMENT</param-name>
-		<param-value>true</param-value>
-	</context-param>
-	<context-param>
-		<param-name>javax.faces.STATE_SAVING_METHOD</param-name>
-		<param-value>client</param-value>
-	</context-param>
-	<context-param>
-		<param-name>com.sun.faces.validateXml</param-name>
-		<param-value>true</param-value>
-	</context-param>
-	<context-param>
-		<param-name>com.sun.faces.verifyObjects</param-name>
-		<param-value>true</param-value>
-	</context-param>
-	<context-param>
-		<param-name>facelets.LIBRARIES</param-name>
-		<param-value>/WEB-INF/tomahawk.taglib.xml</param-value>
-	</context-param>
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+ <display-name>GenePattern</display-name>
+ <context-param>
+  <param-name>javax.faces.DEFAULT_SUFFIX</param-name>
+  <param-value>.xhtml</param-value>
+ </context-param>
+ <context-param>
+  <param-name>facelets.REFRESH_PERIOD</param-name>
+  <param-value>2</param-value>
+ </context-param>
+ <context-param>
+  <param-name>facelets.DEVELOPMENT</param-name>
+  <param-value>true</param-value>
+ </context-param>
+ <context-param>
+  <param-name>javax.faces.STATE_SAVING_METHOD</param-name>
+  <param-value>client</param-value>
+ </context-param>
+ <context-param>
+  <param-name>com.sun.faces.validateXml</param-name>
+  <param-value>true</param-value>
+ </context-param>
+ <context-param>
+  <param-name>com.sun.faces.verifyObjects</param-name>
+  <param-value>true</param-value>
+ </context-param>
+ <context-param>
+  <param-name>facelets.LIBRARIES</param-name>
+  <param-value>/WEB-INF/tomahawk.taglib.xml</param-value>
+ </context-param>
+ <filter>
+  <display-name>Ajax4jsf Filter</display-name>
+  <filter-name>ajax4jsf</filter-name>
+  <filter-class>org.ajax4jsf.Filter</filter-class>
+ </filter>
+ <filter>
+  <filter-name>AuthenticationFilter</filter-name>
+  <filter-class>org.genepattern.server.webapp.AuthenticationFilter</filter-class>
+ </filter>
+ <filter>
+  <filter-name>ConnectionFilter</filter-name>
+  <filter-class>org.genepattern.server.webapp.ConnectionFilter</filter-class>
+ </filter>
+ <filter>
+  <filter-name>AuthorizationFilter</filter-name>
+  <filter-class>org.genepattern.server.webapp.AuthorizationFilter</filter-class>
+  <init-param>
+   <param-name>org.genepattern.AuthorizationManagerFactory</param-name>
+   <param-value>org.genepattern.server.util.AuthorizationManagerFactoryImpl</param-value>
+  </init-param>
+  <init-param>
+   <param-name>genepattern.properties</param-name>
+   <param-value>../resources</param-value>
+  </init-param>
+ </filter>
+ <filter>
+  <filter-name>HibernateFilter</filter-name>
+  <filter-class>org.genepattern.server.webapp.HibernateSessionRequestFilter</filter-class>
+ </filter>
+ 
+ <filter>
+  <display-name>ExtensionsFilter</display-name>
+  <filter-name>ExtensionsFilter</filter-name>
+  <filter-class>org.apache.myfaces.component.html.util.ExtensionsFilter</filter-class>
+  <init-param>
+   <description>Ignore files greather than this max size</description>
+   <param-name>uploadMaxFileSize</param-name>
+   <param-value>100m</param-value>
+  </init-param>
+  <init-param>
+   <description>Keep files less than this threshold in memory</description>
+   <param-name>uploadThresholdSize</param-name>
+   <param-value>100k</param-value>
+  </init-param>
+ </filter>
+ 
+<filter-mapping>
+  <filter-name>ExtensionsFilter</filter-name>
+  <servlet-name>Faces Servlet</servlet-name>
+</filter-mapping>
+    
+ <filter-mapping>
+  <filter-name>ajax4jsf</filter-name>
+  <servlet-name>Faces Servlet</servlet-name>
+  <dispatcher>REQUEST</dispatcher>
+  <dispatcher>FORWARD</dispatcher>
+  <dispatcher>INCLUDE</dispatcher>
+ </filter-mapping>
+ 
+ <filter-mapping>
+  <filter-name>ConnectionFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+ </filter-mapping>
+ 
+ <filter-mapping>
+  <filter-name>AuthenticationFilter</filter-name>
+  <url-pattern>*.jsp</url-pattern>
+ </filter-mapping>
+ 
+ <filter-mapping>
+  <filter-name>AuthenticationFilter</filter-name>
+  <url-pattern>*.jsf</url-pattern>
+ </filter-mapping>
+ 
+ <filter-mapping>
+  <filter-name>AuthorizationFilter</filter-name>
+  <url-pattern>/services/*</url-pattern>
 
-	<filter>
-		<display-name>Ajax4jsf Filter</display-name>
-		<filter-name>ajax4jsf</filter-name>
-		<filter-class>org.ajax4jsf.Filter</filter-class>
-	</filter>
-	<filter-mapping>
-		<filter-name>ajax4jsf</filter-name>
-		<servlet-name>Faces Servlet</servlet-name>
-		<dispatcher>REQUEST</dispatcher>
-		<dispatcher>FORWARD</dispatcher>
-		<dispatcher>INCLUDE</dispatcher>
-	</filter-mapping>
+ </filter-mapping>
+ <filter-mapping>
+  <filter-name>AuthorizationFilter</filter-name>
+  <url-pattern>*.jsp</url-pattern>
+ </filter-mapping>
 
-
-	<filter>
-		<filter-name>AuthenticationFilter</filter-name>
-		<filter-class>
-			org.genepattern.server.webapp.AuthenticationFilter
-		</filter-class>
-	</filter>
-	<filter>
-		<filter-name>ConnectionFilter</filter-name>
-		<filter-class>
-			org.genepattern.server.webapp.ConnectionFilter
-		</filter-class>
-	</filter>
-	<filter>
-		<filter-name>AuthorizationFilter</filter-name>
-		<filter-class>
-			org.genepattern.server.webapp.AuthorizationFilter
-		</filter-class>
-		<init-param>
-			<param-name>
-				org.genepattern.AuthorizationManagerFactory
-			</param-name>
-			<param-value>
-				org.genepattern.server.util.AuthorizationManagerFactoryImpl
-			</param-value>
-		</init-param>
-		<init-param>
-			<param-name>genepattern.properties</param-name>
-			<param-value>../resources</param-value>
-		</init-param>
-	</filter>
-	<filter>
-		<filter-name>HibernateFilter</filter-name>
-		<filter-class>
-			org.genepattern.server.webapp.HibernateSessionRequestFilter
-		</filter-class>
-	</filter>
-
-	<filter-mapping>
-		<filter-name>ConnectionFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>AuthenticationFilter</filter-name>
-		<url-pattern>*.jsp</url-pattern>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>AuthenticationFilter</filter-name>
-		<url-pattern>*.jsf</url-pattern>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>AuthorizationFilter</filter-name>
-		<url-pattern>/services/*</url-pattern>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>AuthorizationFilter</filter-name>
-		<url-pattern>*.jsp</url-pattern>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>AuthorizationFilter</filter-name>
-		<url-pattern>*.jsf</url-pattern>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>HibernateFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-	<servlet>
-		<servlet-name>Faces Servlet</servlet-name>
-		<servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-	<servlet>
-		<servlet-name>StartupServlet</servlet-name>
-		<servlet-class>
-			org.genepattern.server.webapp.StartupServlet
-		</servlet-class>
-		<init-param>
-			<param-name>java.io.tmpdir</param-name>
-			<param-value>./temp</param-value>
-		</init-param>
-		<init-param>
-			<param-name>omnigene.conf</param-name>
-			<param-value>../resources</param-value>
-		</init-param>
-		<init-param>
-			<param-name>genepattern.properties</param-name>
-			<param-value>../resources</param-value>
-		</init-param>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-	<servlet>
-		<display-name>Apache-Axis Servlet</display-name>
-		<servlet-name>AxisServlet</servlet-name>
-		<servlet-class>
-			org.apache.axis.transport.http.AxisServlet
-		</servlet-class>
-		<load-on-startup>20</load-on-startup>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>Faces Servlet</servlet-name>
-		<url-pattern>*.jsf</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>AxisServlet</servlet-name>
-		<url-pattern>/servlet/AxisServlet</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>AxisServlet</servlet-name>
-		<url-pattern>*.jws</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>AxisServlet</servlet-name>
-		<url-pattern>/services/*</url-pattern>
-	</servlet-mapping>
-	<welcome-file-list>
-		<welcome-file>index.jsp</welcome-file>
-	</welcome-file-list>
-	<login-config>
-		<auth-method>BASIC</auth-method>
-	</login-config>
+ <filter-mapping>
+  <filter-name>AuthorizationFilter</filter-name>
+  <url-pattern>*.jsf</url-pattern>
+ </filter-mapping>
+ 
+ <filter-mapping>
+  <filter-name>HibernateFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+ </filter-mapping>
+ 
+ <servlet>
+  <servlet-name>Faces Servlet</servlet-name>
+  <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+  <load-on-startup>1</load-on-startup>
+ </servlet>
+ <servlet>
+  <servlet-name>StartupServlet</servlet-name>
+  <servlet-class>org.genepattern.server.webapp.StartupServlet</servlet-class>
+  <init-param>
+   <param-name>java.io.tmpdir</param-name>
+   <param-value>./temp</param-value>
+  </init-param>
+  <init-param>
+   <param-name>omnigene.conf</param-name>
+   <param-value>../resources</param-value>
+  </init-param>
+  <init-param>
+   <param-name>genepattern.properties</param-name>
+   <param-value>../resources</param-value>
+  </init-param>
+  <load-on-startup>1</load-on-startup>
+ </servlet>
+ <servlet>
+  <display-name>Apache-Axis Servlet</display-name>
+  <servlet-name>AxisServlet</servlet-name>
+  <servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
+  <load-on-startup>20</load-on-startup>
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>Faces Servlet</servlet-name>
+  <url-pattern>*.jsf</url-pattern>
+ </servlet-mapping>
+ <servlet-mapping>
+  <servlet-name>AxisServlet</servlet-name>
+  <url-pattern>/servlet/AxisServlet</url-pattern>
+ </servlet-mapping>
+ <servlet-mapping>
+  <servlet-name>AxisServlet</servlet-name>
+  <url-pattern>*.jws</url-pattern>
+ </servlet-mapping>
+ <servlet-mapping>
+  <servlet-name>AxisServlet</servlet-name>
+  <url-pattern>/services/*</url-pattern>
+ </servlet-mapping>
+ <welcome-file-list>
+  <welcome-file>index.jsp</welcome-file>
+ </welcome-file-list>
+ <login-config>
+  <auth-method>BASIC</auth-method>
+ </login-config>
 </web-app>
