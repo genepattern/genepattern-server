@@ -1,7 +1,14 @@
 /* Auto generated file */
 
 package org.genepattern.server.domain;
+import java.util.*;
 
+/**
+ * A hibernate mapped POJO representing a Suite.  This class is a near copy of SuiteInfo.  
+ * Both are kept for an interim period as we transition to Hibernate.
+ * @author jrobinso
+ *
+ */
 public class Suite {
 
     private String lsid;
@@ -10,6 +17,7 @@ public class Suite {
     private String owner;
     private String description;
     private Integer accessId;
+    private List<String> modules;
 
     public String getLsid() {
         return this.lsid;
@@ -57,6 +65,14 @@ public class Suite {
 
     public void setAccessId(Integer value) {
         this.accessId = value;
+    }
+
+    public List<String> getModules() {
+        return modules;
+    }
+
+    public void setModules(List<String> modules) {
+        this.modules = modules;
     }
 
 }
