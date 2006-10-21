@@ -28,22 +28,58 @@
                          
 	function toggleVisibility(id) {
 	    var element = document.getElementById(id + "_table");
-	    Element.toggle( element );
-
-	    var downArrow = document.getElementById(id + "_expanded_img");
-	    var rightArrow = document.getElementById(id + "_collapsed_img");	    
 	    if(element.style.display=="none")
 	    {
-	        downArrow.style.display ="none";
-	        rightArrow.style.display ="inline"
+	        showCategory(id);
 	    }
 	    else
 	    {
-	        downArrow.style.display ="inline";
-	        rightArrow.style.display ="none"
+	        hideCategory(id);
 	    }
-	   
 	}
+	
+	function hideCategory( id ) {
+	    var tableElement = document.getElementById(id + "_table");
+	    var downArrow = document.getElementById(id + "_expanded_img");
+	    var rightArrow = document.getElementById(id + "_collapsed_img");	
+	        
+	    Element.hide(tableElement);
+	    downArrow.style.display ="none";
+	    rightArrow.style.display ="inline"	    
+	}
+	
+	function showCategory( id ) {
+	    var tableElement = document.getElementById(id + "_table");
+	    var downArrow = document.getElementById(id + "_expanded_img");
+	    var rightArrow = document.getElementById(id + "_collapsed_img");	
+	        
+	    Element.show(tableElement);
+	    downArrow.style.display ="inline";
+	    rightArrow.style.display ="none"
+	}
+	
+	function openAll() {
+      var tables = document.getElementsByName("category_table");
+      for(var i=0; i<tables.length; i++) {
+        var fullId = tables[i].id;
+        var index = fullId.lastIndexOf('_');
+        var catId = fullId.substring(0, index);
+        showCategory(catId);
+      }
+	}
+	
+	function closeAll() {
+      var tables = document.getElementsByName("category_table");
+      for(var i=0; i<tables.length; i++) {
+        var fullId = tables[i].id;
+        var index = fullId.lastIndexOf('_');
+        var catId = fullId.substring(0, index);
+        hideCategory(catId);
+      }
+	
+	}
+	
+
 		
 /* ]]> */
 
@@ -95,15 +131,14 @@
           <td>
             <span class="description">Any documentation or data files you wish to bundle with the suite (pdf, doc, data files, etc.) </span>
             <br/>
-            <br/><t:inputFileUpload storage="file" size="60" immediate="true" valueChangeListener="#{createSuiteBean.fileUploadChange1}" />    
-            <br/><t:inputFileUpload storage="file" size="60"  immediate="true" valueChangeListener="#{createSuiteBean.fileUploadChange2}" />    
-            <br/><t:inputFileUpload storage="file" size="60"  immediate="true" valueChangeListener="#{createSuiteBean.fileUploadChange3}"/>         
+            <br/><t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile1}" />    
+            <br/><t:inputFileUpload storage="file" size="60" valuer="#{createSuiteBean.supportFile2}" />    
+            <br/><t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile3}"/>         
           </td>
         </tr>
         <tr class="smalltype">
           <td>
-            <h:commandLink actionListener="#{createSuiteBean.openAll}" immediate="true">open all</h:commandLink> | 
-              <h:commandLink actionListener="#{createSuiteBean.closeAll}" immediate="true">close all</h:commandLink>
+            <a href="#" onclick="openAll();">open all</a> | <a href="#" onclick="closeAll();">close all</a>
           </td>
           <td>&#160;</td>
         </tr>
@@ -133,7 +168,8 @@
                   </table>
                   
                   <!--  The module list.  The list is conditionally displayed based on the categories "expanded" property -->              
-                    <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top" id="#{category.name}_table">
+                    <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top" 
+                           id="#{category.name}_table" name="category_table">
                       <tbody>
                         
                         <!--  Header Row -->
