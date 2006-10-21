@@ -7,6 +7,7 @@
     <title>GenePattern | Create New GenePattern Suite</title>
     <t:stylesheet path="/css/style.css"/>
     <style type="text/css">
+      img.visible {display:inline}
       img.invisible {display:none}
     </style>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
@@ -24,15 +25,24 @@
 			}
 		}
 	}
-	
+                         
 	function toggleVisibility(id) {
-	    var element = document.getElementById(id);
-	    if(element.style.display == "none") {
-	      element.style.display = "";
+	    var element = document.getElementById(id + "_table");
+	    Element.toggle( element );
+
+	    var downArrow = document.getElementById(id + "_expanded_img");
+	    var rightArrow = document.getElementById(id + "_collapsed_img");	    
+	    if(element.style.display=="none")
+	    {
+	        downArrow.style.display ="none";
+	        rightArrow.style.display ="inline"
 	    }
-	    else {
-	      element.style.display = "none";
+	    else
+	    {
+	        downArrow.style.display ="inline";
+	        rightArrow.style.display ="none"
 	    }
+	   
 	}
 		
 /* ]]> */
@@ -111,13 +121,13 @@
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
                     <tr>
                       <td width="8">
-                        <a href="#">
-                          <img id="#{category.name}_expanded_img" src="/gp/images/arrow-pipelinetask-down.gif"  width="8" height="8" border="0"/>
-                          <img id="#{category.name}_collapsed_img" src="/gp/images/arrow-pipelinetask-right.gif" width="8" height="8" border="0" style.display="none"/>
+                        <a href="#"  onclick="toggleVisibility('#{category.name}');">
+                          <img id="#{category.name}_expanded_img" src="/gp/images/arrow-pipelinetask-down.gif"  width="8" height="8" border="0" class="visible"/>
+                          <img id="#{category.name}_collapsed_img" src="/gp/images/arrow-pipelinetask-right.gif" width="8" height="8" border="0" class="invisible"/>
                         </a>
                       </td>
                       <td>
-                        <a onclick="toggleVisibility('#{category.name}_table'); toggleVisibility('#{category.name}_expanded_img'); toggleVisibility('#{category.name}_collapsed_img')" href="#">#{category.name}</a>
+                        <a onclick="toggleVisibility('#{category.name}');" href="#">#{category.name}</a>
                       </td>
                     </tr>
                   </table>
