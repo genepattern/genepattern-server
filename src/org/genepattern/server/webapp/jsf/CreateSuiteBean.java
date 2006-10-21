@@ -72,21 +72,7 @@ public class CreateSuiteBean implements java.io.Serializable  {
 		this.name = name;
 	}
 	
-	public void openAll(ActionEvent event) {
-		List<ModuleCategory> allCategories = getTasksByType();
-		for(ModuleCategory cat : allCategories) {
-			cat.setExpanded(true);
-		}
-	}
-	
-	public void closeAll(ActionEvent event) {
-		List<ModuleCategory> allCategories = getTasksByType();
-		for(ModuleCategory cat : allCategories) {
-			cat.setExpanded(false);
-		}
-		
-	}
-	
+
     public List getCategoryColumns() {
     	
     	List<List> cols = new ArrayList<List>();
@@ -143,21 +129,6 @@ public class CreateSuiteBean implements java.io.Serializable  {
 		}
 		return categories;
 	}
-    
-    /** 
-     * This value change listenser neccessary to prevent loosing the value when posting a category expand/select
-     * @param event
-     */
-    public void fileUploadChange1(ValueChangeEvent event) {
-        this.supportFile1 = (UploadedFile) event.getNewValue();
-        
-    }
-    public void fileUploadChange2(ValueChangeEvent event) {
-        this.supportFile2 = (UploadedFile) event.getNewValue(); 
-    } 
-    public void fileUploadChange3(ValueChangeEvent event) {
-        this.supportFile3 = (UploadedFile) event.getNewValue();
-    }   
     
     
     public String save() {
