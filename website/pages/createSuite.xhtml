@@ -1,19 +1,30 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jsp/jstl/core"
-      xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
-  <head>
-    <!-- created by rebecca fagan, fagandesign -->
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
-    <title>GenePattern | Create New GenePattern Suite</title>
-    <t:stylesheet path="/css/style.css"/>
-    <style type="text/css">
-      img.visible {display:inline}
-      img.invisible {display:none}
-    </style>
-    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
-    <script type="text/javascript" language="javascript">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
+  <ui:composition template="/templates/common.xhtml">
+    <ui:define name="pageTitle">Create Suite</ui:define>
+    <ui:define name="headText">
+      <style type="text/css">
+        img.visible {display:inline}
+        img.invisible {display:none}
+      </style>
+      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
+      <script type="text/javascript" language="javascript">
 
 /* <![CDATA[ */
+    function validateForm() {
+        var inputElement = $("nameField");
+        var d = $("nameErrorMessageDiv");
+        if (inputElement.value == null || inputElement.value == "") {  
+           d.style.display = "inline";
+          return false;
+        } 
+        else {        
+          d.style.display = "hidden";
+          return true;
+        }
+    }
+    
+    
 	function toggleCheckBoxes(maincheckbox, parentId) {	
 		var isChecked = maincheckbox.checked;
 		var parentElement = document.getElementById(parentId);   // prototype equivalent of document.getElementById
@@ -78,100 +89,99 @@
       }
 	
 	}
-	
-
 		
 /* ]]> */
 
     </script>
-  </head>
-  <body>
-    <h:form id="form1" enctype="multipart/form-data">
-      <t:saveState value="#{createSuiteBean}"/>
-      <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
-        <tr>
-          <td>Create New GenePattern Suite </td>
-        </tr>
-      </table>
-      <table width="100%" cellpadding="3" cellspacing="0" cols="2">
-        <tr class="taskperameter">
-          <td valign="top" class="attribute-required">Name:*</td>
-          <td>
-            <h:inputText value="#{createSuiteBean.name}" size="40" requiredMessage="Name is a required field" required="true" id="nameField"/>
-                &#160;
-              <h:message for="nameField" class="validation-error"/>
-          </td>
-        </tr>
-        <tr class="taskperameter">
-          <td>Description:</td>
-          <td width="85%">
-            <t:inputTextarea value="#{createSuiteBean.description}" cols="60"/>
-          </td>
-        </tr>
-        <tr class="taskperameter">
-          <td>Author:</td>
-          <td>
-            <h:inputText value="#{createSuiteBean.author}" size="40"/>
-            <span class="description">name, affiliation</span>
-          </td>
-        </tr>
-        <tr class="taskperameter">
-          <td>Privacy:</td>
-          <td>
-            <h:selectOneMenu value="#{createSuiteBean.accessId}">
-              <f:selectItem itemLabel="public" itemValue="1"/>
-              <f:selectItem itemLabel="private" itemValue="2"/>
-            </h:selectOneMenu>
-          </td>
-        </tr>
-        <input type="radio" name="language" style="visibility: hidden"/>
-        <tr class="taskperameter">
-          <td>Support Files:<br/>
-          </td>
-          <td>
-            <span class="description">Any documentation or data files you wish to bundle with the suite (pdf, doc, data files, etc.) </span>
-            <br/>
-            <br/><t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile1}" />    
-            <br/><t:inputFileUpload storage="file" size="60" valuer="#{createSuiteBean.supportFile2}" />    
-            <br/><t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile3}"/>         
-          </td>
-        </tr>
-        <tr class="smalltype">
-          <td>
-            <a href="#" onclick="openAll();">open all</a> | <a href="#" onclick="closeAll();">close all</a>
-          </td>
-          <td>&#160;</td>
-        </tr>
-      </table>
-      
-      <!-- Module selection -->
-      <table width="100%" border="0" cellspacing="0" cellpadding="5">
-        <tr valign="top">
-          <t:dataList var="col" value="#{createSuiteBean.categoryColumns}">
-            <td width="50%">
-              <t:dataList var="category" value="#{col}">
-              
-                <!-- Category header -->
-                <div class="pipeline_item">
-                  <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
-                    <tr>
-                      <td width="8">
-                        <a href="#"  onclick="toggleVisibility('#{category.name}');">
-                          <img id="#{category.name}_expanded_img" src="/gp/images/arrow-pipelinetask-down.gif"  width="8" height="8" border="0" class="visible"/>
-                          <img id="#{category.name}_collapsed_img" src="/gp/images/arrow-pipelinetask-right.gif" width="8" height="8" border="0" class="invisible"/>
-                        </a>
-                      </td>
-                      <td>
-                        <a onclick="toggleVisibility('#{category.name}');" href="#">#{category.name}</a>
-                      </td>
-                    </tr>
-                  </table>
-                  
-                  <!--  The module list.  The list is conditionally displayed based on the categories "expanded" property -->              
-                    <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top" 
-                           id="#{category.name}_table" name="category_table">
+    </ui:define>
+    <ui:define name="body">
+      <h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm();">
+        <t:saveState value="#{createSuiteBean}"/>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+          <tr>
+            <td>Create New GenePattern Suite</td>
+          </tr>
+        </table>
+        <table width="100%" cellpadding="3" cellspacing="0" cols="2">
+          <tr class="taskperameter">
+            <td valign="top" class="attribute-required">Name:*</td>
+            <td>
+              <t:inputText value="#{createSuiteBean.name}" size="40"  id="nameField" forceId="true"/> &#160; 
+              <div id="nameErrorMessageDiv" style="display:none;">
+                <font color="red" size="+1">&#160;&#160; Name is required</font>
+              </div>
+            </td>
+          </tr>
+          <tr class="taskperameter">
+            <td>Description:</td>
+            <td width="85%">
+              <t:inputTextarea value="#{createSuiteBean.description}" cols="60"/>
+            </td>
+          </tr>
+          <tr class="taskperameter">
+            <td>Author:</td>
+            <td>
+              <h:inputText value="#{createSuiteBean.author}" size="40"/>
+              <span class="description">name, affiliation</span>
+            </td>
+          </tr>
+          <tr class="taskperameter">
+            <td>Privacy:</td>
+            <td>
+              <h:selectOneMenu value="#{createSuiteBean.accessId}">
+                <f:selectItem itemLabel="public" itemValue="1"/>
+                <f:selectItem itemLabel="private" itemValue="2"/>
+              </h:selectOneMenu>
+            </td>
+          </tr>
+          <input type="radio" name="language" style="visibility: hidden"/>
+          <tr class="taskperameter">
+            <td>Support Files:<br/>
+            </td>
+            <td>
+              <span class="description">Any documentation or data
+					files you wish to bundle with the suite (pdf, doc, data files,
+					etc.) </span>
+              <br/>
+              <br/>
+              <t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile1}"/>
+              <br/>
+              <t:inputFileUpload storage="file" size="60" valuer="#{createSuiteBean.supportFile2}"/>
+              <br/>
+              <t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile3}"/>
+            </td>
+          </tr>
+          <tr class="smalltype">
+            <td>
+              <a href="#" onclick="openAll();">open all</a> | <a href="#" onclick="closeAll();">close all</a>
+            </td>
+            <td>&#160;</td>
+          </tr>
+        </table>
+        <!-- Module selection -->
+        <table width="100%" border="0" cellspacing="0" cellpadding="5">
+          <tr valign="top">
+            <t:dataList var="col" value="#{createSuiteBean.categoryColumns}">
+              <td width="50%">
+                <t:dataList var="category" value="#{col}">
+                  <!-- Category header -->
+                  <div class="pipeline_item">
+                    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
+                      <tr>
+                        <td width="8">
+                          <a href="#" onclick="toggleVisibility('#{category.name}');">
+                            <img id="#{category.name}_expanded_img" src="/gp/images/arrow-pipelinetask-down.gif" width="8" height="8" border="0" class="visible"/>
+                            <img id="#{category.name}_collapsed_img" src="/gp/images/arrow-pipelinetask-right.gif" width="8" height="8" border="0" class="invisible"/>
+                          </a>
+                        </td>
+                        <td>
+                          <a onclick="toggleVisibility('#{category.name}');" href="#">#{category.name}</a>
+                        </td>
+                      </tr>
+                    </table>
+                    <!--  The module list.  The list is conditionally displayed based on the categories "expanded" property -->
+                    <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top" id="#{category.name}_table" name="category_table">
                       <tbody>
-                        
                         <!--  Header Row -->
                         <tr class="tableheader-row2">
                           <td width="30">
@@ -179,13 +189,12 @@
                               <h:selectBooleanCheckbox value="" onclick="toggleCheckBoxes(this, '#{category.name}_table');"/>
                             </div>
                           </td>
-                          <td>task name </td>
+                          <td>task name</td>
                           <td>&#160;</td>
                           <td width="60">
                             <div align="center">version</div>
                           </td>
                         </tr>
-                        
                         <!--  Modules -->
                         <t:dataList var="module" value="#{category.modules}">
                           <tr class="taskperameter">
@@ -200,7 +209,7 @@
                             <td valign="top">&#160;</td>
                             <td valign="top" class="description">
                               <div align="center">
-                                 <t:selectOneMenu value="#{module.selectedVersion}">
+                                <t:selectOneMenu value="#{module.selectedVersion}">
                                   <f:selectItems value="#{module.versionSelectItems}"/>
                                 </t:selectOneMenu>
                               </div>
@@ -210,21 +219,19 @@
                         <tr/>
                       </tbody>
                     </table>
-                 
-                </div>
-                <br/>
-              </t:dataList>
-            </td>
-          </t:dataList>
-        </tr>
-      </table>
-      <div align="center">
-        <br/>
-        <t:graphicImage value="/images/divider-pix1.gif" width="100%" height="2" vspace="5"/>
-        <h:commandButton action="#{createSuiteBean.save}" value="save"/>
-          &#160;
-          <input name="cmd" value="clear" type="submit"/>
-      </div>
-    </h:form>
-  </body>
+                  </div>
+                  <br/>
+                </t:dataList>
+              </td>
+            </t:dataList>
+          </tr>
+        </table>
+        <div align="center">
+          <br/>
+          <t:graphicImage value="/images/divider-pix1.gif" width="100%" height="2" vspace="5"/>
+          <h:commandButton action="#{createSuiteBean.save}" value="save"/> &#160; <input name="cmd" value="clear" type="submit"/>
+        </div>
+      </h:form>
+    </ui:define>
+  </ui:composition>
 </html>
