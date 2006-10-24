@@ -3,11 +3,9 @@
   <ui:composition template="/templates/common.xhtml">
     <ui:define name="pageTitle">Create Suite</ui:define>
     <ui:define name="headText">
-      <style type="text/css">
-        img.visible {display:inline}
-        img.invisible {display:none}
-      </style>
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
+      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js"/>
+      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js"/>
       <script type="text/javascript" language="javascript">
 
 /* <![CDATA[ */
@@ -24,71 +22,7 @@
         }
     }
     
-    
-	function toggleCheckBoxes(maincheckbox, parentId) {	
-		var isChecked = maincheckbox.checked;
-		var parentElement = document.getElementById(parentId);   // prototype equivalent of document.getElementById
 
-		var elements = parentElement.getElementsByTagName("input");
-		for (i = 0; i < elements.length; i++) {	
-		    if(elements[i].type="checkbox") {		
-			  elements[i].checked = isChecked;
-			}
-		}
-	}
-                         
-	function toggleVisibility(id) {
-	    var element = document.getElementById(id + "_table");
-	    if(element.style.display=="none")
-	    {
-	        showCategory(id);
-	    }
-	    else
-	    {
-	        hideCategory(id);
-	    }
-	}
-	
-	function hideCategory( id ) {
-	    var tableElement = document.getElementById(id + "_table");
-	    var downArrow = document.getElementById(id + "_expanded_img");
-	    var rightArrow = document.getElementById(id + "_collapsed_img");	
-	        
-	    Element.hide(tableElement);
-	    downArrow.style.display ="none";
-	    rightArrow.style.display ="inline"	    
-	}
-	
-	function showCategory( id ) {
-	    var tableElement = document.getElementById(id + "_table");
-	    var downArrow = document.getElementById(id + "_expanded_img");
-	    var rightArrow = document.getElementById(id + "_collapsed_img");	
-	        
-	    Element.show(tableElement);
-	    downArrow.style.display ="inline";
-	    rightArrow.style.display ="none"
-	}
-	
-	function openAll() {
-      var tables = document.getElementsByName("category_table");
-      for(var i=0; i<tables.length; i++) {
-        var fullId = tables[i].id;
-        var index = fullId.lastIndexOf('_');
-        var catId = fullId.substring(0, index);
-        showCategory(catId);
-      }
-	}
-	
-	function closeAll() {
-      var tables = document.getElementsByName("category_table");
-      for(var i=0; i<tables.length; i++) {
-        var fullId = tables[i].id;
-        var index = fullId.lastIndexOf('_');
-        var catId = fullId.substring(0, index);
-        hideCategory(catId);
-      }
-	
-	}
 		
 /* ]]> */
 
@@ -96,7 +30,6 @@
     </ui:define>
     <ui:define name="body">
       <h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm();">
-        <t:saveState value="#{createSuiteBean}"/>
         <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
           <tr>
             <td>Create New GenePattern Suite</td>
@@ -108,7 +41,7 @@
             <td>
               <t:inputText value="#{createSuiteBean.name}" size="40"  id="nameField" forceId="true"/> &#160; 
               <div id="nameErrorMessageDiv" style="display:none;">
-                <font color="red" size="+1">&#160;&#160; Name is required</font>
+                <font color="red">&#160;&#160; Name is required</font>
               </div>
             </td>
           </tr>
@@ -170,23 +103,28 @@
                       <tr>
                         <td width="8">
                           <a href="#" onclick="toggleVisibility('#{category.name}');">
-                            <img id="#{category.name}_expanded_img" src="/gp/images/arrow-pipelinetask-down.gif" width="8" height="8" border="0" class="visible"/>
-                            <img id="#{category.name}_collapsed_img" src="/gp/images/arrow-pipelinetask-right.gif" width="8" height="8" border="0" class="invisible"/>
+                            <img id="#{category.identifier}_expanded_img" src="/gp/images/arrow-pipelinetask-down.gif" 
+                                 width="8" height="8" border="0" 
+                                 style="#{category.expanded == true ? 'display:inline;' : 'display:none;'}"/>
+                            <img id="#{category.identifier}_collapsed_img" src="/gp/images/arrow-pipelinetask-right.gif" 
+                                 width="8" height="8" border="0" 
+                                 style="#{category.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
                           </a>
                         </td>
                         <td>
-                          <a onclick="toggleVisibility('#{category.name}');" href="#">#{category.name}</a>
+                          <a onclick="toggleVisibility('#{category.identifier}');" href="#">#{category.name}</a>
                         </td>
                       </tr>
                     </table>
                     <!--  The module list.  The list is conditionally displayed based on the categories "expanded" property -->
-                    <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top" id="#{category.name}_table" name="category_table">
+                    <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top" 
+                           id="#{category.identifier}_panel" name="category_panel">
                       <tbody>
                         <!--  Header Row -->
                         <tr class="tableheader-row2">
                           <td width="30">
                             <div align="center">
-                              <h:selectBooleanCheckbox value="" onclick="toggleCheckBoxes(this, '#{category.name}_table');"/>
+                              <h:selectBooleanCheckbox value="" onclick="toggleCheckBoxes(this, '#{category.identifier}_panel');"/>
                             </div>
                           </td>
                           <td>task name</td>
@@ -229,7 +167,8 @@
         <div align="center">
           <br/>
           <t:graphicImage value="/images/divider-pix1.gif" width="100%" height="2" vspace="5"/>
-          <h:commandButton action="#{createSuiteBean.save}" value="save"/> &#160; <input name="cmd" value="clear" type="submit"/>
+          <h:commandButton action="#{createSuiteBean.save}" value="save"/> &#160; 
+          <h:commandButton action="#{createSuiteBean.clear}" value="clear" immediate="true" type="reset"/>
         </div>
       </h:form>
     </ui:define>

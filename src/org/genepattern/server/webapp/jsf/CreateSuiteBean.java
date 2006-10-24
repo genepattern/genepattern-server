@@ -79,7 +79,6 @@ public class CreateSuiteBean implements java.io.Serializable {
     public List getCategoryColumns() {
 
         List<List> cols = new ArrayList<List>();
-
         List<ModuleCategory> allCategories = getTasksByType();
         int totalCount = 0;
         for (ModuleCategory cat : allCategories) {
@@ -104,7 +103,6 @@ public class CreateSuiteBean implements java.io.Serializable {
 
     private List<ModuleCategory> getTasksByType() {
         if (categories == null) {
-            System.out.println("Creating categories");
             categories = new ArrayList<ModuleCategory>();
             TaskInfo[] alltasks = (new AdminDAO()).getAllTasksForUser(getUserId());
             Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
@@ -211,6 +209,11 @@ public class CreateSuiteBean implements java.io.Serializable {
         }
         in.close();
         out.close();
+    }
+    
+    public String clear()
+    {
+        return null;
     }
 
 }

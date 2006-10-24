@@ -55,6 +55,12 @@ public class ModuleCategory implements java.io.Serializable {
     public String getName() {
         return name;
     }
+    
+    public String getIdentifier() {
+        
+        return name. replace(' ', '_').replace('&', '-').trim();
+        
+    }
 
     public List<Module> getModules() {
         return modules;

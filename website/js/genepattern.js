@@ -64,3 +64,23 @@ function MM_preloadImages() { //v3.0
     var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
     if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
 }
+
+
+
+
+
+///// Jims functions, not yet approved by Josh
+   
+// toggleCheckBoxes -- used in combination with a "master" checkbox to toggle
+// the state of a collection of child checkboxes.  Assumes the children and parent
+// share a common container parent    
+function toggleCheckBoxes(maincheckbox, parentId) {	
+  var isChecked = maincheckbox.checked;
+  var parentElement = document.getElementById(parentId);   
+  var elements = parentElement.getElementsByTagName("input");
+  for (i = 0; i < elements.length; i++) {	
+    if(elements[i].type="checkbox") {		
+      elements[i].checked = isChecked;
+    }
+  }
+}
