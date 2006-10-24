@@ -103,22 +103,23 @@
                       <tr>
                         <td width="8">
                           <a href="#" onclick="toggleVisibility('#{category.name}');">
-                            <img id="#{category.identifier}_expanded_img" src="/gp/images/arrow-pipelinetask-down.gif" 
+                            <img id="#{category.identifier}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" 
                                  width="8" height="8" border="0" 
                                  style="#{category.expanded == true ? 'display:inline;' : 'display:none;'}"/>
-                            <img id="#{category.identifier}_collapsed_img" src="/gp/images/arrow-pipelinetask-right.gif" 
+                            <img id="#{category.identifier}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" 
                                  width="8" height="8" border="0" 
                                  style="#{category.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
                           </a>
                         </td>
                         <td>
-                          <a onclick="toggleVisibility('#{category.identifier}');" href="#">#{category.name}</a>
+                          <a onclick="toggleVisibility('#{category.identifier}');">#{category.name}</a>
                         </td>
                       </tr>
                     </table>
                     <!--  The module list.  The list is conditionally displayed based on the categories "expanded" property -->
+                    <div id="#{category.identifier}_panel">
                     <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top" 
-                           id="#{category.identifier}_panel" name="category_panel">
+                           name="category_panel">
                       <tbody>
                         <!--  Header Row -->
                         <tr class="tableheader-row2">
@@ -157,6 +158,7 @@
                         <tr/>
                       </tbody>
                     </table>
+                    </div>
                   </div>
                   <br/>
                 </t:dataList>
