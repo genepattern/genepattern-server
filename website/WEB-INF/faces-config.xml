@@ -77,6 +77,13 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.CreateSuiteBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
+ 
+     <managed-bean>
+        <managed-bean-name>navigationMenu</managed-bean-name>
+        <managed-bean-class>org.apache.myfaces.examples.misc.NavigationMenu</managed-bean-class>
+        <managed-bean-scope>application</managed-bean-scope>
+    </managed-bean>
+ 
  <navigation-rule>
   <from-view-id>*</from-view-id>
   <navigation-case>
