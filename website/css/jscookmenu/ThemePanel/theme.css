@@ -24,8 +24,8 @@
 	   to cover any borders underneath
 	*/
 	z-index:	100;
-	border:		0;
-	padding:	0;
+	border:		2px;
+	padding:	2px;
 
 	/* the following property is only useful in IE */
 	filter:progid:DXImageTransform.Microsoft.Shadow(color=#DEDEDE,Direction=135,Strength=4);
@@ -33,7 +33,7 @@
 
 .ThemePanelSubMenuTable
 {
-	border:		0px;
+	border:		4px;
 }
 
 .ThemePanelMenuItem,.ThemePanelMenuItemHover,.ThemePanelMenuItemActive
