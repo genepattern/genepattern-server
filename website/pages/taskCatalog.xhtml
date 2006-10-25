@@ -30,14 +30,13 @@
 
 
 	<ui:define name="body">
-
 		<table width="100%" border="0" cellpadding="0" cellspacing="0"
 			class="barhead-other">
 			<tr>
 				<td>Install/Update Tasks</td>
 			</tr>
 		</table>
-		<p></p>
+
 		<c:choose>
 			<c:when test="#{taskCatalogBean.error}">
 				<p>Sorry, the module repository is not currently available.</p>
@@ -46,118 +45,112 @@
 				correct</p>
 			</c:when>
 			<c:otherwise>
-				<table width="100%" border="0" cellpadding="10" cellspacing="0">
-					<tr valign="top">
-						<td colspan="2">Filter tasks by:</td>
-					</tr>
-					<tr valign="top">
-						
-						<td><f:view><h:form id="filterForm">
-							<table>
-								<tr>
-									<td></td>
-									<td valign='top'><b>state</b><br />
+				<h:form>
+					<table width="100%" border="0" cellpadding="5" cellspacing="0">
+						<tr valign="top">
+							<td valign="top">
+							<p>Select from the following tasks from the Module Repository
+							to download and install.</p>
+							</td>
+							<td valign="top"><b>Filters: </b></td>
+							<td valign="top"><b>state<b></b></b><br />
 
-									<h:selectManyListbox
-										value="#{taskCatalogBean.selectedStates}" name="state"
-										forceid="true" id="state">
-										<f:selectItems value="#{taskCatalogBean.states}" />
-									</h:selectManyListbox></td>
-									<td valign='top'><b>OS</b><br />
-									<h:selectManyListbox
-										value="#{taskCatalogBean.selectedOperatingSystems}"
-										name="os" id="os">
-										<f:selectItems value="#{taskCatalogBean.operatingSystems}" />
-									</h:selectManyListbox></td>
-									<td valign='top'><br /><h:selectBooleanCheckbox id="latestOnly"
-										value="#{taskCatalogBean.showingLatestVersionOnly}">Show latest versions of tasks only</h:selectBooleanCheckbox>
-									</td>
-								</tr>
-							</table>
-							<tr>
-								<td><h:commandButton
-									action="#{taskCatalogBean.updateFilters}" value="Refresh" /></td>
-							</tr>
-						</h:form></f:view></td>
-					</tr>
-				</table>
-				<p class="recentjobs-sh">&nbsp;</p>
 
-				<table width="100%" border="0" cellpadding="0" cellspacing="0"
-					class="barhead-task">
-					<!--  <tr>
-						<td class="barhead-version">#{taskCatalogBean.numberOfTasks}
-						tasks</td>
-					</tr>
-					 -->
-				</table>
-				<h:form id="installForm">
+							<t:selectManyCheckbox value="#{taskCatalogBean.selectedStates}"
+								name="state" id="state" layout="lineDirection">
+								<f:selectItems value="#{taskCatalogBean.states}" />
+							</t:selectManyCheckbox></td>
+							<td valign="top"><b>OS<b></b></b><br />
 
-					<!--   <p><input type="submit" name="install" value="install checked" /></p> -->
-					<p><h:commandButton action="#{taskCatalogBean.installTasks}"
-						value="install checked" /></p>
-					<table cellpadding="5" cellspacing="0" class="smalltype">
-
-						<tr class="tableheader-row">
-							<td valign="top"><input type="checkbox" name="ALL"
-								value="ALL" checked="checked"
-								onclick="toggle(this, 'installForm');" /></td>
-							<td valign="top"><b>name (version)</b></td>
-							<td valign="top"><b>task type</b></td>
-							<td valign="top"><b>details</b></td>
+							<t:selectManyCheckbox
+								value="#{taskCatalogBean.selectedOperatingSystems}" name="os"
+								id="os" layout="lineDirection">
+								<f:selectItems value="#{taskCatalogBean.operatingSystems}" />
+							</t:selectManyCheckbox></td>
+							
+							<td><h:commandButton
+								action="#{taskCatalogBean.updateFilters}" value="Filter" /></td>
+							
 						</tr>
-						<c:forEach items="#{taskCatalogBean.tasks}" var="t">
-
-							<tr>
-								<td rowspan="2" valign="top"><input type="checkbox"
-									value="lsid_version" checked="checked" /></td>
-
-								<td valign="top" height="1"><span class="tasks-broad">
-								<a name="#{t.lsid}" id="#{t.lsid}"></a> <b><nobr>#{t.name}</nobr></b></span>
-								(#{t.lsidVersion})</td>
-
-								<td valign="top" height="1"><nobr>#{t.taskType}</nobr></td>
-								<td valign="top" colspan="4" rowspan="2">
-								<table>
-
-									<tr>
-										<td valign="top" align="right">author:</td>
-										<td valign="top"><nobr>#{t.author}</nobr></td>
-									</tr>
-
-									<tr>
-
-										<td valign="top" align="right">quality:</td>
-										<td valign="top">#{t.quality}</td>
-
-									</tr>
-
-									<tr>
-										<td valign="top" align="right">requirements:</td>
-										<td valign="top"><nobr>#{t.requirements}</nobr></td>
-
-									</tr>
-								</table>
-								</td>
-							</tr>
-
-							<tr>
-								<td valign="top" colspan="2"><b>#{t.description}</b> <br />
-								<c:if test="#{!empty t.versionComment}">
-									<span class="tasks-broad"><b>version notes:
-									#{t.versionComment}</b></span>
-									<br />
-								</c:if> <a href="#{t.documentationUrl}" target="_new">documentation</a>&#160;|&#160;<a
-									href="#{t.url}">download zip</a></td>
-							</tr>
-							<tr class="settingperameter">
-								<td colspan="4"></td>
-							</tr>
-						</c:forEach>
 
 					</table>
-				</h:form>
 
+
+					<table width="100%" border="0" cellpadding="0" cellspacing="0"
+						class="barhead-task">
+						<tr>
+							<td class="barhead-version">Found
+							#{taskCatalogBean.numberOfTasks} tasks</td>
+						</tr>
+					</table>
+
+					<c:if test="#{taskCatalogBean.numberOfTasks > 0}">
+						<p><h:commandButton action="#{taskCatalogBean.installTasks}"
+							value="Install Checked" /></p>
+
+						<table width="100%" cellpadding="5" cellspacing="0"
+							class="smalltype">
+
+							<tr class="tableheader-row2">
+								<td valign="top"><input type="checkbox" name="ALL"
+									value="ALL" checked="checked" /></td>
+
+								<td valign="top"><b>name (version)</b></td>
+								<td valign="top"><b>task type</b></td>
+								<td valign="top"><b>details</b></td>
+							</tr>
+							<t:dataList var="t" value="#{taskCatalogBean.tasks}" rowIndexVar="taskIndex">
+								<tr>
+									<td rowspan="2" valign="top"><input type="checkbox" name="instalLsid" value="#{t.lsid}" /></td>
+									<td valign="top" height="1"><span class="tasks-broad"><strong>#{t.name}</strong><br />
+									</span> <select name="lsid_version"
+										onchange="javascript:document.forms['install'].installLsid0.value=this.options[this.selectedIndex].value"
+										class="tasks-broad">
+										<option
+											value="#{t.lsid}">#{t.lsidVersion}
+										- #{t.versionComment}</option>
+									</select></td>
+									
+
+									<td valign="top" height="1"><nobr>#{t.taskType}</nobr></td>
+									<td valign="top" colspan="4" rowspan="2">
+									<table>
+
+										<tr>
+											<td valign="top" align="right">author:</td>
+											<td valign="top"><nobr>#{t.author}</nobr></td>
+										</tr>
+
+										<tr>
+
+											<td valign="top" align="right">quality:</td>
+											<td valign="top">#{t.quality}</td>
+
+										</tr>
+
+										<tr>
+											<td valign="top" align="right">requirements:</td>
+											<td valign="top"><nobr>#{t.requirements}</nobr></td>
+
+										</tr>
+									</table>
+									</td>
+								</tr>
+
+								<tr>
+									<td valign="top" colspan="2"><b>#{t.description}</b> <br />
+									<br />
+									<a href="#{t.documentationUrl}" target="_new">documentation</a>&#160;|&#160;<a
+										href="#{t.url}">download zip</a></td>
+								</tr>
+								<tr class="settingperameter">
+									<td colspan="4"></td>
+								</tr>
+							</t:dataList>
+
+						</table>
+					</c:if>
+				</h:form>
 			</c:otherwise>
 		</c:choose>
 
