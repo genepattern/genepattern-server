@@ -35,8 +35,12 @@ import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
-public class ModuleChooserBean {
-    Logger log = Logger.getLogger(ModuleChooserBean.class);
+public class ModuleChooserBean implements java.io.Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -9026970426503039995L;
+    private static Logger log = Logger.getLogger(ModuleChooserBean.class);
     List<ModuleCategory> categories = null;
 
     private String mode = "category"; // @todo - externalize or make enum
@@ -45,12 +49,17 @@ public class ModuleChooserBean {
     public List<ModuleCategory> getAllTasks() {
         if (categories == null) {
             categories = new ArrayList<ModuleCategory>();
-            categories.add(getRecentlyUsed());
+            categories.add(ModuleHelper.getRecentlyUsed());
             if (mode.equals("all")) {
-                categories.add(getAll());
+                categories.add(ModuleHelper.getAll());
+            }
+            else if (mode.equals("suite")) {
+                for(ModuleCategory cat : ModuleHelper.getTasksBySuite()) {
+                    categories.add(cat);
+                }
             }
             else if (mode.equals("category")) {
-                for (ModuleCategory cat : getTasksByType()) {
+                for (ModuleCategory cat : ModuleHelper.getTasksByType()) {
                     categories.add(cat);
                 }
             }
@@ -86,47 +95,6 @@ public class ModuleChooserBean {
         return UIBeanHelper.getUserId();
     }
 
-    private ModuleCategory getRecentlyUsed() {
-        AdminDAO dao = new AdminDAO();
-        return new ModuleCategory("Recently Used", dao.getRecentlyRunTasksForUser(getUserId()));
-    }
-
-    private ModuleCategory getAll() {
-        AdminDAO dao = new AdminDAO();
-        return new ModuleCategory("All", dao.getAllTasksForUser(getUserId()));
-    }
-
-    private List<ModuleCategory> getTasksByType() {
-
-        List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
-        TaskInfo[] alltasks = (new AdminDAO()).getAllTasksForUser(getUserId());
-        Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
-
-        for (int i = 0; i < alltasks.length; i++) {
-            TaskInfo ti = alltasks[i];
-            String taskType = ti.getTaskInfoAttributes().get("taskType");
-            if(taskType == null || taskType.length() == 0) {
-                taskType = "Uncategorized";
-            }
-            List<TaskInfo> tasks = taskMap.get(taskType);
-            if (tasks == null) {
-                tasks = new ArrayList<TaskInfo>();
-                taskMap.put(taskType, tasks);
-            }
-            tasks.add(ti);
-        }
-
-        List<String> categoryNames = new ArrayList(taskMap.keySet());
-        Collections.sort(categoryNames);
-        for (String categoryName : categoryNames) {
-            TaskInfo[] modules = new TaskInfo[taskMap.get(categoryName).size()];
-            modules = taskMap.get(categoryName).toArray(modules);
-            categories.add(new ModuleCategory(categoryName, modules));
-        }
-        return categories;
-
-    }
-    
     private String getVersion(TaskInfo ti) {
         
         try {

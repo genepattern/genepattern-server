@@ -79,7 +79,9 @@ public class CreateSuiteBean implements java.io.Serializable {
     public List getCategoryColumns() {
 
         List<List> cols = new ArrayList<List>();
-        List<ModuleCategory> allCategories = getTasksByType();
+        List<ModuleCategory> allCategories = ModuleHelper.getTasksByType();
+        
+        // Find the midpoint in the category list.
         int totalCount = 0;
         for (ModuleCategory cat : allCategories) {
             totalCount += cat.getModuleCount();
@@ -99,34 +101,6 @@ public class CreateSuiteBean implements java.io.Serializable {
             cumulativeCount += cat.getModuleCount();
         }
         return cols;
-    }
-
-    private List<ModuleCategory> getTasksByType() {
-        if (categories == null) {
-            categories = new ArrayList<ModuleCategory>();
-            TaskInfo[] alltasks = (new AdminDAO()).getAllTasksForUser(getUserId());
-            Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
-
-            for (int i = 0; i < alltasks.length; i++) {
-                TaskInfo ti = alltasks[i];
-                String taskType = ti.getTaskInfoAttributes().get("taskType");
-                List<TaskInfo> tasks = taskMap.get(taskType);
-                if (tasks == null) {
-                    tasks = new ArrayList<TaskInfo>();
-                    taskMap.put(taskType, tasks);
-                }
-                tasks.add(ti);
-            }
-
-            List<String> categoryNames = new ArrayList(taskMap.keySet());
-            Collections.sort(categoryNames);
-            for (String categoryName : categoryNames) {
-                TaskInfo[] modules = new TaskInfo[taskMap.get(categoryName).size()];
-                modules = taskMap.get(categoryName).toArray(modules);
-                categories.add(new ModuleCategory(categoryName, modules));
-            }
-        }
-        return categories;
     }
 
     public UploadedFile getSupportFile1() {
