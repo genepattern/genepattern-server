@@ -1,4 +1,4 @@
-function mmLoadMenus() {
+/*function mmLoadMenus() {
   if (window.mm_menu_0925155042_0) return;
     window.mm_menu_0925155042_0 = new Menu("root",60,18,"Verdana, Arial, Helvetica, sans-serif",10,"#000000","#000099","#EEEEEE","#FFFFFF","left","middle",3,0,500,-5,7,true,true,true,0,true,false);
   mm_menu_0925155042_0.addMenuItem("info","location='info.html'");
@@ -50,7 +50,8 @@ window.mm_menu_0925165148_0 = new Menu("root",174,18,"Verdana, Arial, Helvetica,
    mm_menu_0925171536_0.menuLiteBgColor='#CCCC66';
    mm_menu_0925171536_0.menuBorderBgColor='#CCCC66';
 mm_menu_0925155524_0.writeMenus();
-} // mmLoadMenus()
+} 
+
 
 function MM_reloadPage(init) {  //reloads the window if Nav4 resized
   if (init==true) with (navigator) {if ((appName=="Netscape")&&(parseInt(appVersion)==4)) {
@@ -65,12 +66,9 @@ function MM_preloadImages() { //v3.0
     if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
 }
 
+*/
 
-
-
-
-///// Jims functions, not yet approved by Josh
-   
+ 
 // toggleCheckBoxes -- used in combination with a "master" checkbox to toggle
 // the state of a collection of child checkboxes.  Assumes the children and parent
 // share a common container parent    
