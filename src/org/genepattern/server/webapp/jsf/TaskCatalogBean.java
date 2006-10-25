@@ -29,12 +29,15 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
+import org.genepattern.server.webservice.server.ITaskIntegrator;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 
 public class TaskCatalogBean {
     private InstallTask[] tasks;
+
+    private List<MyTask> filteredTasks;
 
     private SelectItem[] operatingSystems = new SelectItem[] { new SelectItem(
             "any") };
@@ -59,14 +62,13 @@ public class TaskCatalogBean {
 
     private Map<String, List> baseLsidToTasksMap;
 
-    private boolean filter;
-
     private static final Comparator DESC_COMPARATOR = new DescendingVersionComparator();
 
     public TaskCatalogBean() {
-        filter = false;
         selectedStates = new ArrayList<String>();
+        selectedStates.addAll(getDefaultStatesSelection());
         selectedOperatingSystems = new ArrayList<String>();
+        selectedOperatingSystems.addAll(getDefaultOperatingSystemSelection());
         collection = new InstallTasksCollectionUtils(UIBeanHelper.getUserId(),
                 false);
         try {
@@ -91,7 +93,6 @@ public class TaskCatalogBean {
                     log.error(e);
                 }
             }
-            System.out.println("tasks before filtering " + tasks.length);
 
         } catch (Exception e) {
             this.error = true;
@@ -108,13 +109,14 @@ public class TaskCatalogBean {
             String os = operatingSystemsArray[i];
             operatingSystems[i] = new SelectItem(os);
         }
+        if (UIBeanHelper.getRequest().getParameter(
+                "taskCatalogForm:taskCatalogSubmit") == null) {
+            filter();
+        }
     }
 
-    public InstallTask[] getTasks() {
-        if (!filter) {
-            filterTasks();
-        }
-        return tasks;
+    public List<MyTask> getTasks() {
+        return filteredTasks;
     }
 
     public List<String> getSelectedOperatingSystems() {
@@ -125,6 +127,14 @@ public class TaskCatalogBean {
         selectedOperatingSystems = l;
     }
 
+    public List<String> getSelectedStates() {
+        return selectedStates;
+    }
+
+    public void setSelectedStates(List<String> l) {
+        selectedStates = l;
+    }
+
     public SelectItem[] getOperatingSystems() {
         return this.operatingSystems;
     }
@@ -133,19 +143,16 @@ public class TaskCatalogBean {
         return this.states;
     }
 
-    public List<String> getSelectedStates() {
-        return selectedStates;
+    public void setOperatingSystems(SelectItem[] si) {
+        this.operatingSystems = si;
     }
 
-    public void getSelectedStates(List<String> l) {
-        selectedStates = l;
+    public void getStates(SelectItem[] l) {
+        this.states = l;
     }
 
     public int getNumberOfTasks() {
-        if (!filter) {
-            filterTasks();
-        }
-        return tasks.length;
+        return filteredTasks.size();
     }
 
     public boolean isError() {
@@ -156,29 +163,34 @@ public class TaskCatalogBean {
         return missingLsids;
     }
 
-    public void installTasks() {
-        String[] lsids = UIBeanHelper.getRequest().getParameterValues(
-                "lsid_version");
+    public void install() {
+        filter();
+        final String[] lsids = UIBeanHelper.getRequest().getParameterValues(
+                "installLsid");
         if (lsids != null) {
-            String username = UIBeanHelper.getUserId();
-            LocalTaskIntegratorClient taskIntegrator = new LocalTaskIntegratorClient(
+            final String username = UIBeanHelper.getUserId();
+            final LocalTaskIntegratorClient taskIntegrator = new LocalTaskIntegratorClient(
                     username);
-            for (String lsid : lsids) {
-
-                try {
-                    InstallTask t = lsidToTaskMap.get(lsid);
-                    if (t == null) {
-                        UIBeanHelper.setInfoMessage("Task " + lsid
-                                + " not found.");
-                    } else {
-                        t.install(username, GPConstants.ACCESS_PUBLIC,
-                                taskIntegrator);
+            new Thread() {
+                public void run() {
+                    for (String lsid : lsids) {
+                        try {
+                            InstallTask t = lsidToTaskMap.get(lsid);
+                            if (t == null) {
+//                                UIBeanHelper.setInfoMessage("Task " + lsid
+//                                        + " not found.");  FIXME
+                            } else {
+                                t.install(username, GPConstants.ACCESS_PUBLIC,
+                                        taskIntegrator);
+                            }
+                        } catch (TaskInstallationException e) {
+                            log.error(e);
+                        }
                     }
-                } catch (TaskInstallationException e) {
-                    log.error(e);
                 }
-            }
+            }.start();
         }
+        
     }
 
     private void findMissingTasks(String[] requestedLsidsArray) {
@@ -196,65 +208,94 @@ public class TaskCatalogBean {
         }
     }
 
-    public void filterTasks() {
-        filter = true;
+    private List<String> getDefaultOperatingSystemSelection() {
+        List<String> l = new ArrayList<String>();
+        l.add("any");
+        String os = getOS();
+        if (os != null) {
+            l.add(os);
+        }
+        return l;
+    }
+
+    private List<String> getDefaultStatesSelection() {
+        List<String> l = new ArrayList<String>();
+        l.add(InstallTask.NEW);
+        l.add(InstallTask.UPDATED);
+        return l;
+    }
+
+    private String getOS() {
+        boolean isWindows = System.getProperty("os.name").toLowerCase()
+                .startsWith("windows");
+        boolean isMac = System.getProperty("mrj.version") != null;
+        boolean isLinux = System.getProperty("os.name").toLowerCase()
+                .startsWith("linux");
+
+        if (isWindows) { // remove all tasks that are not windows or
+            // any
+            return "Windows";
+        } else if (isMac) {
+            return "Mac OS X";
+        } else if (isLinux) {
+            return "Linux";
+        }
+        return null;
+    }
+
+    public void filter() {
         Map<String, List> filterKeyToValuesMap = new HashMap<String, List>();
-        if (selectedOperatingSystems.size() > 0) {
-            filterKeyToValuesMap.put("os", selectedOperatingSystems);
-        } else {
+        if (selectedOperatingSystems.size() == 0) {
             // set default
-            boolean isWindows = System.getProperty("os.name").toLowerCase()
-                    .startsWith("windows");
-            boolean isMac = System.getProperty("mrj.version") != null;
-            boolean isLinux = System.getProperty("os.name").toLowerCase()
-                    .startsWith("linux");
-            filterKeyToValuesMap.put("os", selectedOperatingSystems);
-            if (isWindows) { // remove all tasks that are not windows or
-                // any
-                selectedOperatingSystems.add("Windows");
-            } else if (isMac) {
-                selectedOperatingSystems.add("Mac OS X");
-            } else if (isLinux) {
-                selectedOperatingSystems.add("Linux");
-            }
-            selectedOperatingSystems.add("any");
+            selectedOperatingSystems
+                    .addAll(getDefaultOperatingSystemSelection());
         }
-        if (selectedStates.size() > 0) {
-            filterKeyToValuesMap.put("state", selectedStates);
-        } else { // set default
-            selectedStates.add(InstallTask.NEW);
-            selectedStates.add(InstallTask.UPDATED);
-            filterKeyToValuesMap.put("state", selectedStates);
+        filterKeyToValuesMap.put("os", selectedOperatingSystems);
+
+        if (selectedStates.size() == 0) {// set default
+            selectedStates.addAll(getDefaultStatesSelection());
         }
-        List<InstallTask> filteredTasks = new ArrayList<InstallTask>();
+        filterKeyToValuesMap.put("state", selectedStates);
+
+        List<InstallTask> allFilteredTasks = new ArrayList<InstallTask>();
         for (int i = 0; i < tasks.length; i++) {
             if (tasks[i].matchesAttributes(filterKeyToValuesMap)) {
-                filteredTasks.add(tasks[i]);
+                allFilteredTasks.add(tasks[i]);
             }
         }
-        Collections.sort(filteredTasks, new TaskNameComparator());
 
-        for (int i = 0; i < filteredTasks.size(); i++) { // find latest
-                                                            // version of
+        filteredTasks = new ArrayList<MyTask>();
+        for (int i = 0; i < allFilteredTasks.size(); i++) { // find latest
+            // version of
             // tasks
-            InstallTask t = filteredTasks.get(i);
-            String lsid = t.getLsid();
-
+            InstallTask t = allFilteredTasks.get(i);
             try {
-                List<InstallTask> taskList = baseLsidToTasksMap.get(new LSID(
-                        lsid).toStringNoVersion());
+                List<InstallTask> taskList = baseLsidToTasksMap
+                        .remove(new LSID(t.getLsid()).toStringNoVersion());
+                if (taskList != null) {
+                    Collections.sort(taskList, DESC_COMPARATOR);
+                    MyTask latest = new MyTask(taskList.remove(0));
+                    if (taskList.size() > 0) {
+                        MyTask[] laterVersions = new MyTask[taskList.size()];
+                        for (int j = 0; j < taskList.size(); j++) {
+                            laterVersions[j] = new MyTask(taskList.get(j));
+                        }
+                        latest.setLaterVersions(laterVersions);
+                    }
+                    filteredTasks.add(latest);
+                }
 
             } catch (MalformedURLException e) {
                 log.error(e);
             }
         }
-        this.tasks = (InstallTask[]) filteredTasks.toArray(new InstallTask[0]);
+        Collections.sort(filteredTasks, new TaskNameComparator());
 
     }
 
-    private static class TaskNameComparator implements Comparator<InstallTask> {
+    private static class TaskNameComparator implements Comparator<MyTask> {
 
-        public int compare(InstallTask t1, InstallTask t2) {
+        public int compare(MyTask t1, MyTask t2) {
             return t1.getName().compareToIgnoreCase(t2.getName());
         }
 
@@ -270,4 +311,147 @@ public class TaskCatalogBean {
 
     }
 
+    public static class MyTask {
+        private InstallTask task;
+
+        private MyTask[] laterVersions;
+
+        public void setLaterVersions(MyTask[] laterVersions) {
+            this.laterVersions = laterVersions;
+        }
+
+        public MyTask[] getLaterVersions() {
+            return laterVersions;
+        }
+
+        public MyTask(InstallTask task) {
+            this.task = task;
+        }
+
+        public boolean equals(Object obj) {
+            return task.equals(obj);
+        }
+
+        public Map getAttributes() {
+            return task.getAttributes();
+        }
+
+        public String getAuthor() {
+            return task.getAuthor();
+        }
+
+        public String getDescription() {
+            return task.getDescription();
+        }
+
+        public String getDocumentationUrl() {
+            return task.getDocumentationUrl();
+        }
+
+        public String[] getDocUrls() {
+            return task.getDocUrls();
+        }
+
+        public long getDownloadSize() {
+            return task.getDownloadSize();
+        }
+
+        public String getExternalSiteName() {
+            return task.getExternalSiteName();
+        }
+
+        public Map getInstalledTaskInfoAttributes() {
+            return task.getInstalledTaskInfoAttributes();
+        }
+
+        public String getLanguage() {
+            return task.getLanguage();
+        }
+
+        public String getLanguageLevel() {
+            return task.getLanguageLevel();
+        }
+
+        public String getLsid() {
+            return task.getLsid();
+        }
+
+        public String getLsidVersion() {
+            return task.getLsidVersion();
+        }
+
+        public long getModificationTimestamp() {
+            return task.getModificationTimestamp();
+        }
+
+        public String getName() {
+            return task.getName();
+        }
+
+        public String getOperatingSystem() {
+            return task.getOperatingSystem();
+        }
+
+        public String getQuality() {
+            return task.getQuality();
+        }
+
+        public String getRequirements() {
+            return task.getRequirements();
+        }
+
+        public String getTaskType() {
+            return task.getTaskType();
+        }
+
+        public String getUrl() {
+            return task.getUrl();
+        }
+
+        public String getVersionComment() {
+            String comment = task.getVersionComment();
+            if (comment.length() > 100) {
+                comment = comment.substring(0, 99) + "...";
+            }
+            return comment;
+        }
+
+        public int hashCode() {
+            return task.hashCode();
+        }
+
+        public boolean install(String username, int access_id,
+                ITaskIntegrator taskIntegrator)
+                throws TaskInstallationException {
+            return task.install(username, access_id, taskIntegrator);
+        }
+
+        public boolean isAlreadyInstalled() {
+            return task.isAlreadyInstalled();
+        }
+
+        public boolean isDeprecated() {
+            return task.isDeprecated();
+        }
+
+        public boolean isNewer() {
+            return task.isNewer();
+        }
+
+        public boolean matchesAttributes(Map attributes) {
+            return task.matchesAttributes(attributes);
+        }
+
+        public void setInitialInstall(boolean initialInstall) {
+            task.setInitialInstall(initialInstall);
+        }
+
+        public String toLongString() {
+            return task.toLongString();
+        }
+
+        public String toString() {
+            return task.toString();
+        }
+    }
 }
