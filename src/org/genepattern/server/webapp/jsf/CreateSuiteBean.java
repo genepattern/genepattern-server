@@ -186,13 +186,16 @@ public class CreateSuiteBean implements java.io.Serializable {
             if (supportFile3 != null) {
                 saveUploadedFile(supportFile3, suiteDir);
             }
+            return "success";
         }
         catch (Exception e) {
-            HibernateUtil.rollbackTransaction();  // This shouldn't be neccessary, but just in case
-            throw new RuntimeException(e);        // @todo -- replace with appropriate GP exception
+            HibernateUtil.rollbackTransaction(); // This shouldn't be
+                                                    // neccessary, but just in
+                                                    // case
+            throw new RuntimeException(e); // @todo -- replace with appropriate
+                                            // GP exception
         }
 
-        return null;
     }
 
     private void saveUploadedFile(UploadedFile uploadedFile, String suiteDir) throws FileNotFoundException, IOException {
@@ -210,9 +213,8 @@ public class CreateSuiteBean implements java.io.Serializable {
         in.close();
         out.close();
     }
-    
-    public String clear()
-    {
+
+    public String clear() {
         return null;
     }
 

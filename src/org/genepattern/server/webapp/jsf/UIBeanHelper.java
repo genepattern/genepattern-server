@@ -57,8 +57,8 @@ public class UIBeanHelper {
     }
     
     public static Object getManagedBean(String elExpression) {
-        return getFacesContext().getApplication().createValueBinding(elExpression).getValue(getFacesContext());
-    }
+        return getFacesContext().getApplication().evaluateExpressionGet(getFacesContext(), "${spashPageBean", Object.class);
+     }
 
     public static void setInfoMessage(String summary) {
         getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
