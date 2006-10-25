@@ -1,6 +1,6 @@
 
 // directory of where all the images are
-var cmThemePanelBase = '/~heng/JSCookMenu/ThemePanel/';
+var cmThemePanelBase = '/css/jscookmenu/ThemePanel/';
 
 // the follow block allows user to re-define theme base directory
 // before it is loaded.
@@ -28,7 +28,8 @@ var cmThemePanel =
   	// HTML code to the left of the folder item
   	mainFolderLeft: '<img alt="" src="' + cmThemePanelBase + 'blank.gif">',
   	// HTML code to the right of the folder item
-  	mainFolderRight: '<img alt="" src="' + cmThemePanelBase + 'arrow.gif">',
+  	mainFolderRight: '<img alt="" src="' + cmThemePanelBase + 'blank.gif">',
+  //	mainFolderRight: '<img alt="" src="' + cmThemePanelBase + 'arrow.gif">',
 	// HTML code to the left of the regular item
 	mainItemLeft: '<img alt="" src="' + cmThemePanelBase + 'blank.gif">',
 	// HTML code to the right of the regular item
@@ -39,7 +40,8 @@ var cmThemePanel =
 	// HTML code to the left of the folder item
 	folderLeft: '<img alt="" src="' + cmThemePanelBase + 'blank.gif">',
 	// HTML code to the right of the folder item
-	folderRight: '<img alt="" src="' + cmThemePanelBase + 'arrow.gif">',
+	folderRight: '<img alt="" src="' + cmThemePanelBase + 'blank.gif">',
+	//folderRight: '<img alt="" src="' + cmThemePanelBase + 'arrow.gif">',
 	// HTML code to the left of the regular item
 	itemLeft: '<img alt="" src="' + cmThemePanelBase + 'blank.gif">',
 	// HTML code to the right of the regular item
