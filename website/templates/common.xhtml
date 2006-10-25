@@ -31,35 +31,64 @@
 <!-- horizontal navigation band -->
 
 
-  <div id="navband1" class="navband1">
-  <t:jscookMenu layout="hbr" theme="ThemePanel" org.apache.myfaces.STYLE_LOCATION="/css/jscookmenu">
+<div id="navband1" class="navband1"><t:jscookMenu layout="hbr"
+	theme="ThemePanel" org.apache.myfaces.STYLE_LOCATION="/css/jscookmenu">
 
-       <t:navigationMenuItem itemLabel="Tasks &amp; Pipelines">
-         <t:navigationMenuItem itemLabel="Create Task"/>
-         <t:navigationMenuItem itemLabel="Create Pipeline"/>
-       </t:navigationMenuItem>
+	<t:navigationMenuItem itemLabel="Tasks &amp; Pipelines"
+		action="run task">
+		<t:navigationMenuItem itemLabel="Create Task" action="create task" />
+		<t:navigationMenuItem itemLabel="Create Pipeline"
+			action="create pipeline" />
+	</t:navigationMenuItem>
        &#160;&#160;
-       <t:navigationMenuItem itemLabel="Suites"/>
+       <t:navigationMenuItem itemLabel="Suites" action="create suite"></t:navigationMenuItem>
        &#160;&#160;
-       <t:navigationMenuItem itemLabel="Job Results"/>
+       <t:navigationMenuItem itemLabel="Job Results"
+		action="job results"></t:navigationMenuItem>
        &#160;&#160;
-       <t:navigationMenuItem itemLabel="Documentation"/>
+       <t:navigationMenuItem itemLabel="Documentation">
+		<t:navigationMenuItem itemLabel="user's manual &#38; tutorial"
+			action="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/" />
+		<t:navigationMenuItem itemLabel="release notes"
+			action="http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/" />
+		<t:navigationMenuItem itemLabel="public datasets"
+			action="http://www.broad.mit.edu/cancer/software/genepattern/datasets/"
+			target="_self" />
+		<!--   <t:navigationMenuItem itemLabel="task documentation" action="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp" /> -->
+		<t:navigationMenuItem itemLabel="common file formats"
+			action="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_fileformats.html" />
+	</t:navigationMenuItem>
        &#160;&#160;
-       <t:navigationMenuItem itemLabel="Resources"/>
+       <t:navigationMenuItem itemLabel="Resources">
+		<t:navigationMenuItem itemLabel="join mailing list"
+			action="http://www.broad.mit.edu/cancer/software/genepattern/gp_mail.html" />
+		<t:navigationMenuItem itemLabel="report bugs"
+			action="mailto:gp-help@broad.mit.edu" />
+		<t:navigationMenuItem itemLabel="user forum"
+			action="http://www.broad.mit.edu/cancer/software/genepattern/forum/" />
+	</t:navigationMenuItem>
        &#160;&#160;
-       <t:navigationMenuItem itemLabel="Server Settings"/>
-     
-	</t:jscookMenu>
- </div>
+       <t:navigationMenuItem itemLabel="Server Settings">
+		<t:navigationMenuItem itemLabel="install graphical client"
+			action="http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gpge_installer.cgi" />
+		<t:navigationMenuItem itemLabel="Programming Libraries"
+			action="go_sample1" />
+	</t:navigationMenuItem>
+
+</t:jscookMenu></div>
 
 
 <div id="content" class="content">
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 	<tr>
-		<ui:insert name="leftPanel"><td>&#160;</td></ui:insert>
+		<ui:insert name="leftPanel">
+			<td>&#160;</td>
+		</ui:insert>
 		<td valign="top" class="maintasknav" id="maintasknav"><ui:insert
 			name="mainNav">&#160;</ui:insert></td>
-		<ui:insert name="rightPanel"><td>&#160;</td></ui:insert>
+		<ui:insert name="rightPanel">
+			<td>&#160;</td>
+		</ui:insert>
 	</tr>
 
 	<tr>
