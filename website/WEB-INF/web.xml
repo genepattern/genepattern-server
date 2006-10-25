@@ -28,13 +28,23 @@
  </context-param>
  <context-param>
   <param-name>facelets.LIBRARIES</param-name>
-  <param-value>/WEB-INF/tomahawk.taglib.xml</param-value>
+  <param-value>/WEB-INF/tomahawk.taglib.xml;/WEB-INF/validator.taglib.xml</param-value>
  </context-param>
- <filter>
-  <display-name>Ajax4jsf Filter</display-name>
-  <filter-name>ajax4jsf</filter-name>
-  <filter-class>org.ajax4jsf.Filter</filter-class>
- </filter>
+ 
+<!-- Shale Validator Configuration Resources -->
+    <context-param>
+       <param-name>org.apache.shale.validator.VALIDATOR_RULES</param-name>
+       <param-value>
+           /org/apache/shale/validator/validator-rules.xml
+       </param-value>
+    </context-param>
+ 
+     <listener>
+      <listener-class>
+        org.apache.commons.chain.web.ChainListener
+      </listener-class>
+    </listener>
+ 
  <filter>
   <filter-name>AuthenticationFilter</filter-name>
   <filter-class>org.genepattern.server.webapp.AuthenticationFilter</filter-class>
@@ -76,19 +86,29 @@
   </init-param>
  </filter>
  
+ <filter>
+  <filter-name>shale</filter-name>
+  <filter-class>org.apache.shale.faces.ShaleApplicationFilter</filter-class>
+</filter>
+    
+<filter-mapping>
+  <filter-name>shale</filter-name>
+  <url-pattern>*.jsf</url-pattern>
+</filter-mapping>
+ 
+<!-- extension mapping for adding <script/>, <link/>, and other resource tags to JSF-pages  -->
 <filter-mapping>
   <filter-name>ExtensionsFilter</filter-name>
   <servlet-name>Faces Servlet</servlet-name>
 </filter-mapping>
+
+<!-- extension mapping for serving page-independent resources (javascript, stylesheets, images, etc.)  -->
+<filter-mapping>
+    <filter-name>ExtensionsFilter</filter-name>
+    <url-pattern>/faces/myFacesExtensionResource/*</url-pattern>
+</filter-mapping>
     
- <filter-mapping>
-  <filter-name>ajax4jsf</filter-name>
-  <servlet-name>Faces Servlet</servlet-name>
-  <dispatcher>REQUEST</dispatcher>
-  <dispatcher>FORWARD</dispatcher>
-  <dispatcher>INCLUDE</dispatcher>
- </filter-mapping>
- 
+
  <filter-mapping>
   <filter-name>ConnectionFilter</filter-name>
   <url-pattern>/*</url-pattern>
