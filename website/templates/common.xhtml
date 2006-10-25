@@ -17,12 +17,8 @@
 <ui:insert name="headText" />
 <script language="JavaScript"
 	src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js" />
-<script language="JavaScript"
-	src="#{facesContext.externalContext.requestContextPath}/js/mm_menu.js" />
 </head>
-<body
-	onload="MM_preloadImages('#{facesContext.externalContext.requestContextPath}/images/searchicon-1-over.gif','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif')">
-<script language="JavaScript1.2">mmLoadMenus();</script>
+<body>
 <!-- top band with the logo -->
 
 
@@ -35,8 +31,9 @@
 <!-- horizontal navigation band -->
 
 
-<div id="navband1" class="navband1">
-  <t:jscookMenu layout="hbr" theme="ThemeOffice" styleLocation="css/jscookmenu">
+  <div id="navband1" class="navband1">
+  <t:jscookMenu layout="hbr" theme="ThemePanel" org.apache.myfaces.STYLE_LOCATION="/css/jscookmenu">
+
        <t:navigationMenuItem itemLabel="Tasks &amp; Pipelines">
          <t:navigationMenuItem itemLabel="Create Task"/>
          <t:navigationMenuItem itemLabel="Create Pipeline"/>
@@ -51,9 +48,9 @@
        <t:navigationMenuItem itemLabel="Resources"/>
        &#160;&#160;
        <t:navigationMenuItem itemLabel="Server Settings"/>
-      
+     
 	</t:jscookMenu>
-</div>
+ </div>
 
 
 <div id="content" class="content">
