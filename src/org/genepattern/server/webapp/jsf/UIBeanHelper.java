@@ -20,7 +20,7 @@ import org.genepattern.util.GPConstants;
 
 public class UIBeanHelper {
 
-    private UIBeanHelper() {
+    private UIBeanHelper() { 
     }
 
     public static Map getSessionMap() {
@@ -57,8 +57,8 @@ public class UIBeanHelper {
     }
     
     public static Object getManagedBean(String elExpression) {
-        return getFacesContext().getApplication().createValueBinding(elExpression);
-     }
+        return getFacesContext().getApplication().createValueBinding(elExpression).getValue(getFacesContext());
+    }
 
     public static void setInfoMessage(String summary) {
         getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
