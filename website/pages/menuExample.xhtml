@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk">
+
+
+<head>
+<title>JSCook Menu</title>
+</head>
+<body>
+		<!-- Availaible jscookMenu themes: ThemeIE, ThemeMiniBlack, ThemeOffice, ThemePanel
+             Availaible jscookMenu layout: hbr, hbl, hur, hul, vbr, vbl, vur, vul
+             respect to Heng Yuan http://www.cs.ucla.edu/~heng/JSCookMenu
+        -->
+
+ 
+   <t:jscookMenu layout="hbr" theme="ThemeOffice" styleLocation="css/jscookmenu">
+       <t:navigationMenuItem id="nav_1" actionListener="#{navigationMenu.actionListener}"
+			itemLabel="One" itemValue="go_home" action="go_home"/>
+       
+	</t:jscookMenu>
+
+
+</body>
+</html>
