@@ -2,12 +2,15 @@
 
 .ThemePanelMenu,.ThemePanelSubMenuTable
 {
-	font-family:	verdana, arial, sans-serif;
-	font-size:	13px;
+	font-size: 11px;
+	line-height: 21px;
+	font-weight: bold;
 	background-color:	#F7F3F7;
-
 	cursor:		default;
 	white-space:	nowrap;
+	color: #FFFFFF;
+	text-decoration: none;
+	background-color: #666699;
 }
 
 .ThemePanelSubMenu
@@ -30,7 +33,7 @@
 
 .ThemePanelSubMenuTable
 {
-	border:		1px solid #9C9A9C;
+	border:		0px;
 }
 
 .ThemePanelMenuItem,.ThemePanelMenuItemHover,.ThemePanelMenuItemActive
@@ -42,7 +45,7 @@
 .ThemePanelMainItem,
 .ThemePanelMenuItem
 {
-	background-color:	#000099;
+	background-color: #666699;
 }
 
 .ThemePanelMainItemHover,
@@ -50,7 +53,7 @@
 .ThemePanelMenuItemHover,
 .ThemePanelMenuItemActive
 {
-	background-color:	#C6C6C3;
+	color: #CCCC66;
 }
 
 
