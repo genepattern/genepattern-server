@@ -2,9 +2,9 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping package="org.genepattern.server.domain"> 
-  <class name="Suite" table="SUITE"  optimistic-lock="none">
+  <class name="Suite" table="SUITE" optimistic-lock="none" batch-size="10"> 
     <id name="lsid" type="string" unsaved-value="null">
-      <column name="LSID" not-null="true" unique="true" length="4000" />
+      <column name="LSID" not-null="true" unique="true" length="4000"/>
       <generator class="assigned"/>
     </id>
     <property name="name" type="string" column="NAME" length="4000"/>
@@ -12,9 +12,11 @@
     <property name="owner" type="string" column="OWNER" length="4000"/>
     <property name="description" type="string" column="DESCRIPTION" length="4000"/>
     <property name="accessId" type="integer" column="ACCESS_ID" precision="10" scale="0"/>
-    <bag name="modules" table="SUITE_MODULES" order-by="module_lsid asc">
-      <key column="lsid"/>
+    <bag name="modules" table="SUITE_MODULES" order-by="module_lsid asc" cascade="none"> 
+      <key>
+        <column name="lsid" length="4000"/>
+      </key>
       <element column="module_lsid" type="string"/>
-   </bag>
+    </bag>
   </class>
 </hibernate-mapping>
