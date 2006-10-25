@@ -90,6 +90,22 @@
    <from-outcome>logout</from-outcome>
    <to-view-id>/pages/login.xhtml</to-view-id>
   </navigation-case>
+  
+  <navigation-case>
+   <from-outcome>run task</from-outcome>
+   <to-view-id>/pages/runTask.xhtml</to-view-id>
+  </navigation-case>
+  
+  <navigation-case>
+   <from-outcome>job results</from-outcome>
+   <to-view-id>/pages/jobResults.xhtml</to-view-id>
+  </navigation-case>
+  
+  <navigation-case>
+   <from-outcome>create suite</from-outcome>
+   <to-view-id>/pages/createSuite.xhtml</to-view-id>
+  </navigation-case>
+  
  </navigation-rule>
  <navigation-rule>
   <display-name>commandPrefixAdmin</display-name>
