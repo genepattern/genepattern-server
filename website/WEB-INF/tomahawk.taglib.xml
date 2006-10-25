@@ -183,6 +183,14 @@
         </component>
     </tag>
     <tag>
+        <tag-name>navigationMenuItems</tag-name>
+        <component>
+                <component-type>
+                        javax.faces.SelectItems
+                </component-type>
+        </component>
+    </tag> 
+    <tag>
         <tag-name>navigationMenuItem</tag-name>
         <component>
             <component-type>org.apache.myfaces.NavigationMenuItem</component-type>
