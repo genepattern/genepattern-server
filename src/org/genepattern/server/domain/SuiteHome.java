@@ -24,7 +24,6 @@ public class SuiteHome extends AbstractHome {
     private static final Logger log = Logger.getLogger(SuiteHome.class);
 
     public Suite merge(Suite detachedInstance) {
-        log.debug("merging Props instance");
         try {
             return (Suite) HibernateUtil.getSession().merge(detachedInstance);
         }
@@ -35,7 +34,6 @@ public class SuiteHome extends AbstractHome {
     }
 
     public Suite findById(String id) {
-        log.debug("getting Props instance with id: " + id);
         try {
             return (Suite) HibernateUtil.getSession().get("org.genepattern.server.domain.Suite", id);
         }
@@ -44,10 +42,21 @@ public class SuiteHome extends AbstractHome {
             throw re;
         }
     }
-
-    public List<Props> findByExample(Suite instance) {
-        log.debug("finding Suite instance by example");
+    
+    public List<Suite> findAll() {
         try {
+            return HibernateUtil.getSession().createQuery(
+                    "from org.genepattern.server.domain.Suite order by name").list();
+        }
+        catch (RuntimeException re) {
+            log.error("find by example failed", re);
+            throw re;
+        }
+        
+    }
+
+    public List<Suite> findByExample(Suite instance) {
+         try {
             return HibernateUtil.getSession().createCriteria("org.genepattern.server.domain.Suite").add(
                     Example.create(instance)).list();
         }
