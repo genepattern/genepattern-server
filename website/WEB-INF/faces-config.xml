@@ -65,7 +65,7 @@
  <managed-bean>
   <managed-bean-name>moduleChooserBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.ModuleChooserBean</managed-bean-class>
-  <managed-bean-scope>session</managed-bean-scope>
+  <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
   <managed-bean-name>recentJobsBean</managed-bean-name>
