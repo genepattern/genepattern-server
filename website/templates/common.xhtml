@@ -36,9 +36,10 @@
 
 	<t:navigationMenuItem itemLabel="Tasks &amp; Pipelines"
 		action="run task">
-		<t:navigationMenuItem itemLabel="Create Task" action="create task" />
+		<t:navigationMenuItem itemLabel="Run" action="run task" />
+		<t:navigationMenuItem itemLabel="Create Task" actionListener="navBarBean.navigate" />
 		<t:navigationMenuItem itemLabel="Create Pipeline"
-			action="create pipeline" />
+			actionListener="navBarBean.navigate" />
 	</t:navigationMenuItem>
        &#160;&#160;
        <t:navigationMenuItem itemLabel="Suites" action="create suite"></t:navigationMenuItem>
@@ -54,7 +55,10 @@
 		<t:navigationMenuItem itemLabel="public datasets"
 			action="http://www.broad.mit.edu/cancer/software/genepattern/datasets/"
 			target="_self" />
-		<!--   <t:navigationMenuItem itemLabel="task documentation" action="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp" /> -->
+			<t:navigationMenuItem itemLabel="FAQ"
+			action="http://www.broad.mit.edu/cancer/software/genepattern/doc/faq/"
+			target="_self" />
+		 <t:navigationMenuItem itemLabel="task documentation" actionListener="navBarBean.navigate" />
 		<t:navigationMenuItem itemLabel="common file formats"
 			action="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_fileformats.html" />
 	</t:navigationMenuItem>
@@ -68,7 +72,7 @@
 			action="http://www.broad.mit.edu/cancer/software/genepattern/forum/" />
 	</t:navigationMenuItem>
        &#160;&#160;
-       <t:navigationMenuItem itemLabel="Server Settings">
+       <t:navigationMenuItem itemLabel="Downloads">
 		<t:navigationMenuItem itemLabel="install graphical client"
 			action="http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gpge_installer.cgi" />
 		<t:navigationMenuItem itemLabel="Programming Libraries"
