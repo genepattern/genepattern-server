@@ -59,13 +59,13 @@
                 fi.write(zipFile);
             }
         }
-        if (requestParameters.get("file1") == null) {
+        if (requestParameters.get("file") == null) {
 		// no file to park
         return;
     }
 
     String fileURL = null;
-    attachedFile = (File) requestParameters.get("file1");
+    attachedFile = (File) requestParameters.get("file");
     attachmentName = attachedFile.getName();
     fileURL = attachedFile.toURI().toString();
         
