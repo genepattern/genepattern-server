@@ -78,12 +78,35 @@
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  
-     <managed-bean>
-        <managed-bean-name>navigationMenu</managed-bean-name>
-        <managed-bean-class>org.apache.myfaces.examples.misc.NavigationMenu</managed-bean-class>
-        <managed-bean-scope>application</managed-bean-scope>
-    </managed-bean>
+ <!--  Beans for example programs -->
+<managed-bean>
+  <managed-bean-name>navigationMenu</managed-bean-name>
+  <managed-bean-class>org.apache.myfaces.examples.misc.NavigationMenu</managed-bean-class>
+  <managed-bean-scope>application</managed-bean-scope>
+</managed-bean>
  
+<managed-bean>
+  <managed-bean-name>pollExampleBean</managed-bean-name>
+  <managed-bean-class>demo.PollExampleBean</managed-bean-class>
+  <managed-bean-scope>session</managed-bean-scope>
+  <managed-property>
+   <property-name>counter</property-name>
+   <property-class>java.lang.Integer</property-class>
+   <value>0</value>
+  </managed-property>
+</managed-bean>
+ 
+<managed-bean>
+  <managed-bean-name>repeaterExampleBean</managed-bean-name>
+  <managed-bean-class>demo.RepeaterExampleBean</managed-bean-class>
+  <managed-bean-scope>session</managed-bean-scope>
+  <managed-property>
+   <property-name>text</property-name>
+   <property-class>java.lang.String</property-class>
+   <value/>
+  </managed-property>
+</managed-bean>
+   
  <navigation-rule>
   <from-view-id>*</from-view-id>
   <navigation-case>
@@ -150,8 +173,8 @@
   </navigation-case>
  </navigation-rule>
  <application>
-  <view-handler>com.sun.facelets.FaceletViewHandler</view-handler>
-  <!-- Replace view-handler tag with the tag below to enable trinidad  
+  <!-- <view-handler>com.sun.facelets.FaceletViewHandler</view-handler>
+  Replace view-handler tag with the tag below to enable trinidad  
  <default-render-kit-id>org.apache.myfaces.trinidad.core</default-render-kit-id>  -->
  </application>
 </faces-config>

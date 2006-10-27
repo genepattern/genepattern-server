@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
+<ui:composition template="common.xhtml">
+
+	<ui:define name="pageTitle">ajax4jsf. Simple Repeator Demo</ui:define>
+	<ui:define name="pageHeader">
+	</ui:define>
+
+	<ui:define name="body">
+		<a4j:region selfRendered="true">
+			<form jsfc="h:form" id="helloForm"><h:panelGrid columns="2">
+
+				<h:outputText value="Type the Text:" />
+				<input jsfc="h:inputText" value="#{repeaterExampleBean.text}"
+					size="50">
+				<a4j:support event="onkeyup" reRender="repeater" />
+				</input>
+
+				<h:outputText value="Text in the AJAX Response:" />
+				<h:outputText id="repeater" value="#{repeaterExampleBean.text}" />
+
+			</h:panelGrid></form>
+		</a4j:region>
+
+	</ui:define>
+</ui:composition>
+</html>
