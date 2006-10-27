@@ -1,8 +1,12 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
-  <h:form><t:saveState value="#{moduleChooserBean}">
-  	  
-  </t:saveState>
+  <ui:define name="headText">
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js"/>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js"/>
+  </ui:define>
+  <h:form>
+    <t:saveState value="#{moduleChooserBean}"/>
     <!-- tasks and pipelines area -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
       <tr>
@@ -29,42 +33,51 @@
         </td>
       </tr>
       <tr>
-        <!-- Module List  -->
+        <!-- Module Category List  -->
         <t:dataList var="category" value="#{moduleChooserBean.allTasks}">
-          <tr class="task-categories">
+          <!-- Category header  Clicking on the header hides or shows the panel contents -->
+          <!--     The category.expanded property sets the inital hide/show values -->
+          <tr class="task-categories" style="cursor: pointer; " name="#{category.identifier}_panel" onclick="toggleVisibility('#{category.identifier}');">
             <td width="9" valign="middle">
               <t:graphicImage value="/images/spacer.gif" width="8" height="8"/>
             </td>
             <td width="7" valign="top">
-              <h:commandLink actionListener="#{category.toggleExpanded}">
-                <h:graphicImage value="#{category.expanded ? '/images/arrow-down.gif' : '/images/arrow-right.gif'}" width="7" height="7" vspace="3" border="0"/>
-              </h:commandLink>
+              <img id="#{category.identifier}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" width="8" height="8" border="0" style="#{category.expanded == true ? 'display:inline;' : 'display:none;'}"/>
+              <img id="#{category.identifier}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" width="8" height="8" border="0" style="#{category.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
             </td>
             <td width="4">
               <t:graphicImage value="/images/spacer.gif" width="4" height="1"/>
             </td>
-            <td colspan="3" halign="left">
-              <h:commandLink value="#{category.name}" actionListener="#{category.toggleExpanded}"/>
+            <td colspan="3" halign="left">#{category.name}</td>
+          </tr>
+          
+          <!--  The Module List.  The visibility is set by javascript using the "display" style attribute -->
+          <tr>
+            <td colspan="5">
+              <div id="#{category.identifier}_panel" name="category_panel">
+                <table border="0" cellspacing="0" cellpadding="0">
+                  <t:dataList var="taskInfo" value="#{category.modules}" rendered="#{category.expanded}">
+                    <tr class="#{taskInfo.name == moduleChooserBean.selectedModule ? 'tasks_on' : (taskInfo.userId == moduleChooserBean.userId ? 'task-mine' : '')}">
+                      <td>&#160;&#160;&#160;</td>
+                      <td valign="top">&#160;</td>
+                      <td width="4" valign="middle">
+                        <t:graphicImage value="#{taskInfo.pipeline ? '/images/bullet-pipeline.gif' : '/images/bullet-task.gif'}" width="4" height="4"/>
+                      </td>
+                      <td width="4">
+                        <t:graphicImage src="/images/spacer.gif" width="4" height="1"/>
+                      </td>
+                      <td>
+                        <h:commandLink value="#{taskInfo.shortName}" actionListener="#{moduleChooserBean.moduleClicked}">
+                          <f:param name="task" value="#{taskInfo.name}"/>
+                        </h:commandLink>
+                      </td>
+                      <td>&#160;</td>
+                    </tr>
+                  </t:dataList>
+                </table>
+              </div>
             </td>
           </tr>
-          <t:dataList var="taskInfo" value="#{category.modules}" rendered="#{category.expanded}">
-            <tr class="#{taskInfo.name == moduleChooserBean.selectedModule ? 'tasks_on' : (taskInfo.userId == moduleChooserBean.userId ? 'task-mine' : '')}">
-              <td>&#160;</td>
-              <td valign="top">&#160;</td>
-              <td width="4" valign="middle">
-                <t:graphicImage value="#{taskInfo.pipeline ? '/images/bullet-pipeline.gif' : '/images/bullet-task.gif'}" width="4" height="4"/>
-              </td>
-              <td width="4">
-                <t:graphicImage src="/images/spacer.gif" width="4" height="1"/>
-              </td>
-              <td>
-                <h:commandLink value="#{taskInfo.shortName}" actionListener="#{moduleChooserBean.moduleClicked}">
-                  <f:param name="task" value="#{taskInfo.name}"/>
-                </h:commandLink>
-              </td>
-              <td>&#160;</td>
-            </tr>
-          </t:dataList>
         </t:dataList>
       </tr>
     </table>
