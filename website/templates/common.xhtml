@@ -37,9 +37,9 @@
 	<t:navigationMenuItem itemLabel="Tasks &amp; Pipelines"
 		action="run task">
 		<t:navigationMenuItem itemLabel="Run" action="run task" />
-		<t:navigationMenuItem itemLabel="Create Task" actionListener="navBarBean.navigate" />
+		<t:navigationMenuItem itemLabel="Create Task" actionListener="#{navBarBean.navigate}" itemValue="create task" action="create task"/>
 		<t:navigationMenuItem itemLabel="Create Pipeline"
-			actionListener="navBarBean.navigate" />
+			actionListener="#{navBarBean.navigate}" itemValue="create pipeline" action="create pipeline"/>
 	</t:navigationMenuItem>
        &#160;&#160;
        <t:navigationMenuItem itemLabel="Suites" action="create suite"></t:navigationMenuItem>
@@ -58,7 +58,7 @@
 			<t:navigationMenuItem itemLabel="FAQ"
 			action="http://www.broad.mit.edu/cancer/software/genepattern/doc/faq/"
 			target="_self" />
-		 <t:navigationMenuItem itemLabel="task documentation" actionListener="navBarBean.navigate" />
+		 <t:navigationMenuItem itemLabel="task documentation" actionListener="#{navBarBean.navigate}" itemValue="task documentation" action="task documentation"/>
 		<t:navigationMenuItem itemLabel="common file formats"
 			action="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_fileformats.html" />
 	</t:navigationMenuItem>
