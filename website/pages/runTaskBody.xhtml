@@ -73,30 +73,57 @@ function validateForm() {
 
 		<form
 			action="#{facesContext.externalContext.requestContextPath}/#{runTaskBean.formAction}"
-			method="post" ENCTYPE="multipart/form-data"
+			method="post" enctype="multipart/form-data"
 			onsubmit="return validateForm();"><input type="hidden"
 			name="taskLSID" value="#{runTaskBean.lsid}" /> <input type="hidden"
 			name="taskName" value="#{runTaskBean.name}" />
 
 
 
-		<table border="0" cellpadding="0" cellspacing="3" class="attribute"
-			valign="top">
+		 <table border="0" cellpadding="5" cellspacing="0" class="attribute" valign="top">
 			<tbody>
-				<tr>
-					<td colspan="3"><img
-						src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
-						width="1" height="4" /></td>
+				
+
+				<tr class="taskperameter">
+					<td><span class="description">* required field</span></td>
+					<td colspan="2" class="maintasknav2"><input name="cmd"
+						value="run" type="submit" /> <input name="reset" value="reset"
+						onclick="window.location.href=window.location.href" type="button" />
+					&#160;&#160;<h:outputLink
+						value="#{facesContext.externalContext.requestContextPath}/viewTask.jsp">
+						<h:outputText value="properties" />
+						<f:param name="view" value="1" />
+						<f:param name="name" value="#{runTaskBean.lsid}" />
+					</h:outputLink>&#160;|&#160;<c:choose>
+						<c:when test="#{runTaskBean.pipeline==true}">
+							<a href="#"
+								onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>
+						</c:when>
+						<c:otherwise>
+							<h:outputLink
+								value="#{facesContext.externalContext.requestContextPath}/makeZip.jsp">export
+					<f:param name="name" value="#{runTaskBean.lsid}" />
+							</h:outputLink>
+						</c:otherwise>
+					</c:choose>&#160;|&#160;<h:outputLink
+						value="#{facesContext.externalContext.requestContextPath}/viewTask.jsp">
+						<h:outputText value="edit" />				
+						<f:param name="name" value="#{runTaskBean.lsid}" />
+					</h:outputLink>&#160;|&#160;<h:outputLink
+						target="_blank"
+						value="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp">help
+			<f:param name="name" value="#{runTaskBean.lsid}" />
+					</h:outputLink></td>
 				</tr>
 
 				<c:forEach items="#{runTaskBean.parameters}" var="p">
-					<tr>
+					<tr class="taskperameter">
 						<c:choose>
 							<c:when test="#{p.optional==false}">
-								<td valign="middle" align="left" class="attribute-required"><nobr>#{p.displayName}*</nobr></td>
+								<td valign="top" class="attribute-required"><nobr>#{p.displayName}*</nobr></td>
 							</c:when>
 							<c:otherwise>
-								<td valign="middle" align="left"><nobr>#{p.displayName}</nobr></td>
+								<td valign="top"><nobr>#{p.displayName}</nobr></td>
 							</c:otherwise>
 						</c:choose>
 
@@ -132,35 +159,66 @@ function validateForm() {
 									type="#{p.inputType}" value="#{p.defaultValue}" />
 							</c:otherwise>
 						</c:choose></td>
-						<td valign="middle" class="description">#{p.displayDescription}</td>
+						<td valign="top" class="description">#{p.displayDescription}</td>
 					</tr>
-					<tr>
-						<td colspan="3"><img
-							src="#{facesContext.externalContext.requestContextPath}/images/peramdivider-1.gif"
-							width="100%" height="1" vspace="4" /></td>
-					</tr>
+					
 				</c:forEach>
 
 
 				<tr>
 					<td>&#160;</td>
-					<td>&#160;</td>
-					<td>&#160;</td>
-				</tr>
-				<tr>
-					<td>&#160;</td>
-					<td><input name="cmd" value="run" type="submit" /> <input
-						name="reset" value="reset"
+					<td colspan="2" class="maintasknav2"><input name="cmd"
+						value="run" type="submit" /> <input name="reset" value="reset"
 						onclick="window.location.href=window.location.href" type="button" />
-					<input value="help"
-						onclick="window.open('#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}', '_new')"
-						type="button" /></td>
-					<td>&#160;</td>
+					&#160;&#160;<h:outputLink
+						value="#{facesContext.externalContext.requestContextPath}/viewTask.jsp">
+						<h:outputText value="properties" />
+						<f:param name="view" value="1" />
+						<f:param name="name" value="#{runTaskBean.lsid}" />
+					</h:outputLink>&#160;|&#160;<c:choose>
+						<c:when test="#{runTaskBean.pipeline==true}">
+							<a href="#"
+								onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>
+						</c:when>
+						<c:otherwise>
+							<h:outputLink
+								value="#{facesContext.externalContext.requestContextPath}/makeZip.jsp">export
+					<f:param name="name" value="#{runTaskBean.lsid}" />
+							</h:outputLink>
+						</c:otherwise>
+					</c:choose>&#160;|&#160;<h:outputLink
+						value="#{facesContext.externalContext.requestContextPath}/viewTask.jsp">
+						<h:outputText value="edit" />				
+						<f:param name="name" value="#{runTaskBean.lsid}" />
+					</h:outputLink>&#160;|&#160;<h:outputLink
+						target="_blank"
+						value="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp">help
+			<f:param name="name" value="#{runTaskBean.lsid}" />
+					</h:outputLink></td>
 				</tr>
+
 			</tbody>
 		</table>
 		</form>
 		<p>&#160;</p>
+
+		<br />
+		<div class="download_code"><strong>Download code to
+		call #{runTaskBean.name}: </strong>
+		<p></p>
+		
+		<form method="get" action="#{facesContext.externalContext.requestContextPath}/getPipelineCode.jsp">
+			<input type="hidden" name="download" value="1"/>
+			<input type="hidden" name="name" value="#{runTaskBean.lsid}" />
+			<select name="language">
+				<option selected="selected">- Language -</option>
+				<option>Java</option>
+				<option>MATLAB</option>
+				<option>R</option>
+		</select> &#160; <input type="submit" name="Submit" value="code" /></form>
+		</div>
+
+
 	</c:when>
 	<c:otherwise>
 		<h3>GenePattern puts sophisticated computational methods into the

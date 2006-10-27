@@ -38,30 +38,6 @@ function exportPipeline(lsid, title) {
 		<td width="203" rowspan="2" valign="top" class="recentjobs"
 			id="recentjobs"><ui:include src="recentJobs.xhtml" /></td>
 	</ui:define>
-	<c:when test="#{runTaskBean.missing==false}">
-		<ui:define name="mainNav">
-			<h:outputLink target="_blank"
-				value="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp">help
-			<f:param name="name" value="#{runTaskBean.lsid}" />
-			</h:outputLink>&#160;|&#160; <h:outputLink
-				value="#{facesContext.externalContext.requestContextPath}/viewTask.jsp">
-				<h:outputText value="view info" />
-				<f:param name="view" value="1" />
-				<f:param name="name" value="#{runTaskBean.lsid}" />
-			</h:outputLink>&#160;|&#160; <c:choose>
-				<c:when test="#{runTaskBean.pipeline==true}">
-					<a href="#"
-						onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>
-				</c:when>
-				<c:otherwise>
-					<h:outputLink
-						value="#{facesContext.externalContext.requestContextPath}/makeZip.jsp">export
-					<f:param name="name" value="#{runTaskBean.lsid}" />
-					</h:outputLink>
-				</c:otherwise>
-			</c:choose>
-		</ui:define>
-	</c:when>
 
 	<ui:define name="body">
 		<ui:include src="runTaskBody.xhtml" />
