@@ -22,7 +22,7 @@ public class ModuleHelper {
     }
       
 
-    public static ModuleCategory getAll() {
+    public static ModuleCategory getAllTasks() {
         AdminDAO dao = new AdminDAO();
         return new ModuleCategory("All", dao.getAllTasksForUser(getUserId()));
     }
