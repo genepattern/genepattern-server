@@ -89,44 +89,31 @@ function validateForm() {
 					<td colspan="2" class="maintasknav2"><input name="cmd"
 						value="run" type="submit" /> <input name="reset" value="reset"
 						onclick="window.location.href=window.location.href" type="button" />
-					&#160;&#160;<h:outputLink
-						value="#{facesContext.externalContext.requestContextPath}/viewTask.jsp">
-						<h:outputText value="properties" />
-						<f:param name="view" value="1" />
-						<f:param name="name" value="#{runTaskBean.lsid}" />
-					</h:outputLink>&#160;|&#160;<c:choose>
+					&#160;&#160;<a href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?view=1&name=#{runTaskBean.lsid}">properties</a>
+						
+					&#160;|&#160;<c:choose>
 						<c:when test="#{runTaskBean.pipeline==true}">
 							<a 
 								onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>
 						</c:when>
 						<c:otherwise>
-							<h:outputLink
-								value="#{facesContext.externalContext.requestContextPath}/makeZip.jsp">export
-					<f:param name="name" value="#{runTaskBean.lsid}" />
-							</h:outputLink>
+							<a href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>				
 						</c:otherwise>
 					</c:choose>&#160;|&#160;
 					
 					<c:choose>
 						<c:when test="#{runTaskBean.pipeline==false}">
-							<h:outputLink value="#{facesContext.externalContext.requestContextPath}/addTask.jsp">
-								<h:outputText value="edit" />				
-								<f:param name="name" value="#{runTaskBean.lsid}" />
-							</h:outputLink>
+							<a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>
 						</c:when>
 						<c:otherwise>
-							<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp">
-								<h:outputText value="edit" />				
-								<f:param name="name" value="#{runTaskBean.lsid}" />
-							</h:outputLink>
+							<a href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
 						</c:otherwise>
 					</c:choose>
 					
-					&#160;|&#160;<h:outputLink
+					&#160;|&#160;<a
 						target="_blank"
-						value="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp">help
-			<f:param name="name" value="#{runTaskBean.lsid}" />
-					</h:outputLink></td>
+						href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
+					</td>
 				</tr>
 
 				<c:forEach items="#{runTaskBean.parameters}" var="p">
@@ -183,44 +170,33 @@ function validateForm() {
 					<td colspan="2" class="maintasknav2"><input name="cmd"
 						value="run" type="submit" /> <input name="reset" value="reset"
 						onclick="window.location.href=window.location.href" type="button" />
-					&#160;&#160;<h:outputLink
-						value="#{facesContext.externalContext.requestContextPath}/viewTask.jsp">
-						<h:outputText value="properties" />
-						<f:param name="view" value="1" />
-						<f:param name="name" value="#{runTaskBean.lsid}" />
-					</h:outputLink>&#160;|&#160;<c:choose>
+					&#160;&#160;<a
+						href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?view=1&?name=#{runTaskBean.lsid}">properties</a>
+						&#160;|&#160;<c:choose>
 						<c:when test="#{runTaskBean.pipeline==true}">
 							<a 
 								onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>
 						</c:when>
 						<c:otherwise>
-							<h:outputLink
-								value="#{facesContext.externalContext.requestContextPath}/makeZip.jsp">export
-					<f:param name="name" value="#{runTaskBean.lsid}" />
-							</h:outputLink>
+							<a
+								href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>
+					
 						</c:otherwise>
 					</c:choose>&#160;|&#160;
 					<c:choose>
 						<c:when test="#{runTaskBean.pipeline==false}">
-							<h:outputLink value="#{facesContext.externalContext.requestContextPath}/addTask.jsp">
-								<h:outputText value="edit" />				
-								<f:param name="name" value="#{runTaskBean.lsid}" />
-							</h:outputLink>
+							<a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>
 						</c:when>
 						<c:otherwise>
-							<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp">
-								<h:outputText value="edit" />				
-								<f:param name="name" value="#{runTaskBean.lsid}" />
-							</h:outputLink>
+							<a href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
 						</c:otherwise>
 					</c:choose>
 					
 					
-					&#160;|&#160;<h:outputLink
+					&#160;|&#160;<a
 						target="_blank"
-						value="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp">help
-			<f:param name="name" value="#{runTaskBean.lsid}" />
-					</h:outputLink></td>
+						href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
+					</td>
 				</tr>
 
 			</tbody>
