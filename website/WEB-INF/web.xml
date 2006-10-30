@@ -36,19 +36,6 @@
         <param-value>com.sun.facelets.FaceletViewHandler</param-value>
     </context-param>
 
-<!-- Shale Validator Configuration Resources -->
-    <context-param>
-       <param-name>org.apache.shale.validator.VALIDATOR_RULES</param-name>
-       <param-value>
-           /org/apache/shale/validator/validator-rules.xml
-       </param-value>
-    </context-param>
- 
-     <listener>
-      <listener-class>
-        org.apache.commons.chain.web.ChainListener
-      </listener-class>
-    </listener>
  
  <filter>
   <filter-name>AuthenticationFilter</filter-name>
@@ -89,18 +76,9 @@
    <param-name>uploadThresholdSize</param-name>
    <param-value>100k</param-value>
   </init-param>
- </filter>
- 
- <filter>
-  <filter-name>shale</filter-name>
-  <filter-class>org.apache.shale.faces.ShaleApplicationFilter</filter-class>
 </filter>
 
-<filter-mapping>
-  <filter-name>shale</filter-name>
-  <url-pattern>*.jsf</url-pattern>
-</filter-mapping>
- 
+
 <!-- extension mapping for adding <script/>, <link/>, and other resource tags to JSF-pages  -->
 <filter-mapping>
   <filter-name>ExtensionsFilter</filter-name>
@@ -109,8 +87,8 @@
 
 <!-- extension mapping for serving page-independent resources (javascript, stylesheets, images, etc.)  -->
 <filter-mapping>
-    <filter-name>ExtensionsFilter</filter-name>
-    <url-pattern>/faces/myFacesExtensionResource/*</url-pattern>
+  <filter-name>ExtensionsFilter</filter-name>
+  <url-pattern>/faces/myFacesExtensionResource/*</url-pattern>
 </filter-mapping>
     
 
@@ -209,7 +187,7 @@
   <url-pattern>/services/*</url-pattern>
  </servlet-mapping>
  <welcome-file-list>
-  <welcome-file>index.jsp</welcome-file>
+  <welcome-file>pages/runTask.jsf</welcome-file>
  </welcome-file-list>
  <login-config>
   <auth-method>BASIC</auth-method>
