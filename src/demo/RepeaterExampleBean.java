@@ -14,4 +14,8 @@ public class RepeaterExampleBean {
         System.out.println("SetText");
         this.text = text;
     }
+    
+    public String submit() {
+        return null;
+    }
 }
