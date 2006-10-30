@@ -186,9 +186,6 @@
   <servlet-name>AxisServlet</servlet-name>
   <url-pattern>/services/*</url-pattern>
  </servlet-mapping>
- <welcome-file-list>
-  <welcome-file>pages/runTask.jsf</welcome-file>
- </welcome-file-list>
  <login-config>
   <auth-method>BASIC</auth-method>
  </login-config>
