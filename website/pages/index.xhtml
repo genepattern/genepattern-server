@@ -205,7 +205,7 @@ function validateForm() {
 
 						</c:forEach>
 
-						<c:if test="!empty #{runTaskBean.parameters}">
+						<c:if test="#{!empty runTaskBean.parameters}">
 						<tr>
 							<td>&#160;</td>
 							<td colspan="2" class="maintasknav2"><input name="cmd"
