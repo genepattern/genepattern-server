@@ -16,12 +16,12 @@
 	var requiredIds = new Array();
 	var requiredNames = new Array();
 </h:outputText>
-<c:forEach items="#{runTaskBean.parameters}" var="p" varStatus="s">
+<t:dataList value="#{runTaskBean.parameters}" var="p" rowIndexVar="i">
 	<c:if test="#{p.optional==false}">
-	requiredIds['#{s.index}'] = '#{p.name}';
-    requiredNames['#{s.index}'] = '#{p.displayName}';
+	requiredIds['#{i}'] = '#{p.name}';
+    requiredNames['#{i}'] = '#{p.displayName}';
 	</c:if>
- </c:forEach>
+ </t:dataList>
  
 /* <![CDATA[ */
 function exportPipeline(lsid, title) {
@@ -106,8 +106,15 @@ function validateForm() {
 				<table width="100%" border="0" cellpadding="0" cellspacing="0"
 					class="barhead-task">
 					<tr>
-						<td>#{runTaskBean.name} <span class="barhead-version">version
-						#{runTaskBean.version}</span></td>
+						<td>#{runTaskBean.name}</td>
+						<td align="right"><span class="barhead-version">version #{runTaskBean.version} &#160;</span>
+						<t:jscookMenu layout="hbr" theme="ThemePanel" org.apache.myfaces.STYLE_LOCATION="/css/jscookmenu">
+							<t:navigationMenuItem itemLabel="-Change Version-" icon="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif">
+							<t:navigationMenuItems value="#{runTaskBean.menuItems}" />
+							</t:navigationMenuItem>
+						</t:jscookMenu>
+						
+						</td>
 					</tr>
 				</table>
 
@@ -157,7 +164,7 @@ function validateForm() {
 							</td>
 						</tr>
 
-						<c:forEach items="#{runTaskBean.parameters}" var="p">
+						<t:dataList value="#{runTaskBean.parameters}" var="p">
 							<tr class="taskperameter">
 								<c:choose>
 									<c:when test="#{p.optional==false}">
@@ -183,7 +190,7 @@ function validateForm() {
 									</c:when>
 									<c:when test="#{p.inputType=='select'}">
 										<select name="#{p.name}" id="#{p.name}">
-											<c:forEach items="#{p.choices}" var="c">
+											<t:dataList value="#{p.choices}" var="c">
 												<c:choose>
 													<c:when test="#{c.selected}">
 														<option value="#{c.value}" selected="true">#{c.label}</option>
@@ -192,7 +199,7 @@ function validateForm() {
 														<option value="#{c.value}">#{c.label}</option>
 													</c:otherwise>
 												</c:choose>
-											</c:forEach>
+											</t:dataList>
 										</select>
 									</c:when>
 									<c:otherwise>
@@ -203,7 +210,7 @@ function validateForm() {
 								<td valign="top" class="description">#{p.displayDescription}</td>
 							</tr>
 
-						</c:forEach>
+						</t:dataList>
 
 						<c:if test="#{!empty runTaskBean.parameters}">
 						<tr>

@@ -14,13 +14,17 @@ package org.genepattern.server.webapp.jsf;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.apache.myfaces.custom.navmenu.NavigationMenuItem;
+import org.apache.myfaces.custom.navmenu.jscookmenu.HtmlCommandJSCookMenu;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
@@ -34,32 +38,42 @@ import org.genepattern.webservice.WebServiceException;
 
 public class RunTaskBean {
     private boolean visualizer;
+
     private boolean pipeline;
+
     private String name;
+
     private String lsid;
+
     private String[] documentationFilenames;
+
     private Parameter[] parameters;
+
     private String version;
+
     private boolean missing;
+
     private static Logger log = Logger.getLogger(RunTaskBean.class);
+
     private List<String> versions;
 
+    private List<NavigationMenuItem> menuItems;
+
     public RunTaskBean() {
-        // Get the ModuleChooserBean.  This is a session scoped bean containing the currently 
-        // selected task.
-        ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper.getManagedBean("#{moduleChooserBean}");
-        if(chooser != null) {
-            setTask(chooser.getSelectedModule());
-        }
-        //setTask(UIBeanHelper.getRequest().getParameter("lsid"));
+        // Get the ModuleChooserBean. This is a session scoped bean containing
+        // the currently selected task.
+        ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper
+                .getManagedBean("#{moduleChooserBean}");
+        assert chooser != null;
+        setTask(chooser.getSelectedModule());
+
     }
 
     public String getFormAction() {
         if (visualizer) {
             return "preRunVisualizer.jsp";
 
-        }
-        else if (pipeline) {
+        } else if (pipeline) {
             return "runPromptingPipeline.jsp";
         }
         return "runTaskPipeline.jsp";
@@ -88,7 +102,8 @@ public class RunTaskBean {
     public static class DefaultValueSelectItem extends SelectItem {
         private boolean defaultOption;
 
-        public DefaultValueSelectItem(String value, String label, boolean defaultOption) {
+        public DefaultValueSelectItem(String value, String label,
+                boolean defaultOption) {
             super(value, label);
             this.defaultOption = defaultOption;
         }
@@ -101,27 +116,35 @@ public class RunTaskBean {
     public static class Parameter {
 
         private DefaultValueSelectItem[] choices;
+
         private boolean optional;
+
         private String displayDesc;
+
         private String displayName;
+
         private String defaultValue;
+
         private String inputType;
+
         private String name;
 
         private Parameter(ParameterInfo pi, String passedDefaultValue) {
             HashMap pia = pi.getAttributes();
-            this.optional = ((String) pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
+            this.optional = ((String) pia
+                    .get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
                     .length() > 0;
 
-            this.defaultValue = passedDefaultValue != null ? passedDefaultValue : (String) pia
-                    .get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
+            this.defaultValue = passedDefaultValue != null ? passedDefaultValue
+                    : (String) pia.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
 
             if (defaultValue == null) {
                 defaultValue = "";
             }
             defaultValue = defaultValue.trim();
 
-            String[] choicesArray = pi.hasChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER) ? pi
+            String[] choicesArray = pi
+                    .hasChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER) ? pi
                     .getChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER) : null;
             if (choicesArray != null) {
                 choices = new DefaultValueSelectItem[choicesArray.length];
@@ -129,31 +152,30 @@ public class RunTaskBean {
                     String choice = choicesArray[i];
                     String display, option;
 
-                    int equalsCharIndex = choice.indexOf(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
+                    int equalsCharIndex = choice
+                            .indexOf(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
                     if (equalsCharIndex == -1) {
                         display = choice;
                         option = choice;
-                    }
-                    else {
+                    } else {
                         option = choice.substring(0, equalsCharIndex);
                         display = choice.substring(equalsCharIndex + 1);
                     }
                     display = display.trim();
                     option = option.trim();
-                    boolean defaultOption = defaultValue.equals(display) || defaultValue.equals(option);
-                    choices[i] = new DefaultValueSelectItem(option, display, defaultOption);
+                    boolean defaultOption = defaultValue.equals(display)
+                            || defaultValue.equals(option);
+                    choices[i] = new DefaultValueSelectItem(option, display,
+                            defaultOption);
                 }
             }
             if (pi.isPassword()) {
                 inputType = "password";
-            }
-            else if (pi.isInputFile()) {
+            } else if (pi.isInputFile()) {
                 inputType = "file";
-            }
-            else if (choices != null && choices.length > 0) {
+            } else if (choices != null && choices.length > 0) {
                 inputType = "select";
-            }
-            else {
+            } else {
                 inputType = "text";
             }
 
@@ -214,9 +236,9 @@ public class RunTaskBean {
     public void setTask(String taskNameOrLsid) {
         TaskInfo taskInfo = null;
         try {
-            taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(taskNameOrLsid);
-        }
-        catch (WebServiceException e) {
+            taskInfo = new LocalAdminClient(UIBeanHelper.getUserId())
+                    .getTask(taskNameOrLsid);
+        } catch (WebServiceException e) {
             log.error(e);
         }
         if (taskInfo == null) {
@@ -229,23 +251,25 @@ public class RunTaskBean {
         Map<String, String> reloadValues = new HashMap<String, String>();
         if (UIBeanHelper.getRequest().getParameter("reloadJob") != null) {
             try {
-                int reloadJobNumber = Integer.parseInt(UIBeanHelper.getRequest().getParameter("reloadJob"));
-                LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
+                int reloadJobNumber = Integer.parseInt(UIBeanHelper
+                        .getRequest().getParameter("reloadJob"));
+                LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper
+                        .getUserId());
                 JobInfo reloadJob = ac.getJob(reloadJobNumber);
                 // can only reload own jobs
                 if (UIBeanHelper.getUserId().equals(reloadJob.getUserId())) {
-                    ParameterInfo[] reloadParams = reloadJob.getParameterInfoArray();
+                    ParameterInfo[] reloadParams = reloadJob
+                            .getParameterInfoArray();
                     if (reloadParams != null) {
                         for (int i = 0; i < reloadParams.length; i++) {
-                            reloadValues.put(reloadParams[i].getName(), reloadParams[i].getValue());
+                            reloadValues.put(reloadParams[i].getName(),
+                                    reloadParams[i].getValue());
                         }
                     }
                 }
-            }
-            catch (NumberFormatException nfe) {
+            } catch (NumberFormatException nfe) {
                 log.error(nfe);
-            }
-            catch (WebServiceException e) {
+            } catch (WebServiceException e) {
                 log.error(e);
             }
         }
@@ -255,7 +279,8 @@ public class RunTaskBean {
             for (int i = 0; i < pi.length; i++) {
                 String defaultValue = reloadValues.get(pi[i].getName());
                 if (defaultValue == null) {
-                    defaultValue = UIBeanHelper.getRequest().getParameter(pi[i].getName());
+                    defaultValue = UIBeanHelper.getRequest().getParameter(
+                            pi[i].getName());
                 }
                 parameters[i] = new Parameter(pi[i], defaultValue);
             }
@@ -271,23 +296,34 @@ public class RunTaskBean {
         try {
             LSID l = new LSID(lsid);
             this.version = l.getVersion();
-            versions = new LocalAdminClient(UIBeanHelper.getUserId()).getVersions(l);
+            versions = new LocalAdminClient(UIBeanHelper.getUserId())
+                    .getVersions(l);
             versions.remove(version);
-        }
-        catch (MalformedURLException e) {
+            menuItems = new ArrayList<NavigationMenuItem>();
+            for (String version : versions) {
+
+                NavigationMenuItem mi = new NavigationMenuItem(version,
+                        "change version");
+                mi.setValue(version);
+                mi.setActionListener("#{runTaskBean.changeVersion}");
+
+                menuItems.add(mi);
+            }
+        } catch (MalformedURLException e) {
             log.error("LSID:" + lsid, e);
             versions = null;
             this.version = null;
         }
         File[] docFiles = null;
         try {
-            LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
+            LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(
+                    UIBeanHelper.getUserId());
             docFiles = taskIntegratorClient.getDocFiles(taskInfo);
-        }
-        catch (WebServiceException e) {
+        } catch (WebServiceException e) {
             log.error(e);
         }
-        this.documentationFilenames = new String[docFiles != null ? docFiles.length : 0];
+        this.documentationFilenames = new String[docFiles != null ? docFiles.length
+                : 0];
         if (docFiles != null) {
             for (int i = 0; i < docFiles.length; i++) {
                 documentationFilenames[i] = docFiles[i].getName();
@@ -304,8 +340,25 @@ public class RunTaskBean {
         this.missing = missing;
     }
 
-    public List<String> getVersions() {
-        return versions;
+    public List<NavigationMenuItem> getMenuItems() {
+        return menuItems;
+    }
+
+    public void changeVersion(ActionEvent event) {
+        HtmlCommandJSCookMenu m = (HtmlCommandJSCookMenu) event.getSource();
+        ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper
+                .getManagedBean("#{moduleChooserBean}");
+        assert chooser != null;
+        String label = m.getValue().toString();
+
+        try {
+            chooser.setSelectedModule(new LSID(lsid).toStringNoVersion() + ":"
+                    + label);
+            setTask(chooser.getSelectedModule());
+        } catch (MalformedURLException e) {
+            log.error(e);
+        }
+
     }
 
 }
