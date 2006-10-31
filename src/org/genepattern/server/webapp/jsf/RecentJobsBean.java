@@ -20,28 +20,27 @@ import org.genepattern.webservice.WebServiceException;
 
 public class RecentJobsBean {
     private JobInfo[] jobs;
-    private boolean noJobsToDisplay = true;
 
     private static Logger log = Logger.getLogger(RecentJobsBean.class);
 
     public RecentJobsBean() {
         String userId = UIBeanHelper.getUserId();
-        int recentJobsToShow = Integer.parseInt(UserPrefsBean.getProp(UserPropKey.RECENT_JOBS_TO_SHOW, "4").getValue());
+        int recentJobsToShow = Integer.parseInt(UserPrefsBean.getProp(
+                UserPropKey.RECENT_JOBS_TO_SHOW, "4").getValue());
         LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
         try {
             jobs = analysisClient.getJobs(userId, -1, recentJobsToShow, false);
-            noJobsToDisplay = jobs == null || jobs.length == 0;
-        }
-        catch (WebServiceException wse) {
+        } catch (WebServiceException wse) {
             log.error(wse);
         }
     }
 
-    public boolean isNoJobsToDisplay() {
-        return noJobsToDisplay;
+    public int getSize() {
+        return jobs == null ? 0 : jobs.length;
     }
 
     public JobInfo[] getJobs() {
         return jobs;
     }
+
 }

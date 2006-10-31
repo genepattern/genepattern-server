@@ -18,7 +18,10 @@
 				value="/images/spacer.gif" width="1" height="6" /></td>
 		</tr>
 
-
+		<c:if test="#{recentJobsBean.size == 0}">
+			<tr><td>No jobs to display</td></tr>	
+		</c:if>
+		
 		<t:dataList var="job" value="#{recentJobsBean.jobs}">
 			<tr>
 				<td width="9"><t:graphicImage value="/images/spacer.gif"
@@ -27,12 +30,20 @@
 				</td>
 				<td width="9"><t:graphicImage value="/images/spacer.gif"
 					width="9" height="1" /></td>
-				<td><font class="recentjobs-sh">#{job.taskName}</font> <t:graphicImage
-					value="/images/menuicon-1.gif" name="Image2" width="14" height="14"
-					border="0" align="top" id="Image2"
-					onclick="MM_showMenu(window.mm_menu_0925155656_0,11,11,null,'Image2')"
-					onmouseover="MM_swapImage('Image2','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)"
-					onmouseout="MM_swapt:graphicImageRestore();MM_startTimeout();" /> <br />
+				<td><font class="recentjobs-sh">#{job.taskName}</font> <t:jscookMenu
+					layout="hbr" theme="ThemePanel"
+					org.apache.myfaces.STYLE_LOCATION="/css/jscookmenu">
+					
+					<t:navigationMenuItem itemLabel="-Choose Action-">
+						<t:navigationMenuItem itemLabel="Reload" actionListener="#{recentJobsBean.reload}" itemValue="#{job.jobNumber}" action="#{job.jobNumber}"/>
+						<t:navigationMenuItem itemLabel="Delete" actionListener="#{recentJobsBean.delete}" itemValue="#{job.jobNumber}" action="#{job.jobNumber}"/>
+						<t:navigationMenuItem itemLabel="View Code">
+							<t:navigationMenuItem itemLabel="Java" actionListener="#{recentJobsBean.viewCode}" itemValue="#{job.jobNumber}"  action="#{job.jobNumber}"/>
+							<t:navigationMenuItem itemLabel="MATLAB" actionListener="#{recentJobsBean.viewCode}" itemValue="#{job.jobNumber}" action="#{job.jobNumber}"/>
+							<t:navigationMenuItem itemLabel="R" actionListener="#{recentJobsBean.viewCode}" itemValue="#{job.jobNumber}" action="#{job.jobNumber}"/>
+						</t:navigationMenuItem>
+					</t:navigationMenuItem>
+				</t:jscookMenu> <br />
 				<h:outputText value="#{job.dateCompleted}">
 					<f:convertDateTime type="date" pattern="EEE, MMM d, ''yy h:mm a" />
 				</h:outputText> <br />
@@ -42,11 +53,15 @@
 							<f:param name="job" value="#{job.jobNumber}" />
 							<f:param name="filename" value="#{p.name}" />
 						</h:outputLink>
-						<t:graphicImage value="/images/menuicon-2.gif" name="Image3"
-							width="14" height="14" border="0" align="top" id="Image3"
-							onclick="MM_showMenu(window.mm_menu_0925160045_0,11,11,null,'Image3')"
-							onmouseover="MM_swapImage('Image3','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)"
-							onmouseout="MM_swapt:graphicImageRestore();MM_startTimeout();" />
+						<t:jscookMenu layout="hbr" theme="ThemePanel"
+							org.apache.myfaces.STYLE_LOCATION="/css/jscookmenu">
+							<t:navigationMenuItem itemLabel="-Choose Action-">
+								<t:navigationMenuItem itemLabel="Create Pipeline" actionListener="#{recentJobsBean.createPipeline}" itemValue="#{job.jobNumber}" action="#{job.jobNumber}"/>
+								<t:navigationMenuItem itemLabel="Modules">
+									<t:navigationMenuItems value="#{p.moduleMenuItems}" />
+								</t:navigationMenuItem>
+							</t:navigationMenuItem>
+						</t:jscookMenu>
 						<br />
 					</c:if>
 				</t:dataList></td>
