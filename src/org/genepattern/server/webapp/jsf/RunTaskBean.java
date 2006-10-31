@@ -60,12 +60,11 @@ public class RunTaskBean {
     private List<NavigationMenuItem> menuItems;
 
     public RunTaskBean() {
-        // Get the ModuleChooserBean. This is a session scoped bean containing
-        // the currently selected task.
-        ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper
-                .getManagedBean("#{moduleChooserBean}");
-        assert chooser != null;
-        setTask(chooser.getSelectedModule());
+        // This is now set directly by the chooser bean
+        //ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper
+        //        .getManagedBean("#{moduleChooserBean}");
+        //assert chooser != null;
+        //setTask(chooser.getSelectedModule());
 
     }
 

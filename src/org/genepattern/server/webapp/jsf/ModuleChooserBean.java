@@ -77,10 +77,10 @@ public class ModuleChooserBean implements java.io.Serializable {
 
     public void setSelectedModule(String selectedModule) {
         this.selectedModule = selectedModule;
- //       RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
- //       if (runTaskBean != null) {
-//            runTaskBean.setTask(selectedModule);
-//        }
+        RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
+        if (runTaskBean != null) {
+            runTaskBean.setTask(selectedModule);
+        }
     }
 
     public void modeChanged(ValueChangeEvent event) {
