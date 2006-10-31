@@ -123,9 +123,6 @@
   	</copy>
 
 
-	<move file="wartemp/WEB-INF/gpweb.xml" tofile="wartemp/WEB-INF/web.xml"/>
-
-
 	<war destfile="gp.war" 
 		basedir="wartemp"
 		webxml="wartemp/WEB-INF/web.xml">
