@@ -108,11 +108,13 @@ function validateForm() {
 					<tr>
 						<td>#{runTaskBean.name}</td>
 						<td align="right"><span class="barhead-version">version #{runTaskBean.version} &#160;</span>
+						<c:if test="#{!empty runTaskBean.menuItems}">
 						<t:jscookMenu layout="hbr" theme="ThemePanel" org.apache.myfaces.STYLE_LOCATION="/css/jscookmenu">
 							<t:navigationMenuItem itemLabel="-Change Version-" icon="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif">
 							<t:navigationMenuItems value="#{runTaskBean.menuItems}" />
 							</t:navigationMenuItem>
 						</t:jscookMenu>
+						</c:if>
 						
 						</td>
 					</tr>
@@ -134,7 +136,7 @@ function validateForm() {
 
 
 						<tr class="taskperameter">
-							<td><span class="description"><c:if test="!empty #{runTaskBean.parameters}">* required field</c:if></span></td>
+							<td><span class="description"><c:if test="#{runTaskBean.inputParametersExist}">* required field</c:if></span></td>
 							<td colspan="2" class="maintasknav2"><input name="cmd"
 								value="run" type="submit" /> <input name="reset" value="reset"
 								onclick="window.location.href=window.location.href"
