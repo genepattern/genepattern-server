@@ -91,6 +91,10 @@ public class RunTaskBean {
         return name;
     }
 
+    public boolean isInputParametersExist() {
+        return parameters != null && parameters.length > 0;
+    }
+
     public boolean isPipeline() {
         return pipeline;
     }
