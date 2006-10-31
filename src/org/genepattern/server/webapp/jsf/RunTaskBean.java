@@ -51,8 +51,6 @@ public class RunTaskBean {
 
     private String version;
 
-    private boolean missing;
-
     private static Logger log = Logger.getLogger(RunTaskBean.class);
 
     private List<String> versions;
@@ -245,11 +243,9 @@ public class RunTaskBean {
             log.error(e);
         }
         if (taskInfo == null) {
-            missing = true;
+            lsid = null;
             return;
         }
-
-        missing = false;
 
         Map<String, String> reloadValues = new HashMap<String, String>();
         if (UIBeanHelper.getRequest().getParameter("reloadJob") != null) {
@@ -333,14 +329,6 @@ public class RunTaskBean {
             }
         }
 
-    }
-
-    public boolean isMissing() {
-        return missing;
-    }
-
-    public void setMissing(boolean missing) {
-        this.missing = missing;
     }
 
     public List<NavigationMenuItem> getMenuItems() {
