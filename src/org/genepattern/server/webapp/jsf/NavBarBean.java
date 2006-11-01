@@ -23,6 +23,14 @@ public class NavBarBean {
                 UIBeanHelper.getResponse().sendRedirect(cp + "/addTask.jsp");
             } else if (label.equalsIgnoreCase("task documentation")) {
                 UIBeanHelper.getResponse().sendRedirect(cp + "/getTaskDoc.jsp");
+            } else if (label.equalsIgnoreCase("suite catalog")) {
+                UIBeanHelper.getResponse().sendRedirect(
+                        cp + "/suiteCatalog.jsp");
+            } else if (label.equalsIgnoreCase("delete tasks")) {
+                UIBeanHelper.getResponse().sendRedirect(cp + "/deleteTask.jsp");
+            } else if (label.equalsIgnoreCase("delete suites")) {
+                UIBeanHelper.getResponse()
+                        .sendRedirect(cp + "/deleteSuite.jsp");
 
             } else {
                 log.error("Unknown value: " + label);
