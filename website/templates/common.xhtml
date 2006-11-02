@@ -1,161 +1,133 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core">
-<head>
-
-<!-- created by rebecca fagan, fagandesign -->
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<title><ui:insert name="pageTitle">GenePattern </ui:insert></title>
-<link
-	href="#{facesContext.externalContext.requestContextPath}/css/style.css"
-	rel="stylesheet" type="text/css" />
-<script language="JavaScript"
-	src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js" />
-<script language="JavaScript"
-	src="#{facesContext.externalContext.requestContextPath}/jscookmenu/ThemePanel/theme.js" />
-<ui:insert name="headText" />
-</head>
-
-<body>
-<!-- top band with the logo -->
-<div id="topband" class="topband"><h:outputLink
-	value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf"
-	target="_top">
-	<t:graphicImage value="/images/GP-logo.gif" alt="GenePattern"
-		width="296" height="77" border="0" />
-</h:outputLink></div>
-
-<!-- horizontal navigation band -->
-<div id="navband1" class="navband1"><t:jscookMenu layout="hbr"
-	theme="ThemePanel" org.apache.myfaces.STYLE_LOCATION="/jscookmenu">
-	<t:navigationMenuItem itemLabel="Tasks &amp; Pipelines"
-		action="run task">
-		<t:navigationMenuItem itemLabel="Run" action="run task" />
-		<t:navigationMenuItem itemLabel="Create Task"
-			actionListener="#{navBarBean.navigate}" itemValue="create task"
-			action="create task" />
-		<t:navigationMenuItem itemLabel="Create Pipeline"
-			actionListener="#{navBarBean.navigate}" itemValue="create pipeline"
-			action="create pipeline" />
-		<t:navigationMenuItem itemLabel="Install/Update" action="task catalog" />
-		<t:navigationMenuItem itemLabel="Delete"
-			itemValue="delete tasks" actionListener="#{navBarBean.navigate}" action="delete tasks" />
-		
-	</t:navigationMenuItem>
-       &#160;&#160;
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
+  <head>
+    <!-- created by rebecca fagan, fagandesign -->
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+    <title>
+      <ui:insert name="pageTitle">GenePattern </ui:insert>
+    </title>
+    <link href="#{facesContext.externalContext.requestContextPath}/css/style.css" rel="stylesheet" type="text/css"/>
+    <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js"/>
+    <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/jscookmenu/ThemePanel/theme.js"/>
+    <ui:insert name="headText"/>
+  </head>
+  <body>
+    <!-- top band with the logo -->
+    <div id="topband" class="topband">
+      <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf" target="_top">
+        <t:graphicImage value="/images/GP-logo.gif" alt="GenePattern" width="296" height="77" border="0"/>
+      </h:outputLink>
+    </div>
+    <!-- horizontal navigation band -->
+    <div id="navband1" class="navband1">
+      <t:jscookMenu layout="hbr" theme="ThemePanel" org.apache.myfaces.STYLE_LOCATION="/jscookmenu">
+        <t:navigationMenuItem itemLabel="Tasks &amp; Pipelines" action="run task">
+          <t:navigationMenuItem itemLabel="Run" action="run task"/>
+          <t:navigationMenuItem itemLabel="Create Task" actionListener="#{navBarBean.navigate}" itemValue="create task" action="create task"/>
+          <t:navigationMenuItem itemLabel="Create Pipeline" actionListener="#{navBarBean.navigate}" itemValue="create pipeline" action="create pipeline"/>
+          <t:navigationMenuItem itemLabel="Install/Update" action="task catalog"/>
+          <t:navigationMenuItem itemLabel="Delete" itemValue="delete tasks" actionListener="#{navBarBean.navigate}" action="delete tasks"/>
+        </t:navigationMenuItem>
+       
        <t:navigationMenuItem itemLabel="Suites" action="create suite">
-		<t:navigationMenuItem itemLabel="Create" action="create suite" />
-		<t:navigationMenuItem itemLabel="Install/Update"
-			itemValue="suite catalog" actionListener="#{navBarBean.navigate}" action="suite catalog" />
-			<t:navigationMenuItem itemLabel="Delete"
-			itemValue="delete suites" actionListener="#{navBarBean.navigate}" action="delete suites" />
-		
-	</t:navigationMenuItem>
-       &#160;&#160;
-       <t:navigationMenuItem itemLabel="Job Results"
-		action="job results" />
-       &#160;&#160;
+          <t:navigationMenuItem itemLabel="Create Suite" actionListener="#{navBarBean.navigate}" itemValue="create suite" action="create suite"/>
+          <t:navigationMenuItem itemLabel="Install/Update" itemValue="suite catalog" actionListener="#{navBarBean.navigate}" action="suite catalog"/>
+          <t:navigationMenuItem itemLabel="Delete" itemValue="delete suites" actionListener="#{navBarBean.navigate}" action="delete suites"/>
+        </t:navigationMenuItem>
+       
+       <t:navigationMenuItem itemLabel="Job Results" action="job results"/>
+       
        <t:navigationMenuItem itemLabel="Documentation">
-		<t:navigationMenuItem itemLabel="user's manual &#38; tutorial"
-			action="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/" />
-		<t:navigationMenuItem itemLabel="release notes"
-			action="http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/" />
-		<t:navigationMenuItem itemLabel="public datasets"
-			action="http://www.broad.mit.edu/cancer/software/genepattern/datasets/"
-			target="_self" />
-		<t:navigationMenuItem itemLabel="FAQ"
-			action="http://www.broad.mit.edu/cancer/software/genepattern/doc/faq/"
-			target="_self" />
-		<t:navigationMenuItem itemLabel="task documentation"
-			actionListener="#{navBarBean.navigate}"
-			itemValue="task documentation" action="task documentation" />
-		<t:navigationMenuItem itemLabel="common file formats"
-			action="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_fileformats.html" />
-	</t:navigationMenuItem>
-       &#160;&#160;
+          <t:navigationMenuItem itemLabel="user's manual &#38; tutorial" action="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/"/>
+          <t:navigationMenuItem itemLabel="release notes" action="http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/"/>
+          <t:navigationMenuItem itemLabel="public datasets" action="http://www.broad.mit.edu/cancer/software/genepattern/datasets/" target="_self"/>
+          <t:navigationMenuItem itemLabel="FAQ" action="http://www.broad.mit.edu/cancer/software/genepattern/doc/faq/" target="_self"/>
+          <t:navigationMenuItem itemLabel="task documentation" actionListener="#{navBarBean.navigate}" itemValue="task documentation" action="task documentation"/>
+          <t:navigationMenuItem itemLabel="common file formats" action="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_fileformats.html"/>
+        </t:navigationMenuItem>
+      
        <t:navigationMenuItem itemLabel="Resources">
-		<t:navigationMenuItem itemLabel="join mailing list"
-			action="http://www.broad.mit.edu/cancer/software/genepattern/gp_mail.html" />
-		<t:navigationMenuItem itemLabel="report bugs"
-			action="mailto:gp-help@broad.mit.edu" />
-		<t:navigationMenuItem itemLabel="user forum"
-			action="http://www.broad.mit.edu/cancer/software/genepattern/forum/" />
-	</t:navigationMenuItem>
-       &#160;&#160;
+          <t:navigationMenuItem itemLabel="join mailing list" action="http://www.broad.mit.edu/cancer/software/genepattern/gp_mail.html"/>
+          <t:navigationMenuItem itemLabel="report bugs" action="mailto:gp-help@broad.mit.edu"/>
+          <t:navigationMenuItem itemLabel="user forum" action="http://www.broad.mit.edu/cancer/software/genepattern/forum/"/>
+        </t:navigationMenuItem>
+       
        <t:navigationMenuItem itemLabel="Downloads">
-		<t:navigationMenuItem itemLabel="install graphical client"
-			action="http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gpge_installer.cgi" />
-		<t:navigationMenuItem itemLabel="Programming Libraries"
-			action="go_sample1" />
-	</t:navigationMenuItem>
-</t:jscookMenu></div>
-
-<!--  Main content area -->
-<div id="content" class="content">
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-	<tr>
-		<ui:insert name="leftPanel">
-			<td>&#160;</td>
-		</ui:insert>
-		<td valign="top" class="maintasknav" id="maintasknav"><ui:insert
-			name="mainNav">&#160;</ui:insert></td>
-		<ui:insert name="rightPanel">
-			<td>&#160;</td>
-		</ui:insert>
-	</tr>
-	<tr>
-		<td valign="top" class="maincontent" id="maincontent"><ui:insert
-			name="body" /></td>
-	</tr>
-	<tr>
-		<td colspan="3" class="footer">
-		<table width="100%" border="0" cellspacing="0" cellpadding="0">
-			<tr>
-				<td><h:outputLink value="about_gp.html">About GenePattern</h:outputLink>
+          <t:navigationMenuItem itemLabel="install graphical client" action="http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gpge_installer.cgi"/>
+          <t:navigationMenuItem itemLabel="Programming Libraries" action="go_sample1"/>
+        </t:navigationMenuItem>
+      </t:jscookMenu>
+    </div>
+    
+    <!--  Main content area -->
+    <div id="content" class="content">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <ui:insert name="leftPanel">
+            <td>&#160;</td>
+          </ui:insert>
+          <td valign="top" class="maintasknav" id="maintasknav">
+            <ui:insert name="mainNav">&#160;</ui:insert>
+          </td>
+          <ui:insert name="rightPanel">
+            <td>&#160;</td>
+          </ui:insert>
+        </tr>
+        <tr>
+          <td valign="top" class="maincontent" id="maincontent">
+            <ui:insert name="body"/>
+          </td>
+        </tr>
+        
+        <tr>
+          <td colspan="3" class="footer">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td>
+                  <h:outputLink value="about_gp.html">About GenePattern</h:outputLink>
 				| <h:outputLink value="bug_report.html">Report Bugs</h:outputLink> |
 				<h:outputLink value="help_request.html">Request Help</h:outputLink>
-				| <h:outputLink value="contact_us.html">Contact Us</h:outputLink> <br />
-				</td>
-				<td>
-				<div align="right">&#169;2003-2006&#160; <h:outputLink
-					value="http://www.broad.mit.edu" target="_blank">Broad Institute, MIT</h:outputLink>
-				</div>
-				<td width="10">&#160;</td>
-				<td width="27"><h:outputLink value="http://www.broad.mit.edu"
-					target="_blank">
-					<t:graphicImage value="/images/broad-symbol.gif"
-						alt="Broad Institute" width="27" height="30" border="0" />
-				</h:outputLink></td>
-				</td>
-			</tr>
-		</table>
-		</td>
-	</tr>
-</table>
-</div>
-<c:if test="${!empty requestScope.userID}">
-	<table height="30" border="0" cellpadding="0" cellspacing="0"
-		class="loginsettings">
-		<tr valign="top">
-			<td><h:outputLink
-				value="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">
+				| <h:outputLink value="contact_us.html">Contact Us</h:outputLink>
+                  <br/>
+                </td>
+                <td>
+                  <div align="right">&#169;2003-2006&#160; <h:outputLink value="http://www.broad.mit.edu" target="_blank">Broad Institute, MIT</h:outputLink>
+                  </div>
+                  <td width="10">&#160;</td>
+                  <td width="27">
+                    <h:outputLink value="http://www.broad.mit.edu" target="_blank">
+                      <t:graphicImage value="/images/broad-symbol.gif" alt="Broad Institute" width="27" height="30" border="0"/>
+                    </h:outputLink>
+                  </td>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+    
+    <c:if test="${!empty requestScope.userID}">
+      <table height="30" border="0" cellpadding="0" cellspacing="0" class="loginsettings">
+        <tr valign="top">
+          <td>
+            <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">
 			My Settings </h:outputLink> | <h:form style="display: inline;">
-				<h:commandLink id="logoutLink" action="#{loginBean.logout}"> Sign Out </h:commandLink>
-			</h:form>&#160;${requestScope.userID}&#160;&#160;&#160;</td>
-			<td>
-			<form action="" method="post" name="form1" id="form1"><input
-				name="textfield" type="text" size="15" /></form>
-			</td>
-			<td width="5"><t:graphicImage value="/images/spacer.gif"
-				width="5" height="1" /></td>
-			<td><input name="Search" type="submit" id="Search"
-				value="Search" /></td>
-		</tr>
-	</table>
-</c:if>
-</body>
+              <h:commandLink id="logoutLink" action="#{loginBean.logout}"> Sign Out </h:commandLink>
+            </h:form>&#160;${requestScope.userID}&#160;&#160;&#160;</td>
+          <td>
+            <form action="" method="post" name="form1" id="form1">
+              <input name="textfield" type="text" size="15"/>
+            </form>
+          </td>
+          <td width="5">
+            <t:graphicImage value="/images/spacer.gif" width="5" height="1"/>
+          </td>
+          <td>
+            <input name="Search" type="submit" id="Search" value="Search"/>
+          </td>
+        </tr>
+      </table>
+    </c:if>
+  </body>
 </html>
