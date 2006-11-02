@@ -18,11 +18,14 @@ public class NavBarBean {
             if (label.equalsIgnoreCase("create pipeline")) {
                 UIBeanHelper.getResponse().sendRedirect(
                         cp + "/pipelineDesigner.jsp");
-
+            } else if (label.equalsIgnoreCase("task catalog")) {
+                UIBeanHelper.getResponse().sendRedirect(cp + "/pages/taskCatalog.jsf");           
             } else if (label.equalsIgnoreCase("create task")) {
                 UIBeanHelper.getResponse().sendRedirect(cp + "/addTask.jsp");
             } else if (label.equalsIgnoreCase("task documentation")) {
                 UIBeanHelper.getResponse().sendRedirect(cp + "/getTaskDoc.jsp");
+            } else if (label.equalsIgnoreCase("create suite")) {
+                UIBeanHelper.getResponse().sendRedirect(cp + "/pages/createSuite.jsf");
             } else if (label.equalsIgnoreCase("suite catalog")) {
                 UIBeanHelper.getResponse().sendRedirect(
                         cp + "/suiteCatalog.jsp");
@@ -31,7 +34,6 @@ public class NavBarBean {
             } else if (label.equalsIgnoreCase("delete suites")) {
                 UIBeanHelper.getResponse()
                         .sendRedirect(cp + "/deleteSuite.jsp");
-
             } else {
                 log.error("Unknown value: " + label);
             }
