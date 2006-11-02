@@ -22,9 +22,11 @@ import java.io.IOException;
  * @author Joshua Gould
  */
 public class Parameter {
-	String name;
+        // Changed name and value to be protected so that TaskParameter subclass
+        // can change its values.
+	protected String name;
 
-	String value;
+	protected String value;
 
 	/**
 	 * Creates a new Parameter instance.
