@@ -97,7 +97,7 @@ public class UIBeanHelper {
         String referrer = (String) request.getSession().getAttribute("origin");
         request.getSession().removeAttribute("origin");
         if (referrer == null || referrer.length() == 0) {
-            referrer = request.getContextPath() + "/pages/runTask.jsf";
+            referrer = request.getContextPath() + "/pages/index.jsf";
         }
         return referrer;
 
