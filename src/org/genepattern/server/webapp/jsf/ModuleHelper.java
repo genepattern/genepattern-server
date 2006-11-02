@@ -1,20 +1,23 @@
 package org.genepattern.server.webapp.jsf;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteHome;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
 
 public class ModuleHelper {
-  
+    private static Logger log = Logger.getLogger(ModuleHelper.class);
 
     public static ModuleCategory getRecentlyUsed() {
         AdminDAO dao = new AdminDAO();
@@ -64,7 +67,13 @@ public class ModuleHelper {
         TaskInfo[] allTasks = dao.getAllTasksForUser(getUserId());
         HashMap<String, TaskInfo> taskMap = new HashMap();
         for(int i=0; i<allTasks.length; i++) {
-            taskMap.put(allTasks[i].getLsid(), allTasks[i]);
+            try {
+                LSID lsidObj = new LSID(allTasks[i].getLsid());
+                taskMap.put(lsidObj.toStringNoVersion(), allTasks[i]);
+            }
+            catch (MalformedURLException e) {
+                log.error("Error parsing lsid: ", e);
+            }
         };
         
         List<Suite> suites = (new SuiteHome()).findAll();

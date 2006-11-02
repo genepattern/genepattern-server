@@ -18,10 +18,14 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.myfaces.custom.fileupload.HtmlInputFileUpload;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.Suite;
+import org.genepattern.server.domain.SuiteHome;
+import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.TaskIntegrator;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.TaskIntegratorDAO;
+import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -141,27 +145,35 @@ public class CreateSuiteBean implements java.io.Serializable {
     public String save() {
 
         try {
+ 
+            LSID lsidObj = LSIDManager.getInstance().createNewID(org.genepattern.util.IGPConstants.SUITE_NAMESPACE);          
+            String lsid = lsidObj.toString();
+
+           
             // Save database record
-            SuiteInfo suiteInfo = new SuiteInfo();
-            suiteInfo.setName(name);
-            suiteInfo.setDescription(description);
-            suiteInfo.setAccessId(new Integer(accessId));
-            suiteInfo.setAuthor(author);
-            suiteInfo.setOwner(getUserId());
+            Suite suite = new Suite();
+            suite.setLsid(lsid);
+            suite.setOwner(getUserId());
+            suite.setName(name);
+            suite.setDescription(description);
+            suite.setAccessId(new Integer(accessId));
+            suite.setAuthor(author);
+           
             List<String> selectedLSIDs = new ArrayList<String>();
             for (ModuleCategory cat : categories) {
                 for (Module mod : cat.getModules()) {
                     if (mod.isSelected()) {
                         selectedLSIDs.add(mod.getSelectedVersion());
-                        suiteInfo.setModuleLsids(selectedLSIDs);
-                    }
+                     }
                 }
             }
-            (new TaskIntegratorDAO()).createSuite(suiteInfo);
+            if(!selectedLSIDs.isEmpty()) {
+                suite.setModules(selectedLSIDs);
+            }
+            HibernateUtil.getSession().save(suite);
 
             // Save uploaded files, if any
-            String suiteDir = DirectoryManager.getSuiteLibDir(suiteInfo.getName(), suiteInfo.getLSID(), suiteInfo
-                    .getOwner());
+            String suiteDir = DirectoryManager.getSuiteLibDir(suite.getName(), lsid, suite.getOwner());
             if (supportFile1 != null) {
                 saveUploadedFile(supportFile1, suiteDir);
             }
@@ -173,7 +185,7 @@ public class CreateSuiteBean implements java.io.Serializable {
             }
             
             RunTaskBean homePageBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
-            homePageBean.setSplashMessage("Suite " + suiteInfo.getName() + " was successfully created.");
+            homePageBean.setSplashMessage("Suite " + suite.getName() + " was successfully created.");
             
             return "home";
         }
