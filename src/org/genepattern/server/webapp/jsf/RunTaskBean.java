@@ -37,25 +37,22 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
 
 public class RunTaskBean {
+ 
     private boolean visualizer;
-
     private boolean pipeline;
-
     private String name;
-
     private String lsid;
-
     private String[] documentationFilenames;
-
     private Parameter[] parameters;
-
     private String version;
-
     private static Logger log = Logger.getLogger(RunTaskBean.class);
-
     private List<String> versions;
-
     private List<NavigationMenuItem> menuItems;
+    
+    // This is an odd class for this variable, but RunTaskBean is the backing bean
+    // for the home page.
+    private String splashMessage;
+
 
     public RunTaskBean() {
         // This is now set directly by the chooser bean
@@ -349,7 +346,17 @@ public class RunTaskBean {
         } catch (MalformedURLException e) {
             log.error(e);
         }
-
     }
+    
+    public String getSplashMessage() {
+        return splashMessage;
+    }
+
+    public void setSplashMessage(String splashMessage) {
+        this.splashMessage = splashMessage;
+    }
+
+    
+    
 
 }

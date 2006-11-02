@@ -272,7 +272,14 @@ function validateForm() {
 
 			</c:when>
 			<c:otherwise>
-				<ui:include src="splashpage.xhtml" />
+			  <c:choose>
+			    <c:when test="#{runTaskBean.splashMessage != null}">
+			      <p/><h3>#{runTaskBean.splashMessage}</h3>
+			    </c:when>
+			    <c:otherwise>
+			      <ui:include src="splashpage.xhtml" />
+			    </c:otherwise>	
+			  </c:choose>			
 			</c:otherwise>
 		</c:choose>
 	</ui:define>

@@ -38,17 +38,26 @@ public class CreateSuiteBean implements java.io.Serializable {
     private String name;
     private String description;
     private String author;
-    private Integer accessId = 1; // Public
+    private String accessId = "1"; // Public
     private UploadedFile supportFile1;
     private UploadedFile supportFile2;
     private UploadedFile supportFile3;
-    private List<ModuleCategory> categories = null;
+    private List<ModuleCategory> categories;
+    private boolean success = false; // Default value
 
-    public Integer getAccessId() {
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getAccessId() {
         return accessId;
     }
 
-    public void setAccessId(Integer accessId) {
+    public void setAccessId(String accessId) {
         this.accessId = accessId;
     }
 
@@ -79,11 +88,13 @@ public class CreateSuiteBean implements java.io.Serializable {
     public List getCategoryColumns() {
 
         List<List> cols = new ArrayList<List>();
-        List<ModuleCategory> allCategories = ModuleHelper.getTasksByType();
+        if(categories == null) {
+          categories = ModuleHelper.getTasksByType();
+        }
         
         // Find the midpoint in the category list.
         int totalCount = 0;
-        for (ModuleCategory cat : allCategories) {
+        for (ModuleCategory cat : categories) {
             totalCount += cat.getModuleCount();
         }
         int midpoint = totalCount / 2;
@@ -91,7 +102,7 @@ public class CreateSuiteBean implements java.io.Serializable {
         cols.add(new ArrayList());
         cols.add(new ArrayList());
         int cumulativeCount = 0;
-        for (ModuleCategory cat : allCategories) {
+        for (ModuleCategory cat : categories) {
             if (cumulativeCount < midpoint) {
                 cols.get(0).add(cat);
             }
@@ -134,7 +145,7 @@ public class CreateSuiteBean implements java.io.Serializable {
             SuiteInfo suiteInfo = new SuiteInfo();
             suiteInfo.setName(name);
             suiteInfo.setDescription(description);
-            suiteInfo.setAccessId(accessId);
+            suiteInfo.setAccessId(new Integer(accessId));
             suiteInfo.setAuthor(author);
             suiteInfo.setOwner(getUserId());
             List<String> selectedLSIDs = new ArrayList<String>();
@@ -160,7 +171,11 @@ public class CreateSuiteBean implements java.io.Serializable {
             if (supportFile3 != null) {
                 saveUploadedFile(supportFile3, suiteDir);
             }
-            return "success";
+            
+            RunTaskBean homePageBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
+            homePageBean.setSplashMessage("Suite " + suiteInfo.getName() + " was successfully created.");
+            
+            return "home";
         }
         catch (Exception e) {
             HibernateUtil.rollbackTransaction(); // This shouldn't be
@@ -190,6 +205,14 @@ public class CreateSuiteBean implements java.io.Serializable {
 
     public String clear() {
         return null;
+    }
+
+    public List<ModuleCategory> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<ModuleCategory> categories) {
+        this.categories = categories;
     }
 
 }

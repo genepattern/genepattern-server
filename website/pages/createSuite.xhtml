@@ -14,7 +14,7 @@
         var d = $("nameErrorMessageDiv");
         if (inputElement.value == null || inputElement.value == "") {  
            d.style.display = "inline";
-          return false;
+           return false;
         } 
         else {        
           d.style.display = "hidden";
@@ -30,7 +30,9 @@
     </ui:define>
     <ui:define name="body">
       <h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm();">
-      
+        <!--  The category list is used upon submit.  -->
+        <t:saveState value="#{createSuiteBean}"/>
+        <h:messages/> 
         <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
           <tr>
             <td>Create New GenePattern Suite</td>
@@ -62,10 +64,11 @@
           <tr class="taskperameter">
             <td>Privacy:</td>
             <td>
-              <h:selectOneMenu value="#{createSuiteBean.accessId}">
-                <f:selectItem itemLabel="public" itemValue="1"/>
+              <h:selectOneMenu id="privacySelect" value="#{createSuiteBean.accessId}">
+                <f:selectItem itemLabel="public" itemValue="1" />
                 <f:selectItem itemLabel="private" itemValue="2"/>
               </h:selectOneMenu>
+              <h:message for="privacySelect"/>
             </td>
           </tr>
           
@@ -146,7 +149,7 @@
                           <tr class="taskperameter">
                             <td valign="top">
                               <div align="center">
-                                <h:selectBooleanCheckbox value="#{module.selected}" immediate="true"/>
+                                <h:selectBooleanCheckbox value="#{module.selected}" />
                               </div>
                             </td>
                             <td valign="top">
