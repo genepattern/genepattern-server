@@ -695,7 +695,6 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 
 // create selector showing all versions of this task (same authority/namespace/identifier)
 	var latestVersion = new LSID(task.lsid).version
-	taskFields = taskFields + '<td align="right">version <select name="t' + taskNum + '_taskLSIDv" onchange="chgLSIDVer(' + taskNum + ', this)">\n';
 	var wildcard = task.lsid.substring(0, task.lsid.length - latestVersion.length);
 	var sameTasks = new Array();
 	for (t in TaskInfos) {
@@ -703,12 +702,27 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 			sameTasks = sameTasks.concat(new LSID(TaskInfos[t].lsid).version)
 		}
 	}
-	for (t in sameTasks) {
+
+	taskFields = taskFields + '<td align="right">version ';
+
+	if (sameTasks.length > 1){
+		taskFields = taskFields + '<select name="t' + taskNum + '_taskLSIDv" onchange="chgLSIDVer(' + taskNum + ', this)">\n';
+	
+		for (t in sameTasks) {
 		taskFields = taskFields + '<option value="' + wildcard + sameTasks[t] + '"' + 
 			     (sameTasks[t] == latestVersion ? ' selected' : '') +
 			     '>' + sameTasks[t] + (t == 0 ? " (latest)" : "") + '</option>\n';
+		}
+
+		taskFields = taskFields + '</select>';
+	} else {
+		taskFields = taskFields + latestVersion;
 	}
-	taskFields = taskFields + '</select></td>\n';
+	
+	taskFields = taskFields + '</td>\n';
+	
+
+
 // end version selector
 
 	taskFields = taskFields + '</tr></table>';
