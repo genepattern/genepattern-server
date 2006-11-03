@@ -20,43 +20,9 @@
     </div>
     <!-- horizontal navigation band -->
     <div id="navband1" class="navband1">
-      <t:jscookMenu layout="hbr" theme="ThemePanel" org.apache.myfaces.STYLE_LOCATION="/jscookmenu">
-        <t:navigationMenuItem itemLabel="Tasks &amp; Pipelines" action="run task">
-          <t:navigationMenuItem itemLabel="Run" action="run task"/>
-          <t:navigationMenuItem itemLabel="Create Task" actionListener="#{navBarBean.navigate}" itemValue="create task" action="create task"/>
-          <t:navigationMenuItem itemLabel="Create Pipeline" actionListener="#{navBarBean.navigate}" itemValue="create pipeline" action="create pipeline"/>
-          <t:navigationMenuItem itemLabel="Install/Update" action="task catalog"/>
-          <t:navigationMenuItem itemLabel="Delete" itemValue="delete tasks" actionListener="#{navBarBean.navigate}" action="delete tasks"/>
-        </t:navigationMenuItem>
-       
-       <t:navigationMenuItem itemLabel="Suites" action="create suite">
-          <t:navigationMenuItem itemLabel="Create Suite" actionListener="#{navBarBean.navigate}" itemValue="create suite" action="create suite"/>
-          <t:navigationMenuItem itemLabel="Install/Update" itemValue="suite catalog" actionListener="#{navBarBean.navigate}" action="suite catalog"/>
-          <t:navigationMenuItem itemLabel="Delete" itemValue="delete suites" actionListener="#{navBarBean.navigate}" action="delete suites"/>
-        </t:navigationMenuItem>
-       
-       <t:navigationMenuItem itemLabel="Job Results" action="job results"/>
-       
-       <t:navigationMenuItem itemLabel="Documentation">
-          <t:navigationMenuItem itemLabel="user's manual &#38; tutorial" action="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/"/>
-          <t:navigationMenuItem itemLabel="release notes" action="http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/"/>
-          <t:navigationMenuItem itemLabel="public datasets" action="http://www.broad.mit.edu/cancer/software/genepattern/datasets/" target="_self"/>
-          <t:navigationMenuItem itemLabel="FAQ" action="http://www.broad.mit.edu/cancer/software/genepattern/doc/faq/" target="_self"/>
-          <t:navigationMenuItem itemLabel="task documentation" actionListener="#{navBarBean.navigate}" itemValue="task documentation" action="task documentation"/>
-          <t:navigationMenuItem itemLabel="common file formats" action="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_fileformats.html"/>
-        </t:navigationMenuItem>
-      
-       <t:navigationMenuItem itemLabel="Resources">
-          <t:navigationMenuItem itemLabel="join mailing list" action="http://www.broad.mit.edu/cancer/software/genepattern/gp_mail.html"/>
-          <t:navigationMenuItem itemLabel="report bugs" action="mailto:gp-help@broad.mit.edu"/>
-          <t:navigationMenuItem itemLabel="user forum" action="http://www.broad.mit.edu/cancer/software/genepattern/forum/"/>
-        </t:navigationMenuItem>
-       
-       <t:navigationMenuItem itemLabel="Downloads">
-          <t:navigationMenuItem itemLabel="install graphical client" action="http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gpge_installer.cgi"/>
-          <t:navigationMenuItem itemLabel="Programming Libraries" action="go_sample1"/>
-        </t:navigationMenuItem>
-      </t:jscookMenu>
+      <c:if test="#{requestScope.userID != null}">
+        <ui:include src="mainMenu.xhtml"/>
+      </c:if>
     </div>
     
     <!--  Main content area -->
