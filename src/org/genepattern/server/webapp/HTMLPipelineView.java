@@ -373,8 +373,7 @@ public class HTMLPipelineView implements IPipelineView {
 
 		if (taskInfo != null) {
 			writer.write(" - " + taskInfo.getName() + " version ");
-			writer
-					.write("<select name=\"notused\" onchange=\"javascript:window.location='pipelineDesigner.jsp?"
+			writer.write("<select name=\"notused\" onchange=\"javascript:window.location='pipelineDesigner.jsp?"
 							+ GPConstants.NAME
 							+ "=' + this.options[this.selectedIndex].value\" style=\"font-weight: bold; font-size: medium; outline-style: none;\">\n");
 			writer.write(versionSelector(taskInfo));
@@ -416,12 +415,17 @@ public class HTMLPipelineView implements IPipelineView {
 
 		// build version selector
 		if (taskInfo != null) {
-			writer
-					.write("<select name=\"notused\" onchange=\"javascript:window.location='pipelineDesigner.jsp?"
+			int numVers = numVersionsAvailable(taskInfo);
+			if (numVers > 1) {
+				writer.write("<select name=\"notused\" onchange=\"javascript:window.location='pipelineDesigner.jsp?"
 							+ GPConstants.NAME
 							+ "=' + this.options[this.selectedIndex].value\">\n");
-			writer.write(versionSelector(taskInfo));
-			writer.write("</select>\n");
+				writer.write(versionSelector(taskInfo));
+				writer.write("</select>\n");
+			} else {
+				writer.write(""+ taskLSID.getVersion() + "\n");
+
+			}
 		}
 
 		if (pipelineName != null && pipelineName.length() > 0) {
@@ -580,6 +584,39 @@ public class HTMLPipelineView implements IPipelineView {
 		}
 	}
 
+	protected int numVersionsAvailable(TaskInfo taskInfo){
+		int numVersions = 0;
+		if (taskInfo != null) {
+			LSID l;
+			LSID taskLSID = null;
+			try {
+				taskLSID = new LSID((String) taskInfo.giveTaskInfoAttributes()
+						.get(GPConstants.LSID));
+			} catch (MalformedURLException mue) {
+				// ignore
+				return 0;
+			}
+			String thisLSIDNoVersion = taskLSID.toStringNoVersion();
+			for (Iterator itTasks = tmCatalog.iterator(); itTasks.hasNext();) {
+				TaskInfo ti = (TaskInfo) itTasks.next();
+				TaskInfoAttributes tia2 = ti.giveTaskInfoAttributes();
+				String lsid = tia2.get(GPConstants.LSID);
+				try {
+					l = new LSID(lsid);
+					String versionlessLSID = l.toStringNoVersion();
+					if (versionlessLSID.equals(thisLSIDNoVersion)) {
+						numVersions++;
+					}
+				} catch (MalformedURLException mue) {
+					// ignore
+				}
+
+			}
+	
+		}
+		return numVersions;
+	}
+
 	protected String versionSelector(TaskInfo taskInfo) {
 		// build version selector
 
@@ -616,6 +653,8 @@ public class HTMLPipelineView implements IPipelineView {
 				}
 			}
 		}
+
+
 		return sb.toString();
 	}
 
