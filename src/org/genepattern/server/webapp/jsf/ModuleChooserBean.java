@@ -49,20 +49,22 @@ public class ModuleChooserBean implements java.io.Serializable {
     private String selectedModule = "";
 
     public List<ModuleCategoryGroup> getTasks() {
+        ModuleHelper helper = new ModuleHelper();
+        
         categories = new ArrayList<ModuleCategoryGroup>();
         for (String mode : modes) {
             List<ModuleCategory> tmp = new ArrayList();
-            tmp.add(ModuleHelper.getRecentlyUsed());
+            tmp.add(helper.getRecentlyUsed());
             if (mode.equals("all")) {
-                tmp.add(ModuleHelper.getAllTasks());
+                tmp.add(helper.getAllTasks());
             }
             else if (mode.equals("suite")) {
-                for (ModuleCategory cat : ModuleHelper.getTasksBySuite()) {
+                for (ModuleCategory cat : helper.getTasksBySuite()) {
                     tmp.add(cat);
                 }
             }
             else if (mode.equals("category")) {
-                for (ModuleCategory cat : ModuleHelper.getTasksByType()) {
+                for (ModuleCategory cat : helper.getTasksByType()) {
                     tmp.add(cat);
                 }
             }

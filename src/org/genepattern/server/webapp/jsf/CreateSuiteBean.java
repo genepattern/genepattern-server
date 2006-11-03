@@ -93,7 +93,7 @@ public class CreateSuiteBean implements java.io.Serializable {
 
         List<List> cols = new ArrayList<List>();
         if(categories == null) {
-          categories = ModuleHelper.getTasksByType();
+          categories = (new ModuleHelper()).getTasksByType();
         }
         
         // Find the midpoint in the category list.

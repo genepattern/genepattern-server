@@ -19,26 +19,32 @@ import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
 public class ModuleHelper {
     private static Logger log = Logger.getLogger(ModuleHelper.class);
 
-    public static ModuleCategory getRecentlyUsed() {
+    private TaskInfo[] allTasks;
+    
+    public ModuleHelper()
+    {
+        allTasks = (new AdminDAO()).getAllTasksForUser(getUserId());
+    }
+    
+    public  ModuleCategory getRecentlyUsed() {
         AdminDAO dao = new AdminDAO();
         return new ModuleCategory("Recently Used", dao.getRecentlyRunTasksForUser(getUserId()));
     }
       
 
-    public static ModuleCategory getAllTasks() {
+    public  ModuleCategory getAllTasks() {
         AdminDAO dao = new AdminDAO();
         return new ModuleCategory("All", dao.getAllTasksForUser(getUserId()));
     }
 
 
-    public static List<ModuleCategory> getTasksByType() {
+    public  List<ModuleCategory> getTasksByType() {
 
         List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
-        TaskInfo[] alltasks = (new AdminDAO()).getAllTasksForUser(getUserId());
         Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
 
-        for (int i = 0; i < alltasks.length; i++) {
-            TaskInfo ti = alltasks[i];
+        for (int i = 0; i < allTasks.length; i++) {
+            TaskInfo ti = allTasks[i];
             String taskType = ti.getTaskInfoAttributes().get("taskType");
             if(taskType == null || taskType.length() == 0) {
                 taskType = "Uncategorized";
@@ -61,10 +67,9 @@ public class ModuleHelper {
         return categories;
     }
     
-    public static List<ModuleCategory> getTasksBySuite() {
+    public  List<ModuleCategory> getTasksBySuite() {
  
         AdminDAO dao = new AdminDAO();
-        TaskInfo[] allTasks = dao.getAllTasksForUser(getUserId());
         HashMap<String, TaskInfo> taskMap = new HashMap();
         for(int i=0; i<allTasks.length; i++) {
             try {
