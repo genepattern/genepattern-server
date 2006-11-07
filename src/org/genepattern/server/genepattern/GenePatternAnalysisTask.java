@@ -2820,7 +2820,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
      *             if DBLoader is unhappy when connecting to Omnigene
      * @author Jim Lerner
      */
-    protected static Vector installTask(String name, String description, ParameterInfo[] params,
+    public  static Vector installTask(String name, String description, ParameterInfo[] params,
             TaskInfoAttributes taskInfoAttributes, String username, int access_id, ITaskIntegrator taskIntegrator)
             throws OmnigeneException, RemoteException {
         String originalUsername = username;
@@ -2885,16 +2885,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
         return null;
     }
 
-    /**
-     * use installTask but first manage the LSID. if it has one, keep it
-     * unchanged. If not, create a new one to be used when creating a new task
-     * or installing from a zip file
-     */
-    public static String installNewTask(String name, String description, ParameterInfo[] params,
-            TaskInfoAttributes taskInfoAttributes, String username, int access_id, ITaskIntegrator taskIntegrator)
-            throws OmnigeneException, RemoteException, TaskInstallationException {
+
+    public static LSID getNextTaskLsid(String requestedLSID) throws java.rmi.RemoteException{
         LSID taskLSID = null;
-        String requestedLSID = taskInfoAttributes.get(LSID);
         if (requestedLSID != null && requestedLSID.length() > 0) {
             try {
                 taskLSID = new LSID(requestedLSID);
@@ -2908,10 +2901,29 @@ public class GenePatternAnalysisTask implements IGPConstants {
         if (taskLSID == null) {
             // System.out.println("installNewTask: creating new LSID");
             taskLSID = lsidManager.createNewID(TASK_NAMESPACE);
-        }
-        else {
+        } else if (lsidManager.getAuthority().equalsIgnoreCase(taskLSID.getAuthority())){
             taskLSID = lsidManager.getNextIDVersion(requestedLSID);
-        }
+        } else {
+		taskLSID = lsidManager.createNewID(TASK_NAMESPACE);
+	  }
+        
+        return taskLSID;
+    }
+
+
+    /**
+     * use installTask but first manage the LSID. if it has one, keep it
+     * unchanged. If not, create a new one to be used when creating a new task
+     * or installing from a zip file
+     */
+    public static String installNewTask(String name, String description, ParameterInfo[] params,
+            TaskInfoAttributes taskInfoAttributes, String username, int access_id, ITaskIntegrator taskIntegrator)
+            throws OmnigeneException, RemoteException, TaskInstallationException {
+        LSID taskLSID = null;
+        String requestedLSID = taskInfoAttributes.get(LSID);
+        
+        taskLSID = getNextTaskLsid(requestedLSID);
+        
         taskInfoAttributes.put(IGPConstants.LSID, taskLSID.toString());
         // System.out.println("GPAT.installNewTask: new LSID=" +
         // taskLSID.toString());
@@ -2930,51 +2942,28 @@ public class GenePatternAnalysisTask implements IGPConstants {
     public static String updateTask(String name, String description, ParameterInfo[] params,
             TaskInfoAttributes taskInfoAttributes, String username, int access_id) throws OmnigeneException,
             RemoteException, TaskInstallationException {
-        LSID taskLSID = null;
-        LSIDManager mgr = LSIDManager.getInstance();
+        LSID requestedLSID = null;
         try {
             // System.out.println("updateTask: old LSID=" +
             // taskInfoAttributes.get(LSID));
-            taskLSID = new LSID(taskInfoAttributes.get(LSID));
-        }
-        catch (MalformedURLException mue) {
+            requestedLSID= new LSID(taskInfoAttributes.get(LSID));
+        } catch (MalformedURLException mue) {
             mue.printStackTrace();
             // XXX what to do here?
             System.err.println("updateTask: " + mue);
         }
-        if (taskLSID == null) { // old task from 1.1 or earlier
-            taskLSID = mgr.createNewID(TASK_NAMESPACE);
-            // System.out.println("updateTask: creating new ID: " +
-            // taskLSID.toString());
-            taskInfoAttributes.put(LSID, taskLSID.toString());
-        }
-        else if (mgr.getAuthority().equalsIgnoreCase(taskLSID.getAuthority())) {
-            // System.out.println("updateTask: getting next version for " +
-            // taskLSID);
-            try {
-                taskLSID = mgr.getNextIDVersion(taskLSID);
-            }
-            catch (MalformedURLException mue) {
-                Vector vProblem = new Vector();
-                vProblem.add(mue.getMessage());
-                throw new TaskInstallationException(vProblem);
-            }
-            // System.out.println("updateTask: next version for existing ID=" +
-            // taskLSID.toString());
-            taskInfoAttributes.put(IGPConstants.LSID, taskLSID.toString());
-        }
-        else {
-            // System.out.println("updateTask: got authority " +
-            // taskLSID.getAuthority() + " but expected " + mgr.getAuthority());
-            // modifying someone elses task. Give it a new LSID here
+ 
+	 LSID taskLSID = getNextTaskLsid(requestedLSID.toString());
+       LSIDManager lsidManager = LSIDManager.getInstance();
+       if (!lsidManager.getAuthority().equalsIgnoreCase(taskLSID.getAuthority())) {
+           
             String provenance = taskInfoAttributes.get(IGPConstants.LSID_PROVENANCE);
             provenance = provenance + "  " + taskLSID.toString();
             taskInfoAttributes.put(IGPConstants.LSID_PROVENANCE, provenance);
-            taskLSID = mgr.createNewID(TASK_NAMESPACE);
-            // System.out.println("updateTask: creating new ID for someone
-            // else's provenance: " + taskLSID.toString());
-            taskInfoAttributes.put(LSID, taskLSID.toString());
-        }
+	  }
+        taskInfoAttributes.put(LSID, taskLSID.toString());
+
+
         Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, null);
         if ((probs != null) && (probs.size() > 0)) {
             throw new TaskInstallationException(probs);

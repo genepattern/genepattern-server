@@ -224,9 +224,8 @@ public class RunPipeline {
         }
         String server = serverFromFile.getProtocol() + "://" + host + ":"
                 + serverFromFile.getPort();
-
         PipelineModel pipelineModel = getPipelineModel(pipelineFileName,
-                pipelineLSID);
+                pipelineLSID, server);
         RunPipeline rp = new RunPipeline(server, userId, jobId, pipelineModel,
                 decorator);
         rp.runPipeline(additionalArguments);
@@ -244,16 +243,22 @@ public class RunPipeline {
      * which it is and get it either way
      */
     private static PipelineModel getPipelineModel(String pipelineFileName,
-            String lsid) throws Exception {
+            String lsid, String server) throws Exception {
         File file = new File(pipelineFileName);
         BufferedReader reader = null;
         PipelineModel model = null;
         try {
             if (!file.exists()) {
                 // must be a URL, try to retrieve it
-                URL url = new URL(pipelineFileName);
-                URLConnection uconn = url.openConnection();
+		    // first convert 127.0.0.1 or localhost to server
+		    int idx = pipelineFileName.indexOf(":");
+		    idx = pipelineFileName.indexOf(":", idx+1);
 
+
+		    String pfn = server.toLowerCase() + pipelineFileName.substring(idx+5);
+		
+                URL url = new URL(pfn);
+                URLConnection uconn = url.openConnection();
                 reader = new BufferedReader(new InputStreamReader(uconn
                         .getInputStream()));
             } else {
@@ -263,6 +268,7 @@ public class RunPipeline {
             model = PipelineModel.toPipelineModel(new InputSource(reader),
                     false);
             model.setLsid(lsid);
+
             return model;
         } finally {
             if (reader != null) {
@@ -316,15 +322,14 @@ public class RunPipeline {
 
         taskNum = 0;
         JobInfo results[] = new JobInfo[vTasks.size()];
+
         decorator.beforePipelineRuns(model);
         try {
             for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
                 jobSubmission = (JobSubmission) eTasks.nextElement();
-                
 		    if (taskNum >= stopAfterTask) break; // stop and execute no further
                 
                 try {
-
                     parameterInfo = jobSubmission.giveParameterInfoArray();
 
                     ParameterInfo[] params = setInheritedJobParameters(
@@ -335,7 +340,7 @@ public class RunPipeline {
 
                     decorator.recordTaskExecution(jobSubmission, taskNum + 1,
                             vTasks.size());
-
+				
                     JobInfo taskResult = executeTask(jobSubmission, params,
                             taskNum, results);
 

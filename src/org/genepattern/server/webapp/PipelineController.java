@@ -31,13 +31,15 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
-
+import org.genepattern.util.LSID;
 
 public class PipelineController {
 
 	IPipelineView viewer = null;
 
 	PipelineModel model = null;
+
+	boolean isLsidSet = false;
 
 	// transient means: don't persist!!
 	transient Collection tmTasks = null; // collection of TaskInfo objects
@@ -84,10 +86,26 @@ public class PipelineController {
 		return lsid;
 	}
    
-   
+	public String generateLSID(){
+		try {
+			LSID taskLSID = GenePatternAnalysisTask.getNextTaskLsid(model.getLsid());
+			model.setLsid( taskLSID.toString());        
+			isLsidSet = true;
+			return taskLSID.toString();
+		} catch (Exception e){
+			return null;
+		}
+	}
+
+
 	public String generateTask(ParameterInfo[] params)
 			throws TaskInstallationException {
 		try {
+			// set the LSID before using the code generator
+			if (!isLsidSet){
+				generateLSID();	
+			}
+
 			TaskInfoAttributes tia = AbstractPipelineCodeGenerator.getTaskInfoAttributes(model);
 			
 			tia.put(GPConstants.CPU_TYPE, GPConstants.ANY);
@@ -96,12 +114,22 @@ public class PipelineController {
 			tia.put(GPConstants.SERIALIZED_MODEL, model.toXML());
 			tia.put(GPConstants.USERID, model.getUserID());
 
-			String lsid = (String) tia.get(GPConstants.LSID);
-			if (lsid != null && lsid.length() > 0) {
+			Vector probs = GenePatternAnalysisTask.installTask(model.getName() + "."+ GPConstants.TASK_TYPE_PIPELINE, 
+					""+model.getDescription(), 
+					params, 
+					tia, 
+					model.getUserID(), 
+					model.isPrivate() ? GPConstants.ACCESS_PRIVATE
+						: GPConstants.ACCESS_PUBLIC, 
+					null);
+        		if ((probs != null) && (probs.size() > 0)) {
+            		throw new TaskInstallationException(probs);
+        		}
+   
+			/** if (lsid != null && lsid.length() > 0) {
 				//System.out.println("AbstractPipelineCodeGenerator.generateTask:
 				// updating " + lsid);
-				lsid = GenePatternAnalysisTask.updateTask(model.getName() + "."
-						+ GPConstants.TASK_TYPE_PIPELINE, ""
+				lsid = GenePatternAnalysisTask.updateTask(, ""
 						+ model.getDescription(), params, tia, model.getUserID(), model
 						.isPrivate() ? GPConstants.ACCESS_PRIVATE
 						: GPConstants.ACCESS_PUBLIC);
@@ -111,8 +139,9 @@ public class PipelineController {
 						+ model.getDescription(), params, tia, model.getUserID(), model
 						.isPrivate() ? GPConstants.ACCESS_PRIVATE
 						: GPConstants.ACCESS_PUBLIC, null);
-			}
-			return lsid;
+			} **/
+
+			return model.getLsid();
 		} catch (TaskInstallationException tie) {
 			throw tie;
 		} catch (Exception e) {
