@@ -102,6 +102,8 @@
 
                 File aFile = new File(System.getProperty("java.io.tmpdir"), name);
                 requestFiles.put(fi.getFieldName(), aFile);
+
+System.out.println("MP: "+fi.getFieldName() + "=" + name);
                 fi.write(aFile);
 
            }
@@ -305,8 +307,10 @@ try {
 				origValue = p.getValue();
 
 				String paramKey = taskPrefix + "_" + paramName;
+
 				
 				String val = requestParameters.getProperty(paramKey);
+
         
 				if (val == null) {
 					paramKey = taskName + (taskNum+1) + "." + taskPrefix + "_" + paramName;
@@ -341,6 +345,7 @@ try {
 				boolean isOptional = (((String)p.getAttributes().get(GPConstants.PARAM_INFO_OPTIONAL[0])).length() > 0);
 
 //System.out.println(taskName + ": " + paramName + "=" + val + ", prompt= " + runTimePrompt[i] + ", optional=" + isOptional + ", inherited=" + inherited + " (" + requestParameters.getProperty(taskPrefix + "_i_" + i) + "), isInputFile=" + p.isInputFile());
+		
 				// inheritance has priority over run time prompt
 				if (inherited) {
 					runTimePrompt[i] = false;
@@ -364,6 +369,9 @@ try {
 				if (runTimePrompt[i]) {
 					p.getAttributes().put("runTimePrompt", "1");
 					model.addInputParameter(taskName + (taskNum + 1) + "." + paramName, p);
+				} else {
+					p.getAttributes().put("runTimePrompt", null);
+				
 				}
 
 				if (inheritedTaskNum != null || inheritedFilename != null) {
@@ -398,15 +406,22 @@ try {
 							htFilenames.put(taskPrefix + "_" + paramName, shadow);
 						}
                                     String filenameKey = taskPrefix + "_" + paramName;
+
+
 						p.setValue((String)htFilenames.get(filenameKey));
+
+System.out.println("MP 3 = " + filenameKey + " <==" + paramName + "   " + p.getValue() + "  " + runTimePrompt[i]);
 					}
 				}
 
 				// if runtime prompt, save choice list for display later
 				if (runTimePrompt[i]) {
 					p.setValue(origValue);
-				}
+				} 
 
+				// else {
+					//p.getAttributes().put("runTimePrompt", null);
+				//}
 				if (!inherited && !runTimePrompt[i] && (p.getValue() == null || p.getValue().equals("")) && !isOptional) {
 					vProblems.add("Step " + (taskNum+1) + ", " + taskName + ", is missing required parameter " + p.getName());
 				}
@@ -416,6 +431,7 @@ try {
                 
 		boolean isVisualizer = ((String)mTia.get(GPConstants.TASK_TYPE)).equals(GPConstants.TASK_TYPE_VISUALIZER);
 		jobSubmission = new JobSubmission(taskName, mTaskInfo.getDescription(), taskLSID, params, runTimePrompt, isVisualizer, mTaskInfo);
+		
 
 		model.addTask(jobSubmission);
 	}
@@ -456,7 +472,7 @@ try {
 		if (!bRun) {
 			// save the task to the database
 			try {
-				lsid = controller.generateTask();
+				lsid = controller.generateTask(); ///  MP 3
 				model.setLsid(lsid);
 	 			if (bClone || !oldLSID.equals("")) {
 	 				// TODO: change URLs that are task-relative to point to the new task
