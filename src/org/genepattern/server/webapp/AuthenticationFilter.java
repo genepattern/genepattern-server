@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class AuthenticationFilter implements Filter {
 
-    private static final String[] NO_AUTH_REQUIRED_PAGES = { "retrieveResults.jsp", "getFile.jsp", "getInputFile.jsp",
+    private static final String[] NO_AUTH_REQUIRED_PAGES = { "getPipelineModel.jsp", "retrieveResults.jsp", "getFile.jsp", "getInputFile.jsp",
             "login.jsp", "login.jsf", "registerUser.jsf", "forgotPassword.jsf" };
     /** Forward to home page if logged in user requests these pages */
     private static final String[] LOGIN_PAGES = { "login.jsf", "registerUser.jsf", "forgotPassword.jsf" };
