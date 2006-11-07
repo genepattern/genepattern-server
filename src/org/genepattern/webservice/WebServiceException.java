@@ -85,6 +85,10 @@ public class WebServiceException extends Exception {
 	public Throwable getRootCause() {
 		return this.rootCause;
 	}
+	public void setRootCause(Throwable t) {
+		this.rootCause = t;
+	}
+
 
 	public String toString() {
 		StringBuffer sbMessage = new StringBuffer();
