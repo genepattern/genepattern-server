@@ -8,7 +8,36 @@
     </title>
     <link href="#{facesContext.externalContext.requestContextPath}/css/style.css" rel="stylesheet" type="text/css"/>
     <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js"/>
+    <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js"/>  
     <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/jscookmenu/ThemePanel/theme.js"/>
+    <script type="text/javascript" language="javascript">
+
+/* <![CDATA[ */
+
+    function chooserModeChanged() {	  
+      var radioButtons = document.getElementsByName("chooser_mode_selector");
+      for(var i=0; i<radioButtons.length; i++) {
+        if(radioButtons[i].checked) {
+          selectMode(radioButtons[i].value);
+        }
+      }
+    }
+      
+    function selectMode(mode) {	
+	  var selectedPanelId = "module_table_" + mode;
+	  var panels = document.getElementsByName("module_table");
+      for(var i=0; i<panels.length; i++) {
+	    if(panels[i].id == selectedPanelId) {
+	      Element.show(panels[i]);
+	    }
+	    else {
+	      Element.hide(panels[i]);
+	    }
+	  }
+	}
+
+/* ]]> */
+	</script>
     <ui:insert name="headText"/>
   </head>
   <body>
