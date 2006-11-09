@@ -4,9 +4,9 @@
   	  
   </t:saveState>
     <!-- tasks and pipelines area -->
-    <table width="241" border="0" cellspacing="0" cellpadding="0">
+    <table width="242" border="0" cellspacing="0" cellpadding="0">
       <tr>
-        <td colspan="7" class="sidebarhead-bkg">
+        <td colspan="6" class="sidebarhead-bkg">
           <div class="sidebarhead">Tasks &amp; Pipelines<br/>
             <div class="viewchoice">
               <h:selectOneRadio value="#{moduleChooserBean.mode}" styleClass="viewchoice" valueChangeListener="#{moduleChooserBean.modeChanged}" onchange="submit();">
@@ -19,12 +19,12 @@
         </td>
       </tr>
       <tr>
-        <td colspan="5">
+        <td colspan="6">
           <t:graphicImage value="/images/divider-pix1.gif" width="100%" height="1"/>
         </td>
       </tr>
       <tr>
-        <td height="6" colspan="5">
+        <td height="6" colspan="6">
           <t:graphicImage value="/images/spacer.gif" width="1" height="6"/>
         </td>
       </tr>
@@ -32,38 +32,44 @@
         <!-- Module List  -->
         <t:dataList var="category" value="#{moduleChooserBean.allTasks}">
           <tr class="task-categories">
-            <td width="9" valign="middle">
-              <t:graphicImage value="/images/spacer.gif" width="8" height="8"/>
+            <td width="9px" valign="middle">
+              <t:graphicImage value="/images/spacer.gif" width="9px" height="8px"/>
             </td>
-            <td width="7" valign="top">
+            <td width="7px"  valign="middle">
               <h:commandLink actionListener="#{category.toggleExpanded}">
                 <h:graphicImage value="#{category.expanded ? '/images/arrow-down.gif' : '/images/arrow-right.gif'}" width="7" height="7" vspace="3" border="0"/>
               </h:commandLink>
             </td>
-            <td width="4">
+            <td width="4px">
               <t:graphicImage value="/images/spacer.gif" width="4" height="1"/>
             </td>
-            <td colspan="3" halign="left">
+            <td colspan="3" align="left">
               <h:commandLink value="#{category.name}" actionListener="#{category.toggleExpanded}"/>
             </td>
           </tr>
           <t:dataList var="taskInfo" value="#{category.modules}" rendered="#{category.expanded}">
             <tr class="#{taskInfo.name == moduleChooserBean.selectedModule ? 'tasks_on' : (taskInfo.userId == moduleChooserBean.userId ? 'task-mine' : '')}">
-              <td>&#160;</td>
-              <td valign="top">&#160;</td>
-              <td width="4" valign="middle">
-                <t:graphicImage value="#{taskInfo.pipeline ? '/images/bullet-pipeline.gif' : '/images/bullet-task.gif'}" width="4" height="4"/>
+              <td width="9px" valign="middle">
+                <t:graphicImage value="/images/spacer.gif" width="9px" height="8"/>
               </td>
-              <td width="4">
-                <t:graphicImage src="/images/spacer.gif" width="4" height="1"/>
+              <td width="7px" valign="middle">
+                <t:graphicImage value="/images/spacer.gif" width="7px" height="8"/>
               </td>
-              <td>
-                <h:commandLink value="#{taskInfo.shortName}" actionListener="#{moduleChooserBean.moduleClicked}">
-                  <f:param name="task" value="#{taskInfo.name}"/>
-                </h:commandLink>
+              <td width="4px">
+                <t:graphicImage value="/images/spacer.gif" width="4px" height="1"/>
               </td>
-              <td>&#160;</td>
-            </tr>
+               <td width="4px" valign="middle">
+                 <t:graphicImage value="#{taskInfo.pipeline ? '/images/bullet-pipeline.gif' : '/images/bullet-task.gif'}" width="4" height="4"/>
+               </td>
+               <td width="4px">
+                 <t:graphicImage src="/images/spacer.gif" width="4px" height="1"/>
+               </td>
+               <td width="218px" align="left">
+                 <h:commandLink value="#{taskInfo.shortName}" actionListener="#{moduleChooserBean.moduleClicked}">
+                   <f:param name="task" value="#{taskInfo.name}"/>
+                 </h:commandLink>
+               </td>
+             </tr>
           </t:dataList>
         </t:dataList>
       
