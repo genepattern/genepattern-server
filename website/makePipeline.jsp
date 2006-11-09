@@ -227,8 +227,8 @@ try {
 	model.setName(modelName);
 	model.setDescription(requestParameters.getProperty("pipeline_description"));
 	model.setAuthor(requestParameters.getProperty("pipeline_author"));
-	String lsid = requestParameters.getProperty(GPConstants.LSID);
 	boolean isTemp = modelName.startsWith("try.") || bRun;
+	String lsid = requestParameters.getProperty(GPConstants.LSID);
 	if (lsid == null) {
 		lsid = "";
 	}
@@ -239,6 +239,9 @@ try {
 	model.setUserID(requestParameters.getProperty(GPConstants.USERID));
 	String privacy = requestParameters.getProperty(GPConstants.PRIVACY);
 	model.setPrivacy(privacy != null && privacy.equals(GPConstants.PRIVATE));
+
+	PipelineController controller = new PipelineController(model);
+	lsid = controller.generateLSID();
 
 
 	// save uploaded files as part of pipeline definition
@@ -271,7 +274,7 @@ try {
 				// it's for a temporary pipeline
 				dir = tmpDir;
 			}
-			htFilenames.put(fieldName, "<GenePatternURL>getFile.jsp?task=" + GPConstants.LEFT_DELIMITER + GPConstants.LSID + GPConstants.RIGHT_DELIMITER + "&file=" + URLEncoder.encode(attachmentName)); // map between form field name and filesystem name
+			htFilenames.put(fieldName, "<GenePatternURL>getFile.jsp?task=" + URLEncoder.encode(lsid) + "&file=" + URLEncoder.encode(attachmentName)); // map between form field name and filesystem name
 		}
 	}
 
@@ -396,11 +399,11 @@ try {
 
 							// if this is a URL that is in the taskLib, repoint it to the cloned taskLib
 							if (bClone) {
-								String taskFile = "<GenePatternURL>getFile.jsp?task=" + GPConstants.LEFT_DELIMITER + GPConstants.LSID + GPConstants.RIGHT_DELIMITER + "&file=";
+								String taskFile = "<GenePatternURL>getFile.jsp?task=" + URLEncoder.encode(lsid) + "&file=";
 								if (shadow.startsWith(taskFile)) {
 									taskFile = shadow.substring(taskFile.length());
 									// use clone's LSID, not the name
-									shadow = "<GenePatternURL>getFile.jsp?task=" + GPConstants.LEFT_DELIMITER + GPConstants.LSID + GPConstants.RIGHT_DELIMITER + "&file=" + URLEncoder.encode(taskFile, "UTF-8");
+									shadow = "<GenePatternURL>getFile.jsp?task=" + URLEncoder.encode(lsid) + "&file=" + URLEncoder.encode(taskFile, "UTF-8");
 								}
 							}
 							htFilenames.put(taskPrefix + "_" + paramName, shadow);
@@ -449,7 +452,7 @@ System.out.println("MP 3 = " + filenameKey + " <==" + paramName + "   " + p.getV
 		<jsp:include page="navbar.jsp"/>
 <%
 	}
-   PipelineController controller = new PipelineController(model);
+   //PipelineController controller = new PipelineController(model);
 
 	//lsid = null;
 	if (vProblems.size() == 0) {
@@ -474,11 +477,13 @@ System.out.println("MP 3 = " + filenameKey + " <==" + paramName + "   " + p.getV
 			try {
 				lsid = controller.generateTask(); ///  MP 3
 				model.setLsid(lsid);
+
 	 			if (bClone || !oldLSID.equals("")) {
 	 				// TODO: change URLs that are task-relative to point to the new task
 					// System.out.println("copying support files from " + oldLSID + " to " + lsid);
 		 			copySupportFiles(modelName, model.getName(), oldLSID, lsid, userID);
 	 			}
+
 			} catch (TaskInstallationException tie) {
 				vProblems.addAll(tie.getErrors());
 			}
@@ -516,7 +521,7 @@ System.out.println("MP 3 = " + filenameKey + " <==" + paramName + "   " + p.getV
 						continue;
 					}
 					
-					htFilenames.put(fieldName, "<GenePatternURL>getFile.jsp?task=" + GPConstants.LEFT_DELIMITER + GPConstants.LSID + GPConstants.RIGHT_DELIMITER + "&file=" + URLEncoder.encode(attachmentName)); // map between form field name and filesystem name
+					htFilenames.put(fieldName, "<GenePatternURL>getFile.jsp?task=" + URLEncoder.encode(lsid) + "&file=" + URLEncoder.encode(attachmentName)); // map between form field name and filesystem name
 
 
 					if (dir != tmpDir){
