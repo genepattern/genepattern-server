@@ -5,6 +5,7 @@
   	  
   </t:saveState>
     <!-- tasks and pipelines area -->
+         <a4j:outputPanel ajaxRendered="true">
     <table width="242" border="0" cellspacing="0" cellpadding="0">
       <tr>
         <td colspan="7" class="sidebarhead-bkg">
@@ -32,12 +33,12 @@
               <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="8" height="8" />
             </td>
             <td width="7" valign="top">
-              <h:commandLink actionListener="#{category.toggleExpanded}">
+              <a4j:commandLink actionListener="#{category.toggleExpanded}">
                   <img src="#{facesContext.externalContext.requestContextPath}/images/arrow-down.gif" width="7" height="7" vspace="3" border="0" 
                        style="#{category.expanded == true ? 'display:inline;' : 'display:none;'}"/>               	
                   <img src="#{facesContext.externalContext.requestContextPath}/images/arrow-right.gif" width="7" height="7" vspace="3" border="0" 
                        style="#{category.expanded == true ? 'display:none;' : 'display:inline;'}"/>               	
-              </h:commandLink>
+              </a4j:commandLink>
             </td>
             <td width="4">
               <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="4" height="1" />
@@ -67,7 +68,9 @@
              </tr>
           </t:dataList>
         </t:dataList>
+        
       
     </table>
+    </a4j:outputPanel>
   </h:form>
 </html>
