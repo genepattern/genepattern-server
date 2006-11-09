@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.List;
+import java.util.ArrayList;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -128,7 +130,8 @@ public class RunPipeline {
      * are required, while the decorator system property is optional
      */
     public static void main(String args[]) throws Exception {
-    	setupLog4jConfig();
+	try {
+    	  setupLog4jConfig();
     	
         Properties additionalArguments = new Properties();
         String genePatternPropertiesFile = System
@@ -230,11 +233,14 @@ public class RunPipeline {
                 decorator);
         rp.runPipeline(additionalArguments);
 	
-	  // if there are no errors and the log file is empty, then delete it
-	  File log = new File(logFile);
-	  if (log.exists()){
-		if (log.length() < 2L) log.deleteOnExit();
+	} finally {  
+		if ((System.getProperty("DEBUG", null)) == null){
+		  File log = new File(logFile);
+		  if (log.exists()){
+			log.delete();
+	  	}
 	  }
+	}
 
     }
 
@@ -344,9 +350,15 @@ public class RunPipeline {
                     JobInfo taskResult = executeTask(jobSubmission, params,
                             taskNum, results);
 
+			  // handle the special case where a task is a pipeline by adding
+			  // all output files of the pipeline's children (recursively) to its
+			  // taskResult so that they can be used downstream 
+			  taskResult = collectChildJobResults(taskResult);
+
                     decorator.recordTaskCompletion(taskResult, jobSubmission
                             .getName()
                             + (taskNum + 1));
+	
                     results[taskNum] = taskResult;
 
                 } catch (Exception e) {
@@ -370,6 +382,58 @@ public class RunPipeline {
     protected void setStatus(String status) throws Exception {
         analysisClient.setJobStatus(jobId, status);
     }
+
+
+  /** handle the special case where a task is a pipeline by adding
+    * all output files of the pipeline's children (recursively) to its
+    * taskResult so that they can be used downstream 
+**/
+	protected JobInfo  collectChildJobResults(JobInfo taskResult){
+		try {
+		List<ParameterInfo> outs = new ArrayList<ParameterInfo>();
+		JobInfo[] children = analysisClient.getChildren(taskResult.getJobNumber());
+		
+		if (children.length == 0) return taskResult;
+		for (int i=0; i < children.length; i++){
+			getChildJobOutputs(children[i], outs);
+		}
+		// now add them to the parent
+		if (outs.size() == 0) { 
+			return taskResult;
+		} else {
+			for (ParameterInfo p:outs){
+				taskResult.addParameterInfo(p);
+			}
+		}
+		} catch (Exception wse){
+			wse.printStackTrace();
+		}
+		return taskResult;
+	}
+	
+	// recurse through the children and add all output params to the parent
+	
+	protected void  collectChildJobResults(JobInfo taskResult,  List<ParameterInfo> outs) throws WebServiceException{
+		JobInfo[] children = analysisClient.getChildren(taskResult.getJobNumber());
+		
+		if (children.length == 0) return;
+		for (int i=0; i < children.length; i++){
+			getChildJobOutputs(children[i], outs);  // local leaves
+			collectChildJobResults(children[i], outs); // recurse on down
+		}
+	}
+
+	protected void getChildJobOutputs(JobInfo child, List<ParameterInfo> outs){
+		ParameterInfo[] childParams = child.getParameterInfoArray();
+ 		for (int i = 0; i < childParams.length; i++) {
+                	if (childParams[i].isOutputFile()) {
+                   	outs.add(childParams[i]);				
+            	}
+            }
+	}	
+
+
+
 
     protected JobInfo executeVisualizer(AnalysisService svc,
             ParameterInfo[] params) {
