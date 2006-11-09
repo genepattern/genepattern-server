@@ -1,5 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:a4j="https://ajax4jsf.dev.java.net/ajax"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
   <h:form><t:saveState value="#{moduleChooserBean}">
   	  
   </t:saveState>
@@ -32,7 +33,10 @@
             </td>
             <td width="7" valign="top">
               <h:commandLink actionListener="#{category.toggleExpanded}">
-                <img src="#{facesContext.externalContext.requestContextPath}/images/arrow-down.gif" width="7" height="7" vspace="3" border="0" />
+                  <img src="#{facesContext.externalContext.requestContextPath}/images/arrow-down.gif" width="7" height="7" vspace="3" border="0" 
+                       style="#{category.expanded == true ? 'display:inline;' : 'display:none;'}"/>               	
+                  <img src="#{facesContext.externalContext.requestContextPath}/images/arrow-right.gif" width="7" height="7" vspace="3" border="0" 
+                       style="#{category.expanded == true ? 'display:none;' : 'display:inline;'}"/>               	
               </h:commandLink>
             </td>
             <td width="4">
