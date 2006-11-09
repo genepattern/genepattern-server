@@ -55,11 +55,10 @@ public class RunTaskBean {
 
 
     public RunTaskBean() {
-        // This is now set directly by the chooser bean
-        //ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper
-        //        .getManagedBean("#{moduleChooserBean}");
-        //assert chooser != null;
-        //setTask(chooser.getSelectedModule());
+         ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper
+                .getManagedBean("#{moduleChooserBean}");
+        assert chooser != null;
+        setTask(chooser.getSelectedModule());
 
     }
 
