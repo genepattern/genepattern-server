@@ -10,26 +10,7 @@
     <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js"/>
     <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js"/>  
     <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/jscookmenu/ThemePanel/theme.js"/>
-<script type="text/javascript" language="javascript">
-/* <![CDATA[ */
-    function chooserModeChanged() {	  
-      var radioPanel = document.getElementById("viewchoiceRadioPanel");
-      var radioButtons = radioPanel.getElementsByTagName("input");
-      for(var i=0; i<radioButtons.length; i++) {
-        if(radioButtons[i].type == "radio") {
-          var panelId  = "module_table_" + radioButtons[i].value;
-          var panel = document.getElementById(panelId);
-          if(radioButtons[i].checked && panel != null) {
-            Element.show(panel);
-          }
-          else {
-            Element.hide(panel);
-          }
-        }
-      }
-    }
-/* ]]> */
-</script>
+
     <ui:insert name="headText"/>
   </head>
   <body>
