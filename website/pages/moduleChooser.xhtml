@@ -10,9 +10,14 @@
       <tr>
         <td width="100%" class="sidebarhead-bkg">
           <div class="sidebarhead">Tasks &amp; Pipelines<br/>
-            <div class="viewchoice">
-              <t:selectOneRadio value="#{moduleChooserBean.selectedMode}" styleClass="viewchoice"  id="chooser_mode_selector" forceId="true" 
-                    valueChangeListener="#{moduleChooserBean.modeChanged}" onclick="chooserModeChanged();">
+            <div class="viewchoice" id="viewchoiceRadioPanel">
+              <t:selectOneRadio 
+                    value="#{moduleChooserBean.selectedMode}" 
+                    styleClass="viewchoice"  
+                    id="chooser_mode_selector" 
+                    forceId="true" 
+                    valueChangeListener="#{moduleChooserBean.modeChanged}" 
+                    onclick="chooserModeChanged();">
                 <f:selectItem itemValue="category" itemLabel="category"/>
                 <f:selectItem itemValue="suite" itemLabel="suite"/>
                 <f:selectItem itemValue="all" itemLabel="all"/>
@@ -27,10 +32,10 @@
       </table>
       
             <!-- Module Category List  -->
-      <t:dataList var="moduleCategoryGroup" value="#{moduleChooserBean.tasks}" rowIndexVar="rowIndex">
+      <t:dataList var="moduleCategoryGroup" value="#{moduleChooserBean.tasks}" >
 
           <!-- Create table for modules and set initial visibility -->
-          <div  id="module_table_#{moduleCategoryGroup.mode}"  name="module_table"
+          <div  id="module_table_#{moduleCategoryGroup.mode}"
                    style="#{moduleChooserBean.selectedMode == moduleCategoryGroup.mode ? 'display: inline;' : 'display: none;'}">
 
       
