@@ -38,139 +38,165 @@ import org.genepattern.webservice.WebServiceException;
 import java.util.*;
 
 public class ModuleChooserBean implements java.io.Serializable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -9026970426503039995L;
-	private static Logger log = Logger.getLogger(ModuleChooserBean.class);
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -9026970426503039995L;
 
-	private List<ModuleCategoryGroup> categoryGroups = null;
-	private Set<String> closedCategories = new HashSet<String>();
-	private String[] modes = { "category", "suite", "all" };
-	private String selectedMode;
-	private String selectedModule = "";
+    private static Logger log = Logger.getLogger(ModuleChooserBean.class);
 
-	public List<ModuleCategoryGroup> getTasks() {
-		if (categoryGroups == null) {
-			categoryGroups = new ArrayList<ModuleCategoryGroup>();
+    private List<ModuleCategoryGroup> categoryGroups = null;
 
-			ModuleHelper helper = new ModuleHelper();
-			for (String mode : modes) {
-				List<ModuleCategory> tmp = new ArrayList<ModuleCategory>();
-				tmp.add(helper.getRecentlyUsed());
-				if (mode.equals("all")) {
-					ModuleCategory cat = helper.getAllTasks();
-					if( closedCategories.contains(cat.getName())) {
-						cat.setExpanded(false);
-					}
-					tmp.add(cat);
-				} else if (mode.equals("suite")) {
-					for (ModuleCategory cat : helper.getTasksBySuite()) {
-						if( closedCategories.contains(cat.getName())) {
-							cat.setExpanded(false);
-						}
-						tmp.add(cat);
-					}
-				} else if (mode.equals("category")) {
-					for (ModuleCategory cat : helper.getTasksByType()) {
-						if( closedCategories.contains(cat.getName())) {
-							cat.setExpanded(false);
-						}
-						tmp.add(cat);
-					}
-				}
-				categoryGroups.add(new ModuleCategoryGroup(mode, tmp));
-			}
-		}
-		return categoryGroups;
-	}
+    private String[] modes = { "category", "suite", "all" };
 
-	public String getSelectedModule() {
-		return selectedModule;
-	}
+    private String selectedMode;
 
-	public void setSelectedModule(String selectedModule) {
-		this.selectedModule = selectedModule;
-		RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper
-				.getManagedBean("#{runTaskBean}");
-		if (runTaskBean != null) {
-			runTaskBean.setTask(selectedModule);
-		}
-	}
+    private String selectedModule = "";
 
-	public void modeChanged(ValueChangeEvent event) {
-		selectedMode = (String) event.getNewValue();
-	}
+    public List<ModuleCategoryGroup> getTasks() {
+        if (categoryGroups == null) {
+            Set<String> closedCategories = getClosedCategories();
+            categoryGroups = new ArrayList<ModuleCategoryGroup>();
 
-	public void moduleClicked(ActionEvent event) {
-		String expStatePrefix = "expansion_state_";
-		Map parameterMap = getRequest().getParameterMap();
-		for (Object paramKey : parameterMap.keySet()) {
-			String paramName = (String) paramKey;
-			if (paramName.startsWith(expStatePrefix)) {
-				String categoryName = paramName.substring(expStatePrefix.length());
-				if(parameterMap.get(paramKey).equals("false")) {
-					closedCategories.add(categoryName);
-				}
-			}
-		}
-		setSelectedModule(getRequest().getParameter("task"));
-	}
+            ModuleHelper helper = new ModuleHelper();
+            for (String mode : modes) {
+                List<ModuleCategory> tmp = new ArrayList<ModuleCategory>();
+                ModuleCategory recent = helper.getRecentlyUsed();
+                if (closedCategories.contains(recent.getIdentifier())) {
+                    recent.setExpanded(false);
+                }
+                tmp.add(recent);
+                
+                if (mode.equals("all")) {
+                    ModuleCategory cat = helper.getAllTasks();
+                    if (closedCategories.contains(cat.getIdentifier())) {
+                        cat.setExpanded(false);
+                    }
+                    tmp.add(cat);
+                }
+                else if (mode.equals("suite")) {
+                    for (ModuleCategory cat : helper.getTasksBySuite()) {
+                        if (closedCategories.contains(cat.getIdentifier())) {
+                            cat.setExpanded(false);
+                        }
+                        tmp.add(cat);
+                    }
+                }
+                else if (mode.equals("category")) {
+                    for (ModuleCategory cat : helper.getTasksByType()) {
+                        if (closedCategories.contains(cat.getIdentifier())) {
+                            cat.setExpanded(false);
+                        }
+                        tmp.add(cat);
+                    }
+                }
+                categoryGroups.add(new ModuleCategoryGroup(mode, tmp));
+            }
+        }
+        return categoryGroups;
+    }
 
-	public String getUserId() {
-		return UIBeanHelper.getUserId();
-	}
+    public String getSelectedModule() {
+        return selectedModule;
+    }
 
-	private String getVersion(TaskInfo ti) {
+    public void setSelectedModule(String selectedModule) {
+        this.selectedModule = selectedModule;
+        RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
+        if (runTaskBean != null) {
+            runTaskBean.setTask(selectedModule);
+        }
+    }
 
-		try {
-			LSID lsid = new LSID(ti.getLsid());
-			return lsid.getVersion();
-		} catch (MalformedURLException e) {
-			log.error("Bad LSID", e);
-			throw new RuntimeException(e);
-		}
+    public void modeChanged(ValueChangeEvent event) {
+        selectedMode = (String) event.getNewValue();
+    }
 
-	}
+    public void moduleClicked(ActionEvent event) {
+        setSelectedModule(getRequest().getParameter("task"));
+    }
 
-	public String[] getModes() {
-		return modes;
-	}
+    /**
+     * Loop through all parameters looking for "expansion state" values.  It is propbable
+     * that multiple expansion state parameters will exist for each category since the category
+     * may be listed in multiple modes ("all", "category", and "suite").  If any of the expansion state
+     * values for a category is false mark the category closed.
+     * @return
+     */
+    private Set<String> getClosedCategories() {
+        String expStatePrefix = "expansion_state_";
+        Enumeration parameterNames = getRequest().getParameterNames();
+        Set<String> closedCategories = new HashSet<String>();
+        while (parameterNames.hasMoreElements()) {
+            String paramName = (String) parameterNames.nextElement();
+            if (paramName.startsWith(expStatePrefix)) {
+                String categoryName = paramName.substring(expStatePrefix.length());
+                String[] paramValues = getRequest().getParameterValues(paramName);
+                for (String expState : paramValues) {
+                    if (expState.equals("false")) {
+                        closedCategories.add(categoryName);
+                    }
+                }
+            }
+        }
+        return closedCategories;
+    }
 
-	public void setModes(String[] modes) {
-		this.modes = modes;
-	}
+    public String getUserId() {
+        return UIBeanHelper.getUserId();
+    }
 
-	public class ModuleCategoryGroup implements java.io.Serializable {
-		String mode;
+    private String getVersion(TaskInfo ti) {
 
-		List<ModuleCategory> categories;
+        try {
+            LSID lsid = new LSID(ti.getLsid());
+            return lsid.getVersion();
+        }
+        catch (MalformedURLException e) {
+            log.error("Bad LSID", e);
+            throw new RuntimeException(e);
+        }
 
-		public ModuleCategoryGroup(String mode, List<ModuleCategory> categories) {
-			this.mode = mode;
-			this.categories = categories;
-		}
+    }
 
-		public List<ModuleCategory> getCategories() {
-			return categories;
-		}
+    public String[] getModes() {
+        return modes;
+    }
 
-		public String getMode() {
-			return mode;
-		}
+    public void setModes(String[] modes) {
+        this.modes = modes;
+    }
 
-	}
+    public class ModuleCategoryGroup implements java.io.Serializable {
+        String mode;
 
-	public String getSelectedMode() {
-		if (selectedMode == null) {
-			selectedMode = "category";
-		}
-		return selectedMode;
-	}
+        List<ModuleCategory> categories;
 
-	public void setSelectedMode(String selectedMode) {
+        public ModuleCategoryGroup(String mode, List<ModuleCategory> categories) {
+            this.mode = mode;
+            this.categories = categories;
+        }
 
-		this.selectedMode = selectedMode;
-	}
+        public List<ModuleCategory> getCategories() {
+            return categories;
+        }
+
+        public String getMode() {
+            return mode;
+        }
+
+    }
+
+    public String getSelectedMode() {
+        if (selectedMode == null) {
+            selectedMode = "category";
+        }
+        return selectedMode;
+    }
+
+    public void setSelectedMode(String selectedMode) {
+
+        this.selectedMode = selectedMode;
+    }
 
 }

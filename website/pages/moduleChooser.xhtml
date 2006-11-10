@@ -2,34 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:a4j="https://ajax4jsf.dev.java.net/ajax"
       xmlns:c="http://java.sun.com/jsp/jstl/core">
       
-<script type="text/javascript" language="javascript">
 
-/* <![CDATA[ */
-    function chooserModeChanged() {	  
-      var radioPanel = document.getElementById("viewchoiceRadioPanel");
-      var radioButtons = radioPanel.getElementsByTagName("input");
-      for(var i=0; i<radioButtons.length; i++) {
-        if(radioButtons[i].type == "radio") {
-          var panelId  = "module_table_" + radioButtons[i].value;
-          var panel = document.getElementById(panelId);
-          if(radioButtons[i].checked && panel != null) {
-            Element.show(panel);
-          }
-          else {
-            Element.hide(panel);
-          }
-        }
-      }
-    }
-    
-    function toggleExpansionState( categoryIdentifier)
-    {
-      var id= "expansion_state_" + categoryIdentifier;
-      var hiddenField = document.getElementById(id);
-      hiddenField.value = (hiddenField.value == "true" ? "false" : "true");
-    }
-/* ]]> */
-</script>
       
   <h:form>
     <!-- tasks and pipelines area -->
@@ -87,7 +60,7 @@
               #{category.name}             
           </span>
 
-         <div  id="#{category.identifier}_panel"> 
+         <div  id="#{category.identifier}_panel" style="#{category.expanded == true ? 'display:block;' : 'display:none;'}"> 
           <t:dataList var="taskInfo" value="#{category.modules}" >
             <span class="#{taskInfo.name == moduleChooserBean.selectedModule ? 'tasks_on' : (taskInfo.userId == moduleChooserBean.userId ? 'task-mine' : '')}">
               <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="15" height="1" />

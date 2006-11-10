@@ -16,7 +16,7 @@
 	    var downArrow = document.getElementById(id + "_expanded_img");
 	    var rightArrow = document.getElementById(id + "_collapsed_img");	
 	        
-	    Element.hide(tableElement);
+	    tableElement.style.display="none";
 	    downArrow.style.display ="none";
 	    rightArrow.style.display ="inline"	    
 	}
@@ -26,7 +26,7 @@
 	    var downArrow = document.getElementById(id + "_expanded_img");
 	    var rightArrow = document.getElementById(id + "_collapsed_img");	
 	        
-	    Element.show(tableElement);
+	    tableElement.sytle.display="block";
 	    downArrow.style.display ="inline";
 	    rightArrow.style.display ="none"
 	}
