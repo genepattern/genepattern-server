@@ -26,13 +26,13 @@
 	    var downArrow = document.getElementById(id + "_expanded_img");
 	    var rightArrow = document.getElementById(id + "_collapsed_img");	
 	        
-	    tableElement.sytle.display="block";
+	    tableElement.style.display="block";
 	    downArrow.style.display ="inline";
 	    rightArrow.style.display ="none"
 	}
 	
 	function openAll() {
-      var panels = document.getElementsByName("category_panel");
+      var panels = document.getElementsByClassName("category_panel");
       for(var i=0; i<panels.length; i++) {
         var fullId = panels[i].id;
         var index = fullId.lastIndexOf('_');
@@ -42,7 +42,7 @@
 	}
 	
 	function closeAll() {
-      var panels = document.getElementsByName("category_panel");
+      var panels = document.getElementsByClassName("category_panel");
       for(var i=0; i<panels.length; i++) {
         var fullId = panels[i].id;
         var index = fullId.lastIndexOf('_');
