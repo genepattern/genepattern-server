@@ -49,5 +49,29 @@
         var catId = fullId.substring(0, index);
         hideCategory(catId);
       }
+      
+      function chooserModeChanged() {	  
+        var radioPanel = document.getElementById("viewchoiceRadioPanel");
+        var radioButtons = radioPanel.getElementsByTagName("input");
+        for(var i=0; i<radioButtons.length; i++) {
+          if(radioButtons[i].type == "radio") {
+            var panelId  = "module_table_" + radioButtons[i].value;
+            var panel = document.getElementById(panelId);
+            if(radioButtons[i].checked && panel != null) {
+              Element.show(panel);
+            }
+            else {
+              Element.hide(panel);
+            }
+        }
+      }
+    }
+    
+    function toggleExpansionState( categoryIdentifier)
+    {
+      var id= "expansion_state_" + categoryIdentifier;
+      var hiddenField = document.getElementById(id);
+      hiddenField.value = (hiddenField.value == "true" ? "false" : "true");
+    }
 	
 	}
