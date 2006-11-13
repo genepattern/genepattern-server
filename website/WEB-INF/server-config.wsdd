@@ -27,7 +27,7 @@
   <parameter name="methodName" value="*"/>
   <parameter name="scope" value="session"/>
   <parameter name="className" value="org.genepattern.server.webservice.server.Analysis"/>
-  <typeMapping deserializer="org.apache.axis.encoding.ser.MapDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns1:TaskInfoAttributes" serializer="org.apache.axis.encoding.ser.MapSerializerFactory" type="java:org.genepattern.webservice.TaskInfoAttributes" xmlns:ns1="Analysis"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.MapDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns7:TaskInfoAttributes" serializer="org.apache.axis.encoding.ser.MapSerializerFactory" type="java:org.genepattern.webservice.TaskInfoAttributes" xmlns:ns7="Analysis"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns1:TaskInfo" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.genepattern.webservice.TaskInfo" xmlns:ns1="Analysis"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns2:TaskInfoArray" serializer="org.apache.axis.encoding.ser.ArraySerializerFactory" type="java:org.genepattern.webservice.TaskInfo[]" xmlns:ns2="Analysis"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns3:ParmInfo" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.genepattern.webservice.ParameterInfo" xmlns:ns3="Analysis"/>
@@ -40,7 +40,7 @@
   <parameter name="methodName" value="*"/>
   <parameter name="scope" value="session"/>
   <parameter name="className" value="org.genepattern.server.webservice.server.AdminService"/>
-  <typeMapping deserializer="org.apache.axis.encoding.ser.MapDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns1:TaskInfoAttributes" serializer="org.apache.axis.encoding.ser.MapSerializerFactory" type="java:org.genepattern.webservice.TaskInfoAttributes" xmlns:ns1="Admin"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.MapDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns7:TaskInfoAttributes" serializer="org.apache.axis.encoding.ser.MapSerializerFactory" type="java:org.genepattern.webservice.TaskInfoAttributes" xmlns:ns7="Admin"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns1:TaskInfo" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.genepattern.webservice.TaskInfo" xmlns:ns1="Admin"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns2:TaskInfoArray" serializer="org.apache.axis.encoding.ser.ArraySerializerFactory" type="java:org.genepattern.webservice.TaskInfo[]" xmlns:ns2="Admin"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns3:ParmInfo" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.genepattern.webservice.ParameterInfo" xmlns:ns3="Admin"/>
@@ -53,7 +53,7 @@
   <parameter name="methodName" value="*"/>
   <parameter name="scope" value="session"/>
   <parameter name="className" value="org.genepattern.server.webservice.server.TaskIntegrator"/>
-  <typeMapping deserializer="org.apache.axis.encoding.ser.MapDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns1:TaskInfoAttributes" serializer="org.apache.axis.encoding.ser.MapSerializerFactory" type="java:org.genepattern.webservice.TaskInfoAttributes" xmlns:ns1="TaskIntegrator"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.MapDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns7:TaskInfoAttributes" serializer="org.apache.axis.encoding.ser.MapSerializerFactory" type="java:org.genepattern.webservice.TaskInfoAttributes" xmlns:ns7="TaskIntegrator"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns1:TaskInfo" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.genepattern.webservice.TaskInfo" xmlns:ns1="TaskIntegrator"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns2:TaskInfoArray" serializer="org.apache.axis.encoding.ser.ArraySerializerFactory" type="java:org.genepattern.webservice.TaskInfo[]" xmlns:ns2="TaskIntegrator"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns3:ParmInfo" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.genepattern.webservice.ParameterInfo" xmlns:ns3="TaskIntegrator"/>
