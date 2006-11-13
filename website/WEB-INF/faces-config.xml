@@ -102,14 +102,10 @@
 </managed-bean>
  
 <managed-bean>
-  <managed-bean-name>repeaterExampleBean</managed-bean-name>
-  <managed-bean-class>demo.RepeaterExampleBean</managed-bean-class>
+  <managed-bean-name>currentTimeBean</managed-bean-name>
+  <managed-bean-class>demo.CurrentTimeBean</managed-bean-class>
   <managed-bean-scope>session</managed-bean-scope>
-  <managed-property>
-   <property-name>text</property-name>
-   <property-class>java.lang.String</property-class>
-   <value/>
-  </managed-property>
+
 </managed-bean>
    
  <navigation-rule>
