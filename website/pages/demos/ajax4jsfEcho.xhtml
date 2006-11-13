@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
+
+
+<head>
+<title>repeater</title>
+</head>
+<body>
+<f:view>
+	<h:form>
+		<h:panelGrid columns="2">
+
+			<h:outputText value="Type the Text:" />
+			<h:inputText size="50" value="#{demoEchoBean.text}">
+				<a4j:support event="onkeyup" reRender="repeater" />
+			</h:inputText>
+
+			<h:outputText value="Text in the AJAX Response:" />
+			<h:outputText id="repeater" value="#{demoEchoBean.text}" />
+
+		</h:panelGrid>
+	</h:form></f:view>
+</body>
+</html>
