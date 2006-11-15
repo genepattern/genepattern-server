@@ -6,7 +6,6 @@
 	xmlns:t="http://myfaces.apache.org/tomahawk"
 	xmlns:c="http://java.sun.com/jstl/core">
 
-
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 	<tr>
 		<td colspan="5" class="sidebarhead-bkg2">
@@ -35,7 +34,7 @@
 				layout="hbr" theme="ThemePanel"
 				org.apache.myfaces.STYLE_LOCATION="/css/jscookmenu">
 
-				<t:navigationMenuItem itemLabel="-Choose Job Action-">
+				<t:navigationMenuItem icon="/images/menuicon-1.gif">
 					<t:navigationMenuItem itemLabel="Reload"
 						actionListener="#{recentJobsBean.reload}"
 						itemValue="#{job.jobNumber}" action="run task" />
@@ -65,7 +64,7 @@
 				</h:outputLink>
 				<t:jscookMenu layout="hbr" theme="ThemePanel"
 					org.apache.myfaces.STYLE_LOCATION="/css/jscookmenu">
-					<t:navigationMenuItem itemLabel="-Choose File Action-">
+					<t:navigationMenuItem icon="/images/menuicon-1.gif">
 						<t:navigationMenuItem itemLabel="Create Pipeline"
 							actionListener="#{recentJobsBean.createPipeline}"
 							itemValue="#{job.jobNumber}" action="#{job.jobNumber}" />
