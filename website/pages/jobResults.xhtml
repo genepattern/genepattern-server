@@ -11,82 +11,99 @@
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/MochiKit/MochiKit.js"/>
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jobResults.js"/>
-      <script type="text/javascript" language="javascript">
+      <script type="text/javascript" language="javascript"> 
 
 /* <![CDATA[ */
 
-    var fileRows = new Array();
+    var fileRows = new Object();
+
+    function toggleJobCheckboxes(jobNo)
+    {
+      var mainCheckbox = document.getElementById("cb_job_" + jobNo);
+      var isChecked = mainCheckbox.checked;
+      var rowIds = fileRows[jobNo];
+      for(var i=0; i<rowIds.length; i++)
+      {
+        var row = document.getElementById(rowIds[i]);
+        var elements = row.getElementsByTagName("input");
+        for(var j=0; j<elements.length; j++) 
+        {
+          if(elements[j].type == "checkbox") {
+             elements[j].checked = isChecked;
+          }
+        }
+      }
+    }
+      
+    function toggleAllCheckboxes(maincheckbox)
+    {
+      var isChecked = maincheckbox.checked;
+      var elements = document.getElementsByClassName("jobTableCB");
+      for(var j=0; j<elements.length; j++) 
+      {
+        if(elements[j].type == "checkbox") 
+        {
+          elements[j].checked = isChecked;
+        }
+      }
+    }
+ 
                                
-    function toggleVisibility(id) {
-      var hiddenField = document.getElementById("expansion_state_" + id);    
+    function toggleVisibility(jobNo) {
+      var hiddenField = document.getElementById("expansion_state_" + jobNo);    
       if(hiddenField.value == "false")
       {
-        showCategory(id);
+        showCategory(jobNo);
         hiddenField.value = "true";
       }
       else
       {
-        hideCategory(id);
+        hideCategory(jobNo);
         hiddenField.value = "false";
       }
     }
 
-    function hideCategory( id ) {
-      var downArrow = document.getElementById(id + "_expanded_img");
-      var rightArrow = document.getElementById(id + "_collapsed_img");	
+    function hideCategory( jobNo ) {
+      var downArrow = document.getElementById(jobNo + "_expanded_img");
+      var rightArrow = document.getElementById(jobNo + "_collapsed_img");	
       downArrow.style.display ="none";
       rightArrow.style.display ="inline"	  
     
-      var rows = fileRows[id + ''];
-      for(var i=0; i<rows.length; i++)
+      var rowIds = fileRows[jobNo];
+      for(var i=0; i<rowIds.length; i++)
       {
-        row = document.getElementById(rows[i]);
+        row = document.getElementById(rowIds[i]);
         if(row != null) row.style.display="none";
       }
     }
 
-    function showCategory( id ) {
-      var downArrow = document.getElementById(id + "_expanded_img");
-      var rightArrow = document.getElementById(id + "_collapsed_img");	
+    function showCategory( jobNo ) {
+      var downArrow = document.getElementById(jobNo + "_expanded_img");
+      var rightArrow = document.getElementById(jobNo + "_collapsed_img");	
       downArrow.style.display ="inline";
       rightArrow.style.display ="none"
 
-      var rows = fileRows[id + ''];
-      for(var i=0; i<rows.length; i++)
+      var rowIds = fileRows[jobNo];
+      for(var i=0; i<rowIds.length; i++)
       {
-        row = document.getElementById(rows[i]);
+        row = document.getElementById(rowIds[i]);
         if(row != null) row.style.display="";
       }
     }
 
 
     function openAll() {
-      var panels = document.getElementsByClassName("category_panel");
-      for(var i=0; i<panels.length; i++) {
-        var fullId = panels[i].id;
-        var index = fullId.lastIndexOf('_');
-        var catId = fullId.substring(0, index);
-        showCategory(catId);
-      }
+      for(property in fileRows) {
+        showCategory(property);
+      }        
+    }
+    function closeAll() {
+      for(property in fileRows) {
+        hideCategory(property);
+      }        
     }
 	
-    function closeAll() {
-      var panels = document.getElementsByClassName("category_panel");
-      for(var i=0; i<panels.length; i++) {
-        var fullId = panels[i].id;
-        var index = fullId.lastIndexOf('_');
-        var catId = fullId.substring(0, index);
-        hideCategory(catId);
-      }
-    }
- 
- 	function toggleCheckBoxes(maincheckbox, theForm, cbId) {		
-		var isChecked = maincheckbox.checked;
-		var elements = Form.getInputs(theForm , 'checkbox', cbId)	
-		for (i = 0; i < elements.length; i++) {			
-			elements[i].checked = isChecked;
-		}
-	}
+
 		
 		
 	function confirmDelete() {
@@ -100,14 +117,15 @@
 	</script>
     </ui:define>
     <ui:define name="mainNav">
-      <input type="checkbox" name="checkbox" value="checkbox"/>
-email notification&#160;&#160;&#160;&#160;
-<input type="checkbox" name="showAll" value="showAll" onclick="javascript:window.location='zipJobResults.jsp?showAll=1'"/>
-          show everyone's jobs&#160;&#160;&#160;&#160;
-          <input type="checkbox" name="showLogs" value="showLogs" onclick="toggleLogs()"/>
-          show execution logs	
+      <input type="checkbox" name="checkbox" value="checkbox"/>email notification&#160;&#160;&#160;&#160;
+      <input type="checkbox" name="showAll" value="showAll" onclick="javascript:window.location='zipJobResults.jsp?showAll=1'"/>show everyone's jobs&#160;&#160;&#160;&#160;
+      <input type="checkbox" name="showLogs" value="showLogs" onclick="toggleLogs()"/>show execution logs	
 	</ui:define>
+	
+	
     <ui:define name="body">
+    <h:form>
+    
       <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
         <tr>
           <td>Job Results</td>
@@ -139,30 +157,34 @@ email notification&#160;&#160;&#160;&#160;
         &#160;&#160;
        <input name="sort" type="submit" id="sort" value="sort"/>
       </div>
+      
+      <!-- Job results table -->
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
+ 
         <tr class="smalltype">
-          <td>&#160;</td>
+          <td>&#160;</td>         
           <td valign="top">
             <nobr>
               <div align="center">
                 <a href="#">download</a> | <a href="#">delete</a>
               </div>
             </nobr>
-          </td>
-          <td>&#160;</td>
+          </td>         
+          <td>&#160;</td>         
           <td>
-            <a href="link">open all</a> | <a href="link">close all</a>
+            <a href="#" onclick="openAll();">open all</a> | <a href="#" onclick="closeAll();">close all</a>
           </td>
           <td>&#160;</td>
           <td>&#160;</td>
           <td>&#160;</td>
           <td>&#160;</td>
         </tr>
+        
         <tr class="tableheader-row">
           <td>job</td>
           <td>
             <div align="center">
-              <input name="checkbox" type="checkbox" value="checkbox"/>
+              <input name="checkbox" type="checkbox" value="checkbox" onclick="toggleAllCheckboxes(this);"/>
             </div>
           </td>
           <td>&#160;</td>
@@ -181,15 +203,16 @@ email notification&#160;&#160;&#160;&#160;
           <!--  Begin task title row -->
           <tr class="task-titlerow">
             <td>
-              <input type="hidden" 
+               <a href="link">#{jobResult.jobInfo.jobNumber}</a>
+               <input type="hidden" 
                   id="expansion_state_#{jobResult.jobInfo.jobNumber}"
                   name="expansion_state_#{jobResult.jobInfo.jobNumber}"
                   value="#{jobResult.expanded}"/>  
-              <a href="link">#{jobResult.jobInfo.jobNumber}</a>
             </td>
             <td>
               <div align="center">
-                <input name="checkbox" type="checkbox" class="boldtype" value="checkbox"/>
+                <input name="checkbox" type="checkbox" class="jobTableCB" onclick="toggleJobCheckboxes('#{jobResult.jobInfo.jobNumber}');"
+                       id="cb_job_#{jobResult.jobInfo.jobNumber}"/>
               </div>
             </td>
             <td style="cursor: pointer;" onclick="toggleVisibility('#{jobResult.jobInfo.jobNumber}');">
@@ -222,9 +245,11 @@ email notification&#160;&#160;&#160;&#160;
           <!--  End task title row  -->
 
           <!-- Loop through job output files -->
+
           <script type="text/javascript" language="javascript">
             <h:outputText> fileRows['#{jobResult.jobInfo.jobNumber}'] = new Array(); </h:outputText>
           </script>
+
           <t:dataList value="#{jobResult.outputFiles}" var="fileInfo" rowIndexVar="index">
             <script type="text/javascript" language="javascript">
               <h:outputText>
@@ -235,7 +260,7 @@ email notification&#160;&#160;&#160;&#160;
               <td>&#160;</td>
               <td>
                 <div align="center">
-                  <input name="checkbox" type="checkbox" class="boldtype" value="checkbox"/>
+                  <input name="selectedFiles_#{jobResult.jobInfo.jobNumber}" type="checkbox" class="jobTableCB"/>
                 </div>
               </td>
               <td>&#160;</td>
@@ -273,7 +298,8 @@ email notification&#160;&#160;&#160;&#160;
         </tr>
       </table>
       <p>&#160;</p>
-    </ui:define>ui:define name="body">
+      </h:form>
+    </ui:define>
 
 </ui:composition>
 </html>
