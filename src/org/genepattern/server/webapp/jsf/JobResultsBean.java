@@ -33,6 +33,9 @@ public class JobResultsBean {
     private boolean ascending;
     private boolean warnBeforeDeletingJobs;
     private boolean showAllJobs = true;
+    
+    List checkbox = new ArrayList();
+    
     /** name of column we're sorting on */
     private String sort;
     /** column that was last used for sorting */
@@ -58,6 +61,18 @@ public class JobResultsBean {
         catch (WebServiceException wse) {
             wse.printStackTrace();
         }
+    }
+    
+    public String delete() {
+    	String [] selectedJobs = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
+    	String [] selectedFiles = UIBeanHelper.getRequest().getParameterValues("selectedFiles");
+    	return null;
+    }
+    
+    public String download() {
+    	String [] selectedJobs = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
+    	String [] selectedFiles = UIBeanHelper.getRequest().getParameterValues("selectedFiles");
+    	return null;
     }
 
     public void deleteJobs() {
@@ -207,6 +222,7 @@ public class JobResultsBean {
     
     public static class FileInfo {
         String name;
+        String absolutePath;
         long size;
         Date lastModified;
         boolean exists;
@@ -215,7 +231,7 @@ public class JobResultsBean {
             this.name = file.getName();
             this.size = file.length();
             this.exists = file.exists();
-            
+            this.absolutePath = file.getAbsolutePath();           
             Calendar cal = Calendar.getInstance();
             cal.setTimeInMillis(file.lastModified());
             this.lastModified = cal.getTime();
@@ -225,8 +241,7 @@ public class JobResultsBean {
             return name;
         }
         
-        public String getFormattedSize() {
-            
+        public String getFormattedSize() {            
             NumberFormat nf = NumberFormat.getInstance();
             return nf.format(Math.max(1, size / 1000)) + "k";
         }
@@ -235,9 +250,21 @@ public class JobResultsBean {
             return lastModified;
         }
         
+        public String getAbsolutePath() {
+        	return absolutePath;
+        }
         
         
         
         
+        
+    }
+
+    public List getCheckbox() {
+        return checkbox;
+    }
+
+    public void setCheckbox(List checkboxList) {
+        this.checkbox = checkboxList;
     }
 }
