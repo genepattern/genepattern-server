@@ -241,30 +241,23 @@ public class AdminDAO extends BaseDAO {
         return allTasks;
     }
 
-    public TaskInfo[] getAllTasksForUser(String username)
-            throws OmnigeneException {
+    public TaskInfo[] getAllTasksForUser(String username) {
+        String hql = "from org.genepattern.server.domain.TaskMaster where userId = :userId or accessId = :accessId";
+        Query query = getSession().createQuery(hql);
+        query.setString("userId", username);
+        query.setInteger("accessId", PUBLIC_ACCESS_ID);
+        List<TaskMaster> results = query.list();
 
-        try {
-            String hql = "from org.genepattern.server.domain.TaskMaster where userId = :userId or accessId = :accessId";
-            Query query = getSession().createQuery(hql);
-            query.setString("userId", username);
-            query.setInteger("accessId", PUBLIC_ACCESS_ID);
-            List<TaskMaster> results = query.list();
-
-            TaskInfo[] allTasks = new TaskInfo[results.size()];
-            for (int i = 0; i < allTasks.length; i++) {
-                allTasks[i] = taskInfoFromTaskMaster(results.get(i));
-            }
-            return allTasks;
-        } catch (HibernateException e) {
-            log.error(e);
-            throw new OmnigeneException(e);
+        TaskInfo[] allTasks = new TaskInfo[results.size()];
+        for (int i = 0; i < allTasks.length; i++) {
+            allTasks[i] = taskInfoFromTaskMaster(results.get(i));
         }
+        return allTasks;
+
     }
 
     public TaskInfo[] getRecentlyRunTasksForUser(String username, int maxResults) {
 
-        try {
             String hql = "select tm  from org.genepattern.server.domain.TaskMaster tm where taskId in "
                     + " (select distinct aJob.taskId from org.genepattern.server.domain.AnalysisJob aJob where userId = :userId)";
             Query query = getSession().createQuery(hql);
@@ -277,10 +270,7 @@ public class AdminDAO extends BaseDAO {
                 allTasks[i] = taskInfoFromTaskMaster(results.get(i));
             }
             return allTasks;
-        } catch (HibernateException e) {
-            log.error(e);
-            throw new OmnigeneException(e);
-        }
+      
 
     }
 
