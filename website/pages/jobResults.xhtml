@@ -200,8 +200,8 @@ email notification&#160;&#160;&#160;&#160;
                      width="8" height="8" border="0" style="#{jobResult.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
               </div>
             </td>
-            <td class="task-title">
-              <a href="close">#{jobResult.jobInfo.taskName}</a>
+            <td class="task-title" style="cursor: pointer;" onclick="toggleVisibility('#{jobResult.jobInfo.jobNumber}');">
+              #{jobResult.jobInfo.taskName}
               <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" alt="menu" name="Image22" width="14" height="14" border="0" align="absmiddle" id="Image22" onclick="MM_showMenu(window.mm_menu_0925155042_0,11,11,null,'Image22')" onmouseover="MM_swapImage('Image22','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore();MM_startTimeout()"/>
             </td>
             <td>&#160;</td>

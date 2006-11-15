@@ -50,8 +50,7 @@
            <!-- Category header  Clicking on the header hides or shows the panel contents -->
           <!--     The category.expanded property sets the inital hide/show values -->
 
-          <span class="task-categories" style="cursor: pointer;" 
-                onclick="toggleVisibility('#{category.identifier}'); toggleExpansionState('#{category.identifier}');">
+          <span class="task-categories" style="cursor: pointer;" onclick="toggleVisibility('#{category.identifier}');">
               &#160;
               <img id="#{category.identifier}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" 
                    width="8" height="8" border="0" style="#{category.expanded == true ? 'display:inline;' : 'display:none;'}"/>
