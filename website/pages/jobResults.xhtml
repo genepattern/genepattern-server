@@ -166,7 +166,7 @@
           <td valign="top">
             <nobr>
               <div align="center">
-                <a href="#">download</a> | <a href="#">delete</a>
+                <h:commandLink action="#{jobResultsBean.download}">download</h:commandLink> | <h:commandLink action="#{jobResultsBean.delete}">delete</h:commandLink>
               </div>
             </nobr>
           </td>         
@@ -211,22 +211,23 @@
             </td>
             <td>
               <div align="center">
-                <input name="checkbox" type="checkbox" class="jobTableCB" onclick="toggleJobCheckboxes('#{jobResult.jobInfo.jobNumber}');"
+                <input name="selectedJobs" type="checkbox" class="jobTableCB" value="#{jobResult.jobInfo.jobNumber}"
+                       onclick="toggleJobCheckboxes('#{jobResult.jobInfo.jobNumber}');"
                        id="cb_job_#{jobResult.jobInfo.jobNumber}"/>
               </div>
             </td>
-            <td style="cursor: pointer;" onclick="toggleVisibility('#{jobResult.jobInfo.jobNumber}');">
-              <div align="right">
-                <img id="#{jobResult.jobInfo.jobNumber}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" 
-                     width="8" height="8" border="0" style="#{jobResult.expanded == true ? 'display:inline;' : 'display:none;'}"/>
-                <img id="#{jobResult.jobInfo.jobNumber}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" 
-                     width="8" height="8" border="0" style="#{jobResult.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
-              </div>
-            </td>
+            
+            <td align="right" style="cursor: pointer;" onclick="toggleVisibility('#{jobResult.jobInfo.jobNumber}');">
+              <img id="#{jobResult.jobInfo.jobNumber}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" 
+                   width="8" height="8" border="0" style="#{jobResult.expanded == true ? 'display:inline;' : 'display:none;'}"/>
+              <img id="#{jobResult.jobInfo.jobNumber}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" 
+                   width="8" height="8" border="0" style="#{jobResult.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
+            </td>           
             <td class="task-title" style="cursor: pointer;" onclick="toggleVisibility('#{jobResult.jobInfo.jobNumber}');">
               #{jobResult.jobInfo.taskName}
               <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" alt="menu" name="Image22" width="14" height="14" border="0" align="absmiddle" id="Image22" onclick="MM_showMenu(window.mm_menu_0925155042_0,11,11,null,'Image22')" onmouseover="MM_swapImage('Image22','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore();MM_startTimeout()"/>
             </td>
+            
             <td>&#160;</td>
             <td>
               <h:outputText value="#{jobResult.jobInfo.dateSubmitted}">
@@ -260,7 +261,8 @@
               <td>&#160;</td>
               <td>
                 <div align="center">
-                  <input name="selectedFiles_#{jobResult.jobInfo.jobNumber}" type="checkbox" class="jobTableCB"/>
+                  <input name="selectedFiles" value="#{fileInfo.absolutePath}"
+                         id="selectedFiles_#{jobResult.jobInfo.jobNumber}" type="checkbox" class="jobTableCB"/>
                 </div>
               </td>
               <td>&#160;</td>
@@ -285,7 +287,7 @@
           <td valign="top" class="smalltype">
             <nobr>
               <div align="center">
-                <a href="#">download</a> | <a href="#">delete</a>
+                <h:commandLink action="#{jobResultsBean.download}">download</h:commandLink> | <h:commandLink action="#{jobResultsBean.delete}">delete</h:commandLink>
               </div>
             </nobr>
           </td>
