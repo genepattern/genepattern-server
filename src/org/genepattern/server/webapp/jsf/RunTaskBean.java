@@ -244,10 +244,13 @@ public class RunTaskBean {
         }
 
         Map<String, String> reloadValues = new HashMap<String, String>();
-        if (UIBeanHelper.getRequest().getParameter("reloadJob") != null) {
+        String reloadJobNumberString = UIBeanHelper.getRequest().getParameter("reloadJob");
+        if(reloadJobNumberString==null) {
+            reloadJobNumberString = (String) UIBeanHelper.getRequest().getAttribute("reloadJob");
+        }
+        if (reloadJobNumberString != null) {
             try {
-                int reloadJobNumber = Integer.parseInt(UIBeanHelper
-                        .getRequest().getParameter("reloadJob"));
+                int reloadJobNumber = Integer.parseInt(reloadJobNumberString);
                 LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper
                         .getUserId());
                 JobInfo reloadJob = ac.getJob(reloadJobNumber);
