@@ -103,6 +103,7 @@ import org.genepattern.gpge.ui.tasks.HistoryMenu;
 import org.genepattern.gpge.ui.tasks.HistoryModel;
 import org.genepattern.gpge.ui.tasks.JobMessage;
 import org.genepattern.gpge.ui.tasks.JobModel;
+import org.genepattern.gpge.ui.tasks.ModuleMenuItemAction;
 import org.genepattern.gpge.ui.tasks.SemanticUtil;
 import org.genepattern.gpge.ui.tasks.Sendable;
 import org.genepattern.gpge.ui.tasks.TaskDisplay;
@@ -978,9 +979,9 @@ public class GPGE {
 
                             fileSummaryComponent.setText(node.name, node
                                     .getFileInfo());
-                            SemanticUtil.ModuleMenuItemAction[] mi = null;
+                            ModuleMenuItemAction[] mi = null;
                             if (inputTypeToMenuItemsMap != null) {
-                                mi = (SemanticUtil.ModuleMenuItemAction[]) inputTypeToMenuItemsMap
+                                mi = (ModuleMenuItemAction[]) inputTypeToMenuItemsMap
                                         .get(node.getFileInfo().getKind());
                             }
                             if (mi != null) {
@@ -1146,9 +1147,9 @@ public class GPGE {
                             fileSummaryComponent.setText(node.file.getName(),
                                     node.getFileInfo());
 
-                            SemanticUtil.ModuleMenuItemAction[] mi = null;
+                            ModuleMenuItemAction[] mi = null;
                             if (inputTypeToMenuItemsMap != null) {
-                                mi = (SemanticUtil.ModuleMenuItemAction[]) inputTypeToMenuItemsMap
+                                mi = (ModuleMenuItemAction[]) inputTypeToMenuItemsMap
                                         .get(node.getFileInfo().getKind());
                             }
                             if (mi != null) {
