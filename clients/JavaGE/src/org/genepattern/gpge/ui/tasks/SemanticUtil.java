@@ -93,7 +93,7 @@ public class SemanticUtil {
 
         Map inputTypeToModulesMap = org.genepattern.util.SemanticUtil
 
-        .getInputTypeToModulesMap(analysisServices);
+        .getKindToModulesMap(analysisServices);
 
         return _getInputTypeToMenuItemsMap(inputTypeToModulesMap);
 
