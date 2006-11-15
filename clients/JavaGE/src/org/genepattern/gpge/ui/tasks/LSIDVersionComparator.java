@@ -15,12 +15,10 @@ package org.genepattern.gpge.ui.tasks;
 
 import java.util.Comparator;
 
-public class LSIDVersionComparator implements Comparator {
+public class LSIDVersionComparator implements Comparator<String> {
 	public static final LSIDVersionComparator INSTANCE = new LSIDVersionComparator();
 	
-	public int compare(Object arg0, Object arg1) {
-		String s0 = (String) arg0;
-		String s1 = (String) arg1;
+	public int compare(String s0, String s1) {	
 		String[] s0Tokens = s0.split("\\.");
 		String[] s1Tokens = s1.split("\\.");
 		int min = Math.min(s0Tokens.length, s1Tokens.length);
