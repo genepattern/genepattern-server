@@ -262,12 +262,13 @@ public class AdminDAO extends BaseDAO {
         }
     }
 
-    public TaskInfo[] getRecentlyRunTasksForUser(String username) {
+    public TaskInfo[] getRecentlyRunTasksForUser(String username, int maxResults) {
 
         try {
             String hql = "select tm  from org.genepattern.server.domain.TaskMaster tm where taskId in "
                     + " (select distinct aJob.taskId from org.genepattern.server.domain.AnalysisJob aJob where userId = :userId)";
             Query query = getSession().createQuery(hql);
+            query.setMaxResults(maxResults);
             query.setString("userId", username);
             List<TaskMaster> results = query.list();
 

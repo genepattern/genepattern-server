@@ -10,6 +10,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteHome;
+import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
@@ -20,25 +21,23 @@ public class ModuleHelper {
     private static Logger log = Logger.getLogger(ModuleHelper.class);
 
     private TaskInfo[] allTasks;
-    
-    public ModuleHelper()
-    {
+
+    public ModuleHelper() {
         allTasks = (new AdminDAO()).getAllTasksForUser(getUserId());
     }
-    
-    public  ModuleCategory getRecentlyUsed() {
-        AdminDAO dao = new AdminDAO();
-        return new ModuleCategory("Recently Used", dao.getRecentlyRunTasksForUser(getUserId()));
-    }
-      
 
-    public  ModuleCategory getAllTasks() {
+    public ModuleCategory getRecentlyUsed() {
+        AdminDAO dao = new AdminDAO();
+        int recentJobsToShow = Integer.parseInt(UserPrefsBean.getProp(UserPropKey.RECENT_JOBS_TO_SHOW, "4").getValue());
+        return new ModuleCategory("Recently Used", dao.getRecentlyRunTasksForUser(getUserId(), recentJobsToShow));
+    }
+
+    public ModuleCategory getAllTasks() {
         AdminDAO dao = new AdminDAO();
         return new ModuleCategory("All", dao.getAllTasksForUser(getUserId()));
     }
 
-
-    public  List<ModuleCategory> getTasksByType() {
+    public List<ModuleCategory> getTasksByType() {
 
         List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
         Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
@@ -46,7 +45,7 @@ public class ModuleHelper {
         for (int i = 0; i < allTasks.length; i++) {
             TaskInfo ti = allTasks[i];
             String taskType = ti.getTaskInfoAttributes().get("taskType");
-            if(taskType == null || taskType.length() == 0) {
+            if (taskType == null || taskType.length() == 0) {
                 taskType = "Uncategorized";
             }
             List<TaskInfo> tasks = taskMap.get(taskType);
@@ -66,12 +65,12 @@ public class ModuleHelper {
         }
         return categories;
     }
-    
-    public  List<ModuleCategory> getTasksBySuite() {
- 
+
+    public List<ModuleCategory> getTasksBySuite() {
+
         AdminDAO dao = new AdminDAO();
         HashMap<String, TaskInfo> taskMap = new HashMap();
-        for(int i=0; i<allTasks.length; i++) {
+        for (int i = 0; i < allTasks.length; i++) {
             try {
                 LSID lsidObj = new LSID(allTasks[i].getLsid());
                 taskMap.put(lsidObj.toStringNoVersion(), allTasks[i]);
@@ -79,26 +78,27 @@ public class ModuleHelper {
             catch (MalformedURLException e) {
                 log.error("Error parsing lsid: ", e);
             }
-        };
-        
+        }
+        ;
+
         List<Suite> suites = (new SuiteHome()).findAll();
         List<ModuleCategory> categories = new ArrayList(suites.size());
-        for(Suite suite : suites) {
+        for (Suite suite : suites) {
             List<String> lsids = suite.getModules();
             List<TaskInfo> suiteTasks = new ArrayList<TaskInfo>();
-            for(String lsid : lsids) {
+            for (String lsid : lsids) {
                 TaskInfo ti = taskMap.get(lsid);
-                if(ti != null) {
+                if (ti != null) {
                     suiteTasks.add(ti);
                 }
             }
             TaskInfo[] taskArray = new TaskInfo[suiteTasks.size()];
             suiteTasks.toArray(taskArray);
             categories.add(new ModuleCategory(suite.getName(), taskArray));
-            
+
         }
         return categories;
-       
+
     }
 
 }
