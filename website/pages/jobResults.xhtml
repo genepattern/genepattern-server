@@ -1,17 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  Loop through job list -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core" xmlns:tr="http://myfaces.apache.org/trinidad">
   <ui:composition template="/templates/common.xhtml">
     <ui:define name="pageTitle">
-		Job Results
+		GenePattern | Job Results
 	</ui:define>
     <ui:define name="headText">
       <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css"/>
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/MochiKit/MochiKit.js"/>
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
+      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jobResults.js"/>
       <script type="text/javascript" language="javascript">
 
 /* <![CDATA[ */
-	function toggleCheckBoxes(maincheckbox, theForm, cbId) {		
+
+    var fileRows = new Array();
+                               
+    function toggleVisibility(id) {
+      var hiddenField = document.getElementById("expansion_state_" + id);    
+      if(hiddenField.value == "false")
+      {
+        showCategory(id);
+        hiddenField.value = "true";
+      }
+      else
+      {
+        hideCategory(id);
+        hiddenField.value = "false";
+      }
+    }
+
+    function hideCategory( id ) {
+      var downArrow = document.getElementById(id + "_expanded_img");
+      var rightArrow = document.getElementById(id + "_collapsed_img");	
+      downArrow.style.display ="none";
+      rightArrow.style.display ="inline"	  
+    
+      var rows = fileRows[id + ''];
+      for(var i=0; i<rows.length; i++)
+      {
+        row = document.getElementById(rows[i]);
+        if(row != null) row.style.display="none";
+      }
+    }
+
+    function showCategory( id ) {
+      var downArrow = document.getElementById(id + "_expanded_img");
+      var rightArrow = document.getElementById(id + "_collapsed_img");	
+      downArrow.style.display ="inline";
+      rightArrow.style.display ="none"
+
+      var rows = fileRows[id + ''];
+      for(var i=0; i<rows.length; i++)
+      {
+        row = document.getElementById(rows[i]);
+        if(row != null) row.style.display="";
+      }
+    }
+
+
+    function openAll() {
+      var panels = document.getElementsByClassName("category_panel");
+      for(var i=0; i<panels.length; i++) {
+        var fullId = panels[i].id;
+        var index = fullId.lastIndexOf('_');
+        var catId = fullId.substring(0, index);
+        showCategory(catId);
+      }
+    }
+	
+    function closeAll() {
+      var panels = document.getElementsByClassName("category_panel");
+      for(var i=0; i<panels.length; i++) {
+        var fullId = panels[i].id;
+        var index = fullId.lastIndexOf('_');
+        var catId = fullId.substring(0, index);
+        hideCategory(catId);
+      }
+    }
+ 
+ 	function toggleCheckBoxes(maincheckbox, theForm, cbId) {		
 		var isChecked = maincheckbox.checked;
 		var elements = Form.getInputs(theForm , 'checkbox', cbId)	
 		for (i = 0; i < elements.length; i++) {			
@@ -55,12 +124,9 @@ email notification&#160;&#160;&#160;&#160;
         </select>
 	      &#160;<a href="#" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('jobsorder','','#{facesContext.externalContext.requestContextPath}/images/sort-down-over.gif',1)">
           <img src="#{facesContext.externalContext.requestContextPath}/images/sort-down.gif" alt="jobs order" name="jobsorder" width="11" height="16" border="0" align="absmiddle" id="jobsorder"/>
-        </a>
-		  
-		 &#160;&#160;
-		 
-		 &#160;&#160;
-		    <strong>sort files by:</strong>
+        </a>		  
+		 &#160; &#160; &#160; &#160;
+		<strong>sort files by:</strong>
         <select name="sortfiles" id="sortfiles" onchange="MM_jumpMenu('parent',this,0)">
           <option>name</option>
           <option>size</option>
@@ -70,8 +136,8 @@ email notification&#160;&#160;&#160;&#160;
 		    &#160;<a href="#" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('filesorder','','#{facesContext.externalContext.requestContextPath}/images/sort-down-over.gif',1)">
           <img src="#{facesContext.externalContext.requestContextPath}/images/sort-down.gif" alt="files order" name="filesorder" width="11" height="16" border="0" align="absmiddle" id="filesorder"/>
         </a>
-&#160;&#160;
-<input name="sort" type="submit" id="sort" value="sort"/>
+        &#160;&#160;
+       <input name="sort" type="submit" id="sort" value="sort"/>
       </div>
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr class="smalltype">
@@ -108,199 +174,87 @@ email notification&#160;&#160;&#160;&#160;
             <div align="center">&#160;status&#160;</div>
           </td>
         </tr>
-        <tr class="task-titlerow">
-          <td>
-            <a href="link">110</a>
-          </td>
-          <td>
-            <div align="center">
-              <input name="checkbox" type="checkbox" class="boldtype" value="checkbox"/>
-            </div>
-          </td>
-          <td>
-            <div align="right">
-              <a href="close">
-                <img src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" alt="close task" width="8" height="8" hspace="3" vspace="3" border="0"/>
-              </a>
-            </div>
-          </td>
-          <td class="task-title">
-            <a href="close">ConvertLineEndings</a>
-            <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" alt="menu" name="Image22" width="14" height="14" border="0" align="absmiddle" id="Image22" onclick="MM_showMenu(window.mm_menu_0925155042_0,11,11,null,'Image22')" onmouseover="MM_swapImage('Image22','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore();MM_startTimeout()"/>
-          </td>
-          <td>&#160;</td>
-          <td>Sep 12 11:57:05</td>
-          <td>Sep 12 11:57:06</td>
-          <td>
-            <div align="center" class="status-finished">finished</div>
-          </td>
-        </tr>
-        <tr class="files">
-          <td>&#160;</td>
-          <td>
-            <div align="center">
-              <input name="checkbox" type="checkbox" class="boldtype" value="checkbox"/>
-            </div>
-          </td>
-          <td>&#160;</td>
-          <td>
-            <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="4" height="4" hspace="6" vspace="2" border="0"/>
-            <a href="link">new
-                   test.cvt.gff</a>
-            <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" alt="menu" name="Image2" width="14" height="14" border="0" align="absmiddle" id="Image2" onclick="MM_showMenu(window.mm_menu_0925155524_0,11,11,null,'Image2')" onmouseover="MM_swapImage('Image2','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore();MM_startTimeout()"/>
-          </td>
-          <td>60k</td>
-          <td>&#160;</td>
-          <td>Sep 12 11:57:06</td>
-          <td>&#160;</td>
-        </tr>
-        <tr class="files">
-          <td>&#160;</td>
-          <td>
-            <div align="center">
-              <input name="checkbox" type="checkbox" class="boldtype" value="checkbox"/>
-            </div>
-          </td>
-          <td>&#160;</td>
-          <td>
-            <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="4" height="4" hspace="6" vspace="2" border="0"/>
-            <a href="link">new
-              test.cvt.gff</a>
-            <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" alt="menu" name="Image3" width="14" height="14" border="0" align="absmiddle" id="Image3" onmouseover="MM_swapImage('Image3','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore()"/>
-          </td>
-          <td>34k</td>
-          <td>&#160;</td>
-          <td>Sep 12 11:57:06</td>
-          <td>&#160;</td>
-        </tr>
-        <tr class="files">
-          <td>&#160;</td>
-          <td>
-            <div align="center">
-              <input name="checkbox" type="checkbox" class="boldtype" value="checkbox"/>
-            </div>
-          </td>
-          <td>&#160;</td>
-          <td>
-            <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="4" height="4" hspace="6" vspace="2" border="0"/>
-            <a href="link">new
-              test.cvt.gff </a>
-            <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" alt="menu" name="Image4" width="14" height="14" border="0" align="absmiddle" id="Image4" onmouseover="MM_swapImage('Image4','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore()"/>
-          </td>
-          <td>25k</td>
-          <td>&#160;</td>
-          <td>Sep 12 11:57:06</td>
-          <td>&#160;</td>
-        </tr>
-        <tr class="task-titlerow">
-          <td>
-            <a href="link">109</a>
-          </td>
-          <td>
-            <div align="center">
-              <input name="checkbox" type="checkbox" class="boldtype" value="checkbox"/>
-            </div>
-          </td>
-          <td>
-            <div align="right">
-              <a href="close">
-                <img src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" alt="close task" width="8" height="8" hspace="3" vspace="3" border="0"/>
-              </a>
-            </div>
-          </td>
-          <td class="task-title">
-            <a href="close">AreaChange</a>
-            <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" alt="menu" name="Image5" width="14" height="14" border="0" align="absmiddle" id="Image5" onmouseover="MM_swapImage('Image5','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore()"/>
-          </td>
-          <td>&#160;</td>
-          <td>Sep 12 09:57:05</td>
-          <td>Sep 12 09:57:06</td>
-          <td>
-            <div align="center" class="status-finished">finished</div>
-          </td>
-        </tr>
-        <tr class="files">
-          <td>&#160;</td>
-          <td>
-            <div align="center">
-              <input name="checkbox" type="checkbox" class="boldtype" value="checkbox"/>
-            </div>
-          </td>
-          <td>&#160;</td>
-          <td>
-            <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="4" height="4" hspace="6" vspace="2" border="0"/>
-            <a href="link">stdout.txt</a>
-            <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" alt="menu" name="Image6" width="14" height="14" border="0" align="absmiddle" id="Image6" onmouseover="MM_swapImage('Image6','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore()"/>
-          </td>
-          <td>64k</td>
-          <td>&#160;</td>
-          <td>Sep 12 09:57:06</td>
-          <td>&#160;</td>
-        </tr>
-        <tr class="task-titlerow">
-          <td>
-            <a href="link">108</a>
-          </td>
-          <td>
-            <div align="center">
-              <input name="checkbox" type="checkbox" class="boldtype" value="checkbox"/>
-            </div>
-          </td>
-          <td>
-            <div align="right">
-              <a href="open">
-                <img src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" alt="open task" width="8" height="8" hspace="3" vspace="3" border="0"/>
-              </a>
-            </div>
-          </td>
-          <td class="task-title">
-            <a href="open">Lu.Getz.Miska.Nature.June.2005.clustering.miGCM218.pipeline</a>
-            <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" alt="menu" name="Image7" width="14" height="14" border="0" align="absmiddle" id="Image7" onmouseover="MM_swapImage('Image7','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore()"/>
-          </td>
-          <td>&#160;</td>
-          <td>Sep 10 11:48:05</td>
-          <td>Sep 10 11:59:06</td>
-          <td>
-            <div align="center" class="status-error">error</div>
-          </td>
-        </tr>
-        <tr class="task-titlerow">
-          <td>
-            <a href="link">107</a>
-          </td>
-          <td>
-            <div align="center">
-              <input name="checkbox" type="checkbox" class="boldtype" value="checkbox"/>
-            </div>
-          </td>
-          <td>
-            <div align="right">
-              <a href="open">
-                <img src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" alt="open task" width="8" height="8" hspace="3" vspace="3" border="0"/>
-              </a>
-            </div>
-          </td>
-          <td class="task-title">
-            <a href="open">ConvertLineEndings</a>
-            <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" alt="menu" name="Image8" width="14" height="14" border="0" align="absmiddle" id="Image8" onmouseover="MM_swapImage('Image8','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore()"/>
-          </td>
-          <td>&#160;</td>
-          <td>Sep 08 12:02:01</td>
-          <td>Sep 08 12:05:17</td>
-          <td>
-            <div align="center" class="status-finished">finished</div>
-          </td>
-        </tr>
-        <tr class="files">
-          <td>&#160;</td>
-          <td>&#160;</td>
-          <td>&#160;</td>
-          <td>&#160;</td>
-          <td>&#160;</td>
-          <td>&#160;</td>
-          <td>&#160;</td>
-          <td>&#160;</td>
-        </tr>
+        
+        <!--  Loop through job list -->
+        <t:dataList value="#{jobResultsBean.jobResults}" var="jobResult">
+        
+          <!--  Begin task title row -->
+          <tr class="task-titlerow">
+            <td>
+              <input type="hidden" 
+                  id="expansion_state_#{jobResult.jobInfo.jobNumber}"
+                  name="expansion_state_#{jobResult.jobInfo.jobNumber}"
+                  value="#{jobResult.expanded}"/>  
+              <a href="link">#{jobResult.jobInfo.jobNumber}</a>
+            </td>
+            <td>
+              <div align="center">
+                <input name="checkbox" type="checkbox" class="boldtype" value="checkbox"/>
+              </div>
+            </td>
+            <td style="cursor: pointer;" onclick="toggleVisibility('#{jobResult.jobInfo.jobNumber}');">
+              <div align="right">
+                <img id="#{jobResult.jobInfo.jobNumber}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" 
+                     width="8" height="8" border="0" style="#{jobResult.expanded == true ? 'display:inline;' : 'display:none;'}"/>
+                <img id="#{jobResult.jobInfo.jobNumber}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" 
+                     width="8" height="8" border="0" style="#{jobResult.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
+              </div>
+            </td>
+            <td class="task-title">
+              <a href="close">#{jobResult.jobInfo.taskName}</a>
+              <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" alt="menu" name="Image22" width="14" height="14" border="0" align="absmiddle" id="Image22" onclick="MM_showMenu(window.mm_menu_0925155042_0,11,11,null,'Image22')" onmouseover="MM_swapImage('Image22','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore();MM_startTimeout()"/>
+            </td>
+            <td>&#160;</td>
+            <td>
+              <h:outputText value="#{jobResult.jobInfo.dateSubmitted}">
+                <f:convertDateTime pattern="MMM dd hh:mm:ss a"/>
+              </h:outputText>
+            </td>
+            <td>
+              <h:outputText value="#{jobResult.jobInfo.dateCompleted}">
+                <f:convertDateTime pattern="MMM dd hh:mm:ss a"/>
+              </h:outputText>
+            </td>
+            <td>
+              <div align="center" class="status-finished">finished</div>
+            </td>
+          </tr>
+          <!--  End task title row  -->
+
+          <!-- Loop through job output files -->
+          <script type="text/javascript" language="javascript">
+            <h:outputText> fileRows['#{jobResult.jobInfo.jobNumber}'] = new Array(); </h:outputText>
+          </script>
+          <t:dataList value="#{jobResult.outputFiles}" var="fileInfo" rowIndexVar="index">
+            <script type="text/javascript" language="javascript">
+              <h:outputText>
+	             fileRows['#{jobResult.jobInfo.jobNumber}'][#{index}] = 'file_row_#{jobResult.jobInfo.jobNumber}_#{index}';
+              </h:outputText>
+            </script>
+            <tr class="files" id="file_row_#{jobResult.jobInfo.jobNumber}_#{index}">
+              <td>&#160;</td>
+              <td>
+                <div align="center">
+                  <input name="checkbox" type="checkbox" class="boldtype" value="checkbox"/>
+                </div>
+              </td>
+              <td>&#160;</td>
+              <td>
+                <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="4" height="4" hspace="6" vspace="2" border="0"/>
+                <a href="link">#{fileInfo.name}</a>
+                <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" alt="menu" name="Image2" width="14" height="14" border="0" align="absmiddle" id="Image2" onclick="MM_showMenu(window.mm_menu_0925155524_0,11,11,null,'Image2')" onmouseover="MM_swapImage('Image2','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore();MM_startTimeout()"/>
+              </td>
+              <td align="right">#{fileInfo.formattedSize}&#160;&#160;&#160;&#160;</td>
+              <td>&#160;</td>
+              <td>
+                <h:outputText value="#{fileInfo.lastModified}">
+                  <f:convertDateTime pattern="MMM dd hh:mm:ss a"/>
+                </h:outputText>
+              </td>
+              <td>&#160;</td>
+            </tr>
+          </t:dataList>
+        </t:dataList>
         <tr>
           <td class="smalltype">&#160;</td>
           <td valign="top" class="smalltype">

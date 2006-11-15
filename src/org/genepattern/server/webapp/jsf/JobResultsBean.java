@@ -12,9 +12,13 @@
 
 package org.genepattern.server.webapp.jsf;
 
+import java.io.File;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import javax.faces.application.FacesMessage;
@@ -25,10 +29,10 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.WebServiceException;
 
 public class JobResultsBean {
-    private JobInfo[] jobs;
+    private JobResultInfo[] jobResults;
     private boolean ascending;
     private boolean warnBeforeDeletingJobs;
-    private boolean showAllJobs;
+    private boolean showAllJobs = true;
     /** name of column we're sorting on */
     private String sort;
     /** column that was last used for sorting */
@@ -45,7 +49,11 @@ public class JobResultsBean {
         String userId = UIBeanHelper.getUserId();
         LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
         try {
-            jobs = analysisClient.getJobs(showAllJobs ? null : userId, -1, Integer.MAX_VALUE, false);
+            JobInfo[] jobs = analysisClient.getJobs(showAllJobs ? null : userId, -1, Integer.MAX_VALUE, false);
+            jobResults = new JobResultInfo[jobs.length];
+            for(int i=0; i<jobs.length; i++) {
+                jobResults[i] = new JobResultInfo(jobs[i]);
+            }
         }
         catch (WebServiceException wse) {
             wse.printStackTrace();
@@ -144,14 +152,14 @@ public class JobResultsBean {
             }
         };
         if (column != null && !column.equals(lastSort)) {
-            Arrays.sort(jobs, comparator);
+            Arrays.sort(jobResults, comparator);
         }
         lastSort = column;
 
     }
 
-    public JobInfo[] getJobs() {
-        return jobs;
+    public JobResultInfo[] getJobResults() {
+        return jobResults;
     }
 
     public boolean isShowAllJobs() {
@@ -168,5 +176,68 @@ public class JobResultsBean {
 
     public void setWarnBeforeDeletingJobs(boolean warnBeforeDeletingJobs) {
         this.warnBeforeDeletingJobs = warnBeforeDeletingJobs;
+    }
+    
+    public static class JobResultInfo {
+        JobInfo jobInfo;
+        List<FileInfo> outputFiles;
+        boolean expanded = true;
+        
+        public JobResultInfo(JobInfo jobInfo) {
+            this.jobInfo = jobInfo;
+            List<File> files = JobHelper.getOutputFiles(jobInfo);
+            outputFiles = new ArrayList<FileInfo>(files.size());
+            for(File file : files) {
+                outputFiles.add(new FileInfo(file));
+            }
+        }
+        
+        public JobInfo getJobInfo() {
+            return jobInfo;
+        }
+        
+        public List<FileInfo> getOutputFiles() {
+            return outputFiles;
+        }  
+        
+        public boolean isExpanded() {
+            return expanded;
+        }
+    }
+    
+    public static class FileInfo {
+        String name;
+        long size;
+        Date lastModified;
+        boolean exists;
+        
+        public FileInfo(File file) {
+            this.name = file.getName();
+            this.size = file.length();
+            this.exists = file.exists();
+            
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(file.lastModified());
+            this.lastModified = cal.getTime();
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public String getFormattedSize() {
+            
+            NumberFormat nf = NumberFormat.getInstance();
+            return nf.format(Math.max(1, size / 1000)) + "k";
+        }
+        
+        public Date getLastModified() {
+            return lastModified;
+        }
+        
+        
+        
+        
+        
     }
 }

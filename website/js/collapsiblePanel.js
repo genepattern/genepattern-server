@@ -1,8 +1,7 @@
 
 function toggleVisibility(id) {
     var element = document.getElementById(id + "_panel");
-    var id= "expansion_state_" + id;
-    var hiddenField = document.getElementById(id);    
+    var hiddenField = document.getElementById("expansion_state_" + id);    
     
     if(element.style.display=="none")
     {
