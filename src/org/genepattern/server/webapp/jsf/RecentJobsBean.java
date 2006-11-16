@@ -218,27 +218,23 @@ public class RecentJobsBean {
     public static class MyParameterInfo {
         ParameterInfo p;
 
-        NavigationMenuItem[] moduleMenuItems;
+        List<NavigationMenuItem> moduleMenuItems = new ArrayList<NavigationMenuItem>();
 
-        public NavigationMenuItem[] getModuleMenuItems() {
+        public List<NavigationMenuItem> getModuleMenuItems() {
             return moduleMenuItems;
         }
 
-        public void setModuleMenuItems(NavigationMenuItem[] mi) {
-            moduleMenuItems = mi;
-        }
-
+ 
         public MyParameterInfo(ParameterInfo p, Collection<TaskInfo> modules) {
             this.p = p;
             int i = 0;
             if (modules != null) {
                 // NavigationMenuItem
-                moduleMenuItems = new NavigationMenuItem[modules.size()];
-                for (TaskInfo t : modules) {
+                 for (TaskInfo t : modules) {
                     NavigationMenuItem mi = new NavigationMenuItem(t
                             .getShortName(), "http://www.google.com");
 
-                    moduleMenuItems[i++] = mi; // FIXME
+                    moduleMenuItems.add(mi); // FIXME
                 }
             }
         }
