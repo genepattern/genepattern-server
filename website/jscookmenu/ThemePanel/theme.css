@@ -5,18 +5,17 @@
 	font-size: 11px;
 	line-height: 21px;
 	font-weight: bold;
-	background-color:	#F7F3F7;
 	cursor:		default;
 	white-space:	nowrap;
 	color: #FFFFFF;
 	text-decoration: none;
-	background-color: #666699;
-	padding-right: 20px
-	
+	padding-right: 20px;
 }
 
 .ThemePanelSubMenu
 {
+	/* submenu border color */
+	background-color: #666699; 
 	position:	absolute;
 	visibility:	hidden;
 
@@ -34,7 +33,9 @@
 }
 
 .ThemePanelSubMenuTable
-{
+{	
+	
+	background-color: inherit;
 	border:		4px;
 }
 
@@ -44,7 +45,11 @@
 	white-space:	nowrap;
 }
 
-.ThemePanelMainItem,
+.ThemePanelMainItem
+{
+	background-color: inherit;
+}
+
 .ThemePanelMenuItem
 {
 	background-color: #666699;
