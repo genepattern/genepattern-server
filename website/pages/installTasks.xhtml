@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jstl/core">
+
+<ui:composition template="/templates/common.xhtml">
+	<ui:define name="headText">
+		<script type="text/javascript"
+			src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"></script>
+
+	</ui:define>
+	<ui:define name="pageTitle">GenePattern | Installing  Tasks</ui:define>
+
+
+	<ui:define name="body">
+	<h:form>
+	<p><h1>Installing Tasks</h1></p>
+  <table>
+  
+ <ui:repeat value="task" var="#{taskInstallBean.taskLsids}">
+ <tr>
+ <td>
+	<ul>
+		#{task}
+	</ul>
+	</td>
+	<td>
+	   <div id="cb_#{task}"/>
+	   </td>
+	</tr>
+
+</ui:repeat>
+	</table>
+	<h:commandButton value="Done" disabled="true"/>
+	</h:form>
+	</ui:define>
+
+
+</ui:composition>
+</html>

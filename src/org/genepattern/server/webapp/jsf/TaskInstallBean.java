@@ -20,7 +20,7 @@ public class TaskInstallBean {
      * Add the list of lsids to the task installation map
      * @param lsids
      */
-    public void addTasks(Collection<String> lsids) {
+    public void addTasks(String[] lsids) {
     	for(String lsid: lsids) {
     		if(!tasks.containsKey(lsid)) {
     			tasks.put(lsid, false);
@@ -41,8 +41,14 @@ public class TaskInstallBean {
      * rollback, where tasks might have previously been marked "installed".
      * @param lsids
      */
-    public void rollbackInstalls(Collection<String> lsids) {
+    public void rollbackInstalls(String[] lsids) {
     	addTasks(lsids);
+    }
+    
+    public List<String> getTaskLsids() {
+    	List<String> lsids = new ArrayList<String>(tasks.keySet());
+    	Collections.sort(lsids);
+    	return lsids;
     }
     
     /**
