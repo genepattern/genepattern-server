@@ -66,6 +66,10 @@ public class ModuleHelper {
         return categories;
     }
 
+    /**
+     * Return a list of tasks categorized by suite.  
+     * @return
+     */
     public List<ModuleCategory> getTasksBySuite() {
 
         AdminDAO dao = new AdminDAO();
@@ -76,7 +80,7 @@ public class ModuleHelper {
                 taskMap.put(lsidObj.toStringNoVersion(), allTasks[i]);
             }
             catch (MalformedURLException e) {
-                log.error("Error parsing lsid: ", e);
+                log.error("Error parsing lsid: " + allTasks[i].getLsid(), e);
             }
         }
         ;
@@ -87,10 +91,16 @@ public class ModuleHelper {
             List<String> lsids = suite.getModules();
             List<TaskInfo> suiteTasks = new ArrayList<TaskInfo>();
             for (String lsid : lsids) {
-                TaskInfo ti = taskMap.get(lsid);
-                if (ti != null) {
-                    suiteTasks.add(ti);
-                }
+                 try {
+					LSID lsidObj = new LSID(lsid);
+					TaskInfo ti = taskMap.get(lsidObj.toStringNoVersion());
+					if (ti != null) {
+					    suiteTasks.add(ti);
+					}
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					log.error("Error parsing lsid: " + lsid, e);
+				}
             }
             TaskInfo[] taskArray = new TaskInfo[suiteTasks.size()];
             suiteTasks.toArray(taskArray);
