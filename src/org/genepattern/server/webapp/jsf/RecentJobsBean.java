@@ -14,6 +14,8 @@ package org.genepattern.server.webapp.jsf;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,8 +57,9 @@ public class RecentJobsBean {
                 UserPropKey.RECENT_JOBS_TO_SHOW, "4").getValue());
         LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
         try {
-            // jobs = analysisClient.getJobs(userId, -1, recentJobsToShow,
-            // false); FIXME uncomment
+            // JobInfo[] temp = analysisClient.getJobs(userId, -1,
+            // recentJobsToShow,
+            // false); // FIXME uncomment when bug recording jobs is fixed
             JobInfo[] temp = analysisClient.getJobs(null, -1, recentJobsToShow,
                     true);
             jobs = new MyJobInfo[temp.length];
@@ -81,9 +84,9 @@ public class RecentJobsBean {
     }
 
     public void createPipeline(ActionEvent e) {
-        String pipelineName = "dummy"; // FIXME
         String jobNumber = ((HtmlCommandJSCookMenu) e.getSource()).getValue()
                 .toString();
+        String pipelineName = jobNumber; // TODO prompt user for name
         String lsid = new LocalAnalysisClient(UIBeanHelper.getUserId())
                 .createProvenancePipeline(jobNumber, pipelineName);
 
@@ -145,7 +148,22 @@ public class RecentJobsBean {
         } catch (Exception e) {
             log.error(e);
         }
+    }
 
+    public String loadTask(ActionEvent event) {
+        HtmlCommandJSCookMenu m = (HtmlCommandJSCookMenu) event.getSource();
+        try {
+            String lsid = URLDecoder.decode(m.getValue().toString(), "UTF-8");
+            RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper
+                    .getManagedBean("#{runTaskBean}");
+            assert runTaskBean != null;
+            runTaskBean.setTask(lsid);
+
+        } catch (UnsupportedEncodingException e) {
+            log.error(e);
+        }
+
+        return "run task";
     }
 
     public static class MyJobInfo {
@@ -224,17 +242,20 @@ public class RecentJobsBean {
             return moduleMenuItems;
         }
 
- 
         public MyParameterInfo(ParameterInfo p, Collection<TaskInfo> modules) {
             this.p = p;
-            int i = 0;
-            if (modules != null) {
-                // NavigationMenuItem
-                 for (TaskInfo t : modules) {
-                    NavigationMenuItem mi = new NavigationMenuItem(t
-                            .getShortName(), "http://www.google.com");
 
-                    moduleMenuItems.add(mi); // FIXME
+            if (modules != null) {
+                for (TaskInfo t : modules) {
+                    NavigationMenuItem mi = new NavigationMenuItem(t
+                            .getShortName(), "module");
+                    try {
+                        mi.setValue(URLEncoder.encode(t.getLsid(), "UTF-8"));
+                    } catch (UnsupportedEncodingException e) {
+                        log.error(e);
+                    }
+                    mi.setActionListener("#{recentJobsBean.loadTask}");
+                    moduleMenuItems.add(mi);
                 }
             }
         }

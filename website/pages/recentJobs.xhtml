@@ -32,7 +32,7 @@
 				width="9" height="1" /></td>
 			<td><font class="recentjobs-sh">#{job.taskName}</font> <t:jscookMenu
 				layout="hbr" theme="ThemePanel"
-				org.apache.myfaces.STYLE_LOCATION="/css/jscookmenu">
+				org.apache.myfaces.STYLE_LOCATION="/css/jscookmenu" style="display: inline;">
 
 				<t:navigationMenuItem icon="/images/menuicon-1.gif">
 					<t:navigationMenuItem itemLabel="Reload"
@@ -53,7 +53,8 @@
 							itemValue="#{job.jobNumber}" />
 					</t:navigationMenuItem>
 				</t:navigationMenuItem>
-			</t:jscookMenu> <br />
+			</t:jscookMenu>
+			<br />
 			<h:outputText value="#{job.dateCompleted}">
 				<f:convertDateTime type="date" pattern="EEE, MMM d, ''yy h:mm a" />
 			</h:outputText> <br />
@@ -67,7 +68,7 @@
 					<t:navigationMenuItem icon="/images/menuicon-1.gif">
 						<t:navigationMenuItem itemLabel="Create Pipeline"
 							actionListener="#{recentJobsBean.createPipeline}"
-							itemValue="#{job.jobNumber}" action="#{job.jobNumber}" />
+							itemValue="#{job.jobNumber}" action="create pipeline" />
 						<t:navigationMenuItem itemLabel="Modules">
 							<t:navigationMenuItems value="#{p.moduleMenuItems}" /> 
 						</t:navigationMenuItem>
