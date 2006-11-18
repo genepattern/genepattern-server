@@ -1,43 +1,102 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
+  <ui:composition template="/templates/common.xhtml">
+    <ui:define name="headText">
+      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
+<script type="text/javascript">
+/* <![CDATA[ */
+// Execute a jsf el expression on the server
+function callManagedBean(elExpression) {            
+  var opt = {
+    method:    'post',
+    postBody:  'el=' + elExpression,
+    onSuccess: receiveResponse,
+    onFailure: function(t) {
+      alert('Error ' + t.status + ' -- ' + t.statusText);
+    }
+  } 
+  new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
+}
 
-<ui:composition template="/templates/common.xhtml">
-	<ui:define name="headText">
-		<script type="text/javascript"
-			src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"></script>
-
-	</ui:define>
-	<ui:define name="pageTitle">GenePattern | Installing  Tasks</ui:define>
-
-
-	<ui:define name="body">
-	<h:form>
-	<p><h1>Installing Tasks</h1></p>
-  <table>
-  
- <ui:repeat value="task" var="#{taskInstallBean.taskLsids}">
- <tr>
- <td>
-	<ul>
-		#{task}
-	</ul>
-	</td>
-	<td>
-	   <div id="cb_#{task}"/>
-	   </td>
-	</tr>
-
-</ui:repeat>
-	</table>
-	<h:commandButton value="Done" disabled="true"/>
-	</h:form>
-	</ui:define>
+// The callback function - receive response from server
+function receiveResponse( req ) {
+  if (req.readyState == 4) {
+    if (req.status == 200) { // only if "OK"
+      update(req.responseText);
+    } 
+    else {
+      alert("There was a problem retrieving the XML data:\n" + req.statusText);
+    }  
+  }
+}
 
 
-</ui:composition>
+var timerID = 0;
+
+function startPolling(elExpression, interval) {
+   callManagedBean( elExpression );
+   timerID  = setTimeout("startPolling('" + elExpression + "', " + interval + ")", interval);
+}
+
+function stopPolling() {
+   if(timerID) {
+      clearTimeout(timerID);
+      timerID  = 0;
+   }
+}
+
+/* Update the page from the status objects.  Example jsonString ...
+ * [{"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00030:1","status":true},
+ *  {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00052:1","status":true},
+ *  {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1","status":true}]
+ */
+function update(jsonString)
+{
+  var objArray = eval('(' + jsonString + ')');
+  for(var i=0; i<objArray.length; i++) {
+    var installStatus = objArray[i];
+    if(installStatus.status == true) {
+      var lsid = installStatus.lsid;
+      var cb = document.getElementById("cb_" + lsid);
+      if(cb != null) {
+        cb.src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif";
+      }
+    } 
+  }
+}
+		
+/* ]]> */
+</script>
+    </ui:define>
+    <ui:define name="pageTitle">GenePattern | Installing  Tasks</ui:define>
+    <ui:define name="body">
+      <script type="text/javascript">
+        startPolling("taskInstallBean.installedTaskString", 500);
+        
+      </script>
+
+      <h:form>
+        <p>
+          <h1>Installing Tasks</h1>
+        </p>
+        <table>
+          <ui:repeat var="task" value="#{taskInstallBean.taskLsids}">
+            <tr>
+              <td>
+                <img src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif" width="4" height="4" />
+                &#160; #{taskInstallBean.lsidToTaskMap[task]}
+              </td>
+              <td>
+                <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" id="cb_#{task}"/>
+              </td>
+              <td>
+                <div id="error_#{task}"/>
+              </td>
+            </tr>
+          </ui:repeat>
+        </table>
+        <h:commandButton value="Done" disabled="true"/>
+      </h:form>
+    </ui:define>
+  </ui:composition>
 </html>

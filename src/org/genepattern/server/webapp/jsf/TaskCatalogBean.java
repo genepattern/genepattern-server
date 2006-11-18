@@ -26,6 +26,7 @@ import java.util.Map;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
@@ -163,7 +164,7 @@ public class TaskCatalogBean {
         return missingLsids;
     }
 
-    public void install() {
+    public String install() {
         filter();
         final String[] lsids = UIBeanHelper.getRequest().getParameterValues(
                 "installLsid");
@@ -171,10 +172,16 @@ public class TaskCatalogBean {
             final String username = UIBeanHelper.getUserId();
             final LocalTaskIntegratorClient taskIntegrator = new LocalTaskIntegratorClient(
                     username);
+            final TaskInstallBean installBean = (TaskInstallBean)UIBeanHelper.getManagedBean("#{taskInstallBean}");
+
             new Thread() {
                 public void run() {
+                         	installBean.setLsidsToInstall(lsids);
+                	installBean.setLsidToTaskMap(lsidToTaskMap);
+                	
                     for (String lsid : lsids) {
                         try {
+                        	HibernateUtil.beginTransaction();
                             InstallTask t = lsidToTaskMap.get(lsid);
                             if (t == null) {
 //                                UIBeanHelper.setInfoMessage("Task " + lsid
@@ -182,14 +189,18 @@ public class TaskCatalogBean {
                             } else {
                                 t.install(username, GPConstants.ACCESS_PUBLIC,
                                         taskIntegrator);
+                                installBean.markTaskInstalled(lsid);
                             }
+                            HibernateUtil.commitTransaction();
                         } catch (TaskInstallationException e) {
+                        	HibernateUtil.rollbackTransaction();
                             log.error(e);
                         }
                     }
                 }
             }.start();
         }
+        return "install";
         
     }
 
