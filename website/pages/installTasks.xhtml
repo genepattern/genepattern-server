@@ -52,16 +52,35 @@ function stopPolling() {
  */
 function update(jsonString)
 {
+  var complete = true;
   var objArray = eval('(' + jsonString + ')');
   for(var i=0; i<objArray.length; i++) {
     var installStatus = objArray[i];
-    if(installStatus.status == true) {
-      var lsid = installStatus.lsid;
-      var cb = document.getElementById("cb_" + lsid);
-      if(cb != null) {
-        cb.src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif";
+    var lsid = installStatus.lsid;
+    var cb = document.getElementById("cb_" + lsid);
+    if(installStatus.status == "success") {
+       if(cb != null) {
+        cb.src="#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
       }
-    } 
+    }
+    else if (installStatus.status == "error") {
+      var errorTA = document.getElementById("error_text");
+      errorTA.style.display = "block";
+      errorTA.value = installStatus.message;
+      if(cb != null) {
+        cb.src="#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
+      }
+    }
+    else {
+      complete = false;
+    }
+  }
+  if(complete == true) {
+    stopPolling();
+    var doneButton = ${"done_button"};
+    if(doneButton != null) {
+      doneButton.disabled="";
+    }
   }
 }
 		
@@ -79,23 +98,25 @@ function update(jsonString)
         <p>
           <h1>Installing Tasks</h1>
         </p>
+        
         <table>
-          <ui:repeat var="task" value="#{taskInstallBean.taskLsids}">
+          <!--  Loop through tasks (TaskInstallStatus beans) -->
+          <ui:repeat var="task" value="#{taskInstallBean.tasks}">
             <tr>
               <td>
                 <img src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif" width="4" height="4" />
-                &#160; #{taskInstallBean.lsidToTaskMap[task]}
+                &#160; #{task.name}
               </td>
               <td>
-                <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" id="cb_#{task}"/>
-              </td>
-              <td>
-                <div id="error_#{task}"/>
+                <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="12" height="12" id="cb_#{task.lsid}"/>
               </td>
             </tr>
           </ui:repeat>
         </table>
-        <h:commandButton value="Done" disabled="true"/>
+        <br/><br/>
+        <textArea rows="10" cols="60" id="error_text" style = "display:none"/>
+        <br/>
+        <t:commandButton value="Done" disabled="true" id="done_button" forceId = "true"/>
       </h:form>
     </ui:define>
   </ui:composition>

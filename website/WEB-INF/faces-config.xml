@@ -82,15 +82,13 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.NavBarBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
- 
  <!--  Beans for example programs -->
-<managed-bean>
+ <managed-bean>
   <managed-bean-name>navigationMenu</managed-bean-name>
   <managed-bean-class>org.apache.myfaces.examples.misc.NavigationMenu</managed-bean-class>
   <managed-bean-scope>application</managed-bean-scope>
-</managed-bean>
- 
-<managed-bean>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>pollExampleBean</managed-bean-name>
   <managed-bean-class>demo.PollExampleBean</managed-bean-class>
   <managed-bean-scope>session</managed-bean-scope>
@@ -99,47 +97,43 @@
    <property-class>java.lang.Integer</property-class>
    <value>0</value>
   </managed-property>
-</managed-bean>
- 
-<managed-bean>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>currentTimeBean</managed-bean-name>
   <managed-bean-class>demo.CurrentTimeBean</managed-bean-class>
   <managed-bean-scope>session</managed-bean-scope>
-
-</managed-bean>
-   
+ </managed-bean>
+ <managed-bean>
+  <managed-bean-name>taskInstallBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.TaskInstallBean</managed-bean-class>
+  <managed-bean-scope>session</managed-bean-scope>
+ </managed-bean>
  <navigation-rule>
   <from-view-id>*</from-view-id>
   <navigation-case>
    <from-outcome>logout</from-outcome>
    <to-view-id>/pages/login.xhtml</to-view-id>
   </navigation-case>
-  
   <navigation-case>
    <from-outcome>home</from-outcome>
    <to-view-id>/pages/index.xhtml</to-view-id>
   </navigation-case>
-
   <navigation-case>
    <from-outcome>run task</from-outcome>
    <to-view-id>/pages/index.xhtml</to-view-id>
   </navigation-case>
-  
   <navigation-case>
    <from-outcome>job results</from-outcome>
    <to-view-id>/pages/jobResults.xhtml</to-view-id>
   </navigation-case>
-  
   <navigation-case>
    <from-outcome>create suite</from-outcome>
    <to-view-id>/pages/createSuite.xhtml</to-view-id>
   </navigation-case>
-  
   <navigation-case>
    <from-outcome>task catalog</from-outcome>
    <to-view-id>/pages/taskCatalog.xhtml</to-view-id>
   </navigation-case>
-  
  </navigation-rule>
  <navigation-rule>
   <display-name>commandPrefixAdmin</display-name>
@@ -181,6 +175,14 @@
   <navigation-case>
    <from-outcome>success</from-outcome>
    <to-view-id>/pages/login.xhtml</to-view-id>
+  </navigation-case>
+ </navigation-rule>
+ <navigation-rule>
+  <display-name>install</display-name>
+  <from-view-id>/pages/taskCatalog.xhtml</from-view-id>
+  <navigation-case>
+   <from-outcome>install</from-outcome>
+   <to-view-id>/pages/installTasks.xhtml</to-view-id>
   </navigation-case>
  </navigation-rule>
  <application>
