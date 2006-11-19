@@ -117,7 +117,7 @@ AnalysisDAO extends BaseDAO {
             }
             jobNo = addNewJob(taskID, user_id, parameter_info, null, parent, null);
             
-            AnalysisJobHome aHome = new AnalysisJobHome();
+            AnalysisJobDAO aHome = new AnalysisJobDAO();
             org.genepattern.server.domain.AnalysisJob aJob = aHome.findById(jobNo);
             
             JobStatus newStatus = (JobStatus) getSession().get(JobStatus.class, JobStatus.JOB_FINISHED);
@@ -190,7 +190,7 @@ AnalysisDAO extends BaseDAO {
         aJob.setParent(parentJobNumber);
         aJob.setTaskLsid(lsid);
         
-        JobStatus js = (new JobStatusHome()).findById(JobStatus.JOB_PENDING);
+        JobStatus js = (new JobStatusDAO()).findById(JobStatus.JOB_PENDING);
         aJob.setJobStatus(js);
 
 

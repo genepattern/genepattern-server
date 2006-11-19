@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserHome;
+import org.genepattern.server.user.UserDAO;
 
 /**
  * Backing bean for pages/login.
@@ -74,7 +74,7 @@ public class LoginBean {
             assert username != null;
             assert password != null;
 
-            User up = (new UserHome()).findById(username);
+            User up = (new UserDAO()).findById(username);
             if (up == null) {
                 if (passwordRequired) {
                     unknownUser = true;
@@ -84,7 +84,7 @@ public class LoginBean {
                     newUser.setUserId(username);
                     newUser.setPassword(null);
 
-                    (new UserHome()).merge(newUser);
+                    (new UserDAO()).save(newUser);
                     UIBeanHelper.setUserAndRedirect(username, passwordRequired);
 
                 }

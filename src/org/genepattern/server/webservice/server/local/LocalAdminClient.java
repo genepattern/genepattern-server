@@ -23,7 +23,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserHome;
+import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.webservice.server.AdminService;
 import org.genepattern.server.webservice.server.IAdminService;
@@ -140,7 +140,7 @@ public class LocalAdminClient {
         if (key == null) {
             return null;
         }
-        User user = (new UserHome()).findById(userName);
+        User user = (new UserDAO()).findById(userName);
         List<UserProp> props = user != null ? user.getProps() : Collections.EMPTY_LIST;
         for (UserProp p : props) {
             if (key.equals(p.getKey())) {

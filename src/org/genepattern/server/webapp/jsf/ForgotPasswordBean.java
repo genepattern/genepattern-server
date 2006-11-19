@@ -26,7 +26,7 @@ import javax.mail.internet.MimeMessage;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserHome;
+import org.genepattern.server.user.UserDAO;
 
 public class ForgotPasswordBean {
     private String email;
@@ -40,7 +40,7 @@ public class ForgotPasswordBean {
         // Query query = HibernateUtil.getSession().createQuery(hql);
         // query.setString("email", email);
         // User user = (User) query.uniqueResult();
-        User user = new UserHome().findById(username);
+        User user = new UserDAO().findById(username);
         if (user == null) {
             UIBeanHelper.setInfoMessage("No user with the given username exists.");
             return "failure";

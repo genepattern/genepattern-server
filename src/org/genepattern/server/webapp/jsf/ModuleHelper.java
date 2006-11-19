@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Suite;
-import org.genepattern.server.domain.SuiteHome;
+import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.LSID;
@@ -85,7 +85,7 @@ public class ModuleHelper {
         }
         ;
 
-        List<Suite> suites = (new SuiteHome()).findAll();
+        List<Suite> suites = (new SuiteDAO()).findAll();
         List<ModuleCategory> categories = new ArrayList(suites.size());
         for (Suite suite : suites) {
             List<String> lsids = suite.getModules();

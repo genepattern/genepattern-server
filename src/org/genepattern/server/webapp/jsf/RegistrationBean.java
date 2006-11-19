@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserHome;
+import org.genepattern.server.user.UserDAO;
 
 /**
  * Backing bean for pages/login.
@@ -84,7 +84,7 @@ public class RegistrationBean {
 
     public void validateNewUsername(FacesContext context, UIComponent component, Object value)
             throws ValidatorException {
-        User user = (new UserHome()).findById(value.toString());
+        User user = (new UserDAO()).findById(value.toString());
         if (user != null) {
             String message = "An account with this username already exist.  Please choose another.";
             FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
@@ -130,7 +130,7 @@ public class RegistrationBean {
             newUser.setPassword(EncryptionUtil.encrypt(password));
             newUser.incrementLoginCount();
 
-            (new UserHome()).merge(newUser);
+            (new UserDAO()).save(newUser);
             UIBeanHelper.setUserAndRedirect(username, true);
 
         }

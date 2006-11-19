@@ -19,7 +19,7 @@ import org.apache.myfaces.custom.fileupload.HtmlInputFileUpload;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
-import org.genepattern.server.domain.SuiteHome;
+import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.TaskIntegrator;
@@ -170,7 +170,7 @@ public class CreateSuiteBean implements java.io.Serializable {
             if(!selectedLSIDs.isEmpty()) {
                 suite.setModules(selectedLSIDs);
             }
-            HibernateUtil.getSession().save(suite);
+            (new SuiteDAO()).save(suite);
 
             // Save uploaded files, if any
             String suiteDir = DirectoryManager.getSuiteLibDir(suite.getName(), lsid, suite.getOwner());

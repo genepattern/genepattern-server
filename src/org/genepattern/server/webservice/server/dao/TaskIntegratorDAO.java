@@ -31,7 +31,7 @@ import java.util.zip.ZipFile;
 import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Suite;
-import org.genepattern.server.domain.SuiteHome;
+import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.process.SuiteRepository;

@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserHome;
+import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 
 import org.genepattern.data.pipeline.JobSubmission;
@@ -473,7 +473,7 @@ public class HTMLPipelineView implements IPipelineView {
 
 		// XXX get the showLSID param from a users prefs
 		boolean showLSID = false;
-		User user = (new UserHome()).findById(userID);
+		User user = (new UserDAO()).findById(userID);
 		if (user != null){
 	        	List<UserProp> props = user.getProps();
 			UserProp userProp = null;

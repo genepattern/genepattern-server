@@ -71,9 +71,9 @@ import org.apache.tools.ant.taskdefs.Expand;
 import org.genepattern.server.AnalysisServiceException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
-import org.genepattern.server.domain.AnalysisJobHome;
+import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.domain.JobStatusHome;
+import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.indexer.Indexer;
 import org.genepattern.server.indexer.IndexerDaemon;
 import org.genepattern.server.user.UsageLog;
@@ -980,7 +980,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
      */
     private void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
 
-        AnalysisJobHome home = new AnalysisJobHome();
+        AnalysisJobDAO home = new AnalysisJobDAO();
 
         AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
         aJob.setJobNo(jobInfo.getJobNumber());
@@ -991,7 +991,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
             paramString = ParameterFormatConverter.stripPasswords(paramString);
         }
 
-        JobStatus newJobStatus = (new JobStatusHome()).findById(jobStatus);
+        JobStatus newJobStatus = (new JobStatusDAO()).findById(jobStatus);
         aJob.setParameterInfo(paramString);
         aJob.setJobStatus(newJobStatus);
         aJob.setCompletedDate(completionDate);

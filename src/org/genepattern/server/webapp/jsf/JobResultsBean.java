@@ -65,6 +65,8 @@ public class JobResultsBean {
     
     public String delete() {
     	String [] selectedJobs = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
+    	deleteJobs(selectedJobs);
+    	
     	String [] selectedFiles = UIBeanHelper.getRequest().getParameterValues("selectedFiles");
     	return null;
     }
@@ -75,7 +77,7 @@ public class JobResultsBean {
     	return null;
     }
 
-    public void deleteJobs() {
+    private void deleteJobs(String [] jobNumbers) {
         String[] deleteJob = UIBeanHelper.getRequest().getParameterValues("deleteJobId");
         LocalAnalysisClient analysisClient = new LocalAnalysisClient(UIBeanHelper.getUserId());
         List<Integer> jobErrors = new ArrayList<Integer>();
@@ -131,7 +133,7 @@ public class JobResultsBean {
 
     }
 
-    public void sort() {
+    public String sort() {
         final String column = getSort();
         Comparator comparator = new Comparator() {
 
@@ -170,7 +172,8 @@ public class JobResultsBean {
             Arrays.sort(jobResults, comparator);
         }
         lastSort = column;
-
+        
+        return null;
     }
 
     public JobResultInfo[] getJobResults() {

@@ -7,7 +7,7 @@ import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
-import org.genepattern.server.database.AbstractHome;
+import org.genepattern.server.database.BaseDAO;
 import org.genepattern.server.database.HibernateUtil;
 import org.hibernate.LockMode;
 import org.hibernate.SessionFactory;
@@ -18,20 +18,9 @@ import org.hibernate.criterion.Example;
  * @see org.genepattern.server.user.User
  * @author Hibernate Tools
  */
-public class UserHome extends AbstractHome {
+public class UserDAO extends BaseDAO {
 
-    private static final Logger log = Logger.getLogger(UserHome.class);
-
-    public User merge(User detachedInstance) {
-        log.debug("merging Props instance");
-        try {
-            return (User) HibernateUtil.getSession().merge(detachedInstance);
-        }
-        catch (RuntimeException re) {
-            log.error("merge failed", re);
-            throw re;
-        }
-    }
+    public static final Logger log = Logger.getLogger(UserDAO.class);
 
     public User findById(String id) {
         log.debug("getting Props instance with id: " + id);
@@ -44,16 +33,6 @@ public class UserHome extends AbstractHome {
         }
     }
 
-    public List<User> findByExample(User instance) {
-        log.debug("finding User instance by example");
-        try {
-            return HibernateUtil.getSession().createCriteria("org.genepattern.server.user.User").add(
-                    Example.create(instance)).list();
-        }
-        catch (RuntimeException re) {
-            log.error("find by example failed", re);
-            throw re;
-        }
-    }
+ 
 
 }

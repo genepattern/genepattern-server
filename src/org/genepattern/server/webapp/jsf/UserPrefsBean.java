@@ -15,7 +15,7 @@ package org.genepattern.server.webapp.jsf;
 import java.util.List;
 
 import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserHome;
+import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
 
@@ -29,7 +29,7 @@ public class UserPrefsBean {
     }
 
     public static UserProp getProp(String name, String defaultValue) {
-        User user = (new UserHome()).findById(UIBeanHelper.getUserId());
+        User user = (new UserDAO()).findById(UIBeanHelper.getUserId());
         assert user != null;
         List<UserProp> props = user.getProps();
         UserProp userProp = null;

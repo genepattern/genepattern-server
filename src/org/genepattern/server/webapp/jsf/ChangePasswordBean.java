@@ -22,7 +22,7 @@ import javax.faces.validator.ValidatorException;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserHome;
+import org.genepattern.server.user.UserDAO;
 
 public class ChangePasswordBean {
     private static Logger log = Logger.getLogger(ChangePasswordBean.class);
@@ -33,7 +33,7 @@ public class ChangePasswordBean {
     private boolean passwordSet;
 
     public ChangePasswordBean() {
-        User user = (new UserHome()).findById(UIBeanHelper.getUserId());
+        User user = (new UserDAO()).findById(UIBeanHelper.getUserId());
         assert user != null;
         // password will be null if server was initially configured not to
         // require password
@@ -52,7 +52,7 @@ public class ChangePasswordBean {
 
     public void validateCurrentPassword(FacesContext context, UIComponent component, Object value)
             throws ValidatorException {
-        User user = (new UserHome()).findById(UIBeanHelper.getUserId());
+        User user = (new UserDAO()).findById(UIBeanHelper.getUserId());
 
         boolean correctPassword = false;
         try {
@@ -70,7 +70,7 @@ public class ChangePasswordBean {
     }
 
     public String changePassword() {
-        User user = (new UserHome()).findById(UIBeanHelper.getUserId());
+        User user = (new UserDAO()).findById(UIBeanHelper.getUserId());
         try {
             user.setPassword(EncryptionUtil.encrypt(newPassword));
         }
