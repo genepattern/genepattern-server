@@ -117,6 +117,7 @@
   <navigation-case>
    <from-outcome>home</from-outcome>
    <to-view-id>/pages/index.xhtml</to-view-id>
+   <redirect/>
   </navigation-case>
   <navigation-case>
    <from-outcome>run task</from-outcome>
@@ -133,6 +134,7 @@
   <navigation-case>
    <from-outcome>task catalog</from-outcome>
    <to-view-id>/pages/taskCatalog.xhtml</to-view-id>
+   <redirect/>
   </navigation-case>
  </navigation-rule>
  <navigation-rule>
