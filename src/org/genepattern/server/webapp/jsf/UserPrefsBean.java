@@ -42,6 +42,7 @@ public class UserPrefsBean {
 
         if (userProp == null) {
             userProp = new UserProp();
+            userProp.setGpUserId(UIBeanHelper.getUserId());
             userProp.setKey(name);
             userProp.setValue(defaultValue);
             props.add(userProp);
