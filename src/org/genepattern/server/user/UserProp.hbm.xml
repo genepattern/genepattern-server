@@ -8,6 +8,6 @@
     </id>
     <property name="key" type="string" column="key"/>
     <property name="value" type="string" column="value"/>
-    <property name="gpUserId" type="string" column="gp_user_id" update="false" insert="false"/>
+    <property name="gpUserId" type="string" column="gp_user_id"/>
   </class>
 </hibernate-mapping>
