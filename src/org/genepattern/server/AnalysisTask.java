@@ -31,179 +31,176 @@ import org.hibernate.HibernateException;
 
 public class AnalysisTask implements Runnable {
 
-    private Object jobQueueWaitObject = new Object();
+	private Object jobQueueWaitObject = new Object();
 
-    AnalysisDAO ds = new AnalysisDAO();
-    private Vector jobQueue = new Vector();
+	AnalysisDAO ds = new AnalysisDAO();
 
-    // Semaphore to maintain simultaneous job count
-    private Semaphore sem = null;
+	private Vector jobQueue = new Vector();
 
-    private static org.apache.log4j.Category log = org.apache.log4j.Logger.getInstance(AnalysisTask.class);
+	// Semaphore to maintain simultaneous job count
+	private Semaphore sem = null;
 
-    volatile boolean runFlag = true;
+	private static org.apache.log4j.Category log = org.apache.log4j.Logger
+			.getInstance(AnalysisTask.class);
 
-    private final static String TASK_NAME = GenePatternAnalysisTask.TASK_NAME;
+	volatile boolean runFlag = true;
 
-    private GenePatternAnalysisTask genePattern = new GenePatternAnalysisTask();
+	private final static String TASK_NAME = GenePatternAnalysisTask.TASK_NAME;
 
-    private static AnalysisTask instance;
+	private GenePatternAnalysisTask genePattern = new GenePatternAnalysisTask();
 
-    private AnalysisTask() {
-    }
+	private static AnalysisTask instance;
 
-    public String getTaskName() {
-        return TASK_NAME;
-    }
+	private AnalysisTask() {
+	}
 
-    /**
-     * Add an object to queue
-     * 
-     * @param o
-     *            The feature to be added to the JobToQueue attribute
-     */
-    public void addJobToQueue(Object o) {
-        jobQueue.add(o);
-    }
+	public String getTaskName() {
+		return TASK_NAME;
+	}
 
-    /** Clears the AnalysisTask's queue. */
-    public void clear() {
-        jobQueue.clear();
-    }
+	/**
+	 * Add an object to queue
+	 * 
+	 * @param o
+	 *            The feature to be added to the JobToQueue attribute
+	 */
+	public void addJobToQueue(Object o) {
+		jobQueue.add(o);
+	}
 
-    /**
-     * Wake up the job queue thread. The object is synchronized to obtain
-     * ownership of the monitor.
-     */
-    public void wakeupJobQueue() {
-        synchronized (jobQueueWaitObject) {
-            jobQueueWaitObject.notify();
-        }
-    }
+	/** Clears the AnalysisTask's queue. */
+	public void clear() {
+		jobQueue.clear();
+	}
 
-    /** Main AnalysisTask's thread method. */
-    public void run() {
-        log.debug("Starting AnalysisTask thread");
-        int waitTime = Integer.parseInt(System.getProperty("AnalysisTaskQueuePollingFrequency", "1000"));
-        
-        while (true) {
+	/**
+	 * Wake up the job queue thread. The object is synchronized to obtain
+	 * ownership of the monitor.
+	 */
+	public void wakeupJobQueue() {
+		synchronized (jobQueueWaitObject) {
+			jobQueueWaitObject.notify();
+		}
+	}
 
-            // Load input data to input queue
-            synchronized (jobQueueWaitObject) {
+	/** Main AnalysisTask's thread method. */
+	public void run() {
+		log.debug("Starting AnalysisTask thread");
+		int waitTime = Integer.parseInt(System.getProperty(
+				"AnalysisTaskQueuePollingFrequency", "0"));
 
-                if (jobQueue.isEmpty()) {
-                    try {
-                        HibernateUtil.getSession().beginTransaction();
-                        jobQueue = genePattern.getWaitingJobs();
-                        HibernateUtil.getSession().getTransaction().commit();
-                    }
-                    finally {
-                        if (HibernateUtil.getSession().isOpen()) {
-                            HibernateUtil.getSession().close();
-                        }
-                    }
+		while (true) {
 
-                }
+			// Load input data to input queue
+			synchronized (jobQueueWaitObject) {
 
-                if (jobQueue.isEmpty()) {
-                    try {
-                        jobQueueWaitObject.wait(waitTime);
-                    }
-                    catch (InterruptedException ie) {
-                    }
-                }
-            }
+				if (jobQueue.isEmpty()) {
+					try {
+						HibernateUtil.getSession().beginTransaction();
+						jobQueue = genePattern.getWaitingJobs();
+						HibernateUtil.getSession().getTransaction().commit();
+					} finally {
+						HibernateUtil.closeCurrentSession();
+					}
 
-            Object o = null;
+				}
 
-            if (!jobQueue.isEmpty()) {
-                o = jobQueue.remove(0);
-            }
+				if (jobQueue.isEmpty()) {
+					try {
+						jobQueueWaitObject.wait(waitTime);
+					} catch (InterruptedException ie) {
+					}
+				}
+			}
 
-            if (o == null) {
-                continue;
-            }
+			Object o = null;
 
-            try {
-                onJobProcessFrameWork(o);
+			if (!jobQueue.isEmpty()) {
+				o = jobQueue.remove(0);
+			}
 
-            }
-            catch (Exception ex) {
-                log.error(ex);
-            }
+			if (o == null) {
+				continue;
+			}
 
-        }
+			try {
+				onJobProcessFrameWork(o);
 
-    }
+			} catch (Exception ex) {
+				log.error(ex);
+			}
 
-    /**
-     * This is placeholder for doing process, which should be done in begining
-     * and end of each job
-     * 
-     * @param o
-     *            Description of the Parameter
-     */
-    public void onJobProcessFrameWork(Object o) {
-        doAcquire();// if max job running, then wait until some thread to finish
-        new JobThread(o).start();
-    }
+		}
 
-    public String toString() {
-        return TASK_NAME;
-    }
+	}
 
-    private AnalysisTask(int threadCount) {
+	/**
+	 * This is placeholder for doing process, which should be done in begining
+	 * and end of each job
+	 * 
+	 * @param o
+	 *            Description of the Parameter
+	 */
+	public void onJobProcessFrameWork(Object o) {
+		doAcquire();// if max job running, then wait until some thread to finish
+		new JobThread(o).start();
+	}
 
-        // create semaphore when thread count >0
-        if (threadCount > 0) {
-            sem = new Semaphore(threadCount);
-        }
-        try {
-            ds = new AnalysisDAO();
-            ;
-        }
-        catch (OmnigeneException oe) {
-            log.error(oe);
-        }
+	public String toString() {
+		return TASK_NAME;
+	}
 
-    }
+	private AnalysisTask(int threadCount) {
 
-    private void doAcquire() {
-        if (sem != null) {
-            sem.acquire();
-        }
-    }
+		// create semaphore when thread count >0
+		if (threadCount > 0) {
+			sem = new Semaphore(threadCount);
+		}
+		try {
+			ds = new AnalysisDAO();
+			;
+		} catch (OmnigeneException oe) {
+			log.error(oe);
+		}
 
-    private void doRelease() {
-        if (sem != null) {
-            sem.release();
-        }
-    }
+	}
 
-    public static AnalysisTask getInstance() {
-        return instance;
-    }
+	private void doAcquire() {
+		if (sem != null) {
+			sem.acquire();
+		}
+	}
 
-    private class JobThread extends Thread {
+	private void doRelease() {
+		if (sem != null) {
+			sem.release();
+		}
+	}
 
-        Object obj = null;
+	public static AnalysisTask getInstance() {
+		return instance;
+	}
 
-        public JobThread(Object o) {
-            this.obj = o;
-        }
+	private class JobThread extends Thread {
 
-        public void run() {
-            genePattern.onJob(obj);// run job
-            doRelease();// signal completion of thread
-        }
-    }
+		Object obj = null;
 
-    public static void startQueue() {
-    	if (instance == null){
-    		instance = new AnalysisTask(GenePatternAnalysisTask.NUM_THREADS);
-    		Thread runner = new Thread(instance);
-    		runner.start();
-    	}
-    }
+		public JobThread(Object o) {
+			this.obj = o;
+		}
+
+		public void run() {
+			genePattern.onJob(obj);// run job
+			doRelease();// signal completion of thread
+		}
+	}
+
+	public static void startQueue() {
+		if (instance == null) {
+			instance = new AnalysisTask(GenePatternAnalysisTask.NUM_THREADS);
+			Thread runner = new Thread(instance);
+			runner.start();
+		}
+	}
 
 }
