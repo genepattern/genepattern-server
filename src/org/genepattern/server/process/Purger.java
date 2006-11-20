@@ -43,6 +43,8 @@ public class Purger extends TimerTask {
     public void run() {
         if (purgeInterval != -1) {
             try {
+                HibernateUtil.getSession().beginTransaction();
+
                 // find all purgeable jobs
                 GregorianCalendar gcPurgeDate = new GregorianCalendar();
                 gcPurgeDate.add(GregorianCalendar.DATE, -purgeInterval);
@@ -52,8 +54,7 @@ public class Purger extends TimerTask {
                 JobInfo[] purgeableJobs = ds.getJobInfo(gcPurgeDate.getTime());
 
                 // purge expired jobs
-                HibernateUtil.getSession().beginTransaction();
-
+ 
                 for (int jobNum = 0; jobNum < purgeableJobs.length; jobNum++) {
                     try {
 
