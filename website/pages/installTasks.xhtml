@@ -3,92 +3,93 @@
   <ui:composition template="/templates/common.xhtml">
     <ui:define name="headText">
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
-<script type="text/javascript">
-/* <![CDATA[ */
-// Execute a jsf el expression on the server
-function callManagedBean(elExpression) {            
-  var opt = {
-    method:    'post',
-    postBody:  'el=' + elExpression,
-    onSuccess: receiveResponse,
-    onFailure: function(t) {
-      alert('Error ' + t.status + ' -- ' + t.statusText);
-    }
-  } 
-  new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
-}
+      
+      <script type="text/javascript">
+      
+      /* <![CDATA[ */
+      // Execute a jsf el expression on the server
+      function callManagedBean(elExpression) {            
+        var opt = {
+          method:    'post',
+          postBody:  'el=' + elExpression,
+          onSuccess: receiveResponse,
+          onFailure: function(t) {
+            alert('Error ' + t.status + ' -- ' + t.statusText);
+          }
+        } 
+        new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
+      }
 
-// The callback function - receive response from server
-function receiveResponse( req ) {
-  if (req.readyState == 4) {
-    if (req.status == 200) { // only if "OK"
-      update(req.responseText);
-    } 
-    else {
-      alert("There was a problem retrieving the XML data:\n" + req.statusText);
-    }  
-  }
-}
+      // The callback function - receive response from server
+      function receiveResponse( req ) {
+        if (req.readyState == 4) {
+          if (req.status == 200) { // only if "OK"
+            update(req.responseText);
+          } 
+          else {
+            alert("There was a problem retrieving the XML data:\n" + req.statusText);
+          }  
+        }
+      }
 
 
-var timerID = 0;
+      var timerID = 0;
+      function startPolling(elExpression, interval) {
+        callManagedBean( elExpression );
+        timerID  = setTimeout("startPolling('" + elExpression + "', " + interval + ")", interval);
+      }
 
-function startPolling(elExpression, interval) {
-   callManagedBean( elExpression );
-   timerID  = setTimeout("startPolling('" + elExpression + "', " + interval + ")", interval);
-}
-
-function stopPolling() {
-   if(timerID) {
-      clearTimeout(timerID);
-      timerID  = 0;
-   }
-}
-
-/* Update the page from the status objects.  Example jsonString ...
- * [{"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00030:1","status":true},
- *  {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00052:1","status":true},
- *  {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1","status":true}]
- */
-function update(jsonString)
-{
-  new Insertion.Bottom("progress_indicator", ".");
+      function stopPolling() {
+        if(timerID) {
+          clearTimeout(timerID);
+          timerID  = 0;
+        }
+      }
+      
+      /* Update the page from the status objects.  Example jsonString ...
+       * [{"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00030:1","status":true},
+       *  {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00052:1","status":true},
+       *  {"lsid":"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1","status":true}]
+       */
+       function update(jsonString)
+       {
+       new Insertion.Bottom("progress_indicator", ".");
+       
+       var complete = true;
+       var objArray = eval('(' + jsonString + ')');
+       for(var i=0; i<objArray.length; i++) {
+         var installStatus = objArray[i];
+         var lsid = installStatus.lsid;
+         var cb = $("cb_" + lsid);
+         if(installStatus.status == "success") {
+           if(cb != null) {
+             cb.src="#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
+           }
+         }
+         else if (installStatus.status == "error") {
+           if(cb != null) {
+             cb.src="#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
+           }
+           var errorDivId = "error_" + lsid;
+           Element.show(errorDivId);
+           Element.update(errorDivId, "<p>" + installStatus.message + "</p>");
+        }
+        else {
+          // This task is not finished (neither succes nor error)
+          complete = false;
+        }
+      }
   
-  var complete = true;
-  var objArray = eval('(' + jsonString + ')');
-  for(var i=0; i<objArray.length; i++) {
-    var installStatus = objArray[i];
-    var lsid = installStatus.lsid;
-    var cb = $("cb_" + lsid);
-    if(installStatus.status == "success") {
-       if(cb != null) {
-        cb.src="#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
+      if(complete == true) {
+        Element.update("progress_indicator", "<i>done</i>")
+  
+        stopPolling();
+        var buttonPane = $("button_pane");
+        if(buttonPane != null) { 
+          Element.show(buttonPane);
+        }
       }
     }
-    else if (installStatus.status == "error") {
-      if(cb != null) {
-        cb.src="#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
-      }
-        var errorDivId = "error_" + lsid;
-        Element.show(errorDivId);
-        Element.update(errorDivId, "<p>" + installStatus.message + "</p>");
-    }
-    else {
-      complete = false;
-    }
-  }
-  
-  if(complete == true) {
-  
-    Element.update("progress_indicator", "<i>done</i>")
-  
-    stopPolling();
-    var buttonPane = $("button_pane");
-    if(buttonPane != null) { 
-      Element.show(buttonPane);
-    }
-  }
-}
 		
 /* ]]> */
 </script>
