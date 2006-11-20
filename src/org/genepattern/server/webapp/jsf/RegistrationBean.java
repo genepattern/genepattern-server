@@ -127,6 +127,7 @@ public class RegistrationBean {
 
             User newUser = new User();
             newUser.setUserId(username);
+            newUser.setEmail(email);
             newUser.setPassword(EncryptionUtil.encrypt(password));
             newUser.incrementLoginCount();
 
