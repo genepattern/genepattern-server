@@ -95,12 +95,14 @@ public class HibernateUtil {
     }
 
     /**
-     * Begin a new transaction.
+     * Begin a new transaction.  If a transaction is in progress do nothing.
      * 
      * @return
      */
     public static void beginTransaction() {
-        getSession().beginTransaction();
+        if(!getSession().getTransaction().isActive()) {
+        	getSession().beginTransaction();
+        }
     }
 
     /**
