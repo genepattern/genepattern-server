@@ -19,6 +19,8 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -124,7 +126,15 @@ public class RecentJobsBean {
         return "run task";
     }
 
-    public String delete(ActionEvent event) {
+    public void deleteFile(ActionEvent event) {
+
+    }
+
+    public void saveFile(ActionEvent event) {
+
+    }
+
+    public void delete(ActionEvent event) {
         HtmlCommandJSCookMenu m = (HtmlCommandJSCookMenu) event.getSource();
         int jobNumber = Integer.parseInt(m.getValue().toString());
         LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper
@@ -135,12 +145,13 @@ public class RecentJobsBean {
         } catch (WebServiceException e) {
             log.error(e);
         }
-        return "run task";
 
     }
 
     public void viewCode(ActionEvent event) {
         HtmlCommandJSCookMenu m = (HtmlCommandJSCookMenu) event.getSource();
+        System.out.println(event.getComponent());
+
         int jobNumber = Integer.parseInt(m.getValue().toString());
         try {
             String code = CodeGeneratorUtil.getCode(
@@ -237,10 +248,21 @@ public class RecentJobsBean {
         }
     }
 
+    private static class NavigationMenuItemComparator implements
+            Comparator<NavigationMenuItem> {
+
+        public int compare(NavigationMenuItem o1, NavigationMenuItem o2) {
+            return o1.getLabel().compareToIgnoreCase(o2.getLabel());
+        }
+
+    }
+
     public static class MyParameterInfo {
         ParameterInfo p;
 
         List<NavigationMenuItem> moduleMenuItems = new ArrayList<NavigationMenuItem>();
+
+        private static final Comparator COMPARATOR = new NavigationMenuItemComparator();
 
         public List<NavigationMenuItem> getModuleMenuItems() {
             return moduleMenuItems;
@@ -261,6 +283,7 @@ public class RecentJobsBean {
                     mi.setActionListener("#{recentJobsBean.loadTask}");
                     moduleMenuItems.add(mi);
                 }
+                Collections.sort(moduleMenuItems, COMPARATOR);
             }
         }
 
