@@ -90,6 +90,10 @@ public class RecentJobsBean {
         String lsid = new LocalAnalysisClient(UIBeanHelper.getUserId())
                 .createProvenancePipeline(jobNumber, pipelineName);
 
+        if (lsid == null) {
+            UIBeanHelper.setInfoMessage("Unable to create pipeline.");
+            return;
+        }
         try {
             UIBeanHelper.getResponse().sendRedirect(
                     UIBeanHelper.getRequest().getContextPath()
