@@ -12,8 +12,12 @@
 
 package org.genepattern.server.webapp.jsf;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -27,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.event.ActionEvent;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.navmenu.NavigationMenuItem;
@@ -86,17 +91,17 @@ public class RecentJobsBean {
     }
 
     public void createPipeline(ActionEvent e) {
-        String jobNumber = ((HtmlCommandJSCookMenu) e.getSource()).getValue()
-                .toString();
-        String pipelineName = jobNumber; // TODO prompt user for name
-        String lsid = new LocalAnalysisClient(UIBeanHelper.getUserId())
-                .createProvenancePipeline(jobNumber, pipelineName);
-
-        if (lsid == null) {
-            UIBeanHelper.setInfoMessage("Unable to create pipeline.");
-            return;
-        }
         try {
+            String jobNumber = getValue(e);
+            String pipelineName = "job" + jobNumber; // TODO prompt user for
+            // name
+            String lsid = new LocalAnalysisClient(UIBeanHelper.getUserId())
+                    .createProvenancePipeline(jobNumber, pipelineName);
+
+            if (lsid == null) {
+                UIBeanHelper.setInfoMessage("Unable to create pipeline.");
+                return;
+            }
             UIBeanHelper.getResponse().sendRedirect(
                     UIBeanHelper.getRequest().getContextPath()
                             + "/pipelineDesigner.jsp?name="
@@ -110,9 +115,8 @@ public class RecentJobsBean {
     public String reload(ActionEvent event) {
         LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper
                 .getUserId());
-        HtmlCommandJSCookMenu m = (HtmlCommandJSCookMenu) event.getSource();
-        int jobNumber = Integer.parseInt(m.getValue().toString());
         try {
+            int jobNumber = Integer.parseInt(getValue(event));
             JobInfo reloadJob = ac.getJob(jobNumber);
             RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper
                     .getManagedBean("#{runTaskBean}");
@@ -122,38 +126,115 @@ public class RecentJobsBean {
             runTaskBean.setTask(reloadJob.getTaskLSID());
         } catch (WebServiceException e) {
             log.error(e);
+        } catch (NumberFormatException e) {
+            log.error(e);
+        } catch (UnsupportedEncodingException e) {
+            log.error(e);
         }
         return "run task";
     }
 
-    public void deleteFile(ActionEvent event) {
+    private static String getValue(ActionEvent event)
+            throws UnsupportedEncodingException {
+        HtmlCommandJSCookMenu m = (HtmlCommandJSCookMenu) event.getSource();
+        return URLDecoder.decode((String) m.getValue(), "UTF-8");
 
     }
 
+    private static String getEncodedValue(ActionEvent event) {
+        HtmlCommandJSCookMenu m = (HtmlCommandJSCookMenu) event.getSource();
+        return (String) m.getValue();
+
+    }
+
+    public void deleteFile(ActionEvent event) {
+        try {
+            String value = getEncodedValue(event);
+            int index = value.indexOf("/");
+            int jobNumber = Integer.parseInt(value.substring(0, index));
+            String filename = value.substring(index + 1);
+            System.out
+                    .println("deleting " + filename + " for job " + jobNumber);
+            new LocalAnalysisClient(UIBeanHelper.getUserId())
+                    .deleteJobResultFile(jobNumber, jobNumber + "/" + filename);
+        } catch (NumberFormatException e) {
+            log.error(e);
+        } catch (WebServiceException e) {
+            e.printStackTrace();
+            log.error(e);
+        }
+    }
+
     public void saveFile(ActionEvent event) {
+        InputStream is = null;
+
+        try {
+            String value = getValue(event);
+            int index = value.indexOf("/");
+            String jobNumber = value.substring(0, index);
+            String filename = value.substring(index + 1);
+            File in = new File(GenePatternAnalysisTask.getJobDir(jobNumber),
+                    filename);
+            if (!in.exists()) {
+                UIBeanHelper.setInfoMessage("File " + filename
+                        + " does not exist.");
+                return;
+            }
+            HttpServletResponse response = UIBeanHelper.getResponse();
+            response.setHeader("Content-Disposition", "attachment; filename="
+                    + in.getName() + ";");
+            response.setHeader("Content-Type", "application/octet-stream");
+            response.setHeader("Cache-Control", "no-store"); // HTTP 1.1
+            // cache
+            // control
+            response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache
+            // control
+            response.setDateHeader("Expires", 0);
+
+            OutputStream os = response.getOutputStream();
+            is = new BufferedInputStream(new FileInputStream(in));
+            byte[] b = new byte[10000];
+            int bytesRead;
+            while ((bytesRead = is.read(b)) != -1) {
+                os.write(b, 0, bytesRead);
+            }
+        } catch (IOException e) {
+            log.error(e);
+
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    log.error(e);
+                }
+            }
+        }
 
     }
 
     public void delete(ActionEvent event) {
-        HtmlCommandJSCookMenu m = (HtmlCommandJSCookMenu) event.getSource();
-        int jobNumber = Integer.parseInt(m.getValue().toString());
-        LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper
-                .getUserId());
+
         try {
+            int jobNumber = Integer.parseInt(getValue(event));
+            LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper
+                    .getUserId());
             ac.deleteJob(jobNumber);
             updateJobs(); // TODO don't retrieve jobs twice from the database
         } catch (WebServiceException e) {
+            log.error(e);
+        } catch (NumberFormatException e) {
+            log.error(e);
+        } catch (UnsupportedEncodingException e) {
             log.error(e);
         }
 
     }
 
     public void viewCode(ActionEvent event) {
-        HtmlCommandJSCookMenu m = (HtmlCommandJSCookMenu) event.getSource();
-        System.out.println(event.getComponent());
 
-        int jobNumber = Integer.parseInt(m.getValue().toString());
         try {
+            int jobNumber = Integer.parseInt(getValue(event));
             String code = CodeGeneratorUtil.getCode(
                     CodeGeneratorUtil.LANGUAGE.JAVA,
                     new AnalysisJob(UIBeanHelper.getUserId(),
@@ -165,10 +246,25 @@ public class RecentJobsBean {
         }
     }
 
-    public String loadTask(ActionEvent event) {
-        HtmlCommandJSCookMenu m = (HtmlCommandJSCookMenu) event.getSource();
+    public void terminateJob(ActionEvent event) {
         try {
-            String lsid = URLDecoder.decode(m.getValue().toString(), "UTF-8");
+            int jobNumber = Integer.parseInt(getValue(event));
+            LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper
+                    .getUserId());
+            ac.terminateJob(jobNumber);
+            updateJobs(); // TODO don't retrieve jobs twice from the database
+        } catch (WebServiceException e) {
+            log.error(e);
+        } catch (NumberFormatException e) {
+            log.error(e);
+        } catch (UnsupportedEncodingException e) {
+            log.error(e);
+        }
+    }
+
+    public String loadTask(ActionEvent event) {
+        try {
+            String lsid = getValue(event);
             RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper
                     .getManagedBean("#{runTaskBean}");
             assert runTaskBean != null;
@@ -205,6 +301,12 @@ public class RecentJobsBean {
                             modules));
                 }
             }
+        }
+
+        public boolean isComplete() {
+            String status = jobInfo.getStatus();
+            return status.equalsIgnoreCase("Finished")
+                    || status.equalsIgnoreCase("Error");
         }
 
         public Date getDateCompleted() {
@@ -304,7 +406,12 @@ public class RecentJobsBean {
         }
 
         public String getName() {
-            return p.getName();
+            try {
+                return URLEncoder.encode(p.getName(), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                log.error(e);
+                return null;
+            }
         }
 
         public String getUIValue(ParameterInfo formalParam) {
