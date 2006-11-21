@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" 
+      xmlns:c="http://java.sun.com/jstl/core">
+  <h:form>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+      <tr>
+        <td>Module Repository </td>
+      </tr>
+    </table>
+    <p/>
+    <table width="100%" border="0" cellpadding="5" cellspacing="0">
+      <tr valign="top">
+        <td>Repository URL:</td>
+        <td>
+          <input type="text" size="40" name="moduleRepository" value="http://www.broad.mit.edu/webservices/genepatternmodulerepository" onkeyup="changeReposFields(this)"/>
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>&#160;</td>
+        <td>
+          <input type="submit" name="submitRepos" value="submit" class="button" disabled="true"/>
+          <input type="submit" name="submitReposDefault" value="reset to default" disabled="true"/>
+        </td>
+      </tr>
+      <tr valign="top" class="settingperameter">
+        <td colspan="2">&#160;</td>
+      </tr>
+      <tr valign="top">
+        <td>&#160;</td>
+        <td>
+          <a href="taskCatalog.jsp">Install/Update tasks</a>
+        </td>
+      </tr>
+    </table>
+    <p/>
+  </h:form>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
+  <h:form>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+      <tr>
+        <td>Access</td>
+      </tr>
+    </table>
+    <p/>
+    <table width="100%" border="0" cellpadding="5" cellspacing="0">
+      <tr valign="top">
+        <td>Allow Clients to connect from:</td>
+        <td>
+          <input type="radio" name="clientMode" value="This Computer" onclick="clearField(this);"/> 
+                Standalone (local connections only)<br/>
+          <input type="radio" name="clientMode" value="Any computer" checked="true" onclick="clearField(this);"/> 
+                Any Computer <br/>
+          <input type="radio" name="clientMode" value="specified" onclick="refillField(this);"/> 
+                These Domains (comma delimited list):<br/>
+          <input type="text" name="allowed_clients" size="40" value="" onkeyup="changeFields(this)"/>
+          <br/>
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>&nbsp;</td>
+        <td>
+          <input type="submit" name="submit" value="submit" class="button" disabled="true"/>
+        </td>
+      </tr>
+    </table>
+    <p/>
+  </h:form>
+</html>

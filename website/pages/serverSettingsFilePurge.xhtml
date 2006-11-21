@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" 
+      xmlns:c="http://java.sun.com/jstl/core">
+  <h:form>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+      <tr>
+        <td>File Purge Settings </td>
+      </tr>
+    </table>
+    <p/>
+    <table width="100%" border="0" cellpadding="5" cellspacing="0">
+      <tr valign="top">
+        <td>Purge Jobs After: </td>
+        <td>
+          <input type="text" size="40" />days</td>
+      </tr>
+      <tr valign="top">
+        <td>Purge Time: </td>
+        <td>
+          <input type="text" size="40" name="purgeTime" value="23:00" onkeyup="changePurgeFields(this)"/>
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>&#160;</td>
+        <td>
+          <input type="submit" name="submitPurge" value="submit" class="button" disabled="true"/>
+        </td>
+      </tr>
+      <tr valign="top" class="settingperameter">
+        <td colspan="2">&#160;</td>
+      </tr>
+      <tr valign="top">
+        <td>&#160;</td>
+        <td>File purge settings define how often and, at what time of day,
+                intermediate result files <br/>
+                created on the server are deleted (purged).
+                To never delete files set the purge frequency <br/>
+                to -1. Note that
+                this could result in large amounts of hard drive space being
+              used over time.</td>
+      </tr>
+    </table>
+    <p/>
+  </h:form>
+</html>

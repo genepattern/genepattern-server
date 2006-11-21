@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
+  <h:form>
+      <td width="242" rowspan="2" valign="top" class="tasks" id="tasks">
+      <table width="100%"  border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td colspan="5" class="sidebarhead-bkg2"><div class="sidebarhead">Server
+              Settings </div></td>
+        </tr>
+        <tr>
+          <td height="6" colspan="5"><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="1" height="6" /></td>
+        </tr>
+        
+        <ui:repeat value="#{serverSettingsBean.modes}" var="mode">
+        <tr  class="tasks_on">
+          <td width="9" valign="middle"><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="8" height="8" /></td>
+          <td width="4" valign="middle"><img src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif" alt="bullet" width="4" height="4" /></td>
+          <td width="4"><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="4" height="1" /></td>
+          <td><a href="settings-access.html">Access</a></td>
+          <td width="9"><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1" /></td>
+        </tr>
+        </ui:repeat>
+        
+
+      </table>
+      </td>
+      </h:form>
+</html>

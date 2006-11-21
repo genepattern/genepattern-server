@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" 
+      xmlns:c="http://java.sun.com/jstl/core">
+  <h:form>
+   <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+      <tr>
+        <td>Proxy Settings </td>
+      </tr>
+    </table>
+    <p/>
+    <table width="100%" border="0" cellpadding="5" cellspacing="0">
+      <tr valign="top">
+        <td>Proxy Host:</td>
+        <td>
+          <input type="text" size="40" name="proxyHost" value="" onkeyup="changeProxyFields(this)"/>
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>Proxy Port:</td>
+        <td>
+          <input type="text" size="40" name="proxyPort" value="" onkeyup="changeProxyFields(this)"/>
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>Proxy Username:</td>
+        <td>
+          <input type="password" size="40" name="proxyUser" value="" onkeyup="changeProxyFields(this)"/>
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>Proxy Password:</td>
+        <td>
+          <input type="password" size="40" name="proxyPass" value="" onkeyup="changeProxyFields(this)"/>
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>&#160;</td>
+        <td>
+          <input type="submit" name="submitProxy" value="submit" class="button" disabled="true"/>
+          <input type="submit" name="submitClearProxy" value="clear" class="button" disabled="true"/>
+        </td>
+      </tr>
+      <tr valign="top" class="settingperameter">
+        <td colspan="2">&#160;</td>
+      </tr>
+      <tr valign="top">
+        <td>&#160;</td>
+        <td>
+          <p>Proxy settings are needed only to connect to the Module
+                  Repository, and only if your organization has a web proxy between
+                  you and the internet. 
+                Username and password are required
+                only if your proxy requires authentication. The username
+                and password values will not be saved to the config file for
+                security reasons and need to be re-entered after a server restart.</p>
+        </td>
+      </tr>
+    </table>
+    <p/>
+  </h:form>
+</html>
