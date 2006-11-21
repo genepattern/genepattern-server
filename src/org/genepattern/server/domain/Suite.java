@@ -15,6 +15,7 @@ public class Suite {
     private String name;
     private String author;
     private String owner;
+    private String contact;
     private String description;
     private Integer accessId;
     private List<String> modules;
@@ -74,5 +75,13 @@ public class Suite {
     public void setModules(List<String> modules) {
         this.modules = modules;
     }
+
+	public String getContact() {
+		return contact;
+	}
+
+	public void setContact(String contact) {
+		this.contact = contact;
+	}
 
 }

@@ -42,6 +42,7 @@ public class CreateSuiteBean implements java.io.Serializable {
     private String name;
     private String description;
     private String author;
+    private String contact;
     private String accessId = "1"; // Public
     private UploadedFile supportFile1;
     private UploadedFile supportFile2;
@@ -158,6 +159,8 @@ public class CreateSuiteBean implements java.io.Serializable {
             suite.setDescription(description);
             suite.setAccessId(new Integer(accessId));
             suite.setAuthor(author);
+            suite.setContact(contact);
+            
            
             List<String> selectedLSIDs = new ArrayList<String>();
             for (ModuleCategory cat : categories) {
@@ -170,6 +173,7 @@ public class CreateSuiteBean implements java.io.Serializable {
             if(!selectedLSIDs.isEmpty()) {
                 suite.setModules(selectedLSIDs);
             }
+              
             (new SuiteDAO()).save(suite);
 
             // Save uploaded files, if any
@@ -226,5 +230,13 @@ public class CreateSuiteBean implements java.io.Serializable {
     public void setCategories(List<ModuleCategory> categories) {
         this.categories = categories;
     }
+
+	public String getContact() {
+		return contact;
+	}
+
+	public void setContact(String contact) {
+		this.contact = contact;
+	}
 
 }
