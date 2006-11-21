@@ -1397,39 +1397,40 @@ nextTask:
               </head>
               <body>
               <jsp:include page="navbar.jsp"/>
-              Sorry, Internet Explorer for Mac doesn't work right on this page.
-              We recommend Netscape Navigator 7.1 or later for Macs, which you 
-	      can download from the
-              <a href="http://channels.netscape.com/ns/browsers/download.jsp">Netscape.com download page</a>.
-<%
-      } else {
-		try {
-			PipelineModel model = new PipelineModel();
-			model.setUserID(userID);
-			HTMLPipelineView viewer = new HTMLPipelineView(out, request.getScheme(), request.getServerName(), ""+request.getServerPort(), request.getContextPath(), request.getHeader("User-Agent"), request.getParameter("name"));
-			PipelineController controller = new PipelineController(viewer, model);
-			
-			controller.init();
-			controller.begin();
+              <div id="content" class="content">
+	              Sorry, Internet Explorer for Mac doesn't work right on this page.
+	              We recommend Netscape Navigator 7.1 or later for Macs, which you 
+		      can download from the
+	              <a href="http://channels.netscape.com/ns/browsers/download.jsp">Netscape.com download page</a>.
+				<%
+				      } else {
+						try {
+							PipelineModel model = new PipelineModel();
+							model.setUserID(userID);
+							HTMLPipelineView viewer = new HTMLPipelineView(out, request.getScheme(), request.getServerName(), ""+request.getServerPort(), request.getContextPath(), request.getHeader("User-Agent"), request.getParameter("name"));
+							PipelineController controller = new PipelineController(viewer, model);
+							
+							controller.init();
+							controller.begin();
+				
+							// start with a single blank slate
+							controller.displayTask(new TaskInfo());
+							controller.end();
+						} catch (Exception e) {
+							out.println("<br>" + e.getMessage()+"<br>");
+							e.printStackTrace();
+						}
+					}
+				
+					if (request.getParameter("autoSave") != null) {
+				%>
+						<script language="Javascript">
+							savePipeline(true, "save");
+						</script>
+				<%
+					}
+				%>
 
-			// start with a single blank slate
-			controller.displayTask(new TaskInfo());
-			controller.end();
-		} catch (Exception e) {
-			out.println("<br>" + e.getMessage()+"<br>");
-			e.printStackTrace();
-		}
-	}
-
-	if (request.getParameter("autoSave") != null) {
-%>
-		<script language="Javascript">
-			savePipeline(true, "save");
-		</script>
-<%
-	}
-%>
-
-<jsp:include page="footer.jsp"/>
+			<jsp:include page="footer.jsp"/>
 </body>
 </html>
