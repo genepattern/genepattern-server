@@ -7,6 +7,15 @@ import org.hibernate.LockMode;
 public abstract class BaseDAO {
     
     Logger log = Logger.getLogger(BaseDAO.class);
+    
+    /*
+     * Constructor.  Conditionally starts a transaction,  if a transaction is already underway
+     * the call to beginTransaction does nothing.
+     *
+     */
+    public BaseDAO() {
+    	HibernateUtil.beginTransaction();
+    }
 
     public void delete(Object persistentInstance) {
         log.debug("deleting  instance");
