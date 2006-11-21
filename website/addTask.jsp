@@ -292,6 +292,10 @@ function addNewDomainType(name, desc){
 <jsp:include page="navbar.jsp"/>
 <!--   Main content area  -->
 <div id="content" class="content">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+	
+	<tr>
+		<td valign="top" class="maincontent" id="maincontent">
 <table>
 	<% if (taskName != null && taskInfo == null) { %>
 		<script language="javascript">
@@ -928,7 +932,6 @@ function addNewDomainType(name, desc){
 	<% if (tia != null && errors==null) { %>
 	<a href="makeZip.jsp?<%= GPConstants.NAME %>=<%= request.getParameter(GPConstants.NAME) %>&includeDependents=1">package this task into a zip file</a><br>
 	<% } %>
-	</td></tr>
 	<jsp:include page="footer.jsp"/>      
 </body>
 
