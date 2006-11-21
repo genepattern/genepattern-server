@@ -155,19 +155,18 @@ taskTypes = (String[])tsTaskTypes.toArray(new String[0]);
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link href="css/style.css" rel="stylesheet" type="text/css">
-<link href="jscookmenu/ThemePanel/theme.css" rel="stylesheet" type="text/css">
 <link href="skin/favicon.ico" rel="shortcut icon">
+
 <title><%= taskName == null ? "add GenePattern task" : ((!viewOnly ? "update " : "") + taskName + " version " + new LSID(tia.get(GPConstants.LSID)).getVersion()) %></title>
 <% if (viewOnly) { %>
 <style>.hideable { border-style: none; readonly: true; }</style>
 <% } %>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
-<script type="text/javascript" src="/gp/jscookmenu/ThemePanel/theme.js"></script>
-<script language="JavaScript" src="/gp/js/collapsiblePanel.js"></script>
-<script type="text/javascript" src="/gp/jscookmenu/JSCookMenu.js"></script>
-<script type="text/javascript" language="javascript">
-<script language="javascript">
 
+<script language="JavaScript" src="/gp/js/collapsiblePanel.js"></script>
+<script type="text/javascript" language="javascript">
+
+<script language="javascript">
 function showFileFormats(sel, i) {
 	val = sel.value;
 	div = document.getElementById("p" + i + "_fileFormatDiv");
@@ -287,77 +286,44 @@ function addNewDomainType(name, desc){
 }
 
 </script>
-
 </head>
-<body>
 
-<div id="topband" class="topband"><a href="/gp/pages/index.jsf" target="_top">
-	<img src="/gp/images/GP-logo.gif" alt="GenePattern" border="0" height="77" width="296" /></a>
-</div>
-    <!--  horizontal navigation band  -->
-    <div id="navband1" class="navband1">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<script type="text/javascript">
-var id15_menu =
-[[null, 'Tasks & Pipelines', 'id15_menu:A]run task', 'linkDummyForm', null,[null, 'Run', 'id15_menu:A]run task', 'linkDummyForm', null],
-[null, 'Create Task', 'id15_menu:L]#{navBarBean.navigate};create task:A]create task', 'linkDummyForm', null],
-[null, 'Create Pipeline', 'id15_menu:L]#{navBarBean.navigate};create pipeline:A]create pipeline', 'linkDummyForm', null],
-[null, 'Install/Update', 'id15_menu:A]task catalog', 'linkDummyForm', null],
-[null, 'Delete', 'id15_menu:L]#{navBarBean.navigate};delete tasks:A]delete tasks', 'linkDummyForm', null]],
-[null, 'Suites', 'id15_menu:A]create suite', 'linkDummyForm', null,[null, 'Create Suite', 'id15_menu:L]#{navBarBean.navigate};create suite:A]create suite', 'linkDummyForm', null],
-[null, 'Install/Update', 'id15_menu:L]#{navBarBean.navigate};suite catalog:A]suite catalog', 'linkDummyForm', null],
-[null, 'Delete', 'id15_menu:L]#{navBarBean.navigate};delete suites:A]delete suites', 'linkDummyForm', null]],
-[null, 'Job Results', 'id15_menu:A]job results', 'linkDummyForm', null],
-[null, 'Documentation', null, 'linkDummyForm', null,[null, 'user\'s manual & tutorial', 'id15_menu:A]http://www.broad.mit.edu/cancer/software/genepattern/tutorial/', 'linkDummyForm', null],
-[null, 'release notes', 'id15_menu:A]http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/', 'linkDummyForm', null],
-[null, 'public datasets', 'id15_menu:A]http://www.broad.mit.edu/cancer/software/genepattern/datasets/', 'linkDummyForm', null],
-[null, 'FAQ', 'id15_menu:A]http://www.broad.mit.edu/cancer/software/genepattern/doc/faq/', 'linkDummyForm', null],
-[null, 'task documentation', 'id15_menu:L]#{navBarBean.navigate};task documentation:A]task documentation', 'linkDummyForm', null],
-[null, 'common file formats', 'id15_menu:A]http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_fileformats.html', 'linkDummyForm', null]],
-[null, 'Resources', null, 'linkDummyForm', null,[null, 'join mailing list', 'id15_menu:A]http://www.broad.mit.edu/cancer/software/genepattern/gp_mail.html', 'linkDummyForm', null],
-[null, 'report bugs', 'id15_menu:A]mailto:gp-help@broad.mit.edu', 'linkDummyForm', null],
-[null, 'user forum', 'id15_menu:A]http://www.broad.mit.edu/cancer/software/genepattern/forum/', 'linkDummyForm', null]],
-[null, 'Downloads', null, 'linkDummyForm', null,[null, 'install graphical client', 'id15_menu:A]http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gpge_installer.cgi', 'linkDummyForm', null],
-[null, 'Programming Libraries', 'id15_menu:A]go_sample1', 'linkDummyForm', null]]];
-</script>
-<div id="id15_menu"></div>
-<script type="text/javascript">	cmDraw ('id15_menu', id15_menu, 'hbr', cmThemePanel, 'ThemePanel');
-</script>
-</html>
-</div>
+<body>
+<jsp:include page="navbar.jsp"/>
 <!--   Main content area  -->
 <div id="content" class="content">
-<% if (taskName != null && taskInfo == null) { %>
-	<script language="javascript">
-	alert('no such task <%= taskName %>');
-	</script>
-<%
-	taskName = null;
-	}
-
-StringBuffer publicTasks = new StringBuffer();
-String name;
-String description;
-String lsid;
-StringBuffer otherTasks = new StringBuffer();
-String DONT_JUMP = "dontJump";
-
-// used to avoid displaying multiple versions of same basic task
-HashMap hmLSIDsWithoutVersions = new HashMap();
-
-// used to track multiple versions of current task
-Vector vVersions = new Vector();
-LSID l = null;
-String thisLSIDNoVersion = "";
-if (tia != null) {
-	try {
-		lsid = tia.get(GPConstants.LSID);
-		if(lsid!=null && !lsid.trim().equals("")) {
-			thisLSIDNoVersion = new LSID(lsid).toStringNoVersion();
+<table>
+	<% if (taskName != null && taskInfo == null) { %>
+		<script language="javascript">
+		alert('no such task <%= taskName %>');
+		</script>
+	<%
+		taskName = null;
 		}
-	} catch (MalformedURLException mue) {
+	
+	StringBuffer publicTasks = new StringBuffer();
+	String name;
+	String description;
+	String lsid;
+	StringBuffer otherTasks = new StringBuffer();
+	String DONT_JUMP = "dontJump";
+	
+	// used to avoid displaying multiple versions of same basic task
+	HashMap hmLSIDsWithoutVersions = new HashMap();
+	
+	// used to track multiple versions of current task
+	Vector vVersions = new Vector();
+	LSID l = null;
+	String thisLSIDNoVersion = "";
+	if (tia != null) {
+		try {
+			lsid = tia.get(GPConstants.LSID);
+			if(lsid!=null && !lsid.trim().equals("")) {
+				thisLSIDNoVersion = new LSID(lsid).toStringNoVersion();
+			}
+		} catch (MalformedURLException mue) {
+		}
 	}
-}
 
 	String authorityType = null;
 
@@ -471,91 +437,91 @@ if (tia != null) {
 		lsid = "";
 	}
 
-%>
-
-<h2><%= taskName == null ? "Create new "+ messages.get("ApplicationName") +" task" : ((!viewOnly ? "Update " : "") + taskName  + " version ") %>
-<% if (taskName != null) { %>
-	<select name="notused" onchange="javascript:window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'" style="font-weight: bold; font-size: medium; outline-style: none;">
-<%
-	for (Iterator itVersions = vVersions.iterator(); itVersions.hasNext(); ) {
-		String vLSID = (String)itVersions.next();
-		l = new LSID(vLSID);
-%>
-		<option value="<%= l.toString() %>"<%= vLSID.equals(lsid) ? " selected" : "" %>><%= l.getVersion() %></option>
-<%
-	}
-%>
-	</select>
-<% } %>
-</h2>
-<%
-if(errors!=null) {
-%>
-	<font color="red">
-	<h2>
-	There are some problems with the task that need to be fixed:
-	</h2>
-	<ul>
-	<%	
-		for (java.util.Enumeration eProblems = errors.elements(); eProblems.hasMoreElements(); ) {
 	%>
-			<li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
+	
+	<h2><%= taskName == null ? "Create new "+ messages.get("ApplicationName") +" task" : ((!viewOnly ? "Update " : "") + taskName  + " version ") %>
+	<% if (taskName != null) { %>
+		<select name="notused" onchange="javascript:window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'" style="font-weight: bold; font-size: medium; outline-style: none;">
+	<%
+		for (Iterator itVersions = vVersions.iterator(); itVersions.hasNext(); ) {
+			String vLSID = (String)itVersions.next();
+			l = new LSID(vLSID);
+	%>
+			<option value="<%= l.toString() %>"<%= vLSID.equals(lsid) ? " selected" : "" %>><%= l.getVersion() %></option>
 	<%
 		}
-}
-%>
-</ul>
-</font>
-
-<form name="task" action="saveTask.jsp" method="post" ENCTYPE="multipart/form-data">
-<input type="hidden" name="<%= GPConstants.FORMER_NAME %>" value="<%= taskInfo != null ? taskInfo.getName() : "" %>">
-
-
-Please enter the following information to submit a new or updated analysis task to <%= messages.get("ApplicationName") %>.
-&nbsp;&nbsp;<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="button">
-<% if (viewOnly && LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
-
-<br><br>
-  <table cols="2" valign="top">
-  <col align="right" width="20%">
-  <col align="left" width="*">
-  <tr title="Task name without spaces, used as the name by which the task will be invoked.">
-  <td align="right"><b>Name:</b></td>
-  <td width="*"><% if (!viewOnly) { %><input name="<%= GPConstants.NAME %>" maxlength="100" size="<%= taskInfo != null ? Math.max(taskInfo.getName().length() + 2, 20): 20 %>" 
-  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<a href='help.jsp#Name' target='help'><img border='0' src='skin/help2.jpg'/></a><% } else { %><%= taskInfo.getName() %><% } %>
-&nbsp;&nbsp;&nbsp;&nbsp;
-
-<% if (taskInfo != null && !viewOnly) { %>
-  <input type="button" value="<%= DELETE %>..." name="<%= DELETE %>" class="little"
-   onclick="if (window.confirm('Really delete the ' + document.forms['task'].<%= GPConstants.NAME %>.value + ' task?')) { window.location='saveTask.jsp?delete=1&<%= GPConstants.NAME %>=' + document.forms['task'].<%= GPConstants.NAME %>.value + '&<%= GPConstants.LSID %>=' + document.forms['task'].<%= GPConstants.LSID %>.value; }">
-<% } %>
-<% if (taskInfo != null) { %>
-  <input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
-  <input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
-<% } %>
-
-   &nbsp;&nbsp;&nbsp;<select onchange="javascript:if (this.options[this.selectedIndex].value != '<%= DONT_JUMP %>') window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'">
-  <option value="<%= DONT_JUMP %>">task catalog</option>
-	<option value="">new task</option>
-	<%= publicTasks.toString() %>  
-	<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
-	<option value="<%= DONT_JUMP %>">private tasks (not mine)</option>
-	<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
-	<%= otherTasks.toString() %>
-  </select>
-  <select name="notused" onchange="javascript:window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'">
-<%
-	for (Iterator itVersions = vVersions.iterator(); itVersions.hasNext(); ) {
-		String vLSID = (String)itVersions.next();
-		l = new LSID(vLSID);
-%>
-		<option value="<%= l.toString() %>"<%= vLSID.equals(lsid) ? " selected" : "" %>><%= l.getVersion() %></option>
-<%
+	%>
+		</select>
+	<% } %>
+	</h2>
+	<%
+	if(errors!=null) {
+	%>
+		<font color="red">
+		<h2>
+		There are some problems with the task that need to be fixed:
+		</h2>
+		<ul>
+		<%	
+			for (java.util.Enumeration eProblems = errors.elements(); eProblems.hasMoreElements(); ) {
+		%>
+				<li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
+		<%
+			}
 	}
-%>
-  </select>
+	%>
+	</ul>
+	</font>
 
-</td>
+	<form name="task" action="saveTask.jsp" method="post" ENCTYPE="multipart/form-data">
+	<input type="hidden" name="<%= GPConstants.FORMER_NAME %>" value="<%= taskInfo != null ? taskInfo.getName() : "" %>">
+	
+	
+	Please enter the following information to submit a new or updated analysis task to <%= messages.get("ApplicationName") %>.
+	&nbsp;&nbsp;<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="button">
+	<% if (viewOnly && LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
+	
+	<br><br>
+	  <table cols="2" valign="top">
+		  <col align="right" width="20%">
+		  <col align="left" width="*">
+		  <tr title="Task name without spaces, used as the name by which the task will be invoked.">
+		  <td align="right"><b>Name:</b></td>
+		  <td width="*"><% if (!viewOnly) { %><input name="<%= GPConstants.NAME %>" maxlength="100" size="<%= taskInfo != null ? Math.max(taskInfo.getName().length() + 2, 20): 20 %>" 
+		  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<a href='help.jsp#Name' target='help'><img border='0' src='skin/help2.jpg'/></a><% } else { %><%= taskInfo.getName() %><% } %>
+		&nbsp;&nbsp;&nbsp;&nbsp;
+		
+		<% if (taskInfo != null && !viewOnly) { %>
+		  <input type="button" value="<%= DELETE %>..." name="<%= DELETE %>" class="little"
+		   onclick="if (window.confirm('Really delete the ' + document.forms['task'].<%= GPConstants.NAME %>.value + ' task?')) { window.location='saveTask.jsp?delete=1&<%= GPConstants.NAME %>=' + document.forms['task'].<%= GPConstants.NAME %>.value + '&<%= GPConstants.LSID %>=' + document.forms['task'].<%= GPConstants.LSID %>.value; }">
+		<% } %>
+		<% if (taskInfo != null) { %>
+		  <input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
+		  <input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
+		<% } %>
+	
+		   &nbsp;&nbsp;&nbsp;<select onchange="javascript:if (this.options[this.selectedIndex].value != '<%= DONT_JUMP %>') window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'">
+		  <option value="<%= DONT_JUMP %>">task catalog</option>
+			<option value="">new task</option>
+			<%= publicTasks.toString() %>  
+			<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
+			<option value="<%= DONT_JUMP %>">private tasks (not mine)</option>
+			<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
+			<%= otherTasks.toString() %>
+		  </select>
+		  <select name="notused" onchange="javascript:window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'">
+		<%
+			for (Iterator itVersions = vVersions.iterator(); itVersions.hasNext(); ) {
+				String vLSID = (String)itVersions.next();
+				l = new LSID(vLSID);
+		%>
+				<option value="<%= l.toString() %>"<%= vLSID.equals(lsid) ? " selected" : "" %>><%= l.getVersion() %></option>
+		<%
+			}
+		%>
+		  </select>
+
+	</td>
   </tr>
 
   <tr title="LSID">
@@ -593,7 +559,7 @@ Please enter the following information to submit a new or updated analysis task 
   <% } else { 
      out.print(taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.AUTHOR)) : "");
    } %>
-<a href='help.jsp#Author' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	<a href='help.jsp#Author' target='help'><img border='0' src='skin/help2.jpg'/></a>
 
        </td>
   </tr>
@@ -601,389 +567,371 @@ Please enter the following information to submit a new or updated analysis task 
   <tr title="Your user ID">
   <td align="right"><b>Owner:</b></td>
   <td width="*">
-<% 
-   String owner = (tia == null ? userID : tia.get(GPConstants.USERID)); 
-  	if(!viewOnly) { %>
-   <input name="<%= GPConstants.USERID %>" size="50" class="hideable"
-	       value="<%= owner %>" 
-		
-	       <%= (tia == null || owner.equals("") || userID.equals(owner) || userID.equals(taskInfo.getUserId())) ? "" : "readonly" %>>
-	       (email address)
-   <%
-	} else {
-      	out.print(owner);
-   	}
-   %>
-<a href='help.jsp#Owner' target='help'><img border='0' src='skin/help2.jpg'/></a>
-  </td>
-  </tr>
+	<% 
+	   String owner = (tia == null ? userID : tia.get(GPConstants.USERID)); 
+	  	if(!viewOnly) { %>
+	   <input name="<%= GPConstants.USERID %>" size="50" class="hideable"
+		       value="<%= owner %>" 
+			
+		       <%= (tia == null || owner.equals("") || userID.equals(owner) || userID.equals(taskInfo.getUserId())) ? "" : "readonly" %>>
+		       (email address)
+	   <%
+		} else {
+	      	out.print(owner);
+	   	}
+	   %>
+	<a href='help.jsp#Owner' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	  </td>
+	  </tr>
 
-  <tr title="Make available to others">
-  <td align="right"><b>Privacy:</b></td>
-  <td width="*"><%= createSelection(tia, GPConstants.PRIVACY, privacies, "onchange=\"onPrivacyChange(this)\"", viewOnly) %>
-<a href='help.jsp#Privacy' target='help'><img border='0' src='skin/help2.jpg'/></a>
-</td>
+	  <tr title="Make available to others">
+	  <td align="right"><b>Privacy:</b></td>
+	  <td width="*"><%= createSelection(tia, GPConstants.PRIVACY, privacies, "onchange=\"onPrivacyChange(this)\"", viewOnly) %>
+	<a href='help.jsp#Privacy' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	</td>
   </tr>
 
   <tr title="Readiness for use by others">
   <td align="right"><b>Quality&nbsp;level:</b></td>
   <td width="*"><%= createSelection(tia, GPConstants.QUALITY, qualities, "", viewOnly) %>
-<a href='help.jsp#Quality' target='help'><img border='0' src='skin/help2.jpg'/></a>
-</td>
-  </tr>
+	<a href='help.jsp#Quality' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	</td>
+	  </tr>
 
-<% 
-if (taskName != null) {
-	File[] docFiles = null;
-	try {
-		docFiles = taskIntegratorClient.getDocFiles(taskInfo);
-	} catch(org.genepattern.webservice.WebServiceException wse) {
-		docFiles = new File[0];
-	}
-%><tr><td align="right"><%
-	boolean isPipeline = tia != null && tia.get(GPConstants.TASK_TYPE).equals(GPConstants.TASK_TYPE_PIPELINE);
-	boolean hasDoc = docFiles != null && docFiles.length > 0;
-	if (hasDoc || isPipeline) {
-%><b>Documentation:</b></td><td width="*"><%
-	}
-	if (hasDoc) { 
- 		for (i = 0; i < docFiles.length; i++) { %>
-<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(docFiles[i].getName()) %></a> 
-<% 		} 
- 	}
-	if (isPipeline) {
-%>
+	<% 
+	if (taskName != null) {
+		File[] docFiles = null;
+		try {
+			docFiles = taskIntegratorClient.getDocFiles(taskInfo);
+		} catch(org.genepattern.webservice.WebServiceException wse) {
+			docFiles = new File[0];
+		}
+	%><tr><td align="right"><%
+		boolean isPipeline = tia != null && tia.get(GPConstants.TASK_TYPE).equals(GPConstants.TASK_TYPE_PIPELINE);
+		boolean hasDoc = docFiles != null && docFiles.length > 0;
+		if (hasDoc || isPipeline) {
+	%><b>Documentation:</b></td><td width="*"><%
+		}
+		if (hasDoc) { 
+	 		for (i = 0; i < docFiles.length; i++) { %>
+	<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(docFiles[i].getName()) %></a> 
+	<% 		} 
+	 	}
+		if (isPipeline) {
+	%>
 		<a href="pipelineDesigner.jsp?<%= GPConstants.NAME %>=<%= tia.get(GPConstants.LSID) %>">pipeline designer</a>
 		<input name="<%= PipelineModel.PIPELINE_MODEL %>" type="hidden" value="<%= StringUtils.htmlEncode(tia.get(PipelineModel.PIPELINE_MODEL)) %>">
-<%
-	}
-%>
-</td></tr>
-<% } %>
-
-<% if (!viewOnly) { %>
-  <tr>
-  <td align="right" valign="top">
-   </td>
-  <td width="*"><br>    <font size=-1>
-  Use &lt;<%= GPConstants.JAVA %>&gt; for launching a JVM, 
-  &lt;<%= GPConstants.LIBDIR %>&gt; for accessing EXEs, DLLS, JARs, etc., <br>
-  &lt;<i>your_param_name</i>&gt; to substitute your own parameters (listed below),<br>
-  &lt;<i>java.system.property.name</i>&gt; to substitute from java.lang.System.getProperties().<br>
-  You may also use environment variables and settings from your GenePatternServer/resources/genepattern.properties file.<br>
-  Useful ones: &lt;path.separator&gt;, &lt;file.separator&gt;, &lt;os.name&gt;, &lt;perl&gt;, &lt;java&gt;, &lt;libdir&gt;
-</font>
-</td>
-  </tr>
-<% } %>
-
-  <tr title="the command line used to invoke the application, using &lt;tags&gt; for param &amp; environment variable substitutions.">
-  <td align="right" valign="top"><b>command&nbsp;line:</b><br>
-   </td>
-  <td valign="top" width="*"><% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="60" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea> * (required) <a href='help.jsp#Command' target='help'><img border='0' src='skin/help2.jpg'/></a>
-<% } %></td>
-  </tr>
-
-  <tr>
-  <td align="right"><b>task&nbsp;type:</b>
-</td>
-  <td width="*">         
-  <%= createSelection(tia, GPConstants.TASK_TYPE, taskTypes, "", viewOnly) %>
-  <% if (!viewOnly) { %>
-	 <input type="button" onclick="addNewTaskType()" value="new..." class="little">
-  <% } %>
-<a href='help.jsp#TaskType' target='help'><img border='0' src='skin/help2.jpg'/></a>
-
-  </td>
-  </tr>
-
-   <tr>
-  <td align="right"><b>CPU&nbsp;type:</b></td>
-  <td width="*">         
-	<%= createSelection(tia, GPConstants.CPU_TYPE, cpuTypes, "", viewOnly) %> (if compiled for a specific one)
-         <a href='help.jsp#cpu' target='help'><img border='0' src='skin/help2.jpg'/></a>
-</td>
-   </tr>
-
-   <tr>
-  <td align="right"><b>operating&nbsp;system:</b></td>
-  <td width="*"> 
-	<%= createSelection(tia, GPConstants.OS, oses, "", viewOnly) %> (if operating system-dependent)
-  <a href='help.jsp#os' target='help'><img border='0' src='skin/help2.jpg'/></a>
-</td>
-   </tr>
-
-<%--
-   <tr>
-  <td align="right"><b>Java&nbsp;JVM&nbsp;level:</b></td>
-  <td width="*">         
-	<%= createSelection(tia, GPConstants.JVM_LEVEL, jvms, "", viewOnly) %> (if Java is used)
-         </td>
-   </tr>
---%>
-   <tr>
-  <td align="right"><b>Language:</b></td>
-  <td width="*">         
-  <%= createSelection(tia, GPConstants.LANGUAGE, languages, "", viewOnly) %> &nbsp;
-    <b>min. language version:</b> <% if (!viewOnly) { %><input name="<%= GPConstants.JVM_LEVEL %>" value="<%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %>" size="10"><% } else { %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %><% } %>
-         <a href='help.jsp#Language' target='help'><img border='0' src='skin/help2.jpg'/></a>
-</td>
-   </tr>
-   
-   <tr>
-  <td align="right" valign="top"><b>Version&nbsp;comment:</b></td>
-  <td width="*">
-  	<% if (!viewOnly) { %><textarea name="<%= GPConstants.VERSION %>" cols="50" rows="1"><% } %><%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.VERSION)) : "" %><% if (!viewOnly) { %></textarea><% } %>
-   <a href='help.jsp#VersionComment' target='help'><img border='0' src='skin/help2.jpg'/></a>
-</td>
-   </tr>
-
-   <tr>
-   <td align="right" valign="top"><b>output description:</b></td>
-   <td>
-	<table>
-	<tr>
-	<td valign="top">
-		output file format(s):<a href='help.jsp#OutputDescription' target='help'><img border='0' src='skin/help2.jpg'/></a>
-	</td>
-	<td valign="top">	
-<%
-		attributeValue = (tia != null ? tia.get(GPConstants.FILE_FORMAT) : "");
-		if (attributeValue == null) attributeValue = "";
-%>
-<% if (!viewOnly) { 
-		String[] file_formats = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-		String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[FILE_FORMAT_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
-%>
-		<select multiple name="<%= GPConstants.FILE_FORMAT %>" size="<%= Math.min(3, tmFileFormats.size()) %>">
-<%
-		for(Iterator itChoices = tmFileFormats.values().iterator(); itChoices.hasNext(); ) {
-			String c = (String)itChoices.next();
-			boolean isSelected = false;
-			for (i = 0; i < file_formats.length; i++) {
-				if (c.equals(file_formats[i])) {
-					isSelected = true;
-					break;
-				}
-			}
-			out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + StringUtils.htmlEncode(c) + "</option>");
+	<%
 		}
-%>
+	%>
+	</td></tr>
+	<% } %>
+	
+	<% if (!viewOnly) { %>
+	  <tr>
+	  <td align="right" valign="top">
+	   </td>
+	  <td width="*"><br>    <font size=-1>
+	  Use &lt;<%= GPConstants.JAVA %>&gt; for launching a JVM, 
+	  &lt;<%= GPConstants.LIBDIR %>&gt; for accessing EXEs, DLLS, JARs, etc., <br>
+	  &lt;<i>your_param_name</i>&gt; to substitute your own parameters (listed below),<br>
+	  &lt;<i>java.system.property.name</i>&gt; to substitute from java.lang.System.getProperties().<br>
+	  You may also use environment variables and settings from your GenePatternServer/resources/genepattern.properties file.<br>
+	  Useful ones: &lt;path.separator&gt;, &lt;file.separator&gt;, &lt;os.name&gt;, &lt;perl&gt;, &lt;java&gt;, &lt;libdir&gt;
+	</font>
+	</td>
+	  </tr>
+	<% } %>
+
+	  <tr title="the command line used to invoke the application, using &lt;tags&gt; for param &amp; environment variable substitutions.">
+	  <td align="right" valign="top"><b>command&nbsp;line:</b><br>
+	   </td>
+	  <td valign="top" width="*"><% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="60" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea> * (required) <a href='help.jsp#Command' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	<% } %></td>
+	  </tr>
+
+	  <tr>
+	  <td align="right"><b>task&nbsp;type:</b>
+	</td>
+	  <td width="*">         
+	  <%= createSelection(tia, GPConstants.TASK_TYPE, taskTypes, "", viewOnly) %>
+	  <% if (!viewOnly) { %>
+		 <input type="button" onclick="addNewTaskType()" value="new..." class="little">
+	  <% } %>
+	<a href='help.jsp#TaskType' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	
+	  </td>
+	  </tr>
+
+	   <tr>
+	  <td align="right"><b>CPU&nbsp;type:</b></td>
+	  <td width="*">         
+		<%= createSelection(tia, GPConstants.CPU_TYPE, cpuTypes, "", viewOnly) %> (if compiled for a specific one)
+	         <a href='help.jsp#cpu' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	</td>
+	   </tr>
+	
+	   <tr>
+	  <td align="right"><b>operating&nbsp;system:</b></td>
+	  <td width="*"> 
+		<%= createSelection(tia, GPConstants.OS, oses, "", viewOnly) %> (if operating system-dependent)
+	  <a href='help.jsp#os' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	</td>
+	   </tr>
+
+	<%--
+	   <tr>
+	  <td align="right"><b>Java&nbsp;JVM&nbsp;level:</b></td>
+	  <td width="*">         
+		<%= createSelection(tia, GPConstants.JVM_LEVEL, jvms, "", viewOnly) %> (if Java is used)
+	         </td>
+	   </tr>
+	--%>
+	   <tr>
+	  <td align="right"><b>Language:</b></td>
+	  <td width="*">         
+	  <%= createSelection(tia, GPConstants.LANGUAGE, languages, "", viewOnly) %> &nbsp;
+	    <b>min. language version:</b> <% if (!viewOnly) { %><input name="<%= GPConstants.JVM_LEVEL %>" value="<%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %>" size="10"><% } else { %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %><% } %>
+	         <a href='help.jsp#Language' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	</td>
+	   </tr>
+	   
+	   <tr>
+	  <td align="right" valign="top"><b>Version&nbsp;comment:</b></td>
+	  <td width="*">
+	  	<% if (!viewOnly) { %><textarea name="<%= GPConstants.VERSION %>" cols="50" rows="1"><% } %><%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.VERSION)) : "" %><% if (!viewOnly) { %></textarea><% } %>
+	   <a href='help.jsp#VersionComment' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	</td>
+	   </tr>
+	
+	   <tr>
+	   <td align="right" valign="top"><b>output description:</b></td>
+	   <td>
+		<table>
+		<tr>
+		<td valign="top">
+			output file format(s):<a href='help.jsp#OutputDescription' target='help'><img border='0' src='skin/help2.jpg'/></a>
+		</td>
+		<td valign="top">	
+	<%
+			attributeValue = (tia != null ? tia.get(GPConstants.FILE_FORMAT) : "");
+			if (attributeValue == null) attributeValue = "";
+	%>
+	<% if (!viewOnly) { 
+			String[] file_formats = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+			String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[FILE_FORMAT_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
+	%>
+			<select multiple name="<%= GPConstants.FILE_FORMAT %>" size="<%= Math.min(3, tmFileFormats.size()) %>">
+	<%
+			for(Iterator itChoices = tmFileFormats.values().iterator(); itChoices.hasNext(); ) {
+				String c = (String)itChoices.next();
+				boolean isSelected = false;
+				for (i = 0; i < file_formats.length; i++) {
+					if (c.equals(file_formats[i])) {
+						isSelected = true;
+						break;
+					}
+				}
+				out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + StringUtils.htmlEncode(c) + "</option>");
+			}
+	%>
+			</select>
+	<% } else { %>
+			<%= attributeValue %>
+	<% } %>
+		</td>
+	  <% if (!viewOnly) { %>
+	  	<td valign="top">         
+		 <input type="button" onclick="window.open('newFileType.html', 'newFileType', 'width=200,height=200').focus()" value="new..." class="little">
+	  	</td>
+	   <% }%>
+	<!--	 <td valign="top">
+		domain(s):
+		</td> 
+		<td valign="top"> 
+	<%
+			//attributeValue = (tia != null ? tia.get(GPConstants.DOMAIN) : "");
+			//if (attributeValue == null) attributeValue = "";
+	%>
+	  <% //if (!viewOnly) { %>
+		//<select multiple name="<%= GPConstants.DOMAIN %>">
+	<%
+		/*{
+			String[] taskDomains = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+			String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[DOMAIN_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
+	
+			//System.out.println("domain offset: " + DOMAIN_PARAM_OFFSET);
+			for(Iterator itChoices = tmDomains.values().iterator(); itChoices.hasNext(); ) {
+				String c = (String)itChoices.next();
+				boolean isSelected = false;
+				for (i = 0; i < taskDomains.length; i++) {
+					if (c.equals(taskDomains[i])) {
+						isSelected = true;
+						break;
+					}
+				}
+			
+				out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + StringUtils.htmlEncode(c) + "</option>");
+			}
+		}*/
+	%>
 		</select>
-<% } else { %>
-		<%= attributeValue %>
-<% } %>
-	</td>
-  <% if (!viewOnly) { %>
-  	<td valign="top">         
-	 <input type="button" onclick="window.open('newFileType.html', 'newFileType', 'width=200,height=200').focus()" value="new..." class="little">
-  	</td>
-   <% }%>
-<!--	 <td valign="top">
-	domain(s):
-	</td> 
-	<td valign="top"> 
-<%
-		//attributeValue = (tia != null ? tia.get(GPConstants.DOMAIN) : "");
-		//if (attributeValue == null) attributeValue = "";
-%>
-  <% //if (!viewOnly) { %>
-	//<select multiple name="<%= GPConstants.DOMAIN %>">
-<%
-	/*{
-		String[] taskDomains = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-		String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[DOMAIN_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
-
-		//System.out.println("domain offset: " + DOMAIN_PARAM_OFFSET);
-		for(Iterator itChoices = tmDomains.values().iterator(); itChoices.hasNext(); ) {
-			String c = (String)itChoices.next();
-			boolean isSelected = false;
-			for (i = 0; i < taskDomains.length; i++) {
-				if (c.equals(taskDomains[i])) {
-					isSelected = true;
-					break;
-				}
-			}
-		
-			out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + StringUtils.htmlEncode(c) + "</option>");
-		}
-	}*/
-%>
-	</select>
-<% //} else { %>
-	//	<%= attributeValue %>
-<% //} %>
-<!--	</td> -->
-  <% //if (!viewOnly) { %>
-  <!--	<td valign="top">         
-	 <input type="button" onclick="javascript:window.open('newDomain.html', 'newDomain', 'width=200,height=200').focus()"  value="new..." class="little">
-  	</td> -->
-  <%// } %>
-	</tr>
-	</table>
+	<% //} else { %>
+		//	<%= attributeValue %>
+	<% //} %>
+	<!--	</td> -->
+	  <% //if (!viewOnly) { %>
+	  <!--	<td valign="top">         
+		 <input type="button" onclick="javascript:window.open('newDomain.html', 'newDomain', 'width=200,height=200').focus()"  value="new..." class="little">
+	  	</td> -->
+	  <%// } %>
+		</tr>
+		</table>
 
 
-   </td>
-   </tr>
-   <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_LSIDS %>" value="<%= tia != null ? tia.get(GPConstants.REQUIRED_PATCH_LSIDS) : "" %>">
-   <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_URLS %>" value="<%= tia != null ? tia.get(GPConstants.REQUIRED_PATCH_URLS) : "" %>">
-   
-  <% if (!viewOnly) { %>
-   <tr>
-  <td align="right" valign="top"><b>Support&nbsp;files:</b><br>(jar, dll, exe, pl, doc, etc.)<br>
-  </td>
-  <td width="*">
-<font size=-1>
-  The actual program plus any required libraries will will be accessible to your command line as 
-  &lt;<%= GPConstants.LIBDIR %>&gt;<file.separator><i>filename</i></font><a href='help.jsp#SupportFiles' target='help'><img border='0' src='skin/help2.jpg'/></a>
-<br>
+	   </td>
+	   </tr>
+	   <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_LSIDS %>" value="<%= tia != null ? tia.get(GPConstants.REQUIRED_PATCH_LSIDS) : "" %>">
+	   <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_URLS %>" value="<%= tia != null ? tia.get(GPConstants.REQUIRED_PATCH_URLS) : "" %>">
+	   
+	  <% if (!viewOnly) { %>
+	   <tr>
+	  <td align="right" valign="top"><b>Support&nbsp;files:</b><br>(jar, dll, exe, pl, doc, etc.)<br>
+	  </td>
+	  <td width="*">
+	<font size=-1>
+	  The actual program plus any required libraries will will be accessible to your command line as 
+	  &lt;<%= GPConstants.LIBDIR %>&gt;<file.separator><i>filename</i></font><a href='help.jsp#SupportFiles' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	<br>
+	
+	<% for (i = 1; i <= NUM_ATTACHMENTS; i++) { %>
+	  	<input type="file" name="file<%= i %>" size="70" class="little"><br>
+	<% } %>
+	  </td>
+	  </tr>
+	<% } %>
 
-<% for (i = 1; i <= NUM_ATTACHMENTS; i++) { %>
-  	<input type="file" name="file<%= i %>" size="70" class="little"><br>
-<% } %>
-  </td>
-  </tr>
-<% } %>
-
-  <tr>
-  <td align="right" valign="top"><b>Current&nbsp;files:</b></td>
-  <td width="*">
-<%
-   if (taskName != null) {
-	   File[] allFiles = null;
-	   try {
-	   	allFiles = taskIntegratorClient.getAllFiles(taskInfo);
-	   } catch(org.genepattern.webservice.WebServiceException wse) {
-	   	allFiles = new File[0];
-	   }
-	   for (i = 0; i < allFiles.length; i++) { %>
-		<a href="getFile.jsp?task=<%= (String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%= URLEncoder.encode(allFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(allFiles[i].getName()) %></a> 
-<%	   }  %>
-
-<%	   if (allFiles != null && allFiles.length > 0 && !viewOnly) { %>
-		   <br>
-		   <select name="deleteFiles">
-		   <option value="">delete support files...</option>
-<%		   for (i = 0; i < allFiles.length; i++) { %>
-			<option value="<%= StringUtils.htmlEncode(allFiles[i].getName()) %>"><%= allFiles[i].getName() %></option> 
-<%		   }  %>
-		   </select>
-		   <input type="hidden" name="deleteSupportFiles" value="">
-		   <input type="button" value="<%= DELETE %>..." class="little" onclick="confirmDeleteSupportFiles()">
-<%	   } %>
-
-<%   } %>
-  <br>
-
-  </td>
-   </tr>
+	  <tr>
+	  <td align="right" valign="top"><b>Current&nbsp;files:</b></td>
+	  <td width="*">
+	<%
+	   if (taskName != null) {
+		   File[] allFiles = null;
+		   try {
+		   	allFiles = taskIntegratorClient.getAllFiles(taskInfo);
+		   } catch(org.genepattern.webservice.WebServiceException wse) {
+		   	allFiles = new File[0];
+		   }
+		   for (i = 0; i < allFiles.length; i++) { %>
+			<a href="getFile.jsp?task=<%= (String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%= URLEncoder.encode(allFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(allFiles[i].getName()) %></a> 
+	<%	   }  %>
+	
+	<%	   if (allFiles != null && allFiles.length > 0 && !viewOnly) { %>
+			   <br>
+			   <select name="deleteFiles">
+			   <option value="">delete support files...</option>
+	<%		   for (i = 0; i < allFiles.length; i++) { %>
+				<option value="<%= StringUtils.htmlEncode(allFiles[i].getName()) %>"><%= allFiles[i].getName() %></option> 
+	<%		   }  %>
+			   </select>
+			   <input type="hidden" name="deleteSupportFiles" value="">
+			   <input type="button" value="<%= DELETE %>..." class="little" onclick="confirmDeleteSupportFiles()">
+	<%	   } %>
+	
+	<%   } %>
+	  <br>
+	
+	  </td>
+	   </tr>
         
-<tr><td valign="top" align="right"><b>Parameters:</b><font size=-1>&nbsp;</font><br>
-<table cols="1"><tr><td><font size="-1">&nbsp;</font></td></tr><tr><td><font size="-1">&nbsp;</font></td></tr><tr><td align="right"><br><br><br><i>example:</i></td></tr></table>
-</td>
-<td>
-<font size=-1>
-  The names of these parameters will be available for the command line (above) in the form &lt;name&gt;.<br>
-  Parameters with &quot;filename&quot; in their name will be treated as input filenames.</font>&nbsp;&nbsp;<a href='help.jsp#inputParameters' target='help'><img border='0' src='skin/help2.jpg'/></a>
-<br>
-  <table cols="<%= 3+GPConstants.PARAM_INFO_ATTRIBUTES.length %>">
-  <tr>
-  <td width="20%" valign="bottom"><b>name</b></td>
-  <td width="30%" valign="bottom"><b>description (optional)</b></td>
-  <td width="20" valign="bottom"><b>choices</b><br><font size="-1">(optional semicolon-separated list of choices.)</font></td>
-<% 
-  for (int attribute = 0; attribute < GPConstants.PARAM_INFO_ATTRIBUTES.length; attribute++) { 
-		attributeName = ((String)GPConstants.PARAM_INFO_ATTRIBUTES[attribute][GPConstants.PARAM_INFO_NAME_OFFSET]);
-		if (attributeName != null) attributeName = attributeName.replace(GPConstants.PARAM_INFO_SPACER, ' ');
-		if(attributeName.equals("fileFormat")) {
-			attributeName = "file format";
-		}
+	<tr><td valign="top" align="right"><b>Parameters:</b><font size=-1>&nbsp;</font><br>
+	<table cols="1"><tr><td><font size="-1">&nbsp;</font></td></tr><tr><td><font size="-1">&nbsp;</font></td></tr><tr><td align="right"><br><br><br><i>example:</i></td></tr></table>
+	</td>
+	<td>
+	<font size=-1>
+	  The names of these parameters will be available for the command line (above) in the form &lt;name&gt;.<br>
+	  Parameters with &quot;filename&quot; in their name will be treated as input filenames.</font>&nbsp;&nbsp;<a href='help.jsp#inputParameters' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	<br>
+	  <table cols="<%= 3+GPConstants.PARAM_INFO_ATTRIBUTES.length %>">
+	  <tr>
+	  <td width="20%" valign="bottom"><b>name</b></td>
+	  <td width="30%" valign="bottom"><b>description (optional)</b></td>
+	  <td width="20" valign="bottom"><b>choices</b><br><font size="-1">(optional semicolon-separated list of choices.)</font></td>
+	<% 
+	  for (int attribute = 0; attribute < GPConstants.PARAM_INFO_ATTRIBUTES.length; attribute++) { 
+			attributeName = ((String)GPConstants.PARAM_INFO_ATTRIBUTES[attribute][GPConstants.PARAM_INFO_NAME_OFFSET]);
+			if (attributeName != null) attributeName = attributeName.replace(GPConstants.PARAM_INFO_SPACER, ' ');
+			if(attributeName.equals("fileFormat")) {
+				attributeName = "file format";
+			}
+	
+	%>
+	  <td valign="bottom"><b><%= attributeName %></b></td>
+	<% } %>
+	  </tr>
+	  <tr>
+	  <td><i>min</i></td>
+	  <td><i>values below minimum will be set to this value</i></td>
+	  <td><i>2=green, default;0=red;1=blue</i></td>
+	  <td><i>2</i></td>
+	  </tr>
+	
+	<%= createParameterEntries(0, NUM_PARAMETERS, parameterInfoArray, taskInfo, viewOnly) %>
+	
+	<% if (!viewOnly) { %>
+	<tr><td></td></tr>
+	<tr><td colspan="3" align="center">
+	<input type="submit" value="save" name="save" class="little">&nbsp;&nbsp;
+	<input type="reset" value="clear" class="little">&nbsp;&nbsp;
+	<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="little">
+	</td></tr>
+	<tr><td></td></tr>
 
-%>
-  <td valign="bottom"><b><%= attributeName %></b></td>
-<% } %>
-  </tr>
-  <tr>
-  <td><i>min</i></td>
-  <td><i>values below minimum will be set to this value</i></td>
-  <td><i>2=green, default;0=red;1=blue</i></td>
-  <td><i>2</i></td>
-  </tr>
+	<% } %>
+	<!--
+	<tr><td>
+	<p onclick="document.all.parameters.style.display=(document.all.parameters.style.display=='none' ? '' : 'none')"><u><font color="blue">more parameters...</font></u></p>
+	</td></tr>
+	<div id="parameters" style="display: none">
+	-->
+	<%= createParameterEntries(NUM_PARAMETERS, GPConstants.MAX_PARAMETERS, parameterInfoArray, taskInfo, viewOnly) %>
+	
+	<tr><td></td></tr>
+	<tr><td colspan="3" align="center">
+	<% if (!viewOnly) { %>
+	<input type="submit" value="save" name="save" class="little">&nbsp;&nbsp;
+	<input type="reset" value="clear" class="little">&nbsp;&nbsp;
+	<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="little">
+	<% } else { 
+		lsid = tia.get(GPConstants.LSID);
+		l = new LSID(lsid);
+		authorityType = LSIDManager.getInstance().getAuthorityType(l);
+		if (authorityType.equals(LSIDUtil.AUTHORITY_MINE)) {
+	%>
+			<input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button">
+	<%	} else { %>
+			<input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
+			<input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
+	<% 	} 
+	  }
+	%>
+	</td></tr>
 
-<%= createParameterEntries(0, NUM_PARAMETERS, parameterInfoArray, taskInfo, viewOnly) %>
-
-<% if (!viewOnly) { %>
-<tr><td></td></tr>
-<tr><td colspan="3" align="center">
-<input type="submit" value="save" name="save" class="little">&nbsp;&nbsp;
-<input type="reset" value="clear" class="little">&nbsp;&nbsp;
-<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="little">
-</td></tr>
-<tr><td></td></tr>
-
-<% } %>
-<!--
-<tr><td>
-<p onclick="document.all.parameters.style.display=(document.all.parameters.style.display=='none' ? '' : 'none')"><u><font color="blue">more parameters...</font></u></p>
-</td></tr>
-<div id="parameters" style="display: none">
--->
-<%= createParameterEntries(NUM_PARAMETERS, GPConstants.MAX_PARAMETERS, parameterInfoArray, taskInfo, viewOnly) %>
-
-<tr><td></td></tr>
-<tr><td colspan="3" align="center">
-<% if (!viewOnly) { %>
-<input type="submit" value="save" name="save" class="little">&nbsp;&nbsp;
-<input type="reset" value="clear" class="little">&nbsp;&nbsp;
-<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="little">
-<% } else { 
-	lsid = tia.get(GPConstants.LSID);
-	l = new LSID(lsid);
-	authorityType = LSIDManager.getInstance().getAuthorityType(l);
-	if (authorityType.equals(LSIDUtil.AUTHORITY_MINE)) {
-%>
-		<input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button">
-<%	} else { %>
-		<input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
-		<input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
-<% 	} 
-  }
-%>
-</td></tr>
-
-<!-- </div> -->
-
-</table>
-
- </td></tr></table>
-   <p/>
-
- </form>
-<% if (tia != null && errors==null) { %>
-<a href="makeZip.jsp?<%= GPConstants.NAME %>=<%= request.getParameter(GPConstants.NAME) %>&includeDependents=1">package this task into a zip file</a><br>
-<% } %>
-	<tr>
-         <td colspan="3" class="footer">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
-              <tr>
-                <td><a href="about_gp.html">About GenePattern</a>
-				|<a href="bug_report.html">Report Bugs</a> |<a href="help_request.html">Request Help</a>
-				|<a href="contact_us.html">Contact Us</a>
-                  <br />
-                </td>
-                <td>
-                  <div align="right">&copy;2003-2006&nbsp;<a href="http://www.broad.mit.edu" target="_blank">Broad Institute, MIT</a>
-                  </div>
-                  <td width="10">&nbsp;</td>
-                  <td width="27"><a href="http://www.broad.mit.edu" target="_blank">
-                  <img src="/gp/images/broad-symbol.gif" alt="Broad Institute" border="0" height="30" width="27" /></a>
-                  </td>
-                </td>
-              </tr>
-            </table>
-      	</td>
-      </tr>       
+	<!-- </div> -->
+	
+	</table>
+	
+	 </td></tr></table>
+	   <p/>
+	
+	 </form>
+	<% if (tia != null && errors==null) { %>
+	<a href="makeZip.jsp?<%= GPConstants.NAME %>=<%= request.getParameter(GPConstants.NAME) %>&includeDependents=1">package this task into a zip file</a><br>
+	<% } %>
+	</td></tr>
+	<jsp:include page="footer.jsp"/>      
 </body>
+
 </html>
 <% } catch (Throwable t) {
 	t.printStackTrace();
@@ -1159,22 +1107,5 @@ for (int i = from; i < to; i++) {
 } // end of method
 %>
 </div>
-  <table height="30" border="0" cellpadding="0" cellspacing="0" class="loginsettings">
-        <tr valign="top">
-          <td><a href="/gp/pages/accountInfo.jsf">
-			My Settings</a> |<form id="_id99" method="post" action="/gp/pages/jobResults.jsf" enctype="application/x-www-form-urlencoded" style="display: inline;">
-<a id="_id99:logoutLink" href="#" onclick="document.forms['_id99']['_id99:_idcl'].value='_id99:logoutLink'; document.forms['_id99'].submit(); return false;"> Sign Out</a> <input type="hidden" name="com.sun.faces.VIEW" value="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" />
- <input type="hidden" name="_id99" value="_id99" /><input type="hidden" name="_id99:_idcl" /></form>&nbsp;qgao&nbsp;&nbsp;&nbsp;</td>
-          <td>
-            <form method="post" name="form1" id="form1">
-              <input name="textfield" type="text" size="15" />
-
-            </form>
-          </td>
-          <td width="5"><img src="/gp/images/spacer.gif" height="1" width="5" alt="" />
-          </td>
-          <td>
-            <input name="Search" type="submit" id="Search" value="Search" />
-          </td>
-        </tr>
-      </table>
+   
+  

@@ -69,7 +69,7 @@
 <body>
 
 <jsp:include page="navbar.jsp"/>
-
+<div id="content" class="content">
 Deleting Suite - 	<font size=+1><b><%= si.getName() %></b></font>
 <%
 try {
