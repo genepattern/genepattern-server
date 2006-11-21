@@ -1,12 +1,13 @@
 package org.genepattern.server.user;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 public class User {
 
 	String userId;
-	String password;
+	byte[] password;
     String email;
     Date lastLoginDate;
     String lastLoginIP;
@@ -29,15 +30,18 @@ public class User {
         this.email = email;
     }
 
-	public String getPassword() {
+	public byte[] getPassword() {
 		return password;
 	}
-	public void setPassword(String password) {
-		this.password = password;
+
+	public void setPassword(byte[] pw) {		
+		password = pw;
 	}
+
 	public String getUserId() {
 		return userId;
 	}
+
 	public void setUserId(String username) {
 		this.userId = username;
 	}

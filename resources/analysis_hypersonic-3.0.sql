@@ -18,7 +18,7 @@ CREATE TABLE SEQUENCE_TABLE
 CREATE TABLE GP_USER
 (
   USER_ID varchar(255), 
-  GP_PASSWORD varchar(255), 
+  GP_PASSWORD binary(255), 
   EMAIL varchar(255),
   LAST_LOGIN_DATE timestamp,
   LAST_LOGIN_IP varchar(255),

@@ -90,7 +90,7 @@ public class LoginBean {
                 }
             }
             else if (passwordRequired) {
-                if (!EncryptionUtil.encrypt(password).equals(up.getPassword())) {
+                if (!java.util.Arrays.equals(EncryptionUtil.encrypt(password), up.getPassword())) {
                     invalidPassword = true;
                 }
                 else {
@@ -118,6 +118,8 @@ public class LoginBean {
 
         }
     }
+    
+   
 
     public String logout() {
         UIBeanHelper.logout();

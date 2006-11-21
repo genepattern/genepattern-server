@@ -14,26 +14,42 @@ package org.genepattern.server.webapp.jsf;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 public class EncryptionUtil {
-    private EncryptionUtil() {
-    }
+	private EncryptionUtil() {
+	}
 
-    /**
-     * Encrypts the clear text
-     * 
-     * @param clearText
-     * @return The encrypted text
-     * @throws NoSuchAlgorithmException
-     */
-    public static String encrypt(String clearText) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        md.reset();
-        md.update(clearText.getBytes());
-        byte[] b = md.digest();
-        // Base64 base64 = new Base64();
-        // b = base64.encode(b);
-        return new String(b);
-    }
+	/**
+	 * Encrypts the clear text.  The returned string is exactly 255 bytes, the size of the password field.
+	 * 
+	 * @param clearText
+	 * @return The encrypted text
+	 * @throws NoSuchAlgorithmException
+	 */
+	public static byte[] encrypt(String clearText)
+			throws NoSuchAlgorithmException {
+		MessageDigest md = MessageDigest.getInstance("MD5");
+		md.reset();
+		md.update(clearText.getBytes());
+		
+		byte[] encryptedString = new byte[255]; 
+		Arrays.fill(encryptedString, (byte) 0);
+		byte[] digestedString = md.digest();
+		for(int i=0; i<Math.min(encryptedString.length, digestedString.length); i++) {
+			encryptedString[i] = digestedString[i];
+		}
+		return encryptedString;
+	}
+
+	public static void main(String[] args) throws Exception {
+
+		String txt = "a";
+
+		byte[] a1 = EncryptionUtil.encrypt(txt);
+		byte[] a2 = EncryptionUtil.encrypt(txt);
+		System.out.println(a1.length);
+		System.out.println(java.util.Arrays.equals(a1, a2));
+	}
 
 }
