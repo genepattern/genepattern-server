@@ -25,9 +25,11 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+
 
 /**
  * Servlet filter that requires user to log in to access certain pages
@@ -100,7 +102,7 @@ public class AuthenticationFilter implements Filter {
 			for (Cookie c : cookies) {
 				if ("userID".equals(c.getName())) {
 					String userId = c.getValue();
-					if (userId != null && isRegistered(userId)) {
+					if (userId != null && isRegistered(userId, request)) {
 						request.setAttribute("userID", userId);
 						return true;
 					}
@@ -120,12 +122,23 @@ public class AuthenticationFilter implements Filter {
 	 * Check to see if user has been registerd in database.
 	 * 
 	 */
-	private boolean isRegistered(String userId) {
+	private boolean isRegistered(String userId, HttpServletRequest request) {
 		// This filter might run before the HibernateFilter. Open transaction
 		// just in case.  The transaction is closed automatically.
-		HibernateUtil.beginTransaction();
-		return (new UserDAO()).findById(userId) != null;
-
+		Object sessionToken = request.getSession().getAttribute("userID");
+		if(sessionToken != null) {
+			return true;
+		}
+		else {
+		  HibernateUtil.beginTransaction();
+		  if((new UserDAO()).findById(userId) != null) {
+			  request.getSession().setAttribute("userID", userId);
+			  return true;
+		  }
+		  else {
+			  return false;
+		  }
+		}
 	}
 
 	/**
