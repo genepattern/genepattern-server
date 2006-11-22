@@ -16,13 +16,13 @@
       <tr valign="top">
         <td>Java Flags:</td>
         <td>
-          <input type="text" size="40" name="java_flags" value="-Xmx512M" onkeyup="changeJavaFlagFields(this)"/>
+          <h:inputText type="text" size="40" value="#{serverSettingsBean.settings['java_flags']}"/>
         </td>
       </tr>
       <tr valign="top">
         <td>&#160;</td>
         <td>
-          <input type="submit" name="submitJavaFlags" value="submit" class="button" disabled="true"/>
+          <h:commandButton value="Submit" action="#{serverSettingsBean.saveSettings}"/>
         </td>
       </tr>
       <tr valign="top" class="settingperameter">
