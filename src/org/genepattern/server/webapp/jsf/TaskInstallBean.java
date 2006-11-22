@@ -17,128 +17,133 @@ import org.genepattern.util.GPConstants;
  */
 public class TaskInstallBean {
 
-	/**
-	 * A map of LSID -> intall status (true for installed, false for not).
-	 */
-	Map<String, TaskInstallStatus> tasksMap;
+    /**
+     * A map of LSID -> intall status (true for installed, false for not).
+     */
+    Map<String, TaskInstallStatus> tasksMap;
 
-	public TaskInstallBean() {
+    public TaskInstallBean() {
 
-	}
+    }
 
-	/**
-	 * Add the list of lsids to the task installation map
-	 * 
-	 * @param lsids
-	 */
-	public void setTasks(String[] lsids, Map<String, InstallTask> lsidToTaskMap) {
-		tasksMap = new HashMap<String, TaskInstallStatus>();
-		for (String lsid : lsids) {
-			tasksMap.put(lsid, new TaskInstallStatus(lsid, lsidToTaskMap.get(
-					lsid).getName()));
-		}
-	}
+    /**
+     * Add the list of lsids to the task installation map
+     * 
+     * @param lsids
+     */
+    public void setTasks(String[] lsids, Map<String, InstallTask> lsidToTaskMap) {
+        tasksMap = new HashMap<String, TaskInstallStatus>();
+        for (String lsid : lsids) {
+            tasksMap.put(lsid, new TaskInstallStatus(lsid, lsidToTaskMap.get(
+                    lsid).getName()));
+        }
+    }
 
-	public void setStatus(String lsid, String status) {
-		setStatus(lsid, status, null);
-	}
+    public void setStatus(String lsid, String status) {
+        setStatus(lsid, status, null);
+    }
 
-	public void setStatus(String lsid, String status, String message) {
-		TaskInstallStatus bean = tasksMap.get(lsid);
-		if (bean != null) {
-			bean.setStatus(status);
-			bean.setMessage(message);
-		}
-	}
+    public void setStatus(String lsid, String status, String message) {
+        TaskInstallStatus bean = tasksMap.get(lsid);
+        if (bean != null) {
+            bean.setStatus(status);
+            bean.setMessage(message);
+        }
+    }
 
-	public List<TaskInstallStatus> getTasks() {
-		List<TaskInstallStatus> tasks = new ArrayList<TaskInstallStatus>(
-				tasksMap.values());
-		Collections.sort(tasks);
-		return tasks;
-	}
+    public List<TaskInstallStatus> getTasks() {
+        if (tasksMap == null) {
+            return Collections.EMPTY_LIST;
+        }
+        List<TaskInstallStatus> tasks = new ArrayList<TaskInstallStatus>(
+                tasksMap.values());
+        Collections.sort(tasks);
+        return tasks;
+    }
 
-	/**
-	 * Return a JSON string representing the tasks that have been installed.
-	 * This method supports an ajax request, the returned string is the response
-	 * text.
-	 * 
-	 * @return var myJSONObject = {"bindings": [ {"ircEvent": "PRIVMSG",
-	 *         "method": "newURI", "regex": "^http://.*"}, {"ircEvent":
-	 *         "PRIVMSG", "method": "deleteURI", "regex": "^delete.*"},
-	 *         {"ircEvent": "PRIVMSG", "method": "randomURI", "regex":
-	 *         "^random.*"} ] };
-	 */
-	public String getInstalledTaskString() {
+    /**
+     * Return a JSON string representing the tasks that have been installed.
+     * This method supports an ajax request, the returned string is the response
+     * text.
+     * 
+     * @return var myJSONObject = {"bindings": [ {"ircEvent": "PRIVMSG",
+     *         "method": "newURI", "regex": "^http://.*"}, {"ircEvent":
+     *         "PRIVMSG", "method": "deleteURI", "regex": "^delete.*"},
+     *         {"ircEvent": "PRIVMSG", "method": "randomURI", "regex":
+     *         "^random.*"} ] };
+     */
+    public String getInstalledTaskString() {
 
-		JSONArray jsonArray = new JSONArray();
-		for (TaskInstallStatus task : tasksMap.values()) {
-			try {
-				JSONObject jsonObj = new JSONObject();
-				jsonObj.put("lsid", task.getLsid());
-				jsonObj.put("status", task.getStatus());
-				jsonObj.put("message", task.getMessage());
-				jsonArray.put(jsonObj);
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+        JSONArray jsonArray = new JSONArray();
+        if (tasksMap != null) {
+            for (TaskInstallStatus task : tasksMap.values()) {
+                try {
+                    JSONObject jsonObj = new JSONObject();
+                    jsonObj.put("lsid", task.getLsid());
+                    jsonObj.put("status", task.getStatus());
+                    jsonObj.put("message", task.getMessage());
+                    jsonArray.put(jsonObj);
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
 
-		}
+            }
+        }
 
-		return jsonArray.toString();
-	}
+        return jsonArray.toString();
+    }
 
-	public static class TaskInstallStatus implements Comparable {
-		String lsid;
+    public static class TaskInstallStatus implements Comparable {
+        String lsid;
 
-		String name;
+        String name;
 
-		String status;
+        String status;
 
-		String message;
+        String message;
 
-		public TaskInstallStatus(String lsid, String name) {
-			this.lsid = lsid;
-			this.name = name;
-		}
+        public TaskInstallStatus(String lsid, String name) {
+            this.lsid = lsid;
+            this.name = name;
+        }
 
-		public String getLsid() {
-			return lsid;
-		}
+        public String getLsid() {
+            return lsid;
+        }
 
-		public void setLsid(String lsid) {
-			this.lsid = lsid;
-		}
+        public void setLsid(String lsid) {
+            this.lsid = lsid;
+        }
 
-		public String getMessage() {
-			return message;
-		}
+        public String getMessage() {
+            return message;
+        }
 
-		public void setMessage(String message) {
-			this.message = message;
-		}
+        public void setMessage(String message) {
+            this.message = message;
+        }
 
-		public String getStatus() {
-			return status;
-		}
+        public String getStatus() {
+            return status;
+        }
 
-		public void setStatus(String status) {
-			this.status = status;
-		}
+        public void setStatus(String status) {
+            this.status = status;
+        }
 
-		public String getName() {
-			return name;
-		}
+        public String getName() {
+            return name;
+        }
 
-		public void setName(String name) {
-			this.name = name;
-		}
+        public void setName(String name) {
+            this.name = name;
+        }
 
-		public int compareTo(Object o) {
-			return name.compareTo(((TaskInstallStatus) o).getName());
-		}
+        public int compareTo(Object o) {
+            return name.compareTo(((TaskInstallStatus) o).getName());
+        }
 
-	}
+    }
 
 }
