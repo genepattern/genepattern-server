@@ -115,7 +115,7 @@ public class HibernateUtil {
 					.uniqueResult()).intValue();
 		} else if (dbVendor.equals("HSQL")) {
 			return (Integer) getSession().createSQLQuery(
-					"SELECT NEXT VALUE FOR " + sequenceName).uniqueResult();
+					"SELECT NEXT VALUE FOR " + sequenceName + " FROM dual").uniqueResult();
 		} else {
 			return getNextSequenceValueGeneric(sequenceName);
 		}
