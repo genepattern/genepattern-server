@@ -21,6 +21,8 @@ package org.genepattern.webservice;
 
 import java.io.*;
 import java.util.Map;
+import java.util.HashMap;
+
 
 import org.genepattern.util.IGPConstants;
 
@@ -39,6 +41,7 @@ public class TaskInfo implements Serializable {
 
     // JL
     private Map taskInfoAttributes = null;
+    private HashMap attributes = null;
     private ParameterInfo[] parameterInfoArray = null;
 
     /** Creates new TaskInfo */
@@ -86,6 +89,7 @@ public class TaskInfo implements Serializable {
         return (TaskInfoAttributes) taskInfoAttributes;
     }
 
+   
     public TaskInfoAttributes giveTaskInfoAttributes() {
         // JL
         if (taskInfoAttributes == null) taskInfoAttributes = new TaskInfoAttributes();
@@ -100,6 +104,25 @@ public class TaskInfo implements Serializable {
             this.taskInfoAttributes = new TaskInfoAttributes(taskInfoAttributes);
         }
     }
+
+/** the following get/set attributes is a hack for Axis 1.4.  Axis is unable to deal
+    with TaskInfoAttributes as a subclass of HashMap and since we dare not break the 
+	existing API adding this additional instvar allows the attributes to get passed 
+	down properly to SOAP clients without having to write custom (de/)serializers
+	for the TaskInfoAttributes classes.  Ted 11/22/06
+**/
+    public HashMap getAttributes() {
+	  if (attributes == null) attributes = (HashMap)taskInfoAttributes;        
+
+        return  attributes;
+    }
+
+    public void setAttributes(HashMap taskInfoAttributes) {
+	  setTaskInfoAttributes(taskInfoAttributes);
+        this.attributes = taskInfoAttributes;
+        
+    }
+
 
     public String getName() {
         return taskName;
