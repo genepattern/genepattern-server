@@ -1,15 +1,14 @@
 /*
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2006) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2006) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
 
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
-*/
-
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */
 
 package org.genepattern.server.indexer;
 
@@ -109,7 +108,8 @@ public class Indexer {
 
     // TODO: enrich the analyzer with per-field stuff
     // (eg. StandardAnalyzer for most fields, WhitespaceAnalyzer for data files)
-    public static Analyzer GPAnalyzer = new PerFieldAnalyzerWrapper(new GPLuceneAnalyzer() /* WhitespaceAnalyzer() */);
+    public static Analyzer GPAnalyzer = new PerFieldAnalyzerWrapper(
+            new GPLuceneAnalyzer() /* WhitespaceAnalyzer() */);
 
     public Indexer(Writer out) {
         Indexer.out = new PrintWriter(out, true);
@@ -134,7 +134,8 @@ public class Indexer {
                         // ignore
                     }
                 }
-                writer = new IndexWriter(getIndexDir(), Indexer.GPAnalyzer, false);
+                writer = new IndexWriter(getIndexDir(), Indexer.GPAnalyzer,
+                        false);
             }
         }
         return writer;
@@ -184,7 +185,8 @@ public class Indexer {
     public static void reset(File indexDir) throws IOException {
         indexDir.mkdirs();
         // if an old lock file was left around, delete it
-        FSDirectory.getDirectory(indexDir, true).makeLock(IndexWriter.WRITE_LOCK_NAME).release();
+        FSDirectory.getDirectory(indexDir, true).makeLock(
+                IndexWriter.WRITE_LOCK_NAME).release();
         synchronized (getConcurrencyLock()) {
             writer = new IndexWriter(indexDir, GPAnalyzer, true);
             writer = releaseWriter();
@@ -192,6 +194,9 @@ public class Indexer {
     }
 
     public static void optimize(File indexDir) throws IOException {
+        if (!IndexerDaemon.isIndexingEnabled()) {
+            return;
+        }
         synchronized (getConcurrencyLock()) {
             writer = getWriter();
             optimize(writer);
@@ -203,16 +208,18 @@ public class Indexer {
         writer.optimize(); // compacts storage after inserts
     }
 
-    public static void createIfNecessary(File indexDir) throws IOException, OmnigeneException, Exception {
+    public static void createIfNecessary(File indexDir) throws IOException,
+            OmnigeneException, Exception {
         if (indexDir.exists() && new File(indexDir, "segments").exists()) {
             return;
         }
-        //System.out.println("Indexer: resetting and reindexing everything");
+        // System.out.println("Indexer: resetting and reindexing everything");
         reset(indexDir);
         index(indexDir);
     }
 
-    public static void index(File indexDir) throws IOException, OmnigeneException, Exception {
+    public static void index(File indexDir) throws IOException,
+            OmnigeneException, Exception {
         // TODO: change Analyzer to one that is more appropriate.
         // Should probably ignore floating point numbers, use punctuation and
         // spaces as separators, ignore single-letter words
@@ -221,7 +228,7 @@ public class Indexer {
         synchronized (getConcurrencyLock()) {
             try {
                 writer = getWriter();
-                //indexManual(writer);
+                // indexManual(writer);
                 indexTasks(writer);
                 indexJobs(writer);
                 optimize(writer);
@@ -231,7 +238,8 @@ public class Indexer {
         }
     }
 
-    public static void indexTasks(IndexWriter writer) throws IOException, OmnigeneException, Exception {
+    public static void indexTasks(IndexWriter writer) throws IOException,
+            OmnigeneException, Exception {
         Collection tmTasks = GenePatternAnalysisTask.getTasks(null);
         for (Iterator itTasks = tmTasks.iterator(); itTasks.hasNext();) {
             TaskInfo ti = (TaskInfo) itTasks.next();
@@ -239,8 +247,9 @@ public class Indexer {
         }
     }
 
-    public static void indexJobs(IndexWriter writer) throws IOException, OmnigeneException {
-    	AnalysisDAO ds = GenePatternAnalysisTask.getDS();
+    public static void indexJobs(IndexWriter writer) throws IOException,
+            OmnigeneException {
+        AnalysisDAO ds = GenePatternAnalysisTask.getDS();
         JobInfo[] jobs = ds.getJobInfo(new Date());
         JobInfo jobInfo = null;
         for (int i = 0; i < jobs.length; i++) {
@@ -252,14 +261,15 @@ public class Indexer {
         }
     }
 
-    public static void indexJob(IndexWriter writer, int jobID) throws IOException, OmnigeneException {
+    public static void indexJob(IndexWriter writer, int jobID)
+            throws IOException, OmnigeneException {
         AnalysisDAO ds = GenePatternAnalysisTask.getDS();
         JobInfo jobInfo = ds.getJobInfo(jobID);
         indexJob(writer, jobInfo, ds);
     }
 
-    public static void indexJob(IndexWriter writer, JobInfo jobInfo, AnalysisDAO ds)
-            throws IOException, OmnigeneException {
+    public static void indexJob(IndexWriter writer, JobInfo jobInfo,
+            AnalysisDAO ds) throws IOException, OmnigeneException {
         if (!IndexerDaemon.isIndexingEnabled()) {
             return;
         }
@@ -290,12 +300,14 @@ public class Indexer {
                 }
             }
             if (taskInfo != null) {
-                taskName = taskInfo.getName() + (lsid != null ? (" - " + lsid.getVersion()) : "");
+                taskName = taskInfo.getName()
+                        + (lsid != null ? (" - " + lsid.getVersion()) : "");
             } else {
                 taskName = ds.getTemporaryPipelineName(jobID);
             }
             boolean hasOutputFiles = false;
-            out.println("Indexing job and parameters for job " + jobID + ", task " + taskName);
+            out.println("Indexing job and parameters for job " + jobID
+                    + ", task " + taskName);
             Document doc = new Document();
             StringBuffer content = new StringBuffer();
             doc.add(Field.Text(TASKNAME, taskName));
@@ -344,19 +356,21 @@ public class Indexer {
                             continue;
                         }
                         /*
-                               * boolean bAlreadyDone = false; for (int p2 = 0; p2 <
-                               * p; p2++) { if (params[p2].isOutputFile() &&
-                               * filename.equals(params[p2].getValue())) {
-                               * bAlreadyDone = true; break; } } if (bAlreadyDone)
-                               * continue;
-                               */
+                         * boolean bAlreadyDone = false; for (int p2 = 0; p2 <
+                         * p; p2++) { if (params[p2].isOutputFile() &&
+                         * filename.equals(params[p2].getValue())) {
+                         * bAlreadyDone = true; break; } } if (bAlreadyDone)
+                         * continue;
+                         */
                         doc = new Document();
                         File f = new File(System.getProperty("jobs"), filename);
                         if (!waitFileExists(f)) {
-                            out.println(f.getName() + " for job " + jobID + " has been deleted.");
+                            out.println(f.getName() + " for job " + jobID
+                                    + " has been deleted.");
                             continue;
                         }
-                        out.println("Indexing output file " + f.getName() + " for job " + jobID + ", task " + taskName);
+                        out.println("Indexing output file " + f.getName()
+                                + " for job " + jobID + ", task " + taskName);
                         String childJobNumber = f.getParentFile().getName();
                         FileReader fr = new FileReader(f);
                         try {
@@ -367,14 +381,21 @@ public class Indexer {
                                 doc.add(Field.Text(LSID, lsid.toString()));
                             }
                             doc.add(Field.Text(FILENAME, f.getName()));
-                            doc.add(Field.UnIndexed(URL, "retrieveResults.jsp?job=" + childJobNumber + "&filename=" +
-                                    URLEncoder.encode(f.getName(), "UTF-8")));
+                            doc.add(Field.UnIndexed(URL,
+                                    "retrieveResults.jsp?job="
+                                            + childJobNumber
+                                            + "&filename="
+                                            + URLEncoder.encode(f.getName(),
+                                                    "UTF-8")));
                             doc.add(Field.Text(JOB_HAS_OUTPUT, "1"));
                             doc.add(Field.Text(TYPE, "output"));
-                            doc.add(Field.Text(FILEID, "" + jobID + "/" + filename));
+                            doc.add(Field.Text(FILEID, "" + jobID + "/"
+                                    + filename));
                             writer.addDocument(doc);
                         } catch (Throwable t) {
-                            System.err.println(t.getMessage() + " while indexing " + filename + " for job " + jobID);
+                            System.err.println(t.getMessage()
+                                    + " while indexing " + filename
+                                    + " for job " + jobID);
                         } finally {
                             try {
                                 fr.close();
@@ -408,7 +429,8 @@ public class Indexer {
                     out.println("Indexing " + name);
                     Document doc = indexManualHTML.index(docs[f]);
                     doc.add(Field.Text(TYPE, MANUAL));
-                    doc.add(Field.UnIndexed(URL, "docs/" + URLEncoder.encode(name, "UTF-8")));
+                    doc.add(Field.UnIndexed(URL, "docs/"
+                            + URLEncoder.encode(name, "UTF-8")));
                     doc.add(Field.Text(FILENAME, name));
                     writer.addDocument(doc);
                 } catch (IOException ioe) {
@@ -436,16 +458,19 @@ public class Indexer {
         }
     }
 
-    public static int deleteJobFile(int jobID, String filename) throws IOException {
+    public static int deleteJobFile(int jobID, String filename)
+            throws IOException {
         return deleteJobFile(Integer.toString(jobID), filename);
     }
 
-    public static int deleteJobFile(String jobID, String filename) throws IOException {
+    public static int deleteJobFile(String jobID, String filename)
+            throws IOException {
         synchronized (getConcurrencyLock()) {
             IndexReader reader = getReader();
             int numDeleted = 0;
             try {
-                numDeleted = reader.delete(new Term(FILEID, jobID + "/" + filename));
+                numDeleted = reader.delete(new Term(FILEID, jobID + "/"
+                        + filename));
             } finally {
                 reader = releaseReader();
             }
@@ -466,22 +491,24 @@ public class Indexer {
         }
     }
 
-    public static int deleteTask(String name) throws IOException, OmnigeneException {
+    public static int deleteTask(String name) throws IOException,
+            OmnigeneException {
         TaskInfo taskInfo = GenePatternAnalysisTask.getTaskInfo(name, null);
         return deleteTask(taskInfo.getID());
     }
 
-    public static void indexTask(IndexWriter writer, int taskID) throws IOException, OmnigeneException, Exception {
+    public static void indexTask(IndexWriter writer, int taskID)
+            throws IOException, OmnigeneException, Exception {
         if (!IndexerDaemon.isIndexingEnabled()) {
             return;
         }
         synchronized (getConcurrencyLock()) {
             writer.maxFieldLength = MAX_TERMS_PER_FIELD;
-            AdminDAO ds = new AdminDAO(); 
+            AdminDAO ds = new AdminDAO();
             TaskInfo ti = ds.getTask(taskID);
 
             // XXX: delete first in case it already exists?
-            //deleteTask(ti.getID());
+            // deleteTask(ti.getID());
             TaskInfoAttributes tia = ti.giveTaskInfoAttributes();
             String name = ti.getName();
             String lsid = (String) tia.get(GPConstants.LSID);
@@ -506,7 +533,8 @@ public class Indexer {
             content.append(" ");
             ParameterInfo[] parameterInfoArray = new ParameterFormatConverter()
                     .getParameterInfoArray(ti.getParameterInfo());
-            for (int i = 0; parameterInfoArray != null && i < parameterInfoArray.length; i++) {
+            for (int i = 0; parameterInfoArray != null
+                    && i < parameterInfoArray.length; i++) {
                 ParameterInfo pi = parameterInfoArray[i];
                 content.append(pi.getName());
                 content.append(" ");
@@ -517,7 +545,8 @@ public class Indexer {
                 HashMap pia = pi.getAttributes();
                 // TODO: add default value?
             }
-            doc.add(Field.UnIndexed(URL, "addTask.jsp?" + GPConstants.NAME + "=" + lsid + "&view=1"));
+            doc.add(Field.UnIndexed(URL, "addTask.jsp?" + GPConstants.NAME
+                    + "=" + lsid + "&view=1"));
 
             // index documentation files for this task
             String taskLibDir = DirectoryManager.getTaskLibDir(lsid);
@@ -551,23 +580,27 @@ public class Indexer {
                 out.println("Indexing " + filename);
                 try {
                     String pkgName = Indexer.class.getPackage().getName();
-                    String indexerClassName = pkgName + "." + "Index" + getExtension(filename).toUpperCase();
+                    String indexerClassName = pkgName + "." + "Index"
+                            + getExtension(filename).toUpperCase();
                     Class cls = null;
                     try {
                         cls = Class.forName(indexerClassName);
                     } catch (ClassNotFoundException cnfe) {
-                        //out.println("no indexer class found for files of type
+                        // out.println("no indexer class found for files of type
                         // " + getExtension(filename) + ": " + filename + ",
                         // using text indexer.");
                         indexerClassName = pkgName + "." + "IndexTXT";
                         cls = Class.forName(indexerClassName);
                     }
                     Object instance = cls.newInstance();
-                    Method mExec = cls.getMethod("index", new Class[]{File.class});
+                    Method mExec = cls.getMethod("index",
+                            new Class[] { File.class });
                     try {
-                        doc = (Document) mExec.invoke(instance, new Object[]{f});
+                        doc = (Document) mExec.invoke(instance,
+                                new Object[] { f });
                     } catch (InvocationTargetException ite) {
-                        out.println(ite.getMessage() + " while indexing " + filename + " (not indexed)");
+                        out.println(ite.getMessage() + " while indexing "
+                                + filename + " (not indexed)");
                         ite.printStackTrace();
                         continue;
                     }
@@ -578,21 +611,23 @@ public class Indexer {
                         doc.add(Field.Text(TASK_SCRIPTS, code));
                     }
                     /*
-                          * for (Enumeration eFields = doc.fields();
-                          * eFields.hasMoreElements(); ) { Field fld =
-                          * (Field)eFields.nextElement(); out.println(fld.name() +
-                          * "=" + fld.stringValue()); }
-                          */
+                     * for (Enumeration eFields = doc.fields();
+                     * eFields.hasMoreElements(); ) { Field fld =
+                     * (Field)eFields.nextElement(); out.println(fld.name() +
+                     * "=" + fld.stringValue()); }
+                     */
                     doc.add(Field.UnIndexed(FILENAME, filename));
                     doc.add(Field.Keyword(TASKNAME, name));
                     doc.add(Field.Text(TYPE, "doc"));
-                    doc.add(Field.UnIndexed(URL, "getTaskDoc.jsp?" + GPConstants.NAME + "=" + lsid + "&file=" +
-                            URLEncoder.encode(filename, "UTF-8")));
+                    doc.add(Field.UnIndexed(URL, "getTaskDoc.jsp?"
+                            + GPConstants.NAME + "=" + lsid + "&file="
+                            + URLEncoder.encode(filename, "UTF-8")));
                     doc.add(Field.Text(TASKID, "" + ti.getID()));
                     doc.add(Field.Text(LSID, lsid));
                     writer.addDocument(doc);
                 } catch (Throwable t) {
-                    out.println(t.getMessage() + " while indexing " + filename + " (not indexed)");
+                    out.println(t.getMessage() + " while indexing " + filename
+                            + " (not indexed)");
                     t.printStackTrace();
                 }
             }
@@ -624,7 +659,8 @@ public class Indexer {
     }
 
     public static boolean isCodeFile(String filename) {
-        return GenePatternAnalysisTask.isCodeFile(filename) || filename.equals("version.txt");
+        return GenePatternAnalysisTask.isCodeFile(filename)
+                || filename.equals("version.txt");
     }
 
     public static boolean waitFileExists(String filename) {
@@ -649,7 +685,8 @@ public class Indexer {
             name = f.getCanonicalPath();
         } catch (IOException ioe) {
         }
-        System.err.println("Indexer: timed out waiting " + startTime + " seconds for " + name + " to reappear.");
+        System.err.println("Indexer: timed out waiting " + startTime
+                + " seconds for " + name + " to reappear.");
         return false;
     }
 
@@ -658,13 +695,14 @@ public class Indexer {
     }
 
     public static void main(String[] args) throws Exception {
-        String help =
-                "java edu.mit.wi.omnigene.service.analysis.genepattern.Indexer [index all | index taskID | index jobID | delete taskID | delete jobID | delete jobID filename]";
+        String help = "java edu.mit.wi.omnigene.service.analysis.genepattern.Indexer [index all | index taskID | index jobID | delete taskID | delete jobID | delete jobID filename]";
         if (args.length >= 2) {
-            String GPHome = System.getProperty("GPHome", "C:/Program Files/GenePattern");
+            String GPHome = System.getProperty("GPHome",
+                    "C:/Program Files/GenePattern");
             System.setProperty("genepattern.properties", GPHome + "/resources");
             System.setProperty("user.dir", GPHome + "/Tomcat");
-            System.setProperty("log4j.configuration", GPHome + "/Tomcat/webapps/gp/WEB-INF/classes/log4j.properties");
+            System.setProperty("log4j.configuration", GPHome
+                    + "/Tomcat/webapps/gp/WEB-INF/classes/log4j.properties");
             File indexDir = new File(GPHome, "index");
             Indexer indexer = new Indexer(System.out);
             String cmd = args[0]; // index or delete
@@ -686,13 +724,16 @@ public class Indexer {
                         } else if (indexType.equals("file")) {
                             numDeleted = Indexer.deleteJobFile(ID, filename);
                         }
-                        System.out.println("deleted " + numDeleted + " documents from index");
+                        System.out.println("deleted " + numDeleted
+                                + " documents from index");
                     } else if (cmd.equals("index")) {
                         if (indexType.equals("task")) {
-                            writer = new IndexWriter(indexDir, GPAnalyzer, false);
+                            writer = new IndexWriter(indexDir, GPAnalyzer,
+                                    false);
                             Indexer.indexTask(writer, Integer.parseInt(ID));
                         } else if (indexType.equals("job")) {
-                            writer = new IndexWriter(indexDir, GPAnalyzer, false);
+                            writer = new IndexWriter(indexDir, GPAnalyzer,
+                                    false);
                             Indexer.indexJob(writer, Integer.parseInt(ID));
                         } else if (indexType.equals("all")) {
                             Indexer.reset(indexDir);
