@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jstl/core">
+
+<ui:composition template="/templates/common.xhtml">
+	<ui:define name="pageTitle">GenePattern - Import</ui:define>
+	<ui:define name="body">
+		<table width="100%" border="0" cellpadding="0" cellspacing="0"
+			class="barhead-other">
+			<tr>
+				<td>Install</td>
+			</tr>
+		</table>
+		<p></p>
+		<table width="100%" border="0" cellpadding="10" cellspacing="0">
+			<tr valign="top" class="settingperameter">
+				<td><strong>Install from module repository:</strong></td>
+				<td><h:outputLink
+					value="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">
+					Install tasks from module repository
+					</h:outputLink></td>
+			</tr>
+			<tr valign="top" class="settingperameter">
+				<td><strong>Install from zip file:</strong></td>
+				<td><h:form id="form1" enctype="multipart/form-data">Please choose a GenePattern
+				zip file to submit to the GenePattern server.
+				<p><strong>GenePattern zip file:</strong>&nbsp; <t:inputFileUpload
+						storage="file" size="60" value="#{importTaskBean.zipFile}" /></p>
+					<p>Visible to: &nbsp;&nbsp; <t:selectOneRadio
+						value="#{importTaskBean.selectedFilePrivacy}">
+						<f:selectItems value="#{importTaskBean.filePrivacyItems}" />
+					</t:selectOneRadio></p>
+					<h:commandButton action="#{importTaskBean.importFile}"
+						value="install" />&nbsp;&nbsp;
+				</h:form></td>
+			</tr>
+			<tr valign="top" class="settingperameter">
+				<td><strong>Download the zip file from a website:</strong></td>
+				<td><strong>URL of a GenePattern zip file:</strong> <h:inputText
+					value="#{importTaskBean.url}" size="60" />
+				<p>Visible to: &nbsp;&nbsp; <t:selectOneRadio
+					value="#{importTaskBean.selectedUrlPrivacy}">
+					<f:selectItems value="#{importTaskBean.urlPrivacyItems}" />
+				</t:selectOneRadio></p>
+				<h:commandButton action="#{importTaskBean.importUrl}"
+					value="install" /> &nbsp;&nbsp;</td>
+			</tr>
+		</table>
+		<p class="recentjobs-sh">&nbsp;</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+	</ui:define>
+</ui:composition>
+</html>
