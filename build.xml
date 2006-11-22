@@ -353,6 +353,7 @@
             <fileset dir="${build}">
                 <include name="org/genepattern/webservice/**"/>
                 <include name="org/genepattern/util/**"/>
+                <include name="org/apache/xml/**"/>
                 <include name="org/genepattern/codegenerator/**"/>
             </fileset>
         </jar>
