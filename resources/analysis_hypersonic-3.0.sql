@@ -58,14 +58,9 @@ create table job_completion_event
 /* Index status on analysis job */
 create index idx_analysis_job_status on analysis_job(status_id);
 
+/* Add contact column to Suite */
+alter table suite add contact varchar(255);
 
 
-INSERT INTO SEQUENCE_TABLE (ID, NAME, NEXT_VALUE) 
-  VALUES(1, 'lsid_identifier_seq',  SELECT NEXT VALUE FOR LSID_IDENTIFIER_SEQ FROM DUAL);
-  
-
-INSERT INTO SEQUENCE_TABLE (ID, NAME, NEXT_VALUE) 
-  VALUES(2, 'lsid_suite_identifier_seq',  SELECT NEXT VALUE FOR LSID_SUITE_IDENTIFIER_SEQ FROM DUAL);
-
-update props set value='3.0' where key='schemaVersion';
+update props set value='3.0.1' where key='schemaVersion';
   
