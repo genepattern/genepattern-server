@@ -234,9 +234,19 @@ public class TaskCatalogBean {
     }
 
     private List<String> getDefaultStatesSelection() {
+        if (UIBeanHelper.getRequest().getParameter(
+                "taskCatalogForm:taskCatalogSubmit") == null) {
+            List<String> l = new ArrayList<String>();
+            l.add(InstallTask.NEW);
+            l.add(InstallTask.UPDATED);
+            return l;
+        }
         List<String> l = new ArrayList<String>();
+        l.add(InstallTask.NEW);
+        l.add(InstallTask.UPDATED);
         l.add(InstallTask.UPTODATE);
         return l;
+
     }
 
     private String getOS() {
