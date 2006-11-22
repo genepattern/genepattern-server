@@ -30,37 +30,8 @@
 			<td valign="top" class="recentjobs-sh"><a>#{job.jobNumber}</a></td>
 			<td width="9"><t:graphicImage value="/images/spacer.gif"
 				width="9" height="1" /></td>
-			<td><font class="recentjobs-sh">#{job.taskName}</font> <t:jscookMenu
-				layout="hbr" theme="ThemePanel"
-				org.apache.myfaces.STYLE_LOCATION="/css/jscookmenu"
-				style="display: inline;">
-
-				<t:navigationMenuItem icon="/images/menuicon-1.gif">
-					<t:navigationMenuItem itemLabel="Reload"
-						actionListener="#{recentJobsBean.reload}"
-						itemValue="#{job.jobNumber}" action="run task" />
-					<t:navigationMenuItem itemLabel="Delete"
-						actionListener="#{recentJobsBean.delete}"
-						itemValue="#{job.jobNumber}" action="delete" />
-
-					<t:navigationMenuItem itemLabel="Terminate"
-						actionListener="#{recentJobsBean.terminateJob}"
-						itemValue="#{job.jobNumber}" action="terminate"
-						disabled="#{job.complete}" />
-
-					<t:navigationMenuItem itemLabel="View Code">
-						<t:navigationMenuItem itemLabel="Java"
-							actionListener="#{recentJobsBean.viewCode}"
-							itemValue="#{job.jobNumber}" />
-						<t:navigationMenuItem itemLabel="MATLAB"
-							actionListener="#{recentJobsBean.viewCode}"
-							itemValue="#{job.jobNumber}" />
-						<t:navigationMenuItem itemLabel="R"
-							actionListener="#{recentJobsBean.viewCode}"
-							itemValue="#{job.jobNumber}" />
-					</t:navigationMenuItem>
-				</t:navigationMenuItem>
-			</t:jscookMenu> <br />
+			<td><font class="recentjobs-sh">#{job.taskName}</font><t:graphicImage
+				value="/images/menuicon-1.gif" /> <br />
 			<h:outputText value="#{job.dateCompleted}">
 				<f:convertDateTime type="date" pattern="EEE, MMM d, ''yy h:mm a" />
 			</h:outputText> <br />
@@ -69,23 +40,7 @@
 							<f:param name="job" value="#{job.jobNumber}" />
 					<f:param name="filename" value="#{p.name}" />
 				</h:outputLink>
-				<t:jscookMenu layout="hbr" theme="ThemePanel"
-					org.apache.myfaces.STYLE_LOCATION="/css/jscookmenu">
-					<t:navigationMenuItem icon="/images/menuicon-1.gif">
-						<t:navigationMenuItem itemLabel="Delete"
-							actionListener="#{recentJobsBean.deleteFile}"
-							itemValue="#{job.jobNumber}/#{p.value}" action="delete file" />
-						<t:navigationMenuItem itemLabel="Save"
-							actionListener="#{recentJobsBean.saveFile}"
-							itemValue="#{job.jobNumber}/#{p.name}" action="save file" />
-						<t:navigationMenuItem itemLabel="Create Pipeline"
-							actionListener="#{recentJobsBean.createPipeline}"
-							itemValue="#{job.jobNumber}" action="create pipeline" />
-						<t:navigationMenuItem itemLabel="Modules">
-							<t:navigationMenuItems value="#{p.moduleMenuItems}" />
-						</t:navigationMenuItem>
-					</t:navigationMenuItem>
-				</t:jscookMenu>
+				<t:graphicImage value="/images/menuicon-1.gif" />
 				<br />
 
 			</t:dataList></td>
