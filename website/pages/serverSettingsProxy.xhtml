@@ -40,8 +40,8 @@
       <tr valign="top">
         <td>&#160;</td>
         <td>
-          <input type="submit" name="submitProxy" value="submit" class="button" disabled="true"/>
-          <input type="submit" name="submitClearProxy" value="clear" class="button" disabled="true"/>
+          <h:commandButton value="submit" action="#{serverSettingsBean.saveSettings}"/>
+          <h:commandButton value="clear" action="#{serverSettingsBean.removeProxySettings}"/>
         </td>
       </tr>
       <tr valign="top" class="settingperameter">

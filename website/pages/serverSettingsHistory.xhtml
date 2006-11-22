@@ -16,13 +16,13 @@
       <tr valign="top">
         <td> Display this many recent jobs:</td>
         <td>
-          <input name="historySize" value="3" size="10" onkeyup="changeHistoryField(this)"/>
+          <h:inputText type="text" size="10" value="#{serverSettingsBean.settings['historySize']}"/>
         </td>
       </tr>
       <tr valign="top">
         <td>&#160;</td>
         <td>
-          <input type="submit" name="submit" value="submit" class="button" disabled="true"/>
+          <h:commandButton value="Submit" action="#{serverSettingsBean.saveSettings}"/>
         </td>
       </tr>
       <tr valign="top" class="settingperameter">
