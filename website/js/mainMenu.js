@@ -82,6 +82,38 @@ window.mm_menu_1122140703_0 = new Menu("root",124,16,"Verdana, Arial, Helvetica,
    mm_menu_1122140808_0.menuBorder=0;
    mm_menu_1122140808_0.menuLiteBgColor='#CCCC66';
    mm_menu_1122140808_0.menuBorderBgColor='#CCCC66';
+   
+                 window.mm_menu_0925155656_0_1 = new Menu("View&nbsp;Code",84,18,"Verdana, Arial, Helvetica, sans-serif",10,"#000000","#000099","#EEEEEE","#FFFFFF","left","middle",3,0,500,-5,7,true,true,true,0,true,false);
+    mm_menu_0925155656_0_1.addMenuItem("Java","location='#'");
+    mm_menu_0925155656_0_1.addMenuItem("MATLAB","location='#'");
+    mm_menu_0925155656_0_1.addMenuItem("R","location='#'");
+     mm_menu_0925155656_0_1.hideOnMouseOut=true;
+     mm_menu_0925155656_0_1.bgColor='#FFFFFF';
+     mm_menu_0925155656_0_1.menuBorder=1;
+     mm_menu_0925155656_0_1.menuLiteBgColor='#FFFFFF';
+     mm_menu_0925155656_0_1.menuBorderBgColor='#999999';
+  window.mm_menu_0925155656_0 = new Menu("root",90,18,"Verdana, Arial, Helvetica, sans-serif",10,"#000000","#000099","#EEEEEE","#FFFFFF","left","middle",3,0,500,-5,7,true,true,true,0,true,false);
+  mm_menu_0925155656_0.addMenuItem("Reload","location='#'");
+  mm_menu_0925155656_0.addMenuItem("Delete","location='#'");
+  mm_menu_0925155656_0.addMenuItem("Terminate","location='#'");
+  mm_menu_0925155656_0.addMenuItem(mm_menu_0925155656_0_1,"location='#'");
+   mm_menu_0925155656_0.hideOnMouseOut=true;
+   mm_menu_0925155656_0.childMenuIcon="arrows.gif";
+   mm_menu_0925155656_0.bgColor='#FFFFFF';
+   mm_menu_0925155656_0.menuBorder=1;
+   mm_menu_0925155656_0.menuLiteBgColor='#FFFFFF';
+   mm_menu_0925155656_0.menuBorderBgColor='#999999';
+window.mm_menu_0925160045_0 = new Menu("root",112,18,"Verdana, Arial, Helvetica, sans-serif",10,"#000000","#000099","#EEEEEE","#FFFFFF","left","middle",3,0,500,-5,7,true,true,true,0,true,false);
+  mm_menu_0925160045_0.addMenuItem("Delete","location='#'");
+  mm_menu_0925160045_0.addMenuItem("Save","location='#'");
+  mm_menu_0925160045_0.addMenuItem("Create&nbsp;Pipeline","location='#'");
+  mm_menu_0925160045_0.addMenuItem("Modules","location='#'");
+   mm_menu_0925160045_0.hideOnMouseOut=true;
+   mm_menu_0925160045_0.bgColor='#FFFFFF';
+   mm_menu_0925160045_0.menuBorder=1;
+   mm_menu_0925160045_0.menuLiteBgColor='#FFFFFF';
+   mm_menu_0925160045_0.menuBorderBgColor='#999999';
+window.mm_menu_0925165148_0 = new Menu("root",161,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
 
 mm_menu_1122140808_0.writeMenus();
 } // mmLoadMenus()
