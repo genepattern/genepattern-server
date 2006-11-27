@@ -1,9 +1,4 @@
-/**
- * mm_menu 04OCT2005 Version 6.01
- * Updated by Jason Hinkle, verysimple.com 
- * Shows correct mouse cursor in firefox
- * Original copyright below:
- *
+/** 
  * mm_menu 20MAR2002 Version 6.0
  * Andy Finnell, March 2002
  * Copyright (c) 2000-2002 Macromedia, Inc.
@@ -123,8 +118,8 @@ function writeMenus(container) {
 			body.left = menu.menuBorder;
 		} else {
 			content += ''+
-			'<div id="menuLayer'+ countMenus +'" style="position:absolute;z-index:1;left:10px;top:'+ (i * 100) +'px;visibility:hidden;color:' +  menu.menuBorderBgColor + ';">\n'+
-			'  <div id="menuLite'+ countMenus +'" style="position:absolute;z-index:1;left:'+ menu.menuBorder +'px;top:'+ menu.menuBorder +'px;visibility:hide;" onmouseout="mouseoutMenu();">\n'+
+			'<div id="menuLayer'+ countMenus +'" style="position:absolute;z-index:100;left:10px;top:'+ (i * 100) +'px;visibility:hidden;color:' +  menu.menuBorderBgColor + ';">\n'+
+			'  <div id="menuLite'+ countMenus +'" style="position:absolute;z-index:100;left:'+ menu.menuBorder +'px;top:'+ menu.menuBorder +'px;visibility:hide;" onmouseout="mouseoutMenu();">\n'+
 			'	 <div id="menuFg'+ countMenus +'" style="position:absolute;left:'+ menu.menuBorder +'px;top:'+ menu.menuBorder +'px;visibility:hide;">\n'+
 			'';
 		}
@@ -310,7 +305,7 @@ function writeMenus(container) {
 			container.menus[x].menuLayer = "menuLayer" + x;
 			menuLayer.Menu = container.menus[x];
 			menuLayer.Menu.container = "menuLayer" + x;
-			menuLayer.style.zindex = 1;
+			menuLayer.style.zindex = 100;
 		    var s = menuLayer.style;
 			s.pixeltop = -300;
 			s.pixelleft = -300;
@@ -382,11 +377,7 @@ function writeMenus(container) {
 					childItem.style.top = childItem.style.pixelTop + 'px';
 					l.Menu.childMenus[l.Menu.childMenus.length] = l.childMenu;
 				}
-				
-				// ### fix for cursor in firefox ###
-				l.style.cursor = "pointer";
-				if (document.getElementById && (!document.all) ) l.style.cursor = "hand";  // IE 5
-
+				l.style.cursor = "hand";
 				menuCount++;
 			}
 			if( menu.vertical ) {
@@ -451,10 +442,10 @@ function onMenuItemOver(e, l) {
 		}
 		if (l.hilite) {
 			l.document.bgColor = l.menuHiliteBgColor;
-			l.zIndex = 1;
+			l.zIndex = 100;
 			l.hilite.visibility = "inherit";
-			l.hilite.zIndex = 2;
-			l.document.layers[1].zIndex = 1;
+			l.hilite.zIndex = 102;
+			l.document.layers[1].zIndex = 100;
 			l.focusItem.zIndex = this.zIndex +2;
 		}
 		if (l.Menu.bgImageOver) l.background.src = l.Menu.bgImageOver;
@@ -471,7 +462,7 @@ function onMenuItemOver(e, l) {
 			if (a.Menu.bgImageUp) a.style.background = "url(" + a.Menu.bgImageUp +")";;
 		} 
 		l.style.backgroundColor = l.menuHiliteBgColor;
-		l.zIndex = 1;
+		l.zIndex = 100;
 		if (l.Menu.bgImageOver) l.style.background = "url(" + l.Menu.bgImageOver +")";
 		if (l.hilite) {
 			l.hilite.style.visibility = "inherit";
