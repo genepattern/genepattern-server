@@ -35,9 +35,9 @@
                   <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="4" height="1"/>
                 </td>
                 <td>
-                  <t:commandLink id="modeLink" forcedId="true" value="#{mode}" actionListener="#{serverSettingsBean.modeChanged}" immediate="true">
+                  <h:commandLink id="modeLink" value="#{mode}" actionListener="#{serverSettingsBean.modeChanged}" immediate="true">
                      <f:param value="#{mode}" name="mode"/> 
-                  </t:commandLink>
+                  </h:commandLink>
                 </td>
                 <td width="9">
                   <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
