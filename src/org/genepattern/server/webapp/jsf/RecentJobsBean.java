@@ -253,7 +253,7 @@ public class RecentJobsBean {
 	// This action is not referenced from anywhere
 	public String loadTask(ActionEvent event) {
 
-		String lsid = UIBeanHelper.getRequest().getParameter("module");  //<= Not set anywhere 
+		String lsid = UIBeanHelper.getRequest().getParameter("module");  
 		RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper
 				.getManagedBean("#{runTaskBean}");
 		assert runTaskBean != null;

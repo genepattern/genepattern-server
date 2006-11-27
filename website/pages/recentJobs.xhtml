@@ -116,9 +116,18 @@
                     </tr>
                     <tr>
                       <td>
-                        <h:commandLink value="Modules"/>
+                        <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
 					  </td>
                     </tr>
+                    <t:dataList value="#{p.moduleMenuItems}" var="moduleMenuItem">
+                      <tr>
+                        <td>
+                          <h:commandLink value="#{moduleMenuItem.label}" actionListener="#{recentJobsBean.loadTask}">
+                      	    <f:param value="#{moduleMenuItem.value}" name="module"/>
+                          </h:commandLink>
+					    </td>
+                      </tr>
+                    </t:dataList>
                   </tbody>
                 </table>
             </div>
