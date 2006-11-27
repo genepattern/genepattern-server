@@ -272,9 +272,9 @@ public class RecentJobsBean {
 			outputFiles = new ArrayList<MyParameterInfo>();
 			ParameterInfo[] parameterInfoArray = jobInfo
 					.getParameterInfoArray();
-			File outputDir = new File(GenePatternAnalysisTask.getJobDir(""
-					+ jobInfo.getJobNumber()));
 			if (parameterInfoArray != null) {
+				File outputDir = new File(GenePatternAnalysisTask.getJobDir(""
+						+ jobInfo.getJobNumber()));
 				for (int i = 0; i < parameterInfoArray.length; i++) {
 					if (parameterInfoArray[i].isOutputFile()) {
 
