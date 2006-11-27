@@ -134,11 +134,9 @@ public class RecentJobsBean {
 		return "run task";
 	}
 
-
 	public void deleteFile(ActionEvent event) {
 		try {
-			String value = UIBeanHelper.getRequest()
-			.getParameter("jobFile");
+			String value = UIBeanHelper.getRequest().getParameter("jobFile");
 			int index = value.indexOf("/");
 			int jobNumber = Integer.parseInt(value.substring(0, index));
 			String filename = value.substring(index + 1);
@@ -158,7 +156,8 @@ public class RecentJobsBean {
 		InputStream is = null;
 
 		try {
-			String value = UIBeanHelper.getRequest().getParameter("jobFileName");
+			String value = UIBeanHelper.getRequest()
+					.getParameter("jobFileName");
 			int index = value.indexOf("/");
 			String jobNumber = value.substring(0, index);
 			String filename = value.substring(index + 1);
@@ -253,7 +252,7 @@ public class RecentJobsBean {
 	// This action is not referenced from anywhere
 	public String loadTask(ActionEvent event) {
 
-		String lsid = UIBeanHelper.getRequest().getParameter("module");  
+		String lsid = UIBeanHelper.getRequest().getParameter("module");
 		RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper
 				.getManagedBean("#{runTaskBean}");
 		assert runTaskBean != null;
@@ -275,15 +274,17 @@ public class RecentJobsBean {
 					.getParameterInfoArray();
 			File outputDir = new File(GenePatternAnalysisTask.getJobDir(""
 					+ jobInfo.getJobNumber()));
-			for (int i = 0; i < parameterInfoArray.length; i++) {
-				if (parameterInfoArray[i].isOutputFile()) {
+			if (parameterInfoArray != null) {
+				for (int i = 0; i < parameterInfoArray.length; i++) {
+					if (parameterInfoArray[i].isOutputFile()) {
 
-					File file = new File(outputDir, parameterInfoArray[i]
-							.getName());
-					Collection<TaskInfo> modules = kindToModules
-							.get(SemanticUtil.getKind(file));
-					outputFiles.add(new MyParameterInfo(parameterInfoArray[i],
-							modules));
+						File file = new File(outputDir, parameterInfoArray[i]
+								.getName());
+						Collection<TaskInfo> modules = kindToModules
+								.get(SemanticUtil.getKind(file));
+						outputFiles.add(new MyParameterInfo(
+								parameterInfoArray[i], modules));
+					}
 				}
 			}
 		}
