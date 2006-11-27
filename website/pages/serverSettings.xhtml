@@ -1,5 +1,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
   <ui:composition template="/templates/common.xhtml">
     <ui:define name="headText">
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
@@ -31,9 +35,9 @@
                   <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="4" height="1"/>
                 </td>
                 <td>
-                  <h:commandLink value="#{mode}" actionListener="#{serverSettingsBean.modeChanged}" immediate="true">
+                  <t:commandLink id="modeLink" forcedId="true" value="#{mode}" actionListener="#{serverSettingsBean.modeChanged}" immediate="true">
                      <f:param value="#{mode}" name="mode"/> 
-                  </h:commandLink>
+                  </t:commandLink>
                 </td>
                 <td width="9">
                   <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
