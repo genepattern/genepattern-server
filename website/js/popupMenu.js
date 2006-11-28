@@ -16,9 +16,14 @@ function pm_registerClickHandler() {
     }, false);   
 } 
 
-function pm_showMenu(id) {
+function pm_showMenu(id, pos) {
    pm_currentId = id;
-   $(id).style.visibility = "";  //<= resets to default
+   var style = $(id).style;
+   if(pos) {
+     style.left = (pos[0] - 50)  + "px";
+     //style.top = pos[1] + "px";
+   }
+   style.visibility = "";  //<= resets to default
 } 
   
 function pm_hideMenu(id) {
