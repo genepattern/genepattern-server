@@ -30,18 +30,15 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
 public class CodeGeneratorUtil {
-    public static enum LANGUAGE {
-        JAVA, MATLAB, R
-    };
-
-    private static Map<LANGUAGE, TaskCodeGenerator> languageToCodeGenerator;
+   
+    private static Map<String, TaskCodeGenerator> languageToCodeGenerator;
     static {
-        languageToCodeGenerator = new HashMap<LANGUAGE, TaskCodeGenerator>();
-        languageToCodeGenerator.put(LANGUAGE.JAVA,
+        languageToCodeGenerator = new HashMap<String, TaskCodeGenerator>();
+        languageToCodeGenerator.put("Java",
                 new JavaPipelineCodeGenerator());
-        languageToCodeGenerator.put(LANGUAGE.MATLAB,
+        languageToCodeGenerator.put("MATLAB",
                 new MATLABPipelineCodeGenerator());
-        languageToCodeGenerator.put(LANGUAGE.R, new RPipelineCodeGenerator());
+        languageToCodeGenerator.put("R", new RPipelineCodeGenerator());
     }
 
     private static Logger log = Logger.getLogger(CodeGeneratorUtil.class);
@@ -74,6 +71,12 @@ public class CodeGeneratorUtil {
         }
         return jobNumber;
     }
+    
+    public static String getFileExtension(String language)
+    throws Exception {
+        TaskCodeGenerator codeGenerator = languageToCodeGenerator.get(language);
+        return codeGenerator.getFileExtension();
+    }
 
     /**
      * Generates code for a job
@@ -89,7 +92,7 @@ public class CodeGeneratorUtil {
      *             if an error occurs while generating the code.
      */
 
-    public static String getCode(LANGUAGE language, AnalysisJob job)
+    public static String getCode(String language, AnalysisJob job)
             throws Exception {
         TaskCodeGenerator codeGenerator = languageToCodeGenerator.get(language);
         final JobInfo jobInfo = job.getJobInfo();

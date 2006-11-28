@@ -1,15 +1,14 @@
 /*
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2006) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2006) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
 
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
-*/
-
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */
 
 package org.genepattern.codegenerator;
 
@@ -50,378 +49,386 @@ import org.genepattern.webservice.TaskInfoAttributes;
  * @author Ted Liefeld
  * @created Sept 26, 2004
  */
-public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator implements TaskCodeGenerator {
-	int numPrompts = 0;
+public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator
+        implements TaskCodeGenerator {
+    int numPrompts = 0;
 
-	int numNonVisualizersSeen = 0;
+    int numNonVisualizersSeen = 0;
 
-	java.util.Map taskNum2ResultsArrayIndex = new java.util.HashMap();
+    java.util.Map taskNum2ResultsArrayIndex = new java.util.HashMap();
 
-	public MATLABPipelineCodeGenerator(PipelineModel model,
-			String server,
-			List jobSubmissionTaskInfos) {
-      super(model, server, jobSubmissionTaskInfos);
-   }
-   
-   public MATLABPipelineCodeGenerator(){}
+    public MATLABPipelineCodeGenerator(PipelineModel model, String server,
+            List jobSubmissionTaskInfos) {
+        super(model, server, jobSubmissionTaskInfos);
+    }
 
-	public String emitUserInstructions() {
-		return model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE
-				+ " has been saved as a pipeline task on " + server + ".";
-	}
+    public MATLABPipelineCodeGenerator() {
+    }
 
-	/**
-	 * generate the R source code that documents the pipeline, prompts for
-	 * runtime parameter inputs, and offers download of output results
-	 * 
-	 * @return String R code
-	 * @exception GenePatternException
-	 *                Description of the Exception
-	 * @author Jim Lerner
-	 */
-	public String emitProlog() throws GenePatternException {
-		StringBuffer prolog = new StringBuffer();
-		Vector vProblems = new Vector();
+    public String emitUserInstructions() {
+        return model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE
+                + " has been saved as a pipeline task on " + server + ".";
+    }
 
-		prolog.append("% " + model.getName() + ".pipeline");
-		if (model.getDescription().length() > 0) {
-			prolog.append(" - ");
-			prolog.append(model.getDescription());
-		}
-		if (model.getVersion() != null && !model.getVersion().trim().equals("")) {
-			prolog.append(" - version ");
-			prolog.append(model.getVersion());
-		}
-		prolog.append("\n% generated: ");
-		prolog.append(new Date().toString());
-		prolog.append("\n% regenerate with: ");
-		prolog
-				.append(getFullServerURL()
-						+ "getPipelineCode.jsp?language=MATLAB&name="
-						+ model.getLsid());
-		if (model.getAuthor() != null && !model.getAuthor().trim().equals("")) {
-			prolog.append("\n% @author\t");
-			prolog.append(model.getAuthor());
-		}
-		prolog.append("\n%");
-		prolog
-				.append("\n% To run, first download the GenePattern library from the GenePattern home page.");
-		prolog
-				.append("\n% and add it to your MATLABPATH as described in the documentation");
-		prolog.append("\n% \n");
+    /**
+     * generate the R source code that documents the pipeline, prompts for
+     * runtime parameter inputs, and offers download of output results
+     * 
+     * @return String R code
+     * @exception GenePatternException
+     *                Description of the Exception
+     * @author Jim Lerner
+     */
+    public String emitProlog() throws GenePatternException {
+        StringBuffer prolog = new StringBuffer();
+        Vector vProblems = new Vector();
 
-		int numNonVisualizerTasks = 0;
+        prolog.append("% " + model.getName() + ".pipeline");
+        if (model.getDescription().length() > 0) {
+            prolog.append(" - ");
+            prolog.append(model.getDescription());
+        }
+        if (model.getVersion() != null && !model.getVersion().trim().equals("")) {
+            prolog.append(" - version ");
+            prolog.append(model.getVersion());
+        }
+        prolog.append("\n% generated: ");
+        prolog.append(new Date().toString());
+        prolog.append("\n% regenerate with: ");
+        prolog
+                .append(getFullServerURL()
+                        + "getPipelineCode.jsp?language=MATLAB&name="
+                        + model.getLsid());
+        if (model.getAuthor() != null && !model.getAuthor().trim().equals("")) {
+            prolog.append("\n% @author\t");
+            prolog.append(model.getAuthor());
+        }
+        prolog.append("\n%");
+        prolog
+                .append("\n% To run, first download the GenePattern library from the GenePattern home page.");
+        prolog
+                .append("\n% and add it to your MATLABPATH as described in the documentation");
+        prolog.append("\n% \n");
 
-		// check for input parameters that must be specified at runtime
-		ArrayList prompts = new ArrayList();
-		int taskNum = 0;
-		for (Enumeration eTasks = model.getTasks().elements(); eTasks
-				.hasMoreElements(); taskNum++) {
-			JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
-			String taskName = jobSubmission.getName();
-			String tName = javaEncodeName(taskName);
-			ParameterInfo[] parameterInfo = jobSubmission
-					.giveParameterInfoArray();
-			if (!jobSubmission.isVisualizer()) {
-				taskNum2ResultsArrayIndex.put(new Integer(taskNum),
-						new Integer(numNonVisualizerTasks));
-				numNonVisualizerTasks++;
-			}
-			for (int i = 0; i < parameterInfo.length; i++) {
-				if (parameterInfo != null) {
-					HashMap pia = parameterInfo[i].getAttributes();
-					if (pia == null) {
-						pia = new HashMap();
-					}
-					// check that all required parameters have been supplied
-					if (pia.size() > 0
-							&& pia
-									.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]) == null
-							&& !jobSubmission.getRuntimePrompt()[i]
-							&& parameterInfo[i].getValue().equals("")
-							&& pia.get(INHERIT_TASKNAME) == null
-							&& pia
-									.get(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET]) == null) {
-						vProblems.add("Missing required parameter "
-								+ parameterInfo[i].getName() + " for task "
-								+ taskName + taskNum + "\npi: "
-								+ parameterInfo[i]);
-					}
-					if (jobSubmission.getRuntimePrompt()[i]) {
-						prompts.add("input('Enter "
-								+ parameterInfo[i].getName().replace('.', ' ')
-								+ " for task " + taskName + ": ','s')");
-					}
-				}
-			}
-		}
+        int numNonVisualizerTasks = 0;
 
-		prolog.append("gpServer =  GenePatternServer('" + server + "', '"
-				+ model.getUserID() + "');\n");
+        // check for input parameters that must be specified at runtime
+        ArrayList prompts = new ArrayList();
+        int taskNum = 0;
+        for (Enumeration eTasks = model.getTasks().elements(); eTasks
+                .hasMoreElements(); taskNum++) {
+            JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
+            String taskName = jobSubmission.getName();
+            String tName = javaEncodeName(taskName);
+            ParameterInfo[] parameterInfo = jobSubmission
+                    .giveParameterInfoArray();
+            if (!jobSubmission.isVisualizer()) {
+                taskNum2ResultsArrayIndex.put(new Integer(taskNum),
+                        new Integer(numNonVisualizerTasks));
+                numNonVisualizerTasks++;
+            }
+            for (int i = 0; i < parameterInfo.length; i++) {
+                if (parameterInfo != null) {
+                    HashMap pia = parameterInfo[i].getAttributes();
+                    if (pia == null) {
+                        pia = new HashMap();
+                    }
+                    // check that all required parameters have been supplied
+                    if (pia.size() > 0
+                            && pia
+                                    .get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]) == null
+                            && !jobSubmission.getRuntimePrompt()[i]
+                            && parameterInfo[i].getValue().equals("")
+                            && pia.get(INHERIT_TASKNAME) == null
+                            && pia
+                                    .get(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET]) == null) {
+                        vProblems.add("Missing required parameter "
+                                + parameterInfo[i].getName() + " for task "
+                                + taskName + taskNum + "\npi: "
+                                + parameterInfo[i]);
+                    }
+                    if (jobSubmission.getRuntimePrompt()[i]) {
+                        prompts.add("input('Enter "
+                                + parameterInfo[i].getName().replace('.', ' ')
+                                + " for task " + taskName + ": ','s')");
+                    }
+                }
+            }
+        }
 
-		if (prompts.size() > 0) {
-			for (int i = 0, size = prompts.size(); i < size; i++) {
-				prolog.append("prompts" + i + " = " + prompts.get(i) + ";\n");
-			}
-		}
+        prolog.append("gpServer =  GenePatternServer('" + server + "', '"
+                + model.getUserID() + "');\n");
 
-		if (vProblems.size() > 0) {
-			throw new GenePatternException("Cannot create pipeline", vProblems);
-		}
-		if (numNonVisualizerTasks > 0) {
-			//prolog.append("\t\tJobResult[] results = new JobResult[" +
-			// numNonVisualizerTasks + "];\n");
-		}
-		return prolog.toString();
-	}
+        if (prompts.size() > 0) {
+            for (int i = 0, size = prompts.size(); i < size; i++) {
+                prolog.append("prompts" + i + " = " + prompts.get(i) + ";\n");
+            }
+        }
 
-   public String generateTask(AnalysisJob analysisJob, ParameterInfo[] params) {
-      JobInfo jobInfo = analysisJob.getJobInfo();
-      boolean visualizer = analysisJob.isClientJob();
-      String taskName = jobInfo.getTaskName();
-      String lsid = jobInfo.getTaskLSID();
-      StringBuffer sb = new StringBuffer();
-      sb.append("params = getMethodParameters(gpServer,'" + lsid + "');\n");
-      if(params!=null) {
-         for(int i = 0; i < params.length; i++) {
-            sb.append("params." + matlabEncodeName(params[i].getName()) + " = '" + params[i].getValue() + "';\n");  
-         }
-      }
-      if(!visualizer) {
-         sb.append("results = ");
-      }
-      sb.append("runAnalysis(gpServer,'" + taskName + "', params, '" + lsid + "');");  
-      return sb.toString();
-   }
-   
-	/**
-	 * generate Java code for a particular task to execute within the pipeline,
-	 * including a bit of documentation for the task. Generate file input
-	 * inheritance code for input from previously-run pipeline stages. At end of
-	 * task, generate links for downloading output files individually. Invoked
-	 * once for each task in the pipeline.
-	 * 
-	 * @param jobSubmission
-	 *            description of task
-	 * @param taskInfo
-	 *            TaskInfo for this task
-	 * @param parameterInfo
-	 *            ParameterInfo array for this task
-	 * @param taskNum
-	 *            task number (indexed from zero)
-	 * @return String generated R code
-	 * @exception GenePatternException
-	 *                Description of the Exception
-	 * @author Jim Lerner
-	 */
-	public String emitTask(JobSubmission jobSubmission, TaskInfo taskInfo,
-			ParameterInfo[] actualParams, int taskNum)
-			throws GenePatternException {
+        if (vProblems.size() > 0) {
+            throw new GenePatternException("Cannot create pipeline", vProblems);
+        }
+        if (numNonVisualizerTasks > 0) {
+            // prolog.append("\t\tJobResult[] results = new JobResult[" +
+            // numNonVisualizerTasks + "];\n");
+        }
+        return prolog.toString();
+    }
 
-		StringBuffer out = new StringBuffer();
-		String tName = javaEncodeName(jobSubmission.getName());
-		TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-		StringBuffer invocation = new StringBuffer();
-		String lsid = tia.get(GPConstants.LSID);
-		String paramVar = "params" + taskNum;
-		invocation.append("\n" + paramVar + " = getMethodParameters(gpServer,'"
-				+ lsid + "');\n");
+    public String generateTask(AnalysisJob analysisJob, ParameterInfo[] params) {
+        JobInfo jobInfo = analysisJob.getJobInfo();
+        boolean visualizer = analysisJob.isClientJob();
+        String taskName = jobInfo.getTaskName();
+        String lsid = jobInfo.getTaskLSID();
+        StringBuffer sb = new StringBuffer();
+        sb.append("params = getMethodParameters(gpServer,'" + lsid + "');\n");
+        if (params != null) {
+            for (int i = 0; i < params.length; i++) {
+                sb.append("params." + matlabEncodeName(params[i].getName())
+                        + " = '" + params[i].getValue() + "';\n");
+            }
+        }
+        if (!visualizer) {
+            sb.append("results = ");
+        }
+        sb.append("runAnalysis(gpServer,'" + taskName + "', params, '" + lsid
+                + "');");
+        return sb.toString();
+    }
 
-		HashMap paramName2ActaulParam = new HashMap();
-		if (actualParams != null) {
-			for (int i = 0, length = actualParams.length; i < length; i++) {
-				paramName2ActaulParam.put(actualParams[i].getName(),
-						actualParams[i]);
-			}
-		}
-		//ParameterInfo[] formalParams = taskInfo.getParameterInfoArray(); //
-		// doesn't matches order of JobSubmission.getRuntimePrompt()
-		ParameterInfo[] formalParams = jobSubmission.giveParameterInfoArray();
+    /**
+     * generate Java code for a particular task to execute within the pipeline,
+     * including a bit of documentation for the task. Generate file input
+     * inheritance code for input from previously-run pipeline stages. At end of
+     * task, generate links for downloading output files individually. Invoked
+     * once for each task in the pipeline.
+     * 
+     * @param jobSubmission
+     *            description of task
+     * @param taskInfo
+     *            TaskInfo for this task
+     * @param parameterInfo
+     *            ParameterInfo array for this task
+     * @param taskNum
+     *            task number (indexed from zero)
+     * @return String generated R code
+     * @exception GenePatternException
+     *                Description of the Exception
+     * @author Jim Lerner
+     */
+    public String emitTask(JobSubmission jobSubmission, TaskInfo taskInfo,
+            ParameterInfo[] actualParams, int taskNum)
+            throws GenePatternException {
 
-		if (formalParams != null) {
-			for (int i = 0; i < formalParams.length; i++) {
-				ParameterInfo formal = formalParams[i];
-				ParameterInfo actual = (ParameterInfo) paramName2ActaulParam
-						.get(formal.getName());
+        StringBuffer out = new StringBuffer();
+        String tName = javaEncodeName(jobSubmission.getName());
+        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+        StringBuffer invocation = new StringBuffer();
+        String lsid = tia.get(GPConstants.LSID);
+        String paramVar = "params" + taskNum;
+        invocation.append("\n" + paramVar + " = getMethodParameters(gpServer,'"
+                + lsid + "');\n");
 
-				HashMap actualAttributes = null;
-				if (actual != null) {
-					actualAttributes = actual.getAttributes();
-				}
-				if (actualAttributes == null) {
-					actualAttributes = new HashMap();
-				}
+        HashMap paramName2ActaulParam = new HashMap();
+        if (actualParams != null) {
+            for (int i = 0, length = actualParams.length; i < length; i++) {
+                paramName2ActaulParam.put(actualParams[i].getName(),
+                        actualParams[i]);
+            }
+        }
+        // ParameterInfo[] formalParams = taskInfo.getParameterInfoArray(); //
+        // doesn't matches order of JobSubmission.getRuntimePrompt()
+        ParameterInfo[] formalParams = jobSubmission.giveParameterInfoArray();
 
-				if (jobSubmission.getRuntimePrompt()[i]) {
-					invocation.append("\n" + paramVar + "."
-							+ matlabEncodeName(formal.getName()) + "= prompts"
-							+ numPrompts + ";\n");
-					numPrompts++;
+        if (formalParams != null) {
+            for (int i = 0; i < formalParams.length; i++) {
+                ParameterInfo formal = formalParams[i];
+                ParameterInfo actual = (ParameterInfo) paramName2ActaulParam
+                        .get(formal.getName());
 
-				} else if (actualAttributes.get(INHERIT_FILENAME) != null) {
+                HashMap actualAttributes = null;
+                if (actual != null) {
+                    actualAttributes = actual.getAttributes();
+                }
+                if (actualAttributes == null) {
+                    actualAttributes = new HashMap();
+                }
 
-					int inheritedTaskNum = Integer
-							.parseInt((String) actualAttributes
-									.get(INHERIT_TASKNAME)); // task number of
-															 // task to get
-															 // output from
-					actualAttributes.remove("TYPE");
-					actualAttributes.put(ParameterInfo.MODE,
-							ParameterInfo.URL_INPUT_MODE);
+                if (jobSubmission.getRuntimePrompt()[i]) {
+                    invocation.append("\n" + paramVar + "."
+                            + matlabEncodeName(formal.getName()) + "= prompts"
+                            + numPrompts + ";\n");
+                    numPrompts++;
 
-					invocation.append(paramVar + "."
-							+ matlabEncodeName(formal.getName()) + " = ");
+                } else if (actualAttributes.get(INHERIT_FILENAME) != null) {
 
-					String fname = (String) actualAttributes
-							.get(INHERIT_FILENAME); // can either by a number of
-													// stdout, stderr
-					int resultsIndex = ((Integer) (taskNum2ResultsArrayIndex
-							.get(new Integer(inheritedTaskNum)))).intValue();
-					try {
-						fname = String.valueOf(Integer.parseInt(fname)); // 1st
-																		 // index
-																		 // is
-																		 // 1st
-																		 // output
-					} catch (NumberFormatException nfe) {
-						fname = "\"" + fname + "\"";
-					}
-					invocation.append(" results" + resultsIndex + ".fileURLs{"
-							+ fname + "};\n");
+                    int inheritedTaskNum = Integer
+                            .parseInt((String) actualAttributes
+                                    .get(INHERIT_TASKNAME)); // task number
+                                                                // of
+                    // task to get
+                    // output from
+                    actualAttributes.remove("TYPE");
+                    actualAttributes.put(ParameterInfo.MODE,
+                            ParameterInfo.URL_INPUT_MODE);
 
-				} else {
+                    invocation.append(paramVar + "."
+                            + matlabEncodeName(formal.getName()) + " = ");
 
-					String val = null;
-					if (actual != null) {
-						val = actual.getValue();
-					}
-					if (val == null) {
-						if (pia != null) {
-							val = (String) actualAttributes
-									.get((String) GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
-						}
-						if (val == null) {
-							val = "";
-						}
-					}
-					val = val.replace('\\', '/');
+                    String fname = (String) actualAttributes
+                            .get(INHERIT_FILENAME); // can either by a number of
+                    // stdout, stderr
+                    int resultsIndex = ((Integer) (taskNum2ResultsArrayIndex
+                            .get(new Integer(inheritedTaskNum)))).intValue();
+                    try {
+                        fname = String.valueOf(Integer.parseInt(fname)); // 1st
+                        // index
+                        // is
+                        // 1st
+                        // output
+                    } catch (NumberFormatException nfe) {
+                        fname = "\"" + fname + "\"";
+                    }
+                    invocation.append(" results" + resultsIndex + ".fileURLs{"
+                            + fname + "};\n");
 
-					// if this is a taskLib-based URL, convert it so that the
-					// server and
-					// port are evaluated at runtime, allowing the pipeline to
-					// be moved
-					// to another server without code changes
+                } else {
 
-					// BUG: bug 116: this makes the pipeline non-portable to
-					// systems that can't resolve the server name or the port
-					// number!!!
+                    String val = null;
+                    if (actual != null) {
+                        val = actual.getValue();
+                    }
+                    if (val == null) {
+                        if (pia != null) {
+                            val = (String) actualAttributes
+                                    .get((String) GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
+                        }
+                        if (val == null) {
+                            val = "";
+                        }
+                    }
+                    val = val.replace('\\', '/');
 
-					String getFile = "getFile.jsp?";
-					int index = -1;
-					if ((index = val.indexOf(getFile)) > 0) {
-						String query = val.substring(index + getFile.length(),
-								val.length());
-						String[] queries = query.split("&");
-						String task = null;
-						String file = null;
-						for (int j = 0, length = queries.length; j < length; j++) {
-							String[] temp = queries[j].split("=");
-							try {
-								if (temp[0].equals("file")) {
-									file = URLDecoder.decode(temp[1], "utf-8");
-								}
-								if (temp[0].equals("task")) {
-									task = URLDecoder.decode(temp[1], "utf-8");
-									if ("<LSID>".equalsIgnoreCase(task)) {
-										task = model.getLsid();
-									}
-								}
-							} catch (UnsupportedEncodingException uee) {
-								// ignore
-							}
-						}
-						if (task != null && file != null) {
-							//invocation.append("new Parameter(\"" +
-							// formal.getName() + "\",
-							// gpServer.getTaskFileURL(\"" + task + "\", \"" +
-							// file + "\").toString())");
-							//XXX - file from tasklib
-							invocation.append(paramVar + "."
-									+ matlabEncodeName(formal.getName())
-									+ "= getTaskFileURL(gpServer, '" + task
-									+ "', '" + file + "');");
-						} else {
-							invocation.append(paramVar + "."
-									+ matlabEncodeName(formal.getName())
-									+ "= '" + val + "';\n");
-						}
-					} else {
-						//invocation.append("new Parameter(\"" +
-						// formal.getName() + "\", \"" + val + "\")");
-						invocation.append(paramVar + "."
-								+ matlabEncodeName(formal.getName()) + "= '"
-								+ val + "';\n");
+                    // if this is a taskLib-based URL, convert it so that the
+                    // server and
+                    // port are evaluated at runtime, allowing the pipeline to
+                    // be moved
+                    // to another server without code changes
 
-					}
-				}
-			}
+                    // BUG: bug 116: this makes the pipeline non-portable to
+                    // systems that can't resolve the server name or the port
+                    // number!!!
 
-		}
+                    String getFile = "getFile.jsp?";
+                    int index = -1;
+                    if ((index = val.indexOf(getFile)) > 0) {
+                        String query = val.substring(index + getFile.length(),
+                                val.length());
+                        String[] queries = query.split("&");
+                        String task = null;
+                        String file = null;
+                        for (int j = 0, length = queries.length; j < length; j++) {
+                            String[] temp = queries[j].split("=");
+                            try {
+                                if (temp[0].equals("file")) {
+                                    file = URLDecoder.decode(temp[1], "utf-8");
+                                }
+                                if (temp[0].equals("task")) {
+                                    task = URLDecoder.decode(temp[1], "utf-8");
+                                    if ("<LSID>".equalsIgnoreCase(task)) {
+                                        task = model.getLsid();
+                                    }
+                                }
+                            } catch (UnsupportedEncodingException uee) {
+                                // ignore
+                            }
+                        }
+                        if (task != null && file != null) {
+                            // invocation.append("new Parameter(\"" +
+                            // formal.getName() + "\",
+                            // gpServer.getTaskFileURL(\"" + task + "\", \"" +
+                            // file + "\").toString())");
+                            // XXX - file from tasklib
+                            invocation.append(paramVar + "."
+                                    + matlabEncodeName(formal.getName())
+                                    + "= getTaskFileURL(gpServer, '" + task
+                                    + "', '" + file + "');");
+                        } else {
+                            invocation.append(paramVar + "."
+                                    + matlabEncodeName(formal.getName())
+                                    + "= '" + val + "';\n");
+                        }
+                    } else {
+                        // invocation.append("new Parameter(\"" +
+                        // formal.getName() + "\", \"" + val + "\")");
+                        invocation.append(paramVar + "."
+                                + matlabEncodeName(formal.getName()) + "= '"
+                                + val + "';\n");
 
-		invocation.append("\n");
+                    }
+                }
+            }
 
-		// make the actual call
+        }
 
-		if (!jobSubmission.isVisualizer()) {
+        invocation.append("\n");
 
-			invocation.append("results" + numNonVisualizersSeen
-					+ " = runAnalysis(gpServer,'");
-			invocation.append(jobSubmission.getName() + "'," + paramVar + ", '"
-					+ lsid + "');  \n");
-			out.append(invocation.toString() + "\n");
-			numNonVisualizersSeen++;
-		} else {
-			invocation.append("runAnalysis(gpServer,'");
-			invocation.append(jobSubmission.getName() + "'," + paramVar + ", '"
-					+ lsid + "');  \n");
+        // make the actual call
 
-			out.append("\n\t\t" + invocation.toString() + "\n");
-		}
+        if (!jobSubmission.isVisualizer()) {
 
-		return out.toString();
-	}
+            invocation.append("results" + numNonVisualizersSeen
+                    + " = runAnalysis(gpServer,'");
+            invocation.append(jobSubmission.getName() + "'," + paramVar + ", '"
+                    + lsid + "');  \n");
+            out.append(invocation.toString() + "\n");
+            numNonVisualizersSeen++;
+        } else {
+            invocation.append("runAnalysis(gpServer,'");
+            invocation.append(jobSubmission.getName() + "'," + paramVar + ", '"
+                    + lsid + "');  \n");
 
-	/**
-	 * Performs housekeeping to finish off pipeline execution. This consists of
-	 * creating links for downloading some or all output files from the
-	 * pipeline's tasks, and running of a visualizer on the final results, if
-	 * requested by the user.
-	 * 
-	 * @return String code
-	 * @author Jim Lerner
-	 */
-	public String emitEpilog() {
+            out.append("\n\t\t" + invocation.toString() + "\n");
+        }
 
-		return "";
-	}
+        return out.toString();
+    }
 
-	/**
-	 * concrete method for AbstractPipelineCodeGenerator answering: "what
-	 * language is this?"
-	 * 
-	 * @return String language (Java)
-	 * @author Jim Lerner
-	 */
-	public String getLanguage() {
-		return "MATLAB";
-	}
+    /**
+     * Performs housekeeping to finish off pipeline execution. This consists of
+     * creating links for downloading some or all output files from the
+     * pipeline's tasks, and running of a visualizer on the final results, if
+     * requested by the user.
+     * 
+     * @return String code
+     * @author Jim Lerner
+     */
+    public String emitEpilog() {
 
-	protected static String matlabEncodeName(String varName) {
-		return varName.replace('.', '_');
-	}
+        return "";
+    }
 
-	protected static String javaEncodeName(String varName) {
-		return varName.replace('.', '_').replace('-', '_').replace(' ', '_');
-	}
+    /**
+     * concrete method for AbstractPipelineCodeGenerator answering: "what
+     * language is this?"
+     * 
+     * @return String language (Java)
+     * @author Jim Lerner
+     */
+    public String getLanguage() {
+        return "MATLAB";
+    }
+
+    protected static String matlabEncodeName(String varName) {
+        return varName.replace('.', '_');
+    }
+
+    protected static String javaEncodeName(String varName) {
+        return varName.replace('.', '_').replace('-', '_').replace(' ', '_');
+    }
+
+    public String getFileExtension() {
+        return ".m";
+    }
 
 }

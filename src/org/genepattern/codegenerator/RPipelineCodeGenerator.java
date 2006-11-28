@@ -503,4 +503,8 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
 			return "\"" + varName + "\"";
 		}
 	}
+
+    public String getFileExtension() {
+        return ".R";
+    }
 }

@@ -33,9 +33,17 @@ public interface TaskCodeGenerator {
     public String generateTask(AnalysisJob job, ParameterInfo[] params);
 
     /**
-     * Returns the language (e.g. Java, MATLAB)/
+     * Returns the language (e.g. Java, MATLAB)
+     * 
      * @return the language.
      */
     public String getLanguage();
+
+    /**
+     * Returns the file extension
+     * 
+     * @return the file extension.
+     */
+    public String getFileExtension();
 
 }

@@ -430,5 +430,9 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
     public String getLanguage() {
         return "Java";
     }
+    
+    public String getFileExtension() {
+        return ".java";
+    }
 
 }
