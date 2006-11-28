@@ -30,6 +30,7 @@ import javax.xml.soap.SOAPException;
 import org.apache.axis.MessageContext;
 import org.apache.axis.attachments.AttachmentPart;
 import org.apache.log4j.Category;
+import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.handler.AddNewJobHandlerNoWakeup;
 import org.genepattern.server.handler.GetJobStatusHandler;
@@ -48,8 +49,6 @@ import org.genepattern.webservice.AnalysisJob;
 /**
  * Analysis Web Service.
  * 
- * @author David Turner, Hui Gong
- * @version 1.1
  */
 
 public class Analysis extends GenericWebService {
@@ -192,7 +191,9 @@ public class Analysis extends GenericWebService {
         }
     }
     
-    
+    public void wakeupQueue(){
+    	AnalysisTask.getInstance().wakeupJobQueue();
+    }
    
     
     private static void logAndThrow(Throwable t) throws WebServiceException {
