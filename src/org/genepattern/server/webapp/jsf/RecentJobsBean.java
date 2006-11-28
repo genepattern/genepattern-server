@@ -65,7 +65,7 @@ public class RecentJobsBean {
             // recentJobsToShow,
             // false); // FIXME uncomment when bug recording jobs is fixed
             JobInfo[] temp = analysisClient.getJobs(null, -1, recentJobsToShow,
-                    true);
+                    false);
             jobs = new MyJobInfo[temp.length];
             TaskInfo[] tasks = new AdminDAO().getAllTasksForUser(UIBeanHelper
                     .getUserId());
@@ -274,7 +274,6 @@ public class RecentJobsBean {
         RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper
                 .getManagedBean("#{runTaskBean}");
         assert runTaskBean != null;
-        System.out.println("setting lsid to " + lsid);
         runTaskBean.setTask(lsid);
 
         return "run task";
