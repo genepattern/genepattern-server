@@ -1,161 +1,183 @@
 <!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core">
-
-
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-	<tr>
-		<td colspan="5" class="sidebarhead-bkg2">
-		<div class="sidebarhead">Recent Jobs</div>
-		</td>
-	</tr>
-	<tr>
-		<td height="6" colspan="5"><t:graphicImage
-			value="/images/spacer.gif" width="1" height="6" /></td>
-	</tr>
-
-	<c:if test="#{recentJobsBean.size == 0}">
-		<tr>
-			<td>No jobs to display</td>
-		</tr>
-	</c:if>
-    
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" 
+      xmlns:c="http://java.sun.com/jstl/core">
+ 
+      
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td colspan="5" class="sidebarhead-bkg2">
+        <div class="sidebarhead">Recent Jobs</div>
+      </td>
+    </tr>
+    <tr>
+      <td height="6" colspan="5">
+        <t:graphicImage value="/images/spacer.gif" width="1" height="6"/>
+      </td>
+    </tr>
+    <c:if test="#{recentJobsBean.size == 0}">
+      <tr>
+        <td>No jobs to display</td>
+      </tr>
+    </c:if>
     <h:form>
-	<t:dataList var="job" value="#{recentJobsBean.jobs}" rowIndexVar="jobIndex">
-	  <tr>
-	    <td width="9"><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1" /></td>
-        <td valign="top" class="recentjobs-sh"><a href="link">#{job.jobNumber}</a></td>
-        <td width="9"><img src="images/spacer.gif" width="9" height="1" /></td>
-        <td>
-          <font class="recentjobs-sh">#{job.taskName}</font> 
-               <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif"
-                    name="Image2_#{jobIndex}" width="14" height="14" border="0" align="top" id="Image2_#{jobIndex}" 
-                    onclick="toggleMenuVisibility('menuDiv_#{jobIndex}');"
-                    onmouseover="MM_swapImage('Image2_#{jobIndex}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)"
-                    onmouseout="MM_swapImgRestore();"/>
-               <br/>
-               <div id="menuDiv_#{jobIndex}"  onclick="toggleMenuVisibility('menuDiv_#{jobIndex}');"
-                 style="border:solid 1px #666666; background-color: lightslategray; layer-background-color:#ffffcc; position: absolute; z-index:1000; visibility:hidden; display: block; white-space: nowrap;">             
-                <table >
-                  <tbody>
-                    <tr>
-                      <td>
-                        <h:commandLink value="Reload" actionListener="#{recentJobsBean.reload}">
-                      	  <f:param value="#{job.jobNumber}" name="jobNumber"/>
-                        </h:commandLink>
-					  </td>
-                    </tr>
-                     <tr>
-                      <td>
-                        <h:commandLink value="Delete" actionListener="#{recentJobsBean.delete}">
-                      	  <f:param value="#{job.jobNumber}" name="jobNumber"/>
-                        </h:commandLink>
-					  </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <h:commandLink value="Terminate" actionListener="#{recentJobsBean.terminateJob}">
-                      	  <f:param value="#{job.jobNumber}" name="jobNumber"/>
-                        </h:commandLink>
-					  </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <h:commandLink value="View Code" actionListener="#{recentJobsBean.viewCode}">
-                      	  <f:param value="#{job.jobNumber}" name="jobNumber"/>
-                        </h:commandLink>
-					  </td>
-                    </tr>
-                  </tbody>
-                </table>
-               </div>
-          <h:outputText value="#{job.dateCompleted}">
-            <f:convertDateTime pattern="MMM dd hh:mm:ss a"/>
-          </h:outputText> <br/>
-          <t:dataList var="p" value="#{job.outputFileParameterInfos}" rowIndexVar="paramIndex">
-            <h:outputLink value="#{facesContext.externalContext.requestContextPath}/retrieveResults.jsp">#{p.name}
-              <f:param name="job" value="#{job.jobNumber}" />
-              <f:param name="filename" value="#{p.name}" />
-            </h:outputLink>
-            
-                 
-            <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif"
-                 name="Image3_#{jobIndex}_#{paramIndex}" width="14" height="14" border="0" align="top" id="Image3_#{jobIndex}_#{paramIndex}" 
-                 onclick="toggleMenuVisibility('menuDiv_#{jobIndex}_#{paramIndex}');"
-                 onmouseover="MM_swapImage('Image3_#{jobIndex}_#{paramIndex}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)"
-                 onmouseout="MM_swapImgRestore();" />
+    
+      <!-- Loop through jobs -->
+      <t:dataList var="job" value="#{recentJobsBean.jobs}" rowIndexVar="jobIndex">
+        <script type="text/javascript">
+	      var menuId = "menuDiv_#{jobIndex}";
+	      pm_popupMenuIds.push(menuId);
+	    </script>
+        <tr>
+          <td width="9">
+            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
+          </td>
+          <td valign="top" class="recentjobs-sh">
+            <a href="link">#{job.jobNumber}</a>
+          </td>
+          <td width="9">
+            <img src="images/spacer.gif" width="9" height="1"/>
+          </td>
+          <td>
+            <font class="recentjobs-sh">#{job.taskName}</font>
+            <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" 
+                 name="Image2_#{jobIndex}" width="14" height="14" border="0" align="top" 
+                 id="Image2_#{jobIndex}" 
+                 onclick="pm_showMenu('menuDiv_#{jobIndex}');" 
+                 onmouseover="MM_swapImage('Image2_#{jobIndex}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
+                 onmouseout="MM_swapImgRestore();"/>
             <br/>
-            <div id="menuDiv_#{jobIndex}_#{paramIndex}" 
-                 style="border:solid 1px #666666; background-color: lightslategray; layer-background-color:#ffffcc; position: absolute; z-index:1000; visibility:hidden; display: block; white-space: nowrap;">             
-                <table onclick="toggleMenuVisibility('menuDiv_#{jobIndex}_#{paramIndex}');">
+            <div id="menuDiv_#{jobIndex}" style="visibility:hidden;" class="popupMenu">             
+              <table>
+                <tbody>
+                  <tr>
+                    <td>
+                      <h:commandLink value="Reload" actionListener="#{recentJobsBean.reload}">
+                        <f:param value="#{job.jobNumber}" name="jobNumber"/>
+                      </h:commandLink>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <h:commandLink value="Delete" actionListener="#{recentJobsBean.delete}">
+                        <f:param value="#{job.jobNumber}" name="jobNumber"/>
+                      </h:commandLink>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <h:commandLink value="Terminate" actionListener="#{recentJobsBean.terminateJob}">
+                        <f:param value="#{job.jobNumber}" name="jobNumber"/>
+                      </h:commandLink>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <h:commandLink value="View Code" actionListener="#{recentJobsBean.viewCode}">
+                        <f:param value="#{job.jobNumber}" name="jobNumber"/>
+                      </h:commandLink>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <h:outputText value="#{job.dateCompleted}">
+              <f:convertDateTime pattern="MMM dd hh:mm:ss a"/>
+            </h:outputText>
+            <br/>
+            
+            <!--  Loop through output files -->
+            <t:dataList var="p" value="#{job.outputFileParameterInfos}" rowIndexVar="paramIndex">
+              <script type="text/javascript">
+	            var menuId = "menuDiv_#{jobIndex}_#{paramIndex}";
+	            pm_popupMenuIds.push(menuId);
+	          </script>
+              <h:outputLink value="#{facesContext.externalContext.requestContextPath}/retrieveResults.jsp">#{p.name}
+                <f:param name="job" value="#{job.jobNumber}"/>
+                <f:param name="filename" value="#{p.name}"/>
+              </h:outputLink>
+              <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
+                   name="Image3_#{jobIndex}_#{paramIndex}" width="14" height="14" border="0" align="top" 
+                   id="Image3_#{jobIndex}_#{paramIndex}" 
+                   onclick="pm_showMenu('menuDiv_#{jobIndex}_#{paramIndex}');" 
+                   onmouseover="MM_swapImage('Image3_#{jobIndex}_#{paramIndex}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
+                   onmouseout="MM_swapImgRestore();"/>
+              <br/>
+              
+              <div id="menuDiv_#{jobIndex}_#{paramIndex}"  style="visibility:hidden;" class="popupMenu">   
+                <table>
                   <tbody>
                     <tr>
                       <td>
                         <h:commandLink value="Delete" actionListener="#{recentJobsBean.deleteFile}">
-                      	  <f:param value="#{job.jobNumber}/#{p.value}" name="jobFile"/>
+                          <f:param value="#{job.jobNumber}/#{p.value}" name="jobFile"/>
                         </h:commandLink>
-					  </td>
+                      </td>
                     </tr>
                     <tr>
                       <td>
                         <h:commandLink value="Save" actionListener="#{recentJobsBean.saveFile}">
-                      	  <f:param value="#{job.jobNumber}/#{p.name}" name="jobFileName"/>
+                          <f:param value="#{job.jobNumber}/#{p.name}" name="jobFileName"/>
                         </h:commandLink>
-					  </td>
+                      </td>
                     </tr>
                     <tr>
                       <td>
                         <h:commandLink value="Create Pipeline" actionListener="#{recentJobsBean.createPipeline}">
-                      	  <f:param value="#{job.jobNumber}" name="jobNumber"/>
+                          <f:param value="#{job.jobNumber}" name="jobNumber"/>
                         </h:commandLink>
-					  </td>
+                      </td>
                     </tr>
                     <tr>
                       <td>
                         <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
-					  </td>
+                      </td>
                     </tr>
                     <t:dataList value="#{p.moduleMenuItems}" var="moduleMenuItem">
                       <tr>
                         <td>
                           <h:commandLink value="#{moduleMenuItem.label}" actionListener="#{recentJobsBean.loadTask}">
-                      	    <f:param value="#{moduleMenuItem.value}" name="module"/>
+                            <f:param value="#{moduleMenuItem.value}" name="module"/>
                           </h:commandLink>
-					    </td>
+                        </td>
                       </tr>
                     </t:dataList>
                   </tbody>
                 </table>
-            </div>
-          </t:dataList>          
-        </td>
-        <td width="9"><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1" /></td>
-      </tr>
-      <tr>
-        <td colspan="5"><img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" vspace="5" /></td>
-      </tr>
-          
-	</t:dataList>
-	</h:form>
-
-
-	<tr>
-		<td colspan="5"><t:graphicImage value="/images/divider-pix2.gif"
-			width="100%" height="1" vspace="5" /></td>
-	</tr>
-</table>
-
-<p><br />
-</p>
-<p><br />
-</p>
-<p>&nbsp;</p>
-<p><br />
-</p>
-<p><br />
-</p>
+              </div>
+            </t:dataList>
+          </td>
+          <td width="9">
+            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="5">
+            <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" vspace="5"/>
+          </td>
+        </tr>
+      </t:dataList>
+    </h:form>
+    <tr>
+      <td colspan="5">
+        <t:graphicImage value="/images/divider-pix2.gif" width="100%" height="1" vspace="5"/>
+      </td>
+    </tr>
+  </table>
+  <p>
+    <br/>
+  </p>
+  <p>
+    <br/>
+  </p>
+  <p>&nbsp;</p>
+  <p>
+    <br/>
+  </p>
+  <p>
+    <br/>
+  </p>
 </html>
