@@ -8,26 +8,17 @@
   <h:form>
    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
       <tr>
-        <td>Logs</td>
+        <td>GenePattern Log</td>
       </tr>
     </table>
     <p/>
     <table width="100%" border="0" cellpadding="5" cellspacing="0">
       <tr valign="top">
-        <td width="4" valign="top">
-          <img src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif" alt="bullet" width="4" height="4" vspace="6"/>
-        </td>
-        <td valign="top">
-          <a href="../../logs/genepattern.log">View GenePattern log</a>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td valign="top">
-          <img src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif" alt="bullet" width="4" height="4" vspace="6"/>
-        </td>
-        <td valign="top">
-          <a href="wslog.html">View web server log </a>
-        </td>
+      	<pre>
+      	<h:outputText value="#{serverSettingsBean.logHeader}"/>
+      	<br/><hr/><br/>
+        <h:outputText value="#{serverSettingsBean.gpLog}"/>
+        </pre>
       </tr>
     </table>
     <p/>

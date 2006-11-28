@@ -64,8 +64,11 @@
       <t:div rendered="#{serverSettingsBean.currentMode == 'Java Flag Settings'}">
         <ui:include src="serverSettingsJavaFlags.xhtml"/>       
       </t:div>
-      <t:div rendered="#{serverSettingsBean.currentMode == 'Logs'}">
-        <ui:include src="serverSettingsLogs.xhtml"/>       
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Gene Pattern Log'}">
+        <ui:include src="serverSettingsGPLog.xhtml"/>       
+      </t:div>
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Web Server Log'}">
+        <ui:include src="serverSettingsWSLog.xhtml"/>       
       </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Module Repository'}">
         <ui:include src="serverSettingsRepository.xhtml"/>       

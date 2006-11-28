@@ -11,13 +11,12 @@
       <tr valign="top">
         <td>Allow Clients to connect from:</td>
         <td>
-          <input type="radio" name="clientMode" value="This Computer" onclick="clearField(this);"/> 
-                Standalone (local connections only)<br/>
-          <input type="radio" name="clientMode" value="Any computer" checked="true" onclick="clearField(this);"/> 
-                Any Computer <br/>
-          <input type="radio" name="clientMode" value="specified" onclick="refillField(this);"/> 
-                These Domains (comma delimited list):<br/>
-          <input type="text" name="allowed_clients" size="40" value="" onkeyup="changeFields(this)"/>
+	        <h:selectOneRadio value="#{serverSettingsBean.clientMode}" layout="pageDirection">
+	        	<f:selectItem itemValue="Local" itemLabel="Standalone (local connections only)" />
+	  			<f:selectItem itemValue="Any" itemLabel="Any Computer" />				
+				<f:selectItem itemValue="Specified" itemLabel="These Domains (comma delimited list):" />
+			</h:selectOneRadio>
+        	<h:inputText type="text" size="40" value="#{serverSettingsBean.specifiedClientMode}" />
           <br/>
         </td>
       </tr>

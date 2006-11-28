@@ -16,25 +16,25 @@
       <tr valign="top">
         <td>Proxy Host:</td>
         <td>
-          <input type="text" size="40" name="proxyHost" value="" onkeyup="changeProxyFields(this)"/>
+          <h:inputText type="text" size="40" value="#{serverSettingsBean.settings['http.proxyHost']}"/>
         </td>
       </tr>
       <tr valign="top">
         <td>Proxy Port:</td>
         <td>
-          <input type="text" size="40" name="proxyPort" value="" onkeyup="changeProxyFields(this)"/>
+          <h:inputText type="text" size="40" value="#{serverSettingsBean.settings['http.proxyPort']}"/>
         </td>
       </tr>
       <tr valign="top">
         <td>Proxy Username:</td>
         <td>
-          <input type="password" size="40" name="proxyUser" value="" onkeyup="changeProxyFields(this)"/>
+          <h:inputText type="text" size="40" value="#{serverSettingsBean.settings['http.proxyUser']}"/>
         </td>
       </tr>
       <tr valign="top">
         <td>Proxy Password:</td>
         <td>
-          <input type="password" size="40" name="proxyPass" value="" onkeyup="changeProxyFields(this)"/>
+          <h:inputSecret size="40" value="#{serverSettingsBean.proxyPassword}"/>
         </td>
       </tr>
       <tr valign="top">

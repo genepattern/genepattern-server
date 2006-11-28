@@ -16,9 +16,11 @@
       <tr valign="top">
         <td> Status:</td>
         <td>
-          <input name="radiobutton" type="radio" value="radiobutton" checked="checked"/>
-                on&#160;&#160;                <input name="radiobutton" type="radio" value="radiobutton"/>
-                off</td>
+        	<h:selectOneRadio value="#{serverSettingsBean.searchEngine}">
+	        	<f:selectItem itemValue="true" itemLabel="off" />
+	  			<f:selectItem itemValue="false" itemLabel="on" />
+			</h:selectOneRadio>
+        </td>
       </tr>
       <tr valign="top">
         <td>&#160;</td>
