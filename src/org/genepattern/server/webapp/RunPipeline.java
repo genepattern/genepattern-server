@@ -41,6 +41,7 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.GPConstants;
 
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.webservice.AnalysisJob;
@@ -391,6 +392,8 @@ public class RunPipeline {
 	protected JobInfo  collectChildJobResults(JobInfo taskResult){
 		try {
 		List<ParameterInfo> outs = new ArrayList<ParameterInfo>();
+
+				HibernateUtil.beginTransaction();
 		JobInfo[] children = analysisClient.getChildren(taskResult.getJobNumber());
 		
 		if (children.length == 0) return taskResult;
