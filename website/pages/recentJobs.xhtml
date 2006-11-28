@@ -6,7 +6,36 @@
       xmlns:t="http://myfaces.apache.org/tomahawk" 
       xmlns:c="http://java.sun.com/jstl/core">
  
+   <script type="text/javascript">
       
+      /* <![CDATA[ */
+      // Execute a jsf el expression on the server
+      function callManagedBean(elExpression) {            
+        var opt = {
+          method:    'post',
+          postBody:  'el=' + elExpression,
+          onSuccess: receiveResponse,
+          onFailure: function(t) {
+            alert('Error ' + t.status + ' -- ' + t.statusText);
+          }
+        } 
+        new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
+      }
+
+      // The callback function - receive response from server
+      function receiveResponse( req ) {
+        if (req.readyState == 4) {
+          if (req.status == 200) { // only if "OK"
+            update(req.responseText);
+          } 
+          else {
+            alert("There was a problem retrieving the XML data:\n" + req.statusText);
+          }  
+        }
+      }
+      /* ]]> */
+    </script>
+    
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td colspan="5" class="sidebarhead-bkg2">
@@ -69,18 +98,42 @@
                   </tr>
                   <tr>
                     <td>
-                      <h:commandLink value="Terminate" actionListener="#{recentJobsBean.terminateJob}">
+                      <h:commandLink value="Terminate" actionListener="#{recentJobsBean.terminateJob}" rendered="#{!job.complete}">
                         <f:param value="#{job.jobNumber}" name="jobNumber"/>
+                      </h:commandLink>
+                    </td>
+                  </tr>
+                   <tr>
+                      <td>
+                        <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
+                      </td>
+                    </tr>
+                    
+                  <tr>
+                    <td>
+                      <h:commandLink value="View Java Code" actionListener="#{recentJobsBean.viewCode}" target="_blank">
+                        <f:param value="#{job.jobNumber}" name="jobNumber"/>
+                        <f:param value="Java" name="language"/>
                       </h:commandLink>
                     </td>
                   </tr>
                   <tr>
                     <td>
-                      <h:commandLink value="View Code" actionListener="#{recentJobsBean.viewCode}">
+                      <h:commandLink value="View MATLAB Code" actionListener="#{recentJobsBean.viewCode}" target="_blank">
                         <f:param value="#{job.jobNumber}" name="jobNumber"/>
+                        <f:param value="MATLAB" name="language"/>
                       </h:commandLink>
                     </td>
                   </tr>
+                  <tr>
+                    <td>
+                      <h:commandLink value="View R Code" actionListener="#{recentJobsBean.viewCode}" target="_blank">
+                        <f:param value="#{job.jobNumber}" name="jobNumber"/>
+                        <f:param value="R" name="language"/>
+                      </h:commandLink>
+                    </td>
+                  </tr>
+                  
                 </tbody>
               </table>
             </div>
