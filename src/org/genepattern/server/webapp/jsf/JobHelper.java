@@ -8,21 +8,22 @@ import java.io.File;
 
 public class JobHelper {
 
-    public static List<File> getOutputFiles(JobInfo jobInfo) {
+	public static List<File> getOutputFiles(JobInfo jobInfo) {
 
-        List<File> outputFiles = new ArrayList<File>();
-        ParameterInfo[] parameterInfoArray = jobInfo.getParameterInfoArray();
-        String dir = System.getProperty("jobs", "./temp") + "/"  + jobInfo.getJobNumber();
-        
-        for (int i = 0; i < parameterInfoArray.length; i++) {
-            if (parameterInfoArray[i].isOutputFile()) {
-                String fn = parameterInfoArray[i].getName();               
-                outputFiles.add(new File(dir, fn));
-                // get modules for output file
-            }
-        }
-               
-        return outputFiles;
-    }
+		List<File> outputFiles = new ArrayList<File>();
+		ParameterInfo[] parameterInfoArray = jobInfo.getParameterInfoArray();
+		if (parameterInfoArray != null) {
+			String dir = System.getProperty("jobs", "./temp") + "/" + jobInfo.getJobNumber();
+			for (int i = 0; i < parameterInfoArray.length; i++) {
+				if (parameterInfoArray[i].isOutputFile()) {
+					String fn = parameterInfoArray[i].getName();
+					outputFiles.add(new File(dir, fn));
+					// get modules for output file
+				}
+			}
+		}
+
+		return outputFiles;
+	}
 
 }
