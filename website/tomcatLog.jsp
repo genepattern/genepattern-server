@@ -29,8 +29,13 @@
 
 	// if the date has rolled over but there is not yet an entry in today's log, look backward in time
 	if (doGP) {
+	 	String log4jConfiguration = System.getProperty("log4j.configuration"); 
+		if (log4jConfiguration == null) { 
+			log4jConfiguration = "./webapps/gp/WEB-INF/classes/log4j.properties"; 
+		}
+
 		Properties props = new Properties();
-		props.load(new FileInputStream(System.getProperty("log4j.configuration")));
+		props.load(new FileInputStream(log4jConfiguration));
 		f = new File(props.getProperty("log4j.appender.R.File"));
 	} else {
 		if (System.getProperty("serverInfo").indexOf("Apache Tomcat") != -1) {
