@@ -7,6 +7,8 @@
 
 package org.genepattern.webservice;
 
+import org.apache.xml.xml_soap.MapItem;
+
 public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub  {
     private java.util.Vector cachedSerClasses = new java.util.Vector();
     private java.util.Vector cachedSerQNames = new java.util.Vector();
