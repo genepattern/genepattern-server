@@ -476,7 +476,7 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub  {
 
             qName = new javax.xml.namespace.QName("Analysis", "TaskInfoAttributes");
             cachedSerQNames.add(qName);
-            cls = org.apache.xml.xml_soap.MapItem[].class;
+            cls = MapItem[].class;
             cachedSerClasses.add(cls);
             qName = new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "mapItem");
             qName2 = new javax.xml.namespace.QName("", "item");
@@ -519,7 +519,7 @@ public class AnalysisSoapBindingStub extends org.apache.axis.client.Stub  {
 
             qName = new javax.xml.namespace.QName("http://xml.apache.org/xml-soap", "mapItem");
             cachedSerQNames.add(qName);
-            cls = org.apache.xml.xml_soap.MapItem.class;
+            cls = MapItem.class;
             cachedSerClasses.add(cls);
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
