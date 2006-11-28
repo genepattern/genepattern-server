@@ -2,6 +2,7 @@ package org.genepattern.server.webapp.jsf;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.Map;
@@ -16,19 +17,23 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.log4j.Logger;
 import org.genepattern.util.GPConstants;
 
 public class UIBeanHelper {
+    private static Logger log = Logger.getLogger(UIBeanHelper.class);
 
-    private UIBeanHelper() { 
+    private UIBeanHelper() {
     }
 
     public static Map getSessionMap() {
-        return FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
+        return FacesContext.getCurrentInstance().getExternalContext()
+                .getSessionMap();
     }
 
     public static Map getRequestMap() {
-        return FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
+        return FacesContext.getCurrentInstance().getExternalContext()
+                .getRequestMap();
     }
 
     public static FacesContext getFacesContext() {
@@ -40,7 +45,8 @@ public class UIBeanHelper {
     }
 
     public static HttpServletRequest getRequest() {
-        HttpServletRequest request = (HttpServletRequest) getExternalContext().getRequest();
+        HttpServletRequest request = (HttpServletRequest) getExternalContext()
+                .getRequest();
         return request;
     }
 
@@ -55,13 +61,15 @@ public class UIBeanHelper {
     public static HttpServletResponse getResponse() {
         return (HttpServletResponse) getExternalContext().getResponse();
     }
-    
+
     public static Object getManagedBean(String elExpression) {
-        return getFacesContext().getApplication().createValueBinding(elExpression).getValue(getFacesContext());
+        return getFacesContext().getApplication().createValueBinding(
+                elExpression).getValue(getFacesContext());
     }
 
     public static void setInfoMessage(String summary) {
-        getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
+        getFacesContext().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
     }
 
     public static void setInfoMessage(UIComponent component, String summary) {
@@ -137,8 +145,8 @@ public class UIBeanHelper {
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    public static void setUserAndRedirect(String username, boolean sessionOnly) throws UnsupportedEncodingException,
-            IOException {
+    public static void setUserAndRedirect(String username, boolean sessionOnly)
+            throws UnsupportedEncodingException, IOException {
 
         Cookie cookie = new Cookie("userID", username);
         cookie.setPath(getRequest().getContextPath());
@@ -148,6 +156,24 @@ public class UIBeanHelper {
         UIBeanHelper.getResponse().addCookie(cookie);
         String referrer = UIBeanHelper.getReferrer(getRequest());
         UIBeanHelper.getResponse().sendRedirect(referrer);
+    }
+
+    public static String encode(String s) {
+        try {
+            return URLEncoder.encode(s, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            log.error(e);
+            return s;
+        }
+    }
+
+    public static String decode(String s) {
+        try {
+            return URLDecoder.decode(s, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            log.error(e);
+            return s;
+        }
     }
 
 }
