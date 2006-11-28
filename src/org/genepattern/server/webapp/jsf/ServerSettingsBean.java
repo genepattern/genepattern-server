@@ -185,21 +185,28 @@ public class ServerSettingsBean {
 		return this.getLog(getGpLogFile());
 	}
 	
-	public String getLogHeader() {
-		StringBuffer buf = new StringBuffer();
+	public String getGpLogHeader() {	
 		File gpLog=getGpLogFile();
-		if (gpLog == null || !gpLog.exists()) {
+		return getLogHeader(gpLog, "Gene Pattern");	
+	}
+	
+	public String getWsLogHeader() {	
+		File wsLog=getWsLogFile();
+		return getLogHeader(wsLog, "Web Server");	
+	}
+	
+	private String getLogHeader(File log, String name) {
+		StringBuffer buf = new StringBuffer();
+		if ((log == null || !log.exists())) {
 			buf.append("No logs exist.");
 		}else {
-			buf.append("GenePattern log file from ");
+			buf.append(name+" log file from ");
 			buf.append(UIBeanHelper.getRequest().getServerName()+" on ");
 			buf.append(cal.getTime());
 			
 		}
 		return buf.toString();
 	}
-	
-	
 	
 	private File getGpLogFile() {
 		String log4jConfiguration = System.getProperty("log4j.configuration"); 
