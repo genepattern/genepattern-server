@@ -1,0 +1,25 @@
+.popupMenu {
+    border:solid 1px #666666; 
+	background-color: #EAEAEA; 
+	position:absolute; 
+	z-index:1000; 
+	display: block; 
+	white-space: nowrap;
+}
+
+.popupMenu a:link{
+	color: #333366;
+	text-decoration: none;
+}
+.popupMenu a:hover {
+	color: #6666FF;
+	text-decoration: none;
+	background-color: #FAFAF3;
+}
+.popupMenu a:active {
+	color: #3333CC;
+	text-decoration: none;
+	background-color: #FAFAF3;
+}
+
+
