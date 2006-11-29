@@ -781,22 +781,7 @@ public class GPGE {
         }
         String server = PropertyManager.getProperty(PreferenceKeys.SERVER);
         if (server == null || server.equals("")) {
-            try {
-                Properties omnigeneProps = org.genepattern.util.PropertyFactory
-                        .getInstance().getProperties("omnigene.properties");
-                String deprecatedServer = "http://"
-                        + omnigeneProps
-                                .getProperty("analysis.service.site.name"); // omnigene
-                // properties
-                // are
-                // deprecated
-                server = deprecatedServer;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            if (server == null) {
-                server = "http://127.0.0.1:8080";
-            }
+            server = "http://127.0.0.1:8080";
         }
         try {
             new URL(server);
