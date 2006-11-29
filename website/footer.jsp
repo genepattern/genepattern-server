@@ -4,8 +4,7 @@
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
               <tr>
                 <td><a href="about_gp.html">About GenePattern</a>
-				|<a href="bug_report.html">Report Bugs</a> |<a href="help_request.html">Request Help</a>
-				|<a href="contact_us.html">Contact Us</a>
+				|<a href="/gp/pages/contactUs.jsf">Contact Us</a>
                   <br />
                 </td>
                 <td>
