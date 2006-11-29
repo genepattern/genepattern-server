@@ -44,7 +44,6 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.indexer.IndexerDaemon;
 import org.genepattern.server.process.CreateDatabase;
-import org.genepattern.server.process.JSPPrecompiler;
 import org.genepattern.server.process.JobPurger;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.w3c.dom.Document;
@@ -122,7 +121,6 @@ public class StartupServlet extends HttpServlet {
     protected void startDaemons(Properties props, ServletContext application) throws ServletException {
         startJobPurger(props);
         //startIndexerDaemon(props);
-        // startJSPCompiler(props, application);
         Thread.currentThread().yield(); // allow a bit of runtime to the
         // independent threads
     }
@@ -158,16 +156,7 @@ public class StartupServlet extends HttpServlet {
         }
     }
 
-    protected void startJSPCompiler(Properties props, ServletContext application) {
-        String webmaster = props.getProperty("webmaster");
-        log("starting JSP precompiler, will notify " + webmaster + " of any errors");
-        Thread jspPrecompiler = new Thread(new JSPPrecompiler(application.getRealPath("/"), props
-                .getProperty("GenePatternURL"), webmaster), "JSPPrecompiler");
-        jspPrecompiler.setPriority(Thread.MIN_PRIORITY + 1);
-        jspPrecompiler.setDaemon(true);
-        jspPrecompiler.start();
-        addDaemonThread(jspPrecompiler);
-    }
+  
 
     protected void announceReady(Properties props) {
         String message = "GenePattern server version " + System.getProperty("GenePatternVersion") + " build "
