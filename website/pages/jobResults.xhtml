@@ -20,26 +20,8 @@
     }
 
 
-    // Some state for the sort buttons
-    var sortDownGif = '#{facesContext.externalContext.requestContextPath}/images/sort-down.gif';
-    var sortDownOverGif = '#{facesContext.externalContext.requestContextPath}/images/sort-down-over.gif';
-    var sortUpGif = '#{facesContext.externalContext.requestContextPath}/images/sort-up.gif';
-    var sortUpOverGif = '#{facesContext.externalContext.requestContextPath}/images/sort-up-over.gif';
-    
-    function getSortGif(imgId) {
-      var hiddenField = $(imgId + "_field");
-      if(hiddenField != null) {
-        return (hiddenField.value == "true" ? sortUpGif : sortDownGif);
-      }
-    }
-    
-    function getSortOverGif(imgId) {
-      var hiddenField = $(imgId + "_field");
-      if(hiddenField != null) {
-        return (hiddenField.value == "true" ? sortUpOverGif : sortDownGif);
-      }
-    } 
-    
+    // Toggle the sort order state.  
+
     function toggleSortOrder(id) {
 
       var hiddenField = $(id + "_field");
@@ -185,12 +167,14 @@
         </tr>
       </table>
       <div class="sorting_text">
+      
+        <!-- Job sort column -->  
         <strong>sort jobs by: </strong>
-        <h:selectOneMenu value="#{jobResultsBean.jobSortField}">
-          <f:selectItem itemLabel="job id number" itemValue="job id number"/>
-          <f:selectItem itemLabel="name" itemValue="name"/>
-          <f:selectItem itemLabel="date submitted" itemValue="date submitted"/>
-          <f:selectItem itemLabel="date completed" itemValue="date completed"/>
+        <h:selectOneMenu value="#{jobResultsBean.jobSortColumn}">
+          <f:selectItem itemLabel="job id number" itemValue="jobNumber"/>
+          <f:selectItem itemLabel="name" itemValue="taskName"/>
+          <f:selectItem itemLabel="date submitted" itemValue="dateSubmitted"/>
+          <f:selectItem itemLabel="date completed" itemValue="dateCompleted"/>
           <f:selectItem itemLabel="status" itemValue="status"/>       
         </h:selectOneMenu> &#160;
         
@@ -207,13 +191,13 @@
              forceId="true"
              value="#{jobResultsBean.jobSortAscending}"/>
 		 
+		 <!-- File sort column -->
 		 &#160; &#160; &#160; &#160;
 		<strong>sort files by:</strong>
-        <h:selectOneMenu value="#{jobResultsBean.fileSortField}">
+        <h:selectOneMenu value="#{jobResultsBean.fileSortColumn}">
           <f:selectItem itemLabel="name" itemValue="name"/>
           <f:selectItem itemLabel="size" itemValue="size"/>
-          <f:selectItem itemLabel="date completed" itemValue="date completed"/>
-          <f:selectItem itemLabel="status" itemValue="status"/>       
+          <f:selectItem itemLabel="date completed" itemValue="lastModified"/>
         </h:selectOneMenu> &#160;
       
         <!-- File sort direction --> 
@@ -227,9 +211,9 @@
 	    <t:inputHidden
              id="fileSortOrder_field"
              forceId="true"
-             value="#{jobResultsBean.fileSortAscending}"/>
- 
-        &#160;&#160;
+             value="#{jobResultsBean.fileSortAscending}"/> &#160;&#160;
+             
+             
        <h:commandButton value="Sort" action="#{jobResultsBean.sort}"/>
       </div>
       
