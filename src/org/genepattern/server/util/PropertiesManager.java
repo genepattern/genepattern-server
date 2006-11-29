@@ -117,7 +117,7 @@ public class PropertiesManager implements IGPConstants {
 		}
 	}
 
-	protected static Properties getGenePatternProperties() throws IOException {
+	public static Properties getGenePatternProperties() throws IOException {
 		Properties props = new Properties();
 		FileInputStream fis = null;
 
