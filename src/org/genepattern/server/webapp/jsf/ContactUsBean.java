@@ -17,10 +17,6 @@ import org.apache.log4j.Logger;
 
 
 
-/**
- * @author jrobinso
- * 
- */
 public class ContactUsBean {
 	
 	private String replyTo;
@@ -29,26 +25,37 @@ public class ContactUsBean {
 	
 	private static Logger log = Logger.getLogger(ContactUsBean.class);
 	
-	public ContactUsBean(){		
-		
-	}
-	
+	/**
+	 * @return
+	 */
 	public String getReplyTo() {
 		return replyTo;
 	}
 	
+	/**
+	 * @param replyTo
+	 */
 	public void setReplyTo(String replyTo) {
 		this.replyTo=replyTo;
 	}
 	
+	/**
+	 * @return
+	 */
 	public String getMessage() {
 		return message;
 	}
 	
+	/**
+	 * @param message
+	 */
 	public void setMessage(String message) {
 		this.message=message;
 	}
 	
+	/**
+	 * @return
+	 */
 	public String send() {
 		Properties p = new Properties();
         String mailServer = System.getProperty("smtp.server", "imap.broad.mit.edu");
@@ -69,12 +76,8 @@ public class ContactUsBean {
             msg.addRecipient(Message.RecipientType.TO, new InternetAddress(
                     email));
             Transport.send(msg);
-            
-            //UIBeanHelper.setInfoMessage("Your request has been sent!");
         } catch (MessagingException e) {
             log.error(e);
-            //UIBeanHelper
-             //       .setInfoMessage("An error occurred while sending the email.");
             return "failure";
         }
         sent = true;
@@ -82,10 +85,16 @@ public class ContactUsBean {
 		
 	}
 	
+	/**
+	 * @return
+	 */
 	public boolean isSent() {
 		return sent;
 	}
 	
+	/**
+	 * @return
+	 */
 	public String getInfoMessages() {
 		if (!sent)
 			return "An error occurred while sending the email.";
