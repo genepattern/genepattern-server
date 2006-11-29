@@ -50,7 +50,7 @@ public class ContactUsBean {
 	}
 	
 	public String send() {
-		/*Properties p = new Properties();
+		Properties p = new Properties();
         String mailServer = System.getProperty("smtp.server", "imap.broad.mit.edu");
 
         p.put("mail.host", mailServer);
@@ -64,7 +64,7 @@ public class ContactUsBean {
             msg.setText("Reply to "+replyTo+"!\n"+message);
             msg.setFrom(new InternetAddress("user@genepattern.org"));
             msg.setSentDate(new Date());
-            String email = "qgao@broad.mit.edu";
+            String email = "gp-help@broad.mit.edu";
             
             msg.addRecipient(Message.RecipientType.TO, new InternetAddress(
                     email));
@@ -76,7 +76,7 @@ public class ContactUsBean {
             //UIBeanHelper
              //       .setInfoMessage("An error occurred while sending the email.");
             return "failure";
-        }*/
+        }
         sent = true;
         return "success";
 		
