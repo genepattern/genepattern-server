@@ -10,17 +10,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Properties;
 
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 
 import org.genepattern.server.util.PropertiesManager;
 
@@ -35,36 +29,29 @@ public class ServerSettingsBean {
 			"Command Line Prefix", "File Purge Settings", "History",
 			"Java Flag Settings", "Gene Pattern Log", "Web Server Log", "Module Repository",
 			"Proxy Settings", "Search Engine", "Shut Down Server" };
-
+	private String[] clientModes= new String[] {"Local", "Any", "Specified"};
+	
 	private String currentMode = modes[0];  // Default
+	private String currentClientMode = clientModes[0];	//default
 	
-	private Properties settings;
+	private Properties settings;	
 	private String proxyPassword;
-	
-	public static final String LOCAL = "Local";
-	public static final String ANY= "Any";
-	public static final String SPECIFIED = "Specified";
+
 	private Calendar cal = Calendar.getInstance();
 	private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 	
-	public ServerSettingsBean(){
-		
+	
+	private static final String defaultModuleReposityURL="http://www.broad.mit.edu/webservices/genepatternmodulerepository";
+	private static final String defaultLog4jPath = "./webapps/gp/WEB-INF/classes/log4j.properties";
+	private static final String log4jAppenderR = "log4j.appender.R.File";
+	
+	public ServerSettingsBean(){		
 		if(settings == null) {
-			// TODO -- read this from a file.  
-			/*settings = new Properties();
-			settings.put("java_flags", "-Xmx512M");
-			settings.put("historySize", "3");
-			settings.put("purgeTime", "23:00");
-			settings.put("purgeJobsAfter", "7");
-			settings.put("ModuleRepositoryURL", "http://www.broad.mit.edu/webservices/genepatternmodulerepository");*/
 			try {
 				settings=PropertiesManager.getGenePatternProperties();
-
 			} catch (IOException ioe){
-				System.out.println(ioe.getStackTrace());
+				ioe.getStackTrace();
 			}
-			
-			// etc.
 		}
 	}
 	
@@ -91,8 +78,6 @@ public class ServerSettingsBean {
 	 * 
 	 */
 	public Properties getSettings() {
-		
-		
 		return settings;
 	}
 	
@@ -102,51 +87,39 @@ public class ServerSettingsBean {
 	 * @return
 	 */
 	public String saveSettings() {
-		
-		// TODO -- save the settings back to the file
-		System.out.println(settings.get("java_flags"));
 		PropertiesManager.storeChanges(settings);
 		return null;   // This returns us to the same page
 	}
 	
 	public String getClientMode() {
-		String clientMode= (String)this.settings.get("gp.allowed.clients");
+		currentClientMode= (String)settings.get("gp.allowed.clients");
 		
-		if (!(LOCAL.equals(clientMode) || ANY.equals(clientMode))) {
-			
-			clientMode=SPECIFIED;
+		if (!(clientModes[0].equals(currentClientMode) || clientModes[1].equals(currentClientMode))) {
+			currentClientMode=clientModes[2];
 		}
-		return clientMode;
+		return currentClientMode;
 	}
 	
 	public String getSpecifiedClientMode() {
-		String clientMode= (String)this.settings.get("gp.allowed.clients");
-		
-		if (LOCAL.equals(clientMode) || ANY.equals(clientMode)) {		
-			return "";
+		if (!(clientModes[0].equals(currentClientMode) || clientModes[1].equals(currentClientMode))) {
+			return currentClientMode;
 		}
-		return clientMode;
+		return "";
 	}
 	
-	public void setClientMode(String mode) {	
+	public void setClientMode(String mode) {
+		currentClientMode=mode;
 		settings.put("gp.allowed.clients", mode);		
 	}
 	
-	public void setSpecifiedClientMode(String mode) {	
-		settings.put("gp.allowed.clients", mode);		
-	}
-	
-	public String getProxyPassword() {
-		return proxyPassword;
-	}
-
-	public void setProxyPassword(String password) {
-		proxyPassword = password;
+	public void setSpecifiedClientMode(String mode) {
+		if (clientModes[2].equals(currentClientMode)) {		
+			settings.put("gp.allowed.clients", mode);
+		}		
 	}
 	
 	public String getSearchEngine() {
-		String searchEngine= (String)this.settings.get("disable.gp.indexing");
-		
+		String searchEngine= (String)settings.get("disable.gp.indexing");		
 		return searchEngine;
 	}
 	
@@ -177,12 +150,12 @@ public class ServerSettingsBean {
 	}
 	
 	public String getWsLog() throws IOException {
-		return this.getLog(getWsLogFile());
+		return getLog(getWsLogFile());
 		
 	}
 	
 	public String getGpLog() throws IOException {
-		return this.getLog(getGpLogFile());
+		return getLog(getGpLogFile());
 	}
 	
 	public String getGpLogHeader() {	
@@ -211,17 +184,17 @@ public class ServerSettingsBean {
 	private File getGpLogFile() {
 		String log4jConfiguration = System.getProperty("log4j.configuration"); 
 		if (log4jConfiguration == null) { 
-			log4jConfiguration = "./webapps/gp/WEB-INF/classes/log4j.properties"; 
+			log4jConfiguration = defaultLog4jPath; 
 		}
 
 		Properties props = new Properties();
 		try {
 			props.load(new FileInputStream(log4jConfiguration));
 		}catch (IOException exc) {
-		      System.out.println(exc);
+		      exc.printStackTrace();
 		      System.exit(1);
 		}
-		return new File(props.getProperty("log4j.appender.R.File"));
+		return new File(props.getProperty(log4jAppenderR));
 	}
 	
 	private File getWsLogFile() {
@@ -238,4 +211,35 @@ public class ServerSettingsBean {
 		return wsLog;
 	}
 	
+	public String resetModuleRepositoryURL() {
+		settings.put("ModuleRepositoryURL", defaultModuleReposityURL);
+		return null;
+	}
+	
+	public String getProxyPassword() {
+		return proxyPassword;
+	}
+
+	public void setProxyPassword(String password) {
+		proxyPassword = password;
+	}
+	
+	public String removeProxySettings() {
+		settings.put("http.proxyHost", "");
+		settings.put("http.proxyPort", "");
+		settings.put("http.proxyUser", "");
+		
+		settings.put("ftp.proxyHost", "");
+		settings.put("ftp.proxyPort", "");
+		settings.put("ftp.proxyUser", "");
+		proxyPassword="";
+		
+		return null;
+		
+	}
+	
+	public String shutDownServer() {
+		System.exit(1);
+		return null;
+	}
 }
