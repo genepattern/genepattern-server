@@ -15,6 +15,59 @@
 
 /* <![CDATA[ */
 
+    function getContext() {
+      return '#{facesContext.externalContext.requestContextPath}';
+    }
+
+
+    // Some state for the sort buttons
+    var sortDownGif = '#{facesContext.externalContext.requestContextPath}/images/sort-down.gif';
+    var sortDownOverGif = '#{facesContext.externalContext.requestContextPath}/images/sort-down-over.gif';
+    var sortUpGif = '#{facesContext.externalContext.requestContextPath}/images/sort-up.gif';
+    var sortUpOverGif = '#{facesContext.externalContext.requestContextPath}/images/sort-up-over.gif';
+    
+    function getSortGif(imgId) {
+      var hiddenField = $(imgId + "_field");
+      if(hiddenField != null) {
+        return (hiddenField.value == "true" ? sortUpGif : sortDownGif);
+      }
+    }
+    
+    function getSortOverGif(imgId) {
+      var hiddenField = $(imgId + "_field");
+      if(hiddenField != null) {
+        return (hiddenField.value == "true" ? sortUpOverGif : sortDownGif);
+      }
+    } 
+    
+    function toggleSortOrder(id) {
+
+      var hiddenField = $(id + "_field");
+      var image = $(id);
+      var currentValue = hiddenField.value;
+      if(currentValue == "true") {
+        hiddenField.value = "false";       
+        image.src = '#{facesContext.externalContext.requestContextPath}/images/sort-down.gif';
+      }
+      else {
+        hiddenField.value = "true";       
+        image.src = '#{facesContext.externalContext.requestContextPath}/images/sort-up.gif';
+      }
+    }
+    
+    function setSortOrderImage(id) {
+      var hiddenField = $(id + "_field");
+      var image = $(id);
+      var currentValue = hiddenField.value;
+      if(currentValue == "true") {
+         image.src = '#{facesContext.externalContext.requestContextPath}/images/sort-up.gif';
+      }
+      else {      
+        image.src = '#{facesContext.externalContext.requestContextPath}/images/sort-down.gif';
+      }
+    }
+
+
     var fileRows = new Object();
 
     function toggleJobCheckboxes(jobNo)
@@ -118,8 +171,8 @@
     </ui:define>
     <ui:define name="mainNav">
       <input type="checkbox" name="checkbox" value="checkbox"/>email notification&#160;&#160;&#160;&#160;
-      <input type="checkbox" name="showAll" value="showAll" onclick="javascript:window.location='zipJobResults.jsp?showAll=1'"/>show everyone's jobs&#160;&#160;&#160;&#160;
-      <input type="checkbox" name="showLogs" value="showLogs" onclick="toggleLogs()"/>show execution logs	
+      <input type="checkbox" name="showAll" value="showAll" />show everyone's jobs&#160;&#160;&#160;&#160;
+      <input type="checkbox" name="showLogs" value="showLogs" />show execution logs	
 	</ui:define>
 	
 	
@@ -133,33 +186,51 @@
       </table>
       <div class="sorting_text">
         <strong>sort jobs by: </strong>
-        <select name="sortjobs" id="sortjobs" onchange="MM_jumpMenu('parent',this,0)">
-          <option selected="selected">job id number</option>
-          <option>name</option>
-          <option>date submitted</option>
-          <option>date completed</option>
-          <option>status</option>
-        </select>
-	      &#160;<a style="cursor: pointer;" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('jobsorder','','#{facesContext.externalContext.requestContextPath}/images/sort-down-over.gif',1)">
-          <img src="#{facesContext.externalContext.requestContextPath}/images/sort-down.gif" alt="jobs order" name="jobsorder" width="11" height="16" border="0" align="absmiddle" id="jobsorder"/>
-        </a>		  
+        <h:selectOneMenu value="#{jobResultsBean.jobSortField}">
+          <f:selectItem itemLabel="job id number" itemValue="job id number"/>
+          <f:selectItem itemLabel="name" itemValue="name"/>
+          <f:selectItem itemLabel="date submitted" itemValue="date submitted"/>
+          <f:selectItem itemLabel="date completed" itemValue="date completed"/>
+          <f:selectItem itemLabel="status" itemValue="status"/>       
+        </h:selectOneMenu> &#160;
+        
+        <!-- Job sort direction -->
+        <img style="cursor: pointer;"
+             src="#{facesContext.externalContext.requestContextPath}#{jobResultsBean.jobSortAscending == true ? '/images/sort-up.gif' : '/images/sort-down.gif'}"
+             alt="jobs order" width="11" height="16" border="0" align="absmiddle" 
+             id="jobSortOrder" name="jobSortOrder" 
+             onclick="toggleSortOrder('jobSortOrder')"
+	         onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-down-over.gif'" 
+	         onmouseout="setSortOrderImage('jobSortOrder')"/> 
+	    <t:inputHidden
+             id="jobSortOrder_field"
+             forceId="true"
+             value="#{jobResultsBean.jobSortAscending}"/>
+		 
 		 &#160; &#160; &#160; &#160;
 		<strong>sort files by:</strong>
-        <select name="sortfiles" id="sortfiles" onchange="MM_jumpMenu('parent',this,0)">
-          <option>name</option>
-          <option>size</option>
-          <option selected="selected">date completed</option>
-          <option>status</option>
-        </select> &#160;
-          <t:commandLink action="#{jobResultsBean.sort}" 
-                         onmouseout="MM_swapImgRestore()"
-                         onmouseover="MM_swapImage('filesorder','','#{facesContext.externalContext.requestContextPath}/images/sort-down-over.gif',1)">
-          	  <t:graphicImage value="/images/sort-down.gif" forceId="true"
-          	                  width="11" height="16" border="0" align="absmiddle" id="filesorder"/>
-          </t:commandLink>
-
+        <h:selectOneMenu value="#{jobResultsBean.fileSortField}">
+          <f:selectItem itemLabel="name" itemValue="name"/>
+          <f:selectItem itemLabel="size" itemValue="size"/>
+          <f:selectItem itemLabel="date completed" itemValue="date completed"/>
+          <f:selectItem itemLabel="status" itemValue="status"/>       
+        </h:selectOneMenu> &#160;
+      
+        <!-- File sort direction --> 
+        <img style="cursor: pointer;"
+             src="#{facesContext.externalContext.requestContextPath}#{jobResultsBean.fileSortAscending == true ? '/images/sort-up.gif' : '/images/sort-down.gif'}"
+             alt="files order" width="11" height="16" border="0" align="absmiddle" 
+             id="fileSortOrder" name="fileSortOrder" 
+             onclick="toggleSortOrder('fileSortOrder')"
+	         onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-down-over.gif'" 
+	         onmouseout="setSortOrderImage('fileSortOrder')"/> 
+	    <t:inputHidden
+             id="fileSortOrder_field"
+             forceId="true"
+             value="#{jobResultsBean.fileSortAscending}"/>
+ 
         &#160;&#160;
-       <input name="sort" type="submit" id="sort" value="sort"/>
+       <h:commandButton value="Sort" action="#{jobResultsBean.sort}"/>
       </div>
       
       <!-- Job results table -->
@@ -202,7 +273,7 @@
         </tr>
         
         <!--  Loop through job list -->
-        <t:dataList value="#{jobResultsBean.jobResults}" var="jobResult">
+        <t:dataList value="#{jobResultsBean.jobResults}" var="jobResult" rowIndexVar="jobIndex">
         
           <!--  Begin task title row -->
           <tr class="task-titlerow">
@@ -227,9 +298,13 @@
               <img id="#{jobResult.jobInfo.jobNumber}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" 
                    width="8" height="8" border="0" style="#{jobResult.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
             </td>           
-            <td class="task-title" style="cursor: pointer;" onclick="toggleVisibility('#{jobResult.jobInfo.jobNumber}');">
-              #{jobResult.jobInfo.taskName}
-              <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" alt="menu" name="Image22" width="14" height="14" border="0" align="absmiddle" id="Image22" onclick="MM_showMenu(window.mm_menu_0925155042_0,11,11,null,'Image22')" onmouseover="MM_swapImage('Image22','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore();"/>
+            <td class="task-title" >
+              <span style="cursor: pointer;" onclick="toggleVisibility('#{jobResult.jobInfo.jobNumber}');">#{jobResult.jobInfo.taskName}</span>
+              <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" 
+                   alt="menu" width="14" height="14" border="0" align="absmiddle" 
+                   id="Image2_#{jobIndex}"  name="Image2_#{jobIndex}"                   
+                   onmouseover="MM_swapImage('Image2_#{jobIndex}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
+                   onmouseout="MM_swapImgRestore();"/>
             </td>
             
             <td>&#160;</td>
@@ -252,16 +327,16 @@
           <!-- Loop through job output files -->
 
           <script type="text/javascript" language="javascript">
-            <h:outputText> fileRows['#{jobResult.jobInfo.jobNumber}'] = new Array(); </h:outputText>
+            fileRows['#{jobResult.jobInfo.jobNumber}'] = new Array(); 
           </script>
 
-          <t:dataList value="#{jobResult.outputFiles}" var="fileInfo" rowIndexVar="index">
+          <t:dataList value="#{jobResult.outputFiles}" var="fileInfo" rowIndexVar="paramIndex">
             <script type="text/javascript" language="javascript">
               <h:outputText>
-	             fileRows['#{jobResult.jobInfo.jobNumber}'][#{index}] = 'file_row_#{jobResult.jobInfo.jobNumber}_#{index}';
+	             fileRows['#{jobResult.jobInfo.jobNumber}'][#{paramIndex}] = 'file_row_#{jobResult.jobInfo.jobNumber}_#{paramIndex}';
               </h:outputText>
             </script>
-            <tr class="files" id="file_row_#{jobResult.jobInfo.jobNumber}_#{index}">
+            <tr class="files" id="file_row_#{jobResult.jobInfo.jobNumber}_#{paramIndex}">
               <td>&#160;</td>
               <td>
                 <div align="center">
@@ -273,7 +348,11 @@
               <td>
                 <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="4" height="4" hspace="6" vspace="2" border="0"/>
                 <a href="link">#{fileInfo.name}</a>
-                <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" alt="menu" name="Image2" width="14" height="14" border="0" align="absmiddle" id="Image2" onclick="MM_showMenu(window.mm_menu_0925155524_0,11,11,null,'Image2')" onmouseover="MM_swapImage('Image2','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore();"/>
+                <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
+                     alt="menu" width="14" height="14" border="0" align="absmiddle" 
+                     id="Image2_#{jobIndex}_#{paramIndex}" name="Image2_#{jobIndex}_#{paramIndex}" 
+                     onmouseover="MM_swapImage('Image2_#{jobIndex}_#{paramIndex}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
+                     onmouseout="MM_swapImgRestore();"/>
               </td>
               <td align="right">#{fileInfo.formattedSize}&#160;&#160;&#160;&#160;</td>
               <td>&#160;</td>

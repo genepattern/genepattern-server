@@ -29,6 +29,12 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.WebServiceException;
 
 public class JobResultsBean {
+	
+	private String jobSortField = "job id number";
+	private boolean jobSortAscending = true;
+	private String fileSortField = "name";
+	private boolean fileSortAscending = true;
+	
     private JobResultInfo[] jobResults;
     private boolean ascending;
     private boolean warnBeforeDeletingJobs;
@@ -47,7 +53,7 @@ public class JobResultsBean {
         showAllJobs = false; // TODO get from property
 
     }
-
+    
     private void updateJobs() {
         String userId = UIBeanHelper.getUserId();
         LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
@@ -134,7 +140,14 @@ public class JobResultsBean {
     }
 
     public String sort() {
-        final String column = getSort();
+    	
+    	System.out.println(jobSortField);
+    	System.out.println(jobSortAscending);
+    	System.out.println(fileSortField);
+    	System.out.println(fileSortAscending);
+    	
+     
+/*        final String column = getSort();
         Comparator comparator = new Comparator() {
 
             public int compare(Object o1, Object o2) {
@@ -172,6 +185,7 @@ public class JobResultsBean {
             Arrays.sort(jobResults, comparator);
         }
         lastSort = column;
+        */
         
         return null;
     }
@@ -270,4 +284,36 @@ public class JobResultsBean {
     public void setCheckbox(List checkboxList) {
         this.checkbox = checkboxList;
     }
+
+	public String getJobSortField() {
+		return jobSortField;
+	}
+
+	public void setJobSortField(String jobSortField) {
+		this.jobSortField = jobSortField;
+	}
+
+	public String getFileSortField() {
+		return fileSortField;
+	}
+
+	public void setFileSortField(String fileSortField) {
+		this.fileSortField = fileSortField;
+	}
+
+	public boolean isFileSortAscending() {
+		return fileSortAscending;
+	}
+
+	public void setFileSortAscending(boolean fileSortAscending) {
+		this.fileSortAscending = fileSortAscending;
+	}
+
+	public boolean isJobSortAscending() {
+		return jobSortAscending;
+	}
+
+	public void setJobSortAscending(boolean jobSortAscending) {
+		this.jobSortAscending = jobSortAscending;
+	}
 }
