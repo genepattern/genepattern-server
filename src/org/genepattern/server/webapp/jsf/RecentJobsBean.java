@@ -27,6 +27,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletResponse;
@@ -165,10 +167,10 @@ public class RecentJobsBean {
                 return;
             }
             HttpServletResponse response = UIBeanHelper.getResponse();
-            // response.setHeader("Content-Disposition", "attachment; filename="
-            // + in.getName() + ";");
-            response.setHeader("Content-disposition", "inline; filename=\""
-                    + in.getName() + "\"");
+            response.setHeader("Content-Disposition", "attachment; filename="
+             + in.getName() + ";");
+//            response.setHeader("Content-disposition", "inline; filename=\""
+//                    + in.getName() + "\"");
             response.setHeader("Content-Type", "application/octet-stream");
             response.setHeader("Cache-Control", "no-store"); // HTTP 1.1
             // cache
@@ -198,6 +200,105 @@ public class RecentJobsBean {
                     log.error(e);
                 }
             }
+        }
+
+    }
+
+    public List<ParameterInfo> getOutputParameters(JobInfo job) {
+        ParameterInfo[] params = job.getParameterInfoArray();
+        List<ParameterInfo> paramsList = new ArrayList<ParameterInfo>();
+        if (params != null) {
+            for (ParameterInfo p : params) {
+                if (p.isOutputFile()) {
+                    paramsList.add(p);
+                }
+            }
+        }
+        return paramsList;
+    }
+
+    public void downloadZip(ActionEvent event) {
+
+        try {
+            int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper
+                    .getRequest().getParameter("jobNumber")));
+            LocalAnalysisClient client = new LocalAnalysisClient(UIBeanHelper
+                    .getUserId());
+            JobInfo job = client.checkStatus(jobNumber);
+            if (job == null) {
+                return;
+            }
+
+            JobInfo[] children = client.getChildren(jobNumber);
+
+            List<ParameterInfo> outputFileParameters = new ArrayList<ParameterInfo>();
+            if (children.length > 0) {
+                for (JobInfo child : children) {
+                    outputFileParameters.addAll(getOutputParameters(child));
+                }
+
+            } else {
+                outputFileParameters.addAll(getOutputParameters(job));
+
+            }
+
+            HttpServletResponse response = UIBeanHelper.getResponse();
+            response.setHeader("Content-Disposition", "attachment; filename="
+                    + jobNumber + ".zip" + ";");
+
+            response.setHeader("Content-Type", "application/zip");
+            response.setHeader("Cache-Control", "no-store"); // HTTP 1.1
+            // cache
+            // control
+            response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache
+            // control
+            response.setDateHeader("Expires", 0);
+            OutputStream os = response.getOutputStream();
+            ZipOutputStream zos = new ZipOutputStream(os);
+
+            String jobDir = System.getProperty("jobs");
+            byte[] b = new byte[10000];
+            for (ParameterInfo p : outputFileParameters) {
+                String value = p.getValue();
+                int index = value.lastIndexOf("/");
+                if (index == -1) {
+                    index = value.lastIndexOf("\\");
+                }
+                String jobId = value.substring(0, index);
+                String fileName = UIBeanHelper.decode(value.substring(
+                        index + 1, value.length()));
+                File attachment = new File(jobDir + File.separator + value);
+                if (!attachment.exists()) {
+                    continue;
+                }
+                ZipEntry zipEntry = new ZipEntry(
+                        (jobId.equals("" + jobNumber) ? "" : (jobNumber + "/"))
+                                + fileName);
+
+                zos.putNextEntry(zipEntry);
+                zipEntry.setTime(attachment.lastModified());
+                zipEntry.setSize(attachment.length());
+                FileInputStream is = null;
+                try {
+                    is = new FileInputStream(attachment);
+                    int bytesRead;
+                    while ((bytesRead = is.read(b, 0, b.length)) != -1) {
+                        zos.write(b, 0, bytesRead);
+                    }
+                } finally {
+                    if (is != null) {
+                        is.close();
+                    }
+                }
+                zos.closeEntry();
+            }
+            zos.flush();
+            zos.close();
+            UIBeanHelper.getFacesContext().responseComplete();
+        } catch (IOException e) {
+            log.error(e);
+        } catch (WebServiceException e) {
+            log.error(e);
         }
 
     }
@@ -275,7 +376,6 @@ public class RecentJobsBean {
                 .getManagedBean("#{runTaskBean}");
         assert runTaskBean != null;
         runTaskBean.setTask(lsid);
-
         return "run task";
     }
 

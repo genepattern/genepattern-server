@@ -5,36 +5,6 @@
       xmlns:f="http://java.sun.com/jsf/core" 
       xmlns:t="http://myfaces.apache.org/tomahawk" 
       xmlns:c="http://java.sun.com/jstl/core">
- 
-   <script type="text/javascript">
-      
-      /* <![CDATA[ */
-      // Execute a jsf el expression on the server
-      function callManagedBean(elExpression) {            
-        var opt = {
-          method:    'post',
-          postBody:  'el=' + elExpression,
-          onSuccess: receiveResponse,
-          onFailure: function(t) {
-            alert('Error ' + t.status + ' -- ' + t.statusText);
-          }
-        } 
-        new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
-      }
-
-      // The callback function - receive response from server
-      function receiveResponse( req ) {
-        if (req.readyState == 4) {
-          if (req.status == 200) { // only if "OK"
-            update(req.responseText);
-          } 
-          else {
-            alert("There was a problem retrieving the XML data:\n" + req.statusText);
-          }  
-        }
-      }
-      /* ]]> */
-    </script>
     
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
@@ -82,6 +52,14 @@
             <div id="menuDiv_#{jobIndex}" style="visibility:hidden;" class="popupMenu">             
               <table>
                 <tbody>
+                <tr>
+                    <td>
+                      <h:commandLink value="Download" actionListener="#{recentJobsBean.downloadZip}" rendered="#{job.complete}">
+                 		<f:param value="#{job.jobNumber}" name="jobNumber"/>
+                      </h:commandLink>
+                    </td>
+                  </tr>
+                  
                   <tr>
                     <td>
                       <h:commandLink value="Reload" actionListener="#{recentJobsBean.reload}">
@@ -91,7 +69,7 @@
                   </tr>
                   <tr>
                     <td>
-                      <h:commandLink value="Delete" actionListener="#{recentJobsBean.delete}">
+                      <h:commandLink value="Delete" actionListener="#{recentJobsBean.delete}" rendered="#{job.complete}">
                         <f:param value="#{job.jobNumber}" name="jobNumber"/>
                       </h:commandLink>
                     </td>
