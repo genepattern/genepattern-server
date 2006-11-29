@@ -36,7 +36,8 @@
         out.println("no such file: " + filename);
         return;
     }
-    response.setHeader("Content-Disposition", "attachment; filename=" + in.getName() + ";");
+    response.setHeader("Content-disposition", "inline; filename=\""
+            + in.getName() + "\"");
     response.setHeader("Content-Type", "application/octet-stream");
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
     response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control

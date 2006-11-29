@@ -41,15 +41,18 @@ try {
     }
 
     int dotIndex = in.getName().lastIndexOf(".");
-    boolean saveAsDialog = true;
-    if (dotIndex != -1) {
-        String extension = in.getName().substring(dotIndex + 1);
-        if (extension.equalsIgnoreCase("html") || extension.equalsIgnoreCase("htm")) {
-            saveAsDialog = false; // view in browser
-        }
-    }
+    boolean saveAsDialog = false;
+ //   if (dotIndex != -1) {
+  //      String extension = in.getName().substring(dotIndex + 1);
+    //    if (extension.equalsIgnoreCase("html") || extension.equalsIgnoreCase("htm")) {
+     //       saveAsDialog = false; 
+      //  }
+   // }
     if (saveAsDialog) {
         response.setHeader("Content-Disposition", "attachment; filename=" + in.getName() + ";");
+    } else {
+        response.setHeader("Content-disposition", "inline; filename=\""
+                + in.getName() + "\"");
     }
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
     response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
