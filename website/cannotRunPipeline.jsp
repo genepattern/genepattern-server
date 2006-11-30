@@ -35,7 +35,7 @@
 String taskName = (String)request.getAttribute("name");
 %>
 <p>
-The <%=taskName%> cannot be run as the pipeline environment cannot prompt for runtime parameters.<p>	
+The <%=taskName%> cannot be run as pipelines that prompt for runtime parameters must be saved first.<p>	
 
 <jsp:include page="footer.jsp"/>
 </body>
