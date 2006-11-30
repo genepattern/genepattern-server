@@ -1,7 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--  Loop through job list -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core" xmlns:tr="http://myfaces.apache.org/trinidad">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" 
+      xmlns:c="http://java.sun.com/jstl/core">
   <ui:composition template="/templates/common.xhtml">
     <ui:define name="pageTitle">
 		GenePattern | Job Results
@@ -134,17 +137,14 @@
     }
     function closeAll() {
       for(property in fileRows) {
-        hideCategory(property);
+        hideCategory(property); 
       }        
     }
 	
-
-		
 		
 	function confirmDelete() {
-		var warn = #{jobResultsBean.warnBeforeDeletingJobs};
-		if (warn && !confirm('Are you sure you want to delete the selected job(s)?')) return false;
-		return true;
+		return confirm('Are you sure you want to delete the selected job(s)?');
+
 	}
 	
 /* ]]> */
@@ -159,15 +159,14 @@
 	
 	
     <ui:define name="body">
-    <h:form>
-    
+      <h:form>     
       <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
         <tr>
           <td>Job Results</td>
         </tr>
       </table>
       <div class="sorting_text">
-      
+   
         <!-- Job sort column -->  
         <strong>sort jobs by: </strong>
         <h:selectOneMenu value="#{jobResultsBean.jobSortColumn}">
@@ -214,7 +213,8 @@
              value="#{jobResultsBean.fileSortAscending}"/> &#160;&#160;
              
              
-       <h:commandButton value="Sort" action="#{jobResultsBean.sort}"/>
+       <h:commandButton value="Sort" actionListener="#{jobResultsBean.sort}" immediate="true"/>
+
       </div>
       
       <!-- Job results table -->
@@ -225,7 +225,8 @@
           <td valign="top">
             <nobr>
               <div align="center">
-                <h:commandLink action="#{jobResultsBean.download}">download</h:commandLink> | <h:commandLink action="#{jobResultsBean.delete}">delete</h:commandLink>
+                <h:commandLink action="#{jobResultsBean.delete}" 
+                               onclick="if (!confirmDelete()) return false">delete</h:commandLink> 
               </div>
             </nobr>
           </td>         
@@ -256,6 +257,7 @@
           </td>
         </tr>
         
+
         <!--  Loop through job list -->
         <t:dataList value="#{jobResultsBean.jobResults}" var="jobResult" rowIndexVar="jobIndex">
         
@@ -349,12 +351,13 @@
             </tr>
           </t:dataList>
         </t:dataList>
+        
         <tr>
           <td class="smalltype">&#160;</td>
           <td valign="top" class="smalltype">
             <nobr>
               <div align="center">
-                <h:commandLink action="#{jobResultsBean.download}">download</h:commandLink> | <h:commandLink action="#{jobResultsBean.delete}">delete</h:commandLink>
+                <h:commandLink action="#{jobResultsBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink> 
               </div>
             </nobr>
           </td>
@@ -368,6 +371,7 @@
       </table>
       <p>&#160;</p>
       </h:form>
+
     </ui:define>
 
 </ui:composition>

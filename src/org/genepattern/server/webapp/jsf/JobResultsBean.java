@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -61,7 +62,7 @@ public class JobResultsBean {
      */
 	private boolean fileSortAscending = true;
 	
-    private JobResultInfo[] jobResults;
+    private List<JobResultInfo> jobResults;
     private boolean warnBeforeDeletingJobs;
     private boolean showAllJobs = true;
     
@@ -83,9 +84,9 @@ public class JobResultsBean {
         LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
         try {
             JobInfo[] jobs = analysisClient.getJobs(showAllJobs ? null : userId, -1, Integer.MAX_VALUE, false);
-            jobResults = new JobResultInfo[jobs.length];
+            jobResults = new ArrayList<JobResultInfo>(jobs.length);
             for(int i=0; i<jobs.length; i++) {
-                jobResults[i] = new JobResultInfo(jobs[i]);
+                jobResults.add(new JobResultInfo(jobs[i]));
             }
         }
         catch (WebServiceException wse) {
@@ -99,37 +100,44 @@ public class JobResultsBean {
     	
     	String [] selectedFiles = UIBeanHelper.getRequest().getParameterValues("selectedFiles");
         // TODO -- deleteFiles(selectedFiles);
-    	return null;
-    }
-    
-    public String download() {
-    	String [] selectedJobs = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
-    	String [] selectedFiles = UIBeanHelper.getRequest().getParameterValues("selectedFiles");
-        // TODO -- download selected jobs and files
-    	return null;
+        
+        return null;
+    	
     }
 
+
+    /**
+     * Delete a list of jobs.
+     * @param jobNumbers
+     */
     private void deleteJobs(String [] jobNumbers) {
-        String[] deleteJob = UIBeanHelper.getRequest().getParameterValues("deleteJobId");
         LocalAnalysisClient analysisClient = new LocalAnalysisClient(UIBeanHelper.getUserId());
         List<Integer> jobErrors = new ArrayList<Integer>();
 
-        if (deleteJob != null) {
-            for (String job : deleteJob) {
+        if (jobNumbers != null) {
+            for (String job : jobNumbers) {
                 int jobNumber = Integer.parseInt(job);
                 try {
                     analysisClient.deleteJob(jobNumber);
+                    for(int i=0; i<jobResults.size(); i++) {
+                        if(jobResults.get(i).getJobInfo().getJobNumber() == jobNumber) {
+                            jobResults.remove(i);
+                            break;
+                        }
+                    }
                 }
                 catch (NumberFormatException e) {
-                    e.printStackTrace(); // ignore
+                    log.error(e);
                 }
                 catch (WebServiceException e) {
+                    log.error(e);
                     jobErrors.add(jobNumber);
                 }
             }
         }
-        StringBuffer sb = new StringBuffer();
-
+        
+        // Create error messages
+        StringBuffer sb = new StringBuffer();      
         for (int i = 0, size = jobErrors.size(); i < size; i++) {
             if (i > 0) {
                 sb.append(", ");
@@ -140,20 +148,20 @@ public class JobResultsBean {
             String msg = "An error occurred while deleting job(s) " + sb.toString() + ".";
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg));
         }
-        updateJobs();
-        sort();
-
+       
     }
 
 
-    public String sort() {
+    /**
+     * Action method.  First sorts jobs, then for each job sorts files.  
+     * @return
+     */
+    public void sort(ActionEvent event) {
     	     
         sortJobs();
         sortFiles();
-        return null;
     }
 
- 
     private void sortJobs() {
         final String column = getJobSortColumn();
         Comparator comparator = new Comparator() {
@@ -189,7 +197,7 @@ public class JobResultsBean {
                 }
             }
         };
-        Arrays.sort(jobResults, comparator);       
+        Collections.sort(jobResults, comparator);       
     }
     
      
@@ -230,7 +238,7 @@ public class JobResultsBean {
     }  
     
 
-    public JobResultInfo[] getJobResults() {
+    public List<JobResultInfo> getJobResults() {
         return jobResults;
     }
 
