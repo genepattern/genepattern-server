@@ -19,10 +19,6 @@ import javax.faces.event.ActionEvent;
 import org.genepattern.server.util.PropertiesManager;
 
 
-/**
- * @author jrobinso
- * 
- */
 public class ServerSettingsBean {
 
 	private static String[] modes = new String[] { "Access",
@@ -45,6 +41,9 @@ public class ServerSettingsBean {
 	private static final String defaultLog4jPath = "./webapps/gp/WEB-INF/classes/log4j.properties";
 	private static final String log4jAppenderR = "log4j.appender.R.File";
 	
+	/**
+	 * 
+	 */
 	public ServerSettingsBean(){		
 		if(settings == null) {
 			try {
@@ -55,18 +54,30 @@ public class ServerSettingsBean {
 		}
 	}
 	
+	/**
+	 * @return
+	 */
 	public String getCurrentMode() {
 		return currentMode;
 	}
 
+	/**
+	 * @param currentMode
+	 */
 	public void setCurrentMode(String currentMode) {
 		this.currentMode = currentMode;
 	}
 
+	/**
+	 * @return
+	 */
 	public String[] getModes() {
 		return modes;
 	}
 	
+	/**
+	 * @param evt
+	 */
 	public void modeChanged(ActionEvent evt) {
 		setCurrentMode(getRequest().getParameter("mode"));	
 	}
@@ -91,6 +102,9 @@ public class ServerSettingsBean {
 		return null;   // This returns us to the same page
 	}
 	
+	/**
+	 * @return
+	 */
 	public String getClientMode() {
 		currentClientMode= (String)settings.get("gp.allowed.clients");
 		
@@ -100,6 +114,9 @@ public class ServerSettingsBean {
 		return currentClientMode;
 	}
 	
+	/**
+	 * @return
+	 */
 	public String getSpecifiedClientMode() {
 		if (!(clientModes[0].equals(currentClientMode) || clientModes[1].equals(currentClientMode))) {
 			return currentClientMode;
@@ -107,26 +124,43 @@ public class ServerSettingsBean {
 		return "";
 	}
 	
+	/**
+	 * @param mode
+	 */
 	public void setClientMode(String mode) {
 		currentClientMode=mode;
 		settings.put("gp.allowed.clients", mode);		
 	}
 	
+	/**
+	 * @param mode
+	 */
 	public void setSpecifiedClientMode(String mode) {
 		if (clientModes[2].equals(currentClientMode)) {		
 			settings.put("gp.allowed.clients", mode);
 		}		
 	}
 	
+	/**
+	 * @return
+	 */
 	public String getSearchEngine() {
 		String searchEngine= (String)settings.get("disable.gp.indexing");		
 		return searchEngine;
 	}
 	
+	/**
+	 * @param searchEngine
+	 */
 	public void setSearchEngine(String searchEngine) {
 		settings.put("disable.gp.indexing", searchEngine);
 	}
 	
+	/**
+	 * @param log
+	 * @return
+	 * @throws IOException
+	 */
 	public String getLog(File log) throws IOException {
 		StringBuffer buf = new StringBuffer();
 		BufferedReader br=null;
@@ -149,25 +183,44 @@ public class ServerSettingsBean {
 		
 	}
 	
+	/**
+	 * @return
+	 * @throws IOException
+	 */
 	public String getWsLog() throws IOException {
 		return getLog(getWsLogFile());
 		
 	}
 	
+	/**
+	 * @return
+	 * @throws IOException
+	 */
 	public String getGpLog() throws IOException {
 		return getLog(getGpLogFile());
 	}
 	
+	/**
+	 * @return
+	 */
 	public String getGpLogHeader() {	
 		File gpLog=getGpLogFile();
 		return getLogHeader(gpLog, "Gene Pattern");	
 	}
 	
+	/**
+	 * @return
+	 */
 	public String getWsLogHeader() {	
 		File wsLog=getWsLogFile();
 		return getLogHeader(wsLog, "Web Server");	
 	}
 	
+	/**
+	 * @param log
+	 * @param name
+	 * @return
+	 */
 	private String getLogHeader(File log, String name) {
 		StringBuffer buf = new StringBuffer();
 		if ((log == null || !log.exists())) {
@@ -181,6 +234,9 @@ public class ServerSettingsBean {
 		return buf.toString();
 	}
 	
+	/**
+	 * @return
+	 */
 	private File getGpLogFile() {
 		String log4jConfiguration = System.getProperty("log4j.configuration"); 
 		if (log4jConfiguration == null) { 
@@ -197,6 +253,9 @@ public class ServerSettingsBean {
 		return new File(props.getProperty(log4jAppenderR));
 	}
 	
+	/**
+	 * @return
+	 */
 	private File getWsLogFile() {
 		File wsLog=null;
 		if (System.getProperty("serverInfo").indexOf("Apache Tomcat") != -1) {
@@ -211,19 +270,31 @@ public class ServerSettingsBean {
 		return wsLog;
 	}
 	
+	/**
+	 * @return
+	 */
 	public String resetModuleRepositoryURL() {
 		settings.put("ModuleRepositoryURL", defaultModuleReposityURL);
 		return null;
 	}
 	
+	/**
+	 * @return
+	 */
 	public String getProxyPassword() {
 		return proxyPassword;
 	}
 
+	/**
+	 * @param password
+	 */
 	public void setProxyPassword(String password) {
 		proxyPassword = password;
 	}
 	
+	/**
+	 * @return
+	 */
 	public String removeProxySettings() {
 		settings.put("http.proxyHost", "");
 		settings.put("http.proxyPort", "");
@@ -238,6 +309,9 @@ public class ServerSettingsBean {
 		
 	}
 	
+	/**
+	 * @return
+	 */
 	public String shutDownServer() {
 		System.exit(1);
 		return null;
