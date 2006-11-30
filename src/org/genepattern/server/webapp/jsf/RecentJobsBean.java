@@ -117,7 +117,7 @@ public class RecentJobsBean {
 
     }
 
-    public String reload(ActionEvent event) {
+    public String reload() {
         LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper
                 .getUserId());
         try {
