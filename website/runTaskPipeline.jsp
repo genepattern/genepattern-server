@@ -18,7 +18,6 @@ use, misuse, or functionality.
                  org.genepattern.server.genepattern.GenePatternAnalysisTask,
                  org.genepattern.util.GPConstants,
                  org.genepattern.util.StringUtils,
-                 org.genepattern.webservice.AnalysisWebServiceProxy,
                  org.genepattern.server.webservice.server.local.*,
                  org.genepattern.webservice.JobInfo,
                  org.genepattern.webservice.OmnigeneException,
@@ -51,7 +50,7 @@ use, misuse, or functionality.
 <head>
     <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
     <link href="skin/favicon.ico" rel="shortcut icon">
-    <title>Running Task</title>
+    <title>GenePattern - Run Task Results</title>
 </head>
 <body>
 
@@ -143,8 +142,7 @@ use, misuse, or functionality.
         // set up the call to the analysis engine
         String server = request.getScheme() + "://" + InetAddress.getLocalHost().getCanonicalHostName() + ":" + System.getProperty("GENEPATTERN_PORT");
    
-        AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, userID);
-        
+               
         LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
         
         TaskInfo task = GenePatternAnalysisTask.getTaskInfo(lsid, userID);
@@ -206,10 +204,7 @@ use, misuse, or functionality.
 <%
         return;
     }   
-        
-       
-        
- //   JobInfo job = analysisProxy.submitJob(task.getID(), parmInfos);
+               
     JobInfo job = analysisClient.submitJob(task.getID(), parmInfos);
     String jobID = "" + job.getJobNumber();
 
@@ -217,7 +212,7 @@ use, misuse, or functionality.
 <script language="Javascript">
 
     var pipelineStopped = false;
-    function stopPipeline(button) {
+    function stopPipeline(button, jobId) {
         var really = confirm('Really stop the pipeline?');
         if (!really) return;
         window.open("runPipeline.jsp?cmd=stop&jobID=<%= job.getJobNumber() %>", "_blank", "height=100, width=100, directories=no, menubar=no, statusbar=no, resizable=no");
@@ -232,37 +227,64 @@ use, misuse, or functionality.
         }
     }
 
+    function deleteCheckedFiles(){
+	 var frm = document.forms["results"];
+       var really = confirm('Really delete the checked files?');
+       if (!really) return;
+	cmd = frm.elements['cmdElement'];
+	cmd.name="delete";
+	cmd.value="true";
+ 	frm.submit();
+
+    }
+    function downloadCheckedFiles(){
+	 var frm = document.forms["results"];
+	
+	cmd = frm.elements['cmdElement'];
+	cmd.name="download";
+	cmd.value="true";
+	frm.submit();
+
+    }
 
 </script>
 
+<table width="100%"  border="0" cellspacing="0" cellpadding="0">
+<tr>
+      <td valign="top" class="maintasknav" id="maintasknav">
 
-<form name="frmstop">
-    <input name="cmd" type="button" value="stop..." onclick="stopPipeline(this)" class="little">
-    <input type="hidden" name="jobID" value="<%= job.getJobNumber()%>">
-</form>
-<form name="frmemail" method="POST" target="_blank" action="sendMail.jsp" onsubmit="javascript:return false;">
-    email notification to: <input name="to" class="little" size="70" value=""
-                                  onkeydown="return suppressEnterKey(event)">
-    <input type="hidden" name="from" value="<%= StringUtils.htmlEncode(userID) %>">
-    <input type="hidden" name="subject" value="<%= task.getName() %> results for job # <%= jobID %>">
-    <input type="hidden" name="message"
-           value="<html><head><link href='stylesheet.css' rel='stylesheet' type='text/css'><script language='Javascript'>\nfunction checkAll(frm, bChecked) {\n\tfrm = document.forms['results'];\n\tfor (i = 0; i < frm.elements.length; i++) {\n\t\tif (frm.elements[i].type != 'checkbox') continue; \n\t\tfrm.elements[i].checked = bChecked;\n\t}\n}\n</script></head><body>">
-</form>
+	    <input type="checkbox" name="checkbox" value="checkbox"/>email notification&nbsp;&nbsp;&nbsp;&nbsp;
 
+
+		<input name="showLogs" type="checkbox" onclick="toggleLogs()"  value="showLogs" checked="checked" />
+show execution logs</td>
+        </tr>
+</table>
+ 
+<table width="100%"  border="0" cellpadding="0" cellspacing="0" class="barhead-task">
+     <tr>
+        <td><%=requestParameters.get("taskName")%> Status </td>
+     </tr>
+</table>
+
+    
 <table width='100%' cellpadding="0">
     <tr>
+	  <td width="50px">
+  <input name="stopCmd" type="button" value="stop..." onclick="stopPipeline(this, <%= job.getJobNumber()%>)" class="little">
+	  </td>
         <td>
             Running <a href="addTask.jsp?view=1&name=<%=requestParameters.get("taskLSID")%>"><%=
             requestParameters.get("taskName")%>
         </a> as job # <a href="getJobResults.jsp?jobID=<%=job.getJobNumber() %>"><%=job.getJobNumber() %>
         </a> on <%=new Date()%>
-
+	  </td>
     </tr>
-</td>
+
 <tr><td>&nbsp;</td></tr>
 
 <tr>
-    <td>
+    <td colspan=2>
         <%=requestParameters.get("taskName")%> (
         <%
 
@@ -319,11 +341,13 @@ use, misuse, or functionality.
         %>
         )<br></td>
 </tr>
-<tr><td>&nbsp;</td></tr>
+<tr><td colspan=2>&nbsp;</td></tr>
 
 <form id="results" name="results" action="zipJobResults.jsp">
     <input type="hidden" name="name" value="<%=task.getName()%>"/>
     <input type="hidden" name="jobID" value="<%=jobID%>"/>
+    <input type="hidden" name="cmdElement" value=""/>
+
 
 
     <%
@@ -336,11 +360,7 @@ use, misuse, or functionality.
            // System.out.println("Job=" + job);
             
             job = analysisClient.checkStatus(job.getJobNumber());
-          //  System.out.println("\tLocal Job=" + job);
-            
-           // job = analysisProxy.checkStatus(job.getJobNumber());
-            //System.out.println("\tRemote Job=" + job);
-            
+              
             
             if (job != null)
 	            status = job.getStatus();
@@ -351,7 +371,7 @@ use, misuse, or functionality.
         JobInfo jobInfo = job;
         ParameterInfo[] jobParams = jobInfo.getParameterInfoArray();
         
-        out.println("<tr><td><input type=\"checkbox\" checked value=\"\" onclick=checkAll(this)");
+      //  out.println("<tr><td>a<input type=\"checkbox\" checked value=\"\" onclick=checkAll(this)");
         
 
         StringBuffer sbOut = new StringBuffer();
@@ -362,7 +382,7 @@ use, misuse, or functionality.
             sbOut.setLength(0);
             String fileName = new File("../../" + jobParams[j].getValue())
                     .getName();
-            sbOut.append("<tr><td><input type=\"checkbox\" value=\"");
+            sbOut.append("<tr><td colspan=2><input type=\"checkbox\" value=\"");
             sbOut.append("NAME" + "/" + fileName + "=" + jobInfo.getJobNumber() + "/" + fileName);
             sbOut.append("\" name=\"dl\" ");
             sbOut.append("checked><a target=\"_blank\" href=\"");
@@ -384,8 +404,12 @@ use, misuse, or functionality.
             out.println(sbOut.toString());
             
         }
-    out.println("<tr><td>&nbsp;</td></tr>");
-    out.println("<tr><td><input type=\"submit\" name=\"download\" value=\"download selected results\">&nbsp;&nbsp;");
+    out.println("<tr><td colspan=2>&nbsp;</td></tr>");
+
+     out.println("<tr><td colspan=2 valign='top'><nobr><div align='left'><a href='#' onclick=\"downloadCheckedFiles()\">download</a> | <a href='#' onclick=\"deleteCheckedFiles()\" >delete</a> </div></nobr></td></tr>");
+
+
+    out.println("<tr><td colspan=2><input type=\"submit\" name=\"download\" value=\"download selected results\">&nbsp;&nbsp;");
    	out.print("<input type=\"submit\" name=\"delete\" value=\"delete selected results\"");
 	out.println(" onclick=\"return confirm(\'Really delete the selected files?\')\">");
 
@@ -434,9 +458,12 @@ use, misuse, or functionality.
     DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
 %>
 </center>
-<br>
+
+<table with="100%">
+<tr><td  class="purge_notice">
     These job results are scheduled to be purged from the server on <%= df.format(purgeTOD.getTime()).toLowerCase() %>
-    <br>
+</td></tr>
+</table>
 
     <%
         } catch (Throwable e) {
