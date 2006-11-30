@@ -53,7 +53,6 @@ public class RecentJobsBean {
     private static Logger log = Logger.getLogger(RecentJobsBean.class);
 
     public RecentJobsBean() {
-        updateJobs();
     }
 
     private void updateJobs() {
@@ -82,10 +81,16 @@ public class RecentJobsBean {
     }
 
     public int getSize() {
+        if (jobs == null) {
+            updateJobs();
+        }
         return jobs == null ? 0 : jobs.length;
     }
 
     public MyJobInfo[] getJobs() {
+        if (jobs == null) {
+            updateJobs();
+        }
         return jobs;
     }
 
@@ -168,9 +173,9 @@ public class RecentJobsBean {
             }
             HttpServletResponse response = UIBeanHelper.getResponse();
             response.setHeader("Content-Disposition", "attachment; filename="
-             + in.getName() + ";");
-//            response.setHeader("Content-disposition", "inline; filename=\""
-//                    + in.getName() + "\"");
+                    + in.getName() + ";");
+            // response.setHeader("Content-disposition", "inline; filename=\""
+            // + in.getName() + "\"");
             response.setHeader("Content-Type", "application/octet-stream");
             response.setHeader("Cache-Control", "no-store"); // HTTP 1.1
             // cache
@@ -310,7 +315,6 @@ public class RecentJobsBean {
             LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper
                     .getUserId());
             ac.deleteJob(jobNumber);
-            updateJobs(); // TODO don't retrieve jobs twice from the database
         } catch (WebServiceException e) {
             log.error(e);
         } catch (NumberFormatException e) {
@@ -360,7 +364,6 @@ public class RecentJobsBean {
             LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper
                     .getUserId());
             ac.terminateJob(jobNumber);
-            updateJobs(); // TODO don't retrieve jobs twice from the database
         } catch (WebServiceException e) {
             log.error(e);
         } catch (NumberFormatException e) {
