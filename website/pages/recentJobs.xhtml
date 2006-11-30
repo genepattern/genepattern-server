@@ -27,10 +27,6 @@
     
       <!-- Loop through jobs -->
       <t:dataList var="job" value="#{recentJobsBean.jobs}" rowIndexVar="jobIndex">
-        <script type="text/javascript">
-	      var menuId = "menuDiv_#{jobIndex}";
-	      pm_popupMenuIds.push(menuId);
-	    </script>
         <tr>
           <td width="9">
             <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
@@ -43,79 +39,10 @@
           </td>
           <td>
             <font class="recentjobs-sh">#{job.taskName}</font>
-            <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" 
-                 name="Image2_#{jobIndex}" width="14" height="14" border="0" align="top" 
-                 id="Image2_#{jobIndex}" 
-                 onclick="pm_showMenu('menuDiv_#{jobIndex}', Position.cumulativeOffset(this));" 
-                 onmouseover="MM_swapImage('Image2_#{jobIndex}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
-                 onmouseout="MM_swapImgRestore();"/>
-            <br/>
-            <div id="menuDiv_#{jobIndex}" style="visibility:hidden;" class="popupMenu">             
-              <table>
-                <tbody>
-                <tr>
-                    <td>
-                      <h:commandLink value="Download" actionListener="#{recentJobsBean.downloadZip}" rendered="#{job.complete}">
-                 		<f:param value="#{job.jobNumber}" name="jobNumber"/>
-                      </h:commandLink>
-                    </td>
-                  </tr>
-                  
-                  <tr>
-                    <td>
-                      <h:commandLink value="Reload" action="#{recentJobsBean.reload}">
-                        <f:param value="#{job.jobNumber}" name="jobNumber"/>
-                      </h:commandLink>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <h:commandLink value="Delete" actionListener="#{recentJobsBean.delete}" rendered="#{job.complete}">
-                        <f:param value="#{job.jobNumber}" name="jobNumber"/>
-                      </h:commandLink>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <h:commandLink value="Terminate" actionListener="#{recentJobsBean.terminateJob}" rendered="#{!job.complete}">
-                        <f:param value="#{job.jobNumber}" name="jobNumber"/>
-                      </h:commandLink>
-                    </td>
-                  </tr>
-                   <tr>
-                      <td>
-                        <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
-                      </td>
-                    </tr>
-                    
-                  <tr>
-                    <td>
-                      <h:commandLink value="View Java Code" actionListener="#{recentJobsBean.viewCode}" target="_blank">
-                        <f:param value="#{job.jobNumber}" name="jobNumber"/>
-                        <f:param value="Java" name="language"/>
-                      </h:commandLink>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <h:commandLink value="View MATLAB Code" actionListener="#{recentJobsBean.viewCode}" target="_blank">
-                        <f:param value="#{job.jobNumber}" name="jobNumber"/>
-                        <f:param value="MATLAB" name="language"/>
-                      </h:commandLink>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <h:commandLink value="View R Code" actionListener="#{recentJobsBean.viewCode}" target="_blank">
-                        <f:param value="#{job.jobNumber}" name="jobNumber"/>
-                        <f:param value="R" name="language"/>
-                      </h:commandLink>
-                    </td>
-                  </tr>
-                  
-                </tbody>
-              </table>
-            </div>
+            <ui:include src="jobsMenu.xhtml">
+              <ui:param name="jobNumber" value="#{job.jobNumber}"/>
+            </ui:include>
+            
             <h:outputText value="#{job.dateCompleted}">
               <f:convertDateTime pattern="MMM dd hh:mm:ss a"/>
             </h:outputText>

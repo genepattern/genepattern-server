@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
+  <ui:composition>
+        <script type="text/javascript">
+	      var menuId = "menuDiv_#{job.jobNumber}";
+	      pm_popupMenuIds.push(menuId);
+	    </script>
+    <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" 
+         name="Image2_#{job.jobNumber}" width="14" height="14" border="0" align="top" 
+         id="Image2_#{job.jobNumber}" onclick="pm_showMenu('menuDiv_#{job.jobNumber}', Position.cumulativeOffset(this));" 
+         onmouseover="MM_swapImage('Image2_#{job.jobNumber}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
+         onmouseout="MM_swapImgRestore();"/>
+    <br/>
+    <div id="menuDiv_#{job.jobNumber}" style="visibility:hidden;" class="popupMenu">
+      <table>
+        <tbody>
+          <tr>
+            <td>
+              <h:commandLink value="Download" actionListener="#{recentJobsBean.downloadZip}" rendered="#{job.complete}">
+                <f:param value="#{job.jobNumber}" name="jobNumber"/>
+              </h:commandLink>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h:commandLink value="Reload" action="#{recentJobsBean.reload}">
+                <f:param value="#{job.jobNumber}" name="jobNumber"/>
+              </h:commandLink>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h:commandLink value="Delete" actionListener="#{recentJobsBean.delete}" rendered="#{job.complete}">
+                <f:param value="#{job.jobNumber}" name="jobNumber"/>
+              </h:commandLink>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h:commandLink value="Terminate" actionListener="#{recentJobsBean.terminateJob}" rendered="#{!job.complete}">
+                <f:param value="#{job.jobNumber}" name="jobNumber"/>
+              </h:commandLink>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h:commandLink value="View Java Code" actionListener="#{recentJobsBean.viewCode}" target="_blank">
+                <f:param value="#{job.jobNumber}" name="jobNumber"/>
+                <f:param value="Java" name="language"/>
+              </h:commandLink>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h:commandLink value="View MATLAB Code" actionListener="#{recentJobsBean.viewCode}" target="_blank">
+                <f:param value="#{job.jobNumber}" name="jobNumber"/>
+                <f:param value="MATLAB" name="language"/>
+              </h:commandLink>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h:commandLink value="View R Code" actionListener="#{recentJobsBean.viewCode}" target="_blank">
+                <f:param value="#{job.jobNumber}" name="jobNumber"/>
+                <f:param value="R" name="language"/>
+              </h:commandLink>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ui:composition>
+</html>
