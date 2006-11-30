@@ -49,6 +49,8 @@ use, misuse, or functionality.
 <html>
 <head>
     <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
+    <link href="css/style.css" rel="stylesheet" type="text/css">
+    <link href="css/style-jobresults.css" rel="stylesheet" type="text/css">
     <link href="skin/favicon.ico" rel="shortcut icon">
     <title>GenePattern - Run Task Results</title>
 </head>
@@ -282,10 +284,38 @@ show execution logs</td>
     </tr>
 
 <tr><td>&nbsp;</td></tr>
+</table>
 
-<tr>
-    <td colspan=2>
-        <%=requestParameters.get("taskName")%> (
+<table width="100%"  border="0" cellspacing="0" cellpadding="0">
+            <tr class="smalltype">
+              <td >&nbsp;</td>
+              <td valign="top"><nobr>
+                <div align="center"><a href="#">download</a> | <a href="#">delete</a> </div>
+
+              </nobr></td>
+              <td>&nbsp;</td>
+              <td><!-- <a href="link">open all</a> | <a href="link">close all</a> --></td>
+            </tr>
+            <tr class="tableheader-row">
+              <td>step</td>
+
+              <td><div align="center">
+                    <input name="checkbox" type="checkbox" value="checkbox" checked="true" onclick="checkAll(this)" />
+               
+              </div></td>
+              <td>&nbsp;</td>
+              <td>name and parameters </td>
+            </tr>
+
+<tr class="task-title">
+    <td>1</td>
+    <td colspan=2>&nbsp;</td>
+
+    <td colspan=1>
+        <%=requestParameters.get("taskName")%> 
+    </td>
+    </tr>
+    <tr><td/><td/><td/><td>
         <%
 
 
@@ -339,9 +369,9 @@ show execution logs</td>
                 }
             }
         %>
-        )<br></td>
+        <br></td>
 </tr>
-<tr><td colspan=2>&nbsp;</td></tr>
+<tr><td colspan=4>&nbsp;</td></tr>
 
 <form id="results" name="results" action="zipJobResults.jsp">
     <input type="hidden" name="name" value="<%=task.getName()%>"/>
@@ -370,9 +400,7 @@ show execution logs</td>
         // after task completes jobInfo is the same as job
         JobInfo jobInfo = job;
         ParameterInfo[] jobParams = jobInfo.getParameterInfoArray();
-        
-      //  out.println("<tr><td>a<input type=\"checkbox\" checked value=\"\" onclick=checkAll(this)");
-        
+           
 
         StringBuffer sbOut = new StringBuffer();
         for (int j = 0; j < jobParams.length; j++) {
@@ -382,10 +410,10 @@ show execution logs</td>
             sbOut.setLength(0);
             String fileName = new File("../../" + jobParams[j].getValue())
                     .getName();
-            sbOut.append("<tr><td colspan=2><input type=\"checkbox\" value=\"");
+            sbOut.append("<tr><td>&nbsp;</td><td align='center'><input type=\"checkbox\" value=\"");
             sbOut.append("NAME" + "/" + fileName + "=" + jobInfo.getJobNumber() + "/" + fileName);
             sbOut.append("\" name=\"dl\" ");
-            sbOut.append("checked><a target=\"_blank\" href=\"");
+            sbOut.append("checked></td><td/><td><a target=\"_blank\" href=\"");
             String outFileUrl;
             try {
                 outFileUrl = "retrieveResults.jsp?job=" + jobInfo.getJobNumber() + "&filename=" +
@@ -404,18 +432,16 @@ show execution logs</td>
             out.println(sbOut.toString());
             
         }
-    out.println("<tr><td colspan=2>&nbsp;</td></tr>");
+    out.println("<tr><td colspan=4>&nbsp;</td></tr>");
 
-     out.println("<tr><td colspan=2 valign='top'><nobr><div align='left'><a href='#' onclick=\"downloadCheckedFiles()\">download</a> | <a href='#' onclick=\"deleteCheckedFiles()\" >delete</a> </div></nobr></td></tr>");
+     out.println("<tr class=\"smalltype\"><td colspan=4 valign='top'><nobr><div align='left'><a href='#' onclick=\"downloadCheckedFiles()\">download</a> | <a href='#' onclick=\"deleteCheckedFiles()\" >delete</a> </div></nobr></td></tr>");
 
 
-    out.println("<tr><td colspan=2><input type=\"submit\" name=\"download\" value=\"download selected results\">&nbsp;&nbsp;");
-   	out.print("<input type=\"submit\" name=\"delete\" value=\"delete selected results\"");
-	out.println(" onclick=\"return confirm(\'Really delete the selected files?\')\">");
-
-        out.flush();
+           out.flush();
         
          out.println("</form></td></tr>");
+ out.println("<tr><td colspan=4>&nbsp;</td></tr>");
+
 
 
     %>
