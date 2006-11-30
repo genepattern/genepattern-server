@@ -11,8 +11,6 @@
 	</ui:define>
     <ui:define name="headText">
       <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css"/>
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/MochiKit/MochiKit.js"/>
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jobResults.js"/>
       <script type="text/javascript" language="javascript"> 
 
@@ -152,7 +150,6 @@
 	</script>
     </ui:define>
     <ui:define name="mainNav">
-      <input type="checkbox" name="checkbox" value="checkbox"/>email notification&#160;&#160;&#160;&#160;
       <input type="checkbox" name="showAll" value="showAll" />show everyone's jobs&#160;&#160;&#160;&#160;
       <input type="checkbox" name="showLogs" value="showLogs" />show execution logs	
 	</ui:define>
@@ -370,9 +367,9 @@
         </tr>
       </table>
       <p>&#160;</p>
-      </h:form>
-
+    </h:form>
     </ui:define>
+    
 
 </ui:composition>
 </html>
