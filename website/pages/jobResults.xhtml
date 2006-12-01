@@ -150,8 +150,8 @@
 	</script>
     </ui:define>
     <ui:define name="mainNav">
-      <input type="checkbox" name="showAll" value="showAll" />show everyone's jobs&#160;&#160;&#160;&#160;
-      <input type="checkbox" name="showLogs" value="showLogs" />show execution logs	
+      <h:selectBooleanCheckbox value="#{jobResultsBean.showEveryonesJobs}" />show everyone's jobs&#160;&#160;&#160;&#160;
+      <h:selectBooleanCheckbox value="#{jobResultsBean.showExecutionLogs}" />show execution logs	
 	</ui:define>
 	
 	
@@ -256,48 +256,47 @@
         
 
         <!--  Loop through job list -->
-        <t:dataList value="#{jobResultsBean.jobResults}" var="jobResult" rowIndexVar="jobIndex">
+        <t:dataList value="#{jobResultsBean.jobs}" var="jobInfo" rowIndexVar="jobIndex">
         
           <!--  Begin task title row -->
           <tr class="task-titlerow">
             <td>
-               <a href="link">#{jobResult.jobInfo.jobNumber}</a>
+               <a href="link">#{jobInfo.jobNumber}</a>
                <input type="hidden" 
-                  id="expansion_state_#{jobResult.jobInfo.jobNumber}"
-                  name="expansion_state_#{jobResult.jobInfo.jobNumber}"
-                  value="#{jobResult.expanded}"/>  
+                  id="expansion_state_#{jobInfo.jobNumber}"
+                  name="expansion_state_#{jobInfo.jobNumber}"
+                  value="#{jobInfo.expanded}"/>  
             </td>
             <td>
               <div align="center">
-                <input name="selectedJobs" type="checkbox" class="jobTableCB" value="#{jobResult.jobInfo.jobNumber}"
-                       onclick="toggleJobCheckboxes('#{jobResult.jobInfo.jobNumber}');"
-                       id="cb_job_#{jobResult.jobInfo.jobNumber}"/>
+                <input name="selectedJobs" type="checkbox" class="jobTableCB" value="#{jobInfo.jobNumber}"
+                       onclick="toggleJobCheckboxes('#{jobInfo.jobNumber}');"
+                       id="cb_job_#{jobInfo.jobNumber}"/>
               </div>
             </td>
             
-            <td align="right" style="cursor: pointer;" onclick="toggleVisibility('#{jobResult.jobInfo.jobNumber}');">
-              <img id="#{jobResult.jobInfo.jobNumber}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" 
-                   width="8" height="8" border="0" style="#{jobResult.expanded == true ? 'display:inline;' : 'display:none;'}"/>
-              <img id="#{jobResult.jobInfo.jobNumber}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" 
-                   width="8" height="8" border="0" style="#{jobResult.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
+            <td align="right" style="cursor: pointer;" onclick="toggleVisibility('#{jobInfo.jobNumber}');">
+              <img id="#{jobInfo.jobNumber}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" 
+                   width="8" height="8" border="0" style="#{jobInfo.expanded == true ? 'display:inline;' : 'display:none;'}"/>
+              <img id="#{jobInfo.jobNumber}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" 
+                   width="8" height="8" border="0" style="#{jobInfo.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
             </td>           
             <td class="task-title" >
-              <span style="cursor: pointer;" onclick="toggleVisibility('#{jobResult.jobInfo.jobNumber}');">#{jobResult.jobInfo.taskName}</span>
-              <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" 
-                   alt="menu" width="14" height="14" border="0" align="absmiddle" 
-                   id="Image2_#{jobIndex}"  name="Image2_#{jobIndex}"                   
-                   onmouseover="MM_swapImage('Image2_#{jobIndex}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
-                   onmouseout="MM_swapImgRestore();"/>
+              <span style="cursor: pointer;" onclick="toggleVisibility('#{jobInfo.jobNumber}');">#{jobInfo.taskName}</span>
+ 
+              <ui:include src="jobsMenu.xhtml">
+                <ui:param name="job" value="#{jobInfo}"/>
+              </ui:include>
             </td>
-            
+                        
             <td>&#160;</td>
             <td>
-              <h:outputText value="#{jobResult.jobInfo.dateSubmitted}">
+              <h:outputText value="#{jobInfo.dateSubmitted}">
                 <f:convertDateTime pattern="MMM dd hh:mm:ss a"/>
               </h:outputText>
             </td>
             <td>
-              <h:outputText value="#{jobResult.jobInfo.dateCompleted}">
+              <h:outputText value="#{jobInfo.dateCompleted}">
                 <f:convertDateTime pattern="MMM dd hh:mm:ss a"/>
               </h:outputText>
             </td>
@@ -310,33 +309,40 @@
           <!-- Loop through job output files -->
 
           <script type="text/javascript" language="javascript">
-            fileRows['#{jobResult.jobInfo.jobNumber}'] = new Array(); 
+            fileRows['#{jobInfo.jobNumber}'] = new Array(); 
           </script>
 
-          <t:dataList value="#{jobResult.outputFiles}" var="fileInfo" rowIndexVar="paramIndex">
+          <!--  Loop through output files -->
+            <t:dataList var="fileInfo" value="#{jobInfo.outputFileParameterInfos}" rowIndexVar="paramIndex">
             <script type="text/javascript" language="javascript">
               <h:outputText>
-	             fileRows['#{jobResult.jobInfo.jobNumber}'][#{paramIndex}] = 'file_row_#{jobResult.jobInfo.jobNumber}_#{paramIndex}';
+	             fileRows['#{jobInfo.jobNumber}'][#{paramIndex}] = 'file_row_#{jobInfo.jobNumber}_#{paramIndex}';
               </h:outputText>
             </script>
-            <tr class="files" id="file_row_#{jobResult.jobInfo.jobNumber}_#{paramIndex}">
+
+            <tr class="files" id="file_row_#{jobInfo.jobNumber}_#{paramIndex}">
               <td>&#160;</td>
               <td>
                 <div align="center">
-                  <input name="selectedFiles" value="#{fileInfo.absolutePath}"
-                         id="selectedFiles_#{jobResult.jobInfo.jobNumber}" type="checkbox" class="jobTableCB"/>
+                  <input name="selectedFiles" value="#{fileInfo.name}"
+                         id="selectedFiles_#{jobInfo.jobNumber}" type="checkbox" class="jobTableCB"/>
                 </div>
               </td>
               <td>&#160;</td>
               <td>
                 <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="4" height="4" hspace="6" vspace="2" border="0"/>
-                <a href="link">#{fileInfo.name}</a>
-                <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
-                     alt="menu" width="14" height="14" border="0" align="absmiddle" 
-                     id="Image2_#{jobIndex}_#{paramIndex}" name="Image2_#{jobIndex}_#{paramIndex}" 
-                     onmouseover="MM_swapImage('Image2_#{jobIndex}_#{paramIndex}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
-                     onmouseout="MM_swapImgRestore();"/>
-              </td>
+ 
+                <h:outputLink value="#{facesContext.externalContext.requestContextPath}/retrieveResults.jsp">#{fileInfo.name}
+                  <f:param name="job" value="#{jobInfo.jobNumber}"/>
+                  <f:param name="filename" value="#{fileInfo.name}"/>
+                </h:outputLink> 
+                            
+                <ui:include src="jobFileMenu.xhtml">
+                  <ui:param name="job" value="#{jobInfo}"/>
+                  <ui:param name="param" value="#{fileInfo}"/>       
+                </ui:include>
+ 
+               </td>
               <td align="right">#{fileInfo.formattedSize}&#160;&#160;&#160;&#160;</td>
               <td>&#160;</td>
               <td>

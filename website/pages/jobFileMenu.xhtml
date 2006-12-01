@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
+  <ui:composition>
+  
+    <script type="text/javascript">
+      pm_popupMenuIds.push('menuDev_#{job.jobNumber}_#{param.value}');
+	</script>
+	
+    <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
+         name="Image_#{job.jobNumber}_#{param.value}" id="Image_#{job.jobNumber}_#{param.value}" 
+         width="14" height="14" border="0" align="top" 
+         onclick="pm_showMenu('menuDev_#{job.jobNumber}_#{param.value}', Position.cumulativeOffset(this));" 
+         onmouseover="MM_swapImage('Image_#{job.jobNumber}_#{param.value}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
+         onmouseout="MM_swapImgRestore();"/>
+    <br/>
+    <div id="menuDev_#{job.jobNumber}_#{param.value}" style="visibility:hidden;" class="popupMenu">
+      <table>
+        <tbody>
+          <tr>
+            <td>
+              <h:commandLink value="Delete" actionListener="#{recentJobsBean.deleteFile}">
+                <f:param value="#{job.jobNumber}/#{param.value}" name="jobFile"/>
+              </h:commandLink>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h:commandLink value="Save" actionListener="#{recentJobsBean.saveFile}">
+                <f:param value="#{job.jobNumber}/#{param.name}" name="jobFileName"/>
+              </h:commandLink>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h:commandLink value="Create Pipeline" actionListener="#{recentJobsBean.createPipeline}">
+                <f:param value="#{job.jobNumber}" name="jobNumber"/>
+              </h:commandLink>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
+            </td>
+          </tr>
+          <t:dataList value="#{param.moduleMenuItems}" var="moduleMenuItem">
+            <tr>
+              <td>
+                <h:commandLink value="#{moduleMenuItem.label}" actionListener="#{recentJobsBean.loadTask}">
+                  <f:param value="#{moduleMenuItem.value}" name="module"/>
+                </h:commandLink>
+              </td>
+            </tr>
+          </t:dataList>
+        </tbody>
+      </table>
+    </div>
+  </ui:composition>
+</html>
