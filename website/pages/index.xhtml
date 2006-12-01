@@ -10,8 +10,8 @@
 <ui:composition template="/templates/common.xhtml">
 	<ui:define name="headText">
 		<script type="text/javascript"
-	src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"></script>
-<script type="text/javascript" language="javascript">
+			src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"></script>
+		<script type="text/javascript" language="javascript">
 <h:outputText>
 	var requiredIds = new Array();
 	var requiredNames = new Array();
@@ -24,6 +24,30 @@
  </t:dataList>
  
 /* <![CDATA[ */
+
+	function callManagedBean(elExpression, parameters) {            
+        var opt = {
+          parameters: parameters + '&el=' + elExpression,
+          onSuccess: receiveResponse,
+          onFailure: function(t) {
+            alert('Error ' + t.status + ' -- ' + t.statusText);
+          }
+        } 
+        new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
+      }
+
+      // The callback function - receive response from server
+      function receiveResponse( req ) {
+        if (req.readyState == 4) {
+          if (req.status == 200) { // only if "OK"
+            alert(req.responseText);
+          } 
+          else {
+            alert("There was a problem retrieving the XML data:\n" + req.statusText);
+          }  
+        }
+      }
+      
 function exportPipeline(lsid, title) {
 	var width = 250;
 	var height = 200;
@@ -35,13 +59,23 @@ function exportPipeline(lsid, title) {
 	exportWindow.focus();
 }	
 	
-function getCode(language) {
-	var selector = $('languageSelect');
+function viewCode() {
+	var selector = $('gp_languageSelector');
 	if(selector.selectedIndex==0) {
 		window.alert('Please select a language');
 		return false;
 	}
-	return true;
+	var form = $('taskForm');
+	
+	var params = 'language=' + selector.options[selector.selectedIndex].value;
+	for(var i = 0; i < form.elements.length; i++) {
+		var e = form.elements[i];
+		if(e.name!='gp_languageSelector') {
+			params += "&" + e.name + "=" + e.value;
+		}
+	}
+	callManagedBean("recentJobsBean.taskCode", params);
+	
 }
 
 function validateForm() {
@@ -102,7 +136,7 @@ function chooserModeChanged() {
 </script>
 
 	</ui:define>
-	
+
 	<c:when test="#{!empty runTaskBean.lsid}">
 		<ui:define name="pageTitle">GenePattern - #{runTaskBean.name}</ui:define>
 	</c:when>
@@ -128,23 +162,22 @@ function chooserModeChanged() {
 					class="barhead-task">
 					<tr>
 						<td>#{runTaskBean.name}</td>
-						<td align="right"><span class="barhead-version">version #{runTaskBean.version} &#160;</span>
-						<!-- <c:if test="#{!empty runTaskBean.menuItems}">
+						<td align="right"><span class="barhead-version">version
+						#{runTaskBean.version} &#160;</span> <!-- <c:if test="#{!empty runTaskBean.menuItems}">
 						<t:jscookMenu layout="hbr" theme="ThemePanel" org.apache.myfaces.STYLE_LOCATION="/css/jscookmenu">
 							<t:navigationMenuItem itemLabel="-Change Version-" icon="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif">
 							<t:navigationMenuItems value="#{runTaskBean.menuItems}" />
 							</t:navigationMenuItem>
 						</t:jscookMenu>
 						</c:if>
-						 -->
-						</td>
+						 --></td>
 					</tr>
 				</table>
 
 
 				<form
 					action="#{facesContext.externalContext.requestContextPath}/#{runTaskBean.formAction}"
-					method="post" enctype="multipart/form-data"
+					method="post" id="taskForm" enctype="multipart/form-data"
 					onsubmit="return validateForm();"><input type="hidden"
 					name="taskLSID" value="#{runTaskBean.lsid}" /> <input
 					type="hidden" name="taskName" value="#{runTaskBean.name}" />
@@ -157,7 +190,8 @@ function chooserModeChanged() {
 
 
 						<tr class="taskperameter">
-							<td><span class="description"><c:if test="#{runTaskBean.inputParametersExist}">* required field</c:if></span></td>
+							<td><span class="description"><c:if
+								test="#{runTaskBean.inputParametersExist}">* required field</c:if></span></td>
 							<td colspan="2" class="maintasknav2"><input name="cmd"
 								value="run" type="submit" /> <input name="reset" value="reset"
 								onclick="window.location.href=window.location.href"
@@ -236,41 +270,43 @@ function chooserModeChanged() {
 						</t:dataList>
 
 						<c:if test="#{!empty runTaskBean.parameters}">
-						<tr>
-							<td>&#160;</td>
-							<td colspan="2" class="maintasknav2"><input name="cmd"
-								value="run" type="submit" /> <input name="reset" value="reset"
-								onclick="window.location.href=window.location.href"
-								type="button" /> &#160;&#160;<a
-								href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?name=#{runTaskBean.lsid}">properties</a>
-							&#160;|&#160;<c:choose>
-								<c:when test="#{runTaskBean.pipeline==true}">
-									<a
-										onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>
-								</c:when>
-								<c:otherwise>
-									<a
-										href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>
+							<tr>
+								<td>&#160;</td>
+								<td colspan="2" class="maintasknav2"><input name="cmd"
+									value="run" type="submit" /> <input name="reset" value="reset"
+									onclick="window.location.href=window.location.href"
+									type="button" /> &#160;&#160;<a
+									href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?name=#{runTaskBean.lsid}">properties</a>
+								&#160;|&#160;<c:choose>
+									<c:when test="#{runTaskBean.pipeline==true}">
+										<a
+											onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>
+									</c:when>
+									<c:otherwise>
+										<a
+											href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>
 
-								</c:otherwise>
-							</c:choose>&#160;|&#160; <c:choose>
-								<c:when test="#{runTaskBean.pipeline==false}">
-									<a
-										href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>
-								</c:when>
-								<c:otherwise>
-									<a
-										href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
-								</c:otherwise>
-							</c:choose> &#160;|&#160;<a target="_blank"
-								href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
-							</td>
-						</tr>
+									</c:otherwise>
+								</c:choose>&#160;|&#160; <c:choose>
+									<c:when test="#{runTaskBean.pipeline==false}">
+										<a
+											href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>
+									</c:when>
+									<c:otherwise>
+										<a
+											href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
+									</c:otherwise>
+								</c:choose> &#160;|&#160;<a target="_blank"
+									href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
+								</td>
+							</tr>
 						</c:if>
+
+
 
 					</tbody>
 				</table>
-				</form>
+				
 				<p>&#160;</p>
 
 				<br />
@@ -278,29 +314,27 @@ function chooserModeChanged() {
 				call #{runTaskBean.name}: </strong>
 				<p></p>
 
-				<form method="get"
-					action="#{facesContext.externalContext.requestContextPath}/getPipelineCode.jsp" onsubmit="return getCode();">
-				<input type="hidden" name="download" value="1" /> <input
-					type="hidden" name="name" value="#{runTaskBean.lsid}" /> <select
-					name="language" id="languageSelect">
+				<select name="gp_languageSelector" id="gp_languageSelector">
 					<option selected="selected">- Language -</option>
 					<option>Java</option>
 					<option>MATLAB</option>
 					<option>R</option>
-				</select> &#160; <input type="submit" name="Submit" value="code" /></form>
-				</div>
+				</select> &#160; <input type="button" onclick="viewCode();"
+					value="View Code" /></div>
+				</form>
 
 
 			</c:when>
 			<c:otherwise>
-			  <c:choose>
-			    <c:when test="#{runTaskBean.splashMessage != null}">
-			      <p/><h3>#{runTaskBean.splashMessage}</h3>
-			    </c:when>
-			    <c:otherwise>
-			      <ui:include src="splashpage.xhtml" />
-			    </c:otherwise>	
-			  </c:choose>			
+				<c:choose>
+					<c:when test="#{runTaskBean.splashMessage != null}">
+						<p />
+						<h3>#{runTaskBean.splashMessage}</h3>
+					</c:when>
+					<c:otherwise>
+						<ui:include src="splashpage.xhtml" />
+					</c:otherwise>
+				</c:choose>
 			</c:otherwise>
 		</c:choose>
 	</ui:define>
