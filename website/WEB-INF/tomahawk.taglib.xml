@@ -285,7 +285,14 @@
             <component-type>org.apache.myfaces.HtmlSelectOneRadio</component-type>
             <renderer-type>org.apache.myfaces.Radio</renderer-type>
         </component>
-    </tag> 
+    </tag>
+    <tag>
+        <tag-name>selectOneListbox</tag-name>
+        <component>
+            <component-type>org.apache.myfaces.HtmlSelectOneListbox</component-type>
+            <renderer-type>org.apache.myfaces.Listbox</renderer-type>
+        </component>
+    </tag>
     <tag>
         <tag-name>stylesheet</tag-name>
         <component>

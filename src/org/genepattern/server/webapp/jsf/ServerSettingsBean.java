@@ -11,10 +11,14 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import javax.faces.event.ActionEvent;
+import javax.faces.model.SelectItem;
 
 import org.genepattern.server.util.PropertiesManager;
 
@@ -37,7 +41,7 @@ public class ServerSettingsBean {
 	private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 	
 	
-	private static final String defaultModuleReposityURL="http://www.broad.mit.edu/webservices/genepatternmodulerepository";
+	private static final String defaultModuleRepositoryURL="http://www.broad.mit.edu/webservices/genepatternmodulerepository";
 	private static final String defaultLog4jPath = "./webapps/gp/WEB-INF/classes/log4j.properties";
 	private static final String log4jAppenderR = "log4j.appender.R.File";
 	
@@ -273,8 +277,75 @@ public class ServerSettingsBean {
 	/**
 	 * @return
 	 */
+	public Collection getModuleRepositoryURLs() {
+		String moduleRepositoryURLs = (String)settings.get("ModuleRepositoryURLs");
+		String[] result=moduleRepositoryURLs.split(",");
+		Collection<SelectItem> moduleRepositoryURLsLst=new ArrayList<SelectItem>();
+		for (int i=0; i<result.length; i++) {
+			moduleRepositoryURLsLst.add(new SelectItem(result[i]));
+		}
+		return moduleRepositoryURLsLst;
+	}
+	
+	/**
+	 * @param mrURLs
+	 */
+	public void setModuleRepositoryURLs(ArrayList mrURLs)
+	{
+		StringBuffer moduleRepositoryURLs=new StringBuffer();
+		for(int i=0; i<mrURLs.size(); i++) {
+			moduleRepositoryURLs.append(mrURLs.get(i)).append(",");
+		}
+		settings.put("ModuleRepositoryURLs", moduleRepositoryURLs.substring(0, moduleRepositoryURLs.length()-1).toString());
+	}
+	
+	/**
+	 * @return
+	 */
+	public String addModuleRepositoryURL() {
+		String currentModuleRepositoryURL = (String)settings.get("ModuleRepositoryURL");
+		String moduleRepositoryURLs = (String)settings.get("ModuleRepositoryURLs");
+		String[] result=moduleRepositoryURLs.split(",");
+		boolean exist=false;
+		for (int i=0; i<result.length; i++) {
+			if (result[i]!=null && result[i].equals(currentModuleRepositoryURL)) {
+				exist=true;
+				break;
+			}
+		}
+		if(!exist) {
+			moduleRepositoryURLs=moduleRepositoryURLs.concat(",").concat(currentModuleRepositoryURL);
+		}
+		settings.put("ModuleRepositoryURLs", moduleRepositoryURLs);
+		saveSettings();
+		return null;
+	}
+	
+	/**
+	 * @return
+	 */
 	public String resetModuleRepositoryURL() {
-		settings.put("ModuleRepositoryURL", defaultModuleReposityURL);
+		settings.put("ModuleRepositoryURL", defaultModuleRepositoryURL);
+		return null;
+	}
+	
+	/**
+	 * @return
+	 */
+	public String removeModuleRepositoryURL() {
+		String currentModuleRepositoryURL = (String)settings.get("ModuleRepositoryURL");
+		String moduleRepositoryURLs = (String)settings.get("ModuleRepositoryURLs");
+		String[] result=moduleRepositoryURLs.split(",");
+		StringBuffer newModuleRepositoryURLs=new StringBuffer(defaultModuleRepositoryURL+",");
+		if (!defaultModuleRepositoryURL.equals(currentModuleRepositoryURL)) {		
+			for (int i=0; i<result.length; i++) {
+				if (!defaultModuleRepositoryURL.equals(result[i]) && result[i]!=null && !result[i].equals(currentModuleRepositoryURL)) {
+					newModuleRepositoryURLs.append(result[i]).append(",");
+				}
+			}
+			settings.put("ModuleRepositoryURLs", newModuleRepositoryURLs.substring(0, newModuleRepositoryURLs.length()-1).toString());
+		}
+		resetModuleRepositoryURL();
 		return null;
 	}
 	
