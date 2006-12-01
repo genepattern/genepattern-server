@@ -30,14 +30,13 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
 public class CodeGeneratorUtil {
-   
+
     private static Map<String, TaskCodeGenerator> languageToCodeGenerator;
     static {
         languageToCodeGenerator = new HashMap<String, TaskCodeGenerator>();
-        languageToCodeGenerator.put("Java",
-                new JavaPipelineCodeGenerator());
-        languageToCodeGenerator.put("MATLAB",
-                new MATLABPipelineCodeGenerator());
+        languageToCodeGenerator.put("Java", new JavaPipelineCodeGenerator());
+        languageToCodeGenerator
+                .put("MATLAB", new MATLABPipelineCodeGenerator());
         languageToCodeGenerator.put("R", new RPipelineCodeGenerator());
     }
 
@@ -71,9 +70,8 @@ public class CodeGeneratorUtil {
         }
         return jobNumber;
     }
-    
-    public static String getFileExtension(String language)
-    throws Exception {
+
+    public static String getFileExtension(String language) throws Exception {
         TaskCodeGenerator codeGenerator = languageToCodeGenerator.get(language);
         return codeGenerator.getFileExtension();
     }
@@ -102,8 +100,9 @@ public class CodeGeneratorUtil {
         ParameterInfo[] params = jobInfo.getParameterInfoArray();
         for (int i = 0; i < params.length; i++) {
             if (!params[i].isOutputFile()) {
-                String mode = (String) params[i].getAttributes().get(
-                        ParameterInfo.MODE);
+                String mode = params[i].getAttributes() != null ? (String) params[i]
+                        .getAttributes().get(ParameterInfo.MODE)
+                        : null;
                 if (mode != null
                         && mode.equals(ParameterInfo.CACHED_INPUT_MODE)) {
                     String name = getJobResultFileName(jobInfo, i);
@@ -121,7 +120,8 @@ public class CodeGeneratorUtil {
                         log.error(x);
                         throw new Exception("Unable to encode " + name);
                     }
-                } else if (params[i].getAttributes().get("client_filename") != null) {
+                } else if (params[i].getAttributes() != null
+                        && params[i].getAttributes().get("client_filename") != null) {
                     String clientFile = (String) params[i].getAttributes().get(
                             "client_filename");
                     parameterInfoList.add(new ParameterInfo(
