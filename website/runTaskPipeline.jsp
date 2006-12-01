@@ -290,7 +290,7 @@ show execution logs</td>
             <tr class="smalltype">
               <td >&nbsp;</td>
               <td valign="top"><nobr>
-                <div align="center"><a href="#">download</a> | <a href="#">delete</a> </div>
+                <div align="center"><a href="#"  onclick="downloadCheckedFiles()">download</a> | <a href="#"  onclick="deleteCheckedFiles()">delete</a> </div>
 
               </nobr></td>
               <td>&nbsp;</td>
@@ -386,14 +386,10 @@ show execution logs</td>
         String status = "started";
         while (!(status.equalsIgnoreCase("ERROR") || (status
                 .equalsIgnoreCase("Finished")))) {
-            Thread.sleep(500);
-           // System.out.println("Job=" + job);
-            
+            Thread.sleep(500);         
             job = analysisClient.checkStatus(job.getJobNumber());
-              
-            
-            if (job != null)
-	            status = job.getStatus();
+       
+            if (job != null)  status = job.getStatus();
             
         }
 
@@ -411,7 +407,7 @@ show execution logs</td>
             String fileName = new File("../../" + jobParams[j].getValue())
                     .getName();
             sbOut.append("<tr><td>&nbsp;</td><td align='center'><input type=\"checkbox\" value=\"");
-            sbOut.append("NAME" + "/" + fileName + "=" + jobInfo.getJobNumber() + "/" + fileName);
+            sbOut.append(""+jobInfo.getJobNumber() + "/" + fileName);
             sbOut.append("\" name=\"dl\" ");
             sbOut.append("checked></td><td/><td><a target=\"_blank\" href=\"");
             String outFileUrl;
@@ -434,7 +430,7 @@ show execution logs</td>
         }
     out.println("<tr><td colspan=4>&nbsp;</td></tr>");
 
-     out.println("<tr class=\"smalltype\"><td colspan=4 valign='top'><nobr><div align='left'><a href='#' onclick=\"downloadCheckedFiles()\">download</a> | <a href='#' onclick=\"deleteCheckedFiles()\" >delete</a> </div></nobr></td></tr>");
+     out.println("<tr class=\"smalltype\"><td/><td colspan=1  valign='top'><nobr><div align='center'><a href='#' onclick=\"downloadCheckedFiles()\">download</a> | <a href='#' onclick=\"deleteCheckedFiles()\" >delete</a> </div></nobr></td><td/><td/></tr>");
 
 
            out.flush();

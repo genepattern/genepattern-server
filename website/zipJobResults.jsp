@@ -233,16 +233,10 @@ if(deleteJob!=null && deleteJob.length > 0) {
 }
 
 if (isDelete) {
-%>
-   <title>Delete job results</title>
-
-   </head>
-   <body>
-   <jsp:include page="navbar.jsp"/>
-<%
    LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
    if (attachmentNames != null) {
       int _jobId = Integer.parseInt(jobID);
+
       for (int j = 0; j < attachmentNames.length; j++) {
          String value = attachmentNames[j];
          try {
@@ -253,6 +247,7 @@ wse.printStackTrace();
 		}
       }
    }
+   response.sendRedirect("pages/index.jsf");
 }
 
 LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
