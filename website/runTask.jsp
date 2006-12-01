@@ -237,14 +237,6 @@ No such task <%= taskName %><br>
 <table cols="2">
 
 <tr>
-<td valign='top' height='100%'>
-    <iframe frameborder="0" scrolling="yes" marginwidth="1" src="getRecentJobs.jsp" <%=iFrameWidth%> height="500"
-            name="iframe" id="iframeid">
-        No &lt;iframes&gt; support :(
-    </iframe>
-
-
-</td>
 <td valign='top'>
 <%
     int veridx = ((String) tia.get(GPConstants.LSID)).lastIndexOf(":");
