@@ -273,7 +273,7 @@ show execution logs</td>
 <table width='100%' cellpadding="0">
     <tr>
 	  <td width="50px">
-  <input name="stopCmd" type="button" value="stop..." onclick="stopPipeline(this, <%= job.getJobNumber()%>)" class="little">
+  <input name="stopCmd" id="stopCmd" type="button" value="stop..." onclick="stopPipeline(this, <%= job.getJobNumber()%>)" class="little">
 	  </td>
         <td>
             Running <a href="addTask.jsp?view=1&name=<%=requestParameters.get("taskLSID")%>"><%=
@@ -448,17 +448,18 @@ show execution logs</td>
 
 </table>
 <script language="Javascript">
+	document.getElementById("stopCmd").disabled=true;
+	document.getElementById("stopCmd").visibility=false;
 
-    document.frmstop.cmd.disabled = true;
-    document.frmstop.cmd.visibility = false;
-    var frm = document.frmemail;
-    frm.to.readonly = true;
+  // TO DO - email here
+//    var frm = document.frmemail;
+//    frm.to.readonly = true;
     // no more edits as it is about to be used for addressing
-    var to = frm.to.value;
-    if (to != "") {
-        frm.message.value = frm.message.value + 'job <%=jobID%> completed';
-        frm.submit();
-    }
+//    var to = frm.to.value;
+//    if (to != "") {
+//        frm.message.value = frm.message.value + 'job <%=jobID%> completed';
+//        frm.submit();
+//    }
 </script>
 <%
     GregorianCalendar purgeTOD = new GregorianCalendar();
