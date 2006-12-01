@@ -1,27 +1,27 @@
 package org.genepattern.server.webapp.jsf;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Map;
 
 import javax.faces.FactoryFinder;
-import javax.faces.application.Application;
-import javax.faces.application.ApplicationFactory;
 import javax.faces.context.FacesContext;
 import javax.faces.context.FacesContextFactory;
-import javax.faces.el.ValueBinding;
 import javax.faces.lifecycle.Lifecycle;
 import javax.faces.lifecycle.LifecycleFactory;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+
 /**
  * Servlet implementation class for Servlet: SnpViewerServlet
  * 
  */
-public class AjaxServlet extends javax.servlet.http.HttpServlet implements javax.servlet.Servlet {
+public class AjaxServlet extends javax.servlet.http.HttpServlet implements
+        javax.servlet.Servlet {
+    private static Logger log = Logger.getLogger(AjaxServlet.class);
+
     /*
      * (non-Java-doc)
      * 
@@ -33,50 +33,48 @@ public class AjaxServlet extends javax.servlet.http.HttpServlet implements javax
 
     @Override
     public void init() throws ServletException {
-        // TODO Auto-generated method stub
-        System.out.println("AjaxServlet initialized");
         super.init();
     }
 
-    /*
-     * (non-Java-doc)
-     * 
-     * @see javax.servlet.http.HttpServlet#doGet(HttpServletRequest request,
-     *      HttpServletResponse response)
-     */
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Map parameters = request.getParameterMap();
-        Enumeration params = request.getParameterNames();
-        System.out.println("Get");
-
-        while (params.hasMoreElements()) {
-            String name = (String) params.nextElement();
-            Object value = parameters.get(name);
-            System.out.println(name + " -> " + parameters.get(name));
+    @Override
+    protected void doGet(HttpServletRequest request,
+            HttpServletResponse response) {
+        try {
+            String elExpression = request.getParameter("el");
+            executeMethod(elExpression, request, response);
+        } catch (Throwable t) {
+            log.error(t);
         }
     }
 
-    /**
-     * 
-     * 
-     * @see javax.servlet.http.HttpServlet#doPost(HttpServletRequest request,
-     *      HttpServletResponse response)
-     */
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
-            IOException {
+    @Override
+    protected void doPost(HttpServletRequest request,
+            HttpServletResponse response) {
+        try {
+            Map parameterMap = request.getParameterMap();
+            String elExpression = ((String[]) parameterMap.get("el"))[0];
+            executeMethod(elExpression, request, response);
+        } catch (Throwable t) {
+            log.error(t);
+        }
+    }
 
-        Map parameterMap = request.getParameterMap();
-        String elExpression = ((String[]) parameterMap.get("el"))[0];
+    protected void executeMethod(String elExpression,
+            HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
 
-        LifecycleFactory lcFactory = (LifecycleFactory) FactoryFinder.getFactory(FactoryFinder.LIFECYCLE_FACTORY);
-        Lifecycle lifecycle = lcFactory.getLifecycle(LifecycleFactory.DEFAULT_LIFECYCLE);
+        LifecycleFactory lcFactory = (LifecycleFactory) FactoryFinder
+                .getFactory(FactoryFinder.LIFECYCLE_FACTORY);
+        Lifecycle lifecycle = lcFactory
+                .getLifecycle(LifecycleFactory.DEFAULT_LIFECYCLE);
 
         FacesContextFactory factory = (FacesContextFactory) FactoryFinder
                 .getFactory(FactoryFinder.FACES_CONTEXT_FACTORY);
-        FacesContext fc = factory.getFacesContext(getServletContext(), request, response, lifecycle);
-
-
-        Object value = fc.getApplication().createValueBinding("#{" + elExpression + "}").getValue(fc);
+        FacesContext fc = factory.getFacesContext(getServletContext(), request,
+                response, lifecycle);
+        elExpression = "#{" + elExpression + "}";
+        Object value = fc.getApplication().createValueBinding(elExpression)
+                .getValue(fc);
 
         response.setContentType("text/html");
         response.setHeader("Cache-Control", "no-cache");
