@@ -23,6 +23,11 @@ public class BaseDAO {
     public static int JOB_WAITING_STATUS = 1;
 
 
+    public BaseDAO() {
+    	// Start a transaction if not begun already
+    	HibernateUtil.beginTransaction();
+    }
+    
     protected Session getSession() {
         return HibernateUtil.getSession();
     }
