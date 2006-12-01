@@ -17,21 +17,27 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
+import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
-public class JobResultsBean {
+public class JobResultsBean extends JobBean {
 	private static Logger log = Logger.getLogger(JobResultsBean.class);
 
 	/**
@@ -55,8 +61,6 @@ public class JobResultsBean {
 	 * File sort direction (true for ascending, false for descending)
 	 */
 	private boolean fileSortAscending = true;
-
-	private List<JobResultInfo> jobResults;
 
 	private boolean showEveryonesJobs = true;
 
@@ -103,12 +107,7 @@ public class JobResultsBean {
 				int jobNumber = Integer.parseInt(job);
 				try {
 					analysisClient.deleteJob(jobNumber);
-					for (int i = 0; i < jobResults.size(); i++) {
-						if (jobResults.get(i).getJobInfo().getJobNumber() == jobNumber) {
-							jobResults.remove(i);
-							break;
-						}
-					}
+					HibernateUtil.getSession().flush();
 				} catch (NumberFormatException e) {
 					log.error(e);
 				} catch (WebServiceException e) {
@@ -151,8 +150,8 @@ public class JobResultsBean {
 		Comparator comparator = new Comparator() {
 
 			public int compare(Object o1, Object o2) {
-				JobInfo c1 = ((JobResultInfo) o1).getJobInfo();
-				JobInfo c2 = ((JobResultInfo) o2).getJobInfo();
+				MyJobInfo c1 = ((MyJobInfo) o1);
+				MyJobInfo c2 = ((MyJobInfo) o2);
 				if (column == null) {
 					return 0;
 				} else if (column.equals("jobNumber")) {
@@ -180,7 +179,7 @@ public class JobResultsBean {
 				}
 			}
 		};
-		Collections.sort(jobResults, comparator);
+		Collections.sort(getJobs(), comparator);
 	}
 
 	private void sortFiles() {
@@ -188,8 +187,8 @@ public class JobResultsBean {
 		Comparator comparator = new Comparator() {
 
 			public int compare(Object o1, Object o2) {
-				FileInfo c1 = (FileInfo) o1;
-				FileInfo c2 = (FileInfo) o2;
+				MyParameterInfo c1 = (MyParameterInfo) o1;
+				MyParameterInfo c2 = (MyParameterInfo) o2;
 				if (column == null) {
 					return 0;
 				} else if (column.equals("name")) {
@@ -212,46 +211,32 @@ public class JobResultsBean {
 			}
 		};
 
-		for (JobResultInfo jobResult : jobResults) {
-			Collections.sort(jobResult.getOutputFiles(), comparator);
+		for (MyJobInfo jobResult : getJobs()) {
+			Arrays.sort(jobResult.getParameterInfoArray(), comparator);
 		}
 
 	}
 
-	public List<JobResultInfo> getJobResults() {
-		if (jobResults == null) {
-			String userId = UIBeanHelper.getUserId();
-			LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
-			try {
-				JobInfo[] jobs = analysisClient.getJobs(
-						showEveryonesJobs ? null : userId, -1,
-						Integer.MAX_VALUE, false);
-				jobResults = new ArrayList<JobResultInfo>(jobs.length);
-				for (int i = 0; i < jobs.length; i++) {
-					jobResults.add(new JobResultInfo(jobs[i]));
-				}
-			} catch (WebServiceException wse) {
-				log.error(wse);
-			}
+	protected JobInfo[] getJobInfos() {
 
+		String userId = UIBeanHelper.getUserId();
+		LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
+		try {
+			return analysisClient.getJobs(showEveryonesJobs ? null : userId,
+					-1, Integer.MAX_VALUE, false);
+		} catch (WebServiceException wse) {
+			log.error(wse);
+			return new JobInfo[0];
 		}
-		return jobResults;
+
 	}
 
-	public Boolean isShowEveryonesJobs() {
+	public boolean isShowEveryonesJobs() {
 		return showEveryonesJobs;
 	}
 
-	public void setShowEveryonesJobs(Boolean showAllJobs) {
-		this.showEveryonesJobs = showAllJobs;
-	}
-
-	public Boolean isShowExecutionLogs() {
+	public boolean isShowExecutionLogs() {
 		return showExecutionLogs;
-	}
-
-	public void setShowExecutionLogs(Boolean showExecutionLogs) {
-		this.showExecutionLogs = showExecutionLogs;
 	}
 
 	public List getCheckbox() {
@@ -294,84 +279,12 @@ public class JobResultsBean {
 		this.jobSortAscending = jobSortAscending;
 	}
 
-	/**
-	 * Represents a job result. Wraps JobInfo and adds methods for getting the
-	 * output files and the expansion state of the associated UI panel
-	 * 
-	 */
-	public static class JobResultInfo {
-		JobInfo jobInfo;
-
-		List<FileInfo> outputFiles;
-
-		boolean expanded = true;
-
-		public JobResultInfo(JobInfo jobInfo) {
-			this.jobInfo = jobInfo;
-			List<File> files = JobHelper.getOutputFiles(jobInfo);
-			outputFiles = new ArrayList<FileInfo>(files.size());
-			for (File file : files) {
-				outputFiles.add(new FileInfo(file));
-			}
-		}
-
-		public JobInfo getJobInfo() {
-			return jobInfo;
-		}
-
-		public List<FileInfo> getOutputFiles() {
-			return outputFiles;
-		}
-
-		public boolean isExpanded() {
-			return expanded;
-		}
+	public void setShowEveryonesJobs(boolean showEveryonesJobs) {
+		this.showEveryonesJobs = showEveryonesJobs;
 	}
 
-	/**
-	 * Misc info on a job output file
-	 */
-	public static class FileInfo {
-		String name;
-
-		String absolutePath;
-
-		long size;
-
-		Date lastModified;
-
-		boolean exists;
-
-		public FileInfo(File file) {
-			this.name = file.getName();
-			this.size = file.length();
-			this.exists = file.exists();
-			this.absolutePath = file.getAbsolutePath();
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(file.lastModified());
-			this.lastModified = cal.getTime();
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public long getSize() {
-			return size;
-		}
-
-		public String getFormattedSize() {
-			NumberFormat nf = NumberFormat.getInstance();
-			return nf.format(Math.max(1, size / 1000)) + "k";
-		}
-
-		public Date getLastModified() {
-			return lastModified;
-		}
-
-		public String getAbsolutePath() {
-			return absolutePath;
-		}
+	public void setShowExecutionLogs(boolean showExecutionLogs) {
+		this.showExecutionLogs = showExecutionLogs;
 	}
 
 }
