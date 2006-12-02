@@ -1,5 +1,22 @@
 package org.genepattern.server.webapp.jsf;
 
+import org.apache.log4j.Logger;
+import org.apache.myfaces.custom.navmenu.NavigationMenuItem;
+import org.genepattern.codegenerator.CodeGeneratorUtil;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
+import org.genepattern.util.GPConstants;
+import org.genepattern.util.SemanticUtil;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
+
+import javax.faces.event.ActionEvent;
+import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,24 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import javax.faces.event.ActionEvent;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.navmenu.NavigationMenuItem;
-import org.genepattern.codegenerator.CodeGeneratorUtil;
-import org.genepattern.gpge.ui.tasks.TaskLauncher;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.webservice.server.dao.AdminDAO;
-import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
-import org.genepattern.util.SemanticUtil;
-import org.genepattern.webservice.AnalysisJob;
-import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.WebServiceException;
 
 public abstract class JobBean {
     private static Logger log = Logger.getLogger(JobBean.class);
@@ -204,7 +203,8 @@ public abstract class JobBean {
 
             JobInfo[] children = client.getChildren(jobNumber);
 
-            List<ParameterInfo> outputFileParameters = new ArrayList<ParameterInfo>();
+            List<ParameterInfo> outputFileParameters =
+                    new ArrayList<ParameterInfo>();
             if (children.length > 0) {
                 for (JobInfo child : children) {
                     outputFileParameters.addAll(getOutputParameters(child));
@@ -320,7 +320,8 @@ public abstract class JobBean {
             }
             ParameterInfo[] parameters = taskInfo.getParameterInfoArray();
 
-            ParameterInfo[] jobParameters = new ParameterInfo[parameters.length];
+            ParameterInfo[] jobParameters =
+                    new ParameterInfo[parameters.length];
 
             if (parameters != null) {
                 int i = 0;
@@ -335,11 +336,11 @@ public abstract class JobBean {
 
             JobInfo jobInfo = new JobInfo(-1, -1, null, null, null,
                     jobParameters, UIBeanHelper.getUserId(), lsid, taskInfo
-                            .getName());
+                    .getName());
 
             AnalysisJob job = new AnalysisJob(System
-                    .getProperty("GenePatternURL"), jobInfo, TaskLauncher
-                    .isVisualizer(taskInfo));
+                    .getProperty("GenePatternURL"), jobInfo,
+                    JobBean.isVisualizer(taskInfo));
 
             return CodeGeneratorUtil.getCode(language, job);
         } catch (WebServiceException e) {
@@ -349,6 +350,11 @@ public abstract class JobBean {
             log.error(e);
         }
         return "";
+    }
+
+    public static boolean isVisualizer(TaskInfo taskInfo) {
+        return "visualizer".equalsIgnoreCase((String) taskInfo
+                .getTaskInfoAttributes().get(GPConstants.TASK_TYPE));
     }
 
     public void viewCode(ActionEvent e) {
@@ -411,7 +417,6 @@ public abstract class JobBean {
     /**
      * Represents a job result. Wraps JobInfo and adds methods for getting the
      * output files and the expansion state of the associated UI panel
-     * 
      */
     public static class MyJobInfo {
         private JobInfo jobInfo;
@@ -421,7 +426,7 @@ public abstract class JobBean {
         private boolean expanded = true;
 
         public MyJobInfo(JobInfo jobInfo,
-                Map<String, Collection<TaskInfo>> kindToModules) {
+                         Map<String, Collection<TaskInfo>> kindToModules) {
             this.jobInfo = jobInfo;
             outputFiles = new ArrayList<MyParameterInfo>();
             ParameterInfo[] parameterInfoArray = jobInfo
@@ -512,16 +517,18 @@ public abstract class JobBean {
 
         boolean exists;
 
-        List<NavigationMenuItem> moduleMenuItems = new ArrayList<NavigationMenuItem>();
+        List<NavigationMenuItem> moduleMenuItems =
+                new ArrayList<NavigationMenuItem>();
 
-        private static final Comparator COMPARATOR = new NavigationMenuItemComparator();
+        private static final Comparator COMPARATOR =
+                new NavigationMenuItemComparator();
 
         public List<NavigationMenuItem> getModuleMenuItems() {
             return moduleMenuItems;
         }
 
         public MyParameterInfo(ParameterInfo p, File file,
-                Collection<TaskInfo> modules) {
+                               Collection<TaskInfo> modules) {
             this.p = p;
             this.size = file.length();
             this.exists = file.exists();
