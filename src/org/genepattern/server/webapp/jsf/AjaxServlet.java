@@ -53,7 +53,11 @@ public class AjaxServlet extends javax.servlet.http.HttpServlet implements
         try {
             Map parameterMap = request.getParameterMap();
             String elExpression = ((String[]) parameterMap.get("el"))[0];
-            executeMethod(elExpression, request, response);
+	      if (elExpression != null){
+	            executeMethod(elExpression, request, response);
+		} else {
+			executeCommand(parameterMap, request, response);
+		}
         } catch (Throwable t) {
             log.error(t);
         }
@@ -85,4 +89,29 @@ public class AjaxServlet extends javax.servlet.http.HttpServlet implements
         response.getWriter().close();
 
     }
+
+	/**
+	 * execute some command that is not JSF EL
+	 */
+
+	protected void executeCommand(Map parameterMap, HttpServletRequest request, HttpServletResponse response) throws Exception{
+	  	
+		String cmd = ((String[]) parameterMap.get("cmd"))[0];
+		String value= null;
+
+		if ("notifyEmailJobCompletion".equalsIgnoreCase(cmd)){
+			// setup for polling, put any return into value
+		
+		}
+ 		response.setContentType("text/html");
+       	response.setHeader("Cache-Control", "no-cache");
+       	if (value != null) {
+            	response.getWriter().write(value);
+        	}
+        	response.getWriter().flush();
+        	response.getWriter().close();
+
+	}
+
+
 }
