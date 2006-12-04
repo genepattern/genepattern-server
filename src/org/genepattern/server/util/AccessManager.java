@@ -78,7 +78,7 @@ public class AccessManager implements IGPConstants {
 		}
 		if (refresh ) {
 			clientList = System.getProperty("gp.allowed.clients");
-			if ((clientList != null)&& (!(clientList.trim().equals("Any computer")))) {
+			if ((clientList != null)&& (!(clientList.trim().equals("Any")))) {
 				allowedClients = new Vector();
 				StringTokenizer strtok = new StringTokenizer(clientList, ",");
 				while (strtok.hasMoreTokens()) {
