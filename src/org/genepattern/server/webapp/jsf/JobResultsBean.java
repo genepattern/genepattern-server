@@ -21,8 +21,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -66,19 +69,14 @@ public class JobResultsBean extends JobBean {
 
 	private boolean showExecutionLogs = true;
 
-	List checkbox = new ArrayList();
-
-	public JobResultsBean() {
-
-	}
+    Collection checkbox = new HashSet();
+   
 
 	/**
-	 * Update the jobResults list
+	 * Delete the selected jobs and files.
 	 * 
+	 * @return
 	 */
-	private void updateJobs() {
-	}
-
 	public String delete() {
 		String[] selectedJobs = UIBeanHelper.getRequest().getParameterValues(
 				"selectedJobs");
@@ -86,7 +84,9 @@ public class JobResultsBean extends JobBean {
 
 		String[] selectedFiles = UIBeanHelper.getRequest().getParameterValues(
 				"selectedFiles");
-		// TODO -- deleteFiles(selectedFiles);
+		for(String jobFileName: selectedFiles) {
+			deleteFile(jobFileName);
+		}
 
 		return null;
 
@@ -139,10 +139,11 @@ public class JobResultsBean extends JobBean {
 	 * 
 	 * @return
 	 */
-	public void sort(ActionEvent event) {
+	public String sort() {
 
 		sortJobs();
 		sortFiles();
+        return null;
 	}
 
 	private void sortJobs() {
@@ -212,7 +213,7 @@ public class JobResultsBean extends JobBean {
 		};
 
 		for (MyJobInfo jobResult : getJobs()) {
-			Arrays.sort(jobResult.getParameterInfoArray(), comparator);
+			Collections.sort(jobResult.getOutputFileParameterInfos(), comparator);
 		}
 
 	}
@@ -239,11 +240,11 @@ public class JobResultsBean extends JobBean {
 		return showExecutionLogs;
 	}
 
-	public List getCheckbox() {
+	public Collection getCheckbox() {
 		return checkbox;
 	}
 
-	public void setCheckbox(List checkboxList) {
+	public void setCheckbox(Collection checkboxList) {
 		this.checkbox = checkboxList;
 	}
 
@@ -286,5 +287,7 @@ public class JobResultsBean extends JobBean {
 	public void setShowExecutionLogs(boolean showExecutionLogs) {
 		this.showExecutionLogs = showExecutionLogs;
 	}
+
+
 
 }

@@ -21,6 +21,7 @@
     }
 
 
+
     // Toggle the sort order state.  
 
     function toggleSortOrder(id) {
@@ -51,11 +52,12 @@
     }
 
 
+    var jobNumbers = new Array();
     var fileRows = new Object();
 
     function toggleJobCheckboxes(jobNo)
     {
-      var mainCheckbox = document.getElementById("cb_job_" + jobNo);
+      var mainCheckbox = $("cb_job_" + jobNo);
       var isChecked = mainCheckbox.checked;
       var rowIds = fileRows[jobNo];
       for(var i=0; i<rowIds.length; i++)
@@ -66,6 +68,7 @@
         {
           if(elements[j].type == "checkbox") {
              elements[j].checked = isChecked;
+             elements[j].disabled = isChecked;
           }
         }
       }
@@ -74,16 +77,14 @@
     function toggleAllCheckboxes(maincheckbox)
     {
       var isChecked = maincheckbox.checked;
-      var elements = document.getElementsByTagName("input");
-      for(var j=0; j<elements.length; j++) 
-      {
-        if(elements[j].type == "checkbox" && elements[j].className == "jobTableCB") 
-        {
-          elements[j].checked = isChecked;
-        }
+      for(var i=0; i<jobNumbers.length; i++) {
+        var jobCheckbox = $("cb_job_" + jobNumbers[i]);
+        jobCheckbox.checked = isChecked;
+        toggleJobCheckboxes(jobNumbers[i]);
       }
     }
  
+     
                                
     function toggleVisibility(jobNo) {
       var hiddenField = document.getElementById("expansion_state_" + jobNo);    
@@ -210,7 +211,7 @@
              value="#{jobResultsBean.fileSortAscending}"/> &#160;&#160;
              
              
-       <h:commandButton value="Sort" actionListener="#{jobResultsBean.sort}" immediate="true"/>
+       <h:commandButton value="Sort" action="#{jobResultsBean.sort}" />
 
       </div>
       
@@ -258,6 +259,12 @@
         <!--  Loop through job list -->
         <t:dataList value="#{jobResultsBean.jobs}" var="jobInfo" rowIndexVar="jobIndex">
         
+          <script type="text/javascript" language="javascript">
+            <h:outputText>
+	           jobNumbers[#{jobIndex}]='#{jobInfo.jobNumber}';
+            </h:outputText>
+          </script>
+
           <!--  Begin task title row -->
           <tr class="task-titlerow">
             <td>
@@ -269,7 +276,10 @@
             </td>
             <td>
               <div align="center">
-                <input name="selectedJobs" type="checkbox" class="jobTableCB" value="#{jobInfo.jobNumber}"
+                <input name="selectedJobs" 
+                       type="checkbox" 
+                       value="#{jobInfo.jobNumber}"
+                       
                        onclick="toggleJobCheckboxes('#{jobInfo.jobNumber}');"
                        id="cb_job_#{jobInfo.jobNumber}"/>
               </div>
@@ -325,7 +335,7 @@
               <td>
                 <div align="center">
                   <input name="selectedFiles" value="#{fileInfo.name}"
-                         id="selectedFiles_#{jobInfo.jobNumber}" type="checkbox" class="jobTableCB"/>
+                         type="checkbox" class="jobTableCB"/>
                 </div>
               </td>
               <td>&#160;</td>

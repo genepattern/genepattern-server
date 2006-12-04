@@ -3,9 +3,10 @@
 	background-color: #EAEAEA; 
 	position:absolute; 
 	z-index:1000; 
-	display: block; 
 	white-space: nowrap;
 }
+
+
 
 .popupMenu a:link{
 	color: #333366;
@@ -22,4 +23,9 @@
 	background-color: #FAFAF3;
 }
 
-
+.popupMenu td{
+	background-color: '';
+ 	border-top-style: '';
+	border-top-width: '';
+	border-top-color: '';
+}
