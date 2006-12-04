@@ -54,12 +54,20 @@ public class RunTaskBean {
     private String splashMessage;
 
 
+    /**
+     * Initialize the task lsid.  This page needs to support redirects from older .jsp pages as well as
+     * jsf navigation.  JSP pages will pass the lsid in as a request parameter.  Look for it there first,
+     * if the paramter is null get it from the moduleChooserBean.
+     *
+     */
     public RunTaskBean() {
-         ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper
-                .getManagedBean("#{moduleChooserBean}");
-        assert chooser != null;
-        setTask(chooser.getSelectedModule());
-
+        String taskToRun = UIBeanHelper.getRequest().getParameter("lsid");
+        if (taskToRun == null || taskToRun.length() == 0) {
+            ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper.getManagedBean("#{moduleChooserBean}");
+            assert chooser != null;
+            taskToRun = chooser.getSelectedModule();
+        }
+        setTask(taskToRun);
     }
 
     public String getFormAction() {
