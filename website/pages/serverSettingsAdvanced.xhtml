@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" 
+      xmlns:c="http://java.sun.com/jstl/core">
+<ui:composition>
+<h:messages showDetail="true"/>
+   <script type="text/javascript" language="javascript">
+	/* <![CDATA[ */
+	  function changeDb(v) {
+	  	var hsql= document.getElementById("hsql");
+	  	var oracle= document.getElementById("oracle");
+	
+	  	hsql.style.display=(v == "HSQL")?'block':'none';
+	  	oracle.style.display=(v == "ORACLE")?'block':'none';
+	  	
+	  }
+	  /* ]]> */
+  </script>
+  <h:form>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+      <tr>
+        <td>Advanced Configurations</td>
+      </tr>
+    </table>
+    <p/>
+    <table width="100%" border="0" cellpadding="5" cellspacing="0">
+      <tr valign="top">
+        	<td>Default Patch Repository:</td>
+        	<td> 
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['DefaultPatchRepositoryURL']}"/>
+        	</td>
+      </tr>
+      <tr valign="top">
+	        <td>Default Patch URL: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['DefaultPatchURL']}"/>
+	        </td>
+	  </tr>
+      <tr valign="top">
+	        <td>Patch Qualifiers: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['patchQualifiers']}"/>
+	        </td>
+	  </tr>
+      <tr valign="top">
+	        <td>Location for Patches: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['patches']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Location for Ant: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['ant']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Directory for Resources: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['resources']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Directory for Indexes: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['index']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Directory for TaskLib: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['tasklib']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Directory for jobs: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['jobs']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Directory for TomcatCommonLib: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['tomcatCommonLib']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Directory for Webapp: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['webappDir']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Directory for Genepattern Log: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['log4j.appender.R.File']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Classpath for Pipelines: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['pipeline.cp']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Main Class for Pipelines: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['pipeline.main']}"/>
+	        </td>
+	  </tr>
+      <tr valign="top">
+	        <td>VM args for Pipelines: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['pipeline.vmargs']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Decorator for Pipelines: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['pipeline.decorator']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Installed Patch LSIDs: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['installedPatchLSIDs']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Java Install URL: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['JavaGEInstallerURL']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Analysis Task Queue Pollings: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['AnalysisTaskQueuePollingFrequency']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Number of Threads: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['num.threads']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Lucene Commit Lock Timeout: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['org.apache.lucene.commitLockTimeout']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Lucene Write Lock Timeout: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['org.apache.lucene.writeLockTimeout']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Lucene Merge Factor: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['org.apache.lucene.mergeFactor']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	      <td>&#160;</td>
+	      <td>
+	          <h:commandButton value="Submit" action="#{serverSettingsBean.saveSettings}"/>
+	      </td>
+	  </tr>
+	  <tr valign="top" class="settingperameter">
+        <td colspan="2">&#160;</td>
+      </tr>
+    </table>
+    <p/>
+  </h:form>
+</ui:composition>
+</html>

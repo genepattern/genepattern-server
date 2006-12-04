@@ -11,6 +11,7 @@
     <ui:define name="pageTitle">GenePattern | Server Settings</ui:define>
     <ui:define name="leftPanel">
       <h:form>
+        
         <td width="242" rowspan="2" valign="top" class="tasks" id="tasks">
           <table width="100%" border="0" cellspacing="0" cellpadding="0">
             <tr>
@@ -20,7 +21,7 @@
             </tr>
             <tr>
               <td height="6" colspan="5">
-                <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="1" height="6"/>
+                <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="240" height="6"/>
               </td>
             </tr>
             <ui:repeat value="#{serverSettingsBean.modes}" var="mode">
@@ -70,7 +71,7 @@
       <t:div rendered="#{serverSettingsBean.currentMode == 'Web Server Log'}">
         <ui:include src="serverSettingsWSLog.xhtml"/>       
       </t:div>
-      <t:div rendered="#{serverSettingsBean.currentMode == 'Module Repository'}">
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Repositories'}">
         <ui:include src="serverSettingsRepository.xhtml"/>       
       </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Proxy Settings'}">
@@ -78,6 +79,21 @@
       </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Search Engine'}">
         <ui:include src="serverSettingsSearch.xhtml"/>       
+      </t:div>
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Database Settings'}">
+        <ui:include src="serverSettingsDatabase.xhtml"/>       
+      </t:div>
+      <t:div rendered="#{serverSettingsBean.currentMode == 'LSID Configurations'}">
+        <ui:include src="serverSettingsLSID.xhtml"/>       
+      </t:div>
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Programming Language Configurations'}">
+        <ui:include src="serverSettingsPL.xhtml"/>       
+      </t:div>
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Documentation Attibutes'}">
+        <ui:include src="serverSettingsDocAtt.xhtml"/>       
+      </t:div>
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Advanced Configurations'}">
+        <ui:include src="serverSettingsAdvanced.xhtml"/>       
       </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Shut Down Server'}">
         <ui:include src="serverSettingsShutDown.xhtml"/>       

@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -18,17 +19,21 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.faces.event.ActionEvent;
+import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
 import org.genepattern.server.util.PropertiesManager;
+import org.genepattern.webservice.WebServiceException;
 
 
 public class ServerSettingsBean {
 
 	private static String[] modes = new String[] { "Access",
 			"Command Line Prefix", "File Purge Settings", "History",
-			"Java Flag Settings", "Gene Pattern Log", "Web Server Log", "Module Repository",
-			"Proxy Settings", "Search Engine", "Shut Down Server" };
+			"Java Flag Settings", "Gene Pattern Log", "Web Server Log", "Repositories",
+			"Proxy Settings", "Search Engine", "Database Settings", "LSID Configurations",
+			"Programming Language Configurations",
+			"Documentation Attibutes", "Advanced Configurations", "Shut Down Server" };
 	private String[] clientModes= new String[] {"Local", "Any", "Specified"};
 	
 	private String currentMode = modes[0];  // Default
@@ -36,14 +41,31 @@ public class ServerSettingsBean {
 	
 	private Properties settings;	
 	private String proxyPassword;
-
+	
+	
 	private Calendar cal = Calendar.getInstance();
 	private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 	
 	
 	private static final String defaultModuleRepositoryURL="http://www.broad.mit.edu/webservices/genepatternmodulerepository";
+	private static final String defaultSuiteRepositoryURL="http://www.broad.mit.edu/webservices/genepatternmodulerepository/suite";
 	private static final String defaultLog4jPath = "./webapps/gp/WEB-INF/classes/log4j.properties";
 	private static final String log4jAppenderR = "log4j.appender.R.File";
+	
+	
+	private static final String hsqlConnectionDriverclass = "org.hsqldb.jdbcDriver";
+	private static final String hsqlConnectionUrl = "jdbc:hsqldb:hsql://localhost/xdb";
+	private static final String hsqlConnectionUsername = "sa";
+	private static final String hsqlConnectionPassword = "";
+	private static final String hsqlDialect = "org.hibernate.dialect.HSQLDialect";
+	
+	private static final String oracleConnectionDriverclass = "oracle.jdbc.OracleDriver";
+	private static final String oracleConnectionUrl = "jdbc:oracle:thin:@magnesium.broad.mit.edu:1521:meddev10";
+	private static final String oracleConnectionUsername = "gpportal";
+	private static final String oracleConnectionPassword = "gpportal";
+	private static final String oracleDialect = "org.genepattern.server.database.PlatformOracle9Dialect";
+	private static final String oracleDefaultSchema = "gpportal";
+	
 	
 	/**
 	 * 
@@ -275,16 +297,80 @@ public class ServerSettingsBean {
 	}
 	
 	/**
+	 * @param repositoryName
+	 * @return
+	 */
+	private Collection getRepositoryURLs(String repositoryName) {
+		String repositoryURLs = (String)settings.get(repositoryName);
+		String[] result=repositoryURLs.split(",");
+		Collection<SelectItem> repositoryURLsLst=new ArrayList<SelectItem>();
+		for (int i=0; i<result.length; i++) {
+			repositoryURLsLst.add(new SelectItem(result[i]));
+		}
+		return repositoryURLsLst;
+	}
+	
+	/**
+	 * @param mrURLs
+	 * @param repositoryName
+	 */
+	private void setRepositoryURLs(ArrayList mrURLs, String repositoryName) {
+		StringBuffer repositoryURLs=new StringBuffer();
+		for(int i=0; i<mrURLs.size(); i++) {
+			repositoryURLs.append(mrURLs.get(i)).append(",");
+		}
+		settings.put(repositoryName, repositoryURLs.substring(0, repositoryURLs.length()-1).toString());
+	}
+	
+	/**
+	 * @param currentRepositoryName
+	 * @param repositoryNames
+	 */
+	private void addRepositoryURL(String currentRepositoryName, String repositoryNames) {
+		String currentRepositoryURL = (String)settings.get(currentRepositoryName);
+		String repositoryURLs = (String)settings.get(repositoryNames);
+		String[] result=repositoryURLs.split(",");
+		boolean exist=false;
+		for (int i=0; i<result.length; i++) {
+			if (result[i]!=null && result[i].equals(currentRepositoryURL)) {
+				exist=true;
+				break;
+			}
+		}
+		if(!exist) {
+			repositoryURLs=repositoryURLs.concat(",").concat(currentRepositoryURL);
+		}
+		settings.put(repositoryNames, repositoryURLs);
+		saveSettings();
+	}
+	
+	/**
+	 * @param currentRepositoryName
+	 * @param repositoryNames
+	 * @param defaultName
+	 */
+	private void removeRepositoryURL(String currentRepositoryName, String repositoryNames, String defaultName) {
+		String currentRepositoryURL = (String)settings.get(currentRepositoryName);
+		String repositoryURLs = (String)settings.get(repositoryNames);
+		String[] result=repositoryURLs.split(",");
+		StringBuffer newRepositoryURLs=new StringBuffer(defaultName+",");
+		if (!defaultName.equals(currentRepositoryURL)) {		
+			for (int i=0; i<result.length; i++) {
+				if (!defaultName.equals(result[i]) && result[i]!=null && !result[i].equals(currentRepositoryURL)) {
+					newRepositoryURLs.append(result[i]).append(",");
+				}
+			}
+			settings.put(repositoryNames, newRepositoryURLs.substring(0, newRepositoryURLs.length()-1).toString());
+		}
+		resetModuleRepositoryURL();
+	}
+	
+	/**
 	 * @return
 	 */
 	public Collection getModuleRepositoryURLs() {
-		String moduleRepositoryURLs = (String)settings.get("ModuleRepositoryURLs");
-		String[] result=moduleRepositoryURLs.split(",");
-		Collection<SelectItem> moduleRepositoryURLsLst=new ArrayList<SelectItem>();
-		for (int i=0; i<result.length; i++) {
-			moduleRepositoryURLsLst.add(new SelectItem(result[i]));
-		}
-		return moduleRepositoryURLsLst;
+		return getRepositoryURLs("ModuleRepositoryURLs");
+		
 	}
 	
 	/**
@@ -292,34 +378,17 @@ public class ServerSettingsBean {
 	 */
 	public void setModuleRepositoryURLs(ArrayList mrURLs)
 	{
-		StringBuffer moduleRepositoryURLs=new StringBuffer();
-		for(int i=0; i<mrURLs.size(); i++) {
-			moduleRepositoryURLs.append(mrURLs.get(i)).append(",");
-		}
-		settings.put("ModuleRepositoryURLs", moduleRepositoryURLs.substring(0, moduleRepositoryURLs.length()-1).toString());
+		setRepositoryURLs(mrURLs, "ModuleRepositoryURLs");
 	}
 	
 	/**
 	 * @return
 	 */
 	public String addModuleRepositoryURL() {
-		String currentModuleRepositoryURL = (String)settings.get("ModuleRepositoryURL");
-		String moduleRepositoryURLs = (String)settings.get("ModuleRepositoryURLs");
-		String[] result=moduleRepositoryURLs.split(",");
-		boolean exist=false;
-		for (int i=0; i<result.length; i++) {
-			if (result[i]!=null && result[i].equals(currentModuleRepositoryURL)) {
-				exist=true;
-				break;
-			}
-		}
-		if(!exist) {
-			moduleRepositoryURLs=moduleRepositoryURLs.concat(",").concat(currentModuleRepositoryURL);
-		}
-		settings.put("ModuleRepositoryURLs", moduleRepositoryURLs);
-		saveSettings();
+		addRepositoryURL("ModuleRepositoryURL", "ModuleRepositoryURLs");	
 		return null;
 	}
+
 	
 	/**
 	 * @return
@@ -333,19 +402,47 @@ public class ServerSettingsBean {
 	 * @return
 	 */
 	public String removeModuleRepositoryURL() {
-		String currentModuleRepositoryURL = (String)settings.get("ModuleRepositoryURL");
-		String moduleRepositoryURLs = (String)settings.get("ModuleRepositoryURLs");
-		String[] result=moduleRepositoryURLs.split(",");
-		StringBuffer newModuleRepositoryURLs=new StringBuffer(defaultModuleRepositoryURL+",");
-		if (!defaultModuleRepositoryURL.equals(currentModuleRepositoryURL)) {		
-			for (int i=0; i<result.length; i++) {
-				if (!defaultModuleRepositoryURL.equals(result[i]) && result[i]!=null && !result[i].equals(currentModuleRepositoryURL)) {
-					newModuleRepositoryURLs.append(result[i]).append(",");
-				}
-			}
-			settings.put("ModuleRepositoryURLs", newModuleRepositoryURLs.substring(0, newModuleRepositoryURLs.length()-1).toString());
-		}
-		resetModuleRepositoryURL();
+		removeRepositoryURL("ModuleRepositoryURL", "ModuleRepositoryURLs", defaultModuleRepositoryURL);
+		return null;
+	}
+	
+	/**
+	 * @return
+	 */
+	public Collection getSuiteRepositoryURLs() {
+		return getRepositoryURLs("SuiteRepositoryURLs");
+		
+	}
+	
+	/**
+	 * @param mrURLs
+	 */
+	public void setSuiteRepositoryURLs(ArrayList mrURLs)
+	{
+		setRepositoryURLs(mrURLs, "SuiteRepositoryURLs");
+	}
+	
+	/**
+	 * @return
+	 */
+	public String addSuiteRepositoryURL() {
+		addRepositoryURL("SuiteRepositoryURL", "SuiteRepositoryURLs");	
+		return null;
+	}
+	
+	/**
+	 * @return
+	 */
+	public String resetSuiteRepositoryURL() {
+		settings.put("SuiteRepositoryURL", defaultSuiteRepositoryURL);
+		return null;
+	}
+	
+	/**
+	 * @return
+	 */
+	public String removeSuiteRepositoryURL() {
+		removeRepositoryURL("SuiteRepositoryURL", "SuiteRepositoryURLs", defaultSuiteRepositoryURL);
 		return null;
 	}
 	
@@ -367,17 +464,73 @@ public class ServerSettingsBean {
 	 * @return
 	 */
 	public String removeProxySettings() {
-		settings.put("http.proxyHost", "");
-		settings.put("http.proxyPort", "");
-		settings.put("http.proxyUser", "");
+		settings.remove("http.proxyHost");
+		settings.remove("http.proxyPort");
+		settings.remove("http.proxyUser");
 		
-		settings.put("ftp.proxyHost", "");
-		settings.put("ftp.proxyPort", "");
-		settings.put("ftp.proxyUser", "");
+		settings.remove("ftp.proxyHost");
+		settings.remove("ftp.proxyPort");
+		settings.remove("ftp.proxyUser");
 		proxyPassword="";
 		
 		return null;
 		
+	}
+	
+	public String getDb() {
+		String db=(String)settings.get("database.vendor");
+		resetDbParam(db);
+		return db;
+	}
+	
+	
+	public void setDb(String dbName) {
+		settings.put("database.vendor", dbName);		
+	}
+	
+	public void changeDb(ValueChangeEvent event) {
+		String db=(String)settings.get("database.vendor");
+		resetDbParam(db);
+	
+	}
+	
+	private void resetDbParam(String dbName) {
+		if (dbName.equals("HSQL")) {
+			settings.remove("hibernate.connection.SetbigStringTryClob");
+			settings.remove("hibernate.default_schema");
+			
+			settings.put("hibernate.connection.driver_class", hsqlConnectionDriverclass);
+			settings.put("hibernate.connection.url", hsqlConnectionUrl);
+			settings.put("hibernate.connection.username", hsqlConnectionUsername);
+			settings.put("hibernate.connection.password", hsqlConnectionPassword);
+			settings.put("hibernate.dialect", hsqlDialect);
+			
+			
+			settings.put("HSQL_port", "9001");
+			settings.put("HSQL.class", "org.hsqldb.Server");
+			settings.put("HSQL.args", " - port 9001 -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
+			settings.put("HSQL.schema", "analysis_hypersonic-");
+			settings.put("hibernate.connection.shutdown", "true");
+		}else if (dbName.equals("ORACLE")) {
+			settings.remove("HSQL_port");
+			settings.remove("HSQL.class");
+			settings.remove("HSQL.args");
+			settings.remove("HSQL.schema");
+			settings.remove("hibernate.connection.shutdown");
+			settings.remove("HSQL_port");
+			settings.remove("HSQL.class");
+			settings.remove("HSQL.args");
+			settings.remove("HSQL.schema");
+			
+			settings.put("hibernate.connection.driver_class", oracleConnectionDriverclass);
+			settings.put("hibernate.connection.url", oracleConnectionUrl);
+			settings.put("hibernate.connection.username", oracleConnectionUsername);
+			settings.put("hibernate.connection.password", oracleConnectionPassword);
+			settings.put("hibernate.dialect", oracleDialect);
+			
+			settings.put("hibernate.default_schema", oracleDefaultSchema);
+			settings.put("hibernate.connection.SetBigStringTryClob", "true");
+		}
 	}
 	
 	/**

@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" 
+      xmlns:c="http://java.sun.com/jstl/core">
+<ui:composition>
+   <script type="text/javascript" language="javascript">
+	/* <![CDATA[ */
+	  function changeDb(v) {
+	  	var msg= confirm("Do you really want to change to "+v+"?");
+	  	if( msg) {
+	  		$("db").value="Currently, you are using "+v;
+	  		
+		  	var hsql= document.getElementsByClassName("hsql", "maintable");
+		  	var oracle= document.getElementsByClassName("oracle", "maintable");
+	
+			for (var i=0; i<hsql.length; i++) {
+				hsql[i].style.display=(v == "HSQL")? '':'none';
+			}
+			
+			for (var i=0; i<oracle.length; i++) {
+				oracle[i].style.display=(v == "ORACLE")? '':'none';
+			}
+		}
+	  }
+	  /* ]]> */
+  </script>
+  <h:form>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+      <tr>
+        <td>Database Parameters</td>
+      </tr>
+    </table>
+    <p/>
+    <table id="maintable" width="100%" border="0" cellpadding="5" cellspacing="0">
+      <tr valign="top">
+        <td>Database:</td>
+        <td> 
+            <h:selectOneMenu value="#{serverSettingsBean.db}" onchange="changeDb(this.value); submit();" valueChangeListener="#{serverSettingsBean.changeDb}">
+				<f:selectItem itemValue="HSQL" itemLabel="Hsql" />
+	  			<f:selectItem itemValue="ORACLE" itemLabel="Oracle" />
+			</h:selectOneMenu>
+        </td>
+        <td>
+	        <t:outputText id="db" forceId="true" size="40" value="Currently, you are using #{serverSettingsBean.settings['database.vendor']}."/>
+	    </td>
+      </tr>
+      <tr valign="top">
+	        <td>Hibernate Driver Class: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['hibernate.connection.driver_class']}"/>
+	        </td>
+	  </tr>
+      <tr valign="top">
+	        <td>Hibernate URL: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['hibernate.connection.url']}"/>
+	        </td>
+	  </tr>
+      <tr valign="top">
+	        <td>Hibernate User Name: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['hibernate.connection.username']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Hibernate Password: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['hibernate.connection.password']}"/>
+	        </td>
+	  </tr>
+	  <tr valign="top">
+	        <td>Hibernate Dialect: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['hibernate.dialect']}"/>
+	        </td>
+	  </tr>
+      <tr class="hsql" valign="top" style="#{serverSettingsBean.db == 'HSQL' ? 'display:' : 'display:none;'}">
+	        <td>Hibernate Shutdown: </td>
+	        <td>
+	        	<h:selectOneRadio value="#{serverSettingsBean.settings['hibernate.connection.shutdown']}">
+		        	<f:selectItem itemValue="true" itemLabel="true" />
+		  			<f:selectItem itemValue="false" itemLabel="false" />
+				</h:selectOneRadio>	        
+			</td>
+	  </tr>
+      <tr class="hsql" valign="top" style="#{serverSettingsBean.db == 'HSQL' ? 'display:' : 'display:none;'}">
+	        <td>HSQL Port: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['HSQL_port']}"/>
+	        </td>
+	  </tr>
+	  <tr class="hsql" valign="top" style="#{serverSettingsBean.db == 'HSQL' ? 'display:' : 'display:none;'}">
+	        <td>HSQL Class: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['HSQL.class']}"/>
+	        </td>
+	  </tr>
+	  <tr class="hsql" valign="top" style="#{serverSettingsBean.db == 'HSQL' ? 'display:' : 'display:none;'}">
+	        <td>HSQL Args: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['HSQL.args']}"/>
+	        </td>
+	  </tr>
+	  <tr class="hsql" valign="top" style="#{serverSettingsBean.db == 'HSQL' ? 'display:' : 'display:none;'}">
+	        <td>HSQL Schema: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['HSQL.schema']}"/>
+	        </td>
+	  </tr>
+      <tr class="oracle" valign="top" style="#{serverSettingsBean.db == 'ORACLE' ? 'display:' : 'display:none;'}">
+	        <td>Hibernate Set Big String Try Clob: </td>
+	        <td>
+	        	<h:selectOneRadio value="#{serverSettingsBean.settings['hibernate.connection.SetBigStringTryClob']}">
+		        	<f:selectItem itemValue="true" itemLabel="true" />
+		  			<f:selectItem itemValue="false" itemLabel="false" />
+				</h:selectOneRadio>
+	        </td>
+	  </tr>
+	  <tr class="oracle" valign="top" style="#{serverSettingsBean.db == 'ORACLE' ? 'display:' : 'display:none;'}">
+	        <td>Hibernate Default Schema: </td>
+	        <td>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['hibernate.default_schema']}"/>
+	        </td>
+	  </tr>
+	  
+	  <tr valign="top">
+	      <td>&#160;</td>
+	      <td>
+	          <h:commandButton value="Submit" action="#{serverSettingsBean.saveSettings}"/>
+	      </td>
+	  </tr>
+	  <tr valign="top" class="settingperameter">
+        <td colspan="2">&#160;</td>
+      </tr>
+    </table>
+    <p/>
+  </h:form>
+</ui:composition>
+</html>

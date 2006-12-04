@@ -21,6 +21,18 @@
         </td>
       </tr>
       <tr valign="top">
+        <td>Visualizer Java Flags:</td>
+        <td>
+          <h:inputText size="40" value="#{serverSettingsBean.settings['visualizer_java_flags']}"/>
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>R Java Flags:</td>
+        <td>
+          <h:inputText size="40" value="#{serverSettingsBean.settings['r_flags']}"/>
+        </td>
+      </tr>
+      <tr valign="top">
         <td>&#160;</td>
         <td>
           <h:commandButton value="Submit" action="#{serverSettingsBean.saveSettings}"/>

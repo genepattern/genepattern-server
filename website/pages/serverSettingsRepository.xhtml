@@ -25,13 +25,13 @@
   <h:form>
     <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
       <tr>
-        <td>Module Repository </td>
+        <td>Repositories </td>
       </tr>
     </table>
     <p/>
     <table width="100%" border="0" cellpadding="5" cellspacing="0">
       <tr valign="top">
-        <td>Previous Repository URLs:</td>
+        <td>Previous Module Repository URLs:</td>
         <td>
           <t:selectOneListbox id="selectedMrurl" forceId="true" size="10" value="#{serverSettingsBean.settings['ModuleRepositoryURL']}" onclick="$(mrurl).value=this.value">
   			<f:selectItems value="#{serverSettingsBean.moduleRepositoryURLs}" />
@@ -39,7 +39,7 @@
         </td>
       </tr>
       <tr valign="top">
-        <td>Repository URL:</td>
+        <td>Module Repository URL:</td>
         <td>
           <t:inputText id="mrurl" forceId="true" size="40" value="#{serverSettingsBean.settings['ModuleRepositoryURL']}"/>       
         </td>
@@ -50,6 +50,28 @@
           <h:commandButton value="submit" action="#{serverSettingsBean.addModuleRepositoryURL}"/>
           <h:commandButton value="reset to default" action="#{serverSettingsBean.resetModuleRepositoryURL}"/>
           <h:commandButton value="remove from list" action="#{serverSettingsBean.removeModuleRepositoryURL}"/>
+        </td>
+      </tr>
+            <tr valign="top">
+        <td>Previous Module Repository URLs:</td>
+        <td>
+          <t:selectOneListbox size="10" value="#{serverSettingsBean.settings['SuiteRepositoryURL']}" onclick="$(srurl).value=this.value">
+  			<f:selectItems value="#{serverSettingsBean.suiteRepositoryURLs}" />
+		  </t:selectOneListbox>        
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>Module Repository URL:</td>
+        <td>
+          <t:inputText id="srurl" forceId="true" size="40" value="#{serverSettingsBean.settings['SuiteRepositoryURL']}"/>       
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>&#160;</td>
+        <td>
+          <h:commandButton value="submit" action="#{serverSettingsBean.addSuiteRepositoryURL}"/>
+          <h:commandButton value="reset to default" action="#{serverSettingsBean.resetSuiteRepositoryURL}"/>
+          <h:commandButton value="remove from list" action="#{serverSettingsBean.removeSuiteRepositoryURL}"/>
         </td>
       </tr>
       <tr valign="top" class="settingperameter">
