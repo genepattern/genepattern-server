@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.util.EmailNotificationManager;
 
 /**
  * Servlet implementation class for Servlet: SnpViewerServlet
@@ -97,20 +98,27 @@ public class AjaxServlet extends javax.servlet.http.HttpServlet implements
 	protected void executeCommand(Map parameterMap, HttpServletRequest request, HttpServletResponse response) throws Exception{
 	  	
 		String cmd = ((String[]) parameterMap.get("cmd"))[0];
-		String value= null;
+		String value= ""; // nothing to return
 
 		if ("notifyEmailJobCompletion".equalsIgnoreCase(cmd)){
 			// setup for polling, put any return into value
-		
+			String jobID = ((String[]) parameterMap.get("jobID"))[0];
+			String userID= (String)request.getAttribute("userID"); 		
+			EmailNotificationManager.getInstance().addWaitingUser(userID, jobID);
+		} else if ("cancelEmailJobCompletion".equalsIgnoreCase(cmd)){
+			String jobID = ((String[]) parameterMap.get("jobID"))[0];
+			String userID= (String)request.getAttribute("userID"); 		
+			EmailNotificationManager.getInstance().removeWaitingUser(userID, jobID);
 		}
+		
+		
  		response.setContentType("text/html");
        	response.setHeader("Cache-Control", "no-cache");
        	if (value != null) {
-            	response.getWriter().write(value);
-        	}
-        	response.getWriter().flush();
-        	response.getWriter().close();
-
+           	response.getWriter().write(value);
+        }
+        response.getWriter().flush();
+        response.getWriter().close();
 	}
 
 
