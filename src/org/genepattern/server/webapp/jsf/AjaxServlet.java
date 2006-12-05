@@ -53,9 +53,9 @@ public class AjaxServlet extends javax.servlet.http.HttpServlet implements
             HttpServletResponse response) {
         try {
             Map parameterMap = request.getParameterMap();
-            String elExpression = ((String[]) parameterMap.get("el"))[0];
+            String[] elExpression = (String[]) parameterMap.get("el");
 	      if (elExpression != null){
-	            executeMethod(elExpression, request, response);
+	            executeMethod(elExpression[0], request, response);
 		} else {
 			executeCommand(parameterMap, request, response);
 		}
@@ -103,11 +103,11 @@ public class AjaxServlet extends javax.servlet.http.HttpServlet implements
 		if ("notifyEmailJobCompletion".equalsIgnoreCase(cmd)){
 			// setup for polling, put any return into value
 			String jobID = ((String[]) parameterMap.get("jobID"))[0];
-			String userID= (String)request.getAttribute("userID"); 		
+			String userID= ((String[]) parameterMap.get("userID"))[0];
 			EmailNotificationManager.getInstance().addWaitingUser(userID, jobID);
 		} else if ("cancelEmailJobCompletion".equalsIgnoreCase(cmd)){
 			String jobID = ((String[]) parameterMap.get("jobID"))[0];
-			String userID= (String)request.getAttribute("userID"); 		
+			String userID= ((String[]) parameterMap.get("userID"))[0]; 		
 			EmailNotificationManager.getInstance().removeWaitingUser(userID, jobID);
 		}
 		

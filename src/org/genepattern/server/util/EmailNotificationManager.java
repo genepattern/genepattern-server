@@ -201,6 +201,7 @@ class JobWaitThread extends Thread {
 		            info = analysis.checkStatus(jobID);
 		            status = info.getStatus();
 		            sleep = incrementSleep(initialSleep, maxTries, count);
+		    
 		        }
 		        // the job is done.  Send an email to the user
 		        if (!stopQuietly){
