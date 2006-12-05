@@ -41,7 +41,7 @@
 			<c:when test="#{taskCatalogBean.error}">
 				<p>Sorry, the module repository is not currently available.</p>
 				<p>If you use a web proxy to connect to the internet, please
-				ensure your <a href="adminServer.jsp">web proxy settings</a> are
+				ensure your <a href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">web proxy settings</a> are
 				correct</p>
 			</c:when>
 			<c:otherwise>
