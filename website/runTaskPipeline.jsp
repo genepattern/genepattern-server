@@ -9,8 +9,6 @@ This software is supplied without any warranty or guaranteed support
 whatsoever. Neither the Broad Institute nor MIT can be responsible for its
 use, misuse, or functionality.
 */ -->
-
-
 <%@ page import="org.apache.commons.fileupload.FileItem,
                  org.apache.commons.fileupload.disk.DiskFileItemFactory,
                  org.apache.commons.fileupload.servlet.ServletFileUpload,
@@ -24,6 +22,8 @@ use, misuse, or functionality.
                  org.genepattern.webservice.ParameterFormatConverter,
                  org.genepattern.webservice.ParameterInfo,
                  org.genepattern.webservice.TaskInfo,
+				 org.genepattern.server.user.User,
+				 org.genepattern.server.user.UserDAO,
                  java.io.File,
                  java.io.UnsupportedEncodingException,
                  java.net.InetAddress,
@@ -45,6 +45,7 @@ use, misuse, or functionality.
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
     response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
     response.setDateHeader("Expires", 0);
+
 %>
 <html>
 <head>
@@ -53,14 +54,17 @@ use, misuse, or functionality.
     <link href="css/style-jobresults.css" rel="stylesheet" type="text/css">
     <link href="skin/favicon.ico" rel="shortcut icon">
     <title>GenePattern - Run Task Results</title>
+	<script language="Javascript" src="js/prototype.js"/>
+	<script language="Javascript" src="js/commons-validator-1.3.0.js"/>
+
 </head>
 <body>
 
 <jsp:include page="navbar.jsp"/>
 
 <%
-
-    String userID;
+    String userID = null;
+	String userEmail = null;
     try {
         ServletFileUpload fub = new ServletFileUpload(new DiskFileItemFactory());
         HashMap htFilenames = new HashMap(); // map between form field name and filesystem name
@@ -141,6 +145,17 @@ use, misuse, or functionality.
             lsid = taskName;
         }
         userID = (String) requestParameters.get(GPConstants.USERID);
+		try {
+			User user = ( new UserDAO()).findById(userID);
+			userEmail = user.getEmail();
+			if ((userEmail == null) || (userEmail.length() == 0)){
+				userEmail = userID;
+			}
+		} catch (Exception e){
+			userEmail = userID;
+		}
+
+
         // set up the call to the analysis engine
         String server = request.getScheme() + "://" + InetAddress.getLocalHost().getCanonicalHostName() + ":" + System.getProperty("GENEPATTERN_PORT");
    
@@ -249,13 +264,137 @@ use, misuse, or functionality.
 
     }
 
+    function suppressEnterKey(event){
+// do nothing?
+	}
+
+ function requestEmailNotification() {            
+        var ue = document.getElementById("userEmail").value;  
+		var opt = {
+          method:    'post',
+          postBody:  'cmd=notifyEmailJobCompletion&userID='+ue+'&jobID=<%=job.getJobNumber() %>',
+          onSuccess: ignoreResponse(),
+          onFailure: function(t) {
+            alert('Error ' + t.status + ' -- ' + t.statusText);
+          }
+        } 
+        new  Ajax.Request('./notifyJobCompletion.ajax',opt);
+      }
+
+  function cancelEmailNotification() {  
+		var ue = document.getElementById("userEmail").value;  
+		        
+        var opt = {
+          method:    'post',
+          postBody:  'cmd=cancelEmailJobCompletion&userID='+ue+'&jobID=<%=job.getJobNumber() %>',
+          onSuccess: ignoreResponse(),
+          onFailure: function(t) {
+            alert('Error ' + t.status + ' -- ' + t.statusText);
+          }
+        } 
+        new  Ajax.Request('./notifyJobCompletion.ajax',opt);
+      }
+
+   function setEmailNotification(){
+		var cb = document.getElementById('emailCheckbox');
+		var ue = document.getElementById("userEmail");
+		var valid = jcv_checkEmail(ue.value); 
+		alert(ue.value);
+		if (!valid){
+			var em = prompt("Email on completion to?:");
+			ue.setValue(em);
+			alert(em);
+		}
+
+ 	  	if (cb.checked) {
+			requestEmailNotification();
+	 	} else {
+			cancelEmailNotification();
+		}
+   }
+
+   function ignoreResponse( req ) {
+        if (req.readyState == 4) {
+          if (req.status == 200) { // only if "OK"
+            //alert('all is well on email submission') 
+          } else {
+            alert("There was a problem in email notification:\n" + req.statusText);
+          }  
+        }
+      }
+ function jcv_checkEmail(emailStr) {
+        if (emailStr.length == 0) {
+            return true;
+        }
+        // TLD checking turned off by default
+        var checkTLD=0;
+        var knownDomsPat=/^(com|net|org|edu|int|mil|gov|arpa|biz|aero|name|coop|info|pro|museum)$/;
+        var emailPat=/^(.+)@(.+)$/;
+        var specialChars="\\(\\)><@,;:\\\\\\\"\\.\\[\\]";
+        var validChars="\[^\\s" + specialChars + "\]";
+        var quotedUser="(\"[^\"]*\")";
+        var ipDomainPat=/^\[(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\]$/;
+        var atom=validChars + '+';
+        var word="(" + atom + "|" + quotedUser + ")";
+        var userPat=new RegExp("^" + word + "(\\." + word + ")*$");
+        var domainPat=new RegExp("^" + atom + "(\\." + atom +")*$");
+        var matchArray=emailStr.match(emailPat);
+        if (matchArray==null) {
+            return false;
+        }
+        var user=matchArray[1];
+        var domain=matchArray[2];
+        for (i=0; i<user.length; i++) {
+            if (user.charCodeAt(i)>127) {
+                return false;
+            }
+        }
+        for (i=0; i<domain.length; i++) {
+            if (domain.charCodeAt(i)>127) {
+                return false;
+            }
+        }
+        if (user.match(userPat)==null) {
+            return false;
+        }
+        var IPArray=domain.match(ipDomainPat);
+        if (IPArray!=null) {
+            for (var i=1;i<=4;i++) {
+                if (IPArray[i]>255) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        var atomPat=new RegExp("^" + atom + "$");
+        var domArr=domain.split(".");
+        var len=domArr.length;
+        for (i=0;i<len;i++) {
+            if (domArr[i].search(atomPat)==-1) {
+                return false;
+            }
+        }
+        if (checkTLD && domArr[domArr.length-1].length!=2 && 
+            domArr[domArr.length-1].search(knownDomsPat)==-1) {
+            return false;
+        }
+        if (len<2) {
+            return false;
+        }
+        return true;
+    }
+
+
+
 </script>
 
 <table width="100%"  border="0" cellspacing="0" cellpadding="0">
 <tr>
       <td valign="top" class="maintasknav" id="maintasknav">
 
-	    <input type="checkbox" name="checkbox" value="checkbox"/>email notification&nbsp;&nbsp;&nbsp;&nbsp;
+	    <input type="checkbox" id="emailCheckbox" onclick="setEmailNotification();" value="checkbox"/>email notification&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="hidden" id="userEmail" value="<%= userEmail %>"/>
+
 
 
 		<input name="showLogs" type="checkbox" onclick="toggleLogs()"  value="showLogs" checked="checked" />
@@ -447,15 +586,10 @@ show execution logs</td>
 	document.getElementById("stopCmd").disabled=true;
 	document.getElementById("stopCmd").visibility=false;
 
-  // TO DO - email here
-//    var frm = document.frmemail;
-//    frm.to.readonly = true;
-    // no more edits as it is about to be used for addressing
-//    var to = frm.to.value;
-//    if (to != "") {
-//        frm.message.value = frm.message.value + 'job <%=jobID%> completed';
-//        frm.submit();
-//    }
+ 
+    var emailCB = document.getElementById("emailCheckbox");
+    emailCB.enabled=false;
+    
 </script>
 <%
     GregorianCalendar purgeTOD = new GregorianCalendar();
