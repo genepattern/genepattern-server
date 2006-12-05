@@ -83,17 +83,20 @@
       <t:div rendered="#{serverSettingsBean.currentMode == 'Database Settings'}">
         <ui:include src="serverSettingsDatabase.xhtml"/>       
       </t:div>
-      <t:div rendered="#{serverSettingsBean.currentMode == 'LSID Configurations'}">
+      <t:div rendered="#{serverSettingsBean.currentMode == 'LSID'}">
         <ui:include src="serverSettingsLSID.xhtml"/>       
       </t:div>
-      <t:div rendered="#{serverSettingsBean.currentMode == 'Programming Language Configurations'}">
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Programming Language'}">
         <ui:include src="serverSettingsPL.xhtml"/>       
       </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Documentation Attibutes'}">
         <ui:include src="serverSettingsDocAtt.xhtml"/>       
       </t:div>
-      <t:div rendered="#{serverSettingsBean.currentMode == 'Advanced Configurations'}">
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Advanced'}">
         <ui:include src="serverSettingsAdvanced.xhtml"/>       
+      </t:div>
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Create Custom Settings'}">
+        <ui:include src="serverSettingsCustom.xhtml"/>       
       </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Shut Down Server'}">
         <ui:include src="serverSettingsShutDown.xhtml"/>       

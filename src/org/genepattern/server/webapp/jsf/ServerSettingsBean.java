@@ -4,6 +4,7 @@
 package org.genepattern.server.webapp.jsf;
 
 import static org.genepattern.server.webapp.jsf.UIBeanHelper.getRequest;
+import static org.genepattern.util.IGPConstants.TASK_PREFIX_MAPPING;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,8 +17,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
+import javax.faces.component.html.HtmlDataTable;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
@@ -31,17 +34,21 @@ public class ServerSettingsBean {
 	private static String[] modes = new String[] { "Access",
 			"Command Line Prefix", "File Purge Settings", "History",
 			"Java Flag Settings", "Gene Pattern Log", "Web Server Log", "Repositories",
-			"Proxy Settings", "Search Engine", "Database Settings", "LSID Configurations",
-			"Programming Language Configurations",
-			"Documentation Attibutes", "Advanced Configurations", "Shut Down Server" };
+			"Proxy Settings", "Search Engine", "Database Settings", "LSID",
+			"Programming Language", "Documentation Attibutes", "Advanced", "Create Custom Settings", 
+			"Shut Down Server" };
 	private String[] clientModes= new String[] {"Local", "Any", "Specified"};
 	
 	private String currentMode = modes[0];  // Default
 	private String currentClientMode = clientModes[0];	//default
 	
-	private Properties settings;	
+	private Properties settings;
+	private Properties customSettings;
 	private String proxyPassword;
+	private String newCSKey="";
+	private String newCSValue="";
 	
+	HtmlDataTable csMappingTable = null;
 	
 	private Calendar cal = Calendar.getInstance();
 	private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
@@ -70,13 +77,20 @@ public class ServerSettingsBean {
 	/**
 	 * 
 	 */
-	public ServerSettingsBean(){		
+	public ServerSettingsBean(){
 		if(settings == null) {
 			try {
 				settings=PropertiesManager.getGenePatternProperties();
 			} catch (IOException ioe){
 				ioe.getStackTrace();
 			}
+		}
+		if (customSettings==null) {
+			try {
+	        	customSettings= PropertiesManager.getCustomProperties();
+			} catch (IOException ioe){
+				ioe.getStackTrace();
+			}   
 		}
 	}
 	
@@ -125,6 +139,7 @@ public class ServerSettingsBean {
 	 */
 	public String saveSettings() {
 		PropertiesManager.storeChanges(settings);
+		PropertiesManager.storeChangesToCustomProperties(customSettings);
 		return null;   // This returns us to the same page
 	}
 	
@@ -540,4 +555,43 @@ public class ServerSettingsBean {
 		System.exit(1);
 		return null;
 	}
+	
+	public String getNewCSKey() {
+		return newCSKey;
+	}
+	
+	public String getNewCSValue() {
+		return newCSValue;
+	}
+	
+	public void setNewCSKey(String key) {
+		newCSKey=key;
+	}
+	
+	public void setNewCSValue(String value) {
+		newCSValue=value;
+	}
+	
+	public void addNewCustomSetting(ActionEvent event) {
+        customSettings.put(newCSKey, newCSValue);
+    }
+	
+	public void deleteCustomSetting(ActionEvent event) {
+		Map.Entry row = (Map.Entry) csMappingTable.getRowData();
+        customSettings.remove(row.getKey());
+        
+        
+    }
+	
+	public List getCustomSettings() {
+        return new ArrayList(customSettings.entrySet());
+    }
+	
+	public HtmlDataTable getCsMappingTable() {
+        return csMappingTable;
+    }
+
+    public void setCsMappingTable(HtmlDataTable csMappingTable) {
+        this.csMappingTable = csMappingTable;
+    }
 }

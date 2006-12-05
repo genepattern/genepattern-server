@@ -86,6 +86,7 @@ public class StartupServlet extends HttpServlet {
         log("StartupServlet: user.dir=" + System.getProperty("user.dir"));
         ServletContext application = config.getServletContext();
         application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
+        application.setAttribute("custom.properties", config.getInitParameter("custom.properties"));
         loadProperties(config);
 
         String dbVendor = System.getProperty("database.vendor", "HSQL");
@@ -312,7 +313,9 @@ public class StartupServlet extends HttpServlet {
     // resources/build.properties
     protected void loadProperties(ServletConfig config) throws ServletException {
         File propFile = null;
+        File customPropFile = null;
         FileInputStream fis = null;
+        FileInputStream customFis = null;
         try {
             for (Enumeration eConfigProps = config.getInitParameterNames(); eConfigProps.hasMoreElements();) {
                 String propName = (String) eConfigProps.nextElement();
@@ -326,11 +329,19 @@ public class StartupServlet extends HttpServlet {
             Properties sysProps = System.getProperties();
             String dir = sysProps.getProperty("genepattern.properties");
             propFile = new File(dir, "genepattern.properties");
+            customPropFile = new File(dir, "custom.properties");
             Properties props = new Properties();
 
             fis = new FileInputStream(propFile);
             props.load(fis);
             log("loaded GP properties from " + propFile.getCanonicalPath());
+            
+            if (customPropFile.exists()) {
+            	customFis = new FileInputStream(customPropFile);
+            	props.load(customFis);
+            	log("loaded Custom GP properties from " + customPropFile.getCanonicalPath());
+            }
+
             // copy all of the new properties to System properties
             for (Iterator iter = props.keySet().iterator(); iter.hasNext();) {
                 String key = (String) iter.next();

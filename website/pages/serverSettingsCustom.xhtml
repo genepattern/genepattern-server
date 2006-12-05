@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" 
+      xmlns:c="http://java.sun.com/jstl/core">
+<ui:composition>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+      <tr>
+        <td>Custom Settings</td>
+      </tr>
+    </table>
+    <p/>
+    <table width="100%" border="0" cellpadding="5" cellspacing="0">
+		  <tr valign="top">
+        	<td>Add New Custom Settings:</td>
+          </tr>
+		  <tr valign="top">
+		  		<h:form>
+			  		key: 
+					<h:inputText size="20" value="#{serverSettingsBean.newCSKey}" id="newCSKey" required="true" /> 
+					value: 
+					<h:inputText size="50" value="#{serverSettingsBean.newCSValue}" id="newCSValue" required="true" />			
+					<p></p>
+					<h:commandButton value="Add" onclick="submit();" actionListener="#{serverSettingsBean.addNewCustomSetting}"/>	
+				</h:form>		
+		  </tr>
+		  <p></p>
+			<t:dataTable value="#{serverSettingsBean.customSettings}" binding="#{serverSettingsBean.csMappingTable}"
+					width="80%" var="aCustomSetting" styleClass="standardTable" headerClass="standardTable_Header">
+				<h:column>
+					<f:facet name="header">
+						<h:panelGroup>
+							<h:outputText value="Key" />
+						</h:panelGroup>
+					</f:facet>
+					<h:outputText value="#{aCustomSetting.key}" />
+				</h:column>
+				<h:column>
+					<f:facet name="header">
+						<h:panelGroup>
+							<h:outputText value="Value" />
+						</h:panelGroup>
+					</f:facet>
+					<h:inputText value="#{aCustomSetting.value}" />
+				</h:column>
+				<h:column>
+					<f:facet name="header">
+						<h:outputText value="delete" />
+					</f:facet>
+					<h:form>
+						<h:commandButton onclick="submit();" actionListener="#{serverSettingsBean.deleteCustomSetting}" class="little" value="delete" />
+					</h:form>
+				</h:column>
+			</t:dataTable>
+
+		 <p/>
+		 <h:form>
+          <h:commandButton value="Submit" action="#{serverSettingsBean.saveSettings}"/>
+		</h:form>
+	</table> 
+    <p/>
+
+ </ui:composition>
+</html>
