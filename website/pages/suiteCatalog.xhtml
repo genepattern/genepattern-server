@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jstl/core">
+
+<ui:composition template="/templates/common.xhtml">
+	<ui:define name="headText">
+		<script type="text/javascript"
+			src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"></script>
+
+		<script type="text/javascript" language="javascript">
+
+/* <![CDATA[ */
+	function toggle(maincheckbox, theForm, name) {		
+		var isChecked = maincheckbox.checked;
+		var elements = Form.getInputs(theForm , 'checkbox', name);	
+		for (i = 0; i < elements.length; i++) {	
+			elements[i].checked = isChecked;
+			
+		}
+	}
+	
+/* ]]> */
+	</script>
+	</ui:define>
+	<ui:define name="pageTitle">GenePattern - Install/Update Suites</ui:define>
+
+
+	<ui:define name="body">
+		<table width="100%" border="0" cellpadding="0" cellspacing="0"
+			class="barhead-other">
+			<tr>
+				<td>Install/Update Suites</td>
+			</tr>
+		</table>
+
+		<c:choose>
+			<c:when test="#{suiteCatalogBean.error}">
+				<p>Sorry, the suite repository is not currently available.</p>
+				<p>If you use a web proxy to connect to the internet, please
+				ensure your <a href="adminServer.jsp">web proxy settings</a> are
+				correct</p>
+			</c:when>
+			<c:otherwise>
+				<h:form id="suiteCatalogForm">
+					<h:inputHidden id="suiteCatalogSubmit" value="1" />
+					<table width="100%" border="0" cellpadding="5" cellspacing="0">
+						<tr valign="top">
+							<td valign="top">
+							<p>Select from the following suites from the Suite Repository
+							to download and install.</p>
+							</td>
+							<td valign="top"><b>Filters: </b></td>
+							<td valign="top"><b>state<b></b></b><br />
+
+
+							<t:selectManyCheckbox value="#{suiteCatalogBean.selectedStates}"
+								name="state" id="state" layout="lineDirection">
+								<f:selectItems value="#{suiteCatalogBean.states}" />
+							</t:selectManyCheckbox></td>
+							
+
+							<td><h:commandButton action="#{suiteCatalogBean.filter}"
+								value="Filter" /></td>
+
+						</tr>
+
+					</table>
+
+
+					<table width="100%" border="0" cellpadding="0" cellspacing="0"
+						class="barhead-task">
+						<tr>
+							<td class="barhead-version">Found
+							#{suiteCatalogBean.numberOfSuites} suites</td>
+						</tr>
+					</table>
+
+					<c:if test="#{suiteCatalogBean.numberOfSuites > 0}">
+						<p><h:commandButton action="#{suiteCatalogBean.install}"
+							value="Install Checked" /></p>
+
+						<table width="100%" cellpadding="5" cellspacing="0"
+							class="smalltype">
+
+							<tr class="tableheader-row2">
+								<td valign="top"><input type="checkbox" name="ALL"
+									value="ALL" checked="checked"
+									onclick="toggle(this, 'suiteCatalogForm', 'installLsid');" /></td>
+
+								<td valign="top"><b>name (version)</b></td>
+								<td valign="top"><b>details</b></td>
+							</tr>
+							<t:dataList var="t" value="#{suiteCatalogBean.suites}"
+								rowIndexVar="suiteIndex">
+								<tr>
+									<td rowspan="2" valign="top"><input type="checkbox"
+										id="install#{suiteIndex}" name="installLsid" value="#{t.lsid}"
+										checked="checked" /></td>
+									<td valign="top" height="1"><span class="tasks-broad"><strong>#{t.name}</strong><br />
+									</span> <select name="lsid_version"
+										onchange="javascript:document.forms['suiteCatalogForm'].install#{suiteIndex}.value=this.options[this.selectedIndex].value"
+										class="tasks-broad">
+										<option value="#{t.lsid}">#{t.lsidVersion} -
+										#{t.versionComment}</option>
+										<t:dataList var="l" value="#{t.laterVersions}">
+											<option value="#{l.lsid}">#{l.lsidVersion} -
+											#{l.versionComment}</option>
+										</t:dataList>
+									</select></td>
+
+
+									<td valign="top" height="1"></td>
+									<td valign="top" colspan="4" rowspan="2">
+									<table>
+
+										<tr>
+											<td valign="top" align="right">author:</td>
+											<td valign="top"><nobr>#{t.author}</nobr></td>
+										</tr>		
+									</table>
+									</td>
+								</tr>
+
+								<tr>
+									<td valign="top" colspan="2"><b>#{t.description}</b> <br />
+									<br />
+									<a href="#{t.documentationUrl}" target="_new">documentation</a>&#160;|&#160;<a
+										href="#{t.url}">download zip</a></td>
+								</tr>
+								<tr class="settingperameter">
+									<td colspan="4"></td>
+								</tr>
+							</t:dataList>
+
+						</table>
+					</c:if>
+				</h:form>
+			</c:otherwise>
+		</c:choose>
+
+	</ui:define>
+
+
+</ui:composition>
+</html>
