@@ -3,6 +3,7 @@ package org.genepattern.server.webapp.jsf;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.navmenu.NavigationMenuItem;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -32,8 +33,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -43,6 +46,11 @@ public abstract class JobBean {
 	private List<MyJobInfo> jobs;
 
 	Map<String, Collection<TaskInfo>> kindToModules;
+
+    /**
+     * Job sort direction (true for ascending, false for descending)
+     */
+    protected boolean jobSortAscending = true;
 
 	public JobBean() {
 		TaskInfo[] tasks = new AdminDAO().getAllTasksForUser(UIBeanHelper
@@ -55,11 +63,38 @@ public abstract class JobBean {
 	private void updateJobs() {
 		JobInfo[] temp = getJobInfos();
 		jobs = new ArrayList<MyJobInfo>(temp.length);
+        Set<String> selectedJobs = getSelectedJobs();
+        Set<String> selectedFiles = getSelectedFiles();
 		for (int i = 0; i < temp.length; i++) {
-			jobs.add(new MyJobInfo(temp[i], kindToModules));
+            MyJobInfo wrappedJob = new MyJobInfo(temp[i], kindToModules, selectedFiles);
+            wrappedJob.setSelected(selectedJobs.contains(String.valueOf(temp[i].getJobNumber())));
+			jobs.add(wrappedJob);
+            
 		}
 	}
+    
+    private Set<String> getSelectedJobs() {
+        HashSet<String> selectedJobs = new HashSet<String>();
+        String[] tmp = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
+        if(tmp != null) {
+            for(String job : tmp) {
+                selectedJobs.add(job);
+            }
+        }
+        return selectedJobs;
+    }
 
+    private Set<String> getSelectedFiles() {
+        HashSet<String> selectedJobs = new HashSet<String>();
+        String[] tmp = UIBeanHelper.getRequest().getParameterValues("selectedFiles");
+        if(tmp != null) {
+            for(String job : tmp) {
+                selectedJobs.add(job);
+            }
+        }
+        return selectedJobs;
+    }
+    
 	public int getSize() {
 		if (jobs == null) {
 			updateJobs();
@@ -303,15 +338,28 @@ public abstract class JobBean {
 		try {
 			int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper
 					.getRequest().getParameter("jobNumber")));
-			LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper
-					.getUserId());
-			ac.deleteJob(jobNumber);
-		} catch (WebServiceException e) {
-			log.error(e);
+			deleteJob( jobNumber );
 		} catch (NumberFormatException e) {
 			log.error(e);
 		}
 	}
+    
+    /**
+     * Delete the selected job. Should this also delete the files?
+     * 
+     * @param event
+     */
+    protected void deleteJob(int jobNumber) {
+        try {
+            LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper
+                    .getUserId());
+            ac.deleteJob(jobNumber);
+            HibernateUtil.getSession().flush();
+
+        } catch (WebServiceException e) {
+            log.error(e);
+        }
+     }
 
 	public String getTaskCode() {
 		try {
@@ -420,7 +468,8 @@ public abstract class JobBean {
 		}
 	}
 
-	/**
+
+    /**
 	 * Represents a job result. Wraps JobInfo and adds methods for getting the
 	 * output files and the expansion state of the associated UI panel
 	 */
@@ -428,11 +477,13 @@ public abstract class JobBean {
 		private JobInfo jobInfo;
 
 		private List<MyParameterInfo> outputFiles;
-
+        private boolean selected = false;
 		private boolean expanded = true;
+        
 
 		public MyJobInfo(JobInfo jobInfo,
-				Map<String, Collection<TaskInfo>> kindToModules) {
+				Map<String, Collection<TaskInfo>> kindToModules,
+                Set<String> selectedFiles) {
 			this.jobInfo = jobInfo;
 			outputFiles = new ArrayList<MyParameterInfo>();
 			ParameterInfo[] parameterInfoArray = jobInfo
@@ -447,12 +498,27 @@ public abstract class JobBean {
 								.getName());
 						Collection<TaskInfo> modules = kindToModules
 								.get(SemanticUtil.getKind(file));
-						outputFiles.add(new MyParameterInfo(
-								parameterInfoArray[i], file, modules));
+                        MyParameterInfo pInfo = new MyParameterInfo(
+                                parameterInfoArray[i], file, modules);
+
+                        pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
+						outputFiles.add(pInfo);
 					}
 				}
 			}
 		}
+        
+        public void setSelected(boolean bool) {
+            this.selected = bool;
+        }
+        
+        public boolean isSelected() {
+            return selected;
+        }
+        
+        public void setExpanded(boolean bool) {
+            this.expanded = bool;
+        }
 
 		public boolean isExpanded() {
 			return expanded;
@@ -516,20 +582,12 @@ public abstract class JobBean {
 
 	public static class MyParameterInfo {
 		ParameterInfo p;
-
 		long size;
-
 		Date lastModified;
-
 		boolean exists;
-
+        boolean selected = false;
 		List<NavigationMenuItem> moduleMenuItems = new ArrayList<NavigationMenuItem>();
-
 		private static final Comparator COMPARATOR = new NavigationMenuItemComparator();
-
-		public List<NavigationMenuItem> getModuleMenuItems() {
-			return moduleMenuItems;
-		}
 
 		public MyParameterInfo(ParameterInfo p, File file,
 				Collection<TaskInfo> modules) {
@@ -550,8 +608,21 @@ public abstract class JobBean {
 				Collections.sort(moduleMenuItems, COMPARATOR);
 			}
 		}
+        
+ 
+        public List<NavigationMenuItem> getModuleMenuItems() {
+            return moduleMenuItems;
+        }
 
-		public long getSize() {
+        public void setSelected(boolean bool) {
+            this.selected = bool;
+        }
+        
+        public boolean isSelected() {
+            return selected;
+        }
+ 
+        public long getSize() {
 			return size;
 		}
 

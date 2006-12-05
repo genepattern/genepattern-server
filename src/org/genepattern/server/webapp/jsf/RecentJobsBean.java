@@ -49,26 +49,22 @@ import org.genepattern.webservice.WebServiceException;
 
 public class RecentJobsBean extends JobBean {
 
-	private List<MyJobInfo> jobs;
+    private List<MyJobInfo> jobs;
 
-	private static Logger log = Logger.getLogger(RecentJobsBean.class);
+    private static Logger log = Logger.getLogger(RecentJobsBean.class);
 
-
-	protected JobInfo[] getJobInfos() {
-		String userId = UIBeanHelper.getUserId();
-		assert userId != null;
-		int recentJobsToShow = Integer.parseInt(UserPrefsBean.getProp(
-				UserPropKey.RECENT_JOBS_TO_SHOW, "4").getValue());
-		LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
-		try {
-			// JobInfo[] temp = analysisClient.getJobs(userId, -1,
-			// recentJobsToShow,
-			// false); // FIXME uncomment when bug recording jobs is fixed
-			return analysisClient.getJobs(null, -1, recentJobsToShow, false);
-		} catch (WebServiceException wse) {
-			log.error(wse);
-			return new JobInfo[0];
-		}
-	}
+    protected JobInfo[] getJobInfos() {
+        String userId = UIBeanHelper.getUserId();
+        assert userId != null;
+        int recentJobsToShow = Integer.parseInt(UserPrefsBean.getProp(UserPropKey.RECENT_JOBS_TO_SHOW, "4").getValue());
+        LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
+        try {
+            return analysisClient.getJobs(null, -1, recentJobsToShow, false);
+        }
+        catch (WebServiceException wse) {
+            log.error(wse);
+            return new JobInfo[0];
+        }
+    }
 
 }

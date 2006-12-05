@@ -57,8 +57,9 @@
 
     function toggleJobCheckboxes(jobNo)
     {
-      var mainCheckbox = $("cb_job_" + jobNo);
-      var isChecked = mainCheckbox.checked;
+      var jobCheckboxDiv = $("cb_job_" + jobNo);
+      var jobCheckbox = jobCheckboxDiv.getElementsByTagName("input")[0];
+      var isChecked = jobCheckbox.checked;
       var rowIds = fileRows[jobNo];
       for(var i=0; i<rowIds.length; i++)
       {
@@ -68,7 +69,7 @@
         {
           if(elements[j].type == "checkbox") {
              elements[j].checked = isChecked;
-             elements[j].disabled = isChecked;
+             //elements[j].disabled = isChecked;
           }
         }
       }
@@ -78,7 +79,9 @@
     {
       var isChecked = maincheckbox.checked;
       for(var i=0; i<jobNumbers.length; i++) {
-        var jobCheckbox = $("cb_job_" + jobNumbers[i]);
+        var jobNo = jobNumbers[i];
+        var jobCheckboxDiv = $("cb_job_" + jobNo);
+        var jobCheckbox = jobCheckboxDiv.getElementsByTagName("input")[0];
         jobCheckbox.checked = isChecked;
         toggleJobCheckboxes(jobNumbers[i]);
       }
@@ -150,14 +153,17 @@
 
 	</script>
     </ui:define>
-    <ui:define name="mainNav">
-      <h:selectBooleanCheckbox value="#{jobResultsBean.showEveryonesJobs}" />show everyone's jobs&#160;&#160;&#160;&#160;
-      <h:selectBooleanCheckbox value="#{jobResultsBean.showExecutionLogs}" />show execution logs	
-	</ui:define>
-	
 	
     <ui:define name="body">
-      <h:form>     
+      <h:form> 
+      <table width="%100">
+        <tr>
+          <td valign="top" class="maintasknav" id="maintasknav" align="right">
+            <h:selectBooleanCheckbox value="#{jobResultsBean.showEveryonesJobs}" onclick="submit();"/>show everyone's jobs&#160;&#160;&#160;&#160;
+            <h:selectBooleanCheckbox value="#{jobResultsBean.showExecutionLogs}" onclick="submit();"/>show execution logs	
+          </td>
+        </tr>
+      </table>
       <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
         <tr>
           <td>Job Results</td>
@@ -275,14 +281,22 @@
                   value="#{jobInfo.expanded}"/>  
             </td>
             <td>
-              <div align="center">
-                <input name="selectedJobs" 
-                       type="checkbox" 
-                       value="#{jobInfo.jobNumber}"
-                       
-                       onclick="toggleJobCheckboxes('#{jobInfo.jobNumber}');"
-                       id="cb_job_#{jobInfo.jobNumber}"/>
-              </div>
+              <!-- Job select checkbox -->
+              <div align="center" id="cb_job_#{jobInfo.jobNumber}">
+                 <t:div rendered="#{jobInfo.selected}"> 
+                  <input type="checkbox"
+                         name="selectedJobs" 
+                         checked="checked"
+                         value="#{jobInfo.jobNumber}"                      
+                         onclick="toggleJobCheckboxes('#{jobInfo.jobNumber}');"/>
+                </t:div>
+                <t:div rendered="#{!jobInfo.selected}">
+                   <input type="checkbox"
+                         name="selectedJobs" 
+                         value="#{jobInfo.jobNumber}"                      
+                         onclick="toggleJobCheckboxes('#{jobInfo.jobNumber}');"/>
+                </t:div>
+               </div>
             </td>
             
             <td align="right" style="cursor: pointer;" onclick="toggleVisibility('#{jobInfo.jobNumber}');">
@@ -324,6 +338,8 @@
 
           <!--  Loop through output files -->
             <t:dataList var="fileInfo" value="#{jobInfo.outputFileParameterInfos}" rowIndexVar="paramIndex">
+            
+            <!-- Generate ID for this row and append to the fileRows array for the containing job -->
             <script type="text/javascript" language="javascript">
               <h:outputText>
 	             fileRows['#{jobInfo.jobNumber}'][#{paramIndex}] = 'file_row_#{jobInfo.jobNumber}_#{paramIndex}';
@@ -333,16 +349,27 @@
             <tr class="files" id="file_row_#{jobInfo.jobNumber}_#{paramIndex}">
               <td>&#160;</td>
               <td>
-                <div align="center">
-                  <input name="selectedFiles" value="#{fileInfo.name}"
-                         type="checkbox" class="jobTableCB"/>
+                <!-- File selection checkbox -->
+                <div align="center" id="cb_job_#{jobInfo.jobNumber}">
+                  <t:div rendered="#{fileInfo.selected}"> 
+                    <input type="checkbox"
+                           name="selectedFiles" 
+                           checked="checked"
+                           value="#{fileInfo.value}"/>
+                  </t:div>
+                  <t:div rendered="#{!fileInfo.selected}">
+                    <input type="checkbox"
+                           name="selectedFiles" 
+                           value="#{fileInfo.value}"/>
+                  </t:div>
                 </div>
               </td>
               <td>&#160;</td>
               <td>
                 <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="4" height="4" hspace="6" vspace="2" border="0"/>
  
-                <h:outputLink value="#{facesContext.externalContext.requestContextPath}/retrieveResults.jsp">#{fileInfo.name}
+                <h:outputLink value="#{facesContext.externalContext.requestContextPath}/retrieveResults.jsp">
+                  <h:outputText>#{fileInfo.name}</h:outputText>
                   <f:param name="job" value="#{jobInfo.jobNumber}"/>
                   <f:param name="filename" value="#{fileInfo.name}"/>
                 </h:outputLink> 
