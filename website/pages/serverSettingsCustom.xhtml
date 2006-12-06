@@ -6,6 +6,7 @@
       xmlns:t="http://myfaces.apache.org/tomahawk" 
       xmlns:c="http://java.sun.com/jstl/core">
 <ui:composition>
+  <h:form>
     <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
       <tr>
         <td>Custom Settings</td>
@@ -17,50 +18,43 @@
         	<td>Add New Custom Settings:</td>
           </tr>
 		  <tr valign="top">
-		  		<h:form>
 			  		key: 
-					<h:inputText size="20" value="#{serverSettingsBean.newCSKey}" id="newCSKey" required="true" /> 
+					<h:inputText size="20" value="#{serverSettingsBean.newCSKey}" required="true" /> 
 					value: 
-					<h:inputText size="50" value="#{serverSettingsBean.newCSValue}" id="newCSValue" required="true" />			
+					<h:inputText size="50" value="#{serverSettingsBean.newCSValue}" required="true" />			
 					<p></p>
-					<h:commandButton value="Add" onclick="submit();" actionListener="#{serverSettingsBean.addNewCustomSetting}"/>	
-				</h:form>		
+					<h:commandButton value="Add"  actionListener="#{serverSettingsBean.addNewCustomSetting}"/>			
 		  </tr>
 		  <p></p>
-			<t:dataTable value="#{serverSettingsBean.customSettings}" binding="#{serverSettingsBean.csMappingTable}"
-					width="80%" var="aCustomSetting" styleClass="standardTable" headerClass="standardTable_Header">
-				<h:column>
+			<t:dataTable id="customSettingsTable" value="#{serverSettingsBean.customSettings}" binding="#{serverSettingsBean.csMappingTable}"
+					width="80%" var="aCustomSetting">
+				<h:column id="c1">
 					<f:facet name="header">
 						<h:panelGroup>
-							<h:outputText value="Key" />
+							<h:outputText id="keylabel" value="Key" />
 						</h:panelGroup>
 					</f:facet>
-					<h:outputText value="#{aCustomSetting.key}" />
+					<h:outputText id="key" value="#{aCustomSetting.key}" />
 				</h:column>
-				<h:column>
+				<h:column id="c2">
 					<f:facet name="header">
 						<h:panelGroup>
-							<h:outputText value="Value" />
+							<h:outputText id="valuelabel" value="Value" />
 						</h:panelGroup>
 					</f:facet>
-					<h:inputText value="#{aCustomSetting.value}" />
+					<h:inputText id="value" value="#{aCustomSetting.value}" required="true"/>
 				</h:column>
-				<h:column>
+				<h:column id="c3">
 					<f:facet name="header">
-						<h:outputText value="delete" />
+						<h:outputText id="deletelabel" value="Delete" />
 					</f:facet>
-					<h:form>
-						<h:commandButton onclick="submit();" actionListener="#{serverSettingsBean.deleteCustomSetting}" class="little" value="delete" />
-					</h:form>
+					<h:commandButton actionListener="#{serverSettingsBean.deleteCustomSetting}" value="delete" />
 				</h:column>
 			</t:dataTable>
-
-		 <p/>
-		 <h:form>
+		  <p/>	 
           <h:commandButton value="Submit" action="#{serverSettingsBean.saveSettings}"/>
-		</h:form>
 	</table> 
     <p/>
-
+  </h:form>
  </ui:composition>
 </html>
