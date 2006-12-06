@@ -273,7 +273,7 @@ use, misuse, or functionality.
 		var opt = {
           method:    'post',
           postBody:  'cmd=notifyEmailJobCompletion&userID='+ue+'&jobID=<%=job.getJobNumber() %>',
-          onSuccess: ignoreResponse(),
+          onSuccess: ajaxResponse,
           onFailure: function(t) {
             alert('Error ' + t.status + ' -- ' + t.statusText);
           }
@@ -283,27 +283,36 @@ use, misuse, or functionality.
 
   function cancelEmailNotification() {  
 		var ue = document.getElementById("userEmail").value;  
-		        
+		 		    
         var opt = {
           method:    'post',
           postBody:  'cmd=cancelEmailJobCompletion&userID='+ue+'&jobID=<%=job.getJobNumber() %>',
-          onSuccess: ignoreResponse(),
+          onSuccess: ajaxResponse,
           onFailure: function(t) {
             alert('Error ' + t.status + ' -- ' + t.statusText);
           }
         } 
-        new  Ajax.Request('./notifyJobCompletion.ajax',opt);
+        new  Ajax.Request('./cancelJobCompletion.ajax',opt);
       }
 
    function setEmailNotification(){
 		var cb = document.getElementById('emailCheckbox');
 		var ue = document.getElementById("userEmail");
 		var valid = jcv_checkEmail(ue.value); 
-		alert(ue.value);
 		if (!valid){
 			var em = prompt("Email on completion to?:");
-			ue.setValue(em);
-			alert(em);
+			if (em == null){
+				cb.checked = false;
+				return;
+			} else {
+				ue.value = em;
+				valid = jcv_checkEmail(ue.value); 
+				if (!valid){
+					cb.checked = false;
+					alert(ue.value + ' is not a valid email address');
+					return;
+				}
+			}
 		}
 
  	  	if (cb.checked) {
@@ -313,7 +322,8 @@ use, misuse, or functionality.
 		}
    }
 
-   function ignoreResponse( req ) {
+   function ajaxResponse( req ) {
+
         if (req.readyState == 4) {
           if (req.status == 200) { // only if "OK"
             //alert('all is well on email submission') 
@@ -322,68 +332,34 @@ use, misuse, or functionality.
           }  
         }
       }
- function jcv_checkEmail(emailStr) {
-        if (emailStr.length == 0) {
-            return true;
-        }
-        // TLD checking turned off by default
-        var checkTLD=0;
-        var knownDomsPat=/^(com|net|org|edu|int|mil|gov|arpa|biz|aero|name|coop|info|pro|museum)$/;
-        var emailPat=/^(.+)@(.+)$/;
-        var specialChars="\\(\\)><@,;:\\\\\\\"\\.\\[\\]";
-        var validChars="\[^\\s" + specialChars + "\]";
-        var quotedUser="(\"[^\"]*\")";
-        var ipDomainPat=/^\[(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\]$/;
-        var atom=validChars + '+';
-        var word="(" + atom + "|" + quotedUser + ")";
-        var userPat=new RegExp("^" + word + "(\\." + word + ")*$");
-        var domainPat=new RegExp("^" + atom + "(\\." + atom +")*$");
-        var matchArray=emailStr.match(emailPat);
-        if (matchArray==null) {
-            return false;
-        }
-        var user=matchArray[1];
-        var domain=matchArray[2];
-        for (i=0; i<user.length; i++) {
-            if (user.charCodeAt(i)>127) {
-                return false;
-            }
-        }
-        for (i=0; i<domain.length; i++) {
-            if (domain.charCodeAt(i)>127) {
-                return false;
-            }
-        }
-        if (user.match(userPat)==null) {
-            return false;
-        }
-        var IPArray=domain.match(ipDomainPat);
-        if (IPArray!=null) {
-            for (var i=1;i<=4;i++) {
-                if (IPArray[i]>255) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        var atomPat=new RegExp("^" + atom + "$");
-        var domArr=domain.split(".");
-        var len=domArr.length;
-        for (i=0;i<len;i++) {
-            if (domArr[i].search(atomPat)==-1) {
-                return false;
-            }
-        }
-        if (checkTLD && domArr[domArr.length-1].length!=2 && 
-            domArr[domArr.length-1].search(knownDomsPat)==-1) {
-            return false;
-        }
-        if (len<2) {
-            return false;
-        }
-        return true;
-    }
 
+function toggleLogs() {
+	var cb = document.getElementById('logCheckbox');
+	var visible = cb.checked;
+	
+ 	var frm = document.forms["results"];
+       
+	divObj = document.getElementById('executionLogDiv');
+	cbdivObj = document.getElementById('executionLogCBDiv');
+	cbObj = frm.executionLogCB;
+	
+	divObj.style.color='#EFEFEF';
+
+	if(!visible) {
+		divObj.style.display = "none";
+		divObj.visibility=false;
+		cbdivObj.style.display = "none";
+		cbdivObj.visibility=false;
+
+	} else {
+		divObj.style.display = "";
+		divObj.visibility=true;
+		cbdivObj.style.display = "";
+		cbdivObj.visibility=true;
+
+	}
+	
+}
 
 
 </script>
@@ -397,7 +373,7 @@ use, misuse, or functionality.
 
 
 
-		<input name="showLogs" type="checkbox" onclick="toggleLogs()"  value="showLogs" checked="checked" />
+		<input name="showLogs" id="logCheckbox" type="checkbox" onclick="toggleLogs()"  value="showLogs" checked="checked" />
 show execution logs</td>
         </tr>
 </table>
@@ -542,13 +518,40 @@ show execution logs</td>
             if (!jobParams[j].isOutputFile()) {
                 continue;
             }
+			boolean executionLog = false;
             sbOut.setLength(0);
+			
             String fileName = new File("../../" + jobParams[j].getValue())
                     .getName();
-            sbOut.append("<tr><td>&nbsp;</td><td align='center'><input type=\"checkbox\" value=\"");
+    		if (fileName.equals(GPConstants.TASKLOG)) executionLog = true;        
+	
+			
+			
+			sbOut.append("<tr><td>&nbsp;</td><td align='center'>");
+
+			if (executionLog){
+				sbOut.append("<span id='executionLogCBDiv'>");
+			}
+
+			sbOut.append("<input type=\"checkbox\" value=\"");
+			
             sbOut.append(""+jobInfo.getJobNumber() + "/" + fileName);
             sbOut.append("\" name=\"dl\" ");
-            sbOut.append("checked></td><td/><td><a target=\"_blank\" href=\"");
+			if (executionLog){
+				sbOut.append("id='executionLogCB' ");
+			}
+
+            sbOut.append("checked>");
+			if (executionLog){
+				sbOut.append("</span>");
+			}
+
+			sbOut.append("</td><td/><td>");
+			if (executionLog){
+				sbOut.append("<span id='executionLogDiv'>");
+			}
+
+			sbOut.append("<a target=\"_blank\" href=\"");
             String outFileUrl;
             try {
                 outFileUrl = "retrieveResults.jsp?job=" + jobInfo.getJobNumber() + "&filename=" +
@@ -563,7 +566,11 @@ show execution logs</td>
                 // ignore
             }
             
-            sbOut.append("\">" + StringUtils.htmlEncode(fileName) + "</a></td></tr>");
+            sbOut.append("\">" + StringUtils.htmlEncode(fileName) + "</a>");
+			if (executionLog){
+				sbOut.append("</span>");
+			}
+			sbOut.append("</td></tr>");
             out.println(sbOut.toString());
             
         }
