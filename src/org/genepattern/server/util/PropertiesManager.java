@@ -89,6 +89,69 @@ public class PropertiesManager implements IGPConstants {
 
 		return storeSuccess;
 	}
+	
+	public static boolean storeChangesToCustomProperties(Properties newProps){
+		boolean storeSuccess = false;
+		for (Iterator iter = newProps.keySet().iterator(); iter.hasNext(); ){
+			String key = (String)iter.next();
+			String val = newProps.getProperty(key);
+			System.setProperty(key, val);
+		}
+
+		try {
+			int i=0;
+			Properties props = getCustomProperties();
+			StringBuffer commentBuff = new StringBuffer("#Genepattern server updated keys: ");	
+			for (Iterator iter = newProps.keySet().iterator(); iter.hasNext(); i++){
+				String key = (String)iter.next();
+				String val = newProps.getProperty(key);
+				props.setProperty(key, val);
+				if (i > 0) 	commentBuff.append(", ");
+				commentBuff.append(key);
+			}
+			storeCustomProperties(props, commentBuff.toString());
+			storeSuccess = true;
+		} catch (Exception e){
+			storeSuccess = false;
+		} 
+
+		return storeSuccess;
+	}
+	
+	public static Properties getCustomProperties() throws IOException {
+		Properties props = new Properties();
+		FileInputStream fis = null;
+
+		try {
+			String dir = System.getProperty("custom.properties");
+			File propFile = new File(dir, "custom.properties");
+			
+			propFile.createNewFile();
+			
+			fis = new FileInputStream(propFile);
+			props.load(fis);
+			fis.close();
+			fis = null;
+		} finally {
+			if (fis != null) fis.close();
+		}
+		return props;
+
+	} 
+	
+	protected static void storeCustomProperties(Properties props, String comment) throws IOException {
+		FileOutputStream fos = null;
+		try {
+			String dir = System.getProperty("custom.properties");
+			File propFile = new File(dir, "custom.properties");
+			fos = new FileOutputStream(propFile);
+			props.store(fos, comment);
+			fos.close();			
+			fos = null;
+		} finally {
+ 			if (fos != null) fos.close();
+		}
+	}
 
 
 	public static boolean removeProperties(Vector keys){
