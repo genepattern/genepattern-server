@@ -54,8 +54,8 @@ use, misuse, or functionality.
     <link href="css/style-jobresults.css" rel="stylesheet" type="text/css">
     <link href="skin/favicon.ico" rel="shortcut icon">
     <title>GenePattern - Run Task Results</title>
-	<script language="Javascript" src="js/prototype.js"/>
-	<script language="Javascript" src="js/commons-validator-1.3.0.js"/>
+	<script language="Javascript" src="js/prototype.js"></script>
+	<script language="Javascript" src="js/commons-validator-1.3.0.js"></script>
 
 </head>
 <body>
