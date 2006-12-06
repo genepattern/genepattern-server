@@ -14,26 +14,33 @@ package org.genepattern.server.process;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
+import java.net.Authenticator;
+import java.net.HttpURLConnection;
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.Vector;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
-import java.net.HttpURLConnection;
-import java.util.zip.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
 import org.genepattern.util.GPConstants;
-import org.jdom.*;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.Text;
 import org.jdom.input.SAXBuilder;
 
 public class SuiteRepository {
     protected org.jdom.Document document;
+
     protected static String DBF = "javax.xml.parsers.DocumentBuilderFactory";
 
-    HashMap suites = new HashMap();
+    HashMap<String, Map> suites = new HashMap<String, Map>();
 
     protected String motd_message = "";
 
@@ -46,7 +53,7 @@ public class SuiteRepository {
     protected String motd_latestServerVersion = "";
 
     public SuiteRepository() {
-        return;
+
     }
 
     public static void main(String[] args) {
@@ -64,7 +71,8 @@ public class SuiteRepository {
     }
 
     // returns a map keyed by LSID
-    public HashMap getSuites(String url) throws IOException, IllegalArgumentException, IllegalAccessException,
+    public HashMap<String, Map> getSuites(String url) throws IOException,
+            IllegalArgumentException, IllegalAccessException,
             NoSuchMethodException, SecurityException {
         String oldDocumentBuilderFactory = System.getProperty(DBF);
         URL reposURL = new URL(url);
@@ -77,7 +85,8 @@ public class SuiteRepository {
             // use it only if we find a username/password in the System
             // properties
             //
-            HttpURLConnection conn = (HttpURLConnection) reposURL.openConnection();
+            HttpURLConnection conn = (HttpURLConnection) reposURL
+                    .openConnection();
             String user = System.getProperty("http.proxyUser");
             String pass = System.getProperty("http.proxyPassword");
             if ((user != null) && (pass != null)) {
@@ -91,23 +100,28 @@ public class SuiteRepository {
             document = builder.build(is);
             Element root = document.getRootElement();
             getMessageOfTheDay(root);
-            for (Iterator i = root.getChildren("GenePatternSuite").iterator(); i.hasNext();) {
+            for (Iterator i = root.getChildren("GenePatternSuite").iterator(); i
+                    .hasNext();) {
                 Element suite = (Element) i.next();
                 Map suiteMap = getSuiteMap(suite);
-                suites.put(suiteMap.get("lsid"), suiteMap);
+                suites.put((String) suiteMap.get("lsid"), suiteMap);
             }
 
         } catch (IOException ioe) {
-            throw new IOException(ioe.getMessage() + " while connecting to " + url);
+            throw new IOException(ioe.getMessage() + " while connecting to "
+                    + url);
         } catch (JDOMException ioe) {
-            throw new IOException(ioe.getMessage() + " while parsing from " + url);
+            throw new IOException(ioe.getMessage() + " while parsing from "
+                    + url);
         } finally {
             try {
-                if (is != null) is.close();
+                if (is != null)
+                    is.close();
             } catch (IOException ioe) {
                 // ignore
             }
-            if (oldDocumentBuilderFactory != null) System.setProperty(DBF, oldDocumentBuilderFactory);
+            if (oldDocumentBuilderFactory != null)
+                System.setProperty(DBF, oldDocumentBuilderFactory);
         }
 
         // InstallTask[] module_list = parseDOM(root);
@@ -117,7 +131,8 @@ public class SuiteRepository {
 
     public static HashMap getSuiteMap(ZipFile zipFile) throws Exception {
 
-        ZipEntry suiteManifestEntry = zipFile.getEntry(GPConstants.SUITE_MANIFEST_FILENAME);
+        ZipEntry suiteManifestEntry = zipFile
+                .getEntry(GPConstants.SUITE_MANIFEST_FILENAME);
         InputStream is = zipFile.getInputStream(suiteManifestEntry);
 
         SAXBuilder builder = new SAXBuilder();
@@ -130,21 +145,28 @@ public class SuiteRepository {
 
     public void getMessageOfTheDay(Element root) throws JDOMException {
         Element site_motd = root.getChild(NODE_SITE_MOTD);
-        motd_message = ((Text) site_motd.getChild(NODE_MOTD_MESSAGE).getContent().get(0)).getText();
-        motd_url = ((Text) site_motd.getChild(NODE_MOTD_URL).getContent().get(0)).getText();
-        motd_urgency = Integer.parseInt(((Text) site_motd.getChild(NODE_MOTD_URGENCY).getContent().get(0)).getText());
-        motd_latestServerVersion = ((Text) site_motd.getChild(NODE_MOTD_LATESTSERVERVERSION).getContent().get(0))
-                .getText();
+        motd_message = ((Text) site_motd.getChild(NODE_MOTD_MESSAGE)
+                .getContent().get(0)).getText();
+        motd_url = ((Text) site_motd.getChild(NODE_MOTD_URL).getContent()
+                .get(0)).getText();
+        motd_urgency = Integer.parseInt(((Text) site_motd.getChild(
+                NODE_MOTD_URGENCY).getContent().get(0)).getText());
+        motd_latestServerVersion = ((Text) site_motd.getChild(
+                NODE_MOTD_LATESTSERVERVERSION).getContent().get(0)).getText();
 
-        String timestamp = ((Text) site_motd.getChild(NODE_MOTD_TIMESTAMP).getContent().get(0)).getText();
+        String timestamp = ((Text) site_motd.getChild(NODE_MOTD_TIMESTAMP)
+                .getContent().get(0)).getText();
         try {
             motd_timestamp = Long.parseLong(timestamp);
         } catch (NumberFormatException nfe) {
             try {
-                motd_timestamp = (new SimpleDateFormat("dd-MMM-yyyy").parse(timestamp)).getTime();
+                motd_timestamp = (new SimpleDateFormat("dd-MMM-yyyy")
+                        .parse(timestamp)).getTime();
             } catch (ParseException pe) {
                 // ignore
-                System.out.println(pe.getMessage() + " in ModuleRepository.getModules() handling MOTD timestamp");
+                System.out
+                        .println(pe.getMessage()
+                                + " in ModuleRepository.getModules() handling MOTD timestamp");
             }
         }
 
@@ -160,7 +182,8 @@ public class SuiteRepository {
         Text lsid = (Text) root.getChild("lsid").getContent().get(0);
         Text author = (Text) root.getChild("author").getContent().get(0);
         Text owner = (Text) root.getChild("owner").getContent().get(0);
-        Text description = (Text) root.getChild("description").getContent().get(0);
+        Text description = (Text) root.getChild("description").getContent()
+                .get(0);
 
         manifest.put("name", name.getText());
         manifest.put("lsid", lsid.getText());
@@ -195,7 +218,8 @@ public class SuiteRepository {
         ArrayList docFiles = new ArrayList();
         manifest.put("docFiles", docFiles);
 
-        for (Iterator i = root.getChildren("documentationFile").iterator(); i.hasNext();) {
+        for (Iterator i = root.getChildren("documentationFile").iterator(); i
+                .hasNext();) {
             Text docFile = (Text) ((Element) i.next()).getContent().get(0);
             docFiles.add(docFile.getText());
         }
@@ -243,7 +267,7 @@ public class SuiteRepository {
 
     public static String NODE_MOTD_LATESTSERVERVERSION = "motd_latestServerVersion";
 
-    class SimpleAuthenticator extends Authenticator {
+    static class SimpleAuthenticator extends Authenticator {
         private String username, password;
 
         public SimpleAuthenticator(String username, String password) {
