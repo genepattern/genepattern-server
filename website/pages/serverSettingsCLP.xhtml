@@ -13,19 +13,16 @@
       </tr>
     </table>
     <p/>
-    
-      <h:form>
 				Default Command Prefix:<h:inputText size="50"
 					value="#{commandPrefixBean.defaultCommandPrefix}"
 					id="defaultPrefix" required="false" /> <h:commandButton
 					actionListener="#{commandPrefixBean.saveDefaultCommandPrefix}"
 					value="submit" />
-	  </h:form>
 	  <br></br>
       The default command prefix is used for all modules that do not have an explicit prefix setting below.      
      
 	  <br></br>
-	  <h:dataTable value="#{commandPrefixBean.commandPrefixes}"
+	  <h:dataTable id="commandPrefixTable" forceId="true" value="#{commandPrefixBean.commandPrefixes}"
 					var="aPrefix" binding="#{commandPrefixBean.prefixTable}" width="80%" styleClass="standardTable" headerClass="standardTable_Header">
 			<f:facet name="header">
 				Additional command prefixes		
@@ -50,9 +47,7 @@
 				<f:facet name="header">
 					<h:outputText value="delete" />
 				</f:facet>
-				<h:form>
-					<h:commandButton actionListener="#{commandPrefixBean.deletePrefix}" value="delete" />
-				</h:form>
+				<h:commandButton actionListener="#{commandPrefixBean.deletePrefix}" value="delete" />
 			</h:column>
 		  </h:dataTable>
 		  <br></br>
@@ -60,7 +55,7 @@
 		  <p></p>
 		  <b>Add New Prefix:</b>
 			
-		  <h:form>name: 
+		  name: 
 				<h:inputText size="20"
 						value="#{commandPrefixBean.newPrefixName}" id="newPrefixName"
 						required="true" /> 
@@ -71,7 +66,6 @@
 				<h:commandButton value="Submit Prefix"
 						class="little"
 						actionListener="#{commandPrefixBean.saveCommandPrefixes}" />			
-			</h:form>
 			<br></br>
 			<p></p>
 			<t:dataTable value="#{commandPrefixBean.taskPrefixMapping}" 
@@ -98,12 +92,10 @@
 					<f:facet name="header">
 						<h:outputText value="delete" />
 					</f:facet>
-					<h:form>
-						<h:commandButton
+					<h:commandButton
 								actionListener="#{commandPrefixBean.deleteTaskPrefixMapping}"
 								class="little"
 								value="delete" />
-					</h:form>
 				</h:column>
 			</t:dataTable>
 		
@@ -119,6 +111,6 @@
 			<h:commandButton value="Submit Mapping" class="little" actionListener="#{commandPrefixBean.savePrefixTaskMapping}" />
     
     <p/>
-  </h:form>
+</h:form>
  </ui:composition>
 </html>
