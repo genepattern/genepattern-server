@@ -2,7 +2,7 @@ package org.genepattern.server.webapp.jsf;
 
 import java.util.Map;
 
-public class KeyValuePair implements Map.Entry{
+public class KeyValuePair {
 	public String key;
 	public String value;
 	public String altKey;
@@ -40,9 +40,9 @@ public class KeyValuePair implements Map.Entry{
 	public void setValue(String n){
 		 value = n;
 	}
-	public Object setValue(Object n){
+/*	public Object setValue(Object n){
 		Object old = getValue();
 		value = (String)n;
 		return old;
-	}
+	} */
 }
