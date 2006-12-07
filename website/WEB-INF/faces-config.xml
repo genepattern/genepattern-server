@@ -114,6 +114,11 @@
   <managed-bean-scope>session</managed-bean-scope>
  </managed-bean>
  <managed-bean>
+  <managed-bean-name>suiteInstallBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.SuiteInstallBean</managed-bean-class>
+  <managed-bean-scope>session</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>serverSettingsBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.ServerSettingsBean</managed-bean-class>
   <managed-bean-scope>session</managed-bean-scope>
@@ -154,6 +159,11 @@
   <navigation-case>
    <from-outcome>task catalog</from-outcome>
    <to-view-id>/pages/taskCatalog.xhtml</to-view-id>
+   <redirect/>
+  </navigation-case>
+  <navigation-case>
+   <from-outcome>suite catalog</from-outcome>
+   <to-view-id>/pages/suiteCatalog.xhtml</to-view-id>
    <redirect/>
   </navigation-case>
  </navigation-rule>
@@ -205,6 +215,14 @@
   <navigation-case>
    <from-outcome>install</from-outcome>
    <to-view-id>/pages/installTasks.xhtml</to-view-id>
+  </navigation-case>
+ </navigation-rule>
+ <navigation-rule>
+  <display-name>install</display-name>
+  <from-view-id>/pages/suiteCatalog.xhtml</from-view-id>
+  <navigation-case>
+   <from-outcome>install</from-outcome>
+   <to-view-id>/pages/installSuites.xhtml</to-view-id>
   </navigation-case>
  </navigation-rule>
  <application>
