@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.genepattern.util.GPConstants;
+
 public class SuiteInfo implements Serializable {
 
     private String lsid = null;
@@ -61,7 +63,6 @@ public class SuiteInfo implements Serializable {
 
     public SuiteInfo(Map hm) {
         this.lsid = (String) hm.get("lsid");
-
         this.name = (String) hm.get("name");
         this.author = (String) hm.get("author");
         this.owner = (String) hm.get("owner");
@@ -80,6 +81,7 @@ public class SuiteInfo implements Serializable {
             String doc = (String) iter.next();
             docFiles[i] = doc;
         }
+        this.accessId = GPConstants.ACCESS_PUBLIC;
 
     }
 
