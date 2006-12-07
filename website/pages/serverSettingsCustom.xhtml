@@ -6,10 +6,9 @@
       xmlns:t="http://myfaces.apache.org/tomahawk" 
       xmlns:c="http://java.sun.com/jstl/core">
 
-
 <ui:composition>
-<h:messages showDetail="true"/>
-  <h:form> 
+  <h:messages showDetail="true"/>
+  <h:form>
     <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
       <tr>
         <td>Custom Settings</td>
@@ -17,52 +16,47 @@
     </table>
     <p/>
     <table width="100%" border="0" cellpadding="5" cellspacing="0">
-		  <tr valign="top">
-        	<td>Add New Custom Settings:</td>
-          </tr>
-		  <tr valign="top">
+      <tr valign="top">
+        <td>Add New Custom Settings:</td>
+      </tr>
+      <tr valign="top">
 			  		key: 
-					<h:inputText size="20" value="#{serverSettingsBean.newCSKey}" /> 
+					<h:inputText size="20" value="#{serverSettingsBean.newCSKey}"/> 
 					value: 
-					<h:inputText size="50" value="#{serverSettingsBean.newCSValue}" />			
-					<p></p>
-					<h:commandButton value="Add"  actionListener="#{serverSettingsBean.addNewCustomSetting}"/>			
-		  </tr>
-		  <p></p>
-		  <h:dataTable id="customSettingsTable" value="#{serverSettingsBean.customSettings}" width="80%" var="aCustomSetting">
-		  
-				<h:column id="column1">
-					<f:facet name="header">
-						<h:panelGroup>
-							<h:outputText id="keylabel" value="Key" />
-						</h:panelGroup>
-					</f:facet>
-					<h:outputText id="key" value="#{aCustomSetting.key}" />
-				</h:column>
-				<h:column id="column2">
-					<f:facet name="header">
-						<h:panelGroup>
-							<h:outputText id="valuelabel" value="Value" />
-						</h:panelGroup>
-					</f:facet>
-					<h:inputText id="value" value="#{serverSettingsBean.existCSValue}" />
-					<f:param name="key" value="#{aCustomSetting.key}" />
-				</h:column>
-				<h:column id="column3">
-					<f:facet name="header">
-						<h:outputText id="deletelabel" value="Delete" />
-					</f:facet>
-					<h:commandLink actionListener="#{serverSettingsBean.deleteCustomSetting}">
-						<h:outputText value="delete" />
-						<f:param name="key" value="#{aCustomSetting.key}" />
-					</h:commandLink>
-					
-				</h:column>
-		  </h:dataTable>
-		  <p/>	 
-          <h:commandButton value="Submit" action="#{serverSettingsBean.saveSettings}"/>
-	</table> 
+					<h:inputText size="50" value="#{serverSettingsBean.newCSValue}"/>
+        <p/>
+        <h:commandButton value="Add" actionListener="#{serverSettingsBean.addNewCustomSetting}"/>
+      </tr>
+      <p/>
+      
+      <table class="tableheader-row" width="80%">
+        <tr>
+          <td> Key </td>
+          <td> Value </td>
+          <td> Delete </td>
+        </tr>
+        <t:dataList id="customSettingsTable" value="#{serverSettingsBean.customSettings}" var="aCustomSetting">
+          <tr>
+            <td>
+              <h:outputText id="key" value="#{aCustomSetting.key}"/>
+            </td>
+            <td>
+              <h:inputText id="value" value="#{aCustomSetting.value}"/>
+            </td>
+            <td>
+              <h:commandLink actionListener="#{serverSettingsBean.deleteCustomSetting}">
+                <h:outputText value="delete"/>
+                <f:param name="key" value="#{aCustomSetting.key}"/>
+              </h:commandLink>
+            </td>
+          </tr>
+        </t:dataList>
+      </table>
+      <p/>
+      <h:commandButton value="Submit" action="#{serverSettingsBean.saveSettings}"/>
+    </table>
     <p/>
   </h:form>
- </ui:composition>
+</ui:composition>
+
 </html>
