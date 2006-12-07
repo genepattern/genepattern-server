@@ -41,8 +41,9 @@
 			<c:when test="#{suiteCatalogBean.error}">
 				<p>Sorry, the suite repository is not currently available.</p>
 				<p>If you use a web proxy to connect to the internet, please
-				ensure your <a href="adminServer.jsp">web proxy settings</a> are
-				correct</p>
+				ensure your <a
+					href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">web
+				proxy settings</a> are correct</p>
 			</c:when>
 			<c:otherwise>
 				<h:form id="suiteCatalogForm">
@@ -61,7 +62,7 @@
 								name="state" id="state" layout="lineDirection">
 								<f:selectItems value="#{suiteCatalogBean.states}" />
 							</t:selectManyCheckbox></td>
-							
+
 
 							<td><h:commandButton action="#{suiteCatalogBean.filter}"
 								value="Filter" /></td>
@@ -90,46 +91,52 @@
 								<td valign="top"><input type="checkbox" name="ALL"
 									value="ALL" checked="checked"
 									onclick="toggle(this, 'suiteCatalogForm', 'installLsid');" /></td>
-
 								<td valign="top"><b>name (version)</b></td>
-								<td valign="top"><b>details</b></td>
+								<td valign="top"><b>tasks</b></td>
 							</tr>
+
 							<t:dataList var="t" value="#{suiteCatalogBean.suites}"
 								rowIndexVar="suiteIndex">
 								<tr>
 									<td rowspan="2" valign="top"><input type="checkbox"
 										id="install#{suiteIndex}" name="installLsid" value="#{t.lsid}"
 										checked="checked" /></td>
-									<td valign="top" height="1"><span class="tasks-broad"><strong>#{t.name}</strong><br />
+									<td width="60%" valign="top" height="1"><span
+										class="tasks-broad"><strong>#{t.name}</strong><br />
 									</span> <select name="lsid_version"
 										onchange="javascript:document.forms['suiteCatalogForm'].install#{suiteIndex}.value=this.options[this.selectedIndex].value"
 										class="tasks-broad">
-										<option value="#{t.lsid}">#{t.lsidVersion} -
-										#{t.versionComment}</option>
+
+										
+										<option value="#{t.lsid}">#{t.lsidVersion}</option>
+											
 										<t:dataList var="l" value="#{t.laterVersions}">
 											<option value="#{l.lsid}">#{l.lsidVersion} -
 											#{l.versionComment}</option>
 										</t:dataList>
-									</select></td>
+									</select> <br />
+									<br />
+									<b>#{t.description}</b></td>
 
-
-									<td valign="top" height="1"></td>
 									<td valign="top" colspan="4" rowspan="2">
 									<table>
 
 										<tr>
-											<td valign="top" align="right">author:</td>
-											<td valign="top"><nobr>#{t.author}</nobr></td>
-										</tr>		
+											<td valign="top" align="left"><t:dataList var="m"
+												value="#{t.moduleInfo}" rowIndexVar="mIndex">
+													#{m.name}<t:outputText value=" (#{m.version})" rendered="#{m.version != null}"/>
+													&#160;<a href="#{m.docUrl}" target="_new">documentation</a>
+												<br />
+											</t:dataList></td>
+										</tr>
 									</table>
 									</td>
 								</tr>
 
 								<tr>
-									<td valign="top" colspan="2"><b>#{t.description}</b> <br />
-									<br />
-									<a href="#{t.documentationUrl}" target="_new">documentation</a>&#160;|&#160;<a
-										href="#{t.url}">download zip</a></td>
+									<td valign="top" colspan="2">
+										
+									<a href="#{t.url}">download zip</a></td>
 								</tr>
 								<tr class="settingperameter">
 									<td colspan="4"></td>

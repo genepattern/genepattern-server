@@ -12,8 +12,11 @@ import java.util.Map;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.process.SuiteRepository;
+import org.genepattern.server.util.AuthorizationManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -32,49 +35,50 @@ public class SuiteCatalogBean {
 
     private ArrayList<MySuiteInfo> suiteCatalogSuites;
 
-    private static final Comparator versionComparator = new DescendingVersionComparator();
+    private static final Comparator<SuiteInfo> versionComparator = new DescendingVersionComparator();
 
-    private static final int UPDATED = 0;
-
-    private static final int UPTODATE = 1;
-
-    private static final int NEW = 2;
+    private enum State {
+        NEW, UPDATED, UPTODATE
+    };
 
     private ArrayList<MySuiteInfo> filteredSuites;
 
-    private Map<String, List<SuiteInfo>> allSuites;
+    private Map<String, List<SuiteInfo>> baseLsid2InstalledSuites;
+
+    private String suiteUrl;
+
+    private HashMap<String, Map> lsidToSuiteMap;
 
     public SuiteCatalogBean() {
 
         try {
-            allSuites = lsidToSuitesMap(new LocalAdminClient(UIBeanHelper
+            baseLsid2InstalledSuites = lsidToSuitesMap(new LocalAdminClient(UIBeanHelper
                     .getUserId()).getAllSuites());
-
-            HashMap<String, Map> lsidToSuiteMap = new SuiteRepository()
-                    .getSuites(System.getProperty("SuiteRepositoryURL"));
-            Map<String, List<SuiteInfo>> suiteCatalogLsidToSuitesMap = new HashMap<String, List<SuiteInfo>>();
+            suiteUrl = System.getProperty("SuiteRepositoryURL");
+            lsidToSuiteMap = new SuiteRepository().getSuites(suiteUrl);
+            Map<String, List<MySuiteInfo>> suiteCatalogBaseLsidToSuitesMap = new HashMap<String, List<MySuiteInfo>>();
             for (Iterator<Map> it = lsidToSuiteMap.values().iterator(); it
                     .hasNext();) {
-                SuiteInfo si = new SuiteInfo(it.next());
-                List<SuiteInfo> suites = suiteCatalogLsidToSuitesMap.get(si
-                        .getLsid());
+                MySuiteInfo si = new MySuiteInfo(it.next(), suiteUrl);
+                List<MySuiteInfo> suites = suiteCatalogBaseLsidToSuitesMap
+                        .get(si.getLsid());
                 if (suites == null) {
-                    suites = new ArrayList<SuiteInfo>();
-                    suiteCatalogLsidToSuitesMap.put(si.getLsid(), suites);
+                    suites = new ArrayList<MySuiteInfo>();
+                    suiteCatalogBaseLsidToSuitesMap.put(si.getLsid(), suites);
                 }
                 suites.add(si);
             }
             suiteCatalogSuites = new ArrayList<MySuiteInfo>(
-                    suiteCatalogLsidToSuitesMap.size());
-            for (Iterator<List<SuiteInfo>> it = suiteCatalogLsidToSuitesMap
+                    suiteCatalogBaseLsidToSuitesMap.size());
+            for (Iterator<List<MySuiteInfo>> it = suiteCatalogBaseLsidToSuitesMap
                     .values().iterator(); it.hasNext();) {
-                List<SuiteInfo> suites = it.next();
+                List<MySuiteInfo> suites = it.next();
                 Collections.sort(suites, versionComparator);
-                MySuiteInfo s = new MySuiteInfo(suites.get(0));
+                MySuiteInfo s = suites.get(0);
                 if (suites.size() > 1) {
                     MySuiteInfo[] later = new MySuiteInfo[suites.size() - 1];
                     for (int i = 1; i < suites.size(); i++) {
-                        later[i - 1] = new MySuiteInfo(suites.get(i));
+                        later[i - 1] = suites.get(i);
                     }
                     s.setLaterVersions(later);
                 }
@@ -82,15 +86,68 @@ public class SuiteCatalogBean {
             }
             if (UIBeanHelper.getRequest().getParameter(
                     "suiteCatalogForm:suiteCatalogSubmit") == null) {
+                selectedStates = new ArrayList<String>();
                 selectedStates.add("new");
                 selectedStates.add("updated");
                 filter();
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
             log.error(e);
             error = true;
         }
+
+    }
+
+    public String install() {
+        filter();
+
+        final String[] lsids = UIBeanHelper.getRequest().getParameterValues(
+                "installLsid");
+        if (lsids != null) {
+            final String username = UIBeanHelper.getUserId();
+            final LocalTaskIntegratorClient taskIntegrator = new LocalTaskIntegratorClient(
+                    username);
+            AuthorizationManager authManager = new AuthorizationManager();
+
+            boolean suiteInstallAllowed = authManager.checkPermission(
+                    "createSuite", username);
+            final SuiteInstallBean installBean = (SuiteInstallBean) UIBeanHelper
+                    .getManagedBean("#{suiteInstallBean}");
+            String[] names = new String[lsids.length];
+            int i = 0;
+            for (String lsid : lsids) {
+                Map suite = lsidToSuiteMap.get(lsid);
+                names[i++] = (String) suite.get("name");
+            }
+
+            installBean.setSuites(lsids, names);
+            if (!suiteInstallAllowed) {
+                UIBeanHelper
+                        .setInfoMessage("You don't have the required permissions to install suites.");
+                return "failure";
+            }
+
+            new Thread() {
+                public void run() {
+                    for (String lsid : lsids) {
+                        try {
+                            HibernateUtil.beginTransaction();
+                            taskIntegrator.install(lsid);
+                            HibernateUtil.commitTransaction();
+                            installBean.setStatus(lsid, "success");
+                        } catch (WebServiceException e) {
+                            HibernateUtil.rollbackTransaction();
+                            log.error(e);
+                            installBean
+                                    .setStatus(lsid, "error", e.getMessage());
+                        }
+                    }
+                }
+            }.start();
+        }
+        return "install";
 
     }
 
@@ -100,11 +157,11 @@ public class SuiteCatalogBean {
             for (SuiteInfo si : suites) {
 
                 try {
-                    List<SuiteInfo> suiteList = lsidToSuitesMap.get(new LSID(si
-                            .getLSID()).toStringNoVersion());
+                    String lsid = new LSID(si.getLSID()).toStringNoVersion();
+                    List<SuiteInfo> suiteList = lsidToSuitesMap.get(lsid);
                     if (suiteList == null) {
                         suiteList = new ArrayList<SuiteInfo>();
-                        lsidToSuitesMap.put(si.getLSID(), suiteList);
+                        lsidToSuitesMap.put(lsid, suiteList);
                     }
 
                     suiteList.add(si);
@@ -128,7 +185,8 @@ public class SuiteCatalogBean {
      */
     public boolean isAlreadyInstalled(String lsid) {
         try {
-            return allSuites.containsKey(new LSID(lsid).toStringNoVersion());
+            return baseLsid2InstalledSuites.containsKey(new LSID(lsid)
+                    .toStringNoVersion());
         } catch (MalformedURLException e) {
             log.error(e);
             return false;
@@ -139,7 +197,7 @@ public class SuiteCatalogBean {
 
         try {
             LSID reposLsid = new LSID(lsid);
-            List<SuiteInfo> suites = allSuites.get(reposLsid
+            List<SuiteInfo> suites = baseLsid2InstalledSuites.get(reposLsid
                     .toStringNoVersion());
             if (suites != null) {
                 SuiteInfo si = suites.get(0);
@@ -153,21 +211,28 @@ public class SuiteCatalogBean {
         return true;
     }
 
-    public void filter() throws WebServiceException {
+    public void filter() {
+
         boolean getNew = selectedStates.contains("new");
         boolean getUpdated = selectedStates.contains("updated");
         boolean getUpToDate = selectedStates.contains("up to date");
+        if (!getNew && !getUpdated && !getUpToDate) {
+            selectedStates.add("new");
+            selectedStates.add("updated");
+            selectedStates.add("up to date");
+        }
         filteredSuites = new ArrayList<MySuiteInfo>();
 
         for (MySuiteInfo si : suiteCatalogSuites) {
             String lsid = si.getLsid();
-            int state = isAlreadyInstalled(lsid) ? (isNewer(lsid) ? UPDATED
-                    : UPTODATE) : NEW;
-            if (getNew && state == NEW) {
+            State state = isAlreadyInstalled(lsid) ? (isNewer(lsid) ? State.UPDATED
+                    : State.UPTODATE)
+                    : State.NEW;
+            if (getNew && state == State.NEW) {
                 filteredSuites.add(si);
-            } else if (getUpdated && state == UPDATED) {
+            } else if (getUpdated && state == State.UPDATED) {
                 filteredSuites.add(si);
-            } else if (getUpToDate) {
+            } else if (getUpToDate && state == State.UPTODATE) {
                 filteredSuites.add(si);
             }
         }
@@ -219,125 +284,42 @@ public class SuiteCatalogBean {
 
     }
 
-    public static class MySuiteInfo {
-        SuiteInfo suiteInfo;
+    public static class MySuiteInfo extends SuiteInfo {
 
-        MySuiteInfo[] laterVersions;
+        private MySuiteInfo[] laterVersions;
 
-        public MySuiteInfo(SuiteInfo info) {
-            this.suiteInfo = info;
+        /** URL to download suite zip */
+        private String url;
+
+        private ModuleInfo[] moduleInfo;
+
+        public MySuiteInfo(Map hm, String suiteUrl) {
+            super(hm);
+            ArrayList modules = (ArrayList) hm.get("modules");
+            moduleInfo = new ModuleInfo[modules.size()];
+            int i = 0;
+            for (Iterator iter = modules.iterator(); iter.hasNext(); i++) {
+                moduleInfo[i] = new ModuleInfo();
+                Map modMap = (Map) iter.next();
+                try {
+                    moduleInfo[i].version = new LSID((String) modMap
+                            .get("lsid")).getVersion();
+                } catch (MalformedURLException e) {
+                    log.error(e);
+                }
+                moduleInfo[i].docUrl = (String) modMap.get("docFile");
+                moduleInfo[i].name = (String) modMap.get("name");
+
+            }
+            url = suiteUrl + "/" + getName() + ".zip";
         }
 
-        public boolean equals(Object otherThing) {
-            return suiteInfo.equals(otherThing);
+        public String getUrl() {
+            return url;
         }
 
-        public int getAccessId() {
-            return suiteInfo.getAccessId();
-        }
-
-        public String getAuthor() {
-            return suiteInfo.getAuthor();
-        }
-
-        public String getDescription() {
-            return suiteInfo.getDescription();
-        }
-
-        public String[] getDocFiles() {
-            return suiteInfo.getDocFiles();
-        }
-
-        public String[] getDocumentationFiles() {
-            return suiteInfo.getDocumentationFiles();
-        }
-
-        public String getID() {
-            return suiteInfo.getID();
-        }
-
-        public String getLsid() {
-            return suiteInfo.getLsid();
-        }
-
-        public String getLSID() {
-            return suiteInfo.getLSID();
-        }
-
-        public String[] getModuleLsids() {
-            return suiteInfo.getModuleLsids();
-        }
-
-        public String[] getModuleLSIDs() {
-            return suiteInfo.getModuleLSIDs();
-        }
-
-        public String getName() {
-            return suiteInfo.getName();
-        }
-
-        public String getOwner() {
-            return suiteInfo.getOwner();
-        }
-
-        public int hashCode() {
-            return suiteInfo.hashCode();
-        }
-
-        public void setAccessId(int accessId) {
-            suiteInfo.setAccessId(accessId);
-        }
-
-        public void setAuthor(String userId) {
-            suiteInfo.setAuthor(userId);
-        }
-
-        public void setDescription(String description) {
-            suiteInfo.setDescription(description);
-        }
-
-        public void setDocFiles(String[] docFiles) {
-            suiteInfo.setDocFiles(docFiles);
-        }
-
-        public void setDocumentationFiles(String[] mods) {
-            suiteInfo.setDocumentationFiles(mods);
-        }
-
-        public void setID(String ID) {
-            suiteInfo.setID(ID);
-        }
-
-        public void setLsid(String lsid) {
-            suiteInfo.setLsid(lsid);
-        }
-
-        public void setLSID(String LSID) {
-            suiteInfo.setLSID(LSID);
-        }
-
-        public void setModuleLsids(List<String> moduleList) {
-            suiteInfo.setModuleLsids(moduleList);
-        }
-
-        public void setModuleLsids(String[] moduleLsids) {
-            suiteInfo.setModuleLsids(moduleLsids);
-        }
-
-        public void setModuleLSIDs(String[] mods) {
-            suiteInfo.setModuleLSIDs(mods);
-        }
-
-        public void setName(String taskName) {
-            suiteInfo.setName(taskName);
-        }
-
-        public void setOwner(String userId) {
-            suiteInfo.setOwner(userId);
-        }
-
-        public String toString() {
-            return suiteInfo.toString();
+        public ModuleInfo[] getModuleInfo() {
+            return moduleInfo;
         }
 
         public MySuiteInfo[] getLaterVersions() {
@@ -348,9 +330,64 @@ public class SuiteCatalogBean {
             this.laterVersions = laterVersions;
         }
 
+        public String getLsidVersion() {
+            try {
+                return new LSID(getLsid()).getVersion();
+            } catch (MalformedURLException e) {
+                log.error(e);
+                return null;
+            }
+        }
+
     }
 
-    public ArrayList<MySuiteInfo> getFilteredSuites() {
+    public static class ModuleInfo {
+        @Override
+        public String toString() {
+            return "version= " + version + " name = " + name + " docUrl "
+                    + docUrl;
+        }
+
+        private String version;
+
+        private String name;
+
+        private String docUrl;
+
+        public ModuleInfo() {
+
+        }
+
+        public String getDocUrl() {
+            return docUrl;
+        }
+
+        public void setDocUrl(String docUrl) {
+            this.docUrl = docUrl;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public void setVersion(String version) {
+            this.version = version;
+        }
+    }
+
+    public ArrayList<MySuiteInfo> getSuites() {
         return filteredSuites;
+    }
+
+    public int getNumberOfSuites() {
+        return filteredSuites != null ? filteredSuites.size() : 0;
     }
 }
