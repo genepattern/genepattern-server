@@ -52,8 +52,8 @@ public class SuiteCatalogBean {
     public SuiteCatalogBean() {
 
         try {
-            baseLsid2InstalledSuites = lsidToSuitesMap(new LocalAdminClient(UIBeanHelper
-                    .getUserId()).getAllSuites());
+            baseLsid2InstalledSuites = createBaseLsidToSuitesMap(new LocalAdminClient(
+                    UIBeanHelper.getUserId()).getAllSuites());
             suiteUrl = System.getProperty("SuiteRepositoryURL");
             lsidToSuiteMap = new SuiteRepository().getSuites(suiteUrl);
             Map<String, List<MySuiteInfo>> suiteCatalogBaseLsidToSuitesMap = new HashMap<String, List<MySuiteInfo>>();
@@ -151,19 +151,19 @@ public class SuiteCatalogBean {
 
     }
 
-    private Map<String, List<SuiteInfo>> lsidToSuitesMap(SuiteInfo[] suites) {
+    private Map<String, List<SuiteInfo>> createBaseLsidToSuitesMap(
+            SuiteInfo[] suites) {
         Map<String, List<SuiteInfo>> lsidToSuitesMap = new HashMap<String, List<SuiteInfo>>();
         if (suites != null) {
             for (SuiteInfo si : suites) {
-
                 try {
-                    String lsid = new LSID(si.getLSID()).toStringNoVersion();
-                    List<SuiteInfo> suiteList = lsidToSuitesMap.get(lsid);
+                    String baseLsid = new LSID(si.getLSID())
+                            .toStringNoVersion();
+                    List<SuiteInfo> suiteList = lsidToSuitesMap.get(baseLsid);
                     if (suiteList == null) {
                         suiteList = new ArrayList<SuiteInfo>();
-                        lsidToSuitesMap.put(lsid, suiteList);
+                        lsidToSuitesMap.put(baseLsid, suiteList);
                     }
-
                     suiteList.add(si);
                 } catch (MalformedURLException e) {
                     log.error(e);
@@ -171,9 +171,9 @@ public class SuiteCatalogBean {
 
             }
         }
-        for (Iterator<String> it = lsidToSuitesMap.keySet().iterator(); it
+        for (Iterator<List<SuiteInfo>> it = lsidToSuitesMap.values().iterator(); it
                 .hasNext();) {
-            List<SuiteInfo> lsidSuites = lsidToSuitesMap.get(it.next());
+            List<SuiteInfo> lsidSuites = it.next();
             Collections.sort(lsidSuites, versionComparator);
         }
         return lsidToSuitesMap;
@@ -220,14 +220,26 @@ public class SuiteCatalogBean {
             selectedStates.add("new");
             selectedStates.add("updated");
             selectedStates.add("up to date");
+            getNew = true;
+            getUpdated = true;
+            getUpToDate = true;
         }
+
         filteredSuites = new ArrayList<MySuiteInfo>();
 
         for (MySuiteInfo si : suiteCatalogSuites) {
             String lsid = si.getLsid();
-            State state = isAlreadyInstalled(lsid) ? (isNewer(lsid) ? State.UPDATED
-                    : State.UPTODATE)
-                    : State.NEW;
+            State state;
+            if (isAlreadyInstalled(lsid)) {
+                if (isNewer(lsid)) {
+                    state = State.UPDATED;
+                } else {
+                    state = State.UPTODATE;
+                }
+            } else {
+                state = State.NEW;
+            }
+
             if (getNew && state == State.NEW) {
                 filteredSuites.add(si);
             } else if (getUpdated && state == State.UPDATED) {
