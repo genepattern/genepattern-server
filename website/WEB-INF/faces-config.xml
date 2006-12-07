@@ -48,6 +48,11 @@
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
+  <managed-bean-name>changeEmailBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.ChangeEmailBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>forgotPasswordBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.ForgotPasswordBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
@@ -124,6 +129,11 @@
   <managed-bean-scope>session</managed-bean-scope>
  </managed-bean>
   <managed-bean>
+  <managed-bean-name>mySettingsBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.MySettingsBean</managed-bean-class>
+  <managed-bean-scope>session</managed-bean-scope>
+ </managed-bean>
+  <managed-bean>
   <managed-bean-name>importTaskBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.ImportTaskBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
@@ -135,6 +145,10 @@
  </managed-bean>
  <navigation-rule>
   <from-view-id>*</from-view-id>
+  <navigation-case>
+   <from-outcome>my settings</from-outcome>
+   <to-view-id>/pages/accountInfo.xhtml</to-view-id>
+  </navigation-case>
   <navigation-case>
    <from-outcome>logout</from-outcome>
    <to-view-id>/pages/login.xhtml</to-view-id>
