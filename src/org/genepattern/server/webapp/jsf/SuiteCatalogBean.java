@@ -101,7 +101,6 @@ public class SuiteCatalogBean {
     }
 
     public String install() {
-        filter();
 
         final String[] lsids = UIBeanHelper.getRequest().getParameterValues(
                 "installLsid");
