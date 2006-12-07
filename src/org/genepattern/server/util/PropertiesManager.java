@@ -16,6 +16,7 @@ package org.genepattern.server.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -26,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.File;
 
+import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.util.IGPConstants;
 
 public class PropertiesManager implements IGPConstants {
@@ -90,11 +92,11 @@ public class PropertiesManager implements IGPConstants {
 		return storeSuccess;
 	}
 	
-	public static boolean storeChangesToCustomProperties(Properties newProps){
+	public static boolean storeChangesToCustomProperties(List<KeyValuePair> newProps){
 		boolean storeSuccess = false;
-		for (Iterator iter = newProps.keySet().iterator(); iter.hasNext(); ){
-			String key = (String)iter.next();
-			String val = newProps.getProperty(key);
+        for(KeyValuePair keyValue : newProps) {
+			String key = keyValue.getKey();
+			String val = keyValue.getValue();
 			System.setProperty(key, val);
 		}
 
@@ -102,9 +104,9 @@ public class PropertiesManager implements IGPConstants {
 			int i=0;
 			Properties props = getCustomProperties();
 			StringBuffer commentBuff = new StringBuffer("#Genepattern server updated keys: ");	
-			for (Iterator iter = newProps.keySet().iterator(); iter.hasNext(); i++){
-				String key = (String)iter.next();
-				String val = newProps.getProperty(key);
+            for(KeyValuePair keyValue : newProps) {
+                String key = keyValue.getKey();
+                String val = keyValue.getValue();
 				props.setProperty(key, val);
 				if (i > 0) 	commentBuff.append(", ");
 				commentBuff.append(key);
