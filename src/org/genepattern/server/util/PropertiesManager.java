@@ -141,6 +141,24 @@ public class PropertiesManager implements IGPConstants {
 
 	} 
 	
+	public static Properties getDefaultProperties() throws IOException {
+		Properties props = new Properties();
+		FileInputStream fis = null;
+
+		try {
+			String dir = System.getProperty("genepattern.properties");
+			File propFile = new File(dir, "genepattern.properties.backup");
+			fis = new FileInputStream(propFile);
+			props.load(fis);
+			fis.close();
+			fis = null;
+		} finally {
+			if (fis != null) fis.close();
+		}
+		return props;
+
+	}
+	
 	protected static void storeCustomProperties(Properties props, String comment) throws IOException {
 		FileOutputStream fos = null;
 		try {
