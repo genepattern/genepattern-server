@@ -37,33 +37,42 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
 
 public class RunTaskBean {
- 
+
     private boolean visualizer;
+
     private boolean pipeline;
+
     private String name;
+
     private String lsid;
+
     private String[] documentationFilenames;
+
     private Parameter[] parameters;
+
     private String version;
+
     private static Logger log = Logger.getLogger(RunTaskBean.class);
+
     private List<String> versions;
-    private List<NavigationMenuItem> menuItems;
-    
-    // This is an odd class for this variable, but RunTaskBean is the backing bean
+
+    // This is an odd class for this variable, but RunTaskBean is the backing
+    // bean
     // for the home page.
     private String splashMessage;
 
-
     /**
-     * Initialize the task lsid.  This page needs to support redirects from older .jsp pages as well as
-     * jsf navigation.  JSP pages will pass the lsid in as a request parameter.  Look for it there first,
-     * if the paramter is null get it from the moduleChooserBean.
-     *
+     * Initialize the task lsid. This page needs to support redirects from older
+     * .jsp pages as well as jsf navigation. JSP pages will pass the lsid in as
+     * a request parameter. Look for it there first, if the paramter is null get
+     * it from the moduleChooserBean.
+     * 
      */
     public RunTaskBean() {
         String taskToRun = UIBeanHelper.getRequest().getParameter("lsid");
         if (taskToRun == null || taskToRun.length() == 0) {
-            ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper.getManagedBean("#{moduleChooserBean}");
+            ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper
+                    .getManagedBean("#{moduleChooserBean}");
             assert chooser != null;
             taskToRun = chooser.getSelectedModule();
         }
@@ -252,9 +261,11 @@ public class RunTaskBean {
         }
 
         Map<String, String> reloadValues = new HashMap<String, String>();
-        String reloadJobNumberString = UIBeanHelper.getRequest().getParameter("reloadJob");
-        if(reloadJobNumberString==null) {
-            reloadJobNumberString = (String) UIBeanHelper.getRequest().getAttribute("reloadJob");
+        String reloadJobNumberString = UIBeanHelper.getRequest().getParameter(
+                "reloadJob");
+        if (reloadJobNumberString == null) {
+            reloadJobNumberString = (String) UIBeanHelper.getRequest()
+                    .getAttribute("reloadJob");
         }
         if (reloadJobNumberString != null) {
             try {
@@ -305,16 +316,7 @@ public class RunTaskBean {
             versions = new LocalAdminClient(UIBeanHelper.getUserId())
                     .getVersions(l);
             versions.remove(version);
-            menuItems = new ArrayList<NavigationMenuItem>();
-            for (String version : versions) {
 
-                NavigationMenuItem mi = new NavigationMenuItem(version,
-                        "change version");
-                mi.setValue(version);
-                mi.setActionListener("#{runTaskBean.changeVersion}");
-
-                menuItems.add(mi);
-            }
         } catch (MalformedURLException e) {
             log.error("LSID:" + lsid, e);
             versions = null;
@@ -338,26 +340,24 @@ public class RunTaskBean {
 
     }
 
-    public List<NavigationMenuItem> getMenuItems() {
-        return menuItems;
-    }
-
-    public void changeVersion(ActionEvent event) {
-        HtmlCommandJSCookMenu m = (HtmlCommandJSCookMenu) event.getSource();
+    public void changeVersion() {
         ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper
                 .getManagedBean("#{moduleChooserBean}");
         assert chooser != null;
-        String label = m.getValue().toString();
+        String version = UIBeanHelper.decode(UIBeanHelper.getRequest()
+                .getParameter("version"));
 
         try {
+            System.out.println("Set selected module to "
+                    + new LSID(lsid).toStringNoVersion() + ":" + version);
             chooser.setSelectedModule(new LSID(lsid).toStringNoVersion() + ":"
-                    + label);
+                    + version);
             setTask(chooser.getSelectedModule());
         } catch (MalformedURLException e) {
             log.error(e);
         }
     }
-    
+
     public String getSplashMessage() {
         return splashMessage;
     }
@@ -366,7 +366,12 @@ public class RunTaskBean {
         this.splashMessage = splashMessage;
     }
 
-    
-    
+    public List<String> getVersions() {
+        return versions;
+    }
+
+    public void setVersions(List<String> versions) {
+        this.versions = versions;
+    }
 
 }
