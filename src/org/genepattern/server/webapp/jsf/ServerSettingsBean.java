@@ -4,19 +4,16 @@
 package org.genepattern.server.webapp.jsf;
 
 import static org.genepattern.server.webapp.jsf.UIBeanHelper.getRequest;
-import static org.genepattern.util.IGPConstants.TASK_PREFIX_MAPPING;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -26,7 +23,6 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
 import org.genepattern.server.util.PropertiesManager;
-import org.genepattern.webservice.WebServiceException;
 
 
 public class ServerSettingsBean {
@@ -48,8 +44,8 @@ public class ServerSettingsBean {
 	private String newCSKey="";
 	private String newCSValue="";
 	
-	HtmlDataTable csMappingTable = null;
-	
+	//HtmlDataTable csMappingTable = null;
+	private String test="one";
 	private Calendar cal = Calendar.getInstance();
 	private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 	
@@ -573,25 +569,46 @@ public class ServerSettingsBean {
 	}
 	
 	public void addNewCustomSetting(ActionEvent event) {
-        customSettings.put(newCSKey, newCSValue);
+		if (newCSKey!="" && newCSValue!="") {
+			customSettings.put(newCSKey, newCSValue);
+		}
     }
 	
 	public void deleteCustomSetting(ActionEvent event) {
-		Map.Entry row = (Map.Entry) csMappingTable.getRowData();
-        customSettings.remove(row.getKey());
-        
-        
+		//Map.Entry row = (Map.Entry) csMappingTable.getRowData();
+        //customSettings.remove(row.getKey());
+		Map params = UIBeanHelper.getExternalContext().getRequestParameterMap();
+		String deleteKey= (String) params.get("deleteKey");
+		customSettings.remove(deleteKey);
     }
 	
-	public List getCustomSettings() {
-        return new ArrayList(customSettings.entrySet());
+	public Object[] getCustomSettings() {
+		/*ArrayList<Map.Entry> out = new ArrayList<Map.Entry>();
+        
+		for (Map.Entry cSetting : customSettings.entrySet()) {
+            
+            out.add(new KeyValuePair((String) cSetting.getKey(), (String) cSetting.getValue()));
+        }
+        return out;*/
+		return customSettings.entrySet().toArray();
     }
 	
-	public HtmlDataTable getCsMappingTable() {
+	/*public HtmlDataTable getCsMappingTable() {
         return csMappingTable;
     }
 
     public void setCsMappingTable(HtmlDataTable csMappingTable) {
         this.csMappingTable = csMappingTable;
+    }*/
+    
+    public String getTest() {
+    	
+    	return test;
+    }
+    
+    public Object setTest(String o) {
+    	System.out.println("test");
+    	test=o;
+    	return test;
     }
 }
