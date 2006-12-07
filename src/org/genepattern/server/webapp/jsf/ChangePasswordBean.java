@@ -81,7 +81,7 @@ public class ChangePasswordBean {
         }
         String message = "Your new password has been saved";
         UIBeanHelper.setInfoMessage(message);
-        return "success";
+        return "my settings";
     }
 
     public UIInput getPasswordConfirmComponent() {

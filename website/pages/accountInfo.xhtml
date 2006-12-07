@@ -3,26 +3,66 @@
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk">
-
-
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jstl/core">
 <ui:composition template="/templates/common.xhtml">
+	<ui:define name="headText">
+		<script type="text/javascript"
+			src="#{facesContext.externalContext.requestContextPath}/js/prototype.js" />
+	</ui:define>
 	<ui:define name="pageTitle">GenePattern Account Information</ui:define>
-	<ui:define name="body">
-		<h2>GenePattern Account Information</h2>
-
+	<ui:define name="leftPanel">
 		<h:form>
-			<h:panelGrid columns="1">
-				<h:outputLink
-					value="#{facesContext.externalContext.requestContextPath}/pages/changePassword.jsf">
-				Change Password</h:outputLink>
-				<h:outputLink
-					value="#{facesContext.externalContext.requestContextPath}/pages/visualizerMemory.jsf">
-				Change Memory Allocated for Visualizers</h:outputLink>
-			</h:panelGrid>
+
+			<td width="242" rowspan="2" valign="top" class="tasks" id="tasks">
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td colspan="5" class="sidebarhead-bkg2">
+					<div class="sidebarhead">Account Information</div>
+					</td>
+				</tr>
+				<tr>
+					<td height="6" colspan="5"><img
+						src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
+						width="240" height="6" /></td>
+				</tr>
+				<ui:repeat value="#{mySettingsBean.modes}" var="mode">
+					<tr class="#{mySettingsBean.currentMode == mode ? 'tasks_on' : ''}">
+						<td width="9" valign="middle"><img
+							src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
+							width="8" height="8" /></td>
+						<td width="4" valign="middle"><img
+							src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif"
+							alt="bullet" width="4" height="4" /></td>
+						<td width="4"><img
+							src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
+							width="4" height="1" /></td>
+						<td><h:commandLink id="modeLink" value="#{mode}"
+							actionListener="#{mySettingsBean.modeChanged}" immediate="true">
+							<f:param value="#{mode}" name="mode" />
+						</h:commandLink></td>
+						<td width="9"><img
+							src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
+							width="9" height="1" /></td>
+					</tr>
+				</ui:repeat>
+			</table>
+			</td>
 		</h:form>
 	</ui:define>
+	<ui:define name="body">
+		<t:div rendered="#{mySettingsBean.currentMode == 'Change Password'}">
+			<ui:include src="changePassword.xhtml" />
+		</t:div>
+		<t:div rendered="#{mySettingsBean.currentMode == 'Visualizer Memory'}">
+			<ui:include src="visualizerMemory.xhtml" />
+		</t:div>
+		<t:div rendered="#{mySettingsBean.currentMode == 'Change Email'}">
+			<ui:include src="changeEmail.xhtml" />
+		</t:div>
 
-
+	</ui:define>
 </ui:composition>
+
 </html>
+

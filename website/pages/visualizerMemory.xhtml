@@ -5,25 +5,15 @@
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk">
 
+<h:form>
+	<h:panelGrid columns="3">
+		<h:outputLabel value="Java Flags:" for="javaFlags"></h:outputLabel>
+		<h:inputText size="50" id="javaFlags" required="false"
+			value="#{userPrefsBean.javaFlags.value}" />
+		<h:message style="color: red; font-weight: bold;" for="javaFlags" />
+	</h:panelGrid>
+	<h:commandButton action="#{userPrefsBean.save}" value="Save" />
+	
+</h:form>
 
-<ui:composition template="/templates/common.xhtml">
-
-	<ui:define name="pageTitle">Visualizer Memory</ui:define>
-
-	<ui:define name="body">
-		<h2>Visualizer Memory</h2>
-		<h:form>
-			<h:panelGrid columns="3">
-				<h:outputLabel value="Java Flags:" for="javaFlags"></h:outputLabel>
-				<h:inputText size="50" id="javaFlags" required="false"
-					value="#{userPrefsBean.javaFlags.value}" />
-				<h:message style="color: red; font-weight: bold;" for="javaFlags" />
-			</h:panelGrid>
-			<h:commandButton action="#{userPrefsBean.save}" value="Save" />
-			<h:commandButton action="cancel" value="Cancel" immediate="true" />
-
-		</h:form>
-	</ui:define>
-
-</ui:composition>
 </html>

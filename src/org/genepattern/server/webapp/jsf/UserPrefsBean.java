@@ -52,7 +52,7 @@ public class UserPrefsBean {
 
     public String save() {
         UIBeanHelper.setInfoMessage("Property successfully updated");
-        return "success";
+        return "my settings";
     }
 
     public UserProp getNumberOfRecentJobs() {
