@@ -30,6 +30,7 @@
 		  </tr>
 		  <p></p>
 		  <h:dataTable id="customSettingsTable" value="#{serverSettingsBean.customSettings}" width="80%" var="aCustomSetting">
+		  
 				<h:column id="column1">
 					<f:facet name="header">
 						<h:panelGroup>
@@ -44,7 +45,8 @@
 							<h:outputText id="valuelabel" value="Value" />
 						</h:panelGroup>
 					</f:facet>
-					<h:inputText id="value" value="#{serverSettingsBean.test}" />
+					<h:inputText id="value" value="#{serverSettingsBean.existCSValue}" />
+					<f:param name="key" value="#{aCustomSetting.key}" />
 				</h:column>
 				<h:column id="column3">
 					<f:facet name="header">
@@ -52,7 +54,7 @@
 					</f:facet>
 					<h:commandLink actionListener="#{serverSettingsBean.deleteCustomSetting}">
 						<h:outputText value="delete" />
-						<f:param name="deleteKey" value="#{aCustomSetting.key}" />
+						<f:param name="key" value="#{aCustomSetting.key}" />
 					</h:commandLink>
 					
 				</h:column>

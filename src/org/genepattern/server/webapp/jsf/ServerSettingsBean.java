@@ -14,8 +14,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.faces.component.html.HtmlDataTable;
 import javax.faces.event.ActionEvent;
@@ -44,8 +47,8 @@ public class ServerSettingsBean {
 	private String newCSKey="";
 	private String newCSValue="";
 	
-	//HtmlDataTable csMappingTable = null;
-	private String test="one";
+	
+	private ArrayList<KeyValuePair> out = new ArrayList<KeyValuePair>();
 	private Calendar cal = Calendar.getInstance();
 	private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 	
@@ -575,40 +578,24 @@ public class ServerSettingsBean {
     }
 	
 	public void deleteCustomSetting(ActionEvent event) {
-		//Map.Entry row = (Map.Entry) csMappingTable.getRowData();
-        //customSettings.remove(row.getKey());
-		Map params = UIBeanHelper.getExternalContext().getRequestParameterMap();
-		String deleteKey= (String) params.get("deleteKey");
-		customSettings.remove(deleteKey);
+		customSettings.remove(getKey());
     }
 	
 	public Object[] getCustomSettings() {
-		/*ArrayList<Map.Entry> out = new ArrayList<Map.Entry>();
-        
-		for (Map.Entry cSetting : customSettings.entrySet()) {
-            
-            out.add(new KeyValuePair((String) cSetting.getKey(), (String) cSetting.getValue()));
-        }
-        return out;*/
 		return customSettings.entrySet().toArray();
     }
 	
-	/*public HtmlDataTable getCsMappingTable() {
-        return csMappingTable;
-    }
-
-    public void setCsMappingTable(HtmlDataTable csMappingTable) {
-        this.csMappingTable = csMappingTable;
-    }*/
-    
-    public String getTest() {
-    	
-    	return test;
-    }
-    
-    public Object setTest(String o) {
-    	System.out.println("test");
-    	test=o;
-    	return test;
-    }
+	public String getExistCSValue() {
+		return customSettings.getProperty(getKey());
+	}
+	
+	public void setExistCSValue(String value) {
+		customSettings.put(getKey(), value);
+	}
+	
+	private String getKey() {
+		Map params = UIBeanHelper.getExternalContext().getRequestParameterMap();
+		String key= (String) params.get("key");
+		return key;
+	}
 }
