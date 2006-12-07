@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.util.GPConstants;
 
 
 /**
@@ -104,6 +105,7 @@ public class AuthenticationFilter implements Filter {
 					String userId = c.getValue();
 					if (userId != null && isRegistered(userId, request)) {
 						request.setAttribute("userID", userId);
+						request.setAttribute(GPConstants.USERID, userId);
 						return true;
 					}
 					else {
