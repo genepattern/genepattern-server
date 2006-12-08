@@ -48,11 +48,13 @@ public class EmailNotificationManager {
 	
 	
 	public void sendJobCompletionEmail(String user, String jobID){
-		String status = null;
+		String status = "status unknown";
+		String task = "";
 		try {
 			LocalAnalysisClient analysis = new LocalAnalysisClient(user);
 			JobInfo jobInfo = analysis.checkStatus(Integer.parseInt(jobID));
 			status = jobInfo.getStatus();
+			task = jobInfo.getTaskName();
 		} catch (Exception e){
 			// swallow it and send the link without status
 			status = "Finished";
@@ -60,10 +62,14 @@ public class EmailNotificationManager {
 		
 		String addresses = user;
 		String from = "GenePattern@"+ System.getProperty("gpServerHostAddress");
-		String subject = "Job " + jobID + " - " + status;
-		String message = "<a href='http://gp21e-789.broad.mit.edu:8080/gp/pages/jobResults.jsf?jobID=jobID'>GenePattern Results Page</a>";
+		String subject = "Job " + jobID + " - " + task +" - "+ status;
+		StringBuffer msg = new StringBuffer();
+		msg.append("The results for job "+jobID+","+ task +" , are available on the <br>");
+		msg.append("<a href='http://gp21e-789.broad.mit.edu:8080/gp/pages/jobResults.jsf?jobID=jobID'>GenePattern JobResults Page</a>");
 		
-		emailToAddresses(addresses, from, subject, message);
+		
+		
+		emailToAddresses(addresses, from, subject, msg.toString());
 		
 	}
 	

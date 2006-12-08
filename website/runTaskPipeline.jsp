@@ -56,6 +56,7 @@ use, misuse, or functionality.
     <title>GenePattern - Run Task Results</title>
 	<script language="Javascript" src="js/prototype.js"></script>
 	<script language="Javascript" src="js/commons-validator-1.3.0.js"></script>
+	<script language="Javascript" src="js/genepattern.js"></script>
 
 </head>
 <body>
@@ -228,14 +229,7 @@ use, misuse, or functionality.
 %>
 <script language="Javascript">
 
-    var pipelineStopped = false;
-    function stopPipeline(button, jobId) {
-        var really = confirm('Really stop the pipeline?');
-        if (!really) return;
-        window.open("runPipeline.jsp?cmd=stop&jobID=<%= job.getJobNumber() %>", "_blank", "height=100, width=100, directories=no, menubar=no, statusbar=no, resizable=no");
-        pipelineStopped = true;
-    }
-    function checkAll(cb) {
+     function checkAll(cb) {
         var frm = document.forms["results"];
         var bChecked = cb.checked;
         for (i = 0; i < frm.elements.length; i++) {
@@ -268,34 +262,8 @@ use, misuse, or functionality.
 // do nothing?
 	}
 
- function requestEmailNotification() {            
-        var ue = document.getElementById("userEmail").value;  
-		var opt = {
-          method:    'post',
-          postBody:  'cmd=notifyEmailJobCompletion&userID='+ue+'&jobID=<%=job.getJobNumber() %>',
-          onSuccess: ajaxResponse,
-          onFailure: function(t) {
-            alert('Error ' + t.status + ' -- ' + t.statusText);
-          }
-        } 
-        new  Ajax.Request('./notifyJobCompletion.ajax',opt);
-      }
 
-  function cancelEmailNotification() {  
-		var ue = document.getElementById("userEmail").value;  
-		 		    
-        var opt = {
-          method:    'post',
-          postBody:  'cmd=cancelEmailJobCompletion&userID='+ue+'&jobID=<%=job.getJobNumber() %>',
-          onSuccess: ajaxResponse,
-          onFailure: function(t) {
-            alert('Error ' + t.status + ' -- ' + t.statusText);
-          }
-        } 
-        new  Ajax.Request('./cancelJobCompletion.ajax',opt);
-      }
-
-   function setEmailNotification(){
+   function setEmailNotification(jobId){
 		var cb = document.getElementById('emailCheckbox');
 		var ue = document.getElementById("userEmail");
 		var valid = jcv_checkEmail(ue.value); 
@@ -316,23 +284,13 @@ use, misuse, or functionality.
 		}
 
  	  	if (cb.checked) {
-			requestEmailNotification();
+			requestEmailNotification(ue.value, jobId);
 	 	} else {
-			cancelEmailNotification();
+			cancelEmailNotification(ue.value, jobId);
 		}
    }
 
-   function ajaxResponse( req ) {
-
-        if (req.readyState == 4) {
-          if (req.status == 200) { // only if "OK"
-            //alert('all is well on email submission') 
-          } else {
-            alert("There was a problem in email notification:\n" + req.statusText);
-          }  
-        }
-      }
-
+ 
 function toggleLogs() {
 	var cb = document.getElementById('logCheckbox');
 	var visible = cb.checked;
@@ -368,7 +326,7 @@ function toggleLogs() {
 <tr>
       <td valign="top" class="maintasknav" id="maintasknav">
 
-	    <input type="checkbox" id="emailCheckbox" onclick="setEmailNotification();" value="checkbox"/>email notification&nbsp;&nbsp;&nbsp;&nbsp;
+	    <input type="checkbox" id="emailCheckbox" onclick="setEmailNotification(<%=jobId%>);" value="checkbox"/>email notification&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="hidden" id="userEmail" value="<%= userEmail %>"/>
 
 
@@ -388,7 +346,7 @@ show execution logs</td>
 <table width='100%' cellpadding="0">
     <tr>
 	  <td width="50px">
-  <input name="stopCmd" id="stopCmd" type="button" value="stop..." onclick="stopPipeline(this, <%= job.getJobNumber()%>)" class="little">
+  <input name="stopCmd" id="stopCmd" type="button" value="stop..." onclick="stopJob(this, <%= job.getJobNumber()%>)" class="little">
 	  </td>
         <td>
             Running <a href="addTask.jsp?view=1&name=<%=requestParameters.get("taskLSID")%>"><%=
