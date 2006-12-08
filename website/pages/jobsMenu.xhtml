@@ -5,13 +5,8 @@
 	      var menuId = "menuDiv_#{job.jobNumber}";
 	      pm_popupMenuIds.push(menuId);
 	    </script>
-    <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" 
-         name="Image2_#{job.jobNumber}" width="14" height="14" border="0" align="top" 
-         id="Image2_#{job.jobNumber}" onclick="pm_showMenu('menuDiv_#{job.jobNumber}', Position.cumulativeOffset(this));" 
-         onmouseover="MM_swapImage('Image2_#{job.jobNumber}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
-         onmouseout="MM_swapImgRestore();"/>
-    <br/>
-    <div id="menuDiv_#{job.jobNumber}" style="visibility:hidden;" class="popupMenu">
+
+    <div id="menuDiv_#{job.jobNumber}" style="visibility:hidden; position:absolute;" class="popupMenu">
       <table>
         <tbody>
           <tr>

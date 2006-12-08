@@ -6,14 +6,7 @@
       pm_popupMenuIds.push('menuDev_#{job.jobNumber}_#{param.value}');
 	</script>
 	
-    <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
-         name="Image_#{job.jobNumber}_#{param.value}" id="Image_#{job.jobNumber}_#{param.value}" 
-         width="14" height="14" border="0" align="top" 
-         onclick="pm_showMenu('menuDev_#{job.jobNumber}_#{param.value}', Position.cumulativeOffset(this));" 
-         onmouseover="MM_swapImage('Image_#{job.jobNumber}_#{param.value}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
-         onmouseout="MM_swapImgRestore();"/>
-    <br/>
-    <div id="menuDev_#{job.jobNumber}_#{param.value}" style="visibility:hidden;" class="popupMenu">
+    <div id="menuDev_#{job.jobNumber}_#{param.value}" style="visibility:hidden; position:absolute;" class="popupMenu">
       <table>
         <tbody>
           <tr>

@@ -39,10 +39,14 @@
           </td>
           <td>
             <font class="recentjobs-sh">#{job.taskName}</font>
-            <ui:include src="jobsMenu.xhtml">
-              <ui:param name="job" value="#{job}"/>
-              <ui:param name="jobComplete" value="#{job.complete}"/>
-            </ui:include>
+            
+            <!-- Image trigger for jobs menu popup -->
+            <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" 
+                 name="Image2_#{job.jobNumber}" width="14" height="14" border="0" align="top" 
+                 id="Image2_#{job.jobNumber}" onclick="pm_showMenu('menuDiv_#{job.jobNumber}', Position.cumulativeOffset(this), 50, 80);" 
+                 onmouseover="MM_swapImage('Image2_#{job.jobNumber}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
+                 onmouseout="MM_swapImgRestore();"/>
+            <br/>
             
             <h:outputText value="#{job.dateCompleted}">
               <f:convertDateTime pattern="MMM dd hh:mm:ss a"/>
@@ -56,11 +60,14 @@
                 <f:param name="filename" value="#{p.name}"/>
               </h:outputLink>
               
-              <ui:include src="jobFileMenu.xhtml">
-                <ui:param name="job" value="#{job}"/>
-                <ui:param name="param" value="#{p}"/>
-              </ui:include>
-              
+                <!-- Image for popup menu -->            
+                <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
+                     name="Image_#{job.jobNumber}_#{p.value}" id="Image_#{job.jobNumber}_#{p.value}" 
+                     width="14" height="14" border="0" align="top" 
+                     onclick="pm_showMenu('menuDev_#{job.jobNumber}_#{p.value}', Position.cumulativeOffset(this), 50, 80);" 
+                     onmouseover="MM_swapImage('Image_#{job.jobNumber}_#{p.value}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
+                     onmouseout="MM_swapImgRestore();"/> 
+        
             </t:dataList>
           </td>
           <td width="9">
@@ -93,5 +100,23 @@
   <p>
     <br/>
   </p>
+  
+    <!-- Create menus  -->
+    <ui:define name="popupMenus">
+      <h:form>
+        <t:dataList var="jobInfo" value="#{recentJobsBean.jobs}" rowIndexVar="jobIndex">
+          <ui:include src="jobsMenu.xhtml">
+            <ui:param name="job" value="#{jobInfo}"/>
+          </ui:include>
+          <t:dataList var="fileInfo" value="#{jobInfo.outputFileParameterInfos}" rowIndexVar="paramIndex">
+            <ui:include src="jobFileMenu.xhtml">
+              <ui:param name="job" value="#{jobInfo}"/>
+              <ui:param name="param" value="#{fileInfo}"/>       
+            </ui:include>
+          </t:dataList>
+        </t:dataList>
+      </h:form>
+    </ui:define>
+   
   </ui:composition>
 </html>

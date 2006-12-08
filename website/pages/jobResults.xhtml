@@ -159,8 +159,8 @@
       <table width="%100">
         <tr>
           <td valign="top" class="maintasknav" id="maintasknav" align="right">
-            <h:selectBooleanCheckbox value="#{jobResultsBean.showEveryonesJobs}" onclick="submit();"/>show everyone's jobs&#160;&#160;&#160;&#160;
-            <h:selectBooleanCheckbox value="#{jobResultsBean.showExecutionLogs}" onclick="submit();"/>show execution logs	
+            <h:selectBooleanCheckbox  value="#{jobResultsBean.showEveryonesJobs}" onchange="submit();"/>show everyone's jobs&#160;&#160;&#160;&#160;
+            <h:selectBooleanCheckbox  value="#{jobResultsBean.showExecutionLogs}" onchange="submit();" />show execution logs	
           </td>
         </tr>
       </table>
@@ -267,7 +267,7 @@
         
           <script type="text/javascript" language="javascript">
             <h:outputText>
-	           jobNumbers[#{jobIndex}]='#{jobInfo.jobNumber}';
+	           jobNumbers[#{jobIndex}]='#{jobResults.jobInfo.jobNumber}';
             </h:outputText>
           </script>
 
@@ -301,17 +301,22 @@
             
             <td align="right" style="cursor: pointer;" onclick="toggleVisibility('#{jobInfo.jobNumber}');">
               <img id="#{jobInfo.jobNumber}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" 
-                   width="8" height="8" border="0" style="#{jobInfo.expanded == true ? 'display:inline;' : 'display:none;'}"/>
+                   width="8" height="8" border="0" style="#{jobResults.expanded == true ? 'display:inline;' : 'display:none;'}"/>
               <img id="#{jobInfo.jobNumber}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" 
-                   width="8" height="8" border="0" style="#{jobInfo.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
+                   width="8" height="8" border="0" style="#{jobResults.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
             </td>           
             <td class="task-title" >
-              <span style="cursor: pointer;" onclick="toggleVisibility('#{jobInfo.jobNumber}');">#{jobInfo.taskName}</span>
+              <span style="cursor: pointer;" onclick="toggleVisibility('#{jobInfo.jobNumber}');">
+                <h:outputText>#{jobInfo.taskName}</h:outputText>
+              </span>
  
-              <ui:include src="jobsMenu.xhtml">
-                <ui:param name="job" value="#{jobInfo}"/>
-              </ui:include>
-            </td>
+              <!-- Image trigger for jobs menu popup -->
+              <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" 
+                   name="Image2_#{jobInfo.jobNumber}" width="14" height="14" border="0" align="top" 
+                   id="Image2_#{jobInfo.jobNumber}" onclick="pm_showMenu('menuDiv_#{jobInfo.jobNumber}', Position.cumulativeOffset(this), 50, 0);" 
+                   onmouseover="MM_swapImage('Image2_#{jobInfo.jobNumber}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
+                   onmouseout="MM_swapImgRestore();"/>
+             </td>
                         
             <td>&#160;</td>
             <td>
@@ -373,12 +378,14 @@
                   <f:param name="job" value="#{jobInfo.jobNumber}"/>
                   <f:param name="filename" value="#{fileInfo.name}"/>
                 </h:outputLink> 
-                            
-                <ui:include src="jobFileMenu.xhtml">
-                  <ui:param name="job" value="#{jobInfo}"/>
-                  <ui:param name="param" value="#{fileInfo}"/>       
-                </ui:include>
- 
+                
+                <!-- Image for popup menu -->            
+                <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
+                     name="Image_#{jobInfo.jobNumber}_#{fileInfo.value}" id="Image_#{jobInfo.jobNumber}_#{fileInfo.value}" 
+                     width="14" height="14" border="0" align="top" 
+                     onclick="pm_showMenu('menuDev_#{jobInfo.jobNumber}_#{fileInfo.value}', Position.cumulativeOffset(this), 50, 0);" 
+                     onmouseover="MM_swapImage('Image_#{jobInfo.jobNumber}_#{fileInfo.value}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
+                     onmouseout="MM_swapImgRestore();"/> 
                </td>
               <td align="right">#{fileInfo.formattedSize}&#160;&#160;&#160;&#160;</td>
               <td>&#160;</td>
@@ -413,6 +420,22 @@
     </h:form>
     </ui:define>
     
-
+    <!-- Create menus  -->
+    <ui:define name="popupMenus">
+      <h:form>
+        <t:dataList value="#{jobResultsBean.jobs}" var="jobInfo" rowIndexVar="jobIndex">
+          <ui:include src="jobsMenu.xhtml">
+            <ui:param name="job" value="#{jobInfo}"/>
+          </ui:include>
+          <t:dataList var="fileInfo" value="#{jobInfo.outputFileParameterInfos}" rowIndexVar="paramIndex">
+            <ui:include src="jobFileMenu.xhtml">
+              <ui:param name="job" value="#{jobInfo}"/>
+              <ui:param name="param" value="#{fileInfo}"/>       
+            </ui:include>
+          </t:dataList>
+        </t:dataList>
+      </h:form>
+    </ui:define>
+ 
 </ui:composition>
 </html>

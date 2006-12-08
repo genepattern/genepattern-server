@@ -16,12 +16,12 @@ function pm_registerClickHandler() {
     }, false);   
 } 
 
-function pm_showMenu(id, pos) {
+function pm_showMenu(id, pos, leftOffset, topOffset) {
    pm_currentId = id;
    var style = $(id).style;
    if(pos) {
-     style.left = (pos[0] - 50)  + "px";
-     //style.top = pos[1] + "px";
+     style.left = (pos[0] - leftOffset)  + "px";
+     style.top = (pos[1] - topOffset) + "px";
    }
    style.visibility = "";  //<= resets to default
 } 
@@ -30,4 +30,6 @@ function pm_hideMenu(id) {
   $(id).style.visibility = "hidden";
 } 
 
-           
+function pm_setMousePosition(e) {
+  alert(document.event);
+}
