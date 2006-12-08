@@ -168,7 +168,8 @@
 	  <tr valign="top">
 	      <td>&#160;</td>
 	      <td>
-	          <h:commandButton value="Submit" action="#{serverSettingsBean.saveSettings}"/>
+	          <h:commandButton value="Submit" actionlistener="#{serverSettingsBean.saveSettings}"/>
+	          <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}"/>
 	      </td>
 	  </tr>
 	  <tr valign="top" class="settingperameter">

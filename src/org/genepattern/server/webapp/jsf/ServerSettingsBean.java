@@ -14,13 +14,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
+import java.util.TreeMap;
 
-import javax.faces.component.html.HtmlDataTable;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
@@ -29,17 +29,18 @@ import org.genepattern.server.util.PropertiesManager;
 
 public class ServerSettingsBean {
 
-    private static String[] modes = new String[] { "Access", "Command Line Prefix", "File Purge Settings", "History",
+    private Map<String, String[]> modes;/* = new String[] { "Access", "Command Line Prefix", "File Purge Settings", "History",
             "Java Flag Settings", "Gene Pattern Log", "Web Server Log", "Repositories", "Proxy Settings",
             "Search Engine", "Database Settings", "LSID", "Programming Language", "Documentation Attibutes",
-            "Advanced", "Create Custom Settings", "Shut Down Server" };
+            "Advanced", "Create Custom Settings", "Shut Down Server" };*/
     private String[] clientModes = new String[] { "Local", "Any", "Specified" };
 
-    private String currentMode = modes[0]; // Default
+    private String currentMode;// = modes[0]; // Default
     private String currentClientMode = clientModes[0]; // default
 
     private Properties settings;
     private List<KeyValuePair> customSettings;
+    private Properties defaultSettings;
     private String proxyPassword;
     private String newCSKey = "";
     private String newCSValue = "";
@@ -70,6 +71,32 @@ public class ServerSettingsBean {
      * 
      */
     public ServerSettingsBean() {
+    	if (modes == null) {
+    		modes=new TreeMap<String, String[]>();
+    		modes.put("Access", new String[]{"gp.allowed.clients"});
+    		modes.put("Command Line Prefix", new String[]{"gp.allowed.clients"});
+    		modes.put("File Purge Settings", new String[]{"purgeJobsAfter", "purgeTime"});
+    		modes.put("History", new String[]{"historySize"});
+    		modes.put("Java Flag Settings", new String[]{"java_flags"});
+    		modes.put("Gene Pattern Log", null);
+    		modes.put("Web Server Log", null);
+    		modes.put("Repositories", new String[]{"ModuleRepositoryURL", "ModuleRepositoryURLs", "SuiteRepositoryURL", "SuiteRepositoryURLs"});
+    		modes.put("Proxy Settings", new String[]{"http.proxyHost", "http.proxyPort", "http.proxyUser"});
+    		modes.put("Search Engine", new String[]{"disable.gp.indexing"});
+    		modes.put("Database Settings", new String[]{"database.vendor", "HSQL_port", "HSQL.class", "HSQL.args", "HSQL.schema", 
+    				"hibernate.connection.driver_class", "hibernate.connection.shutdown", "hibernate.connection.url", "hibernate.connection.username", 
+    				"hibernate.connection.password", "hibernate.dialect", "hibernate.default_schema", "hibernate.connection.SetBigStringTryClob"});
+    		modes.put("LSID", new String[]{"lsid.authority", "lsid.show"});
+    		modes.put("Programming Language", new String[]{"perl", "java", "R", "run_r_path"});
+    		modes.put("Documentation Attibutes", new String[]{"files.doc", "files.binary", "files.code"});
+    		modes.put("Advanced", new String[]{"DefaultPatchRepositoryURL", "DefaultPatchURL", "patchQualifiers", "patches", "ant", "resources", "index",
+    				"tasklib", "jobs", "tomcatCommonLib", "webappDir", "log4j.appender.R.File", "pipeline.cp", "pipeline.main", "pipeline.vmargs", 
+    				"pipeline.decorator", "installedPatchLSIDs", "JavaGEInstallerURL", "AnalysisTaskQueuePollingFrequency", "num.threads", 
+    				"org.apache.lucene.commitLockTimeout", "org.apache.lucene.writeLockTimeout", "org.apache.lucene.mergeFactor"});
+    		modes.put("Create Custom Settings", null);
+    		modes.put("Shut Down Server", null);
+    	}
+    	currentMode=(String)modes.keySet().toArray()[0];
         if (settings == null) {
             try {
                 settings = PropertiesManager.getGenePatternProperties();
@@ -86,6 +113,14 @@ public class ServerSettingsBean {
                     customSettings.add(new KeyValuePair((String) entry.getKey(), (String) entry.getValue()));
                 }
 
+            }
+            catch (IOException ioe) {
+                ioe.getStackTrace();
+            }
+        }
+        if (defaultSettings == null) {
+        	try {
+        		defaultSettings = PropertiesManager.getDefaultProperties();
             }
             catch (IOException ioe) {
                 ioe.getStackTrace();
@@ -110,8 +145,8 @@ public class ServerSettingsBean {
     /**
      * @return
      */
-    public String[] getModes() {
-        return modes;
+    public Object[] getModes() {
+        return modes.keySet().toArray();
     }
 
     /**
@@ -129,20 +164,6 @@ public class ServerSettingsBean {
      */
     public Properties getSettings() {
         return settings;
-    }
-
-    /**
-     * Save the settings back to the file. Trigger by the "submit" button on the
-     * page.
-     * 
-     * @return
-     */
-    public String saveSettings() {
-        PropertiesManager.storeChanges(settings);
-        
-        
-        PropertiesManager.storeChangesToCustomProperties(customSettings);
-        return null; // This returns us to the same page
     }
 
     /**
@@ -362,7 +383,7 @@ public class ServerSettingsBean {
             repositoryURLs = repositoryURLs.concat(",").concat(currentRepositoryURL);
         }
         settings.put(repositoryNames, repositoryURLs);
-        saveSettings();
+        saveSettings(null);
     }
 
     /**
@@ -497,7 +518,7 @@ public class ServerSettingsBean {
 
     public String getDb() {
         String db = (String) settings.get("database.vendor");
-        resetDbParam(db);
+        //resetDbParam(db);
         return db;
     }
 
@@ -507,7 +528,7 @@ public class ServerSettingsBean {
 
     public void changeDb(ValueChangeEvent event) {
         String db = (String) settings.get("database.vendor");
-        resetDbParam(db);
+        //resetDbParam(db);
 
     }
 
@@ -549,6 +570,35 @@ public class ServerSettingsBean {
             settings.put("hibernate.connection.SetBigStringTryClob", "true");
         }
     }
+    
+    public String getClobRadio() {
+    	String value=(String)settings.get("hibernate.connection.SetBigStringTryClob");
+    	return (value==null)?"":value;
+    }
+    
+    /**
+     * @param mode
+     */
+    public void setClobRadio(String mode) {
+    	if (mode!=null && (mode.equals("true") || mode.equals("false"))) {
+    		settings.put("hibernate.connection.SetBigStringTryClob", mode);
+    	}
+    }
+    
+    public String getShutDownRadio() {
+    	String value=(String)settings.get("hibernate.connection.shutdown");
+    	return (value==null)?"":value;
+    }
+    
+    /**
+     * @param mode
+     */
+    public void setShutDownRadio(String mode) {
+    	if (mode!=null && (mode.equals("true") || mode.equals("false"))) {
+    		settings.put("hibernate.connection.shutdown", mode);
+    	}
+    }
+    
 
     /**
      * @return
@@ -595,5 +645,29 @@ public class ServerSettingsBean {
         return key;
     }
     
+    /**
+     * Save the settings back to the file. Trigger by the "submit" button on the
+     * page.
+     * 
+     * @return
+     */
+    public void saveSettings(ActionEvent event) {
+        PropertiesManager.storeChanges(settings);
+        PropertiesManager.storeChangesToCustomProperties(customSettings);
+    }
+    
+    public void restore(ActionEvent event) {
+		String[] propertyKeys = modes.get(currentMode);
+		if (propertyKeys!=null) {
+			String defaultValue;
+			for (String propertyKey:propertyKeys) {
+				defaultValue = (String)defaultSettings.get(propertyKey);
+				if (defaultValue!=null) {
+					settings.put(propertyKey, defaultValue);
+				}
+			}
+			saveSettings(event);
+		}
+	}
     
 }

@@ -47,7 +47,8 @@
       <tr valign="top">
         <td>&#160;</td>
         <td>
-          <h:commandButton value="submit" action="#{serverSettingsBean.addModuleRepositoryURL}"/>
+          <h:commandButton value="Submit" actionlistener="#{serverSettingsBean.saveSettings}"/>
+	      <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}"/>
           <h:commandButton value="reset to default" action="#{serverSettingsBean.resetModuleRepositoryURL}"/>
           <h:commandButton value="remove from list" action="#{serverSettingsBean.removeModuleRepositoryURL}"/>
         </td>
@@ -69,7 +70,8 @@
       <tr valign="top">
         <td>&#160;</td>
         <td>
-          <h:commandButton value="submit" action="#{serverSettingsBean.addSuiteRepositoryURL}"/>
+          <h:commandButton value="Submit" actionlistener="#{serverSettingsBean.saveSettings}"/>
+	      <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}"/>
           <h:commandButton value="reset to default" action="#{serverSettingsBean.resetSuiteRepositoryURL}"/>
           <h:commandButton value="remove from list" action="#{serverSettingsBean.removeSuiteRepositoryURL}"/>
         </td>

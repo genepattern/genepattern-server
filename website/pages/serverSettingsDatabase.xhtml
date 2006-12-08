@@ -6,6 +6,7 @@
       xmlns:t="http://myfaces.apache.org/tomahawk" 
       xmlns:c="http://java.sun.com/jstl/core">
 <ui:composition>
+<h:messages showDetail="true"/>
    <script type="text/javascript" language="javascript">
 	/* <![CDATA[ */
 	  function changeDb(v) {
@@ -38,7 +39,7 @@
       <tr valign="top">
         <td>Database:</td>
         <td> 
-            <h:selectOneMenu value="#{serverSettingsBean.db}" onchange="changeDb(this.value); submit();" valueChangeListener="#{serverSettingsBean.changeDb}">
+            <h:selectOneMenu value="#{serverSettingsBean.db}" onchange="changeDb(this.value)" valueChangeListener="#{serverSettingsBean.changeDb}">
 				<f:selectItem itemValue="HSQL" itemLabel="Hsql" />
 	  			<f:selectItem itemValue="ORACLE" itemLabel="Oracle" />
 			</h:selectOneMenu>
@@ -80,7 +81,7 @@
       <tr class="hsql" valign="top" style="#{serverSettingsBean.db == 'HSQL' ? 'display:' : 'display:none;'}">
 	        <td>Hibernate Shutdown: </td>
 	        <td>
-	        	<h:selectOneRadio value="#{serverSettingsBean.settings['hibernate.connection.shutdown']}">
+	        	<h:selectOneRadio value="#{serverSettingsBean.shutDownRadio}">
 		        	<f:selectItem itemValue="true" itemLabel="true" />
 		  			<f:selectItem itemValue="false" itemLabel="false" />
 				</h:selectOneRadio>	        
@@ -113,7 +114,7 @@
       <tr class="oracle" valign="top" style="#{serverSettingsBean.db == 'ORACLE' ? 'display:' : 'display:none;'}">
 	        <td>Hibernate Set Big String Try Clob: </td>
 	        <td>
-	        	<h:selectOneRadio value="#{serverSettingsBean.settings['hibernate.connection.SetBigStringTryClob']}">
+	        	<h:selectOneRadio value="#{serverSettingsBean.clobRadio}">
 		        	<f:selectItem itemValue="true" itemLabel="true" />
 		  			<f:selectItem itemValue="false" itemLabel="false" />
 				</h:selectOneRadio>
@@ -129,7 +130,8 @@
 	  <tr valign="top">
 	      <td>&#160;</td>
 	      <td>
-	          <h:commandButton value="Submit" action="#{serverSettingsBean.saveSettings}"/>
+	          <h:commandButton value="Submit" actionlistener="#{serverSettingsBean.saveSettings}"/>
+	          <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}"/>
 	      </td>
 	  </tr>
 	  <tr valign="top" class="settingperameter">

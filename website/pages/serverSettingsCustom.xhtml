@@ -10,39 +10,45 @@
   <h:messages showDetail="true"/>
   <h:form>
     <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
-      <tr>
+      <tr valign="top">
         <td>Custom Settings</td>
       </tr>
     </table>
-    <p/>
+    <br/>
     <table width="100%" border="0" cellpadding="5" cellspacing="0">
       <tr valign="top">
         <td>Add New Custom Settings:</td>
       </tr>
-      <tr valign="top">
-			  		key: 
-					<h:inputText size="20" value="#{serverSettingsBean.newCSKey}"/> 
-					value: 
-					<h:inputText size="50" value="#{serverSettingsBean.newCSValue}"/>
-        <p/>
-        <h:commandButton value="Add" actionListener="#{serverSettingsBean.addNewCustomSetting}"/>
-      </tr>
-      <p/>
-      
       <table class="tableheader-row" width="80%">
-        <tr>
-          <td> Key </td>
-          <td> Value </td>
+	      <tr valign="top">
+	      	<td>name: </td>
+			<td>
+				<h:inputText size="20" value="#{serverSettingsBean.newCSKey}"/>
+			</td>
+			<td>content: </td>
+			<td>
+				<h:inputText size="50" value="#{serverSettingsBean.newCSValue}"/>
+			</td>
+			<td>
+				<h:commandLink value="Add" actionListener="#{serverSettingsBean.addNewCustomSetting}"/>
+			</td> 
+	      </tr>
+      </table>
+      <br/><br/>
+      <table class="tableheader-row" width="80%">
+        <tr valign="top">
+          <td> Name </td>
+          <td> Content </td>         
           <td> Delete </td>
         </tr>
         <t:dataList id="customSettingsTable" value="#{serverSettingsBean.customSettings}" var="aCustomSetting">
-          <tr>
+          <tr valign="top">
             <td>
               <h:outputText id="key" value="#{aCustomSetting.key}"/>
-            </td>
+            </td>         
             <td>
               <h:inputText id="value" value="#{aCustomSetting.value}"/>
-            </td>
+            </td>            
             <td>
               <h:commandLink actionListener="#{serverSettingsBean.deleteCustomSetting}">
                 <h:outputText value="delete"/>
@@ -52,10 +58,11 @@
           </tr>
         </t:dataList>
       </table>
-      <p/>
-      <h:commandButton value="Submit" action="#{serverSettingsBean.saveSettings}"/>
+      <tr valign="top">
+      	<h:commandButton value="Submit" action="#{serverSettingsBean.saveSettings}"/>
+      </tr>
     </table>
-    <p/>
+    <br/>
   </h:form>
 </ui:composition>
 

@@ -24,8 +24,8 @@ public class CommandPrefixBean {
     private static Logger log = Logger.getLogger(CommandPrefixBean.class);
     LocalAdminClient admin;
 
-    HtmlDataTable prefixTable = null;
-    HtmlDataTable tpmappingTable = null;
+    //HtmlDataTable prefixTable = null;
+    //HtmlDataTable tpmappingTable = null;
 
     private String defaultCommandPrefix;
 
@@ -129,8 +129,7 @@ public class CommandPrefixBean {
     }
 
     public void deletePrefix(ActionEvent event) {
-        Map.Entry row = (Map.Entry) prefixTable.getRowData();
-        String prefixToDelete = (String) row.getKey();
+        String prefixToDelete = getKey("aPrefixKey");
         Properties cp = pm.getCommandPrefixes();
         cp.remove(prefixToDelete);
         pm.saveProperties(COMMAND_PREFIX, cp);
@@ -147,9 +146,14 @@ public class CommandPrefixBean {
         }
         if (tpmChanged) pm.saveProperties(TASK_PREFIX_MAPPING, tpm);
     }
+    
+    private String getKey(String keyName) {
+        Map params = UIBeanHelper.getExternalContext().getRequestParameterMap();
+        String key = (String) params.get(keyName);
+        return key;
+    }
 
     public void saveDefaultCommandPrefix(ActionEvent event) {
-
         pm.storeChange(COMMAND_PREFIX, defaultCommandPrefix);
         System.setProperty(COMMAND_PREFIX, defaultCommandPrefix);
         System.out.println("set " + defaultCommandPrefix + "  to " + System.getProperty(COMMAND_PREFIX));
@@ -173,10 +177,9 @@ public class CommandPrefixBean {
     }
 
     public void deleteTaskPrefixMapping(ActionEvent event) throws MalformedURLException, WebServiceException {
-        KeyValuePair row = (KeyValuePair) tpmappingTable.getRowData();
-
+    	String k = lsidFromName(getKey("aPrefixMapKey"));
         Properties p = pm.getTaskPrefixMapping();
-        String k = lsidFromName(row.getAltKey());
+        
         p.remove(k);
         pm.saveProperties(TASK_PREFIX_MAPPING, p);
 
@@ -201,22 +204,6 @@ public class CommandPrefixBean {
         else {
             return name;
         }
-    }
-
-    public HtmlDataTable getPrefixTable() {
-        return prefixTable;
-    }
-
-    public void setPrefixTable(HtmlDataTable prefixTable) {
-        this.prefixTable = prefixTable;
-    }
-
-    public HtmlDataTable getTpmappingTable() {
-        return tpmappingTable;
-    }
-
-    public void setTpmappingTable(HtmlDataTable tpmappingTable) {
-        this.tpmappingTable = tpmappingTable;
     }
 
 }
