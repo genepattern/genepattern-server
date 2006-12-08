@@ -80,34 +80,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 		String isSaved = System.getProperty("savedPipeline");
 		// bug 592. Don't give link to pipeline if it is not saved
 
-		if ("false".equalsIgnoreCase(isSaved)) {
-			out.print("running " + model.getName() + ".pipeline as ");
-		} else {
-			out.print("running ");
-			if (model.getLsid().length() > 0) {
-				out.print("<a href=\"" + URL + GET_PIPELINE_JSP
-						+ model.getLsid() + "\">");
-			}
-			out.print(model.getName() + ".pipeline");
-			out.print("</a>");
-			out.print(" as ");
-		}
-		out.println("<a href=\"" + URL + GET_JOB_JSP + jobID + "\">job #"
-				+ jobID + "</a> on " + (new Date()));
-		out.println("<p>");
-
-		out.print("Pipeline summary: ");
-		int taskNum = 0;
-		Vector vTasks = model.getTasks();
-		for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
-			JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
-			out.print("<a href=\"" + URL + GET_TASK_JSP
-					+ jobSubmission.getLSID() + "\">");
-			out.print(jobSubmission.getName());
-			out.print("</a>");
-			if (taskNum < (vTasks.size() - 1))
-				out.print(", ");
-		}
+		
 		out.println("<p>");
 
 		// set up the form for zip results
@@ -117,11 +90,36 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 				+ model.getName() + "\">");
 		out.println("<input type=\"hidden\" name=\"jobID\" value=\"" + jobID
 				+ "\">");
+ 		out.println("<input type=\"hidden\" name=\"cmdElement\" value=\"\"/>");
 
 		// set up the table for task reporting
-		out
-				.println("<table width=\"90%\"><tr><td><u>step</u></td><td><u>name and parameters</u></td></tr>");
-		out.flush();
+		//out.println("<table width=\"90%\"><tr><td><u>step</u></td><td><u>name and parameters</u></td></tr>");
+		
+		out.println("<table width=\"100%\"  border=\"0\" cellspacing=\"0\" cellpadding=\"0\">");
+
+		//out.println("<colgroup><col width='100'/><col width='100'/><col width='100'/></colgroup>");
+
+		out.println("<tr class=\"smalltype\">");
+		out.println("  <td >&nbsp;</td>");
+		out.println("  <td valign=\"top\"><nobr>");
+		out.println("    <div align=\"center\" class=\"smalltype\"><a onclick=\"downloadCheckedFiles()\" href=\"#\">download</a> | <a onclick=\"deleteCheckedFiles()\"href=\"#\">delete</a> </div>");
+
+		out.println("  </nobr></td>");
+		out.println("  <td>&nbsp;</td>");
+		out.println("  <td><div class=\"smalltype\"><a href=\"#\" onclick=\"openAllTasks()\">open all</a> | <a href=\"#\" onclick=\"closeAllTasks()\">close all</a></div>");
+		out.println("<img src=\"images/spacer.gif\" height=\"0\" width=\"550\"/></td></tr>");
+		out.println("<tr class=\"tableheader-row\">");
+		out.println("  <td>step</td>");
+		out.println("  <td><div align=\"center\" >");
+		out.println("        <input name=\"checkbox\" type=\"checkbox\" value=\"checkbox\" checked=\"checked\" onclick=\"javascript:checkAll(this.form, this.checked)\" />");
+           
+		out.println("  </div></td>");
+		out.println("  <td>&nbsp;</td>");
+		out.println("  <td>name and parameters </td>");
+		out.println("</tr>");
+
+        out.flush();
+		
 	}
 
 	/**
@@ -129,12 +127,27 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 	 * 
 	 * If this is for a visualizer, write out the applet code
 	 */
+	int currentIndex = -1;
 	public void recordTaskExecution(JobSubmission jobSubmission, int idx,
 			int numSteps) {
-
-		out.print("<tr><td valign=top width=20><nobr>" + idx + " of "
+		currentIndex = idx;
+		
+		out.print("<tr class=\"task-title\"><td valign=top><nobr>" + idx + " of "
 				+ numSteps + "</nobr></td>");
-		out.print("<td valign=top>" + jobSubmission.getName() + "(");
+		out.println("<td><div align=\"center\"><input name=\"checkbox\" type=\"checkbox\" onclick=\"checkAllInTask("+currentIndex+", this)\" value=\"checkbox\" checked=\"checked\" />");
+		out.println("</div></td>");
+		
+		out.println("<td>");
+		out.println("<div align=\"right\"><a href=\"#\">");
+		out.println("<img id=\"downarrow"+idx+"\" visibility=\"true\" src=\"images/arrow-down-main2.gif\" onclick=\"toggleTask("+currentIndex+",true)\" alt=\"close task\" width=\"7\" height=\"7\" hspace=\"3\" vspace=\"3\" border=\"0\" />");
+		out.println("<img style=\"display:none\" visibility=\"false\" id=\"rightarrow"+idx+"\" src=\"images/arrow-right-main2.gif\" onclick=\"toggleTask("+currentIndex+",false)\" alt=\"open task\" width=\"7\" height=\"7\" hspace=\"3\" vspace=\"3\" border=\"0\" />");
+
+
+		out.println("</a></div></td>");
+
+		out.println("<td valign=top>" + jobSubmission.getName()+"</td></tr>");
+		out.println("<tr id=\"fileRow"+idx+"_0\"class=\"files\"><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>");
+		out.println("<td class=\"description\">(");
 		ParameterInfo[] parameterInfo = jobSubmission.giveParameterInfoArray();
 		for (int i = 0; i < parameterInfo.length; i++) {
 			ParameterInfo aParam = parameterInfo[i];
@@ -232,26 +245,42 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
 		ParameterInfo[] jobParams = jobInfo.getParameterInfoArray();
 		StringBuffer sbOut = new StringBuffer();
+		int numOutputFiles = 0;
+		//out.println("<tr><td colspan=5><div id=\"taskDiv"+ currentIndex +"\"><table>");
 
 		for (int j = 0; j < jobParams.length; j++) {
 			if (!jobParams[j].isOutputFile()) {
 				continue;
 			}
-
+			numOutputFiles++;
 			sbOut.setLength(0);
 			String fileName = new File("../../" + jobParams[j].getValue()).getName();
 			String fileJobDirAndName = jobParams[j].getValue();
-		
+			
+			boolean executionLog = false;
+    		if (fileName.equals(GPConstants.TASKLOG)) executionLog = true;        
+
 			int idx = fileJobDirAndName.indexOf("/");
 			String realJobId = fileJobDirAndName.substring(0, idx);
 
 			String jobNumber = realJobId; //jobInfo.getJobNumber()
 
-			sbOut.append("<tr><td></td><td><input type=\"checkbox\" value=\"");
+			String divId = "outFileDiv"+currentIndex+"_"+j;
+			String cbDivId = "outFileCBDiv" + currentIndex+"_"+j;
+			String cbId = "outFileCB" + currentIndex+"_"+numOutputFiles;
+			String rowId="fileRow"+currentIndex+"_"+numOutputFiles;
+			if (executionLog){
+				 rowId = "executionLogRow" + currentIndex;
+				 divId = "executionLogDiv"+currentIndex;
+				 cbDivId = "executionLogCBDiv" + currentIndex;
+				
+			}
+			
+			sbOut.append("<tr id=\""+rowId+"\" class=\"files\"><td>&nbsp;</td><td align=\"center\">&nbsp;<span align=\"center\" id=\""+cbDivId+"\"><input id=\""+cbId+"\" type=\"checkbox\" value=\"");
 			sbOut.append(name + "/" + fileName + "=" + jobNumber 
 					+ "/" + fileName);
 			sbOut.append("\" name=\"dl\" ");
-			sbOut.append("checked><a target=\"_blank\" href=\"");
+			sbOut.append("checked ></span></td><td>&nbsp;</td><td>&nbsp;<span id=\""+divId+ "\"><a target=\"_blank\" href=\"");
 
 			String outFileUrl = null;
 			try {
@@ -269,26 +298,36 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 			} catch (UnsupportedEncodingException uee) {
 				// ignore
 			}
-			sbOut.append("\">" + htmlEncode(fileName) + "</a></td></tr>");
+			sbOut.append("\">" + htmlEncode(fileName) + "</a></span></td></tr>");
+			
 			out.println(sbOut.toString());
 		}
+		out.append("<script language=\"Javascript\">");
+		out.append(" outputFileCount[" + currentIndex + "] = "+ numOutputFiles+";");
+		out.append("</script>");
+		out.append("</td></tr>");
+		
 		out.flush();
 
 	}
 
 	public void afterPipelineRan(PipelineModel model) {
+		
+		out.println("   <tr class=\"smalltype\">");
+		out.println("  <td >&nbsp;</td>");
+
+		out.println("  <td valign=\"top\"><nobr>");
+		out.println("   <div class=\"smalltype\" align=\"center\"><a href=\"#\">download</a> | <a href=\"#\">delete</a> </div>");
+        				  
+		out.println("   </nobr></td><td>&nbsp;</td> <td><div align=\"right\"></div></td></tr>");
+        												  
 		out.println("</table>"); // lead with this as the subclass expects it
 
-		out
-				.println("<center><input type=\"submit\" name=\"download\" value=\"download selected results\">&nbsp;&nbsp;");
-		out
-				.println("<a href=\"javascript:checkAll(this.form, true)\">check all</a> &nbsp;&nbsp;");
-		out
-				.println("<a href=\"javascript:checkAll(this.form, false)\">uncheck all</a></center><br><center>");
-		out
-				.println("<input type=\"submit\" name=\"delete\" value=\"delete selected results\"");
-		out
-				.println(" onclick=\"return confirm(\'Really delete the selected files?\')\">");
+		//out.println("<center><input type=\"submit\" name=\"download\" value=\"download selected results\">&nbsp;&nbsp;");
+		//out.println("<a href=\"javascript:checkAll(this.form, true)\">check all</a> &nbsp;&nbsp;");
+		//out.println("<a href=\"javascript:checkAll(this.form, false)\">uncheck all</a></center><br><center>");
+		//out.println("<input type=\"submit\" name=\"delete\" value=\"delete selected results\"");
+		//out.println(" onclick=\"return confirm(\'Really delete the selected files?\')\">");
 		out.println("</form>");
 		out.flush();
 	}

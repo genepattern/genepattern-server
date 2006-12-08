@@ -12,7 +12,53 @@
 
 
 <%@ page
-	import="java.io.BufferedReader,java.io.File,java.io.FileInputStream,java.io.FileReader,java.io.BufferedWriter,java.io.FileWriter,java.io.InputStream,java.io.InputStreamReader,java.io.IOException,java.io.ObjectInputStream,java.io.OutputStream,java.io.PrintStream,java.net.URLEncoder,java.text.DateFormat,java.text.ParseException,java.text.SimpleDateFormat,java.util.Date,java.util.Enumeration,java.util.GregorianCalendar,java.util.HashMap,java.util.Hashtable,java.util.Iterator,java.util.Map,java.util.StringTokenizer,java.util.TreeMap,java.io.PrintWriter,javax.mail.*,javax.mail.internet.MimeMessage,javax.mail.internet.InternetAddress,org.genepattern.webservice.JobInfo,org.genepattern.webservice.JobStatus,org.genepattern.webservice.ParameterFormatConverter,org.genepattern.webservice.ParameterInfo,org.genepattern.webservice.TaskInfo,org.genepattern.webservice.TaskInfoAttributes,org.genepattern.server.util.AccessManager,org.genepattern.util.StringUtils,org.genepattern.server.genepattern.GenePatternAnalysisTask,org.genepattern.util.GPConstants,org.genepattern.server.indexer.IndexerDaemon,org.genepattern.data.pipeline.PipelineModel,org.genepattern.server.webapp.RunPipelineForJsp,org.genepattern.server.webapp.*,org.genepattern.data.pipeline.*,org.genepattern.server.*,org.genepattern.util.LSID"
+	import="java.io.BufferedReader,
+		java.io.File,
+		java.io.FileInputStream,
+        java.io.FileReader,
+        java.io.BufferedWriter,
+        java.io.FileWriter,
+        java.io.InputStream,
+        java.io.InputStreamReader,
+        java.io.IOException,
+        java.io.ObjectInputStream,
+        java.io.OutputStream,
+        java.io.PrintStream,
+        java.net.URLEncoder,
+        java.text.DateFormat,
+        java.text.ParseException,
+        java.text.SimpleDateFormat,
+        java.util.Date,
+        java.util.Enumeration,
+		java.util.GregorianCalendar,
+		java.util.HashMap,
+        java.util.Hashtable,
+        java.util.Iterator,
+        java.util.Map,
+        java.util.StringTokenizer,
+        java.util.TreeMap,
+        java.io.PrintWriter,
+        javax.mail.*,
+        javax.mail.internet.MimeMessage,
+        javax.mail.internet.InternetAddress,
+        org.genepattern.server.user.User,
+		org.genepattern.server.user.UserDAO,
+        org.genepattern.webservice.JobInfo,
+        org.genepattern.webservice.JobStatus,
+        org.genepattern.webservice.ParameterFormatConverter,
+        org.genepattern.webservice.ParameterInfo,
+        org.genepattern.webservice.TaskInfo,
+        org.genepattern.webservice.TaskInfoAttributes,
+        org.genepattern.server.util.AccessManager,
+        org.genepattern.util.StringUtils,
+        org.genepattern.server.genepattern.GenePatternAnalysisTask,
+        org.genepattern.util.GPConstants,
+        org.genepattern.server.indexer.IndexerDaemon,
+        org.genepattern.data.pipeline.PipelineModel,
+        org.genepattern.server.webapp.RunPipelineForJsp,
+        org.genepattern.server.webapp.*,
+        org.genepattern.data.pipeline.*,
+        org.genepattern.server.*,org.genepattern.util.LSID"
 	session="false" language="Java" buffer="1kb"%>
 <%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -39,6 +85,8 @@
 
 	int UNDEFINED = -1;
 	int jobID = UNDEFINED;
+	String userEmail = null;
+	
 	try {
 		boolean DEBUG = false;
 		if (!DEBUG && requestParamsAndAttributes.get("DEBUG") != null)
@@ -47,6 +95,17 @@
 		String userID = (String) request.getAttribute("userID"); // will force login if necessary
 		if (userID == null || userID.length() == 0)
 			return; // come back after login
+
+		try {
+			User user = ( new UserDAO()).findById(userID);
+			userEmail = user.getEmail();
+			if ((userEmail == null) || (userEmail.length() == 0)){
+				userEmail = userID;
+			}
+		} catch (Exception e){
+			userEmail = userID;
+		}
+
 
 		String NAME = "name";
 		String DOT_PIPELINE = "." + GPConstants.TASK_TYPE_PIPELINE;
@@ -168,13 +227,22 @@
 
 <html>
 <head>
-<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
-<link href="skin/favicon.ico" rel="shortcut icon">
-<title><%=title.replace('.', ' ')%></title>
+	<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
+    <link href="css/style.css" rel="stylesheet" type="text/css">
+    <link href="css/style-jobresults.css" rel="stylesheet" type="text/css">
+    <link href="skin/favicon.ico" rel="shortcut icon">
+
+<title>GenePattern | <%=title.replace('.', ' ')%> Results</title>
+	<script language="Javascript" src="js/prototype.js"></script>
+	<script language="Javascript" src="js/commons-validator-1.3.0.js"></script>
+	<script language="Javascript" src="js/genepattern.js"></script>
 
 </head>
 <body>
 <jsp:include page="navbar.jsp"/>
+<script language="Javascript">
+var outputFileCount = new Array();
+</script>
 <%
 			out.flush();
 			if (command.equals(RUN)) {
@@ -182,10 +250,10 @@
 				.giveTaskInfoAttributes().get(
 				GPConstants.SERIALIZED_MODEL);
 		PipelineModel model = null;
+		int numTasks = 50;
 		try {
-			model = PipelineModel
-			.toPipelineModel(serializedModel);
-
+			model = PipelineModel.toPipelineModel(serializedModel);
+			numTasks = model.getTasks().size();
 		} catch (Exception e) {
 			out
 			.println("An error occurred while attempting to run the pipeline.");
@@ -231,15 +299,6 @@
 %>
 <script language="Javascript">
 
-var pipelineStopped = false;
-
-function stopPipeline(button) {
-	var really = confirm('Really stop the pipeline?');
-	if (!really) return;
-	window.open("runPipeline.jsp?<%= CMD %>=<%= STOP %>&<%= JOBID %>=<%= jobID %>", "_blank", "height=100, width=100, directories=no, menubar=no, statusbar=no, resizable=no");
-	pipelineStopped = true;
-}
-
 function checkAll(frm, bChecked) {
 	frm = document.forms["results"];
 	for (i = 0; i < frm.elements.length; i++) {
@@ -247,50 +306,183 @@ function checkAll(frm, bChecked) {
 		frm.elements[i].checked = bChecked;
 	}
 }
+  
+// check all the files in the job by its index
+function checkAllInTask(idx, taskcb) {
+	frm = document.forms["results"];
+    var fileCount = outputFileCount[idx];
 
-var ie4 = (document.all) ? true : false;
-var ns4 = (document.layers) ? true : false;
-var ns6 = (document.getElementById && !document.all) ? true : false;
+	for (i = 1; i < (fileCount+1); i++) {
+		cb = document.getElementById('outFileCB'+idx+"_"+i);
 
-function showLayer(lay) {
-	if (ie4) {document.all[lay].style.visibility = "visible";}
-	if (ns4) {document.layers[lay].visibility = "show";}
-	if (ns6) {document.getElementById([lay]).style.display = "block";}
+		cb.checked = taskcb.checked;
+
+	}
+}
+ 
+
+function setEmailNotification(jobId){
+		var cb = document.getElementById('emailCheckbox');
+		var ue = document.getElementById("userEmail");
+		var valid = jcv_checkEmail(ue.value); 
+		if (!valid){
+			var em = prompt("Email on completion to?:");
+			if (em == null){
+				cb.checked = false;
+				return;
+			} else {
+				ue.value = em;
+				valid = jcv_checkEmail(ue.value); 
+				if (!valid){
+					cb.checked = false;
+					alert(ue.value + ' is not a valid email address');
+					return;
+				}
+			}
+		}
+
+ 	  	if (cb.checked) {
+			requestEmailNotification(ue.value, jobId);
+	 	} else {
+			cancelEmailNotification(ue.value, jobId);
+		}
+   }
+var numTasks = <%=numTasks%>;
+
+function toggleLogs() {
+	var cb = document.getElementById('logCheckbox');
+	var visible = cb.checked;
+	var frm = document.forms["results"];
+    
+	for(var i = 0; i < (numTasks + 1); i++) {
+		
+		divObj = document.getElementById('executionLogRow'+i);
+	//	cbdivObj = document.getElementById('executionLogCBDiv'+i);
+		
+		if(!visible) {
+			divObj.style.display = "none";
+			divObj.visibility=false;
+	//		cbdivObj.style.display = "none";
+	//		cbdivObj.visibility=false;
+
+		} else {
+			divObj.style.display = "";
+			divObj.visibility=true;
+	//		cbdivObj.style.display = "";
+	//		cbdivObj.visibility=true;
+	
+		}
+
+
+	}
+}
+   
+function openAllTasks(){
+	for(var i = 1; i < (numTasks + 1); i++) {
+		toggleTask(i, false);
+	}
+}
+function closeAllTasks(){
+	for(var i = 1; i < (numTasks + 1); i++) {
+		toggleTask(i, true);
+	}
 }
 
-function hideLayer(lay) {
-	if (ie4) {document.all[lay].style.visibility = "hidden";}
-	if (ns4) {document.layers[lay].visibility = "hide";}
-	if (ns6) {document.getElementById([lay]).style.display = "none";}
+function setVisibility(anObj, visibility){
+
+	if (visibility == null){
+		visibility = anObj.visibility;
+	}
+	if (visibility == false){
+		anObj.style.display = "";
+		anObj.visibility=true;
+	} else {
+		anObj.style.display = "none";
+		anObj.visibility=false;
+	}
+
 }
 
-window.focus();
+function toggleTask(idx, visibility) {
+	var idBase = 'fileRow'+idx+"_";
+	var fileCount = outputFileCount[idx];
 
-if (document.layers) document.captureEvents(Event.KEYPRESS);
+	arrowdown = document.getElementById('downarrow'+idx);
+	setVisibility(arrowdown, visibility);	
 
-function suppressEnterKey(evt) {
-	var c = document.layers ? evt.which : document.all ? event.keyCode : evt.keyCode;
-	return "\r\n".indexOf(String.fromCharCode(c)) == -1;
-}
+	arrowright = document.getElementById('rightarrow'+idx);
+	setVisibility(arrowright, !visibility);	
+
+	logRow = document.getElementById('executionLogRow'+idx);
+	setVisibility(logRow, visibility);	
+	
+	for(var i = 0; i < (fileCount + 1); i++) {
+		
+		adiv  = document.getElementById(idBase +i);
+		if (adiv != null){
+		setVisibility(adiv, visibility);
+		}
+	}		
+	
+}	
+	
+  function deleteCheckedFiles(){
+	 var frm = document.forms["results"];
+       var really = confirm('Really delete the checked files?');
+       if (!really) return;
+	cmd = frm.elements['cmdElement'];
+	cmd.name="delete";
+	cmd.value="true";
+ 	frm.submit();
+
+  }
+ 
+ function downloadCheckedFiles(){
+	 var frm = document.forms["results"];
+	
+	cmd = frm.elements['cmdElement'];
+	cmd.name="download";
+	cmd.value="true";
+	frm.submit();
+
+    }
 
 </script>
 
+<table width="100%"  border="0" cellspacing="0" cellpadding="0">
+<tr>
+      <td valign="top" class="maintasknav" id="maintasknav">
 
-<br>
-<form name="frm<%= STOP %>"><input name="cmd" type="button"
-	value="<%= STOP %>..." onclick="stopPipeline(this)" class="little">
-<input type="hidden" name="<%= JOBID %>" value="<%= jobID %>"></form>
+	    <input type="checkbox" id="emailCheckbox" onclick="setEmailNotification(<%=jobID%>);" value="checkbox"/>email notification&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="hidden" id="userEmail" value="<%= userEmail %>"/>
 
-<form name="frm<%= EMAIL %>" method="POST" target="_blank"
-	action="sendMail.jsp" onsubmit="javascript:return false;">email
-notification to: <input name="to" class="little" size="70" value=""
-	onkeydown="return suppressEnterKey(event)"> <input
-	type="hidden" name="from" value="<%= StringUtils.htmlEncode(userID) %>">
-<input type="hidden" name="subject"
-	value="<%= taskInfo.getName() %> results for job # <%= jobID %>">
-<input type="hidden" name="message"
-	value="<html><head><link href='stylesheet.css' rel='stylesheet' type='text/css'><script language='Javascript'>\nfunction checkAll(frm, bChecked) {\n\tfrm = document.forms['results'];\n\tfor (i = 0; i < frm.elements.length; i++) {\n\t\tif (frm.elements[i].type != 'checkbox') continue; \n\t\tfrm.elements[i].checked = bChecked;\n\t}\n}\n</script></head><body>">
-</form>
+
+
+		<input name="showLogs" id="logCheckbox" type="checkbox" onclick="toggleLogs()"  value="showLogs" checked="checked" />
+show execution logs</td>
+        </tr>
+</table>
+<table width="100%"  border="0" cellpadding="0" cellspacing="0" class="barhead-task">
+     <tr>
+        <td><%=taskInfo.getName()%> Status </td>
+     </tr>
+</table>
+
+<table width='100%' cellpadding="0">
+    <tr>
+	  <td width="50px">
+  <input name="stopCmd" id="stopCmd" type="button" value="stop..." onclick="stopJob(this, <%= jobID%>)" class="little">
+	  </td>
+        <td>
+            Running <a href="addTask.jsp?view=1&name=<%=taskInfo.getTaskInfoAttributes().get("LSID")%>"><%=
+           taskInfo.getName()%>
+        </a> as job # <a href="getJobResults.jsp?jobID=<%=jobID%>"><%=jobID %>
+        </a> on <%=new Date()%>
+	  </td>
+    </tr>
+</table>
+
+
 <!--span id='output'-->
 <%
 		out.flush();
@@ -311,21 +503,11 @@ notification to: <input name="to" class="little" size="70" value=""
 <!--/span-->
 
 <script language="Javascript">
+	document.getElementById("stopCmd").disabled=true;
+	document.getElementById("stopCmd").visibility=false;
 
-			document.frm<%= STOP %>.cmd.disabled = true;
-			document.frm<%= STOP %>.cmd.visibility = false;
-			var frm = document.frm<%= EMAIL %>;
-			frm.to.readonly = true; // no more edits as it is about to be used for addressing
-			var to = frm.to.value;
-			if (to != "") {
-<%
-				String output = GenePatternAnalysisTask.replace(cc.toString(), "'", "\\'"); // replace quote with backslash-quote
-				output = GenePatternAnalysisTask.replace(output, "\n", "\\n");
-				output = GenePatternAnalysisTask.replace(output, "\r", "\\r");
-%>
-				frm.message.value = frm.message.value + '<%= output %>';
-				frm.submit();
-			}
+
+	
 		</script>
 <%
 		GregorianCalendar purgeTOD = new GregorianCalendar();
@@ -359,10 +541,11 @@ notification to: <input name="to" class="little" size="70" value=""
 				DateFormat.SHORT, DateFormat.SHORT);
 %>
 
-<br>
-These job results are scheduled to be purged from the server on
-<%=df.format(purgeTOD.getTime()).toLowerCase()%>
-<br>
+<table with="100%">
+<tr><td  class="purge_notice">
+    These job results are scheduled to be purged from the server on <%= df.format(purgeTOD.getTime()).toLowerCase() %>
+</td></tr>
+</table>
 
 <%
 			synchronized (IndexerDaemon.getDaemon().indexLock) {

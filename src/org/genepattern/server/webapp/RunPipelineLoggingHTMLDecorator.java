@@ -56,15 +56,17 @@ public class RunPipelineLoggingHTMLDecorator extends RunPipelineHTMLDecorator {
 	public void beforePipelineRuns(PipelineModel model) {
 		super.beforePipelineRuns(model);
 		logger.beforePipelineRuns(model);
-
+		String divId = "executionLogDiv0";
+		String rowId = "executionLogRow0" ;
+	
 		String jobID = System.getProperty("jobID");
 		
 		String fileName = model.getName() + "_execution_log.html";
-		out.println("<p><input type=\"checkbox\" value=\"" + fileName + "="
+		out.println("<p><div id=\""+rowId+"\"><input type=\"checkbox\" value=\"" + fileName + "="
 				+ jobID + "/" + fileName + "\" name=\"dl\" checked>");
 		out.println("<a target=\"_blank\" href=\"" + URL + GET_TASK_FILE
 				+ "job=" + jobID + "&filename=" + fileName + "\">" + fileName
-				+ "</a><p>");
+				+ "</a></div><div id=\""+divId+"\"></div><p>");
 
 	}
 
