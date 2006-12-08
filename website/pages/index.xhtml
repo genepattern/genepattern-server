@@ -172,7 +172,10 @@ function chooserModeChanged() {
       							pm_popupMenuIds.push('versionPopupMenu');
       							/* ]]> */
 							</script>
-						</h:outputText> <img
+						</h:outputText>
+						<h:outputText
+							rendered="#{!empty runTaskBean.versions}">
+						<img
 							src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif"
 							name="Image_versionPopupMenu" id="Image_versionPopupMenu"
 							width="14" height="14" border="0" valign="middle"
@@ -198,7 +201,9 @@ function chooserModeChanged() {
 								</tbody>
 							</table>
 							</div>
-						</h:form></td>
+						</h:form>
+						</h:outputText>
+						</td>
 					</tr>
 				</table>
 
