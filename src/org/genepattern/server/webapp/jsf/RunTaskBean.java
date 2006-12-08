@@ -97,6 +97,10 @@ public class RunTaskBean {
         return lsid;
     }
 
+    public String getEncodedLsid() {
+        return UIBeanHelper.encode(lsid);
+    }
+
     public String getName() {
         return name;
     }
