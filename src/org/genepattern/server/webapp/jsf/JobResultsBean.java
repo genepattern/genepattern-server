@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UISelectBoolean;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
@@ -59,9 +60,28 @@ public class JobResultsBean extends JobBean {
      */
     private boolean fileSortAscending = true;
 
-    private boolean showEveryonesJobs = true;
+    private boolean showEveryonesJobs = false;
 
     private boolean showExecutionLogs = true;
+
+    /**
+     * Get the job infos to display. This might be called before the model is
+     * updated.
+     */
+    protected JobInfo[] getJobInfos() {
+
+        String userId = UIBeanHelper.getUserId();
+        LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
+        try {
+            JobInfo[] jobs = analysisClient.getJobs(showEveryonesJobs ? null : userId, -1, Integer.MAX_VALUE, false);
+            return jobs;
+        }
+        catch (WebServiceException wse) {
+            log.error(wse);
+            return new JobInfo[0];
+        }
+
+    }
 
     /**
      * Delete the selected jobs and files.
@@ -202,25 +222,6 @@ public class JobResultsBean extends JobBean {
 
     }
 
-    protected JobInfo[] getJobInfos() {
-
-        String userId = UIBeanHelper.getUserId();
-        LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
-        try {
-            JobInfo[] jobs = analysisClient.getJobs(showEveryonesJobs ? null : userId, -1, Integer.MAX_VALUE, false);
-            return jobs;
-        }
-        catch (WebServiceException wse) {
-            log.error(wse);
-            return new JobInfo[0];
-        }
-
-    }
-
-    public boolean isShowEveryonesJobs() {
-        return showEveryonesJobs;
-    }
-
     public boolean isShowExecutionLogs() {
         return showExecutionLogs;
     }
@@ -257,12 +258,17 @@ public class JobResultsBean extends JobBean {
         this.jobSortAscending = jobSortAscending;
     }
 
-    public void setShowEveryonesJobs(boolean showEveryonesJobs) {
-        this.showEveryonesJobs = showEveryonesJobs;
-    }
-
     public void setShowExecutionLogs(boolean showExecutionLogs) {
         this.showExecutionLogs = showExecutionLogs;
+    }
+
+    public boolean isShowEveryonesJobs() {
+        return showEveryonesJobs;
+    }
+
+    public void setShowEveryonesJobs(boolean showEveryonesJobs) {
+        this.showEveryonesJobs = showEveryonesJobs;
+        this.updateJobs();
     }
 
 }
