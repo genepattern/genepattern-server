@@ -153,6 +153,8 @@ function chooserModeChanged() {
 			id="recentjobs"><ui:include src="recentJobs.xhtml" /></td>
 	</ui:define>
 
+	
+
 	<ui:define name="body">
 		<div id="errorMessageDiv" style="display:none;">
 		<p id="errorMessage"></p>
@@ -167,43 +169,19 @@ function chooserModeChanged() {
 						<td align="right"><span class="barhead-version">version
 						#{runTaskBean.version} &#160;</span> <h:outputText
 							rendered="#{!empty runTaskBean.versions}">
-							<script type="text/javascript">
-								/* <![CDATA[ */
-      							pm_popupMenuIds.push('versionPopupMenu');
-      							/* ]]> */
-							</script>
-						</h:outputText>
-						<h:outputText
-							rendered="#{!empty runTaskBean.versions}">
-						<img
-							src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif"
-							name="Image_versionPopupMenu" id="Image_versionPopupMenu"
-							width="14" height="14" border="0" valign="middle"
-							onclick="pm_showMenu('versionPopupMenu', Position.cumulativeOffset(this));"
-							onmouseover="MM_swapImage('Image_versionPopupMenu','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)"
-							onmouseout="MM_swapImgRestore();" /> <br />
+							
+						</h:outputText> <h:outputText rendered="#{!empty runTaskBean.versions}">
+							<img
+								src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif"
+								name="Image_versionPopupMenu" id="Image_versionPopupMenu"
+								width="14" height="14" border="0" valign="middle"
+								onclick="pm_showMenu('versionPopupMenu', Position.cumulativeOffset(this), 0, 0);"
+								onmouseover="MM_swapImage('Image_versionPopupMenu','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)"
+								onmouseout="MM_swapImgRestore();" />
+							<br />
 
-						<h:form>
-							<div id="versionPopupMenu" style="visibility:hidden;"
-								class="popupMenu">
-							<table>
-								<tbody>
-									<tr>
-										<t:dataList value="#{runTaskBean.versions}" var="version">
-											<tr>
-												<td><h:commandLink value="#{version}"
-													action="#{runTaskBean.changeVersion}">
-													<f:param value="#{version}" name="version" />
-												</h:commandLink></td>
-											</tr>
-										</t:dataList>
-									</tr>
-								</tbody>
-							</table>
-							</div>
-						</h:form>
-						</h:outputText>
-						</td>
+
+						</h:outputText></td>
 					</tr>
 				</table>
 
@@ -283,8 +261,8 @@ function chooserModeChanged() {
 
 										</t:dataList>
 									</select>
-								</h:outputText> 
-								<h:outputText rendered="#{p.inputType=='text' || p.inputType=='password'}">
+								</h:outputText> <h:outputText
+									rendered="#{p.inputType=='text' || p.inputType=='password'}">
 									<input name="#{p.name}" id="#{p.name}" size="30"
 										type="#{p.inputType}" value="#{p.defaultValue}" />
 								</h:outputText></td>
@@ -301,9 +279,9 @@ function chooserModeChanged() {
 									onclick="window.location.href=window.location.href"
 									type="button" /> &#160;&#160;<a
 									href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?name=#{runTaskBean.lsid}">properties</a>
-								&#160;|&#160;
-								<h:outputText rendered="#{runTaskBean.pipeline}">
-									<a onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>&#160;|&#160;
+								&#160;|&#160; <h:outputText rendered="#{runTaskBean.pipeline}">
+									<a
+										onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>&#160;|&#160;
 										<a
 										href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
 								</h:outputText><h:outputText rendered="#{!runTaskBean.pipeline}">
@@ -350,5 +328,30 @@ function chooserModeChanged() {
 			</c:otherwise>
 		</c:choose>
 	</ui:define>
+	
+	<ui:define name="popupMenus">
+	<script type="text/javascript">
+		pm_popupMenuIds.push('versionPopupMenu');
+	</script>
+		<h:form>
+			<div id="versionPopupMenu" style="visibility:hidden; position:absolute;" class="popupMenu">
+			<table>
+				<tbody>
+					<tr>
+						<t:dataList value="#{runTaskBean.versions}" var="version">
+							<tr>
+								<td><h:commandLink value="#{version}"
+									action="#{runTaskBean.changeVersion}">
+									<f:param value="#{version}" name="version" />
+								</h:commandLink></td>
+							</tr>
+						</t:dataList>
+					</tr>
+				</tbody>
+			</table>
+			</div>
+		</h:form>
+	</ui:define>
+	
 </ui:composition>
 </html>
