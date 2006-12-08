@@ -60,7 +60,7 @@ public abstract class JobBean {
 
 	abstract protected JobInfo[] getJobInfos();
 
-	private void updateJobs() {
+	protected void updateJobs() {
 		JobInfo[] temp = getJobInfos();
 		jobs = new ArrayList<MyJobInfo>(temp.length);
         Set<String> selectedJobs = getSelectedJobs();
