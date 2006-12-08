@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:c="http://java.sun.com/jstl/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+
+   
+  <c:if test="#{testBean.boolValue}">
+ 	testBean.boolValue == true <br/>
+  </c:if>
+  <c:if test="#{!testBean.boolValue}">
+	testBean.boolValue == false  Shouldn't be here! <br/>
+  </c:if>
+  <c:if test="true">
+ 	test = true <br/>
+  </c:if>
+  <c:if test="false">
+ 	test = false  Shouldn't be here! <br/>
+  </c:if>
+  
+  <p/>
+  
+  <c:choose>
+    <c:when test="#{testBean.boolValue}">
+       c:choose test successful
+    </c:when>
+    <c:otherwise>
+      c:choose test failed !
+    </c:otherwise>
+ </c:choose>
+ 
+  
+ 	  
+  
+</html>
