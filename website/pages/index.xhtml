@@ -137,7 +137,7 @@ function chooserModeChanged() {
 
 	</ui:define>
 
-	<ui:define name="pageTitle" >
+	<ui:define name="pageTitle">
 	  GenePattern 
 	  <h:outputText rendered="#{!empty runTaskBean.lsid}"> - #{runTaskBean.name}</h:outputText>
 	</ui:define>
@@ -165,45 +165,40 @@ function chooserModeChanged() {
 					<tr>
 						<td>#{runTaskBean.name}</td>
 						<td align="right"><span class="barhead-version">version
-						#{runTaskBean.version} &#160;</span> 
-						<c:if
-							test="#{!empty runTaskBean.versions}">
+						#{runTaskBean.version} &#160;</span> <h:outputText
+							rendered="#{!empty runTaskBean.versions}">
 							<script type="text/javascript">
 								/* <![CDATA[ */
       							pm_popupMenuIds.push('versionPopupMenu');
       							/* ]]> */
 							</script>
+						</h:outputText> <img
+							src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif"
+							name="Image_versionPopupMenu" id="Image_versionPopupMenu"
+							width="14" height="14" border="0" valign="middle"
+							onclick="pm_showMenu('versionPopupMenu', Position.cumulativeOffset(this));"
+							onmouseover="MM_swapImage('Image_versionPopupMenu','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)"
+							onmouseout="MM_swapImgRestore();" /> <br />
 
-							<img
-								src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif"
-								name="Image_versionPopupMenu" id="Image_versionPopupMenu"
-								width="14" height="14" border="0" valign="middle"
-								onclick="pm_showMenu('versionPopupMenu', Position.cumulativeOffset(this));"
-								onmouseover="MM_swapImage('Image_versionPopupMenu','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)"
-								onmouseout="MM_swapImgRestore();" />
-							<br />
-							
-								<h:form>
-									<div id="versionPopupMenu" style="visibility:hidden;"
-										class="popupMenu">
-									<table>
-										<tbody>
+						<h:form>
+							<div id="versionPopupMenu" style="visibility:hidden;"
+								class="popupMenu">
+							<table>
+								<tbody>
+									<tr>
+										<t:dataList value="#{runTaskBean.versions}" var="version">
 											<tr>
-												<t:dataList value="#{runTaskBean.versions}" var="version">
-													<tr>
-														<td><h:commandLink value="#{version}"
-															action="#{runTaskBean.changeVersion}">
-															<f:param value="#{version}" name="version" />
-														</h:commandLink></td>
-													</tr>
-												</t:dataList>
+												<td><h:commandLink value="#{version}"
+													action="#{runTaskBean.changeVersion}">
+													<f:param value="#{version}" name="version" />
+												</h:commandLink></td>
 											</tr>
-										</tbody>
-									</table>
-									</div>
-								</h:form>
-							
-						</c:if></td>
+										</t:dataList>
+									</tr>
+								</tbody>
+							</table>
+							</div>
+						</h:form></td>
 					</tr>
 				</table>
 
@@ -231,76 +226,69 @@ function chooserModeChanged() {
 								type="button" /> &#160;&#160;<a
 								href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?name=#{runTaskBean.lsid}">properties</a>
 
-							&#160;|&#160;<c:choose>
-								<c:when test="#{runTaskBean.pipeline==true}">
+							&#160;|&#160; <h:outputText rendered="#{runTaskBean.pipeline}">
+
+								<a
+									onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>
+										&#160;|&#160;
 									<a
-										onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>
-								</c:when>
-								<c:otherwise>
+									href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
+							</h:outputText> <h:outputText rendered="#{!runTaskBean.pipeline}">
+								<a
+									href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>
+									&#160;|&#160;
 									<a
-										href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>
-								</c:otherwise>
-							</c:choose>&#160;|&#160; <c:choose>
-								<c:when test="#{runTaskBean.pipeline==false}">
-									<a
-										href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>
-								</c:when>
-								<c:otherwise>
-									<a
-										href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
-								</c:otherwise>
-							</c:choose> &#160;|&#160;<a target="_blank"
+									href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>
+
+							</h:outputText> &#160;|&#160;<a target="_blank"
 								href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
 							</td>
 						</tr>
 
 						<t:dataList value="#{runTaskBean.parameters}" var="p">
 							<tr class="taskperameter">
-							  <td valign="top" class="#{p.optional==false ? 'attribute-required' : ''}">
-							    <nobr>
-							     #{p.displayName} <h:outputText rendered="#{p.optional==false}" value="*"></h:outputText>
-							    </nobr>
-							  </td>
+								<td valign="top"
+									class="#{p.optional==false ? 'attribute-required' : ''}">
+								<nobr> #{p.displayName} <h:outputText
+									rendered="#{p.optional==false}" value="*"></h:outputText> </nobr></td>
 
-								<td valign="top">
-								<c:choose>
-									<c:when test="#{p.inputType=='file'}">
-										<input name="#{p.name}" id="#{p.name}" size="30"
-											type="#{p.inputType}"
-											onchange="this.form['shadow#{p.name}'].value=this.value;"
-											onblur="javascript:if (this.value.length
+								<td valign="top"><h:outputText
+									rendered="#{p.inputType=='file'}">
+
+									<input name="#{p.name}" id="#{p.name}" size="30"
+										type="#{p.inputType}"
+										onchange="this.form['shadow#{p.name}'].value=this.value;"
+										onblur="javascript:if (this.value.length
 							> 0) { this.form['shadow#{p.name}'].value=this.value;
 							}"
-											ondrop="this.form['shadow#{p.name}'].value=this.value;" />
-										<input name="shadow#{p.name}" type="hidden" readonly="true"
-											size="90" tabindex="-1" class="shadow"
-											style="{ border-style: none; font-style: italic; font-size:9pt; background-color: transparent }" />
-									</c:when>
-									<c:when test="#{p.inputType=='select'}">
-										<select name="#{p.name}" id="#{p.name}">
-											<t:dataList value="#{p.choices}" var="c">
-												<c:choose>
-													<c:when test="#{c.selected}">
-														<option value="#{c.value}" selected="true">#{c.label}</option>
-													</c:when>
-													<c:otherwise>
-														<option value="#{c.value}">#{c.label}</option>
-													</c:otherwise>
-												</c:choose>
-											</t:dataList>
-										</select>
-									</c:when>
-									<c:otherwise>
-										<input name="#{p.name}" id="#{p.name}" size="30"
-											type="#{p.inputType}" value="#{p.defaultValue}" />
-									</c:otherwise>
-								</c:choose></td>
+										ondrop="this.form['shadow#{p.name}'].value=this.value;" />
+									<input name="shadow#{p.name}" type="hidden" readonly="true"
+										size="90" tabindex="-1" class="shadow"
+										style="{ border-style: none; font-style: italic; font-size:9pt; background-color: transparent }" />
+								</h:outputText> <h:outputText rendered="#{p.inputType=='select'}">
+									<select name="#{p.name}" id="#{p.name}">
+										<t:dataList value="#{p.choices}" var="c">
+
+											<h:outputText rendered="#{c.selected}">
+												<option value="#{c.value}" selected="true">#{c.label}</option>
+											</h:outputText>>
+													<h:outputText rendered="#{!c.selected}">
+												<option value="#{c.value}">#{c.label}</option>
+											</h:outputText>
+
+										</t:dataList>
+									</select>
+								</h:outputText> 
+								<h:outputText rendered="#{p.inputType=='text' || p.inputType=='password'}">
+									<input name="#{p.name}" id="#{p.name}" size="30"
+										type="#{p.inputType}" value="#{p.defaultValue}" />
+								</h:outputText></td>
 								<td valign="top" class="description">#{p.displayDescription}</td>
 							</tr>
 
 						</t:dataList>
 
-						<c:if test="#{!empty runTaskBean.parameters}">
+						<h:outputText rendered="#{!empty runTaskBean.parameters}">
 							<tr>
 								<td>&#160;</td>
 								<td colspan="2" class="maintasknav2"><input name="cmd"
@@ -308,32 +296,22 @@ function chooserModeChanged() {
 									onclick="window.location.href=window.location.href"
 									type="button" /> &#160;&#160;<a
 									href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?name=#{runTaskBean.lsid}">properties</a>
-								&#160;|&#160;<c:choose>
-									<c:when test="#{runTaskBean.pipeline==true}">
+								&#160;|&#160;
+								<h:outputText rendered="#{runTaskBean.pipeline}">
+									<a onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>&#160;|&#160;
 										<a
-											onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>
-									</c:when>
-									<c:otherwise>
+										href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
+								</h:outputText><h:outputText rendered="#{!runTaskBean.pipeline}">
+									<a
+										href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>
+										&#160;|&#160;
 										<a
-											href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>
-
-									</c:otherwise>
-								</c:choose>&#160;|&#160; <c:choose>
-									<c:when test="#{runTaskBean.pipeline==false}">
-										<a
-											href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>
-									</c:when>
-									<c:otherwise>
-										<a
-											href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
-									</c:otherwise>
-								</c:choose> &#160;|&#160;<a target="_blank"
+										href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>
+								</h:outputText> &#160;|&#160;<a target="_blank"
 									href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
 								</td>
 							</tr>
-						</c:if>
-
-
+						</h:outputText>
 
 					</tbody>
 				</table>
@@ -352,9 +330,8 @@ function chooserModeChanged() {
 					<option>R</option>
 				</select> &#160; <input type="button" onclick="viewCode();" value="View Code" /></div>
 				</form>
-
-
 			</c:when>
+
 			<c:otherwise>
 				<c:choose>
 					<c:when test="#{runTaskBean.splashMessage != null}">
