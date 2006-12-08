@@ -16,10 +16,10 @@
 	var requiredIds = new Array();
 	var requiredNames = new Array();
 </h:outputText>
-<t:dataList value="#{runTaskBean.parameters}" var="p" rowIndexVar="i">
-    <h:outputText rendered = "#{p.optional==false}">
-	requiredIds['#{i}'] = '#{p.name}';
-    requiredNames['#{i}'] = '#{p.displayName}';
+<t:dataList value="#{runTaskBean.parameters}" var="p">
+    <h:outputText rendered = "#{!p.optional}">
+	requiredIds.push('#{p.name}');
+    requiredNames.push('#{p.displayName}');
 	</h:outputText>
  </t:dataList>
  
@@ -80,11 +80,14 @@ function viewCode() {
 
 function validateForm() {
         var error = false;
-        var missingParams = "<br/>";
+        var missingParams = "<br />";
+       
         for(var i = 0; i < requiredIds.length; i++) {
             var elementId = requiredIds[i];   
-            var displayName = requiredNames[i];          
+            var displayName = requiredNames[i];    
+                 
             var e = $(elementId);
+            
             var type = e.type;
             
             if (type == "file" || type == "text" || type == "textarea") {
@@ -96,13 +99,14 @@ function validateForm() {
             }
         }
        
+     
         var d = $("errorMessageDiv");
         var t = $("errorMessage");
         
         if (error) {
             d.style.display = "inline";
             t.innerHTML =
-            "<font color=\"red\" size=\"+1\">The task could not be run. The following required parameters need to have values provided:</font>" +
+            "<font color=\"red\" size=\"+1\">#{runTaskBean.name} could not be run. The following required parameters need to have values provided:</font>" +
             missingParams;
         } else {
             d.style.display = "hidden";
@@ -190,7 +194,7 @@ function chooserModeChanged() {
 					action="#{facesContext.externalContext.requestContextPath}/#{runTaskBean.formAction}"
 					method="post" id="taskForm" enctype="multipart/form-data"
 					onsubmit="return validateForm();"><input type="hidden"
-					name="taskLSID" value="#{runTaskBean.lsid}" /> <input
+					name="taskLSID" value="#{runTaskBean.encodedLsid}" /> <input
 					type="hidden" name="taskName" value="#{runTaskBean.name}" />
 
 
@@ -205,7 +209,7 @@ function chooserModeChanged() {
 								test="#{runTaskBean.inputParametersExist}">* required field</c:if></span></td>
 							<td colspan="2" class="maintasknav2"><input name="cmd"
 								value="run" type="submit" /> <input name="reset" value="reset"
-								onclick="window.location.href=window.location.href"
+								onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'"
 								type="button" /> &#160;&#160;<a
 								href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?name=#{runTaskBean.lsid}">properties</a>
 
@@ -276,7 +280,7 @@ function chooserModeChanged() {
 								<td>&#160;</td>
 								<td colspan="2" class="maintasknav2"><input name="cmd"
 									value="run" type="submit" /> <input name="reset" value="reset"
-									onclick="window.location.href=window.location.href"
+									onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'"
 									type="button" /> &#160;&#160;<a
 									href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?name=#{runTaskBean.lsid}">properties</a>
 								&#160;|&#160; <h:outputText rendered="#{runTaskBean.pipeline}">
