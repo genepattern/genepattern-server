@@ -42,7 +42,7 @@
 				<h:inputText size="50" value="#{commandPrefixBean.newPrefixValue}" id="newPrefixVal"/>
 			</td>
 			<td>
-				<h:commandButton value="Submit Prefix" class="little" actionListener="#{commandPrefixBean.saveCommandPrefixes}" />
+				<h:commandLink value="add prefix" actionListener="#{commandPrefixBean.saveCommandPrefixes}" />
 			</td> 
 	      </tr>
         </table>
@@ -111,12 +111,10 @@
 						<f:selectItems value="#{commandPrefixBean.commandPrefixesAsSelectItems}" />
 					</h:selectOneMenu>
 				</td>
-			</tr>
-			<tr valign="top">
 				<td>
-		      		<h:commandButton value="Submit Mapping" class="little" actionListener="#{commandPrefixBean.savePrefixTaskMapping}" />
-		      	</td>
-		    </tr>
+					<h:commandLink value="add mapping" actionListener="#{commandPrefixBean.savePrefixTaskMapping}" />
+				</td>
+			</tr>
 		</table>
     </table>
 </h:form>
