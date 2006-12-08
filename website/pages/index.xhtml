@@ -17,10 +17,10 @@
 	var requiredNames = new Array();
 </h:outputText>
 <t:dataList value="#{runTaskBean.parameters}" var="p" rowIndexVar="i">
-	<c:if test="#{p.optional==false}">
+    <h:outputText rendered = "#{p.optional==false}">
 	requiredIds['#{i}'] = '#{p.name}';
     requiredNames['#{i}'] = '#{p.displayName}';
-	</c:if>
+	</h:outputText>
  </t:dataList>
  
 /* <![CDATA[ */
@@ -137,9 +137,11 @@ function chooserModeChanged() {
 
 	</ui:define>
 
-	<c:when test="#{!empty runTaskBean.lsid}">
-		<ui:define name="pageTitle">GenePattern - #{runTaskBean.name}</ui:define>
-	</c:when>
+	<ui:define name="pageTitle" >
+	  GenePattern 
+	  <h:outputText rendered="#{!empty runTaskBean.lsid}"> - #{runTaskBean.name}</h:outputText>
+	</ui:define>
+
 
 	<ui:define name="leftPanel">
 		<td width="242" rowspan="2" valign="top" class="tasks" id="tasks">
@@ -163,7 +165,8 @@ function chooserModeChanged() {
 					<tr>
 						<td>#{runTaskBean.name}</td>
 						<td align="right"><span class="barhead-version">version
-						#{runTaskBean.version} &#160;</span> <c:if
+						#{runTaskBean.version} &#160;</span> 
+						<c:if
 							test="#{!empty runTaskBean.versions}">
 							<script type="text/javascript">
 								/* <![CDATA[ */
@@ -179,7 +182,7 @@ function chooserModeChanged() {
 								onmouseover="MM_swapImage('Image_versionPopupMenu','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)"
 								onmouseout="MM_swapImgRestore();" />
 							<br />
-							<f:subview>
+							
 								<h:form>
 									<div id="versionPopupMenu" style="visibility:hidden;"
 										class="popupMenu">
@@ -199,7 +202,7 @@ function chooserModeChanged() {
 									</table>
 									</div>
 								</h:form>
-							</f:subview>
+							
 						</c:if></td>
 					</tr>
 				</table>
@@ -253,16 +256,14 @@ function chooserModeChanged() {
 
 						<t:dataList value="#{runTaskBean.parameters}" var="p">
 							<tr class="taskperameter">
-								<c:choose>
-									<c:when test="#{p.optional==false}">
-										<td valign="top" class="attribute-required"><nobr>#{p.displayName}*</nobr></td>
-									</c:when>
-									<c:otherwise>
-										<td valign="top"><nobr>#{p.displayName}</nobr></td>
-									</c:otherwise>
-								</c:choose>
+							  <td valign="top" class="#{p.optional==false ? 'attribute-required' : ''}">
+							    <nobr>
+							     #{p.displayName} <h:outputText rendered="#{p.optional==false}" value="*"></h:outputText>
+							    </nobr>
+							  </td>
 
-								<td valign="top"><c:choose>
+								<td valign="top">
+								<c:choose>
 									<c:when test="#{p.inputType=='file'}">
 										<input name="#{p.name}" id="#{p.name}" size="30"
 											type="#{p.inputType}"
