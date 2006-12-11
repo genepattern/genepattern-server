@@ -28,18 +28,6 @@
     <p/>
     <table width="100%" border="0" cellpadding="5" cellspacing="0">
       <tr valign="top">
-        	<td>Default Patch Repository:</td>
-        	<td> 
-	        	<h:inputText size="40" value="#{serverSettingsBean.settings['DefaultPatchRepositoryURL']}"/>
-        	</td>
-      </tr>
-      <tr valign="top">
-	        <td>Default Patch URL: </td>
-	        <td>
-	        	<h:inputText size="40" value="#{serverSettingsBean.settings['DefaultPatchURL']}"/>
-	        </td>
-	  </tr>
-      <tr valign="top">
 	        <td>Patch Qualifiers: </td>
 	        <td>
 	        	<h:inputText size="40" value="#{serverSettingsBean.settings['patchQualifiers']}"/>
@@ -145,24 +133,6 @@
 	        <td>Number of Threads: </td>
 	        <td>
 	        	<h:inputText size="40" value="#{serverSettingsBean.settings['num.threads']}"/>
-	        </td>
-	  </tr>
-	  <tr valign="top">
-	        <td>Lucene Commit Lock Timeout: </td>
-	        <td>
-	        	<h:inputText size="40" value="#{serverSettingsBean.settings['org.apache.lucene.commitLockTimeout']}"/>
-	        </td>
-	  </tr>
-	  <tr valign="top">
-	        <td>Lucene Write Lock Timeout: </td>
-	        <td>
-	        	<h:inputText size="40" value="#{serverSettingsBean.settings['org.apache.lucene.writeLockTimeout']}"/>
-	        </td>
-	  </tr>
-	  <tr valign="top">
-	        <td>Lucene Merge Factor: </td>
-	        <td>
-	        	<h:inputText size="40" value="#{serverSettingsBean.settings['org.apache.lucene.mergeFactor']}"/>
 	        </td>
 	  </tr>
 	  <tr valign="top">
