@@ -13,11 +13,11 @@
         <td>Command Line Prefix</td>
       </tr>
     </table>
-    <br/>
-    <table width="100%" border="0" cellpadding="5" cellspacing="0">
+    <br/><br/>
+    <table width="100%" border="0" cellpadding="5" cellspacing="0" class="tableheader-row">
     	<tr>
-    		<td>Default Command Prefix:</td>
-    		<td>
+    		<td width="31%">Default Command Prefix:</td>
+    		<td width="56%">
     			<h:inputText size="50" value="#{commandPrefixBean.defaultCommandPrefix}" id="defaultPrefix"/>
 			</td>
 			<td>
@@ -27,36 +27,37 @@
 		<tr valign="top">
 	      	The default command prefix is used for all modules that do not have an explicit prefix setting below.      
 	    </tr>
-	    <br/><br/>
-		<table class="tableheader-row" width="80%">
+	  </table>
+	  <br/><br/>
+	  <table width="100%" border="0" cellpadding="5" cellspacing="0" class="tableheader-row">
 		  <tr valign="top">
 		  	Add New Prefix:
 		  </tr>
 	      <tr valign="top">
-	      	<td>name: </td>
-			<td>
-				<h:inputText size="20" value="#{commandPrefixBean.newPrefixName}" id="newPrefixName"/>
+	      	<td width="3%">name: </td>
+			<td width="5%">
+				<h:inputText value="#{commandPrefixBean.newPrefixName}" id="newPrefixName"/>
 			</td>
-			<td>content: </td>
-			<td>
+			<td width="5%">content: </td>
+			<td width="56%">
 				<h:inputText size="50" value="#{commandPrefixBean.newPrefixValue}" id="newPrefixVal"/>
 			</td>
 			<td>
 				<h:commandLink value="add prefix" actionListener="#{commandPrefixBean.saveCommandPrefixes}" />
 			</td> 
 	      </tr>
-        </table>
-        <br/><br/>
-		<table class="tableheader-row" width="80%">
-	        <tr valign="top">
-	          <td> Name </td>
-	          <td> Content </td>
+      </table>
+      <br/><br/>
+	  <table width="100%" border="0" cellpadding="5" cellspacing="0" style="table-layout:fixed;">
+	        <tr valign="top" class="tableheader-row">
+	          <td width="30%"> Name </td>
+	          <td width="60%"> Content </td>
 	          <td> Delete </td>
 	        </tr>
 		  	<t:dataList id="commandPrefixTable" forceId="true" value="#{commandPrefixBean.commandPrefixes}" var="aPrefix" width="80%">
-			  	<tr valign="top">
+			  	<tr valign="top" class="tableheader-row">
 		            <td>
-		              <h:outputText id="key" value="#{aPrefix.key}"/>
+		              <h:outputText size="15" id="key" value="#{aPrefix.key}"/>
 		            </td>
 		            <td>
 		              <h:outputText id="value" value="#{aPrefix.value}"/>
@@ -71,14 +72,14 @@
 			</t:dataList>
 		</table>
 		<br/><br/>
-		<table class="tableheader-row" width="80%">
-			<tr valign="top">
-			    <td> Module </td>
-			    <td> Command Prefix Name </td>         
+		<table width="100%" border="0" cellpadding="5" cellspacing="0" style="table-layout:fixed;">
+			<tr valign="top" class="tableheader-row">
+			    <td width="30%"> Module </td>
+			    <td width="60%"> Command Prefix Name </td>         
 			    <td> Delete </td>
 			</tr>
 			<t:dataList value="#{commandPrefixBean.taskPrefixMapping}" width="80%" var="aPrefixMap">
-				<tr valign="top">
+				<tr valign="top" class="tableheader-row">
 		            <td>
 		              <h:outputText value="#{aPrefixMap.key}" />
 		            </td>         
@@ -95,18 +96,18 @@
 			</t:dataList>
 		</table>
 		<br/><br/>
-		<table class="tableheader-row" width="80%">
+		<table width="100%" border="0" cellpadding="5" cellspacing="0" class="tableheader-row">
 			<tr valign="top">
 				for modules ...
 			</tr>
 			<tr valign="top">
-				<td>
+				<td width="24%">
 					<h:selectManyListbox size="6" value="#{commandPrefixBean.newMappingLSID}">
 						<f:selectItems value="#{moduleListBean.latestModules}" />
 					</h:selectManyListbox>
 				</td>
-				<td>... use prefix... </td>
-				<td>
+				<td width="22%">... use prefix... </td>
+				<td width="30%">
 					<h:selectOneMenu value="#{commandPrefixBean.newMappingPrefix}">
 						<f:selectItems value="#{commandPrefixBean.commandPrefixesAsSelectItems}" />
 					</h:selectOneMenu>
@@ -116,7 +117,7 @@
 				</td>
 			</tr>
 		</table>
-    </table>
+
 </h:form>
  </ui:composition>
 </html>
