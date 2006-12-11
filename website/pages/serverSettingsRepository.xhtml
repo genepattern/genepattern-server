@@ -18,7 +18,7 @@
       <tr valign="top">
         <td>Previous Module Repository URLs:</td>
         <td>
-          <t:selectOneListbox size="10" value="#{serverSettingsBean.settings['ModuleRepositoryURL']}" onclick="$(mrurl).value=this.value">
+          <t:selectOneListbox size="3" value="#{serverSettingsBean.settings['ModuleRepositoryURL']}" onclick="$(mrurl).value=this.value">
   			<f:selectItems value="#{serverSettingsBean.moduleRepositoryURLs}" />
 		  </t:selectOneListbox>        
         </td>
@@ -50,7 +50,7 @@
       <tr valign="top">
         <td>Previous Suite Repository URLs:</td>
         <td>
-          <t:selectOneListbox id="select2" forceId="true" size="10" value="#{serverSettingsBean.settings['SuiteRepositoryURL']}" onclick="$(srurl).value=this.value">
+          <t:selectOneListbox id="select2" forceId="true" size="3" value="#{serverSettingsBean.settings['SuiteRepositoryURL']}" onclick="$(srurl).value=this.value">
   			<f:selectItems value="#{serverSettingsBean.suiteRepositoryURLs}" />
 		  </t:selectOneListbox>        
         </td>
