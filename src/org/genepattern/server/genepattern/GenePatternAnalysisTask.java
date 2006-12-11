@@ -1020,12 +1020,15 @@ public class GenePatternAnalysisTask implements IGPConstants {
     public static ParameterInfo[] stripOutSpecialParams(ParameterInfo[] inParams) {
         ArrayList<ParameterInfo> strippedParams = new ArrayList<ParameterInfo>();
 
-        for (int i = 0; i < inParams.length; i++) {
-            ParameterInfo pi = inParams[i];
+        if (inParams != null) {
+            for (int i = 0; i < inParams.length; i++) {
+                ParameterInfo pi = inParams[i];
 
-            if (pi.getName().equals(PIPELINE_ARG_STOP_AFTER_TASK_NUM)) continue;
+                if (pi.getName().equals(PIPELINE_ARG_STOP_AFTER_TASK_NUM))
+                    continue;
 
-            strippedParams.add(pi);
+                strippedParams.add(pi);
+            }
         }
         return (ParameterInfo[]) strippedParams.toArray(new ParameterInfo[strippedParams.size()]);
 
