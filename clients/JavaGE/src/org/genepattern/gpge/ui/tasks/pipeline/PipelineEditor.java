@@ -152,6 +152,10 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
     private JButton exportButton;
 
+    private JPanel bottomBtnPanel;
+
+    private boolean showHeaderPanel = true;
+
     private void enableButtons() {
         deleteButton.setEnabled(model.getTaskCount() > 0);
         if (model.getTaskCount() == 0) {
@@ -299,7 +303,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
         expandAllButton.addActionListener(expandListener);
         collapseAllButton.addActionListener(expandListener);
 
-        JPanel bottomBtnPanel = new JPanel();
+        bottomBtnPanel = new JPanel();
         saveButton = new JButton("Save");
         runButton = new JButton("Run");
         viewOrEditButton = view ? new JButton("Edit") : new JButton("View");
@@ -459,6 +463,17 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
                     + " version " + new LSID(model.getLSID()).getVersion());
         } catch (MalformedURLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void setShowButtonPanel(boolean b) {
+        bottomBtnPanel.setVisible(b);
+    }
+
+    public void setShowHeaderPanel(boolean b) {
+        this.showHeaderPanel  = b;
+        if(headerPanel!=null) {
+            headerPanel.setVisible(b);
         }
     }
 
@@ -663,8 +678,10 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
             remove(headerPanel);
         }
         headerPanel = new HeaderPanel(model, analysisService, buttonPanel, view);
-        add(headerPanel, BorderLayout.NORTH);
+        if (showHeaderPanel) {
+            add(headerPanel, BorderLayout.NORTH);
 
+        }
         if (!view && model.getMissingJobSubmissions().size() > 0) {
             return false;
         }
@@ -780,7 +797,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
             JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT));
             p.add(icon);
             p.add(nameLabel);
-            
+
             temp.add(p, cc.xy(1, 1));
             temp.add(nameField, cc.xy(3, 1));
 
