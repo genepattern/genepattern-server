@@ -2781,15 +2781,10 @@ public class GPGE {
                                                 "http://")) {
                                             server = "http://" + server;
                                         }
-                                        if (!server
-                                                .equals(analysisServiceManager
-                                                        .getServer())
-                                                || !username
-                                                        .equals(analysisServiceManager
-                                                                .getUsername())) {
-                                            changeServer(server, username,
+                                        
+                                        changeServer(server, username,
                                                     password);
-                                        }
+                                       
                                     } catch (NumberFormatException nfe) {
                                         GenePattern
                                                 .showMessageDialog("Invalid port. Please try again.");
