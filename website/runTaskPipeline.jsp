@@ -66,6 +66,7 @@ use, misuse, or functionality.
 <%
     String userID = null;
 	String userEmail = null;
+	String jobId = null;
     try {
         ServletFileUpload fub = new ServletFileUpload(new DiskFileItemFactory());
         HashMap htFilenames = new HashMap(); // map between form field name and filesystem name
@@ -140,7 +141,7 @@ use, misuse, or functionality.
         }
         
         //http://cp21e-789.broad.mit.edu:8080/gp/getInputFile.jsp?file=Axis62355.att_all_aml_train.res
-        String lsid = (String) requestParameters.get("taskLSID");
+        String lsid = URLDecoder.decode((String) requestParameters.get("taskLSID"));
         String taskName = (String) requestParameters.get("taskName");
         if (lsid == null) {
             lsid = taskName;
@@ -224,7 +225,7 @@ use, misuse, or functionality.
     }   
                
     JobInfo job = analysisClient.submitJob(task.getID(), parmInfos);
-    String jobID = "" + job.getJobNumber();
+    jobId = "" + job.getJobNumber();
 
 %>
 <script language="Javascript">
@@ -448,7 +449,7 @@ show execution logs</td>
 
 <form id="results" name="results" action="zipJobResults.jsp">
     <input type="hidden" name="name" value="<%=task.getName()%>"/>
-    <input type="hidden" name="jobID" value="<%=jobID%>"/>
+    <input type="hidden" name="jobID" value="<%=jobId%>"/>
     <input type="hidden" name="cmdElement" value=""/>
 
 
