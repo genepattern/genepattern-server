@@ -19,8 +19,7 @@
       <tr valign="top">
         <td>Add New Custom Settings:</td>
       </tr>
-      <table class="tableheader-row" width="80%">
-	      <tr valign="top">
+      <tr valign="top" class="tableheader-row">
 	      	<td>name: </td>
 			<td>
 				<h:inputText size="20" value="#{serverSettingsBean.newCSKey}"/>
@@ -32,17 +31,17 @@
 			<td>
 				<h:commandLink value="add" actionListener="#{serverSettingsBean.addNewCustomSetting}"/>
 			</td> 
-	      </tr>
-      </table>
-      <br/><br/>
-      <table class="tableheader-row" width="80%">
-        <tr valign="top">
+	  </tr>
+	</table>
+	<br/><br/>
+	<table width="100%" border="0" cellpadding="5" cellspacing="0">
+      <tr valign="top" class="tableheader-row">
           <td> Name </td>
           <td> Content </td>         
           <td> Delete </td>
-        </tr>
-        <t:dataList id="customSettingsTable" value="#{serverSettingsBean.customSettings}" var="aCustomSetting">
-          <tr valign="top">
+      </tr>
+      <t:dataList id="customSettingsTable" value="#{serverSettingsBean.customSettings}" var="aCustomSetting">
+          <tr valign="top" class="task-titlerow">
             <td>
               <h:outputText id="key" value="#{aCustomSetting.key}"/>
             </td>         
@@ -56,12 +55,14 @@
               </h:commandLink>
             </td>
           </tr>
-        </t:dataList>
-      </table>
-      <tr valign="top">
-      	<h:commandButton value="Submit" action="#{serverSettingsBean.saveSettings}"/>
-      </tr>
+      </t:dataList>
     </table>
+    <br/><br/>
+    <table width="100%" border="0" cellpadding="5" cellspacing="0">
+	      <tr valign="top">
+	      	<h:commandButton value="Submit" actionListener="#{serverSettingsBean.saveSettings}"/>
+	      </tr>
+    </table>   
     <br/>
   </h:form>
 </ui:composition>
