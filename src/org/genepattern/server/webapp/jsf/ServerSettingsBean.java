@@ -29,13 +29,10 @@ import org.genepattern.server.util.PropertiesManager;
 
 public class ServerSettingsBean {
 
-    private Map<String, String[]> modes;/* = new String[] { "Access", "Command Line Prefix", "File Purge Settings", "History",
-            "Java Flag Settings", "Gene Pattern Log", "Web Server Log", "Repositories", "Proxy Settings",
-            "Search Engine", "Database Settings", "LSID", "Programming Language", "Documentation Attibutes",
-            "Advanced", "Create Custom Settings", "Shut Down Server" };*/
+    private Map<String, String[]> modes;
     private String[] clientModes = new String[] { "Local", "Any", "Specified" };
 
-    private String currentMode;// = modes[0]; // Default
+    private String currentMode; // Default
     private String currentClientMode = clientModes[0]; // default
 
     private Properties settings;
@@ -45,28 +42,9 @@ public class ServerSettingsBean {
     private String newCSKey = "";
     private String newCSValue = "";
 
-    private ArrayList<KeyValuePair> out = new ArrayList<KeyValuePair>();
     private Calendar cal = Calendar.getInstance();
     private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-
-    private static final String defaultModuleRepositoryURL = "http://www.broad.mit.edu/webservices/genepatternmodulerepository";
-    private static final String defaultSuiteRepositoryURL = "http://www.broad.mit.edu/webservices/genepatternmodulerepository/suite";
-    private static final String defaultLog4jPath = "./webapps/gp/WEB-INF/classes/log4j.properties";
-    private static final String log4jAppenderR = "log4j.appender.R.File";
-
-    private static final String hsqlConnectionDriverclass = "org.hsqldb.jdbcDriver";
-    private static final String hsqlConnectionUrl = "jdbc:hsqldb:hsql://localhost/xdb";
-    private static final String hsqlConnectionUsername = "sa";
-    private static final String hsqlConnectionPassword = "";
-    private static final String hsqlDialect = "org.hibernate.dialect.HSQLDialect";
-
-    private static final String oracleConnectionDriverclass = "oracle.jdbc.OracleDriver";
-    private static final String oracleConnectionUrl = "jdbc:oracle:thin:@magnesium.broad.mit.edu:1521:meddev10";
-    private static final String oracleConnectionUsername = "gpportal";
-    private static final String oracleConnectionPassword = "gpportal";
-    private static final String oracleDialect = "org.genepattern.server.database.PlatformOracle9Dialect";
-    private static final String oracleDefaultSchema = "gpportal";
-
+    
     /**
      * 
      */
@@ -82,7 +60,6 @@ public class ServerSettingsBean {
     		modes.put("Web Server Log", null);
     		modes.put("Repositories", new String[]{"ModuleRepositoryURL", "ModuleRepositoryURLs", "SuiteRepositoryURL", "SuiteRepositoryURLs"});
     		modes.put("Proxy Settings", new String[]{"http.proxyHost", "http.proxyPort", "http.proxyUser"});
-    		modes.put("Search Engine", new String[]{"disable.gp.indexing"});
     		modes.put("Database Settings", new String[]{"database.vendor", "HSQL_port", "HSQL.class", "HSQL.args", "HSQL.schema", 
     				"hibernate.connection.driver_class", "hibernate.connection.shutdown", "hibernate.connection.url", "hibernate.connection.username", 
     				"hibernate.connection.password", "hibernate.dialect", "hibernate.default_schema", "hibernate.connection.SetBigStringTryClob"});
@@ -307,7 +284,8 @@ public class ServerSettingsBean {
     private File getGpLogFile() {
         String log4jConfiguration = System.getProperty("log4j.configuration");
         if (log4jConfiguration == null) {
-            log4jConfiguration = defaultLog4jPath;
+        	String defaultValue = (String)defaultSettings.get("log4j.configuration");
+            log4jConfiguration = defaultValue;            
         }
 
         Properties props = new Properties();
@@ -318,7 +296,7 @@ public class ServerSettingsBean {
             exc.printStackTrace();
             System.exit(1);
         }
-        return new File(props.getProperty(log4jAppenderR));
+        return new File(props.getProperty("log4j.appender.R.File"));
     }
 
     /**
@@ -342,10 +320,10 @@ public class ServerSettingsBean {
      * @param repositoryName
      * @return
      */
-    private Collection getRepositoryURLs(String repositoryName) {
+    private List getRepositoryURLs(String repositoryName) {
         String repositoryURLs = (String) settings.get(repositoryName);
         String[] result = repositoryURLs.split(",");
-        Collection<SelectItem> repositoryURLsLst = new ArrayList<SelectItem>();
+        List<SelectItem> repositoryURLsLst = new ArrayList<SelectItem>();
         for (int i = 0; i < result.length; i++) {
             repositoryURLsLst.add(new SelectItem(result[i]));
         }
@@ -356,10 +334,10 @@ public class ServerSettingsBean {
      * @param mrURLs
      * @param repositoryName
      */
-    private void setRepositoryURLs(ArrayList mrURLs, String repositoryName) {
+    private void setRepositoryURLs(ArrayList rURLs, String repositoryName) {
         StringBuffer repositoryURLs = new StringBuffer();
-        for (int i = 0; i < mrURLs.size(); i++) {
-            repositoryURLs.append(mrURLs.get(i)).append(",");
+        for (int i = 0; i < rURLs.size(); i++) {
+            repositoryURLs.append(rURLs.get(i)).append(",");
         }
         settings.put(repositoryName, repositoryURLs.substring(0, repositoryURLs.length() - 1).toString());
     }
@@ -404,7 +382,7 @@ public class ServerSettingsBean {
             }
             settings.put(repositoryNames, newRepositoryURLs.substring(0, newRepositoryURLs.length() - 1).toString());
         }
-        resetModuleRepositoryURL();
+        //resetModuleRepositoryURL();
     }
 
     /**
@@ -425,25 +403,32 @@ public class ServerSettingsBean {
     /**
      * @return
      */
-    public String addModuleRepositoryURL() {
+    public void addModuleRepositoryURL(ActionEvent event) {
+    	System.out.println("add");
         addRepositoryURL("ModuleRepositoryURL", "ModuleRepositoryURLs");
-        return null;
     }
+    
+    
 
     /**
      * @return
      */
-    public String resetModuleRepositoryURL() {
+    private void resetModuleRepositoryURL() {
+    	String defaultModuleRepositoryURL = (String)defaultSettings.get("DefaultModuleRepositoryURL");
         settings.put("ModuleRepositoryURL", defaultModuleRepositoryURL);
-        return null;
     }
 
     /**
      * @return
      */
-    public String removeModuleRepositoryURL() {
-        removeRepositoryURL("ModuleRepositoryURL", "ModuleRepositoryURLs", defaultModuleRepositoryURL);
-        return null;
+    public void removeModuleRepositoryURL(ActionEvent event) {
+    	String defaultModuleRepositoryURL = (String)defaultSettings.get("DefaultModuleRepositoryURL");
+    	removeRepositoryURL("ModuleRepositoryURL", "ModuleRepositoryURLs", defaultModuleRepositoryURL);
+    	settings.put("ModuleRepositoryURL", defaultModuleRepositoryURL);
+    }
+    
+    public void test(ActionEvent event) {
+    	System.out.println("test");
     }
 
     /**
@@ -464,15 +449,15 @@ public class ServerSettingsBean {
     /**
      * @return
      */
-    public String addSuiteRepositoryURL() {
+    public void addSuiteRepositoryURL(ActionEvent event) {
         addRepositoryURL("SuiteRepositoryURL", "SuiteRepositoryURLs");
-        return null;
     }
 
     /**
      * @return
      */
-    public String resetSuiteRepositoryURL() {
+    private String resetSuiteRepositoryURL() {
+    	String defaultSuiteRepositoryURL = (String)defaultSettings.get("DefaultSuiteRepositoryURL");
         settings.put("SuiteRepositoryURL", defaultSuiteRepositoryURL);
         return null;
     }
@@ -480,9 +465,10 @@ public class ServerSettingsBean {
     /**
      * @return
      */
-    public String removeSuiteRepositoryURL() {
+    public void removeSuiteRepositoryURL(ActionEvent event) {
+    	String defaultSuiteRepositoryURL = (String)defaultSettings.get("DefaultSuiteRepositoryURL");
         removeRepositoryURL("SuiteRepositoryURL", "SuiteRepositoryURLs", defaultSuiteRepositoryURL);
-        return null;
+        settings.put("SuiteRepositoryURL", defaultSuiteRepositoryURL);
     }
 
     /**
@@ -502,7 +488,7 @@ public class ServerSettingsBean {
     /**
      * @return
      */
-    public String removeProxySettings() {
+    /*public String removeProxySettings() {
         settings.remove("http.proxyHost");
         settings.remove("http.proxyPort");
         settings.remove("http.proxyUser");
@@ -514,11 +500,10 @@ public class ServerSettingsBean {
 
         return null;
 
-    }
+    }*/
 
     public String getDb() {
         String db = (String) settings.get("database.vendor");
-        //resetDbParam(db);
         return db;
     }
 
@@ -528,47 +513,6 @@ public class ServerSettingsBean {
 
     public void changeDb(ValueChangeEvent event) {
         String db = (String) settings.get("database.vendor");
-        //resetDbParam(db);
-
-    }
-
-    private void resetDbParam(String dbName) {
-        if (dbName.equals("HSQL")) {
-            settings.remove("hibernate.connection.SetbigStringTryClob");
-            settings.remove("hibernate.default_schema");
-
-            settings.put("hibernate.connection.driver_class", hsqlConnectionDriverclass);
-            settings.put("hibernate.connection.url", hsqlConnectionUrl);
-            settings.put("hibernate.connection.username", hsqlConnectionUsername);
-            settings.put("hibernate.connection.password", hsqlConnectionPassword);
-            settings.put("hibernate.dialect", hsqlDialect);
-
-            settings.put("HSQL_port", "9001");
-            settings.put("HSQL.class", "org.hsqldb.Server");
-            settings.put("HSQL.args", " - port 9001 -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
-            settings.put("HSQL.schema", "analysis_hypersonic-");
-            settings.put("hibernate.connection.shutdown", "true");
-        }
-        else if (dbName.equals("ORACLE")) {
-            settings.remove("HSQL_port");
-            settings.remove("HSQL.class");
-            settings.remove("HSQL.args");
-            settings.remove("HSQL.schema");
-            settings.remove("hibernate.connection.shutdown");
-            settings.remove("HSQL_port");
-            settings.remove("HSQL.class");
-            settings.remove("HSQL.args");
-            settings.remove("HSQL.schema");
-
-            settings.put("hibernate.connection.driver_class", oracleConnectionDriverclass);
-            settings.put("hibernate.connection.url", oracleConnectionUrl);
-            settings.put("hibernate.connection.username", oracleConnectionUsername);
-            settings.put("hibernate.connection.password", oracleConnectionPassword);
-            settings.put("hibernate.dialect", oracleDialect);
-
-            settings.put("hibernate.default_schema", oracleDefaultSchema);
-            settings.put("hibernate.connection.SetBigStringTryClob", "true");
-        }
     }
     
     public String getClobRadio() {
@@ -582,6 +526,26 @@ public class ServerSettingsBean {
     public void setClobRadio(String mode) {
     	if (mode!=null && (mode.equals("true") || mode.equals("false"))) {
     		settings.put("hibernate.connection.SetBigStringTryClob", mode);
+    	}
+    }
+    
+    public String getLsidShowRadio() {
+    	String value=(String)settings.get("lsid.show");
+    	return (value==null)?"":value;
+    }
+    
+    /**
+     * @param mode
+     */
+    public void setLsidShowRadio(String mode) {
+    	if (mode!=null) {
+    		if (mode.equals("1")) {
+    			settings.put("lsid.show", true);
+    		}
+    		if (mode.equals("0")) {
+    			settings.put("lsid.show", false);
+    		}
+    		
     	}
     }
     
@@ -631,7 +595,6 @@ public class ServerSettingsBean {
     }
 
     public void deleteCustomSetting(ActionEvent event) {
-        System.out.println(getKey());
         customSettings.remove(getKey());
     }
 
@@ -658,10 +621,17 @@ public class ServerSettingsBean {
     
     public void restore(ActionEvent event) {
 		String[] propertyKeys = modes.get(currentMode);
+		String subtype = (String)event.getComponent().getAttributes().get("subtype");
+				
 		if (propertyKeys!=null) {
 			String defaultValue;
 			for (String propertyKey:propertyKeys) {
-				defaultValue = (String)defaultSettings.get(propertyKey);
+				if (subtype.equals("Module") && !propertyKey.contains(subtype)) {
+					continue;
+				}else if (subtype.equals("Suite") && !propertyKey.contains(subtype)) {
+					continue;
+				}
+				defaultValue = (String)defaultSettings.get(propertyKey);			
 				if (defaultValue!=null) {
 					settings.put(propertyKey, defaultValue);
 				}
