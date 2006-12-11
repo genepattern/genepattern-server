@@ -531,7 +531,7 @@ public class ServerSettingsBean {
     
     public String getLsidShowRadio() {
     	String value=(String)settings.get("lsid.show");
-    	return (value==null)?"":value;
+    	return (value==null)?"":(value.equals("1")?"true":"false");
     }
     
     /**
@@ -539,13 +539,11 @@ public class ServerSettingsBean {
      */
     public void setLsidShowRadio(String mode) {
     	if (mode!=null) {
-    		if (mode.equals("1")) {
-    			settings.put("lsid.show", true);
-    		}
-    		if (mode.equals("0")) {
-    			settings.put("lsid.show", false);
-    		}
-    		
+    		if (mode.equals("true")) {
+    			settings.put("lsid.show", "1");
+    		}else {
+    			settings.put("lsid.show", "0");
+    		}		
     	}
     }
     
