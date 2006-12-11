@@ -48,17 +48,17 @@
     <div id="content" class="content">
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
-          <td rowspan="1"><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="0" height="440"/></td>
+          <td><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="0" height="440"/></td>
           <ui:insert name="leftPanel"/>
           <td valign="top" class="maincontent" id="maincontent">
-     		<ui:include src="/pages/messages.xhtml" />
+     		<h:messages/>
      		<ui:insert name="body" />
           </td>
           <ui:insert name="rightPanel"/>
         </tr>
         
         <tr>
-          <td colspan="3" class="footer">
+          <td colspan="4" class="footer">
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
               <tr>
                 <td>
@@ -91,17 +91,6 @@
 			My Settings </h:outputLink> | <h:form style="display: inline;">
               <h:commandLink id="logoutLink" action="#{loginBean.logout}"> Sign Out </h:commandLink>
             </h:form>&#160;${requestScope.userID}&#160;&#160;&#160;</td>
-          <td>
-            <form action="" method="post" name="form1" id="form1">
-              <input name="textfield" type="text" size="15"/>
-            </form>
-          </td>
-          <td width="5">
-            <t:graphicImage value="/images/spacer.gif" width="5" height="1"/>
-          </td>
-          <td>
-            <input name="Search" type="submit" id="Search" value="Search"/>
-          </td>
         </tr>
       </table>
     </c:if>
