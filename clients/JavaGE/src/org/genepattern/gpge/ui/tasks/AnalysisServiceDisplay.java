@@ -21,14 +21,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
@@ -36,12 +39,15 @@ import org.genepattern.codegenerator.JavaPipelineCodeGenerator;
 import org.genepattern.codegenerator.MATLABPipelineCodeGenerator;
 import org.genepattern.codegenerator.RPipelineCodeGenerator;
 import org.genepattern.codegenerator.TaskCodeGenerator;
+import org.genepattern.data.pipeline.JobSubmission;
+import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.gpge.CLThread;
 import org.genepattern.gpge.message.ChangeViewMessageRequest;
 import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel;
 import org.genepattern.gpge.ui.tasks.pipeline.ExportPipeline;
+import org.genepattern.gpge.ui.tasks.pipeline.PipelineEditor;
 import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.GPConstants;
@@ -65,6 +71,8 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
     private TogglePanel togglePanel;
 
     private ParameterInfoPanel parameterInfoPanel;
+
+    private JComboBox runToComboBox;
 
     public AnalysisServiceDisplay() {
         this.setBackground(Color.white);
@@ -120,7 +128,7 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
             throw new NullPointerException();
         }
         this.selectedService = _selectedService;
-
+        JPanel bottomPanel = new JPanel(new BorderLayout());
         if (togglePanel != null) {
             advancedGroupExpanded = togglePanel.isExpanded();
         }
@@ -136,8 +144,16 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
         parameterInfoPanel = new ParameterInfoPanel(taskName, params);
         removeAll();
 
+        boolean isPipeline = TaskLauncher.isPipeline(selectedService);
         setLayout(new BorderLayout());
         JPanel buttonPanel = new JPanel();
+        if (isPipeline) {
+
+            runToComboBox = new JComboBox();
+            buttonPanel.add(new JLabel("Run to "));
+            buttonPanel.add(runToComboBox);
+        }
+
         JButton submitButton = new JButton("Run");
         submitButton.addActionListener(new SubmitActionListener());
         buttonPanel.add(submitButton);
@@ -153,7 +169,39 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
 
         buttonPanel.add(helpButton);
 
-        if (TaskLauncher.isPipeline(selectedService)) {
+        if (isPipeline) {
+
+            // PipelineEditor pipelineEditor = new PipelineEditor();
+            // pipelineEditor.setShowButtonPanel(false);
+            // pipelineEditor.setShowHeaderPanel(false);
+
+            try {
+                PipelineModel model = PipelineModel
+                        .toPipelineModel(((String) selectedService
+                                .getTaskInfo().getTaskInfoAttributes().get(
+                                        GPConstants.SERIALIZED_MODEL)));
+
+                List<JobSubmission> tasks = model.getTasks();
+
+                if (tasks != null) {
+                    for (int i = 0; i < tasks.size(); i++) {
+                        runToComboBox.addItem((i + 1) + ". "
+                                + tasks.get(i).getName());
+                    }
+                }
+                runToComboBox
+                        .setSelectedIndex(runToComboBox.getItemCount() - 1);
+                // pipelineEditor.view(selectedService, model);
+                //
+                // JDialog d = new JDialog();
+                // d.getContentPane().add(pipelineEditor);
+                // d.pack();
+                // d.setVisible(true);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             JButton editButton = new JButton("Edit");
             editButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -204,7 +252,6 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
          * tp.add(group);
          */
 
-        JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setBorder(GUIUtil.createBorder(UIManager
                 .getLookAndFeelDefaults().getBorder("ScrollPane.border"), 0, 0,
                 0, 2));
@@ -242,10 +289,9 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
         add(topPanel, BorderLayout.NORTH);
 
         JScrollPane sp = new JScrollPane(parameterInfoPanel);
-        final javax.swing.border.Border b = sp.getBorder();
+        final Border b = sp.getBorder();
         sp.setBorder(GUIUtil.createBorder(b, 0, -1, -1, -1));
         add(sp, BorderLayout.CENTER);
-
         add(bottomPanel, BorderLayout.SOUTH);
         setMinimumSize(new java.awt.Dimension(100, 100));
         revalidate();
@@ -338,13 +384,23 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
     private class SubmitActionListener implements ActionListener {
 
         public final void actionPerformed(ActionEvent ae) {
-            final JButton source = (JButton) ae.getSource();
-            final ParameterInfo[] actualParameterArray = parameterInfoPanel
+            JButton source = (JButton) ae.getSource();
+            ParameterInfo[] actualParameterArray = parameterInfoPanel
                     .getParameterInfoArray();
-            final AnalysisService _selectedService = selectedService;
+            if (runToComboBox != null) {
+                int taskNumber = runToComboBox.getSelectedIndex();
+                ParameterInfo p = new ParameterInfo(
+                        "PIPELINE_ARG.StopAfterTask", "" + taskNumber, "");
+                ParameterInfo[] temp = new ParameterInfo[actualParameterArray.length + 1];
+                System.arraycopy(actualParameterArray, 0, temp, 0,
+                        actualParameterArray.length);
+                temp[temp.length - 1] = p;
+                actualParameterArray = temp;
+
+            }
+            AnalysisService _selectedService = selectedService;
             doSubmit(source, actualParameterArray, _selectedService);
         }
-
     }
 
     public Iterator getInputFileTypes() {
