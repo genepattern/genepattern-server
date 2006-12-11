@@ -37,6 +37,7 @@ public class ChangeServerDialog extends CenteredDialog {
     private JLabel serverLabel, portLabel, usernameLabel;
 
     private JTextField portTextField, serverTextField, usernameTextField;
+
     private JPasswordField passwordField;
 
     public ChangeServerDialog(java.awt.Frame owner) {
@@ -45,7 +46,8 @@ public class ChangeServerDialog extends CenteredDialog {
         setModal(false);
     }
 
-    public void show(String server, String username, String password, ActionListener okListener) {
+    public void show(String server, String username, String password,
+            ActionListener okListener) {
         passwordField = new JPasswordField(20);
         passwordField.setText(password);
         serverLabel = new JLabel("Server Name: ",
@@ -93,10 +95,11 @@ public class ChangeServerDialog extends CenteredDialog {
 
         inputPanel.add(usernameLabel, cc.xy(1, 6));
         inputPanel.add(usernameTextField, cc.xy(3, 6));
-        
-        inputPanel.add(new JLabel("Password: ", javax.swing.SwingConstants.RIGHT), cc.xy(1, 8));
+
+        inputPanel.add(new JLabel("Password: ",
+                javax.swing.SwingConstants.RIGHT), cc.xy(1, 8));
         inputPanel.add(passwordField, cc.xy(3, 8));
-        
+
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(cancelButton);
         buttonPanel.add(okButton);
@@ -122,6 +125,6 @@ public class ChangeServerDialog extends CenteredDialog {
     }
 
     public String getPassword() {
-        return passwordField.getText();
+        return new String(passwordField.getPassword());
     }
 }
