@@ -92,7 +92,7 @@ use, misuse, or functionality.
                 String fieldName = fi.getFieldName();
                 String fileName = fi.getName();
                 if (fileName == null || fileName.trim().equals("")) {
-                    FileItem shadow = (FileItem) nameToFileItemMap.get("shadow" + fieldName);
+                    FileItem shadow = (FileItem) nameToFileItemMap.get(fieldName + "_url");
                     if (shadow != null) {
                         fileName = shadow.getString();
                     }
