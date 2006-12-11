@@ -102,7 +102,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 		out.println("<tr class=\"smalltype\">");
 		out.println("  <td >&nbsp;</td>");
 		out.println("  <td valign=\"top\"><nobr>");
-		out.println("    <div align=\"center\" class=\"smalltype\"><a onclick=\"downloadCheckedFiles()\" href=\"#\">download</a> | <a onclick=\"deleteCheckedFiles()\"href=\"#\">delete</a> </div>");
+		out.println("    <div align=\"center\" class=\"smalltype\"><a onclick=\"downloadCheckedFiles()\" href=\"#\">download</a> | <a onclick=\"deleteCheckedFiles()\" href=\"#\">delete</a> </div>");
 
 		out.println("  </nobr></td>");
 		out.println("  <td>&nbsp;</td>");
@@ -317,7 +317,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 		out.println("  <td >&nbsp;</td>");
 
 		out.println("  <td valign=\"top\"><nobr>");
-		out.println("   <div class=\"smalltype\" align=\"center\"><a href=\"#\">download</a> | <a href=\"#\">delete</a> </div>");
+		out.println("   <div class=\"smalltype\" align=\"center\"><a onclick=\"downloadCheckedFiles()\" href=\"#\">download</a> | <a onclick=\"deleteCheckedFiles()\" href=\"#\">delete</a> </div>");
         				  
 		out.println("   </nobr></td><td>&nbsp;</td> <td><div align=\"right\"></div></td></tr>");
         												  

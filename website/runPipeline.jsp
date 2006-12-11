@@ -434,7 +434,8 @@ function toggleTask(idx, visibility) {
 	cmd.name="delete";
 	cmd.value="true";
  	frm.submit();
-
+	
+	cmd.name="cmdElement";
   }
  
  function downloadCheckedFiles(){
@@ -444,7 +445,7 @@ function toggleTask(idx, visibility) {
 	cmd.name="download";
 	cmd.value="true";
 	frm.submit();
-
+	cmd.name="cmdElement";
     }
 
 </script>
