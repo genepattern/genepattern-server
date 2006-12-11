@@ -94,7 +94,7 @@ public class PipelineModel implements Serializable {
 
 	TreeMap hmParameters = new TreeMap(); // run-time prompt for these
 
-	Vector vTasks = new Vector(); // Vector of JobSubmission objects
+	Vector<JobSubmission> vTasks = new Vector<JobSubmission>(); // Vector of JobSubmission objects
 
 	public PipelineModel() {
 	}
@@ -109,10 +109,10 @@ public class PipelineModel implements Serializable {
 	 * @return The <tt>JobSubmission</tt> at the given index
 	 */
 	public JobSubmission getTask(int index) {
-		return (JobSubmission) vTasks.get(index);
+		return vTasks.get(index);
 	}
 
-	public Vector getTasks() {
+	public Vector<JobSubmission> getTasks() {
 		return vTasks;
 	}
 
