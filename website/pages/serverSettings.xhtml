@@ -77,16 +77,13 @@
       <t:div rendered="#{serverSettingsBean.currentMode == 'Proxy Settings'}">
         <ui:include src="serverSettingsProxy.xhtml"/>       
       </t:div>
-      <t:div rendered="#{serverSettingsBean.currentMode == 'Search Engine'}">
-        <ui:include src="serverSettingsSearch.xhtml"/>       
-      </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Database Settings'}">
         <ui:include src="serverSettingsDatabase.xhtml"/>       
       </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'LSID'}">
         <ui:include src="serverSettingsLSID.xhtml"/>       
       </t:div>
-      <t:div rendered="#{serverSettingsBean.currentMode == 'Programming Language'}">
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Programming Languages'}">
         <ui:include src="serverSettingsPL.xhtml"/>       
       </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Documentation Attibutes'}">
