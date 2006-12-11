@@ -92,6 +92,9 @@ function validateForm() {
             
             if (type == "file" || type == "text" || type == "textarea") {
                 var value = e.value;
+              	if (type == "file" && (value == null || value == "")) {
+              		value = $(elementId + "_url").value;
+              	}
                 if (value == null || value == "") {
                    error = true;
                    missingParams += "<br/>" + "<b>" + displayName + "</b>";
@@ -134,14 +137,14 @@ function chooserModeChanged() {
 }
 
 function showUrlInput(id) {
-	$(id).type = "text";
+	Element.hide(id);
+	Element.show(id + "_url");
 }
 
 function showFileInput(id) {
-	//Element.remove($(id));
-	//var txt = '<input name="' + id + '" id="' + id + '" size="30" type="file" />';
-	//new Insertion.Top(id + "_td", txt);
-	$(id).type = "file";
+	Element.show(id);
+	Element.hide(id + "_url");
+	
 }
    
 
@@ -168,7 +171,7 @@ function showFileInput(id) {
 			id="recentjobs"><ui:include src="recentJobs.xhtml" /></td>
 	</ui:define>
 
-	
+
 
 	<ui:define name="body">
 		<div id="errorMessageDiv" style="display:none;">
@@ -184,7 +187,7 @@ function showFileInput(id) {
 						<td align="right"><span class="barhead-version">version
 						#{runTaskBean.version} &#160;</span> <h:outputText
 							rendered="#{!empty runTaskBean.versions}">
-							
+
 						</h:outputText> <h:outputText rendered="#{!empty runTaskBean.versions}">
 							<img
 								src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif"
@@ -253,18 +256,27 @@ function showFileInput(id) {
 								<td valign="top" id="#{p.name}_td"><h:outputText
 									rendered="#{p.inputType=='file'}">
 									<h:outputText rendered="#{empty p.defaultValue}">
+									
 										<input name="#{p.name}" id="#{p.name}" size="30" type="file" />
-										<input type="radio" name="#{p.name}_cb" onclick="showUrlInput('#{p.name}');">Specify URL</input>
-										<input type="radio" name="#{p.name}_cb" onclick="showFileInput('#{p.name}');" checked="yes">Upload File</input>
+										<input name="#{p.name}_url" id="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}" style="display:none"/>
+										<br />
+											<input type="radio" name="#{p.name}_cb" onclick="showUrlInput('#{p.name}');">Specify URL</input> 
+											<input type="radio" name="#{p.name}_cb" onclick="showFileInput('#{p.name}');" checked="yes">Upload File</input>
+										
 									</h:outputText>
 									<h:outputText rendered="#{!empty p.defaultValue}">
-										<input name="#{p.name}" id="#{p.name}" size="30" type="text" value="#{p.defaultValue}" />
-										<input type="radio" name="#{p.name}_cb" onclick="showUrlInput('#{p.name}');" checked="yes">Specify URL</input>
-										<input type="radio" name="#{p.name}_cb" onclick="showFileInput('#{p.name}');" >Upload File</input>
+										<input name="#{p.name}" id="#{p.name}" size="30" type="file" style="display:none"/>
+										<input name="#{p.name}_url" id="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
+										<br />
+										<input type="radio" name="#{p.name}_cb"
+											onclick="showUrlInput('#{p.name}');" checked="yes">Specify
+										URL</input>
+										<input type="radio" name="#{p.name}_cb"
+											onclick="showFileInput('#{p.name}');">Upload File</input>
+										
 									</h:outputText>
-									
-								</h:outputText> 
-								<h:outputText rendered="#{p.inputType=='select'}">
+
+								</h:outputText> <h:outputText rendered="#{p.inputType=='select'}">
 									<select name="#{p.name}" id="#{p.name}">
 										<t:dataList value="#{p.choices}" var="c">
 
@@ -344,13 +356,14 @@ function showFileInput(id) {
 			</c:otherwise>
 		</c:choose>
 	</ui:define>
-	
+
 	<ui:define name="popupMenus">
-	<script type="text/javascript">
+		<script type="text/javascript">
 		pm_popupMenuIds.push('versionPopupMenu');
 	</script>
 		<h:form>
-			<div id="versionPopupMenu" style="visibility:hidden; position:absolute;" class="popupMenu">
+			<div id="versionPopupMenu"
+				style="visibility:hidden; position:absolute;" class="popupMenu">
 			<table>
 				<tbody>
 					<tr>
@@ -368,6 +381,6 @@ function showFileInput(id) {
 			</div>
 		</h:form>
 	</ui:define>
-	
+
 </ui:composition>
 </html>
