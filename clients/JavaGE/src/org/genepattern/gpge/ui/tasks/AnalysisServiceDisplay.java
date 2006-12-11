@@ -313,13 +313,13 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
             final AnalysisService selectedService) {
         try {
             source.setEnabled(false);
-            final String username = AnalysisServiceManager.getInstance()
-                    .getUsername();
 
             new CLThread() {
                 public void run() {
                     RunTask rt = new RunTask(selectedService,
-                            actualParameterArray, username);
+                            actualParameterArray, AnalysisServiceManager
+                                    .getInstance().getUsername(),
+                            AnalysisServiceManager.getInstance().getPassword());
                     rt.exec();
                 }
             }.start();

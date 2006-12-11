@@ -41,10 +41,10 @@ public class RequestHandler {
 			cat.debug(str);
 	}
 
-	public RequestHandler(String server, String username) {
+	public RequestHandler(String server, String username, String password) {
 		this.server = server;
 		try {
-			_proxy = new AnalysisWebServiceProxy(server, username);
+			_proxy = new AnalysisWebServiceProxy(server, username, password);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

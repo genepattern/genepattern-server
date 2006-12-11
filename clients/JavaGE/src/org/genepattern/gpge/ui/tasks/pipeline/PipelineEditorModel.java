@@ -124,7 +124,8 @@ public class PipelineEditorModel {
 		try {
 			String[] fileNames = new TaskIntegratorProxy(AnalysisServiceManager
 					.getInstance().getServer(), AnalysisServiceManager
-					.getInstance().getUsername()).getDocFileNames(lsid);
+					.getInstance().getUsername(), AnalysisServiceManager
+                                        .getInstance().getPassword()).getDocFileNames(lsid);
 			serverDocFiles.clear();
 			serverDocFiles.addAll(Arrays.asList(fileNames));
 			localDocFiles.clear();

@@ -57,15 +57,15 @@ public class Analysis extends GenericWebService {
 
     private static Category _cat;
 
-    { 
-    	try {
-    		_cat = Category.getInstance(Analysis.class.getName());
-    	}catch (Exception e){
-    		System.err.println("Could not create Analysis log file");
-    	}
-    
+    {
+        try {
+            _cat = Category.getInstance(Analysis.class.getName());
+        } catch (Exception e) {
+            System.err.println("Could not create Analysis log file");
+        }
+
     }
-    
+
     /**
      * Default constructor. Constructs a <code>Analysis</code> web service
      * object.
@@ -73,8 +73,7 @@ public class Analysis extends GenericWebService {
     public Analysis() {
         Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
         // sometimes empty
-        
-    
+
     }
 
     /**
@@ -107,14 +106,15 @@ public class Analysis extends GenericWebService {
      * @return the job information
      */
 
-    public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
+    public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters)
+            throws WebServiceException {
         try {
             AnalysisDAO dao = new AnalysisDAO();
             int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(),
-                    org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters), -1);
+                    org.genepattern.webservice.ParameterFormatConverter
+                            .getJaxbString(parameters), -1);
             return dao.getJobInfo(jobNo);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new WebServiceException(e);
         }
     }
@@ -131,16 +131,16 @@ public class Analysis extends GenericWebService {
      * @return the job information
      */
 
-    public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters, int parentJobNumber)
-            throws WebServiceException {
+    public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters,
+            int parentJobNumber) throws WebServiceException {
         try {
             AnalysisDAO dao = new AnalysisDAO();
             int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(),
-                    org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters), parentJobNumber);
+                    org.genepattern.webservice.ParameterFormatConverter
+                            .getJaxbString(parameters), parentJobNumber);
             return dao.getJobInfo(jobNo);
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new WebServiceException(e);
         }
     }
@@ -156,8 +156,7 @@ public class Analysis extends GenericWebService {
                 jobs[i] = children[i].getJobNumber();
             }
             return jobs;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new WebServiceException(e);
         }
     }
@@ -179,70 +178,68 @@ public class Analysis extends GenericWebService {
      *                thrown if problems are encountered
      */
 
-    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files, int parentJobId)
-            throws WebServiceException {
+    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files,
+            int parentJobId) throws WebServiceException {
         try {
             renameInputFiles(parameters, files);
-            AddNewJobHandler req = new AddNewJobHandler(taskID, getUsernameFromContext(), parameters, parentJobId);
+            AddNewJobHandler req = new AddNewJobHandler(taskID,
+                    getUsernameFromContext(), parameters, parentJobId);
             return req.executeRequest();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new WebServiceException(e);
         }
     }
-    
-    public void wakeupQueue(){
-    	AnalysisTask.getInstance().wakeupJobQueue();
-    }
-   
-    
-    private static void logAndThrow(Throwable t) throws WebServiceException {
-    	
-    	 if (_cat != null) _cat.error(t.getMessage());
-         t.printStackTrace();
-         throw new WebServiceException(t);
-    }
-    
-   
-    
-    // find any input files and concat axis name with original file name.
-    private void renameInputFiles(ParameterInfo[] parameters, Map files) throws WebServiceException {
-        if (parameters != null) for (int x = 0; x < parameters.length; x++) {
-            if (parameters[x].isInputFile()) {
-                String orgFilename = parameters[x].getValue();
-                Object obj = files.get(orgFilename);
-                DataHandler dataHandler = null;
-                if (obj instanceof AttachmentPart) {
-                    AttachmentPart ap = (AttachmentPart) obj;
-                    try {
-                        dataHandler = ap.getDataHandler();
-                    }
-                    catch (SOAPException se) {
-                        throw new WebServiceException("Error while processing files");
-                    }
-                }
-                else {
-                    dataHandler = (DataHandler) obj;
-                }
 
-                String newFilename = dataHandler.getName() + "_" + orgFilename;
-                File f = new File(dataHandler.getName());
-                File newFile = new File(newFilename);
-                boolean renamed = f.renameTo(newFile);
-                // reset parameter's value with new filename
-                if (renamed) {
-                    parameters[x].setValue(newFilename);
-                }
-                else {
-                    try {
-                        parameters[x].setValue(f.getCanonicalPath());
+    public void wakeupQueue() {
+        AnalysisTask.getInstance().wakeupJobQueue();
+    }
+
+    private static void logAndThrow(Throwable t) throws WebServiceException {
+
+        if (_cat != null)
+            _cat.error(t.getMessage());
+        t.printStackTrace();
+        throw new WebServiceException(t);
+    }
+
+    // find any input files and concat axis name with original file name.
+    private void renameInputFiles(ParameterInfo[] parameters, Map files)
+            throws WebServiceException {
+        if (parameters != null)
+            for (int x = 0; x < parameters.length; x++) {
+                if (parameters[x].isInputFile()) {
+                    String orgFilename = parameters[x].getValue();
+                    Object obj = files.get(orgFilename);
+                    DataHandler dataHandler = null;
+                    if (obj instanceof AttachmentPart) {
+                        AttachmentPart ap = (AttachmentPart) obj;
+                        try {
+                            dataHandler = ap.getDataHandler();
+                        } catch (SOAPException se) {
+                            throw new WebServiceException(
+                                    "Error while processing files");
+                        }
+                    } else {
+                        dataHandler = (DataHandler) obj;
                     }
-                    catch (IOException ioe) {
-                        throw new WebServiceException(ioe);
+
+                    String newFilename = dataHandler.getName() + "_"
+                            + orgFilename;
+                    File f = new File(dataHandler.getName());
+                    File newFile = new File(newFilename);
+                    boolean renamed = f.renameTo(newFile);
+                    // reset parameter's value with new filename
+                    if (renamed) {
+                        parameters[x].setValue(newFilename);
+                    } else {
+                        try {
+                            parameters[x].setValue(f.getCanonicalPath());
+                        } catch (IOException ioe) {
+                            throw new WebServiceException(ioe);
+                        }
                     }
                 }
             }
-        }
     }
 
     /**
@@ -258,7 +255,8 @@ public class Analysis extends GenericWebService {
      * @exception is
      *                thrown if problems are encountered
      */
-    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files) throws WebServiceException {
+    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files)
+            throws WebServiceException {
         Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
         // sometimes empty
 
@@ -270,10 +268,11 @@ public class Analysis extends GenericWebService {
         renameInputFiles(parameters, files);
 
         try {
-            AddNewJobHandler req = new AddNewJobHandler(taskID, username, parameters);
+            AddNewJobHandler req = new AddNewJobHandler(taskID, username,
+                    parameters);
             jobInfo = req.executeRequest();
         } catch (Throwable t) {
-          logAndThrow(t);
+            logAndThrow(t);
         }
 
         return jobInfo;
@@ -298,7 +297,7 @@ public class Analysis extends GenericWebService {
             GetJobStatusHandler req = new GetJobStatusHandler(jobID);
             jobInfo = req.executeRequest();
         } catch (Throwable t) {
-          logAndThrow(t);
+            logAndThrow(t);
         }
 
         return jobInfo;
@@ -318,13 +317,13 @@ public class Analysis extends GenericWebService {
         // sometimes empty
 
         JobInfo jobInfo = null;
-        ArrayList filenames = null;
+        ArrayList<String> filenames = new ArrayList<String>();
 
         try {
             GetJobStatusHandler req = new GetJobStatusHandler(jobID);
             jobInfo = req.executeRequest();
         } catch (Throwable t) {
-          logAndThrow(t);
+            logAndThrow(t);
         }
 
         if (jobInfo != null) {
@@ -332,22 +331,24 @@ public class Analysis extends GenericWebService {
             if (parameters != null) {
                 for (int x = 0; x < parameters.length; x++) {
                     if (parameters[x].isOutputFile()) {
-                        if (filenames == null) filenames = new ArrayList();
-                        filenames.add(System.getProperty("jobs") + "/" + parameters[x].getValue());
+                        filenames.add(System.getProperty("jobs") + "/"
+                                + parameters[x].getValue());
                     }
                 }
             }
         }
 
-        ArrayList list = null;
+        ArrayList<FileWrapper> list = new ArrayList<FileWrapper>(
+                filenames != null ? filenames.size() : 0);
         if (filenames != null) {
-            list = new ArrayList(filenames.size());
 
             for (Iterator iterator = filenames.iterator(); iterator.hasNext();) {
                 String fn = (String) iterator.next();
                 File f = new File(fn);
-                DataHandler dataHandler = new DataHandler(new FileDataSource(fn));
-                list.add(new FileWrapper(dataHandler.getName(), dataHandler, f.length(), f.lastModified()));
+                DataHandler dataHandler = new DataHandler(
+                        new FileDataSource(fn));
+                list.add(new FileWrapper(dataHandler.getName(), dataHandler, f
+                        .length(), f.lastModified()));
             }
         }
 
@@ -362,7 +363,8 @@ public class Analysis extends GenericWebService {
      */
     public void terminateJob(int jobId) throws WebServiceException {
         try {
-            Process p = org.genepattern.server.genepattern.GenePatternAnalysisTask.terminatePipeline("" + jobId);
+            Process p = org.genepattern.server.genepattern.GenePatternAnalysisTask
+                    .terminatePipeline("" + jobId);
             if (p != null) {
                 setJobStatus(jobId, JobStatus.ERROR);
             }
@@ -372,8 +374,7 @@ public class Analysis extends GenericWebService {
                 // jobs
                 terminateJob(children[i].getJobNumber());
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new WebServiceException(e);
         }
     }
@@ -397,8 +398,7 @@ public class Analysis extends GenericWebService {
             for (int i = 0; i < children.length; i++) {
                 purgeJob(children[i].getJobNumber());
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new WebServiceException(e);
         }
     }
@@ -414,28 +414,30 @@ public class Analysis extends GenericWebService {
     public void deleteJob(int jobId) throws WebServiceException {
         try {
             terminateJob(jobId);
-            File jobDir = new File(org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String
-                    .valueOf(jobId)));
+            File jobDir = new File(
+                    org.genepattern.server.genepattern.GenePatternAnalysisTask
+                            .getJobDir(String.valueOf(jobId)));
             File[] files = jobDir.listFiles();
             if (files != null) {
                 for (int i = 0; i < files.length; i++) {
                     files[i].delete();
-                    org.genepattern.server.indexer.Indexer.deleteJobFile(jobId, files[i].getName());
+                    org.genepattern.server.indexer.Indexer.deleteJobFile(jobId,
+                            files[i].getName());
                 }
             }
             jobDir.delete();
-            
+
             AnalysisJobDAO aHome = new AnalysisJobDAO();
-            org.genepattern.server.domain.AnalysisJob aJob = aHome.findById(jobId);
+            org.genepattern.server.domain.AnalysisJob aJob = aHome
+                    .findById(jobId);
             aJob.setDeleted(true);
-            
+
             AnalysisDAO ds = new AnalysisDAO();
             JobInfo[] children = ds.getChildren(jobId);
             for (int i = 0; i < children.length; i++) {
                 deleteJob(children[i].getJobNumber());
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new WebServiceException(e);
         }
     }
@@ -447,7 +449,8 @@ public class Analysis extends GenericWebService {
         }
         List newParams = new ArrayList();
         for (int i = 0; i < params.length; i++) {
-            if (!params[i].isOutputFile() || !params[i].getValue().equals(value)) {
+            if (!params[i].isOutputFile()
+                    || !params[i].getValue().equals(value)) {
                 newParams.add(params[i]);
             }
         }
@@ -458,8 +461,7 @@ public class Analysis extends GenericWebService {
         try {
             AnalysisDAO ds = new AnalysisDAO();
             return ds.getJobInfo(jobId);
-        }
-        catch (org.genepattern.webservice.OmnigeneException oe) {
+        } catch (org.genepattern.webservice.OmnigeneException oe) {
             throw new WebServiceException(oe);
         }
 
@@ -479,7 +481,8 @@ public class Analysis extends GenericWebService {
      *            the value of the parameter info object for the output file to
      *            delete
      */
-    public void deleteJobResultFile(int jobId, String value) throws WebServiceException {
+    public void deleteJobResultFile(int jobId, String value)
+            throws WebServiceException {
         try {
             AnalysisDAO ds = new AnalysisDAO();
             JobInfo jobInfo = ds.getJobInfo(jobId);
@@ -491,7 +494,8 @@ public class Analysis extends GenericWebService {
             jobInfo.setParameterInfoArray(removeOutputFile(jobInfo, value));
 
             if (jobInfo.getParameterInfoArray().length == beforeDeletionLength) {
-                throw new WebServiceException(new java.io.FileNotFoundException());
+                throw new WebServiceException(
+                        new java.io.FileNotFoundException());
             }
 
             int fileCreationJobNumber = jobInfo.getJobNumber();
@@ -501,42 +505,46 @@ public class Analysis extends GenericWebService {
             int index2 = fileName.lastIndexOf('\\');
             int index = (index1 > index2 ? index1 : index2);
             if (index != -1) {
-                fileCreationJobNumber = Integer.parseInt(fileName.substring(0, index));
+                fileCreationJobNumber = Integer.parseInt(fileName.substring(0,
+                        index));
                 fileName = fileName.substring(index + 1, fileName.length());
 
             }
-            String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String
-                    .valueOf(fileCreationJobNumber));
+            String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask
+                    .getJobDir(String.valueOf(fileCreationJobNumber));
             File file = new File(jobDir, fileName);
             if (file.exists()) {
                 file.delete();
             }
 
-            ds.updateJob(jobInfo.getJobNumber(), jobInfo.getParameterInfo(), ((Integer) JobStatus.STATUS_MAP
-                    .get(jobInfo.getStatus())).intValue());
+            ds.updateJob(jobInfo.getJobNumber(), jobInfo.getParameterInfo(),
+                    ((Integer) JobStatus.STATUS_MAP.get(jobInfo.getStatus()))
+                            .intValue());
 
             if (fileCreationJobNumber != jobId) { // jobId is a parent job
                 JobInfo childJob = ds.getJobInfo(fileCreationJobNumber);
-                childJob.setParameterInfoArray(removeOutputFile(childJob, value));
-                ds.updateJob(childJob.getJobNumber(), childJob.getParameterInfo(), ((Integer) JobStatus.STATUS_MAP
+                childJob
+                        .setParameterInfoArray(removeOutputFile(childJob, value));
+                ds.updateJob(childJob.getJobNumber(), childJob
+                        .getParameterInfo(), ((Integer) JobStatus.STATUS_MAP
                         .get(childJob.getStatus())).intValue());
-            }
-            else {
+            } else {
                 JobInfo parent = ds.getParent(jobId);
                 if (parent != null) { // jobId is a child job
-                    parent.setParameterInfoArray(removeOutputFile(parent, value));
+                    parent
+                            .setParameterInfoArray(removeOutputFile(parent,
+                                    value));
                 }
             }
             try {
-                org.genepattern.server.indexer.Indexer.deleteJobFile(fileCreationJobNumber, fileName);
+                org.genepattern.server.indexer.Indexer.deleteJobFile(
+                        fileCreationJobNumber, fileName);
             } catch (Throwable t) {
                 logAndThrow(t);
             }
-        }
-        catch (org.genepattern.server.JobIDNotFoundException jnfe) {
+        } catch (org.genepattern.server.JobIDNotFoundException jnfe) {
             // file and job has already been deleted-ignore
-        }
-        catch (org.genepattern.webservice.OmnigeneException oe) {
+        } catch (org.genepattern.webservice.OmnigeneException oe) {
             throw new WebServiceException(oe);
         }
 
@@ -551,7 +559,8 @@ public class Analysis extends GenericWebService {
      *            the job status. One of "Pending", "Processing", "Finished, or
      *            "Error"
      */
-    public void setJobStatus(int jobId, String status) throws WebServiceException {
+    public void setJobStatus(int jobId, String status)
+            throws WebServiceException {
         try {
             AnalysisDAO ds = new AnalysisDAO();
             JobInfo jobInfo = ds.getJobInfo(jobId);
@@ -560,8 +569,7 @@ public class Analysis extends GenericWebService {
                 throw new WebServiceException("Unknown status: " + status);
             }
             ds.updateJobStatus(jobId, intStatus.intValue());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new WebServiceException(e);
         }
     }
@@ -584,13 +592,12 @@ public class Analysis extends GenericWebService {
      * 
      * @return the jobs
      */
-    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs)
-            throws WebServiceException {
+    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries,
+            boolean allJobs) throws WebServiceException {
         try {
             AnalysisDAO ds = new AnalysisDAO();
             return ds.getJobs(username, maxJobNumber, maxEntries, allJobs);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new WebServiceException(e);
         }
     }
@@ -606,7 +613,8 @@ public class Analysis extends GenericWebService {
         // get the context then the username from the soap header
         context = MessageContext.getCurrentContext();
         String username = context.getUsername();
-        if (username == null) username = "";
+        if (username == null)
+            username = "";
         return username;
     }
 
@@ -620,10 +628,12 @@ public class Analysis extends GenericWebService {
         return pf.createProvenancePipeline(jobSet, pipelineName);
     }
 
-    public String createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName) {
+    public String createProvenancePipeline(String fileUrlOrJobNumber,
+            String pipelineName) {
         String userID = getUsernameFromContext();
         ProvenanceFinder pf = new ProvenanceFinder(userID);
-        String lsid = pf.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
+        String lsid = pf.createProvenancePipeline(fileUrlOrJobNumber,
+                pipelineName);
         System.out.println("Created: " + lsid);
         return lsid;
     }
@@ -631,7 +641,8 @@ public class Analysis extends GenericWebService {
     public JobInfo[] findJobsThatCreatedFile(String fileURLOrJobNumber) {
         String userID = getUsernameFromContext();
         ProvenanceFinder pf = new ProvenanceFinder(userID);
-        TreeSet jobSet = (TreeSet) pf.findJobsThatCreatedFile(fileURLOrJobNumber);
+        TreeSet jobSet = (TreeSet) pf
+                .findJobsThatCreatedFile(fileURLOrJobNumber);
         JobInfo[] jobs = new JobInfo[jobSet.size()];
         int i = 0;
         for (Iterator iter = jobSet.iterator(); iter.hasNext(); i++) {

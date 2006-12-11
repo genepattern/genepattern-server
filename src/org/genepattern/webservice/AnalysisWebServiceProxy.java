@@ -34,16 +34,16 @@ public class AnalysisWebServiceProxy {
 
 	AnalysisSoapBindingStub stub;
 
-	public AnalysisWebServiceProxy(String url, String userName)
+	public AnalysisWebServiceProxy(String url, String userName, String password)
 			throws WebServiceException {
-		this(url, userName, true);
+		this(url, userName, password, true);
 	}
 
 	public void setTimeout(int timeout) {
 		stub.setTimeout(timeout);
 	}
 	
-	public AnalysisWebServiceProxy(String url, String userName,
+	public AnalysisWebServiceProxy(String url, String userName, String password,
 			boolean maintainSession) throws WebServiceException {
      try {
          this.endpoint = url;
@@ -55,6 +55,7 @@ public class AnalysisWebServiceProxy {
          this.service = new Service(new BasicClientConfig());
          stub = new AnalysisSoapBindingStub(new URL(endpoint), service);
          stub.setUsername(userName);
+         stub.setPassword(password);
          stub.setMaintainSession(maintainSession);
       } catch(org.apache.axis.AxisFault af) {
          throw new WebServiceException(af);  

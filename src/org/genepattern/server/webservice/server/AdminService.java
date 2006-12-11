@@ -278,6 +278,8 @@ public class AdminService implements IAdminService {
 					.getProperty("GenePatternVersion"));
 			serviceInfoMap.put("lsid.authority", props
 					.getProperty("lsid.authority"));
+                        serviceInfoMap.put("require.password", props
+                                .getProperty("require.password"));
 		}
 	}
 

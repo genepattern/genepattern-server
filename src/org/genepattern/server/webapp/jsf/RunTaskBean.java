@@ -283,8 +283,11 @@ public class RunTaskBean {
                             .getParameterInfoArray();
                     if (reloadParams != null) {
                         for (int i = 0; i < reloadParams.length; i++) {
-                            reloadValues.put(reloadParams[i].getName(),
-                                    reloadParams[i].getValue());
+                            String value = reloadParams[i].getValue();
+                            // if(reloadParams[i].isInputFile()) {
+                            // value = reloadParams[i].getAttributes().get();
+                            // }
+                            reloadValues.put(reloadParams[i].getName(), value);
                         }
                     }
                 }
@@ -344,7 +347,8 @@ public class RunTaskBean {
 
     }
 
-    public void changeVersion() {
+    public void changeVersion(ActionEvent event) {
+        System.out.println("changeVersion");
         ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper
                 .getManagedBean("#{moduleChooserBean}");
         assert chooser != null;
@@ -352,8 +356,6 @@ public class RunTaskBean {
                 .getParameter("version"));
 
         try {
-            System.out.println("Set selected module to "
-                    + new LSID(lsid).toStringNoVersion() + ":" + version);
             chooser.setSelectedModule(new LSID(lsid).toStringNoVersion() + ":"
                     + version);
             setTask(chooser.getSelectedModule());

@@ -212,7 +212,8 @@ public class SuitesPreferences {
 		try {
 			AdminProxy proxy = new AdminProxy(AnalysisServiceManager
 					.getInstance().getServer(), AnalysisServiceManager
-					.getInstance().getUsername());
+					.getInstance().getUsername(), AnalysisServiceManager
+                                        .getInstance().getPassword());
 
 			suites = proxy.getLatestSuites();
 			JLabel showSuiteLabel = null;

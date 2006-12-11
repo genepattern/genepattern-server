@@ -92,7 +92,8 @@ public class SuiteEditor extends JPanel {
                                     AnalysisServiceManager.getInstance()
                                             .getServer(),
                                     AnalysisServiceManager.getInstance()
-                                            .getUsername());
+                                            .getUsername(), AnalysisServiceManager.getInstance()
+                                            .getPassword());
                             proxy.getSuite(lsid);
 
                         } catch (WebServiceException e) {
@@ -303,7 +304,7 @@ public class SuiteEditor extends JPanel {
                                     return;
                                 }
                                 new TaskIntegratorProxy(asm.getServer(), asm
-                                        .getUsername()).exportSuiteToZip(
+                                        .getUsername(), asm.getPassword()).exportSuiteToZip(
                                         suiteInfo.getLsid(), destination);
 
                             } catch (WebServiceException e1) {
@@ -347,10 +348,6 @@ public class SuiteEditor extends JPanel {
                         Object obj = docComboBox.getItemAt(i);
                         if (obj instanceof String) {
                             String s = (String) obj;
-                            String url = AnalysisServiceManager.getInstance()
-                                    .getServer()
-                                    + "/gp/getFile.jsp?task="
-                                    + suiteInfo.getLSID() + "&file=" + s;
                             serverDocFiles.add(s);
                         } else {
                             LocalFileWrapper fw = (LocalFileWrapper) obj;
@@ -385,7 +382,7 @@ public class SuiteEditor extends JPanel {
                             try {
 
                                 String lsid = new TaskIntegratorProxy(asm
-                                        .getServer(), asm.getUsername())
+                                        .getServer(), asm.getUsername(), asm.getPassword())
                                         .modifySuite(suiteInfo,
                                                 (File[]) localDocFiles
                                                         .toArray(new File[0]),
@@ -407,7 +404,7 @@ public class SuiteEditor extends JPanel {
                                                 SuiteEditor.this,
                                                 ChangeViewMessageRequest.SHOW_EDIT_SUITE_REQUEST,
                                                 new AdminProxy(asm.getServer(),
-                                                        asm.getUsername())
+                                                        asm.getUsername(), asm.getPassword())
                                                         .getSuite(lsid)));
                             } catch (WebServiceException e1) {
                                 e1.printStackTrace();

@@ -195,9 +195,9 @@ public class MissingTasksDisplay {
                                     AnalysisServiceManager.getInstance()
                                             .getServer(),
                                     AnalysisServiceManager.getInstance()
-                                            .getUsername());
+                                            .getUsername(),  AnalysisServiceManager.getInstance().getPassword());
                             dialog.setSize(300, 200);
-                            dialog.show();
+                            dialog.setVisible(true);
                             for (int i = 0; i < missingTasks.size(); i++) {
                                 JobSubmission js = (JobSubmission) missingTasks
                                         .get(i);

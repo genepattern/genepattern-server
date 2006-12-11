@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -430,10 +429,11 @@ public class GPGE {
         }
     }
 
-    public void changeServer(final String server, final String username) {
+    public void changeServer(final String server, final String username,
+            final String password) {
         analysisServiceManager = AnalysisServiceManager.getInstance();
 
-        analysisServiceManager.changeServer(server, username);
+        analysisServiceManager.changeServer(server, username, password);
         MessageManager.notifyListeners(new ChangeViewMessageRequest(this,
                 ChangeViewMessageRequest.SHOW_GETTING_STARTED_REQUEST));
 
@@ -459,7 +459,8 @@ public class GPGE {
                 try {
                     Map serviceInfo = new org.genepattern.webservice.AdminProxy(
                             analysisServiceManager.getServer(),
-                            analysisServiceManager.getUsername(), false)
+                            analysisServiceManager.getUsername(),
+                            analysisServiceManager.getPassword(), false)
                             .getServiceInfo();
                     String lsidAuthority = (String) serviceInfo
                             .get("lsid.authority");
@@ -765,7 +766,8 @@ public class GPGE {
         if (RUNNING_ON_MAC) {
             frame.setSize(0, 0);
             frame.setLocation(screenSize.width / 2, screenSize.height / 2);
-            frame.show(); // on Mac OSX the dialog won't stay on top unless
+            frame.setVisible(true); // on Mac OSX the dialog won't stay on top
+            // unless
             // the parent frame is visible when the dialog is
             // created
         }
@@ -895,7 +897,22 @@ public class GPGE {
 
         });
 
-        changeServer(server, username);
+        String password = null;
+
+        try {
+            Map info = new AdminProxy(server, username, null).getServiceInfo();
+            if (info != null) {
+                String requirePassword = (String) info.get("require.password");
+                if ("true".equalsIgnoreCase(requirePassword)) {
+                    password = JOptionPane.showInputDialog(frame,
+                            "Please enter your password");
+                }
+            }
+        } catch (WebServiceException e1) {
+            e1.printStackTrace();
+        }
+        
+        changeServer(server, username, password);
         if (showSplashScreen) {
             splash.dispose();
         }
@@ -1691,7 +1708,8 @@ public class GPGE {
                         try {
                             AnalysisWebServiceProxy p = new AnalysisWebServiceProxy(
                                     analysisServiceManager.getServer(),
-                                    analysisServiceManager.getUsername(), false);
+                                    analysisServiceManager.getUsername(),
+                                    analysisServiceManager.getPassword(), false);
                             p.terminateJob(jobNode.job.getJobInfo()
                                     .getJobNumber());
                         } catch (WebServiceException wse) {
@@ -1862,7 +1880,8 @@ public class GPGE {
                             try {
                                 AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(
                                         analysisServiceManager.getServer(),
-                                        analysisServiceManager.getUsername());
+                                        analysisServiceManager.getUsername(),
+                                        analysisServiceManager.getPassword());
                                 System.out.println("creating pipeline for "
                                         + serverFileNode.getURL());
                                 String lsid = proxy.createProvenancePipeline(
@@ -2455,12 +2474,12 @@ public class GPGE {
             try {
                 final AdminProxy proxy = new AdminProxy(AnalysisServiceManager
                         .getInstance().getServer(), AnalysisServiceManager
-                        .getInstance().getUsername());
+                        .getInstance().getUsername(), AnalysisServiceManager
+                        .getInstance().getPassword());
                 SuiteInfo[] suites = proxy.getLatestSuites();
-                Arrays.sort(suites, new Comparator() {
-                    public int compare(Object o1, Object o2) {
-                        SuiteInfo s1 = (SuiteInfo) o1;
-                        SuiteInfo s2 = (SuiteInfo) o2;
+                Arrays.sort(suites, new Comparator<SuiteInfo>() {
+                    public int compare(SuiteInfo s1, SuiteInfo s2) {
+
                         return s1.getName().compareToIgnoreCase(s2.getName());
                     }
                 });
@@ -2589,7 +2608,10 @@ public class GPGE {
                                                         .getServer(),
                                                 AnalysisServiceManager
                                                         .getInstance()
-                                                        .getUsername())
+                                                        .getUsername(),
+                                                AnalysisServiceManager
+                                                        .getInstance()
+                                                        .getPassword())
                                                 .importZip(file, privacy);
                                     } else {
                                         lsid = new TaskIntegratorProxy(
@@ -2598,7 +2620,10 @@ public class GPGE {
                                                         .getServer(),
                                                 AnalysisServiceManager
                                                         .getInstance()
-                                                        .getUsername())
+                                                        .getUsername(),
+                                                AnalysisServiceManager
+                                                        .getInstance()
+                                                        .getPassword())
                                                 .importZipFromURL(s, privacy);
                                     }
                                     String _message = null;
@@ -2740,11 +2765,13 @@ public class GPGE {
                             frame);
                     dialog.show(analysisServiceManager.getServer(),
                             analysisServiceManager.getUsername(),
+                            analysisServiceManager.getPassword(),
                             new ActionListener() {
                                 public void actionPerformed(ActionEvent e) {
                                     dialog.dispose();
                                     String server = dialog.getServer();
                                     String username = dialog.getUsername();
+                                    String password = dialog.getPassword();
                                     try {
                                         int port = Integer.parseInt(dialog
                                                 .getPort());
@@ -2760,7 +2787,8 @@ public class GPGE {
                                                 || !username
                                                         .equals(analysisServiceManager
                                                                 .getUsername())) {
-                                            changeServer(server, username);
+                                            changeServer(server, username,
+                                                    password);
                                         }
                                     } catch (NumberFormatException nfe) {
                                         GenePattern

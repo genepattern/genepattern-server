@@ -25,13 +25,15 @@ import java.util.Map;
 
 /**
  * This class is used to communicate with a GenePattern server.
- *
+ * 
  * @author Joshua Gould
  */
 public class GPServer {
     protected final String server; // e.g. http://localhost:8080
 
     protected final String userName;
+
+    protected String password;
 
     /**
      * LRU cache of tasks
@@ -47,21 +49,42 @@ public class GPServer {
 
     /**
      * Creates a new GPServer instance.
-     *
-     * @param server   The server, for example http://127.0.0.1:8080
-     * @param userName The user name.
-     * @throws WebServiceException If an error occurs while connecting to the server
+     * 
+     * @param server
+     *            The server, for example http://127.0.0.1:8080
+     * @param userName
+     *            The user name.
+     * @throws WebServiceException
+     *             If an error occurs while connecting to the server
      */
-    public GPServer(String server, String userName) throws WebServiceException {
+    public GPServer(String server, String username) throws WebServiceException {
+        this(server, username, null);
+    }
+
+    /**
+     * Creates a new GPServer instance.
+     * 
+     * @param server
+     *            The server, for example http://127.0.0.1:8080
+     * @param username
+     *            The user name.
+     * @param password
+     *            The password.
+     * @throws WebServiceException
+     *             If an error occurs while connecting to the server
+     */
+    public GPServer(String server, String username, String password)
+            throws WebServiceException {
         this.server = server;
-        this.userName = userName;
+        this.userName = username;
+        this.password = password;
         this.cachedTasks = new LinkedHashMap(MAX_ENTRIES + 1, .75F, true) {
             public boolean removeEldestEntry(Map.Entry eldest) {
                 return size() > MAX_ENTRIES;
             }
         };
         try {
-            adminProxy = new AdminProxy(server, userName);
+            adminProxy = new AdminProxy(server, userName, password);
         } catch (Exception e) {
             throw new WebServiceException(e);
         }
@@ -69,7 +92,7 @@ public class GPServer {
 
     /**
      * Gets the server
-     *
+     * 
      * @return the server
      */
     public String getServer() {
@@ -78,7 +101,7 @@ public class GPServer {
 
     /**
      * Gets the username
-     *
+     * 
      * @return the username
      */
     public String getUsername() {
@@ -103,15 +126,19 @@ public class GPServer {
 
     /**
      * submit a job based on a service and its parameters
-     *
-     * @param parmInfos Description of the Parameter
-     * @param handler   Description of the Parameter
-     * @param tinfo     Description of the Parameter
+     * 
+     * @param parmInfos
+     *            Description of the Parameter
+     * @param handler
+     *            Description of the Parameter
+     * @param tinfo
+     *            Description of the Parameter
      * @return Description of the Return Value
      * @throws org.genepattern.webservice.WebServiceException
-     *          Description of the Exception
+     *             Description of the Exception
      */
-    private AnalysisJob submitJob(AnalysisWebServiceProxy handler, TaskInfo tinfo, ParameterInfo[] parmInfos)
+    private AnalysisJob submitJob(AnalysisWebServiceProxy handler,
+            TaskInfo tinfo, ParameterInfo[] parmInfos)
             throws org.genepattern.webservice.WebServiceException {
         final JobInfo job = handler.submitJob(tinfo.getID(), parmInfos);
         final AnalysisJob aJob = new AnalysisJob(server, job);
@@ -122,21 +149,25 @@ public class GPServer {
      * Wait for a job to end or error. This loop will wait for a max of 36
      * seconds for 10 tries doubling the wait time each time after 6 seconds to
      * a max of a 16 seconds wait
-     *
-     * @param job     Description of the Parameter
-     * @param handler Description of the Parameter
+     * 
+     * @param job
+     *            Description of the Parameter
+     * @param handler
+     *            Description of the Parameter
      * @throws org.genepattern.webservice.WebServiceException
-     *          Description of the Exception
+     *             Description of the Exception
      */
-    private static void waitForErrorOrCompletion(AnalysisWebServiceProxy handler, AnalysisJob job)
+    private static void waitForErrorOrCompletion(
+            AnalysisWebServiceProxy handler, AnalysisJob job)
             throws org.genepattern.webservice.WebServiceException {
         int maxtries = 20;
         int sleep = 1000;
         waitForErrorOrCompletion(handler, job, maxtries, sleep);
     }
 
-    private static void waitForErrorOrCompletion(AnalysisWebServiceProxy handler, AnalysisJob job, int maxTries,
-                                                 int initialSleep)
+    private static void waitForErrorOrCompletion(
+            AnalysisWebServiceProxy handler, AnalysisJob job, int maxTries,
+            int initialSleep)
             throws org.genepattern.webservice.WebServiceException {
         String status = "";
         JobInfo info = null;
@@ -158,21 +189,23 @@ public class GPServer {
 
     /**
      * Returns the url to retrieve the given file as part of the given task.
-     *
-     * @param taskNameOrLSID The task name or LSID of the task that contains the file. When
-     *                       an LSID is provided that does not include a version, the
-     *                       latest available version of the task identified by the LSID
-     *                       will be used. If a task name is supplied, the latest version
-     *                       of the task with the nearest authority is selected. The
-     *                       nearest authority is the first match in the sequence: local
-     *                       authority, Broad authority, other authority.
-     * @param fileName       The file name.
+     * 
+     * @param taskNameOrLSID
+     *            The task name or LSID of the task that contains the file. When
+     *            an LSID is provided that does not include a version, the
+     *            latest available version of the task identified by the LSID
+     *            will be used. If a task name is supplied, the latest version
+     *            of the task with the nearest authority is selected. The
+     *            nearest authority is the first match in the sequence: local
+     *            authority, Broad authority, other authority.
+     * @param fileName
+     *            The file name.
      * @return The url.
      */
     public URL getTaskFileURL(String taskNameOrLSID, String fileName) {
         try {
-            return new URL(server + "/gp/getFile.jsp?task=" + taskNameOrLSID + "&file=" +
-                    URLEncoder.encode(fileName, "UTF-8"));
+            return new URL(server + "/gp/getFile.jsp?task=" + taskNameOrLSID
+                    + "&file=" + URLEncoder.encode(fileName, "UTF-8"));
         } catch (java.net.MalformedURLException x) {
             throw new Error(x);
         } catch (UnsupportedEncodingException x) {
@@ -182,21 +215,26 @@ public class GPServer {
 
     /**
      * Checks if the given job is complete.
-     *
-     * @param jobNumber the job number
+     * 
+     * @param jobNumber
+     *            the job number
      * @return <tt>true</tt> if the job with the given job number is complete,
      *         <tt>false</tt> otherwise
-     * @throws WebServiceException If an error occurs
+     * @throws WebServiceException
+     *             If an error occurs
      */
     public boolean isComplete(int jobNumber) throws WebServiceException {
         try {
-            AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, userName, false);
+            AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(
+                    server, userName, password, false);
             analysisProxy.setTimeout(Integer.MAX_VALUE);
             JobInfo ji = analysisProxy.checkStatus(jobNumber);
             if (ji == null) {
-                throw new WebServiceException("The job number " + jobNumber + " was not found.");
+                throw new WebServiceException("The job number " + jobNumber
+                        + " was not found.");
             }
-            return ji.getStatus().equalsIgnoreCase("finished") || ji.getStatus().equalsIgnoreCase("error");
+            return ji.getStatus().equalsIgnoreCase("finished")
+                    || ji.getStatus().equalsIgnoreCase("error");
         } catch (Exception x) {
             throw new WebServiceException(x);
         }
@@ -205,16 +243,19 @@ public class GPServer {
     /**
      * Creates a new <tt>JobResult</tt> instance for the given job number.
      * Invoke this method after the job is complete.
-     *
-     * @param jobNumber the job number
+     * 
+     * @param jobNumber
+     *            the job number
      * @return <tt>JobResult</tt> instance or <tt>null</tt> if the job is
      *         not complete
-     * @throws WebServiceException If an error occurs
+     * @throws WebServiceException
+     *             If an error occurs
      * @see #isComplete
      */
     public JobResult createJobResult(int jobNumber) throws WebServiceException {
         try {
-            AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, userName, false);
+            AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(
+                    server, userName, password, false);
             analysisProxy.setTimeout(Integer.MAX_VALUE);
             JobInfo info = analysisProxy.checkStatus(jobNumber);
             if (info == null) {
@@ -255,9 +296,10 @@ public class GPServer {
             }
             try {
                 return new JobResult(new URL(server), info.getJobNumber(),
-                        (String[]) resultFiles.toArray(new String[0]), stdout, stderr, (Parameter[]) jobParameters
-                        .toArray(new Parameter[0]), (String) taskInfo
-                        .getTaskInfoAttributes().get(GPConstants.LSID));
+                        (String[]) resultFiles.toArray(new String[0]), stdout,
+                        stderr, (Parameter[]) jobParameters
+                                .toArray(new Parameter[0]), (String) taskInfo
+                                .getTaskInfoAttributes().get(GPConstants.LSID));
             } catch (java.net.MalformedURLException mfe) {
                 throw new Error(mfe);
             }
@@ -269,32 +311,39 @@ public class GPServer {
     /**
      * Submits the given task with the given parameters and does not wait for
      * the job to complete.
-     *
-     * @param taskNameOrLSID The task name or LSID. When an LSID is provided that does not
-     *                       include a version, the latest available version of the task
-     *                       identified by the LSID will be used. If a task name is
-     *                       supplied, the latest version of the task with the nearest
-     *                       authority is selected. The nearest authority is the first
-     *                       match in the sequence: local authority, Broad authority, other
-     *                       authority.
-     * @param parameters     The parameters to run the task with.
+     * 
+     * @param taskNameOrLSID
+     *            The task name or LSID. When an LSID is provided that does not
+     *            include a version, the latest available version of the task
+     *            identified by the LSID will be used. If a task name is
+     *            supplied, the latest version of the task with the nearest
+     *            authority is selected. The nearest authority is the first
+     *            match in the sequence: local authority, Broad authority, other
+     *            authority.
+     * @param parameters
+     *            The parameters to run the task with.
      * @return The job number.
-     * @throws WebServiceException If an error occurs during the job submission process.
+     * @throws WebServiceException
+     *             If an error occurs during the job submission process.
      * @see #isComplete
      * @see #createJobResult
      */
-    public int runAnalysisNoWait(String taskNameOrLSID, Parameter[] parameters) throws WebServiceException {
+    public int runAnalysisNoWait(String taskNameOrLSID, Parameter[] parameters)
+            throws WebServiceException {
         try {
             TaskInfo taskInfo = getTask(taskNameOrLSID);
-            ParameterInfo[] actualParameters = Util.createParameterInfoArray(taskInfo, parameters);
+            ParameterInfo[] actualParameters = Util.createParameterInfoArray(
+                    taskInfo, parameters);
             AnalysisWebServiceProxy analysisProxy = null;
             try {
-                analysisProxy = new AnalysisWebServiceProxy(server, userName);
+                analysisProxy = new AnalysisWebServiceProxy(server, userName,
+                        password);
                 analysisProxy.setTimeout(Integer.MAX_VALUE);
             } catch (Exception x) {
                 throw new WebServiceException(x);
             }
-            AnalysisJob job = submitJob(analysisProxy, taskInfo, actualParameters);
+            AnalysisJob job = submitJob(analysisProxy, taskInfo,
+                    actualParameters);
             return job.getJobInfo().getJobNumber();
         } catch (org.genepattern.webservice.WebServiceException wse) {
             throw new WebServiceException(wse.getMessage(), wse.getRootCause());
@@ -304,31 +353,38 @@ public class GPServer {
     /**
      * Submits the given task with the given parameters and waits for the job to
      * complete.
-     *
-     * @param taskNameOrLSID The task name or LSID. When an LSID is provided that does not
-     *                       include a version, the latest available version of the task
-     *                       identified by the LSID will be used. If a task name is
-     *                       supplied, the latest version of the task with the nearest
-     *                       authority is selected. The nearest authority is the first
-     *                       match in the sequence: local authority, Broad authority, other
-     *                       authority.
-     * @param parameters     The parameters to run the task with.
+     * 
+     * @param taskNameOrLSID
+     *            The task name or LSID. When an LSID is provided that does not
+     *            include a version, the latest available version of the task
+     *            identified by the LSID will be used. If a task name is
+     *            supplied, the latest version of the task with the nearest
+     *            authority is selected. The nearest authority is the first
+     *            match in the sequence: local authority, Broad authority, other
+     *            authority.
+     * @param parameters
+     *            The parameters to run the task with.
      * @return The job result.
-     * @throws WebServiceException If an error occurs during the job submission or job result
-     *                             retrieval process.
+     * @throws WebServiceException
+     *             If an error occurs during the job submission or job result
+     *             retrieval process.
      */
-    public JobResult runAnalysis(String taskNameOrLSID, Parameter[] parameters) throws WebServiceException {
+    public JobResult runAnalysis(String taskNameOrLSID, Parameter[] parameters)
+            throws WebServiceException {
         try {
             TaskInfo taskInfo = getTask(taskNameOrLSID);
-            ParameterInfo[] actualParameters = Util.createParameterInfoArray(taskInfo, parameters);
+            ParameterInfo[] actualParameters = Util.createParameterInfoArray(
+                    taskInfo, parameters);
             AnalysisWebServiceProxy analysisProxy = null;
             try {
-                analysisProxy = new AnalysisWebServiceProxy(server, userName);
+                analysisProxy = new AnalysisWebServiceProxy(server, userName,
+                        password);
                 analysisProxy.setTimeout(Integer.MAX_VALUE);
             } catch (Exception x) {
                 throw new WebServiceException(x);
             }
-            AnalysisJob job = submitJob(analysisProxy, taskInfo, actualParameters);
+            AnalysisJob job = submitJob(analysisProxy, taskInfo,
+                    actualParameters);
             waitForErrorOrCompletion(analysisProxy, job);
             ArrayList resultFiles = new ArrayList();
             ParameterInfo[] jobParameterInfo = job.getJobInfo()
@@ -361,8 +417,10 @@ public class GPServer {
             try {
                 return new JobResult(new URL(job.getServer()), job.getJobInfo()
                         .getJobNumber(), (String[]) resultFiles
-                        .toArray(new String[0]), stdout, stderr, (Parameter[]) jobParameters.toArray(new Parameter[0]),
-                        (String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
+                        .toArray(new String[0]), stdout, stderr,
+                        (Parameter[]) jobParameters.toArray(new Parameter[0]),
+                        (String) taskInfo.getTaskInfoAttributes().get(
+                                GPConstants.LSID));
             } catch (java.net.MalformedURLException mfe) {
                 throw new Error(mfe);
             }
@@ -374,28 +432,35 @@ public class GPServer {
     /**
      * Downloads the support files for the given task from the server and
      * executes the given task locally.
-     *
-     * @param taskNameOrLSID The task name or LSID. When an LSID is provided that does not
-     *                       include a version, the latest available version of the task
-     *                       identified by the LSID will be used. If a task name is
-     *                       supplied, the latest version of the task with the nearest
-     *                       authority is selected. The nearest authority is the first
-     *                       match in the sequence: local authority, Broad authority, other
-     *                       authority.
-     * @param parameters     The parameters to run the task with.
-     * @throws WebServiceException If an error occurs while launching the visualizer.
+     * 
+     * @param taskNameOrLSID
+     *            The task name or LSID. When an LSID is provided that does not
+     *            include a version, the latest available version of the task
+     *            identified by the LSID will be used. If a task name is
+     *            supplied, the latest version of the task with the nearest
+     *            authority is selected. The nearest authority is the first
+     *            match in the sequence: local authority, Broad authority, other
+     *            authority.
+     * @param parameters
+     *            The parameters to run the task with.
+     * @throws WebServiceException
+     *             If an error occurs while launching the visualizer.
      */
-    public void runVisualizer(String taskNameOrLSID, Parameter[] parameters) throws WebServiceException {
+    public void runVisualizer(String taskNameOrLSID, Parameter[] parameters)
+            throws WebServiceException {
         TaskInfo taskInfo = getTask(taskNameOrLSID);
-        ParameterInfo[] actualParameters = Util.createParameterInfoArray(taskInfo, parameters);
+        ParameterInfo[] actualParameters = Util.createParameterInfoArray(
+                taskInfo, parameters);
         Map paramName2ValueMap = new HashMap();
         if (actualParameters != null) {
             for (int i = 0; i < actualParameters.length; i++) {
-                paramName2ValueMap.put(actualParameters[i].getName(), actualParameters[i].getValue());
+                paramName2ValueMap.put(actualParameters[i].getName(),
+                        actualParameters[i].getValue());
             }
         }
         try {
-            final TaskExecutor executor = new LocalTaskExecutor(taskInfo, paramName2ValueMap, userName, server);
+            final TaskExecutor executor = new LocalTaskExecutor(taskInfo,
+                    paramName2ValueMap, userName, password, server);
             new Thread() {
                 public void run() {
                     try {
@@ -414,10 +479,13 @@ public class GPServer {
      * make the sleep time go up as it takes longer to exec. eg for 100 tries of
      * 1000ms (1 sec) first 20 are 1 sec each next 20 are 2 sec each next 20 are
      * 4 sec each next 20 are 8 sec each any beyond this are 16 sec each
-     *
-     * @param init     Description of the Parameter
-     * @param maxTries Description of the Parameter
-     * @param count    Description of the Parameter
+     * 
+     * @param init
+     *            Description of the Parameter
+     * @param maxTries
+     *            Description of the Parameter
+     * @param count
+     *            Description of the Parameter
      * @return Description of the Return Value
      */
     private static int incrementSleep(int init, int maxTries, int count) {

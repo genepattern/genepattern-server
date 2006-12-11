@@ -553,7 +553,8 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
             String lsid = new TaskIntegratorProxy(AnalysisServiceManager
                     .getInstance().getServer(), AnalysisServiceManager
-                    .getInstance().getUsername(), false).modifyTask(
+                    .getInstance().getUsername(), AnalysisServiceManager
+                    .getInstance().getPassword(), false).modifyTask(
                     GPConstants.ACCESS_PUBLIC, ti.getName(), ti
                             .getDescription(), ti.getParameterInfoArray(),
                     (HashMap) ti.getTaskInfoAttributes(), (File[]) taskFiles

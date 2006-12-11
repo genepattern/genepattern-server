@@ -45,14 +45,17 @@ public class RunTask {
 	ParameterInfo[] actualParams;
 
 	String username;
+        
+        String password;
 
 	public RunTask(AnalysisService analysisService,
-			ParameterInfo[] actualParams, String username) {
+			ParameterInfo[] actualParams, String username, String password) {
 		this.analysisService = analysisService;
 		this.taskInfo = analysisService.getTaskInfo();
 		this.actualParams = actualParams;
 		this.formalParams = taskInfo.getParameterInfoArray();
 		this.username = username;
+                this.password = password;
 	}
 
 	public void exec() {
@@ -155,11 +158,11 @@ public class RunTask {
                return;
             }
             try {
-               AnalysisWebServiceProxy serviceProxy = new AnalysisWebServiceProxy(server, username);
+               AnalysisWebServiceProxy serviceProxy = new AnalysisWebServiceProxy(server, username, password);
                
                if (TaskLauncher.isVisualizer(analysisService)) {
                   TaskLauncher.submitVisualizer(analysisService,
-                        copyParameterInfo(actualParams), username, serviceProxy);
+                        copyParameterInfo(actualParams), username, password, serviceProxy);
                } else {
                   TaskLauncher.submitAndWaitUntilCompletionInNewThread(
                         copyParameterInfo(actualParams), serviceProxy, analysisService);
@@ -174,10 +177,10 @@ public class RunTask {
 			}
 		} else {
          try {
-            AnalysisWebServiceProxy serviceProxy = new AnalysisWebServiceProxy(server, username);
+            AnalysisWebServiceProxy serviceProxy = new AnalysisWebServiceProxy(server, username, password);
             if (TaskLauncher.isVisualizer(analysisService)) {
                TaskLauncher.submitVisualizer(analysisService,
-                     actualParams, username, serviceProxy);
+                     actualParams, username, password, serviceProxy);
             } else {
                TaskLauncher.submitAndWaitUntilCompletionInNewThread(
                      actualParams, serviceProxy, analysisService);
