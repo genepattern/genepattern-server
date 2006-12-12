@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.database.BaseDAO;
 import org.genepattern.server.database.HibernateUtil;
 import org.hibernate.LockMode;
+import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Example;
 
@@ -32,17 +33,31 @@ public class SuiteDAO extends BaseDAO {
             throw re;
         }
     }
-    
+
     public List<Suite> findAll() {
         try {
-            return HibernateUtil.getSession().createQuery(
-                    "from org.genepattern.server.domain.Suite order by name").list();
+            return HibernateUtil.getSession().createQuery("from org.genepattern.server.domain.Suite order by name")
+                    .list();
         }
         catch (RuntimeException re) {
             log.error("find by example failed", re);
             throw re;
         }
-        
+
+    }
+
+    public List<Suite> findByOwner(String ownerName) {
+        try {
+            Query query = HibernateUtil.getSession().createQuery(
+                    "from org.genepattern.server.domain.Suite where owner = :ownerName order by name");
+            query.setString("ownerName", ownerName);
+            return query.list();
+        }
+        catch (RuntimeException re) {
+            log.error("find by example failed", re);
+            throw re;
+        }
+
     }
 
 }
