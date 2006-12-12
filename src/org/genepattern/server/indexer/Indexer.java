@@ -465,10 +465,14 @@ public class Indexer {
 
     public static int deleteJobFile(String jobID, String filename)
             throws IOException {
+        if (!IndexerDaemon.isIndexingEnabled()) {
+            return 0;
+        }
         synchronized (getConcurrencyLock()) {
             IndexReader reader = getReader();
             int numDeleted = 0;
             try {
+               
                 numDeleted = reader.delete(new Term(FILEID, jobID + "/"
                         + filename));
             } finally {
@@ -479,6 +483,9 @@ public class Indexer {
     }
 
     public static int deleteTask(int taskID) throws IOException {
+        if (!IndexerDaemon.isIndexingEnabled()) {
+            return 0;
+        }
         synchronized (getConcurrencyLock()) {
             int numDeleted = 0;
             IndexReader reader = getReader();
