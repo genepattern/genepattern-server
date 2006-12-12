@@ -67,7 +67,7 @@ public class ServerSettingsBean {
     				"hibernate.connection.password", "hibernate.dialect", "hibernate.default_schema", "hibernate.connection.SetBigStringTryClob"});
     		modes.put("LSID", new String[]{"lsid.authority", "lsid.show"});
     		modes.put("Programming Language", new String[]{"perl", "java", "R", "run_r_path"});
-    		modes.put("Documentation Attibutes", new String[]{"files.doc", "files.binary", "files.code"});
+    		//modes.put("Documentation Attibutes", new String[]{"files.doc", "files.binary", "files.code"});
     		modes.put("Advanced", new String[]{"DefaultPatchRepositoryURL", "DefaultPatchURL", "patchQualifiers", "patches", "ant", "resources", "index",
     				"tasklib", "jobs", "tomcatCommonLib", "webappDir", "log4j.appender.R.File", "pipeline.cp", "pipeline.main", "pipeline.vmargs", 
     				"pipeline.decorator", "installedPatchLSIDs", "JavaGEInstallerURL", "AnalysisTaskQueuePollingFrequency", "num.threads", 
@@ -179,9 +179,7 @@ public class ServerSettingsBean {
      * @param mode
      */
     public void setSpecifiedClientMode(String mode) {
-        //if (clientModes[2].equals(currentClientMode)) {
-            specifiedClientMode=mode;
-        //}
+        specifiedClientMode=mode;
     }
     
     /**
@@ -198,6 +196,9 @@ public class ServerSettingsBean {
     	setSelectItems(clientModes, "gp.allowed.clients");
     }
     
+    /**
+     * @param event
+     */
     public void addSpecifiedClientMode(ActionEvent event) {
     	if (clientModes[2].equals(currentClientMode)) {
 	    	String allClientModes = (String) settings.get("gp.allowed.clients");
@@ -217,6 +218,9 @@ public class ServerSettingsBean {
         saveSettings(event);
     }
     
+    /**
+     * @param event
+     */
     public void removeSpecifiedClientMode(ActionEvent event) {
     	String allClientModes = (String) settings.get("gp.allowed.clients");
         String[] result = allClientModes.split(",");
@@ -462,10 +466,6 @@ public class ServerSettingsBean {
     	settings.put("ModuleRepositoryURL", defaultModuleRepositoryURL);
     }
     
-    public void test(ActionEvent event) {
-    	System.out.println("test");
-    }
-
     /**
      * @return
      */
@@ -511,36 +511,32 @@ public class ServerSettingsBean {
         proxyPassword = password;
     }
 
+
     /**
      * @return
      */
-    /*public String removeProxySettings() {
-        settings.remove("http.proxyHost");
-        settings.remove("http.proxyPort");
-        settings.remove("http.proxyUser");
-
-        settings.remove("ftp.proxyHost");
-        settings.remove("ftp.proxyPort");
-        settings.remove("ftp.proxyUser");
-        proxyPassword = "";
-
-        return null;
-
-    }*/
-
     public String getDb() {
         String db = (String) settings.get("database.vendor");
         return db;
     }
 
+    /**
+     * @param dbName
+     */
     public void setDb(String dbName) {
         settings.put("database.vendor", dbName);
     }
 
+    /**
+     * @param event
+     */
     public void changeDb(ValueChangeEvent event) {
         String db = (String) settings.get("database.vendor");
     }
     
+    /**
+     * @return
+     */
     public String getClobRadio() {
     	String value=(String)settings.get("hibernate.connection.SetBigStringTryClob");
     	return (value==null)?"":value;
@@ -555,6 +551,9 @@ public class ServerSettingsBean {
     	}
     }
     
+    /**
+     * @return
+     */
     public String getLsidShowRadio() {
     	String value=(String)settings.get("lsid.show");
     	return (value==null)?"":(value.equals("1")?"true":"false");
@@ -573,6 +572,9 @@ public class ServerSettingsBean {
     	}
     }
     
+    /**
+     * @return
+     */
     public String getShutDownRadio() {
     	String value=(String)settings.get("hibernate.connection.shutdown");
     	return (value==null)?"":value;
@@ -596,36 +598,60 @@ public class ServerSettingsBean {
         return null;
     }
 
+    /**
+     * @return
+     */
     public String getNewCSKey() {
         return newCSKey;
     }
 
+    /**
+     * @return
+     */
     public String getNewCSValue() {
         return newCSValue;
     }
 
+    /**
+     * @param key
+     */
     public void setNewCSKey(String key) {
         newCSKey = key;
     }
 
+    /**
+     * @param value
+     */
     public void setNewCSValue(String value) {
         newCSValue = value;
     }
 
+    /**
+     * @param event
+     */
     public void addNewCustomSetting(ActionEvent event) {
         if (newCSKey != "" && newCSValue != "") {
             customSettings.add(new KeyValuePair(newCSKey, newCSValue));
         }
     }
 
+    /**
+     * @param event
+     */
     public void deleteCustomSetting(ActionEvent event) {
         customSettings.remove(getKey());
     }
 
+    /**
+     * @return
+     */
     public List<KeyValuePair> getCustomSettings() {
         return customSettings;
     }
 
+    /**
+     * @return
+     */
     private String getKey() {
         Map params = UIBeanHelper.getExternalContext().getRequestParameterMap();
         String key = (String) params.get("key");
@@ -643,6 +669,9 @@ public class ServerSettingsBean {
         PropertiesManager.storeChangesToCustomProperties(customSettings);
     }
     
+    /**
+     * @param event
+     */
     public void restore(ActionEvent event) {
 		String[] propertyKeys = modes.get(currentMode);	
 		String subtype = currentMode.equals("Repositories")?(String)event.getComponent().getAttributes().get("subtype"):"";
