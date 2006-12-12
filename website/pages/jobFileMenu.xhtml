@@ -38,7 +38,7 @@
           <t:dataList value="#{param.moduleMenuItems}" var="moduleMenuItem">
             <tr>
               <td>
-                <h:commandLink value="#{moduleMenuItem.label}" actionListener="#{recentJobsBean.loadTask}">
+                <h:commandLink value="#{moduleMenuItem.key}" actionListener="#{recentJobsBean.loadTask}">
                   <f:param value="#{moduleMenuItem.value}" name="module"/>
                 </h:commandLink>
               </td>
