@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" 
+      xmlns:c="http://java.sun.com/jstl/core">
+ 
+ <ui:composition>
+    <script type="text/javascript" language="javascript">
+      <h:outputText>
+	           jobNumbers[jobIndex]='#{jobInfo.jobNumber}';
+	           jobIndex = jobIndex + 1;
+            </h:outputText>
+    </script>
+    <!--  job row -->
+    <tr class="task-titlerow">
+      <td>
+        <a href="link">#{jobInfo.jobNumber}</a>
+        <input type="hidden" id="expansion_state_#{jobInfo.jobNumber}" name="expansion_state_#{jobInfo.jobNumber}" value="#{jobInfo.expanded}"/>
+      </td>
+      <td>
+        <!-- Job select checkbox -->
+        <div align="center" id="cb_job_#{jobInfo.jobNumber}">
+          <c:choose>
+            <c:when test="#{jobInfo.selected}">
+              <input type="checkbox" name="selectedJobs" checked="checked" value="#{jobInfo.jobNumber}" onclick="toggleJobCheckboxes('#{jobInfo.jobNumber}');"/>
+            </c:when>
+            <c:otherwise>
+              <input type="checkbox" name="selectedJobs" value="#{jobInfo.jobNumber}" onclick="toggleJobCheckboxes('#{jobInfo.jobNumber}');"/>
+            </c:otherwise>
+          </c:choose>
+        </div>
+      </td>
+      <td align="right" style="cursor: pointer;" onclick="toggleVisibility('#{jobInfo.jobNumber}');">
+        <img id="#{jobInfo.jobNumber}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" width="8" height="8" border="0" style="#{jobInfo.expanded == true ? 'display:inline;' : 'display:none;'}"/>
+        <img id="#{jobInfo.jobNumber}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" width="8" height="8" border="0" style="#{jobInfo.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
+      </td>
+      <td class="task-title">
+        <a href="javascript:void();" onclick="toggleVisibility('#{jobInfo.jobNumber}');">#{jobInfo.taskName}</a>
+        <!-- Image trigger for jobs menu popup -->
+        <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" name="Image2_#{jobInfo.jobNumber}" width="14" height="14" border="0" align="top" id="Image2_#{jobInfo.jobNumber}" onclick="pm_showMenu('menuDiv_#{jobInfo.jobNumber}', Position.cumulativeOffset(this), 50, 0);" onmouseover="MM_swapImage('Image2_#{jobInfo.jobNumber}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" onmouseout="MM_swapImgRestore();"/>
+      </td>
+      <td>&#160;</td>
+      <td>
+        <h:outputText value="#{jobInfo.dateSubmitted}">
+          <f:convertDateTime pattern="MMM dd hh:mm:ss a"/>
+        </h:outputText>
+      </td>
+      <td>
+        <h:outputText value="#{jobInfo.dateCompleted}">
+          <f:convertDateTime pattern="MMM dd hh:mm:ss a"/>
+        </h:outputText>
+      </td>
+      <td>
+        <div align="center" class="status-finished">finished</div>
+      </td>
+    </tr>
+    <!--  End job row  -->
+    <!-- Loop through job output files -->
+    <script type="text/javascript" language="javascript">
+            fileRows['#{jobInfo.jobNumber}'] = new Array(); 
+          </script>
+    <!--  Loop through output files -->
+    <ui:include src="jobResultsFiles.xhtml">
+      <ui:param name="jobInfo" value="#{jobInfo}"/>
+    </ui:include>
+    <!--  Loop through child jobs  -->
+    <c:forEach var="childJob" items="#{jobInfo.childJobs}">
+      <ui:include src="jobResultsJobs.xhtml">
+        <ui:param name="jobInfo" value="#{childJob}"/>
+      </ui:include>
+    </c:forEach>
+  </ui:composition>
+</html>
