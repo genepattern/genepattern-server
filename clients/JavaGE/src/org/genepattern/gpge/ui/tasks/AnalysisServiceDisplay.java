@@ -25,11 +25,11 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.HyperlinkEvent;
@@ -47,7 +47,6 @@ import org.genepattern.gpge.message.MessageManager;
 import org.genepattern.gpge.ui.graphics.draggable.ObjectTextField;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel;
 import org.genepattern.gpge.ui.tasks.pipeline.ExportPipeline;
-import org.genepattern.gpge.ui.tasks.pipeline.PipelineEditor;
 import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.GPConstants;
@@ -237,12 +236,13 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
 
         JPanel viewCodePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        JLabel viewCodeLabel = new JLabel("View Code:");
-        final JComboBox viewCodeComboBox = new JComboBox(new Object[] { "Java",
-                "MATLAB", "R" });
 
-        viewCodePanel.add(viewCodeLabel);
+        final JComboBox viewCodeComboBox = new JComboBox(new String[] {
+                "- Language -", "Java", "MATLAB", "R" });
+        
+        JButton viewCodeButton = new JButton("View Code");
         viewCodePanel.add(viewCodeComboBox);
+        viewCodePanel.add(viewCodeButton);
 
         togglePanel = new TogglePanel("Generate Code", viewCodePanel);
         togglePanel.setExpanded(advancedGroupExpanded);
@@ -259,8 +259,11 @@ public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
         bottomPanel.add(buttonPanel, BorderLayout.CENTER);
         bottomPanel.add(togglePanel, BorderLayout.SOUTH);
 
-        viewCodeComboBox.addActionListener(new ActionListener() {
+        viewCodeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                if (viewCodeComboBox.getSelectedIndex() == 0) {
+                    return;
+                }
                 String language = (String) viewCodeComboBox.getSelectedItem();
                 TaskCodeGenerator codeGenerator = null;
                 if ("Java".equals(language)) {
