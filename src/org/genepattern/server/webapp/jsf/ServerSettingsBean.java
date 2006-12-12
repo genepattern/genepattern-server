@@ -639,7 +639,13 @@ public class ServerSettingsBean {
      * @param event
      */
     public void deleteCustomSetting(ActionEvent event) {
-        customSettings.remove(getKey());
+    	String keyToRemove = getKey();
+    	for (KeyValuePair element:customSettings) {
+    		if (element.getKey().equals(keyToRemove)) {
+    			customSettings.remove(element);
+    			break;
+    		}
+    	}
     }
 
     /**

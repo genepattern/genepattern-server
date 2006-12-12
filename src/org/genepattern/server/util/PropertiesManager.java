@@ -102,7 +102,7 @@ public class PropertiesManager implements IGPConstants {
 
 		try {
 			int i=0;
-			Properties props = getCustomProperties();
+			Properties props = new Properties();
 			StringBuffer commentBuff = new StringBuffer("#Genepattern server updated keys: ");	
             for(KeyValuePair keyValue : newProps) {
                 String key = keyValue.getKey();
