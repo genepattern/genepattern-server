@@ -13,6 +13,10 @@
 		<copyfile src="${USER_INSTALL_DIR}/resources/genepattern.properties" dest="${USER_INSTALL_DIR}/resources/genepattern.properties.save"/>
 	</target>
 
+	<target name="saveDefaultProperties">
+		<copyfile src="${USER_INSTALL_DIR}/resources/genepattern.properties" dest="${USER_INSTALL_DIR}/resources/genepattern.properties.default"/>
+	</target>
+
 	<target name="create-zip" depends="init">
 		<echo> Zipping up ${Rlib} </echo>
 		<zip basedir="${Rlib}" destfile="${zip-file}" whenempty="fail" update="true">
@@ -31,7 +35,7 @@
 		<copyfile src="${Rlib}GenePattern/R/GenePattern" dest="${output.dir}/GenePattern.R"/>
 	</target>
 
-	<target name="post-install" depends="create-tar-and-zip, copyRSource"/>
+	<target name="post-install" depends="saveDefaultProperties, create-tar-and-zip, copyRSource"/>
 
 	<target name="sleep5seconds">
 		<sleep seconds="5"/>
