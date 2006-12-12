@@ -1,7 +1,10 @@
 /* Auto generated file */
 
 package org.genepattern.server.domain;
+import java.net.MalformedURLException;
 import java.util.*;
+
+import org.genepattern.util.LSID;
 
 /**
  * A hibernate mapped POJO representing a Suite.  This class is a near copy of SuiteInfo.  
@@ -83,5 +86,15 @@ public class Suite {
 	public void setContact(String contact) {
 		this.contact = contact;
 	}
+    
+    public String getVersion() {
+        try {
+            LSID lsidObject = new LSID(getLsid());
+            return lsidObject.getVersion();
+        }
+        catch (MalformedURLException e) {
+            return "";
+        }
+    }
 
 }
