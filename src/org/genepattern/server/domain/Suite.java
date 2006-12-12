@@ -4,6 +4,7 @@ package org.genepattern.server.domain;
 import java.net.MalformedURLException;
 import java.util.*;
 
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.LSID;
 
 /**
