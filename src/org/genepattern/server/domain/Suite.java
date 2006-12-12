@@ -22,6 +22,9 @@ public class Suite {
     private String description;
     private Integer accessId;
     private List<String> modules;
+    
+    private boolean selected = false;
+    private boolean expanded = true;
 
     public String getLsid() {
         return this.lsid;
@@ -86,6 +89,14 @@ public class Suite {
 	public void setContact(String contact) {
 		this.contact = contact;
 	}
+	
+	public boolean isSelected() {
+        return selected;
+    }
+	
+	public boolean isExpanded() {
+        return expanded;
+    }
     
     public String getVersion() {
         try {
@@ -95,6 +106,11 @@ public class Suite {
         catch (MalformedURLException e) {
             return "";
         }
+    }
+    
+    public boolean isOwnedByUser() {
+    	String user = UIBeanHelper.getUserId();
+    	return (owner.equals(user))?true:false;
     }
 
 }

@@ -109,6 +109,11 @@
   <managed-bean-scope>session</managed-bean-scope>
  </managed-bean>
  <managed-bean>
+  <managed-bean-name>suiteDeleteBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.SuiteDeleteBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>serverSettingsBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.ServerSettingsBean</managed-bean-class>
   <managed-bean-scope>session</managed-bean-scope>
