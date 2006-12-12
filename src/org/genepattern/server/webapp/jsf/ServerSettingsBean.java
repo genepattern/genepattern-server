@@ -31,9 +31,11 @@ public class ServerSettingsBean {
 
     private Map<String, String[]> modes;
     private String[] clientModes = new String[] { "Local", "Any", "Specified" };
-
-    private String currentMode; // Default
     private String currentClientMode = clientModes[0]; // default
+    private String specifiedClientMode;
+    
+    private String currentMode; // Default
+    
 
     private Properties settings;
     private List<KeyValuePair> customSettings;
@@ -146,7 +148,7 @@ public class ServerSettingsBean {
     /**
      * @return
      */
-    public String getClientMode() {
+    public String getCurrentClientMode() {
         currentClientMode = (String) settings.get("gp.allowed.clients");
 
         if (!(clientModes[0].equals(currentClientMode) || clientModes[1].equals(currentClientMode))) {
@@ -156,30 +158,75 @@ public class ServerSettingsBean {
     }
 
     /**
+     * @param mode
+     */
+    public void setCurrentClientMode(String mode) {
+        currentClientMode = mode;
+        if (!clientModes[2].equals(currentClientMode)) {
+        	settings.put("gp.allowed.clients", mode);
+        	specifiedClientMode=null;
+        }
+    }
+    
+    /**
      * @return
      */
     public String getSpecifiedClientMode() {
-        if (!(clientModes[0].equals(currentClientMode) || clientModes[1].equals(currentClientMode))) {
-            return currentClientMode;
-        }
-        return "";
-    }
-
-    /**
-     * @param mode
-     */
-    public void setClientMode(String mode) {
-        currentClientMode = mode;
-        settings.put("gp.allowed.clients", mode);
+    	return specifiedClientMode;
     }
 
     /**
      * @param mode
      */
     public void setSpecifiedClientMode(String mode) {
-        if (clientModes[2].equals(currentClientMode)) {
-            settings.put("gp.allowed.clients", mode);
+        //if (clientModes[2].equals(currentClientMode)) {
+            specifiedClientMode=mode;
+        //}
+    }
+    
+    /**
+     * @return
+     */
+    public List getSpecifiedClientModes() {
+    	return getSelectItems("gp.allowed.clients");
+    }
+
+    /**
+     * @param mode
+     */
+    public void setSpecifiedClientModes(List clientModes) {
+    	setSelectItems(clientModes, "gp.allowed.clients");
+    }
+    
+    public void addSpecifiedClientMode(ActionEvent event) {
+    	if (clientModes[2].equals(currentClientMode)) {
+	    	String allClientModes = (String) settings.get("gp.allowed.clients");
+	        String[] result = allClientModes.split(",");
+	        boolean exist = false;
+	        for (int i = 0; i < result.length; i++) {
+	            if (result[i] != null && result[i].equals(specifiedClientMode)) {
+	                exist = true;
+	                break;
+	            }
+	        }
+	        if (!exist) {
+	        	allClientModes = allClientModes.concat(",").concat(specifiedClientMode);
+	        }
+	        settings.put("gp.allowed.clients", allClientModes);
+    	}
+        saveSettings(event);
+    }
+    
+    public void removeSpecifiedClientMode(ActionEvent event) {
+    	String allClientModes = (String) settings.get("gp.allowed.clients");
+        String[] result = allClientModes.split(",");
+        StringBuffer newClientModes = new StringBuffer();
+        for (int i = 0; i < result.length; i++) {
+            if (result[i] != null && !result[i].equals(specifiedClientMode)) {
+            	newClientModes.append(result[i]).append(",");
+            }
         }
+        settings.put("gp.allowed.clients", newClientModes.substring(0, newClientModes.length() - 1).toString());
     }
 
     /**
@@ -320,26 +367,26 @@ public class ServerSettingsBean {
      * @param repositoryName
      * @return
      */
-    private List getRepositoryURLs(String repositoryName) {
-        String repositoryURLs = (String) settings.get(repositoryName);
-        String[] result = repositoryURLs.split(",");
-        List<SelectItem> repositoryURLsLst = new ArrayList<SelectItem>();
+    private List getSelectItems(String commaSeparatedValue) {
+        String selectItems = (String) settings.get(commaSeparatedValue);
+        String[] result = selectItems.split(",");
+        List<SelectItem> valuesLst = new ArrayList<SelectItem>();
         for (int i = 0; i < result.length; i++) {
-            repositoryURLsLst.add(new SelectItem(result[i]));
+        	valuesLst.add(new SelectItem(result[i]));
         }
-        return repositoryURLsLst;
+        return valuesLst;
     }
 
     /**
      * @param mrURLs
      * @param repositoryName
      */
-    private void setRepositoryURLs(ArrayList rURLs, String repositoryName) {
+    private void setSelectItems(List values, String Name) {
         StringBuffer repositoryURLs = new StringBuffer();
-        for (int i = 0; i < rURLs.size(); i++) {
-            repositoryURLs.append(rURLs.get(i)).append(",");
+        for (int i = 0; i < values.size(); i++) {
+            repositoryURLs.append(values.get(i)).append(",");
         }
-        settings.put(repositoryName, repositoryURLs.substring(0, repositoryURLs.length() - 1).toString());
+        settings.put(Name, repositoryURLs.substring(0, repositoryURLs.length() - 1).toString());
     }
 
     /**
@@ -382,40 +429,28 @@ public class ServerSettingsBean {
             }
             settings.put(repositoryNames, newRepositoryURLs.substring(0, newRepositoryURLs.length() - 1).toString());
         }
-        //resetModuleRepositoryURL();
     }
 
     /**
      * @return
      */
-    public Collection getModuleRepositoryURLs() {
-        return getRepositoryURLs("ModuleRepositoryURLs");
+    public List getModuleRepositoryURLs() {
+        return getSelectItems("ModuleRepositoryURLs");
 
     }
 
     /**
      * @param mrURLs
      */
-    public void setModuleRepositoryURLs(ArrayList mrURLs) {
-        setRepositoryURLs(mrURLs, "ModuleRepositoryURLs");
+    public void setModuleRepositoryURLs(List mrURLs) {
+    	setSelectItems(mrURLs, "ModuleRepositoryURLs");
     }
 
     /**
      * @return
      */
     public void addModuleRepositoryURL(ActionEvent event) {
-    	System.out.println("add");
-        addRepositoryURL("ModuleRepositoryURL", "ModuleRepositoryURLs");
-    }
-    
-    
-
-    /**
-     * @return
-     */
-    private void resetModuleRepositoryURL() {
-    	String defaultModuleRepositoryURL = (String)defaultSettings.get("DefaultModuleRepositoryURL");
-        settings.put("ModuleRepositoryURL", defaultModuleRepositoryURL);
+    	addRepositoryURL("ModuleRepositoryURL", "ModuleRepositoryURLs");
     }
 
     /**
@@ -434,16 +469,16 @@ public class ServerSettingsBean {
     /**
      * @return
      */
-    public Collection getSuiteRepositoryURLs() {
-        return getRepositoryURLs("SuiteRepositoryURLs");
+    public List getSuiteRepositoryURLs() {
+        return getSelectItems("SuiteRepositoryURLs");
 
     }
 
     /**
      * @param mrURLs
      */
-    public void setSuiteRepositoryURLs(ArrayList mrURLs) {
-        setRepositoryURLs(mrURLs, "SuiteRepositoryURLs");
+    public void setSuiteRepositoryURLs(List mrURLs) {
+    	setSelectItems(mrURLs, "SuiteRepositoryURLs");
     }
 
     /**
@@ -451,15 +486,6 @@ public class ServerSettingsBean {
      */
     public void addSuiteRepositoryURL(ActionEvent event) {
         addRepositoryURL("SuiteRepositoryURL", "SuiteRepositoryURLs");
-    }
-
-    /**
-     * @return
-     */
-    private String resetSuiteRepositoryURL() {
-    	String defaultSuiteRepositoryURL = (String)defaultSettings.get("DefaultSuiteRepositoryURL");
-        settings.put("SuiteRepositoryURL", defaultSuiteRepositoryURL);
-        return null;
     }
 
     /**
@@ -618,8 +644,8 @@ public class ServerSettingsBean {
     }
     
     public void restore(ActionEvent event) {
-		String[] propertyKeys = modes.get(currentMode);
-		String subtype = (String)event.getComponent().getAttributes().get("subtype");
+		String[] propertyKeys = modes.get(currentMode);	
+		String subtype = currentMode.equals("Repositories")?(String)event.getComponent().getAttributes().get("subtype"):"";
 				
 		if (propertyKeys!=null) {
 			String defaultValue;

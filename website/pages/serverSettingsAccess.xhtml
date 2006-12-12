@@ -6,6 +6,16 @@
       xmlns:t="http://myfaces.apache.org/tomahawk" 
       xmlns:c="http://java.sun.com/jstl/core">
 <ui:composition>
+<script type="text/javascript" language="javascript">
+	/* <![CDATA[ */
+	  function showControl(v) {
+		var specified= document.getElementsByClassName("specified", "root");
+		for (var i=0; i<specified.length; i++) {
+			specified[i].style.display=(v == "Specified")? '':'none';
+		}
+	  }
+	  /* ]]> */
+  </script>
   <h:form>
     <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
       <tr>
@@ -13,26 +23,44 @@
       </tr>
     </table>
     <p/>
-    <table width="100%" border="0" cellpadding="5" cellspacing="0">
+    <table id="root" width="100%" border="0" cellpadding="5" cellspacing="0">
       <tr valign="top">
-        <td>Allow Clients to connect from:</td>
-        <td>
-	        <h:selectOneRadio value="#{serverSettingsBean.clientMode}" layout="pageDirection">
+        <td width="15%">Allow Clients to connect from:</td>
+        <td width="50%">
+	        <h:selectOneRadio value="#{serverSettingsBean.currentClientMode}" layout="pageDirection" onchange="showControl(this.value);">
 	        	<f:selectItem itemValue="Local" itemLabel="Standalone (local connections only)" />
 	  			<f:selectItem itemValue="Any" itemLabel="Any Computer" />				
 				<f:selectItem itemValue="Specified" itemLabel="These Domains (comma delimited list):" />
 			</h:selectOneRadio>
-        	<h:inputText type="text" size="40" value="#{serverSettingsBean.specifiedClientMode}" />
           <br/>
         </td>
       </tr>
-      <tr valign="top">
-        <td>&nbsp;</td>
-        <td>
-          <h:commandButton value="Submit" actionListener="#{serverSettingsBean.saveSettings}"/>
-          <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}"/>
+      <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
+        <td width="15%">All Client Modes:</td>
+        <td >
+          <t:selectOneListbox style="width:50%" size="3" value="#{serverSettingsBean.specifiedClientMode}" onclick="$(clientMode).value=this.value">
+  			<f:selectItems value="#{serverSettingsBean.specifiedClientModes}" />
+		  </t:selectOneListbox>        
         </td>
       </tr>
+      <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
+        <td>Specified Client Mode:</td>
+        <td>
+          <t:inputText id="clientMode" forceId="true" size="40" value="#{serverSettingsBean.specifiedClientMode}"/>       
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>&#160;</td>
+        <td>
+          <h:commandButton value="Submit" actionListener="#{serverSettingsBean.addSpecifiedClientMode}"/>
+          <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}">
+	      	<f:attribute name="subtype" value="Module" />
+	      </h:commandButton>
+	      <h:commandButton styleClass="specified" value="Remove" actionListener="#{serverSettingsBean.removeSpecifiedClientMode}"
+          	style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}"/>    
+        </td>
+      </tr>
+      
     </table>
     <p/>
   </h:form>
