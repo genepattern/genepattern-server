@@ -165,8 +165,12 @@ public class SemanticUtil {
 
     public static Map<String, List<AnalysisService>> getKindToModulesMap(
             Collection<AnalysisService> analysisServices) {
-        String server = analysisServices != null ? analysisServices.iterator()
-                .next().getServer() : null;
+        Iterator<AnalysisService> temp = analysisServices.iterator();
+        String server = null;
+        if (temp.hasNext()) {
+            server = temp.next().getServer();
+        }
+        
         Map<String, Collection<TaskInfo>> map = new HashMap<String, Collection<TaskInfo>>();
         for (Iterator<AnalysisService> it = analysisServices.iterator(); it
                 .hasNext();) {
