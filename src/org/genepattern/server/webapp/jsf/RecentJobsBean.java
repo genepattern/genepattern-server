@@ -49,7 +49,7 @@ import org.genepattern.webservice.WebServiceException;
 
 public class RecentJobsBean extends JobBean {
 
-    private List<MyJobInfo> jobs;
+    private List<JobResultsWrapper> jobs;
 
     private static Logger log = Logger.getLogger(RecentJobsBean.class);
 

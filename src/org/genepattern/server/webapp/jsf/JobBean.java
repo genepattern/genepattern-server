@@ -1,10 +1,11 @@
 package org.genepattern.server.webapp.jsf;
 
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.navmenu.NavigationMenuItem;
+
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.webservice.server.Analysis;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -43,14 +44,14 @@ import java.util.zip.ZipOutputStream;
 public abstract class JobBean {
 	private static Logger log = Logger.getLogger(JobBean.class);
 
-	private List<MyJobInfo> jobs;
+	private List<JobResultsWrapper> jobs;
 
 	Map<String, Collection<TaskInfo>> kindToModules;
 
-    /**
-     * Job sort direction (true for ascending, false for descending)
-     */
-    protected boolean jobSortAscending = true;
+	/**
+	 * Job sort direction (true for ascending, false for descending)
+	 */
+	protected boolean jobSortAscending = true;
 
 	public JobBean() {
 		TaskInfo[] tasks = new AdminDAO().getAllTasksForUser(UIBeanHelper
@@ -62,39 +63,40 @@ public abstract class JobBean {
 
 	protected void updateJobs() {
 		JobInfo[] temp = getJobInfos();
-		jobs = new ArrayList<MyJobInfo>(temp.length);
-        Set<String> selectedJobs = getSelectedJobs();
-        Set<String> selectedFiles = getSelectedFiles();
+		jobs = new ArrayList<JobResultsWrapper>(temp.length);
+		Set<String> selectedJobs = getSelectedJobs();
+		Set<String> selectedFiles = getSelectedFiles();
 		for (int i = 0; i < temp.length; i++) {
-            MyJobInfo wrappedJob = new MyJobInfo(temp[i], kindToModules, selectedFiles);
-            wrappedJob.setSelected(selectedJobs.contains(String.valueOf(temp[i].getJobNumber())));
+			JobResultsWrapper wrappedJob = new JobResultsWrapper(temp[i],
+					kindToModules, selectedFiles, selectedJobs);
 			jobs.add(wrappedJob);
-            
 		}
 	}
-    
-    private Set<String> getSelectedJobs() {
-        HashSet<String> selectedJobs = new HashSet<String>();
-        String[] tmp = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
-        if(tmp != null) {
-            for(String job : tmp) {
-                selectedJobs.add(job);
-            }
-        }
-        return selectedJobs;
-    }
 
-    private Set<String> getSelectedFiles() {
-        HashSet<String> selectedJobs = new HashSet<String>();
-        String[] tmp = UIBeanHelper.getRequest().getParameterValues("selectedFiles");
-        if(tmp != null) {
-            for(String job : tmp) {
-                selectedJobs.add(job);
-            }
-        }
-        return selectedJobs;
-    }
-    
+	private Set<String> getSelectedJobs() {
+		HashSet<String> selectedJobs = new HashSet<String>();
+		String[] tmp = UIBeanHelper.getRequest().getParameterValues(
+				"selectedJobs");
+		if (tmp != null) {
+			for (String job : tmp) {
+				selectedJobs.add(job);
+			}
+		}
+		return selectedJobs;
+	}
+
+	private Set<String> getSelectedFiles() {
+		HashSet<String> selectedJobs = new HashSet<String>();
+		String[] tmp = UIBeanHelper.getRequest().getParameterValues(
+				"selectedFiles");
+		if (tmp != null) {
+			for (String job : tmp) {
+				selectedJobs.add(job);
+			}
+		}
+		return selectedJobs;
+	}
+
 	public int getSize() {
 		if (jobs == null) {
 			updateJobs();
@@ -102,7 +104,7 @@ public abstract class JobBean {
 		return jobs == null ? 0 : jobs.size();
 	}
 
-	public List<MyJobInfo> getJobs() {
+	public List<JobResultsWrapper> getJobs() {
 		if (jobs == null) {
 			updateJobs();
 		}
@@ -153,7 +155,7 @@ public abstract class JobBean {
 		return "run task";
 	}
 
-	public void deleteFile(ActionEvent event) throws WebServiceException{
+	public void deleteFile(ActionEvent event) throws WebServiceException {
 		String value = UIBeanHelper.decode(UIBeanHelper.getRequest()
 				.getParameter("jobFile"));
 		deleteFile(value);
@@ -193,14 +195,9 @@ public abstract class JobBean {
 			HttpServletResponse response = UIBeanHelper.getResponse();
 			response.setHeader("Content-Disposition", "attachment; filename="
 					+ in.getName() + ";");
-			// response.setHeader("Content-disposition", "inline; filename=\""
-			// + in.getName() + "\"");
 			response.setHeader("Content-Type", "application/octet-stream");
 			response.setHeader("Cache-Control", "no-store"); // HTTP 1.1
-			// cache
-			// control
 			response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache
-			// control
 			response.setDateHeader("Expires", 0);
 
 			OutputStream os = response.getOutputStream();
@@ -338,28 +335,28 @@ public abstract class JobBean {
 		try {
 			int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper
 					.getRequest().getParameter("jobNumber")));
-			deleteJob( jobNumber );
+			deleteJob(jobNumber);
 		} catch (NumberFormatException e) {
 			log.error(e);
 		}
 	}
-    
-    /**
-     * Delete the selected job. Should this also delete the files?
-     * 
-     * @param event
-     */
-    protected void deleteJob(int jobNumber) {
-        try {
-            LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper
-                    .getUserId());
-            ac.deleteJob(jobNumber);
-            HibernateUtil.getSession().flush();
 
-        } catch (WebServiceException e) {
-            log.error(e);
-        }
-     }
+	/**
+	 * Delete the selected job. Should this also delete the files?
+	 * 
+	 * @param event
+	 */
+	protected void deleteJob(int jobNumber) {
+		try {
+			LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper
+					.getUserId());
+			ac.deleteJob(jobNumber);
+			HibernateUtil.getSession().flush();
+
+		} catch (WebServiceException e) {
+			log.error(e);
+		}
+	}
 
 	public String getTaskCode() {
 		try {
@@ -468,24 +465,30 @@ public abstract class JobBean {
 		}
 	}
 
-
-    /**
+	/**
 	 * Represents a job result. Wraps JobInfo and adds methods for getting the
 	 * output files and the expansion state of the associated UI panel
 	 */
-	public static class MyJobInfo {
+	public static class JobResultsWrapper {
+
 		private JobInfo jobInfo;
 
 		private List<MyParameterInfo> outputFiles;
-        private boolean selected = false;
-		private boolean expanded = true;
-        
 
-		public MyJobInfo(JobInfo jobInfo,
+		private boolean selected = false;
+
+		private boolean expanded = true;
+
+		private List<JobResultsWrapper> childJobs;
+
+		public JobResultsWrapper(JobInfo jobInfo,
 				Map<String, Collection<TaskInfo>> kindToModules,
-                Set<String> selectedFiles) {
+				Set<String> selectedFiles, Set<String> selectedJobs) {
 			this.jobInfo = jobInfo;
+			this.selected = selectedJobs.contains(String.valueOf(jobInfo.getJobNumber()));
+
 			outputFiles = new ArrayList<MyParameterInfo>();
+
 			ParameterInfo[] parameterInfoArray = jobInfo
 					.getParameterInfoArray();
 			if (parameterInfoArray != null) {
@@ -498,27 +501,46 @@ public abstract class JobBean {
 								.getName());
 						Collection<TaskInfo> modules = kindToModules
 								.get(SemanticUtil.getKind(file));
-                        MyParameterInfo pInfo = new MyParameterInfo(
-                                parameterInfoArray[i], file, modules);
+						MyParameterInfo pInfo = new MyParameterInfo(
+								parameterInfoArray[i], file, modules);
 
-                        pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
+						pInfo.setSelected(selectedFiles.contains(pInfo
+								.getValue()));
 						outputFiles.add(pInfo);
 					}
 				}
 			}
+			
+			// Child jobs
+			childJobs = new ArrayList<JobResultsWrapper>();
+	        String userId = UIBeanHelper.getUserId();
+	        LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
+			try {
+				JobInfo[] children = analysisClient.getChildren(jobInfo.getJobNumber());
+				for(JobInfo child : children) {
+					childJobs.add(new JobResultsWrapper(child, kindToModules, selectedFiles, selectedJobs));
+				}
+			} catch (WebServiceException e) {
+				log.error("Error getting child jobs", e);
+				
+			}		
 		}
-        
-        public void setSelected(boolean bool) {
-            this.selected = bool;
-        }
-        
-        public boolean isSelected() {
-            return selected;
-        }
-        
-        public void setExpanded(boolean bool) {
-            this.expanded = bool;
-        }
+
+		public List<JobResultsWrapper> getChildJobs() {
+			return childJobs;
+		}
+
+		public void setSelected(boolean bool) {
+			this.selected = bool;
+		}
+
+		public boolean isSelected() {
+			return selected;
+		}
+
+		public void setExpanded(boolean bool) {
+			this.expanded = bool;
+		}
 
 		public boolean isExpanded() {
 			return expanded;
@@ -546,10 +568,6 @@ public abstract class JobBean {
 			return outputFiles;
 		}
 
-		public ParameterInfo[] getParameterInfoArray() {
-			return jobInfo.getParameterInfoArray();
-		}
-
 		public String getStatus() {
 			return jobInfo.getStatus();
 		}
@@ -571,23 +589,28 @@ public abstract class JobBean {
 		}
 	}
 
-	private static class NavigationMenuItemComparator implements
-			Comparator<NavigationMenuItem> {
+	private static class KeyValueComparator implements Comparator<KeyValuePair> {
 
-		public int compare(NavigationMenuItem o1, NavigationMenuItem o2) {
-			return o1.getLabel().compareToIgnoreCase(o2.getLabel());
+		public int compare(KeyValuePair o1, KeyValuePair o2) {
+			return o1.getKey().compareToIgnoreCase(o2.getKey());
 		}
 
 	}
 
 	public static class MyParameterInfo {
 		ParameterInfo p;
+
 		long size;
+
 		Date lastModified;
+
 		boolean exists;
-        boolean selected = false;
-		List<NavigationMenuItem> moduleMenuItems = new ArrayList<NavigationMenuItem>();
-		private static final Comparator COMPARATOR = new NavigationMenuItemComparator();
+
+		boolean selected = false;
+
+		List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
+
+		private static final Comparator COMPARATOR = new KeyValueComparator();
 
 		public MyParameterInfo(ParameterInfo p, File file,
 				Collection<TaskInfo> modules) {
@@ -600,29 +623,27 @@ public abstract class JobBean {
 
 			if (modules != null) {
 				for (TaskInfo t : modules) {
-					NavigationMenuItem mi = new NavigationMenuItem(t
-							.getShortName(), "module");
-					mi.setValue(UIBeanHelper.encode(t.getLsid()));
+					KeyValuePair mi = new KeyValuePair(t.getShortName(),
+							UIBeanHelper.encode(t.getLsid()));
 					moduleMenuItems.add(mi);
 				}
 				Collections.sort(moduleMenuItems, COMPARATOR);
 			}
 		}
-        
- 
-        public List<NavigationMenuItem> getModuleMenuItems() {
-            return moduleMenuItems;
-        }
 
-        public void setSelected(boolean bool) {
-            this.selected = bool;
-        }
-        
-        public boolean isSelected() {
-            return selected;
-        }
- 
-        public long getSize() {
+		public List<KeyValuePair> getModuleMenuItems() {
+			return moduleMenuItems;
+		}
+
+		public void setSelected(boolean bool) {
+			this.selected = bool;
+		}
+
+		public boolean isSelected() {
+			return selected;
+		}
+
+		public long getSize() {
 			return size;
 		}
 
@@ -633,14 +654,6 @@ public abstract class JobBean {
 
 		public Date getLastModified() {
 			return lastModified;
-		}
-
-		public HashMap getAttributes() {
-			return p.getAttributes();
-		}
-
-		public String[] getChoices(String delimiter) {
-			return p.getChoices(delimiter);
 		}
 
 		public String getDescription() {
@@ -665,46 +678,6 @@ public abstract class JobBean {
 
 		public boolean hasChoices(String delimiter) {
 			return p.hasChoices(delimiter);
-		}
-
-		public boolean isInputFile() {
-			return p.isInputFile();
-		}
-
-		public boolean isOutputFile() {
-			return p.isOutputFile();
-		}
-
-		public boolean isPassword() {
-			return p.isPassword();
-		}
-
-		public void setAsInputFile() {
-			p.setAsInputFile();
-		}
-
-		public void setAsOutputFile() {
-			p.setAsOutputFile();
-		}
-
-		public void setAttributes(HashMap attributes) {
-			p.setAttributes(attributes);
-		}
-
-		public void setDescription(String description) {
-			p.setDescription(description);
-		}
-
-		public void setLabel(String label) {
-			p.setLabel(label);
-		}
-
-		public void setName(String name) {
-			p.setName(name);
-		}
-
-		public void setValue(String value) {
-			p.setValue(value);
 		}
 
 		public String toString() {

@@ -154,8 +154,8 @@ public class JobResultsBean extends JobBean {
         Comparator comparator = new Comparator() {
 
             public int compare(Object o1, Object o2) {
-                MyJobInfo c1 = ((MyJobInfo) o1);
-                MyJobInfo c2 = ((MyJobInfo) o2);
+                JobResultsWrapper c1 = ((JobResultsWrapper) o1);
+                JobResultsWrapper c2 = ((JobResultsWrapper) o2);
                 if (column == null) {
                     return 0;
                 }
@@ -216,7 +216,7 @@ public class JobResultsBean extends JobBean {
             }
         };
 
-        for (MyJobInfo jobResult : getJobs()) {
+        for (JobResultsWrapper jobResult : getJobs()) {
             Collections.sort(jobResult.getOutputFileParameterInfos(), comparator);
         }
 
