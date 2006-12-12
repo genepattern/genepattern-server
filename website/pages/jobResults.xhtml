@@ -54,6 +54,15 @@
 
     var jobNumbers = new Array();
     var fileRows = new Object();
+    
+    function addFileRow(jobNumber, fileRowId) {
+      var rowIds = fileRows[jobNumber];
+      if(rowIds == null) {
+        rowIds = new Array();
+        fileRows[jobNumber] = rowIds;
+      }
+      rowIds[rowIds.length] = fileRowId;
+    }
 
     function toggleJobCheckboxes(jobNo)
     {
@@ -110,6 +119,9 @@
       rightArrow.style.display ="inline"	  
     
       var rowIds = fileRows[jobNo];
+      if(rowIds == null) {
+        alert("Null rowIds for job: " + jobNo);
+      }
       for(var i=0; i<rowIds.length; i++)
       {
         row = document.getElementById(rowIds[i]);
@@ -267,6 +279,7 @@
         <c:forEach var="jobInfo" items="#{jobResultsBean.jobs}">
           <ui:include src="jobResultsJobs.xhtml">
             <ui:param name="jobInfo" value="#{jobInfo}"/>
+            <ui:param name="level" value="0"/>
           </ui:include>
         </c:forEach>
         

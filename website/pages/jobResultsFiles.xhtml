@@ -10,14 +10,15 @@
        Inputs:   jobInfo
    -->
   <ui:composition>
-    <t:dataList var="fileInfo" value="#{jobInfo.outputFileParameterInfos}" rowIndexVar="paramIndex">
+    <c:forEach var="fileInfo" items="#{jobInfo.outputFileParameterInfos}" varStatus="loopStatus">
+ 
       <!-- Generate ID for this row and append to the fileRows array for the containing job -->
       <script type="text/javascript" language="javascript">
-        <h:outputText>
-	             fileRows['#{jobInfo.jobNumber}'][#{paramIndex}] = 'file_row_#{jobInfo.jobNumber}_#{paramIndex}';
-              </h:outputText>
+        var rowId = 'file_row_' + '#{jobInfo.jobNumber}_#{loopStatus.index}';
+        addFileRow('#{parentJob}', rowId);
       </script>
-      <tr class="files" id="file_row_#{jobInfo.jobNumber}_#{paramIndex}">
+
+      <tr class="files" id="file_row_#{jobInfo.jobNumber}_#{loopStatus.index}">
         <td>&#160;</td>
         <td>
           <!-- File selection checkbox -->
@@ -31,13 +32,18 @@
           </div>
         </td>
         <td>&#160;</td>
-        <td>
+        <td class="#{level == 0 ? '' : 'pipelinefiles'}">
+          <c:if test="#{level > 1}">
+            <c:forEach begin="0" end="#{level}">&#160;&#160;</c:forEach>
+          </c:if>
           <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="4" height="4" hspace="6" vspace="2" border="0"/>
+           
           <h:outputLink value="#{facesContext.externalContext.requestContextPath}/retrieveResults.jsp">
             <h:outputText>#{fileInfo.name}</h:outputText>
             <f:param name="job" value="#{jobInfo.jobNumber}"/>
             <f:param name="filename" value="#{fileInfo.name}"/>
           </h:outputLink>
+ 
           <!-- Image for popup menu -->
           <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" name="Image_#{jobInfo.jobNumber}_#{fileInfo.value}" id="Image_#{jobInfo.jobNumber}_#{fileInfo.value}" width="14" height="14" border="0" align="top" onclick="pm_showMenu('menuDev_#{jobInfo.jobNumber}_#{fileInfo.value}', Position.cumulativeOffset(this), 50, 0);" onmouseover="MM_swapImage('Image_#{jobInfo.jobNumber}_#{fileInfo.value}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" onmouseout="MM_swapImgRestore();"/>
         </td>
@@ -50,6 +56,6 @@
         </td>
         <td>&#160;</td>
       </tr>
-    </t:dataList>
+    </c:forEach>
   </ui:composition>
 </html>
