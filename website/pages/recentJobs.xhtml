@@ -18,11 +18,11 @@
         <t:graphicImage value="/images/spacer.gif" width="1" height="6"/>
       </td>
     </tr>
-    <c:if test="#{recentJobsBean.size == 0}">
+    <h:outputText rendered="#{empty recentJobsBean.jobs}">
       <tr>
         <td>No jobs to display</td>
       </tr>
-    </c:if>
+    </h:outputText>
     <h:form>
     
       <!-- Loop through jobs -->
