@@ -88,19 +88,15 @@
     			value="webappDir=${INSTALL_DIR}/"/>
 
 	</replace>
+
 	<echo append="true" file="gpinstall/resources/genepattern.properties">
 fullyQualifiedHostName=${HOST}.${DOMAIN}
 	</echo>
 	<antcall target="addSmtpServer"/>
 	
-    	<replace file="gpinstall/resources/omnigene.properties">
-		<replacefilter 
-    			token="$GENEPATTERN_PORT$" 
-    			value="${GENEPATTERN_PORT}"/>
+    	
 
-	</replace>
-
-    	<replace file="gp/WEB-INF/web.xml">
+    <replace file="gp/WEB-INF/web.xml">
 		<replacefilter 
     			token="../resources" 
     			value="${INSTALL_DIR}/resources"/>
@@ -118,6 +114,8 @@ fullyQualifiedHostName=${HOST}.${DOMAIN}
     			token="../resources" 
     			value="${INSTALL_DIR}/resources"/>
 	</replace>
+
+	<copy file="gpinstall/resources/genepattern.properties" tofile="gpinstall/resources/genepattern.properties.default"/>
 
 
 
