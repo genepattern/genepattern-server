@@ -62,7 +62,7 @@ window.mm_menu_1122140110_0 = new Menu("root",112,16,"Verdana, Arial, Helvetica,
     window.mm_menu_1122140441_0 = new Menu("root",112,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,true);
   mm_menu_1122140441_0.addMenuItem("Create&nbsp;Suite","location='/gp/pages/createSuite.jsf'");
   mm_menu_1122140441_0.addMenuItem("Install&nbsp;/&nbsp;Update","location='/gp/pages/suiteCatalog.jsf'");
-  mm_menu_1122140441_0.addMenuItem("Delete");
+  mm_menu_1122140441_0.addMenuItem("Delete","location='/gp/pages/deleteSuite.jsf'");
    mm_menu_1122140441_0.hideOnMouseOut=true;
    mm_menu_1122140441_0.bgColor='#CCCC66';
    mm_menu_1122140441_0.menuBorder=0;
