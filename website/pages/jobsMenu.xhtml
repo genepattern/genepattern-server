@@ -11,7 +11,7 @@
         <tbody>
           <tr>
             <td>
-              <h:commandLink value="Download" actionListener="#{recentJobsBean.downloadZip}" rendered="#{jobComplete}">
+              <h:commandLink value="Download" actionListener="#{recentJobsBean.downloadZip}" rendered="#{job.complete}">
                 <f:param value="#{job.jobNumber}" name="jobNumber"/>
               </h:commandLink>
             </td>
@@ -25,14 +25,14 @@
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Delete" actionListener="#{recentJobsBean.delete}" rendered="#{jobComplete}">
+              <h:commandLink value="Delete" actionListener="#{recentJobsBean.delete}" rendered="#{job.complete}">
                 <f:param value="#{job.jobNumber}" name="jobNumber"/>
               </h:commandLink>
             </td>
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Terminate" actionListener="#{recentJobsBean.terminateJob}" rendered="#{!jobComplete}">
+              <h:commandLink value="Terminate" actionListener="#{recentJobsBean.terminateJob}" rendered="#{!job.complete}">
                 <f:param value="#{job.jobNumber}" name="jobNumber"/>
               </h:commandLink>
             </td>
