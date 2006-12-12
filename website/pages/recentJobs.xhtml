@@ -43,7 +43,7 @@
             <!-- Image trigger for jobs menu popup -->
             <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" 
                  name="Image2_#{job.jobNumber}" width="14" height="14" border="0" align="top" 
-                 id="Image2_#{job.jobNumber}" onclick="pm_showMenu('menuDiv_#{job.jobNumber}', Position.cumulativeOffset(this), 50, 80);" 
+                 id="Image2_#{job.jobNumber}" onclick="pm_showMenu('menuDiv_#{job.jobNumber}', Position.cumulativeOffset(this), 50, 100);" 
                  onmouseover="MM_swapImage('Image2_#{job.jobNumber}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
                  onmouseout="MM_swapImgRestore();"/>
             <br/>
@@ -64,7 +64,7 @@
                 <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
                      name="Image_#{job.jobNumber}_#{p.value}" id="Image_#{job.jobNumber}_#{p.value}" 
                      width="14" height="14" border="0" align="top" 
-                     onclick="pm_showMenu('menuDev_#{job.jobNumber}_#{p.value}', Position.cumulativeOffset(this), 50, 80);" 
+                     onclick="pm_showMenu('menuDev_#{job.jobNumber}_#{p.value}', Position.cumulativeOffset(this), 50, 100);" 
                      onmouseover="MM_swapImage('Image_#{job.jobNumber}_#{p.value}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
                      onmouseout="MM_swapImgRestore();"/> 
         
