@@ -449,7 +449,6 @@ public abstract class JobBean {
         private List<OutputFileInfo> allOutputFiles;
 
         private boolean selected = false;
-        private boolean expanded = true;
         private List<JobResultsWrapper> childJobs;
 
         public JobResultsWrapper(JobInfo jobInfo, Map<String, Collection<TaskInfo>> kindToModules,
@@ -504,12 +503,10 @@ public abstract class JobBean {
             return selected;
         }
 
-        public void setExpanded(boolean bool) {
-            this.expanded = bool;
-        }
-
         public boolean isExpanded() {
-            return expanded;
+        	String parameterName = "expansion_state_" + jobInfo.getJobNumber();
+        	String value = UIBeanHelper.getRequest().getParameter(parameterName);
+            return (value == null || value.equals("true"));
         }
 
         public boolean isComplete() {
