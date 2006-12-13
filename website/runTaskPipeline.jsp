@@ -146,9 +146,9 @@ use, misuse, or functionality.
         if (lsid == null) {
             lsid = taskName;
         }
-        userID = (String) requestParameters.get(GPConstants.USERID);
+        userID = (String) request.getAttribute(GPConstants.USERID);
 		try {
-			User user = ( new UserDAO()).findById(userID);
+			User user = (new UserDAO()).findById(userID);
 			userEmail = user.getEmail();
 			if ((userEmail == null) || (userEmail.length() == 0)){
 				userEmail = userID;
