@@ -1,10 +1,14 @@
 package org.genepattern.server.webapp.jsf;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import javax.faces.model.SelectItem;
 
 import org.genepattern.util.LSID;
+import org.genepattern.util.LSIDVersionComparator;
 import org.genepattern.webservice.TaskInfo;
 
 /**
@@ -85,7 +89,7 @@ public class Module implements java.io.Serializable {
                 String v2 = ((SelectItem) o2).getLabel();
                 if(v1.toLowerCase().equals("latest")) return -1;
                 else if(v2.toLowerCase().equals("latest")) return 1;
-                else return Integer.parseInt(v2) - Integer.parseInt(v1);
+                else return LSIDVersionComparator.INSTANCE.compare(v1, v2);
             }
 
         });
