@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-
 import org.genepattern.io.IOdfHandler;
 import org.genepattern.io.OdfParser;
 import org.genepattern.io.ParseException;
@@ -33,100 +32,61 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
 public class SemanticUtil {
-
     private SemanticUtil() {
     }
 
     public static String getKind(File file) {
-
         String name = file.getName();
-
         int dotIndex = name.lastIndexOf(".");
-
         String extension = null;
-
         if (dotIndex > 0) {
-
             extension = name.substring(dotIndex + 1, name.length());
-
-        }
-
-        if (extension.equalsIgnoreCase("odf")) {
-
-            OdfParser parser = new OdfParser();
-
-            OdfHandler handler = new OdfHandler();
-
-            FileInputStream fis = null;
-
-            parser.setHandler(handler);
-
-            try {
-
-                fis = new FileInputStream(file);
-
-                parser.parse(fis);
-
-            } catch (Exception e) {
-
-            } finally {
-
-                try {
-
-                    if (fis != null) {
-
-                        fis.close();
-
-                    }
-
-                } catch (IOException x) {
-
-                }
-
-            }
-
-            return handler.model;
-
         } else {
-
-            return extension.toLowerCase();
-
+            return null;
         }
-
+        if (extension.equalsIgnoreCase("odf")) {
+            OdfParser parser = new OdfParser();
+            OdfHandler handler = new OdfHandler();
+            FileInputStream fis = null;
+            parser.setHandler(handler);
+            try {
+                fis = new FileInputStream(file);
+                parser.parse(fis);
+            } catch (Exception e) {
+            } finally {
+                try {
+                    if (fis != null) {
+                        fis.close();
+                    }
+                } catch (IOException x) {
+                }
+            }
+            return handler.model;
+        } else {
+            return extension.toLowerCase();
+        }
     }
 
     private static class OdfHandler implements IOdfHandler {
-
         public String model;
 
         public void endHeader() throws ParseException {
-
             throw new ParseException("");
-
         }
 
         public void header(String key, String[] values) throws ParseException {
-
         }
 
         public void header(String key, String value) throws ParseException {
-
             if (key.equals("Model")) {
-
                 model = value;
-
                 throw new ParseException("");
-
             }
-
         }
 
         public void data(int row, int column, String s) throws ParseException {
-
             throw new ParseException("");
-
         }
-
     }
 
     /**
@@ -137,23 +97,14 @@ public class SemanticUtil {
      * format for the given input parameter
      * 
      */
-
     public static boolean isCorrectKind(String[] inputTypes, String kind) {
-
         if (inputTypes == null || inputTypes.length == 0) {
-
             return false;
-
         }
-
         if (kind == null || kind.equals("")) {
-
             return true;
-
         }
-
         return Arrays.asList(inputTypes).contains(kind);
-
     }
 
     /**
@@ -162,7 +113,6 @@ public class SemanticUtil {
      * services that take that input type as an input parameter
      * 
      */
-
     public static Map<String, List<AnalysisService>> getKindToModulesMap(
             Collection<AnalysisService> analysisServices) {
         Iterator<AnalysisService> temp = analysisServices.iterator();
@@ -170,7 +120,6 @@ public class SemanticUtil {
         if (temp.hasNext()) {
             server = temp.next().getServer();
         }
-        
         Map<String, Collection<TaskInfo>> map = new HashMap<String, Collection<TaskInfo>>();
         for (Iterator<AnalysisService> it = analysisServices.iterator(); it
                 .hasNext();) {
@@ -181,7 +130,6 @@ public class SemanticUtil {
         for (Iterator<String> it = map.keySet().iterator(); it.hasNext();) {
             String kind = it.next();
             Collection<TaskInfo> tasks = map.get(kind);
-
             if (tasks != null) {
                 List<AnalysisService> modules = new ArrayList<AnalysisService>();
                 for (Iterator<TaskInfo> taskIt = tasks.iterator(); taskIt
@@ -190,7 +138,6 @@ public class SemanticUtil {
                 }
                 kindToServices.put(kind, modules);
             }
-
         }
         return kindToServices;
     }
@@ -206,54 +153,30 @@ public class SemanticUtil {
 
     private static void addToInputTypeToModulesMap(
             Map<String, Collection<TaskInfo>> map, TaskInfo taskInfo) {
-
         ParameterInfo[] p = taskInfo.getParameterInfoArray();
-
         if (p != null) {
-
             for (int i = 0; i < p.length; i++) {
-
                 if (p[i].isInputFile()) {
-
                     ParameterInfo info = p[i];
-
                     String fileFormatsString = (String) info.getAttributes()
-
-                    .get(GPConstants.FILE_FORMAT);
-
+                            .get(GPConstants.FILE_FORMAT);
                     if (fileFormatsString == null
-
-                    || fileFormatsString.equals("")) {
-
+                            || fileFormatsString.equals("")) {
                         continue;
-
                     }
-
                     StringTokenizer st = new StringTokenizer(fileFormatsString,
-
-                    GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-
+                            GPConstants.PARAM_INFO_CHOICE_DELIMITER);
                     while (st.hasMoreTokens()) {
-
                         String type = st.nextToken();
-
                         Collection<TaskInfo> modules = map.get(type);
-
                         if (modules == null) {
-
                             modules = new HashSet<TaskInfo>();
-
                             map.put(type, modules);
-
                         }
                         modules.add(taskInfo);
-
                     }
-
                 }
-
             }
-
         }
     }
 }
