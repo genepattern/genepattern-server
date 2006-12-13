@@ -36,7 +36,8 @@
           <c:if test="#{level > 1}">
             <c:forEach begin="0" end="#{level}">&#160;&#160;</c:forEach>
           </c:if>
-          <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="4" height="4" hspace="6" vspace="2" border="0"/>
+          <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" 
+               width="4" height="4" hspace="6" vspace="2" border="0"/>
            
           <h:outputLink value="#{facesContext.externalContext.requestContextPath}/retrieveResults.jsp">
             <h:outputText>#{fileInfo.name}</h:outputText>
@@ -45,7 +46,12 @@
           </h:outputLink>
  
           <!-- Image for popup menu -->
-          <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" name="Image_#{jobInfo.jobNumber}_#{fileInfo.value}" id="Image_#{jobInfo.jobNumber}_#{fileInfo.value}" width="14" height="14" border="0" align="top" onclick="pm_showMenu('menuDev_#{jobInfo.jobNumber}_#{fileInfo.value}', Position.cumulativeOffset(this), 50, 0);" onmouseover="MM_swapImage('Image_#{jobInfo.jobNumber}_#{fileInfo.value}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" onmouseout="MM_swapImgRestore();"/>
+          <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
+               name="Image_#{fileInfo.value}" id="Image_#{fileInfo.value}" 
+               width="14" height="14" border="0" align="top" 
+               onclick="pm_showMenu('menuDev_#{fileInfo.value}', Position.cumulativeOffset(this), 50, 0);" 
+               onmouseover="MM_swapImage('Image_#{fileInfo.value}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
+               onmouseout="MM_swapImgRestore();"/>
         </td>
         <td align="right">#{fileInfo.formattedSize}&#160;&#160;&#160;&#160;</td>
         <td>&#160;</td>

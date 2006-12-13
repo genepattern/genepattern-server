@@ -20,8 +20,6 @@
       return '#{facesContext.externalContext.requestContextPath}';
     }
 
-
-
     // Toggle the sort order state.  
 
     function toggleSortOrder(id) {
@@ -70,15 +68,14 @@
       var jobCheckbox = jobCheckboxDiv.getElementsByTagName("input")[0];
       var isChecked = jobCheckbox.checked;
       var rowIds = fileRows[jobNo];
-      for(var i=0; i<rowIds.length; i++)
-      {
-        var row = document.getElementById(rowIds[i]);
-        var elements = row.getElementsByTagName("input");
-        for(var j=0; j<elements.length; j++) 
-        {
-          if(elements[j].type == "checkbox") {
-             elements[j].checked = isChecked;
-             //elements[j].disabled = isChecked;
+      if(rowIds != null) {
+        for(var i=0; i<rowIds.length; i++) {
+          var row = document.getElementById(rowIds[i]);
+          var elements = row.getElementsByTagName("input");
+          for(var j=0; j<elements.length; j++) {
+            if(elements[j].type == "checkbox") {
+               elements[j].checked = isChecked;
+            }
           }
         }
       }
@@ -99,7 +96,8 @@
      
                                
     function toggleVisibility(jobNo) {
-      var hiddenField = document.getElementById("expansion_state_" + jobNo);    
+      var hiddenFieldSpan = document.getElementById("expansion_state_" + jobNo);   
+      var hiddenField = hiddenFieldSpan.getElementsByTagName("input")[0]; 
       if(hiddenField.value == "false")
       {
         showCategory(jobNo);
@@ -119,13 +117,11 @@
       rightArrow.style.display ="inline"	  
     
       var rowIds = fileRows[jobNo];
-      if(rowIds == null) {
-        alert("Null rowIds for job: " + jobNo);
-      }
-      for(var i=0; i<rowIds.length; i++)
-      {
-        row = document.getElementById(rowIds[i]);
-        if(row != null) row.style.display="none";
+      if(rowIds != null) {
+        for(var i=0; i<rowIds.length; i++) {
+          row = document.getElementById(rowIds[i]);
+          if(row != null) row.style.display="none";
+        }
       }
     }
 
@@ -280,6 +276,7 @@
           <ui:include src="jobResultsJobs.xhtml">
             <ui:param name="jobInfo" value="#{jobInfo}"/>
             <ui:param name="level" value="0"/>
+            <ui:param name="parentJob" value="#{jobInfo.jobNumber}"/>
           </ui:include>
         </c:forEach>
         
@@ -302,24 +299,36 @@
       </table>
       <p>&#160;</p>
     </h:form>
+    
+    // Set initial visibility state
+    <script type="text/javascript" language="javascript"> 
+      <c:forEach var="jobInfo" items="#{jobResultsBean.jobs}">
+        <c:if test="#{!jobInfo.expanded}">
+            hideCategory('#{jobInfo.jobNumber}');
+        </c:if>
+      </c:forEach>
+    </script>
+    
     </ui:define>
     
     <!-- Create menus  -->
     <ui:define name="popupMenus">
       <h:form>
-        <t:dataList value="#{jobResultsBean.jobs}" var="jobInfo" rowIndexVar="jobIndex">
+        <c:forEach var="jobInfo" items="#{jobResultsBean.jobs}">
           <ui:include src="jobsMenu.xhtml">
             <ui:param name="job" value="#{jobInfo}"/>
           </ui:include>
-          <t:dataList var="fileInfo" value="#{jobInfo.outputFileParameterInfos}" rowIndexVar="paramIndex">
+          <c:forEach var="fileInfo" items="#{jobInfo.outputFileParameterInfos}">
             <ui:include src="jobFileMenu.xhtml">
               <ui:param name="job" value="#{jobInfo}"/>
-              <ui:param name="param" value="#{fileInfo}"/>       
+              <ui:param name="param" value="#{fileInfo}"/>    
+              <ui:param name="parentJob" value="#{jobInfo.jobNumber}"/>   
             </ui:include>
-          </t:dataList>
-        </t:dataList>
+          </c:forEach>
+        </c:forEach>
       </h:form>
     </ui:define>
+ 
  
 </ui:composition>
 </html>

@@ -192,8 +192,8 @@ public class JobResultsBean extends JobBean {
         Comparator comparator = new Comparator() {
 
             public int compare(Object o1, Object o2) {
-                MyParameterInfo c1 = (MyParameterInfo) o1;
-                MyParameterInfo c2 = (MyParameterInfo) o2;
+                OutputFileInfo c1 = (OutputFileInfo) o1;
+                OutputFileInfo c2 = (OutputFileInfo) o2;
                 if (column == null) {
                     return 0;
                 }
@@ -217,9 +217,17 @@ public class JobResultsBean extends JobBean {
         };
 
         for (JobResultsWrapper jobResult : getJobs()) {
-            Collections.sort(jobResult.getOutputFileParameterInfos(), comparator);
+            sortFilesRecursive(jobResult, comparator);
         }
 
+    }
+    
+    private void sortFilesRecursive(JobResultsWrapper jobResult, Comparator comparator) {
+        Collections.sort(jobResult.getOutputFileParameterInfos(), comparator);
+        for(JobResultsWrapper child : jobResult.getChildJobs()) {
+            sortFilesRecursive(child, comparator);
+        }
+       
     }
 
     public boolean isShowExecutionLogs() {

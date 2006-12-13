@@ -26,17 +26,24 @@
         <c:if test="#{level == 0}">
           <a href="link">#{jobInfo.jobNumber}</a>
         </c:if>
-        <input type="hidden" id="expansion_state_#{jobInfo.jobNumber}" name="expansion_state_#{jobInfo.jobNumber}" value="#{jobInfo.expanded}"/>
+        
+        <!--  Hidden field to hold the expansion state.  Its wrapped in a span so the id can be computed.
+              This is in turn used to manipulate the <input> element in javascript -->
+        <span id="expansion_state_#{jobInfo.jobNumber}">
+          <h:inputHidden  value="#{jobInfo.expanded}"/>
+        </span>
       </td>
       <td>
         <!-- Job select checkbox -->
         <div align="center" id="cb_job_#{jobInfo.jobNumber}">
           <c:choose>
             <c:when test="#{jobInfo.selected}">
-              <input type="checkbox" name="selectedJobs" checked="checked" value="#{jobInfo.jobNumber}" onclick="toggleJobCheckboxes('#{jobInfo.jobNumber}');"/>
+              <input type="checkbox" name="selectedJobs" checked="checked" value="#{jobInfo.jobNumber}" 
+                     onclick="toggleJobCheckboxes('#{jobInfo.jobNumber}');"/>
             </c:when>
             <c:otherwise>
-              <input type="checkbox" name="selectedJobs" value="#{jobInfo.jobNumber}" onclick="toggleJobCheckboxes('#{jobInfo.jobNumber}');"/>
+              <input type="checkbox" name="selectedJobs" value="#{jobInfo.jobNumber}" 
+                     onclick="toggleJobCheckboxes('#{jobInfo.jobNumber}');"/>
             </c:otherwise>
           </c:choose>
         </div>
@@ -45,30 +52,40 @@
       <!-- Job visibility toggle icon -->
       <td align="right" style="cursor: pointer;" onclick="toggleVisibility('#{jobInfo.jobNumber}');">
         <c:if test="#{level == 0}">
-          <img id="#{jobInfo.jobNumber}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" 
-               width="8" height="8" border="0" style="#{jobInfo.expanded == true ? 'display:inline;' : 'display:none;'}"/>
-          <img id="#{jobInfo.jobNumber}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" 
-               width="8" height="8" border="0" style="#{jobInfo.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
+          <img id="#{jobInfo.jobNumber}_expanded_img" 
+                src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" 
+                width="8" height="8" border="0" style="display:inline;"/>
+          <img id="#{jobInfo.jobNumber}_collapsed_img" 
+               src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" 
+               width="8" height="8" border="0" style="display:none;"/>
         </c:if>
       </td>
  
       <!-- Task name -->
-      <td class="#{level == 0 ? 'task-title' : 'pipelinetask-title'}" 
-          style="cursor: pointer;" onclick="toggleVisibility('#{jobInfo.jobNumber}');">
+      <td class="#{level == 0 ? 'task-title' : 'pipelinetask-title'}" >
         <c:if test="#{level > 1}">
           <c:forEach begin="0" end="#{level}">&#160;&#160;</c:forEach>
         </c:if>
         <c:if test="#{level > 0}">
            #{sequence}.&#160;
         </c:if>
-        #{jobInfo.taskName}
+        <c:if test="#{level == 0}">
+          <span style="cursor: pointer;" onclick="toggleVisibility('#{jobInfo.jobNumber}');">
+            #{jobInfo.taskName}
+          </span>
+       </c:if>
+        <c:if test="#{level > 0}">
+          #{jobInfo.taskName}
+       </c:if>
 
         <!-- Image trigger for jobs menu popup -->
-        <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" 
+        <c:if test="#{level == 0}">
+          <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" 
              name="Image2_#{jobInfo.jobNumber}" width="14" height="14" border="0" align="top" id="Image2_#{jobInfo.jobNumber}" 
              onclick="pm_showMenu('menuDiv_#{jobInfo.jobNumber}', Position.cumulativeOffset(this), 50, 0);" 
              onmouseover="MM_swapImage('Image2_#{jobInfo.jobNumber}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
              onmouseout="MM_swapImgRestore();"/>
+        </c:if>
       </td>
       <td>&#160;</td>
       <td>
@@ -91,8 +108,7 @@
     <ui:include src="jobResultsFiles.xhtml">
       <ui:param name="jobInfo" value="#{jobInfo}"/>
       <ui:param name="level" value="#{level + 1}"/>
-      <ui:param name="parentJob" value="#{jobInfo.jobNumber}"/>
-    </ui:include>
+     </ui:include>
     
     <!--  Loop through child jobs  -->
     <c:forEach var="childJob" items="#{jobInfo.childJobs}" varStatus="loopStatus">
@@ -100,7 +116,6 @@
         <ui:param name="jobInfo" value="#{childJob}"/>
         <ui:param name="level" value="#{level + 1}"/>
         <ui:param name="sequence" value="#{loopStatus.index + 1}"/>
-        <ui:param name="parentJob" value="#{jobInfo.jobNumber}"/>
       </ui:include>
     </c:forEach>
   </ui:composition>
