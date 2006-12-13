@@ -27,11 +27,10 @@
           <a href="link">#{jobInfo.jobNumber}</a>
         </c:if>
         
-        <!--  Hidden field to hold the expansion state.  Its wrapped in a span so the id can be computed.
-              This is in turn used to manipulate the <input> element in javascript -->
-        <span id="expansion_state_#{jobInfo.jobNumber}">
-          <h:inputHidden  value="#{jobInfo.expanded}"/>
-        </span>
+        <!--  Hidden field to hold the expansion state.  -->
+        <input type="hidden" id="expansion_state_#{jobInfo.jobNumber}" 
+               name="expansion_state_#{jobInfo.jobNumber}" value="#{jobInfo.expanded}"/>
+
       </td>
       <td>
         <!-- Job select checkbox -->

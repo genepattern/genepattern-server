@@ -96,8 +96,7 @@
      
                                
     function toggleVisibility(jobNo) {
-      var hiddenFieldSpan = document.getElementById("expansion_state_" + jobNo);   
-      var hiddenField = hiddenFieldSpan.getElementsByTagName("input")[0]; 
+      var hiddenField = $("expansion_state_" + jobNo);  
       if(hiddenField.value == "false")
       {
         showCategory(jobNo);
