@@ -73,6 +73,16 @@ public abstract class JobBean {
         }
     }
 
+    public String loadTask(ActionEvent event) {
+        String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest()
+                .getParameter("module"));
+        RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper
+                .getManagedBean("#{runTaskBean}");
+        assert runTaskBean != null;
+        runTaskBean.setTask(lsid);
+        return "run task";
+    }
+
     private Set<String> getSelectedJobs() {
         HashSet<String> selectedJobs = new HashSet<String>();
         String[] tmp = UIBeanHelper.getRequest().getParameterValues(
