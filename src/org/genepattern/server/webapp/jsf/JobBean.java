@@ -46,7 +46,7 @@ public abstract class JobBean {
 
     Map<String, Collection<TaskInfo>> kindToModules;
 
-    private boolean includeLogsFiles = false;
+    private boolean showExecutionLogs = false;
 
     /**
      * Job sort direction (true for ascending, false for descending)
@@ -60,6 +60,15 @@ public abstract class JobBean {
     }
 
     abstract protected JobInfo[] getJobInfos();
+    
+    
+    public boolean isShowExecutionLogs() {
+        return showExecutionLogs;
+    }
+
+    public void setShowExecutionLogs(boolean showExecutionLogs) {
+        this.showExecutionLogs = showExecutionLogs;
+    }
 
     protected void updateJobs() {
         JobInfo[] temp = getJobInfos();
@@ -498,7 +507,7 @@ public abstract class JobBean {
                         + jobInfo.getJobNumber()));
                 for (int i = 0; i < parameterInfoArray.length; i++) {
                     if (parameterInfoArray[i].isOutputFile()) {
-                        if (includeLogsFiles
+                        if (showExecutionLogs
                                 || !parameterInfoArray[i].getName().equals(
                                         "gp_task_execution_log.txt")) {
                             File file = new File(outputDir,
@@ -611,6 +620,7 @@ public abstract class JobBean {
         public String getUserId() {
             return jobInfo.getUserId();
         }
+ 
     }
 
     private static class KeyValueComparator implements Comparator<KeyValuePair> {
@@ -722,5 +732,7 @@ public abstract class JobBean {
             return p.toString();
         }
     }
+
+ 
 
 }
