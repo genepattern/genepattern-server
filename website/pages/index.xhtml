@@ -25,6 +25,17 @@
  
 /* <![CDATA[ */
 
+	function closeCode() {
+		Element.hide($('codeDiv'));
+	}
+	
+	function showCode(code) {
+		var txt = '<p>' + code + '</p>';
+		Element.update('codeDiv', txt);
+     	Element.show($('codeDiv'));
+     	
+	}
+	
 	function callManagedBean(elExpression, parameters) {            
         var opt = {
           parameters: parameters + '&el=' + elExpression,
@@ -40,7 +51,7 @@
       function receiveResponse( req ) {
         if (req.readyState == 4) {
           if (req.status == 200) { // only if "OK"
-            alert(req.responseText);
+            	showCode(req.responseText);
           } 
           else {
             alert("There was a problem retrieving the XML data:\n" + req.statusText);
@@ -330,10 +341,10 @@ function showFileInput(id) {
 				<p>&#160;</p>
 
 				<br />
-				<div class="download_code"><strong>Download code to
+				<div class="download_code"><strong>View code to
 				call #{runTaskBean.name}: </strong>
-				<p></p>
-
+				<div id="codeDiv">&#160;</div>
+			
 				<select name="gp_languageSelector" id="gp_languageSelector">
 					<option selected="selected">- Language -</option>
 					<option>Java</option>
@@ -341,6 +352,7 @@ function showFileInput(id) {
 					<option>R</option>
 				</select> &#160; <input type="button" onclick="viewCode();" value="View Code" /></div>
 				</form>
+				
 			</c:when>
 
 			<c:otherwise>
