@@ -54,26 +54,41 @@
             <br/>
             
             <!--  Loop through output files -->
-            <t:dataList var="p" value="#{job.outputFileParameterInfos}" rowIndexVar="paramIndex">
-              <h:outputLink value="#{facesContext.externalContext.requestContextPath}/retrieveResults.jsp">#{p.name}
-                <f:param name="job" value="#{job.jobNumber}"/>
-                <f:param name="filename" value="#{p.name}"/>
-              </h:outputLink>
-              
-                <!-- Image for popup menu -->            
-                <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
-                     name="Image_#{job.jobNumber}_#{p.value}" id="Image_#{job.jobNumber}_#{p.value}" 
-                     width="14" height="14" border="0" align="top" 
-                     onclick="pm_showMenu('menuDev_#{job.jobNumber}_#{p.value}', Position.cumulativeOffset(this), 50, 100);" 
-                     onmouseover="MM_swapImage('Image_#{job.jobNumber}_#{p.value}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
-                     onmouseout="MM_swapImgRestore();"/> 
-        
-            </t:dataList>
+            <ui:include src="recentJobsFiles.xhtml">
+              <ui:param name="recentJob" value="#{job}"/>
+            </ui:include>
+            
           </td>
           <td width="9">
             <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
           </td>
+        </tr>        
+ 
+        <!-- Now loop through all descenant jobs (pipeline).  Descendants do not get there own menu -->
+        <t:dataList var="descendant" value="#{job.descendantJobs}" rowIndexVar="descIndex">
+        <tr>
+          <td width="9">
+            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
+          </td>
+          <td valign="top" class="recentjobs-sh">
+            
+          </td>
+          <td width="9">
+            <img src="images/spacer.gif" width="9" height="1"/>
+          </td>
+          <td>
+            <font class="recentjobs-sh">
+              #{descendant.taskName}</font>
+            <br/>
+             <!--  Loop through output files -->
+            <ui:include src="recentJobsFiles.xhtml">
+              <ui:param name="recentJob" value="#{descendant}"/>
+            </ui:include>
+          </td>
         </tr>
+            
+        </t:dataList>
+        
         <tr>
           <td colspan="5">
             <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" vspace="5"/>
@@ -108,7 +123,7 @@
           <ui:include src="jobsMenu.xhtml">
             <ui:param name="job" value="#{jobInfo}"/>
           </ui:include>
-          <t:dataList var="fileInfo" value="#{jobInfo.outputFileParameterInfos}" rowIndexVar="paramIndex">
+          <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}" rowIndexVar="paramIndex">
             <ui:include src="jobFileMenu.xhtml">
               <ui:param name="job" value="#{jobInfo}"/>
               <ui:param name="param" value="#{fileInfo}"/>       

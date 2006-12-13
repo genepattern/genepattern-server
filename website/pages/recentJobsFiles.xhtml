@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" 
+      xmlns:c="http://java.sun.com/jstl/core">
+      
+  <!-- File section for recentJobs page-->
+  <ui:composition>
+    <!--  Loop through output files -->
+    <t:dataList var="p" value="#{recentJob.outputFileParameterInfos}" rowIndexVar="paramIndex">
+      <h:outputLink value="#{facesContext.externalContext.requestContextPath}/retrieveResults.jsp">#{p.name}              
+        <f:param name="job" value="#{recentJob.jobNumber}"/>
+        <f:param name="filename" value="#{p.name}"/>
+      </h:outputLink>
+      
+      <!-- Image for popup menu -->
+      <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
+           name="Image_#{p.value}" 
+           id="Image_#{p.value}" 
+           width="14" height="14" border="0" align="top" 
+           onclick="pm_showMenu('menuDev_#{p.value}', Position.cumulativeOffset(this), 50, 100);" 
+           onmouseover="MM_swapImage('Image_#{p.value}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
+           onmouseout="MM_swapImgRestore();"/>
+
+    </t:dataList>
+  </ui:composition>
+</html>
