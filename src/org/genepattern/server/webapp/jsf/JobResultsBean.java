@@ -62,8 +62,6 @@ public class JobResultsBean extends JobBean {
 
     private boolean showEveryonesJobs = false;
 
-    private boolean showExecutionLogs = true;
-
     /**
      * Get the job infos to display. This might be called before the model is
      * updated.
@@ -230,10 +228,6 @@ public class JobResultsBean extends JobBean {
        
     }
 
-    public boolean isShowExecutionLogs() {
-        return showExecutionLogs;
-    }
-
     public String getJobSortColumn() {
         return jobSortColumn;
     }
@@ -264,10 +258,6 @@ public class JobResultsBean extends JobBean {
 
     public void setJobSortAscending(boolean jobSortAscending) {
         this.jobSortAscending = jobSortAscending;
-    }
-
-    public void setShowExecutionLogs(boolean showExecutionLogs) {
-        this.showExecutionLogs = showExecutionLogs;
     }
 
     public boolean isShowEveryonesJobs() {
