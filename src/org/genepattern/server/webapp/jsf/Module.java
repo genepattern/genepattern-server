@@ -89,7 +89,7 @@ public class Module implements java.io.Serializable {
                 String v2 = ((SelectItem) o2).getLabel();
                 if(v1.toLowerCase().equals("latest")) return -1;
                 else if(v2.toLowerCase().equals("latest")) return 1;
-                else return LSIDVersionComparator.INSTANCE.compare(v1, v2);
+                else return LSIDVersionComparator.INSTANCE.compare(v2, v1);
             }
 
         });
