@@ -317,7 +317,7 @@
           <ui:include src="jobsMenu.xhtml">
             <ui:param name="job" value="#{jobInfo}"/>
           </ui:include>
-          <c:forEach var="fileInfo" items="#{jobInfo.outputFileParameterInfos}">
+          <c:forEach var="fileInfo" items="#{jobInfo.allFileInfos}">
             <ui:include src="jobFileMenu.xhtml">
               <ui:param name="job" value="#{jobInfo}"/>
               <ui:param name="param" value="#{fileInfo}"/>    
