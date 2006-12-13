@@ -10,19 +10,19 @@
        Inputs:   jobInfo
    -->
   <ui:composition>
-    <c:forEach var="fileInfo" items="#{jobInfo.outputFileParameterInfos}" varStatus="loopStatus">
+    <t:dataList var="fileInfo" value="#{jobInfo.outputFileParameterInfos}" rowIndexVar="index">
  
       <!-- Generate ID for this row and append to the fileRows array for the containing job -->
       <script type="text/javascript" language="javascript">
-        var rowId = 'file_row_' + '#{jobInfo.jobNumber}_#{loopStatus.index}';
-        addFileRow('#{parentJob}', rowId);
+        var rowId = 'file_row_' + '#{jobInfo.jobNumber}_#{index}';
+        addFileRow('#{jobInfo.rootJobNumber}', rowId);
       </script>
 
-      <tr class="files" id="file_row_#{jobInfo.jobNumber}_#{loopStatus.index}">
+      <tr class="files" id="file_row_#{jobInfo.jobNumber}_#{index}">
         <td>&#160;</td>
         <td>
           <!-- File selection checkbox -->
-          <div align="center" id="cb_job_#{jobInfo.jobNumber}">
+          <div align="center">
             <t:div rendered="#{fileInfo.selected}">
               <input type="checkbox" name="selectedFiles" checked="checked" value="#{fileInfo.value}"/>
             </t:div>
@@ -32,10 +32,7 @@
           </div>
         </td>
         <td>&#160;</td>
-        <td class="#{level == 0 ? '' : 'pipelinefiles'}">
-          <c:if test="#{level > 1}">
-            <c:forEach begin="0" end="#{level}">&#160;&#160;</c:forEach>
-          </c:if>
+        <td class="#{jobInfo.level == 0 ? '' : 'pipelinefiles'}">
           <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" 
                width="4" height="4" hspace="6" vspace="2" border="0"/>
            
@@ -62,6 +59,6 @@
         </td>
         <td>&#160;</td>
       </tr>
-    </c:forEach>
+    </t:dataList>
   </ui:composition>
 </html>

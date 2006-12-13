@@ -100,16 +100,17 @@
       if(hiddenField.value == "false")
       {
         showCategory(jobNo);
-        hiddenField.value = "true";
-      }
+       }
       else
       {
         hideCategory(jobNo);
-        hiddenField.value = "false";
       }
     }
 
     function hideCategory( jobNo ) {
+    
+      $("expansion_state_" + jobNo).value = "false";
+      
       var downArrow = document.getElementById(jobNo + "_expanded_img");
       var rightArrow = document.getElementById(jobNo + "_collapsed_img");	
       downArrow.style.display ="none";
@@ -125,6 +126,9 @@
     }
 
     function showCategory( jobNo ) {
+    
+      $("expansion_state_" + jobNo).value = "true";
+    
       var downArrow = document.getElementById(jobNo + "_expanded_img");
       var rightArrow = document.getElementById(jobNo + "_collapsed_img");	
       downArrow.style.display ="inline";
@@ -163,11 +167,11 @@
 	
     <ui:define name="body">
       <h:form> 
-      <table width="%100">
+      <table width="100%"  border="0" cellspacing="0" cellpadding="0">
         <tr>
-          <td valign="top" class="maintasknav" id="maintasknav" align="right">
-            <h:selectBooleanCheckbox  value="#{jobResultsBean.showEveryonesJobs}" onchange="submit();"/>show everyone's jobs&#160;&#160;&#160;&#160;
-            <h:selectBooleanCheckbox  value="#{jobResultsBean.showExecutionLogs}" onchange="submit();" />show execution logs	
+          <td valign="top" class="maintasknav" id="maintasknav" align="right" width="100%">
+            <h:selectBooleanCheckbox  value="#{jobResultsBean.showEveryonesJobs}" onchange="this.form.submit();"/>show everyone's jobs&#160;&#160;&#160;&#160;
+            <h:selectBooleanCheckbox  value="#{jobResultsBean.showExecutionLogs}" onchange="this.form.submit();" />show execution logs	
           </td>
         </tr>
       </table>
@@ -271,13 +275,20 @@
 
         <!--  Loop through job list -->
         <script type="text/javascript" language="javascript"> var jobIndex = 0; </script>
-        <c:forEach var="jobInfo" items="#{jobResultsBean.jobs}">
+        <t:dataList var="jobInfo" value="#{jobResultsBean.jobs}">
           <ui:include src="jobResultsJobs.xhtml">
             <ui:param name="jobInfo" value="#{jobInfo}"/>
-            <ui:param name="level" value="0"/>
             <ui:param name="parentJob" value="#{jobInfo.jobNumber}"/>
           </ui:include>
-        </c:forEach>
+          
+          <!--  Loop through descendants  -->
+          <t:dataList var="childJob" value="#{jobInfo.descendantJobs}">
+            <ui:include src="jobResultsJobs.xhtml">
+              <ui:param name="jobInfo" value="#{childJob}"/>
+              <ui:param name="parentJob" value="#{jobInfo.jobNumber}"/>
+            </ui:include>
+          </t:dataList>
+        </t:dataList>
         
         <tr>
           <td class="smalltype">&#160;</td>
@@ -299,7 +310,7 @@
       <p>&#160;</p>
     </h:form>
     
-    // Set initial visibility state
+    <!-- Set initial visibility state  -->
     <script type="text/javascript" language="javascript"> 
       <c:forEach var="jobInfo" items="#{jobResultsBean.jobs}">
         <c:if test="#{!jobInfo.expanded}">
@@ -320,8 +331,7 @@
           <c:forEach var="fileInfo" items="#{jobInfo.allFileInfos}">
             <ui:include src="jobFileMenu.xhtml">
               <ui:param name="job" value="#{jobInfo}"/>
-              <ui:param name="param" value="#{fileInfo}"/>    
-              <ui:param name="parentJob" value="#{jobInfo.jobNumber}"/>   
+              <ui:param name="param" value="#{fileInfo}"/>      
             </ui:include>
           </c:forEach>
         </c:forEach>
