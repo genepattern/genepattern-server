@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.util.LSIDVersionComparator;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.SuiteInfo;
