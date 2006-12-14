@@ -381,10 +381,10 @@ function showFileInput(id) {
 					<tr>
 						<t:dataList value="#{runTaskBean.versions}" var="version">
 							<tr>
-								<td><h:commandLink value="#{version}"
-									actionListener="#{runTaskBean.changeVersion}">
-									<f:param value="#{version}" name="version" />
-								</h:commandLink></td>
+								<td><h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf">
+									#{version}
+									<f:param value="#{runTaskBean.lsidNoVersion}:#{version}" name="lsid" />
+								</h:outputLink></td>
 							</tr>
 						</t:dataList>
 					</tr>
