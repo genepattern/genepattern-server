@@ -52,6 +52,24 @@ public class ViewSuiteBean implements java.io.Serializable {
             	Suite s = (Suite) HibernateUtil.getSession().get(org.genepattern.server.domain.Suite.class, lsid);
             	if (s.getOwner().equals(user)) {
             		(new SuiteDAO()).delete(s);
+            		//Delete supporting files
+            		
+                	try {
+                		String suiteDirPath = DirectoryManager.getSuiteLibDir(s.getName(), s.getLsid(), s.getOwner());
+                		File suiteDir = new File(suiteDirPath);
+                		File[] allFiles=suiteDir.listFiles();
+                		for (File file:allFiles) {
+                			file.delete();
+                		}
+                		suiteDir.delete();
+                	}catch (Exception e) {
+                        HibernateUtil.rollbackTransaction(); // This shouldn't be
+                                                                // neccessary, but just in
+                                                                // case
+                        throw new RuntimeException(e); // @todo -- replace with appropriate
+                                                        // GP exception
+                    }
+                	//end of deleting supporting files
             	}
             }
         }
