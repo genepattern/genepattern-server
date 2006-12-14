@@ -96,6 +96,15 @@ public class RunTaskBean {
     public String getLsid() {
         return lsid;
     }
+    
+    public String getLsidNoVersion() {
+        try {
+            return new LSID(lsid).toStringNoVersion();
+        } catch (MalformedURLException e) {
+            log.error(e);
+            return null;
+        }
+    }
 
     public String getEncodedLsid() {
         return UIBeanHelper.encode(lsid);
