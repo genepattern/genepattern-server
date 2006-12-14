@@ -160,6 +160,16 @@
 
 	}
 	
+	function toggleShowEveryonesJobs(cb) {
+var location = '#{facesContext.externalContext.requestContextPath}/pages/jobResults.jsf';
+if(cb.checked) {
+location += "?all=1";
+} else {
+location += "?all=0";
+}
+document.location.href=location;
+}
+	
 /* ]]> */
 
 	</script>
@@ -273,28 +283,28 @@
         </tr>
         
         <!--  Loop through job list -->
-         <t:dataList var="jobInfo" value="#{jobResultsBean.jobs}" rowIndexVar="jobIndex">
+         <t:dataList var="rootJobInfo" value="#{jobResultsBean.jobs}" rowIndexVar="jobIndex">
  
           <script type="text/javascript" language="javascript">
-            jobNumbers[#{jobIndex}]='#{jobInfo.jobNumber}';
+            jobNumbers[#{jobIndex}]='#{rootJobInfo.jobNumber}';
           </script>
  
           <ui:include src="jobResultsJobs.xhtml">
-            <ui:param name="jobInfo" value="#{jobInfo}"/>
-            <ui:param name="parentJob" value="#{jobInfo.jobNumber}"/>
+            <ui:param name="jobInfo" value="#{rootJobInfo}"/>
+            <ui:param name="parentJob" value="#{rootJobInfo.jobNumber}"/>
           </ui:include>
           
           <!--  Loop through descendants  -->
-          <t:dataList var="childJob" value="#{jobInfo.descendantJobs}">
+          <t:dataList var="childJob" value="#{rootJobInfo.descendantJobs}">
             
             <script type="text/javascript" language="javascript">
  	           var rowId = "job_row_" + #{childJob.jobNumber};
-	           addFileRow('#{jobInfo.jobNumber}', rowId);	  
+	           addFileRow('#{rootJobInfo.jobNumber}', rowId);	  
 	        </script>
 
             <ui:include src="jobResultsJobs.xhtml">
               <ui:param name="jobInfo" value="#{childJob}"/>
-              <ui:param name="parentJob" value="#{jobInfo.jobNumber}"/>
+              <ui:param name="parentJob" value="#{rootJobInfo.jobNumber}"/>
             </ui:include>
           </t:dataList>
         </t:dataList>
