@@ -272,10 +272,13 @@
           </td>
         </tr>
         
-
         <!--  Loop through job list -->
-        <script type="text/javascript" language="javascript"> var jobIndex = 0; </script>
-        <t:dataList var="jobInfo" value="#{jobResultsBean.jobs}">
+         <t:dataList var="jobInfo" value="#{jobResultsBean.jobs}" rowIndexVar="jobIndex">
+ 
+          <script type="text/javascript" language="javascript">
+            jobNumbers[#{jobIndex}]='#{jobInfo.jobNumber}';
+          </script>
+ 
           <ui:include src="jobResultsJobs.xhtml">
             <ui:param name="jobInfo" value="#{jobInfo}"/>
             <ui:param name="parentJob" value="#{jobInfo.jobNumber}"/>
@@ -283,6 +286,12 @@
           
           <!--  Loop through descendants  -->
           <t:dataList var="childJob" value="#{jobInfo.descendantJobs}">
+            
+            <script type="text/javascript" language="javascript">
+ 	           var rowId = "job_row_" + #{childJob.jobNumber};
+	           addFileRow('#{jobInfo.jobNumber}', rowId);	  
+	        </script>
+
             <ui:include src="jobResultsJobs.xhtml">
               <ui:param name="jobInfo" value="#{childJob}"/>
               <ui:param name="parentJob" value="#{jobInfo.jobNumber}"/>

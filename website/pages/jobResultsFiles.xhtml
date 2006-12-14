@@ -15,7 +15,7 @@
       <!-- Generate ID for this row and append to the fileRows array for the containing job -->
       <script type="text/javascript" language="javascript">
         var rowId = 'file_row_' + '#{jobInfo.jobNumber}_#{index}';
-        addFileRow('#{jobInfo.rootJobNumber}', rowId);
+        addFileRow('#{parentJob}', rowId);
       </script>
 
       <tr class="files" id="file_row_#{jobInfo.jobNumber}_#{index}">
