@@ -1,23 +1,22 @@
-// Global array to hold popmenu ids
-var pm_popupMenuIds = new Array();
 
 var pm_currentId;
-
-// Mouse click handler.  Close  popupMenus
+var pm_showing = false;
 
 function pm_registerClickHandler() {
-    Event.observe(window.document, 'click', function() {
-       for(var i=0; i<pm_popupMenuIds.length; i++) {
-         if(pm_popupMenuIds[i] != pm_currentId) {
-           pm_hideMenu(pm_popupMenuIds[i]); 
-         }
-       }
-       pm_currentId = null;
-    }, false);   
+    Event.observe(window.document, 'click', pm_clickHandler, false);  
 } 
+
+function pm_clickHandler() {
+  if(!pm_showing) {
+    pm_hideMenu(pm_currentId); 
+  } 
+  pm_showing = false;
+  return true;
+}
 
 function pm_showMenu(id, pos, leftOffset, topOffset) {
    pm_currentId = id;
+   pm_showing = true;
    var style = $(id).style;
    if(pos) {
      style.left = (pos[0] - leftOffset)  + "px";
@@ -27,9 +26,13 @@ function pm_showMenu(id, pos, leftOffset, topOffset) {
 } 
   
 function pm_hideMenu(id) {
-  $(id).style.visibility = "hidden";
+  var menu = $(id);
+  if(menu != null) {
+    $(id).style.visibility = "hidden";
+    pm_currentId = null;
+  }
+  
 } 
 
-function pm_setMousePosition(e) {
-  alert(document.event);
-}
+
+
