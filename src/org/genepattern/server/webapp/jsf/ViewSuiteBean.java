@@ -103,28 +103,30 @@ public class ViewSuiteBean implements java.io.Serializable {
     public List getCategoryColumnsForSuite() {
         List<List> cols = new ArrayList<List>();
         
-        if(categories == null) {
-          categories = (new ModuleHelper()).getTasksByTypeForSuite(currentSuite);
-        }
-        
-        // Find the midpoint in the category list.
-        int totalCount = 0;
-        for (ModuleCategory cat : categories) {
-            totalCount += cat.getModuleCount();
-        }
-        int midpoint = totalCount / 2;
-
-        cols.add(new ArrayList());
-        cols.add(new ArrayList());
-        int cumulativeCount = 0;
-        for (ModuleCategory cat : categories) {
-            if (cumulativeCount < midpoint) {
-                cols.get(0).add(cat);
-            }
-            else {
-                cols.get(1).add(cat);
-            }
-            cumulativeCount += cat.getModuleCount();
+        if (currentSuite!=null) {
+	        if(categories == null) {
+	          categories = (new ModuleHelper()).getTasksByTypeForSuite(currentSuite);
+	        }
+	        
+	        // Find the midpoint in the category list.
+	        int totalCount = 0;
+	        for (ModuleCategory cat : categories) {
+	            totalCount += cat.getModuleCount();
+	        }
+	        int midpoint = totalCount / 2;
+	
+	        cols.add(new ArrayList());
+	        cols.add(new ArrayList());
+	        int cumulativeCount = 0;
+	        for (ModuleCategory cat : categories) {
+	            if (cumulativeCount < midpoint) {
+	                cols.get(0).add(cat);
+	            }
+	            else {
+	                cols.get(1).add(cat);
+	            }
+	            cumulativeCount += cat.getModuleCount();
+	        }
         }
         return cols;
     }
@@ -135,12 +137,14 @@ public class ViewSuiteBean implements java.io.Serializable {
     public String getSupportFiles() {
     	StringBuffer supportFiles = new StringBuffer();
     	try {
-    		String suiteDirPath = DirectoryManager.getSuiteLibDir(currentSuite.getName(), currentSuite.getLsid(), currentSuite.getOwner());
-    		File suiteDir = new File(suiteDirPath);
-    		File[] allFiles=suiteDir.listFiles();
-    		for (File file:allFiles) {
-    			supportFiles.append(file.getAbsolutePath()).append("\n");
-    		}  		
+    		if (currentSuite!=null) {
+	    		String suiteDirPath = DirectoryManager.getSuiteLibDir(currentSuite.getName(), currentSuite.getLsid(), currentSuite.getOwner());
+	    		File suiteDir = new File(suiteDirPath);
+	    		File[] allFiles=suiteDir.listFiles();
+	    		for (File file:allFiles) {
+	    			supportFiles.append(file.getAbsolutePath()).append("\n");
+	    		}
+    		}
     	}catch (Exception e) {
             HibernateUtil.rollbackTransaction(); // This shouldn't be
                                                     // neccessary, but just in
