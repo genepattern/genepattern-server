@@ -148,13 +148,13 @@ function chooserModeChanged() {
 }
 
 function showUrlInput(id) {
-	Element.hide(id);
-	Element.show(id + "_url");
+	Element.hide(id + "_div_file");
+	Element.show(id + "_div_url");
 }
 
 function showFileInput(id) {
-	Element.show(id);
-	Element.hide(id + "_url");
+	Element.show(id + "_div_file");
+	Element.hide(id + "_div_url");
 	
 }
    
@@ -268,17 +268,17 @@ function showFileInput(id) {
 									rendered="#{p.inputType=='file'}">
 									<h:outputText rendered="#{empty p.defaultValue}">
 									
-										<input name="#{p.name}" id="#{p.name}" size="30" type="file" />
-										<input name="#{p.name}_url" id="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}" style="display:none"/>
-										<br />
-											<input type="radio" name="#{p.name}_cb" onclick="showUrlInput('#{p.name}');">Specify URL</input> 
-											<input type="radio" name="#{p.name}_cb" onclick="showFileInput('#{p.name}');" checked="yes">Upload File</input>
+										<div id="#{p.name}_div_file"><input name="#{p.name}" id="#{p.name}" size="30" type="file" /></div>
+										<div id="#{p.name}_div_url" style="display:none"><input name="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/></div>
+										<input type="radio" name="#{p.name}_cb" onclick="showUrlInput('#{p.name}');">Specify URL</input> 
+										<input type="radio" name="#{p.name}_cb" onclick="showFileInput('#{p.name}');" checked="yes">Upload File</input>
 										
 									</h:outputText>
+									
 									<h:outputText rendered="#{!empty p.defaultValue}">
-										<input name="#{p.name}" id="#{p.name}" size="30" type="file" style="display:none"/>
-										<input name="#{p.name}_url" id="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
-										<br />
+										<div id="#{p.name}_div_file" style="display:none"><input name="#{p.name}" id="#{p.name}" size="30" type="file"/></div>
+										<div id="#{p.name}_div_url"><input name="#{p.name}_url" id="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/></div>
+										
 										<input type="radio" name="#{p.name}_cb"
 											onclick="showUrlInput('#{p.name}');" checked="yes">Specify
 										URL</input>
