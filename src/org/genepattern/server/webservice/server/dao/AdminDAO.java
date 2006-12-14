@@ -14,8 +14,20 @@ package org.genepattern.server.webservice.server.dao;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
-import java.sql.*;
-import java.util.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
@@ -25,8 +37,10 @@ import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
-import org.genepattern.webservice.*;
-import org.hibernate.HibernateException;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.SuiteInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 import org.hibernate.Query;
 
 /**
@@ -254,6 +268,30 @@ public class AdminDAO extends BaseDAO {
         }
         return allTasks;
 
+    }
+    
+    /**
+     * @param username
+     * @param lsids
+     * @return
+     */
+    public Map<String, TaskInfo> getAllTasksForUserWithLsids(String username, List<String> lsids) {
+        String hql = "from org.genepattern.server.domain.TaskMaster where (userId = :userId or accessId = :accessId) and lsid like :lsids";
+        Query query = getSession().createQuery(hql);
+        query.setString("userId", username);
+        query.setInteger("accessId", PUBLIC_ACCESS_ID);
+        
+        Map<String, TaskInfo> queriedTasks = new HashMap<String, TaskInfo>();
+        for (String lsid: lsids) {
+        	query.setString("lsids", lsid+"%");
+        	List<TaskMaster> results = query.list();
+
+            for (int i = 0; i < results.size(); i++) {
+            	queriedTasks.put(lsid, taskInfoFromTaskMaster(results.get(i)));
+            }
+        }
+        TaskInfo[] tasksArray=new TaskInfo[queriedTasks.size()];
+        return queriedTasks;
     }
 
     public TaskInfo[] getRecentlyRunTasksForUser(String username, int maxResults) {

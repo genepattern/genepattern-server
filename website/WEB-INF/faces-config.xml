@@ -109,8 +109,8 @@
   <managed-bean-scope>session</managed-bean-scope>
  </managed-bean>
  <managed-bean>
-  <managed-bean-name>suiteDeleteBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.jsf.SuiteDeleteBean</managed-bean-class>
+  <managed-bean-name>viewSuiteBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.ViewSuiteBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
@@ -232,6 +232,14 @@
   <navigation-case>
    <from-outcome>install</from-outcome>
    <to-view-id>/pages/installSuites.xhtml</to-view-id>
+  </navigation-case>
+ </navigation-rule>
+ <navigation-rule>
+  <display-name>view suite</display-name>
+  <from-view-id>/pages/deleteSuite.xhtml</from-view-id>
+  <navigation-case>
+   <from-outcome>view suite</from-outcome>
+   <to-view-id>/pages/viewSuite.xhtml</to-view-id>
   </navigation-case>
  </navigation-rule>
  <application>

@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
+  <ui:composition template="/templates/common.xhtml">
+    <ui:define name="pageTitle">Create Suite</ui:define>
+    <ui:define name="headText">
+      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
+      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js"/>
+      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js"/>
+    </ui:define>
+    <ui:define name="body">
+      <h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm();">
+        <!--  The category list is used upon submit.  -->
+        <h:messages/> 
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+          <tr>
+            <td>#{viewSuiteBean.currentSuite.name}</td>
+          </tr>
+        </table>
+        <table width="100%" cellpadding="3" cellspacing="0" cols="2">
+          <tr class="taskperameter">
+            <td valign="top" class="attribute-required">Name:*</td>
+            <td>
+              <t:outputText value="#{viewSuiteBean.currentSuite.name}" size="40"  id="nameField" forceId="true"/> &#160; 
+            </td>
+          </tr>
+          <tr class="taskperameter">
+            <td>Description:</td>
+            <td width="85%">
+              <t:outputText value="#{viewSuiteBean.currentSuite.description}" cols="60"/>
+            </td>
+          </tr>
+          <tr class="taskperameter">
+            <td>Author:</td>
+            <td>
+              <h:outputText value="#{viewSuiteBean.currentSuite.author}" size="40"/>
+            </td>
+          </tr>
+          <tr class="taskperameter">
+            <td>Contact:</td>
+            <td>
+              <h:outputText value="#{viewSuiteBean.currentSuite.contact}" size="40"/>
+            </td>
+          </tr>
+          <tr class="taskperameter">
+            <td>Privacy:</td>
+            <td>
+              <h:outputText value="#{(viewSuiteBean.currentSuite.accessId eq '1')? 'public':'private'}"/>
+            </td>
+          </tr>
+          <tr class="taskperameter">
+            <td>Support Files:<br/>
+            </td>
+            <td>
+              <pre>
+              	<t:outputText size="60" value="#{viewSuiteBean.supportFiles}"/>
+              </pre>
+            </td>
+          </tr>
+          <tr class="smalltype">
+            <td>
+              <a  style="cursor: pointer;" onclick="openAll();">open all</a> | <a  style="cursor: pointer;"  onclick="closeAll();">close all</a>
+            </td>
+            <td>&#160;</td>
+          </tr>
+        </table>
+        
+        <!-- Module selection -->
+                
+        <table width="100%" border="0" cellspacing="0" cellpadding="5">
+          <tr valign="top">
+			<!-- Loop through the columns (hardcoded on the backing bean to 2 columns) -->
+            <t:dataList var="col" value="#{viewSuiteBean.categoryColumnsForSuite}">
+              <td width="50%">              
+                <!--  Loop through the categories -->
+                <t:dataList var="category" value="#{col}">
+                  <div class="pipeline_item">                 
+                    <!-- Category header  Clicking on the header hides or shows the panel contents -->
+                    <!--     The category.expanded property sets the inital hide/show values -->
+                    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
+                      <tr style="cursor: pointer;" onclick="toggleVisibility('#{category.identifier}');">
+                        <td width="8" >            
+                            <img id="#{category.identifier}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" 
+                                 width="8" height="8" border="0" 
+                                 style="#{category.expanded == true ? 'display:inline;' : 'display:none;'}"/>
+                            <img id="#{category.identifier}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" 
+                                 width="8" height="8" border="0" 
+                                 style="#{category.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
+                        </td>
+                        <td>
+                          #{category.name} 
+                        </td>
+                      </tr>
+                    </table>
+                    
+                    <!--  The module list.  The list is conditionally displayed based on the categories "expanded" property -->
+                    <div id="#{category.identifier}_panel" class="category_panel">
+                    <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top">
+                      <tbody>
+                        <!--  Header Row -->
+                        <tr class="tableheader-row2">
+                          <td>task name</td>
+                          <td>&#160;</td>
+                          <td width="60">
+                            <div align="center">version</div>
+                          </td>
+                        </tr>
+                        <!--  Modules -->
+                        <t:dataList var="module" value="#{category.modules}">
+                          <tr class="taskperameter">
+                            <td valign="top">
+                              <a href="#">#{module.name}</a>
+                            </td>
+                            <td valign="top">&#160;</td>
+                            <td valign="top" class="description">
+                              <div align="center">
+                                <h:outputText value="#{module.selectedVersion}"/>
+                              </div>
+                            </td>
+                          </tr>
+                        </t:dataList>
+                        <tr/>
+                      </tbody>
+                    </table>
+                    </div>
+                  </div>
+                  <br/>
+                </t:dataList>
+              </td>
+            </t:dataList>
+          </tr>
+        </table>
+      </h:form>
+    </ui:define>
+  </ui:composition>
+</html>

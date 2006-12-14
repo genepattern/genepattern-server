@@ -93,7 +93,7 @@
           <td valign="top">
             <nobr>
               <div align="center">
-                <h:commandLink actionListener="#{suiteDeleteBean.delete}" 
+                <h:commandLink actionListener="#{viewSuiteBean.delete}" 
                                onclick="if (!confirmDelete()) return false">delete</h:commandLink> 
               </div>
             </nobr>
@@ -120,13 +120,13 @@
 
         <!--  Loop through suite list -->
         <script type="text/javascript" language="javascript"> var jobIndex = 0; </script>
-        <c:forEach var="suiteInfo" items="#{suiteDeleteBean.suites}">
+        <c:forEach var="suiteInfo" items="#{viewSuiteBean.suites}">
           <tr class="task-titlerow">
           	  <td>
 		        <h:outputText value="#{suiteInfo.version}"/>
 		      </td>
 		      <td>
-		        <!-- Job select checkbox -->
+		        <!-- Suite select checkbox -->
 		        <div align="center" id="cb_suite_#{suiteInfo.name}">
 		          <c:choose>
 		            <c:when test="#{!suiteInfo.ownedByUser}">
@@ -142,7 +142,9 @@
 		        </div>
 		      </td>
 		      <td>
-		        <h:outputText value="#{suiteInfo.name}"/>
+		        <h:commandLink value="#{suiteInfo.name}" action="#{viewSuiteBean.viewSuite}">
+		        	<f:param name="lsid" value="#{suiteInfo.lsid}"/>
+		        </h:commandLink>
 		      </td>
 		      <td class="task-title">
 		        <h:outputText value="#{suiteInfo.description}"/>
@@ -161,7 +163,7 @@
           <td valign="top" class="smalltype">
             <nobr>
               <div align="center">
-                <h:commandLink actionListener="#{suiteDeleteBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink> 
+                <h:commandLink actionListener="#{viewSuiteBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink> 
               </div>
             </nobr>
           </td>
