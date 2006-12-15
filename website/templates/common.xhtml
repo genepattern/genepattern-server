@@ -52,7 +52,9 @@
           <td><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="0" height="440"/></td>
           <ui:insert name="leftPanel"/>
           <td valign="top" class="maincontent" id="maincontent">
-     		<h:messages/>
+            <h:outputText value="Please correct the following errors before proceeding:" 
+                          rendered="#{! empty facesContext.maximumSeverity}" style="font-weight:bold"/>
+		    <h:messages errorClass="validation-error" errorStyle="font-weight:bold; color:red;"/>
      		<ui:insert name="body" />
           </td>
           <ui:insert name="rightPanel"/>
