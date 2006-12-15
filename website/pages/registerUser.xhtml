@@ -16,40 +16,38 @@
 		<h:form>
 			<h2>Enter the following information to create an account.</h2>
 			<b />
-			<h:panelGrid columns="3">
+			<h:panelGrid columns="2">
 
 				<h:outputLabel value="Username:" for="username"></h:outputLabel>
 				<h:inputText size="50" value="#{registrationBean.username}"
-					id="username" required="true"
+					id="username" required="true" requiredMessage="Username is required"
 					validator="#{registrationBean.validateNewUsername}" />
-				<h:message style="color: red; font-weight: bold;" for="username" />
 
 				<h:outputLabel value="Password:" for="password"></h:outputLabel>
 				<h:inputSecret size="50" value="#{registrationBean.password}"
-					id="password" required="true"
+					id="password" required="true" requiredMessage="Password is required"
 					validator="#{registrationBean.validatePassword}" />
-				<h:message style="color: red; font-weight: bold;" for="password" />
 
 				<h:outputLabel value="Re-enter password:" for="passwordConfirm"></h:outputLabel>
 				<h:inputSecret size="50" value="#{registrationBean.passwordConfirm}"
-					id="passwordConfirm" required="true"
+					id="passwordConfirm"
 					binding="#{registrationBean.passwordConfirmComponent}" />
-				<h:outputText></h:outputText>
+				
 
 				<h:outputLabel value="Email:" for="email"></h:outputLabel>
 				<h:inputText size="50" value="#{registrationBean.email}" id="email"
-					required="true" validator="#{registrationBean.validateEmail}">
+					required="true" requiredMessage="Email is required"
+					validator="#{registrationBean.validateEmail}">
 					<t:validateEmail />
 				</h:inputText>
-				<h:message style="color: red; font-weight: bold;" for="email" />
 
 				<h:outputLabel value="Re-enter email" for="emailConfirm"></h:outputLabel>
 				<h:inputText size="50" value="#{registrationBean.emailConfirm}"
-					id="emailConfirm" required="true"
+					id="emailConfirm" 
 					binding="#{registrationBean.emailConfirmComponent}">
 					<t:validateEmail />
 				</h:inputText>
-				<h:outputText></h:outputText>
+				
 
 			</h:panelGrid>
 
