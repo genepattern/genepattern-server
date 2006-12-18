@@ -5,8 +5,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.component.UIInput;
 import javax.faces.model.SelectItem;
+import javax.faces.validator.ValidatorException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
@@ -36,6 +38,8 @@ public class ImportTaskBean {
 
     private static final String ALL_USERS = "all users";
 
+    private boolean importSuitePage;
+
     public ImportTaskBean() {
         filePrivacyItems = new SelectItem[2];
         filePrivacyItems[0] = new SelectItem(UIBeanHelper.getUserId());
@@ -46,39 +50,66 @@ public class ImportTaskBean {
         urlPrivacyItems[0] = new SelectItem(UIBeanHelper.getUserId());
         urlPrivacyItems[1] = new SelectItem(ALL_USERS);
         selectedUrlPrivacy = ALL_USERS;
+        importSuitePage = UIBeanHelper.getRequest().getParameter("suite") != null;
     }
 
     public void importUrl() {
-
+        if (url == null) {
+            String message = "Please provide a URL to a GenePattern zip file.";
+            FacesMessage facesMessage = new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR, message, message);
+            throw new ValidatorException(facesMessage);
+        }
+        String path = null;
         try {
-            String file = GenePatternAnalysisTask.downloadTask(url);
+            path = GenePatternAnalysisTask.downloadTask(url);
             doImport(
-                    file,
+                    path,
                     selectedUrlPrivacy.equals(ALL_USERS) ? GPConstants.ACCESS_PUBLIC
                             : GPConstants.ACCESS_PRIVATE);
         } catch (IOException e) {
             UIBeanHelper.setInfoMessage("An error occurred while downloading "
                     + url + ".");
             log.error(e);
+        } finally {
+            if (path != null) {
+                new File(path).delete();
+            }
         }
 
     }
 
     public void importFile() {
+        if (zipFile == null) {
+            String message = "Please provide a GenePattern zip file.";
+            FacesMessage facesMessage = new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR, message, message);
+            throw new ValidatorException(facesMessage);
+        }
 
+        File tmpDir = null;
+        File file = null;
         try {
-            File tmp = File.createTempFile("upload", "zip");
-            tmp.delete();
-            tmp.mkdir();
-            doImport(
-                    saveFile(zipFile, tmp).getCanonicalPath(),
-                    selectedFilePrivacy.equals(ALL_USERS) ? GPConstants.ACCESS_PUBLIC
-                            : GPConstants.ACCESS_PRIVATE);
+            tmpDir = File.createTempFile("upload", "zip");
+            tmpDir.delete();
+            tmpDir.mkdir();
+            file = saveFile(zipFile, tmpDir);
+            doImport(file.getCanonicalPath(),
+
+            selectedFilePrivacy.equals(ALL_USERS) ? GPConstants.ACCESS_PUBLIC
+                    : GPConstants.ACCESS_PRIVATE);
         } catch (IOException e) {
             UIBeanHelper
                     .setInfoMessage("An error occurred while importing the file "
                             + zipFile.getName() + ".");
             log.error(e);
+        } finally {
+            if (file != null) {
+                file.delete();
+            }
+            if (tmpDir != null) {
+                tmpDir.delete();
+            }
         }
 
     }
@@ -115,6 +146,7 @@ public class ImportTaskBean {
         } catch (WebServiceException e) {
             UIBeanHelper.setInfoMessage("An error occurred during import.");
             log.error(e);
+            return;
         }
         boolean doRecursive = taskInstallAllowed; // TODO ask user?
         try {
@@ -143,6 +175,7 @@ public class ImportTaskBean {
         FileOutputStream out = null;
         InputStream in = null;
         try {
+
             String fileName = uploadedFile.getName();
             if (fileName != null) {
                 fileName = FilenameUtils.getName(fileName);
@@ -220,6 +253,10 @@ public class ImportTaskBean {
 
     public void setSelectedUrlPrivacy(String selectedUrlPrivacy) {
         this.selectedUrlPrivacy = selectedUrlPrivacy;
+    }
+
+    public boolean isImportSuitePage() {
+        return importSuitePage;
     }
 
 }
