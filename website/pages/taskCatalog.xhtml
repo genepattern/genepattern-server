@@ -47,35 +47,40 @@
 			<c:otherwise>
 				<h:form id="taskCatalogForm">
 				<h:inputHidden id="taskCatalogSubmit" value="1" />
-					<table width="100%" border="0" cellpadding="5" cellspacing="0">
-						<tr valign="top">
-							<td valign="top">
-							<p>Select from the following tasks from the Module Repository
-							to download and install.</p>
-							</td>
-							<td valign="top"><b>Filters: </b></td>
-							<td valign="top"><b>state<b></b></b><br />
-
-
+					
+							
+							
+						<table border="0" cellpadding="5" cellspacing="0">
+							 
+							<tr><td colspan="3">Select from the following tasks from the Module Repository
+							to download and install.
+							</td></tr>
+							<tr valign="top"><td valign="top"><b>State:</b>
+							<br />
 							<t:selectManyCheckbox value="#{taskCatalogBean.selectedStates}"
-								name="state" id="state" layout="lineDirection">
-								<f:selectItems value="#{taskCatalogBean.states}" />
-							</t:selectManyCheckbox></td>
-							<td valign="top"><b>OS<b></b></b><br />
-
+								name="state" id="state" layout="lineDirection" style="display:inline">
+								<f:selectItems value="#{taskCatalogBean.states}"/>
+							</t:selectManyCheckbox>
+							
+							</td>
+							<td>
+							
+							<b>OS:</b>
+							<br />
 							<t:selectManyCheckbox
 								value="#{taskCatalogBean.selectedOperatingSystems}" name="os"
-								id="os" layout="lineDirection">
+								id="os" layout="lineDirection" style="display:inline">
 								<f:selectItems value="#{taskCatalogBean.operatingSystems}" />
-							</t:selectManyCheckbox></td>
-
-							<td><h:commandButton
-								action="#{taskCatalogBean.filter}" value="Filter" /></td>
-
+							</t:selectManyCheckbox>
+							
+							</td>
+							<td>
+							<h:commandButton
+								action="#{taskCatalogBean.filter}" value="Filter" />
+								</td>
 						</tr>
-
-					</table>
-
+						</table>
+					
 
 					<table width="100%" border="0" cellpadding="0" cellspacing="0"
 						class="barhead-task">

@@ -48,22 +48,22 @@
 			<c:otherwise>
 				<h:form id="suiteCatalogForm">
 					<h:inputHidden id="suiteCatalogSubmit" value="1" />
-					<table width="100%" border="0" cellpadding="5" cellspacing="0">
+					<table border="0" cellpadding="5" cellspacing="0">
 						<tr valign="top">
-							<td valign="top">
-							<p>Select from the following suites from the Suite Repository
-							to download and install.</p>
+							<td colspan="2" valign="top">
+							Select from the following suites from the Suite Repository
+							to download and install.
 							</td>
-							<td valign="top"><b>Filters: </b></td>
-							<td valign="top"><b>state<b></b></b><br />
-
-
+					    </tr>
+					    <tr>
+							<td valign="top"><b>State:</b>
+							<br />
 							<t:selectManyCheckbox value="#{suiteCatalogBean.selectedStates}"
-								name="state" id="state" layout="lineDirection">
+								name="state" id="state" layout="lineDirection" style="display:inline">
 								<f:selectItems value="#{suiteCatalogBean.states}" />
 							</t:selectManyCheckbox></td>
 
-
+	
 							<td><h:commandButton action="#{suiteCatalogBean.filter}"
 								value="Filter" /></td>
 
