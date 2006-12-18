@@ -1,14 +1,39 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:a4j="https://ajax4jsf.dev.java.net/ajax">
   <ui:composition template="/templates/common.xhtml">
-    <ui:define name="pageTitle">Create Suite</ui:define>
+  	<ui:define name="pageTitle">Create Suite</ui:define>
     <ui:define name="headText">
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js"/>
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js"/>
     </ui:define>
     <ui:define name="body">
-      <h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm();">
+	    <script type="text/javascript" language="javascript">
+		/* <![CDATA[ */
+		  function confirmExport() {
+			var msg = confirm("Including dependents could blow up the download zip and therefore increase the download time.\nDo you still want to include dependents?");
+		  	
+			$("export").innerHTML=(msg)?"export include dependents":"export";
+			return msg;
+		  }
+		  
+		  function toggleVisibility(jobNo) {
+		      var hiddenField = document.getElementById("expansion_state_" + jobNo);    
+		      if(hiddenField.value == "false")
+		      {
+		        showCategory(jobNo);
+		        hiddenField.value = "true";
+		      }
+		      else
+		      {
+		        hideCategory(jobNo);
+		        hiddenField.value = "false";
+		      }
+		  }
+		  /* ]]> */
+	  </script>
+      
+      <h:form>
         <!--  The category list is used upon submit.  -->
         <h:messages/> 
         <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
@@ -59,7 +84,30 @@
           <tr class="smalltype">
             <td>
               <a  style="cursor: pointer;" onclick="openAll();">open all</a> | <a  style="cursor: pointer;"  onclick="closeAll();">close all</a>
-            </td>
+              | 
+              <t:commandLink id="export" forceId="true" value="#{viewSuiteBean.exportLabel}" onclick="pm_showMenu('exportDiv', Position.cumulativeOffset(this), -35, 125)"/>
+	          <div id="exportDiv" style="visibility:hidden; position:absolute;" class="popupMenu">
+		          <table>
+		          	  <tr>
+			          	<h:outputText value="Including dependents could blow up the download zip and increase the download time."/>
+			          </tr>
+			          <tr>
+			            <td>
+			              	<h:selectBooleanCheckbox value="#{viewSuiteBean.includeDependents}"/>
+			            </td><td>
+	      		  			<h:outputText value="export include dependents"/>
+			            </td>
+			            <td>&#160;</td><td>
+			              	<t:commandLink value="Submit" actionListener="#{viewSuiteBean.export}">
+			              		<f:param name="lsid" value="#{viewSuiteBean.currentSuite.lsid}"/>
+			              	</t:commandLink>
+			            &#160;
+	      		  			<t:commandLink value="Cancel"/>
+			            </td>
+			          </tr>
+			      </table>
+    		  </div>	            
+	        </td>
             <td>&#160;</td>
           </tr>
         </table>

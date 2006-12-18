@@ -13,41 +13,30 @@
 
 package org.genepattern.server.process;
 
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Vector;
+import java.io.OutputStreamWriter;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.io.*;
-import java.util.*;
-
 
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
-import org.genepattern.webservice.OmnigeneException;
-import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.SuiteInfo;
-import org.genepattern.webservice.TaskInfoAttributes;
-import org.genepattern.util.KeySortedProperties;
 
 public class ZipSuite extends CommandLineAction {
 	public static final String suiteManifestFileName = "suiteManifest.xml";
 
-	public ZipSuite() {
-	}
-
-	public void zipFiles(ZipOutputStream zos, File dir) throws Exception {
+	
+	/**
+	 * @param zos
+	 * @param dir
+	 * @throws Exception
+	 */
+	protected void zipFiles(ZipOutputStream zos, File dir) throws Exception {
 		File[] fileList = dir.listFiles(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
 				return !name.endsWith(".old") && !name.endsWith(".bak");
@@ -60,20 +49,29 @@ public class ZipSuite extends CommandLineAction {
 
 	}
 
-	public void zipFile(ZipOutputStream zos, File f) throws Exception {
+	/**
+	 * @param zos
+	 * @param f
+	 * @throws Exception
+	 */
+	protected void zipFile(ZipOutputStream zos, File f) throws Exception {
 		zipFile(zos, f, null);
 	}
 
-	public void zipFile(ZipOutputStream zos, File f, String comment)
+	/**
+	 * @param zos
+	 * @param f
+	 * @param comment
+	 * @throws Exception
+	 */
+	private void zipFile(ZipOutputStream zos, File f, String comment)
 			throws Exception {
 		try {
 			if (f.isDirectory()) return;
 
 			ZipEntry zipEntry = null;
 			FileInputStream is = null;
-			String value = null;
-			String attachmentName = null;
-
+			
 			byte[] buf = new byte[100000];
 			zipEntry = new ZipEntry(f.getName());
 			zipEntry.setTime(f.lastModified());
@@ -95,18 +93,14 @@ public class ZipSuite extends CommandLineAction {
 						+ fileLength + " bytes in " + f.getPath());
 			}
 			zos.closeEntry();
-			//System.out.println("zipSuiteFile: zipped " + f.getAbsolutePath() +
-			// ", length=" + numRead);
 		} catch (Exception t) {
 			t.printStackTrace();
 			throw t;
 		}
 	}
 
-	public ZipEntry zipSuiteManifest(ZipOutputStream zos,	SuiteInfo suite) throws Exception {
+	private ZipEntry zipSuiteManifest(ZipOutputStream zos,	SuiteInfo suite) throws Exception {
 		// insert manifest
-		//	System.out.println("creating manifest");		
-
 		ZipEntry zipEntry = new ZipEntry(GPConstants.SUITE_MANIFEST_FILENAME);
 		zos.putNextEntry(zipEntry);
 
@@ -119,10 +113,12 @@ public class ZipSuite extends CommandLineAction {
 		return zipEntry;
 	}
 
-
-	
-
-
+	/**
+	 * @param name
+	 * @param userID
+	 * @return
+	 * @throws Exception
+	 */
 	public File packageSuite(String name, String userID) throws Exception {
 
 		if (name == null || name.length() == 0) {
@@ -139,6 +135,12 @@ public class ZipSuite extends CommandLineAction {
 		return packageSuite(suite, userID);
 	}
 
+	/**
+	 * @param suiteInfo
+	 * @param userID
+	 * @return
+	 * @throws Exception
+	 */
 	public File packageSuite(SuiteInfo suiteInfo, String userID) throws Exception {
 		String name = suiteInfo.getName();
 

@@ -4,16 +4,28 @@
 package org.genepattern.server.webapp.jsf;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
+import org.genepattern.server.process.ZipSuite;
+import org.genepattern.server.process.ZipSuiteWithDependents;
 import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.webservice.server.TaskIntegrator;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.webservice.SuiteInfo;
+import org.genepattern.webservice.WebServiceException;
 
 
 public class ViewSuiteBean implements java.io.Serializable {
@@ -22,6 +34,9 @@ public class ViewSuiteBean implements java.io.Serializable {
     private List suites;
     private Suite currentSuite;
     List<ModuleCategory> categories;
+    
+    boolean includeDependents = false;
+    String exportLable="export";
     
     /**
      * @return
@@ -81,9 +96,6 @@ public class ViewSuiteBean implements java.io.Serializable {
     public String viewSuite() {
     	String lsid = UIBeanHelper.getRequest().getParameter("lsid");
     	currentSuite = (new SuiteDAO()).findById(lsid);
-    	
-    	
-            
     	return (currentSuite!=null)?"view suite":"failure";
     }
     
@@ -155,4 +167,66 @@ public class ViewSuiteBean implements java.io.Serializable {
         return (supportFiles.length()>0)?supportFiles.substring(0, supportFiles.length()-1).toString():"";
     }
 
+    /**
+     * @param event
+     */
+    public void export(ActionEvent event) {
+    	String lsid = UIBeanHelper.getRequest().getParameter("lsid");
+    	if (lsid == null || lsid.length() == 0) return;
+    	
+    	String userID= UIBeanHelper.getUserId(); 
+		if (userID == null) return; // come back after login
+	
+    	FacesContext facesContext=UIBeanHelper.getFacesContext();
+    	try {
+    		
+    		ZipSuite zs = (this.includeDependents)?new ZipSuiteWithDependents() :new ZipSuite();
+    		
+    		File zipFile = zs.packageSuite(lsid, userID);
+    	    
+    	    
+    	    HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+    	    
+    	    LocalAdminClient adminClient = new LocalAdminClient(userID);
+    		SuiteInfo si = adminClient.getSuite(lsid);
+    	    String contentType = "application/x-zip-compressed" + "; name=\"" + si.getName()+".zip" + "\";";
+    	    response.addHeader("Content-Disposition", "attachment; filename=\"" + si.getName()+".zip" + "\";");
+    		response.setContentLength((int) zipFile.length());
+    		response.setContentType(contentType);
+       		OutputStream out = response.getOutputStream();
+
+			//Copy the contents of the file to the output stream
+			byte[] buf = new byte[1024];
+			int count = 0;
+			FileInputStream in = new FileInputStream(zipFile);
+			while ((count = in.read(buf)) >= 0) {
+				out.write(buf, 0, count);
+			}
+			in.close();
+			out.flush();
+			out.close();
+			
+			zipFile.delete();
+			facesContext.responseComplete();
+    		  
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+    }
+    
+    public boolean getIncludeDependents() {
+    	return includeDependents;
+    }
+    
+    public void setIncludeDependents(boolean includeDependents) {
+    	this.includeDependents = includeDependents;
+    }
+    
+    public String getExportLabel() {
+    	return exportLable;
+    }
+    
+    public void setExportLabel(String exportLabel) {
+    	this.exportLable=exportLabel;
+    }
 }
