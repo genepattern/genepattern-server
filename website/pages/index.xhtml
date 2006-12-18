@@ -62,7 +62,7 @@
 function exportPipeline(lsid, title) {
 	var width = 250;
 	var height = 200;
-	var exportWindow = window.open('askInclude.jsp?name=' + 
+	var exportWindow = window.open('#{facesContext.externalContext.requestContextPath}/askInclude.jsp?name=' + 
 		    lsid +   
 		    '&title=' + title, 
 		    'export',
