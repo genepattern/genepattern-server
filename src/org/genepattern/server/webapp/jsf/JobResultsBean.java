@@ -60,7 +60,7 @@ public class JobResultsBean extends JobBean {
 	 */
 	private boolean fileSortAscending = true;
 
-	private boolean showEveryonesJobs = false;
+	private boolean showEveryonesJobs = true;
 
 	/**
 	 * Get the job infos to display. This might be called before the model is
