@@ -19,10 +19,15 @@
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/mainMenu.js"/>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/popupMenu.js"/>   
 
-
     <ui:insert name="headText"/>
+    
+    <!-- Use this insert to override the "onLoad" initialization method.  This function is triggered from the body onload event.  -->
+    <ui:insert name="validationInit">
+      <script type="text/javascript" language="javascript"> function onLoad(){}  </script>
+    </ui:insert>
+    
   </head>
-  <body onload="MM_preloadImages('#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif'); pm_registerClickHandler();">
+  <body onload="MM_preloadImages('#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif'); pm_registerClickHandler(); onLoad();">
     <script language="JavaScript1.2" type="text/javascript">mmLoadMenus();</script>
 
     <!-- top band with the logo -->
