@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
+  <ui:composition>
+  <script type="text/javascript">
+	      var menuId = "menuDiv_#{suiteInfo.lsid}";
+	      pm_popupMenuIds.push(menuId);
+	    </script>
+     <div id="menuDiv_#{suite.lsid}" style="visibility:hidden; position:absolute;" class="popupMenu">
+      <table>
+        <tbody>
+          <tr>
+            <td>
+              <h:commandLink value="Edit" action="#{manageSuiteBean.edit}">
+                <f:param name="lsid" value="#{suiteInfo.lsid}"/>
+              </h:commandLink>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h:commandLink value="Delete" action="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false">
+                <f:param name="selectedSuites" value="#{suiteInfo.lsid}"/>
+              </h:commandLink>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h:commandLink value="Export Excluding Dependents" actionListener="#{manageSuiteBean.exportExDependents}">
+                <f:param name="lsid" value="#{suiteInfo.lsid}"/>
+              </h:commandLink>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h:commandLink value="Export Including Dependents" actionListener="#{manageSuiteBean.exportInDependents}">
+                <f:param name="lsid" value="#{suiteInfo.lsid}"/>
+              </h:commandLink>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ui:composition>
+</html>

@@ -3,30 +3,7 @@
   <ui:composition template="/templates/common.xhtml">
     <ui:define name="pageTitle">Create Suite</ui:define>
     <ui:define name="headText">
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js"/>
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js"/>
-      <script type="text/javascript" language="javascript">
-
-/* <![CDATA[ */
-    function validateForm() {
-        var inputElement = $("nameField");
-        var d = $("nameErrorMessageDiv");
-        if (inputElement.value == null || inputElement.value == "") {  
-           d.style.display = "inline";
-           return false;
-        } 
-        else {        
-          d.style.display = "hidden";
-          return true;
-        }
-    }
-    
-
-		
-/* ]]> */
-
-    </script>
+      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/suite.js"/>
     </ui:define>
     <ui:define name="body">
       <h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm();">

@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" 
+      xmlns:c="http://java.sun.com/jstl/core">
+  <ui:composition template="/templates/common.xhtml">
+    <ui:define name="pageTitle">
+		GenePattern | Manage Suites
+	</ui:define>
+    <ui:define name="headText">
+    <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/suite.js"/>
+    </ui:define>	
+    <ui:define name="body">
+      <h:form>
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+        <tr>
+          <td>Manage Suites</td>
+        </tr>
+      </table>   
+      <!-- Delete suite table -->
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr class="smalltype">
+          <td valign="top">
+            <nobr>
+              <div align="center">
+                <h:commandLink actionListener="#{manageSuiteBean.delete}" 
+                               onclick="if (!confirmDelete()) return false">delete</h:commandLink> 
+              </div>
+            </nobr>
+          </td>         
+          <td>&#160;</td>
+          <td>&#160;</td>
+          <td>&#160;</td>        
+        </tr>
+        
+        <tr class="tableheader-row">
+          <td>&#160;</td>
+          <td>name</td>
+          <td>version</td>
+          <td>author&#160;</td>
+          <td>owner &#160;</td>
+        </tr>
+       
+        <!--  Loop through suite list -->
+        <c:forEach var="suiteInfo" items="#{manageSuiteBean.suites}">
+          <tr class="task-titlerow">
+          	  <td>
+		        <!-- Suite select checkbox -->
+		        <div align="center" id="cb_suite_#{suiteInfo.name}">
+		          <c:choose>
+		            <c:when test="#{!suiteInfo.ownedByUser}">
+		              <input type="checkbox" name="selectedSuites" disabled="true" value="#{suiteInfo.lsid}" onclick="toggleSuiteCheckboxes('#{suiteInfo.lsid}');"/>
+		            </c:when>
+		            <c:when test="#{suiteInfo.selected}">
+		              <input type="checkbox" name="selectedSuites" checked="checked" value="#{suiteInfo.lsid}" onclick="toggleSuiteCheckboxes('#{suiteInfo.lsid}');"/>
+		            </c:when>
+		            <c:otherwise>
+		              <input type="checkbox" name="selectedSuites" value="#{suiteInfo.lsid}" onclick="toggleSuiteCheckboxes('#{suiteInfo.lsid}');"/>
+		            </c:otherwise>
+		          </c:choose>
+		        </div>
+		      </td>
+		      <td class="task-title">
+		        <h:commandLink value="#{suiteInfo.name}" action="#{manageSuiteBean.view}">
+		        	<f:param name="lsid" value="#{suiteInfo.lsid}"/>
+		        </h:commandLink>
+		        <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
+		        name="Image_#{suiteInfo.lsid}" id="Image_#{suiteInfo.lsid}" width="14" height="14" 
+		        border="0" align="top" onclick="pm_showMenu('menuDiv_#{suiteInfo.lsid}', Position.cumulativeOffset(this), -20, 0);" 
+		        onmouseover="MM_swapImage('Image_#{suiteInfo.lsid}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
+		        onmouseout="MM_swapImgRestore();"/>
+		      </td>
+		      <td>
+		        <h:outputText value="#{suiteInfo.version}"/>
+		      </td>
+		      <td>
+		        <h:outputText value="#{suiteInfo.author}"/>
+		      </td>
+		      <td>
+		        <h:outputText value="#{suiteInfo.owner}"/>
+		      </td>
+		  </tr>
+		  <tr valign="top" class="smalltype" style="#{suiteInfo.description != '' ? 'display:' : 'display:none;'}">
+		  	  <td>&#160;</td>
+		  	  <td>
+		  	  	<h:outputText value="#{suiteInfo.description}"/> 
+		  	  </td>
+		  	  <td>&#160;</td>
+		  	  <td>&#160;</td>
+		  	  <td>&#160;</td>  
+		  </tr>
+        </c:forEach>
+        
+        <tr>
+          <td valign="top" class="smalltype">
+            <nobr>
+              <div align="center">
+                <h:commandLink actionListener="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink> 
+              </div>
+            </nobr>
+          </td>
+          <td>&#160;</td>
+          <td>&#160;</td>
+          <td>&#160;</td>
+          <td>&#160;</td>
+          <td>&#160;</td>
+        </tr>
+      </table>
+      <p>&#160;</p>
+    </h:form>
+    </ui:define>
+    
+    <!-- Create menus --> 
+    <ui:define name="popupMenus">
+      <h:form>
+        <t:dataList value="#{manageSuiteBean.suites}" var="suiteInfo" rowIndexVar="suiteIndex">
+          <ui:include src="suitesMenu.xhtml">
+            <ui:param name="suite" value="#{suiteInfo}"/>
+          </ui:include>
+        </t:dataList>
+      </h:form>
+    </ui:define>
+ 
+</ui:composition>
+</html>
