@@ -331,11 +331,11 @@ document.location.href=location;
     
     <!-- Set initial visibility state  -->
     <script type="text/javascript" language="javascript"> 
-      <c:forEach var="jobInfo" items="#{jobResultsBean.jobs}">
-        <c:if test="#{!jobInfo.expanded}">
+      <t:dataList var="jobInfo" value="#{jobResultsBean.jobs}">
+        <h:outputText rendered="#{!jobInfo.expanded}">
             hideCategory('#{jobInfo.jobNumber}');
-        </c:if>
-      </c:forEach>
+        </h:outputText>
+      </t:dataList>
     </script>
     
     </ui:define>
@@ -343,17 +343,17 @@ document.location.href=location;
     <!-- Create menus  -->
     <ui:define name="popupMenus">
       <h:form>
-        <c:forEach var="jobInfo" items="#{jobResultsBean.jobs}">
+        <t:dataList var="jobInfo" value="#{jobResultsBean.jobs}">
           <ui:include src="jobsMenu.xhtml">
             <ui:param name="job" value="#{jobInfo}"/>
           </ui:include>
-          <c:forEach var="fileInfo" items="#{jobInfo.allFileInfos}">
+          <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}">
             <ui:include src="jobFileMenu.xhtml">
               <ui:param name="job" value="#{jobInfo}"/>
               <ui:param name="param" value="#{fileInfo}"/>      
             </ui:include>
-          </c:forEach>
-        </c:forEach>
+          </t:dataList>
+        </t:dataList>
       </h:form>
     </ui:define>
  
