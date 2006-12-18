@@ -18,18 +18,28 @@
 		<p></p>
 		<table width="100%" border="0" cellpadding="10" cellspacing="0">
 			<tr valign="top" class="settingperameter">
+				<h:outputText rendered="#{ ! importTaskBean.importSuitePage}">
 				<td><strong>Install from module repository:</strong></td>
 				<td><h:outputLink
 					value="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">
 					Install tasks from module repository
 					</h:outputLink></td>
+				</h:outputText>
+				
+				<h:outputText rendered="#{importTaskBean.importSuitePage}">
+				<td><strong>Install from suite repository:</strong></td>
+				<td><h:outputLink
+					value="#{facesContext.externalContext.requestContextPath}/pages/suiteCatalog.jsf">
+					Install suites from suite repository
+					</h:outputLink></td>
+				</h:outputText>
 			</tr>
 			<tr valign="top" class="settingperameter">
 				<td><strong>Install from zip file:</strong></td>
 				<td><h:form id="form1" enctype="multipart/form-data">Please choose a GenePattern
 				zip file to submit to the GenePattern server.
 				<p><strong>GenePattern zip file:</strong>&nbsp; <t:inputFileUpload
-						storage="file" size="60" value="#{importTaskBean.zipFile}" /></p>
+						storage="file" size="60" value="#{importTaskBean.zipFile}" required="true" /></p>
 					<p>Visible to: &nbsp;&nbsp; <t:selectOneRadio
 						value="#{importTaskBean.selectedFilePrivacy}">
 						<f:selectItems value="#{importTaskBean.filePrivacyItems}" />
@@ -41,7 +51,7 @@
 			<tr valign="top" class="settingperameter">
 				<td><strong>Download the zip file from a website:</strong></td>
 				<td><strong>URL of a GenePattern zip file:</strong> <h:inputText
-					value="#{importTaskBean.url}" size="60" />
+					value="#{importTaskBean.url}" size="60" required="true" />
 				<p>Visible to: &nbsp;&nbsp; <t:selectOneRadio
 					value="#{importTaskBean.selectedUrlPrivacy}">
 					<f:selectItems value="#{importTaskBean.urlPrivacyItems}" />
