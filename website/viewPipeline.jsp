@@ -38,6 +38,13 @@
 		 java.util.Iterator"
 	session="true" contentType="text/html" language="Java" %>
 <%
+
+response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
+response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
+response.setDateHeader("Expires", 0);
+  
+System.out.println("=======================================HERE");
+
 String userID= (String)request.getAttribute("userID"); // will force login if necessary
 if (userID == null) return; // come back after login
 IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
@@ -79,21 +86,32 @@ if (task != null) {
 <head>
 <script language="JavaScript">
 var numTasks = <% out.print(model.getTasks().size()); %>
-function toggle() {
+function toggle(visible) {
 	for(var i = 0; i < numTasks; i++) {
-		formobj = document.getElementById('id' + i);
-		var visible = document.form1.togglecb.checked;
-		if(!visible) {
-			formobj.style.display = "none";
-		} else {
-			formobj.style.display = "block";
-		}
+		toggleTask(visible, i);
 	}
 }
 
-function toggleLSID() {
+function toggleTask(visible, i) {
+	formobj = document.getElementById('id' + i);
+	arrowImg = document.getElementById('arrowTask'+i);
+	if (visible == null){
+		visible = (formobj.style.display == "none");
+	}
+	if(!visible) {
+		formobj.style.display = "none";
+		if (arrowImg != null)
+			arrowImg.src="images/arrow-pipelinetask-right.gif"
+	} else {
+		formobj.style.display = "block";
+		if (arrowImg != null)
+			arrowImg.src="images/arrow-pipelinetask-down.gif" 
+	}
+}
+
+function toggleLSID(visible) {
 	formobj = document.getElementById('pipeline_lsid');
-	var visible = document.form1.togglelsid.checked;
+	
 	if(!visible) {
 		formobj.style.display = "none";
 	} else {
@@ -190,10 +208,9 @@ if (docFiles != null){
 
 	}
 }
-
+out.print("<br>");
 
 //XXXXXXXXXXX
-out.println("&nbsp;&nbsp;<form name=\"form1\"><input name=\"togglecb\" type=\"checkbox\" onClick=toggle();>Show Input Parameters</input><input name=\"togglelsid\" type=\"checkbox\" onClick=toggleLSID();>Show LSIDs</input></form>");
 
 try {
    RunPipelineForJsp.isMissingTasks(model, new java.io.PrintWriter(out), userID);
@@ -202,8 +219,15 @@ try {
    return;
 }
 List tasks = model.getTasks();
-for(int i = 0; i < tasks.size(); i++) {
+%>
+<br>
+<form name="form1"><a href="#" onClick="toggle(true)" class="smalltype" >open all</a> | <a href="#" onClick=toggle(false) class="smalltype" >close all</a></form>
 
+<%
+//<input id="togglelsid" type="checkbox" onClick=toggleLSID();>Show LSIDs</input>
+
+for(int i = 0; i < tasks.size(); i++) {
+	out.println("<div class=\"pipeline_item\">");
 	JobSubmission js = (JobSubmission) tasks.get(i);
 	ParameterInfo[] parameterInfo = js.giveParameterInfoArray();
 	int displayNumber = i+1;
@@ -220,43 +244,55 @@ for(int i = 0; i < tasks.size(); i++) {
 		
 		unknownTaskVersion = !GenePatternAnalysisTask.taskExists(taskLSIDstrNoVer , userID);
 	}
-    
-   out.print("<p><font size=\"+1\"><a name=\""+ displayNumber +"\"/> " + displayNumber + ". ");
-    
-   Map tia = formalTask!=null?formalTask.getTaskInfoAttributes():null;
+   	String taskLSIDstr = js.getLSID();
+	LSID taskLSID = new LSID(taskLSIDstr);
+	String taskLsidVersion = taskLSID.getVersion();	
+
+	Map tia = formalTask!=null?formalTask.getTaskInfoAttributes():null;
 
 	ParameterInfo[] formalParams = formalTask!=null?formalTask.getParameterInfoArray():null;
-   if(formalParams==null) {
+   	if(formalParams==null) {
       formalParams = new ParameterInfo[0];
-   }
+   	}
+   %>
+
+<table width="100%"  border="0" cellpadding="0" cellspacing="0" class="barhead-task"><tr>
+   <%
    if(formalTask==null) {
-      out.print("<font color='red'>"+ js.getName()  + "</font></font> is not present on this server.");
+      out.print("<td width=\"8\">&nbsp;</td><td>&nbsp;&nbsp;"+displayNumber+". <font color='red'>"+ js.getName()  + "</font></font> is not present on this server.</td><td class='smalltype' align='right'>version "+taskLsidVersion +"</td></tr></table><table class=\"attribute\"><td>&nbsp;</td><td>&nbsp;</td>");
       tia = new HashMap();
       formalParams = new ParameterInfo[0];
    } else if (!unknownTask){
-		out.print("<a href=\"addTask.jsp?view=1&name=" + js.getLSID() + "\">" + js.getName() + "</a></font> " + StringUtils.htmlEncode(formalTask.getDescription()));
+	 %>
+          <td width=\"8\"><a href="#" onClick="toggleTask(null, <%=displayNumber-1%>)" ><img id="arrowTask<%=displayNumber-1%>" src="images/arrow-pipelinetask-right.gif" alt="hide task" width="8" height="8" vspace="3" border="0" /></a></td>
+          <td><%=displayNumber%>. <a href="addTask.jsp?view=1&name=<%=js.getLSID()%>"> <%=js.getName()%></a> </td>
+		<td class='smalltype' align='right'>version <%=taskLsidVersion %></td></tr></table>
+		<table class="attribute">
+	 	<tr><td>&nbsp;</td><td><%= StringUtils.htmlEncode(formalTask.getDescription())%></td>
+    <%
+
 		
 	} else {
 		if (!unknownTaskVersion) {
-			LSID taskLSID = new LSID(js.getLSID());
 			TaskInfo altVersionInfo = GenePatternAnalysisTask.getTaskInfo(taskLSID.toStringNoVersion(), userID);
 			Map altVersionTia = altVersionInfo.getTaskInfoAttributes();
 			
 			LSID altVersionLSID = new LSID((String)(altVersionTia.get(GPConstants.LSID)) );
 
-			out.print("<font color='red'>"+ js.getName() + "</font></font> This task version <b>("+taskLSID.getVersion()+")</b> is not present on this server. The version present on this server is <br>"  );
-		out.print("<dd><a href=\"addTask.jsp?view=1&name=" + js.getName() + "\">" + js.getName() + " <b>("+altVersionLSID .getVersion()+")</b> </a> " + StringUtils.htmlEncode(formalTask.getDescription()));
+			out.print("<td width=\"8\">&nbsp;</td><td>&nbsp;&nbsp; "+displayNumber+". <font color='red'>"+ js.getName() + "</font></font> This task version <b>("+taskLSID.getVersion()+")</b> is not present on this server.</td><td class='smalltype' align='right'>version "+taskLsidVersion +"</td></tr></table><table><tr><td>&nbsp;</td><td> The version present on this server is <br>"  );
+		out.print("<dd><a href=\"addTask.jsp?view=1&name=" + js.getName() + "\">" + js.getName() + " <b>("+altVersionLSID .getVersion()+")</b> </a> " + StringUtils.htmlEncode(formalTask.getDescription()) + "</td>");
 
 		
 
 		} else {
 
-			out.print("<font color='red'>"+ js.getName() + "</font></font> This task is not present on this server"  );
+			out.print("<td width=\"8\">&nbsp;</td><td><font color='red'>"+ js.getName() + "</font></font> This task is not present on this server</td>"  );
 
 		}
 
 
 	}
+	out.println("</tr></table>");
 
 
 
@@ -266,7 +302,7 @@ for(int i = 0; i < tasks.size(); i++) {
 
 	out.println("<div id=\"id"+ i + "\" style=\"display:none;\">");
 
-out.println("<table cellspacing='0' width='100%' frame='box'>");
+out.println("<table cellspacing='0' width='100%' class='attribute'>");
 	boolean[] runtimePrompt = js.getRuntimePrompt();
 	java.util.Map paramName2FormalParamMap = new java.util.HashMap();
    
@@ -274,8 +310,18 @@ out.println("<table cellspacing='0' width='100%' frame='box'>");
 		paramName2FormalParamMap.put(formalParams[j].getName(), formalParams[j]);
 	}
 	boolean odd = false;
+%>
+
+	<tr class="tableheader-row2">
+              <td >parameter name </td>
+              <td>value</td>
+              <td>description</td>
+            </tr>
+<%
+
 	for(int j = 0; j < formalParams.length; j++) {
 		String paramName = formalParams[j].getName();
+		String paramDescription = formalParams[j].getDescription();
 
 		ParameterInfo formalParam = (ParameterInfo) paramName2FormalParamMap.get(paramName);
 		ParameterInfo informalParam = null;
@@ -369,15 +415,15 @@ out.println("<table cellspacing='0' width='100%' frame='box'>");
 		paramName = paramName.replace('.', ' ');
 		//	out.print("<dd>" + paramName);
 		//	out.println(": " + value);
-		if (odd)
-			out.print("<tr ><td width='25%' align='right'>" + paramName );
-		else 
-			out.print("<tr  class=\"paleBackground\" ><td width='25%' align='right'>" + paramName);
-
+		
+		out.print("<tr class='taskperameter'><td width='25%' class='attribute-required'>" + paramName );
+		
 	
 		out.flush();
 	
-		out.print(":</td><td>&nbsp;&nbsp;&nbsp; " + value);
+		out.print(":</td><td class='attribute-required' >" + value);
+		out.print(":</td><td class='attribute-required' >" + paramDescription);
+
 		out.println("</td></tr>");
 
 		odd = !odd;
@@ -385,7 +431,9 @@ out.println("<table cellspacing='0' width='100%' frame='box'>");
 	out.println("</table>");
 
 	out.println("</div>");
+   out.println("</div><br>");
    
+
 
 }out.println("<table cellspacing='0' width='100%' frame='box'>");
 if (! RunPipelineForJsp.isMissingTasks(model, userID)){
