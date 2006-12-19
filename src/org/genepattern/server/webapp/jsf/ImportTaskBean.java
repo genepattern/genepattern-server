@@ -38,7 +38,7 @@ public class ImportTaskBean {
 
     private static final String ALL_USERS = "all users";
 
-    private boolean importSuitePage;
+    private String installName;
 
     public ImportTaskBean() {
         filePrivacyItems = new SelectItem[2];
@@ -50,7 +50,6 @@ public class ImportTaskBean {
         urlPrivacyItems[0] = new SelectItem(UIBeanHelper.getUserId());
         urlPrivacyItems[1] = new SelectItem(ALL_USERS);
         selectedUrlPrivacy = ALL_USERS;
-        importSuitePage = UIBeanHelper.getRequest().getParameter("suite") != null;
     }
 
     public void importUrl() {
@@ -159,7 +158,7 @@ public class ImportTaskBean {
             } else {
                 name = new LocalAdminClient(username).getTask(lsid).getName();
             }
-            UIBeanHelper.setInfoMessage("Successfully installed " + name + ".");
+            installName  = name;
         } catch (WebServiceException e) {
             if (e instanceof WebServiceErrorMessageException) {
                 WebServiceErrorMessageException wseme = (WebServiceErrorMessageException) e;
@@ -255,8 +254,12 @@ public class ImportTaskBean {
         this.selectedUrlPrivacy = selectedUrlPrivacy;
     }
 
-    public boolean isImportSuitePage() {
-        return importSuitePage;
+    public String getInstallName() {
+        return installName;
+    }
+
+    public void setInstallName(String installName) {
+        this.installName = installName;
     }
 
 }
