@@ -7,6 +7,11 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.IndexPageBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
+  <managed-bean>
+  <managed-bean-name>aboutBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.AboutBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
  <managed-bean>
   <managed-bean-name>loginBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.LoginBean</managed-bean-class>
