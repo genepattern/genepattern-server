@@ -64,6 +64,7 @@ use, misuse, or functionality.
 <jsp:include page="navbar.jsp"/>
 
 <%
+
     String userID = null;
 	String userEmail = null;
 	String jobId = null;
@@ -79,6 +80,7 @@ use, misuse, or functionality.
         HashMap requestParameters = new HashMap();
         HashMap nameToFileItemMap = new HashMap();
         
+       
         if (fub.isMultipartContent(request)) {
         	 List params = fub.parseRequest(request);
              
@@ -86,19 +88,22 @@ use, misuse, or functionality.
             FileItem fi = (FileItem) iter.next();
             nameToFileItemMap.put(fi.getFieldName(), fi);
         }
+       
         for (Iterator iter = params.iterator(); iter.hasNext();) {
             FileItem fi = (FileItem) iter.next();
-            if (!fi.isFormField()) {
-                String fieldName = fi.getFieldName();
-                String fileName = fi.getName();
-                if (fileName == null || fileName.trim().equals("")) {
+            String fieldName = fi.getFieldName();
+            
+            if (!fi.isFormField()) {            
+                FileItem cbItem = (FileItem) nameToFileItemMap.get(fieldName + "_cb");
+                boolean urlChecked = cbItem != null? "url".equals(cbItem.getString()) : false;
+                String fileName = fi.getName();         
+                if (urlChecked|| fileName == null || fileName.trim().equals("")) {
                     FileItem shadow = (FileItem) nameToFileItemMap.get(fieldName + "_url");
                     if (shadow != null) {
                         fileName = shadow.getString();
                     }
                 }
-                
-                               
+              
                 if (fileName != null && !fileName.trim().equals("")) {
                     try {
                         new URL(fileName);
@@ -129,7 +134,16 @@ use, misuse, or functionality.
                     }
                 }
             } else {
-                requestParameters.put(fi.getFieldName(), fi.getString());
+                int endIndex = Math.max(fieldName.length() - "_url".length(), 1);
+				String parameterName = fieldName.substring(0, endIndex);
+				
+                FileItem cbItem = (FileItem) nameToFileItemMap.get(parameterName + "_cb");
+                boolean urlChecked = cbItem != null? "url".equals(cbItem.getString()) : false;
+               	if(urlChecked) {
+                   htFilenames.put(parameterName, fi.getString());
+               } else {
+                   requestParameters.put(fieldName, fi.getString());
+               }
             }
         } // loop over files
         } else {
@@ -140,6 +154,10 @@ use, misuse, or functionality.
         	}
         }
         
+        
+        
+        
+       
         //http://cp21e-789.broad.mit.edu:8080/gp/getInputFile.jsp?file=Axis62355.att_all_aml_train.res
         String taskLsid = (String) requestParameters.get("taskLSID");
         String lsid = taskLsid !=null ? URLDecoder.decode(taskLsid) : null;
