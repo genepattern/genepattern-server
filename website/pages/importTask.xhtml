@@ -15,10 +15,14 @@
 				<td>Install</td>
 			</tr>
 		</table>
-		<p></p>
+		<p>
+		<h:outputText rendered="#{importTaskBean.installName != null}">
+			Successfully installed #{importTaskBean.installName}.
+		</h:outputText>
+		</p>
 		<table width="100%" border="0" cellpadding="10" cellspacing="0">
 			<tr valign="top" class="settingperameter">
-				<h:outputText rendered="#{ ! importTaskBean.importSuitePage}">
+				<h:outputText rendered="#{empty param.suite}">
 				<td><strong>Install from module repository:</strong></td>
 				<td><h:outputLink
 					value="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">
@@ -26,7 +30,7 @@
 					</h:outputLink></td>
 				</h:outputText>
 				
-				<h:outputText rendered="#{importTaskBean.importSuitePage}">
+				<h:outputText rendered="#{ ! empty param.suite}">
 				<td><strong>Install from suite repository:</strong></td>
 				<td><h:outputLink
 					value="#{facesContext.externalContext.requestContextPath}/pages/suiteCatalog.jsf">
