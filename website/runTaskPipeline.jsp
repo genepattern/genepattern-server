@@ -141,10 +141,17 @@ use, misuse, or functionality.
         }
         
         //http://cp21e-789.broad.mit.edu:8080/gp/getInputFile.jsp?file=Axis62355.att_all_aml_train.res
-        String lsid = URLDecoder.decode((String) requestParameters.get("taskLSID"));
+        String taskLsid = (String) requestParameters.get("taskLSID");
+        String lsid = taskLsid !=null ? URLDecoder.decode(taskLsid) : null;
         String taskName = (String) requestParameters.get("taskName");
         if (lsid == null) {
-            lsid = taskName;
+            if(taskName != null) {
+                lsid = URLDecoder.decode(taskName);
+            } else {
+                out.println("No task specified");
+                return;
+            }
+            
         }
         userID = (String) request.getAttribute(GPConstants.USERID);
 		try {
@@ -520,6 +527,9 @@ show execution logs</td>
             }
             sbOut.append(outFileUrl);
             try {
+                if(fileName==null) {
+                    out.println("file is null");
+                }
                 fileName = URLDecoder.decode(fileName, "UTF-8");
             } catch (UnsupportedEncodingException uee) {
                 // ignore
