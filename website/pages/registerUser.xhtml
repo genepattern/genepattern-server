@@ -6,60 +6,76 @@
 	xmlns:t="http://myfaces.apache.org/tomahawk"
 	xmlns:b="http://broad.mit.edu/jsf">
 
-
 <ui:composition template="/templates/common.xhtml">
+  <ui:define name="validationInit">
+    <script type="text/javascript" language="javascript"> 
+      /* <![CDATA[ */
+      function onLoad()
+      {
+        var objForm = document.forms["registrationForm"];
+        objForm.username.required = 1;
+        objForm.username.regexp = /^\w*$/;
+        objForm.username.err = "Missing or invalid username";
 
-	<ui:define name="pageTitle">Register User</ui:define>
+        objForm.password.required = 1;
+        objForm.password.regexp = /^\w*$/;
+        objForm.password.err = "Missing or invalid password";
 
-	<ui:define name="body">
+        objForm.passwordConfirm.equals = "password";
+        objForm.passwordConfirm.err = "Passwords do not match";
+ 
+        objForm.email.required = 1;
+        objForm.email.regexp = "JSVAL_RX_EMAIL";
+        objForm.email.err = "Missing or invalid email";
 
-		<h:form>
-			<h2>Enter the following information to create an account.</h2>
-			<b />
-			<h:panelGrid columns="2">
+        objForm.emailConfirm.equals = "email";
+        objForm.emailConfirm.err = "Emails do not match";
+      }
+       /* ]]> */
 
-				<h:outputLabel value="Username:" for="username"></h:outputLabel>
-				<h:inputText size="50" value="#{registrationBean.username}"
-					id="username" required="true" requiredMessage="Username is required"
-					validator="#{registrationBean.validateNewUsername}" />
-
-				<h:outputLabel value="Password:" for="password"></h:outputLabel>
-				<h:inputSecret size="50" value="#{registrationBean.password}"
-					id="password" required="true" requiredMessage="Password is required"
-					validator="#{registrationBean.validatePassword}" />
-
-				<h:outputLabel value="Re-enter password:" for="passwordConfirm"></h:outputLabel>
-				<h:inputSecret size="50" value="#{registrationBean.passwordConfirm}"
-					id="passwordConfirm"
-					binding="#{registrationBean.passwordConfirmComponent}" />
-				
-
-				<h:outputLabel value="Email:" for="email"></h:outputLabel>
-				<h:inputText size="50" value="#{registrationBean.email}" id="email"
-					required="true" requiredMessage="Email is required"
-					validator="#{registrationBean.validateEmail}">
-					<t:validateEmail />
-				</h:inputText>
-
-				<h:outputLabel value="Re-enter email" for="emailConfirm"></h:outputLabel>
-				<h:inputText size="50" value="#{registrationBean.emailConfirm}"
-					id="emailConfirm" 
-					binding="#{registrationBean.emailConfirmComponent}">
-					<t:validateEmail />
-				</h:inputText>
-				
-
-			</h:panelGrid>
-
-			<h:commandButton value="Create account" class="little"
-				actionListener="#{registrationBean.registerUser}" />
-
-
-
-
-		</h:form>
-	</ui:define>
-
-
+    </script>
+  </ui:define>
+  
+  <ui:define name="pageTitle">Register User</ui:define>
+  <ui:define name="body">
+    <h:form onclick="return validateForm(this);" id="registrationForm">
+      <h2>Enter the following information to create an account.</h2>
+      <b/>
+      <h:panelGrid columns="2">
+        <h:outputLabel value="Username:" for="username"/>
+        <t:inputText size="50" value="#{registrationBean.username}" id="username"
+                     forceId="true" 
+                     required="true" requiredMessage="Username is required" 
+                     validator="#{registrationBean.validateNewUsername}"/>
+                     
+        <h:outputLabel value="Password:" for="password"/>
+        <t:inputSecret size="50" value="#{registrationBean.password}" id="password" 
+                       forceId="true" 
+                       required="true" requiredMessage="Password is required" validator="#{registrationBean.validatePassword}"/>
+                       
+        <h:outputLabel value="Re-enter password:" for="passwordConfirm"/>
+        <t:inputSecret size="50" value="#{registrationBean.passwordConfirm}" id="passwordConfirm" 
+                       forceId="true" 
+                       binding="#{registrationBean.passwordConfirmComponent}"/>
+                       
+        <h:outputLabel value="Email:" for="email"/>
+        <t:inputText size="50" value="#{registrationBean.email}" id="email" 
+                     forceId="true" 
+                     required="true" requiredMessage="Email is required" validator="#{registrationBean.validateEmail}">
+          <t:validateEmail/>
+        </t:inputText>
+        
+        <h:outputLabel value="Re-enter email" for="emailConfirm"/>
+        <t:inputText size="50" value="#{registrationBean.emailConfirm}" id="emailConfirm" 
+                     forceId="true" 
+                     binding="#{registrationBean.emailConfirmComponent}">
+          <t:validateEmail/>
+        </t:inputText>
+        
+      </h:panelGrid>
+      <h:commandButton value="Create account" class="little" actionListener="#{registrationBean.registerUser}"/>
+    </h:form>
+  </ui:define>
 </ui:composition>
+
 </html>

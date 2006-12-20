@@ -9,7 +9,6 @@
     </title>
     <link href="#{facesContext.externalContext.requestContextPath}/css/style.css" rel="stylesheet" type="text/css"/>
     <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css"/>
-    <link href="#{facesContext.externalContext.requestContextPath}/css/buttons.css" rel="stylesheet" type="text/css"/>
     <link href="#{facesContext.externalContext.requestContextPath}/css/popupMenu.css" rel="stylesheet" type="text/css"/>
  
     <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
@@ -18,13 +17,40 @@
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/mm_menu.js"/>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/mainMenu.js"/>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/popupMenu.js"/>   
+    <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/jsval.js"/>
+    <script type="text/javascript" language="javascript"> 
+      /* <![CDATA[ */
+      /* Function to support "jsval" based validation.  See registerUser.xhtml for an example.*/ 
+      function validateForm(objForm) {
+        var strErrorClass = "error";
+        var errMessages = getValidationErrors(objForm, strErrorClass);
+        if(errMessages.length == 0) {
+          return true;
+        }
+        else {
+          var d = $("errorMessageDiv");
+          var t = $("errorMessageContent");
+          d.style.display = "";
+          
+          var messageString = "<ul style=\"font-weight:bold; color:red;\">";
+          for(var i=0; i<errMessages.length; i++) {
+            messageString += "<li/>" +  errMessages[i];
+          }
+          messageString += "</ul>";
+          Element.update('errorMessageContent', messageString);
+          return false;
+        }     
+      }
+       /* ]]> */
 
-    <ui:insert name="headText"/>
-    
+      </script>
+     
     <!-- Use this insert to override the "onLoad" initialization method.  This function is triggered from the body onload event.  -->
     <ui:insert name="validationInit">
       <script type="text/javascript" language="javascript"> function onLoad(){}  </script>
     </ui:insert>
+  
+    <ui:insert name="headText"/>
     
   </head>
   <body onload="MM_preloadImages('#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif'); pm_registerClickHandler(); onLoad();">
@@ -54,14 +80,35 @@
     <div id="content" class="content">
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
-          <td><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="0" height="440"/></td>
+          <td>
+            <!-- Spacer used to maintain a minimum height -->
+            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="0" height="440"/>
+          </td>
+          
           <ui:insert name="leftPanel"/>
+          
           <td valign="top" class="maincontent" id="maincontent">
+          
+            <!-- JSF (Server side) errors -->
             <h:outputText value="Please correct the following errors before proceeding:" 
                           rendered="#{! empty facesContext.maximumSeverity}" style="font-weight:bold"/>
 		    <h:messages errorClass="validation-error" errorStyle="font-weight:bold; color:red;"/>
+		    
+		    <!-- Javascript validation errors.  The JSF and Javascript error blockss will not
+		         be visible at the same time (if JS validation fails, the form submit will not
+		         occur and thus JSF validation will not be run) -->
+		         
+		    <div id="errorMessageDiv" style="display:none;">
+              <span id="errorMessageHeader" style="font-weight:bold">
+                Please correct the following errors before proceeding:
+              </span>
+              <p id="errorMessageContent"/>
+            </div>
+		    
+		    <!-- Main content body -->
      		<ui:insert name="body" />
           </td>
+          
           <ui:insert name="rightPanel"/>
         </tr>
         
@@ -90,7 +137,7 @@
       </table>
     </div>
     
-    <c:if test="${!empty requestScope.userID}">
+    <t:div rendered="${!empty requestScope.userID}">
       <table height="30" border="0" cellpadding="0" cellspacing="0" class="loginsettings">
         <tr valign="top">
           <td>
@@ -100,7 +147,7 @@
             </h:form>&#160;${requestScope.userID}&#160;&#160;&#160;</td>
         </tr>
       </table>
-    </c:if>
+    </t:div>
     
     <ui:insert name="popupMenus"/>
     
