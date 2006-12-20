@@ -34,13 +34,19 @@ public class TaskInstallBean {
     public void setTasks(String[] lsids, Map<String, InstallTask> lsidToTaskMap) {
         tasksMap = new HashMap<String, TaskInstallStatus>();
         for (String lsid : lsids) {
-            tasksMap.put(lsid, new TaskInstallStatus(lsid, lsidToTaskMap.get(
-                    lsid).getName()));
+            tasksMap.put(lsid, new TaskInstallStatus(lsid, lsidToTaskMap.get(lsid).getName()));
         }
     }
 
     public void setStatus(String lsid, String status) {
         setStatus(lsid, status, null);
+    }
+
+    public void appendPatchProgressMessage(String lsid, String message) {
+        TaskInstallStatus bean = tasksMap.get(lsid);
+        if (bean != null) {
+            bean.patchMessage += message;
+        }
     }
 
     public void setStatus(String lsid, String status, String message) {
@@ -55,8 +61,7 @@ public class TaskInstallBean {
         if (tasksMap == null) {
             return Collections.EMPTY_LIST;
         }
-        List<TaskInstallStatus> tasks = new ArrayList<TaskInstallStatus>(
-                tasksMap.values());
+        List<TaskInstallStatus> tasks = new ArrayList<TaskInstallStatus>(tasksMap.values());
         Collections.sort(tasks);
         return tasks;
     }
@@ -66,11 +71,6 @@ public class TaskInstallBean {
      * This method supports an ajax request, the returned string is the response
      * text.
      * 
-     * @return var myJSONObject = {"bindings": [ {"ircEvent": "PRIVMSG",
-     *         "method": "newURI", "regex": "^http://.*"}, {"ircEvent":
-     *         "PRIVMSG", "method": "deleteURI", "regex": "^delete.*"},
-     *         {"ircEvent": "PRIVMSG", "method": "randomURI", "regex":
-     *         "^random.*"} ] };
      */
     public String getInstalledTaskString() {
 
@@ -82,9 +82,12 @@ public class TaskInstallBean {
                     jsonObj.put("lsid", task.getLsid());
                     jsonObj.put("status", task.getStatus());
                     jsonObj.put("message", task.getMessage());
+                    String patch = task.getPatchMessage();
+
+                    jsonObj.put("patch", patch);
+
                     jsonArray.put(jsonObj);
                 } catch (JSONException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
 
@@ -94,7 +97,9 @@ public class TaskInstallBean {
         return jsonArray.toString();
     }
 
-    public static class TaskInstallStatus implements Comparable {
+    public static class TaskInstallStatus implements Comparable<TaskInstallStatus> {
+        String patchMessage = "";
+
         String lsid;
 
         String name;
@@ -106,6 +111,10 @@ public class TaskInstallBean {
         public TaskInstallStatus(String lsid, String name) {
             this.lsid = lsid;
             this.name = name;
+        }
+
+        public String getPatchMessage() {
+            return patchMessage;
         }
 
         public String getLsid() {
@@ -140,8 +149,8 @@ public class TaskInstallBean {
             this.name = name;
         }
 
-        public int compareTo(Object o) {
-            return name.compareTo(((TaskInstallStatus) o).getName());
+        public int compareTo(TaskInstallStatus o) {
+            return name.compareTo(o.getName());
         }
 
     }

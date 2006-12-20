@@ -29,7 +29,7 @@ import java.util.Vector;
 
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.TaskInstallationException;
-import org.genepattern.server.webservice.server.ITaskIntegrator;
+import org.genepattern.server.webservice.server.Status;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.OmnigeneException;
@@ -78,13 +78,16 @@ public class InstallTask {
     };
 
     // names of columns that can be displayed to the user
-    protected static final String[] COLUMNS = { GPConstants.NAME, GPConstants.VERSION, STATE, REFRESHABLE,
-            GPConstants.DESCRIPTION, GPConstants.TASK_TYPE, GPConstants.AUTHOR, GPConstants.QUALITY,
-            GPConstants.CPU_TYPE, GPConstants.OS, GPConstants.LANGUAGE, GPConstants.JVM_LEVEL, LSID_VERSION };
+    protected static final String[] COLUMNS = { GPConstants.NAME,
+            GPConstants.VERSION, STATE, REFRESHABLE, GPConstants.DESCRIPTION,
+            GPConstants.TASK_TYPE, GPConstants.AUTHOR, GPConstants.QUALITY,
+            GPConstants.CPU_TYPE, GPConstants.OS, GPConstants.LANGUAGE,
+            GPConstants.JVM_LEVEL, LSID_VERSION };
 
     // titles for columns that can be displayed to the user
-    protected static final String[] TITLES = { GPConstants.NAME, GPConstants.VERSION, STATE, REFRESHABLE,
-            GPConstants.DESCRIPTION, "task type", GPConstants.AUTHOR, GPConstants.QUALITY, "CPU", "OS",
+    protected static final String[] TITLES = { GPConstants.NAME,
+            GPConstants.VERSION, STATE, REFRESHABLE, GPConstants.DESCRIPTION,
+            "task type", GPConstants.AUTHOR, GPConstants.QUALITY, "CPU", "OS",
             GPConstants.LANGUAGE, "lang. version", "ver" };
 
     protected String userID = null;
@@ -113,8 +116,9 @@ public class InstallTask {
 
     protected boolean deprecated = false;
 
-    public InstallTask(String userID, String manifestString, String[] supportFiles, String installURL,
-            long downloadSize, long modificationTimestamp, String siteName, boolean deprecated) {
+    public InstallTask(String userID, String manifestString,
+            String[] supportFiles, String installURL, long downloadSize,
+            long modificationTimestamp, String siteName, boolean deprecated) {
         this.userID = userID;
         this.installURL = installURL;
         this.downloadSize = downloadSize;
@@ -127,8 +131,7 @@ public class InstallTask {
         Properties props = new Properties();
         try {
             props.load(new ByteArrayInputStream(manifestString.getBytes()));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -154,26 +157,28 @@ public class InstallTask {
             lsid = module.get(GPConstants.LSID);
             l = new LSID(lsid);
             lsidVersion = l.getVersion();
-            taskInfo = GenePatternAnalysisTask.getTaskInfo(l.toStringNoVersion(), userID);
+            taskInfo = GenePatternAnalysisTask.getTaskInfo(l
+                    .toStringNoVersion(), userID);
             if (taskInfo != null) {
                 tia = taskInfo.giveTaskInfoAttributes();
             }
-        }
-        catch (OmnigeneException oe) {
-        }
-        catch (MalformedURLException mue) {
+        } catch (OmnigeneException oe) {
+        } catch (MalformedURLException mue) {
         }
 
         // figure out which support files are documentation files
         Vector vSupportFiles = new Vector();
         for (int i = 0; supportFiles != null && i < supportFiles.length; i++) {
-            if (GenePatternAnalysisTask.isDocFile(supportFiles[i]) && !supportFiles[i].equals("version.txt")) {
+            if (GenePatternAnalysisTask.isDocFile(supportFiles[i])
+                    && !supportFiles[i].equals("version.txt")) {
                 vSupportFiles.add(supportFiles[i]);
             }
         }
         docFileURLs = (String[]) vSupportFiles.toArray(new String[0]);
-        module.put(STATE, isAlreadyInstalled() ? (isNewer() ? UPDATED : UPTODATE) : NEW);
-        module.put(REFRESHABLE, isAlreadyInstalled() ? (isNewer() ? YES : NO) : YES);
+        module.put(STATE, isAlreadyInstalled() ? (isNewer() ? UPDATED
+                : UPTODATE) : NEW);
+        module.put(REFRESHABLE, isAlreadyInstalled() ? (isNewer() ? YES : NO)
+                : YES);
         module.put(LSID_VERSION, lsidVersion);
     }
 
@@ -181,7 +186,8 @@ public class InstallTask {
     // type")
     public static String columnNameToHRV(String columnName) throws Exception {
         if (TITLES.length != COLUMNS.length) {
-            throw new Exception("length of COLUMNS doesn't match length of TITLES");
+            throw new Exception(
+                    "length of COLUMNS doesn't match length of TITLES");
         }
         for (int i = 0; i < TITLES.length; i++) {
             if (COLUMNS[i].equals(columnName)) {
@@ -210,25 +216,25 @@ public class InstallTask {
         String oldLSID = tia.get(GPConstants.LSID);
 
         // TODO: use LSID class to compare LSIDs
-        if (newLSID != null && oldLSID == null) return true;
+        if (newLSID != null && oldLSID == null)
+            return true;
 
-        if (newLSID != null && oldLSID != null && oldLSID.length() > 0 && newLSID.length() > 0) {
+        if (newLSID != null && oldLSID != null && oldLSID.length() > 0
+                && newLSID.length() > 0) {
             try {
                 LSID l1 = new LSID(newLSID);
                 LSID l2 = new LSID(oldLSID);
                 if (!l1.isSimilar(l2)) {
                     // different authority, namespace,or identifier
                     result = (l1.compareTo(l2) > 0);
-                }
-                else {
+                } else {
                     // only different version number
                     result = (l1.getVersion().compareTo(l2.getVersion()) > 0);
                 }
                 // System.out.println(getName() + " isNewer: LSID comparison: "
                 // + result + " for " + newLSID + " vs. " + oldLSID);
                 return result;
-            }
-            catch (MalformedURLException mue) {
+            } catch (MalformedURLException mue) {
                 System.err.println("Bad LSID: " + newLSID + " or " + oldLSID);
             }
         }
@@ -250,14 +256,16 @@ public class InstallTask {
             Object oChoices = attributes.get(name);
             if (oChoices instanceof String) {
                 if (!attributes.containsKey(name)
-                        || (!attributes.get(name).equals(value) && !value.equals(GPConstants.ANY) && !value.equals(""))) {
+                        || (!attributes.get(name).equals(value)
+                                && !value.equals(GPConstants.ANY) && !value
+                                .equals(""))) {
                     return false;
                 }
-            }
-            else {
+            } else {
                 // vChoices is a List of possible settings. Any one is okay
                 List vChoices = (List) oChoices;
-                if (!vChoices.contains(value) && !value.equals(GPConstants.ANY) && !value.equals("")) {
+                if (!vChoices.contains(value) && !value.equals(GPConstants.ANY)
+                        && !value.equals("")) {
                     return false;
                 }
             }
@@ -320,10 +328,10 @@ public class InstallTask {
 
     public String getRequirements() {
         StringBuffer buf = new StringBuffer();
-        if (getLanguage() != null) {
+        if (getLanguage() != null && !getLanguage().trim().equals("")) {
             buf.append(getLanguage());
 
-            if (getLanguageLevel() != null) {
+            if (getLanguageLevel() != null && !getLanguageLevel().trim().equals("")) {
                 buf.append(" ");
                 buf.append(getLanguageLevel());
 
@@ -333,8 +341,7 @@ public class InstallTask {
 
         if (getOperatingSystem() != null) {
             buf.append(getOperatingSystem() + " OS");
-        }
-        else {
+        } else {
             buf.append("any OS");
         }
         return buf.toString();
@@ -382,33 +389,36 @@ public class InstallTask {
     }
 
     // return Vector of error messages when attempting to install this Module
-    public boolean install(String username, int access_id, ITaskIntegrator taskIntegrator)
+    public boolean install(String username, int access_id, Status status)
             throws TaskInstallationException {
         String filename = null;
         Vector vProblems = new Vector();
         String url = getUrl();
         try {
-            boolean wasInstalled = isAlreadyInstalled() && tia.get(GPConstants.LSID).equals(getLsid());
+            boolean wasInstalled = isAlreadyInstalled()
+                    && tia.get(GPConstants.LSID).equals(getLsid());
             filename = GenePatternAnalysisTask.downloadTask(url);
-            String zipLSID = (String) GenePatternAnalysisTask.getPropsFromZipFile(filename).getProperty(
-                    GPConstants.LSID);
-            if (!zipLSID.equals(getLsid())) throw new Exception("requested LSID " + getLsid()
-                    + " doesn't match actual " + zipLSID);
+            String zipLSID = (String) GenePatternAnalysisTask
+                    .getPropsFromZipFile(filename)
+                    .getProperty(GPConstants.LSID);
+            if (!zipLSID.equals(getLsid()))
+                throw new Exception("requested LSID " + getLsid()
+                        + " doesn't match actual " + zipLSID);
 
-            String taskName = GenePatternAnalysisTask.getTaskNameFromZipFile(filename);
-            lsid = GenePatternAnalysisTask.installNewTask(filename, username, access_id, taskIntegrator);
+            String taskName = GenePatternAnalysisTask
+                    .getTaskNameFromZipFile(filename);
+            lsid = GenePatternAnalysisTask.installNewTask(filename, username,
+                    access_id, status);
 
             return wasInstalled;
-        }
-        catch (TaskInstallationException tie) {
+        } catch (TaskInstallationException tie) {
             throw tie;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Vector vErrors = new Vector();
-            vErrors.add(FAILED + ": unable to load " + url + ": " + e.getMessage());
+            vErrors.add(FAILED + ": unable to load " + url + ": "
+                    + e.getMessage());
             throw new TaskInstallationException(vErrors);
-        }
-        finally {
+        } finally {
             if (filename != null) {
                 new File(filename).delete();
             }
@@ -428,18 +438,19 @@ public class InstallTask {
         System.exit(0);
     }
 
-    public static InstallTask loadFromRepositoryAndZipFile(String taskName, String userID) throws Exception {
+    public static InstallTask loadFromRepositoryAndZipFile(String taskName,
+            String userID) throws Exception {
         String repositoryPath = REPOSITORY_ROOT + "/modules/" + taskName;
         File[] supportFiles = new File(repositoryPath).listFiles();
         if (supportFiles == null) {
-            throw new Exception("No such directory " + new File(repositoryPath).getCanonicalPath());
+            throw new Exception("No such directory "
+                    + new File(repositoryPath).getCanonicalPath());
         }
         String[] supportFileURLs = new String[supportFiles.length];
         for (int i = 0; i < supportFiles.length; i++) {
             try {
                 supportFileURLs[i] = supportFiles[i].toURI().toURL().toString();
-            }
-            catch (MalformedURLException ignore) {
+            } catch (MalformedURLException ignore) {
             }
         }
 
@@ -447,11 +458,11 @@ public class InstallTask {
         String installURL = "";
         try {
             installURL = zip.toURI().toURL().toString();
+        } catch (MalformedURLException ignore) {
         }
-        catch (MalformedURLException ignore) {
-        }
-        InstallTask task = new InstallTask(userID, InstallTask.loadManifest(taskName, userID), supportFileURLs,
-                installURL, zip.length(), zip.lastModified(), "Broad", false);
+        InstallTask task = new InstallTask(userID, InstallTask.loadManifest(
+                taskName, userID), supportFileURLs, installURL, zip.length(),
+                zip.lastModified(), "Broad", false);
         return task;
     }
 
@@ -463,29 +474,30 @@ public class InstallTask {
         for (int arg = 0; arg < args.length; arg++) {
             String taskName = args[arg];
             try {
-                InstallTask task = loadFromRepositoryAndZipFile(taskName, userID);
+                InstallTask task = loadFromRepositoryAndZipFile(taskName,
+                        userID);
                 out.append(task.toString());
 
                 HashMap match = new HashMap();
                 match.put(GPConstants.TASK_TYPE, "Prediction");
                 match.put(GPConstants.LANGUAGE, "Java");
-                out.append("matchesAttributes(taskType=Prediction, language=Java)=" + task.matchesAttributes(match)
-                        + "\n");
+                out
+                        .append("matchesAttributes(taskType=Prediction, language=Java)="
+                                + task.matchesAttributes(match) + "\n");
 
                 match.put(GPConstants.LANGUAGE, "Perl");
-                out.append("matchesAttributes(taskType=Prediction, language=Perl)=" + task.matchesAttributes(match)
-                        + "\n");
+                out
+                        .append("matchesAttributes(taskType=Prediction, language=Perl)="
+                                + task.matchesAttributes(match) + "\n");
 
                 out.append("installing...\n");
                 if (task.install(userID, GPConstants.ACCESS_PUBLIC, null)) {
                     out.append("overwrote");
-                }
-                else {
+                } else {
                     out.append("installed");
                 }
                 out.append(" " + taskName + "\n");
-            }
-            catch (Throwable t) {
+            } catch (Throwable t) {
                 t.printStackTrace();
             }
         }
@@ -493,11 +505,12 @@ public class InstallTask {
     }
 
     // test support: given a task name, return the manifest file as a string
-    protected static String loadManifest(String taskName, String userID) throws Exception {
+    protected static String loadManifest(String taskName, String userID)
+            throws Exception {
         Properties props = new Properties();
         // NB: assumes that source repository /gp2/modules exists!!!
-        props.load(new FileInputStream(
-                new File(REPOSITORY_ROOT + "/modules/" + taskName, GPConstants.MANIFEST_FILENAME)));
+        props.load(new FileInputStream(new File(REPOSITORY_ROOT + "/modules/"
+                + taskName, GPConstants.MANIFEST_FILENAME)));
         ByteArrayOutputStream manifestData = new ByteArrayOutputStream(10000);
         props.store(manifestData, taskName); // write properties to stream
         return manifestData.toString();
@@ -518,8 +531,7 @@ public class InstallTask {
             out.append(attributeNames[i]);
             try {
                 out.append(" (" + columnNameToHRV(attributeNames[i]) + ")");
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             out.append("=" + attributes.get(attributeNames[i]));
@@ -531,13 +543,15 @@ public class InstallTask {
         String[] docFiles = getDocUrls();
         out.append("documentation: ");
         for (i = 0; i < docFiles.length; i++) {
-            if (i > 0) out.append(", ");
+            if (i > 0)
+                out.append(", ");
             out.append(docFiles[i]);
         }
         out.append("\n");
 
-        out.append("url=" + getUrl() + " is " + getDownloadSize() + " bytes, created "
-                + new Date(getModificationTimestamp()) + "\n");
+        out.append("url=" + getUrl() + " is " + getDownloadSize()
+                + " bytes, created " + new Date(getModificationTimestamp())
+                + "\n");
         return out.toString();
     }
 }

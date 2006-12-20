@@ -81,7 +81,7 @@ import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webservice.server.DirectoryManager;
-import org.genepattern.server.webservice.server.ITaskIntegrator;
+import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.dao.BaseDAO;
@@ -1275,7 +1275,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
     // installed.
     // if not, download and install it.
     // For any problems, throw an exception
-    protected static boolean validatePatches(TaskInfo taskInfo, ITaskIntegrator taskIntegrator) throws Exception {
+    protected static boolean validatePatches(TaskInfo taskInfo, Status taskIntegrator) throws Exception {
         TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
         String requiredPatchLSID = tia.get(REQUIRED_PATCH_LSIDS);
         // no patches required?
@@ -1341,7 +1341,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
     // containing a command line,
     // running that command line after substitutions, and recording the result
     // in the genepattern.properties patch registry
-    public static void installPatch(String requiredPatchLSID, String requiredPatchURL, ITaskIntegrator taskIntegrator)
+    public static void installPatch(String requiredPatchLSID, String requiredPatchURL, Status taskIntegrator)
             throws Exception {
         LSID patchLSID = new LSID(requiredPatchLSID);
         boolean wasNullURL = (requiredPatchURL == null || requiredPatchURL.length() == 0);
@@ -1379,7 +1379,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
             requiredPatchURL = (String) hmProps.get("site_module.url");
         }
         if (taskIntegrator != null) {
-            taskIntegrator.statusMessage("Downloading required patch from " + requiredPatchURL);
+            taskIntegrator.statusMessage("Downloading required patch from " + requiredPatchURL + "...");
         }
         String zipFilename = downloadPatch(requiredPatchURL, taskIntegrator, (String) hmProps
                 .get("site_module.zipfilesize"));
@@ -1403,7 +1403,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
         // if (taskIntegrator != null) taskIntegrator.statusMessage("Running " +
         // commandLine + " in " + patchDirectory.getAbsolutePath());
         if (taskIntegrator != null) {
-            taskIntegrator.statusMessage("Running " + nomDePatch + " Installer.<br> ");
+            taskIntegrator.statusMessage("Running " + nomDePatch + " Installer.");
         }
         String exitValue = "" + executePatch(commandLine, patchDirectory, taskIntegrator);
         if (taskIntegrator != null) {
@@ -1454,7 +1454,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
     }
 
     // download the patch zip file from a URL
-    protected static String downloadPatch(String url, ITaskIntegrator taskIntegrator, String contentLength)
+    protected static String downloadPatch(String url, Status taskIntegrator, String contentLength)
             throws IOException {
         try {
             long len = -1;
@@ -1480,13 +1480,13 @@ public class GenePatternAnalysisTask implements IGPConstants {
     }
 
     // unzip the patch files into their own directory
-    protected static void explodePatch(String zipFilename, File patchDirectory, ITaskIntegrator taskIntegrator)
+    protected static void explodePatch(String zipFilename, File patchDirectory, Status taskIntegrator)
             throws IOException {
         explodePatch(zipFilename, patchDirectory, taskIntegrator, null);
     }
 
     // unzip the patch files into their own directory
-    protected static void explodePatch(String zipFilename, File patchDirectory, ITaskIntegrator taskIntegrator,
+    protected static void explodePatch(String zipFilename, File patchDirectory, Status taskIntegrator,
             String zipEntryName) throws IOException {
         ZipFile zipFile = new ZipFile(zipFilename);
         InputStream is = null;
@@ -1573,7 +1573,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 
     // run the patch command line in the patch directory, returning the exit
     // code from the executable
-    protected static int executePatch(String commandLine, File patchDirectory, ITaskIntegrator taskIntegrator)
+    protected static int executePatch(String commandLine, File patchDirectory, Status taskIntegrator)
             throws Exception {
         // spawn the command
         Process process = Runtime.getRuntime().exec(commandLine, null, patchDirectory);
@@ -1592,9 +1592,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
 
         // create threads to read from the command's stdout and stderr
         // streams
-        if (taskIntegrator != null) {
-            taskIntegrator.statusMessage("<p><table width='80%' align='center' border=1><tr bgcolor='#DDDDFF' ><td>");
-        }
+       
         Thread outputReader = (taskIntegrator != null) ? antStreamCopier(process.getInputStream(), taskIntegrator)
                 : streamCopier(process.getInputStream(), System.out);
         Thread errorReader = (taskIntegrator != null) ? antStreamCopier(process.getErrorStream(), taskIntegrator)
@@ -1607,9 +1605,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
         // wait for all output
         outputReader.join();
         errorReader.join();
-        if (taskIntegrator != null) {
-            taskIntegrator.statusMessage("<p>&nbsp;</td></tr></table>");
-        }
+       
 
         // the process will be dead by now
         process.waitFor();
@@ -1717,7 +1713,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
     }
 
     // copy an InputStream to a PrintStream until EOF
-    public static Thread streamCopier(final InputStream is, final ITaskIntegrator taskIntegrator) throws IOException {
+    public static Thread streamCopier(final InputStream is, final Status taskIntegrator) throws IOException {
         // create thread to read from the a process' output or error stream
         return new Thread(new Runnable() {
             public void run() {
@@ -1725,7 +1721,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 String line;
                 try {
                     while ((line = in.readLine()) != null) {
-                        if (taskIntegrator != null) {
+                        if (taskIntegrator != null && line!=null) {
                             taskIntegrator.statusMessage(line);
                         }
                     }
@@ -1738,7 +1734,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
     }
 
     // copy an InputStream to a PrintStream until EOF
-    public static Thread antStreamCopier(final InputStream is, final ITaskIntegrator taskIntegrator) throws IOException {
+    public static Thread antStreamCopier(final InputStream is, final Status taskIntegrator) throws IOException {
         // create thread to read from the a process' output or error stream
         return new Thread(new Runnable() {
             public void run() {
@@ -1750,7 +1746,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                         if ((idx = line.indexOf("[echo]")) >= 0) {
                             line = line.substring(idx + 6);
                         }
-                        if (taskIntegrator != null) {
+                        if (taskIntegrator != null && line!=null) {
                             taskIntegrator.statusMessage(line);
                         }
                     }
@@ -2824,7 +2820,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * @author Jim Lerner
      */
     public  static Vector installTask(String name, String description, ParameterInfo[] params,
-            TaskInfoAttributes taskInfoAttributes, String username, int access_id, ITaskIntegrator taskIntegrator)
+            TaskInfoAttributes taskInfoAttributes, String username, int access_id, Status taskIntegrator)
             throws OmnigeneException, RemoteException {
         String originalUsername = username;
         TaskInfo taskInfo = new TaskInfo();
@@ -2920,7 +2916,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * or installing from a zip file
      */
     public static String installNewTask(String name, String description, ParameterInfo[] params,
-            TaskInfoAttributes taskInfoAttributes, String username, int access_id, ITaskIntegrator taskIntegrator)
+            TaskInfoAttributes taskInfoAttributes, String username, int access_id, Status taskIntegrator)
             throws OmnigeneException, RemoteException, TaskInstallationException {
         LSID taskLSID = null;
         String requestedLSID = taskInfoAttributes.get(LSID);
@@ -3259,7 +3255,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
      * @see #installTask
      */
     public static String installNewTask(String zipFilename, String username, int access_id, boolean recursive,
-            ITaskIntegrator taskIntegrator) throws TaskInstallationException {
+            Status taskIntegrator) throws TaskInstallationException {
         Vector vProblems = new Vector();
         IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
         if (!authManager.checkPermission("createTask", username)) {
@@ -3574,7 +3570,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
     }
 
     public static String installNewTask(String zipFilename, String username, int access_id,
-            ITaskIntegrator taskIntegrator) throws TaskInstallationException {
+            Status taskIntegrator) throws TaskInstallationException {
         return installNewTask(zipFilename, username, access_id, true, taskIntegrator);
     }
 
@@ -3594,12 +3590,12 @@ public class GenePatternAnalysisTask implements IGPConstants {
      *             storing it locally
      * @author Jim Lerner
      */
-    public static String downloadTask(String zipURL, ITaskIntegrator taskIntegrator, long expectedLength)
+    public static String downloadTask(String zipURL, Status statusMonitor, long expectedLength)
             throws IOException {
-        return downloadTask(zipURL, taskIntegrator, expectedLength, true);
+        return downloadTask(zipURL, statusMonitor, expectedLength, true);
     }
 
-    public static String downloadTask(String zipURL, ITaskIntegrator taskIntegrator, long expectedLength,
+    public static String downloadTask(String zipURL, Status statusMonitor, long expectedLength,
             boolean verbose) throws IOException {
         File zipFile = null;
         long downloadedBytes = 0;
@@ -3626,14 +3622,14 @@ public class GenePatternAnalysisTask implements IGPConstants {
             else {
                 downloadSize = expectedLength;
             }
-            if ((taskIntegrator != null) && (downloadSize != -1) && verbose) {
-                taskIntegrator.statusMessage("Download length: " + (long) downloadSize + " bytes."); // Each
+            if ((statusMonitor != null) && (downloadSize != -1) && verbose) {
+                statusMonitor.statusMessage("Download length: " + (long) downloadSize + " bytes."); // Each
                 // dot
             }
             // represents
             // 100KB.");
-            if ((taskIntegrator != null)) {
-                taskIntegrator.beginProgress("download");
+            if ((statusMonitor != null)) {
+                statusMonitor.beginProgress("download");
             }
             InputStream is = uc.getInputStream();
             byte[] buf = new byte[100000];
@@ -3646,8 +3642,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 if (downloadSize > -1) {
                     long pctComplete = 100 * downloadedBytes / downloadSize;
                     if (lastPercent != pctComplete) {
-                        if (taskIntegrator != null) {
-                            taskIntegrator.continueProgress((int) pctComplete);
+                        if (statusMonitor != null) {
+                            statusMonitor.continueProgress((int) pctComplete);
                         }
                         lastPercent = pctComplete;
                     }
@@ -3667,10 +3663,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
         }
         finally {
             System.out.println("downloaded " + downloadedBytes + " bytes");
-            if (taskIntegrator != null) {
-                taskIntegrator.endProgress();
+            if (statusMonitor != null) {
+                statusMonitor.endProgress();
                 if (verbose) {
-                    taskIntegrator.statusMessage("downloaded " + downloadedBytes + " bytes");
+                    statusMonitor.statusMessage("downloaded " + downloadedBytes + " bytes");
                 }
             }
         }

@@ -31,6 +31,7 @@ import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
 import org.genepattern.server.webservice.server.ITaskIntegrator;
+import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -40,12 +41,10 @@ public class TaskCatalogBean {
 
     private List<MyTask> filteredTasks;
 
-    private SelectItem[] operatingSystems = new SelectItem[] { new SelectItem(
-            "any") };
+    private SelectItem[] operatingSystems = new SelectItem[] { new SelectItem("any") };
 
-    private SelectItem[] states = new SelectItem[] {
-            new SelectItem("new", "new"), new SelectItem("updated", "updated"),
-            new SelectItem("up to date", "up to date") };;
+    private SelectItem[] states = new SelectItem[] { new SelectItem("new", "new"),
+            new SelectItem("updated", "updated"), new SelectItem("up to date", "up to date") };;
 
     private HashSet missingLsids;
 
@@ -70,8 +69,7 @@ public class TaskCatalogBean {
         selectedStates.addAll(getDefaultStatesSelection());
         selectedOperatingSystems = new ArrayList<String>();
         selectedOperatingSystems.addAll(getDefaultOperatingSystemSelection());
-        collection = new InstallTasksCollectionUtils(UIBeanHelper.getUserId(),
-                false);
+        collection = new InstallTasksCollectionUtils(UIBeanHelper.getUserId(), false);
         try {
             this.tasks = collection.getAvailableModules();
         } catch (Exception e) {
@@ -83,8 +81,7 @@ public class TaskCatalogBean {
             for (InstallTask t : tasks) {
                 try {
                     String baseLsid = new LSID(t.getLsid()).toStringNoVersion();
-                    List<InstallTask> taskList = baseLsidToTasksMap
-                            .get(baseLsid);
+                    List<InstallTask> taskList = baseLsidToTasksMap.get(baseLsid);
                     if (taskList == null) {
                         taskList = new ArrayList<InstallTask>();
                         baseLsidToTasksMap.put(baseLsid, taskList);
@@ -112,8 +109,7 @@ public class TaskCatalogBean {
             String os = operatingSystemsArray[i];
             operatingSystems[i] = new SelectItem(os);
         }
-        if (UIBeanHelper.getRequest().getParameter(
-                "taskCatalogForm:taskCatalogSubmit") == null) {
+        if (UIBeanHelper.getRequest().getParameter("taskCatalogForm:taskCatalogSubmit") == null) {
             filter();
         }
     }
@@ -155,7 +151,7 @@ public class TaskCatalogBean {
     }
 
     public int getNumberOfTasks() {
-        return filteredTasks.size();
+        return filteredTasks != null ? filteredTasks.size() : 0;
     }
 
     public boolean isError() {
@@ -168,35 +164,46 @@ public class TaskCatalogBean {
 
     public String install() {
         filter();
-        final String[] lsids = UIBeanHelper.getRequest().getParameterValues(
-                "installLsid");
+        final String[] lsids = UIBeanHelper.getRequest().getParameterValues("installLsid");
         if (lsids != null) {
             final String username = UIBeanHelper.getUserId();
-            final LocalTaskIntegratorClient taskIntegrator = new LocalTaskIntegratorClient(
-                    username);
-            final TaskInstallBean installBean = (TaskInstallBean) UIBeanHelper
-                    .getManagedBean("#{taskInstallBean}");
+            final TaskInstallBean installBean = (TaskInstallBean) UIBeanHelper.getManagedBean("#{taskInstallBean}");
             installBean.setTasks(lsids, lsidToTaskMap);
 
             new Thread() {
                 public void run() {
 
-                    for (String lsid : lsids) {
+                    for (final String lsid : lsids) {
                         try {
                             HibernateUtil.beginTransaction();
                             InstallTask t = lsidToTaskMap.get(lsid);
                             if (t == null) {
-                                // UIBeanHelper.setInfoMessage("Task " + lsid
-                                // + " not found."); FIXME
+                                installBean.setStatus(lsid, "error", lsid + " not found.");
+
                             } else {
-                                t.install(username, GPConstants.ACCESS_PUBLIC,
-                                        taskIntegrator);
+                                t.install(username, GPConstants.ACCESS_PUBLIC, new Status() {
+
+                                    public void beginProgress(String string) {
+                                    }
+
+                                    public void continueProgress(int percent) {
+                                    }
+
+                                    public void endProgress() {
+                                    }
+
+                                    public void statusMessage(String message) {
+                                        if (message != null) {
+                                            installBean.appendPatchProgressMessage(lsid, message + "<br />");
+                                        }
+                                    }
+
+                                });
                                 installBean.setStatus(lsid, "success");
                             }
                             HibernateUtil.commitTransaction();
                         } catch (TaskInstallationException e) {
-                            installBean
-                                    .setStatus(lsid, "error", e.getMessage());
+                            installBean.setStatus(lsid, "error", e.getMessage());
                             HibernateUtil.rollbackTransaction();
                             log.error(e);
                         }
@@ -234,8 +241,7 @@ public class TaskCatalogBean {
     }
 
     private List<String> getDefaultStatesSelection() {
-        if (UIBeanHelper.getRequest().getParameter(
-                "taskCatalogForm:taskCatalogSubmit") == null) {
+        if (UIBeanHelper.getRequest().getParameter("taskCatalogForm:taskCatalogSubmit") == null) {
             List<String> l = new ArrayList<String>();
             l.add(InstallTask.NEW);
             l.add(InstallTask.UPDATED);
@@ -250,11 +256,9 @@ public class TaskCatalogBean {
     }
 
     private String getOS() {
-        boolean isWindows = System.getProperty("os.name").toLowerCase()
-                .startsWith("windows");
+        boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
         boolean isMac = System.getProperty("mrj.version") != null;
-        boolean isLinux = System.getProperty("os.name").toLowerCase()
-                .startsWith("linux");
+        boolean isLinux = System.getProperty("os.name").toLowerCase().startsWith("linux");
 
         if (isWindows) { // remove all tasks that are not windows or
             // any
@@ -271,8 +275,7 @@ public class TaskCatalogBean {
         Map<String, List> filterKeyToValuesMap = new HashMap<String, List>();
         if (selectedOperatingSystems.size() == 0) {
             // set default
-            selectedOperatingSystems
-                    .addAll(getDefaultOperatingSystemSelection());
+            selectedOperatingSystems.addAll(getDefaultOperatingSystemSelection());
         }
         filterKeyToValuesMap.put("os", selectedOperatingSystems);
 
@@ -296,8 +299,7 @@ public class TaskCatalogBean {
             // tasks
             InstallTask t = allFilteredTasks.get(i);
             try {
-                List<InstallTask> taskList = baseLsidToTasksMap
-                        .remove(new LSID(t.getLsid()).toStringNoVersion());
+                List<InstallTask> taskList = baseLsidToTasksMap.remove(new LSID(t.getLsid()).toStringNoVersion());
                 if (taskList != null) {
                     Collections.sort(taskList, DESC_COMPARATOR);
                     MyTask latest = new MyTask(taskList.remove(0));
@@ -327,12 +329,10 @@ public class TaskCatalogBean {
 
     }
 
-    private static class DescendingVersionComparator implements
-            Comparator<InstallTask> {
+    private static class DescendingVersionComparator implements Comparator<InstallTask> {
 
         public int compare(InstallTask t1, InstallTask t2) {
-            return new Integer(Integer.parseInt(t2.getLsidVersion()))
-                    .compareTo(Integer.parseInt(t1.getLsidVersion()));
+            return new Integer(Integer.parseInt(t2.getLsidVersion())).compareTo(Integer.parseInt(t1.getLsidVersion()));
         }
 
     }
@@ -446,8 +446,7 @@ public class TaskCatalogBean {
             return task.hashCode();
         }
 
-        public boolean install(String username, int access_id,
-                ITaskIntegrator taskIntegrator)
+        public boolean install(String username, int access_id, ITaskIntegrator taskIntegrator)
                 throws TaskInstallationException {
             return task.install(username, access_id, taskIntegrator);
         }

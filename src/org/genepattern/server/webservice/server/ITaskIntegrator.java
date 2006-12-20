@@ -21,7 +21,7 @@ import org.genepattern.webservice.WebServiceException;
 /**
  * @author Joshua Gould
  */
-public interface ITaskIntegrator {
+public interface ITaskIntegrator extends Status {
 
 	/**
 	 * Deletes the given task
@@ -310,9 +310,6 @@ public interface ITaskIntegrator {
 	public javax.activation.DataHandler exportToZip(String lsid, boolean recursive)
 			throws WebServiceException;
 			
-	public void statusMessage(String message);
 	public void errorMessage(String message);
-	public void beginProgress(String message);
-	public void continueProgress(int percentComplete);
-	public void endProgress();
+	
 }
