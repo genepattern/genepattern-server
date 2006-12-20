@@ -119,19 +119,14 @@ function validateForm() {
             	missingParams += "<br/>" + "<b>" + displayName + "</b>";
             }
         }
-       
-     
-        var d = $("errorMessageDiv");
-        var t = $("errorMessage");
-        
+         
         if (error) {
-            d.style.display = "inline";
-            t.innerHTML =
+           	var txt =
             "<font color=\"red\" size=\"+1\">#{runTaskBean.name} could not be run. The following required parameters need to have values provided:</font>" +
             missingParams;
-        } else {
-            d.style.display = "hidden";
-        }
+            Element.update('errorMessageDiv', txt);
+     		Element.show($('errorMessageDiv'));
+        } 
         
         return !error;
     }
