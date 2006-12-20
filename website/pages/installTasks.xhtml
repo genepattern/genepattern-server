@@ -53,36 +53,45 @@
        */
        function update(jsonString)
        {
-       new Insertion.Bottom("progress_indicator", ".");
+      // new Insertion.Bottom("progress_indicator", ".");
        
        var complete = true;
        var objArray = eval('(' + jsonString + ')');
-       for(var i=0; i<objArray.length; i++) {
+	   for(var i=0; i<objArray.length; i++) {
          var installStatus = objArray[i];
          var lsid = installStatus.lsid;
          var cb = $("cb_" + lsid);
+         
          if(installStatus.status == "success") {
            if(cb != null) {
-             cb.src="#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
+     			cb.src="#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
            }
          }
          else if (installStatus.status == "error") {
            if(cb != null) {
-             cb.src="#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
+             	cb.src="#{facesContext.externalContext.requestContextPath}/images/red-x.gif";
            }
            var errorDivId = "error_" + lsid;
            Element.show(errorDivId);
-           Element.update(errorDivId, "<p>" + installStatus.message + "</p>");
+           Element.update(errorDivId,installStatus.message);
         }
         else {
-          // This task is not finished (neither succes nor error)
+          // This task is not finished (neither success nor error)
           complete = false;
+        }
+        var progressId = "progress_" + lsid;
+        if(installStatus.patch != '') {
+        
+        	Element.update(progressId, installStatus.patch);
+        } else {
+          	Element.hide(progressId);
         }
       }
   
       if(complete == true) {
         Element.update("progress_indicator", "<i>done</i>")
-  
+  		
+        	
         stopPolling();
         var buttonPane = $("button_pane");
         if(buttonPane != null) { 
@@ -106,29 +115,31 @@
           <h1>Installing Tasks&#160;&#160;<span id="progress_indicator"></span> </h1>
         </p>
         
-        <table>
+        <table border="0" cellpadding="5" cellspacing="0">
           <!--  Loop through tasks (TaskInstallStatus beans) -->
           <ui:repeat var="task" value="#{taskInstallBean.tasks}">
             <tr>
-              <td>
+              <td valign="top">
                 #{task.name}
               </td>
-              <td>
+              <td valign="top">
                 <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="12" height="12" id="cb_#{task.lsid}"/>
               </td>
             </tr>
+            <tr><td valign="top" colspan="2" id="progress_#{task.lsid}">&#160;</td></tr>
+           
           </ui:repeat>
         </table>
         
         <!--  Divs for error messages.  One for each task  -->
         <ui:repeat var="task" value="#{taskInstallBean.tasks}">
-          <div id="error_#{task.lsid}" class="validation-error" style="display: none;">
+          <div id="error_#{task.lsid}" class="validation-error" style="display:none;">
              
           </div>
         </ui:repeat>
         
 
-        <div id="button_pane" style="display: none;">
+        <div id="button_pane" style="display:none;">
           <t:commandButton value="Done"  action="home"/>&#160;
           <t:commandButton value="Install More" action="task catalog"/>
         </div>
