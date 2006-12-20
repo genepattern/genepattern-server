@@ -7,6 +7,7 @@
     </ui:define>
     <ui:define name="body">
       <h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm();">
+      	<f:attribute name="lsid" value="#{manageSuiteBean.currentSuite == null ? '' : manageSuiteBean.currentSuite.lsid}"/>
         <!--  The category list is used upon submit.  -->
         <t:saveState value="#{createSuiteBean}"/>
         <h:messages/> 
@@ -60,14 +61,51 @@
             <td>Support Files:<br/>
             </td>
             <td>
-              <span class="description">Any documentation or data
+			  <t:div rendered="#{manageSuiteBean.supportFiles != null}">
+			  		<table width="100%" border="0" cellpadding="0" cellspacing="0">
+			  			<tr>
+            				<td><t:outputText size="60" value="Current Support Files: "/></td>
+            				<td>&#160;</td>
+            			</tr>
+            			<tr style="#{manageSuiteBean.supportFiles.sf1 != null ? 'display:' : 'display:none;'}">
+            				<td><t:outputText size="60" value="#{manageSuiteBean.supportFiles.sf1}"/></td>
+            				<td>
+            					<h:commandLink actionListener="#{manageSuiteBean.deleteSupportFile}" onclick="if (!confirmDeleteSupportFile()) return false">
+                               		<t:outputText size="60" value="delete"/>
+                               		<f:param name="supportFileKey" value="sf1"/>
+                               	</h:commandLink>
+                            </td>
+            			</tr>
+            			<tr style="#{manageSuiteBean.supportFiles.sf2 != null ? 'display:' : 'display:none;'}">
+             				<td><t:outputText size="60" value="#{manageSuiteBean.supportFiles.sf2}"/></td>
+            				<td>
+            					<h:commandLink actionListener="#{manageSuiteBean.deleteSupportFile}" onclick="if (!confirmDeleteSupportFile()) return false">
+                               		<t:outputText size="60" value="delete"/>
+                               		<f:param name="supportFileKey" value="sf2"/>
+                               	</h:commandLink>
+                            </td>
+            			</tr>
+            			<tr style="#{manageSuiteBean.supportFiles.sf3 != null ? 'display:' : 'display:none;'}">
+            				<td><t:outputText size="60" value="#{manageSuiteBean.supportFiles.sf3}"/></td>
+            				<td>
+            					<h:commandLink actionListener="#{manageSuiteBean.deleteSupportFile}" onclick="if (!confirmDeleteSupportFile()) return false">
+                               		<t:outputText size="60" value="delete"/>
+                               		<f:param name="supportFileKey" value="sf3"/>
+                               	</h:commandLink>
+                            </td>
+            			</tr>
+            		</table>
+			  </t:div>
+			  <br/>
+              <br/>
+			  <span class="description">Any documentation or data
 					files you wish to bundle with the suite (pdf, doc, data files,
 					etc.) </span>
               <br/>
               <br/>
               <t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile1}"/>
               <br/>
-              <t:inputFileUpload storage="file" size="60" valuer="#{createSuiteBean.supportFile2}"/>
+              <t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile2}"/>
               <br/>
               <t:inputFileUpload storage="file" size="60" value="#{createSuiteBean.supportFile3}"/>
             </td>
@@ -163,7 +201,8 @@
         <div align="center">
           <br/>
           <t:graphicImage value="/images/divider-pix1.gif" width="100%" height="2" vspace="5"/>
-          <h:commandButton action="#{createSuiteBean.save}" value="save"/> &#160; 
+          <h:commandButton action="#{createSuiteBean.save}" value="save"/>
+          &#160; 
           <h:commandButton action="#{createSuiteBean.clear}" value="clear" immediate="true" type="reset"/>
         </div>
       </h:form>

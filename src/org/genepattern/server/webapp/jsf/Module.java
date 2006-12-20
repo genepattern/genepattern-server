@@ -26,6 +26,8 @@ public class Module implements java.io.Serializable {
     private List<SelectItem> versions = new ArrayList<SelectItem>();
     private String selectedVersion = "latest";  // LSID of selected version
     
+    private LSID lsid;
+    
     public String getSelectedVersion() {
         return selectedVersion;
     }
@@ -39,6 +41,7 @@ public class Module implements java.io.Serializable {
         this.name = ti.getName();
         this.shortName = ti.getShortName();
         pipeline = ti.isPipeline();
+        this.lsid=lsid;
         
         // Add the "latest" version option by stripping out the version #
         versions.add(new SelectItem(lsid.toStringNoVersion(), "latest"));
@@ -81,7 +84,9 @@ public class Module implements java.io.Serializable {
         return userId;
     }
 
-
+    public LSID getLSID() {
+    	return lsid;
+    }
     public List<SelectItem> getVersionSelectItems() {
         Collections.sort(versions, new Comparator() {           
             public int compare(Object o1, Object o2) {

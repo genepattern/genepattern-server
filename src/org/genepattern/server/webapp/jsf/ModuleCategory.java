@@ -107,5 +107,26 @@ public class ModuleCategory implements java.io.Serializable {
     		
     	}
     }
+    
+    public void setSelected(List<String> selectedLsids) {
+    	LSID lsidObj=null;
+    	for (String lsid : selectedLsids) {
+    		try {
+				lsidObj = new LSID(lsid);
+			}catch (MalformedURLException e) {
+                log.error("Error parsing lsid: " + lsid, e);
+            }
+    		
+    		for (Module module:modules) {
+    			if (lsid.equals(module.getLSID().toStringNoVersion())) {
+    				module.setSelected(true);
+    				if (!"".equals(lsidObj.getVersion())) {
+    					module.setSelectedVersion(lsidObj.getVersion());
+    				}
+    			}
+    		}
+    		
+    	}
+    }
 
 }

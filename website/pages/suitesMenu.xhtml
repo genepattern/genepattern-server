@@ -17,7 +17,7 @@
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Delete" action="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false">
+              <h:commandLink value="Delete" action="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false" rendered="#{suiteInfo.ownedByUser}">
                 <f:param name="selectedSuites" value="#{suiteInfo.lsid}"/>
               </h:commandLink>
             </td>
@@ -31,7 +31,7 @@
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Export Including Dependents" actionListener="#{manageSuiteBean.exportInDependents}">
+              <h:commandLink value="Export Including Dependents" action="#{manageSuiteBean.exportInDependents}">
                 <f:param name="lsid" value="#{suiteInfo.lsid}"/>
               </h:commandLink>
             </td>

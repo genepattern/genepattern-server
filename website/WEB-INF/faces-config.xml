@@ -255,6 +255,14 @@
    <to-view-id>/pages/manageSuite.xhtml</to-view-id>
   </navigation-case>
  </navigation-rule>
+ <navigation-rule>
+  <display-name>edit suite</display-name>
+  <from-view-id>/pages/*</from-view-id>
+  <navigation-case>
+   <from-outcome>edit suite</from-outcome>
+   <to-view-id>/pages/createSuite.xhtml</to-view-id>
+  </navigation-case>
+ </navigation-rule>
  <application>
   <view-handler>com.sun.facelets.FaceletViewHandler</view-handler>
   <!-- Replace view-handler tag with the tag below to enable trinidad  

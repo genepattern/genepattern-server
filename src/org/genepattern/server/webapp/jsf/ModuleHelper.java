@@ -77,6 +77,40 @@ public class ModuleHelper {
         }
         return categories;
     }
+    
+    public List<ModuleCategory> getSelectedTasksByType(Suite suite) {
+    	List<String> selectedLsids = suite.getModules();
+        List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
+        Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
+
+        for (int i = 0; i < allTasks.length; i++) {
+            TaskInfo ti = allTasks[i];
+            String taskType = ti.getTaskInfoAttributes().get("taskType");
+            if (taskType == null || taskType.length() == 0) {
+                taskType = "Uncategorized";
+            }
+            List<TaskInfo> tasks = taskMap.get(taskType);
+            if (tasks == null) {
+                tasks = new ArrayList<TaskInfo>();
+                taskMap.put(taskType, tasks);
+            }
+            tasks.add(ti);
+        }
+
+        List<String> categoryNames = new ArrayList<String>(taskMap.keySet());
+        Collections.sort(categoryNames);
+        ModuleCategory mc;
+        for (String categoryName : categoryNames) {
+            TaskInfo[] modules = new TaskInfo[taskMap.get(categoryName).size()];            
+            modules = taskMap.get(categoryName).toArray(modules);
+            
+            mc = new ModuleCategory(categoryName, modules);
+            mc.setSelected(selectedLsids);
+            
+            categories.add(mc);
+        }
+        return categories;
+    }
 
     /**
      * Return a list of tasks categorized by suite.  
@@ -141,9 +175,10 @@ public class ModuleHelper {
         List<String> categoryNames = new ArrayList<String>(taskMap.keySet());
         Collections.sort(categoryNames);
         ModuleCategory mc;
+        Map<String, TaskInfo> lsidToTaskInfoMap;
         for (String categoryName : categoryNames) {
             TaskInfo[] modules = new TaskInfo[taskMap.get(categoryName).size()];
-            Map<String, TaskInfo> lsidToTaskInfoMap = taskMap.get(categoryName);
+            lsidToTaskInfoMap = taskMap.get(categoryName);
             
             modules = taskMap.get(categoryName).values().toArray(modules);
             mc = new ModuleCategory(categoryName, modules);

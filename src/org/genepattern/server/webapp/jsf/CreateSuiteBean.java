@@ -38,7 +38,7 @@ import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
  */
 public class CreateSuiteBean implements java.io.Serializable {
 
-    private static final long serialVersionUID = 352540582209631173l;
+    //private static final long serialVersionUID = 352540582209631173l;
     private String name;
     private String description;
     private String author;
@@ -49,7 +49,17 @@ public class CreateSuiteBean implements java.io.Serializable {
     private UploadedFile supportFile3;
     private List<ModuleCategory> categories;
     private boolean success = false; // Default value
+    private Suite currentSuite = null;
 
+    public CreateSuiteBean() {
+    	if (currentSuite==null) {
+			String lsid = UIBeanHelper.getRequest().getParameter("lsid");
+	    	if (lsid!=null) {
+	        	currentSuite = (new SuiteDAO()).findById(lsid);
+	    	}
+		}
+    }
+    
     public boolean isSuccess() {
         return success;
     }
@@ -59,7 +69,7 @@ public class CreateSuiteBean implements java.io.Serializable {
     }
 
     public String getAccessId() {
-        return accessId;
+        return (currentSuite == null) ? accessId : currentSuite.getAccessId().toString();
     }
 
     public void setAccessId(String accessId) {
@@ -67,7 +77,7 @@ public class CreateSuiteBean implements java.io.Serializable {
     }
 
     public String getAuthor() {
-        return author;
+        return (currentSuite == null) ? author : currentSuite.getAuthor();
     }
 
     public void setAuthor(String author) {
@@ -75,7 +85,7 @@ public class CreateSuiteBean implements java.io.Serializable {
     }
 
     public String getDescription() {
-        return description;
+        return (currentSuite == null) ? description : currentSuite.getDescription();
     }
 
     public void setDescription(String description) {
@@ -83,7 +93,7 @@ public class CreateSuiteBean implements java.io.Serializable {
     }
 
     public String getName() {
-        return name;
+        return (currentSuite == null) ? name : currentSuite.getName();
     }
 
     public void setName(String name) {
@@ -94,7 +104,11 @@ public class CreateSuiteBean implements java.io.Serializable {
 
         List<List> cols = new ArrayList<List>();
         if(categories == null) {
-          categories = (new ModuleHelper()).getTasksByType();
+        	if (currentSuite!=null) {
+	        	categories = (new ModuleHelper()).getSelectedTasksByType(currentSuite);
+        	}else {
+        		categories = (new ModuleHelper()).getTasksByType();
+        	}
         }
         
         // Find the midpoint in the category list.
@@ -144,10 +158,11 @@ public class CreateSuiteBean implements java.io.Serializable {
     }
 
     public String save() {
-
+    	
         try {
- 
-            LSID lsidObj = LSIDManager.getInstance().createNewID(org.genepattern.util.IGPConstants.SUITE_NAMESPACE);          
+        	
+            LSID lsidObj = (currentSuite == null)?LSIDManager.getInstance().createNewID(org.genepattern.util.IGPConstants.SUITE_NAMESPACE):
+            	LSIDManager.getInstance().getNextIDVersion(currentSuite.getLsid());          
             String lsid = lsidObj.toString();
 
            
@@ -232,7 +247,7 @@ public class CreateSuiteBean implements java.io.Serializable {
     }
 
 	public String getContact() {
-		return contact;
+		return (currentSuite == null) ? contact : currentSuite.getContact();
 	}
 
 	public void setContact(String contact) {

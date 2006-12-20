@@ -35,3 +35,7 @@ function toggleSuiteCheckboxes(id) {
 function confirmDelete() {
 	return confirm('Are you sure you want to delete the selected suite(s)?');
 }
+
+function confirmDeleteSupportFile() {
+	return confirm('Are you sure you want to delete this support file?');
+}

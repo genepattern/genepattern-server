@@ -13,7 +13,7 @@ import org.genepattern.util.LSID;
  * @author jrobinso
  *
  */
-public class Suite {
+public class Suite implements java.io.Serializable {
 
     private String lsid;
     private String name;

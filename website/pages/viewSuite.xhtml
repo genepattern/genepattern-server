@@ -54,9 +54,19 @@
             <td>Support Files:<br/>
             </td>
             <td>
-              <pre>
-              	<t:outputText size="60" value="#{manageSuiteBean.supportFiles}"/>
-              </pre>
+            	<t:div rendered="#{manageSuiteBean.supportFiles != null}">
+			  		<table width="100%" border="0" cellpadding="0" cellspacing="0">
+            			<tr style="#{manageSuiteBean.supportFiles.sf1 != null ? 'display:' : 'display:none;'}">
+            				<td><t:outputText size="60" value="#{manageSuiteBean.supportFiles.sf1}"/></td>
+            			</tr>
+            			<tr style="#{manageSuiteBean.supportFiles.sf2 != null ? 'display:' : 'display:none;'}">
+             				<td><t:outputText size="60" value="#{manageSuiteBean.supportFiles.sf2}"/></td>
+            			</tr>
+            			<tr style="#{manageSuiteBean.supportFiles.sf3 != null ? 'display:' : 'display:none;'}">
+            				<td><t:outputText size="60" value="#{manageSuiteBean.supportFiles.sf3}"/></td>
+            			</tr>
+            		</table>
+            	</t:div>
             </td>
           </tr>
           <tr class="smalltype">
