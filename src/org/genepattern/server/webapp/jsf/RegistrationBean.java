@@ -129,11 +129,8 @@ public class RegistrationBean {
             newUser.setUserId(username);
             newUser.setEmail(email);
             newUser.setPassword(EncryptionUtil.encrypt(password));
-            newUser.incrementLoginCount();
-
             (new UserDAO()).save(newUser);
-            UIBeanHelper.setUserAndRedirect(username, true);
-
+            UIBeanHelper.login(username, true);
         }
         catch (Exception e) {
             log.error(e);

@@ -14,6 +14,8 @@
    name="lastLoginDate" type="timestamp"/>
   <property column="last_login_ip" generated="never" lazy="false"
    name="lastLoginIP" type="string"/>
+   <property column="sessionid" generated="never" lazy="false"
+   name="sessionId" type="string"/>
   <property column="total_login_count" generated="never" lazy="false"
    name="totalLoginCount" type="integer"/>
   <bag cascade="all-delete-orphan" name="props">

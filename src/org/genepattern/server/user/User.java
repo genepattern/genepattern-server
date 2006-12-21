@@ -1,20 +1,27 @@
 package org.genepattern.server.user;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 public class User {
 
-	String userId;
-	byte[] password;
-    String email;
-    Date lastLoginDate;
-    String lastLoginIP;
-    int totalLoginCount;
-    List<UserProp> props;
+    String userId;
 
-	public List<UserProp> getProps() {
+    byte[] password;
+
+    String email;
+
+    Date lastLoginDate;
+
+    String lastLoginIP;
+
+    int totalLoginCount;
+
+    List<UserProp> props;
+    
+    String sessionId;
+
+    public List<UserProp> getProps() {
         return props;
     }
 
@@ -30,22 +37,21 @@ public class User {
         this.email = email;
     }
 
-	public byte[] getPassword() {
-		return password;
-	}
+    public byte[] getPassword() {
+        return password;
+    }
 
-	public void setPassword(byte[] pw) {		
-		password = pw;
-	}
+    public void setPassword(byte[] pw) {
+        password = pw;
+    }
 
-	public String getUserId() {
-		return userId;
-	}
+    public String getUserId() {
+        return userId;
+    }
 
-	public void setUserId(String username) {
-		this.userId = username;
-	}
- 
+    public void setUserId(String username) {
+        this.userId = username;
+    }
 
     public Date getLastLoginDate() {
         return lastLoginDate;
@@ -70,10 +76,17 @@ public class User {
     public void setTotalLoginCount(int totalLoginCount) {
         this.totalLoginCount = totalLoginCount;
     }
-    
+
     public void incrementLoginCount() {
         totalLoginCount++;
     }
-	
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
 
 }

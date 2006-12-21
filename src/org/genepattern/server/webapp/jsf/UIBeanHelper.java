@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -11,13 +12,14 @@ import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserDAO;
 import org.genepattern.util.GPConstants;
 
 public class UIBeanHelper {
@@ -27,13 +29,11 @@ public class UIBeanHelper {
     }
 
     public static Map getSessionMap() {
-        return FacesContext.getCurrentInstance().getExternalContext()
-                .getSessionMap();
+        return FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
     }
 
     public static Map getRequestMap() {
-        return FacesContext.getCurrentInstance().getExternalContext()
-                .getRequestMap();
+        return FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
     }
 
     public static FacesContext getFacesContext() {
@@ -45,8 +45,7 @@ public class UIBeanHelper {
     }
 
     public static HttpServletRequest getRequest() {
-        HttpServletRequest request = (HttpServletRequest) getExternalContext()
-                .getRequest();
+        HttpServletRequest request = (HttpServletRequest) getExternalContext().getRequest();
         return request;
     }
 
@@ -63,13 +62,11 @@ public class UIBeanHelper {
     }
 
     public static Object getManagedBean(String elExpression) {
-        return getFacesContext().getApplication().createValueBinding(
-                elExpression).getValue(getFacesContext());
+        return getFacesContext().getApplication().createValueBinding(elExpression).getValue(getFacesContext());
     }
 
     public static void setInfoMessage(String summary) {
-        getFacesContext().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
+        getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
     }
 
     public static void setInfoMessage(UIComponent component, String summary) {
@@ -112,7 +109,7 @@ public class UIBeanHelper {
     }
 
     public static String getUserId() {
-        return (String) getRequest().getAttribute("userID");
+        return (String) getRequest().getAttribute(GPConstants.USERID);
     }
 
     public static boolean isLoggedIn() {
@@ -123,7 +120,7 @@ public class UIBeanHelper {
         Cookie[] cookies = UIBeanHelper.getRequest().getCookies();
         if (cookies != null) {
             for (Cookie c : cookies) {
-                if ("userID".equals(c.getName())) {
+                if (GPConstants.USERID.equals(c.getName())) {
                     c.setMaxAge(0);
                     c.setPath(getRequest().getContextPath());
                     UIBeanHelper.getResponse().addCookie(c);
@@ -131,6 +128,7 @@ public class UIBeanHelper {
                 }
             }
         }
+        UIBeanHelper.getRequest().removeAttribute(GPConstants.USERID);
         UIBeanHelper.getRequest().removeAttribute("userID");
         UIBeanHelper.getSession().invalidate();
     }
@@ -145,15 +143,25 @@ public class UIBeanHelper {
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    public static void setUserAndRedirect(String username, boolean sessionOnly)
-            throws UnsupportedEncodingException, IOException {
+    public static void login(String username, boolean sessionOnly) throws UnsupportedEncodingException, IOException {
+        HttpSession session = UIBeanHelper.getSession();
+        User user = new UserDAO().findById(username);
+        assert user != null;
+        user.setSessionId(session.getId());
+        user.incrementLoginCount();
+        user.setLastLoginDate(new Date());
+        user.setLastLoginIP(UIBeanHelper.getRequest().getRemoteAddr());
+        UIBeanHelper.getRequest().setAttribute(GPConstants.USERID, username);
+        UIBeanHelper.getRequest().setAttribute("userID", username);
 
-        Cookie cookie = new Cookie("userID", username);
+        Cookie cookie = new Cookie(GPConstants.USERID, username);
         cookie.setPath(getRequest().getContextPath());
         if (!sessionOnly) {
             cookie.setMaxAge(Integer.MAX_VALUE);
+            session.setMaxInactiveInterval(-1);
         }
         UIBeanHelper.getResponse().addCookie(cookie);
+
         String referrer = UIBeanHelper.getReferrer(getRequest());
         UIBeanHelper.getResponse().sendRedirect(referrer);
     }

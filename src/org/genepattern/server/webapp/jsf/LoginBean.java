@@ -85,7 +85,7 @@ public class LoginBean {
                     newUser.setPassword(null);
 
                     (new UserDAO()).save(newUser);
-                    UIBeanHelper.setUserAndRedirect(username, passwordRequired);
+                    UIBeanHelper.login(username, passwordRequired);
 
                 }
             }
@@ -94,11 +94,11 @@ public class LoginBean {
                     invalidPassword = true;
                 }
                 else {
-                    UIBeanHelper.setUserAndRedirect(username, passwordRequired);
+                    UIBeanHelper.login(username, passwordRequired);
                 }
             }
             else {
-                UIBeanHelper.setUserAndRedirect(username, passwordRequired);
+                UIBeanHelper.login(username, passwordRequired);
             }
         }
         catch (UnsupportedEncodingException e) {
