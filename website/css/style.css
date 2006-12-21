@@ -709,7 +709,16 @@ h6 {
 	line-height: 13px;
 
 }
+input.error, select.error {
+	border: 1px solid red; 
+	background-color: #FFFCE2;  
+	background-position: right; 
+	background-repeat: no-repeat;
+}
+
 .validation-error {
       color: red;
       font-weight: bold;
 }
+
+
