@@ -7,7 +7,7 @@ function mmLoadMenus() {
   mm_menu_documentation.addMenuItem("release&nbsp;notes","location='http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/'");
   mm_menu_documentation.addMenuItem("FAQ","location='http://www.broad.mit.edu/cancer/software/genepattern/faq/'");
   mm_menu_documentation.addMenuItem("public&nbsp;datasets","location='http://www.broad.mit.edu/cancer/software/genepattern/datasets/'");
-  mm_menu_documentation.addMenuItem("task&nbsp;documentation","location='getTaskDoc.jsp'");
+  mm_menu_documentation.addMenuItem("task&nbsp;documentation","location='/gp/getTaskDoc.jsp'");
   mm_menu_documentation.hideOnMouseOut=true;
   mm_menu_documentation.bgColor='#CCCC66';
   mm_menu_documentation.menuBorder=0;
