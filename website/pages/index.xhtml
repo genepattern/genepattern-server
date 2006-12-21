@@ -91,8 +91,8 @@ function viewCode() {
 
 function validateForm() {
         var error = false;
-        var missingParams = "<br />";
-       
+          
+		var messageString = "<ul style=\"font-weight:bold; color:red;\">";
         for(var i = 0; i < requiredIds.length; i++) {
             var elementId = requiredIds[i];   
             var displayName = requiredNames[i];    
@@ -102,32 +102,43 @@ function validateForm() {
             var type = e.type;
             var value = null;
             var validate = true;
+            var urlInput = null;
             if (type == "text" || type == "textarea") {
             	value = e.value;
-            } else if(type=='file') {       	
+            } else if(type=='file') {       
+            	urlInput = $(elementId + "_url");	
             	if(Element.visible($(elementId + "_div_url"))) {
-            		value = $(elementId + "_url").value;
+            		value = urlInput.value;
             	} else {
             		value = e.value;
             	}
+            	
             } else {
             	validate = false;
             }
             
             if (validate && (value == null || value == "")) {
                	error = true;
-            	missingParams += "<br/>" + "<b>" + displayName + "</b>";
+               	messageString += "<li/>" +  displayName;
+            	e.className = "error";
+            	if(urlInput!=null) {
+         			urlInput.className = "error";
+         		}
+            } else {
+         		e.className = "";
+         		if(urlInput!=null) {
+         			urlInput.className = "";
+         		}
             }
         }
          
+		var d = $("errorMessageDiv");
+		var t = $("errorMessageContent");
+		d.style.display = "";
         if (error) {
-           	var txt =
-            "<font color=\"red\" size=\"+1\">#{runTaskBean.name} could not be run. The following required parameters need to have values provided:</font>" +
-            missingParams;
-            Element.update('errorMessageDiv', txt);
-     		Element.show($('errorMessageDiv'));
+   			messageString += "</ul>";
+          	Element.update('errorMessageContent', messageString);
         } 
-        
         return !error;
     }
 
