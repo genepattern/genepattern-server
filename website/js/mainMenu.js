@@ -1,3 +1,6 @@
+
+// Defines main menu for GP 3.0.   Assumes the javascript global variable 'contextRoot' has been defined elsewhere.
+
 function mmLoadMenus() {
   if (window.mm_menu_documentation) return;
 
@@ -7,7 +10,7 @@ function mmLoadMenus() {
   mm_menu_documentation.addMenuItem("release&nbsp;notes","location='http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/'");
   mm_menu_documentation.addMenuItem("FAQ","location='http://www.broad.mit.edu/cancer/software/genepattern/faq/'");
   mm_menu_documentation.addMenuItem("public&nbsp;datasets","location='http://www.broad.mit.edu/cancer/software/genepattern/datasets/'");
-  mm_menu_documentation.addMenuItem("task&nbsp;documentation","location='/gp/getTaskDoc.jsp'");
+  mm_menu_documentation.addMenuItem("task&nbsp;documentation","location=contextRoot + '/getTaskDoc.jsp'");
   mm_menu_documentation.hideOnMouseOut=true;
   mm_menu_documentation.bgColor='#CCCC66';
   mm_menu_documentation.menuBorder=0;
@@ -16,7 +19,7 @@ function mmLoadMenus() {
    
   window.mm_menu_resources = new Menu("root",89,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_resources.addMenuItem("mailing&nbsp;list","location='mailto:gp-users-join@broad.mit.edu?body=Just send this!'");
-  mm_menu_resources.addMenuItem("report&nbsp;bugs","location='/gp/pages/contactUs.jsf'");
+  mm_menu_resources.addMenuItem("report&nbsp;bugs","location=contextRoot + '/pages/contactUs.jsf'");
   mm_menu_resources.addMenuItem("user&nbsp;forum","location='http://www.broad.mit.edu/cancer/software/genepattern/forum/'");
   mm_menu_resources.hideOnMouseOut=true;
   mm_menu_resources.bgColor='#CCCC66';
@@ -26,7 +29,7 @@ function mmLoadMenus() {
 
   window.mm_menu_downloads = new Menu("root",157,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_downloads.addMenuItem("install&nbsp;graphical&nbsp;client","location='http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gpge_installer.cgi?version=2.0.2&server=http%3A%2F%2Fgenepatterntest.broad.mit.edu%3A8080'");
-  mm_menu_downloads.addMenuItem("Programming&nbsp;Libraries","location='/gp/pages/downloadProgrammingLibaries.jsf'");
+  mm_menu_downloads.addMenuItem("Programming&nbsp;Libraries","location=contextRoot + '/pages/downloadProgrammingLibaries.jsf'");
   mm_menu_downloads.hideOnMouseOut=true;
   mm_menu_downloads.bgColor='#CCCC66';
   mm_menu_downloads.menuBorder=0;
@@ -34,9 +37,9 @@ function mmLoadMenus() {
   mm_menu_downloads.menuBorderBgColor='#CCCC66';
 
   window.mm_menu_tasks = new Menu("root",112,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_tasks.addMenuItem("Create","location='/gp/pages/createTask.jsf'");
-  mm_menu_tasks.addMenuItem("Install&nbsp;/&nbsp;Update","location='/gp/pages/taskCatalog.jsf'");
-  mm_menu_tasks.addMenuItem("Manage","location='/gp/pages/manageTasks.jsf'");
+  mm_menu_tasks.addMenuItem("Create","location=contextRoot + '/pages/createTask.jsf'");
+  mm_menu_tasks.addMenuItem("Install&nbsp;/&nbsp;Update","location=contextRoot + '/pages/taskCatalog.jsf'");
+  mm_menu_tasks.addMenuItem("Manage","location=contextRoot + '/pages/manageTasks.jsf'");
   mm_menu_tasks.hideOnMouseOut=true;
   mm_menu_tasks.bgColor='#CCCC66';
   mm_menu_tasks.menuBorder=0;
@@ -44,9 +47,9 @@ function mmLoadMenus() {
   mm_menu_tasks.menuBorderBgColor='#CCCC66';
 
   window.mm_menu_pipelines = new Menu("root",112,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_pipelines.addMenuItem("Create","location='/gp/pipelineDesigner.jsp'");
-  mm_menu_pipelines.addMenuItem("Install&nbsp;/&nbsp;Update","location='/gp/pages/taskCatalog.jsf'");
-  mm_menu_pipelines.addMenuItem("Manage","location='/gp/pages/manageTasks.jsf'");
+  mm_menu_pipelines.addMenuItem("Create","location=contextRoot + '/pipelineDesigner.jsp'");
+  mm_menu_pipelines.addMenuItem("Install&nbsp;/&nbsp;Update","location=contextRoot + '/pages/taskCatalog.jsf'");
+  mm_menu_pipelines.addMenuItem("Manage","location=contextRoot + '/pages/manageTasks.jsf'");
   mm_menu_pipelines.hideOnMouseOut=true;
   mm_menu_pipelines.bgColor='#CCCC66';
   mm_menu_pipelines.menuBorder=0;
@@ -54,9 +57,9 @@ function mmLoadMenus() {
   mm_menu_pipelines.menuBorderBgColor='#CCCC66';
 
   window.mm_menu_suites = new Menu("root",112,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_suites.addMenuItem("Create","location='/gp/pages/createSuite.jsf'");
-  mm_menu_suites.addMenuItem("Install&nbsp;/&nbsp;Update","location='/gp/pages/suiteCatalog.jsf'");
-  mm_menu_suites.addMenuItem("Manage","location='/gp/pages/manageSuite.jsf'");
+  mm_menu_suites.addMenuItem("Create","location=contextRoot + '/pages/createSuite.jsf'");
+  mm_menu_suites.addMenuItem("Install&nbsp;/&nbsp;Update","location=contextRoot + '/pages/suiteCatalog.jsf'");
+  mm_menu_suites.addMenuItem("Manage","location=contextRoot + '/pages/manageSuite.jsf'");
   mm_menu_suites.hideOnMouseOut=true;
   mm_menu_suites.bgColor='#CCCC66';
   mm_menu_suites.menuBorder=0;
@@ -64,7 +67,7 @@ function mmLoadMenus() {
   mm_menu_suites.menuBorderBgColor='#CCCC66';
 
   window.mm_menu_jobResults = new Menu("root",124,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_jobResults.addMenuItem("Results&nbsp;Summary","location='/gp/pages/jobResults.jsf'");
+  mm_menu_jobResults.addMenuItem("Results&nbsp;Summary","location=contextRoot + '/pages/jobResults.jsf'");
   mm_menu_jobResults.hideOnMouseOut=true;
   mm_menu_jobResults.bgColor='#CCCC66';
   mm_menu_jobResults.menuBorder=0;
@@ -72,7 +75,7 @@ function mmLoadMenus() {
   mm_menu_jobResults.menuBorderBgColor='#CCCC66';
 
   window.mm_menu_administration = new Menu("root",105,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,true);
-  mm_menu_administration.addMenuItem("server&nbsp;settings","location='/gp/pages/serverSettings.jsf'");
+  mm_menu_administration.addMenuItem("server&nbsp;settings","location=contextRoot + '/pages/serverSettings.jsf'");
   mm_menu_administration.hideOnMouseOut=true;
   mm_menu_administration.bgColor='#CCCC66';
   mm_menu_administration.menuBorder=0;
