@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.faces.model.SelectItem;
 
@@ -292,7 +293,7 @@ public class TaskCatalogBean {
                 }
             }
         }
-
+        
         filteredTasks = new ArrayList<MyTask>();
         for (int i = 0; i < allFilteredTasks.size(); i++) { // find latest
             // version of
@@ -319,6 +320,20 @@ public class TaskCatalogBean {
         }
         Collections.sort(filteredTasks, new TaskNameComparator());
 
+
+    }
+    
+    public void refilter(Set<String> lsids) {
+    	filteredTasks = new ArrayList<MyTask>();
+    	if (tasks != null) {
+    		MyTask missingTask;
+            for (int i = 0; i < tasks.length; i++) {
+            	if (lsids.contains(tasks[i].getLsid())) {
+            		missingTask = new MyTask(tasks[i]);
+                	filteredTasks.add(missingTask);
+                }
+            }
+        }
     }
 
     private static class TaskNameComparator implements Comparator<MyTask> {

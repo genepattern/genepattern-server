@@ -173,7 +173,6 @@
   <navigation-case>
    <from-outcome>task catalog</from-outcome>
    <to-view-id>/pages/taskCatalog.xhtml</to-view-id>
-   <redirect/>
   </navigation-case>
   <navigation-case>
    <from-outcome>suite catalog</from-outcome>

@@ -16,6 +16,8 @@ package org.genepattern.server.process;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 import java.util.zip.ZipOutputStream;
 
@@ -48,7 +50,13 @@ public class ZipTaskWithDependents extends ZipTask {
 			// do nothing
 			throw new Exception("no such task: " + name);
 		}
-		return packageTask(taskInfo, userID);
+		File packagedTasks;
+		try {
+			packagedTasks = packageTask(taskInfo, userID);
+		}catch (MissingTaskException e) {
+			throw e;
+		}
+		return packagedTasks;
 	}
 
 	public File packageTask(TaskInfo taskInfo, String userID) throws Exception {
@@ -73,7 +81,7 @@ public class ZipTaskWithDependents extends ZipTask {
 				zos.finish();
 				zos.close();
 				return zipFile;
-			} catch (Exception e) {
+			} catch (MissingTaskException e) {
 				zos.close();
 				zipFile.delete();
 				throw e;
@@ -112,44 +120,56 @@ public class ZipTaskWithDependents extends ZipTask {
 
 				Vector vTasks = model.getTasks();
 				int taskNum = 0;
-				String message = "";
-
+				//String message = "";
+				
+				Map<Integer, MissingTaskError> errors = new HashMap<Integer, MissingTaskError>();
+				MissingTaskError error;
 				// validate availability of all dependent tasks
 				for (Enumeration eTasks = vTasks.elements(); eTasks
 						.hasMoreElements(); taskNum++) {
 					JobSubmission jobSubmission = (JobSubmission) eTasks
 							.nextElement();
 					String taskLsid = jobSubmission.getLSID();
+					
 					TaskInfo depti = GenePatternAnalysisTask.getTaskInfo(
 							taskLsid, userID);
 					if (depti == null) {
-						message = message + taskInfo.getName()
+						/*message = message + taskInfo.getName()
 								+ " refers to task # " + (taskNum + 1) + " "
-								+ jobSubmission.getName();
+								+ jobSubmission.getName();*/
 						depti = GenePatternAnalysisTask.getTaskInfo(
 								jobSubmission.getName(), userID);
-						if (depti != null) {
+						error = new MissingTaskError(taskInfo.getName(), jobSubmission);
+						
+						if (depti != null) {			
 							LSID available = new LSID(depti
 									.giveTaskInfoAttributes().get(
 											GPConstants.LSID));
 							LSID requested = new LSID(taskLsid);
+							error.setAvailableVersion(available.getVersion());
 							if (available.isSimilar(requested)) {
-								message = message + " version "
+								/*message = message + " version "
 										+ requested.getVersion()
 										+ " but version "
 										+ available.getVersion()
-										+ " is available.\n";
+										+ " is available.\n";*/
+								error.setErrorType(MissingTaskError.errorTypes[1]);
+									
 							} else {
-								message = message + " (" + taskLsid + ").\n";
+								//message = message + " (" + taskLsid + ").\n";
+								error.setErrorType(MissingTaskError.errorTypes[2]);
 							}
 						} else {
-							message = message + " which does not exist " + " ("
-									+ taskLsid + ").\n";
+							/*message = message + " which does not exist " + " ("
+									+ taskLsid + ").\n";*/
+							error.setErrorType(MissingTaskError.errorTypes[0]);
 						}
+						errors.put(new Integer(taskNum), error);
 					}
 				}
-				if (message.length() > 0)
-					throw new Exception(message);
+				//if (message.length() > 0)
+				if (errors.size()>0)
+					throw new MissingTaskException(errors);
 
 				// done validating, now actually do the zipping
 				taskNum = 0;

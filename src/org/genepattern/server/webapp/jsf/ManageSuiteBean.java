@@ -7,34 +7,24 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.genepattern.data.pipeline.JobSubmission;
-import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.process.InstallTask;
-import org.genepattern.server.process.InstallTasksCollectionUtils;
+import org.genepattern.server.process.MissingTaskException;
 import org.genepattern.server.process.ZipSuite;
 import org.genepattern.server.process.ZipSuiteWithDependents;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.util.GPConstants;
-import org.genepattern.util.LSID;
-import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.SuiteInfo;
-import org.genepattern.webservice.TaskInfo;
 
 
 public class ManageSuiteBean /*implements java.io.Serializable*/ {
@@ -167,46 +157,15 @@ public class ManageSuiteBean /*implements java.io.Serializable*/ {
     
     public String exportInDependents() {
     	ZipSuite zs = new ZipSuiteWithDependents();
-    	//List missingLsids = checkVersion();
-    	export(zs);
-    	return ""/*"task catalog"*/;
+    	return export(zs);
     }
     
-   private List checkVersion() {
-	   List<String> missingLsids = new ArrayList<String>();
-	   setCurrentSuite();
-       if (currentSuite != null) {
-    		
-    		InstallTasksCollectionUtils collection = new InstallTasksCollectionUtils(UIBeanHelper.getUserId(),
-                false);
-    		InstallTask[] tasks = null;
-	        try {
-	        	tasks = collection.getAvailableModules();
-	        } catch (Exception e) {
-	            log.error(e);
-	        }
-	        Map lsidToTaskMap = new HashMap<String, InstallTask>();
-	        if (tasks != null) {
-	            for (InstallTask t : tasks) {
-	                lsidToTaskMap.put(t.getLsid(), t);
-	            }
-	        }
-    		List<String> requestedLsids = currentSuite.getModules();
-    		for (String requestedLsid : requestedLsids) {
-    			if (lsidToTaskMap.containsKey(requestedLsid)) {
-    				missingLsids.add(requestedLsid);
-    			}
-    		}
-    	}
-    	return missingLsids;
-    }
-    
-    private void export(ZipSuite zs) {
+    private String export(ZipSuite zs)  {
     	String lsid = UIBeanHelper.getRequest().getParameter("lsid");
-    	if (lsid == null || lsid.equals("null") || lsid.length() == 0) return;
+    	if (lsid == null || lsid.equals("null") || lsid.length() == 0)  return "";
     	
     	String userID= UIBeanHelper.getUserId(); 
-		if (userID == null) return; // come back after login
+		if (userID == null) return ""; // come back after login
 	
     	FacesContext facesContext=UIBeanHelper.getFacesContext();
     	try {
@@ -237,9 +196,14 @@ public class ManageSuiteBean /*implements java.io.Serializable*/ {
 			zipFile.delete();
 			facesContext.responseComplete();
     		  
-    	} catch (Exception e) {
+    	}catch (MissingTaskException e) {
+    		TaskCatalogBean taskCatalogBean = (TaskCatalogBean) UIBeanHelper.getManagedBean("#{taskCatalogBean}");
+    		taskCatalogBean.refilter(e.getMissingLsids());
+    		return "task catalog";
+		} catch (Exception e) {
     		e.printStackTrace();
     	}
+		return "success";
     }
     
     public String edit() {

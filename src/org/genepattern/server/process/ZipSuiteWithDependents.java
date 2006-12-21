@@ -15,19 +15,9 @@ package org.genepattern.server.process;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.Enumeration;
-import java.util.Vector;
 import java.util.zip.ZipOutputStream;
 
-import org.genepattern.data.pipeline.JobSubmission;
-import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.util.GPConstants;
-import org.genepattern.util.LSID;
-import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.SuiteInfo;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoAttributes;
 
 public class ZipSuiteWithDependents extends ZipSuite {
 
@@ -76,6 +66,8 @@ public class ZipSuiteWithDependents extends ZipSuite {
 				zipFile(zos, zipTask);
 				zipTask.delete();
 			}
+		}catch (MissingTaskException e) {
+			throw e;
 		} finally {
 			tmpDir.delete();
 		}
