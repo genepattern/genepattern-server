@@ -30,7 +30,7 @@ import org.genepattern.webservice.SuiteInfo;
 public class ManageSuiteBean /*implements java.io.Serializable*/ {
 	private static Logger log = Logger.getLogger(ManageSuiteBean.class);
 	 
-    private List suites;
+    private List<Suite> suites;
     private Suite currentSuite= null;
     private List<ModuleCategory> categories;
     
@@ -41,8 +41,8 @@ public class ManageSuiteBean /*implements java.io.Serializable*/ {
      * @return
      */
     public List<Suite> getSuites() {
-    	List<Suite> list = (suites==null)?(new SuiteDAO()).findAll():suites;
-		return list;   	
+    	suites = (suites==null)?(new SuiteDAO()).findAll():suites;
+		return suites;   	
     }
     
     /**
@@ -89,30 +89,6 @@ public class ManageSuiteBean /*implements java.io.Serializable*/ {
         }
         return cols;
     }
-    
-    /**
-     * @return
-     */
-    /*public String getSupportFiles() {
-    	StringBuffer supportFiles = new StringBuffer();
-    	try {
-    		if (currentSuite!=null) {
-	    		String suiteDirPath = DirectoryManager.getSuiteLibDir(currentSuite.getName(), currentSuite.getLsid(), currentSuite.getOwner());
-	    		File suiteDir = new File(suiteDirPath);
-	    		File[] allFiles=suiteDir.listFiles();
-	    		for (File file:allFiles) {
-	    			supportFiles.append(file.getAbsolutePath()).append("\n");
-	    		}
-    		}
-    	}catch (Exception e) {
-            HibernateUtil.rollbackTransaction(); // This shouldn't be
-                                                    // neccessary, but just in
-                                                    // case
-            throw new RuntimeException(e); // @todo -- replace with appropriate
-                                            // GP exception
-        }
-        return (supportFiles.length()>0)?supportFiles.substring(0, supportFiles.length()-1).toString():"";
-    }*/
     
     public Map getSupportFiles() {
     	
