@@ -643,6 +643,7 @@
         <property name="webapp.path" value="website"/>
         <property name="tomcat.home" value="installer/gpdist/Tomcat"/>
         <property name="output.dir" value="${webapp.path}/WEB-INF/src"/>
+        <mkdir dir="${webapp.path}/WEB-INF/src"/>
         <delete>
             <fileset dir="${output.dir}" includes="**"/>
         </delete>
