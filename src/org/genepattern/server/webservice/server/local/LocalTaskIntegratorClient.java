@@ -14,16 +14,16 @@ package org.genepattern.server.webservice.server.local;
 
 import java.io.File;
 import java.io.IOException;
-import javax.servlet.jsp.JspWriter;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
-import java.util.ArrayList;
+import javax.servlet.jsp.JspWriter;
 
 import org.genepattern.server.webservice.server.ITaskIntegrator;
+import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.TaskIntegrator;
-import org.genepattern.server.webservice.server.dao.TaskIntegratorDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -34,7 +34,9 @@ import org.genepattern.webservice.WebServiceException;
  */
 public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIntegrator {
     String progressMessage = "";
+
     JspWriter out = null; // TODO this variable does not belong here
+
     String userName = null;
 
     public LocalTaskIntegratorClient(final String userName) {
@@ -88,7 +90,8 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIn
         for (int i = 0, length = dh.length; i < length; i++) {
             FileDataSource ds = (FileDataSource) dh[i].getDataSource();
             File file = ds.getFile();
-            if (!file.isDirectory()) vFiles.add(file);
+            if (!file.isDirectory())
+                vFiles.add(file);
         }
         File[] files = (File[]) vFiles.toArray(new File[vFiles.size()]);
 
@@ -123,6 +126,11 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIn
 
     public String importZipFromURL(String url, int privacy, boolean recursive) throws WebServiceException {
         return super.importZipFromURL(url, privacy, recursive, this);
+    }
+
+    public String importZipFromURL(String url, int privacy, boolean recursive, Status status)
+            throws WebServiceException {
+        return super.importZipFromURL(url, privacy, recursive, status);
     }
 
     public String importZipFromURL(String url, int privacy, boolean recursive, ITaskIntegrator taskIntegrator)
@@ -161,8 +169,7 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIn
                 out.println(message + "<br>");
                 flush();
             }
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             // ignore
         }
     }
@@ -174,8 +181,7 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIn
                 out.println(message + "<br>");
                 flush();
             }
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             // ignore
         }
     }
@@ -187,8 +193,7 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIn
                 out.print(message + " <span id=\"" + message.hashCode() + "\">0</span>% complete<br>");
                 flush();
             }
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             // ignore
         }
     }
@@ -203,8 +208,7 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIn
                 // complete<br>");
                 flush();
             }
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             // ignore
         }
     }

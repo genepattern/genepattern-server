@@ -27,7 +27,7 @@ public class TaskInstallBean {
     }
 
     /**
-     * Add the list of lsids to the task installation map
+     * Sets the list of lsids to the task installation map
      * 
      * @param lsids
      */
@@ -35,6 +35,18 @@ public class TaskInstallBean {
         tasksMap = new HashMap<String, TaskInstallStatus>();
         for (String lsid : lsids) {
             tasksMap.put(lsid, new TaskInstallStatus(lsid, lsidToTaskMap.get(lsid).getName()));
+        }
+    }
+
+    /**
+     * Sets the list of lsids to the task installation map
+     * 
+     * @param lsids
+     */
+    public void setTasks(String[] lsids, String[] taskNames) {
+        tasksMap = new HashMap<String, TaskInstallStatus>();
+        for (int i = 0; i < lsids.length; i++) {
+            tasksMap.put(lsids[i], new TaskInstallStatus(lsids[i], taskNames[i]));
         }
     }
 
