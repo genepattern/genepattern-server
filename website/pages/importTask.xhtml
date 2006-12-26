@@ -7,6 +7,24 @@
 	xmlns:c="http://java.sun.com/jstl/core">
 
 <ui:composition template="/templates/common.xhtml">
+<ui:define name="validationInit">
+    <script type="text/javascript" language="javascript"> 
+      /* <![CDATA[ */
+      function onLoad()
+      {
+        var e = $("form1:zipfile");
+        e.required = 1;
+        e.err = "Missing file";
+
+		e = $("url");
+        e.required = 1;
+        e.regexp = /^\w*$/;
+        e.err = "Missing URL";
+      }
+       /* ]]> */
+
+    </script>
+    </ui:define>
 	<ui:define name="pageTitle">GenePattern - Import</ui:define>
 	<ui:define name="body">
 		<table width="100%" border="0" cellpadding="0" cellspacing="0"
@@ -15,11 +33,7 @@
 				<td>Install</td>
 			</tr>
 		</table>
-		<p>
-		<h:outputText rendered="#{importTaskBean.installName != null}">
-			Successfully installed #{importTaskBean.installName}.
-		</h:outputText>
-		</p>
+		
 		<table width="100%" border="0" cellpadding="10" cellspacing="0">
 			<tr valign="top" class="settingperameter">
 				<h:outputText rendered="#{empty param.suite}">
@@ -40,28 +54,28 @@
 			</tr>
 			<tr valign="top" class="settingperameter">
 				<td><strong>Install from zip file:</strong></td>
-				<td><h:form id="form1" enctype="multipart/form-data">Please choose a GenePattern
+				<td><h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm(this);">Please choose a GenePattern
 				zip file to submit to the GenePattern server.
 				<p><strong>GenePattern zip file:</strong>&nbsp; <t:inputFileUpload
-						storage="file" size="60" value="#{importTaskBean.zipFile}" required="true" /></p>
+						storage="file" size="60" value="#{importBean.zipFile}" id="zipfile" /></p>
 					<p>Visible to: &nbsp;&nbsp; <t:selectOneRadio
-						value="#{importTaskBean.selectedFilePrivacy}">
-						<f:selectItems value="#{importTaskBean.filePrivacyItems}" />
+						value="#{importBean.selectedFilePrivacy}">
+						<f:selectItems value="#{importBean.filePrivacyItems}" />
 					</t:selectOneRadio></p>
-					<h:commandButton action="#{importTaskBean.importFile}"
+					<h:commandButton action="#{importBean.importFile}"
 						value="install" />&nbsp;&nbsp;
 				</h:form></td>
 			</tr>
 			<tr valign="top" class="settingperameter">
 				<td><strong>Download the zip file from a website:</strong></td>
-				<td><strong>URL of a GenePattern zip file:</strong> <h:inputText
-					value="#{importTaskBean.url}" size="60" required="true" />
+				<td><strong>URL of a GenePattern zip file:</strong><h:form id="form2" onsubmit="return validateForm(this);">  <t:inputText
+					value="#{importBean.url}" size="60" id="url" forceId="true"/>
 				<p>Visible to: &nbsp;&nbsp; <t:selectOneRadio
-					value="#{importTaskBean.selectedUrlPrivacy}">
-					<f:selectItems value="#{importTaskBean.urlPrivacyItems}" />
+					value="#{importBean.selectedUrlPrivacy}">
+					<f:selectItems value="#{importBean.urlPrivacyItems}" />
 				</t:selectOneRadio></p>
-				<h:commandButton action="#{importTaskBean.importUrl}"
-					value="install" /> &nbsp;&nbsp;</td>
+				<h:commandButton action="#{importBean.importUrl}"
+					value="install" /></h:form> &nbsp;&nbsp;</td>
 			</tr>
 		</table>
 		<p class="recentjobs-sh">&nbsp;</p>
