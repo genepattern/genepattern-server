@@ -129,8 +129,8 @@
   <managed-bean-scope>session</managed-bean-scope>
  </managed-bean>
  <managed-bean>
-  <managed-bean-name>importTaskBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.jsf.ImportTaskBean</managed-bean-class>
+  <managed-bean-name>importBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.ImportBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
@@ -143,8 +143,17 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.TestBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
+ 
  <navigation-rule>
-  <from-view-id>*</from-view-id>
+  <from-view-id>*</from-view-id> 
+  <navigation-case>
+   <from-outcome>install task results</from-outcome>
+   <to-view-id>/pages/installTasks.xhtml</to-view-id>
+  </navigation-case>
+  <navigation-case>
+   <from-outcome>install suite results</from-outcome>
+   <to-view-id>/pages/installSuites.xhtml</to-view-id>
+  </navigation-case>
   <navigation-case>
    <from-outcome>my settings</from-outcome>
    <to-view-id>/pages/accountInfo.xhtml</to-view-id>
