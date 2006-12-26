@@ -94,6 +94,10 @@
   <url-pattern>*.jsf</url-pattern>
  </filter-mapping>
  <filter-mapping>
+  <filter-name>AuthenticationFilter</filter-name>
+  <url-pattern>*.ajax</url-pattern>
+ </filter-mapping>
+ <filter-mapping>
   <filter-name>AuthorizationFilter</filter-name>
   <url-pattern>/services/*</url-pattern>
  </filter-mapping>
