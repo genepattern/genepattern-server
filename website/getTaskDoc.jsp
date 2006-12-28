@@ -298,17 +298,21 @@ if (contentType == null) {
 	htTypes.put(".zip", "application/zip");
 	htTypes.put("." + GPConstants.TASK_TYPE_PIPELINE, "text/plain");
 	htTypes.put(".class", "application/octet-stream");
-	htTypes.put(".doc", "application/msword");
+	htTypes.put(".doc", "application/pdf");
+	htTypes.put(".pdf", "application/msword");
 
 	i = filename.lastIndexOf(".");
 	String extension = (i > -1 ? filename.substring(i) : "");
 	contentType = (String)htTypes.get(extension.toLowerCase());
 }
-if (contentType == null) contentType = "text/plain";
-System.out.println("A");
-contentType = contentType + "; name=\"" + filename + "\";";
-response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\";");
-response.setContentType(contentType);
+if (contentType == null) {
+    contentType = "application/octet-stream";
+}
+response.setHeader("Content-Type", contentType);
+
+response.setHeader("Content-disposition", "inline; filename=\""
+        + filename + "\"");
+
       FileInputStream ins = new java.io.FileInputStream(in);
 	int c = 0;
   	while ((c = ins.read()) != -1) {
