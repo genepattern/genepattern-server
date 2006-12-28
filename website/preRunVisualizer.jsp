@@ -128,9 +128,10 @@ for (Iterator iter = rParams.iterator(); iter.hasNext();) {
 	String CLONE = "clone";
 	HashMap htFilenames = new HashMap();
 
-	String lsid = requestParameters.getProperty("taskLSID");
-	String taskName = requestParameters.getProperty("taskName");
+	String lsid = URLDecoder.decode(requestParameters.getProperty("taskLSID"), "UTF-8");
+	String taskName = URLDecoder.decode(requestParameters.getProperty("taskName"), "UTF-8");
 
+	
 	boolean DEBUG = false; // (requestParameters.getProperty("debug") != null);
 
 	if (DEBUG) {
@@ -202,9 +203,14 @@ for (Iterator iter = rParams.iterator(); iter.hasNext();) {
 		
 	} // loop over files
 
+	
 	// set up the call to the runVisualizer.jsp by putting the params into the request
 	// and then forwarding through a requestDispatcher
 	TaskInfo task = GenePatternAnalysisTask.getTaskInfo(lsid, userID);
+	if(task==null) {
+	    out.println("Task not found");
+		return;
+	}
 	ParameterInfo[] parmInfos = task.getParameterInfoArray();
     if(parmInfos==null) {
         parmInfos = new ParameterInfo[0];
