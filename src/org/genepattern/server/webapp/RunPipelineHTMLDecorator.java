@@ -38,8 +38,13 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.StringUtils;
 import org.genepattern.util.GPConstants;
-import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.*;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.user.UserPropKey;
+import org.genepattern.visualizer.RunVisualizerConstants;
+import org.genepattern.util.StringUtils;
 
 /**
  * This is the decorator for output from running a pipeline from the web
@@ -197,8 +202,113 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 		out.flush();
 	}
 
-	// output the applet tag for a visdualizer
+	// output the applet tag for a visualizer
+
 	public void writeVisualizerAppletTag(JobSubmission jobSubmission) {
+		// PUT APPLET HERE
+
+		String userId = System.getProperty("userId");
+		LocalAdminClient adminClient = new LocalAdminClient(userId);
+		TaskInfo taskInfo = null;
+		try {
+			taskInfo = adminClient.getTask(jobSubmission.getLSID());
+		} catch (Exception e){
+			e.printStackTrace();
+			return; // can't write the applet without this
+		}
+		ParameterInfo[] parameterInfoArray = jobSubmission.giveParameterInfoArray();
+		Properties params = new Properties();
+		for (int i=0; i < parameterInfoArray.length; i++){
+			params.setProperty(parameterInfoArray[i].getName(), parameterInfoArray[i].getValue());
+		}
+		
+		String name = jobSubmission.getName();
+		TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+		String lsid = (String)tia.get(GPConstants.LSID);
+		String libdir = "";
+		try {
+			libdir = DirectoryManager.getTaskLibDir(lsid);
+		} catch (Exception e){
+			e.printStackTrace(); // can't get the applet without this
+			return;
+		}
+		if (parameterInfoArray == null) parameterInfoArray = new ParameterInfo[0];
+		File[] supportFiles = new File(libdir).listFiles();
+		int i;
+		String appletName = "a" + ("" + Math.random()).substring(2); // unique name so that multiple instances of applet on a single page will not collide
+		String javaFlags = adminClient.getUserProperty(UserPropKey.VISUALIZER_JAVA_FLAGS);
+		if(javaFlags==null) {
+	 	   javaFlags = System.getProperty(RunVisualizerConstants.JAVA_FLAGS_VALUE);
+		}
+
+		out.println("<applet code=\""+ org.genepattern.visualizer.RunVisualizerApplet.class.getName() +"\" archive=\"runVisualizer.jar\" codebase=\"downloads\" width=\"1\" height=\"1\" alt=\"Your browser refuses to run applets\" name=\""+appletName+"\">");
+		out.println("<param name=\""+ RunVisualizerConstants.NAME +"\" value=\""+ name +"\">");
+		out.println("<param name=\""+ RunVisualizerConstants.OS +"\" value=\""+ StringUtils.htmlEncode(tia.get(GPConstants.OS)) +"\">");
+		out.println("<param name=\""+ RunVisualizerConstants.CPU_TYPE +"\" value=\""+ StringUtils.htmlEncode(tia.get(GPConstants.CPU_TYPE)) +"\">");
+		out.println("<param name=\""+ RunVisualizerConstants.LIBDIR +"\" value=\""+ StringUtils.htmlEncode(libdir) +"\">");
+		out.println("<param name=\""+ RunVisualizerConstants.JAVA_FLAGS_VALUE +"\" value=\""+ StringUtils.htmlEncode(javaFlags) +"\">");
+
+		out.println("<param name=\"" + RunVisualizerConstants.PARAM_NAMES +"\" value=\"");
+			
+		for (i = 0; i < parameterInfoArray.length; i++) {
+			if (i > 0) out.print(",");
+			out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
+		}
+		out.println("\">");
+
+		for (i = 0; i < parameterInfoArray.length; i++) {
+			String paramName = parameterInfoArray[i].getName();
+			if (paramName.equals("className")) { 
+				out.println("<param name=\""+ paramName +"\" value=\""+ StringUtils.htmlEncode(parameterInfoArray[i].getDescription()) +"\">");
+				continue;
+			}
+			out.println("<param name=\""+ StringUtils.htmlEncode(paramName) +"\" value=\""+ StringUtils.htmlEncode(params.getProperty(paramName)) +"\">");
+		}	
+
+		out.println("<param name=\""+ RunVisualizerConstants.DOWNLOAD_FILES +"\" value=\"");
+		
+		int numToDownload = 0;
+		for (i = 0; i < parameterInfoArray.length; i++) {
+			String paramName = parameterInfoArray[i].getName();
+			if (parameterInfoArray[i].isInputFile() && params.getProperty(paramName) != null &&
+					(params.getProperty(paramName).startsWith("http:") ||
+							params.getProperty(paramName).startsWith("https:") ||
+							params.getProperty(paramName).startsWith("ftp:"))) {
+				// note that this parameter is a URL that must be downloaded by adding it to the CSV list for the applet
+				if (numToDownload > 0) out.print(",");
+				out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
+				numToDownload++;
+			}
+		}
+		out.println("\">");
+		
+		out.println("<param name=\""+ RunVisualizerConstants.COMMAND_LINE +"\" value=\""+ StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE))+"\">");
+		out.println("<param name=\""+ RunVisualizerConstants.DEBUG+ "\" value=\"1\">");
+		out.println("<param name=\""+ RunVisualizerConstants.SUPPORT_FILE_NAMES +"\" value=\"");
+
+
+		for (i = 0; i < supportFiles.length; i++) {
+			if (i > 0) out.print(",");
+			out.print(StringUtils.htmlEncode(supportFiles[i].getName()));
+		} 
+		out.println("\">");
+		
+		out.println("<param name=\""+ RunVisualizerConstants.SUPPORT_FILE_DATES+"\" value=\"" );
+
+		for (i = 0; i < supportFiles.length; i++) {
+			if (i > 0) out.print(",");
+			out.print(supportFiles[i].lastModified());
+		} 
+		out.println("\">");
+
+		out.println("<param name=\""+ RunVisualizerConstants.LSID +"\" value=\""+ lsid +"\">");
+		out.println("Your browser is ignoring this applet.");		
+
+		out.println("</applet>");		
+		out.flush();
+	}
+
+public void __writeVisualizerAppletTag(JobSubmission jobSubmission) {
 		// PUT APPLET HERE
 		StringBuffer buff = new StringBuffer();
 		buff.append(URL);
@@ -235,6 +345,8 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 		}
 		out.flush();
 	}
+
+
 
 	/**
 	 * called after a task execution is complete
