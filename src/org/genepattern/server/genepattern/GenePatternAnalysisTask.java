@@ -1631,10 +1631,19 @@ public class GenePatternAnalysisTask implements IGPConstants {
         System.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
         Properties props = new Properties();
         props.load(new FileInputStream(new File(System.getProperty("resources"), "genepattern.properties")));
-        props.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
-        props.store(new FileOutputStream(new File(System.getProperty("resources"), "genepattern.properties")),
+
+		// make sure any changes are properly set in the System props
+		props.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
+                props.store(new FileOutputStream(new File(System.getProperty("resources"), "genepattern.properties")),
                 "added installed patch LSID");
-    }
+    
+		for (Iterator iter = props.keySet().iterator(); iter.hasNext();){
+			String k = (String) iter.next();
+			String v = (String)props.get(k);
+			System.setProperty(k,v);	
+		}
+
+	}
 
     /**
      * // read the genepattern.properties file into a String (preserving
