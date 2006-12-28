@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk">
+
+<ui:composition template="/templates/common.xhtml">
+
+	<ui:define name="pageTitle">
+	Programming Libraries
+</ui:define>
+	<ui:define name="body">
+		<table width="100%" border="0" cellpadding="0" cellspacing="0"
+			class="barhead-other">
+			<tr>
+				<td>Programming Libraries</td>
+			</tr>
+		</table>
+		
+		<p><b>Java</b>
+		<br />Download: <a href="#{facesContext.externalContext.requestContextPath}/downloads/GenePattern.zip">zip</a>
+		<br /><a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_prog_java.html">Documentation</a>
+		</p>
+		
+		<p><b>R</b>
+		<br />Download: <a href="#{facesContext.externalContext.requestContextPath}/downloads/GenePattern_0.1-0.zip">zip</a>&#160;|&#160;
+		<a href="#{facesContext.externalContext.requestContextPath}/downloads/GenePattern_0.1-0.tar.gz">tar.gz</a>&#160;|&#160;
+		<a href="#{facesContext.externalContext.requestContextPath}/GenePattern.R">R Source File</a>
+		<br />
+		<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_prog_R.html">Documentation</a>
+		</p>
+			
+		<p><b>MATLAB</b>
+		<br />Download: <a href="#{facesContext.externalContext.requestContextPath}/downloads/GenePatternMatlab.zip">zip</a>
+		<br /><a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/index.html?gp_tutorial_prog_MATLAB.html">Documentation</a>
+		</p>
+		
+	</ui:define>
+</ui:composition>
+</html>
