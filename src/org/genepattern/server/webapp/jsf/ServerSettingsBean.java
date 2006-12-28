@@ -13,9 +13,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Hashtable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -371,8 +369,11 @@ public class ServerSettingsBean {
      * @param repositoryName
      * @return
      */
-    private List getSelectItems(String commaSeparatedValue) {
+    private List<SelectItem> getSelectItems(String commaSeparatedValue) {
         String selectItems = (String) settings.get(commaSeparatedValue);
+        if(selectItems==null) {
+            return Collections.EMPTY_LIST;
+        }
         String[] result = selectItems.split(",");
         List<SelectItem> valuesLst = new ArrayList<SelectItem>();
         for (int i = 0; i < result.length; i++) {
