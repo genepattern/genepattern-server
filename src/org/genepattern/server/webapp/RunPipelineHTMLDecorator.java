@@ -284,16 +284,14 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 		
 		out.println("<param name=\""+ RunVisualizerConstants.COMMAND_LINE +"\" value=\""+ StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE))+"\">");
 		out.println("<param name=\""+ RunVisualizerConstants.DEBUG+ "\" value=\"1\">");
-		out.println("<param name=\""+ RunVisualizerConstants.SUPPORT_FILE_NAMES +"\" value=\"");
-
-
+		out.print("<param name=\""+ RunVisualizerConstants.SUPPORT_FILE_NAMES +"\" value=\"");
 		for (i = 0; i < supportFiles.length; i++) {
 			if (i > 0) out.print(",");
 			out.print(StringUtils.htmlEncode(supportFiles[i].getName()));
 		} 
 		out.println("\">");
 		
-		out.println("<param name=\""+ RunVisualizerConstants.SUPPORT_FILE_DATES+"\" value=\"" );
+		out.print("<param name=\""+ RunVisualizerConstants.SUPPORT_FILE_DATES+"\" value=\"" );
 
 		for (i = 0; i < supportFiles.length; i++) {
 			if (i > 0) out.print(",");
