@@ -264,10 +264,10 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 				continue;
 			}
 			boolean isInputFile = (paramName.indexOf("filename") != -1);
-			String value = params.getProperty(paramName);
-			value = localizeURL(value);
-			
-			out.println("<param name=\""+ StringUtils.htmlEncode(paramName) +"\" value=\""+ StringUtils.htmlEncode(value) +"\">");
+			String value;
+			if (isInputFile) value = localizeURL(params.getProperty(paramName));
+			else value = StringUtils.htmlEncode(params.getProperty(paramName));
+			out.println("<param name=\""+ StringUtils.htmlEncode(paramName) +"\" value=\""+ value +"\">");
 		}	
 
 		out.println("<param name=\""+ RunVisualizerConstants.DOWNLOAD_FILES +"\" value=\"");
