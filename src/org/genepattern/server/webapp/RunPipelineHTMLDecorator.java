@@ -252,6 +252,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 			
 		for (i = 0; i < parameterInfoArray.length; i++) {
 			if (i > 0) out.print(",");
+			
 			out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
 		}
 		out.println("\">");
@@ -262,7 +263,11 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 				out.println("<param name=\""+ paramName +"\" value=\""+ StringUtils.htmlEncode(parameterInfoArray[i].getDescription()) +"\">");
 				continue;
 			}
-			out.println("<param name=\""+ StringUtils.htmlEncode(paramName) +"\" value=\""+ StringUtils.htmlEncode(params.getProperty(paramName)) +"\">");
+			boolean isInputFile = (paramName.indexOf("filename") != -1);
+			String value = params.getProperty(paramName);
+			value = localizeURL(value);
+			
+			out.println("<param name=\""+ StringUtils.htmlEncode(paramName) +"\" value=\""+ StringUtils.htmlEncode(value) +"\">");
 		}	
 
 		out.println("<param name=\""+ RunVisualizerConstants.DOWNLOAD_FILES +"\" value=\"");
