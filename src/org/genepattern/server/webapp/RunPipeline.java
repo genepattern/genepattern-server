@@ -202,7 +202,7 @@ public class RunPipeline {
         String pipelineFileName = args[0];
         String userId = args[1];
 		System.setProperty("userId", userId);
-		System.setProperty("tasklib","../../..");
+		System.setProperty("tasklib","../../../tasklib/");
         String pipelineLSID = System.getProperty(GPConstants.LSID);
         int jobId = -1;
         if (System.getProperty("jobID") == null) { // null when run using java
