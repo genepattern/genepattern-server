@@ -206,8 +206,10 @@ public class RunPipeline {
 		// set the tasklib.  In the genepattern.properties it may be relative to tomcat but we are
 		// in a pipeline 2 dirs deeper.  If it does not start wit a ".." use it as it.  if it does
 		// start with ".." then add two more directory jumps up
-		String taskLib = System.getProperty("tasklib");
-		if (taskLib.startsWith("..")){
+		String taskLib = genepatternProps.getProperty("tasklib");
+		if (taskLib == null) {
+			taskLib = "../../../tasklib";
+		} else if (taskLib.startsWith("..")){
 			taskLib = "../../" + taskLib;
 		}
 		System.setProperty("tasklib",taskLib);
