@@ -19,10 +19,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import javax.faces.FacesException;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
+import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.util.PropertiesManager;
 
 public class ServerSettingsBean {
@@ -57,6 +60,11 @@ public class ServerSettingsBean {
      * 
      */
     public ServerSettingsBean() {
+        IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
+        if (!authManager.checkPermission("administrateServer", UIBeanHelper.getUserId())) {
+               throw new FacesException("You don' have the required permissions to administer the server."); 
+        }
+
         if (modes == null) {
             modes = new TreeMap<String, String[]>();
             modes.put("Access", new String[] { "gp.allowed.clients" });
