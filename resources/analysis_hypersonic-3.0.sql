@@ -59,6 +59,8 @@ create table job_completion_event
 /* Index status on analysis job */
 create index idx_analysis_job_status on analysis_job(status_id);
 
+create index idx_gp_user_prop_key on gp_user_prop(key);
+
 /* Add contact column to Suite */
 alter table suite add contact varchar(255);
 
