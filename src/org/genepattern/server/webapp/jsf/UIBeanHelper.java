@@ -117,6 +117,9 @@ public class UIBeanHelper {
     }
 
     public static void logout() {
+        User user = new UserDAO().findById(UIBeanHelper.getUserId());
+        assert user != null;
+        user.setSessionId(null);
         Cookie[] cookies = UIBeanHelper.getRequest().getCookies();
         if (cookies != null) {
             for (Cookie c : cookies) {
@@ -135,8 +138,6 @@ public class UIBeanHelper {
 
     /**
      * 
-     * @param request
-     * @param response
      * @param username
      * @param sessionOnly
      *            whether the login cookie should be set for the session only
@@ -145,6 +146,7 @@ public class UIBeanHelper {
      */
     public static void login(String username, boolean sessionOnly) throws UnsupportedEncodingException, IOException {
         HttpSession session = UIBeanHelper.getSession();
+
         User user = new UserDAO().findById(username);
         assert user != null;
         user.setSessionId(session.getId());
