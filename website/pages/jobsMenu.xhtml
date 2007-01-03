@@ -21,7 +21,7 @@
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Delete" actionListener="#{recentJobsBean.delete}" rendered="#{job.complete}">
+              <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected job?');" actionListener="#{recentJobsBean.delete}" rendered="#{job.complete}">
                 <f:param value="#{job.jobNumber}" name="jobNumber"/>
               </h:commandLink>
             </td>
