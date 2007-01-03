@@ -93,6 +93,7 @@ function validateForm() {
         var error = false;
           
 		var messageString = "<ul style=\"font-weight:bold; color:red;\">";
+		var numErrors = 0;
         for(var i = 0; i < requiredIds.length; i++) {
             var elementId = requiredIds[i];   
             var displayName = requiredNames[i];    
@@ -118,7 +119,7 @@ function validateForm() {
             }
             
             if (validate && (value == null || value == "")) {
-               	error = true;
+               	numErrors++;
                	messageString += "<li/>" +  displayName;
             	e.className = "error";
             	if(urlInput!=null) {
@@ -134,13 +135,17 @@ function validateForm() {
          
 		var d = $("errorMessageDiv");
 		var t = $("errorMessageContent");
-		
-        if (error) {
+		if (numErrors > 0) {
+			if(numErrors != 1) {
+				Element.update('errorMessageHeader', "Please provide values for the following parameters:");
+			} else {
+				Element.update('errorMessageHeader', "Please provide a value for the following parameter:");
+			}
         	d.style.display = "block";
    			messageString += "</ul>";
           	Element.update('errorMessageContent', messageString);
         } 
-        return !error;
+        return numErrors == 0;
     }
 
      
