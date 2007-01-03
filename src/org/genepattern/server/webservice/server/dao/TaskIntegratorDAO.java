@@ -47,6 +47,9 @@ public class TaskIntegratorDAO extends BaseDAO {
         if (s == null) {
             s = new Suite();
         }
+
+        suiteInfo.setLsid(lsid); // for web service who looks for this after creation
+
         s.setLsid(lsid);
         s.setName(suiteInfo.getName());
         s.setDescription(suiteInfo.getDescription());
