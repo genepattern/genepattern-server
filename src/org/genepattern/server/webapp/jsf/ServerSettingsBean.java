@@ -55,6 +55,9 @@ public class ServerSettingsBean {
     private Calendar cal = Calendar.getInstance();
 
     private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+    
+    private final String gpLogPath = "GpLogPath";
+    private final String wsLogPath = "WsLogPath";
 
     /**
      * 
@@ -316,6 +319,28 @@ public class ServerSettingsBean {
         File gpLog = getGpLogFile();
         return getLogHeader(gpLog, "Gene Pattern");
     }
+    
+    public String getGpLogKeyName() {
+    	return gpLogPath;
+    }
+    
+    public String getGpLogPath() {
+    	return getLogPath(gpLogPath);
+    }
+    
+    public boolean isGpLogFound() {
+    	if (getGpLogHeader().equals("Log not found.")) {
+    		return false;
+    	}
+    	return true;
+    }
+    
+    public boolean isWsLogFound() {
+    	if (getWsLogHeader().equals("Log not found.")) {
+    		return false;
+    	}
+    	return true;
+    }
 
     /**
      * @return
@@ -341,6 +366,23 @@ public class ServerSettingsBean {
 
         }
         return buf.toString();
+    }
+    
+    public String getWsLogPath() {
+    	return getLogPath(wsLogPath);
+    }
+    
+    public String getWsLogKeyName() {
+    	return wsLogPath;
+    }
+    
+    private String getLogPath(String key) {
+    	String logPath = (String) settings.get(key);
+    	if (logPath==null) {
+    		settings.put(key, "");
+    		return "";
+    	}
+        return logPath;
     }
 
     /**
