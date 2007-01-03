@@ -81,6 +81,16 @@ public class TaskIntegratorProxy {
         }
     }
 
+    public String installSuite(SuiteInfo suiteInfo)
+    	throws  org.genepattern.webservice.WebServiceException {
+    	try {
+    		return stub.installSuite(suiteInfo);
+    	} catch (RemoteException re){
+    		throw new WebServiceException(re);
+    	}
+    		
+    }
+    
     public String modifySuite(SuiteInfo suiteInfo, File[] files,
             String[] existingFileNames) throws WebServiceException {
         try {
