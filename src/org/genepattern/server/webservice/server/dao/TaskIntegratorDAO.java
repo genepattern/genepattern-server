@@ -12,37 +12,12 @@
 
 package org.genepattern.server.webservice.server.dao;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
-import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Suite;
-import org.genepattern.server.domain.SuiteDAO;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
-import org.genepattern.server.process.SuiteRepository;
-import org.genepattern.server.webservice.server.DirectoryManager;
-import org.genepattern.server.webservice.server.Util;
-import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.util.GPConstants;
-import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
-import org.genepattern.webservice.WebServiceException;
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
 
 /**
@@ -53,22 +28,25 @@ public class TaskIntegratorDAO extends BaseDAO {
 
     private static Logger log = Logger.getLogger(TaskIntegratorDAO.class);
 
-    public void deleteSuite(String lsid) throws WebServiceException {
-
+    public void deleteSuite(String lsid) {
         Suite s = (Suite) getSession().get(org.genepattern.server.domain.Suite.class, lsid);
         getSession().delete(s);
-
     }
 
     public void createSuite(SuiteInfo suiteInfo) {
-
         String lsid = suiteInfo.getLsid();
-        if (lsid == null || lsid.length() == 0) {
-            LSID lsidObj = LSIDManager.getInstance().createNewID(org.genepattern.util.IGPConstants.SUITE_NAMESPACE);
-            lsid = lsidObj.toString();
+        Suite s = null;
+        if (lsid == null || lsid.trim().equals("")) {
+            lsid = LSIDManager.getInstance().createNewID(org.genepattern.util.IGPConstants.SUITE_NAMESPACE).toString();
+        } else { // see if suite already exists in database
+            String hql = "from org.genepattern.server.domain.Suite where lsid = :lsid";
+            Query query = getSession().createQuery(hql);
+            query.setString("lsid", lsid);
+            s = (Suite) query.uniqueResult();
         }
-
-        Suite s = new Suite();
+        if (s == null) {
+            s = new Suite();
+        }
         s.setLsid(lsid);
         s.setName(suiteInfo.getName());
         s.setDescription(suiteInfo.getDescription());
@@ -80,14 +58,13 @@ public class TaskIntegratorDAO extends BaseDAO {
     }
 
     public SuiteInfo getSuite(String lsid) throws AdminDAOSysException {
-        String hql = "from  org.genepattern.server.webservice.server.dao.Suite where lsid = :lsid";
+        String hql = "from org.genepattern.server.domain.Suite where lsid = :lsid";
         Query query = getSession().createQuery(hql);
         query.setString("lsid", lsid);
         Suite result = (Suite) query.uniqueResult();
         if (result != null) {
             return suiteInfoFromSuite(result);
-        }
-        else {
+        } else {
             throw new AdminDAOSysException("suite id " + lsid + " not found");
         }
     }
