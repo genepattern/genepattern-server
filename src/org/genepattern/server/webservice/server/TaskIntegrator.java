@@ -16,6 +16,8 @@ import org.apache.axis.MessageContext;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.domain.Suite;
+import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.genepattern.TaskInstallationException;
@@ -35,6 +37,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
 import org.hibernate.Transaction;
+
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -419,9 +422,15 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public void delete(String lsid) throws WebServiceException {
-        if (LSIDUtil.isSuiteLSID(lsid)) {
+    	if (LSIDUtil.isSuiteLSID(lsid)) {
+        	Suite aSuite = (new SuiteDAO()).findById(lsid);
+        	String owner = aSuite.getOwner();
+        	if (!owner.equals(getUserName())){
+        		throw new WebServiceException("You may not delete a suite you are not the owner of.");
+        	}
             TaskIntegratorDAO dao = new TaskIntegratorDAO();
             dao.deleteSuite(lsid);
+            
         }
         else {
             deleteTask(lsid);

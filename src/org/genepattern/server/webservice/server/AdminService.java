@@ -26,8 +26,11 @@ import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
 import org.apache.axis.MessageContext;
+import org.genepattern.server.domain.Suite;
+import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.webservice.server.dao.*;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.IGPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.*;
 
@@ -200,7 +203,15 @@ public class AdminService implements IAdminService {
 
 	public SuiteInfo getSuite(String lsid) throws WebServiceException {
 		try {	
-			return dataService.getSuite(lsid);
+			SuiteInfo suite = dataService.getSuite(lsid);
+			
+			String owner = suite.getOwner();
+			if (suite.getAccessId() == IGPConstants.ACCESS_PRIVATE){
+				if (!owner.equals(getUserName())){
+					throw new WebServiceException("You may not view a private suite you are not the owner of.");
+				}
+			}
+			return suite;
 		} catch (OmnigeneException e) {
 			throw new WebServiceException(e);
 		}

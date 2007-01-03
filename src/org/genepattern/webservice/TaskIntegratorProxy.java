@@ -220,7 +220,14 @@ public class TaskIntegratorProxy {
             throw new WebServiceException(re);
         }
     }
-
+    
+    public void deleteSuite(String lsid) throws WebServiceException {
+        try {
+            stub.delete(lsid);
+        } catch (RemoteException re) {
+            throw new WebServiceException(re);
+        }
+    }
     public void getSupportFiles(String lsid, String[] fileNames,
             File destinationDirectory) throws WebServiceException {
         try {
