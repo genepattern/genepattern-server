@@ -162,7 +162,7 @@ public class TaskInstallBean {
         }
 
         public int compareTo(TaskInstallStatus o) {
-            return name.compareTo(o.getName());
+            return name.compareToIgnoreCase(o.getName());
         }
 
     }
