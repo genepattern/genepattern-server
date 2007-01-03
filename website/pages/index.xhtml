@@ -134,8 +134,9 @@ function validateForm() {
          
 		var d = $("errorMessageDiv");
 		var t = $("errorMessageContent");
-		d.style.display = "";
+		
         if (error) {
+        	d.style.display = "block";
    			messageString += "</ul>";
           	Element.update('errorMessageContent', messageString);
         } 
