@@ -44,6 +44,7 @@ public abstract class TestWebService extends TestCase {
    protected final static Task FOREIGN_PREPROCESS = new Task(new File(BASE_FILE_DIR, "PreprocessDatasetForeign.zip"));
 
    protected String userName = "GenePattern";
+   protected String password = "";
    protected String server = "http://127.0.0.1:8080";
 
 
@@ -147,9 +148,9 @@ public abstract class TestWebService extends TestCase {
 
 
    protected void setUp() throws Exception {
-      adminProxy = new AdminProxy(server, userName);
-      taskIntegratorProxy = new TaskIntegratorProxy(server, userName);
-      gpServer = new GPServer(server, userName);
+      adminProxy = new AdminProxy(server, userName, password);
+      taskIntegratorProxy = new TaskIntegratorProxy(server, userName, password);
+      gpServer = new GPServer(server, userName, password);
    }
 
 
@@ -168,11 +169,12 @@ public abstract class TestWebService extends TestCase {
       Task(File zipFile) {
          try {
             if(TaskUtil.isZipOfZips(zipFile)) {
-               zipOfZips = true;
-               TaskInfo[] tasks = TaskUtil.getTaskInfosFromZipOfZips(zipFile);
-               Map props = tasks[0].getTaskInfoAttributes();
-               name = tasks[0].getName();
-               lsid = (String) props.get("LSID");
+            	throw new RuntimeException("TestWebService does not handle zip of zips yet");
+             //  zipOfZips = true;
+             //  TaskInfo[] tasks = TaskUtil.getTaskInfosFromZipOfZips(zipFile);
+             //  Map props = tasks[0].getTaskInfoAttributes();
+             //  name = tasks[0].getName();
+             //  lsid = (String) props.get("LSID");
             } else {
                TaskInfo task = TaskUtil.getTaskInfoFromZip(zipFile);
                Map props = task.getTaskInfoAttributes();
