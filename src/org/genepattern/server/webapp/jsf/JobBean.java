@@ -367,6 +367,8 @@ public abstract class JobBean {
             UIBeanHelper.getResponse().sendRedirect(
                     UIBeanHelper.getRequest().getContextPath() + "/pipelineDesigner.jsp?name="
                             + UIBeanHelper.encode(lsid));
+        } catch (WebServiceException wse){
+        	log.error(wse);
         } catch (IOException e1) {
             log.error(e1);
         }

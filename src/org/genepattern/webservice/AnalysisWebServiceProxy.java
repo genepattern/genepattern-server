@@ -43,6 +43,10 @@ public class AnalysisWebServiceProxy {
 		stub.setTimeout(timeout);
 	}
 	
+	public AnalysisSoapBindingStub getStub(){
+		return stub;
+	}
+	
 	public AnalysisWebServiceProxy(String url, String userName, String password,
 			boolean maintainSession) throws WebServiceException {
      try {
