@@ -39,7 +39,7 @@ function mmLoadMenus() {
   window.mm_menu_tasks = new Menu("root",112,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_tasks.addMenuItem("Create","location=contextRoot + '/addTask.jsp'");
   mm_menu_tasks.addMenuItem("Install&nbsp;/&nbsp;Update","location=contextRoot + '/pages/taskCatalog.jsf'");
-  mm_menu_tasks.addMenuItem("Manage","location=contextRoot + '/pages/manageTasks.jsf'");
+  mm_menu_tasks.addMenuItem("Manage","location=contextRoot + '/deleteTask.jsp'");
   mm_menu_tasks.hideOnMouseOut=true;
   mm_menu_tasks.bgColor='#CCCC66';
   mm_menu_tasks.menuBorder=0;
@@ -49,7 +49,7 @@ function mmLoadMenus() {
   window.mm_menu_pipelines = new Menu("root",112,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_pipelines.addMenuItem("Create","location=contextRoot + '/pipelineDesigner.jsp'");
   mm_menu_pipelines.addMenuItem("Install&nbsp;/&nbsp;Update","location=contextRoot + '/pages/taskCatalog.jsf'");
-  mm_menu_pipelines.addMenuItem("Manage","location=contextRoot + '/pages/manageTasks.jsf'");
+  mm_menu_pipelines.addMenuItem("Manage","location=contextRoot + '/deleteTask.jsp'");
   mm_menu_pipelines.hideOnMouseOut=true;
   mm_menu_pipelines.bgColor='#CCCC66';
   mm_menu_pipelines.menuBorder=0;
