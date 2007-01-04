@@ -25,11 +25,15 @@ import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
 import org.genepattern.server.process.SuiteRepository;
 import org.genepattern.server.process.ZipSuite;
+import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.IAuthorizationManager;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.dao.TaskIntegratorDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
+import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -66,6 +70,7 @@ import java.util.zip.ZipFile;
 public class TaskIntegrator implements ITaskIntegrator {
 
     private static Logger log = Logger.getLogger(TaskIntegrator.class);
+    IAuthorizationManager authManager  = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
 
     protected String getUserName() {
         MessageContext context = MessageContext.getCurrentContext();
@@ -446,6 +451,8 @@ public class TaskIntegrator implements ITaskIntegrator {
         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
+        isTaskOwnerOrAdmin(getUserName(), lsid);
+    	
         try {
             Thread.yield();
             String attachmentDir = DirectoryManager.getTaskLibDir(lsid);
@@ -462,10 +469,28 @@ public class TaskIntegrator implements ITaskIntegrator {
         }
     }
 
+    private boolean isTaskOwner(String user, String lsid) throws WebServiceException{
+        TaskInfo taskInfo = new LocalAdminClient(user).getTask(lsid);
+        if (taskInfo == null) return false; // can't own what you can't see
+    	return user.equals(taskInfo.getUserId());
+    }
+    
+    private void isTaskOwnerOrAdmin(String user, String lsid) throws WebServiceException{  
+    	if (!isTaskOwner(user, lsid)){
+    		if (!authManager.checkPermission("administrateServer", user)) {
+            	throw new WebServiceException("You do not have permission for jobs started by other users."); 	
+            } 
+    	}
+    }
+    
+    
     public DataHandler getSupportFile(String lsid, String fileName) throws WebServiceException {
+    	
         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
+        isTaskOwnerOrAdmin(getUserName(), lsid);
+    	
         try {
             Thread.yield();
             String attachmentDir = DirectoryManager.getTaskLibDir(lsid);
@@ -486,6 +511,8 @@ public class TaskIntegrator implements ITaskIntegrator {
             if (lsid == null || lsid.equals("")) {
                 throw new WebServiceException("Invalid LSID");
             }
+            isTaskOwnerOrAdmin(getUserName(), lsid);
+        	
             DataHandler[] dhs = new DataHandler[fileNames.length];
             String attachmentDir = DirectoryManager.getTaskLibDir(lsid);
             File dir = new File(attachmentDir);
@@ -526,6 +553,8 @@ public class TaskIntegrator implements ITaskIntegrator {
         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
+        isTaskOwnerOrAdmin(getUserName(), lsid);
+    	
         String[] files = getSupportFileNames(lsid);
         DataHandler[] dhs = new DataHandler[files.length];
         for (int i = 0; i < files.length; i++) {
@@ -764,6 +793,8 @@ public class TaskIntegrator implements ITaskIntegrator {
         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
+        isTaskOwnerOrAdmin(getUserName(), lsid);
+    	
         try {
             Thread.yield();
             String taskLibDir = DirectoryManager.getLibDir(lsid);
@@ -784,6 +815,8 @@ public class TaskIntegrator implements ITaskIntegrator {
 
     public DataHandler[] getDocFiles(String lsid) throws WebServiceException {
         String taskLibDir = null;
+        isTaskOwnerOrAdmin(getUserName(), lsid);
+    	
         try {
             taskLibDir = DirectoryManager.getLibDir(lsid);
         }

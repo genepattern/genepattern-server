@@ -42,6 +42,10 @@ public class TaskIntegratorProxy {
         this(url, userName, null, true);
     }
 
+    public TaskIntegratorSoapBindingStub getStub(){
+    	return stub;
+    }
+    
     public TaskIntegratorProxy(String url, String userName, String password,
             boolean maintainSession) throws WebServiceException {
         try {
