@@ -169,6 +169,9 @@ public class UIBeanHelper {
     }
 
     public static String encode(String s) {
+        if (s == null) {
+            return null;
+        }
         try {
             return URLEncoder.encode(s, "UTF-8");
         } catch (UnsupportedEncodingException e) {
@@ -178,6 +181,9 @@ public class UIBeanHelper {
     }
 
     public static String decode(String s) {
+        if (s == null) {
+            return null;
+        }
         try {
             return URLDecoder.decode(s, "UTF-8");
         } catch (UnsupportedEncodingException e) {
