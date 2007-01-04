@@ -15,6 +15,10 @@ function pm_clickHandler() {
 }
 
 function pm_showMenu(id, pos, leftOffset, topOffset) {
+   if(pm_currentId != null) {
+     pm_hideMenu(pm_currentId)
+   }
+   
    pm_currentId = id;
    pm_showing = true;
    var style = $(id).style;
