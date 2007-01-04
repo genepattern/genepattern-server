@@ -5724,7 +5724,7 @@ Some warnings were generated during the install. The install log will be opened 
 								<boolean>false</boolean>
 							</property>
 							<property name="urlPath">
-								<string><![CDATA[http://127.0.0.1:$GENEPATTERN_PORT$/gp/login.jsp?userid=$webmaster$&referrer=installFrame.jsp]]></string>
+								<string><![CDATA[http://127.0.0.1:$GENEPATTERN_PORT$/gp/pages/login.jsf?userid=$webmaster$&referrer=installFrame.jsp]]></string>
 							</property>
 							<property name="showPleaseWaitPanel">
 								<boolean>false</boolean>
@@ -5747,7 +5747,7 @@ Some warnings were generated during the install. The install log will be opened 
 					<method name="addElement">
 						<object class="com.zerog.ia.installer.actions.Exec" objectID="fed8b687bcbd">
 							<property name="commandLineArgs">
-								<string><![CDATA[/usr/bin/konqueror http://127.0.0.1:$GENEPATTERN_PORT$/gp/login.jsp?userid=$webmaster$&referrer=installFrame.jsp]]></string>
+								<string><![CDATA[/usr/bin/konqueror http://127.0.0.1:$GENEPATTERN_PORT$/gp/pages/login.jsf?userid=$webmaster$&referrer=installFrame.jsp]]></string>
 							</property>
 							<property name="waitForProcess">
 								<boolean>false</boolean>
