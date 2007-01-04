@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -124,12 +125,7 @@ public class JobInfoBean {
             for (ParameterInfo param : parameterInfoArray) {
                 if (param.isOutputFile() && !param.getName().equals(GPConstants.TASKLOG)) {
                     String value = param.getValue();
-                    String sep = File.separator;
-                    int index = value.lastIndexOf(sep);
-                    if (index == -1) {
-                        sep = "/";
-                        index = value.lastIndexOf(sep);
-                    }
+                    int index = StringUtils.lastIndexOfFileSeparator(value);
                     int jobNumber = Integer.parseInt(value.substring(0, index));
                     String filename = value.substring(index + 1);
                     OutputParameter p = new OutputParameter();

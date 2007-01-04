@@ -34,6 +34,7 @@ import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
+import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -367,8 +368,8 @@ public abstract class JobBean {
             UIBeanHelper.getResponse().sendRedirect(
                     UIBeanHelper.getRequest().getContextPath() + "/pipelineDesigner.jsp?name="
                             + UIBeanHelper.encode(lsid));
-        } catch (WebServiceException wse){
-        	log.error(wse);
+        } catch (WebServiceException wse) {
+            log.error(wse);
         } catch (IOException e1) {
             log.error(e1);
         }
@@ -436,10 +437,8 @@ public abstract class JobBean {
             byte[] b = new byte[10000];
             for (ParameterInfo p : outputFileParameters) {
                 String value = p.getValue();
-                int index = value.lastIndexOf("/");
-                if (index == -1) {
-                    index = value.lastIndexOf("\\");
-                }
+                int index = StringUtils.lastIndexOfFileSeparator(value);
+
                 String jobId = value.substring(0, index);
                 String fileName = UIBeanHelper.decode(value.substring(index + 1, value.length()));
                 File attachment = new File(jobDir + File.separator + value);
@@ -557,7 +556,7 @@ public abstract class JobBean {
 
         try {
             String value = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobFileName"));
-            int index = value.indexOf("/");
+            int index = StringUtils.lastIndexOfFileSeparator(value);
             String jobNumber = value.substring(0, index);
             String filename = value.substring(index + 1);
             File in = new File(GenePatternAnalysisTask.getJobDir(jobNumber), filename);
@@ -655,11 +654,11 @@ public abstract class JobBean {
 
     protected void deleteFile(String encodedJobFileName) {
         try {
-            int index = encodedJobFileName.indexOf("/");
+            int index = StringUtils.lastIndexOfFileSeparator(encodedJobFileName);
             int jobNumber = Integer.parseInt(encodedJobFileName.substring(0, index));
             String filename = encodedJobFileName.substring(index + 1);
-            new LocalAnalysisClient(UIBeanHelper.getUserId())
-                    .deleteJobResultFile(jobNumber, jobNumber + "/" + filename);
+            new LocalAnalysisClient(UIBeanHelper.getUserId()).deleteJobResultFile(jobNumber, jobNumber + File.separator
+                    + filename);
         } catch (NumberFormatException e) {
             log.error(e);
         } catch (WebServiceException e) {
