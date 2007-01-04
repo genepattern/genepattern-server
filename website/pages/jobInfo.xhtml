@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jstl/core">
+<head><title>Job #{jobInfoBean.jobNumber} #{jobInfoBean.taskName}</title></head>
+<body>
+<p>
+<b>Job #{jobInfoBean.jobNumber} #{jobInfoBean.taskName}</b>
+<br />
+<br />
+<b>Input Parameters</b>
+<br />
+
+<t:dataList var="p" value="#{jobInfoBean.inputParameters}">
+	<h:outputText>#{p.name}: </h:outputText>
+	<h:outputText rendered="#{p.url}">
+	<a
+				href="#{facesContext.externalContext.requestContextPath}/getInputFile.jsp?file=#{p.value}">#{p.displayValue}</a></h:outputText>
+	<h:outputText rendered="#{!p.url}">#{p.displayValue}</h:outputText>
+	<br />
+</t:dataList>
+<br />
+<br />
+
+<b>Output Files</b>
+<br />
+<ol>
+	<t:dataList var="p" value="#{jobInfoBean.outputFiles}">
+		<li><h:outputText>
+			<a
+				href="#{facesContext.externalContext.requestContextPath}/retrieveResults.jsp?job=#{p.jobNumber}&amp;filename=#{p.name}">#{p.name}</a>
+		</h:outputText></li>
+	</t:dataList>
+</ol>
+</p>
+</body>
+</html>
