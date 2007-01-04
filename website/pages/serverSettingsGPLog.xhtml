@@ -12,7 +12,18 @@
         <td>GenePattern Log</td>
       </tr>
     </table>
-	  <p/>
+	<p/>
+	<table>
+	    	<tr>
+	    		<td width="31%">Alternative Log File Path:</td>
+	    		<td width="56%">
+	    			<h:inputText size="50" value="#{serverSettingsBean.settings.GpLogPath}" id="defaultPrefix"/>
+				</td>
+				<td>
+					<h:commandButton actionListener="#{serverSettingsBean.saveSettings}" value="submit" />
+				</td>
+			</tr>
+	</table>
     <table width="100%" border="0" cellpadding="5" cellspacing="0">
       <tr valign="top">
       	<pre>
@@ -23,22 +34,6 @@
       </tr>
     </table>
     <p/>
-    <t:div rendered="#{!serverSettingsBean.gpLogFound}">
-	    <table width="100%" border="0" cellpadding="5" cellspacing="0">
-	    	<tr>
-	    		<td width="31%">Log File Path:</td>
-	    		<td width="56%">
-	    			<h:inputText size="50" value="#{serverSettingsBean.gpLogPath}" id="defaultPrefix"/>
-				</td>
-				<td>
-					<h:commandButton actionListener="#{serverSettingsBean.saveSettings}" value="submit" />
-				</td>
-			</tr>
-			<tr valign="top">
-		      	Please specify your own gene pattern log path, the path will be saved with the key "#{serverSettingsBean.gpLogKeyName}" in the property file.      
-		    </tr>
-		  </table>
-	  </t:div>
   </h:form>
 </ui:composition>
 </html>

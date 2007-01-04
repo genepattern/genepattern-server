@@ -319,28 +319,6 @@ public class ServerSettingsBean {
         File gpLog = getGpLogFile();
         return getLogHeader(gpLog, "Gene Pattern");
     }
-    
-    public String getGpLogKeyName() {
-    	return gpLogPath;
-    }
-    
-    public String getGpLogPath() {
-    	return getLogPath(gpLogPath);
-    }
-    
-    public boolean isGpLogFound() {
-    	if (getGpLogHeader().equals("Log not found.")) {
-    		return false;
-    	}
-    	return true;
-    }
-    
-    public boolean isWsLogFound() {
-    	if (getWsLogHeader().equals("Log not found.")) {
-    		return false;
-    	}
-    	return true;
-    }
 
     /**
      * @return
@@ -367,45 +345,19 @@ public class ServerSettingsBean {
         }
         return buf.toString();
     }
-    
-    public String getWsLogPath() {
-    	return getLogPath(wsLogPath);
-    }
-    
-    public String getWsLogKeyName() {
-    	return wsLogPath;
-    }
-    
-    private String getLogPath(String key) {
-    	String logPath = (String) settings.get(key);
-    	if (logPath==null) {
-    		settings.put(key, "");
-    		return "";
-    	}
-        return logPath;
-    }
 
     /**
      * @return
      */
     private File getGpLogFile() {
-        String log4jConfiguration = System.getProperty("log4j.configuration");
-        if (log4jConfiguration == null) {
-            String defaultValue = (String) defaultSettings.get("log4j.configuration");
-            log4jConfiguration = defaultValue;
-        }
-
-        if (log4jConfiguration == null || !new File(log4jConfiguration).exists()) {
-            return null;
-        }
-        Properties props = new Properties();
-
-        try {
-            props.load(new FileInputStream(log4jConfiguration));
-        } catch (IOException exc) {
-            exc.printStackTrace();
-        }
-        return new File(props.getProperty("log4j.appender.R.File"));
+    	String logPath=settings.getProperty("log4j.appender.R.File");
+    	if (logPath == null || !new File(logPath).exists()) {
+    		String newLogPath = settings.getProperty(gpLogPath);
+    		if (newLogPath!=null) {
+    			return new File(newLogPath);
+    		}
+    	}
+        return new File(logPath);
     }
 
     /**
@@ -413,6 +365,7 @@ public class ServerSettingsBean {
      */
     private File getWsLogFile() {
         File wsLog = null;
+        cal = Calendar.getInstance();
         if (System.getProperty("serverInfo").indexOf("Apache Tomcat") != -1) {
             for (int i = 0; i < 10; i++) {
                 String filename = "localhost." + df.format(cal.getTime()) + ".log";
@@ -422,7 +375,13 @@ public class ServerSettingsBean {
                 wsLog = null;
                 cal.add(Calendar.DATE, -1); // backup up one day
             }
-        }
+        }    
+        if (wsLog==null || !wsLog.exists()) {
+    		String newLogPath = settings.getProperty(wsLogPath);
+    		if (newLogPath!=null) {
+    			return new File(newLogPath);
+    		}		 		
+    	}
         return wsLog;
     }
 
