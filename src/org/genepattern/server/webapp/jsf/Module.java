@@ -101,6 +101,14 @@ public class Module implements java.io.Serializable {
         return versions;
         
     }
+    
+    /**
+     * 
+     * @return true if the LSID indicates this module is from the broad.  This affects the color scheme for the module name.
+     */
+    public boolean isFromBroad() {
+	return getLSID().getAuthority().equals("broad.mit.edu");	
+    }
 
 
 }
