@@ -15,6 +15,10 @@ String cp = request.getContextPath();
     <img src="<%=cp%>/images/GP-logo.gif" alt="GenePattern Portal" width="296" height="77" border="0" /> 
   </a>
 </div>
+
+<script type="text/javascript" language="javascript"> 
+  var contextRoot = "<%=cp%>";
+</script>
 	
 <!-- horizontal navigation band -->
 <div id="navband1" class="navband1"
