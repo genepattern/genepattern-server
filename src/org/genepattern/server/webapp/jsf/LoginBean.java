@@ -20,16 +20,27 @@ import org.genepattern.server.user.UserDAO;
 public class LoginBean {
 
     private static Logger log = Logger.getLogger(LoginBean.class);
+
     private String username;
+
     private String password;
+
     private boolean passwordRequired;
 
     private boolean unknownUser = false;
+
     private boolean invalidPassword = false;
 
     public LoginBean() {
         String prop = System.getProperty("require.password", "false").toLowerCase();
         passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
+        String usernameInRequest = UIBeanHelper.getRequest().getParameter("username");
+        if (usernameInRequest != null) {
+            username = usernameInRequest;
+            if (!passwordRequired) {
+                submitLogin(null);
+            }
+        }
     }
 
     public boolean isPasswordRequired() {
@@ -72,14 +83,11 @@ public class LoginBean {
 
         try {
             assert username != null;
-            assert password != null;
-
             User up = (new UserDAO()).findById(username);
             if (up == null) {
                 if (passwordRequired) {
                     unknownUser = true;
-                }
-                else {
+                } else {
                     User newUser = new User();
                     newUser.setUserId(username);
                     newUser.setPassword(null);
@@ -88,38 +96,30 @@ public class LoginBean {
                     UIBeanHelper.login(username, passwordRequired);
 
                 }
-            }
-            else if (passwordRequired) {
+            } else if (passwordRequired) {
                 if (!java.util.Arrays.equals(EncryptionUtil.encrypt(password), up.getPassword())) {
                     invalidPassword = true;
-                }
-                else {
+                } else {
                     UIBeanHelper.login(username, passwordRequired);
                 }
-            }
-            else {
+            } else {
                 UIBeanHelper.login(username, passwordRequired);
             }
-        }
-        catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException e) {
             log.error(e);
             throw new RuntimeException(e); // @TODO -- wrap in gp system
             // exeception.
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.error(e);
             throw new RuntimeException(e); // @TODO -- wrap in gp system
             // exeception.
-        }
-        catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException e) {
             log.error(e);
             throw new RuntimeException(e); // @TODO -- wrap in gp system
             // exeception.
 
         }
     }
-    
-   
 
     public String logout() {
         UIBeanHelper.logout();
