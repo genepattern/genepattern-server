@@ -26,8 +26,7 @@
           <td valign="top">
             <nobr>
               <div align="center">
-                <h:commandLink actionListener="#{manageSuiteBean.delete}" 
-                               onclick="if (!confirmDelete()) return false">delete</h:commandLink> 
+                <h:commandLink value="delete" action="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false"/> 
               </div>
             </nobr>
           </td>         
@@ -98,7 +97,8 @@
           <td valign="top" class="smalltype">
             <nobr>
               <div align="center">
-                <h:commandLink actionListener="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink> 
+                <h:commandLink value="delete" action="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false"/>
+                
               </div>
             </nobr>
           </td>
