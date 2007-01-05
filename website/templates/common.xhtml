@@ -70,14 +70,38 @@
     <div id="navband1" class="navband1" style="cursor: pointer;">
       <c:if test="#{requestScope.userID != null}">
         <nobr>
-        <a href="javascript:void();" name="link17" id="link6" onmouseover="MM_showMenu(window.mm_menu_tasks,0,18,null,'link17')" onmouseout="MM_startTimeout();">Tasks</a> &#160;&#160;&#160;&#160;&#160;&#160;
-        <a href="javascript:void();" name="link16" id="link8" onmouseover="MM_showMenu(window.mm_menu_pipelines,0,18,null,'link16')" onmouseout="MM_startTimeout();">Pipelines</a> &#160;&#160;&#160;&#160;&#160;&#160; 
-        <a href="javascript:void();" name="link14" id="link9" onmouseover="MM_showMenu(window.mm_menu_suites,0,18,null,'link14')" onmouseout="MM_startTimeout();">Suites</a> &#160;&#160;&#160;&#160;&#160;&#160;
-        <a href="javascript:void();" name="link15" id="link10" onmouseover="MM_showMenu(window.mm_menu_jobResults,0,18,null,'link15')" onmouseout="MM_startTimeout();">Job Results</a> &#160;&#160;&#160;&#160;&#160;&#160;  
-        <a href="javascript:void();" name="link11" id="link1" onmouseover="MM_showMenu(window.mm_menu_documentation,0,18,null,'link11')" onmouseout="MM_startTimeout();">Documentation</a> &#160;&#160;&#160;&#160;&#160;&#160; 
-        <a href="javascript:void();" name="link12" id="link3" onmouseover="MM_showMenu(window.mm_menu_resources,0,18,null,'link12')" onmouseout="MM_startTimeout();">Resources</a> &#160;&#160;&#160;&#160;&#160;&#160; 
-        <a href="javascript:void();" name="link2" id="link5" onmouseover="MM_showMenu(window.mm_menu_downloads,0,18,null,'link2')" onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160; 
-        <a href="javascript:void();" name="link13" id="link4" onmouseover="MM_showMenu(window.mm_menu_administration,0,18,null,'link13')" onmouseout="MM_startTimeout();">Administration</a>     
+        <a name="link17" id="link6" 
+           onclick="MM_showMenu(window.mm_menu_tasks,0,18,null,'link17')" 
+           onmouseover="MM_showMenu(window.mm_menu_tasks,0,18,null,'link17')" 
+           onmouseout="MM_startTimeout();">Tasks</a> &#160;&#160;&#160;&#160;&#160;&#160;
+        <a name="link16" id="link8" 
+           onclick="MM_showMenu(window.mm_menu_pipelines,0,18,null,'link16')" 
+           onmouseover="MM_showMenu(window.mm_menu_pipelines,0,18,null,'link16')" 
+           onmouseout="MM_startTimeout();">Pipelines</a> &#160;&#160;&#160;&#160;&#160;&#160; 
+        <a name="link14" id="link9" 
+           onclick="MM_showMenu(window.mm_menu_suites,0,18,null,'link14')" 
+           onmouseover="MM_showMenu(window.mm_menu_suites,0,18,null,'link14')" 
+           onmouseout="MM_startTimeout();">Suites</a> &#160;&#160;&#160;&#160;&#160;&#160;
+        <a name="link15" id="link10" 
+           onclick="MM_showMenu(window.mm_menu_jobResults,0,18,null,'link15')" 
+           onmouseover="MM_showMenu(window.mm_menu_jobResults,0,18,null,'link15')" 
+           onmouseout="MM_startTimeout();">Job Results</a> &#160;&#160;&#160;&#160;&#160;&#160;  
+        <a name="link11" id="link1" 
+           onclick="MM_showMenu(window.mm_menu_documentation,0,18,null,'link11')" 
+           onmouseover="MM_showMenu(window.mm_menu_documentation,0,18,null,'link11')" 
+           onmouseout="MM_startTimeout();">Documentation</a> &#160;&#160;&#160;&#160;&#160;&#160; 
+        <a name="link12" id="link3" 
+           onclick="MM_showMenu(window.mm_menu_resources,0,18,null,'link12')" 
+           onmouseover="MM_showMenu(window.mm_menu_resources,0,18,null,'link12')" 
+           onmouseout="MM_startTimeout();">Resources</a> &#160;&#160;&#160;&#160;&#160;&#160; 
+        <a name="link2" id="link5" 
+           onclick="MM_showMenu(window.mm_menu_downloads,0,18,null,'link2')" 
+           onmouseover="MM_showMenu(window.mm_menu_downloads,0,18,null,'link2')" 
+           onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160; 
+        <a name="link13" id="link4" 
+           onclick="MM_showMenu(window.mm_menu_administration,0,18,null,'link13')" 
+           onmouseover="MM_showMenu(window.mm_menu_administration,0,18,null,'link13')" 
+           onmouseout="MM_startTimeout();">Administration</a>     
         </nobr>
      </c:if>
    </div>
