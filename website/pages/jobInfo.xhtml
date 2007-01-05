@@ -5,24 +5,38 @@
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk"
 	xmlns:c="http://java.sun.com/jstl/core">
-<head><title>Job #{jobInfoBean.jobNumber} #{jobInfoBean.taskName}</title></head>
+<head>
+<link
+	href="#{facesContext.externalContext.requestContextPath}/css/style.css"
+	rel="stylesheet" type="text/css" />
+<title>Job #{jobInfoBean.jobNumber} #{jobInfoBean.taskName}</title>
+</head>
 <body>
-<p>
-<b>Job #{jobInfoBean.jobNumber} #{jobInfoBean.taskName}</b>
-<br />
-<br />
+
+<h2>Job #{jobInfoBean.jobNumber} #{jobInfoBean.taskName}</h2>
+
 <b>Input Parameters</b>
 <br />
 
 <t:dataList var="p" value="#{jobInfoBean.inputParameters}">
+
 	<h:outputText>#{p.name}: </h:outputText>
 	<h:outputText rendered="#{p.url}">
-	<a
-				href="#{facesContext.externalContext.requestContextPath}/getInputFile.jsp?file=#{p.value}">#{p.displayValue}</a></h:outputText>
-	<h:outputText rendered="#{!p.url}">#{p.displayValue}</h:outputText>
+		<a href="#{p.value}">#{p.displayValue}</a>
+	</h:outputText>
+	<h:outputText rendered="#{!p.url and p.exists}">
+		<h:outputText rendered="#{!empty p.directory}">
+			<a href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.directory}/#{p.value}">#{p.displayValue}</a>
+		</h:outputText>
+		<h:outputText rendered="#{empty p.directory}">
+			<a href="#{facesContext.externalContext.requestContextPath}/getInputFile.jsp?file=#{p.value}">#{p.displayValue}</a>
+		</h:outputText>
+	</h:outputText>
+	<h:outputText rendered="#{!p.url and !p.exists}">
+		#{p.displayValue}
+	</h:outputText>
 	<br />
 </t:dataList>
-<br />
 <br />
 
 <b>Output Files</b>
@@ -35,6 +49,6 @@
 		</h:outputText></li>
 	</t:dataList>
 </ol>
-</p>
+
 </body>
 </html>

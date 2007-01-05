@@ -94,11 +94,12 @@ public class JobInfoBean {
                 }
                 String displayValue = value;
 
-                // see if a URL was passed in
                 boolean isUrl = false;
-
+                boolean exists = false;
+                String directory = null;
                 if (formalParameter.isInputFile()) {
                     try {
+                        // see if a URL was passed in
                         new URL(value);
                         isUrl = true;
                     } catch (MalformedURLException e) {
@@ -106,9 +107,13 @@ public class JobInfoBean {
                     }
                     if (!isUrl) {
                         File f = new File(value);
-                        displayValue = f.getName();
+                        exists = f.exists();
+                        value = f.getName();
+                        displayValue = value;
                         if (displayValue.startsWith("Axis")) {
                             displayValue = displayValue.substring(displayValue.indexOf('_') + 1);
+                        } else {
+                            directory = f.getParentFile().getName();
                         }
                     }
                 }
@@ -118,10 +123,12 @@ public class JobInfoBean {
                     name = formalParameter.getName();
                 }
                 name = name.replaceAll("\\.", " ");
+                p.setDirectory(directory);
                 p.setName(name);
                 p.setDisplayValue(displayValue);
                 p.setValue(value);
                 p.setUrl(isUrl);
+                p.setExists(exists);
                 inputs.add(p);
             }
         }
@@ -182,6 +189,10 @@ public class JobInfoBean {
 
         private String displayValue;
 
+        private boolean exists;
+
+        private String directory;
+
         public String getName() {
             return name;
         }
@@ -212,6 +223,22 @@ public class JobInfoBean {
 
         public void setValue(String value) {
             this.value = value;
+        }
+
+        public boolean isExists() {
+            return exists;
+        }
+
+        public void setExists(boolean exists) {
+            this.exists = exists;
+        }
+
+        public String getDirectory() {
+            return directory;
+        }
+
+        public void setDirectory(String directory) {
+            this.directory = directory;
         }
     }
 
