@@ -88,7 +88,12 @@ public class JobInfoBean {
             for (ParameterInfo formalParameter : formalParameters) {
                 ParameterInfo param = parameterMap.get(formalParameter.getName());
                 String value = param.getUIValue(formalParameter);
+                // skip parameters that the user did not give a value for
+                if (value == null || value.equals("")) {
+                    continue;
+                }
                 String displayValue = value;
+
                 // see if a URL was passed in
                 boolean isUrl = false;
 
