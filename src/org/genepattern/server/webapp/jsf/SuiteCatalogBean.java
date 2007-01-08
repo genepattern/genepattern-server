@@ -15,6 +15,8 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.process.SuiteRepository;
 import org.genepattern.server.util.AuthorizationManager;
+import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.LSID;
@@ -23,9 +25,8 @@ import org.genepattern.webservice.WebServiceException;
 
 public class SuiteCatalogBean {
 
-    private SelectItem[] states = new SelectItem[] {
-            new SelectItem("new", "new"), new SelectItem("updated", "updated"),
-            new SelectItem("up to date", "up to date") };;
+    private SelectItem[] states = new SelectItem[] { new SelectItem("new", "new"),
+            new SelectItem("updated", "updated"), new SelectItem("up to date", "up to date") };;
 
     private static Logger log = Logger.getLogger(SuiteCatalogBean.class);
 
@@ -52,26 +53,22 @@ public class SuiteCatalogBean {
     public SuiteCatalogBean() {
 
         try {
-            baseLsid2InstalledSuites = createBaseLsidToSuitesMap(new LocalAdminClient(
-                    UIBeanHelper.getUserId()).getAllSuites());
+            baseLsid2InstalledSuites = createBaseLsidToSuitesMap(new LocalAdminClient(UIBeanHelper.getUserId())
+                    .getAllSuites());
             suiteUrl = System.getProperty("SuiteRepositoryURL");
             lsidToSuiteMap = new SuiteRepository().getSuites(suiteUrl);
             Map<String, List<MySuiteInfo>> suiteCatalogBaseLsidToSuitesMap = new HashMap<String, List<MySuiteInfo>>();
-            for (Iterator<Map> it = lsidToSuiteMap.values().iterator(); it
-                    .hasNext();) {
+            for (Iterator<Map> it = lsidToSuiteMap.values().iterator(); it.hasNext();) {
                 MySuiteInfo si = new MySuiteInfo(it.next(), suiteUrl);
-                List<MySuiteInfo> suites = suiteCatalogBaseLsidToSuitesMap
-                        .get(si.getLsid());
+                List<MySuiteInfo> suites = suiteCatalogBaseLsidToSuitesMap.get(si.getLsid());
                 if (suites == null) {
                     suites = new ArrayList<MySuiteInfo>();
                     suiteCatalogBaseLsidToSuitesMap.put(si.getLsid(), suites);
                 }
                 suites.add(si);
             }
-            suiteCatalogSuites = new ArrayList<MySuiteInfo>(
-                    suiteCatalogBaseLsidToSuitesMap.size());
-            for (Iterator<List<MySuiteInfo>> it = suiteCatalogBaseLsidToSuitesMap
-                    .values().iterator(); it.hasNext();) {
+            suiteCatalogSuites = new ArrayList<MySuiteInfo>(suiteCatalogBaseLsidToSuitesMap.size());
+            for (Iterator<List<MySuiteInfo>> it = suiteCatalogBaseLsidToSuitesMap.values().iterator(); it.hasNext();) {
                 List<MySuiteInfo> suites = it.next();
                 Collections.sort(suites, versionComparator);
                 MySuiteInfo s = suites.get(0);
@@ -84,8 +81,7 @@ public class SuiteCatalogBean {
                 }
                 suiteCatalogSuites.add(s);
             }
-            if (UIBeanHelper.getRequest().getParameter(
-                    "suiteCatalogForm:suiteCatalogSubmit") == null) {
+            if (UIBeanHelper.getRequest().getParameter("suiteCatalogForm:suiteCatalogSubmit") == null) {
                 selectedStates = new ArrayList<String>();
                 selectedStates.add("new");
                 selectedStates.add("updated");
@@ -102,18 +98,18 @@ public class SuiteCatalogBean {
 
     public String install() {
 
-        final String[] lsids = UIBeanHelper.getRequest().getParameterValues(
-                "installLsid");
+        final String[] lsids = UIBeanHelper.getRequest().getParameterValues("installLsid");
         if (lsids != null) {
             final String username = UIBeanHelper.getUserId();
-            final LocalTaskIntegratorClient taskIntegrator = new LocalTaskIntegratorClient(
-                    username);
-            AuthorizationManager authManager = new AuthorizationManager();
+            final LocalTaskIntegratorClient taskIntegrator = new LocalTaskIntegratorClient(username);
+            IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
+            boolean suiteInstallAllowed = authManager.checkPermission("createSuite", username);
+            if (!suiteInstallAllowed) {
+                UIBeanHelper.setInfoMessage("You don't have the required permissions to install suites.");
+                return "failure";
+            }
 
-            boolean suiteInstallAllowed = authManager.checkPermission(
-                    "createSuite", username);
-            final SuiteInstallBean installBean = (SuiteInstallBean) UIBeanHelper
-                    .getManagedBean("#{suiteInstallBean}");
+            final SuiteInstallBean installBean = (SuiteInstallBean) UIBeanHelper.getManagedBean("#{suiteInstallBean}");
             String[] names = new String[lsids.length];
             int i = 0;
             for (String lsid : lsids) {
@@ -122,11 +118,6 @@ public class SuiteCatalogBean {
             }
 
             installBean.setSuites(lsids, names);
-            if (!suiteInstallAllowed) {
-                UIBeanHelper
-                        .setInfoMessage("You don't have the required permissions to install suites.");
-                return "failure";
-            }
 
             new Thread() {
                 public void run() {
@@ -139,8 +130,7 @@ public class SuiteCatalogBean {
                         } catch (WebServiceException e) {
                             HibernateUtil.rollbackTransaction();
                             log.error(e);
-                            installBean
-                                    .setStatus(lsid, "error", e.getMessage());
+                            installBean.setStatus(lsid, "error", e.getMessage());
                         }
                     }
                 }
@@ -150,14 +140,12 @@ public class SuiteCatalogBean {
 
     }
 
-    private Map<String, List<SuiteInfo>> createBaseLsidToSuitesMap(
-            SuiteInfo[] suites) {
+    private Map<String, List<SuiteInfo>> createBaseLsidToSuitesMap(SuiteInfo[] suites) {
         Map<String, List<SuiteInfo>> lsidToSuitesMap = new HashMap<String, List<SuiteInfo>>();
         if (suites != null) {
             for (SuiteInfo si : suites) {
                 try {
-                    String baseLsid = new LSID(si.getLSID())
-                            .toStringNoVersion();
+                    String baseLsid = new LSID(si.getLSID()).toStringNoVersion();
                     List<SuiteInfo> suiteList = lsidToSuitesMap.get(baseLsid);
                     if (suiteList == null) {
                         suiteList = new ArrayList<SuiteInfo>();
@@ -170,8 +158,7 @@ public class SuiteCatalogBean {
 
             }
         }
-        for (Iterator<List<SuiteInfo>> it = lsidToSuitesMap.values().iterator(); it
-                .hasNext();) {
+        for (Iterator<List<SuiteInfo>> it = lsidToSuitesMap.values().iterator(); it.hasNext();) {
             List<SuiteInfo> lsidSuites = it.next();
             Collections.sort(lsidSuites, versionComparator);
         }
@@ -184,8 +171,7 @@ public class SuiteCatalogBean {
      */
     public boolean isAlreadyInstalled(String lsid) {
         try {
-            return baseLsid2InstalledSuites.containsKey(new LSID(lsid)
-                    .toStringNoVersion());
+            return baseLsid2InstalledSuites.containsKey(new LSID(lsid).toStringNoVersion());
         } catch (MalformedURLException e) {
             log.error(e);
             return false;
@@ -196,12 +182,10 @@ public class SuiteCatalogBean {
 
         try {
             LSID reposLsid = new LSID(lsid);
-            List<SuiteInfo> suites = baseLsid2InstalledSuites.get(reposLsid
-                    .toStringNoVersion());
+            List<SuiteInfo> suites = baseLsid2InstalledSuites.get(reposLsid.toStringNoVersion());
             if (suites != null) {
                 SuiteInfo si = suites.get(0);
-                return Integer.parseInt(reposLsid.getVersion()) > Integer
-                        .parseInt(new LSID(si.getLsid()).getVersion());
+                return Integer.parseInt(reposLsid.getVersion()) > Integer.parseInt(new LSID(si.getLsid()).getVersion());
             }
         } catch (MalformedURLException e) {
             log.error(e);
@@ -271,14 +255,12 @@ public class SuiteCatalogBean {
         return error;
     }
 
-    private static class DescendingVersionComparator implements
-            Comparator<SuiteInfo> {
+    private static class DescendingVersionComparator implements Comparator<SuiteInfo> {
 
         public int compare(SuiteInfo t1, SuiteInfo t2) {
             try {
-                return new Integer(Integer.parseInt(new LSID(t2.getLsid())
-                        .getVersion())).compareTo(Integer.parseInt(new LSID(t1
-                        .getLsid()).getVersion()));
+                return new Integer(Integer.parseInt(new LSID(t2.getLsid()).getVersion())).compareTo(Integer
+                        .parseInt(new LSID(t1.getLsid()).getVersion()));
             } catch (MalformedURLException e) {
                 log.error(e);
                 return 0;
@@ -313,8 +295,7 @@ public class SuiteCatalogBean {
                 moduleInfo[i] = new ModuleInfo();
                 Map modMap = (Map) iter.next();
                 try {
-                    moduleInfo[i].version = new LSID((String) modMap
-                            .get("lsid")).getVersion();
+                    moduleInfo[i].version = new LSID((String) modMap.get("lsid")).getVersion();
                 } catch (MalformedURLException e) {
                     log.error(e);
                 }
@@ -355,8 +336,7 @@ public class SuiteCatalogBean {
     public static class ModuleInfo {
         @Override
         public String toString() {
-            return "version= " + version + " name = " + name + " docUrl "
-                    + docUrl;
+            return "version= " + version + " name = " + name + " docUrl " + docUrl;
         }
 
         private String version;
