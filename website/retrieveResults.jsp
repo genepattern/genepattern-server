@@ -29,6 +29,7 @@ try {
     }
     filename = new File(filename).getName();
     File in = new File(GenePatternAnalysisTask.getJobDir(tempDir), filename);
+    
     if (!in.exists()) {
         if (errorIfNotFound) {
             response.sendError(javax.servlet.http.HttpServletResponse.SC_GONE);
@@ -39,21 +40,17 @@ try {
         }
         return;
     }
-
-    int dotIndex = in.getName().lastIndexOf(".");
+    
+   
     boolean saveAsDialog = false;
- //   if (dotIndex != -1) {
-  //      String extension = in.getName().substring(dotIndex + 1);
-    //    if (extension.equalsIgnoreCase("html") || extension.equalsIgnoreCase("htm")) {
-     //       saveAsDialog = false; 
-      //  }
-   // }
+ 
     if (saveAsDialog) {
         response.setHeader("Content-Disposition", "attachment; filename=" + in.getName() + ";");
     } else {
         response.setHeader("Content-disposition", "inline; filename=\""
                 + in.getName() + "\"");
     }
+    
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
     response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
     response.setDateHeader("Expires", 0);
@@ -69,17 +66,16 @@ try {
             os.write(b, 0, bytesRead);
         }
     } finally {
-        if (os != null) {
-           // os.close();
-        }
+       
         if (is != null) {
             is.close();
         }
     }
 
 } catch (Exception e){
-	//e.printStackTrace();
+	
 }
+
 out.clear();
-out = pageContext.pushBody(); 
+pageContext.pushBody(); 
 %>
