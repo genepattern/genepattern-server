@@ -7,11 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.faces.FacesException;
 import javax.faces.component.html.HtmlDataTable;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import static org.genepattern.util.GPConstants.*;
@@ -22,23 +25,29 @@ import org.genepattern.webservice.WebServiceException;
 public class CommandPrefixBean {
 
     private static Logger log = Logger.getLogger(CommandPrefixBean.class);
+
     LocalAdminClient admin;
 
-    //HtmlDataTable prefixTable = null;
-    //HtmlDataTable tpmappingTable = null;
+    // HtmlDataTable prefixTable = null;
+    // HtmlDataTable tpmappingTable = null;
 
     private String defaultCommandPrefix;
 
     private String newPrefixName;
+
     private String newPrefixValue;
 
     private List newMappingLSID;
+
     private String newMappingPrefix;
 
     PropertiesManager pm = null;
 
     public CommandPrefixBean() {
-
+        IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
+        if (!authManager.checkPermission("administrateServer", UIBeanHelper.getUserId())) {
+            throw new FacesException("You don' have the required permissions to administer the server.");
+        }
         admin = new LocalAdminClient(UIBeanHelper.getUserId());
         pm = PropertiesManager.getInstance();
         defaultCommandPrefix = System.getProperty(COMMAND_PREFIX);
@@ -144,9 +153,10 @@ public class CommandPrefixBean {
                 tpmChanged = true;
             }
         }
-        if (tpmChanged) pm.saveProperties(TASK_PREFIX_MAPPING, tpm);
+        if (tpmChanged)
+            pm.saveProperties(TASK_PREFIX_MAPPING, tpm);
     }
-    
+
     private String getKey(String keyName) {
         Map params = UIBeanHelper.getExternalContext().getRequestParameterMap();
         String key = (String) params.get(keyName);
@@ -177,9 +187,9 @@ public class CommandPrefixBean {
     }
 
     public void deleteTaskPrefixMapping(ActionEvent event) throws MalformedURLException, WebServiceException {
-    	String k = lsidFromName(getKey("aPrefixMapKey"));
+        String k = lsidFromName(getKey("aPrefixMapKey"));
         Properties p = pm.getTaskPrefixMapping();
-        
+
         p.remove(k);
         pm.saveProperties(TASK_PREFIX_MAPPING, p);
 
@@ -188,7 +198,8 @@ public class CommandPrefixBean {
     protected String nameFromLSID(String lsid) throws WebServiceException {
 
         TaskInfo task = admin.getTask(lsid);
-        if (task != null) return task.getName();
+        if (task != null)
+            return task.getName();
         else
             return lsid;
 
@@ -200,8 +211,7 @@ public class CommandPrefixBean {
         if (task != null) {
             LSID lsid = new LSID((String) task.getTaskInfoAttributes().get("LSID"));
             return lsid.toStringNoVersion();
-        }
-        else {
+        } else {
             return name;
         }
     }
