@@ -3,6 +3,11 @@
                               "http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
 <faces-config>
 <managed-bean>
+  <managed-bean-name>authorizationBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.AuthorizationBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
+<managed-bean>
   <managed-bean-name>jobInfoBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.JobInfoBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
