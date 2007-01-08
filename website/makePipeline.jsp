@@ -70,6 +70,7 @@
 			<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 			<link href="skin/favicon.ico" rel="shortcut icon">
 			<title>Delete pipeline</title>
+			<jsp:include page="navbarHead.jsp"/>
 			</head>
 			<body>
 			<jsp:include page="navbar.jsp"/>

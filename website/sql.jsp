@@ -35,6 +35,7 @@
 <style>
 TD.little { font-size: 9pt }
 </style>
+<jsp:include page="navbarHead.jsp"/>
 </head>
 <body onLoad="javascript:sql.query.focus();">
 <jsp:include page="navbar.jsp"/>

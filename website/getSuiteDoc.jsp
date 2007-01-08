@@ -72,8 +72,10 @@ function toggleVersions(divname) {
 	}
 }
 </script>
+<jsp:include page="navbarHead.jsp"/>
 </head>
 <body>
+
 <jsp:include page="navbar.jsp"/>
 <table>
 <tr>

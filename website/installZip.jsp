@@ -46,6 +46,7 @@ use, misuse, or functionality.
     <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
     <link rel="SHORTCUT ICON" href="favicon.ico">
     <title>install GenePattern task from zip file</title>
+    <jsp:include page="navbarHead.jsp"/>
 </head>
 
 <body>

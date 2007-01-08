@@ -102,7 +102,9 @@ session="false" language="Java" contentType="text/plain" %>
 		<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 		<link rel="SHORTCUT ICON" href="favicon.ico" >
 		<title>GenePattern</title>
+		<jsp:include page="navbarHead.jsp"/>
 		</head>
+		
 		<body>	
 		<jsp:include page="navbar.jsp"/>
 		<P><B><%=taskInfo.getName()%></b> had an error while trying to generate pipeline code.<br> Please load the pipeline into the pipeline designer, fix any problems,  save it, and then try again.

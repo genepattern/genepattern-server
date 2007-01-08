@@ -57,7 +57,7 @@ use, misuse, or functionality.
 	<script language="Javascript" src="js/prototype.js"></script>
 	<script language="Javascript" src="js/commons-validator-1.3.0.js"></script>
 	<script language="Javascript" src="js/genepattern.js"></script>
-
+    <jsp:include page="navbarHead.jsp"/>
 </head>
 <body>
 

@@ -81,7 +81,9 @@ response.setContentType(contentType);
 <link rel="SHORTCUT ICON" href="favicon.ico" >
 <title>zip <%= (ti != null) ? ti.getName() : name %></title>
 <style>
+<jsp:include page="navbarHead.jsp"/>
 </head>
+
 <body>
 <jsp:include page="navbar.jsp"/>
 <font color="red">

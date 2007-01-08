@@ -30,6 +30,7 @@
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 	<link href="skin/favicon.ico" rel="shortcut icon">
 	<title>Can't find <%= pipelineName %></title>
+	<jsp:include page="navbarHead.jsp"/>
 </head>
 <body>
 	<jsp:include page="navbar.jsp"/>

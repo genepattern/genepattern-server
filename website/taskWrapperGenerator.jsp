@@ -48,6 +48,7 @@ if (request.getParameter("noenvelope") == null) {
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
 <title>generated wrapper code for GenePattern</title>
+<jsp:include page="navbarHead.jsp"/>
 </head>
 <body>	
 <jsp:include page="navbar.jsp"/>

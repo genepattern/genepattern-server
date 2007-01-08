@@ -28,8 +28,10 @@
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
 <title>install GenePattern zip file</title>
+<jsp:include page="navbarHead.jsp"/>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 </head>
+
 <body>
 <jsp:include page="navbar.jsp"/>
 <h2>Install from zip file</h2>

@@ -21,6 +21,7 @@
 .example { font-family: Courier, Courier New, serif; font-size: 10pt; }
 .exampleLink { font-family: Courier, Courier New, serif; font-size: 10pt; color: blue; text-decoration: underline}
 </style>
+<jsp:include page="navbarHead.jsp"/>
 </head>
 <jsp:useBean id="messages" class="org.genepattern.server.util.MessageUtils" scope="page"/>
 

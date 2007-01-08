@@ -152,7 +152,7 @@ function runpipeline( url) {
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
 <title><%=task.getName()%></title>
-
+<jsp:include page="navbarHead.jsp"/>
 </head>
 <body>
 <jsp:include page="navbar.jsp"/>

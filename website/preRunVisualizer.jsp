@@ -66,6 +66,7 @@ response.setDateHeader("Expires", 0);
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link href="skin/favicon.ico" rel="shortcut icon">
 <title>Running Task</title>
+<jsp:include page="navbarHead.jsp"/>
 </head>
 <body>
 

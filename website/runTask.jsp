@@ -60,6 +60,7 @@ use, misuse, or functionality.
     <link href="css/style.css" rel="stylesheet" type="text/css">
     <link rel="SHORTCUT ICON" href="favicon.ico">
     <title>run GenePattern task</title>
+    <jsp:include page="navbarHead.jsp"/>
 </head>
 <body>
 <jsp:include page="navbar.jsp"/>

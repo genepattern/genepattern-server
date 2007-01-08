@@ -260,7 +260,7 @@ function addNewDomainType(name, desc){
 }
 
 </script>
-
+<jsp:include page="navbarHead.jsp"/>
 </head>
 <body>
 <jsp:include page="navbar.jsp"/>
