@@ -31,9 +31,10 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
+import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.ITaskIntegrator;
 import org.genepattern.server.webservice.server.Status;
-import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 
@@ -165,6 +166,12 @@ public class TaskCatalogBean {
 
     public String install() {
         filter();
+        IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
+        final boolean taskInstallAllowed = authManager.checkPermission("createTask", UIBeanHelper.getUserId());
+        if (!taskInstallAllowed) {
+            UIBeanHelper.setInfoMessage("You don't have the required permissions to install tasks.");
+            return "failure";
+        }
         final String[] lsids = UIBeanHelper.getRequest().getParameterValues("installLsid");
         if (lsids != null) {
             final String username = UIBeanHelper.getUserId();
@@ -178,10 +185,12 @@ public class TaskCatalogBean {
                         try {
                             HibernateUtil.beginTransaction();
                             InstallTask t = lsidToTaskMap.get(lsid);
+
                             if (t == null) {
                                 installBean.setStatus(lsid, "error", lsid + " not found.");
 
                             } else {
+
                                 t.install(username, GPConstants.ACCESS_PUBLIC, new Status() {
 
                                     public void beginProgress(String string) {
@@ -293,7 +302,7 @@ public class TaskCatalogBean {
                 }
             }
         }
-        
+
         filteredTasks = new ArrayList<MyTask>();
         for (int i = 0; i < allFilteredTasks.size(); i++) { // find latest
             // version of
@@ -320,17 +329,16 @@ public class TaskCatalogBean {
         }
         Collections.sort(filteredTasks, new TaskNameComparator());
 
-
     }
-    
+
     public void refilter(Set<String> lsids) {
-    	filteredTasks = new ArrayList<MyTask>();
-    	if (tasks != null) {
-    		MyTask missingTask;
+        filteredTasks = new ArrayList<MyTask>();
+        if (tasks != null) {
+            MyTask missingTask;
             for (int i = 0; i < tasks.length; i++) {
-            	if (lsids.contains(tasks[i].getLsid())) {
-            		missingTask = new MyTask(tasks[i]);
-                	filteredTasks.add(missingTask);
+                if (lsids.contains(tasks[i].getLsid())) {
+                    missingTask = new MyTask(tasks[i]);
+                    filteredTasks.add(missingTask);
                 }
             }
         }
