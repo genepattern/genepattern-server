@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
+<f:view contentType="text/html"> 
+  <head>
+    <!-- created by rebecca fagan, fagandesign -->
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+    <title>
+      <ui:insert name="pageTitle">GenePattern </ui:insert>
+    </title>
+    <link href="#{facesContext.externalContext.requestContextPath}/css/style.css" rel="stylesheet" type="text/css"/>
+    <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css"/>
+    <link href="#{facesContext.externalContext.requestContextPath}/css/popupMenu.css" rel="stylesheet" type="text/css"/>
+     
+    <script type="text/javascript" language="javascript"> 
+      var contextRoot = '#{facesContext.externalContext.requestContextPath}';
+    </script>
+     
+    <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
+    <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js"/>
+    <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js"/>  
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/mm_menu.js"/>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/mainMenu.js"/>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/popupMenu.js"/>   
+    <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/jsval.js"/>
+    <script type="text/javascript" language="javascript"> 
+      /* <![CDATA[ */
+      /* Function to support "jsval" based validation.  See registerUser.xhtml for an example.*/ 
+      function validateForm(objForm) {
+        var strErrorClass = "error";
+        var errMessages = getValidationErrors(objForm, strErrorClass);
+        if(errMessages.length == 0) {
+          return true;
+        }
+        else {
+          var d = $("errorMessageDiv");
+          var t = $("errorMessageContent");
+          d.style.display = "";
+          
+          var messageString = "<ul style=\"font-weight:bold; color:red;\">";
+          for(var i=0; i<errMessages.length; i++) {
+            messageString += "<li/>" +  errMessages[i];
+          }
+          messageString += "</ul>";
+          Element.update('errorMessageContent', messageString);
+          return false;
+        }     
+      }
+       /* ]]> */
+
+      </script>
+     
+    <!-- Use this insert to override the "onLoad" initialization method.  This function is triggered from the body onload event.  -->
+    <ui:insert name="validationInit">
+      <script type="text/javascript" language="javascript"> function onLoad(){}  </script>
+    </ui:insert>
+  
+    <ui:insert name="headText"/>
+    
+    <style type="text/css">
+    /* <![CDATA[ */
+
+
+	#header {
+		margin:0; 
+		padding:0;
+		}
+
+	#main {
+		margin:0; 
+		padding:0;
+		}
+	#left {
+		float:left;
+		width:245px;
+		margin:0; 
+		padding:0;
+		}
+	#right {
+		float:right;
+		width:205px;
+		margin:0; 
+		padding:0;
+		}
+	#middle {
+	    padding-top:10px;
+	    padding-left:27px;
+	    padding-right:27px;
+		margin-left:245px;
+		margin-right:205px;
+		}
+	.cleaner {
+		clear:both;
+		height:1px;
+		font-size:1px;
+		border:none;
+		margin:0; 
+		padding:0;
+		background:transparent;
+		}
+
+     /* ]]> */
+    </style>   
+
+  </head>
+  <body onload="MM_preloadImages('#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif'); pm_registerClickHandler(); onLoad();">
+    <script language="JavaScript1.2" type="text/javascript">mmLoadMenus();</script>
+
+    <div id="header">
+      <!-- top band with the logo -->
+      <div id="topband" class="topband">
+        <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf" target="_top">
+          <t:graphicImage value="/images/GP-logo.gif" alt="GenePattern" width="296" height="77" border="0"/>
+        </h:outputLink>
+      </div>
+
+      <!-- horizontal menu band -->
+      <div id="navband1" class="navband1">
+        <c:if test="#{requestScope.userID != null}">
+          <nobr>
+          <a name="link17" id="link6" 
+             onclick="MM_showMenu(window.mm_menu_tasks,0,18,null,'link17')" 
+             onmouseover="MM_showMenu(window.mm_menu_tasks,0,18,null,'link17')" 
+             onmouseout="MM_startTimeout();">Tasks</a> &#160;&#160;&#160;&#160;&#160;&#160;
+          <a name="link16" id="link8" 
+             onclick="MM_showMenu(window.mm_menu_pipelines,0,18,null,'link16')" 
+             onmouseover="MM_showMenu(window.mm_menu_pipelines,0,18,null,'link16')" 
+             onmouseout="MM_startTimeout();">Pipelines</a> &#160;&#160;&#160;&#160;&#160;&#160; 
+          <a name="link14" id="link9" 
+             onclick="MM_showMenu(window.mm_menu_suites,0,18,null,'link14')" 
+             onmouseover="MM_showMenu(window.mm_menu_suites,0,18,null,'link14')" 
+             onmouseout="MM_startTimeout();">Suites</a> &#160;&#160;&#160;&#160;&#160;&#160;
+          <a name="link15" id="link10" 
+             onclick="MM_showMenu(window.mm_menu_jobResults,0,18,null,'link15')" 
+             onmouseover="MM_showMenu(window.mm_menu_jobResults,0,18,null,'link15')" 
+             onmouseout="MM_startTimeout();">Job Results</a> &#160;&#160;&#160;&#160;&#160;&#160;  
+          <a name="link11" id="link1" 
+             onclick="MM_showMenu(window.mm_menu_documentation,0,18,null,'link11')" 
+             onmouseover="MM_showMenu(window.mm_menu_documentation,0,18,null,'link11')" 
+             onmouseout="MM_startTimeout();">Documentation</a> &#160;&#160;&#160;&#160;&#160;&#160; 
+          <a name="link12" id="link3" 
+             onclick="MM_showMenu(window.mm_menu_resources,0,18,null,'link12')" 
+             onmouseover="MM_showMenu(window.mm_menu_resources,0,18,null,'link12')" 
+             onmouseout="MM_startTimeout();">Resources</a> &#160;&#160;&#160;&#160;&#160;&#160; 
+          <a name="link2" id="link5" 
+             onclick="MM_showMenu(window.mm_menu_downloads,0,18,null,'link2')" 
+             onmouseover="MM_showMenu(window.mm_menu_downloads,0,18,null,'link2')" 
+             onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160; 
+          <a name="link13" id="link4" 
+             onclick="MM_showMenu(window.mm_menu_administration,0,18,null,'link13')" 
+             onmouseover="MM_showMenu(window.mm_menu_administration,0,18,null,'link13')" 
+             onmouseout="MM_startTimeout();">Administration</a>     
+          </nobr>
+       </c:if>
+     </div>
+   </div>
+    
+     <div id="main" class="content">
+    
+      <div id="left">
+        <ui:insert name="leftPanel"/>
+      </div>
+              
+      <div id="right">
+        <ui:insert name="rightPanel"/>
+      </div>
+      
+      <div class="maincontent" id="middle">
+        
+        <!-- JSF (Server side) errors -->
+        <h:outputText value="Please correct the following errors before proceeding:" 
+                      rendered="#{! empty facesContext.maximumSeverity}" style="font-weight:bold"/>
+		<h:messages errorClass="validation-error" errorStyle="font-weight:bold; color:red;"/>
+		    
+	    <!-- Javascript validation errors.  The JSF and Javascript error blockss will not
+		     be visible at the same time (if JS validation fails, the form submit will not
+		     occur and thus JSF validation will not be run) -->
+		         
+		<div id="errorMessageDiv" style="display:none;">
+          <span id="errorMessageHeader" style="font-weight:bold">
+            Please correct the following errors before proceeding:
+          </span>
+          <p id="errorMessageContent"/>
+        </div>
+		    
+		<!-- Main content body -->
+     	<ui:insert name="body" />
+     	
+     	<div class="cleaner">&nbsp;</div>
+     	
+      </div>
+    </div>
+    <div id="footer" class="footer">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td>
+            <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</h:outputLink>&#160;|&#160;<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/contactUs.jsf">Contact Us</h:outputLink>
+             <br/>
+          </td>
+          <td>
+            <div align="right">
+              &#169;2003-2006&#160; 
+              <h:outputLink value="http://www.broad.mit.edu" target="_blank">Broad Institute, MIT</h:outputLink>
+            </div>
+          </td>
+          <td width="10">&#160;</td>
+          <td width="27">
+            <h:outputLink value="http://www.broad.mit.edu" target="_blank">
+              <t:graphicImage value="/images/broad-symbol.gif" alt="Broad Institute" width="27" height="30" border="0"/>
+            </h:outputLink>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    
+    <t:div id="loginsettings" forceId="true" rendered="${!empty requestScope.userID}">
+      <table height="30" border="0" cellpadding="0" cellspacing="0" class="loginsettings">
+        <tr valign="top">
+          <td>
+            <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">
+			My Settings </h:outputLink> | <h:form style="display: inline;">
+              <h:commandLink id="logoutLink" action="#{loginBean.logout}"> Sign Out </h:commandLink>
+            </h:form>&#160;${requestScope.userID}&#160;&#160;&#160;</td>
+        </tr>
+      </table>
+    </t:div>    
+    
+    <ui:insert name="popupMenus"/>
+    
+  </body>
+  </f:view>
+</html>
