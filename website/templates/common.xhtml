@@ -105,10 +105,12 @@
            onclick="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" 
            onmouseover="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" 
            onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160; 
-        <a name="link13" id="link4" 
-           onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" 
-           onmouseover="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" 
-           onmouseout="MM_startTimeout();">Administration</a>     
+        <c:if test="#{authorizationBean.admin}">
+        	<a name="link13" id="link4" 
+           		onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" 
+           		onmouseover="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" 
+           		onmouseout="MM_startTimeout();">Administration</a>    
+          </c:if> 
         </nobr>
      </c:if>
    </div>
