@@ -21,9 +21,34 @@ import org.genepattern.server.util.IAuthorizationManager;
  * 
  */
 public class AuthorizationBean {
+    private IAuthorizationManager authManager;
+
+    public AuthorizationBean() {
+        authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
+    }
 
     public boolean isAdmin() {
-        IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
         return authManager.checkPermission("administrateServer", UIBeanHelper.getUserId());
     }
+
+    public boolean isCreateTaskAllowed() {
+        return authManager.checkPermission("createTask", UIBeanHelper.getUserId());
+    }
+
+    public boolean isCreateSuiteAllowed() {
+        return authManager.checkPermission("createSuite", UIBeanHelper.getUserId());
+    }
+
+    public boolean isCreatePipelineAllowed() {
+        return authManager.checkPermission("createPipeline", UIBeanHelper.getUserId());
+    }
+
+    public boolean isDeleteTaskAllowed() {
+        return authManager.checkPermission("deleteTask", UIBeanHelper.getUserId());
+    }
+
+    public boolean isDeleteJobAllowed() {
+        return authManager.checkPermission("deleteJob", UIBeanHelper.getUserId());
+    }
+
 }
