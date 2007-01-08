@@ -336,6 +336,7 @@ public class HTMLPipelineView implements IPipelineView {
 		writer.write("<title>"
 				+ (taskInfo != null ? taskInfo.getName() : "new pipeline")
 				+ "</title>\n");
+		writer.write("<script>var contextRoot = '" + contextPath + "/'; </script>");
 		writer.write("</head>\n");
 		writer.write("<body>\n");
 
