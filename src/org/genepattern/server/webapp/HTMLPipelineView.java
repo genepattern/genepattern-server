@@ -344,7 +344,7 @@ public class HTMLPipelineView implements IPipelineView {
 		// this will fail for 
 		try {
 			String rootDir = System.getProperty("webappDir", "./webapps/"+contextPath);
-			File f = new File(rootDir+"/navBar.html");
+			File f = new File(rootDir+"/navbar.html");
 			//System.out.println("F=" + f.getCanonicalPath() + "  " + f.exists());
 		InputStream is = new FileInputStream(f);
 		if (is == null) {
