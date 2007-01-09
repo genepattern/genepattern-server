@@ -86,7 +86,7 @@ public class DirectoryManager {
 				|| !l.hasVersion()) {
 			throw new MalformedURLException("invalid LSID");
 		}
-		return getTaskLibDir(null, lsid, null);
+		return getTaskLibDir(null, lsid, "");
 	}
 
 
