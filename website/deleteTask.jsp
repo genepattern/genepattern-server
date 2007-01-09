@@ -90,12 +90,6 @@ function confirmDelete() {
 <body>
 
 	<jsp:include page="navbar.jsp"/>
-	<!--   Main content area  -->
-	<div id="content" class="content">
-	<table width="100%" border="0" cellspacing="0" cellpadding="0">
-	
-	<tr>
-		<td valign="top" class="maincontent" id="maincontent">
 	
 		<h2>Delete tasks</h2>
 		

@@ -291,13 +291,8 @@ function addNewDomainType(name, desc){
 
 <body>
 <jsp:include page="navbar.jsp"/>
-<!--   Main content area  -->
-<div id="content" class="content">
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-	
-	<tr>
-		<td valign="top" class="maincontent" id="maincontent">
-<table>
+
+
 	<% if (taskName != null && taskInfo == null) { %>
 		<script language="javascript">
 		alert('no such task <%= taskName %>');
