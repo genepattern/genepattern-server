@@ -1071,7 +1071,7 @@ function setTaskName(taskNum, taskName, taskLSID) {
 		alert("Step " + (taskNum+1) + ": unable to locate " + taskName + '(' + taskLSID + ')');
 		writeToLayer(taskNum, newTaskHTML(taskNum) + 
 			(new LSID(requestedLSID).authority != myAuthority ?
-			 ('<br><a href="taskCatalog.jsp?<%= GPConstants.LSID %>=' + requestedLSID + '">load ' + taskName + ' from Broad task catalog</a>') : ""));
+			 ('<br><a href="/gp/pages/taskCatalog.jsf?<%= GPConstants.LSID %>=' + requestedLSID + '">load ' + taskName + ' from Broad task catalog</a>') : ""));
 		showLayer(taskNum);
 		// XXX: there will be problems in subsequent stages that inherit files from this stage
 		//stopLoading = true;

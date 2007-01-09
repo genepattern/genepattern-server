@@ -207,7 +207,7 @@ function confirmDelete() {
 		</td>
 		<td align="left" colspan="2">
 			<input type="button" name="delete" value="delete selected tasks" onclick="confirmDelete()">
-			<input type="button" value="install tasks from Module repository" onclick="window.location='taskCatalog.jsp'">
+			<input type="button" value="install tasks from Module repository" onclick="window.location='/gp/pages/taskCatalog.jsf'">
 		</td>
 		</tr>
 		
@@ -325,7 +325,7 @@ function confirmDelete() {
 		<tr><td> </td><td colspan="2" align="left">
 			<br>
 			<input type="button" name="delete" value="delete selected tasks" onclick="confirmDelete()">
-			<input type="button" value="install tasks from Module repository" onclick="window.location='taskCatalog.jsp'">
+			<input type="button" value="install tasks from Module repository" onclick="window.location='/gp/pages/taskCatalog.jsf'">
 		</td></tr>
 		
 		</table>

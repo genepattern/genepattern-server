@@ -94,7 +94,7 @@ public class RunPipelineForJsp {
                             "<tr class=\"paleBackground\" ><td> Name </td><td> Required Version</td><td> Available Version</td><td>LSID</td></tr>");
         }
         if (((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) && (out != null)) {
-            out.println("<form method=\"post\" action=\"taskCatalog.jsp\">");
+            out.println("<form method=\"post\" action=\"/gp/pages/taskCatalog.jsf\">");
         }
         if (unknownTaskNames.size() > 0) {
             for (Iterator iter = unknownTaskNames.keySet().iterator(); iter

@@ -64,7 +64,7 @@ Please choose a GenePattern zip file to submit to the GenePattern server.<br><br
 
 
 <tr><td colspan="<%= 3 + taskDetailItems.length %>"><br><hr><br>
-<a href="taskCatalog.jsp">Install tasks from module repository</a></td></tr>
+<a href="/gp/pages/taskCatalog.jsf">Install tasks from module repository</a></td></tr>
 
 <tr><td colspan="<%= 3 + taskDetailItems.length %>"><br><hr><br>
 Or download the zip file from a website:</td></tr>

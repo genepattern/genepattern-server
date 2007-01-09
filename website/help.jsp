@@ -57,7 +57,7 @@ Each input field in the <a href="addTask.jsp">addTask.jsp</a> page (accessed fro
 
 An example for each field is given based on the Consensus Clustering task, which may be
 uploaded from the
-<a href="taskCatalog.jsp?taskType=Clustering&state=new&state=updated&state=up%20to%20date&name=ConsensusClustering"><nobr><%=messages.get("ApplicationName")%> public website</nobr></a> if you haven't already installed it.
+<a href="/gp/pages/taskCatalog.jsf?taskType=Clustering&state=new&state=updated&state=up%20to%20date&name=ConsensusClustering"><nobr><%=messages.get("ApplicationName")%> public website</nobr></a> if you haven't already installed it.
 <br>
 
 <h2><a name="taskLevelAttributes">Entering task-level attributes</a></h2>

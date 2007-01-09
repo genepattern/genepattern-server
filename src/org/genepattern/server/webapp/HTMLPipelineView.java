@@ -1010,7 +1010,7 @@ if (loadErrors.size() > 0) {
 
 }
 			if (stopLoading) {
-				s.append("if (window.confirm('Loading missing tasks?')) window.location='taskCatalog.jsp?checkAll=1" + missingLSIDs + "';\n");
+				s.append("if (window.confirm('Loading missing tasks?')) window.location='/gp/pages/taskCatalog.jsf?checkAll=1" + missingLSIDs + "';\n");
 			}
 
 			return s.toString();
