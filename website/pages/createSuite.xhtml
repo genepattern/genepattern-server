@@ -4,7 +4,9 @@
     <ui:define name="pageTitle">Create Suite</ui:define>
     <ui:define name="headText">
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/suite.js"/>
+      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js"/>  
     </ui:define>
+    
     <ui:define name="body">
       <h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm();">
       	<f:attribute name="lsid" value="#{manageSuiteBean.currentSuite == null ? '' : manageSuiteBean.currentSuite.lsid}"/>
