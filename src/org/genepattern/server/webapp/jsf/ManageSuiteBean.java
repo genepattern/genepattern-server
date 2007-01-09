@@ -256,5 +256,10 @@ public class ManageSuiteBean /*implements java.io.Serializable*/ {
     	this.includeDependents = includeDependents;
     }
     
+    public String viewTaskProperty() {
+        String[] selectedSuites = UIBeanHelper.getRequest().getParameterValues("selectedSuites");
+        deleteSuites(selectedSuites);
+        return "delete suite";
+    }
     
 }

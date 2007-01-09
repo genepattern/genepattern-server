@@ -87,6 +87,11 @@ public class Module implements java.io.Serializable {
     public LSID getLSID() {
     	return lsid;
     }
+    
+    public String getLsid() {
+    	return lsid.toString();
+    }
+    
     public List<SelectItem> getVersionSelectItems() {
         Collections.sort(versions, new Comparator() {           
             public int compare(Object o1, Object o2) {
