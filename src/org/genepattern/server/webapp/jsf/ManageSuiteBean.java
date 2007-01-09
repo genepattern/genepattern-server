@@ -78,7 +78,7 @@ public class ManageSuiteBean /*implements java.io.Serializable*/ {
 	        cols.add(new ArrayList());
 	        int cumulativeCount = 0;
 	        for (ModuleCategory cat : categories) {
-	            if (cumulativeCount < midpoint) {
+	            if (cumulativeCount <= midpoint) {
 	                cols.get(0).add(cat);
 	            }
 	            else {
