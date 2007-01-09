@@ -18,6 +18,8 @@ import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
+import org.genepattern.server.domain.TaskMaster;
+import org.genepattern.server.domain.TaskMasterDAO;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.genepattern.TaskInstallationException;
@@ -485,9 +487,9 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     private boolean isTaskOwner(String user, String lsid) throws WebServiceException{
-        TaskInfo taskInfo = new LocalAdminClient(user).getTask(lsid);
-        if (taskInfo == null) return false; // can't own what you can't see
-    	return user.equals(taskInfo.getUserId());
+        TaskMaster tm = (new TaskMasterDAO()).findByIdLsid(lsid);
+        if (tm == null) return false; // can't own what you can't see
+    	return user.equals(tm.getUserId());
     }
     
     private void isTaskOwnerOrAuthorized(String user, String lsid, String method) throws WebServiceException{  

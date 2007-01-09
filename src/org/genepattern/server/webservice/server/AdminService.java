@@ -28,6 +28,8 @@ import javax.activation.FileDataSource;
 import org.apache.axis.MessageContext;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
+import org.genepattern.server.domain.TaskMaster;
+import org.genepattern.server.domain.TaskMasterDAO;
 import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.dao.*;
@@ -60,9 +62,9 @@ public class AdminService implements IAdminService {
 	       } 
 	}
 	private boolean isTaskOwner(String user, String lsid) throws WebServiceException{
-		TaskInfo taskInfo = new LocalAdminClient(user).getTask(lsid);
-	   	if (taskInfo == null) return false; // can't own what you can't see
-	   	return user.equals(taskInfo.getUserId());
+		TaskMaster tm = (new TaskMasterDAO()).findByIdLsid(lsid);
+        if (tm == null) return false; // can't own what you can't see
+    	return user.equals(tm.getUserId());
 	}
 	    
 	private void isTaskOwnerOrAuthorized(String user, String lsid, String method) throws WebServiceException{  
