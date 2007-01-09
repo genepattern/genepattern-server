@@ -64,11 +64,6 @@ use, misuse, or functionality.
 </head>
 <body>
 <jsp:include page="navbar.jsp"/>
-<div id="content" class="content">
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-	
-	<tr>
-		<td valign="top" class="maincontent" id="maincontent">
 
 Must specify task name.<br>
 
