@@ -31,8 +31,11 @@ import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.domain.TaskMaster;
+import org.genepattern.server.domain.TaskMasterDAO;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -133,8 +136,7 @@ public class DirectoryManager {
 			getLibDir();
 			LSID lsid = null;
 			TaskInfo taskInfo = null;
-			LocalAdminClient adminClient = new LocalAdminClient(username);
-
+			
 			if (sLSID != null && sLSID.length() > 0) {
 				try {
 					lsid = new LSID(sLSID);
@@ -142,7 +144,7 @@ public class DirectoryManager {
 					// " for task name " + taskName);
 					if (taskName == null || taskInfo == null) {
 						// lookup task name for this LSID
-						taskInfo = adminClient.getTask(lsid.toString());
+						taskInfo = (new AdminDAO()).getTask(lsid.toString(), username);
 						if (taskInfo != null) {
 							taskName = taskInfo.getName();
 							if (username == null)
@@ -159,7 +161,8 @@ public class DirectoryManager {
 					_cat.debug("getTaskLibDir: using lsid from taskName "
 							+ taskName);
 					// lookup task name for this LSID
-					taskInfo = adminClient.getTask(lsid.toString());
+					taskInfo = (new AdminDAO()).getTask(lsid.toString(), username);
+					
 					if (taskInfo == null)
 						throw new Exception("can't getTaskInfo from "
 								+ lsid.toString());
@@ -213,6 +216,7 @@ public class DirectoryManager {
 			// ignore -- not an LSID
 		} catch (Exception e2) {
 		}
+		
 		String dirName = makeDirName(lsid, taskName, taskInfo);
 		f = new File(taskLibDir, dirName);
 		f.mkdirs();
