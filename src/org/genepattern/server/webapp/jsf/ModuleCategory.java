@@ -92,19 +92,21 @@ public class ModuleCategory implements java.io.Serializable {
     public void setSelectedVersionOfModules(Map<String, TaskInfo> lsidToTaskInfoMap) {
     	LSID lsidObj=null;
     	for (Module module:modules) {
+    		//TaskInfo info = lsidToTaskInfoMap.get(module.getLSID());
     		for (Map.Entry<String, TaskInfo> entry:lsidToTaskInfoMap.entrySet()) {
-    			try {
-    				lsidObj = new LSID(entry.getKey());
-    			}catch (MalformedURLException e) {
-                    log.error("Error parsing lsid: " + (String)entry.getKey(), e);
-                }
-    			String version = (lsidObj!=null)?lsidObj.getVersion():"";
-    			if (!version.equals("")) {
-    				module.setSelectedVersion(version);
+    			if (entry.getKey().contains(module.getLSID().toStringNoVersion())) {
+    				try {
+        				lsidObj = new LSID(entry.getKey());
+        			}catch (MalformedURLException e) {
+                        log.error("Error parsing lsid: " + (String)entry.getKey(), e);
+                    }
+        			String version = (lsidObj!=null)?lsidObj.getVersion():"";
+        			if (!version.equals("")) {
+        				module.setSelectedVersion(version);
+        			}
+        			break;
     			}
-    			
     		}
-    		
     	}
     }
     
