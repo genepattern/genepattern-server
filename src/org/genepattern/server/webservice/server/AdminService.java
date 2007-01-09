@@ -28,7 +28,10 @@ import javax.activation.FileDataSource;
 import org.apache.axis.MessageContext;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
+import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.dao.*;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.IGPConstants;
 import org.genepattern.util.LSID;
@@ -45,11 +48,42 @@ public class AdminService implements IAdminService {
 	static Map serviceInfoMap;
 
 	AdminDAO dataService;
+	IAuthorizationManager authManager  = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
 
 	public AdminService() {
         dataService = new AdminDAO();
 	}
 
+	private void isAuthorized(String user, String method) throws WebServiceException {
+	   	if (!authManager.isAllowed(method, user)) {
+	       	throw new WebServiceException("You do not have permission for items owned by other users."); 	
+	       } 
+	}
+	private boolean isTaskOwner(String user, String lsid) throws WebServiceException{
+		TaskInfo taskInfo = new LocalAdminClient(user).getTask(lsid);
+	   	if (taskInfo == null) return false; // can't own what you can't see
+	   	return user.equals(taskInfo.getUserId());
+	}
+	    
+	private void isTaskOwnerOrAuthorized(String user, String lsid, String method) throws WebServiceException{  
+	 
+	 	if (!isTaskOwner(user, lsid)){
+	  		isAuthorized(user,method);
+	   	}
+	}
+    private boolean isSuiteOwner(String user, String lsid){
+    	
+        Suite aSuite = (new SuiteDAO()).findById(lsid);
+        String owner = aSuite.getOwner();
+        return owner.equals(getUserName());
+        
+    }
+    
+    private void isSuiteOwnerOrAuthorized(String user, String lsid, String method) throws WebServiceException{  
+    	if (!isSuiteOwner(user, lsid)){
+    		isAuthorized(user,method);
+    	}
+    }
 	protected String getUserName() {
 		MessageContext context = MessageContext.getCurrentContext();
 		String username = context.getUsername();
@@ -60,16 +94,19 @@ public class AdminService implements IAdminService {
 	}
 
 	public Map getServiceInfo() throws WebServiceException {
+		isAuthorized(getUserName(),"AdminService.getServiceInfo");
 		Thread.yield();
 		return serviceInfoMap;
 	}
 
 	public DataHandler getServerLog() throws WebServiceException {
+		isAuthorized(getUserName(),"AdminService.getServerLog");
 		Thread.yield();
 		return getLog(false);
 	}
 
 	public DataHandler getGenePatternLog() throws WebServiceException {
+		isAuthorized(getUserName(),"AdminService.getGenePatternLog");
 		Thread.yield();
 		return getLog(true);
 	}
@@ -105,6 +142,8 @@ public class AdminService implements IAdminService {
 	}
 
 	public TaskInfo[] getAllTasks() throws WebServiceException {
+		isAuthorized(getUserName(),"AdminService.getAllTasks");
+
 		Thread.yield();
 		try {
 			return dataService.getAllTasksForUser(getUserName());
@@ -114,6 +153,7 @@ public class AdminService implements IAdminService {
 	}
 
 	public TaskInfo getTask(String lsidOrTaskName) throws WebServiceException {
+		isTaskOwnerOrAuthorized(getUserName(), lsidOrTaskName, "AdminService.getTask");
 		Thread.yield();
 		try {
 			return dataService.getTask(lsidOrTaskName, getUserName());
@@ -123,6 +163,7 @@ public class AdminService implements IAdminService {
 	}
 
 	public TaskInfo[] getLatestTasks() throws WebServiceException {
+		isAuthorized(getUserName(),"AdminService.getLatestTasks");
 		Thread.yield();
 		try {
 			return dataService.getLatestTasks(getUserName());
@@ -132,6 +173,8 @@ public class AdminService implements IAdminService {
 	}
 	
 	public TaskInfo[] getLatestTasksByName() throws WebServiceException {
+		isAuthorized(getUserName(),"AdminService.getLatestTasksByName");
+
 		Thread.yield();
 		try {
 			return dataService.getLatestTasksByName(getUserName());
@@ -141,6 +184,7 @@ public class AdminService implements IAdminService {
 	}
 
 	public Map getSuiteLsidToVersionsMap() throws WebServiceException {
+		isAuthorized(getUserName(),"AdminService.getSuiteLsidToVersionsMap");
 		Map suiteLsid2VersionsMap = new HashMap();
 		SuiteInfo[] allSuites;
 		try {
@@ -171,6 +215,7 @@ public class AdminService implements IAdminService {
 	}
 	
 	public Map getLSIDToVersionsMap() throws WebServiceException {
+		isAuthorized(getUserName(),"AdminService.getLSIDToVersionsMap");
 		Thread.yield();
 		Map lsid2VersionsMap = new HashMap();
 		TaskInfo[] tasks = null;
@@ -202,6 +247,7 @@ public class AdminService implements IAdminService {
 	}
 
 	public SuiteInfo getSuite(String lsid) throws WebServiceException {
+		isSuiteOwnerOrAuthorized(getUserName(), lsid, "AdminService.getSuite");
 		try {	
 			SuiteInfo suite = dataService.getSuite(lsid);
 			
@@ -225,6 +271,7 @@ public class AdminService implements IAdminService {
 	 *                If an error occurs
 	 */
 	public SuiteInfo[] getLatestSuites() throws WebServiceException {
+		isAuthorized(getUserName(), "AdminService.getLatestSuites");
 		try {
 			return dataService.getLatestSuites(getUserName());
 		} catch (AdminDAOSysException e) {
@@ -241,6 +288,7 @@ public class AdminService implements IAdminService {
 	 *                If an error occurs
 	 */
 	public SuiteInfo[] getAllSuites() throws WebServiceException{
+		isAuthorized(getUserName(), "AdminService.getAllSuites");
 		try {
 			return dataService.getAllSuites(getUserName());
 		} catch (AdminDAOSysException e) {
@@ -257,6 +305,7 @@ public class AdminService implements IAdminService {
 	 *                If an error occurs
 	 */
 	public SuiteInfo[] getSuiteMembership(String taskLsid) throws WebServiceException{
+		isTaskOwnerOrAuthorized(getUserName(), taskLsid, "AdminService.getSuiteMembership");
 		try {
 			return  dataService.getSuiteMembership(taskLsid);
 		} catch (OmnigeneException e) {

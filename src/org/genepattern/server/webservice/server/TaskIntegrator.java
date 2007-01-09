@@ -82,11 +82,14 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public DataHandler exportToZip(String taskName) throws WebServiceException {
+    	isAuthorized(getUserName(),"TaskIntegrator.exportToZip");
         return exportToZip(taskName, false);
     }
 
     public DataHandler exportSuiteToZip(String lsid) throws WebServiceException {
-        try {
+    	isAuthorized(getUserName(),"TaskIntegrator.exportSuiteToZip");
+        
+    	try {
             ZipSuite zs = new ZipSuite();
             File zipFile = zs.packageSuite(lsid, getUserName());
             DataHandler h = new DataHandler(new FileDataSource(zipFile.getCanonicalPath()));
@@ -98,7 +101,9 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public DataHandler exportToZip(String taskName, boolean recursive) throws WebServiceException {
-        try {
+       	isAuthorized(getUserName(),"TaskIntegrator.exportToZip");
+ 
+    	try {
             Thread.yield();
             String username = getUserName();
             org.genepattern.server.process.ZipTask zt;
@@ -119,15 +124,19 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public String importZip(DataHandler handler, int privacy) throws WebServiceException {
-        return importZip(handler, privacy, true);
+       	isAuthorized(getUserName(),"TaskIntegrator.importZip");
+
+    	return importZip(handler, privacy, true);
     }
 
     public String importZip(DataHandler handler, int privacy, boolean recursive) throws WebServiceException {
+       	isAuthorized(getUserName(),"TaskIntegrator.importZip");
         return importZip(handler, privacy, recursive, null);
     }
 
     public String installSuite(SuiteInfo suiteInfo, DataHandler[] supportFiles, String[] fileNames)
             throws WebServiceException {
+       	isAuthorized(getUserName(),"TaskIntegrator.importZip");
         try {
             TaskIntegratorDAO dao = new TaskIntegratorDAO();
             dao.createSuite(suiteInfo);
@@ -184,7 +193,8 @@ public class TaskIntegrator implements ITaskIntegrator {
 
     protected String importZip(DataHandler handler, int privacy, boolean recursive, Status taskIntegrator)
             throws WebServiceException {
-        Vector vProblems = null;
+       	isAuthorized(getUserName(),"TaskIntegrator.importZip");
+       	Vector vProblems = null;
         String lsid = null;
         try {
             Thread.yield();
@@ -230,7 +240,8 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public void installSuite(String lsid) throws WebServiceException {
-        try {
+       	isAuthorized(getUserName(),"TaskIntegrator.installSuite");
+       	try {
             SuiteRepository sr = new SuiteRepository();
             HashMap suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
 
@@ -246,6 +257,7 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public String installSuite(ZipFile zipFile) throws WebServiceException {
+    	isAuthorized(getUserName(),"TaskIntegrator.installSuite");
         try {
             System.out.println("Installing suite from zip");
 
@@ -288,7 +300,8 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public String installSuite(SuiteInfo suiteInfo) throws WebServiceException {
-
+    	isAuthorized(getUserName(),"TaskIntegrator.installSuite");
+        
         try {
             if (suiteInfo.getLSID() != null) {
                 if (suiteInfo.getLSID().trim().length() == 0) suiteInfo.setLSID(null);
@@ -332,11 +345,13 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public String importZipFromURL(String url, int privacy, boolean recursive) throws WebServiceException {
+    	isAuthorized(getUserName(),"TaskIntegrator.importZipFromURL");
         return importZipFromURL(url, privacy, recursive, null);
     }
 
     protected String importZipFromURL(String url, int privacy, boolean recursive, Status taskIntegrator)
             throws WebServiceException {
+    	isAuthorized(getUserName(),"TaskIntegrator.importZipFromURL");
         File zipFile = null;
         ZipFile zippedFile;
         InputStream is = null;
@@ -399,10 +414,12 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public String importZipFromURL(String url, int privacy) throws WebServiceException {
+    	isAuthorized(getUserName(),"TaskIntegrator.importZipFromURL");
         return importZipFromURL(url, privacy, true, null);
     }
 
     public void installTask(String lsid) throws WebServiceException {
+    	isAuthorized(getUserName(),"TaskIntegrator.installTask");
         InstallTasksCollectionUtils utils = new InstallTasksCollectionUtils(getUserName(), false);
         try {
             InstallTask[] tasks = utils.getAvailableModules();
@@ -418,6 +435,7 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public void install(String lsid) throws WebServiceException {
+    	isAuthorized(getUserName(),"TaskIntegrator.install");
         if (LSIDUtil.isSuiteLSID(lsid)) {
             installSuite(lsid);
         }
@@ -428,11 +446,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 
     public void delete(String lsid) throws WebServiceException {
     	if (LSIDUtil.isSuiteLSID(lsid)) {
-        	Suite aSuite = (new SuiteDAO()).findById(lsid);
-        	String owner = aSuite.getOwner();
-        	if (!owner.equals(getUserName())){
-        		throw new WebServiceException("You may not delete a suite you are not the owner of.");
-        	}
+    		isSuiteOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.delete");
             TaskIntegratorDAO dao = new TaskIntegratorDAO();
             dao.deleteSuite(lsid);
             
@@ -448,10 +462,11 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public String[] getSupportFileNames(String lsid) throws WebServiceException {
+        isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.getSupportFileNames");
+
         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
-        isTaskOwnerOrAdmin(getUserName(), lsid);
     	
         try {
             Thread.yield();
@@ -475,21 +490,39 @@ public class TaskIntegrator implements ITaskIntegrator {
     	return user.equals(taskInfo.getUserId());
     }
     
-    private void isTaskOwnerOrAdmin(String user, String lsid) throws WebServiceException{  
+    private void isTaskOwnerOrAuthorized(String user, String lsid, String method) throws WebServiceException{  
+ 
     	if (!isTaskOwner(user, lsid)){
-    		if (!authManager.checkPermission("administrateServer", user)) {
-            	throw new WebServiceException("You do not have permission for jobs started by other users."); 	
-            } 
+    		isAuthorized(user,method);
     	}
     }
     
+    private void isAuthorized(String user, String method) throws WebServiceException {
+    	if (!authManager.isAllowed(method, user)) {
+        	throw new WebServiceException("You do not have permission for items owned by other users."); 	
+        } 
+    }
+    
+    private boolean isSuiteOwner(String user, String lsid){
+    	
+        Suite aSuite = (new SuiteDAO()).findById(lsid);
+        String owner = aSuite.getOwner();
+        return owner.equals(getUserName());
+        
+    }
+    
+    private void isSuiteOwnerOrAuthorized(String user, String lsid, String method) throws WebServiceException{  
+    	if (!isSuiteOwner(user, lsid)){
+    		isAuthorized(user,method);
+    	}
+    }
     
     public DataHandler getSupportFile(String lsid, String fileName) throws WebServiceException {
-    	
+        isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.getSupportFile");
+          	
         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
-        isTaskOwnerOrAdmin(getUserName(), lsid);
     	
         try {
             Thread.yield();
@@ -507,12 +540,12 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public DataHandler[] getSupportFiles(String lsid, String[] fileNames) throws WebServiceException {
-        try {
+    	isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.getSupportFiles");
+     	try {
             if (lsid == null || lsid.equals("")) {
                 throw new WebServiceException("Invalid LSID");
             }
-            isTaskOwnerOrAdmin(getUserName(), lsid);
-        	
+           
             DataHandler[] dhs = new DataHandler[fileNames.length];
             String attachmentDir = DirectoryManager.getTaskLibDir(lsid);
             File dir = new File(attachmentDir);
@@ -531,7 +564,8 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public long[] getLastModificationTimes(String lsid, String[] fileNames) throws WebServiceException {
-        try {
+    	isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.getLastModificationTimes");
+     	try {
             if (lsid == null || lsid.equals("")) {
                 throw new WebServiceException("Invalid LSID");
             }
@@ -550,11 +584,11 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public DataHandler[] getSupportFiles(String lsid) throws WebServiceException {
-        if (lsid == null || lsid.equals("")) {
+       isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.getSupportFiles");
+       if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
-        isTaskOwnerOrAdmin(getUserName(), lsid);
-    	
+     	
         String[] files = getSupportFileNames(lsid);
         DataHandler[] dhs = new DataHandler[files.length];
         for (int i = 0; i < files.length; i++) {
@@ -565,7 +599,10 @@ public class TaskIntegrator implements ITaskIntegrator {
 
     public String modifyTask(int accessId, String taskName, String description, ParameterInfo[] parameterInfoArray,
             Map taskAttributes, DataHandler[] dataHandlers, String[] fileNames) throws WebServiceException {
-        String lsid = null;
+
+    	isAuthorized(getUserName(), "TaskIntegrator.modifyTask");
+
+    	String lsid = null;
         String username = getUserName();
         String oldLSID = null;
         try {
@@ -678,7 +715,8 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public String deleteFiles(String lsid, String[] fileNames) throws WebServiceException {
-        if (lsid == null || lsid.equals("")) {
+    isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.deleteFiles");
+       if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
         try {
@@ -707,7 +745,8 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public void deleteTask(String lsid) throws WebServiceException {
-        if (lsid == null || lsid.equals("")) {
+    	isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.deleteTask");
+         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
         String username = getUserName();
@@ -751,6 +790,7 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public String cloneTask(String oldLSID, String cloneName) throws WebServiceException {
+    	isAuthorized(getUserName(),  "TaskIntegrator.cloneTask");
         String userID = getUserName();
         try {
             TaskInfo taskInfo = null;
@@ -790,10 +830,10 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public String[] getDocFileNames(String lsid) throws WebServiceException {
+    	isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.getDocFileNames");
         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
-        isTaskOwnerOrAdmin(getUserName(), lsid);
     	
         try {
             Thread.yield();
@@ -815,7 +855,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 
     public DataHandler[] getDocFiles(String lsid) throws WebServiceException {
         String taskLibDir = null;
-        isTaskOwnerOrAdmin(getUserName(), lsid);
+        isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.getDocFiles");
     	
         try {
             taskLibDir = DirectoryManager.getLibDir(lsid);
@@ -851,6 +891,7 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public boolean isZipOfZips(String url) throws WebServiceException {
+        isAuthorized(getUserName(), "TaskIntegrator.isZipOfZips");
         File file = Util.downloadUrl(url);
         try {
             return org.genepattern.server.TaskUtil.isZipOfZips(file);
@@ -861,7 +902,8 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public boolean isSuiteZip(String url) throws WebServiceException {
-        File file = Util.downloadUrl(url);
+        isAuthorized(getUserName(), "TaskIntegrator.isSuiteZip");
+               File file = Util.downloadUrl(url);
         try {
             return org.genepattern.server.TaskUtil.isSuiteZip(file);
         }
@@ -871,8 +913,9 @@ public class TaskIntegrator implements ITaskIntegrator {
     }
 
     public boolean isPipelineZip(String url) throws WebServiceException {
-        File file = Util.downloadUrl(url);
-        try {
+		isAuthorized(getUserName(), "TaskIntegrator.isPipelineZip");
+	    File file = Util.downloadUrl(url);
+	    try {
             return org.genepattern.server.TaskUtil.isPipelineZip(file);
         }
         catch (java.io.IOException ioe) {
