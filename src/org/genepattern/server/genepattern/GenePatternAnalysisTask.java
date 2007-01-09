@@ -3418,7 +3418,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 tia.put(name, value);
             }
 
-            // System.out.println("installTask (zip): username=" + username + ",
+            //System.out.println("installTask (zip): username=" + username + ",
             // access_id=" + access_id + ", tia.owner=" + tia.get(USERID) + ",
             // tia.privacy=" + tia.get(PRIVACY));
             if (vProblems.size() == 0) {
@@ -3433,7 +3433,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     lsid = (String) tia.get(IGPConstants.LSID);
 
                     // extract files from zip file
-                    String taskDir = DirectoryManager.getTaskLibDir((String) tia.get(IGPConstants.LSID));
+                    String taskDir = DirectoryManager.getTaskLibDir(null, (String) tia.get(IGPConstants.LSID), username);
                     File dir = new File(taskDir);
 
                     // if there are any existing files from a previous
