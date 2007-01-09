@@ -27,11 +27,11 @@ public class MissingTaskError extends Exception {
 	
 	private String availableVersion;
 
-	public MissingTaskError(String parentTaskName, JobSubmission jobSubmission) {
+	public MissingTaskError(String parentTaskName, String taskName, String taskLsid) {
 		this.parentTaskName = parentTaskName;
-		this.taskName = jobSubmission.getName();
+		this.taskName = taskName;
 		try {
-			this.taskLSID = new LSID(jobSubmission.getLSID());
+			this.taskLSID = new LSID(taskLsid);
 		}catch (MalformedURLException e) {
 	        System.out.println(e.getStackTrace());
 	    }

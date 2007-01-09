@@ -60,7 +60,7 @@ public class ZipTaskWithDependents extends ZipTask {
 	}
 
 	public File packageTask(TaskInfo taskInfo, String userID) throws Exception {
-
+		
 		TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
 		String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
 		if (serializedModel != null && serializedModel.trim().length() > 0) {
@@ -94,9 +94,6 @@ public class ZipTaskWithDependents extends ZipTask {
 	public void zipDependentTasks(ZipOutputStream zos, TaskInfo taskInfo,
 			String userID) throws Exception {
 
-		ZipOutputStream localZos = zos;
-
-		Vector files = new Vector();
 		File tmpDir = new File(System.getProperty("java.io.tmpdir"), taskInfo
 				.getName()
 				+ "_dep_" + System.currentTimeMillis());
@@ -139,7 +136,7 @@ public class ZipTaskWithDependents extends ZipTask {
 								+ jobSubmission.getName();*/
 						depti = GenePatternAnalysisTask.getTaskInfo(
 								jobSubmission.getName(), userID);
-						error = new MissingTaskError(taskInfo.getName(), jobSubmission);
+						error = new MissingTaskError(taskInfo.getName(), jobSubmission.getName(), jobSubmission.getLSID());
 						
 						if (depti != null) {			
 							LSID available = new LSID(depti
