@@ -111,7 +111,7 @@ public class JobResultsFilter implements Filter {
 			file = strtok.nextToken();
 
 		if (isAdmin){
-			allowed = true
+			allowed = true;
 		} else if (job == null){
 			// should admin be allowed here? or anyone if no passwords?
 			allowed = false;
