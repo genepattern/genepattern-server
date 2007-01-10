@@ -187,10 +187,7 @@ function cloneTask() {
 }
 
 function runTask() {
-	while (true) {
-		window.location = "runTask.jsp?<%= GPConstants.NAME %>=<%= taskName %>&<%= GPConstants.LSID %>=<%= tia.get(GPConstants.LSID) %>&<%= GPConstants.USERID %>=<%= userID %>";
-		break;
-	}
+	window.location = '<%= request.getContextPath() %>/pages/index.jsf?lsid=<%= tia.get(GPConstants.LSID) %>';
 }
 
 <% } %>
