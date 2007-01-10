@@ -23,14 +23,14 @@ use, misuse, or functionality.
                  java.io.PrintWriter,
                  java.io.File,
                  org.apache.commons.io.FilenameUtils,
-              	  org.apache.commons.fileupload.FileItem,
-                 java.net.MalformedURLException,
+              	 java.net.MalformedURLException,
                  java.net.URL,
                  java.util.ArrayList,
                  java.util.HashMap,
                  java.util.Iterator,
                  java.util.List,
-                 java.util.Map"
+                 java.util.Map,
+                 java.net.URLDecoder"
          session="false" contentType="text/html" language="Java" %>
 <%
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -96,7 +96,7 @@ use, misuse, or functionality.
         
         String userID = (String) requestParameters.get(GPConstants.USERID);
         String lsid = (String) requestParameters.get("taskLSID");
-        TaskInfo task = GenePatternAnalysisTask.getTaskInfo(lsid, userID);
+        TaskInfo task = GenePatternAnalysisTask.getTaskInfo(URLDecoder.decode(lsid, "UTF-8"), userID);
         if (task == null) {
             out.println("Unable to find task " + lsid);
             return;

@@ -14,17 +14,10 @@
 <%@ page
 	import="java.io.BufferedReader,
 		java.io.File,
-		java.io.FileInputStream,
-        java.io.FileReader,
-        java.io.BufferedWriter,
-        java.io.FileWriter,
-        java.io.InputStream,
+		java.io.InputStream,
         java.io.InputStreamReader,
         java.io.IOException,
-        java.io.ObjectInputStream,
         java.io.OutputStream,
-        java.io.PrintStream,
-        java.net.URLEncoder,
         java.text.DateFormat,
         java.text.ParseException,
         java.text.SimpleDateFormat,
@@ -32,33 +25,18 @@
         java.util.Enumeration,
 		java.util.GregorianCalendar,
 		java.util.HashMap,
-        java.util.Hashtable,
-        java.util.Iterator,
-        java.util.Map,
-        java.util.StringTokenizer,
-        java.util.TreeMap,
-        java.io.PrintWriter,
-        javax.mail.*,
-        javax.mail.internet.MimeMessage,
-        javax.mail.internet.InternetAddress,
         org.genepattern.server.user.User,
 		org.genepattern.server.user.UserDAO,
-        org.genepattern.webservice.JobInfo,
         org.genepattern.webservice.JobStatus,
-        org.genepattern.webservice.ParameterFormatConverter,
         org.genepattern.webservice.ParameterInfo,
         org.genepattern.webservice.TaskInfo,
-        org.genepattern.webservice.TaskInfoAttributes,
-        org.genepattern.server.util.AccessManager,
         org.genepattern.util.StringUtils,
         org.genepattern.server.genepattern.GenePatternAnalysisTask,
         org.genepattern.util.GPConstants,
         org.genepattern.server.indexer.IndexerDaemon,
         org.genepattern.data.pipeline.PipelineModel,
         org.genepattern.server.webapp.RunPipelineForJsp,
-        org.genepattern.server.webapp.*,
-        org.genepattern.data.pipeline.*,
-        org.genepattern.server.*,org.genepattern.util.LSID"
+        java.net.URLDecoder"
 	session="false" language="Java" buffer="1kb"%>
 <%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -133,7 +111,7 @@
 			.get("serverPort");
 		} else if (!command.equals(STOP) && name != null) {
 			taskInfo = GenePatternAnalysisTask
-			.getTaskInfo(name, userID);
+			.getTaskInfo(URLDecoder.decode(name, "UTF-8"), userID);
 		}
 		String pipelineName = (name == null ? ("unnamed" + DOT_PIPELINE)
 		: taskInfo.getName());
@@ -202,7 +180,7 @@
 			if ((name != null)
 			&& (!(name.trim().length() == 0))) {
 				taskInfo = GenePatternAnalysisTask.getTaskInfo(
-				name, userID);
+				URLDecoder.decode(name, "UTF-8"), userID);
 			} else {
 				taskInfo = GenePatternAnalysisTask.getTaskInfo(
 				pipelineName, userID);
