@@ -46,11 +46,11 @@ public class Module implements java.io.Serializable {
         // Add the "latest" version option by stripping out the version #
         versions.add(new SelectItem(lsid.toStringNoVersion(), "latest"));
                     
-        versions.add(new SelectItem(lsid.toString(), lsid.getVersion()));
+        versions.add(new SelectItem(lsid.getVersion(), lsid.getVersion()));
     }
     
     public void addVersion(LSID lsid) {
-        versions.add(new SelectItem(lsid.toString(), lsid.getVersion()));
+        versions.add(new SelectItem(lsid.getVersion(), lsid.getVersion()));
    }
 
     public String getName() {
