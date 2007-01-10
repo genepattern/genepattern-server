@@ -85,7 +85,9 @@ response.setDateHeader("Expires", 0);
 Properties requestParameters = new Properties();
 HashMap requestFiles = new HashMap();
 
-String userID = null;
+String userID = (String) request.getAttribute(GPConstants.USERID);
+
+
 
 try {
 
@@ -124,7 +126,6 @@ for (Iterator iter = rParams.iterator(); iter.hasNext();) {
  }
 
 
-	userID = requestParameters.getProperty(GPConstants.USERID);
 	String RUN = "run";
 	String CLONE = "clone";
 	HashMap htFilenames = new HashMap();
@@ -270,7 +271,7 @@ for (Iterator iter = rParams.iterator(); iter.hasNext();) {
 <%
 		return;
 	}
-
+System.out.println("PRV="+userID);
 
 	RequestDispatcher rd = request.getRequestDispatcher("runVisualizer.jsp");
 	rd.include(request, response);
