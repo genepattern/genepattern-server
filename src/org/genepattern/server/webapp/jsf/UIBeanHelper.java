@@ -167,7 +167,9 @@ public class UIBeanHelper {
 
         User user = new UserDAO().findById(username);
         assert user != null;
-        user.setSessionId(session.getId());
+        if (sessionOnly) {
+            user.setSessionId(session.getId());
+        }
         user.incrementLoginCount();
         user.setLastLoginDate(new Date());
         user.setLastLoginIP(UIBeanHelper.getRequest().getRemoteAddr());
