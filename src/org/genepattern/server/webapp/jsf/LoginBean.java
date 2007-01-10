@@ -71,6 +71,24 @@ public class LoginBean {
         return invalidPassword;
     }
 
+    public static void createNewUserNoPassword(String username, boolean redirect) {
+        User newUser = new User();
+        newUser.setUserId(username);
+        try {
+            newUser.setPassword(EncryptionUtil.encrypt(""));
+        } catch (NoSuchAlgorithmException e) {
+            log.error(e);
+        }
+        (new UserDAO()).save(newUser);
+        try {
+            UIBeanHelper.login(username, false, redirect);
+        } catch (UnsupportedEncodingException e) {
+            log.error(e);
+        } catch (IOException e) {
+            log.error(e);
+        }
+    }
+
     /**
      * Submit the user / password. For now this uses an action listener since we
      * are redirecting to a page outside of the JSF framework. This should be
@@ -80,7 +98,6 @@ public class LoginBean {
      *            ignored
      */
     public void submitLogin(ActionEvent event) {
-
         try {
             assert username != null;
             User up = (new UserDAO()).findById(username);
@@ -88,13 +105,7 @@ public class LoginBean {
                 if (passwordRequired) {
                     unknownUser = true;
                 } else {
-                    User newUser = new User();
-                    newUser.setUserId(username);
-                    newUser.setPassword(null);
-
-                    (new UserDAO()).save(newUser);
-                    UIBeanHelper.login(username, passwordRequired);
-
+                    createNewUserNoPassword(username, true);
                 }
             } else if (passwordRequired) {
                 if (!java.util.Arrays.equals(EncryptionUtil.encrypt(password), up.getPassword())) {
