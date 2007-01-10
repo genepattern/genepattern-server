@@ -471,7 +471,7 @@ out.println("<br>");
 			out.println("<div id=\"log\" style=\"display:none;\">");
       	} 
 
-		String fileURL = "retrieveResults.jsp?job=" + jobNumber + "&filename=" + URLEncoder.encode(fileName, "utf-8");
+		String fileURL = "jobResults/" + jobNumber + "/" + URLEncoder.encode(fileName, "utf-8");
            	out.println(prefix + "<input type=\"checkbox\" name=\"dl\" value=\"" + value + "\" checked><a href=\""+ fileURL+"\">" + fileName + "</a>");
    		
 		if (authorizationManager.checkPermission("createPipeline", encodedUserId)){

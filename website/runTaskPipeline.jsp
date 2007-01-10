@@ -539,10 +539,10 @@ show execution logs</td>
 			sbOut.append("<a target=\"_blank\" href=\"");
             String outFileUrl;
             try {
-                outFileUrl = "retrieveResults.jsp?job=" + jobInfo.getJobNumber() + "&filename=" +
+                outFileUrl = "jobResults/" + jobInfo.getJobNumber() + "/" +
                         URLEncoder.encode(fileName, "utf-8");
             } catch (UnsupportedEncodingException uee) {
-                outFileUrl = "retrieveResults.jsp?job=" + jobInfo.getJobNumber() + "&filename=" + fileName;
+                outFileUrl = "jobResults/" + jobInfo.getJobNumber() + "/" + fileName;
             }
             sbOut.append(outFileUrl);
             try {
