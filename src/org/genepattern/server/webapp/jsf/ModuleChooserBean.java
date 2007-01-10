@@ -48,45 +48,44 @@ public class ModuleChooserBean implements java.io.Serializable {
     private List<ModuleCategoryGroup> categoryGroups = null;
 
     private String[] modes = { "category", "suite", "all" };
-
-    private String selectedMode;
-
+ 
     private String selectedModule = "";
+   
+    private CollapsiblePanelState moduleChooserState;
+    
+    public ModuleChooserBean() {
+	moduleChooserState = (CollapsiblePanelState) UIBeanHelper.getManagedBean("#{moduleChooserState}");
+    }
+
 
     public List<ModuleCategoryGroup> getTasks() {
         if (categoryGroups == null) {
-            Set<String> closedCategories = getClosedCategories();
+
             categoryGroups = new ArrayList<ModuleCategoryGroup>();
 
             ModuleHelper helper = new ModuleHelper();
             for (String mode : modes) {
+        	/* Create the "recent" psuedo category */
                 List<ModuleCategory> tmp = new ArrayList<ModuleCategory>();
                 ModuleCategory recent = helper.getRecentlyUsed();
-                if (closedCategories.contains(recent.getIdentifier())) {
-                    recent.setExpanded(false);
-                }
+                recent.setIdPrefix(mode);
+                recent.setExpanded(!moduleChooserState.isClosed(recent.getIdentifier()));
                 tmp.add(recent);
                 
                 if (mode.equals("all")) {
                     ModuleCategory cat = helper.getAllTasks();
-                    if (closedCategories.contains(cat.getIdentifier())) {
-                        cat.setExpanded(false);
-                    }
+                    cat.setExpanded(!moduleChooserState.isClosed(cat.getIdentifier()));
                     tmp.add(cat);
                 }
                 else if (mode.equals("suite")) {
                     for (ModuleCategory cat : helper.getTasksBySuite()) {
-                        if (closedCategories.contains(cat.getIdentifier())) {
-                            cat.setExpanded(false);
-                        }
+                        cat.setExpanded(!moduleChooserState.isClosed(cat.getIdentifier()));
                         tmp.add(cat);
                     }
                 }
                 else if (mode.equals("category")) {
                     for (ModuleCategory cat : helper.getTasksByType()) {
-                        if (closedCategories.contains(cat.getIdentifier())) {
-                            cat.setExpanded(false);
-                        }
+                        cat.setExpanded(!moduleChooserState.isClosed(cat.getIdentifier()));
                         tmp.add(cat);
                     }
                 }
@@ -99,9 +98,10 @@ public class ModuleChooserBean implements java.io.Serializable {
     public String getSelectedModule() {
         return selectedModule;
     }
+    
 
     public void setSelectedModule(String selectedModule) {
-        this.selectedModule = selectedModule;
+	this.selectedModule = selectedModule;
         RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
         if (runTaskBean != null) {
             runTaskBean.setTask(selectedModule);
@@ -109,37 +109,11 @@ public class ModuleChooserBean implements java.io.Serializable {
     }
 
     public void modeChanged(ValueChangeEvent event) {
-        selectedMode = (String) event.getNewValue();
+	moduleChooserState.setSelectedMode((String) event.getNewValue());
     }
 
     public void moduleClicked(ActionEvent event) {
         setSelectedModule(getRequest().getParameter("task"));
-    }
-
-    /**
-     * Loop through all parameters looking for "expansion state" values.  It is propbable
-     * that multiple expansion state parameters will exist for each category since the category
-     * may be listed in multiple modes ("all", "category", and "suite").  If any of the expansion state
-     * values for a category is false mark the category closed.
-     * @return
-     */
-    private Set<String> getClosedCategories() {
-        String expStatePrefix = "expansion_state_";
-        Enumeration parameterNames = getRequest().getParameterNames();
-        Set<String> closedCategories = new HashSet<String>();
-        while (parameterNames.hasMoreElements()) {
-            String paramName = (String) parameterNames.nextElement();
-            if (paramName.startsWith(expStatePrefix)) {
-                String categoryName = paramName.substring(expStatePrefix.length());
-                String[] paramValues = getRequest().getParameterValues(paramName);
-                for (String expState : paramValues) {
-                    if (expState.equals("false")) {
-                        closedCategories.add(categoryName);
-                    }
-                }
-            }
-        }
-        return closedCategories;
     }
 
     public String getUserId() {
@@ -188,15 +162,12 @@ public class ModuleChooserBean implements java.io.Serializable {
     }
 
     public String getSelectedMode() {
-        if (selectedMode == null) {
-            selectedMode = "category";
-        }
-        return selectedMode;
+        return moduleChooserState.getSelectedMode();
     }
 
     public void setSelectedMode(String selectedMode) {
 
-        this.selectedMode = selectedMode;
+	moduleChooserState.setSelectedMode(selectedMode);
     }
 
 }

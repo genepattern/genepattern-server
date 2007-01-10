@@ -19,7 +19,14 @@ public class ModuleCategory implements java.io.Serializable {
     static Logger log = Logger.getLogger(ModuleCategory.class);
 
     private boolean expanded = true;
+    
     private String name;
+    /**
+     * Optional prefix used to qualify the identifier.  The need for this arose to create a unique identifier for
+     * the "recently used" category since it appears three times on the page.
+     */
+    private String idPrefix = "";
+    
     private List<Module> modules;
 
     public ModuleCategory(String name, TaskInfo[] taskInfos) {
@@ -64,7 +71,7 @@ public class ModuleCategory implements java.io.Serializable {
     
     public String getIdentifier() {
         
-        return name. replace(' ', '_').replace('&', '-').trim();
+        return idPrefix + name.replace(' ', '_').replace('&', '-').trim();
         
     }
 
@@ -129,6 +136,10 @@ public class ModuleCategory implements java.io.Serializable {
     		}
     		
     	}
+    }
+
+    public void setIdPrefix(String idPrefix) {
+        this.idPrefix = idPrefix;
     }
 
 }

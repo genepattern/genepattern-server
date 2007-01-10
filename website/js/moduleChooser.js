@@ -1,39 +1,31 @@
 
-function toggleVisibility(panelStateBean, id) {
+function toggleVisibility(id) {
     var element = document.getElementById(id + "_panel");
-    var hiddenField = document.getElementById("expansion_state_" + id);    
     var panelState = "open";  // default   
     if(element.style.display=="none")
     {
-        showCategory(id);
-        if(hiddenField != null) hiddenField.value = "true";
-        panelState = "closed";
+        openCategory(id);
     }
     else
     {
-        hideCategory(id);
-        if(hiddenField != null) hiddenField.value = "false";
-        panelState = "open";
+        closeCategory(id);
     }
-    
-    if(panelStateBean != null) {
-      var method = panelStateBean + ".updatePanelState";
-      updateBeanState(method, id, panelState);
-     
-    }
+
 }
 
-function hideCategory( id ) {
+function closeCategory( id ) {
     var tableElement = document.getElementById(id + "_panel");
     var downArrow = document.getElementById(id + "_expanded_img");
     var rightArrow = document.getElementById(id + "_collapsed_img");	
         
     tableElement.style.display="none";
     downArrow.style.display ="none";
-    rightArrow.style.display ="inline"	    
+    rightArrow.style.display ="inline"	   
+    
+    updatePanelState(id, "closed"); 
 }
 
-function showCategory( id ) {
+function openCategory( id ) {
     var tableElement = document.getElementById(id + "_panel");
     var downArrow = document.getElementById(id + "_expanded_img");
     var rightArrow = document.getElementById(id + "_collapsed_img");	
@@ -41,6 +33,8 @@ function showCategory( id ) {
     tableElement.style.display="block";
     downArrow.style.display ="inline";
     rightArrow.style.display ="none"
+    
+    updatePanelState(id, "open");
 }
 	
 function openAll() {
@@ -49,7 +43,7 @@ function openAll() {
        var fullId = panels[i].id;
        var index = fullId.lastIndexOf('_');
        var catId = fullId.substring(0, index);
-       showCategory(catId);
+       openCategory(catId);
      }
 }
 	
@@ -59,21 +53,15 @@ function closeAll() {
        var fullId = panels[i].id;
        var index = fullId.lastIndexOf('_');
        var catId = fullId.substring(0, index);
-       hideCategory(catId);
+       closeCategory(catId);
      }
  }
  
-function toggleExpansionState( categoryIdentifier) {
-   var id= "expansion_state_" + categoryIdentifier;
-   var hiddenField = document.getElementById(id);
-   hiddenField.value = (hiddenField.value == "true" ? "false" : "true");
- }
- 
 
-function updateBeanState(elExpression, id, state) {            
+function updateBeanState(id, state) {            
   var opt = {
     method:    'post',
-    postBody:  'el=' + elExpression + '&id=' + id + '&state=' + state,
+    postBody:  'el=moduleChooserState.updatePanelState&id=' + id + '&state=' + state,
     onSuccess: receiveResponse,
     onFailure: function(t) {
       alert('Error ' + t.status + ' -- ' + t.statusText);
