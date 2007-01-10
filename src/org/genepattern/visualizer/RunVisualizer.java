@@ -422,6 +422,10 @@ public class RunVisualizer {
 		String baseName = file.substring(file.lastIndexOf("/", queryIdx) + 1);
 		int j;
 
+		if (file.indexOf('/jobResults') != -1){
+			return baseName;
+		}
+
 		if (baseName.indexOf("retrieveResults.jsp") != -1
 				&& (j = file.lastIndexOf("filename=")) != -1) { // for
 							// http://18.103.3.29:8080/gp/retrieveResults.jsp?job=1122&filename=all_aml_wv_xval.odf
@@ -442,6 +446,7 @@ public class RunVisualizer {
 				return new java.util.StringTokenizer(temp, "&").nextToken();
 
 		}
+
 
 		String path = url.getPath();
 		path = path.substring(path.lastIndexOf("/") + 1);
