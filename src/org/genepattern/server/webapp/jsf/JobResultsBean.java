@@ -23,6 +23,8 @@ import javax.faces.context.FacesContext;
 import org.apache.log4j.Logger;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
+import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -61,6 +63,12 @@ public class JobResultsBean extends JobBean {
         this.fileSortColumn = new UserDAO().getPropertyValue(userId, "fileSortColumn", fileSortColumn);
         this.showEveryonesJobs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesJobs", String
                 .valueOf(showEveryonesJobs)));
+        if (showEveryonesJobs
+                && !new AuthorizationManagerFactoryImpl().getAuthorizationManager().checkPermission(
+                        "administrateServer", UIBeanHelper.getUserId())) {
+            showEveryonesJobs = false;
+
+        }
         this.jobSortColumn = new UserDAO().getPropertyValue(userId, "jobSortColumn", jobSortColumn);
         this.jobSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "jobSortAscending", String
                 .valueOf(jobSortAscending)));
@@ -126,9 +134,14 @@ public class JobResultsBean extends JobBean {
     }
 
     public void setShowEveryonesJobs(boolean showEveryonesJobs) {
+        if (showEveryonesJobs
+                && !new AuthorizationManagerFactoryImpl().getAuthorizationManager().checkPermission(
+                        "administrateServer", UIBeanHelper.getUserId())) {
+            showEveryonesJobs = false;
+
+        }
         this.showEveryonesJobs = showEveryonesJobs;
         new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesJobs", String.valueOf(showEveryonesJobs));
-
         this.updateJobs();
     }
 
