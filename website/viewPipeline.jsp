@@ -183,7 +183,7 @@ out.println("  <input type=\"button\" value=\"clone...\" name=\"clone\"       cl
 }
 
 if (! RunPipelineForJsp.isMissingTasks(model, userID)){
-	out.println("  <input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runTask.jsp?cmd=run&name="+pipelineName + "')\"; />");
+	out.println("  <input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; />");
 }				
 //XXXXXXXXXXXXX
 String descrip = task.getDescription();
@@ -438,7 +438,7 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
 }out.println("<table cellspacing='0' width='100%' frame='box'>");
 if (! RunPipelineForJsp.isMissingTasks(model, userID)){
 
-out.println("<table width='100%'><tr><td align='center'><input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runTask.jsp?cmd=run&name="+pipelineName + "')\"; /></td></tr></table>");
+out.println("<table width='100%'><tr><td align='center'><input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; /></td></tr></table>");
 }
 
 %>

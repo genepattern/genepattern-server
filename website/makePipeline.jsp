@@ -650,12 +650,8 @@ System.out.println("MP 3 = " + filenameKey + " <==" + paramName + "   " + p.getV
 			out.println("<script language=\"Javascript\">window.close();</script>");
 		}
 
-		out.println("<form action=\"runTask.jsp\" method=\"post\">");
-		out.println("<input type=\"hidden\" name=\"" + GPConstants.NAME + "\" value=\"" + lsid + "\">");
-		out.println("<br><br><center><input type=\"submit\" value=\"run\" name=\"cmd\">&nbsp;&nbsp;");
-		//out.println("<input type=\"submit\" value=\"edit pipeline code\" name=\"cmd\">");
-		out.println("</center></form>");
-
+		out.println("<a href='" + request.getContextPath() + "/pages/index.jsf?lsid=" + lsid + "'>Run</a>");
+		out.println("<br />");
 		out.println("<a href=\"pipelineDesigner.jsp?" + GPConstants.NAME + "=" + lsid + "\">modify " + pipelineName + " design</a><br>");
 
 	}
