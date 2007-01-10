@@ -2,12 +2,12 @@
 <!DOCTYPE faces-config PUBLIC "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"
                               "http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
 <faces-config>
-<managed-bean>
+ <managed-bean>
   <managed-bean-name>authorizationBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.AuthorizationBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
-<managed-bean>
+ <managed-bean>
   <managed-bean-name>jobInfoBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.JobInfoBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
@@ -17,7 +17,7 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.IndexPageBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
-  <managed-bean>
+ <managed-bean>
   <managed-bean-name>aboutBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.AboutBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
@@ -153,9 +153,13 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.TestBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
- 
+ <managed-bean>
+  <managed-bean-name>moduleChooserState</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.CollapsiblePanelState</managed-bean-class>
+  <managed-bean-scope>session</managed-bean-scope>
+ </managed-bean>
  <navigation-rule>
-  <from-view-id>*</from-view-id> 
+  <from-view-id>*</from-view-id>
   <navigation-case>
    <from-outcome>install task results</from-outcome>
    <to-view-id>/pages/installTasks.xhtml</to-view-id>
