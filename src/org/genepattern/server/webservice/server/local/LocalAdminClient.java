@@ -35,13 +35,13 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
 public class LocalAdminClient {
-    IAdminService service;
+    AdminService service;
 
     String userName;
 
     public LocalAdminClient(final String userName) {
         this.userName = userName;
-        service = new AdminService() {
+        service = new AdminService(userName) {
             protected String getUserName() {
                 return userName;
             }

@@ -51,9 +51,16 @@ public class AdminService implements IAdminService {
 
 	AdminDAO dataService;
 	IAuthorizationManager authManager  = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
-
+	protected String localUserName = "";
+	
+	
 	public AdminService() {
         dataService = new AdminDAO();
+	}
+
+	public AdminService(String localUser) {
+        dataService = new AdminDAO();
+        localUserName = localUser;
 	}
 
 	private void isAuthorized(String user, String method) throws WebServiceException {
@@ -62,6 +69,8 @@ public class AdminService implements IAdminService {
 	       } 
 	}
 	private boolean isTaskOwner(String user, String lsid) throws WebServiceException{
+		System.out.println("isTaskOwner: " + user + " -- " + this.localUserName);
+		
 		TaskMaster tm = (new TaskMasterDAO()).findByIdLsid(lsid);
         if (tm == null) return false; // can't own what you can't see
     	return user.equals(tm.getUserId());
@@ -88,12 +97,17 @@ public class AdminService implements IAdminService {
     }
 	protected String getUserName() {
 		MessageContext context = MessageContext.getCurrentContext();
+		if (context == null) return this.localUserName;
+		
 		String username = context.getUsername();
 		if (username == null) {
-			username = "";
+			username = this.localUserName;
 		}
 		return username;
 	}
+	
+	
+	
 
 	public Map getServiceInfo() throws WebServiceException {
 		isAuthorized(getUserName(),"AdminService.getServiceInfo");
