@@ -56,7 +56,7 @@
 
 
 String userID= (String)request.getAttribute("userID"); // will force login if necessary
-if (userID == null) return; // come back after login
+
 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 %>
 <%
@@ -131,13 +131,23 @@ if (requestParameters.getProperty("delete") != null || requestParameters.getProp
 	try {
 		taskIntegratorClient.deleteTask(lsid);
 %>
-		<%writeHeader(response, out);%>
+		<html>
+	<head>
+		<title>Saved GenePattern task</title>
+	</head>
+	<body>
+		<jsp:include page="navbarHead.jsp"/>
 		<jsp:include page="navbar.jsp"/>
 		<%= taskName %> has been deleted.  Any running jobs using that task have been stopped.<br>
 <%
 	} catch (Throwable t) { 
 %>
-		<%writeHeader(response, out);%>
+		<html>
+	<head>
+		<title>Saved GenePattern task</title>
+	</head>
+	<body>
+	<jsp:include page="navbarHead.jsp"/>
 		<jsp:include page="navbar.jsp"/>
 <%
 		out.println(t + " while attempting to delete " + taskName);
@@ -180,7 +190,12 @@ if ((requestParameters.getProperty("deleteFiles") != null || requestParameters.g
 					response.sendRedirect(forward + "?" + GPConstants.NAME + "=" + lsid);
 					return;
 				} else { %>
-					<%writeHeader(response, out);%>
+					<html>
+	<head>
+		<title>Saved GenePattern task</title>
+	</head>
+	<body>
+	<jsp:include page="navbarHead.jsp"/>
 					<jsp:include page="navbar.jsp"/>
 					Unable to delete <%= filename %> from <%= taskName %> support files.<br>
 					<jsp:include page="footer.jsp"/>
@@ -191,7 +206,12 @@ if ((requestParameters.getProperty("deleteFiles") != null || requestParameters.g
 				}
 			} catch (Throwable t) { 
 %>	
-				<%writeHeader(response, out);%>
+				<html>
+	<head>
+		<title>Saved GenePattern task</title>
+	</head>
+	<body>
+	<jsp:include page="navbarHead.jsp"/>
 				<jsp:include page="navbar.jsp"/>
 				<%= t %> while attempting to delete <%= filename %>
 				<br>
@@ -220,7 +240,12 @@ if (requestParameters.getProperty("clone") != null) {
 		Vector vProblems = wseme.getErrors();
 		if(vProblems != null && vProblems.size() > 0) {
 %>
-			<%writeHeader(response, out);%>
+			<html>
+	<head>
+		<title>Saved GenePattern task</title>
+	</head>
+	<body>
+	<jsp:include page="navbarHead.jsp"/>
 			<jsp:include page="navbar.jsp"/>
 			There are some problems with the <%= cloneName %> task that need to be fixed:<br><ul>
 <%	
@@ -236,7 +261,12 @@ if (requestParameters.getProperty("clone") != null) {
 		}
 	}
 %>
-	<%writeHeader(response, out);%>
+	<html>
+	<head>
+		<title>Saved GenePattern task</title>
+	</head>
+	<body>
+	<jsp:include page="navbarHead.jsp"/>
 	<jsp:include page="navbar.jsp"/>
 	Cloned <%= taskName %> as <%= cloneName %>.<br>
 	<a href="addTask.jsp?<%= GPConstants.NAME%>=<%=lsid %>">edit <%= cloneName %></a><br>
@@ -496,40 +526,25 @@ timeMS dateTime loginId taskType moduleName  manifest supportFilesChanges URLToE
 		return;
 	}
 %>
-    <%writeHeader(response, out);%>
+    <html>
+	<head>
+		<title>Saved GenePattern task</title>
+	</head>
+	<body>
+	<jsp:include page="navbarHead.jsp"/>
     <jsp:include page="navbar.jsp" />
     Installation of your <a href="addTask.jsp?<%= GPConstants.NAME %>=<%= URLEncoder.encode(lsid, "UTF-8") %>"><%= taskName %></a> task (version <%= new LSID(lsid).getVersion() %>) is complete.<br><br>
 
     If you write R methods to run tasks, you'll find the R wrapper <a href="taskWrapperGenerator.jsp?<%= GPConstants.NAME %>=<%= URLEncoder.encode(lsid, "UTF-8") %>">here</a>.<br>
     
-<h4>Try <a href="<%= request.getContextPath() %>/pages/index.jsf?lsid=<%= URLEncoder.encode(lsid, "UTF-8") %>">running</a> <%= taskName %> now.</h4>
+<hr><a href='<%= request.getContextPath() %>/pages/index.jsf?lsid=<%= URLEncoder.encode(lsid, "UTF-8") %>'>Run <%= taskName %></a>
+</h4>
 
 
 
-	</pre><br>
-	<a href="javascript:history.back()">back</a> 
+	<br>
+	
 <jsp:include page="footer.jsp"/>
 </body>
 </html>
 
-<%! 
-public void writeHeader(HttpServletResponse response, JspWriter out) {
-	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
-	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
-	response.setDateHeader("Expires", 0);
-	try {
-	out.println("<html>");
-	out.println("<head>");
-	%>
-	<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
-	<link href="css/style.css" rel="stylesheet" type="text/css">
-	<link href="skin/favicon.ico" rel="shortcut icon">
-	<% 	
-
-	out.println("<title>saved GenePattern task</title>");
-	out.println("</head>");
-	out.println("<body>");
-	} catch(java.io.IOException ioe) {}
-
-}
-%>
