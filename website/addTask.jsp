@@ -166,10 +166,9 @@ taskTypes = (String[])tsTaskTypes.toArray(new String[0]);
 <script language="JavaScript" src="/gp/js/collapsiblePanel.js"></script>
 <script type="text/javascript" language="javascript">
 
-<script language="javascript">
 function showFileFormats(sel, i) {
-	val = sel.value;
-	div = document.getElementById("p" + i + "_fileFormatDiv");
+	var val = sel.value;
+	var div = document.getElementById("p" + i + "_fileFormatDiv");
 	if(val=="java.io.File") {
 		div.style.display = "block";
 	} else {
@@ -197,27 +196,19 @@ function confirmDeleteSupportFiles() {
 	}
 }
 
-<%
-// create Javascript associative array of all Tasks (mine and others) so that determination of ownership and rights can be ascertained
-%>
 
 <% if (taskInfo != null) { %>
 function cloneTask() {
-	while (true) {
 		var cloneName = window.prompt("Name for cloned task", "copyOf<%= taskName %>");
 		if (cloneName == null || cloneName.length == 0) {
 			return;
 		}
 		window.location = "saveTask.jsp?clone=1&<%= GPConstants.NAME %>=<%= taskName %>&<%= GPConstants.LSID %>=<%= tia.get(GPConstants.LSID) %>&cloneName=" + cloneName + "&<%= GPConstants.USERID %>=<%= userID %>";
-		break;
-	}
+	
 }
 
 function runTask() {
-	while (true) {
-		window.location = "runTask.jsp?<%= GPConstants.NAME %>=<%= taskName %>&<%= GPConstants.LSID %>=<%= tia.get(GPConstants.LSID) %>&<%= GPConstants.USERID %>=<%= userID %>";
-		break;
-	}
+	window.location ="<%= request.getContextPath() %>/pages/index.jsf?lsid=<%= tia.get(GPConstants.LSID) %>";
 }
 
 <% } %>

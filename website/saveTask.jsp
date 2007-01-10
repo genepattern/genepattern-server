@@ -502,12 +502,9 @@ timeMS dateTime loginId taskType moduleName  manifest supportFilesChanges URLToE
 
     If you write R methods to run tasks, you'll find the R wrapper <a href="taskWrapperGenerator.jsp?<%= GPConstants.NAME %>=<%= URLEncoder.encode(lsid, "UTF-8") %>">here</a>.<br>
     
-<hr><h4>Try running <%= taskName %> now!</h4>
+<h4>Try <a href="<%= request.getContextPath() %>/pages/index.jsf?lsid=<%= URLEncoder.encode(lsid, "UTF-8") %>">running</a> <%= taskName %> now.</h4>
 
-<jsp:include page="runTask.jsp" flush="true">
-	<jsp:param name="name" value="<%= lsid %>"/>
-	<jsp:param name="noEnvelope" value="1"/>
-</jsp:include>
+
 
 	</pre><br>
 	<a href="javascript:history.back()">back</a> 
@@ -523,8 +520,11 @@ public void writeHeader(HttpServletResponse response, JspWriter out) {
 	try {
 	out.println("<html>");
 	out.println("<head>");
-	out.println("<link href=\"skin/stylesheet.css\" rel=\"stylesheet\" type=\"text/css\">");
-	out.println("<link rel=\"SHORTCUT ICON\" href=\"favicon.ico\" >");
+	%>
+	<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
+	<link href="css/style.css" rel="stylesheet" type="text/css">
+	<link href="skin/favicon.ico" rel="shortcut icon">
+	<% 	
 
 	out.println("<title>saved GenePattern task</title>");
 	out.println("</head>");
