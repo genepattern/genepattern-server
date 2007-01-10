@@ -12,8 +12,12 @@
 
 package org.genepattern.server.webapp;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Properties;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -26,10 +30,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webapp.jsf.LoginBean;
 import org.genepattern.util.GPConstants;
 
 /**
@@ -39,6 +44,8 @@ import org.genepattern.util.GPConstants;
  */
 public class AuthenticationFilter implements Filter {
 
+    private static Logger log = Logger.getLogger(AuthenticationFilter.class);
+
     private static final String[] NO_AUTH_REQUIRED_PAGES = { "getPipelineModel.jsp", "retrieveResults.jsp",
             "getFile.jsp", "getInputFile.jsp", "login.jsp", "login.jsf", "registerUser.jsf", "forgotPassword.jsf" };
 
@@ -46,6 +53,8 @@ public class AuthenticationFilter implements Filter {
     private static final String[] LOGIN_PAGES = { "login.jsf", "registerUser.jsf", "forgotPassword.jsf" };
 
     private static final String HOME_PAGE = "/pages/index.jsf";
+
+    private boolean passwordRequired;
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
             ServletException {
@@ -94,7 +103,8 @@ public class AuthenticationFilter implements Filter {
         String userId = getUserId(request);
         if (userId != null && isSignedIn(userId, request)) {
             request.setAttribute(GPConstants.USERID, userId);
-            request.setAttribute("userID", userId); // old jsp pages use this attribute for usernames
+            request.setAttribute("userID", userId); // old jsp pages use this
+            // attribute for usernames
             return true;
         }
         return false;
@@ -115,29 +125,45 @@ public class AuthenticationFilter implements Filter {
     }
 
     /**
-     * Check to see if user has been registerd in database.
+     * Check to see if user is logged in and has registerd in database.
      * 
      */
     private boolean isSignedIn(String userId, HttpServletRequest request) {
-        if (request.isRequestedSessionIdFromURL()) { // disallow passing the
-            // session id from the
-            // URL, allow cookie
-            // based sessions only
-            return false;
-        }
+        if (!passwordRequired) { // don't check for valid session id if no
+            // password is required-GPConstants.USERID cookie is sufficient for
+            // authentication
 
-        HttpSession session = request.getSession(false);
-        if (session == null) {
+            HibernateUtil.beginTransaction();
+            User user = new UserDAO().findById(userId);
+            if (user == null) {
+                LoginBean.createNewUserNoPassword(userId, false);
+            }
+
+            return true;
+        } else {
+
+            if (request.isRequestedSessionIdFromURL()) { // disallow passing
+                // the
+                // session id from the
+                // URL, allow cookie
+                // based sessions only
+                return false;
+            }
+
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                return false;
+            }
+            // This filter might run before the HibernateFilter. Open
+            // transaction
+            // just in case. The transaction is closed automatically.
+            HibernateUtil.beginTransaction();
+            User user = new UserDAO().findById(userId);
+            if (user != null && session.getId().equals(user.getSessionId())) {
+                return true;
+            }
             return false;
         }
-        // This filter might run before the HibernateFilter. Open transaction
-        // just in case. The transaction is closed automatically.
-        HibernateUtil.beginTransaction();
-        User user = new UserDAO().findById(userId);
-        if (user != null && session.getId().equals(user.getSessionId())) {
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -243,6 +269,42 @@ public class AuthenticationFilter implements Filter {
     public void destroy() {
     }
 
-    public void init(FilterConfig filterconfig) throws ServletException {
+    private void loadProperties(Properties props, File propFile) {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(propFile);
+            props.load(fis);
+
+        } catch (IOException e) {
+            log.error(e);
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+
+                }
+            }
+        }
+
     }
+
+    public void init(FilterConfig filterconfig) throws ServletException {
+        String dir = filterconfig.getInitParameter("genepattern.properties");
+        File propFile = new File(dir, "genepattern.properties");
+        File customPropFile = new File(dir, "custom.properties");
+        Properties props = new Properties();
+
+        if (propFile.exists()) {
+            loadProperties(props, propFile);
+        }
+
+        if (customPropFile.exists()) {
+            loadProperties(props, customPropFile);
+        }
+        String prop = props.getProperty("require.password", "false").toLowerCase();
+        passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
+
+    }
+
 }
