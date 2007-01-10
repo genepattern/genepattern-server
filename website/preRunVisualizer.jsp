@@ -174,7 +174,7 @@ for (Iterator iter = rParams.iterator(); iter.hasNext();) {
 					
 				dir = new File(System.getProperty("java.io.tmpdir"));
 				// create a bogus dir under this for the input files
-				tmpDirName = taskName + "_" + userID + "_" + System.currentTimeMillis();			
+				tmpDirName = ""+ userID.hashCode() + "_" + taskName + "_" + System.currentTimeMillis();			
 				dir = new File(dir, tmpDirName );
 				dir.mkdir();
 				attachmentName = dir.getPath() + File.separator + attachmentName;
