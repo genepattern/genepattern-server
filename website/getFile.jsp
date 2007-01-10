@@ -1,5 +1,5 @@
 <%@ page
-        import="org.genepattern.server.webservice.server.DirectoryManager, java.io.BufferedInputStream, java.io.File, java.io.FileInputStream, java.io.InputStream, java.io.OutputStream" %>
+        import="org.genepattern.server.webservice.server.DirectoryManager, org.genepattern.util.GPConstants, java.io.BufferedInputStream, java.io.File, java.io.FileInputStream, org.genepattern.server.util.IAuthorizationManager, org.genepattern.server.util.AuthorizationManagerFactoryImpl,java.io.InputStream, java.io.OutputStream" %>
 <%
 
     String taskName = request.getParameter("task");
@@ -17,16 +17,33 @@
         filename = filename.substring(i + 1); // disallow absolute paths
     }
     File in = null;
+	String userID = (String) request.getAttribute(GPConstants.USERID);
+				
     try {
         if (taskName.length() > 0) {
-            in = new File(DirectoryManager.getTaskLibDir(taskName), filename);
+            in = new File(DirectoryManager.getTaskLibDir(taskName, taskName, userID), filename);
         } else {
             // look in temp for pipelines run without saving
             in = new File(System.getProperty("java.io.tmpdir"), filename);
+
+			// now we need to check whether this is the user or an admin trying
+			// to look at the file if it exists
+			if (in.exists()){
+				String hash = ""+userID.hashCode();
+				
+				if (!filename.startsWith(hash)){
+					IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
+					boolean isAdmin = authManager.checkPermission("administrateServer",userID );
+					if (!isAdmin){
+						System.out.println("SECURITY ALERT: " + userID +" tried to snoop someone elses file " + filename);
+						in = File.createTempFile("dummy",null);
+					}
+				} 			
+			}	
         }
     } catch (Exception e) {
         try {
-            in = new File(DirectoryManager.getTaskLibDir(taskName, null, null), filename);
+            in = new File(DirectoryManager.getTaskLibDir(taskName, null, userID), filename);
         } catch (Exception e2) {
             out.println("No such task " + taskName);
             return;

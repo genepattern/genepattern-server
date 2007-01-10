@@ -55,7 +55,12 @@ use, misuse, or functionality.
      * File parameters are stored as FileItems, all other parameters as strings
      */
     Map name2FileItem = new HashMap();
-	File tempDir = File.createTempFile("runTaskPipeline", null);
+
+	String userID = (String) request.getAttribute(GPConstants.USERID);
+		
+    Map name2FileItem = new HashMap();
+	File tempDir = File.createTempFile(""+userID.hashCode()+"_runPipelineInputs", null);
+	
 	
 	tempDir.delete();
 	tempDir.mkdir();
@@ -94,7 +99,6 @@ use, misuse, or functionality.
         
         
         
-        String userID = (String) requestParameters.get(GPConstants.USERID);
         String lsid = (String) requestParameters.get("taskLSID");
         TaskInfo task = GenePatternAnalysisTask.getTaskInfo(URLDecoder.decode(lsid, "UTF-8"), userID);
         if (task == null) {

@@ -69,11 +69,13 @@ use, misuse, or functionality.
 	String userEmail = null;
 	String jobId = null;
     try {
+		userID = (String) request.getAttribute(GPConstants.USERID);
+		
         ServletFileUpload fub = new ServletFileUpload(new DiskFileItemFactory());
         HashMap htFilenames = new HashMap(); // map between form field name and filesystem name
 
         // create a dir for the input files
-        File tempDir = File.createTempFile("runTaskPipeline", null);
+		File tempDir = File.createTempFile(""+userID.hashCode()+"_runTaskInputs", null);
         tempDir.delete();
         tempDir.mkdir();
         String tmpDirName = tempDir.getName();
@@ -171,8 +173,7 @@ use, misuse, or functionality.
             }
             
         }
-        userID = (String) request.getAttribute(GPConstants.USERID);
-		try {
+        try {
 			User user = (new UserDAO()).findById(userID);
 			userEmail = user.getEmail();
 			if ((userEmail == null) || (userEmail.length() == 0)){
