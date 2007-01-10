@@ -81,7 +81,6 @@ public class AjaxServlet extends javax.servlet.http.HttpServlet implements
         Object value = fc.getApplication().createValueBinding(elExpression)
                 .getValue(fc);
         
-        log.info("Executing: " + elExpression);
 
         response.setContentType("text/html");
         response.setHeader("Cache-Control", "no-cache");
