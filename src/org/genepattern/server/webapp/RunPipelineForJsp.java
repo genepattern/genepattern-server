@@ -12,25 +12,6 @@
 
 package org.genepattern.server.webapp;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItem;
-import org.genepattern.data.pipeline.JobSubmission;
-import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.genepattern.LSIDManager;
-import org.genepattern.server.webservice.server.DirectoryManager;
-import org.genepattern.util.GPConstants;
-import org.genepattern.util.LSID;
-import org.genepattern.util.LSIDUtil;
-import org.genepattern.util.StringUtils;
-import org.genepattern.webservice.JobInfo;
-import org.genepattern.server.domain.JobStatus;
-import org.genepattern.webservice.OmnigeneException;
-import org.genepattern.webservice.ParameterFormatConverter;
-import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoAttributes;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.PrintWriter;
@@ -41,6 +22,24 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.fileupload.FileItem;
+import org.genepattern.data.pipeline.JobSubmission;
+import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.genepattern.LSIDManager;
+import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
+import org.genepattern.util.LSIDUtil;
+import org.genepattern.util.StringUtils;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterFormatConverter;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 
 public class RunPipelineForJsp {
     public static int jobID = -1;
@@ -94,24 +93,25 @@ public class RunPipelineForJsp {
                             "<tr class=\"paleBackground\" ><td> Name </td><td> Required Version</td><td> Available Version</td><td>LSID</td></tr>");
         }
         if (((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) && (out != null)) {
-            out.println("<form method=\"post\" action=\"/gp/pages/taskCatalog.jsf\">");
+            out.println("<form method=\"post\" action=\"pages/taskCatalog.jsf\">");
         }
-        if (unknownTaskNames.size() > 0) {
+        if (unknownTaskNames.size() > 0) {       	
             for (Iterator iter = unknownTaskNames.keySet().iterator(); iter
                     .hasNext();) {
                 String name = (String) iter.next();
                 LSID absentlsid = (LSID) unknownTaskNames.get(name);
-                out.println("<input type=\"hidden\" name=\"LSID\" value=\"" + absentlsid + "\" /> ");
+                out.println("<input type=\"hidden\" name=\"lsid\" value=\"" + absentlsid + "\" /> ");
                 out.println("<tr><td>" + name + "</td><td>" + absentlsid.getVersion() + "</td><td></td><td> " +
                         absentlsid.toStringNoVersion() + "</td></tr>");
             }
+        	
         }
         if (unknownTaskVersions.size() > 0) {
             for (Iterator iter = unknownTaskVersions.keySet().iterator(); iter
                     .hasNext();) {
                 String name = (String) iter.next();
                 LSID absentlsid = (LSID) unknownTaskVersions.get(name);
-                out.println("<input type=\"hidden\" name=\"LSID\" value=\"" + absentlsid + "\" /> ");
+                out.println("<input type=\"hidden\" name=\"lsid\" value=\"" + absentlsid + "\" /> ");
                 TaskInfo altVersionInfo = GenePatternAnalysisTask.getTaskInfo(absentlsid.toStringNoVersion(), userID);
                 Map altVersionTia = altVersionInfo.getTaskInfoAttributes();
                 LSID altVersionLSID = new LSID((String) (altVersionTia
@@ -120,6 +120,7 @@ public class RunPipelineForJsp {
                         altVersionLSID.getVersion() + "</td><td>" + absentlsid.toStringNoVersion() + "</td></tr>");
             }
         }
+        
         if ((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) {
             out.println("<tr class=\"paleBackground\" >");
             out

@@ -282,51 +282,66 @@ public class TaskCatalogBean {
     }
 
     public void filter() {
-        Map<String, List> filterKeyToValuesMap = new HashMap<String, List>();
-        if (selectedOperatingSystems.size() == 0) {
-            // set default
-            selectedOperatingSystems.addAll(getDefaultOperatingSystemSelection());
-        }
-        filterKeyToValuesMap.put("os", selectedOperatingSystems);
-
-        if (selectedStates.size() == 0) {// set default
-            selectedStates.addAll(getDefaultStatesSelection());
-        }
-        filterKeyToValuesMap.put("state", selectedStates);
-
-        List<InstallTask> allFilteredTasks = new ArrayList<InstallTask>();
-        if (tasks != null) {
+    	String[] lsids = UIBeanHelper.getRequest().getParameterValues("lsid");
+    	filteredTasks = new ArrayList<MyTask>();
+        
+    	if (lsids==null) {
+	        Map<String, List> filterKeyToValuesMap = new HashMap<String, List>();
+	        if (selectedOperatingSystems.size() == 0) {
+	            // set default
+	            selectedOperatingSystems.addAll(getDefaultOperatingSystemSelection());
+	        }
+	        filterKeyToValuesMap.put("os", selectedOperatingSystems);
+	
+	        if (selectedStates.size() == 0) {// set default
+	            selectedStates.addAll(getDefaultStatesSelection());
+	        }
+	        filterKeyToValuesMap.put("state", selectedStates);
+	
+	        List<InstallTask> allFilteredTasks = new ArrayList<InstallTask>();
+	        if (tasks != null) {
+	            for (int i = 0; i < tasks.length; i++) {
+	                if (tasks[i].matchesAttributes(filterKeyToValuesMap)) {
+	                    allFilteredTasks.add(tasks[i]);
+	                }
+	            }
+	        }
+	
+	        for (int i = 0; i < allFilteredTasks.size(); i++) { // find latest
+	            // version of
+	            // tasks
+	            InstallTask t = allFilteredTasks.get(i);
+	            try {
+	                List<InstallTask> taskList = baseLsidToTasksMap.remove(new LSID(t.getLsid()).toStringNoVersion());
+	                if (taskList != null) {
+	                    Collections.sort(taskList, DESC_COMPARATOR);
+	                    MyTask latest = new MyTask(taskList.remove(0));
+	                    if (taskList.size() > 0) {
+	                        MyTask[] laterVersions = new MyTask[taskList.size()];
+	                        for (int j = 0; j < taskList.size(); j++) {
+	                            laterVersions[j] = new MyTask(taskList.get(j));
+	                        }
+	                        latest.setLaterVersions(laterVersions);
+	                    }
+	                    filteredTasks.add(latest);
+	                }
+	
+	            } catch (MalformedURLException e) {
+	                log.error(e);
+	            }
+	        }
+    	}else if (tasks != null) {
+            MyTask missingTask;
             for (int i = 0; i < tasks.length; i++) {
-                if (tasks[i].matchesAttributes(filterKeyToValuesMap)) {
-                    allFilteredTasks.add(tasks[i]);
-                }
-            }
-        }
-
-        filteredTasks = new ArrayList<MyTask>();
-        for (int i = 0; i < allFilteredTasks.size(); i++) { // find latest
-            // version of
-            // tasks
-            InstallTask t = allFilteredTasks.get(i);
-            try {
-                List<InstallTask> taskList = baseLsidToTasksMap.remove(new LSID(t.getLsid()).toStringNoVersion());
-                if (taskList != null) {
-                    Collections.sort(taskList, DESC_COMPARATOR);
-                    MyTask latest = new MyTask(taskList.remove(0));
-                    if (taskList.size() > 0) {
-                        MyTask[] laterVersions = new MyTask[taskList.size()];
-                        for (int j = 0; j < taskList.size(); j++) {
-                            laterVersions[j] = new MyTask(taskList.get(j));
-                        }
-                        latest.setLaterVersions(laterVersions);
+            	for (String lsid:lsids) {
+            		if (lsid.equals(tasks[i].getLsid())) {
+                        missingTask = new MyTask(tasks[i]);
+                        filteredTasks.add(missingTask);
                     }
-                    filteredTasks.add(latest);
-                }
-
-            } catch (MalformedURLException e) {
-                log.error(e);
+            	}      
             }
-        }
+    		
+    	}
         Collections.sort(filteredTasks, new TaskNameComparator());
 
     }
@@ -342,6 +357,7 @@ public class TaskCatalogBean {
                 }
             }
         }
+        Collections.sort(filteredTasks, new TaskNameComparator());
     }
 
     private static class TaskNameComparator implements Comparator<MyTask> {
