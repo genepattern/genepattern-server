@@ -54,9 +54,7 @@ use, misuse, or functionality.
      * To run a pipeline with prompt when run parameters, we put parameters into the request object.
      * File parameters are stored as FileItems, all other parameters as strings
      */
-    Map name2FileItem = new HashMap();
-
-	String userID = (String) request.getAttribute(GPConstants.USERID);
+   	String userID = (String) request.getAttribute(GPConstants.USERID);
 		
     Map name2FileItem = new HashMap();
 	File tempDir = File.createTempFile(""+userID.hashCode()+"_runPipelineInputs", null);
