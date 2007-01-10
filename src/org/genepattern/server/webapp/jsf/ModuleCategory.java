@@ -129,7 +129,7 @@ public class ModuleCategory implements java.io.Serializable {
     		for (Module module:modules) {
     			if (lsid.contains(module.getLSID().toStringNoVersion())) {
     				module.setSelected(true);
-    				String version = module.getLSID().getVersion();
+    				String version = lsidObj.getVersion();
     				if (!"".equals(version)) {
     					module.setSelectedVersion(version);
     				}
