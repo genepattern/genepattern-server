@@ -36,28 +36,6 @@
      	
 	}
 	
-	function callManagedBean(elExpression, parameters) {            
-        var opt = {
-          parameters: parameters + '&el=' + elExpression,
-          onSuccess: receiveResponse,
-          onFailure: function(t) {
-            alert('Error ' + t.status + ' -- ' + t.statusText);
-          }
-        } 
-        new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
-      }
-
-      // The callback function - receive response from server
-      function receiveResponse( req ) {
-        if (req.readyState == 4) {
-          if (req.status == 200) { // only if "OK"
-            	showCode(req.responseText);
-          } 
-          else {
-            alert("There was a problem retrieving the XML data:\n" + req.statusText);
-          }  
-        }
-      }
       
 function exportPipeline(lsid, title) {
 	var width = 250;
@@ -148,23 +126,7 @@ function validateForm() {
         return numErrors == 0;
     }
 
-     
-function chooserModeChanged() {	  
-   var radioPanel = document.getElementById("viewchoiceRadioPanel");
-   var radioButtons = radioPanel.getElementsByTagName("input");
-   for(var i=0; i<radioButtons.length; i++) {
-     if(radioButtons[i].type == "radio") {
-       var panelId  = "module_table_" + radioButtons[i].value;
-       var panel = document.getElementById(panelId);
-       if(radioButtons[i].checked && panel != null) {
-         Element.show(panel);
-       }
-       else {
-         Element.hide(panel);
-       }
-     }
-   }
-}
+
 
 function showUrlInput(id) {
 	Element.hide(id + "_div_file");

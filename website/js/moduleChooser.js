@@ -56,9 +56,40 @@ function closeAll() {
        closeCategory(catId);
      }
  }
- 
 
-function updateBeanState(id, state) {            
+     
+function chooserModeChanged() {	  
+   var radioPanel = document.getElementById("viewchoiceRadioPanel");
+   var radioButtons = radioPanel.getElementsByTagName("input");
+   for(var i=0; i<radioButtons.length; i++) {
+     if(radioButtons[i].type == "radio") {
+       var panelId  = "module_table_" + radioButtons[i].value;
+       var panel = document.getElementById(panelId);
+       if(radioButtons[i].checked && panel != null) {
+         Element.show(panel);
+         updateChooserMode(radioButtons[i].value);
+       }
+       else {
+         Element.hide(panel);
+       }
+     }
+   }
+}
+
+
+function updateChooserMode(mode) {            
+  var opt = {
+    method:    'post',
+    postBody:  'el=moduleChooserState.updateChooserMode&mode=' + mode,
+    onSuccess: receiveResponse,
+    onFailure: function(t) {
+      alert('Error ' + t.status + ' -- ' + t.statusText);
+    }
+  } 
+  new  Ajax.Request('/gp/anyThingAtAll.ajax',opt);
+}
+
+function updatePanelState(id, state) {            
   var opt = {
     method:    'post',
     postBody:  'el=moduleChooserState.updatePanelState&id=' + id + '&state=' + state,
@@ -67,7 +98,7 @@ function updateBeanState(id, state) {
       alert('Error ' + t.status + ' -- ' + t.statusText);
     }
   } 
-  new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
+  new  Ajax.Request('/gp/anyThingAtAll.ajax',opt);
 }
 
 // The callback function - receive response from server

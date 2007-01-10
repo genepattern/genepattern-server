@@ -108,9 +108,6 @@ public class ModuleChooserBean implements java.io.Serializable {
         }
     }
 
-    public void modeChanged(ValueChangeEvent event) {
-	moduleChooserState.setSelectedMode((String) event.getNewValue());
-    }
 
     public void moduleClicked(ActionEvent event) {
         setSelectedModule(getRequest().getParameter("task"));
@@ -162,7 +159,8 @@ public class ModuleChooserBean implements java.io.Serializable {
     }
 
     public String getSelectedMode() {
-        return moduleChooserState.getSelectedMode();
+	String mode = moduleChooserState.getSelectedMode();
+	return (mode == null ? "category" : mode);
     }
 
     public void setSelectedMode(String selectedMode) {
