@@ -422,7 +422,7 @@ public class RunVisualizer {
 		String baseName = file.substring(file.lastIndexOf("/", queryIdx) + 1);
 		int j;
 
-		if (file.indexOf('/jobResults') != -1){
+		if (file.indexOf("/jobResults") != -1){
 			return baseName;
 		}
 
