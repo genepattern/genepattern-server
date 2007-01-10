@@ -35,11 +35,11 @@ public class LoginBean {
         String prop = System.getProperty("require.password", "false").toLowerCase();
         passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
         String usernameInRequest = UIBeanHelper.getRequest().getParameter("username");
+
         if (usernameInRequest != null) {
             username = usernameInRequest;
-            if (!passwordRequired) {
-                submitLogin(null);
-            }
+            password = UIBeanHelper.getRequest().getParameter("password");
+            submitLogin(null);
         }
     }
 
