@@ -122,8 +122,8 @@ public class JobResult {
 				throw new IllegalArgumentException(
 						"Creation order out of range.");
 			}
-			return new URL(getServerURL() + "/gp/retrieveResults.jsp?job="
-					+ getJobNumber() + "&filename="
+			return new URL(getServerURL() + "/gp/jobResults/"
+					+ getJobNumber() + "/"
 					+ URLEncoder.encode(fileNames[creationOrder], "UTF-8"));
 		} catch (MalformedURLException x) {
 			throw new Error(x);
@@ -141,8 +141,8 @@ public class JobResult {
 	 */
 	public URL getURL(String fileName) {
 		try {
-			return new URL(getServerURL() + "/gp/retrieveResults.jsp?job="
-					+ getJobNumber() + "&filename="
+			return new URL(getServerURL() + "/gp/jobResults/"
+					+ getJobNumber() + "/"
 					+ URLEncoder.encode(fileName, "UTF-8"));
 		} catch (MalformedURLException x) {
 			throw new Error(x);

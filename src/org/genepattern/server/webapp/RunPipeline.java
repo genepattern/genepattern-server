@@ -548,8 +548,8 @@ public class RunPipeline {
         }
         String context = System.getProperty("GP_Path", "/gp");
 
-        String url = server + context + "/retrieveResults.jsp?job="
-                + job.getJobNumber() + "&filename=" + fileName;
+        String url = server + context + "/jobResults/"
+                + job.getJobNumber() + "/" + fileName;
         return url;
     }
 

@@ -259,7 +259,7 @@ public class ProvenanceFinder {
 		}
 		
 		// if it is not a result file do nothing		
-		if (!(fileURL.indexOf("retrieveResults.jsp") >= 1)) return null;
+		if (!((fileURL.indexOf("retrieveResults.jsp") >= 1) ||  (fileURL.indexOf("jobResults") >= 1) )) return null;
 		
 		// now we think we have a local result file url so grab the job # 
 		int idx = fileURL.indexOf(key+"=");
@@ -304,7 +304,7 @@ public class ProvenanceFinder {
 				String jobstr = pvalue.substring(0, idx);
 				String filename = pvalue.substring(idx+1);
 
-				return serverURL + "/gp/retrieveResults.jsp?job=" + jobstr + "&filename=" + filename;
+				return serverURL + "/gp/jobResults/" + jobstr + "/" + filename;
 			} else {
 		return pvalue;	
 

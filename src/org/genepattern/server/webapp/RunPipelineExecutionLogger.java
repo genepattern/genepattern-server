@@ -48,7 +48,7 @@ import org.genepattern.webservice.ParameterInfo;
  * pipeline was run, execution times and output files
  */
 public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase implements RunPipelineOutputDecoratorIF {
-	protected static String GET_TASK_FILE = "retrieveResults.jsp?";
+	protected static String GET_TASK_FILE = "jobResults";
 
 	protected String jobID = null;
 	protected File jobDir = null;
@@ -294,12 +294,12 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 
 				String outFileUrl = null;
 				try {
-					outFileUrl = URL + GET_TASK_FILE + "job="
-							+ jobInfo.getJobNumber() + "&filename="
+					outFileUrl = URL + GET_TASK_FILE + "/"
+							+ jobInfo.getJobNumber() + "/"
 							+ URLEncoder.encode(fileName, "utf-8");
 				} catch (UnsupportedEncodingException uee) {
-					outFileUrl = URL + GET_TASK_FILE + "job="
-							+ jobInfo.getJobNumber() + "&filename=" + fileName;
+					outFileUrl = URL + GET_TASK_FILE + "/"
+							+ jobInfo.getJobNumber() + "/" + fileName;
 				}
 
 				sbOut.append(localizeURL(outFileUrl));

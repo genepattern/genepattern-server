@@ -61,7 +61,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
 	protected static String GET_TASK_JSP = "viewTask.jsp?view=1&name=";
 
-	protected static String GET_TASK_FILE = "retrieveResults.jsp?";
+	protected static String GET_TASK_FILE = "jobResults";
 	protected static String GET_FILE = "getFile.jsp?task=&file=";
 	
 
@@ -398,12 +398,12 @@ public void __writeVisualizerAppletTag(JobSubmission jobSubmission) {
 
 			String outFileUrl = null;
 			try {
-				outFileUrl = URL + GET_TASK_FILE + "job="
-						+ jobNumber  + "&filename="
+				outFileUrl = URL + GET_TASK_FILE + "/"
+						+ jobNumber  + "/"
 						+ URLEncoder.encode(fileName, "utf-8");
 			} catch (UnsupportedEncodingException uee) {
-				outFileUrl = URL + GET_TASK_FILE + "job="
-						+ jobNumber  + "&filename=" + fileName;
+				outFileUrl = URL + GET_TASK_FILE + "/"
+						+ jobNumber  + "/" + fileName;
 			}
 
 			sbOut.append(localizeURL(outFileUrl));
