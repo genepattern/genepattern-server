@@ -178,6 +178,7 @@ public class RunPipeline {
                 return true;
             }
         };
+        
 
         HttpsURLConnection.setDefaultHostnameVerifier(hv);
 
@@ -311,7 +312,9 @@ public class RunPipeline {
      */
     public void runPipeline(Map args) throws Exception {
 
-        setStatus(JobStatus.PROCESSING);
+      HibernateUtil.beginTransaction();
+      
+      setStatus(JobStatus.PROCESSING);
 	  String stopAfterTaskStr =	System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
 	  int stopAfterTask = Integer.MAX_VALUE;
 	  if (stopAfterTaskStr != null){
@@ -370,7 +373,8 @@ public class RunPipeline {
 				
                     JobInfo taskResult = executeTask(jobSubmission, params,
                             taskNum, results);
-
+                    
+                   
 			  // handle the special case where a task is a pipeline by adding
 			  // all output files of the pipeline's children (recursively) to its
 			  // taskResult so that they can be used downstream 
@@ -394,7 +398,13 @@ public class RunPipeline {
         } finally {
             decorator.afterPipelineRan(model);
         }
+        
+        System.out.println("FINAL SET STATUS ON PIPELINE");
+        
+        HibernateUtil.commitTransaction();
+        HibernateUtil.beginTransaction();
         setStatus(JobStatus.FINISHED);
+        HibernateUtil.commitTransaction();
     }
 
     /**
@@ -739,7 +749,13 @@ public class RunPipeline {
         }
         TaskInfo tinfo = svc.getTaskInfo();
         final JobInfo job = analysisClient.submitJobNoWakeup(tinfo.getID(), parmInfos, jobId);
+        HibernateUtil.commitTransaction();
+        HibernateUtil.beginTransaction();
+      
         final AnalysisJob aJob = new AnalysisJob(svc.getServer(), job);
+        HibernateUtil.commitTransaction();
+        HibernateUtil.beginTransaction();
+      
         return aJob;
     }
 
@@ -766,8 +782,12 @@ public class RunPipeline {
                 .equalsIgnoreCase("Finished")))) {
             count++;
             Thread.currentThread().sleep(sleep);
+
+            HibernateUtil.commitTransaction();
+            HibernateUtil.beginTransaction();
             info = analysisClient.checkStatus(job.getJobInfo().getJobNumber());
             status = info.getStatus();
+            
             // if (count > maxTries) break;
             sleep = incrementSleep(initialSleep, maxTries, count);
         }
