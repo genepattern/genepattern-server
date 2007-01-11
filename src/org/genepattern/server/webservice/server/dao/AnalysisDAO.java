@@ -257,8 +257,10 @@ AnalysisDAO extends BaseDAO {
         query.setInteger("jobNo", jobNo);
         AnalysisJob aJob = (AnalysisJob) query.uniqueResult();
         // If jobNo not found
-        if (aJob == null) throw new JobIDNotFoundException("AnalysisHypersonicDAO:getJobInfo JobID " + jobNo
-                + " not found");
+        if (aJob == null){
+        	throw new JobIDNotFoundException("AnalysisDAO:getJobInfo JobID " + jobNo  + " not found");
+        }
+              
 
         return new JobInfo(aJob);
     }
