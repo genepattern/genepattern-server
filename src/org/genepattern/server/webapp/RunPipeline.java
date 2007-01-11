@@ -26,6 +26,7 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.security.Security;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -148,7 +149,13 @@ public class RunPipeline {
                 fis.close();
             }
         }
-
+        for (Iterator iter = genepatternProps.keySet().iterator(); iter.hasNext();){
+        	String key = (String)iter.next();
+        	String val = genepatternProps.getProperty(key);
+        	System.setProperty(key, val);
+        }
+        
+        
         String trustStore = genepatternProps
                 .getProperty("javax.net.ssl.trustStore");
         if (trustStore != null)
