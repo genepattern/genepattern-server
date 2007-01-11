@@ -160,8 +160,10 @@ try {
 			<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 			<link href="skin/favicon.ico" rel="shortcut icon">
 			<title>Delete pipeline</title>
+			<jsp:include page="navbarHead.jsp"/>
 			</head>
 			<body>
+
 			<jsp:include page="navbar.jsp"/>
 			Stopped and deleted <%= taskInfo.getName() %> along with its support files.<br><br>
 <%
@@ -184,6 +186,8 @@ try {
 		<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 		<link href="skin/favicon.ico" rel="shortcut icon">
 		<title>Delete pipeline</title>
+		<jsp:include page="navbarHead.jsp"/>
+			
 		</head>
 		<body>
 		<jsp:include page="navbar.jsp"/>
@@ -448,6 +452,7 @@ System.out.println("MP 3 = " + filenameKey + " <==" + paramName + "   " + p.getV
 		<link href="skin/favicon.ico" rel="shortcut icon">
 		<title><%= pipelineName %> - saved</title>
 		<script language="Javascript">window.focus();</script>
+		<jsp:include page="navbarHead.jsp"/>
 		</head>
 		<body>
 		<jsp:include page="navbar.jsp"/>
@@ -650,7 +655,7 @@ System.out.println("MP 3 = " + filenameKey + " <==" + paramName + "   " + p.getV
 			out.println("<script language=\"Javascript\">window.close();</script>");
 		}
 
-		out.println("<a href='" + request.getContextPath() + "/pages/index.jsf?lsid=" + lsid + "'>Run</a>");
+		out.println("&nbsp;&nbsp;<a href='" + request.getContextPath() + "/pages/index.jsf?lsid=" + lsid + "'>Run "+pipelineName +".</a>");
 		out.println("<br />");
 		out.println("<a href=\"pipelineDesigner.jsp?" + GPConstants.NAME + "=" + lsid + "\">modify " + pipelineName + " design</a><br>");
 
