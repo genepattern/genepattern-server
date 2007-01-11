@@ -440,7 +440,7 @@ if (! RunPipelineForJsp.isMissingTasks(model, userID)){
 
 out.println("<table width='100%'><tr><td align='center'><input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; /></td></tr></table>");
 }
-
+out.println("</table>");
 %>
 <jsp:include page="footer.jsp"/>
 </body>
