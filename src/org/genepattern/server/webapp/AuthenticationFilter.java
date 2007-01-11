@@ -14,8 +14,8 @@ package org.genepattern.server.webapp;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.util.Properties;
 
@@ -35,6 +35,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.jsf.LoginBean;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.GPConstants;
 
 /**
@@ -101,7 +102,7 @@ public class AuthenticationFilter implements Filter {
      */
     protected boolean isAuthenticated(HttpServletRequest request, HttpServletResponse response) {
         String userId = getUserId(request);
-        if (userId != null && isSignedIn(userId, request)) {
+        if (userId != null && isSignedIn(userId, request, response)) {
             request.setAttribute(GPConstants.USERID, userId);
             request.setAttribute("userID", userId); // old jsp pages use this
             // attribute for usernames
@@ -128,7 +129,7 @@ public class AuthenticationFilter implements Filter {
      * Check to see if user is logged in and has registerd in database.
      * 
      */
-    private boolean isSignedIn(String userId, HttpServletRequest request) {
+    private boolean isSignedIn(String userId, HttpServletRequest request, HttpServletResponse response) {
         if (!passwordRequired) { // don't check for valid session id if no
             // password is required-GPConstants.USERID cookie is sufficient for
             // authentication
@@ -136,7 +137,14 @@ public class AuthenticationFilter implements Filter {
             HibernateUtil.beginTransaction();
             User user = new UserDAO().findById(userId);
             if (user == null) {
-                LoginBean.createNewUserNoPassword(userId, false);
+                LoginBean.createNewUserNoPassword(userId);
+                try {
+                    UIBeanHelper.login(userId, false, false, request, response);
+                } catch (UnsupportedEncodingException e) {
+                    log.error(e);
+                } catch (IOException e) {
+                    log.error(e);
+                }
             }
 
             return true;
