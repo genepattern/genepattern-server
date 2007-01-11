@@ -227,7 +227,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 		String lsid = (String)tia.get(GPConstants.LSID);
 		String libdir = "";
 		try {
-			libdir = DirectoryManager.getTaskLibDir(lsid);
+			libdir = DirectoryManager.getTaskLibDir(null, lsid, userId);
 		} catch (Exception e){
 			e.printStackTrace(); // can't get the applet without this
 			return;
@@ -309,46 +309,6 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 		out.println("</applet>");		
 		out.flush();
 	}
-
-public void __writeVisualizerAppletTag(JobSubmission jobSubmission) {
-		// PUT APPLET HERE
-		StringBuffer buff = new StringBuffer();
-		buff.append(URL);
-		buff.append("runVisualizer.jsp?name=");
-		buff.append(jobSubmission.getLSID());
-		buff.append("&userid=");
-		buff.append(System.getProperty("userID", ""));
-		ParameterInfo[] parameterInfo = jobSubmission.giveParameterInfoArray();
-		for (int i = 0; i < parameterInfo.length; i++) {
-			buff.append("&");
-			ParameterInfo aParam = parameterInfo[i];
-			try {
-				buff.append(URLEncoder.encode(aParam.getName(), "utf-8"));
-				buff.append("=");
-				buff.append(URLEncoder.encode(aParam.getValue(), "utf-8"));
-			} catch (UnsupportedEncodingException uee) {
-				// ignore
-			}
-		}
-
-		try {
-			URL url = new URL(buff.toString());
-			Object appletTag = url.getContent();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					(InputStream) appletTag));
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				out.println(line);
-			}
-
-		} catch (Exception mue) {
-			out.println("Could not create applet tag " + mue);
-			mue.printStackTrace();
-		}
-		out.flush();
-	}
-
-
 
 	/**
 	 * called after a task execution is complete

@@ -208,9 +208,9 @@ public class RunPipeline {
 		// start with ".." then add two more directory jumps up
 		String taskLib = genepatternProps.getProperty("tasklib");
 		if (taskLib == null) {
-			taskLib = "../../../tasklib";
+			taskLib = "../../../../../tasklib";
 		} else if (taskLib.startsWith("..")){
-			taskLib = "../../" + taskLib;
+			taskLib = "../../../../" + taskLib;
 		}
 		System.setProperty("tasklib",taskLib);
 		
@@ -467,7 +467,7 @@ public class RunPipeline {
 
                 }
             }
-            analysisClient.recordClientJob(svc.getTaskInfo().getID(), params, jobId);
+            return analysisClient.recordClientJob(svc.getTaskInfo().getID(), params, jobId);
         } catch (WebServiceException e) {
             e.printStackTrace();
         }
