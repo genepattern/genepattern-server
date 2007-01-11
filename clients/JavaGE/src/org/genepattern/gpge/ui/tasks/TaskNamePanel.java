@@ -71,15 +71,16 @@ public class TaskNamePanel extends JPanel {
         if (bottomComponent == null) {
             bottomComponent = createBottomComponent();
         }
+        
 
         CellConstraints cc = new CellConstraints();
         JPanel temp = new JPanel(new FormLayout(
-                "left:pref:none, 3dlu, pref, 3dlu, right:pref:none", "pref"));
+                "left:pref:none, 3dlu, pref, 3dlu, right:pref:none", "3dlu, pref"));
         // icon, title, version
 
-        temp.add(new JLabel(GenePattern.getSmallIcon()), cc.xy(1, 1));
-        temp.add(taskNameComponent, cc.xy(3, 1));
-        temp.add(versionComboBox, cc.xy(5, 1));
+        temp.add(new JLabel(GenePattern.getSmallIcon()), cc.xy(1, 2));
+        temp.add(taskNameComponent, cc.xy(3, 2));
+        temp.add(versionComboBox, cc.xy(5, 2));
 
         JPanel temp2 = new JPanel(new BorderLayout());
         setLayout(new BorderLayout());
