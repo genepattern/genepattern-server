@@ -65,7 +65,7 @@ ant package
 
 
 
-	<target name="package" depends="compile,init" description="Compiles and creates the jar file">
+	<target name="package" depends="compile" description="Compiles and creates the jar file">
 		<jar destfile="${appfile}" manifest="${manifest}">
 			<fileset dir="build" includes="**" />
 			<fileset dir="." includes="org/genepattern/gpge/resources/**" />
@@ -80,9 +80,9 @@ ant package
 		</delete>
 	</target>
 
-	<target name="compile" depends=" init" description="Compiles the .java files that have been modified or that don&apos;t have .class files">
+	<target name="compile" depends="init" description="Compiles the .java files that have been modified or that don&apos;t have .class files">
 		<mkdir dir="build" />
-		<javac debug="true" defaultexcludes="true" deprecation="false" destdir="build" includes="${inclds}" optimize="false" proceed="false" srcdir=".">
+		<javac debug="true" defaultexcludes="true" deprecation="false" destdir="build" includes="**" optimize="false" proceed="false" srcdir=".">
 			<classpath refid="library.classpath" />
 		</javac>
 	</target>
