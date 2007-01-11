@@ -59,5 +59,19 @@ public class SuiteDAO extends BaseDAO {
         }
 
     }
+    
+    public List<Suite> findByOwnerOrPublic(String ownerName) {
+        try {
+            Query query = HibernateUtil.getSession().createQuery(
+                    "from org.genepattern.server.domain.Suite where owner = :ownerName  or accessId = 1 order by name");
+            query.setString("ownerName", ownerName);
+            return query.list();
+        }
+        catch (RuntimeException re) {
+            log.error("find by example failed", re);
+            throw re;
+        }
+
+    }
 
 }
