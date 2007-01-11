@@ -148,7 +148,7 @@ public class UIBeanHelper {
      * @throws IOException
      */
     public static void login(String username, boolean sessionOnly) throws UnsupportedEncodingException, IOException {
-        UIBeanHelper.login(username, sessionOnly, true);
+        UIBeanHelper.login(username, sessionOnly, true, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
     }
 
     /**
@@ -161,10 +161,9 @@ public class UIBeanHelper {
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    public static void login(String username, boolean sessionOnly, boolean redirect)
-            throws UnsupportedEncodingException, IOException {
-        HttpSession session = UIBeanHelper.getSession();
-
+    public static void login(String username, boolean sessionOnly, boolean redirect, HttpServletRequest request,
+            HttpServletResponse response) throws UnsupportedEncodingException, IOException {
+        HttpSession session = request.getSession();
         User user = new UserDAO().findById(username);
         assert user != null;
         if (sessionOnly) {
@@ -172,21 +171,21 @@ public class UIBeanHelper {
         }
         user.incrementLoginCount();
         user.setLastLoginDate(new Date());
-        user.setLastLoginIP(UIBeanHelper.getRequest().getRemoteAddr());
-        UIBeanHelper.getRequest().setAttribute(GPConstants.USERID, username);
-        UIBeanHelper.getRequest().setAttribute("userID", username);
+        user.setLastLoginIP(request.getRemoteAddr());
+        request.setAttribute(GPConstants.USERID, username);
+        request.setAttribute("userID", username);
 
         Cookie cookie = new Cookie(GPConstants.USERID, username);
-        cookie.setPath(getRequest().getContextPath());
+        cookie.setPath(request.getContextPath());
         if (!sessionOnly) {
             cookie.setMaxAge(Integer.MAX_VALUE);
             session.setMaxInactiveInterval(-1);
         }
-        UIBeanHelper.getResponse().addCookie(cookie);
+        response.addCookie(cookie);
 
         if (redirect) {
-            String referrer = UIBeanHelper.getReferrer(getRequest());
-            UIBeanHelper.getResponse().sendRedirect(referrer);
+            String referrer = UIBeanHelper.getReferrer(request);
+            response.sendRedirect(referrer);
         }
     }
 
