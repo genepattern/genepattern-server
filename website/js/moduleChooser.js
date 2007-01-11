@@ -38,25 +38,42 @@ function openCategory( id ) {
 }
 	
 function openAll() {
-     var panels = document.getElementsByClassName("category_panel");
-     for(var i=0; i<panels.length; i++) {
-       var fullId = panels[i].id;
-       var index = fullId.lastIndexOf('_');
-       var catId = fullId.substring(0, index);
-       openCategory(catId);
+   var parentPanel = getCurrentModePanel();
+   var panels = parentPanel.getElementsByTagName("div");
+   for(var i=0; i<panels.length; i++) {
+     var catId = panels[i].getAttribute('categoryId');
+     if(catId) {
+        openCategory(catId);
      }
+   }
 }
+
 	
 function closeAll() {
-     var panels = document.getElementsByClassName("category_panel");
-     for(var i=0; i<panels.length; i++) {
-       var fullId = panels[i].id;
-       var index = fullId.lastIndexOf('_');
-       var catId = fullId.substring(0, index);
-       closeCategory(catId);
+   var parentPanel = getCurrentModePanel();
+   var panels = parentPanel.getElementsByTagName("div");
+   for(var i=0; i<panels.length; i++) {
+     var catId = panels[i].getAttribute('categoryId');
+     if(catId) {
+        closeCategory(catId);
      }
- }
+   }
+}
 
+function getCurrentModePanel() {
+   var radioPanel = document.getElementById("viewchoiceRadioPanel");
+   var radioButtons = radioPanel.getElementsByTagName("input");
+   for(var i=0; i<radioButtons.length; i++) {
+     if(radioButtons[i].type == "radio") {
+       var panelId  = "module_table_" + radioButtons[i].value;
+       var panel = document.getElementById(panelId);
+       if(radioButtons[i].checked && panel != null) {
+         return panel;
+       }
+     }
+   }
+   return null;
+}
      
 function chooserModeChanged() {	  
    var radioPanel = document.getElementById("viewchoiceRadioPanel");

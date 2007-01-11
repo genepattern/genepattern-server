@@ -6,9 +6,9 @@
       
   <h:form>
     <!-- tasks and pipelines area -->
-    <table width="242" border="0" cellspacing="0" cellpadding="0">
+    <table width="242" border="0" cellspacing="0" cellpadding="0" class="sidebarhead-bkg">
       <tr>
-        <td width="100%" class="sidebarhead-bkg">
+        <td width="100%" >
           <div class="sidebarhead">Tasks &amp; Pipelines<br/>
             <div class="viewchoice" id="viewchoiceRadioPanel">
               <t:selectOneRadio 
@@ -26,6 +26,11 @@
         </td>
       </tr>
       <tr>
+        <td>&#160;&#160;&#160;&#160;
+          <a style="cursor: pointer;" onclick="openAll();">open all</a> | <a style="cursor: pointer;" onclick="closeAll();">close all</a>
+        </td>
+      </tr>  
+      <tr>
         <td height="6" ><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="1" height="6" /></td>
       </tr>
       </table>
@@ -34,7 +39,7 @@
       <t:dataList var="moduleCategoryGroup" value="#{moduleChooserBean.tasks}" >
 
           <!-- Create table for modules and set initial visibility -->
-          <div  id="module_table_#{moduleCategoryGroup.mode}"
+          <div  id="module_table_#{moduleCategoryGroup.mode}" 
                 style="#{moduleChooserBean.selectedMode == moduleCategoryGroup.mode ? 'display: inline;' : 'display: none;'}">
 
       
@@ -55,7 +60,8 @@
               #{category.name}             
           </span>
 
-         <div  id="#{category.identifier}_panel" style="#{category.expanded == true ? 'display:block;' : 'display:none;'}"> 
+         <div  id="#{category.identifier}_panel" class="category_panel" categoryId='#{category.identifier}'
+               style="#{category.expanded == true ? 'display:block;' : 'display:none;'}"> 
           <t:dataList var="taskInfo" value="#{category.modules}" >
             <span class="#{taskInfo.name == moduleChooserBean.selectedModule ? 'tasks_on' : (taskInfo.fromBroad == false ? 'task-mine' : '')}">
               <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="15" height="1" />
