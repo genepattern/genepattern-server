@@ -229,11 +229,12 @@ function showFileInput(id) {
             
             <!-- Loop through parameters -->
             <t:dataList value="#{runTaskBean.parameters}" var="p">
-              <tr class="taskperameter">
+              <tr>
               
                 <!-- Parameter label -->
                 <td valign="top" class="#{p.optional==false ? 'attribute-required' : ''}">
                   <nobr> #{p.displayName} <h:outputText rendered="#{!p.optional}" value="*"/> </nobr>
+                 
                 </td>
                 <td valign="top" id="#{p.name}_td">
                 
@@ -280,9 +281,11 @@ function showFileInput(id) {
                   <h:outputText rendered="#{p.inputType=='text' || p.inputType=='password'}">
                     <input name="#{p.name}" id="#{p.name}" size="30" type="#{p.inputType}" value="#{p.defaultValue}"/>
                   </h:outputText>
+                   
                 </td>
-                <td valign="top" class="description">#{p.displayDescription}</td>
+               
               </tr>
+              <tr class="taskperameter"><td colspan="2">#{p.displayDescription}</td></tr>
             </t:dataList>
             
             <h:outputText rendered="#{!empty runTaskBean.parameters}">
