@@ -71,7 +71,7 @@ public class LoginBean {
         return invalidPassword;
     }
 
-    public static void createNewUserNoPassword(String username, boolean redirect) {
+    public static void createNewUserNoPassword(String username) {
         User newUser = new User();
         newUser.setUserId(username);
         try {
@@ -80,13 +80,6 @@ public class LoginBean {
             log.error(e);
         }
         (new UserDAO()).save(newUser);
-        try {
-            UIBeanHelper.login(username, false, redirect);
-        } catch (UnsupportedEncodingException e) {
-            log.error(e);
-        } catch (IOException e) {
-            log.error(e);
-        }
     }
 
     /**
@@ -105,7 +98,14 @@ public class LoginBean {
                 if (passwordRequired) {
                     unknownUser = true;
                 } else {
-                    createNewUserNoPassword(username, true);
+                    createNewUserNoPassword(username);
+                    try {
+                        UIBeanHelper.login(username, false);
+                    } catch (UnsupportedEncodingException e) {
+                        log.error(e);
+                    } catch (IOException e) {
+                        log.error(e);
+                    }
                 }
             } else if (passwordRequired) {
                 if (!java.util.Arrays.equals(EncryptionUtil.encrypt(password), up.getPassword())) {
