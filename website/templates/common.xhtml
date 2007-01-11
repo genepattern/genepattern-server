@@ -15,12 +15,13 @@
       var contextRoot = '#{facesContext.externalContext.requestContextPath}';
     </script>
      
-    <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
-    <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js"/>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/genepattern.js"/>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/mm_menu.js"/>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/mainMenu.js"/>
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/popupMenu.js"/>   
-    <script language="JavaScript" src="#{facesContext.externalContext.requestContextPath}/js/jsval.js"/>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jsval.js"/>
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/minmax.js"/>
     <script type="text/javascript" language="javascript"> 
       /* <![CDATA[ */
       /* Function to support "jsval" based validation.  See registerUser.xhtml for an example.*/ 
@@ -140,6 +141,7 @@
           <ui:insert name="leftPanel"/>
           
           <td valign="top" class="maincontent" id="maincontent">
+          <div style="min-width: 570px;">
           
             <!-- JSF (Server side) errors -->
             <h:outputText value="Please correct the following errors before proceeding:" 
@@ -159,7 +161,8 @@
 		    
 		    <!-- Main content body -->
      		<ui:insert name="body" />
-          </td>
+     		</div>
+           </td>
           
           <ui:insert name="rightPanel"/>
         </tr>
