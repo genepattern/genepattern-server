@@ -12,42 +12,21 @@
 
 package org.genepattern.server.webapp.jsf;
 
-import java.util.List;
-
-import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
 
 public class UserPrefsBean {
     private UserProp javaFlagsProp;
+
     private UserProp recentJobsProp;
 
-    public UserPrefsBean() {     
-        javaFlagsProp = getProp(UserPropKey.VISUALIZER_JAVA_FLAGS, System.getProperty("visualizer_java_flags"));
-        recentJobsProp = getProp(UserPropKey.RECENT_JOBS_TO_SHOW, "4");
-    }
-
-    public static UserProp getProp(String name, String defaultValue) {
-        User user = (new UserDAO()).findById(UIBeanHelper.getUserId());
-        assert user != null;
-        List<UserProp> props = user.getProps();
-        UserProp userProp = null;
-        for (UserProp p : props) {
-            if (name.equals(p.getKey())) {
-                userProp = p;
-                break;
-            }
-        }
-
-        if (userProp == null) {
-            userProp = new UserProp();
-            userProp.setGpUserId(UIBeanHelper.getUserId());
-            userProp.setKey(name);
-            userProp.setValue(defaultValue);
-            props.add(userProp);
-        }
-        return userProp;
+    public UserPrefsBean() {
+        UserDAO dao = new UserDAO();
+        String userId = UIBeanHelper.getUserId();
+        javaFlagsProp = dao.getProperty(userId, UserPropKey.VISUALIZER_JAVA_FLAGS, System
+                .getProperty("visualizer_java_flags"));
+        recentJobsProp = dao.getProperty(userId, UserPropKey.RECENT_JOBS_TO_SHOW, "4");
     }
 
     public String save() {

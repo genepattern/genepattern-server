@@ -13,6 +13,7 @@
 package org.genepattern.server.webapp.jsf;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.webservice.JobInfo;
@@ -25,7 +26,8 @@ public class RecentJobsBean extends JobBean {
     protected JobInfo[] getJobInfos() {
         String userId = UIBeanHelper.getUserId();
         assert userId != null;
-        int recentJobsToShow = Integer.parseInt(UserPrefsBean.getProp(UserPropKey.RECENT_JOBS_TO_SHOW, "4").getValue());
+        int recentJobsToShow = Integer.parseInt(new UserDAO().getPropertyValue(userId, UserPropKey.RECENT_JOBS_TO_SHOW,
+                "4"));
         LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
         try {
             return analysisClient.getJobs(userId, -1, recentJobsToShow, false);
