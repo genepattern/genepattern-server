@@ -1167,10 +1167,10 @@ public class GenePatternAnalysisTask implements IGPConstants {
                             // C:\Program
                             // Files\GenePatternServer\Tomcat\..\temp\attachments\Axis39088.att_all_aml_500.gct
                             // we want everything from ..\temp on
-                            String substr = ".." + File.separator + "temp" + File.separator + "attachments";
+                            String substr = /*".." +*/ File.separator + "temp" + File.separator;// + "attachments";
                             int fidx = origFullPath.indexOf(substr);
-                            String inputfilename = origFullPath.substring(fidx + 20);
-                            value = value + "    " + GP_URL + "getInputFile.jsp?file=" + inputfilename;
+                            String inputfilename = origFullPath.substring(fidx + 6);
+                            value = value + "    " + GP_URL + "getFile.jsp?task=&file=" + inputfilename;
                         }
                     }
                     else {
