@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.commons.fileupload.FileItem;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
@@ -394,6 +395,9 @@ public class RunPipelineForJsp {
             DeleteUnsavedTasklibDirThread delThread = new DeleteUnsavedTasklibDirThread(taskInfo, process);
             delThread.start();
         }
+        HibernateUtil.commitTransaction(); // ensure this is in the DB
+        HibernateUtil.beginTransaction();
+        
         return process;
     }
 
