@@ -114,8 +114,23 @@
         <p>
           <h1>Installing Tasks&#160;&#160;<span id="progress_indicator"></span> </h1>
         </p>
+
+        <p>
+        <!--  Divs for error messages.  One for each task  -->
+         <ui:repeat var="task" value="#{taskInstallBean.tasks}">
+          <li id="error_#{task.lsid}" class="validation-error" style="font-weight:bold; color:red;display:none;"></li>
+        </ui:repeat>
+        </p>
         
         <table border="0" cellpadding="5" cellspacing="0">
+          <tr>
+            <td>
+              <ui:repeat var="task" value="#{taskInstallBean.tasks}">
+                <li id="error_#{task.lsid}" class="validation-error" style="font-weight:bold; color:red;display:none;"></li>
+              </ui:repeat>
+            </td>
+          </tr>
+          
           <!--  Loop through tasks (TaskInstallStatus beans) -->
           <ui:repeat var="task" value="#{taskInstallBean.tasks}">
             <tr>
@@ -131,12 +146,6 @@
           </ui:repeat>
         </table>
         
-        <!--  Divs for error messages.  One for each task  -->
-        <ui:repeat var="task" value="#{taskInstallBean.tasks}">
-          <div id="error_#{task.lsid}" class="validation-error" style="display:none;">
-             
-          </div>
-        </ui:repeat>
         
 
         <div id="button_pane" style="display:none;">
