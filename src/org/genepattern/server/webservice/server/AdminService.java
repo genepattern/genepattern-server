@@ -69,7 +69,6 @@ public class AdminService implements IAdminService {
 	       } 
 	}
 	private boolean isTaskOwner(String user, String lsid) throws WebServiceException{
-		System.out.println("isTaskOwner: " + user + " -- " + this.localUserName);
 		
 		TaskMaster tm = (new TaskMasterDAO()).findByIdLsid(lsid);
         if (tm == null) return false; // can't own what you can't see
