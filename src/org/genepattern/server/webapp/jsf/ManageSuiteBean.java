@@ -44,7 +44,7 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
      * @return
      */
     public List<Suite> getSuites() {
-        suites = (suites == null) ? (new SuiteDAO()).findAll() : suites;
+        suites = (suites == null) ? (new SuiteDAO()).findByOwnerOrPublic(UIBeanHelper.getUserId()) : suites;
         return suites;
     }
 
