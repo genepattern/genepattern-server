@@ -422,7 +422,7 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
 		out.flush();
 	
 		out.print(":</td><td class='attribute-required' >" + value);
-		out.print(":</td><td class='attribute-required' >" + paramDescription);
+		out.print("</td><td class='attribute-required' >" + paramDescription);
 
 		out.println("</td></tr>");
 
