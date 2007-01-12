@@ -16,17 +16,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.net.Authenticator;
+import java.net.HttpURLConnection;
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Vector;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
-import java.net.HttpURLConnection;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -35,39 +36,63 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
+/**
+ * 
+ * Class for parsing XML returned from module or patch repository
+ * 
+ */
 public class ModuleRepository {
-    protected String motd_message = "";
+    static class SimpleAuthenticator extends Authenticator {
+        private String username, password;
 
-    protected String motd_url = "";
-
-    protected int motd_urgency = 0;
-
-    protected long motd_timestamp = 0;
-
-    protected String motd_latestServerVersion = "";
-
-    ModuleRepository() {
-        return;
-    }
-
-    public static void main(String[] args) {
-        String url = "http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_module_repository.cgi";
-
-        ModuleRepository mr = new ModuleRepository();
-
-        try {
-            mr.GetModules(url);
-        } catch (Exception e) {
-            e.printStackTrace();
+        public SimpleAuthenticator(String username, String password) {
+            this.username = username;
+            this.password = password;
         }
 
-        // System.out.println(dumpDOM(root, 0));
+        protected PasswordAuthentication getPasswordAuthentication() {
+            return new PasswordAuthentication(username, password.toCharArray());
+        }
     }
 
-    public InstallTask[] GetModules(String url) throws IOException, SAXException, ParserConfigurationException,
-            IllegalArgumentException, IllegalAccessException, NoSuchMethodException, SecurityException {
+    private static final String NODE_MANIFEST = "manifest";
+
+    private static final String NODE_MODULEREPOSITORY = "module_repository";
+
+    private static final String NODE_PATCHREPOSITORY = "patch_repository";
+
+    private static final String NODE_MOTD_LATESTSERVERVERSION = "motd_latestServerVersion";
+
+    private static final String NODE_MOTD_MESSAGE = "motd_message";
+
+    private static final String NODE_MOTD_TIMESTAMP = "motd_timestamp";
+
+    private static final String NODE_MOTD_URGENCY = "motd_urgency";
+
+    private static final String NODE_MOTD_URL = "motd_url";
+
+    private static final String NODE_SITE_MOTD = "site_motd";
+
+    private static final String NODE_SITEMODULE = "site_module";
+
+    private static final String NODE_SUPPORTFILE = "support_file";
+
+    private String motd_latestServerVersion = "";
+
+    private String motd_message = "";
+
+    private long motd_timestamp = 0;
+
+    private int motd_urgency = 0;
+
+    private String motd_url = "";
+
+    public ModuleRepository() {
+
+    }
+
+    public InstallTask[] parse(String url) throws Exception {
         String DBF = "javax.xml.parsers.DocumentBuilderFactory";
         String oldDocumentBuilderFactory = System.getProperty(DBF);
         URL reposURL = new URL(url);
@@ -97,11 +122,13 @@ public class ModuleRepository {
             throw new IOException(ioe.getMessage() + " while connecting to " + url);
         } finally {
             try {
-                if (is != null) is.close();
+                if (is != null)
+                    is.close();
             } catch (IOException ioe) {
                 // ignore
             }
-            if (oldDocumentBuilderFactory != null) System.setProperty(DBF, oldDocumentBuilderFactory);
+            if (oldDocumentBuilderFactory != null)
+                System.setProperty(DBF, oldDocumentBuilderFactory);
         }
 
         Element root = doc.getDocumentElement();
@@ -112,36 +139,28 @@ public class ModuleRepository {
 
     }
 
-    public static String dumpDOM(Node node, int indent) {
-        if (node.getNodeType() != Node.ELEMENT_NODE) {
-            // most likely a comment or text node
-            System.out.println("name= " + node.getNodeName() + ", type=" + node.getNodeType() + ", value="
-                    + node.getNodeValue());
-            return "";
-        }
-        Element element = (Element) node;
-        String indentString = "\t\t\t\t\t\t\t\t\t".substring(0, indent);
-        StringWriter outputWriter = new StringWriter();
-        NamedNodeMap attributes = element.getAttributes();
-        outputWriter.write(indentString);
-        outputWriter.write("<" + element.getTagName());
-        if (attributes != null) {
-            for (int i = 0; i < attributes.getLength(); i++) {
-                outputWriter.write("Attribute: " + ((Attr) attributes.item(i)).getName() + "="
-                        + ((Attr) attributes.item(i)).getValue() + "\n");
-            }
-        }
-        outputWriter.write("/>\n");
-        NodeList children = element.getChildNodes();
-        for (int child = 0; child < children.getLength(); child++) {
-            outputWriter.write(dumpDOM(children.item(child), indent + 1));
-        }
-        return outputWriter.toString();
+    public String getMOTD_latestServerVersion() {
+        return motd_latestServerVersion;
+    }
+
+    public String getMOTD_message() {
+        return motd_message;
+    }
+
+    public Date getMOTD_timestamp() {
+        return new Date(motd_timestamp);
+    }
+
+    public int getMOTD_urgency() {
+        return motd_urgency;
+    }
+
+    public String getMOTD_url() {
+        return motd_url;
     }
 
     public InstallTask[] parseDOM(Node node) {
-        Vector module_list = new Vector();
-        int c_module = 0;
+        List module_list = new ArrayList();
 
         switch (node.getNodeType()) {
         case Node.ELEMENT_NODE:
@@ -149,7 +168,7 @@ public class ModuleRepository {
             String manifest = "";
             String support_file;
 
-            if (element.getTagName().equals(NODE_MODULEREPOSITORY)) {
+            if (element.getTagName().equals(NODE_MODULEREPOSITORY) || element.getTagName().equals(NODE_PATCHREPOSITORY)) {
                 NodeList moduleNodes = node.getChildNodes();
                 for (int i = 0; i < moduleNodes.getLength(); i++) {
                     Node c_node = moduleNodes.item(i);
@@ -183,8 +202,7 @@ public class ModuleRepository {
                                     if (childElt.getTagName().equals(NODE_MANIFEST)) {
                                         Node valueNode = c_childNode.getFirstChild();
                                         manifest = valueNode.getNodeValue();
-                                    }
-                                    else if (childElt.getTagName().equals(NODE_SUPPORTFILE)) {
+                                    } else if (childElt.getTagName().equals(NODE_SUPPORTFILE)) {
                                         support_file = childElt.hasAttribute("url") ? childElt.getAttribute("url")
                                                 : null;
                                         support_urls.add(support_file);
@@ -202,8 +220,7 @@ public class ModuleRepository {
                                 t.printStackTrace();
                             }
 
-                        }
-                        else if (c_elt.getTagName().equals(NODE_SITE_MOTD)) {
+                        } else if (c_elt.getTagName().equals(NODE_SITE_MOTD)) {
                             // System.out.println("got " + c_elt.getTagName() +
                             // ": " + dumpDOM(c_node, 0));
                             NodeList motdNodes = c_node.getChildNodes();
@@ -213,11 +230,9 @@ public class ModuleRepository {
                                     c_elt = (Element) c_node;
                                     if (c_elt.getTagName().equals(NODE_MOTD_MESSAGE)) {
                                         motd_message = c_node.getChildNodes().item(0).getNodeValue();
-                                    }
-                                    else if (c_elt.getTagName().equals(NODE_MOTD_URL)) {
+                                    } else if (c_elt.getTagName().equals(NODE_MOTD_URL)) {
                                         motd_url = c_node.getChildNodes().item(0).getNodeValue();
-                                    }
-                                    else if (c_elt.getTagName().equals(NODE_MOTD_URGENCY)) {
+                                    } else if (c_elt.getTagName().equals(NODE_MOTD_URGENCY)) {
                                         try {
                                             motd_urgency = Integer.parseInt(c_node.getChildNodes().item(0)
                                                     .getNodeValue());
@@ -226,8 +241,7 @@ public class ModuleRepository {
                                             System.out.println(nfe.getMessage()
                                                     + " in ModuleRepository.getModules() handling MOTD urgency");
                                         }
-                                    }
-                                    else if (c_elt.getTagName().equals(NODE_MOTD_TIMESTAMP)) {
+                                    } else if (c_elt.getTagName().equals(NODE_MOTD_TIMESTAMP)) {
                                         try {
                                             motd_timestamp = Long.parseLong(c_node.getChildNodes().item(0)
                                                     .getNodeValue());
@@ -241,29 +255,24 @@ public class ModuleRepository {
                                                         + " in ModuleRepository.getModules() handling MOTD timestamp");
                                             }
                                         }
-                                    }
-                                    else if (c_elt.getTagName().equals(NODE_MOTD_LATESTSERVERVERSION)) {
+                                    } else if (c_elt.getTagName().equals(NODE_MOTD_LATESTSERVERVERSION)) {
                                         motd_latestServerVersion = c_node.getChildNodes().item(0).getNodeValue();
-                                    }
-                                    else {
+                                    } else {
                                         System.out.println("Got non-MOTD node where motd expected: "
                                                 + c_elt.getTagName());
                                     }
                                 }
                             }
-                        }
-                        else {
+                        } else {
                             System.out.println("Got non-sitemodule node where sitemodule expected: "
                                     + c_elt.getTagName());
                         }
-                    }
-                    else {
+                    } else {
                         // System.out.println("Got non-element node where
                         // element expected " + c_node.getNodeType());
                     }
                 } // for loop
-            }
-            else {
+            } else {
                 System.out.println("Got non-modulerepository node where modulerepository node expected: "
                         + element.getTagName());
             }
@@ -289,56 +298,44 @@ public class ModuleRepository {
         return task_list;
     }
 
-    public String getMOTD_message() {
-        return motd_message;
+    public static String dumpDOM(Node node, int indent) {
+        if (node.getNodeType() != Node.ELEMENT_NODE) {
+            // most likely a comment or text node
+            System.out.println("name= " + node.getNodeName() + ", type=" + node.getNodeType() + ", value="
+                    + node.getNodeValue());
+            return "";
+        }
+        Element element = (Element) node;
+        String indentString = "\t\t\t\t\t\t\t\t\t".substring(0, indent);
+        StringWriter outputWriter = new StringWriter();
+        NamedNodeMap attributes = element.getAttributes();
+        outputWriter.write(indentString);
+        outputWriter.write("<" + element.getTagName());
+        if (attributes != null) {
+            for (int i = 0; i < attributes.getLength(); i++) {
+                outputWriter.write("Attribute: " + ((Attr) attributes.item(i)).getName() + "="
+                        + ((Attr) attributes.item(i)).getValue() + "\n");
+            }
+        }
+        outputWriter.write("/>\n");
+        NodeList children = element.getChildNodes();
+        for (int child = 0; child < children.getLength(); child++) {
+            outputWriter.write(dumpDOM(children.item(child), indent + 1));
+        }
+        return outputWriter.toString();
     }
 
-    public String getMOTD_url() {
-        return motd_url;
-    }
+    public static void main(String[] args) {
+        String url = "http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_module_repository.cgi";
 
-    public int getMOTD_urgency() {
-        return motd_urgency;
-    }
+        ModuleRepository mr = new ModuleRepository();
 
-    public Date getMOTD_timestamp() {
-        return new Date(motd_timestamp);
-    }
-
-    public String getMOTD_latestServerVersion() {
-        return motd_latestServerVersion;
-    }
-
-    public static String NODE_MANIFEST = "manifest";
-
-    public static String NODE_SUPPORTFILE = "support_file";
-
-    public static String NODE_SITEMODULE = "site_module";
-
-    public static String NODE_MODULEREPOSITORY = "module_repository";
-
-    public static String NODE_SITE_MOTD = "site_motd";
-
-    public static String NODE_MOTD_MESSAGE = "motd_message";
-
-    public static String NODE_MOTD_URL = "motd_url";
-
-    public static String NODE_MOTD_URGENCY = "motd_urgency";
-
-    public static String NODE_MOTD_TIMESTAMP = "motd_timestamp";
-
-    public static String NODE_MOTD_LATESTSERVERVERSION = "motd_latestServerVersion";
-
-    static class SimpleAuthenticator extends Authenticator {
-        private String username, password;
-
-        public SimpleAuthenticator(String username, String password) {
-            this.username = username;
-            this.password = password;
+        try {
+            mr.parse(url);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        protected PasswordAuthentication getPasswordAuthentication() {
-            return new PasswordAuthentication(username, password.toCharArray());
-        }
+        // System.out.println(dumpDOM(root, 0));
     }
 }
