@@ -31,6 +31,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
+import org.genepattern.server.process.ModuleRepository;
 import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.ITaskIntegrator;
@@ -160,6 +161,82 @@ public class TaskCatalogBean {
         for (MySelectItem i : selectItems) {
             i.setSelected(set.contains(i.getValue()));
         }
+    }
+
+    public static class Patch {
+
+        private String name;
+
+        private long size;
+
+        public String getFormattedSize() {
+            return JobHelper.getFormattedSize(size);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public long getSize() {
+            return size;
+        }
+
+    }
+
+    private void updatePatches() {
+        HashMap<String, InstallTask> lsidToPatchMap = new HashMap<String, InstallTask>();
+        try {
+            String reposUrl = System.getProperty("DefaultPatchRepositoryURL");
+            InstallTask[] patches = new ModuleRepository().parse(reposUrl);
+            if (patches != null) {
+                for (InstallTask t : patches) {
+                    lsidToPatchMap.put(t.getLsid(), t);
+                }
+            }
+        } catch (Exception e) {
+            log.error(e);
+            e.printStackTrace();
+        }
+        List<MyTask> tasks = getTasks();
+        String installedPatchLSIDsString = System.getProperty("installedPatchLSIDs");
+        Set<String> installedPatches = new HashSet<String>();
+        if (installedPatchLSIDsString != null) {
+            installedPatches.addAll(Arrays.asList(installedPatchLSIDsString.split(",")));
+        }
+        System.out.println("lsids in repos " + Arrays.asList(lsidToPatchMap.keySet().toArray()));
+        if (tasks != null) {
+
+            for (MyTask t : tasks) {
+
+                String temp = (String) t.getAttributes().get("requiredPatchLSIDs");
+                String[] patchLsids = (temp != null && !"".equals(temp)) ? patchLsids = temp.split(",") : new String[0];
+
+                List<Patch> patches = new ArrayList<Patch>();
+                for (String patchLsid : patchLsids) {
+                    patchLsid = patchLsid.trim();
+                    if (installedPatches.contains(patchLsid)) {
+                        // ignore patches that are already installed
+                        continue;
+                    }
+                    InstallTask installTaskPatch = lsidToPatchMap.get(patchLsid);
+                    if (installTaskPatch != null) {
+                        Patch patch = new Patch();
+                        patch.name = installTaskPatch.getName();
+                        patch.size = installTaskPatch.getDownloadSize();
+                        patches.add(patch);
+
+                    } else {
+                        log.info("Patch " + patchLsid + " required by " + t.getName()
+                                + " not found in patch repository.");
+
+                    }
+
+                }
+                t.setPatches(patches);
+
+            }
+        }
+
     }
 
     public List<MyTask> getTasks() {
@@ -360,6 +437,7 @@ public class TaskCatalogBean {
 
         }
         Collections.sort(filteredTasks, new TaskNameComparator());
+        updatePatches();
 
     }
 
@@ -398,8 +476,18 @@ public class TaskCatalogBean {
 
         private MyTask[] laterVersions;
 
+        private List<Patch> patches;
+
         public void setLaterVersions(MyTask[] laterVersions) {
             this.laterVersions = laterVersions;
+        }
+
+        public void setPatches(List<Patch> patches) {
+            this.patches = patches;
+        }
+
+        public List<Patch> getPatches() {
+            return this.patches;
         }
 
         public MyTask[] getLaterVersions() {
@@ -434,7 +522,11 @@ public class TaskCatalogBean {
             return task.getDocUrls();
         }
 
-        public long getDownloadSize() {
+        public String getFormattedSize() {
+            return JobHelper.getFormattedSize(task.getDownloadSize());
+        }
+
+        public long getSize() {
             return task.getDownloadSize();
         }
 
