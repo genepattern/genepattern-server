@@ -104,7 +104,6 @@
                 File aFile = new File(System.getProperty("java.io.tmpdir"), name);
                 requestFiles.put(fi.getFieldName(), aFile);
 
-System.out.println("MP: "+fi.getFieldName() + "=" + name);
                 fi.write(aFile);
 
            }
@@ -134,6 +133,8 @@ try {
 	bRun = requestParameters.getProperty("cmd").equals(RUN);
 	bClone = requestParameters.getProperty("cmd").equals(CLONE);
 	bDelete = requestParameters.getProperty("delete") != null;
+
+
 
 	String pipelineName = requestParameters.getProperty("pipeline_name");
 	if (bDelete) {
@@ -234,6 +235,8 @@ try {
 	model.setAuthor(requestParameters.getProperty("pipeline_author"));
 	boolean isTemp = modelName.startsWith("try.") || bRun;
 	String lsid = requestParameters.getProperty(GPConstants.LSID);
+	String origLSID = lsid;
+
 	if (lsid == null) {
 		lsid = "";
 	}
@@ -361,17 +364,6 @@ try {
 					inheritedFilename = "";
 					inheritedFilename += requestParameters.getProperty(taskPrefix + "_if_" + i);
 
-//AAAAAAAAAAAAAAAAAAAAa
-//					String[] values = requestParameters.getParameterValues(taskPrefix + "_if_" + i);
-//					for (int x=0; values!=null && x < values.length ; x++){
-//					 	if (x > 0) {
-//							inheritedFilename = inheritedFilename + GPConstants.PARAM_INFO_CHOICE_DELIMITER;
-//						} else {
-//							inheritedFilename = "";
-//						}
-//						inheritedFilename += values[x];
-//					}
-// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 				}
 
 				if (runTimePrompt[i]) {
@@ -418,7 +410,6 @@ try {
 
 						p.setValue((String)htFilenames.get(filenameKey));
 
-System.out.println("MP 3 = " + filenameKey + " <==" + paramName + "   " + p.getValue() + "  " + runTimePrompt[i]);
 					}
 				}
 
@@ -462,7 +453,8 @@ System.out.println("MP 3 = " + filenameKey + " <==" + paramName + "   " + p.getV
 
 	//lsid = null;
 	if (vProblems.size() == 0) {
-		String oldLSID = lsid;
+		String oldLSID = origLSID;
+	
 		if (bClone) {
 			model.setName(requestParameters.getProperty("cloneName"));
 			// TODO: change URLs that are task-relative to point to the new task
@@ -486,7 +478,7 @@ System.out.println("MP 3 = " + filenameKey + " <==" + paramName + "   " + p.getV
 
 	 			if (bClone || !oldLSID.equals("")) {
 	 				// TODO: change URLs that are task-relative to point to the new task
-					// System.out.println("copying support files from " + oldLSID + " to " + lsid);
+					//System.out.println("copying support files from " + oldLSID + " to " + lsid);
 		 			copySupportFiles(modelName, model.getName(), oldLSID, lsid, userID);
 	 			}
 
@@ -679,8 +671,15 @@ System.out.println("MP 3 = " + filenameKey + " <==" + paramName + "   " + p.getV
 	}
 } %>
 <%! void copySupportFiles(String oldTaskName, String newTaskName, String oldLSID, String newLSID, String userID) throws Exception {
+	//copySupportFiles(modelName, model.getName(), oldLSID, lsid, userID);
+	//DirectoryManager.getTaskLibDir(modelName + "." + GPConstants.TASK_TYPE_PIPELINE, lsid, userID);
+
+
+
 	String oldDir = DirectoryManager.getTaskLibDir(oldTaskName + "." + GPConstants.TASK_TYPE_PIPELINE, oldLSID, userID);
 	String newDir = DirectoryManager.getTaskLibDir(newTaskName + "." + GPConstants.TASK_TYPE_PIPELINE, newLSID, userID);
+
+
 	File[] oldFiles = new File(oldDir).listFiles(new FilenameFilter() {
 				public boolean accept(File dir, String name) {
 					return (!name.endsWith(".old") && !name.equals("version.txt"));
