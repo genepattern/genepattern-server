@@ -194,7 +194,7 @@ public class CreateSuiteBean implements java.io.Serializable {
             for (ModuleCategory cat : categories) {
                 for (Module mod : cat.getModules()) {
                     if (mod.isSelected()) {
-                        selectedLSIDs.add(mod.getSelectedVersion());
+                        selectedLSIDs.add(mod.getLsid());
                     }
                 }
             }
