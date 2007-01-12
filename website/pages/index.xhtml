@@ -25,6 +25,29 @@
  
 /* <![CDATA[ */
 
+	function callManagedBean(elExpression, parameters) {            
+        var opt = {
+          parameters: parameters + '&el=' + elExpression,
+          onSuccess: receiveResponse,
+          onFailure: function(t) {
+            alert('Error ' + t.status + ' -- ' + t.statusText);
+          }
+        } 
+        new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
+      }
+
+      // The callback function - receive response from server
+      function receiveResponse( req ) {
+        if (req.readyState == 4) {
+          if (req.status == 200) { // only if "OK"
+            	showCode(req.responseText);
+          } 
+          else {
+            alert("There was a problem retrieving the XML data:\n" + req.statusText);
+          }  
+        }
+      }
+      
 	function closeCode() {
 		Element.hide($('codeDiv'));
 	}
