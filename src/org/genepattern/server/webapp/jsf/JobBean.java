@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -226,14 +225,8 @@ public abstract class JobBean {
     }
 
     public static class OutputFileInfo {
-        static NumberFormat numberFormat;
 
         private static final Comparator COMPARATOR = new KeyValueComparator();
-
-        static {
-            numberFormat = NumberFormat.getInstance();
-            numberFormat.setMaximumFractionDigits(1);
-        }
 
         boolean exists;
 
@@ -269,15 +262,7 @@ public abstract class JobBean {
         }
 
         public String getFormattedSize() {
-            if (size >= 1073741824) {
-                double gigabytes = size / 1073741824.0;
-                return numberFormat.format(gigabytes) + " GB";
-            } else if (size >= 1048576) {
-                double megabytes = size / 1048576.0;
-                return numberFormat.format(megabytes) + " MB";
-            } else {
-                return Math.max(1, Math.ceil(size / 1024.0)) + " KB";
-            }
+            return JobHelper.getFormattedSize(size);
         }
 
         public String getLabel() {
@@ -528,6 +513,8 @@ public abstract class JobBean {
 
     public String loadTask(ActionEvent event) {
         String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("module"));
+        String jobNumber = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber"));
+        UIBeanHelper.getRequest().setAttribute("matchJob", jobNumber);
         RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
         assert runTaskBean != null;
         runTaskBean.setTask(lsid);
