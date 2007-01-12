@@ -60,7 +60,7 @@ public class InstallTasksCollectionUtils {
 		}
 
 		Vector modules = new Vector();
-		modules.addAll(Arrays.asList(repos.GetModules(repositoryURL)));
+		modules.addAll(Arrays.asList(repos.parse(repositoryURL)));
 		// weed out any bad LSIDs right away
 		InstallTask task = null;
 		for (ListIterator itModule = modules.listIterator(); itModule.hasNext();) {
