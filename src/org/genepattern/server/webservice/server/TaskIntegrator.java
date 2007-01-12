@@ -794,6 +794,8 @@ public class TaskIntegrator implements ITaskIntegrator {
     public String cloneTask(String oldLSID, String cloneName) throws WebServiceException {
     	isAuthorized(getUserName(),  "TaskIntegrator.cloneTask");
         String userID = getUserName();
+        
+        
         try {
             TaskInfo taskInfo = null;
             try {
@@ -814,6 +816,7 @@ public class TaskIntegrator implements ITaskIntegrator {
 
                 // update the pipeline model with the new name
                 model.setName(cloneName);
+                model.setUserid(userID);
                 // update the task with the new model and command line
                 TaskInfoAttributes newTIA = AbstractPipelineCodeGenerator.getTaskInfoAttributes(model);
                 tia.put(GPConstants.SERIALIZED_MODEL, model.toXML());
