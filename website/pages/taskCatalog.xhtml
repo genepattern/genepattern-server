@@ -47,38 +47,48 @@
 			<c:otherwise>
 				<h:form id="taskCatalogForm">
 				<h:inputHidden id="taskCatalogSubmit" value="1" />
-					
-							
-							
+		
 						<table border="0" cellpadding="5" cellspacing="0">
-							 
-							<tr><td colspan="3">Select from the following tasks from the Module Repository
-							to download and install.
-							</td></tr>
-							<tr valign="top"><td valign="top"><b>State:</b>
+							
+							<tr valign="top">
+							<td valign="top">
 							<br />
-							<t:selectManyCheckbox value="#{taskCatalogBean.selectedStates}"
-								name="state" id="state" layout="lineDirection" style="display:inline">
-								<f:selectItems value="#{taskCatalogBean.states}"/>
-							</t:selectManyCheckbox>
-							
+							<t:dataList var="t" value="#{taskCatalogBean.states}" >
+								<h:outputText rendered="#{t.selected}">
+									<input type="checkbox" name="state" value="#{t.value}" checked="true">#{t.label}</input>
+								</h:outputText>
+								<h:outputText rendered="#{!t.selected}">
+									<input type="checkbox" name="state" value="#{t.value}">#{t.label}</input>
+								</h:outputText>
+								<br />
+							</t:dataList>
 							</td>
-							<td>
-							
-							<b>OS:</b>
+							<td valign="top">
+					
+							Operating System:
 							<br />
-							<t:selectManyCheckbox
-								value="#{taskCatalogBean.selectedOperatingSystems}" name="os"
-								id="os" layout="lineDirection" style="display:inline">
-								<f:selectItems value="#{taskCatalogBean.operatingSystems}" />
-							</t:selectManyCheckbox>
-							
+							<t:dataList var="t" value="#{taskCatalogBean.operatingSystems}" >
+								<h:outputText rendered="#{t.selected}">
+									<input type="checkbox" name="os" value="#{t.value}" checked="true">#{t.label}</input>
+								</h:outputText>
+								<h:outputText rendered="#{! t.selected}">
+									<input type="checkbox" name="os" value="#{t.value}">#{t.label}</input>
+								</h:outputText>
+								<br />
+							</t:dataList>
+			
 							</td>
+							
+						
+							
+							</tr>
+							<tr>
 							<td>
 							<h:commandButton
-								action="#{taskCatalogBean.filter}" value="Filter" />
+								action="#{taskCatalogBean.filter}" value="Search" />
 								</td>
-						</tr>
+							</tr>
+						
 						</table>
 					
 
