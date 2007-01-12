@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk">
+      
+  <ui:composition template="/templates/common.xhtml">
+    <ui:define name="pageTitle">Manage Tasks and Pipelines</ui:define>
+    <ui:define name="headText">
+      <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css"/>
+      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jobResults.js"/>
+      <script type="text/javascript" language="javascript"> 
+
+/* <![CDATA[ */
+
+    // versionCheckboxes.  This will contain an array of checkboxes, one for each version, for each task
+    var versionCheckboxes = new Array();
+   
+    // Add an id for a version checkbox to the array at "taskIndex"
+    function addVersionCB(taskIndex, versionCB) {
+      var idArray = versionCheckboxes[taskIndex];
+      if(idArray == null) {
+        idArray = new Array();
+        versionCheckboxes[jobNumber] = idArray;
+      }
+      idArray[idArray.length] = versionCB;
+    }
+
+    // Toggle the version checkboxes for a particular task
+    function toggleTaskCheckboxes(taskIndex)
+    {
+      var masterCheckbox = $("task_version_cb_" + taskIndex);
+      var isChecked = masterCheckbox.checked;
+      
+      var idArray = versionCheckboxes[taskIndex];
+      if(idArray != null) {
+        for(var i=0; i<idArray.length; i++) {
+          var checkbox = document.getElementById(idArray[i]);
+          checkbox.checked = isChecked;
+        }
+      }
+    }
+     
+    // Toggle all checkboxes.  
+    function toggleAllCheckboxes(maincheckbox)
+    {
+      var isChecked = maincheckbox.checked;
+      
+      for(var i=0; i<versionCheckboxes.length; i++) {
+        var idArray = versionCheckboxes[i];
+        for(var j=0; j<idArray.length; j++) {
+           var checkbox = document.getElementById(rowIds[i]);
+           checkbox.checked = isChecked;         
+        }
+      }
+    }
+ 	
+	function confirmDelete() {
+		return confirm('Are you sure you want to delete the selected job(s)?');
+
+	}
+	
+    /* ]]> */
+
+	</script>
+    </ui:define>    
+    <ui:define name="body">
+      <h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm();">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tbody>
+          <tr class="smalltype">
+            <td valign="top" align="center">
+              <h:commandLink action="#{someBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink> 
+            </td>
+            <td>&#160;</td>
+            <td>&#160;</td>
+            <td>&#160;</td>
+          </tr>
+          <tr class="tableheader-row">
+            <td align="center"><input name="checkbox" type="checkbox" onclick="toggleAllCheckboxes(this);" />            </td>
+            <td>version</td>
+            <td>&#160;</td>
+            <td>used by  &#160;</td>
+          </tr>
+
+          <!--  Loop through tasklist -->
+          <!--  Something like <t:dataList var="taskObject" value="#{someBean.someMethod}" rowIndexVar="taskIndex">  -->
+ 
+          <!--  Task title row -->
+          <tr class="task-titlerow">
+            <!-- Job select checkbox -->
+            <td align="center">
+              <input id="task_header_cb_#{taskIndex}" onclick="toggleTaskCheckboxes(#{taskIndex});" type="checkbox" />            </td>
+            <!-- Task name -->
+            <td>&#160;</td>
+            <td><span class="task-title">MapChipFeaturesGeneral</span> <br/>
+              Task description goes here.  This is the description of the taskInfo object with the latest version. blah blah blah blah blah blah
+              blah blah blah blah blah blah
+              blah blah blah blah blah blah </td>
+			  <td>&#160;</td>
+          </tr>
+          <!--  End task title row  -->
+
+          <!--  Versions -->
+          <!--  Loop through versions.  Something like this 
+          <t:dataList var="taskInfo" value="#{taskObject.versions}">     
+          -->
+          
+          <!--  Record id of checkbox.  Makes check all /uncheck all easier -->
+           <script type="text/javascript" language="javascript">
+ 	           addVersionRow('#{taskIndex}', 'task_version_cb_#{taskIndex}');	  
+	       </script>
+ 		  
+          <tr class="files">
+            <td align="center">
+			  <input id="task_version_cb_#{taskIndex}" name="selectedVersions" value="#{taskInfo.taskId}" type="checkbox" />
+            </td>
+            <td align="center"><a href="/gp/addTask.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00015:1">1</a></td>
+            <td><a href="/gp/addTask.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00015:1">comment for version 1 goes here</a></td>
+            <td><nobr>Golub.Slonin.1999.Naturl.all.aml.piplieine ver: 1</nobr>
+			    <br/><nobr>some.other.pipeline ver: 1 </nobr>
+			</td>
+          </tr>
+  
+          <tr class="files">
+            <td align="center">
+			  <input name="selectedFiles" value="#{taskInfo.taskId}" type="checkbox" />
+             </td>
+            <td align="center"> 
+              <a href="/gp/addTask.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00015:1">2</a>
+            </td>
+            <td>
+              <a href="/gp/addTask.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00015:1">comment for version 2 goes here</a>
+            </td>
+            <td>&#160;</td>
+          </tr>
+          
+          <!--  End through versions.  -->
+          <!--  End loop through tasks  -->
+          
+          <tr>
+            <td class="smalltype" align="center" valign="top">
+              <h:commandLink action="#{someBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink> 
+			</td>
+            <td>&#160;</td>
+            <td>&#160;</td>
+            <td>&#160;</td>
+          </tr>
+        </tbody>
+      </table>
+      </h:form>
+    </ui:define>
+  </ui:composition>
+</html>
