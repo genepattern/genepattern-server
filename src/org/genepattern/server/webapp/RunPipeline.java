@@ -398,9 +398,7 @@ public class RunPipeline {
         } finally {
             decorator.afterPipelineRan(model);
         }
-        
-        System.out.println("FINAL SET STATUS ON PIPELINE");
-        
+             
         HibernateUtil.commitTransaction();
         HibernateUtil.beginTransaction();
         setStatus(JobStatus.FINISHED);
@@ -498,6 +496,9 @@ public class RunPipeline {
             ParameterInfo[] params, int taskNum, JobInfo[] results)
             throws Exception {
 
+    			
+    	
+    	
         String lsidOrTaskName = jobSubmission.getLSID();
         if (lsidOrTaskName == null || lsidOrTaskName.equals("")) {
             lsidOrTaskName = jobSubmission.getName();
@@ -537,6 +538,25 @@ public class RunPipeline {
                     // != null){
                     // aParam.getAttributes().remove(PipelineModel.RUNTIME_PARAM);
                     // }
+                } 
+                try{
+                String value = aParam.getValue();
+                
+                if (value != null){
+                	if (value.startsWith("<GenePatternURL>")){
+                		// substitute <LSID> flags for pipeline files
+                		
+                		if (value.startsWith("<GenePatternURL>")){
+                			String lsidTag = "<LSID>";
+                			String lsidValue = System.getProperty("LSID");
+                             
+                			value = value.replace(lsidTag, lsidValue);
+                			aParam.setValue(value);
+                		}
+                	}
+                }
+                } catch (Exception e){
+                	e.printStackTrace();
                 }
             }
         }
@@ -734,19 +754,25 @@ public class RunPipeline {
             ParameterInfo[] parmInfos) throws Exception {
         if (parmInfos != null) {
             for (int i = 0; i < parmInfos.length; i++) {
+            	
                 if (parmInfos[i].isInputFile()) {
+                	
                     String file = parmInfos[i].getValue(); // bug 724
-                    String val = file;
-                    if (!(file.startsWith("http:") || file.startsWith("ftp:") || file
-                            .startsWith("file:"))) {
-                        val = new File(file).toURI().toString();
+                    if (file.trim().length() != 0){
+                    	
+	                    String val = file;
+	                    if (!(file.startsWith("http:") || file.startsWith("ftp:") || file
+	                            .startsWith("file:"))) {
+	                        val = new File(file).toURI().toString();
+	                    }
+	                    parmInfos[i].setValue(val);
+	                    parmInfos[i].getAttributes().remove("TYPE");
+	                    parmInfos[i].getAttributes().remove("MODE");
                     }
-                    parmInfos[i].setValue(val);
-                    parmInfos[i].getAttributes().remove("TYPE");
-                    parmInfos[i].getAttributes().remove("MODE");
                 }
             }
         }
+        
         TaskInfo tinfo = svc.getTaskInfo();
         final JobInfo job = analysisClient.submitJobNoWakeup(tinfo.getID(), parmInfos, jobId);
         HibernateUtil.commitTransaction();

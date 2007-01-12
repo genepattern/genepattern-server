@@ -289,6 +289,8 @@ public class GenePatternAnalysisTask implements IGPConstants {
             TaskInfo taskInfo = getTaskInfo(jobInfo);
 
             taskName = taskInfo.getName();
+            
+            
             int formalParamsLength = 0;
             ParameterInfo[] formalParams = taskInfo.getParameterInfoArray();
             if (formalParams != null) {
@@ -333,6 +335,9 @@ public class GenePatternAnalysisTask implements IGPConstants {
                     String fileType = (attrsActual != null ? (String) attrsActual.get(ParameterInfo.TYPE) : null);
                     String mode = (attrsActual != null ? (String) attrsActual.get(ParameterInfo.MODE) : null);
                     String originalPath = params[i].getValue();
+                    
+                    boolean isOptional = "on".equals(attrsActual.get("optional"));
+                    
                     // allow parameter value substitutions within file input
                     // parameters
                     originalPath = substitute(originalPath, props, params);
@@ -341,6 +346,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                         log.debug("in: mode=" + mode + ", fileType=" + fileType + ", name=" + params[i].getValue()
                                 + ", origValue=" + params[i].getValue());
                         if (originalPath == null) {
+                        	if (isOptional) continue;
                             throw new IOException(params[i].getName() + " has not been assigned a filename");
                         }
                         if (mode.equals("CACHED_IN")) {
