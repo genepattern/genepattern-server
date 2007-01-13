@@ -14,11 +14,9 @@
       {
         var objForm = document.forms["registrationForm"];
         objForm.username.required = 1;
-        objForm.username.regexp = /^\w*$/;
         objForm.username.err = "Missing or invalid username";
 
         objForm.password.required = 1;
-        objForm.password.regexp = /^\w*$/;
         objForm.password.err = "Missing or invalid password";
 
         objForm.passwordConfirm.equals = "password";
