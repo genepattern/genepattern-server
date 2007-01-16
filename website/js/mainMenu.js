@@ -4,42 +4,10 @@
 function mmLoadMenus() {
   if (window.mm_menu_documentation) return;
 
-  // Documentation menu
-  window.mm_menu_documentation = new Menu("root",153,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_documentation.addMenuItem("User's&nbsp;Manual&nbsp;/&nbsp;Tutorial","location='http://www.broad.mit.edu/cancer/software/genepattern/tutorial/'");
-  mm_menu_documentation.addMenuItem("Release&nbsp;nNtes","location='http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/'");
-  mm_menu_documentation.addMenuItem("FAQ","location='http://www.broad.mit.edu/cancer/software/genepattern/faq/'");
-  mm_menu_documentation.addMenuItem("Public&nbsp;Datasets","location='http://www.broad.mit.edu/cancer/software/genepattern/datasets/'");
-  mm_menu_documentation.addMenuItem("Task&nbsp;Documentation","location=contextRoot + '/getTaskDoc.jsp'");
-  mm_menu_documentation.hideOnMouseOut=true;
-  mm_menu_documentation.bgColor='#CCCC66';
-  mm_menu_documentation.menuBorder=0;
-  mm_menu_documentation.menuLiteBgColor='#CCCC66';
-  mm_menu_documentation.menuBorderBgColor='#CCCC66';
-   
-  window.mm_menu_resources = new Menu("root",89,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_resources.addMenuItem("Mailing&nbsp;List","location='mailto:gp-users-join@broad.mit.edu?body=Just send this!'");
-  mm_menu_resources.addMenuItem("Report&nbsp;Bugs","location=contextRoot + '/pages/contactUs.jsf'");
-  mm_menu_resources.addMenuItem("User&nbsp;Forum","location='http://www.broad.mit.edu/cancer/software/genepattern/forum/'");
-  mm_menu_resources.hideOnMouseOut=true;
-  mm_menu_resources.bgColor='#CCCC66';
-  mm_menu_resources.menuBorder=0;
-  mm_menu_resources.menuLiteBgColor='#CCCC66';
-  mm_menu_resources.menuBorderBgColor='#CCCC66';
-
-  window.mm_menu_downloads = new Menu("root",157,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_downloads.addMenuItem("Install&nbsp;Graphical&nbsp;Client","location='http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gpge_installer.cgi?version=2.0.2&server=http%3A%2F%2Fgenepatterntest.broad.mit.edu%3A8080'");
-  mm_menu_downloads.addMenuItem("Programming&nbsp;Libraries","location=contextRoot + '/pages/downloadProgrammingLibaries.jsf'");
-  mm_menu_downloads.hideOnMouseOut=true;
-  mm_menu_downloads.bgColor='#CCCC66';
-  mm_menu_downloads.menuBorder=0;
-  mm_menu_downloads.menuLiteBgColor='#CCCC66';
-  mm_menu_downloads.menuBorderBgColor='#CCCC66';
-
   window.mm_menu_tasks = new Menu("root",112,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_tasks.addMenuItem("Start","location=contextRoot + '/pages/index.jsf'");
-  mm_menu_tasks.addMenuItem("Create&nbsp;task","location=contextRoot + '/addTask.jsp'");
-  mm_menu_tasks.addMenuItem("Create&nbsp;pipeline","location=contextRoot + '/pipelineDesigner.jsp'");
+  mm_menu_tasks.addMenuItem("Create&nbsp;Task","location=contextRoot + '/addTask.jsp'");
+  mm_menu_tasks.addMenuItem("Create&nbsp;Pipeline","location=contextRoot + '/pipelineDesigner.jsp'");
   mm_menu_tasks.addMenuItem("Install&nbsp;/&nbsp;Update","location=contextRoot + '/pages/taskCatalog.jsf'");
   mm_menu_tasks.addMenuItem("Import","location=contextRoot + '/pages/importTask.jsf'");
   mm_menu_tasks.addMenuItem("Manage","location=contextRoot + '/deleteTask.jsp'");
@@ -67,6 +35,38 @@ function mmLoadMenus() {
   mm_menu_jobResults.menuBorder=0;
   mm_menu_jobResults.menuLiteBgColor='#CCCC66';
   mm_menu_jobResults.menuBorderBgColor='#CCCC66';
+
+  // Documentation menu
+  window.mm_menu_documentation = new Menu("root",153,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
+  mm_menu_documentation.addMenuItem("User's&nbsp;Manual&nbsp;/&nbsp;Tutorial","location='http://www.broad.mit.edu/cancer/software/genepattern/tutorial/'");
+  mm_menu_documentation.addMenuItem("Release&nbsp;Notes","location='http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/'");
+  mm_menu_documentation.addMenuItem("FAQ","location='http://www.broad.mit.edu/cancer/software/genepattern/faq/'");
+  mm_menu_documentation.addMenuItem("Public&nbsp;Datasets","location='http://www.broad.mit.edu/cancer/software/genepattern/datasets/'");
+  mm_menu_documentation.addMenuItem("Task&nbsp;Documentation","location=contextRoot + '/getTaskDoc.jsp'");
+  mm_menu_documentation.hideOnMouseOut=true;
+  mm_menu_documentation.bgColor='#CCCC66';
+  mm_menu_documentation.menuBorder=0;
+  mm_menu_documentation.menuLiteBgColor='#CCCC66';
+  mm_menu_documentation.menuBorderBgColor='#CCCC66';
+   
+  window.mm_menu_resources = new Menu("root",89,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
+  mm_menu_resources.addMenuItem("Mailing&nbsp;List","location='mailto:gp-users-join@broad.mit.edu?body=Just send this!'");
+  mm_menu_resources.addMenuItem("Report&nbsp;Bugs","location=contextRoot + '/pages/contactUs.jsf'");
+  mm_menu_resources.addMenuItem("User&nbsp;Forum","location='http://www.broad.mit.edu/cancer/software/genepattern/forum/'");
+  mm_menu_resources.hideOnMouseOut=true;
+  mm_menu_resources.bgColor='#CCCC66';
+  mm_menu_resources.menuBorder=0;
+  mm_menu_resources.menuLiteBgColor='#CCCC66';
+  mm_menu_resources.menuBorderBgColor='#CCCC66';
+
+  window.mm_menu_downloads = new Menu("root",157,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
+  mm_menu_downloads.addMenuItem("Install&nbsp;Graphical&nbsp;Client","location='http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gpge_installer.cgi?version=2.0.2&server=http%3A%2F%2Fgenepatterntest.broad.mit.edu%3A8080'");
+  mm_menu_downloads.addMenuItem("Programming&nbsp;Libraries","location=contextRoot + '/pages/downloadProgrammingLibaries.jsf'");
+  mm_menu_downloads.hideOnMouseOut=true;
+  mm_menu_downloads.bgColor='#CCCC66';
+  mm_menu_downloads.menuBorder=0;
+  mm_menu_downloads.menuLiteBgColor='#CCCC66';
+  mm_menu_downloads.menuBorderBgColor='#CCCC66';
 
   window.mm_menu_administration = new Menu("root",105,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,true);
   mm_menu_administration.addMenuItem("Server&nbsp;Settings","location=contextRoot + '/pages/serverSettings.jsf'");
