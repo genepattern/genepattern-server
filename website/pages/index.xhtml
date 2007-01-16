@@ -333,12 +333,14 @@ function showFileInput(id) {
 							</h:outputText></td>
 
 						</tr>
+						
 						<tr class="taskperameter">
+							<td></td>
 							<h:outputText rendered="#{runTaskBean.showParameterDescriptions}">
-								<td colspan="2"><span name="parameter_description" style="display:inline">#{p.displayDescription}</span></td>
+								<td valign="top" class="description"><span name="parameter_description" style="display:inline">#{p.displayDescription}</span></td>
 							</h:outputText>
 							<h:outputText rendered="#{!runTaskBean.showParameterDescriptions}">
-								<td colspan="2"><span name="parameter_description" style="display:none">#{p.displayDescription}</span></td>
+								<td valign="top" class="description"><span name="parameter_description" style="display:none">#{p.displayDescription}</span></td>
 							</h:outputText>
 							
 						</tr>
@@ -346,7 +348,7 @@ function showFileInput(id) {
 
 					<h:outputText rendered="#{!empty runTaskBean.parameters}">
 						<tr>
-							<td>&#160;</td>
+							<td valign="top">&#160;</td>
 							<td colspan="2" class="maintasknav2"><input name="cmd"
 								value="run" type="submit" /> <input name="reset" value="reset"
 								onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'"
