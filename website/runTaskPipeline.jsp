@@ -9,15 +9,12 @@ This software is supplied without any warranty or guaranteed support
 whatsoever. Neither the Broad Institute nor MIT can be responsible for its
 use, misuse, or functionality.
 */ -->
-<%@ page import="org.apache.commons.fileupload.FileItem,
-                 org.apache.commons.fileupload.disk.DiskFileItemFactory,
-                 org.apache.commons.fileupload.servlet.ServletFileUpload,
-                 org.apache.commons.io.FilenameUtils,
-                 org.genepattern.server.genepattern.GenePatternAnalysisTask,
+<%@ page import="
                  org.genepattern.util.GPConstants,
                  org.genepattern.util.StringUtils,
-                 org.genepattern.server.webservice.server.local.*,
+                 org.genepattern.server.webservice.server.local.LocalAnalysisClient,
                  org.genepattern.webservice.JobInfo,
+                 org.genepattern.server.webapp.RunTaskHelper,
                  org.genepattern.webservice.OmnigeneException,
                  org.genepattern.webservice.ParameterFormatConverter,
                  org.genepattern.webservice.ParameterInfo,
@@ -38,8 +35,9 @@ use, misuse, or functionality.
                  java.util.Date,
                  java.util.GregorianCalendar,
                  java.util.HashMap,
-                 java.util.Iterator,
-                 java.util.*"
+                 java.util.Map,
+                 java.util.List,
+                 java.util.Iterator"
          session="false" contentType="text/html" language="Java" %>
 <%
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -69,110 +67,26 @@ use, misuse, or functionality.
 	String userEmail = null;
 	String jobId = null;
     try {
+        
 		userID = (String) request.getAttribute(GPConstants.USERID);
+		LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
+	        
+		RunTaskHelper runTaskHelper = new RunTaskHelper(userID, request);
 		
-        ServletFileUpload fub = new ServletFileUpload(new DiskFileItemFactory());
-        HashMap htFilenames = new HashMap(); // map between form field name and filesystem name
-
-        // create a dir for the input files
-		File tempDir = File.createTempFile(""+userID.hashCode()+"_runTaskInputs", null);
-        tempDir.delete();
-        tempDir.mkdir();
-        String tmpDirName = tempDir.getName();
-        HashMap requestParameters = new HashMap();
-        HashMap nameToFileItemMap = new HashMap();
-        
-       
-        if (fub.isMultipartContent(request)) {
-        	 List params = fub.parseRequest(request);
-             
-        for (Iterator iter = params.iterator(); iter.hasNext();) {
-            FileItem fi = (FileItem) iter.next();
-            nameToFileItemMap.put(fi.getFieldName(), fi);
-        }
-       
-        for (Iterator iter = params.iterator(); iter.hasNext();) {
-            FileItem fi = (FileItem) iter.next();
-            String fieldName = fi.getFieldName();
-            
-            if (!fi.isFormField()) {            
-                FileItem cbItem = (FileItem) nameToFileItemMap.get(fieldName + "_cb");
-                boolean urlChecked = cbItem != null? "url".equals(cbItem.getString()) : false;
-                String fileName = fi.getName();         
-                if (urlChecked|| fileName == null || fileName.trim().equals("")) {
-                    FileItem shadow = (FileItem) nameToFileItemMap.get(fieldName + "_url");
-                    if (shadow != null) {
-                        fileName = shadow.getString();
-                    }
-                }
-              
-                if (fileName != null && !fileName.trim().equals("")) {
-                    try {
-                        new URL(fileName);
-                        // don't bother trying to save a file that is a URL, retrieve it at execution time instead
-                        htFilenames.put(fieldName, fileName);
-                    } catch (MalformedURLException mfe) {
-                    	File oldFile = new File(fileName);
-                    	
-                        fileName = FilenameUtils.getName(fileName);
-                        File file = new File(tempDir, fileName);
-                        if (file.exists()) {
-                            if (fileName.length() < 3) {
-                                fileName += "tmp";
-                            }
-                            file = File.createTempFile(fileName, FilenameUtils.getExtension(fileName), tempDir);
-                        } 
-                        try {
-                           fi.write(file);
-                           // deal with reload files that are not uploaded and so for which
-                           // the write leaves an empty file
-                           if (file.length() == 0){
-                        	   file = oldFile;
-                           }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        htFilenames.put(fieldName, file.getCanonicalPath());
-                    }
-                }
-            } else {
-                int endIndex = Math.max(fieldName.length() - "_url".length(), 1);
-				String parameterName = fieldName.substring(0, endIndex);
-				
-                FileItem cbItem = (FileItem) nameToFileItemMap.get(parameterName + "_cb");
-                boolean urlChecked = cbItem != null? "url".equals(cbItem.getString()) : false;
-               	if(urlChecked) {
-                   htFilenames.put(parameterName, fi.getString());
-               } else {
-                   requestParameters.put(fieldName, fi.getString());
-               }
-            }
-        } // loop over files
-        } else {
-        	for (Enumeration en = request.getParameterNames(); en.hasMoreElements(); ){
-        		String k = (String)en.nextElement();
-        		String v = request.getParameter(k);
-        		requestParameters.put(k,v);
-        	}
-        }
+		TaskInfo task = runTaskHelper.getTaskInfo();
+		if (task == null) {
+			out.println("Unable to find task");
+	   		return;
+		}
+	        
+		String lsid = runTaskHelper.getTaskLsid();
+		String taskName = runTaskHelper.getTaskName();
+		
+		
+		String tmpDirName = runTaskHelper.getTempDirectory().getName();
+		Map<String, String> requestParameters = runTaskHelper.getRequestParameters();
         
         
-        
-        
-       
-        //http://cp21e-789.broad.mit.edu:8080/gp/getInputFile.jsp?file=Axis62355.att_all_aml_train.res
-        String taskLsid = (String) requestParameters.get("taskLSID");
-        String lsid = taskLsid !=null ? URLDecoder.decode(taskLsid) : null;
-        String taskName = (String) requestParameters.get("taskName");
-        if (lsid == null) {
-            if(taskName != null) {
-                lsid = URLDecoder.decode(taskName);
-            } else {
-                out.println("No task specified");
-                return;
-            }
-            
-        }
         try {
 			User user = (new UserDAO()).findById(userID);
 			userEmail = user.getEmail();
@@ -188,56 +102,11 @@ use, misuse, or functionality.
         String server = request.getScheme() + "://" + InetAddress.getLocalHost().getCanonicalHostName() + ":" + System.getProperty("GENEPATTERN_PORT");
    
                
-        LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
         
-        TaskInfo task = GenePatternAnalysisTask.getTaskInfo(lsid, userID);
-        if (task == null) {
-            out.println("Unable to find task " + lsid);
-            return;
-        }
         ParameterInfo[] parmInfos = task.getParameterInfoArray();
-        int nParams = 0;
-        if (parmInfos != null) {
-            nParams = parmInfos.length;
-        } else {
-            parmInfos = new ParameterInfo[0];
-        }
-        ArrayList missingReqParams = new ArrayList();
-        for (int i = 0; i < nParams; i++) {
-            ParameterInfo pinfo = parmInfos[i];
-            String value;
-            if (pinfo.isInputFile()) {
-                value = (String) htFilenames.get(pinfo.getName());
-                if (value == null) {
-                    pinfo.getAttributes().put(ParameterInfo.TYPE, "");
-                }
-                if (value != null) {
-                    try {
-                        new URL(value);
-                        HashMap attrs = pinfo.getAttributes();
-                        attrs.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
-                        attrs.remove(ParameterInfo.TYPE);
-                    } catch (MalformedURLException mfe) {
-                    }
-                }
-            } else {
-                value = (String) requestParameters.get(pinfo.getName());
-            }
-
-            //
-            // look for missing required params
-            //
-            if ((value == null) || (value.trim().length() == 0)) {
-                HashMap pia = pinfo.getAttributes();
-                boolean isOptional =
-                        ((String) pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
-                                .length() > 0;
-                if (!isOptional) {
-                    missingReqParams.add(pinfo);
-                }
-            }
-            pinfo.setValue(value);
-        }
+        parmInfos = parmInfos == null ? parmInfos = new ParameterInfo[0] : parmInfos;
+       
+      	List<ParameterInfo> missingReqParams = runTaskHelper.getMissingParameters();
         if (missingReqParams.size() > 0) {
             System.out.println("" + missingReqParams);
             request.setAttribute("missingReqParams", missingReqParams);
@@ -417,7 +286,7 @@ show execution logs</td>
     </tr>
     <tr><td/><td/><td/><td>
         <%
-
+		
 
             ParameterInfo[] formalParameterInfoArray = null;
             try {
