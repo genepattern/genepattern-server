@@ -29,9 +29,8 @@
 			// now we need to check whether this is the user or an admin trying
 			// to look at the file if it exists
 			if (in.exists()){
-				String hash = ""+userID.hashCode();
-				
-				if (!filename.startsWith(hash)){
+			    String prefix = userID + "_";
+				if (!filename.startsWith(prefix)){
 					IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
 					boolean isAdmin = authManager.checkPermission("administrateServer",userID );
 					if (!isAdmin){
