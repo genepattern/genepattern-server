@@ -615,6 +615,9 @@ show execution logs</td>
 <tr><td  class="purge_notice">
     These job results are scheduled to be purged from the server on <%= df.format(purgeTOD.getTime()).toLowerCase() %>
 </td></tr>
+<tr><td><br>
+	<a href="pages/index.jsf">Return to Tasks & Pipelines Start</a>
+</td></tr>
 </table>
 
     <%
