@@ -77,8 +77,7 @@ public class LocalTaskExecutor extends TaskExecutor {
 
     private static int MAX_FILE_NAME_LENGTH = 255;
 
-    public LocalTaskExecutor(TaskInfo taskInfo, Map substitutions,
-            String username, String password, String server)
+    public LocalTaskExecutor(TaskInfo taskInfo, Map substitutions, String username, String password, String server)
             throws WebServiceException {
         super(taskInfo, substitutions, username);
         this.server = server;
@@ -88,16 +87,14 @@ public class LocalTaskExecutor extends TaskExecutor {
         } catch (java.net.MalformedURLException mfe) {
             this.server = "http://" + this.server;
         }
-        this.taskIntegratorProxy = new TaskIntegratorProxy(server, userName, password,
-                false);
+        this.taskIntegratorProxy = new TaskIntegratorProxy(server, userName, password, false);
     }
 
     public void beforeExec() throws TaskExecException {
         try {
             Map attr = taskInfo.getTaskInfoAttributes();
             if (attr != null) {
-                taskId = (String) attr
-                        .get(org.genepattern.util.GPConstants.LSID);
+                taskId = (String) attr.get(org.genepattern.util.GPConstants.LSID);
             }
             if (taskId == null) {
                 taskId = taskInfo.getName();
@@ -112,9 +109,7 @@ public class LocalTaskExecutor extends TaskExecutor {
             String libdirName = null;
             int length = taskName.length() + ".libdir".length();
             if (length >= MAX_FILE_NAME_LENGTH) {
-                libdirName = taskName.substring(0, taskName.length() - length
-                        - MAX_FILE_NAME_LENGTH)
-                        + ".libdir";
+                libdirName = taskName.substring(0, taskName.length() - length - MAX_FILE_NAME_LENGTH) + ".libdir";
             } else {
                 libdirName = taskName + ".libdir";
             }
@@ -124,13 +119,8 @@ public class LocalTaskExecutor extends TaskExecutor {
 
             substitutions.put("libdir", libdir + File.separator);
             if (substitutions.get(LocalTaskExecutor.JAVA) == null) {
-                String java = System.getProperty("java.home")
-                        + File.separator
-                        + "bin"
-                        + File.separator
-                        + "java"
-                        + (System.getProperty("os.name").startsWith("Windows") ? ".exe"
-                                : "");
+                String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java"
+                        + (System.getProperty("os.name").startsWith("Windows") ? ".exe" : "");
                 substitutions.put(LocalTaskExecutor.JAVA, java);
             }
 
@@ -156,8 +146,7 @@ public class LocalTaskExecutor extends TaskExecutor {
     private void startReader(final InputStream is, final PrintStream out) {
         Thread copyThread = new Thread(new Runnable() {
             public void run() {
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(is));
+                BufferedReader in = new BufferedReader(new InputStreamReader(is));
                 String line;
                 // copy inputstream to outputstream
 
@@ -166,8 +155,7 @@ public class LocalTaskExecutor extends TaskExecutor {
                         out.println(line);
                     }
                 } catch (IOException ioe) {
-                    System.err.println(ioe
-                            + " while reading from process stream");
+                    System.err.println(ioe + " while reading from process stream");
                 }
             }
         });
@@ -196,18 +184,14 @@ public class LocalTaskExecutor extends TaskExecutor {
         String baseName = file.substring(file.lastIndexOf("/") + 1);
         int j;
         try {
-            if (baseName.indexOf("retrieveResults.jsp") != -1
-                    && (j = file.lastIndexOf("filename=")) != -1) { // for
+            if (baseName.indexOf("retrieveResults.jsp") != -1 && (j = file.lastIndexOf("filename=")) != -1) { // for
                 // http://18.103.3.29:8080/gp/retrieveResults.jsp?job=1122&filename=all_aml_wv_xval.odf
-                String temp = URLDecoder.decode(file.substring(j
-                        + "filename=".length(), file.length()), "UTF-8");
+                String temp = URLDecoder.decode(file.substring(j + "filename=".length(), file.length()), "UTF-8");
                 return new java.util.StringTokenizer(temp, "&").nextToken();
             }
-            if (baseName.indexOf("getFile.jsp") != -1
-                    && (j = file.lastIndexOf("file=")) != -1) { // for
+            if (baseName.indexOf("getFile.jsp") != -1 && (j = file.lastIndexOf("file=")) != -1) { // for
                 // http://cmec5-ea2.broad.mit.edu:8080/gp/getFile.jsp?task=try.SOMClusterViewer.pipeline&file=ten.res
-                String temp = URLDecoder.decode(file.substring(j
-                        + "file=".length(), file.length()), "UTF-8");
+                String temp = URLDecoder.decode(file.substring(j + "file=".length(), file.length()), "UTF-8");
                 return new java.util.StringTokenizer(temp, "&").nextToken();
             }
         } catch (UnsupportedEncodingException uee) {
@@ -221,8 +205,7 @@ public class LocalTaskExecutor extends TaskExecutor {
         return path;
     }
 
-    protected void downloadInputFiles(TaskInfo taskInfo, Map substitutions)
-            throws Exception {
+    protected void downloadInputFiles(TaskInfo taskInfo, Map substitutions) throws Exception {
         // loop through params, download urls to sandbox directory and change
         // substitions for downloaded files and for local files with file:/
         // protocol
@@ -230,8 +213,7 @@ public class LocalTaskExecutor extends TaskExecutor {
             ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
 
             for (int i = 0, length = formalParameters.length; i < length; i++) {
-                String value = (String) substitutions.get(formalParameters[i]
-                        .getName());
+                String value = (String) substitutions.get(formalParameters[i].getName());
                 if (value == null) {
                     substitutions.put(formalParameters[i].getName(), "");
                 }
@@ -255,14 +237,12 @@ public class LocalTaskExecutor extends TaskExecutor {
                     }
                     if (url != null && "file".equals(url.getProtocol())) {
                         File f = new File(url.getFile());
-                        substitutions.put(formalParameters[i].getName(), f
-                                .getCanonicalPath());
+                        substitutions.put(formalParameters[i].getName(), f.getCanonicalPath());
                     } else if (url != null) {
                         File f = new File(sandboxdir, getURLFileName(url));
                         downloadFile(url, f);
                         f.deleteOnExit();
-                        substitutions.put(formalParameters[i].getName(), f
-                                .getCanonicalPath());
+                        substitutions.put(formalParameters[i].getName(), f.getCanonicalPath());
                     }
                 }
             }
@@ -292,17 +272,12 @@ public class LocalTaskExecutor extends TaskExecutor {
             if (conn instanceof HttpURLConnection) {
                 if (((HttpURLConnection) conn).getResponseCode() == HttpURLConnection.HTTP_GONE) {
                     String urlFile = url.getFile();
-                    String baseName = urlFile.substring(urlFile
-                            .lastIndexOf("/") + 1);
+                    String baseName = urlFile.substring(urlFile.lastIndexOf("/") + 1);
 
-                    if (baseName.indexOf("retrieveResults.jsp") != -1
-                            && (urlFile.lastIndexOf("filename=")) != -1) {
-                        throw new IOException("The file "
-                                + destinationFile.getName()
-                                + " is not available.");
+                    if (baseName.indexOf("retrieveResults.jsp") != -1 && (urlFile.lastIndexOf("filename=")) != -1) {
+                        throw new IOException("The file " + destinationFile.getName() + " is not available.");
                     } else {
-                        throw new IOException("The url " + url
-                                + " is not available.");
+                        throw new IOException("The url " + url + " is not available.");
                     }
 
                 }
@@ -341,16 +316,14 @@ public class LocalTaskExecutor extends TaskExecutor {
 
         synchronized (taskIntegratorProxy) {
             try {
-                supportFileNames = taskIntegratorProxy
-                        .getSupportFileNames(taskId);
-                supportFileDates = taskIntegratorProxy
-                        .getLastModificationTimes(taskId, supportFileNames);
+                supportFileNames = taskIntegratorProxy.getSupportFileNames(taskId);
+                supportFileDates = taskIntegratorProxy.getLastModificationTimes(taskId, supportFileNames);
             } catch (WebServiceException wse) {
                 Throwable rootCause = wse.getRootCause();
                 if (rootCause instanceof org.apache.axis.AxisFault) {
                     org.apache.axis.AxisFault e = (org.apache.axis.AxisFault) rootCause;
-                    javax.xml.namespace.QName noService = new javax.xml.namespace.QName(
-                            "http://xml.apache.org/axis/", "Server.NoService");
+                    javax.xml.namespace.QName noService = new javax.xml.namespace.QName("http://xml.apache.org/axis/",
+                            "Server.NoService");
                     if (e.getFaultCode().equals(noService)) {
                         oldServer = true;
                     }
@@ -360,44 +333,14 @@ public class LocalTaskExecutor extends TaskExecutor {
             }
         }
         if (oldServer) {
-            InputStream is = null;
-            try {
-                URL url = new URL(server + "/gp/getTaskInfo.jsp?name="
-                        + taskInfo.getName());
-                Properties props = new Properties();
-                is = url.openStream();
-                props.load(is);
-                String serverTaskDir = props.getProperty("libdir");
-                String supportFilesTokens = props.getProperty("support.files");
-                String modDatesTokens = props.getProperty("support.file.dates");
-                StringTokenizer st1 = new StringTokenizer(supportFilesTokens,
-                        ",");
-                StringTokenizer st2 = new StringTokenizer(modDatesTokens, ",");
-                int tokens = st1.countTokens();
-                supportFileNames = new String[tokens];
-                supportFileDates = new long[tokens];
-                for (int i = 0; i < tokens; i++) {
-                    supportFileNames[i] = st1.nextToken().trim();
-                    supportFileDates[i] = Long
-                            .parseLong(st2.nextToken().trim());
-                }
-            } catch (IOException ioe) {
-                throw new WebServiceException(ioe);
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException e) {
-                    }
-                }
-            }
+            throw new WebServiceException(
+                    "You're connecting to an older version of the server. Running visualizers is not supported.");
 
         }
 
         Map fileName2DateMap = new HashMap();
         for (int i = 0; i < supportFileNames.length; i++) {
-            fileName2DateMap.put(supportFileNames[i], new Long(
-                    supportFileDates[i]));
+            fileName2DateMap.put(supportFileNames[i], new Long(supportFileDates[i]));
         }
 
         File idFile = new File(libdir, ID_FILE_NAME);
@@ -456,8 +399,7 @@ public class LocalTaskExecutor extends TaskExecutor {
                     currentFiles[curf].delete();
                 }
             } else {
-                long date = ((Long) (fileName2DateMap.get(currentFiles[curf]
-                        .getName()))).longValue();
+                long date = ((Long) (fileName2DateMap.get(currentFiles[curf].getName()))).longValue();
                 if (currentFiles[curf].lastModified() != date) {
                     // delete out-of-date file (either more recent or older)
                     currentFiles[curf].delete();
@@ -492,12 +434,10 @@ public class LocalTaskExecutor extends TaskExecutor {
                 if (oldServer) {
                     task = taskInfo.getName();
                 } else {
-                    task = (String) taskInfo.getTaskInfoAttributes().get(
-                            org.genepattern.util.GPConstants.LSID);
+                    task = (String) taskInfo.getTaskInfoAttributes().get(org.genepattern.util.GPConstants.LSID);
                 }
 
-                URL urlFile = new URL(server + "/gp/getFile.jsp?task=" + task
-                        + "&file=" + fileName);
+                URL urlFile = new URL(server + "/gp/getFile.jsp?task=" + task + "&file=" + fileName);
                 File dest = new File(libdir, fileName);
                 downloadFile(urlFile, dest);
             } catch (IOException ioe) {
@@ -510,10 +450,8 @@ public class LocalTaskExecutor extends TaskExecutor {
         }
         for (int i = 0; i < downloadSupportFileNames.size(); i++) {
             String fileName = (String) downloadSupportFileNames.get(i);
-            long modificationTime = supportFileDates[((Integer) (downloadSupportFileIndices
-                    .get(i))).intValue()];
+            long modificationTime = supportFileDates[((Integer) (downloadSupportFileIndices.get(i))).intValue()];
             new File(libdir, fileName).setLastModified(modificationTime);
         }
     }
-
 }
