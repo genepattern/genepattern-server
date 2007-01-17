@@ -8,7 +8,7 @@
                 </td>
 
                 <td>
-                  <div align="right">&copy;2003-2006&nbsp;<a href="http://www.broad.mit.edu" target="_blank">Broad Institute, MIT</a>
+                  <div align="right">&copy;2003-2007&nbsp;<a href="http://www.broad.mit.edu" target="_blank">Broad Institute, MIT</a>
                   </div>
                   <td width="10">&nbsp;</td>
                   <td width="27"><a href="http://www.broad.mit.edu" target="_blank"><img src="/gp/images/broad-symbol.gif" alt="Broad Institute" border="0" height="30" width="27" /></a>
