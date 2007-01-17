@@ -94,11 +94,6 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator
         }
         prolog.append("\n% generated: ");
         prolog.append(new Date().toString());
-        prolog.append("\n% regenerate with: ");
-        prolog
-                .append(getFullServerURL()
-                        + "getPipelineCode.jsp?language=MATLAB&name="
-                        + model.getLsid());
         if (model.getAuthor() != null && !model.getAuthor().trim().equals("")) {
             prolog.append("\n% @author\t");
             prolog.append(model.getAuthor());

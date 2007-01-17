@@ -110,9 +110,6 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
 		}
 		prolog.append("\n# generated: ");
 		prolog.append(new Date().toString());
-		prolog.append("\n# regenerate with: ");
-		prolog.append(getFullServerURL() + "pipelineDesigner.jsp?" + GPConstants.NAME
-				+ "=" + model.getLsid() + "&language=" + getLanguage() + "\n");
 		prolog.append("# Author: ");
 		prolog.append(model.getAuthor());
 		prolog.append("\n# LSID: ");

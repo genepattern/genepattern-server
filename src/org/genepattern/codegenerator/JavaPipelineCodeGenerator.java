@@ -137,9 +137,6 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
         }
         prolog.append("\n * generated: ");
         prolog.append(new Date().toString());
-        prolog.append("\n * regenerate with: ");
-        prolog.append(getFullServerURL() + "getPipelineCode.jsp?" + GPConstants.LANGUAGE + "=Java&" + GPConstants.NAME
-                + "=" + model.getLsid());
         if (model.getAuthor() != null && !model.getAuthor().trim().equals("")) {
             prolog.append("\n * @author\t");
             prolog.append(model.getAuthor());
