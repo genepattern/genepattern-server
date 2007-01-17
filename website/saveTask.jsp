@@ -535,7 +535,6 @@ timeMS dateTime loginId taskType moduleName  manifest supportFilesChanges URLToE
     <jsp:include page="navbar.jsp" />
     Installation of your <a href="addTask.jsp?<%= GPConstants.NAME %>=<%= URLEncoder.encode(lsid, "UTF-8") %>"><%= taskName %></a> task (version <%= new LSID(lsid).getVersion() %>) is complete.<br><br>
 
-    If you write R methods to run tasks, you'll find the R wrapper <a href="taskWrapperGenerator.jsp?<%= GPConstants.NAME %>=<%= URLEncoder.encode(lsid, "UTF-8") %>">here</a>.<br>
     
 <hr><a href='<%= request.getContextPath() %>/pages/index.jsf?lsid=<%= URLEncoder.encode(lsid, "UTF-8") %>'>Run <%= taskName %></a>
 </h4>
