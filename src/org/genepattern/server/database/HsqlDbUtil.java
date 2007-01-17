@@ -24,7 +24,7 @@ public class HsqlDbUtil {
      */
     public static void startDatabase() {
         // @todo - get from properites file
-        String port = System.getProperty("HSQL.port", "9001");
+        String port = System.getProperty("HSQL_port", "9001");
         String dbFile = System.getProperty("HSQL.dbfile", "../resources/GenePatternDB");
         String dbUrl = "file:" + dbFile;
         String dbName = System.getProperty("HSQL.dbName", "xdb");
