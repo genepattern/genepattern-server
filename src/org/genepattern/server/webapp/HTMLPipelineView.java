@@ -100,13 +100,10 @@ public class HTMLPipelineView implements IPipelineView {
 		this.userID = userID;
 		this.tmCatalog = tmCatalog;
 		tmTaskTypes = preprocessTaskInfo(tmCatalog);
-		try {
+		
 			tmTasksByLSID = new org.genepattern.server.webservice.server.local.LocalAdminClient(
 					userID).getTaskCatalogByLSID(tmCatalog);
-		} catch (org.genepattern.webservice.WebServiceException re) {
-			System.err.println(re.getMessage() + " in HTMLPipelineView.init");
-			throw new RuntimeException(re);
-		}
+		
 		//dumpCatalog();
 		try {
 			writer.write("");
