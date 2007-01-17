@@ -84,8 +84,8 @@ public class RunTaskHelper {
         HashMap<String, FileItem> nameToFileItemMap = new HashMap<String, FileItem>();
 
         // prefix is used to restrict access to input files based on username
-        String prefix = username.hashCode() + "_";
-        tempDir = File.createTempFile(prefix + "runTask", null);
+        String prefix = username +  "_";
+        tempDir = File.createTempFile(prefix + "run", null);
         tempDir.delete();
         tempDir.mkdir();
 
