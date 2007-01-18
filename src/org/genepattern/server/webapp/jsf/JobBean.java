@@ -72,7 +72,7 @@ public abstract class JobBean {
             this.level = level;
             this.sequence = sequence;
 
-            // Build the list of output files from the parameter ino array.
+            // Build the list of output files from the parameter info array.
 
             outputFiles = new ArrayList<OutputFileInfo>();
             ParameterInfo[] parameterInfoArray = jobInfo.getParameterInfoArray();
@@ -83,8 +83,8 @@ public abstract class JobBean {
                         if (showExecutionLogs || !parameterInfoArray[i].getName().equals("gp_task_execution_log.txt")) {
                             File file = new File(outputDir, parameterInfoArray[i].getName());
                             Collection<TaskInfo> modules = kindToModules.get(SemanticUtil.getKind(file));
-                            OutputFileInfo pInfo = new OutputFileInfo(parameterInfoArray[i], file, modules);
-
+                            OutputFileInfo pInfo = new OutputFileInfo(parameterInfoArray[i], file, modules, jobInfo
+                                    .getJobNumber());
                             pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
                             outputFiles.add(pInfo);
                         }
@@ -130,20 +130,6 @@ public abstract class JobBean {
 
         public Date getDateSubmitted() {
             return jobInfo.getDateSubmitted();
-        }
-
-        /**
-         * Returns a list all descendant jobs, basically a the flattened tree.
-         * 
-         * @return
-         */
-        public List<JobResultsWrapper> getDescendantJobs() {
-            List<JobResultsWrapper> descendantJobs = new ArrayList<JobResultsWrapper>();
-            descendantJobs.addAll(childJobs);
-            for (JobResultsWrapper childJob : childJobs) {
-                descendantJobs.addAll(childJob.getDescendantJobs());
-            }
-            return descendantJobs;
         }
 
         public int getJobNumber() {
@@ -226,7 +212,7 @@ public abstract class JobBean {
 
     public static class OutputFileInfo {
 
-        private static final Comparator COMPARATOR = new KeyValueComparator();
+        private static final Comparator<KeyValuePair> COMPARATOR = new KeyValueComparator();
 
         boolean exists;
 
@@ -240,7 +226,9 @@ public abstract class JobBean {
 
         long size;
 
-        public OutputFileInfo(ParameterInfo p, File file, Collection<TaskInfo> modules) {
+        int jobNumber;
+
+        public OutputFileInfo(ParameterInfo p, File file, Collection<TaskInfo> modules, int jobNumber) {
             this.p = p;
             this.size = file.length();
             this.exists = file.exists();
@@ -255,6 +243,11 @@ public abstract class JobBean {
                 }
                 Collections.sort(moduleMenuItems, COMPARATOR);
             }
+            this.jobNumber = jobNumber;
+        }
+
+        public int getJobNumber() {
+            return jobNumber;
         }
 
         public String getDescription() {
@@ -341,6 +334,11 @@ public abstract class JobBean {
     public void createPipeline(ActionEvent e) {
         try {
             String jobNumber = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber"));
+            if (jobNumber == null) {
+                UIBeanHelper.setInfoMessage("No job specified.");
+                return;
+            }
+            System.out.println(jobNumber);
             String pipelineName = "job" + jobNumber; // TODO prompt user for
             // name
             String lsid = new LocalAnalysisClient(UIBeanHelper.getUserId()).createProvenancePipeline(jobNumber,
