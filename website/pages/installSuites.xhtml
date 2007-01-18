@@ -53,8 +53,7 @@
        */
        function update(jsonString)
        {
-       new Insertion.Bottom("progress_indicator", ".");
-       
+        
        var complete = true;
        var objArray = eval('(' + jsonString + ')');
        for(var i=0; i<objArray.length; i++) {
@@ -81,7 +80,7 @@
       }
   
       if(complete == true) {
-        Element.update("progress_indicator", "<i>done</i>")
+        Element.update("progress_indicator", " complete")
   
         stopPolling();
         var buttonPane = $("button_pane");
@@ -102,33 +101,31 @@
       </script>
 
       <h:form>
-        <p>
-          <h1>Installing Suites&#160;&#160;<span id="progress_indicator"></span> </h1>
-        </p>
+       
+          <h1>Installing Suites<span id="progress_indicator">...</span></h1>
+       
         
         <table>
           <!--  Loop through suites (SuiteInstallStatus beans) -->
           <ui:repeat var="suite" value="#{suiteInstallBean.suites}">
             <tr>
               <td>
-                #{suite.name}
+                <b>#{suite.name}</b>
               </td>
               <td>
                 <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="12" height="12" id="cb_#{suite.lsid}"/>
               </td>
             </tr>
+            <tr><td colspan="2" valign="top" id="error_#{suitelsid}" class="validation-error" style="font-weight:bold;color:red;display:none"></td></tr>
+            <tr class="taskperameter"><td colspan="2" valign="top">&#160;</td></tr>
+          
           </ui:repeat>
         </table>
         
-        <!--  Divs for error messages.  One for each suite  -->
-        <ui:repeat var="suite" value="#{suiteInstallBean.suites}">
-          <div id="error_#{suite.lsid}" class="validation-error" style="display: none;">
-             
-          </div>
-        </ui:repeat>
-        
-
-        <div id="button_pane" style="display: none;">
+    
+        <div id="button_pane" style="display:none;">
+        	<br />
+        	<br />
           <t:commandButton value="Done"  action="home"/>&#160;
           <t:commandButton value="Install More" action="suite catalog"/>
         </div>
