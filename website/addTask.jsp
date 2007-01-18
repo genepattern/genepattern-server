@@ -540,7 +540,7 @@ function addNewDomainType(name, desc){
   </tr>
 
   <tr class="taskperameter" title="Author's name, affiliation, email address">
-  <td valign="top"><b>Author:</b></td>
+  <td valign="top">Author:</td>
   <td width="*">
   <%
   if(!viewOnly) { %>
@@ -555,7 +555,7 @@ function addNewDomainType(name, desc){
   </tr>
 
   <tr class="taskperameter" title="Your user ID">
-  <td valign="right">Owner:</td>
+  <td valign="right">Contact:</td>
   <td width="*">
 	<% 
 	   String owner = (tia == null ? userID : tia.get(GPConstants.USERID)); 
