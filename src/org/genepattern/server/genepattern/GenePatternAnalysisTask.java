@@ -2641,9 +2641,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
             }
         }
 
-        // check that each substitution variable listed in the command line is
-        // actually in props
-
+        
         vProblems = validateSubstitutions(props, taskName, commandLine, "command line", vProblems, formalParams);
         return vProblems;
     }
@@ -2853,7 +2851,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
                 e = e.getCause();
             }
             System.err.println(e.toString() + " while installing " + name);
-            vProblems.add(e.toString());
+            vProblems.add(e.getMessage());
         }
         if (vProblems.size() > 0) {
             return vProblems;
