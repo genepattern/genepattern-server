@@ -111,6 +111,20 @@ public abstract class JobBean {
             }
         }
 
+        /**
+         * Returns a list all descendant jobs, basically a flattened tree.
+         * 
+         * @return The descendant jobs.
+         */
+        public List<JobResultsWrapper> getDescendantJobs() {
+            List<JobResultsWrapper> descendantJobs = new ArrayList<JobResultsWrapper>();
+            descendantJobs.addAll(childJobs);
+            for (JobResultsWrapper childJob : childJobs) {
+                descendantJobs.addAll(childJob.getDescendantJobs());
+            }
+            return descendantJobs;
+        }
+
         public List<OutputFileInfo> getAllFileInfos() {
             List<OutputFileInfo> allFiles = new ArrayList<OutputFileInfo>();
             allFiles.addAll(outputFiles);
