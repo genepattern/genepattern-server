@@ -3,7 +3,6 @@
  */
 package org.genepattern.server.webapp.jsf;
 
-import java.io.File;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -20,16 +19,10 @@ import javax.faces.event.ActionEvent;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.domain.Suite;
-import org.genepattern.server.domain.SuiteDAO;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
-import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
-import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
@@ -49,7 +42,6 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 	    	String lsid;
 	    	
 	    	LSID lSID = null;
-	    	LSID lastLSID = null;
 	    	
 	    	for (Iterator<TaskInfo> itTasks = tasks.iterator(); itTasks.hasNext(); ) {
 	    		ti = (TaskInfo)itTasks.next();
