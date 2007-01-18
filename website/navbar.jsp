@@ -11,8 +11,8 @@
     <script language="JavaScript1.2" type="text/javascript">
     	var agt = navigator.userAgent.toLowerCase();
     	var isSafari = agt.indexOf("safari") != -1;
-    	var x = isSafari ? -10 : 0;
-    	var y =  isSafari ? 8 : 18;
+    	var x = isSafari ? -90 : 0;
+    	var y =  isSafari ? 10 : 18;
     	mmLoadMenus();
     </script>
     <div id="navband1" class="navband1" style="cursor: pointer;">
