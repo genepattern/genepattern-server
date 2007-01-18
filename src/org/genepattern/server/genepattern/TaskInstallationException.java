@@ -45,7 +45,7 @@ public class TaskInstallationException extends Exception {
                 buf.append(" ");
             }
             buf.append(String.valueOf(i + 1));
-            buf.append(".");
+            buf.append(". ");
             buf.append(errors.get(i));
         }
         return buf.toString();
