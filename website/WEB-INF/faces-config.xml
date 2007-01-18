@@ -123,6 +123,11 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.SuiteInstallBean</managed-bean-class>
   <managed-bean-scope>session</managed-bean-scope>
  </managed-bean>
+  <managed-bean>
+  <managed-bean-name>manageTasksBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.ManageTasksBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
  <managed-bean>
   <managed-bean-name>manageSuiteBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.ManageSuiteBean</managed-bean-class>

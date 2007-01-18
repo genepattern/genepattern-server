@@ -10,7 +10,7 @@ function mmLoadMenus() {
   mm_menu_tasks.addMenuItem("Create&nbsp;Pipeline","location=contextRoot + '/pipelineDesigner.jsp'");
   mm_menu_tasks.addMenuItem("Install&nbsp;/&nbsp;Update","location=contextRoot + '/pages/taskCatalog.jsf'");
   mm_menu_tasks.addMenuItem("Import","location=contextRoot + '/pages/importTask.jsf'");
-  mm_menu_tasks.addMenuItem("Manage","location=contextRoot + '/deleteTask.jsp'");
+  mm_menu_tasks.addMenuItem("Manage","location=contextRoot + '/pages/manageTasks.jsf'");
   mm_menu_tasks.hideOnMouseOut=true;
   mm_menu_tasks.bgColor='#CCCC66';
   mm_menu_tasks.menuBorder=0;
