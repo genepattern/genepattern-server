@@ -1079,8 +1079,7 @@ public class GenePatternAnalysisTask implements IGPConstants {
         }
         String value = null;
         if (path != null
-                && ((path.indexOf("getFile.jsp") >= 0) || (path.indexOf("getInputFile.jsp") >= 0) || (path
-                        .indexOf("retrieveResults.jsp") >= 0))) {
+                && ((path.indexOf("getFile.jsp") >= 0))) {
             String query = u.getQuery();
             if (query != null && !query.equals("")) {
                 try {
