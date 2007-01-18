@@ -19,7 +19,17 @@
  */
 package org.genepattern.server.webapp;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.StringTokenizer;
 
 import javax.servlet.Filter;
@@ -120,14 +130,57 @@ public class JobResultsFilter implements Filter {
 		}
 		
 		if (allowed){
-			chain.doFilter(request, response);
+			// if it is a jsp, jsf or xhtml extension, we return the contents directly and
+			// don't pass it on as it could be interpreted into something malicious
+			if (resultsPath.endsWith(".jsp") || resultsPath.endsWith(".jsf") || resultsPath.endsWith(".xhtml")){
+				returnFile(resultsPath, (HttpServletResponse)response);
+				
+			} else {
+				chain.doFilter(request, response);
+			}
 			return;
 		} else {
 			((HttpServletResponse)response).sendError(((HttpServletResponse)response).SC_FORBIDDEN);
 		}
    }
 
-	  private boolean isJobOwner(String user, String jobId){
+	  private void returnFile(String resultsPath, HttpServletResponse response) {
+		  try {
+			  // TODO Auto-generated method stub
+			  File f = new File(resultsPath);
+		
+			  response.setHeader("Content-disposition", "inline; filename=\""
+		                + f.getName() + "\"");
+		    
+		    
+		    response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
+		    response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
+		    response.setDateHeader("Expires", 0);
+		    response.setDateHeader("X-lastModified", f.lastModified());
+
+		    OutputStream os = response.getOutputStream();
+		    Writer out  = new BufferedWriter(new OutputStreamWriter(os));
+		    BufferedReader is = null;
+		   try {
+		        is = new BufferedReader(new FileReader(f));
+		        char[] b = new char[10000];
+		        int bytesRead;
+		        while ((bytesRead = is.read(b)) != -1) {
+		            out.write(b);         
+		        }
+		    } finally {
+		        if (is != null) {
+		            is.close();
+		        }
+		    }
+
+			  
+		  } catch (Exception e){
+			  e.printStackTrace();
+		  }
+	}
+
+	private boolean isJobOwner(String user, String jobId){
 		  try {
 			  int jobID = Integer.parseInt(jobId);
 	
