@@ -2059,7 +2059,7 @@ public class GPGE {
 
         try {
             String server = analysisServiceManager.getServer()
-                    + "/gp/taskCatalog.jsp";
+                    + "/gp/pages/taskCatalog.jsf";
             String text = "<html><body><font face=\"Arial, Helvetica, sans-serif\">There are no modules installed on the server. Go to "
                     + "<a href="
                     + server
