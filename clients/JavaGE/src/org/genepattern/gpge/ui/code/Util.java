@@ -12,23 +12,29 @@
 
 
 package org.genepattern.gpge.ui.code;
-import javax.swing.JDialog;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Toolkit;
 
-import org.genepattern.util.GPConstants;
+import javax.swing.JDialog;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
 import org.genepattern.gpge.GenePattern;
-import org.genepattern.webservice.*;
 import org.genepattern.gpge.ui.maindisplay.CenteredDialog;
-import org.genepattern.gpge.ui.tasks.JobModel;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
+import org.genepattern.gpge.ui.tasks.JobModel;
+import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.AnalysisService;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 
 /**
  *  Utility class for code generation
@@ -57,7 +63,7 @@ public class Util {
                String name = JobModel.getJobResultFileName(job, i);
                int jobNumber = JobModel.getJobCreationJobNumber(job, i);
                try {
-                  String url = job.getServer() + "/gp/retrieveResults.jsp?job=" + jobNumber + "&filename=" + java.net.URLEncoder.encode(name, "UTF-8");
+                  String url = job.getServer() + "/gp/jobResults/" + jobNumber + "/" + URLEncoder.encode(name, "UTF-8");
 
                   parameterInfoList.add(new ParameterInfo(params[i].getName(), url, ""));
                } catch(java.io.UnsupportedEncodingException x) {

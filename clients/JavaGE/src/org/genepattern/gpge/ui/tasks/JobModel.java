@@ -12,27 +12,35 @@
 
 package org.genepattern.gpge.ui.tasks;
 
-import java.awt.event.*;
-import java.io.*;
-import java.net.*;
-import java.text.DateFormat;
-import java.util.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Vector;
 
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
-import javax.swing.tree.*;
-import org.genepattern.data.pipeline.JobSubmission;
-import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.util.GPConstants;
-import org.genepattern.webservice.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+
 import org.genepattern.gpge.message.MessageManager;
-import org.genepattern.gpge.ui.treetable.*;
-import org.genepattern.gpge.ui.table.*;
-import org.genepattern.gpge.ui.maindisplay.FileInfoUtil;
 import org.genepattern.gpge.ui.maindisplay.AscendingComparator;
+import org.genepattern.gpge.ui.maindisplay.FileInfoUtil;
 import org.genepattern.gpge.ui.maindisplay.SendableTreeNode;
+import org.genepattern.gpge.ui.table.SortEvent;
+import org.genepattern.gpge.ui.treetable.AbstractSortableTreeTableModel;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.AnalysisWebServiceProxy;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.JobStatus;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * Job model
@@ -132,8 +140,8 @@ public class JobModel extends AbstractSortableTreeTableModel {
         }
         URL url = null;
         try {
-            url = new URL(job.getServer() + "/gp/retrieveResults.jsp?job="
-                    + jobNumber + "&filename="
+            url = new URL(job.getServer() + "/gp/jobResults/"
+                    + jobNumber + "/"
                     + URLEncoder.encode(fileName, "UTF-8")); // include &e=
             // to get
             // response code
@@ -657,8 +665,8 @@ public class JobModel extends AbstractSortableTreeTableModel {
                 AnalysisJob job = parent.job;
                 int jobNumber = getJobCreationJobNumber(this);
 
-                return new URL(job.getServer() + "/gp/retrieveResults.jsp?job="
-                        + jobNumber + "&filename="
+                return new URL(job.getServer() + "/gp/jobResults/"
+                        + jobNumber + "/"
                         + URLEncoder.encode(name, "UTF-8"));
             } catch (MalformedURLException x) {
                 throw new Error(x);

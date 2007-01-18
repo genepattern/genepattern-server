@@ -83,8 +83,6 @@ public class CodeGeneratorUtil {
      *            the language.
      * @param job
      *            the job.
-     * @param username
-     *            the username.
      * @return the code.
      * @throws Exception
      *             if an error occurs while generating the code.
@@ -110,8 +108,8 @@ public class CodeGeneratorUtil {
                     try {
                         String url = job.getServer()
                                 + System.getProperty("GP_Path")
-                                + "retrieveResults.jsp?job=" + jobNumber
-                                + "&filename="
+                                + "jobResults/" + jobNumber
+                                + "/"
                                 + java.net.URLEncoder.encode(name, "UTF-8");
 
                         parameterInfoList.add(new ParameterInfo(params[i]
