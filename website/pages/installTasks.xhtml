@@ -81,7 +81,6 @@
         }
         var progressId = "progress_" + lsid;
         if(installStatus.patch != '') {
-        
         	Element.update(progressId, installStatus.patch);
         } else {
           	Element.hide(progressId);
@@ -89,13 +88,11 @@
       }
   
       if(complete == true) {
-        Element.update("progress_indicator", "<i>done</i>")
-  		
-        	
+        Element.update("progress_indicator", " complete")
         stopPolling();
         var buttonPane = $("button_pane");
         if(buttonPane != null) { 
-          Element.show(buttonPane);
+  			Element.show(buttonPane);
         }
       }
     }
@@ -111,44 +108,32 @@
       </script>
 
       <h:form>
-        <p>
-          <h1>Installing Tasks&#160;&#160;<span id="progress_indicator"></span> </h1>
-        </p>
-
-        <p>
-        <!--  Divs for error messages.  One for each task  -->
-         <ui:repeat var="task" value="#{taskInstallBean.tasks}">
-          <li id="error_#{task.lsid}" class="validation-error" style="font-weight:bold; color:red;display:none;"></li>
-        </ui:repeat>
-        </p>
+       
+          <h1>Installing Tasks<span id="progress_indicator">...</span></h1>
         
+      
         <table border="0" cellpadding="5" cellspacing="0">
-          <tr>
-            <td>
-              <ui:repeat var="task" value="#{taskInstallBean.tasks}">
-                <li id="error_#{task.lsid}" class="validation-error" style="font-weight:bold; color:red;display:none;"></li>
-              </ui:repeat>
-            </td>
-          </tr>
           
           <!--  Loop through tasks (TaskInstallStatus beans) -->
           <ui:repeat var="task" value="#{taskInstallBean.tasks}">
             <tr>
               <td valign="top">
-                #{task.name}
+                <b>#{task.name}</b>
               </td>
               <td valign="top">
                 <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="12" height="12" id="cb_#{task.lsid}"/>
               </td>
             </tr>
             <tr><td valign="top" colspan="2" id="progress_#{task.lsid}">&#160;</td></tr>
-           
+            <tr><td colspan="2" valign="top" id="error_#{task.lsid}" class="validation-error" style="font-weight:bold;color:red;display:none"></td></tr>
+            <tr class="taskperameter"><td colspan="2" valign="top">&#160;</td></tr>
           </ui:repeat>
         </table>
         
-        
 
         <div id="button_pane" style="display:none;">
+       	  <br />
+          <br />
           <t:commandButton value="Done"  action="home"/>&#160;
           <t:commandButton value="Install More" action="task catalog"/>
         </div>
