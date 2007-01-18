@@ -430,7 +430,7 @@ function addNewDomainType(name, desc){
 
 	%>
 	
-	<h2><%= taskName == null ? "Create new "+ messages.get("ApplicationName") +" task" : ((!viewOnly ? "Update " : "") + taskName  + " version ") %>
+	<h2 class="barhead-other"><%= taskName == null ? "Create new "+ messages.get("ApplicationName") +" task" : ((!viewOnly ? "Update " : "") + taskName  + " version ") %>
 	<% if (taskName != null) { %>
 		<select name="notused" onchange="javascript:window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'" style="font-weight: bold; font-size: medium; outline-style: none;">
 	<%
@@ -473,11 +473,10 @@ function addNewDomainType(name, desc){
 	<% if (viewOnly && LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
 	
 	<br><br>
-	  <table cols="2" valign="top">
-		  <col align="right" width="20%">
-		  <col align="left" width="*">
-		  <tr title="Task name without spaces, used as the name by which the task will be invoked.">
-		  <td align="right"><b>Name:</b></td>
+	  <table width="100%" cellpadding="3" cellspacing="0" cols="2" valign="top">
+		  
+		  <tr title="Task name without spaces, used as the name by which the task will be invoked." class="taskperameter">
+		  <td align="top" class="attribute-required">Name:*</td>
 		  <td width="*"><% if (!viewOnly) { %><input name="<%= GPConstants.NAME %>" maxlength="100" size="<%= taskInfo != null ? Math.max(taskInfo.getName().length() + 2, 20): 20 %>" 
 		  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<a href='help.jsp#Name' target='help'><img border='0' src='skin/help2.jpg'/></a><% } else { %><%= taskInfo.getName() %><% } %>
 		&nbsp;&nbsp;&nbsp;&nbsp;
@@ -515,8 +514,8 @@ function addNewDomainType(name, desc){
 	</td>
   </tr>
 
-  <tr title="LSID">
-  <td align="right"><b>LSID:</b></td>
+  <tr class="taskperameter" title="LSID">
+  <td valign="top">LSID:</td>
   <td width="*">
  <% if(!viewOnly) { %>
    <input type="text" name="<%= GPConstants.LSID %>" value="<%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.LSID)) : "" %>" size="100" readonly style="{ border-style: none; }">
@@ -527,8 +526,8 @@ function addNewDomainType(name, desc){
   </td>
   </tr>
 
-  <tr title="A verbose description of the purpose of the program, especially useful to someone who hasn't run the program before to determine whether it is suited to their problem.">
-  <td align="right"><b>Description:</b></td>
+  <tr class="taskperameter"  title="A verbose description of the purpose of the program, especially useful to someone who hasn't run the program before to determine whether it is suited to their problem.">
+  <td valign="top">Description:</td>
   <td width="*">
   <% if(!viewOnly) { %>
   <input name="<%= GPConstants.DESCRIPTION %>" size="80" class="hideable"
@@ -540,8 +539,8 @@ function addNewDomainType(name, desc){
   </td>
   </tr>
 
-  <tr title="Author's name, affiliation, email address">
-  <td align="right"><b>Author:</b></td>
+  <tr class="taskperameter" title="Author's name, affiliation, email address">
+  <td valign="top"><b>Author:</b></td>
   <td width="*">
   <%
   if(!viewOnly) { %>
@@ -555,8 +554,8 @@ function addNewDomainType(name, desc){
        </td>
   </tr>
 
-  <tr title="Your user ID">
-  <td align="right"><b>Owner:</b></td>
+  <tr class="taskperameter" title="Your user ID">
+  <td valign="right">Owner:</td>
   <td width="*">
 	<% 
 	   String owner = (tia == null ? userID : tia.get(GPConstants.USERID)); 
@@ -576,14 +575,14 @@ function addNewDomainType(name, desc){
 	  </tr>
 
 	  <tr title="Make available to others">
-	  <td align="right"><b>Privacy:</b></td>
+	  <td valign="top">Privacy:</td>
 	  <td width="*"><%= createSelection(tia, GPConstants.PRIVACY, privacies, "onchange=\"onPrivacyChange(this)\"", viewOnly) %>
 	<a href='help.jsp#Privacy' target='help'><img border='0' src='skin/help2.jpg'/></a>
 	</td>
   </tr>
 
-  <tr title="Readiness for use by others">
-  <td align="right"><b>Quality&nbsp;level:</b></td>
+  <tr class="taskperameter" title="Readiness for use by others">
+  <td valign="top">Quality&nbsp;level:</td>
   <td width="*"><%= createSelection(tia, GPConstants.QUALITY, qualities, "", viewOnly) %>
 	<a href='help.jsp#Quality' target='help'><img border='0' src='skin/help2.jpg'/></a>
 	</td>
@@ -597,11 +596,11 @@ function addNewDomainType(name, desc){
 		} catch(org.genepattern.webservice.WebServiceException wse) {
 			docFiles = new File[0];
 		}
-	%><tr><td align="right"><%
+	%><tr><td valign="top"><%
 		boolean isPipeline = tia != null && tia.get(GPConstants.TASK_TYPE).equals(GPConstants.TASK_TYPE_PIPELINE);
 		boolean hasDoc = docFiles != null && docFiles.length > 0;
 		if (hasDoc || isPipeline) {
-	%><b>Documentation:</b></td><td width="*"><%
+	%>Documentation:</td><td width="*"><%
 		}
 		if (hasDoc) { 
 	 		for (i = 0; i < docFiles.length; i++) { %>
@@ -620,7 +619,7 @@ function addNewDomainType(name, desc){
 	
 	<% if (!viewOnly) { %>
 	  <tr>
-	  <td align="right" valign="top">
+	  <td valign="top">
 	   </td>
 	  <td width="*"><br>    <font size=-1>
 	  Use &lt;<%= GPConstants.JAVA %>&gt; for launching a JVM, 
@@ -635,14 +634,14 @@ function addNewDomainType(name, desc){
 	<% } %>
 
 	  <tr title="the command line used to invoke the application, using &lt;tags&gt; for param &amp; environment variable substitutions.">
-	  <td align="right" valign="top"><b>command&nbsp;line:</b><br>
+	  <td valign="top">command&nbsp;line:<br>
 	   </td>
 	  <td valign="top" width="*"><% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="60" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea> * (required) <a href='help.jsp#Command' target='help'><img border='0' src='skin/help2.jpg'/></a>
 	<% } %></td>
 	  </tr>
 
-	  <tr>
-	  <td align="right"><b>task&nbsp;type:</b>
+	  <tr class="taskperameter">
+	  <td valign="top">task&nbsp;type:
 	</td>
 	  <td width="*">         
 	  <%= createSelection(tia, GPConstants.TASK_TYPE, taskTypes, "", viewOnly) %>
@@ -654,16 +653,16 @@ function addNewDomainType(name, desc){
 	  </td>
 	  </tr>
 
-	   <tr>
-	  <td align="right"><b>CPU&nbsp;type:</b></td>
+	   <tr class="taskperameter">
+	  <td valign="top">CPU&nbsp;type:</td>
 	  <td width="*">         
 		<%= createSelection(tia, GPConstants.CPU_TYPE, cpuTypes, "", viewOnly) %> (if compiled for a specific one)
 	         <a href='help.jsp#cpu' target='help'><img border='0' src='skin/help2.jpg'/></a>
 	</td>
 	   </tr>
 	
-	   <tr>
-	  <td align="right"><b>operating&nbsp;system:</b></td>
+	   <tr class="taskperameter">
+	  <td valign="top">operating&nbsp;system:</td>
 	  <td width="*"> 
 		<%= createSelection(tia, GPConstants.OS, oses, "", viewOnly) %> (if operating system-dependent)
 	  <a href='help.jsp#os' target='help'><img border='0' src='skin/help2.jpg'/></a>
@@ -678,8 +677,8 @@ function addNewDomainType(name, desc){
 	         </td>
 	   </tr>
 	--%>
-	   <tr>
-	  <td align="right"><b>Language:</b></td>
+	   <tr class="taskperameter">
+	  <td valign="top">Language:</td>
 	  <td width="*">         
 	  <%= createSelection(tia, GPConstants.LANGUAGE, languages, "", viewOnly) %> &nbsp;
 	    <b>min. language version:</b> <% if (!viewOnly) { %><input name="<%= GPConstants.JVM_LEVEL %>" value="<%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %>" size="10"><% } else { %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %><% } %>
@@ -687,16 +686,16 @@ function addNewDomainType(name, desc){
 	</td>
 	   </tr>
 	   
-	   <tr>
-	  <td align="right" valign="top"><b>Version&nbsp;comment:</b></td>
+	   <tr class="taskperameter">
+	  <td valign="top">Version&nbsp;comment:</td>
 	  <td width="*">
 	  	<% if (!viewOnly) { %><textarea name="<%= GPConstants.VERSION %>" cols="50" rows="1"><% } %><%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.VERSION)) : "" %><% if (!viewOnly) { %></textarea><% } %>
 	   <a href='help.jsp#VersionComment' target='help'><img border='0' src='skin/help2.jpg'/></a>
 	</td>
 	   </tr>
 	
-	   <tr>
-	   <td align="right" valign="top"><b>output description:</b></td>
+	   <tr class="taskperameter">
+	   <td valign="top">output description:</td>
 	   <td>
 		<table>
 		<tr>
@@ -786,8 +785,8 @@ function addNewDomainType(name, desc){
 	   <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_URLS %>" value="<%= tia != null ? tia.get(GPConstants.REQUIRED_PATCH_URLS) : "" %>">
 	   
 	  <% if (!viewOnly) { %>
-	   <tr>
-	  <td align="right" valign="top"><b>Support&nbsp;files:</b><br>(jar, dll, exe, pl, doc, etc.)<br>
+	   <tr class="taskperameter">
+	  <td valign="top">Support&nbsp;files:<br>(jar, dll, exe, pl, doc, etc.)<br>
 	  </td>
 	  <td width="*">
 	<font size=-1>
@@ -802,8 +801,8 @@ function addNewDomainType(name, desc){
 	  </tr>
 	<% } %>
 
-	  <tr>
-	  <td align="right" valign="top"><b>Current&nbsp;files:</b></td>
+	  <tr class="taskperameter">
+	  <td valign="top">Current&nbsp;files:</td>
 	  <td width="*">
 	<%
 	   if (taskName != null) {
@@ -835,15 +834,15 @@ function addNewDomainType(name, desc){
 	  </td>
 	   </tr>
         
-	<tr><td valign="top" align="right"><b>Parameters:</b><font size=-1>&nbsp;</font><br>
-	<table cols="1"><tr><td><font size="-1">&nbsp;</font></td></tr><tr><td><font size="-1">&nbsp;</font></td></tr><tr><td align="right"><br><br><br><i>example:</i></td></tr></table>
+	<tr class="taskperameter" ><td valign="top">Parameters:<font size=-1>&nbsp;</font><br>
 	</td>
 	<td>
 	<font size=-1>
 	  The names of these parameters will be available for the command line (above) in the form &lt;name&gt;.<br>
 	  Parameters with &quot;filename&quot; in their name will be treated as input filenames.</font>&nbsp;&nbsp;<a href='help.jsp#inputParameters' target='help'><img border='0' src='skin/help2.jpg'/></a>
-	<br>
-	  <table cols="<%= 3+GPConstants.PARAM_INFO_ATTRIBUTES.length %>">
+	<br/>
+	<br/>
+	  <table cols="<%= 3+GPConstants.PARAM_INFO_ATTRIBUTES.length %>" class="pipeline_item">
 	  <tr>
 	  <td width="20%" valign="bottom"><b>name</b></td>
 	  <td width="30%" valign="bottom"><b>description (optional)</b></td>
