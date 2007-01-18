@@ -73,7 +73,7 @@ public class ImportBean {
             return doImport(path, selectedUrlPrivacy.equals(ALL_USERS) ? GPConstants.ACCESS_PUBLIC
                     : GPConstants.ACCESS_PRIVATE);
         } catch (IOException e) {
-            UIBeanHelper.setInfoMessage("An error occurred while downloading " + url + ".");
+            UIBeanHelper.setInfoMessage("Unable to install " + url + ".");
             log.error(e);
             return "error";
         }
@@ -97,21 +97,19 @@ public class ImportBean {
             return doImport(file.getCanonicalPath(), selectedFilePrivacy.equals(ALL_USERS) ? GPConstants.ACCESS_PUBLIC
                     : GPConstants.ACCESS_PRIVATE);
         } catch (IOException e) {
-            UIBeanHelper.setInfoMessage("An error occurred while importing the file " + zipFile.getName() + ".");
+            UIBeanHelper.setInfoMessage("Unable to install " + zipFile.getName() + ". Please ensure that "
+                    + zipFile.getName() + " is a valid task or pipeline zip file.");
             log.error(e);
             return "error";
         }
 
     }
 
-    private String doImport(final String path, final int privacy) {
-        try {
-            if (TaskUtil.isSuiteZip(new File(path))) {
-                return doSuiteImport(path, privacy);
-            }
-        } catch (IOException e) {
-            log.error(e);
+    private String doImport(final String path, final int privacy) throws IOException {
+        if (TaskUtil.isSuiteZip(new File(path))) {
+            return doSuiteImport(path, privacy);
         }
+
         return doTaskImport(path, privacy);
 
     }
@@ -139,7 +137,8 @@ public class ImportBean {
             }
         } catch (IOException e) {
             log.error(e);
-            UIBeanHelper.setInfoMessage("An error occurred during import.");
+            UIBeanHelper.setInfoMessage("Unable to install " + new File(path).getName() + ". Please ensure that "
+                    + new File(path).getName() + " is a valid task or pipeline zip file.");
             return "error";
         }
         final boolean doRecursive = taskInstallAllowed; // TODO ask user?
@@ -208,13 +207,10 @@ public class ImportBean {
         try {
             HashMap hm = SuiteRepository.getSuiteMap(new ZipFile(path));
             suiteInfo = new SuiteInfo(hm);
-        } catch (IOException e) {
-            log.error(e);
-            UIBeanHelper.setInfoMessage("An error occurred during import.");
-            return "error";
         } catch (Exception e) {
             log.error(e);
-            UIBeanHelper.setInfoMessage("An error occurred during import.");
+            UIBeanHelper.setInfoMessage("Unable to install " + new File(path).getName() + ". Please ensure that "
+                    + new File(path).getName() + " is a valid suite zip file.");
             return "error";
         }
 
