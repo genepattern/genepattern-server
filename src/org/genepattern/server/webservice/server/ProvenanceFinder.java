@@ -15,13 +15,14 @@ package org.genepattern.server.webservice.server;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -72,8 +73,7 @@ public class ProvenanceFinder {
             PipelineController controller = new PipelineController(model);
             lsid = controller.generateTask();
             model.setLsid(lsid);
-
-            copyFilesToPipelineDir(lsid);
+            copyFilesToPipelineDir(lsid, pipelineName);
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -152,13 +152,13 @@ public class ProvenanceFinder {
         filesToCopy = new ArrayList();
         // create an array list with the taskinfos at their taskid location for
         // easier retrieval later
-        Map taskCatalog = new LocalAdminClient(userID).getTaskCatalogByLSID();
-        HashMap<Integer, TaskInfo> taskList = new HashMap<Integer, TaskInfo>();
+        Collection<TaskInfo> taskCatalog = new LocalAdminClient(userID).getTaskCatalog();
+        HashMap<String, TaskInfo> taskList = new HashMap<String, TaskInfo>();
         HashMap<Integer, Integer> jobOrder = new HashMap<Integer, Integer>();
 
-        for (Iterator iter = taskCatalog.values().iterator(); iter.hasNext();) {
-            TaskInfo ti = (TaskInfo) iter.next();
-            taskList.put(new Integer(ti.getID()), ti);
+        for (Iterator<TaskInfo> iter = taskCatalog.iterator(); iter.hasNext();) {
+            TaskInfo ti = iter.next();
+            taskList.put(ti.getLsid(), ti);
         }
 
         String taskLSID = "";
@@ -178,7 +178,7 @@ public class ProvenanceFinder {
             jobOrder.put(new Integer(job.getJobNumber()), new Integer(i));
             // map old job number to order in pipeline
 
-            TaskInfo mTaskInfo = taskList.get(new Integer(job.getTaskID()));
+            TaskInfo mTaskInfo = taskList.get(job.getTaskLSID());
             if (mTaskInfo == null) {
                 throw new WebServiceException("Could not find job number: " + job.getJobNumber() + ", task: "
                         + job.getTaskName() + " in task list.");
@@ -216,10 +216,10 @@ public class ProvenanceFinder {
         return model;
     }
 
-    protected void copyFilesToPipelineDir(String pipelineLSID) {
+    protected void copyFilesToPipelineDir(String pipelineLSID, String pipelineName) {
         String attachmentDir = null;
         try {
-            attachmentDir = DirectoryManager.getTaskLibDir(pipelineLSID);
+            attachmentDir = DirectoryManager.getTaskLibDir(pipelineName, pipelineLSID, userID);
         } catch (Exception e) {
             System.out.println("Could not copy files for pipeline: " + pipelineLSID);
             e.printStackTrace();
@@ -233,19 +233,34 @@ public class ProvenanceFinder {
 
         for (Iterator iter = filesToCopy.iterator(); iter.hasNext();) {
             File aFile = (File) iter.next();
-
+            FileInputStream is = null;
+            FileOutputStream os = null;
             try {
-                FileInputStream is = new FileInputStream(aFile);
-                FileOutputStream os = new FileOutputStream(new File(dir, aFile.getName()));
+                is = new FileInputStream(aFile);
+                os = new FileOutputStream(new File(dir, aFile.getName()));
                 while ((j = is.read(buf, 0, buf.length)) > 0) {
                     os.write(buf, 0, j);
                 }
-                is.close();
-                os.close();
-            } catch (Exception e) {
+
+            } catch (IOException e) {
                 System.out
                         .println("Could not copy file " + aFile.getAbsolutePath() + " todir " + dir.getAbsolutePath());
                 e.printStackTrace();
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close();
+                    }
+                } catch (IOException e) {
+
+                }
+                try {
+                    if (os != null) {
+                        os.close();
+                    }
+                } catch (IOException e) {
+
+                }
             }
         }
         filesToCopy.clear();
