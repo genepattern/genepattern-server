@@ -364,10 +364,8 @@ public class HTMLPipelineView implements IPipelineView {
 						+ submitURL
 						+ "\"  method=\"post\" ENCTYPE=\"multipart/form-data\">\n");
 		
-		MessageUtils mu = new MessageUtils();
-		String appName = mu.getProperty("ApplicationName");
-
-		writer.write("<table width=\"100%\"  border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"barhead-other\"><tr><td>"+appName+" Pipeline Designer");
+		
+		writer.write("<table width=\"100%\"  border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"barhead-other\"><tr class=\"barhead-other\"><td class=\"barhead-other\">Pipeline Designer");
 
 		if (taskInfo != null) {
 			writer.write(" - " + taskInfo.getName() + " version ");
@@ -382,7 +380,7 @@ public class HTMLPipelineView implements IPipelineView {
 
 		writer.write("<table cols=\"2\">\n");
 
-		writer.write("<tr class=\"taskperameter\"><td class=\"attribute-required\"><a name=\"0\"></a>Pipeline&nbsp;name*:</td><td width=\"*\"><input name=\"pipeline_name\" value=\"\" size=\""
+		writer.write("<tr class=\"taskperameter\"><td  class=\"taskperameter\"><a name=\"0\"></a>Pipeline&nbsp;name:</td><td width=\"*\"><input name=\"pipeline_name\" value=\"\" size=\""
 						+ (pipelineName != null ? pipelineName.length() : 20)
 						+ "\" onchange=\"javascript:if (document.forms['pipeline'].pipeline_name.value != '' && !isRSafe(document.forms['pipeline'].pipeline_name.value)) alert(pipelineInstruction);\"> (required)\n");
 		writer.write("<input type=\"hidden\" name=\"cloneName\">\n");
@@ -777,7 +775,7 @@ public class HTMLPipelineView implements IPipelineView {
 				}
 			}
 			if (askName) {
-				//writer.write("var n = window.prompt('Please enter a name for this pipeline.  ' + pipelineInstruction + '\\n\\nPipeline name*:', '');\n");
+				//writer.write("var n = window.prompt('Please enter a name for this pipeline.  ' + pipelineInstruction + '\\n\\nPipeline name:', '');\n");
 				writer.write("var n = \"\";\n");
 				writer.write("if (n != null) document.pipeline['pipeline_name'].value = n;\n");
 				writer.write("if (n != null && n.length > 0 && !isRSafe(n)) alert(pipelineInstruction);\n");
