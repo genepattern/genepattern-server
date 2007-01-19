@@ -380,8 +380,8 @@ public class HTMLPipelineView implements IPipelineView {
 
 		writer.write("<table cols=\"2\">\n");
 
-		writer.write("<tr class=\"taskperameter\"><td  class=\"taskperameter\"><a name=\"0\"></a>Pipeline&nbsp;name:</td><td width=\"*\"><input name=\"pipeline_name\" value=\"\" size=\""
-						+ (pipelineName != null ? pipelineName.length() : 20)
+		writer.write("<tr class=\"pipelineperameter\"><td  class=\"taskperameter\"><a name=\"0\"></a>Pipeline&nbsp;name:</td><td width=\"*\"><input name=\"pipeline_name\" value=\"\" class=\"pipelineperameterinputTextShort\" size=\""
+						+ (pipelineName != null ? pipelineName.length() : 30)
 						+ "\" onchange=\"javascript:if (document.forms['pipeline'].pipeline_name.value != '' && !isRSafe(document.forms['pipeline'].pipeline_name.value)) alert(pipelineInstruction);\"> (required)\n");
 		writer.write("<input type=\"hidden\" name=\"cloneName\">\n");
 		writer.write("<input type=\"hidden\" name=\"autoSave\">\n");
@@ -433,18 +433,18 @@ public class HTMLPipelineView implements IPipelineView {
 		writer.write("</td></tr>\n");
 
 		writer
-				.write("<tr class=\"taskperameter\"><td>Description:</td><td width=\"*\"><input name=\"pipeline_description\" value=\"\" size=\"80\"></td></tr>\n");
+				.write("<tr class=\"pipelineperameter\"><td>Description:</td><td width=\"*\"><input name=\"pipeline_description\" value=\"\"  class=\"pipelineperameterinputText\"></td></tr>\n");
 		writer
-				.write("<tr class=\"taskperameter\"><td>Author:</td><td width=\"*\"><input name=\"pipeline_author\" value=\"\" size=\"40\"> (name)</td></tr>\n");
+				.write("<tr class=\"pipelineperameter\"><td>Author:</td><td width=\"*\"><input name=\"pipeline_author\" value=\"\" class=\"pipelineperameterinputText\"> <span class='description'>name, affiliation</span></td></tr>\n");
 		writer
-				.write("<tr class=\"taskperameter\"><td>Owner:</td><td width=\"*\"><input name=\""
+				.write("<tr class=\"pipelineperameter\"><td>Contact:</td><td width=\"*\"><input name=\""
 						+ GenePatternAnalysisTask.USERID
 						+ "\" value=\""
 						+ userID
-						+ "\" size=\"40\"> (email address)</td></tr>\n");
+						+ "\" class=\"pipelineperameterinputText\"> <span class='description'>email address</span></td></tr>\n");
 
 		writer
-				.write("<tr class=\"taskperameter\"><td>Privacy:</td><td width=\"*\"><select name=\""
+				.write("<tr class=\"pipelineperameter\"><td>Privacy:</td><td width=\"*\"><select name=\""
 						+ GenePatternAnalysisTask.PRIVACY + "\">");
 		String[] privacies = GenePatternAnalysisTask.PRIVACY_LEVELS;
 		for (int i = 0; i < privacies.length; i++) {
@@ -454,9 +454,9 @@ public class HTMLPipelineView implements IPipelineView {
 		writer.write("</select></td></tr>\n");
 
 		writer
-				.write("<tr class=\"taskperameter\"><td>Version comment:</td><td width=\"*\"><textarea name=\""
+				.write("<tr class=\"pipelineperameter\"><td valign='top'>Version comment:</td><td width=\"85%\"><textarea name=\""
 						+ GenePatternAnalysisTask.VERSION
-						+ "\" cols=\"80\" rows=\"1\"></textarea></td></tr>\n");
+						+ "\" class=\"pipelineperameterinputText\" rows=\"1\"></textarea></td></tr>\n");
 
 		// output language is no longer used, but the radio button to support it
 		// is required to avoid getting an error on existing pipelines
@@ -481,15 +481,7 @@ public class HTMLPipelineView implements IPipelineView {
       	  	}
 			if (userProp != null) showLSID = Boolean.parseBoolean(userProp.getValue());
 		}
-		if (!showLSID){
-			writer.write("<div style=\"display: none;\">");
-		}
-		writer.write("<tr><td align=\"right\" width=\"1\">LSID:</td><td width=\"*\"><input type=\"text\" name=\""
-						+ GPConstants.LSID
-						+ "\" value=\"\" size=\"80\" readonly style=\"border-style: none\"></td></tr>\n");
-		if (!showLSID){
-			writer.write("</div>");
-		}
+		
 
 		// TODO: great place for a summary of the tasks! Eg. Threshold -> Slice
 		// -> GetRows, next line: Slice -> NearestNeighbors.
@@ -561,21 +553,21 @@ public class HTMLPipelineView implements IPipelineView {
 				}
 
 				writer
-						.write("<input type='file' name='doc' size='30' ></td></tr>");
+						.write("<input type='file' name='doc' size='80' class=\"pipelineperameterinputFile\" ></td></tr>");
 
 			}
 
 		} catch (WebServiceException e) {
 			// no doc displayed
-			writer.write("<input type='file' name='doc' size='60' ></td></tr>");
+			writer.write("<input type='file' name='doc' size='80' class=\"pipelineperameterinputFile\" ></td></tr>");
 
 		} catch (IOException ioe) {
-			writer.write("<input type='file' name='doc' size='60' ></td></tr>");
+			writer.write("<input type='file' name='doc' size='80' class=\"pipelineperameterinputFile\" ></td></tr>");
 
 			throw ioe;
 		} catch (Exception e) {
 			// no doc displayed
-			writer.write("<input type='file' name='doc' size='60' ></td></tr>");
+			writer.write("<input type='file' name='doc' size='80' class=\"pipelineperameterinputFile\" ></td></tr>");
 
 		}
 	}

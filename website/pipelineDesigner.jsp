@@ -862,7 +862,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		
 		taskFields = taskFields + "</span></td><td valign=\"top\">";
 		if (pi.description.length > 0)  taskFields = taskFields + pi.description;
-		taskFields = taskFields + "</td></tr>\n";
+		taskFields = taskFields + "&nbsp;</td></tr>\n";
 		
 	}
 	taskFields = taskFields + '</table>\n';

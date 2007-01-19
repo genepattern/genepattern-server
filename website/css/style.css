@@ -565,6 +565,40 @@ a:active {
 	border-bottom-color: #CCCCFF;
 }
 
+.pipelineperameter {
+	background-color: #FFFFFF;
+}
+.pipelineperameter td{
+	background-color: #FFFFFF;
+ 	border-bottom-style: solid;
+	border-bottom-width: 0px;
+	border-bottom-color: #CCCCFF;
+}
+.pipelineperameter-on {
+	background-color: #FFFFFF;
+}
+.pipelineperameter-on td{
+	background-color: #f1f1fd;
+ 	border-bottom-style: solid;
+	border-bottom-width: 0px;
+	border-bottom-color: #CCCCFF;
+}
+
+.pipelineperameterinputText{
+	width: 420px;
+}
+.pipelineperameterinputText_short{
+	width: 120px;
+}
+.pipelineperameterinputTextArea{
+	width: 420px;
+}
+.pipelineperameterinputFile{
+	width: 425px;
+	size: 90;
+}
+
+
 
 .settingperameter {
 	background-color: #FFFFFF;
@@ -575,7 +609,7 @@ a:active {
 	border-bottom-width: 1px;
 	border-bottom-color: #CCCCFF;
 }
-.smalltype {font-size: 9px;font-weight:normal;}
+.smalltype {font-size: 9px;}
 .smalltype2 {
 	font-size: 9px;
 	line-height: 9px;
