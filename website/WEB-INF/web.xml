@@ -38,6 +38,19 @@
    <param-name>genepattern.properties</param-name>
    <param-value>../resources</param-value>
   </init-param>
+  <init-param>
+   <param-name>no.login.required</param-name>
+   <param-value>getPipelineModel.jsp,login.jsf,registerUser.jsf,forgotPassword.jsf</param-value>
+  </init-param>
+  <init-param>
+   <param-name>forward.if.logged.in</param-name>
+   <param-value>login.jsf,registerUser.jsf,forgotPassword.jsf</param-value>
+  </init-param>
+  <init-param>
+   <param-name>home</param-name>
+   <param-value>/pages/index.jsf</param-value>
+  </init-param>
+  
  </filter>
  <filter>
   <filter-name>ConnectionFilter</filter-name>
