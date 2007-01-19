@@ -7,21 +7,21 @@
         <tbody>
           <tr>
             <td>
-              <h:commandLink value="Delete" actionListener="#{recentJobsBean.deleteFile}">
+              <h:commandLink value="Delete" actionListener="#{recentJobsBean.deleteFile}" immediate="true">
                 <f:param value="#{param.value}" name="jobFile"/>
               </h:commandLink>
             </td>
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Save" actionListener="#{recentJobsBean.saveFile}">
+              <h:commandLink value="Save" actionListener="#{recentJobsBean.saveFile}" immediate="true">
                 <f:param value="#{param.value}" name="jobFileName"/>
               </h:commandLink>
             </td>
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Create Pipeline" actionListener="#{recentJobsBean.createPipeline}">
+              <h:commandLink value="Create Pipeline" actionListener="#{recentJobsBean.createPipeline}" immediate="true">
                 <f:param value="#{param.jobNumber}" name="jobNumber"/>
               </h:commandLink>
             </td>
@@ -34,7 +34,7 @@
           <t:dataList value="#{param.moduleMenuItems}" var="moduleMenuItem">
             <tr>
               <td>
-                <h:commandLink value="#{moduleMenuItem.key}" actionListener="#{recentJobsBean.loadTask}">
+                <h:commandLink value="#{moduleMenuItem.key}" actionListener="#{recentJobsBean.loadTask}" immediate="true">
                   <f:param value="#{moduleMenuItem.value}" name="module"/>
                 </h:commandLink>
               </td>
