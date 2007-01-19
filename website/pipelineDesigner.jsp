@@ -771,10 +771,8 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		taskFields = taskFields + '</td></tr>\n';
 	}
 
-	taskFields = taskFields + '<tr><td class="smalltype2">prompt when run</td></tr>';
-
 	if (task.parameterInfoArray.length > 0) {
-		taskFields = taskFields + '<tr class="tableheader-row2"><td>&nbsp;</td><td>parameter name</td><td>value</td><td>description</td></tr>';
+		taskFields = taskFields + '<tr class="tableheader-row2"><td class="smalltype2">prompt when run</td><td>parameter name</td><td>value</td><td>description</td></tr>';
 	} else {
 		taskFields = taskFields + '<tr><td></td><td colspan="2"><i>' + task.name + ' has no input parameters</i>';
 	}
