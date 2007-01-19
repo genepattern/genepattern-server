@@ -67,9 +67,9 @@ String[] privacies = GPConstants.PRIVACY_LEVELS;
 
 int NUM_ATTACHMENTS = 5;
 int NUM_PARAMETERS = 5;
-String DELETE = "delete";
-String CLONE = "clone";
-String RUN = "run";
+String DELETE = "Delete";
+String CLONE = "Clone";
+String RUN = "Run";
 String taskName = request.getParameter(GPConstants.NAME);
 String attributeName = null;
 String attributeValue = null;
@@ -472,16 +472,15 @@ function addNewDomainType(name, desc){
 	
 	
 	Please enter the following information to submit a new or updated analysis task to <%= messages.get("ApplicationName") %>.
-	&nbsp;&nbsp;<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="button">
-	<% if (viewOnly && LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
+	&nbsp;&nbsp;<input type="button" value="Help" onclick="window.open('help.jsp', 'help')" class="button">
+	<% if (viewOnly && LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="Edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
 	
 	<br><br>
-	  <table cols="2" valign="top">
-		  <col align="right" width="20%">
-		  <col align="left" width="*">
-		  <tr title="Task name without spaces, used as the name by which the task will be invoked.">
-		  <td align="right"><b>Name:</b></td>
-		  <td width="*"><% if (!viewOnly) { %><input name="<%= GPConstants.NAME %>" maxlength="100" size="<%= taskInfo != null ? Math.max(taskInfo.getName().length() + 2, 20): 20 %>" 
+	  <table cols="2" valign="top" width="100%">
+		  
+		  <tr class="taskperameter" title="Task name without spaces, used as the name by which the task will be invoked.">
+		  <td valign="top" >Name:*</td>
+		  <td><% if (!viewOnly) { %><input name="<%= GPConstants.NAME %>" maxlength="100" size="<%= taskInfo != null ? Math.max(taskInfo.getName().length() + 2, 20): 20 %>" 
 		  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<a href='help.jsp#Name' target='help'><img border='0' src='skin/help2.jpg'/></a><% } else { %><%= taskInfo.getName() %><% } %>
 		&nbsp;&nbsp;&nbsp;&nbsp;
 		
@@ -518,9 +517,9 @@ function addNewDomainType(name, desc){
 	</td>
   </tr>
 
-  <tr title="LSID">
-  <td align="right"><b>LSID:</b></td>
-  <td width="*">
+  <tr class="taskperameter" title="LSID">
+  <td valign="top">LSID:</td>
+  <td >
  <% if(!viewOnly) { %>
    <input type="text" name="<%= GPConstants.LSID %>" value="<%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.LSID)) : "" %>" size="100" readonly style="{ border-style: none; }">
   <% } else {
@@ -530,9 +529,9 @@ function addNewDomainType(name, desc){
   </td>
   </tr>
 
-  <tr title="A verbose description of the purpose of the program, especially useful to someone who hasn't run the program before to determine whether it is suited to their problem.">
-  <td align="right"><b>Description:</b></td>
-  <td width="*">
+  <tr class="taskperameter" title="A verbose description of the purpose of the program, especially useful to someone who hasn't run the program before to determine whether it is suited to their problem.">
+  <td valign="top">Description:</td>
+  <td >
   <% if(!viewOnly) { %>
   <input name="<%= GPConstants.DESCRIPTION %>" size="80" class="hideable"
        value="<%= taskInfo != null ? StringUtils.htmlEncode(taskInfo.getDescription()) : "" %>">
@@ -543,9 +542,9 @@ function addNewDomainType(name, desc){
   </td>
   </tr>
 
-  <tr title="Author's name, affiliation, email address">
-  <td align="right"><b>Author:</b></td>
-  <td width="*">
+  <tr class="taskperameter" title="Author's name, affiliation, email address">
+  <td valign="top">Author:</td>
+  <td >
   <%
   if(!viewOnly) { %>
   <input name="<%= GPConstants.AUTHOR %>" size="80" class="hideable"
@@ -558,9 +557,9 @@ function addNewDomainType(name, desc){
        </td>
   </tr>
 
-  <tr title="Your user ID">
-  <td align="right"><b>Owner:</b></td>
-  <td width="*">
+  <tr class="taskperameter" title="Your user ID">
+  <td valign="top">Owner:</td>
+  <td >
 	<% 
 	   String owner = (tia == null ? userID : tia.get(GPConstants.USERID)); 
 	  	if(!viewOnly) { %>
@@ -578,16 +577,16 @@ function addNewDomainType(name, desc){
 	  </td>
 	  </tr>
 
-	  <tr title="Make available to others">
-	  <td align="right"><b>Privacy:</b></td>
-	  <td width="*"><%= createSelection(tia, GPConstants.PRIVACY, privacies, "onchange=\"onPrivacyChange(this)\"", viewOnly) %>
+	  <tr class="taskperameter" title="Make available to others">
+	  <td valign="top">Privacy:</td>
+	  <td><%= createSelection(tia, GPConstants.PRIVACY, privacies, "onchange=\"onPrivacyChange(this)\"", viewOnly) %>
 	<a href='help.jsp#Privacy' target='help'><img border='0' src='skin/help2.jpg'/></a>
 	</td>
   </tr>
 
-  <tr title="Readiness for use by others">
-  <td align="right"><b>Quality&nbsp;level:</b></td>
-  <td width="*"><%= createSelection(tia, GPConstants.QUALITY, qualities, "", viewOnly) %>
+  <tr class="taskperameter" title="Readiness for use by others">
+  <td valign="top">Quality&nbsp;level:</td>
+  <td ><%= createSelection(tia, GPConstants.QUALITY, qualities, "", viewOnly) %>
 	<a href='help.jsp#Quality' target='help'><img border='0' src='skin/help2.jpg'/></a>
 	</td>
 	  </tr>
@@ -600,11 +599,11 @@ function addNewDomainType(name, desc){
 		} catch(org.genepattern.webservice.WebServiceException wse) {
 			docFiles = new File[0];
 		}
-	%><tr><td align="right"><%
+	%><tr class="taskperameter"><td valign="top"><%
 		boolean isPipeline = tia != null && tia.get(GPConstants.TASK_TYPE).equals(GPConstants.TASK_TYPE_PIPELINE);
 		boolean hasDoc = docFiles != null && docFiles.length > 0;
 		if (hasDoc || isPipeline) {
-	%><b>Documentation:</b></td><td width="*"><%
+	%>Documentation:</td><td width="*"><%
 		}
 		if (hasDoc) { 
 	 		for (i = 0; i < docFiles.length; i++) { %>
@@ -637,37 +636,40 @@ function addNewDomainType(name, desc){
 	  </tr>
 	<% } %>
 
-	  <tr title="the command line used to invoke the application, using &lt;tags&gt; for param &amp; environment variable substitutions.">
-	  <td align="right" valign="top"><b>command&nbsp;line:</b><br>
+	  <tr class="taskperameter" title="the command line used to invoke the application, using &lt;tags&gt; for param &amp; environment variable substitutions.">
+	  <td valign="top" >command&nbsp;line:<br>
 	   </td>
-	  <td valign="top" width="*"><% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="60" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea> * (required) <a href='help.jsp#Command' target='help'><img border='0' src='skin/help2.jpg'/></a>
-	<% } %></td>
+	  <td valign="top" ><pre>
+	  <% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="60" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncodeLongString(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea> * (required) <a href='help.jsp#Command' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	<% } %>
+		</pre>
+	</td>
 	  </tr>
 
-	  <tr>
-	  <td align="right"><b>task&nbsp;type:</b>
+	  <tr class="taskperameter" >
+	  <td valign="top">task&nbsp;type:
 	</td>
-	  <td width="*">         
+	  <td >         
 	  <%= createSelection(tia, GPConstants.TASK_TYPE, taskTypes, "", viewOnly) %>
 	  <% if (!viewOnly) { %>
-		 <input type="button" onclick="addNewTaskType()" value="new..." class="little">
+		 <input type="button" onclick="addNewTaskType()" value="New..." class="little">
 	  <% } %>
 	<a href='help.jsp#TaskType' target='help'><img border='0' src='skin/help2.jpg'/></a>
 	
 	  </td>
 	  </tr>
 
-	   <tr>
-	  <td align="right"><b>CPU&nbsp;type:</b></td>
-	  <td width="*">         
+	   <tr class="taskperameter" >
+	  <td valign="top">CPU&nbsp;type:</td>
+	  <td >         
 		<%= createSelection(tia, GPConstants.CPU_TYPE, cpuTypes, "", viewOnly) %> (if compiled for a specific one)
 	         <a href='help.jsp#cpu' target='help'><img border='0' src='skin/help2.jpg'/></a>
 	</td>
 	   </tr>
 	
-	   <tr>
-	  <td align="right"><b>operating&nbsp;system:</b></td>
-	  <td width="*"> 
+	   <tr class="taskperameter" >
+	  <td valign="top" >operating&nbsp;system:</td>
+	  <td > 
 		<%= createSelection(tia, GPConstants.OS, oses, "", viewOnly) %> (if operating system-dependent)
 	  <a href='help.jsp#os' target='help'><img border='0' src='skin/help2.jpg'/></a>
 	</td>
@@ -681,25 +683,25 @@ function addNewDomainType(name, desc){
 	         </td>
 	   </tr>
 	--%>
-	   <tr>
-	  <td align="right"><b>Language:</b></td>
-	  <td width="*">         
+	   <tr class="taskperameter" >
+	  <td valign="top" >Language:</td>
+	  <td>         
 	  <%= createSelection(tia, GPConstants.LANGUAGE, languages, "", viewOnly) %> &nbsp;
 	    <b>min. language version:</b> <% if (!viewOnly) { %><input name="<%= GPConstants.JVM_LEVEL %>" value="<%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %>" size="10"><% } else { %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %><% } %>
 	         <a href='help.jsp#Language' target='help'><img border='0' src='skin/help2.jpg'/></a>
 	</td>
 	   </tr>
 	   
-	   <tr>
-	  <td align="right" valign="top"><b>Version&nbsp;comment:</b></td>
-	  <td width="*">
+	   <tr class="taskperameter" >
+	  <td valign="top">Version&nbsp;comment:</td>
+	  <td >
 	  	<% if (!viewOnly) { %><textarea name="<%= GPConstants.VERSION %>" cols="50" rows="1"><% } %><%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.VERSION)) : "" %><% if (!viewOnly) { %></textarea><% } %>
 	   <a href='help.jsp#VersionComment' target='help'><img border='0' src='skin/help2.jpg'/></a>
 	</td>
 	   </tr>
 	
-	   <tr>
-	   <td align="right" valign="top"><b>output description:</b></td>
+	   <tr class="taskperameter" >
+	   <td valign="top">output description:</td>
 	   <td>
 		<table>
 		<tr>
@@ -736,7 +738,7 @@ function addNewDomainType(name, desc){
 		</td>
 	  <% if (!viewOnly) { %>
 	  	<td valign="top">         
-		 <input type="button" onclick="window.open('newFileType.html', 'newFileType', 'width=200,height=200').focus()" value="new..." class="little">
+		 <input type="button" onclick="window.open('newFileType.html', 'newFileType', 'width=200,height=200').focus()" value="New..." class="little">
 	  	</td>
 	   <% }%>
 	<!--	 <td valign="top">
@@ -790,9 +792,9 @@ function addNewDomainType(name, desc){
 	   
 	  <% if (!viewOnly) { %>
 	   <tr>
-	  <td align="right" valign="top"><b>Support&nbsp;files:</b><br>(jar, dll, exe, pl, doc, etc.)<br>
+	  <td valign="top">Support&nbsp;files:<br>(jar, dll, exe, pl, doc, etc.)<br>
 	  </td>
-	  <td width="*">
+	  <td >
 	<font size=-1>
 	  The actual program plus any required libraries will will be accessible to your command line as 
 	  &lt;<%= GPConstants.LIBDIR %>&gt;<file.separator><i>filename</i></font><a href='help.jsp#SupportFiles' target='help'><img border='0' src='skin/help2.jpg'/></a>
@@ -805,9 +807,9 @@ function addNewDomainType(name, desc){
 	  </tr>
 	<% } %>
 
-	  <tr>
-	  <td align="right" valign="top"><b>Current&nbsp;files:</b></td>
-	  <td width="*">
+	  <tr class="taskperameter" >
+	  <td valign="top" >Current&nbsp;files:</td>
+	  <td>
 	<%
 	   if (taskName != null) {
 		   File[] allFiles = null;
@@ -818,7 +820,11 @@ function addNewDomainType(name, desc){
 		   }
 		   for (i = 0; i < allFiles.length; i++) { %>
 			<a href="getFile.jsp?task=<%= (String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%= URLEncoder.encode(allFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(allFiles[i].getName()) %></a> 
-	<%	   }  %>
+				<% if (i!=0 && i%10==0) {%>
+				
+					<br/><% 
+				}
+		   }  %>
 	
 	<%	   if (allFiles != null && allFiles.length > 0 && !viewOnly) { %>
 			   <br>
@@ -834,19 +840,20 @@ function addNewDomainType(name, desc){
 	
 	<%   } %>
 	  <br>
-	
+
 	  </td>
 	   </tr>
         
-	<tr><td valign="top" align="right"><b>Parameters:</b><font size=-1>&nbsp;</font><br>
-	<table cols="1"><tr><td><font size="-1">&nbsp;</font></td></tr><tr><td><font size="-1">&nbsp;</font></td></tr><tr><td align="right"><br><br><br><i>example:</i></td></tr></table>
+	<tr><td valign="top" >Parameters:<font size=-1>&nbsp;</font><br>
 	</td>
 	<td>
 	<font size=-1>
 	  The names of these parameters will be available for the command line (above) in the form &lt;name&gt;.<br>
 	  Parameters with &quot;filename&quot; in their name will be treated as input filenames.</font>&nbsp;&nbsp;<a href='help.jsp#inputParameters' target='help'><img border='0' src='skin/help2.jpg'/></a>
-	<br>
-	  <table cols="<%= 3+GPConstants.PARAM_INFO_ATTRIBUTES.length %>">
+	<br/>
+	<br/>
+<br/>
+	  <table cols="<%= 3+GPConstants.PARAM_INFO_ATTRIBUTES.length %>" class="pipeline_item">
 	  <tr>
 	  <td width="20%" valign="bottom"><b>name</b></td>
 	  <td width="30%" valign="bottom"><b>description (optional)</b></td>
@@ -875,9 +882,9 @@ function addNewDomainType(name, desc){
 	<% if (!viewOnly) { %>
 	<tr><td></td></tr>
 	<tr><td colspan="3" align="center">
-	<input type="submit" value="save" name="save" class="little">&nbsp;&nbsp;
-	<input type="reset" value="clear" class="little">&nbsp;&nbsp;
-	<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="little">
+	<input type="submit" value="Save" name="save" class="little">&nbsp;&nbsp;
+	<input type="reset" value="Clear" class="little">&nbsp;&nbsp;
+	<input type="button" value="Help" onclick="window.open('help.jsp', 'help')" class="little">
 	</td></tr>
 	<tr><td></td></tr>
 
@@ -893,16 +900,16 @@ function addNewDomainType(name, desc){
 	<tr><td></td></tr>
 	<tr><td colspan="3" align="center">
 	<% if (!viewOnly) { %>
-	<input type="submit" value="save" name="save" class="little">&nbsp;&nbsp;
-	<input type="reset" value="clear" class="little">&nbsp;&nbsp;
-	<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="little">
+	<input type="submit" value="Save" name="save" class="little">&nbsp;&nbsp;
+	<input type="reset" value="Clear" class="little">&nbsp;&nbsp;
+	<input type="button" value="Help" onclick="window.open('help.jsp', 'help')" class="little">
 	<% } else { 
 		lsid = tia.get(GPConstants.LSID);
 		l = new LSID(lsid);
 		authorityType = LSIDManager.getInstance().getAuthorityType(l);
 		if (authorityType.equals(LSIDUtil.AUTHORITY_MINE)) {
 	%>
-			<input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button">
+			<input type="button" value="Edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button">
 	<%	} else { %>
 			<input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
 			<input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
