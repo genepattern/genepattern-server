@@ -10,9 +10,7 @@
   <ui:composition>
     <!--  Loop through output files -->
     <t:dataList var="p" value="#{recentJob.outputFileParameterInfos}" rowIndexVar="paramIndex">
-      <h:outputLink value="#{facesContext.externalContext.requestContextPath}/retrieveResults.jsp">#{p.name}              
-        <f:param name="job" value="#{recentJob.jobNumber}"/>
-        <f:param name="filename" value="#{p.name}"/>
+      <h:outputLink value="#{facesContext.externalContext.requestContextPath}/jobResults/#{recentJob.jobNumber}/#{p.name}">#{p.name}              
       </h:outputLink>
       
       <!-- Image for popup menu -->

@@ -36,10 +36,8 @@
           <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" 
                width="4" height="4" hspace="6" vspace="2" border="0"/>
            
-          <h:outputLink value="#{facesContext.externalContext.requestContextPath}/retrieveResults.jsp">
+          <h:outputLink value="#{facesContext.externalContext.requestContextPath}/jobResults/#{jobInfo.jobNumber}/#{fileInfo.name}">
             <h:outputText>#{fileInfo.name}</h:outputText>
-            <f:param name="job" value="#{jobInfo.jobNumber}"/>
-            <f:param name="filename" value="#{fileInfo.name}"/>
           </h:outputLink>
  
           <!-- Image for popup menu -->

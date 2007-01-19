@@ -45,7 +45,7 @@
 	<t:dataList var="p" value="#{jobInfoBean.outputFiles}">
 		<li><h:outputText>
 			<a
-				href="#{facesContext.externalContext.requestContextPath}/retrieveResults.jsp?job=#{p.jobNumber}&amp;filename=#{p.name}">#{p.name}</a>
+				href="#{facesContext.externalContext.requestContextPath}/jobResults/#{p.jobNumber}/#{p.name}">#{p.name}</a>
 		</h:outputText></li>
 	</t:dataList>
 </ol>
