@@ -47,13 +47,12 @@ public class AuthenticationFilter implements Filter {
 
     private static Logger log = Logger.getLogger(AuthenticationFilter.class);
 
-    private static final String[] NO_AUTH_REQUIRED_PAGES = { "getPipelineModel.jsp", "retrieveResults.jsp",
-            "getFile.jsp", "getInputFile.jsp", "login.jsp", "login.jsf", "registerUser.jsf", "forgotPassword.jsf" };
+    private String[] noAuthorizationRequiredPages;
 
     /** Forward to home page if logged in user requests these pages */
-    private static final String[] LOGIN_PAGES = { "login.jsf", "registerUser.jsf", "forgotPassword.jsf" };
+    private String[] forwardIfLoggedInPages;
 
-    private static final String HOME_PAGE = "/pages/index.jsf";
+    private String homePage;
 
     private boolean passwordRequired;
 
@@ -78,17 +77,17 @@ public class AuthenticationFilter implements Filter {
         }
 
         if (isAuthenticated((HttpServletRequest) request, (HttpServletResponse) response)) {
-            for (int i = 0, length = LOGIN_PAGES.length; i < length; i++) {
-                if (requestedURI.contains(LOGIN_PAGES[i])) {
-                    ((HttpServletResponse) response).sendRedirect(req.getContextPath() + HOME_PAGE);
+            for (int i = 0, length = forwardIfLoggedInPages.length; i < length; i++) {
+                if (requestedURI.contains(forwardIfLoggedInPages[i])) {
+                    ((HttpServletResponse) response).sendRedirect(req.getContextPath() + homePage);
                     return;
                 }
             }
             chain.doFilter(request, response);
         } else {
             // escape valve for some pages that do not require authentication
-            for (int i = 0, length = NO_AUTH_REQUIRED_PAGES.length; i < length; i++) {
-                if (requestedURI.contains(NO_AUTH_REQUIRED_PAGES[i])) {
+            for (int i = 0, length = noAuthorizationRequiredPages.length; i < length; i++) {
+                if (requestedURI.contains(noAuthorizationRequiredPages[i])) {
                     chain.doFilter(request, response);
                     return;
                 }
@@ -312,6 +311,16 @@ public class AuthenticationFilter implements Filter {
         }
         String prop = props.getProperty("require.password", "false").toLowerCase();
         passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
+        noAuthorizationRequiredPages = filterconfig.getInitParameter("no.login.required").split(",");
+        for (int i = 0; i < noAuthorizationRequiredPages.length; i++) {
+            noAuthorizationRequiredPages[i] = noAuthorizationRequiredPages[i].trim();
+        }
+
+        forwardIfLoggedInPages = filterconfig.getInitParameter("forward.if.logged.in").split(",");
+        for (int i = 0; i < forwardIfLoggedInPages.length; i++) {
+            forwardIfLoggedInPages[i] = forwardIfLoggedInPages[i].trim();
+        }
+        homePage = filterconfig.getInitParameter("home").trim();
 
     }
 
