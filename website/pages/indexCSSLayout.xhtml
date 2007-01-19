@@ -243,7 +243,7 @@ function showFileInput(id) {
 
                 <input name="cmd" value="run" type="submit"/>
 
-                <input name="reset" value="reset" 
+                <input name="reset" value="Reset" 
                        onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'" 
                        type="button"/> &#160;&#160;
 
@@ -328,7 +328,7 @@ function showFileInput(id) {
                 <td>&#160;</td>
                 <td colspan="2" class="maintasknav2">
                   <input name="cmd" value="run" type="submit"/>
-                  <input name="reset" value="reset" onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'" type="button"/> &#160;&#160;
+                  <input name="reset" value="Reset" onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'" type="button"/> &#160;&#160;
                   
                   <h:outputText rendered="#{runTaskBean.pipeline}">
                   	<a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160;

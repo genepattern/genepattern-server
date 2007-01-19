@@ -175,15 +175,15 @@ try {
 } catch(Exception e){e.printStackTrace(System.out);}
 if(showEdit) {
 	String editURL = "pipelineDesigner.jsp?name=" + pipelineName;
-	out.println("  <input type=\"button\" value=\"edit\" name=\"edit\" class=\"little\" onclick=\"window.location='" + editURL + "'\"; />");
+	out.println("  <input type=\"button\" value=\"Edit\" name=\"edit\" class=\"little\" onclick=\"window.location='" + editURL + "'\"; />");
 }
 
 if (authManager.checkPermission("createPipeline", userID)){
-out.println("  <input type=\"button\" value=\"clone...\" name=\"clone\"       class=\"little\" onclick=\"cloneTask('"+displayName+"', '" + pipelineName + "', '" + userID + "')\"; />");
+out.println("  <input type=\"button\" value=\"Clone...\" name=\"clone\"       class=\"little\" onclick=\"cloneTask('"+displayName+"', '" + pipelineName + "', '" + userID + "')\"; />");
 }
 
 if (! RunPipelineForJsp.isMissingTasks(model, userID)){
-	out.println("  <input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; />");
+	out.println("  <input type=\"button\" value=\"Run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; />");
 }				
 //XXXXXXXXXXXXX
 String descrip = task.getDescription();
@@ -438,7 +438,7 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
 }out.println("<table cellspacing='0' width='100%' frame='box'>");
 if (! RunPipelineForJsp.isMissingTasks(model, userID)){
 
-out.println("<table width='100%'><tr><td align='center'><input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; /></td></tr></table>");
+out.println("<table width='100%'><tr><td align='center'><input type=\"button\" value=\"Run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; /></td></tr></table>");
 }
 out.println("</table>");
 %>

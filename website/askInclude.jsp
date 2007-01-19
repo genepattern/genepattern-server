@@ -43,10 +43,10 @@ Press 'Pipeline only' to include only the <%= title %> pipeline definition itsel
 
 <br>
 <center>
-<input type="button" name="includeDependents" value="Include tasks" onclick="doSubmit(this)" class="little">
-<input type="button" name="dontIncludeDependents" value="Pipeline only" onclick="doSubmit(this)" class="little">
+<input type="button" name="IncludeDependents" value="Include tasks" onclick="doSubmit(this)" class="little">
+<input type="button" name="DontIncludeDependents" value="Pipeline only" onclick="doSubmit(this)" class="little">
 <br>
-<input type="button" name="cancel" value="Cancel export" onclick="javascript:window.close()" class="little">
+<input type="button" name="Cancel" value="Cancel export" onclick="javascript:window.close()" class="little">
 </center>
 <input type="hidden" name="name" value="<%= request.getParameter("name") %>">
 </form>

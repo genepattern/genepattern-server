@@ -431,7 +431,7 @@ function toggleTask(idx, visibility) {
 <table width='100%' cellpadding="0">
 	<tr>
 		<td width="50px"><input name="stopCmd" id="stopCmd" type="button"
-			value="stop..." onclick="stopJob(this, <%= jobID%>)" class="little">
+			value="Stop..." onclick="stopJob(this, <%= jobID%>)" class="little">
 		</td>
 		<td>Running <a
 			href="addTask.jsp?view=1&name=<%=taskInfo.getTaskInfoAttributes().get("LSID")%>"><%=taskInfo.getName()%>

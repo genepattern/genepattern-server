@@ -799,7 +799,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		taskFields = taskFields + 'Define alternative name and description to display when prompting for this input.<br>';
 		taskFields = taskFields + '<br><table class="prompt-table" border="0" cellspacing="0" cellpadding="0"><tr border="0" ><td>Display Name:</td><td><input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/></td></tr>';
 		taskFields = taskFields + '<tr><td>Display Description:</td><td><input name="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/></td></tr>';
-		taskFields = taskFields + '</table><center><input type="button" value="save" onclick="closePromptWindow(\'div_'+taskNum+'_'+pnum+'\')"/><input type="button" value="reset" onclick="reset(\''+taskNum+'\', \''+pi.name+'\',\''+pi.description+'\')"/></center>';
+		taskFields = taskFields + '</table><center><input type="button" value="Save" onclick="closePromptWindow(\'div_'+taskNum+'_'+pnum+'\')"/><input type="button" value="Reset" onclick="reset(\''+taskNum+'\', \''+pi.name+'\',\''+pi.description+'\')"/></center>';
 		taskFields = taskFields + '</div></div>';
 		taskFields = taskFields + '  </span>';
 
@@ -870,10 +870,10 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 
 	taskFields = taskFields + '<br><center>\n';
 	if ((taskNum+1) < MAX_TASKS) {
-		taskFields = taskFields + '<input type="button" value="add another task" onClick="addAnother(' + (taskNum+1) + 
+		taskFields = taskFields + '<input type="button" value="Add Another Task" onClick="addAnother(' + (taskNum+1) + 
 				          ', true)" name="notused" class="little">&nbsp;&nbsp;\n';
 	}
-	taskFields = taskFields + '<input type="button" value="delete ' + task.name + '" onClick="deleteTask(' + taskNum + 
+	taskFields = taskFields + '<input type="button" value="Delete ' + task.name + '" onClick="deleteTask(' + taskNum + 
 				  ')" name="notused" class="little">\n</center>';
 
 	if (bUpdateInheritance) {
@@ -1400,7 +1400,7 @@ nextTask:
 	newTask = newTask + '</select></td></tr></table>\n';
 	newTask = newTask + '<input type="hidden" name="t' + taskNum + '_taskName" value="' + NOT_SET + '">';
 	if (taskNum > 0) {
-		newTask = newTask + '<br><center><input type="button" value="delete" onClick="deleteTask(' + taskNum + 
+		newTask = newTask + '<br><center><input type="button" value="Delete" onClick="deleteTask(' + taskNum + 
 				    ')" name="notused" class="little"></center>';
 	}
 	return newTask;

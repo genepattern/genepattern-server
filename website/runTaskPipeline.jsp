@@ -242,7 +242,7 @@ show execution logs</td>
 <table width='100%' cellpadding="0">
     <tr>
 	  <td width="50px">
-  <input name="stopCmd" id="stopCmd" type="button" value="stop..." onclick="stopJob(this, <%= job.getJobNumber()%>)" class="little">
+  <input name="stopCmd" id="stopCmd" type="button" value="Stop..." onclick="stopJob(this, <%= job.getJobNumber()%>)" class="little">
 	  </td>
         <td>
             Running <a href="addTask.jsp?view=1&name=<%=requestParameters.get("taskLSID")%>"><%=

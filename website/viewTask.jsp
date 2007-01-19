@@ -68,9 +68,9 @@ String[] privacies = GPConstants.PRIVACY_LEVELS;
 
 int NUM_ATTACHMENTS = 5;
 int NUM_PARAMETERS = 5;
-String DELETE = "delete";
-String CLONE = "clone";
-String RUN = "run";
+String DELETE = "Delete";
+String CLONE = "Clone";
+String RUN = "Run";
 String taskName = request.getParameter(GPConstants.NAME);
 String attributeName = null;
 String attributeValue = null;
@@ -426,8 +426,8 @@ if (tia != null) {
 
 
 Please enter the following information to submit a new or updated analysis task to <%= messages.get("ApplicationName") %>.
-&nbsp;&nbsp;<input type="button" value="help" onclick="window.open('help.jsp', 'help')" class="button">
-<% if (LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
+&nbsp;&nbsp;<input type="button" value="Help" onclick="window.open('help.jsp', 'help')" class="button">
+<% if (LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="Edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
 
 <br><br>
   <table cols="2" valign="top">
@@ -676,7 +676,7 @@ if (taskName != null) {
 	authorityType = LSIDManager.getInstance().getAuthorityType(l);
 	if (authorityType.equals(LSIDUtil.AUTHORITY_MINE)) {
 %>
-		<input type="button" value="edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button">
+		<input type="button" value="Edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button">
 <%	} else { %>
 		<input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
 		<% if (authManager.isAllowed("addTask.jsp", userID)) { %>
