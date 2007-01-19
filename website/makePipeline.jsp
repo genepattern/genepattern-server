@@ -449,7 +449,8 @@ try {
 		<jsp:include page="navbar.jsp"/>
 <%
 	}
-   //PipelineController controller = new PipelineController(model);
+	if (controller == null)
+	    controller = new PipelineController(model);
 
 	//lsid = null;
 	if (vProblems.size() == 0) {
@@ -473,15 +474,16 @@ try {
 		if (!bRun) {
 			// save the task to the database
 			try {
+
+
 				lsid = controller.generateTask(); ///  MP 3
 				model.setLsid(lsid);
 
-	 			if (bClone || !oldLSID.equals("")) {
+	 			if (bClone || !"".equals(oldLSID)) {
 	 				// TODO: change URLs that are task-relative to point to the new task
 					//System.out.println("copying support files from " + oldLSID + " to " + lsid);
 		 			copySupportFiles(modelName, model.getName(), oldLSID, lsid, userID);
 	 			}
-
 			} catch (TaskInstallationException tie) {
 				vProblems.addAll(tie.getErrors());
 			}
@@ -544,7 +546,6 @@ try {
 				}
 			}
 		}
-
 
 		// run immediately, without saving?
 		if (bRun) {
@@ -635,7 +636,9 @@ try {
 		// delete the legacy R file for the pipeline, if it exists
 		pipelineName = model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE;
 		String dir = DirectoryManager.getTaskLibDir(pipelineName, lsid, userID);
-      out.println(model.getName() + " version " + new org.genepattern.util.LSID(model.getLsid()).getVersion()  + " has been saved.");
+
+      out.println(model.getName() + " version " + new org.genepattern.util.LSID(model.getLsid()).getVersion()  + " has been saved.<br><br>");
+
 		new File(dir, model.getName() + ".r").delete();
 
 		if (requestParameters.getProperty("cmd").equals(CLONE)) {
@@ -647,9 +650,12 @@ try {
 			out.println("<script language=\"Javascript\">window.close();</script>");
 		}
 
-		out.println("&nbsp;&nbsp;<a href='" + request.getContextPath() + "/pages/index.jsf?lsid=" + lsid + "'>Run "+pipelineName +".</a>");
+		out.println("&nbsp;&nbsp;<a href='" + request.getContextPath() + "/pages/index.jsf?lsid=" + lsid + "'>Continue to Tasks & Pipeline Start.</a>");
 		out.println("<br />");
-		out.println("<a href=\"pipelineDesigner.jsp?" + GPConstants.NAME + "=" + lsid + "\">modify " + pipelineName + " design</a><br>");
+	
+
+		
+		
 
 	}
 } catch (Exception e) {
