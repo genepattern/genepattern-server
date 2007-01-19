@@ -158,19 +158,30 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 			ParameterInfo aParam = parameterInfo[i];
 			boolean isInputFile = aParam.isInputFile();
 			HashMap hmAttributes = aParam.getAttributes();
+			boolean isOptional = false;
+
 			String paramType = null;
-			if (hmAttributes != null)
+			if (hmAttributes != null){
 				paramType = (String) hmAttributes.get(ParameterInfo.TYPE);
+				String optVal = (String)hmAttributes.get(GPConstants.PARAM_INFO_OPTIONAL[0]);
+				if (optVal != null){
+					isOptional =  "on".equalsIgnoreCase(optVal); 
+				}
+			}
 			if (!isInputFile && !aParam.isOutputFile() && paramType != null
 					&& paramType.equals(ParameterInfo.FILE_TYPE)) {
 				isInputFile = true;
 			}
 			isInputFile = (aParam.getName().indexOf("filename") != -1);
+			String value = aParam.getValue();
+
+			if (isOptional && (value.trim().length() == 0)){
+				continue; // don't write the optional empty params
+			}
+			
 
 			out.print(aParam.getName().replace('.',' '));
 			out.print("=");
-			String value = aParam.getValue();
-
 			if (isInputFile) {
 				// convert from "localhost" to the actual host name so that
 				// it can be referenced from anywhere (eg. visualizer on

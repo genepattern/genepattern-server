@@ -478,15 +478,20 @@ public class RunVisualizer {
 		while (stDownloadables.hasMoreTokens()) {
 			String paramName = stDownloadables.nextToken();
 			String paramURL = (String) params.get(paramName);
-			paramURL = variableSubstitution(paramURL, hmDownloadables);
+			try {
+				paramURL = variableSubstitution(paramURL, hmDownloadables);
 
-			String filename = getURLFileName(new URL(paramURL));
-			if (DEBUG)
-				System.out.println("downloading " + paramURL + " to " + tempdir
+				String filename = getURLFileName(new URL(paramURL));
+				if (DEBUG)
+					System.out.println("downloading " + paramURL + " to " + tempdir
 						+ " as " + filename);
-			File file = downloadFile(new URL(paramURL), tempdir, filename);
-			file.deleteOnExit();
-			hmDownloadables.put(paramName, file);
+				File file = downloadFile(new URL(paramURL), tempdir, filename);
+				file.deleteOnExit();
+				hmDownloadables.put(paramName, file);
+			} catch (Exception mfe){
+				mfe.printStackTrace();
+			}
+
 		}
 		return hmDownloadables;
 	}

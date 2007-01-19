@@ -66,25 +66,9 @@ public class RunVisualizerApplet extends Applet {
 				showStatus("No run flag set");
 			}
 		} catch (Throwable t) {
+
 			t.printStackTrace();
-			try {
-				getAppletContext()
-						.showDocument(
-								new URL(
-										source,
-										"/gp/runVisualizer.jsp?"
-												+ RunVisualizerConstants.NAME
-												+ "="
-												+ params
-														.get(RunVisualizerConstants.LSID)
-												+ "&message="
-												+ URLEncoder
-														.encode(t.getMessage()
-																+ " while attempting to run "
-																+ (String) params
-																		.get(RunVisualizerConstants.NAME))));
-			} catch (MalformedURLException mue) { /* ignore */
-			}
+			
 		}
 	}
 
