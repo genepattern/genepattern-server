@@ -43,12 +43,19 @@ public class UserPrefsBean {
         return "my settings";
     }
 
-    public UserProp getNumberOfRecentJobs() {
-        return recentJobsProp;
+    public String getNumberOfRecentJobs() {
+        return recentJobsProp.getValue();
     }
 
-    public void setNumberOfRecentJobs(UserProp p) {
-        recentJobsProp = p;
+    public void setNumberOfRecentJobs(String value) {
+    	try {
+    		Integer.parseInt(value);
+    	} catch(NumberFormatException e) {
+    		System.out.println("error: " +e);
+    		return;
+    	}
+        recentJobsProp.setValue(value);
+        
     }
 
     public UserProp getJavaFlags() {
