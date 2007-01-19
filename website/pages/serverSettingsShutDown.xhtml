@@ -16,22 +16,22 @@
     <table width="100%" border="0" cellpadding="5" cellspacing="0">
       <tr valign="top">
         <td>
-        <h:commandLink value="Click here to shut down the GenePattern server." action="#{serverSettingsBean.shutDownServer}"/>
-                        
-                <div align="center"/>
+          <p>
+            <span class="style1">Warning: The GenePattern server
+                    can NOT be restarted from this page.</span>
+          </p>
+          <!--  p>To restart the
+                server please click on the <strong>StartGenePatternServer</strong>                icon.</p-->
         </td>
       </tr>
       <tr valign="top" class="settingperameter">
         <td>&nbsp;</td>
       </tr>
-      <tr valign="top">
+      <tr  valign="top">
         <td>
-          <p>
-            <span class="style1">Warning: The GenePattern server
-                    can NOT be restarted from this page.</span>
-          </p>
-          <p>To restart the
-                server please click on the <strong>StartGenePatternServer</strong>                icon.</p>
+        <h:commandLink style="font-weight: bold; color: #990000;" value="Click here to shut down the GenePattern server." action="#{serverSettingsBean.shutDownServer}"/>
+                        
+                <div align="center"/>
         </td>
       </tr>
     </table>
