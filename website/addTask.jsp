@@ -639,11 +639,13 @@ function addNewDomainType(name, desc){
 	  <tr class="taskperameter" title="the command line used to invoke the application, using &lt;tags&gt; for param &amp; environment variable substitutions.">
 	  <td valign="top" >command&nbsp;line:<br>
 	   </td>
-	  <td valign="top" ><pre>
+	   <pre>
+	  <td valign="top" >
 	  <% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="60" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncodeLongString(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea> * (required) <a href='help.jsp#Command' target='help'><img border='0' src='skin/help2.jpg'/></a>
 	<% } %>
-		</pre>
+		
 	</td>
+	</pre>
 	  </tr>
 
 	  <tr class="taskperameter" >
