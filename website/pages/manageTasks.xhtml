@@ -54,6 +54,13 @@
     </ui:define>    
     <ui:define name="body">
       <h:form >
+      <table width="100%"  border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td valign="top" class="maintasknav" id="maintasknav" align="right" width="100%">
+            <h:selectBooleanCheckbox  value="#{manageTasksBean.showEveryonesJobs}" onchange="this.form.submit();"/>show everyone's jobs&#160;&#160;&#160;&#160;
+          </td>
+        </tr>
+      </table>
       <table border="0" cellpadding="0" cellspacing="0" width="100%">
         <tbody>
           <tr class="smalltype">
@@ -77,7 +84,7 @@
           <!--  Task title row -->
           <div align="center" id="mainDiv">
           <t:dataList var="taskGroup" value="#{manageTasksBean.tasks}">
-            <tr class="task-title">
+            <tr valign="top" class="task-title">
           	  <td>
 		        <!-- Task select checkbox -->
 		        <div align="center" id="main_#{taskGroup.lsidNoVersion}">
@@ -105,7 +112,7 @@
 		    </tr>
 		    
 		    <t:dataList var="versionInfo" value="#{taskGroup.indexedVersions}">
-		    	<tr class="smalltype">
+		    	<tr valign="top" class="smalltype">
 		            <td align="center">
 					  	<div align="center" name="div_#{taskGroup.lsidNoVersion}">
 					  		<t:div rendered="#{!versionInfo.allowed}">

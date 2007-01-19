@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.IGPConstants;
 
 public class TaskInfo implements Serializable {
@@ -260,6 +261,10 @@ public class TaskInfo implements Serializable {
 
         return type.endsWith("pipeline");
 
+    }
+    
+    public boolean isOwnedByUser() {
+    	return this.getUserId().equals(UIBeanHelper.getUserId());
     }
 
 }
