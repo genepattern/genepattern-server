@@ -186,6 +186,28 @@ public class StringUtils {
         }
         return res.toString();
     }
+    
+    public static final String htmlEncodeLongString(String nonHTMLsrc) {
+        if (nonHTMLsrc == null)
+            return "";
+        StringBuffer res = new StringBuffer();
+        int l = nonHTMLsrc.length();
+        int idx;
+        char c;
+        for (int i = 0; i < l; i++) {
+            c = nonHTMLsrc.charAt(i);
+            idx = entityMap.indexOf(c);
+            if (idx == -1) {
+                res.append(c);
+            } else {
+                res.append(quickEntities[idx]);
+            }
+            if (i!=0 && i%150==0) {
+            	res.append("\n");
+            }
+        }
+        return res.toString();
+    }
 
     /**
      * static lookup table for htmlEncode method
