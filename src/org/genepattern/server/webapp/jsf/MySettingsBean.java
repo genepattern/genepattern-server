@@ -13,7 +13,7 @@ import org.genepattern.server.user.UserDAO;
 public class MySettingsBean {
 
     private static String[] modes = new String[] { "Change Password",
-            "Change Email", "Visualizer Memory" };
+            "Change Email", "Visualizer Memory", "History"};
 
     private String currentMode = modes[0]; // Default
 

@@ -60,6 +60,9 @@
 		<t:div rendered="#{mySettingsBean.currentMode == 'Change Email'}">
 			<ui:include src="changeEmail.xhtml" />
 		</t:div>
+		<t:div rendered="#{mySettingsBean.currentMode == 'History'}">
+			<ui:include src="history.xhtml" />
+		</t:div>
 
 	</ui:define>
 </ui:composition>

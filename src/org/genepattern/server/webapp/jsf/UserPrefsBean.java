@@ -12,9 +12,12 @@
 
 package org.genepattern.server.webapp.jsf;
 
+import java.io.IOException;
+
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
+import org.genepattern.server.util.PropertiesManager;
 
 public class UserPrefsBean {
     private UserProp javaFlagsProp;
@@ -26,7 +29,13 @@ public class UserPrefsBean {
         String userId = UIBeanHelper.getUserId();
         javaFlagsProp = dao.getProperty(userId, UserPropKey.VISUALIZER_JAVA_FLAGS, System
                 .getProperty("visualizer_java_flags"));
-        recentJobsProp = dao.getProperty(userId, UserPropKey.RECENT_JOBS_TO_SHOW, "4");
+        try {
+        	String historySize = (String)PropertiesManager.getDefaultProperties().get("historySize");
+        	recentJobsProp = dao.getProperty(userId, UserPropKey.RECENT_JOBS_TO_SHOW, (historySize==null) ? "4" : historySize);
+
+        } catch (IOException ioe) {
+            ioe.getStackTrace();
+        }
     }
 
     public String save() {

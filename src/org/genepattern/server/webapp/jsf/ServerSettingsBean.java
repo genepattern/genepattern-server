@@ -73,7 +73,6 @@ public class ServerSettingsBean {
             modes.put("Access", new String[] { "gp.allowed.clients" });
             modes.put("Command Line Prefix", new String[] { "gp.allowed.clients" });
             modes.put("File Purge Settings", new String[] { "purgeJobsAfter", "purgeTime" });
-            modes.put("History", new String[] { "historySize" });
             modes.put("Java Flag Settings", new String[] { "java_flags" });
             modes.put("Gene Pattern Log", null);
             modes.put("Web Server Log", null);
