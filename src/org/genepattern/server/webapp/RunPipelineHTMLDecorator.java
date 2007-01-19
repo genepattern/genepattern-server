@@ -182,6 +182,9 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
 			out.print(aParam.getName().replace('.',' '));
 			out.print("=");
+			
+
+			
 			if (isInputFile) {
 				// convert from "localhost" to the actual host name so that
 				// it can be referenced from anywhere (eg. visualizer on
@@ -469,14 +472,29 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 	}
 
 	public String getFileURL(File theFile) throws IOException{
-		
-		// if it exists and lives under /temp, the parent dir where we are running, we can
+	
+		// if it exists and lives under /jobResults, the parent dir where we are running, we can
 		// create a getFile link for it
 		File tempDir = new File(System.getProperty("user.dir"), "here");
 		tempDir = tempDir.getParentFile().getParentFile();
 		
-		
 		StringBuffer pathBuffer = new StringBuffer();
+		if (findCommonParentFile(theFile, tempDir, pathBuffer)) return GET_FILE + pathBuffer.substring(1); // strip leading slash
+		
+		// now look again for Tomcat/temp.  We know we should be in Tomcat/webapps/gp/jobResults
+		// so look up the path for the right alternate parent
+		tempDir = tempDir.getParentFile().getParentFile().getParentFile();
+		tempDir = new File(tempDir, "temp");
+		pathBuffer = new StringBuffer();
+		if (findCommonParentFile(theFile, tempDir, pathBuffer)) return GET_FILE + pathBuffer.substring(1); // strip leading slash
+		
+		
+		else return theFile.getName();
+		
+	}
+	
+	
+	private boolean findCommonParentFile(File theFile, File tempDir, StringBuffer pathBuffer){
 		File parent = theFile;
 		boolean foundCommonParent = false;
 		
@@ -488,11 +506,8 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 			pathBuffer.insert(0, "/" + parent.getName());
 			parent = parent.getParentFile();
 		}
-		if (foundCommonParent) return GET_FILE + pathBuffer.substring(1); // strip leading slash
-		else return theFile.getName();
-		
+		return foundCommonParent;
 	}
-	
 	
 	// look for the file name.  If it is a genepattern local url, then there will be a file=
 	// in it somewhere, we want to return what the file name is but not any parent dir
