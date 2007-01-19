@@ -106,13 +106,13 @@
 		        onmouseover="MM_swapImage('Image_#{taskGroup.lsidNoVersion}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
 		        onmouseout="MM_swapImgRestore();"/>
 		        <br/>
-		        <h:outputText styleClass="smalltype" value="#{taskGroup.description}"/>       
+		        <h:outputText styleClass="smalltype5" value="#{taskGroup.description}"/>       
 		      </td>
 		      <td>&#160;</td>
 		    </tr>
 		    
 		    <t:dataList var="versionInfo" value="#{taskGroup.indexedVersions}">
-		    	<tr valign="top" class="smalltype">
+		    	<tr valign="top" class="smalltype5">
 		            <td align="center">
 					  	<div align="center" name="div_#{taskGroup.lsidNoVersion}">
 					  		<t:div rendered="#{!versionInfo.allowed}">

@@ -609,7 +609,7 @@ a:active {
 	border-bottom-width: 1px;
 	border-bottom-color: #CCCCFF;
 }
-.smalltype {font-size: 9px;font-weight:normal;}
+.smalltype {font-size: 9px;}
 .smalltype2 {
 	font-size: 9px;
 	line-height: 9px;
@@ -624,6 +624,11 @@ a:active {
 }
 .smalltype4 td{
 	background-color: #f1f1fd;	
+}
+
+.smalltype5 {
+	font-size: 9px;
+	font-weight:normal;
 }
 
 .tableheader-row2 {
