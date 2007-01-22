@@ -19,6 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URL;
@@ -104,6 +105,7 @@ public class RunPipeline {
         this.server = server;
         System.setProperty("userID", userID);
         this.jobId = jobId;
+        
         this.model = model;
         this.decorator = decorator == null ? new RunPipelineBasicDecorator()
                 : decorator;
@@ -278,17 +280,22 @@ public class RunPipeline {
         try {
             if (!file.exists()) {
                 // must be a URL, try to retrieve it
-		    // first convert 127.0.0.1 or localhost to server
-		    int idx = pipelineFileName.indexOf(":");
-		    idx = pipelineFileName.indexOf(":", idx+1);
-
-
-		    String pfn = server.toLowerCase() + pipelineFileName.substring(idx+5);
+            	// first convert 127.0.0.1 or localhost to server
+            	//int idx = pipelineFileName.indexOf(":");
+            	//idx = pipelineFileName.indexOf(":", idx+1);
+            	//String pfn = server.toLowerCase() + pipelineFileName.substring(idx+5);
 		
-                URL url = new URL(pfn);
-                URLConnection uconn = url.openConnection();
-                reader = new BufferedReader(new InputStreamReader(uconn
-                        .getInputStream()));
+                //URL url = new URL(pfn);
+                //URLConnection uconn = url.openConnection();
+                //reader = new BufferedReader(new InputStreamReader(uconn.getInputStream()));
+            	LocalAdminClient adminClient = new LocalAdminClient(System.getProperty("userId"));
+            	TaskInfo ti = adminClient.getTask(lsid);
+            	Map tia = ti.getTaskInfoAttributes();
+        		String serializedModel = (String)tia.get(GPConstants.SERIALIZED_MODEL);
+        			
+        		reader = new  BufferedReader(new StringReader(serializedModel));	
+            	
+            	                
             } else {
                 reader = new BufferedReader(new FileReader(pipelineFileName));
                 //file.deleteOnExit();
@@ -457,8 +464,11 @@ public class RunPipeline {
 	protected void getChildJobOutputs(JobInfo child, List<ParameterInfo> outs){
 		ParameterInfo[] childParams = child.getParameterInfoArray();
  		for (int i = 0; i < childParams.length; i++) {
-                	if (childParams[i].isOutputFile()) {
-                   	outs.add(childParams[i]);				
+                if (childParams[i].isOutputFile()) {
+                	File f = new File(childParams[i].getValue());
+                	if (!f.getName().equals(GPConstants.TASKLOG)){
+                		outs.add(childParams[i]);	
+                	}		
             	}
             }
 	}	
