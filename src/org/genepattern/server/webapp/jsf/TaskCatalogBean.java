@@ -34,7 +34,6 @@ import org.genepattern.server.process.InstallTasksCollectionUtils;
 import org.genepattern.server.process.ModuleRepository;
 import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
 import org.genepattern.server.util.IAuthorizationManager;
-import org.genepattern.server.webservice.server.ITaskIntegrator;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -594,9 +593,9 @@ public class TaskCatalogBean {
             return task.hashCode();
         }
 
-        public boolean install(String username, int access_id, ITaskIntegrator taskIntegrator)
+        public boolean install(String username, int access_id, Status status)
                 throws TaskInstallationException {
-            return task.install(username, access_id, taskIntegrator);
+            return task.install(username, access_id, status);
         }
 
         public boolean isAlreadyInstalled() {

@@ -21,7 +21,6 @@ import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 import javax.servlet.jsp.JspWriter;
 
-import org.genepattern.server.webservice.server.ITaskIntegrator;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.TaskIntegrator;
 import org.genepattern.util.GPConstants;
@@ -32,7 +31,7 @@ import org.genepattern.webservice.WebServiceException;
 /**
  * @author Joshua Gould
  */
-public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIntegrator {
+public class LocalTaskIntegratorClient extends TaskIntegrator implements Status {
     String progressMessage = "";
 
     JspWriter out = null; // TODO this variable does not belong here
@@ -131,11 +130,6 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements ITaskIn
     public String importZipFromURL(String url, int privacy, boolean recursive, Status status)
             throws WebServiceException {
         return super.importZipFromURL(url, privacy, recursive, status);
-    }
-
-    public String importZipFromURL(String url, int privacy, boolean recursive, ITaskIntegrator taskIntegrator)
-            throws WebServiceException {
-        return super.importZipFromURL(url, privacy, recursive, taskIntegrator);
     }
 
     public String importZip(DataHandler handler, int privacy) throws WebServiceException {
