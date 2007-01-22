@@ -28,9 +28,6 @@ public class CommandPrefixBean {
 
     LocalAdminClient admin;
 
-    // HtmlDataTable prefixTable = null;
-    // HtmlDataTable tpmappingTable = null;
-
     private String defaultCommandPrefix;
 
     private String newPrefixName;
@@ -51,6 +48,7 @@ public class CommandPrefixBean {
         admin = new LocalAdminClient(UIBeanHelper.getUserId());
         pm = PropertiesManager.getInstance();
         defaultCommandPrefix = System.getProperty(COMMAND_PREFIX);
+        setDefault();
     }
 
     public String getDefaultCommandPrefix() {
@@ -60,9 +58,19 @@ public class CommandPrefixBean {
     public void setDefaultCommandPrefix(String defaultCommandPrefix) {
         this.defaultCommandPrefix = defaultCommandPrefix;
     }
+    
+    public void saveDefaultCommandPrefix(ActionEvent event) {
+    	setDefault();
+        System.setProperty(COMMAND_PREFIX, defaultCommandPrefix);
+    }
+    
+    private void setDefault() {
+    	Properties p = pm.getCommandPrefixes();
+    	p.setProperty("default", defaultCommandPrefix);
+    	pm.saveProperties(COMMAND_PREFIX, p);
+    }
 
     public List getCommandPrefixes() {
-
         return new ArrayList(pm.getCommandPrefixes().entrySet());
     }
 
@@ -161,12 +169,6 @@ public class CommandPrefixBean {
         Map params = UIBeanHelper.getExternalContext().getRequestParameterMap();
         String key = (String) params.get(keyName);
         return key;
-    }
-
-    public void saveDefaultCommandPrefix(ActionEvent event) {
-        pm.storeChange(COMMAND_PREFIX, defaultCommandPrefix);
-        System.setProperty(COMMAND_PREFIX, defaultCommandPrefix);
-        System.out.println("set " + defaultCommandPrefix + "  to " + System.getProperty(COMMAND_PREFIX));
     }
 
     /**
