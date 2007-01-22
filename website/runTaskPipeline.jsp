@@ -245,10 +245,9 @@ show execution logs</td>
   <input name="stopCmd" id="stopCmd" type="button" value="Stop..." onclick="stopJob(this, <%= job.getJobNumber()%>)" class="little">
 	  </td>
         <td>
-            Running <a href="addTask.jsp?view=1&name=<%=requestParameters.get("taskLSID")%>"><%=
-            requestParameters.get("taskName")%>
+            Running <%= requestParameters.get("taskName")%>
         </a> as job # <a href="getJobResults.jsp?jobID=<%=job.getJobNumber() %>"><%=job.getJobNumber() %>
-        </a> on <%=new Date()%>
+        </a> on <%=java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.LONG, java.text.DateFormat.LONG).format(job.getDateSubmitted())%>.
 	  </td>
     </tr>
 

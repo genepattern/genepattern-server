@@ -126,13 +126,12 @@ try {
 	
 	RequestDispatcher rd = request.getRequestDispatcher("runVisualizer.jsp");
 	rd.include(request, response);
-	GenePatternAnalysisTask.createVisualizerJob(userID, ParameterFormatConverter.getJaxbString(parmInfos) , taskName, lsid);
+	JobInfo job = GenePatternAnalysisTask.createVisualizerJob(userID, ParameterFormatConverter.getJaxbString(parmInfos) , taskName, lsid);
 %>
 
 <table width='100%' cellpadding='10'>
 	<tr>
-		<td>Running <a href="addTask.jsp?view=1&name=<%= lsid %>"><%=requestParameters.get("taskName")%></a>
-		version <%= new LSID(lsid).getVersion() %> on <%=new Date()%></td>
+		<td>Running <%=requestParameters.get("taskName")%> on <%=java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.LONG, java.text.DateFormat.LONG).format(job.getDateSubmitted())%>.</td>
 	</tr>
 	<tr>
 		<td><%=requestParameters.get("taskName")%> ( <%
