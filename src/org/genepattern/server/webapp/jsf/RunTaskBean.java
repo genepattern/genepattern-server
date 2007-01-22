@@ -14,6 +14,7 @@ package org.genepattern.server.webapp.jsf;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.SemanticUtil;
+import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -123,7 +125,7 @@ public class RunTaskBean {
         try {
             return new LSID(lsid).toStringNoVersion();
         } catch (MalformedURLException e) {
-            log.error(e);
+            log.error("Bad LSID: " + lsid, e);
             return null;
         }
     }
@@ -281,30 +283,43 @@ public class RunTaskBean {
         try {
             taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(taskNameOrLsid);
         } catch (WebServiceException e) {
-            log.error(e);
+            log.error("Unable to get task " + taskNameOrLsid, e);
         }
         if (taskInfo == null) {
             lsid = null;
             return;
         }
-        ParameterInfo[] pi = taskInfo.getParameterInfoArray();
+        ParameterInfo[] taskParameters = taskInfo.getParameterInfoArray();
 
         String matchJob = (String) UIBeanHelper.getRequest().getAttribute("matchJob");
-        Map outputFilesToKind = new HashMap();
-        if (matchJob != null) {
-            if (pi != null) {
-                for (ParameterInfo p : pi) {
-                    if (p.isInputFile()) {
 
+        Map<String, String> reloadValues = new HashMap<String, String>();
+        if (matchJob != null) {
+            Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
+            if (taskParameters != null) {
+                for (ParameterInfo p : taskParameters) {
+                    if (p.isInputFile()) {
+                        List<String> fileFormats = SemanticUtil.getFileFormats(p);
+                        for (String format : fileFormats) {
+                            List<String> inputParameterNames = kindToInputParameters.get(p.getName());
+                            if (inputParameterNames == null) {
+                                inputParameterNames = new ArrayList<String>();
+                                kindToInputParameters.put(format, inputParameterNames);
+                            }
+                            inputParameterNames.add(p.getName());
+
+                        }
                     }
                 }
             }
+
             try {
-                int reloadJobNumber = Integer.parseInt(matchJob);
                 LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
-                JobInfo matchJobInfo = ac.getJob(reloadJobNumber);
-                // can only reload own jobs
+                JobInfo matchJobInfo = ac.getJob(Integer.parseInt(matchJob));
+
                 File outputDir = new File(GenePatternAnalysisTask.getJobDir("" + matchJobInfo.getJobNumber()));
+
+                // can only reload own jobs
                 if (UIBeanHelper.getUserId().equals(matchJobInfo.getUserId())) {
                     ParameterInfo[] params = matchJobInfo.getParameterInfoArray();
                     if (params != null) {
@@ -312,30 +327,41 @@ public class RunTaskBean {
                             if (p.isOutputFile()) {
                                 File file = new File(outputDir, p.getName());
                                 String kind = SemanticUtil.getKind(file);
-                                // SemanticUtil.isCorrectKind(inputTypes, kind);
-                                // outputFilesToKind.put(key, value);
+                                List<String> inputParameterNames = kindToInputParameters.get(kind);
+                                // XXX ignoring parameters that have more than
+                                // one match
+                                if (inputParameterNames != null && inputParameterNames.size() == 1) {
+                                    String value = p.getValue();
+                                    int index = StringUtils.lastIndexOfFileSeparator(value);
+                                    String jobNumber = value.substring(0, index);
+                                    String filename = value.substring(index + 1);
+                                    reloadValues.put(inputParameterNames.get(0), System.getProperty("GenePatternURL")
+                                            + "jobResults/" + jobNumber + "/" + UIBeanHelper.encode(filename));
+                                    // reloadValues.put(inputParameterNames.get(0),
+                                    // "job #" + jobNumber + ", " +
+                                    // filename);
+                                }
                             }
 
                         }
                     }
                 }
             } catch (NumberFormatException nfe) {
-                log.error(nfe);
+                log.error(matchJob + " is not an integer.", nfe);
             } catch (WebServiceException e) {
-                log.error(e);
+                log.error("Error getting job " + matchJob + ".", e);
             }
         }
 
-        Map<String, String> reloadValues = new HashMap<String, String>();
         String reloadJobNumberString = UIBeanHelper.getRequest().getParameter("reloadJob");
         if (reloadJobNumberString == null) {
             reloadJobNumberString = (String) UIBeanHelper.getRequest().getAttribute("reloadJob");
         }
         if (reloadJobNumberString != null) {
             try {
-                int reloadJobNumber = Integer.parseInt(reloadJobNumberString);
+
                 LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
-                JobInfo reloadJob = ac.getJob(reloadJobNumber);
+                JobInfo reloadJob = ac.getJob(Integer.parseInt(reloadJobNumberString));
                 // can only reload own jobs
                 if (UIBeanHelper.getUserId().equals(reloadJob.getUserId())) {
                     ParameterInfo[] reloadParams = reloadJob.getParameterInfoArray();
@@ -347,22 +373,22 @@ public class RunTaskBean {
                     }
                 }
             } catch (NumberFormatException nfe) {
-                log.error(nfe);
+                log.error(reloadJobNumberString + " is not an integer.", nfe);
             } catch (WebServiceException e) {
-                log.error(e);
+                log.error("Error getting job " + reloadJobNumberString, e);
             }
         }
 
-        this.parameters = new Parameter[pi != null ? pi.length : 0];
-        if (pi != null) {
-            for (int i = 0; i < pi.length; i++) {
-                String defaultValue = reloadValues.get(pi[i].getName());
+        this.parameters = new Parameter[taskParameters != null ? taskParameters.length : 0];
+        if (taskParameters != null) {
+            for (int i = 0; i < taskParameters.length; i++) {
+                String defaultValue = reloadValues.get(taskParameters[i].getName());
                 if (defaultValue == null) {
-                    defaultValue = UIBeanHelper.getRequest().getParameter(pi[i].getName());
+                    defaultValue = UIBeanHelper.getRequest().getParameter(taskParameters[i].getName());
                 }
                 // if defaultValue is null default value will be set in
                 // Parameter constructor
-                parameters[i] = new Parameter(pi[i], defaultValue);
+                parameters[i] = new Parameter(taskParameters[i], defaultValue);
             }
         }
 
@@ -389,7 +415,7 @@ public class RunTaskBean {
             LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
             docFiles = taskIntegratorClient.getDocFiles(taskInfo);
         } catch (WebServiceException e) {
-            log.error(e);
+            log.error("Error getting doc files.", e);
         }
         this.documentationFilenames = new String[docFiles != null ? docFiles.length : 0];
         if (docFiles != null) {
@@ -401,7 +427,6 @@ public class RunTaskBean {
     }
 
     public void changeVersion(ActionEvent event) {
-        System.out.println("changeVersion");
         ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper.getManagedBean("#{moduleChooserBean}");
         assert chooser != null;
         String version = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("version"));
@@ -410,7 +435,7 @@ public class RunTaskBean {
             chooser.setSelectedModule(new LSID(lsid).toStringNoVersion() + ":" + version);
             setTask(chooser.getSelectedModule());
         } catch (MalformedURLException e) {
-            log.error(e);
+            log.error("Bad LSID:" + lsid, e);
         }
     }
 
