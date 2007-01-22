@@ -193,12 +193,14 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
         }
         invocation.append("gpServer.");
         if (visualizer) {
-            invocation.append("runVisualizer(new Parameter[]{");
+            invocation.append("runVisualizer(");
         }
         else {
-            invocation.append("runAnalysis(new Parameter[]{");
+            invocation.append("runAnalysis(");
         }
         invocation.append("\"" + lsid + "\", ");
+        invocation.append("new Parameter[]{");
+                       
         if (params != null) {
             for (int i = 0; i < params.length; i++) {
                 if (i > 0) {
