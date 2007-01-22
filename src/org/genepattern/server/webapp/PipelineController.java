@@ -126,7 +126,9 @@ public class PipelineController {
             		throw new TaskInstallationException(probs);
         		}
    
-			/** if (lsid != null && lsid.length() > 0) {
+        	String newLsid = tia.get("LSID");	
+        		
+        	/** if (lsid != null && lsid.length() > 0) {
 				//System.out.println("AbstractPipelineCodeGenerator.generateTask:
 				// updating " + lsid);
 				lsid = GenePatternAnalysisTask.updateTask(, ""
@@ -141,7 +143,7 @@ public class PipelineController {
 						: GPConstants.ACCESS_PUBLIC, null);
 			} **/
 
-			return model.getLsid();
+			return newLsid;
 		} catch (TaskInstallationException tie) {
 			throw tie;
 		} catch (Exception e) {
