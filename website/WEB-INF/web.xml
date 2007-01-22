@@ -40,7 +40,7 @@
   </init-param>
   <init-param>
    <param-name>no.login.required</param-name>
-   <param-value>getPipelineModel.jsp,login.jsf,registerUser.jsf,forgotPassword.jsf</param-value>
+   <param-value>getFile.jsp,getPipelineModel.jsp,login.jsf,registerUser.jsf,forgotPassword.jsf</param-value>
   </init-param>
   <init-param>
    <param-name>forward.if.logged.in</param-name>
