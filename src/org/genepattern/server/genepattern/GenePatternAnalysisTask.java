@@ -442,6 +442,17 @@ public class GenePatternAnalysisTask implements IGPConstants {
                              File outFile = null;
                             try {
                                 url = uri.toURL();
+                                
+				              String localPrefix = System.getProperty("GenePatternURL");
+				              if (url.toString().startsWith(localPrefix)){
+				            	  String urlStr = url.toString();
+				            	  int idx = urlStr.indexOf('?');
+				            	  String sep = (idx == -1 ? "?":"&");
+				            	  String userIdURL = urlStr+ sep+ IGPConstants.USERID + "=" +jobInfo.getUserId();
+				            
+				            	  url = new URL(userIdURL);
+				              }
+              
                                 URLConnection conn = url.openConnection();
                                 String name = getDownloadFileName(conn, url);
                                 outFile = new File(outDirName, name);
