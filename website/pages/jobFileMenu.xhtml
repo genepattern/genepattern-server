@@ -36,6 +36,7 @@
               <td>
                 <h:commandLink value="#{moduleMenuItem.key}" actionListener="#{recentJobsBean.loadTask}" immediate="true">
                   <f:param value="#{moduleMenuItem.value}" name="module"/>
+                  <f:param value="#{param.jobNumber}" name="jobNumber"/>
                 </h:commandLink>
               </td>
             </tr>
