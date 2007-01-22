@@ -60,7 +60,7 @@ function mmLoadMenus() {
   mm_menu_resources.menuBorderBgColor='#CCCC66';
 
   window.mm_menu_downloads = new Menu("root",157,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_downloads.addMenuItem("Install&nbsp;Graphical&nbsp;Client","location='http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gpge_installer.cgi?version=2.0.2&server=http%3A%2F%2Fgenepatterntest.broad.mit.edu%3A8080'");
+  mm_menu_downloads.addMenuItem("Install&nbsp;Graphical&nbsp;Client","location=javaGEInstallerURL");
   mm_menu_downloads.addMenuItem("Programming&nbsp;Libraries","location=contextRoot + '/pages/downloadProgrammingLibaries.jsf'");
   mm_menu_downloads.hideOnMouseOut=true;
   mm_menu_downloads.bgColor='#CCCC66';
