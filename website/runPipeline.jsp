@@ -317,20 +317,13 @@ function toggleLogs() {
 	for(var i = 0; i < (numTasks + 1); i++) {
 		
 		divObj = document.getElementById('executionLogRow'+i);
-	//	cbdivObj = document.getElementById('executionLogCBDiv'+i);
 		
 		if(!visible) {
 			divObj.style.display = "none";
 			divObj.visibility=false;
-	//		cbdivObj.style.display = "none";
-	//		cbdivObj.visibility=false;
-
 		} else {
 			divObj.style.display = "";
-			divObj.visibility=true;
-	//		cbdivObj.style.display = "";
-	//		cbdivObj.visibility=true;
-	
+			divObj.visibility=true;	
 		}
 
 
@@ -434,7 +427,7 @@ function toggleTask(idx, visibility) {
 			value="Stop..." onclick="stopJob(this, <%= jobID%>)" class="little">
 		</td>
 		<td>Running <a
-			href="addTask.jsp?view=1&name=<%=taskInfo.getTaskInfoAttributes().get("LSID")%>"><%=taskInfo.getName()%>
+			href="viewPipeline.jsp?view=1&name=<%=taskInfo.getTaskInfoAttributes().get("LSID")%>"><%=taskInfo.getName()%>
 		</a> as job # <a href="getJobResults.jsp?jobID=<%=jobID%>"><%=jobID%>
 		</a> on <%=new Date()%></td>
 	</tr>
