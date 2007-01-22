@@ -655,9 +655,8 @@ public abstract class JobBean {
         try {
             int index = StringUtils.lastIndexOfFileSeparator(encodedJobFileName);
             int jobNumber = Integer.parseInt(encodedJobFileName.substring(0, index));
-            String filename = encodedJobFileName.substring(index + 1);
-            new LocalAnalysisClient(UIBeanHelper.getUserId()).deleteJobResultFile(jobNumber, jobNumber + File.separator
-                    + filename);
+//            String filename = encodedJobFileName.substring(index + 1);
+            new LocalAnalysisClient(UIBeanHelper.getUserId()).deleteJobResultFile(jobNumber, encodedJobFileName);
         } catch (NumberFormatException e) {
             log.error(e);
         } catch (WebServiceException e) {
