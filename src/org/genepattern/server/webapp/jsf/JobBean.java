@@ -186,7 +186,7 @@ public abstract class JobBean {
          * boolean property used to conditionally render or enable some menu
          * items.
          * 
-         * @return
+         * @return Whether the job is complete.
          */
         public boolean isComplete() {
             String status = jobInfo.getStatus();
@@ -366,9 +366,9 @@ public abstract class JobBean {
                     UIBeanHelper.getRequest().getContextPath() + "/pipelineDesigner.jsp?name="
                             + UIBeanHelper.encode(lsid));
         } catch (WebServiceException wse) {
-            log.error(wse);
+            log.error("Error creating pipeline.", wse);
         } catch (IOException e1) {
-            log.error(e1);
+            log.error("Error creating pipeline.", e1);
         }
 
     }
@@ -384,7 +384,7 @@ public abstract class JobBean {
             deleteJob(jobNumber);
             updateJobs();
         } catch (NumberFormatException e) {
-            log.error(e);
+            log.error("Error deleting job.", e);
         }
     }
 
@@ -467,9 +467,9 @@ public abstract class JobBean {
             os.close();
             UIBeanHelper.getFacesContext().responseComplete();
         } catch (IOException e) {
-            log.error(e);
+            log.error("Error downloading zip.", e);
         } catch (WebServiceException e) {
-            log.error(e);
+            log.error("Error downloading zip.", e);
         }
 
     }
@@ -511,10 +511,9 @@ public abstract class JobBean {
 
             return CodeGeneratorUtil.getCode(language, job);
         } catch (WebServiceException e) {
-            log.error(e);
+            log.error("Error getting code.", e);
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error(e);
+            log.error("Error getting code.", e);
         }
         return "";
     }
@@ -525,8 +524,8 @@ public abstract class JobBean {
 
     public String loadTask(ActionEvent event) {
         String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("module"));
-        String jobNumber = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber"));
-        UIBeanHelper.getRequest().setAttribute("matchJob", jobNumber);
+        UIBeanHelper.getRequest().setAttribute("matchJob",
+                UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
         RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
         assert runTaskBean != null;
         runTaskBean.setTask(lsid);
@@ -543,9 +542,9 @@ public abstract class JobBean {
             UIBeanHelper.getRequest().setAttribute("reloadJob", String.valueOf(reloadJob.getJobNumber()));
             runTaskBean.setTask(reloadJob.getTaskLSID());
         } catch (WebServiceException e) {
-            log.error(e);
+            log.error("Error reloading job.", e);
         } catch (NumberFormatException e) {
-            log.error(e);
+            log.error("Error reloading job.", e);
         }
         return "run task";
     }
@@ -581,14 +580,14 @@ public abstract class JobBean {
             os.close();
             UIBeanHelper.getFacesContext().responseComplete();
         } catch (IOException e) {
-            log.error(e);
+            log.error("Error saving file.", e);
 
         } finally {
             if (is != null) {
                 try {
                     is.close();
                 } catch (IOException e) {
-                    log.error(e);
+
                 }
             }
         }
@@ -607,9 +606,9 @@ public abstract class JobBean {
             LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
             ac.terminateJob(jobNumber);
         } catch (WebServiceException e) {
-            log.error(e);
+            log.error("Error getting job " + UIBeanHelper.getRequest().getParameter("jobNumber"), e);
         } catch (NumberFormatException e) {
-            log.error(e);
+            log.error(UIBeanHelper.getRequest().getParameter("jobNumber") + " is not a number.", e);
         }
     }
 
@@ -621,7 +620,7 @@ public abstract class JobBean {
                     .getUserId()).getJob(jobNumber));
             viewCode(language, job, "" + jobNumber);
         } catch (WebServiceException x) {
-            log.error(x);
+            log.error("Error getting job " + UIBeanHelper.getRequest().getParameter("jobNumber"), x);
         }
     }
 
@@ -647,7 +646,7 @@ public abstract class JobBean {
 
             UIBeanHelper.getFacesContext().responseComplete();
         } catch (Exception e) {
-            log.error(e);
+            log.error("Error viewing code for job " + job.getJobInfo().getJobNumber(), e);
         }
     }
 
@@ -655,12 +654,12 @@ public abstract class JobBean {
         try {
             int index = StringUtils.lastIndexOfFileSeparator(encodedJobFileName);
             int jobNumber = Integer.parseInt(encodedJobFileName.substring(0, index));
-//            String filename = encodedJobFileName.substring(index + 1);
+            // String filename = encodedJobFileName.substring(index + 1);
             new LocalAnalysisClient(UIBeanHelper.getUserId()).deleteJobResultFile(jobNumber, encodedJobFileName);
         } catch (NumberFormatException e) {
-            log.error(e);
+            log.error("Error parsing " + encodedJobFileName, e);
         } catch (WebServiceException e) {
-            log.error(e);
+            log.error("Error deleting file.", e);
         }
     }
 
@@ -675,7 +674,7 @@ public abstract class JobBean {
             ac.deleteJob(jobNumber);
             HibernateUtil.getSession().flush();
         } catch (WebServiceException e) {
-            log.error(e);
+            log.error("Error deleting job " + jobNumber, e);
         }
     }
 
@@ -708,7 +707,7 @@ public abstract class JobBean {
      * Get the list of selected files (pathnames) from the request parameters.
      * This is converted to a set to make membership tests efficient.
      * 
-     * @return
+     * @return The selected files.
      */
     private Set<String> getSelectedFiles() {
         HashSet<String> selectedJobs = new HashSet<String>();
@@ -725,7 +724,7 @@ public abstract class JobBean {
      * Get the list of selected jobs (LSIDs) from the request parameters. This
      * is converted to a set to make membership tests efficient.
      * 
-     * @return
+     * @return The selected jobs.
      */
     private Set<String> getSelectedJobs() {
         HashSet<String> selectedJobs = new HashSet<String>();
