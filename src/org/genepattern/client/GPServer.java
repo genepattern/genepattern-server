@@ -12,9 +12,6 @@
 
 package org.genepattern.client;
 
-import org.genepattern.util.GPConstants;
-import org.genepattern.webservice.*;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -22,6 +19,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.AdminProxy;
+import org.genepattern.webservice.AnalysisJob;
+import org.genepattern.webservice.AnalysisWebServiceProxy;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.JobResult;
+import org.genepattern.webservice.LocalTaskExecutor;
+import org.genepattern.webservice.Parameter;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskExecutor;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * This class is used to communicate with a GenePattern server.
@@ -38,7 +48,7 @@ public class GPServer {
     /**
      * LRU cache of tasks
      */
-    protected Map cachedTasks;
+    protected Map<String, TaskInfo> cachedTasks;
 
     /**
      * number of tasks to cache
@@ -52,7 +62,7 @@ public class GPServer {
      * 
      * @param server
      *            The server, for example http://127.0.0.1:8080
-     * @param userName
+     * @param username
      *            The user name.
      * @throws WebServiceException
      *             If an error occurs while connecting to the server
@@ -73,12 +83,11 @@ public class GPServer {
      * @throws WebServiceException
      *             If an error occurs while connecting to the server
      */
-    public GPServer(String server, String username, String password)
-            throws WebServiceException {
+    public GPServer(String server, String username, String password) throws WebServiceException {
         this.server = server;
         this.userName = username;
         this.password = password;
-        this.cachedTasks = new LinkedHashMap(MAX_ENTRIES + 1, .75F, true) {
+        this.cachedTasks = new LinkedHashMap<String, TaskInfo>(MAX_ENTRIES + 1, .75F, true) {
             public boolean removeEldestEntry(Map.Entry eldest) {
                 return size() > MAX_ENTRIES;
             }
@@ -109,7 +118,7 @@ public class GPServer {
     }
 
     private TaskInfo getTask(String lsid) throws WebServiceException {
-        TaskInfo taskInfo = (TaskInfo) cachedTasks.get(lsid);
+        TaskInfo taskInfo = cachedTasks.get(lsid);
         if (taskInfo == null) {
             try {
                 taskInfo = adminProxy.getTask(lsid);
@@ -137,8 +146,7 @@ public class GPServer {
      * @throws org.genepattern.webservice.WebServiceException
      *             Description of the Exception
      */
-    private AnalysisJob submitJob(AnalysisWebServiceProxy handler,
-            TaskInfo tinfo, ParameterInfo[] parmInfos)
+    private AnalysisJob submitJob(AnalysisWebServiceProxy handler, TaskInfo tinfo, ParameterInfo[] parmInfos)
             throws org.genepattern.webservice.WebServiceException {
         final JobInfo job = handler.submitJob(tinfo.getID(), parmInfos);
         final AnalysisJob aJob = new AnalysisJob(server, job);
@@ -157,24 +165,20 @@ public class GPServer {
      * @throws org.genepattern.webservice.WebServiceException
      *             Description of the Exception
      */
-    private static void waitForErrorOrCompletion(
-            AnalysisWebServiceProxy handler, AnalysisJob job)
+    private static void waitForErrorOrCompletion(AnalysisWebServiceProxy handler, AnalysisJob job)
             throws org.genepattern.webservice.WebServiceException {
         int maxtries = 20;
         int sleep = 1000;
         waitForErrorOrCompletion(handler, job, maxtries, sleep);
     }
 
-    private static void waitForErrorOrCompletion(
-            AnalysisWebServiceProxy handler, AnalysisJob job, int maxTries,
-            int initialSleep)
-            throws org.genepattern.webservice.WebServiceException {
+    private static void waitForErrorOrCompletion(AnalysisWebServiceProxy handler, AnalysisJob job, int maxTries,
+            int initialSleep) throws org.genepattern.webservice.WebServiceException {
         String status = "";
         JobInfo info = null;
         int count = 0;
         int sleep = initialSleep;
-        while (!(status.equalsIgnoreCase("ERROR") || (status
-                .equalsIgnoreCase("Finished")))) {
+        while (!(status.equalsIgnoreCase("ERROR") || (status.equalsIgnoreCase("Finished")))) {
             count++;
             try {
                 Thread.sleep(sleep);
@@ -204,8 +208,8 @@ public class GPServer {
      */
     public URL getTaskFileURL(String taskNameOrLSID, String fileName) {
         try {
-            return new URL(server + "/gp/getFile.jsp?task=" + taskNameOrLSID
-                    + "&file=" + URLEncoder.encode(fileName, "UTF-8"));
+            return new URL(server + "/gp/getFile.jsp?task=" + taskNameOrLSID + "&file="
+                    + URLEncoder.encode(fileName, "UTF-8"));
         } catch (java.net.MalformedURLException x) {
             throw new Error(x);
         } catch (UnsupportedEncodingException x) {
@@ -225,16 +229,13 @@ public class GPServer {
      */
     public boolean isComplete(int jobNumber) throws WebServiceException {
         try {
-            AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(
-                    server, userName, password, false);
+            AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, userName, password, false);
             analysisProxy.setTimeout(Integer.MAX_VALUE);
             JobInfo ji = analysisProxy.checkStatus(jobNumber);
             if (ji == null) {
-                throw new WebServiceException("The job number " + jobNumber
-                        + " was not found.");
+                throw new WebServiceException("The job number " + jobNumber + " was not found.");
             }
-            return ji.getStatus().equalsIgnoreCase("finished")
-                    || ji.getStatus().equalsIgnoreCase("error");
+            return ji.getStatus().equalsIgnoreCase("finished") || ji.getStatus().equalsIgnoreCase("error");
         } catch (Exception x) {
             throw new WebServiceException(x);
         }
@@ -254,24 +255,22 @@ public class GPServer {
      */
     public JobResult createJobResult(int jobNumber) throws WebServiceException {
         try {
-            AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(
-                    server, userName, password, false);
+            AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, userName, password, false);
             analysisProxy.setTimeout(Integer.MAX_VALUE);
             JobInfo info = analysisProxy.checkStatus(jobNumber);
             if (info == null) {
                 return null;
             }
             String status = info.getStatus();
-            if (!(status.equalsIgnoreCase("ERROR") || (status
-                    .equalsIgnoreCase("Finished")))) {
+            if (!(status.equalsIgnoreCase("ERROR") || (status.equalsIgnoreCase("Finished")))) {
                 return null;
             }
             TaskInfo taskInfo = getTask(info.getTaskLSID());
-            ArrayList resultFiles = new ArrayList();
+            ArrayList<String> resultFiles = new ArrayList<String>();
             ParameterInfo[] jobParameterInfo = info.getParameterInfoArray();
             boolean stderr = false;
             boolean stdout = false;
-            ArrayList jobParameters = new ArrayList();
+            ArrayList<Parameter> jobParameters = new ArrayList<Parameter>();
             for (int j = 0; j < jobParameterInfo.length; j++) {
                 if (jobParameterInfo[j].isOutputFile()) {
                     String fileName = jobParameterInfo[j].getValue();
@@ -279,8 +278,7 @@ public class GPServer {
                     int index2 = fileName.lastIndexOf('\\');
                     int index = (index1 > index2 ? index1 : index2);
                     if (index != -1) {
-                        fileName = fileName.substring(index + 1, fileName
-                                .length());
+                        fileName = fileName.substring(index + 1, fileName.length());
                     }
                     if (fileName.equals(GPConstants.STDOUT)) {
                         stdout = true;
@@ -290,16 +288,13 @@ public class GPServer {
                         resultFiles.add(fileName);
                     }
                 } else {
-                    jobParameters.add(new Parameter(jobParameterInfo[j]
-                            .getName(), jobParameterInfo[j].getValue()));
+                    jobParameters.add(new Parameter(jobParameterInfo[j].getName(), jobParameterInfo[j].getValue()));
                 }
             }
             try {
-                return new JobResult(new URL(server), info.getJobNumber(),
-                        (String[]) resultFiles.toArray(new String[0]), stdout,
-                        stderr, (Parameter[]) jobParameters
-                                .toArray(new Parameter[0]), (String) taskInfo
-                                .getTaskInfoAttributes().get(GPConstants.LSID));
+                return new JobResult(new URL(server), info.getJobNumber(), (String[]) resultFiles
+                        .toArray(new String[0]), stdout, stderr, (Parameter[]) jobParameters.toArray(new Parameter[0]),
+                        (String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
             } catch (java.net.MalformedURLException mfe) {
                 throw new Error(mfe);
             }
@@ -328,22 +323,18 @@ public class GPServer {
      * @see #isComplete
      * @see #createJobResult
      */
-    public int runAnalysisNoWait(String taskNameOrLSID, Parameter[] parameters)
-            throws WebServiceException {
+    public int runAnalysisNoWait(String taskNameOrLSID, Parameter[] parameters) throws WebServiceException {
         try {
             TaskInfo taskInfo = getTask(taskNameOrLSID);
-            ParameterInfo[] actualParameters = Util.createParameterInfoArray(
-                    taskInfo, parameters);
+            ParameterInfo[] actualParameters = Util.createParameterInfoArray(taskInfo, parameters);
             AnalysisWebServiceProxy analysisProxy = null;
             try {
-                analysisProxy = new AnalysisWebServiceProxy(server, userName,
-                        password);
+                analysisProxy = new AnalysisWebServiceProxy(server, userName, password);
                 analysisProxy.setTimeout(Integer.MAX_VALUE);
             } catch (Exception x) {
                 throw new WebServiceException(x);
             }
-            AnalysisJob job = submitJob(analysisProxy, taskInfo,
-                    actualParameters);
+            AnalysisJob job = submitJob(analysisProxy, taskInfo, actualParameters);
             return job.getJobInfo().getJobNumber();
         } catch (org.genepattern.webservice.WebServiceException wse) {
             throw new WebServiceException(wse.getMessage(), wse.getRootCause());
@@ -369,29 +360,24 @@ public class GPServer {
      *             If an error occurs during the job submission or job result
      *             retrieval process.
      */
-    public JobResult runAnalysis(String taskNameOrLSID, Parameter[] parameters)
-            throws WebServiceException {
+    public JobResult runAnalysis(String taskNameOrLSID, Parameter[] parameters) throws WebServiceException {
         try {
             TaskInfo taskInfo = getTask(taskNameOrLSID);
-            ParameterInfo[] actualParameters = Util.createParameterInfoArray(
-                    taskInfo, parameters);
+            ParameterInfo[] actualParameters = Util.createParameterInfoArray(taskInfo, parameters);
             AnalysisWebServiceProxy analysisProxy = null;
             try {
-                analysisProxy = new AnalysisWebServiceProxy(server, userName,
-                        password);
+                analysisProxy = new AnalysisWebServiceProxy(server, userName, password);
                 analysisProxy.setTimeout(Integer.MAX_VALUE);
             } catch (Exception x) {
                 throw new WebServiceException(x);
             }
-            AnalysisJob job = submitJob(analysisProxy, taskInfo,
-                    actualParameters);
+            AnalysisJob job = submitJob(analysisProxy, taskInfo, actualParameters);
             waitForErrorOrCompletion(analysisProxy, job);
-            ArrayList resultFiles = new ArrayList();
-            ParameterInfo[] jobParameterInfo = job.getJobInfo()
-                    .getParameterInfoArray();
+            ArrayList<String> resultFiles = new ArrayList<String>();
+            ParameterInfo[] jobParameterInfo = job.getJobInfo().getParameterInfoArray();
             boolean stderr = false;
             boolean stdout = false;
-            ArrayList jobParameters = new ArrayList();
+            ArrayList<Parameter> jobParameters = new ArrayList<Parameter>();
             for (int j = 0; j < jobParameterInfo.length; j++) {
                 if (jobParameterInfo[j].isOutputFile()) {
                     String fileName = jobParameterInfo[j].getValue();
@@ -399,8 +385,7 @@ public class GPServer {
                     int index2 = fileName.lastIndexOf('\\');
                     int index = (index1 > index2 ? index1 : index2);
                     if (index != -1) {
-                        fileName = fileName.substring(index + 1, fileName
-                                .length());
+                        fileName = fileName.substring(index + 1, fileName.length());
                     }
                     if (fileName.equals(GPConstants.STDOUT)) {
                         stdout = true;
@@ -410,17 +395,13 @@ public class GPServer {
                         resultFiles.add(fileName);
                     }
                 } else {
-                    jobParameters.add(new Parameter(jobParameterInfo[j]
-                            .getName(), jobParameterInfo[j].getValue()));
+                    jobParameters.add(new Parameter(jobParameterInfo[j].getName(), jobParameterInfo[j].getValue()));
                 }
             }
             try {
-                return new JobResult(new URL(job.getServer()), job.getJobInfo()
-                        .getJobNumber(), (String[]) resultFiles
-                        .toArray(new String[0]), stdout, stderr,
-                        (Parameter[]) jobParameters.toArray(new Parameter[0]),
-                        (String) taskInfo.getTaskInfoAttributes().get(
-                                GPConstants.LSID));
+                return new JobResult(new URL(job.getServer()), job.getJobInfo().getJobNumber(), (String[]) resultFiles
+                        .toArray(new String[0]), stdout, stderr, (Parameter[]) jobParameters.toArray(new Parameter[0]),
+                        (String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
             } catch (java.net.MalformedURLException mfe) {
                 throw new Error(mfe);
             }
@@ -446,21 +427,18 @@ public class GPServer {
      * @throws WebServiceException
      *             If an error occurs while launching the visualizer.
      */
-    public void runVisualizer(String taskNameOrLSID, Parameter[] parameters)
-            throws WebServiceException {
+    public void runVisualizer(String taskNameOrLSID, Parameter[] parameters) throws WebServiceException {
         TaskInfo taskInfo = getTask(taskNameOrLSID);
-        ParameterInfo[] actualParameters = Util.createParameterInfoArray(
-                taskInfo, parameters);
-        Map paramName2ValueMap = new HashMap();
+        ParameterInfo[] actualParameters = Util.createParameterInfoArray(taskInfo, parameters);
+        Map<String, String> paramName2ValueMap = new HashMap<String, String>();
         if (actualParameters != null) {
             for (int i = 0; i < actualParameters.length; i++) {
-                paramName2ValueMap.put(actualParameters[i].getName(),
-                        actualParameters[i].getValue());
+                paramName2ValueMap.put(actualParameters[i].getName(), actualParameters[i].getValue());
             }
         }
         try {
-            final TaskExecutor executor = new LocalTaskExecutor(taskInfo,
-                    paramName2ValueMap, userName, password, server);
+            final TaskExecutor executor = new LocalTaskExecutor(taskInfo, paramName2ValueMap, userName, password,
+                    server);
             new Thread() {
                 public void run() {
                     try {
