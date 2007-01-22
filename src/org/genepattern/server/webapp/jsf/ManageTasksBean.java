@@ -44,7 +44,15 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 	    	TaskInfo ti = null;
 	    	String lsid;
 	    	LSID lSID = null;
-	    	
+	    	String userId = UIBeanHelper.getUserId();
+	    	this.showEveryonesTasks = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesTasks", String
+	                .valueOf(showEveryonesTasks)));
+	        if (showEveryonesTasks
+	                && !new AuthorizationManagerFactoryImpl().getAuthorizationManager().checkPermission(
+	                        "administrateServer", userId)) {
+	        	showEveryonesTasks = false;
+
+	        }
 	    	for (Iterator<TaskInfo> itTasks = tasks.iterator(); itTasks.hasNext(); ) {
 	    		ti = (TaskInfo)itTasks.next();
 	    		if (!showEveryonesTasks && !ti.isOwnedByUser()) {
@@ -96,6 +104,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
         	showEveryonesTasks = false;
 
         }
+        new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesTasks", String.valueOf(showEveryonesTasks));
         this.showEveryonesTasks = showEveryonesTasks;
     }
     
