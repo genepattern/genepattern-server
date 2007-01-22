@@ -55,7 +55,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 	        }
 	    	for (Iterator<TaskInfo> itTasks = tasks.iterator(); itTasks.hasNext(); ) {
 	    		ti = (TaskInfo)itTasks.next();
-	    		if (!showEveryonesTasks && !ti.isOwnedByUser()) {
+	    		if (!showEveryonesTasks && !ti.getUserId().equals(UIBeanHelper.getUserId())) {
 	    			continue;
 	    		}
 		    		
@@ -220,7 +220,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
     				
     				TaskInfo t = adminClient.getTask(keyLsid);
     				if (t!=null) {
-    					if (!showEveryonesTasks && !t.isOwnedByUser()) {
+    					if (!showEveryonesTasks && !t.getUserId().equals(UIBeanHelper.getUserId())) {
     		    			continue;
     		    		}
     					temp = (indexedTasks.containsKey(lsidNoVersion)) ? indexedTasks.get(lsidNoVersion) : new TaskGroup();
@@ -327,7 +327,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
         	}
         	
         	public boolean isOwnedByUser() {
-        		return ti.isOwnedByUser();
+        		return ti.getUserId().equals(UIBeanHelper.getUserId());
         	}
         	
         	public boolean isAllowed() {

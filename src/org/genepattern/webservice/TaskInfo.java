@@ -263,8 +263,5 @@ public class TaskInfo implements Serializable {
 
     }
     
-    public boolean isOwnedByUser() {
-    	return this.getUserId().equals(UIBeanHelper.getUserId());
-    }
 
 }
