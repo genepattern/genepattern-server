@@ -1,12 +1,13 @@
-/* Auto generated file */
-
 package org.genepattern.server.domain;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JobStatus {
 
     private Integer statusId;
+
     private String statusName;
 
     public JobStatus() {
@@ -49,10 +50,10 @@ public class JobStatus {
      * an unmodifiable map that maps a string representation of the status to
      * the numberic representation
      */
-    public static final Map STATUS_MAP;
+    public static final Map<String, Integer> STATUS_MAP;
 
     static {
-        Map statusHash = new HashMap();
+        Map<String, Integer> statusHash = new HashMap<String, Integer>();
         statusHash.put(PENDING, new Integer(JOB_PENDING));
         statusHash.put(PROCESSING, new Integer(JOB_PROCESSING));
         statusHash.put(FINISHED, new Integer(JOB_FINISHED));

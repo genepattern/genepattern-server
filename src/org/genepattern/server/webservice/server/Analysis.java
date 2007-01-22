@@ -13,11 +13,13 @@
 package org.genepattern.server.webservice.server;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import javax.activation.DataHandler;
@@ -36,6 +38,7 @@ import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.GenericWebService;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.FileWrapper;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -49,11 +52,9 @@ import org.genepattern.webservice.WebServiceException;
 
 public class Analysis extends GenericWebService {
 
-    private MessageContext context;
-
     private static Logger log = Logger.getLogger(Analysis.class);
 
-    private IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
+    private IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
 
     /**
      * Default constructor. Constructs a <code>Analysis</code> web service
@@ -187,9 +188,7 @@ public class Analysis extends GenericWebService {
     }
 
     private static void logAndThrow(Throwable t) throws WebServiceException {
-
-        if (log != null)
-            log.error(t.getMessage());
+        log.error(t.getMessage());
         t.printStackTrace();
         throw new WebServiceException(t);
     }
@@ -332,8 +331,8 @@ public class Analysis extends GenericWebService {
 
         ArrayList<FileWrapper> list = new ArrayList<FileWrapper>(filenames.size());
 
-        for (Iterator iterator = filenames.iterator(); iterator.hasNext();) {
-            String fn = (String) iterator.next();
+        for (Iterator<String> iterator = filenames.iterator(); iterator.hasNext();) {
+            String fn = iterator.next();
             File f = new File(fn);
             DataHandler dataHandler = new DataHandler(new FileDataSource(fn));
             list.add(new FileWrapper(dataHandler.getName(), dataHandler, f.length(), f.lastModified()));
@@ -502,8 +501,8 @@ public class Analysis extends GenericWebService {
      * Deletes the given output file for the given job and removes the output
      * file from the parameter info array for the job. If <tt>jobId</tt> is a
      * parent job and value was created by it's child, the child will be updated
-     * as well. Additionall, if <tt>jobId</tt> is a child job, the parent will
-     * be updated too.
+     * as well. Additionally, if <tt>jobId</tt> is a child job, the parent
+     * will be updated too.
      * 
      * @param jobId
      *            the job id
@@ -512,9 +511,7 @@ public class Analysis extends GenericWebService {
      *            delete
      */
     public void deleteJobResultFile(int jobId, String value) throws WebServiceException {
-
         isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.deleteJobResultFile");
-
         AnalysisDAO ds = new AnalysisDAO();
         JobInfo jobInfo = ds.getJobInfo(jobId);
         int beforeDeletionLength = 0;
@@ -526,19 +523,16 @@ public class Analysis extends GenericWebService {
         jobInfo.setParameterInfoArray(removeOutputFileParameters(jobInfo, value));
 
         if (jobInfo.getParameterInfoArray().length == beforeDeletionLength) {
-            throw new WebServiceException(new java.io.FileNotFoundException());
+            throw new WebServiceException(new FileNotFoundException());
         }
 
         int fileCreationJobNumber = jobInfo.getJobNumber();
 
         String fileName = value;
-        int index1 = fileName.lastIndexOf('/');
-        int index2 = fileName.lastIndexOf('\\');
-        int index = (index1 > index2 ? index1 : index2);
+        int index = StringUtils.lastIndexOfFileSeparator(fileName);
         if (index != -1) {
             fileCreationJobNumber = Integer.parseInt(fileName.substring(0, index));
             fileName = fileName.substring(index + 1, fileName.length());
-
         }
         String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String
                 .valueOf(fileCreationJobNumber));
@@ -579,7 +573,7 @@ public class Analysis extends GenericWebService {
 
             AnalysisDAO ds = new AnalysisDAO();
 
-            Integer intStatus = (Integer) JobStatus.STATUS_MAP.get(status);
+            Integer intStatus = JobStatus.STATUS_MAP.get(status);
             if (intStatus == null) {
                 throw new WebServiceException("Unknown status: " + status);
             }
@@ -628,10 +622,11 @@ public class Analysis extends GenericWebService {
      */
     protected String getUsernameFromContext() {
         // get the context then the username from the soap header
-        context = MessageContext.getCurrentContext();
+        MessageContext context = MessageContext.getCurrentContext();
         String username = context.getUsername();
-        if (username == null)
+        if (username == null) {
             username = "";
+        }
         return username;
     }
 
@@ -654,7 +649,6 @@ public class Analysis extends GenericWebService {
         String userID = getUsernameFromContext();
         ProvenanceFinder pf = new ProvenanceFinder(userID);
 
-        // check permisison
         JobInfo job = pf.findJobThatCreatedFile(fileUrlOrJobNumber);
         isJobOwnerOrAuthorized(getUsernameFromContext(), job.getJobNumber(), "Analysis.createProvenancePipeline");
 
@@ -666,15 +660,14 @@ public class Analysis extends GenericWebService {
         String userID = getUsernameFromContext();
         ProvenanceFinder pf = new ProvenanceFinder(userID);
 
-        // check permisison
         JobInfo job = pf.findJobThatCreatedFile(fileURLOrJobNumber);
         isJobOwnerOrAuthorized(getUsernameFromContext(), job.getJobNumber(), "Analysis.findJobsThatCreatedFile");
 
-        TreeSet jobSet = (TreeSet) pf.findJobsThatCreatedFile(fileURLOrJobNumber);
+        Set<JobInfo> jobSet = pf.findJobsThatCreatedFile(fileURLOrJobNumber);
         JobInfo[] jobs = new JobInfo[jobSet.size()];
         int i = 0;
-        for (Iterator iter = jobSet.iterator(); iter.hasNext(); i++) {
-            JobInfo aJob = (JobInfo) iter.next();
+        for (Iterator<JobInfo> iter = jobSet.iterator(); iter.hasNext(); i++) {
+            JobInfo aJob = iter.next();
             jobs[i] = aJob;
         }
         return jobs;
