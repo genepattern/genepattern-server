@@ -18,7 +18,12 @@
     }
     File in = null;
 	String userID = (String) request.getAttribute(GPConstants.USERID);
-				
+	if (userID == null) userID = (String) request.getParameter(GPConstants.USERID);
+
+	if (userID == null){ // no anonymous files 
+		((HttpServletResponse)response).sendError(HttpServletResponse.SC_NOT_FOUND);
+			return;
+	}
     try {
         if (taskName.length() > 0) {
             in = new File(DirectoryManager.getTaskLibDir(taskName, taskName, userID), filename);
