@@ -1,15 +1,15 @@
 package org.genepattern.server.webservice.server.dao;
 
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.util.GPConstants;
-import org.genepattern.util.IGPConstants;
-import org.genepattern.webservice.*;
-import org.hibernate.Transaction;
-
-import junit.framework.TestCase;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 
 public class AnalysisDAOTest extends DAOTestCase {
 

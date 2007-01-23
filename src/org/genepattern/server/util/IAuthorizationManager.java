@@ -19,19 +19,6 @@
  */
 package org.genepattern.server.util;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Cookie;
-import java.net.URLEncoder;
-import java.net.URLDecoder;
-import org.genepattern.util.IGPConstants;
-import java.io.UnsupportedEncodingException;
-import java.io.*;
-import java.util.*;
 
 
 /**
