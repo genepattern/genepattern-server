@@ -124,7 +124,7 @@ public class SuiteCatalogBean {
                     for (String lsid : lsids) {
                         try {
                             HibernateUtil.beginTransaction();
-                            taskIntegrator.install(lsid);
+                            taskIntegrator.installSuite(lsid);
                             HibernateUtil.commitTransaction();
                             installBean.setStatus(lsid, "success");
                         } catch (WebServiceException e) {
