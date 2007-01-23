@@ -58,6 +58,39 @@ if(isDownload) {
    	zos = new ZipOutputStream(new FileOutputStream(zipFile));
       byte[] buf = new byte[100000];
       String jobDir = System.getProperty("jobs");
+
+	  if ((attachmentNames == null) && (jobID != null)) {
+			// if no filenames passed in, we get all files from the job
+ 			LocalAnalysisClient client = new LocalAnalysisClient(userID);
+            JobInfo jobInfo = client.checkStatus(Integer.parseInt(jobID));
+			JobInfo[] children = client.getChildren(jobInfo.getJobNumber());
+
+			ParameterInfo[] params = jobInfo.getParameterInfoArray();
+			ArrayList<String> fileList = new ArrayList<String>();
+			if (params != null) {
+				for (int p = 0; p < params.length; p++) {
+					if (params[p].isOutputFile()) {
+						fileList.add((String)params[p].getValue());
+					}
+				}
+			}
+			for (int ji = 0; ji < children.length; ji++){
+				JobInfo childJob = children[ji];
+				params = childJob.getParameterInfoArray();
+				if (params != null) {
+					for (int p = 0; p < params.length; p++) {
+						if (params[p].isOutputFile()) {
+							fileList.add((String)params[p].getValue());
+						}
+					}
+				}
+			}
+
+			attachmentNames = fileList.toArray(new String[fileList.size()]);
+		}
+	  
+
+
 		for(int i = 0; i < attachmentNames.length; i++) {
 			String value = attachmentNames[i];
          int index = value.lastIndexOf("=");

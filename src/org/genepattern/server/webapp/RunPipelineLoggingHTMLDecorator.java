@@ -65,7 +65,7 @@ public class RunPipelineLoggingHTMLDecorator extends RunPipelineHTMLDecorator {
 		out.println("<p><div id=\""+rowId+"\"><input type=\"checkbox\" value=\"" + fileName + "="
 				+ jobID + "/" + fileName + "\" name=\"dl\" checked>");
 		out.println("<a target=\"_blank\" href=\"" + URL + GET_TASK_FILE
-				+ "job=" + jobID + "&filename=" + fileName + "\">" + fileName
+				+ "/" + jobID + "/" + fileName + "\">" + fileName
 				+ "</a></div><div id=\""+divId+"\"></div><p>");
 
 	}
