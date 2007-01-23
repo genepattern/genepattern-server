@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.faces.event.ActionEvent;
+import javax.faces.event.ValueChangeEvent;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
@@ -41,37 +42,17 @@ public class ManageTasksBean /* implements java.io.Serializable */{
     	LocalAdminClient adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
     	try {
     		tasks = (tasks == null) ? adminClient.getTaskCatalog() : tasks;
-	    	TaskInfo ti = null;
-	    	String lsid;
-	    	LSID lSID = null;
+	    	
 	    	String userId = UIBeanHelper.getUserId();
 	    	this.showEveryonesTasks = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesTasks", String
-	                .valueOf(showEveryonesTasks)));
-	        if (showEveryonesTasks
+	                .valueOf(this.showEveryonesTasks)));
+	        if (this.showEveryonesTasks
 	                && !new AuthorizationManagerFactoryImpl().getAuthorizationManager().checkPermission(
 	                        "administrateServer", userId)) {
-	        	showEveryonesTasks = false;
+	        	this.showEveryonesTasks = false;
 
 	        }
-	    	for (Iterator<TaskInfo> itTasks = tasks.iterator(); itTasks.hasNext(); ) {
-	    		ti = (TaskInfo)itTasks.next();
-	    		if (!showEveryonesTasks && !ti.getUserId().equals(UIBeanHelper.getUserId())) {
-	    			continue;
-	    		}
-		    		
-		    	TaskInfoAttributes tia = ti.giveTaskInfoAttributes();
-				lsid = tia.get(GPConstants.LSID);
-				try {
-					lSID = new LSID(lsid);
-				} catch (MalformedURLException mue) {
-					continue;
-				}
-	
-				String lsidNoVersion = lSID.toStringNoVersion();
-	    		TaskGroup versionInfos = (indexedTasks.containsKey(lsidNoVersion)) ? (TaskGroup)indexedTasks.get(lsidNoVersion) : new TaskGroup();
-	    		versionInfos.addVersionInfo(ti);
-	    		indexedTasks.put(lSID.toStringNoVersion(), versionInfos);
-    		}
+	        getIndexedTasks();
 	    }catch(Exception e) {
 	    		
 	    }
@@ -93,6 +74,36 @@ public class ManageTasksBean /* implements java.io.Serializable */{
         return sortedTasks;
     }
     
+    private void getIndexedTasks() {
+    	TaskInfo ti = null;
+    	String lsid;
+    	LSID lSID = null;
+    	indexedTasks = new HashMap<String, TaskGroup>();
+    	try {
+	    	for (Iterator<TaskInfo> itTasks = tasks.iterator(); itTasks.hasNext(); ) {
+	    		ti = (TaskInfo)itTasks.next();
+	    		if (!showEveryonesTasks && !ti.getUserId().equals(UIBeanHelper.getUserId())) {
+	    			continue;
+	    		}
+		    		
+		    	TaskInfoAttributes tia = ti.giveTaskInfoAttributes();
+				lsid = tia.get(GPConstants.LSID);
+				try {
+					lSID = new LSID(lsid);
+				} catch (MalformedURLException mue) {
+					continue;
+				}
+	
+				String lsidNoVersion = lSID.toStringNoVersion();
+	    		TaskGroup versionInfos = (indexedTasks.containsKey(lsidNoVersion)) ? (TaskGroup)indexedTasks.get(lsidNoVersion) : new TaskGroup();
+	    		versionInfos.addVersionInfo(ti);
+	    		indexedTasks.put(lSID.toStringNoVersion(), versionInfos);
+			}
+    	}catch (Exception e) {
+    		
+    	}
+    }
+    
     public boolean isShowEveryonesJobs() {
         return showEveryonesTasks;
     }
@@ -106,12 +117,12 @@ public class ManageTasksBean /* implements java.io.Serializable */{
         }
         new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesTasks", String.valueOf(showEveryonesTasks));
         this.showEveryonesTasks = showEveryonesTasks;
+        getIndexedTasks();
     }
     
     public void delete(ActionEvent event) {
         String[] taskLsids = UIBeanHelper.getRequest().getParameterValues("selectedVersions");
         deleteTasks(taskLsids);
-        //return "delete task";
     }
 
     private void deleteTasks(String[] taskLsids) {
@@ -134,22 +145,6 @@ public class ManageTasksBean /* implements java.io.Serializable */{
             }
         }
     }
-    /*
-    public String doDescription(String description) {
-    	int start = description.indexOf("http://");
-    	if (start == -1) start = description.indexOf("https://");
-    	if (start == -1) start = description.indexOf("ftp://");
-    	if (start != -1) {
-    		int end = description.indexOf(" ", start);
-    		if (end == -1) end = description.indexOf(")", start);
-    		if (end == -1) end = description.length();
-    		description = StringUtils.htmlEncode(description.substring(0, start)) + 
-    				"<a href=\"" + description.substring(start, end) + "\" target=\"_blank\">" + 
-    				description.substring(start, end) + "</a>" + 
-    				StringUtils.htmlEncode(description.substring(end));
-    	}
-    	return description;
-     }*/
     
     private LSID getLSID(String lsid) {
 		LSID lSID = null;
