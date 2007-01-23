@@ -7,7 +7,7 @@ function mmLoadMenus() {
   window.mm_menu_tasks = new Menu("root",112,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_tasks.addMenuItem("Start","location=contextRoot + '/pages/index.jsf'");
   if(createTaskAllowed) {
-  	mm_menu_tasks.addMenuItem("Create&nbsp;Task","location=contextRoot + '/addTask.jsp'");
+  	mm_menu_tasks.addMenuItem("Create&nbsp;Module","location=contextRoot + '/addTask.jsp'");
   }
   if(createPipelineAllowed) {
   	mm_menu_tasks.addMenuItem("Create&nbsp;Pipeline","location=contextRoot + '/pipelineDesigner.jsp'");
@@ -53,7 +53,7 @@ function mmLoadMenus() {
   mm_menu_documentation.addMenuItem("Release&nbsp;Notes","location='http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/'");
   mm_menu_documentation.addMenuItem("FAQ","location='http://www.broad.mit.edu/cancer/software/genepattern/faq/'");
   mm_menu_documentation.addMenuItem("Public&nbsp;Datasets","location='http://www.broad.mit.edu/cancer/software/genepattern/datasets/'");
-  mm_menu_documentation.addMenuItem("Task&nbsp;Documentation","location=contextRoot + '/getTaskDoc.jsp'");
+  mm_menu_documentation.addMenuItem("Module&nbsp;Documentation","location=contextRoot + '/getTaskDoc.jsp'");
   mm_menu_documentation.hideOnMouseOut=true;
   mm_menu_documentation.bgColor='#CCCC66';
   mm_menu_documentation.menuBorder=0;
@@ -61,7 +61,7 @@ function mmLoadMenus() {
   mm_menu_documentation.menuBorderBgColor='#CCCC66';
    
   window.mm_menu_resources = new Menu("root",89,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_resources.addMenuItem("Mailing&nbsp;List","location='mailto:gp-users-join@broad.mit.edu?body=Just send this!'");
+  mm_menu_resources.addMenuItem("Mailing&nbsp;List","location='http://www.broad.mit.edu/cancer/software/genepattern/gp_mail.html'");
   mm_menu_resources.addMenuItem("Report&nbsp;Bugs","location=contextRoot + '/pages/contactUs.jsf'");
   mm_menu_resources.addMenuItem("User&nbsp;Forum","location='http://www.broad.mit.edu/cancer/software/genepattern/forum/'");
   mm_menu_resources.hideOnMouseOut=true;
