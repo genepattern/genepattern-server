@@ -348,6 +348,6 @@ public interface IGPConstants {
 
     public static final String PIPELINE_ARG_STOP_AFTER_TASK_NUM = "PIPELINE_ARG.StopAfterTask";
 
-    public static final String TASK_PREFIX_MAPPING = "tastPrefixMapping";
+    public static final String TASK_PREFIX_MAPPING = "taskPrefixMapping";
 
 }
