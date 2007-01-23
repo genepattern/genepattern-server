@@ -23,21 +23,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Cookie;
-import java.net.URLEncoder;
-import java.net.URLDecoder;
-import org.genepattern.util.IGPConstants;
-import java.io.UnsupportedEncodingException;
-import java.io.IOException;
 /**
  * @author Liefeld
  * 
- * TODO To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Style - Code Templates
  */
-public class AccessManager implements IGPConstants {
+public class AccessManager  {
 	protected static String clientList = "";
 	protected static Vector allowedClients = null;
 
@@ -47,7 +37,7 @@ public class AccessManager implements IGPConstants {
 	public static boolean isAllowed(String host, String address) {
 
 		Vector okClients = getAllowedClients();
-		String clientList = System.getProperty("gp.allowed.clients");
+//		String clientList = System.getProperty("gp.allowed.clients");
 
 		if (okClients != null) {
 			for (int i = 0; i < okClients.size(); i++) {
