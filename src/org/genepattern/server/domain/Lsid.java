@@ -1,11 +1,36 @@
 package org.genepattern.server.domain;
 
-public class Lsid {
+import java.net.MalformedURLException;
 
+import org.apache.log4j.Logger;
+import org.genepattern.util.LSID;
+
+public class Lsid {
+    private static Logger log = Logger.getLogger(Lsid.class);
     private String lsid;
     private String lsidNoVersion;
     private String version;
+    
+    public Lsid() {
+    	
+    }
 
+    /**
+     * Create an instance from a string representation.  
+     */
+    public Lsid(String lsidString) {
+        try {
+        	org.genepattern.util.LSID tmp = new LSID(lsidString);
+			this.setLsid(tmp.toString());
+			this.setLsidNoVersion(tmp.toStringNoVersion());
+			this.setVersion(tmp.getVersion());
+		} catch (MalformedURLException e) {
+			log.error("Error creating lsid", e);
+		}
+
+    	
+    }
+    
     public String getLsid() {
         return lsid;
     }
