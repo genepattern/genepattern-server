@@ -1,4 +1,5 @@
-
+<jsp:useBean id="authorizationBean" scope="request" class="org.genepattern.server.webapp.jsf.AuthorizationBean" /> 
+<% String username = (String) request.getAttribute("userid"); %>
 <!-- top band with the logo -->
 <div id="topband" class="topband">
   <a href="index.jsp"target="_top"> 
@@ -21,7 +22,7 @@
         <a name="link17" id="link6" 
            onclick="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')" 
            onmouseover="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')" 
-           onmouseout="MM_startTimeout();">Tasks &amp; Pipelines</a> &#160;&#160;&#160;&#160;&#160;&#160;
+           onmouseout="MM_startTimeout();">Modules &amp; Pipelines</a> &#160;&#160;&#160;&#160;&#160;&#160;
         <a name="link14" id="link9" 
            onclick="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')" 
            onmouseover="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')" 
@@ -42,10 +43,12 @@
            onclick="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" 
            onmouseover="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" 
            onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160; 
+        <% if(authorizationBean.isAdmin(username)) { %>
         <a name="link13" id="link4" 
            onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" 
            onmouseover="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" 
            onmouseout="MM_startTimeout();">Administration</a>     
+		<% } %>
         </nobr>
    </div>
 
