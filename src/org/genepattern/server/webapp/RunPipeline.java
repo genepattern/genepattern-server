@@ -75,8 +75,7 @@ public class RunPipeline {
 
     public static final String STDERR = GPConstants.STDERR;
 
-    public static String logFile = "pipelineErrors.log";
-
+ 
     RunPipelineOutputDecoratorIF decorator;
 
     PipelineModel model;
@@ -111,12 +110,15 @@ public class RunPipeline {
                 : decorator;
     }
 
+    
+    public static String logFile = "../../../../logs/pipelineErrors.log";
+
     public static void setupLog4jConfig(){
     	String override = System.getProperty("log4j.properties");
     	if (override != null) return;
-    	
     	Properties log4jconfig = new Properties();
     	log4jconfig.setProperty("log4j.rootLogger", "error, R");
+    	log4jconfig.setProperty("log4j.threshold","OFF");
     	log4jconfig.setProperty("log4j.appender.R", "org.apache.log4j.RollingFileAppender");
     	log4jconfig.setProperty("log4j.appender.R.File", logFile);
     	log4jconfig.setProperty("log4j.appender.R.MaxFileSize", "100KB");
