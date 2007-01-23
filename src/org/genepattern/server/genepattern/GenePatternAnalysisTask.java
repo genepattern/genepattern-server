@@ -13,6 +13,7 @@
 package org.genepattern.server.genepattern;
 
 import java.io.BufferedOutputStream;
+import static org.genepattern.util.GPConstants.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -174,7 +175,7 @@ import org.w3c.dom.NodeList;
  * @see org.genepattern.webservice.TaskInfoAttributes
  */
 
-public class GenePatternAnalysisTask implements IGPConstants {
+public class GenePatternAnalysisTask  {
 
     /** used by log4j logging */
     /*
