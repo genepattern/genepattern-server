@@ -66,7 +66,7 @@ String version = "";
 if (task != null) {
 	TaskInfoAttributes tia = task.giveTaskInfoAttributes();
 	if (tia != null) {
-		 String serializedModel = (String)tia.get(GenePatternAnalysisTask.SERIALIZED_MODEL);
+		 String serializedModel = (String)tia.get(GPConstants.SERIALIZED_MODEL);
 		 if (serializedModel != null && serializedModel.length() > 0) {
 			 try {
 			 	 model = PipelineModel.toPipelineModel(serializedModel);

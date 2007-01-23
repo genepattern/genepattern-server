@@ -727,7 +727,7 @@ for (int i = from; i < to; i++) {
 	out.append("<tr>\n");
 	out.append("<td valign=\"top\">" + StringUtils.htmlEncode(p.getName()) + "</td>\n");
 	out.append("<td valign=\"top\">" + (( p.getDescription() == null) ? "" : (StringUtils.htmlEncode(p.getDescription()))) + "</td>\n");
-	out.append("<td valign=\"top\">" + ((((p.getValue() == null) ? "" : StringUtils.htmlEncode(GenePatternAnalysisTask.replace(p.getValue(), GenePatternAnalysisTask.PARAM_INFO_CHOICE_DELIMITER, GenePatternAnalysisTask.PARAM_INFO_CHOICE_DELIMITER+" "))))) + "</td>\n");
+	out.append("<td valign=\"top\">" + ((((p.getValue() == null) ? "" : StringUtils.htmlEncode(GenePatternAnalysisTask.replace(p.getValue(), GPConstants.PARAM_INFO_CHOICE_DELIMITER, GPConstants.PARAM_INFO_CHOICE_DELIMITER+" "))))) + "</td>\n");
 
 	if ( (p.isInputFile() || p.getName().indexOf("filename") != -1)) {
 		attributes.put(GPConstants.PARAM_INFO_TYPE[GPConstants.PARAM_INFO_TYPE_NAME_OFFSET], GPConstants.PARAM_INFO_TYPE_INPUT_FILE);
