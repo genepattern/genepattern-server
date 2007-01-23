@@ -426,9 +426,9 @@ public class HTMLPipelineView implements IPipelineView {
 
 		if (pipelineName != null && pipelineName.length() > 0) {
 			writer
-					.write("<input type=\"submit\" value=\"delete...\" name=\"delete\" onclick=\"return deletePipeline()\" class=\"little\">\n");
+					.write("<input type=\"submit\" value=\"Delete...\" name=\"delete\" onclick=\"return deletePipeline()\" class=\"little\">\n");
 			writer
-					.write("<input type=\"submit\" value=\"clone...\" name=\"clone\" onclick=\"return clonePipeline()\" class=\"little\">\n");
+					.write("<input type=\"submit\" value=\"Clone...\" name=\"clone\" onclick=\"return clonePipeline()\" class=\"little\">\n");
 		}
 		writer.write("</td></tr>\n");
 
@@ -547,12 +547,12 @@ public class HTMLPipelineView implements IPipelineView {
 						writer.write("</select>");
 
 						writer
-								.write("<input type='button' value='delete doc...' class='little' onclick='deleteDocFiles()'></nobr>");
+								.write("<input type='button' value='Delete Doc...' class='little' onclick='deleteDocFiles()'></nobr>");
 					} else {
 						writer
 								.write("<input type='hidden' name='deleteFiles' value='"
 										+ docFiles[0].getName() + "'>");
-						writer.write("<input type='button' value='delete "
+						writer.write("<input type='button' value='Delete "
 								+ docFiles[0].getName()
 								+ "'  onclick='deleteDocFiles()'>");
 
@@ -693,9 +693,9 @@ public class HTMLPipelineView implements IPipelineView {
 			writer
 					.write("<input type=\"hidden\" name=\"cmd\" value=\"save\">\n");
 			writer
-					.write("<input type=\"button\" value=\"save\" name=\"save\" onclick=\"savePipeline(true, 'save')\" class=\"little\">&nbsp;&nbsp");
+					.write("<input type=\"button\" value=\"Save\" name=\"save\" onclick=\"savePipeline(true, 'save')\" class=\"little\">&nbsp;&nbsp");
 			writer
-					.write("<input type=\"button\" value=\"run\" name=\"run\" onclick=\"savePipeline(false, 'run')\" class=\"little\">");
+					.write("<input type=\"button\" value=\"Run\" name=\"run\" onclick=\"savePipeline(false, 'run')\" class=\"little\">");
 			writer.write("</center>\n");
 			writer.write("</form>");
 			writer.write("<script language=\"Javascript\">\n");
