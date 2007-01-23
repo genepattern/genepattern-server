@@ -13,50 +13,30 @@
 
 package org.genepattern.server.webapp;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.URLEncoder;
 
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.TreeMap;
-import java.util.StringTokenizer;
-import java.util.Vector;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.Filter;
-import javax.servlet.FilterConfig;
-import javax.servlet.FilterChain;
-import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.net.URLEncoder;
-import java.net.URLDecoder;
-
-import java.lang.reflect.*;
-
-
-import org.genepattern.util.IGPConstants;
 import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
 import org.genepattern.server.util.IAuthorizationManager;
+import org.genepattern.util.GPConstants;
 
 
 /**
  * @author Liefeld
  * 
- * TODO To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Style - Code Templates
+
  */
-public class AuthorizationFilter implements Filter, IGPConstants {
+public class AuthorizationFilter implements Filter {
 	private FilterConfig filterConfig = null;
    	private IAuthorizationManager authManager = null;
 
@@ -150,7 +130,7 @@ public class AuthorizationFilter implements Filter, IGPConstants {
 				if (fqHostName.equals("localhost"))	fqHostName = "127.0.0.1";
 			}
 			String serverName = request.getServerName();
-			String fqAddress = "http://" + fqHostName + ":"	+ request.getServerPort() + "/gp/notpermitted.jsp?link=" + URLEncoder.encode(request.getRequestURI(), UTF8);
+			String fqAddress = "http://" + fqHostName + ":"	+ request.getServerPort() + "/gp/notpermitted.jsp?link=" + URLEncoder.encode(request.getRequestURI(), GPConstants.UTF8);
 
 
 			response.sendRedirect(fqAddress);
