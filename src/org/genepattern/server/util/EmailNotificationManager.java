@@ -65,7 +65,8 @@ public class EmailNotificationManager {
 		String subject = "Job " + jobID + " - " + task +" - "+ status;
 		StringBuffer msg = new StringBuffer();
 		msg.append("The results for job "+jobID+","+ task +" , are available on the <br>");
-		msg.append("<a href='http://gp21e-789.broad.mit.edu:8080/gp/pages/jobResults.jsf?jobID=jobID'>GenePattern JobResults Page</a>");
+		//msg.append("<a href='http://gp21e-789.broad.mit.edu:8080/gp/pages/jobResults.jsf?jobID=jobID'>GenePattern JobResults Page</a>");
+		msg.append("<a href='"+System.getProperty("GenePatternURL")+"/pages/jobResults.jsf?jobID=jobID'>GenePattern JobResults Page</a>");
 		
 		
 		
