@@ -19,24 +19,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
-import java.util.ArrayList;
-import java.util.List;
 
+import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
+import org.genepattern.data.pipeline.JobSubmission;
+import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
-
-import org.genepattern.data.pipeline.JobSubmission;
-import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
@@ -47,10 +47,6 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
-import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
-import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
-import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.server.util.MessageUtils;
 
 public class HTMLPipelineView implements IPipelineView {
 
@@ -133,7 +129,7 @@ public class HTMLPipelineView implements IPipelineView {
 		writer.write("<script language=\"Javascript\">\n");
 
 		writer.write("var PIPELINE = \""
-				+ GenePatternAnalysisTask.TASK_TYPE_PIPELINE + "\";\n");
+				+ GPConstants.TASK_TYPE_PIPELINE + "\";\n");
 		writer.write("var MAX_TASKS = " + MAX_TASKS + ";\n");
 		writer.write("var divs = new Array(MAX_TASKS);\n");
 		writer.write("for (tNum = 0; tNum < MAX_TASKS; tNum++) {\n");
@@ -218,14 +214,14 @@ public class HTMLPipelineView implements IPipelineView {
 								+ (pi.isOutputFile() ? "true" : "false")
 								+ ", \""
 								+ ((pia != null && pia
-										.get(GenePatternAnalysisTask.PARAM_INFO_DEFAULT_VALUE[0]) != null) ? StringUtils
+										.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]) != null) ? StringUtils
 										.htmlEncode(((String) pia
-												.get(GenePatternAnalysisTask.PARAM_INFO_DEFAULT_VALUE[0]))
+												.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]))
 												.trim())
 										: "")
 								+ "\", "
 								+ ((pia != null && pia
-										.get(GenePatternAnalysisTask.PARAM_INFO_OPTIONAL[0]) != null) ? "true"
+										.get(GPConstants.PARAM_INFO_OPTIONAL[0]) != null) ? "true"
 										: "false"));
 					writer.write(", new Array("); // create array of file formats
 					String fileFormats = (String)pia.get(GPConstants.FILE_FORMAT);
@@ -438,15 +434,15 @@ public class HTMLPipelineView implements IPipelineView {
 				.write("<tr class=\"pipelineperameter\"><td>Author:</td><td width=\"*\"><input name=\"pipeline_author\" value=\"\" class=\"pipelineperameterinputText\"> <span class='description'>name, affiliation</span></td></tr>\n");
 		writer
 				.write("<tr class=\"pipelineperameter\"><td>Contact:</td><td width=\"*\"><input name=\""
-						+ GenePatternAnalysisTask.USERID
+						+ GPConstants.USERID
 						+ "\" value=\""
 						+ userID
 						+ "\" class=\"pipelineperameterinputText\"> <span class='description'>email address</span></td></tr>\n");
 
 		writer
 				.write("<tr class=\"pipelineperameter\"><td>Privacy:</td><td width=\"*\"><select name=\""
-						+ GenePatternAnalysisTask.PRIVACY + "\">");
-		String[] privacies = GenePatternAnalysisTask.PRIVACY_LEVELS;
+						+ GPConstants.PRIVACY + "\">");
+		String[] privacies = GPConstants.PRIVACY_LEVELS;
 		for (int i = 0; i < privacies.length; i++) {
 			writer.write("<option value=\"" + privacies[i] + "\">"
 					+ privacies[i] + "</option>");
@@ -455,13 +451,13 @@ public class HTMLPipelineView implements IPipelineView {
 
 		writer
 				.write("<tr class=\"pipelineperameter\"><td valign='top'>Version comment:</td><td width=\"85%\"><textarea name=\""
-						+ GenePatternAnalysisTask.VERSION
+						+ GPConstants.VERSION
 						+ "\" class=\"pipelineperameterinputText\" rows=\"1\"></textarea></td></tr>\n");
 
 		// output language is no longer used, but the radio button to support it
 		// is required to avoid getting an error on existing pipelines
 		writer.write("<input type=\"radio\" name=\""
-				+ GenePatternAnalysisTask.LANGUAGE
+				+ GPConstants.LANGUAGE
 				+ "\" style=\"visibility: hidden\">\n");
 
 		// JTL 3/2/05 Adding spot to add doc to pipelines
@@ -705,7 +701,7 @@ public class HTMLPipelineView implements IPipelineView {
 			boolean askName = true;
 			if (pipelineName != null) {
 				Collection tmTask = (Collection) tmTaskTypes
-						.get(GenePatternAnalysisTask.TASK_TYPE_PIPELINE);
+						.get(GPConstants.TASK_TYPE_PIPELINE);
 				if (tmTask != null) {
 					// find this pipeline in the Collection
 
@@ -731,7 +727,7 @@ public class HTMLPipelineView implements IPipelineView {
 							// pipeline design
 							String recreateScript = null;
 							String serializedModel = (String) tia
-									.get(GenePatternAnalysisTask.SERIALIZED_MODEL);
+									.get(GPConstants.SERIALIZED_MODEL);
 							//System.out.println("HTMLPipelineView.end:
 							// serialized model for " + pipelineName + "=" +
 							// serializedModel);
@@ -809,17 +805,17 @@ public class HTMLPipelineView implements IPipelineView {
 					+ javascriptEncode(model.getDescription()) + "\");\n");
 			s.append("	setField(\"pipeline_author\", \""
 					+ javascriptEncode(model.getAuthor()) + "\");\n");
-			s.append("	setField(\"" + GenePatternAnalysisTask.USERID + "\", \""
+			s.append("	setField(\"" + GPConstants.USERID + "\", \""
 					+ javascriptEncode(model.getUserID()) + "\");\n");
-			s.append("	setField(\"" + GenePatternAnalysisTask.VERSION
+			s.append("	setField(\"" + GPConstants.VERSION
 					+ "\", \"" + javascriptEncode(model.getVersion())
 					+ "\");\n");
 			s.append("	setSelector(\""
-					+ GenePatternAnalysisTask.PRIVACY
+					+ GPConstants.PRIVACY
 					+ "\", \""
-					+ (model.isPrivate() ? GenePatternAnalysisTask.PRIVATE
-							: GenePatternAnalysisTask.PUBLIC) + "\");\n");
-			//		s.append(" setOption(\"" + GenePatternAnalysisTask.LANGUAGE +
+					+ (model.isPrivate() ? GPConstants.PRIVATE
+							: GPConstants.PUBLIC) + "\");\n");
+			//		s.append(" setOption(\"" + GPConstants.LANGUAGE +
 			// "\", \"R\");\n");
 			s.append("	setField(\"" + GPConstants.LSID + "\", \""
 					+ javascriptEncode(model.getLsid()) + "\");\n");
@@ -1045,9 +1041,9 @@ if (loadErrors.size() > 0) {
 			ti = (TaskInfo) itTasks.next();
 			name = ti.getName();
 			taskType = ti.giveTaskInfoAttributes().get(
-					GenePatternAnalysisTask.TASK_TYPE);
+					GPConstants.TASK_TYPE);
 			lsid = ti.giveTaskInfoAttributes()
-					.get(GenePatternAnalysisTask.LSID);
+					.get(GPConstants.LSID);
 			if (taskType.length() == 0) {
 				taskType = "[unclassified]";
 			}
