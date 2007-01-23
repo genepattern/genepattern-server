@@ -15,8 +15,8 @@
 
 	String userID= (String)request.getAttribute("userID"); // will force login if necessary
 	if (userID == null) return; // come back after login
-	if (request.getParameter(GenePatternAnalysisTask.NAME) != null && !request.getParameter(GenePatternAnalysisTask.NAME).equals("") && !LSIDManager.getInstance().getAuthorityType(new LSID(request.getParameter(GenePatternAnalysisTask.NAME))).equals(LSIDUtil.AUTHORITY_MINE)) {
-		response.sendRedirect("viewPipeline.jsp?" + GenePatternAnalysisTask.NAME + "=" + request.getParameter(GenePatternAnalysisTask.NAME));
+	if (request.getParameter(GPConstants.NAME) != null && !request.getParameter(GPConstants.NAME).equals("") && !LSIDManager.getInstance().getAuthorityType(new LSID(request.getParameter(GPConstants.NAME))).equals(LSIDUtil.AUTHORITY_MINE)) {
+		response.sendRedirect("viewPipeline.jsp?" + GPConstants.NAME + "=" + request.getParameter(GPConstants.NAME));
 	}
 %>
 
