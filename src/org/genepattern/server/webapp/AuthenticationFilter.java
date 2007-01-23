@@ -78,8 +78,11 @@ public class AuthenticationFilter implements Filter {
 
         if (isAuthenticated((HttpServletRequest) request, (HttpServletResponse) response)) {
             for (int i = 0, length = forwardIfLoggedInPages.length; i < length; i++) {
-                if (requestedURI.contains(forwardIfLoggedInPages[i])) {
+            	if (requestedURI.contains(forwardIfLoggedInPages[i]) && req.getParameter("origin")==null) {
                     ((HttpServletResponse) response).sendRedirect(req.getContextPath() + homePage);
+                    return;
+                }else if (requestedURI.contains(forwardIfLoggedInPages[i]) && req.getParameter("origin")!=null) {
+                	chain.doFilter(request, response);
                     return;
                 }
             }
