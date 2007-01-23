@@ -1,5 +1,8 @@
 package org.genepattern.server.webapp.jsf;
 
+import static org.genepattern.util.GPConstants.COMMAND_PREFIX;
+import static org.genepattern.util.GPConstants.TASK_PREFIX_MAPPING;
+
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -8,7 +11,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.faces.FacesException;
-import javax.faces.component.html.HtmlDataTable;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
@@ -17,7 +19,6 @@ import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import static org.genepattern.util.GPConstants.*;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -26,7 +27,7 @@ public class CommandPrefixBean {
 
     private static Logger log = Logger.getLogger(CommandPrefixBean.class);
 
-    LocalAdminClient admin;
+    private LocalAdminClient admin;
 
     private String defaultCommandPrefix;
 
@@ -47,7 +48,7 @@ public class CommandPrefixBean {
         }
         admin = new LocalAdminClient(UIBeanHelper.getUserId());
         pm = PropertiesManager.getInstance();
-        defaultCommandPrefix = System.getProperty(COMMAND_PREFIX);
+        defaultCommandPrefix = System.getProperty(COMMAND_PREFIX, "");
         setDefault();
     }
 
@@ -57,6 +58,9 @@ public class CommandPrefixBean {
 
     public void setDefaultCommandPrefix(String defaultCommandPrefix) {
         this.defaultCommandPrefix = defaultCommandPrefix;
+        if(defaultCommandPrefix==null) {
+            defaultCommandPrefix = "";
+        }
     }
     
     public void saveDefaultCommandPrefix(ActionEvent event) {
