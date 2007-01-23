@@ -19,21 +19,17 @@
  */
 package org.genepattern.server.util;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Cookie;
-import java.net.URLEncoder;
-import java.net.URLDecoder;
-import org.genepattern.util.IGPConstants;
-import java.io.UnsupportedEncodingException;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 
-import org.jdom.*;
+import org.jdom.Attribute;
+import org.jdom.Element;
+import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
 
@@ -48,7 +44,7 @@ import org.jdom.input.SAXBuilder;
  * and also can return a string representing the link, or a failure string to put in place of the link
  */
 
-public class AuthorizationManager implements IAuthorizationManager, IGPConstants {
+public class AuthorizationManager implements IAuthorizationManager {
 	  
 
 	public static void main(String[] args) throws Exception{
