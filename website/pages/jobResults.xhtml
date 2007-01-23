@@ -181,7 +181,9 @@ document.location.href=location;
       <table width="100%"  border="0" cellspacing="0" cellpadding="0">
         <tr>
           <td valign="top" class="maintasknav" id="maintasknav" align="right" width="100%">
+          	<h:outputText rendered="#{authorizationBean.admin}">
             <h:selectBooleanCheckbox  value="#{jobResultsBean.showEveryonesJobs}" onchange="this.form.submit();"/>show everyone's jobs&#160;&#160;&#160;&#160;
+            </h:outputText>
             <h:selectBooleanCheckbox  value="#{jobResultsBean.showExecutionLogs}" onchange="this.form.submit();" />show execution logs	
           </td>
         </tr>
