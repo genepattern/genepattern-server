@@ -6,16 +6,18 @@ function mmLoadMenus() {
 
   window.mm_menu_tasks = new Menu("root",112,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_tasks.addMenuItem("Start","location=contextRoot + '/pages/index.jsf'");
-  if(createTaskAllowed) {
-  	mm_menu_tasks.addMenuItem("Create&nbsp;Module","location=contextRoot + '/addTask.jsp'");
-  }
   if(createPipelineAllowed) {
-  	mm_menu_tasks.addMenuItem("Create&nbsp;Pipeline","location=contextRoot + '/pipelineDesigner.jsp'");
+  	mm_menu_tasks.addMenuItem("New&nbsp;Pipeline","location=contextRoot + '/pipelineDesigner.jsp'");
   }
+  
   if(createTaskAllowed) {
-  	mm_menu_tasks.addMenuItem("Install&nbsp;/&nbsp;Update","location=contextRoot + '/pages/taskCatalog.jsf'");
+  	mm_menu_tasks.addMenuItem("New&nbsp;Module","location=contextRoot + '/addTask.jsp'");
+  }
+  
+  if(createTaskAllowed) {
+  	mm_menu_tasks.addMenuItem("Install&nbsp;from&nbsp;repository","location=contextRoot + '/pages/taskCatalog.jsf'");
   }	
-  mm_menu_tasks.addMenuItem("Import","location=contextRoot + '/pages/importTask.jsf'");
+  mm_menu_tasks.addMenuItem("Install&nbsp;from&nbsp;zip","location=contextRoot + '/pages/importTask.jsf'");
   if(deleteTaskAllowed) {
   	mm_menu_tasks.addMenuItem("Manage","location=contextRoot + '/pages/manageTasks.jsf'");
   }
@@ -27,9 +29,9 @@ function mmLoadMenus() {
 
   window.mm_menu_suites = new Menu("root",112,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   if(createSuiteAllowed) {
-  	mm_menu_suites.addMenuItem("Create","location=contextRoot + '/pages/createSuite.jsf'");
-  	mm_menu_suites.addMenuItem("Install&nbsp;/&nbsp;Update","location=contextRoot + '/pages/suiteCatalog.jsf'");
-  	mm_menu_suites.addMenuItem("Import","location=contextRoot + '/pages/importTask.jsf?suite=1'");
+  	mm_menu_suites.addMenuItem("New","location=contextRoot + '/pages/createSuite.jsf'");
+  	mm_menu_suites.addMenuItem("Install&nbsp;from&nbsp;repository","location=contextRoot + '/pages/suiteCatalog.jsf'");
+  	mm_menu_suites.addMenuItem("Install&nbsp;from&nbsp;zip","location=contextRoot + '/pages/importTask.jsf?suite=1'");
     mm_menu_suites.addMenuItem("Manage","location=contextRoot + '/pages/manageSuite.jsf'");
   }
 
@@ -47,12 +49,12 @@ function mmLoadMenus() {
   mm_menu_jobResults.menuLiteBgColor='#CCCC66';
   mm_menu_jobResults.menuBorderBgColor='#CCCC66';
 
-  // Documentation menu
+  // Help menu
   window.mm_menu_documentation = new Menu("root",153,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_documentation.addMenuItem("User's&nbsp;Manual&nbsp;/&nbsp;Tutorial","location='http://www.broad.mit.edu/cancer/software/genepattern/tutorial/'");
   mm_menu_documentation.addMenuItem("Release&nbsp;Notes","location='http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/'");
   mm_menu_documentation.addMenuItem("FAQ","location='http://www.broad.mit.edu/cancer/software/genepattern/faq/'");
-  mm_menu_documentation.addMenuItem("Public&nbsp;Datasets","location='http://www.broad.mit.edu/cancer/software/genepattern/datasets/'");
+  
   mm_menu_documentation.addMenuItem("Module&nbsp;Documentation","location=contextRoot + '/getTaskDoc.jsp'");
   mm_menu_documentation.hideOnMouseOut=true;
   mm_menu_documentation.bgColor='#CCCC66';
@@ -71,8 +73,9 @@ function mmLoadMenus() {
   mm_menu_resources.menuBorderBgColor='#CCCC66';
 
   window.mm_menu_downloads = new Menu("root",157,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_downloads.addMenuItem("Install&nbsp;Graphical&nbsp;Client","location=javaGEInstallerURL");
+  mm_menu_downloads.addMenuItem("Install&nbsp;Desktop&nbsp;Client","location=javaGEInstallerURL");
   mm_menu_downloads.addMenuItem("Programming&nbsp;Libraries","location=contextRoot + '/pages/downloadProgrammingLibaries.jsf'");
+  mm_menu_downloads.addMenuItem("Public&nbsp;Datasets","location='http://www.broad.mit.edu/cancer/software/genepattern/datasets/'");
   mm_menu_downloads.hideOnMouseOut=true;
   mm_menu_downloads.bgColor='#CCCC66';
   mm_menu_downloads.menuBorder=0;

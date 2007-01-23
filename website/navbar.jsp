@@ -34,7 +34,7 @@
         <a name="link11" id="link1" 
            onclick="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" 
            onmouseover="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" 
-           onmouseout="MM_startTimeout();">Documentation</a> &#160;&#160;&#160;&#160;&#160;&#160; 
+           onmouseout="MM_startTimeout();">Help</a> &#160;&#160;&#160;&#160;&#160;&#160; 
         <a name="link12" id="link3" 
            onclick="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" 
            onmouseover="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" 
