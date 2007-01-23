@@ -52,38 +52,22 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements Status 
 
     }
 
-    public String modifyTask(int accessId, String taskName, String description, ParameterInfo[] parameterInfoArray,
-            java.util.Map taskAttributes, javax.activation.DataHandler[] dataHandlers, String[] fileNames)
-            throws WebServiceException {
-        return super.modifyTask(accessId, taskName, description, parameterInfoArray, taskAttributes, dataHandlers,
-                fileNames);
-    }
 
-    public String modifySuite(int access_id, String lsid, String name, String description, String author, String owner,
-            ArrayList moduleLsids, ArrayList files) throws WebServiceException {
-
-        return modifySuite(access_id, lsid, name, description, author, owner, moduleLsids, files);
-
-    }
-
-    public String cloneTask(String lsid, String cloneName) throws WebServiceException {
-        return super.cloneTask(lsid, cloneName);
-    }
-
-    public DataHandler[] getSupportFiles(String lsid) throws WebServiceException {
-        return super.getSupportFiles(lsid);
-    }
-
-    public String[] getSupportFileNames(String lsid) throws WebServiceException {
-        return super.getSupportFileNames(lsid);
-    }
-
+    /**
+     * Return all files for a given task.  Used by addTask.jsp and viewTask.jsp.
+     * Gets the files from the super class an array of DataHandlers
+     * and converts them to an array of FileDataSources.
+     * 
+     * @param task
+     * @return array of files
+     * @throws WebServiceException
+     */
     public File[] getAllFiles(TaskInfo task) throws WebServiceException {
         String taskId = (String) task.getTaskInfoAttributes().get(GPConstants.LSID);
         if (taskId == null) {
             taskId = task.getName();
         }
-        DataHandler[] dh = super.getSupportFiles(taskId);
+        DataHandler[] dh = getSupportFiles(taskId);
 
         Vector vFiles = new Vector();
         for (int i = 0, length = dh.length; i < length; i++) {
@@ -97,12 +81,19 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements Status 
         return files;
     }
 
+    /**
+     * Returns the docFiles for a given task.  Gets the files from the super class an array of DataHandlers
+     * and converts them to an array of FileDataSources.
+     * @param task
+     * @return
+     * @throws WebServiceException
+     */
     public File[] getDocFiles(TaskInfo task) throws WebServiceException {
         String taskId = (String) task.getTaskInfoAttributes().get(GPConstants.LSID);
         if (taskId == null) {
             taskId = task.getName();
         }
-        DataHandler[] dh = super.getDocFiles(taskId);
+        DataHandler[] dh = getDocFiles(taskId);
         File[] files = new File[dh.length];
         for (int i = 0, length = dh.length; i < length; i++) {
             FileDataSource ds = (FileDataSource) dh[i].getDataSource();
@@ -110,52 +101,11 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements Status 
         }
         return files;
     }
+    
 
-    public void deleteTask(String lsid) throws WebServiceException {
-        super.deleteTask(lsid);
-    }
-
-    public String deleteFiles(String lsid, String[] fileNames) throws WebServiceException {
-        return super.deleteFiles(lsid, fileNames);
-    }
-
-    public String importZipFromURL(String url, int privacy) throws WebServiceException {
-        return super.importZipFromURL(url, privacy, true, this);
-    }
-
-    public String importZipFromURL(String url, int privacy, boolean recursive) throws WebServiceException {
-        return super.importZipFromURL(url, privacy, recursive, this);
-    }
-
-    public String importZipFromURL(String url, int privacy, boolean recursive, Status status)
-            throws WebServiceException {
-        return super.importZipFromURL(url, privacy, recursive, status);
-    }
-
-    public String importZip(DataHandler handler, int privacy) throws WebServiceException {
-        return super.importZip(handler, privacy);
-    }
-
-    public DataHandler exportToZip(String taskName) throws WebServiceException {
-        return super.exportToZip(taskName, false);
-    }
-
-    public DataHandler exportToZip(String taskName, boolean recursive) throws WebServiceException {
-        return super.exportToZip(taskName, recursive);
-    }
-
-    public long[] getLastModificationTimes(String lsid, String[] fileNames) throws WebServiceException {
-        return super.getLastModificationTimes(lsid, fileNames);
-    }
-
-    public DataHandler[] getSupportFiles(String lsid, String[] fileNames) throws WebServiceException {
-        return super.getSupportFiles(lsid, fileNames);
-    }
-
-    public DataHandler[] getDocFiles(String lsid) throws WebServiceException {
-        return super.getDocFiles(lsid);
-    }
-
+    /**
+     * Print a message to the jsp output stream
+     */
     public void statusMessage(String message) {
         System.out.println(message);
         try {
@@ -168,17 +118,6 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements Status 
         }
     }
 
-    public void errorMessage(String message) {
-        System.out.println(message);
-        try {
-            if (out != null) {
-                out.println(message + "<br>");
-                flush();
-            }
-        } catch (IOException ioe) {
-            // ignore
-        }
-    }
 
     public void beginProgress(String message) {
         progressMessage = message;
