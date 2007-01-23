@@ -432,17 +432,16 @@ function setPromptPosition(e, divid, anElement){
    }
 
 function closePromptWindow(divid){
+alert(divid);
 	document.getElementById(divid).style.display="none"
 }
 
 
-function reset(taskNum, name, descrip){
-	document.getElementById('t'+taskNum+'_'+pi.name+'_altDescription').value = descrip;
-	document.getElementById('t'+taskNum+'_'+pi.name+'_altName').value = name;
-
-//Display Name: <input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/>
-//Display Description: <input name="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/>
-
+function resetDisplay(taskNum, name, descrip){
+	var namestr = 't'+taskNum+'_'+name+'_altName';
+	var desstr = 't'+taskNum+'_'+name+'_altDescription';
+	document.getElementById(namestr).value = name;
+	document.getElementById(desstr).value = descrip;
 }
 
 function collapseTask(taskNum){
@@ -782,7 +781,6 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		pnum = pnum + 1;
 		var pi = task.parameterInfoArray[param];
 		var choices = ((pi.value != null && pi.value != 'null' && pi.value.length > 0) ? pi.value.split(";") : "");
-
 		// prompt-when-run
 		taskFields = taskFields + '<tr class=\"taskperameter\"><td valign="top">\n';
 		taskFields = taskFields + '<input type="checkbox" name="t' + taskNum + '_prompt_' + param + '"';
@@ -793,13 +791,14 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		
 		// XXX add ability to submit an alternate name for prompt when run params
   		taskFields = taskFields + '<span id="span_'+taskNum+'_'+pnum+'" style="display:none">'
-		
+		var namestr = "\'t'+taskNum+'\'_\''+pi.name+'\'_altName\'";
+		//alert(namestr);
 		taskFields = taskFields + '<div id="div_'+taskNum+'_'+pnum+'" class="prompt-window" style="position:absolute;background-color:#FFFFFF;left:0px;top:0px;display:none" onSelectStart="return false">';
 		taskFields = taskFields + '<div id="dwindowcontent" style="height:100%;text-align:center;">';
 		taskFields = taskFields + 'Define alternative name and description to display when prompting for this input.<br>';
-		taskFields = taskFields + '<br><table class="prompt-table" border="0" cellspacing="0" cellpadding="0"><tr border="0" ><td>Display Name:</td><td><input name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/></td></tr>';
-		taskFields = taskFields + '<tr><td>Display Description:</td><td><input name="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/></td></tr>';
-		taskFields = taskFields + '</table><center><input type="button" value="Save" onclick="closePromptWindow(\'div_'+taskNum+'_'+pnum+'\')"/><input type="button" value="Reset" onclick="reset(\''+taskNum+'\', \''+pi.name+'\',\''+pi.description+'\')"/></center>';
+		taskFields = taskFields + '<br><table class="prompt-table" border="0" cellspacing="0" cellpadding="0"><tr border="0" ><td>Display Name:</td><td><input id="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/></td></tr>';
+		taskFields = taskFields + '<tr><td>Display Description:</td><td><input id="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/></td></tr>';
+		taskFields = taskFields + '</table><center><input type="button" value="Save" onclick="closePromptWindow(\'div_'+taskNum+'_'+pnum+'\')"/><input type="button" value="Reset" onclick="resetDisplay(\''+taskNum+'\', \''+pi.name+'\', \''+pi.description+'\')"/></center>';
 		taskFields = taskFields + '</div></div>';
 		taskFields = taskFields + '  </span>';
 
