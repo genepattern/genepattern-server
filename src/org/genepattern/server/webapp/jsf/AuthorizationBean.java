@@ -51,4 +51,28 @@ public class AuthorizationBean {
         return authManager.checkPermission("deleteJob", UIBeanHelper.getUserId());
     }
 
+    public boolean isAdmin(String username) {
+        return authManager.checkPermission("administrateServer", username);
+    }
+
+    public boolean isCreateTaskAllowed(String username) {
+        return authManager.checkPermission("createTask", username);
+    }
+
+    public boolean isCreateSuiteAllowed(String username) {
+        return authManager.checkPermission("createSuite", username);
+    }
+
+    public boolean isCreatePipelineAllowed(String username) {
+        return authManager.checkPermission("createPipeline", username);
+    }
+
+    public boolean isDeleteTaskAllowed(String username) {
+        return authManager.checkPermission("deleteTask", username);
+    }
+
+    public boolean isDeleteJobAllowed(String username) {
+        return authManager.checkPermission("deleteJob", username);
+    }
+
 }
