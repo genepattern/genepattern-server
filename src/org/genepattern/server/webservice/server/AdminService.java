@@ -35,7 +35,7 @@ import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AdminDAOSysException;
 import org.genepattern.util.GPConstants;
-import org.genepattern.util.IGPConstants;
+import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.SuiteInfo;
@@ -268,7 +268,7 @@ public class AdminService implements IAdminService {
             SuiteInfo suite = dataService.getSuite(lsid);
 
             String owner = suite.getOwner();
-            if (suite.getAccessId() == IGPConstants.ACCESS_PRIVATE) {
+            if (suite.getAccessId() == GPConstants.ACCESS_PRIVATE) {
                 if (!owner.equals(getUserName())) {
                     throw new WebServiceException("You may not view a private suite you are not the owner of.");
                 }

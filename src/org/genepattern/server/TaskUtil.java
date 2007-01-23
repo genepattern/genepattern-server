@@ -12,20 +12,19 @@
 
 package org.genepattern.server;
 
-import java.io.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import org.genepattern.util.IGPConstants;
 
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -115,7 +114,7 @@ public class TaskUtil {
 		Map tia = ti.getTaskInfoAttributes();
 		if (tia == null) return false; //default to false if unknown
 
-  		String type = (String) tia.get(IGPConstants.TASK_TYPE);
+  		String type = (String) tia.get(GPConstants.TASK_TYPE);
 		if (type == null) return false; // default to false if unknown
 
             return type.endsWith("pipeline");
@@ -142,7 +141,7 @@ public class TaskUtil {
         try {
             zipFile = new ZipFile(file);
             ZipEntry manifestEntry = zipFile
-                    .getEntry(org.genepattern.util.IGPConstants.MANIFEST_FILENAME);
+                    .getEntry(GPConstants.MANIFEST_FILENAME);
             if (manifestEntry == null) {
                 zipFile.close();
                 throw new IOException(file.getName()
@@ -226,8 +225,8 @@ public class TaskUtil {
         Properties props = new Properties();
         props.load(is);
 
-        String taskName = (String) props.remove(GenePatternAnalysisTask.NAME);
-        String lsid = (String) props.get(GenePatternAnalysisTask.LSID);
+        String taskName = (String) props.remove(GPConstants.NAME);
+        String lsid = (String) props.get(GPConstants.LSID);
         org.genepattern.util.LSID l = new org.genepattern.util.LSID(lsid);// ;
         // throw
         // MalformedURLException
@@ -241,7 +240,7 @@ public class TaskUtil {
         }
         // FIXME add check for other required attributes
         String taskDescription = (String) props
-                .remove(GenePatternAnalysisTask.DESCRIPTION);
+                .remove(GPConstants.DESCRIPTION);
 
         // ParameterInfo entries consist of name/value/description triplets, of
         // which the value and description are optional
@@ -252,7 +251,7 @@ public class TaskUtil {
 
         List vParams = new ArrayList();
 
-        for (int i = 1; i <= GenePatternAnalysisTask.MAX_PARAMETERS; i++) {
+        for (int i = 1; i <= GPConstants.MAX_PARAMETERS; i++) {
             String name = (String) props.remove("p" + i + "_name");
             if (name == null) {
                 continue;
@@ -272,16 +271,16 @@ public class TaskUtil {
             }
             ParameterInfo pi = new ParameterInfo(name, value, description);
             HashMap attributes = new HashMap();
-            for (int attribute = 0; attribute < GenePatternAnalysisTask.PARAM_INFO_ATTRIBUTES.length; attribute++) {
-                name = (String) GenePatternAnalysisTask.PARAM_INFO_ATTRIBUTES[attribute][0];
+            for (int attribute = 0; attribute < GPConstants.PARAM_INFO_ATTRIBUTES.length; attribute++) {
+                name = (String) GPConstants.PARAM_INFO_ATTRIBUTES[attribute][0];
                 value = (String) props.remove("p" + i + "_" + name);
                 if (value != null) {
                     attributes.put(name, value);
                 }
-                if (name.equals(GenePatternAnalysisTask.PARAM_INFO_TYPE[0])
+                if (name.equals(GPConstants.PARAM_INFO_TYPE[0])
                         && value != null
                         && value
-                                .equals(GenePatternAnalysisTask.PARAM_INFO_TYPE_INPUT_FILE)) {
+                                .equals(GPConstants.PARAM_INFO_TYPE_INPUT_FILE)) {
                     attributes
                             .put(ParameterInfo.MODE, ParameterInfo.INPUT_MODE);
                     attributes.put(ParameterInfo.TYPE, ParameterInfo.FILE_TYPE);

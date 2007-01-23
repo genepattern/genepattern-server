@@ -3,19 +3,17 @@
  */
 package org.genepattern.server.webapp.jsf;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
 
-import javax.faces.event.ActionEvent;
-import javax.faces.event.ValueChangeEvent;
-import javax.faces.model.SelectItem;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.myfaces.custom.fileupload.HtmlInputFileUpload;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
@@ -24,15 +22,8 @@ import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.DirectoryManager;
-import org.genepattern.server.webservice.server.TaskIntegrator;
-import org.genepattern.server.webservice.server.dao.AdminDAO;
-import org.genepattern.server.webservice.server.dao.TaskIntegratorDAO;
+import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
-import org.genepattern.webservice.SuiteInfo;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.WebServiceException;
-
-import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
 
 /**
  * @author jrobinso
@@ -176,7 +167,7 @@ public class CreateSuiteBean implements java.io.Serializable {
         try {
 
             LSID lsidObj = (currentSuite == null) ? LSIDManager.getInstance().createNewID(
-                    org.genepattern.util.IGPConstants.SUITE_NAMESPACE) : LSIDManager.getInstance().getNextIDVersion(
+                    GPConstants.SUITE_NAMESPACE) : LSIDManager.getInstance().getNextIDVersion(
                     currentSuite.getLsid());
             String lsid = lsidObj.toString();
 

@@ -6,38 +6,33 @@
  */
 package org.genepattern.server.process;
 
-import org.genepattern.webservice.SuiteInfo;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfoAttributes;
-import org.genepattern.webservice.WebServiceException;
-import org.genepattern.util.StringUtils;
-import org.genepattern.server.webservice.server.DirectoryManager;
-import org.genepattern.server.webservice.server.local.*;
-import org.genepattern.util.GPConstants;
-import org.genepattern.util.IGPConstants;
-import org.genepattern.util.LSID;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-
-import java.io.BufferedWriter;
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.StringBufferInputStream;
-
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringBufferInputStream;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.HashMap;
+
+import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.util.GPConstants;
+import org.genepattern.util.StringUtils;
+import org.genepattern.webservice.SuiteInfo;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * @author liefeld
@@ -125,7 +120,7 @@ public class CatalogGenerator {
         Map tia = taskInfo.getTaskInfoAttributes();
         ZipTask zt = new ZipTask();
         String lsid = (String) tia.get(GPConstants.LSID);
-        String taskDir = DirectoryManager.getTaskLibDir((String) tia.get(IGPConstants.LSID));
+        String taskDir = DirectoryManager.getTaskLibDir((String) tia.get(GPConstants.LSID));
         File dir = new File(taskDir);
 
         File[] supportFiles = dir.listFiles(new SupportFileFilter());
@@ -187,7 +182,7 @@ public class CatalogGenerator {
         Map tia = taskInfo.getTaskInfoAttributes();
         ZipTask zt = new ZipTask();
         String lsid = (String) tia.get(GPConstants.LSID);
-        String taskDir = DirectoryManager.getTaskLibDir((String) tia.get(IGPConstants.LSID));
+        String taskDir = DirectoryManager.getTaskLibDir((String) tia.get(GPConstants.LSID));
 
         File dir = new File(taskDir);
         File manifestFile = new File(dir.getAbsolutePath(), "manifest");

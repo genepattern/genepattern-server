@@ -17,6 +17,7 @@ import java.util.Arrays;
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.genepattern.LSIDManager;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.SuiteInfo;
 import org.hibernate.Query;
 
@@ -37,7 +38,7 @@ public class TaskIntegratorDAO extends BaseDAO {
         String lsid = suiteInfo.getLsid();
         Suite s = null;
         if (lsid == null || lsid.trim().equals("")) {
-            lsid = LSIDManager.getInstance().createNewID(org.genepattern.util.IGPConstants.SUITE_NAMESPACE).toString();
+            lsid = LSIDManager.getInstance().createNewID(GPConstants.SUITE_NAMESPACE).toString();
         } else { // see if suite already exists in database
             String hql = "from org.genepattern.server.domain.Suite where lsid = :lsid";
             Query query = getSession().createQuery(hql);

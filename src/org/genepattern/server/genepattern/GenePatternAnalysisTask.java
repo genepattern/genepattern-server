@@ -12,8 +12,67 @@
 
 package org.genepattern.server.genepattern;
 
+import static org.genepattern.util.GPConstants.ACCESS_PRIVATE;
+import static org.genepattern.util.GPConstants.ANY;
+import static org.genepattern.util.GPConstants.COMMAND_LINE;
+import static org.genepattern.util.GPConstants.COMMAND_PREFIX;
+import static org.genepattern.util.GPConstants.CPU_TYPE;
+import static org.genepattern.util.GPConstants.DEFAULT_PATCH_URL;
+import static org.genepattern.util.GPConstants.DESCRIPTION;
+import static org.genepattern.util.GPConstants.INPUT_BASENAME;
+import static org.genepattern.util.GPConstants.INPUT_EXTENSION;
+import static org.genepattern.util.GPConstants.INPUT_FILE;
+import static org.genepattern.util.GPConstants.INPUT_PATH;
+import static org.genepattern.util.GPConstants.INSTALLED_PATCH_LSIDS;
+import static org.genepattern.util.GPConstants.JAVA;
+import static org.genepattern.util.GPConstants.JOB_ID;
+import static org.genepattern.util.GPConstants.JVM_LEVEL;
+import static org.genepattern.util.GPConstants.LANGUAGE;
+import static org.genepattern.util.GPConstants.LEFT_DELIMITER;
+import static org.genepattern.util.GPConstants.LIBDIR;
+import static org.genepattern.util.GPConstants.LSID;
+import static org.genepattern.util.GPConstants.MANIFEST_FILENAME;
+import static org.genepattern.util.GPConstants.MAX_PARAMETERS;
+import static org.genepattern.util.GPConstants.NAME;
+import static org.genepattern.util.GPConstants.OS;
+import static org.genepattern.util.GPConstants.PARAM_INFO_ATTRIBUTES;
+import static org.genepattern.util.GPConstants.PARAM_INFO_CHOICE_DELIMITER;
+import static org.genepattern.util.GPConstants.PARAM_INFO_DEFAULT_VALUE;
+import static org.genepattern.util.GPConstants.PARAM_INFO_NAME_OFFSET;
+import static org.genepattern.util.GPConstants.PARAM_INFO_OPTIONAL;
+import static org.genepattern.util.GPConstants.PARAM_INFO_PREFIX;
+import static org.genepattern.util.GPConstants.PARAM_INFO_TYPE;
+import static org.genepattern.util.GPConstants.PARAM_INFO_TYPE_INPUT_FILE;
+import static org.genepattern.util.GPConstants.PARAM_INFO_TYPE_SEPARATOR;
+import static org.genepattern.util.GPConstants.PATCH_ERROR_EXIT_VALUE;
+import static org.genepattern.util.GPConstants.PATCH_SUCCESS_EXIT_VALUE;
+import static org.genepattern.util.GPConstants.PERL;
+import static org.genepattern.util.GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM;
+import static org.genepattern.util.GPConstants.PRIVACY;
+import static org.genepattern.util.GPConstants.PRIVATE;
+import static org.genepattern.util.GPConstants.PUBLIC;
+import static org.genepattern.util.GPConstants.R;
+import static org.genepattern.util.GPConstants.REQUIRED_PATCH_LSIDS;
+import static org.genepattern.util.GPConstants.REQUIRED_PATCH_URLS;
+import static org.genepattern.util.GPConstants.RESERVED_PARAMETER_NAMES;
+import static org.genepattern.util.GPConstants.RIGHT_DELIMITER;
+import static org.genepattern.util.GPConstants.R_HOME;
+import static org.genepattern.util.GPConstants.STDERR;
+import static org.genepattern.util.GPConstants.STDERR_REDIRECT;
+import static org.genepattern.util.GPConstants.STDIN_REDIRECT;
+import static org.genepattern.util.GPConstants.STDOUT;
+import static org.genepattern.util.GPConstants.STDOUT_REDIRECT;
+import static org.genepattern.util.GPConstants.TASKLOG;
+import static org.genepattern.util.GPConstants.TASK_ID;
+import static org.genepattern.util.GPConstants.TASK_NAMESPACE;
+import static org.genepattern.util.GPConstants.TASK_TYPE;
+import static org.genepattern.util.GPConstants.TASK_TYPE_VISUALIZER;
+import static org.genepattern.util.GPConstants.TOMCAT;
+import static org.genepattern.util.GPConstants.UNREQUIRED_PARAMETER_NAMES;
+import static org.genepattern.util.GPConstants.USERID;
+import static org.genepattern.util.GPConstants.UTF8;
+
 import java.io.BufferedOutputStream;
-import static org.genepattern.util.GPConstants.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -86,7 +145,7 @@ import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.dao.BaseDAO;
-import org.genepattern.util.IGPConstants;
+import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
@@ -213,7 +272,7 @@ public class GenePatternAnalysisTask  {
 
     static {
         try {
-            NUM_THREADS = Integer.parseInt(System.getProperty(IGPConstants.NUM_THREADS, "20"));
+            NUM_THREADS = Integer.parseInt(System.getProperty(GPConstants.NUM_THREADS, "20"));
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -449,7 +508,7 @@ public class GenePatternAnalysisTask  {
 				            	  String urlStr = url.toString();
 				            	  int idx = urlStr.indexOf('?');
 				            	  String sep = (idx == -1 ? "?":"&");
-				            	  String userIdURL = urlStr+ sep+ IGPConstants.USERID + "=" +jobInfo.getUserId();
+				            	  String userIdURL = urlStr+ sep+ GPConstants.USERID + "=" +jobInfo.getUserId();
 				            
 				            	  url = new URL(userIdURL);
 				              }
@@ -2548,7 +2607,7 @@ public class GenePatternAnalysisTask  {
                  * vProblems.add(actualParams[actual].getName() + " is not a
                  * legal parameter name. It must contain only letters, digits,
                  * and periods, and may not begin with a period or digit" + "
-                 * for task " + props.get(IGPConstants.LSID)); }
+                 * for task " + props.get(GPConstants.LSID)); }
                  */
                 for (int j = 0; j < UNREQUIRED_PARAMETER_NAMES.length; j++) {
                     if (name.equals(UNREQUIRED_PARAMETER_NAMES[j])) {
@@ -2752,7 +2811,7 @@ public class GenePatternAnalysisTask  {
         }
         catch (Exception e) {
             vProblems = new Vector();
-            vProblems.add(e.toString() + " while validating inputs for " + tia.get(IGPConstants.LSID));
+            vProblems.add(e.toString() + " while validating inputs for " + tia.get(GPConstants.LSID));
             e.printStackTrace();
         }
         return vProblems;
@@ -2947,7 +3006,7 @@ public class GenePatternAnalysisTask  {
         
         taskLSID = getNextTaskLsid(requestedLSID);
         
-        taskInfoAttributes.put(IGPConstants.LSID, taskLSID.toString());
+        taskInfoAttributes.put(GPConstants.LSID, taskLSID.toString());
         // System.out.println("GPAT.installNewTask: new LSID=" +
         // taskLSID.toString());
         Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, taskIntegrator);
@@ -2980,9 +3039,9 @@ public class GenePatternAnalysisTask  {
        LSIDManager lsidManager = LSIDManager.getInstance();
        if (!lsidManager.getAuthority().equalsIgnoreCase(taskLSID.getAuthority())) {
            
-            String provenance = taskInfoAttributes.get(IGPConstants.LSID_PROVENANCE);
+            String provenance = taskInfoAttributes.get(GPConstants.LSID_PROVENANCE);
             provenance = provenance + "  " + taskLSID.toString();
-            taskInfoAttributes.put(IGPConstants.LSID_PROVENANCE, provenance);
+            taskInfoAttributes.put(GPConstants.LSID_PROVENANCE, provenance);
 	  }
         taskInfoAttributes.put(LSID, taskLSID.toString());
 
@@ -3183,7 +3242,7 @@ public class GenePatternAnalysisTask  {
             throw new IOException(zipFilename + " is not a zip file");
         }
         ZipFile zipFile = new ZipFile(zipFilename);
-        ZipEntry manifestEntry = zipFile.getEntry(IGPConstants.MANIFEST_FILENAME);
+        ZipEntry manifestEntry = zipFile.getEntry(GPConstants.MANIFEST_FILENAME);
         if (manifestEntry == null) {
             zipFile.close();
             throw new IOException(zipFilename
@@ -3242,7 +3301,7 @@ public class GenePatternAnalysisTask  {
                 catch (ZipException ze) {
                     break; // EOF
                 }
-                if (zipEntry.getName().equals(IGPConstants.MANIFEST_FILENAME)) {
+                if (zipEntry.getName().equals(GPConstants.MANIFEST_FILENAME)) {
                     long manifestSize = zipEntry.getSize();
                     if (manifestSize == -1) {
                         manifestSize = 10000;
@@ -3445,10 +3504,10 @@ public class GenePatternAnalysisTask  {
                 }
                 if (vProblems.size() == 0) {
                     // get the newly assigned LSID
-                    lsid = (String) tia.get(IGPConstants.LSID);
+                    lsid = (String) tia.get(GPConstants.LSID);
 
                     // extract files from zip file
-                    String taskDir = DirectoryManager.getTaskLibDir(null, (String) tia.get(IGPConstants.LSID), username);
+                    String taskDir = DirectoryManager.getTaskLibDir(null, (String) tia.get(GPConstants.LSID), username);
                     File dir = new File(taskDir);
 
                     // if there are any existing files from a previous
@@ -3734,7 +3793,7 @@ public class GenePatternAnalysisTask  {
                     os.close();
                     Properties props = new Properties();
                     ZipFile subZipFile = new ZipFile(subFile);
-                    ZipEntry manifestEntry = subZipFile.getEntry(IGPConstants.MANIFEST_FILENAME);
+                    ZipEntry manifestEntry = subZipFile.getEntry(GPConstants.MANIFEST_FILENAME);
                     props.load(subZipFile.getInputStream(manifestEntry));
                     subZipFile.close();
                     subFile.delete();
@@ -4634,7 +4693,7 @@ public class GenePatternAnalysisTask  {
 
     public static String[] getTaskTypes() {
         return new String[] { "", "Clustering", "Gene List Selection", "Image Creator", "Method",
-                IGPConstants.TASK_TYPE_PIPELINE, "Prediction", "Preprocess & Utilities", "Projection",
+                GPConstants.TASK_TYPE_PIPELINE, "Prediction", "Preprocess & Utilities", "Projection",
                 "Statistical Methods", "Sequence Analysis", TASK_TYPE_VISUALIZER };
     }
 
