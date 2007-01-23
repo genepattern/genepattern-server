@@ -12,6 +12,12 @@
 
 package org.genepattern.util;
 
+/**
+ * 
+ * @deprecated Users should statically import GPConstants as a replacement for
+ *             this.
+ * 
+ */
 public interface IGPConstants {
 
     // strings which are shared with addTask.jsp and saveTask.jsp
@@ -21,7 +27,6 @@ public interface IGPConstants {
 
     /** Alternative name key for a ParameterInfo */
     public static final String ALTNAME = "altName";
-
 
     /** TaskInfo.description */
     public static final String DESCRIPTION = "description";
@@ -161,8 +166,7 @@ public interface IGPConstants {
     public static final String QUALITY_PRODUCTION = "production";
 
     /** array of quality levels for user choices */
-    public static final String[] QUALITY_LEVELS = { QUALITY_DEVELOPMENT,
-            QUALITY_PREPRODUCTION, QUALITY_PRODUCTION };
+    public static final String[] QUALITY_LEVELS = { QUALITY_DEVELOPMENT, QUALITY_PREPRODUCTION, QUALITY_PRODUCTION };
 
     /**
      * two levels of privacy defined: public, private. Group is complicated for
@@ -200,10 +204,9 @@ public interface IGPConstants {
      * names of all expected TaskInfoAttributes from manifest file (or other new
      * task submission)
      */
-    public static final String[] TASK_INFO_ATTRIBUTES = { COMMAND_LINE,
-            TASK_TYPE, CPU_TYPE, OS, JVM_LEVEL, LANGUAGE, VERSION, AUTHOR,
-            USERID, PRIVACY, QUALITY, PIPELINE_SCRIPT, LSID, SERIALIZED_MODEL,
-            DOMAIN, FILE_FORMAT, REQUIRED_PATCH_LSIDS, REQUIRED_PATCH_URLS };
+    public static final String[] TASK_INFO_ATTRIBUTES = { COMMAND_LINE, TASK_TYPE, CPU_TYPE, OS, JVM_LEVEL, LANGUAGE,
+            VERSION, AUTHOR, USERID, PRIVACY, QUALITY, PIPELINE_SCRIPT, LSID, SERIALIZED_MODEL, DOMAIN, FILE_FORMAT,
+            REQUIRED_PATCH_LSIDS, REQUIRED_PATCH_URLS };
 
     public static final char PARAM_INFO_SPACER = '_'; // replace this
 
@@ -242,12 +245,9 @@ public interface IGPConstants {
 
     public static final int PARAM_INFO_TYPE_CLASS_OFFSET = 1;
 
-    public static final String[][] PARAM_INFO_TYPES = {
-            { "text", PARAM_INFO_TYPE_TEXT },
-            { "integer", PARAM_INFO_TYPE_INTEGER },
-            { "floating point", PARAM_INFO_TYPE_FLOAT },
-            { "input file", PARAM_INFO_TYPE_INPUT_FILE },
-            { "password", PARAM_INFO_TYPE_PASSWORD }};
+    public static final String[][] PARAM_INFO_TYPES = { { "text", PARAM_INFO_TYPE_TEXT },
+            { "integer", PARAM_INFO_TYPE_INTEGER }, { "floating point", PARAM_INFO_TYPE_FLOAT },
+            { "input file", PARAM_INFO_TYPE_INPUT_FILE }, { "password", PARAM_INFO_TYPE_PASSWORD } };
 
     // well-known ParameterInfo attributes
     public static final int PARAM_INFO_NAME_OFFSET = 0; // offset into one of
@@ -262,30 +262,22 @@ public interface IGPConstants {
 
     public static final String MULTIPLE = "multiple";
 
-    public static final String[] PARAM_INFO_CLIENT_FILENAME = {
-            "client_filename", PARAM_INFO_STRING };
+    public static final String[] PARAM_INFO_CLIENT_FILENAME = { "client_filename", PARAM_INFO_STRING };
 
-    public static final String[] PARAM_INFO_DEFAULT_VALUE = { "default_value",
-            PARAM_INFO_STRING };
+    public static final String[] PARAM_INFO_DEFAULT_VALUE = { "default_value", PARAM_INFO_STRING };
 
-    public static final Object[] PARAM_INFO_TYPE = { "type", PARAM_INFO_CHOICE,
-            PARAM_INFO_TYPES };
+    public static final Object[] PARAM_INFO_TYPE = { "type", PARAM_INFO_CHOICE, PARAM_INFO_TYPES };
 
-    public static final String[] PARAM_INFO_OPTIONAL = { "optional",
-            PARAM_INFO_CHECKBOX };
+    public static final String[] PARAM_INFO_OPTIONAL = { "optional", PARAM_INFO_CHECKBOX };
 
-    public static final String[] PARAM_INFO_PREFIX = { "prefix_when_specified",
-            PARAM_INFO_STRING };
+    public static final String[] PARAM_INFO_PREFIX = { "prefix_when_specified", PARAM_INFO_STRING };
 
-    public static Object[] PARAM_INFO_FILE_FORMAT = { FILE_FORMAT,
-            PARAM_INFO_CHOICE, null, MULTIPLE };
+    public static Object[] PARAM_INFO_FILE_FORMAT = { FILE_FORMAT, PARAM_INFO_CHOICE, null, MULTIPLE };
 
-    public static Object[] PARAM_INFO_DOMAIN = { DOMAIN, PARAM_INFO_CHOICE,
-            null, MULTIPLE };
+    public static Object[] PARAM_INFO_DOMAIN = { DOMAIN, PARAM_INFO_CHOICE, null, MULTIPLE };
 
-    public static final Object[][] PARAM_INFO_ATTRIBUTES = {
-            PARAM_INFO_DEFAULT_VALUE, PARAM_INFO_OPTIONAL, PARAM_INFO_PREFIX,
-            PARAM_INFO_TYPE, PARAM_INFO_FILE_FORMAT };
+    public static final Object[][] PARAM_INFO_ATTRIBUTES = { PARAM_INFO_DEFAULT_VALUE, PARAM_INFO_OPTIONAL,
+            PARAM_INFO_PREFIX, PARAM_INFO_TYPE, PARAM_INFO_FILE_FORMAT };
 
     public static int MAX_PARAMETERS = 20;
 
@@ -304,8 +296,7 @@ public interface IGPConstants {
     /** request attribute, set when the user has logged off */
     public static final String USER_LOGGED_OFF = "userLoggedOff";
 
-    public static final String[] RESERVED_PARAMETER_NAMES = { JOB_ID, TASK_ID,
-            LIBDIR, NAME };
+    public static final String[] RESERVED_PARAMETER_NAMES = { JOB_ID, TASK_ID, LIBDIR, NAME };
 
     public static final String[] UNREQUIRED_PARAMETER_NAMES = {};
 
@@ -355,10 +346,8 @@ public interface IGPConstants {
      */
     public static final String NUM_THREADS = "num.threads";
 
-
     public static final String PIPELINE_ARG_STOP_AFTER_TASK_NUM = "PIPELINE_ARG.StopAfterTask";
 
     public static final String TASK_PREFIX_MAPPING = "tastPrefixMapping";
- 	 
-    
+
 }
