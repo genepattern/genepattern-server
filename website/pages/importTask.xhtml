@@ -25,33 +25,28 @@
 
     </script>
     </ui:define>
-	<ui:define name="pageTitle">GenePattern - Import</ui:define>
+	<h:outputText rendered="#{empty param.suite}">
+		<ui:define name="pageTitle">GenePattern - Install Modules &amp; Pipelines</ui:define>
+	</h:outputText>
+	<h:outputText rendered="#{! empty param.suite}">
+		<ui:define name="pageTitle">GenePattern - Install Suites</ui:define>
+	</h:outputText>
 	<ui:define name="body">
+		
+		
 		<table width="100%" border="0" cellpadding="0" cellspacing="0"
 			class="barhead-other">
-			<tr>
-				<td>Install</td>
-			</tr>
+			<tr><td>
+				<h:outputText rendered="#{empty param.suite}">
+					<ui:define name="pageTitle">Install Modules &amp; Pipelines</ui:define>
+				</h:outputText>
+				<h:outputText rendered="#{! empty param.suite}">
+					<ui:define name="pageTitle">Install Suites</ui:define>
+				</h:outputText>
+			</td></tr>
 		</table>
 		
 		<table width="100%" border="0" cellpadding="10" cellspacing="0">
-			<tr valign="top" class="settingperameter">
-				<h:outputText rendered="#{empty param.suite}">
-				<td><strong>Install from module repository:</strong></td>
-				<td><h:outputLink
-					value="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">
-					Install tasks from module repository
-					</h:outputLink></td>
-				</h:outputText>
-				
-				<h:outputText rendered="#{ ! empty param.suite}">
-				<td><strong>Install from suite repository:</strong></td>
-				<td><h:outputLink
-					value="#{facesContext.externalContext.requestContextPath}/pages/suiteCatalog.jsf">
-					Install suites from suite repository
-					</h:outputLink></td>
-				</h:outputText>
-			</tr>
 			<tr valign="top" class="settingperameter">
 				<td><strong>Install from zip file:</strong></td>
 				<td><h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm(this);">Please choose a GenePattern
