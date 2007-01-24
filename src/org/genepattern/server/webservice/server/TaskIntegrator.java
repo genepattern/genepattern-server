@@ -107,6 +107,7 @@ public class TaskIntegrator  {
             try {
                 taskInfo = new LocalAdminClient(userID).getTask(oldLSID);
             } catch (Exception e) {
+            	log.error(e);
                 throw new WebServiceException(e);
             }
             taskInfo.setName(cloneName);
@@ -133,8 +134,7 @@ public class TaskIntegrator  {
             cloneTaskLib(taskInfo.getName(), cloneName, oldLSID, newLSID, userID);
             return newLSID;
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            e.printStackTrace();
+            log.error(e);
             throw new WebServiceException(e);
         }
     }
@@ -175,7 +175,7 @@ public class TaskIntegrator  {
                     .toArray(new DataHandler[0]), (String[]) lAttachments.toArray(new String[0]));
             return newLSID;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e);
             throw new WebServiceException("while deleting files from " + lsid, e);
         }
     }
@@ -228,6 +228,7 @@ public class TaskIntegrator  {
             }
             dir.delete();
         } catch (Throwable e) {
+        	log.error(e);
             throw new WebServiceException("while deleting task " + lsid, e);
         }
     }
@@ -241,6 +242,7 @@ public class TaskIntegrator  {
             DataHandler h = new DataHandler(new FileDataSource(zipFile.getCanonicalPath()));
             return h; // FIXME delete zip file
         } catch (Exception e) {
+        	log.error(e);
             throw new WebServiceException(e);
         }
     }
@@ -276,6 +278,7 @@ public class TaskIntegrator  {
             DataHandler h = new DataHandler(new FileDataSource(zipFile.getCanonicalPath()));
             return h;
         } catch (Exception e) {
+        	log.error(e);
             throw new WebServiceException("while exporting to zip file", e);
         }
     }
@@ -307,6 +310,7 @@ public class TaskIntegrator  {
             }
             return docFiles;
         } catch (Exception e) {
+        	log.error(e);
             throw new WebServiceException("while getting doc filenames", e);
         }
     }
@@ -328,6 +332,7 @@ public class TaskIntegrator  {
         try {
             taskLibDir = DirectoryManager.getLibDir(lsid);
         } catch (Exception e) {
+        	log.error(e);
             throw new WebServiceException(e);
         }
         File[] docFiles = new File(taskLibDir).listFiles(new FilenameFilter() {
@@ -384,6 +389,7 @@ public class TaskIntegrator  {
             }
             return modificationTimes;
         } catch (Exception e) {
+        	log.error(e);
             throw new WebServiceException("Error getting support files.", e);
         }
     }
@@ -416,6 +422,7 @@ public class TaskIntegrator  {
             });
             return oldFiles;
         } catch (Exception e) {
+        	log.error(e);
             throw new WebServiceException("while getting support filenames", e);
         }
     }
@@ -468,6 +475,7 @@ public class TaskIntegrator  {
             }
             return new DataHandler(new FileDataSource(f));
         } catch (Exception e) {
+        	log.error(e);
             throw new WebServiceException("while getting support file " + fileName + " from " + lsid, e);
         }
     }
@@ -502,6 +510,7 @@ public class TaskIntegrator  {
             }
             return dhs;
         } catch (Exception e) {
+        	log.error(e);
             throw new WebServiceException("Error getting support files.", e);
         }
     }
@@ -548,6 +557,7 @@ public class TaskIntegrator  {
                     isSuite = true;
                 }
             } catch (IOException ioe) {
+            	log.error(ioe);
                 throw new WebServiceException("Couldn't open " + path + ": " + ioe.getMessage());
             }
             if (isSuite) {
@@ -556,10 +566,12 @@ public class TaskIntegrator  {
                 try {
                     lsid = GenePatternAnalysisTask.installNewTask(path, username, privacy, recursive, taskIntegrator);
                 } catch (TaskInstallationException tie) {
+                	log.error(tie);
                     vProblems = tie.getErrors();
                 }
             }
         } catch (Exception e) {
+        	log.error(e);
             throw new WebServiceException("while importing from zip file", e);
         }
         if (vProblems != null && vProblems.size() > 0) {
@@ -613,6 +625,7 @@ public class TaskIntegrator  {
                     isSuite = true;
                 }
             } catch (IOException ioe) {
+            	log.error(ioe);
                 throw new WebServiceException("Couldn't open " + path + ": " + ioe.getMessage());
             }
             if (!(isTask || isSuite || isZipOfZips)) {
@@ -664,6 +677,7 @@ public class TaskIntegrator  {
 
             installSuite(suite);
         } catch (Exception e) {
+        	log.error(e);
             throw new WebServiceException(e);
         }
     }
@@ -779,7 +793,7 @@ public class TaskIntegrator  {
 
             return installSuite(suite);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e);
             throw new WebServiceException(e);
         }
     }
@@ -818,7 +832,7 @@ public class TaskIntegrator  {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e);
         }
     }
 
@@ -888,7 +902,7 @@ public class TaskIntegrator  {
                 }
 
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e);
                 throw new WebServiceException(e);
             }
         } else {
@@ -938,7 +952,7 @@ public class TaskIntegrator  {
                     axisFile.renameTo(newFile);
                     docFiles.add(newFile.getAbsolutePath());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error(e);
                 }
 
             }
@@ -959,7 +973,7 @@ public class TaskIntegrator  {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error(e);
                 }
 
             }
