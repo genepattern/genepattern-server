@@ -39,13 +39,20 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
     private boolean includeDependents = false;
 
     private Map<String, String> supportFiles = null;
+    
+    public ManageSuiteBean() {
+	resetSuites();
+    }
 
     /**
      * @return
      */
     public List<Suite> getSuites() {
-        suites = (suites == null) ? (new SuiteDAO()).findByOwnerOrPublic(UIBeanHelper.getUserId()) : suites;
         return suites;
+    }
+    
+    private void resetSuites() {
+	suites = (new SuiteDAO()).findByOwnerOrPublic(UIBeanHelper.getUserId());
     }
 
     /**
@@ -243,6 +250,7 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
                     // end of deleting supporting files
                 }
             }
+            resetSuites();
         }
     }
 
