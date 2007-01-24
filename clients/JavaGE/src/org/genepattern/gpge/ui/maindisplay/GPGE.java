@@ -522,7 +522,7 @@ public class GPGE {
 
         CLThread changeStatusThread = new CLThread() {
             public void run() {
-                frame.setTitle("GenePattern Graphical Environment - Server: "
+                frame.setTitle("GenePattern Desktop Client - Server: "
                         + server + ",  Username: " + username);
 
             }
