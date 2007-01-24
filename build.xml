@@ -153,7 +153,7 @@
 	
     <target name="gp-library" depends="init, gp-library-doc">
     	
-    	<jar basedir="${genepattern.build}" defaultexcludes="true" includes="**" jarfile="${genepattern.build}/${gp-library-jarname}">
+    	<jar basedir="${genepattern.build}" defaultexcludes="true" includes="**/*.class" jarfile="${genepattern.build}/${gp-library-jarname}">
             <manifest>
                 <attribute name="Class-Path" value="./lib/activation.jar ./lib/axis.jar ./lib/commons-discovery-0.2.jar ./lib/commons-logging-1.0.4.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.11.jar ./lib/mail.jar ./lib/saaj.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar "/>
             </manifest>
