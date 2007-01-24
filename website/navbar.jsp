@@ -31,10 +31,6 @@
            onclick="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" 
            onmouseover="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')" 
            onmouseout="MM_startTimeout();">Job Results</a> &#160;&#160;&#160;&#160;&#160;&#160;  
-        <a name="link11" id="link1" 
-           onclick="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" 
-           onmouseover="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" 
-           onmouseout="MM_startTimeout();">Help</a> &#160;&#160;&#160;&#160;&#160;&#160; 
         <a name="link12" id="link3" 
            onclick="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" 
            onmouseover="MM_showMenu(window.mm_menu_resources,x,y,null,'link12')" 
@@ -44,11 +40,15 @@
            onmouseover="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" 
            onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160; 
         <% if(authorizationBean.isAdmin(username)) { %>
-        <a name="link13" id="link4" 
-           onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" 
-           onmouseover="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" 
-           onmouseout="MM_startTimeout();">Administration</a>     
+        	<a name="link13" id="link4" 
+           		onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" 
+           		onmouseover="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" 
+           		onmouseout="MM_startTimeout();">Administration</a>&#160;&#160;&#160;&#160;&#160;&#160;     
 		<% } %>
+        <a name="link11" id="link1" 
+           onclick="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" 
+           onmouseover="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')" 
+           onmouseout="MM_startTimeout();">Help</a> 
         </nobr>
    </div>
 

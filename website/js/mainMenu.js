@@ -51,10 +51,14 @@ function mmLoadMenus() {
 
   // Help menu
   window.mm_menu_documentation = new Menu("root",153,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_documentation.addMenuItem("User's&nbsp;Manual&nbsp;/&nbsp;Tutorial","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/', '_blank');");
-  mm_menu_documentation.addMenuItem("Release&nbsp;Notes","window.open('http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/', '_blank')");
-  mm_menu_documentation.addMenuItem("FAQ","window.open('http://www.broad.mit.edu/cancer/software/genepattern/faq/', '_blank')");
+  mm_menu_documentation.addMenuItem("Tutorial","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_tutorial.html', '_blank');");
+  mm_menu_documentation.addMenuItem("Desktop Client Guide","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_java_client.html', '_blank');");
+  mm_menu_documentation.addMenuItem("Web Client Guide","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_web_client.html', '_blank');");
+  mm_menu_documentation.addMenuItem("Programmers Guide","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_programmer.html', '_blank');");
   mm_menu_documentation.addMenuItem("Module&nbsp;Documentation","location=contextRoot + '/getTaskDoc.jsp'");
+  mm_menu_documentation.addMenuItem("File Formats","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_fileformats.html', '_blank');");
+  mm_menu_documentation.addMenuItem("Release&nbsp;Notes","window.open('http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/', '_blank')");
+  mm_menu_documentation.addMenuItem("FAQ","window.open('http://www.broad.mit.edu/cancer/software/genepattern/doc/faq/', '_blank')");
   mm_menu_documentation.hideOnMouseOut=true;
   mm_menu_documentation.bgColor='#CCCC66';
   mm_menu_documentation.menuBorder=0;
