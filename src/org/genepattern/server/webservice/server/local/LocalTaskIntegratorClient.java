@@ -35,6 +35,7 @@ import org.genepattern.webservice.WebServiceException;
 
 /**
  * @author Joshua Gould
+ * Extensions to TaskIntegraotr for use locally (as opposed to through the web service).
  */
 public class LocalTaskIntegratorClient extends TaskIntegrator implements Status {
 
