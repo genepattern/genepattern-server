@@ -4,7 +4,7 @@
 function mmLoadMenus() {
   if (window.mm_menu_documentation) return;
 
-  window.mm_menu_tasks = new Menu("root",112,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
+  window.mm_menu_tasks = new Menu("root",140,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_tasks.addMenuItem("Start","location=contextRoot + '/pages/index.jsf'");
   if(createPipelineAllowed) {
   	mm_menu_tasks.addMenuItem("New&nbsp;Pipeline","location=contextRoot + '/pipelineDesigner.jsp'");
@@ -27,7 +27,7 @@ function mmLoadMenus() {
   mm_menu_tasks.menuLiteBgColor='#CCCC66';
   mm_menu_tasks.menuBorderBgColor='#CCCC66';
 
-  window.mm_menu_suites = new Menu("root",112,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
+  window.mm_menu_suites = new Menu("root",140,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   if(createSuiteAllowed) {
   	mm_menu_suites.addMenuItem("New","location=contextRoot + '/pages/createSuite.jsf'");
   	mm_menu_suites.addMenuItem("Install&nbsp;from&nbsp;repository","location=contextRoot + '/pages/suiteCatalog.jsf'");
@@ -41,7 +41,7 @@ function mmLoadMenus() {
   mm_menu_suites.menuLiteBgColor='#CCCC66';
   mm_menu_suites.menuBorderBgColor='#CCCC66';
 
-  window.mm_menu_jobResults = new Menu("root",124,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
+  window.mm_menu_jobResults = new Menu("root",130,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_jobResults.addMenuItem("Results&nbsp;Summary","location=contextRoot + '/pages/jobResults.jsf'");
   mm_menu_jobResults.hideOnMouseOut=true;
   mm_menu_jobResults.bgColor='#CCCC66';
