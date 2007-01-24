@@ -119,11 +119,27 @@
  </filter-mapping>
  <filter-mapping>
   <filter-name>AuthenticationFilter</filter-name>
-  <url-pattern>/*</url-pattern>
+  <url-pattern>*.jsp</url-pattern>
+ </filter-mapping>
+ <filter-mapping>
+  <filter-name>AuthenticationFilter</filter-name>
+  <url-pattern>*.jsf</url-pattern>
+ </filter-mapping>
+ <filter-mapping>
+  <filter-name>AuthenticationFilter</filter-name>
+  <url-pattern>*.ajax</url-pattern>
  </filter-mapping>
  <filter-mapping>
   <filter-name>AuthorizationFilter</filter-name>
-  <url-pattern>/*</url-pattern>
+  <url-pattern>/services/*</url-pattern>
+ </filter-mapping>
+ <filter-mapping>
+  <filter-name>AuthorizationFilter</filter-name>
+  <url-pattern>*.jsp</url-pattern>
+ </filter-mapping>
+ <filter-mapping>
+  <filter-name>AuthorizationFilter</filter-name>
+  <url-pattern>*.jsf</url-pattern>
  </filter-mapping>
  <filter-mapping>
   <filter-name>HibernateFilter</filter-name>
