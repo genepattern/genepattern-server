@@ -43,13 +43,11 @@
 
 	for (Enumeration enumer = request.getAttributeNames(); enumer.hasMoreElements(); ){
 		String key = (String) enumer.nextElement();
-
-		System.out.println("Key=" + key + "  val=" + (request.getAttribute(key)).getClass());
-		if (!key.startsWith("javax.servlet"))
-			params.put(key, (String)request.getAttribute(key));
+		if (!key.startsWith("javax.servlet")) {
+			params.put(key, request.getAttribute(key).toString());
+		}
 	}
-
-
+	
 	String name = params.getProperty(GPConstants.NAME);
 	TaskInfo taskInfo = GenePatternAnalysisTask.getTaskInfo(name, userID);
 	String message = params.getProperty("message");
