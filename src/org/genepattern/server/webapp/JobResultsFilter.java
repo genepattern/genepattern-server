@@ -19,6 +19,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -33,7 +35,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
-import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
@@ -109,9 +110,8 @@ public class JobResultsFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
             ServletException {
         boolean allowed = true;
-        IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
+
         String userid = (String) request.getAttribute(GPConstants.USERID);
-        boolean isAdmin = authManager.checkPermission("administrateServer", userid);
 
         // since this is a dir name with a path, we want to get the path in the
         // application context
@@ -119,14 +119,17 @@ public class JobResultsFilter implements Filter {
         // given http://aserver:aport/gp/jobResults/92/foo.txt
         // we want to get the "92" as the job #
 
-        HttpServletRequest hsr = (HttpServletRequest) request;
-        String servletPath = hsr.getServletPath();
+        String servletPath = ((HttpServletRequest) request).getServletPath();
         int idx = servletPath.indexOf("jobResults");
         if (idx == -1) {
             ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
         }
         String resultsPath = servletPath.substring(idx + 1 + ("jobResults".length()));
-
+        try {
+            resultsPath = URLDecoder.decode(resultsPath, "UTF-8");
+        } catch (UnsupportedEncodingException x) {
+        }
+        
         StringTokenizer strtok = new StringTokenizer(resultsPath, "/");
         String job = null;
         String file = null;
@@ -137,14 +140,14 @@ public class JobResultsFilter implements Filter {
             file = strtok.nextToken();
         }
 
-        if (isAdmin) {
-            allowed = true;
-        } else if (job == null || file == null) {
+        if (job == null || file == null) {
             // if file is null, request is for a directory-prohibit directory
             // listings
             // should admin be allowed here?
             allowed = false;
-        } else if (isJobOwner(userid, job)) {
+        } else if (isJobOwner(userid, job)
+                || new AuthorizationManagerFactoryImpl().getAuthorizationManager().checkPermission(
+                        "administrateServer", userid)) {
             allowed = true;
         }
 
@@ -176,6 +179,9 @@ public class JobResultsFilter implements Filter {
 
     private boolean isJobOwner(String user, String jobId) {
         try {
+            if (user == null) {
+                return false;
+            }
             int jobID = Integer.parseInt(jobId);
             AnalysisDAO ds = new AnalysisDAO();
             JobInfo jobInfo = ds.getJobInfo(jobID);
