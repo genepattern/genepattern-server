@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.PropertyConfigurator;
-import org.genepattern.util.IGPConstants;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.AnalysisWebServiceProxy;
 import org.genepattern.webservice.JobInfo;

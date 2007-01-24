@@ -18,9 +18,9 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 import org.genepattern.data.pipeline.*;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.*;
 import org.genepattern.server.*;
-import org.genepattern.server.genepattern.*;
 import junit.framework.*;
 
 /**
@@ -97,7 +97,7 @@ public class TestRunNoParamPipelines extends TestCase {
 
                TaskInfo taskInfo = TaskUtil.getTaskInfoFromZip(zipFile);
 
-               String serializedModel = (String) taskInfo.getTaskInfoAttributes().get(GenePatternAnalysisTask.SERIALIZED_MODEL);
+               String serializedModel = (String) taskInfo.getTaskInfoAttributes().get(GPConstants.SERIALIZED_MODEL);
 
                if(serializedModel != null && serializedModel.length() > 0) {
                   PipelineModel model = PipelineModel.toPipelineModel(serializedModel);

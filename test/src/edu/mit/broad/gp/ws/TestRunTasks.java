@@ -17,6 +17,7 @@ import java.io.File;
 
 
 import org.genepattern.data.pipeline.*;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.*;
 import org.genepattern.server.*;
 import org.genepattern.server.genepattern.*;
@@ -95,6 +96,7 @@ public class TestRunTasks
            null, false, false);
            assertTrue("" + r.getJobNumber(), r.hasStandardError()); 
     }
+   
 
 
    private JobResult runTask(File file, Parameter[] params) 
@@ -112,7 +114,7 @@ public class TestRunTasks
       if(!task.zipOfZips) {
          TaskInfo taskInfo = TaskUtil.getTaskInfoFromZip(file);
          String serializedModel = (String) taskInfo.getTaskInfoAttributes().get(
-               GenePatternAnalysisTask.SERIALIZED_MODEL);
+               GPConstants.SERIALIZED_MODEL);
          if(installDependentTasks && serializedModel != null && serializedModel.length() > 0) {
             PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
             installDependentTasks(model);
