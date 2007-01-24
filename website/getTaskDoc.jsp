@@ -198,7 +198,7 @@ function toggleVersions(divname) {
 		<%
 			if (versions.length > 1){
 		%>		
-			<input id="<%=firstName%>cb" type="checkbox" onClick="toggleVersions('<%=firstName%>') "> all Versions</input>
+			<input id="<%=firstName%>cb" type="checkbox" onClick="toggleVersions('<%=firstName%>') "> Show all versions</input>
 			<%	
 			}
 		%>		
