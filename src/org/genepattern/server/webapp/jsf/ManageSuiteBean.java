@@ -256,8 +256,15 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
 
     public void deleteSupportFile(ActionEvent event) {
         try {
-            String key = UIBeanHelper.getRequest().getParameter("supportFileKey");
-            supportFiles.remove(key);
+            if (currentSuite != null) {
+        	String key = UIBeanHelper.getRequest().getParameter("supportFileKey");
+                String fileName = supportFiles.get(key);
+                File supportFile = new File(fileName);
+                if (supportFile!=null && supportFile.exists()) {
+                    supportFile.delete();  
+                }
+                supportFiles.remove(key);
+            }          
         } catch (Exception e) {
             throw new RuntimeException(e); // @todo -- replace with appropriate
             // GP exception
