@@ -441,11 +441,7 @@ AnalysisDAO extends BaseDAO {
             int taskID = (Integer) getSession().save(tm);
 
             if (sLSID != null && !sLSID.equals("")) {
-                LSID tmp = new LSID(sLSID);
-                Lsid lsid = new Lsid();
-                lsid.setLsid(tmp.toString());
-                lsid.setLsidNoVersion(tmp.toStringNoVersion());
-                lsid.setVersion(tmp.getVersion());
+                Lsid lsid = new Lsid(sLSID);
                 getSession().save(lsid);
             }
 
@@ -579,10 +575,7 @@ AnalysisDAO extends BaseDAO {
             }
 
             if (sLSID != null) {
-                Lsid lsidHibernate = new Lsid();
-                lsidHibernate.setLsid(lsid.toString());
-                lsidHibernate.setLsidNoVersion(lsid.toStringNoVersion());
-                lsidHibernate.setVersion(lsid.getVersion());
+                Lsid lsidHibernate = new Lsid(lsid.toString());
                 getSession().save(lsidHibernate);
 
             }
