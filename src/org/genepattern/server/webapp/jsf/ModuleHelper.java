@@ -4,6 +4,7 @@ import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -81,8 +82,8 @@ public class ModuleHelper {
         return categories;
     }
 
-    public List<ModuleCategory> getSelectedTasksByType(Suite suite) {
-        List<String> selectedLsids = suite.getModules();
+    public List<ModuleCategory> getSelectedTasksByType(String [] selectedLsids) {
+
         List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
         Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
 
@@ -108,7 +109,7 @@ public class ModuleHelper {
             modules = taskMap.get(categoryName).toArray(modules);
 
             mc = new ModuleCategory(categoryName, modules);
-            mc.setSelected(selectedLsids);
+            mc.setSelected(Arrays.asList(selectedLsids));
 
             categories.add(mc);
         }

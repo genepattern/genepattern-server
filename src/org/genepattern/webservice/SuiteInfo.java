@@ -29,179 +29,186 @@ import org.genepattern.util.GPConstants;
 
 public class SuiteInfo implements Serializable {
 
-    private String lsid = null;
+	private String lsid = null;
 
-    private String name = "", description = "";
+	private String name = "", description = "";
 
-    private int accessId = 0;
+	private int accessId = 0;
 
-    private String author = null;
+	private String author = null;
 
-    private String owner = null;
+	private String owner = null;
 
-    private String[] moduleLsids = new String[0];
+	private String contact = null;
 
-    private String[] docFiles = new String[0];
+	private String[] moduleLsids = new String[0];
 
-    /** Creates new SuiteInfo */
-    public SuiteInfo() {
-    }
+	private String[] docFiles = new String[0];
 
-    public SuiteInfo(String lsid, String name, String description,
-            String author, String owner, List modules, int access_id, List docs) {
-        this.lsid = lsid;
-        this.name = name;
-        this.author = author;
-        this.owner = owner;
-        this.description = description;
-        this.moduleLsids = (String[]) modules
-                .toArray(new String[modules.size()]);
-        this.accessId = access_id;
-        this.docFiles = (String[]) docs.toArray(new String[docs.size()]);
+	/** Creates new SuiteInfo */
+	public SuiteInfo() {
+	}
 
-    }
+	public SuiteInfo(String lsid, String name, String description, String author, String owner, List modules,
+			int access_id, List docs) {
+		this.lsid = lsid;
+		this.name = name;
+		this.author = author;
+		this.owner = owner;
+		this.description = description;
+		this.moduleLsids = (String[]) modules.toArray(new String[modules.size()]);
+		this.accessId = access_id;
+		this.docFiles = (String[]) docs.toArray(new String[docs.size()]);
 
-    public SuiteInfo(Map hm) {
-        this.lsid = (String) hm.get("lsid");
-        this.name = (String) hm.get("name");
-        this.author = (String) hm.get("author");
-        this.owner = (String) hm.get("owner");
-        this.description = (String) hm.get("description");
-        ArrayList modules = (ArrayList) hm.get("modules");
-        this.moduleLsids = new String[modules.size()];
-        int i = 0;
-        for (Iterator iter = modules.iterator(); iter.hasNext(); i++) {
-            Map modMap = (Map) iter.next();
-            moduleLsids[i] = (String) modMap.get("lsid");
-        }
-        ArrayList docs = (ArrayList) hm.get("docFiles");
-        this.docFiles = new String[docs.size()];
-        i = 0;
-        for (Iterator iter = docs.iterator(); iter.hasNext(); i++) {
-            String doc = (String) iter.next();
-            docFiles[i] = doc;
-        }
-        this.accessId = GPConstants.ACCESS_PUBLIC;
+	}
 
-    }
+	public SuiteInfo(Map hm) {
+		this.lsid = (String) hm.get("lsid");
+		this.name = (String) hm.get("name");
+		this.author = (String) hm.get("author");
+		this.owner = (String) hm.get("owner");
+		this.description = (String) hm.get("description");
+		ArrayList modules = (ArrayList) hm.get("modules");
+		this.moduleLsids = new String[modules.size()];
+		int i = 0;
+		for (Iterator iter = modules.iterator(); iter.hasNext(); i++) {
+			Map modMap = (Map) iter.next();
+			moduleLsids[i] = (String) modMap.get("lsid");
+		}
+		ArrayList docs = (ArrayList) hm.get("docFiles");
+		this.docFiles = new String[docs.size()];
+		i = 0;
+		for (Iterator iter = docs.iterator(); iter.hasNext(); i++) {
+			String doc = (String) iter.next();
+			docFiles[i] = doc;
+		}
+		this.accessId = GPConstants.ACCESS_PUBLIC;
 
-    public void setOwner(String userId) {
-        this.owner = userId;
-    }
+	}
 
-    public String getOwner() {
-        return this.owner;
-    }
+	public void setOwner(String userId) {
+		this.owner = userId;
+	}
 
-    public void setAuthor(String userId) {
-        this.author = userId;
-    }
+	public String getOwner() {
+		return this.owner;
+	}
 
-    public String getAuthor() {
-        return this.author;
-    }
+	public void setAuthor(String userId) {
+		this.author = userId;
+	}
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+	public String getAuthor() {
+		return this.author;
+	}
 
-    public String getDescription() {
-        return this.description;
-    }
+	public void setDescription(String description) {
+		this.description = description;
+	}
 
-    public void setLSID(String LSID) {
-        this.lsid = LSID;
-    }
+	public String getDescription() {
+		return this.description;
+	}
 
-    public String getLSID() {
-        return this.lsid;
-    }
+	public void setLSID(String LSID) {
+		this.lsid = LSID;
+	}
 
-    public void setAccessId(int accessId) {
-        this.accessId = accessId;
-    }
+	public String getLSID() {
+		return this.lsid;
+	}
 
-    public int getAccessId() {
-        return this.accessId;
-    }
+	public void setAccessId(int accessId) {
+		this.accessId = accessId;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public int getAccessId() {
+		return this.accessId;
+	}
 
-    public void setName(java.lang.String taskName) {
-        this.name = taskName;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public String getID() {
-        return getLSID();
-    }
+	public void setName(java.lang.String taskName) {
+		this.name = taskName;
+	}
 
-    public void setID(String ID) {
-        setLSID(ID);
-    }
+	public String getID() {
+		return getLSID();
+	}
 
-    public String[] getModuleLSIDs() {
-        return moduleLsids;
-    }
+	public void setID(String ID) {
+		setLSID(ID);
+	}
 
-    public void setModuleLSIDs(String[] mods) {
-        this.moduleLsids = mods;
-    }
+	public String[] getModuleLSIDs() {
+		return moduleLsids;
+	}
 
-    public String[] getDocumentationFiles() {
-        return docFiles;
-    }
+	public void setModuleLSIDs(String[] mods) {
+		this.moduleLsids = mods;
+	}
 
-    public void setDocumentationFiles(String[] mods) {
-        this.docFiles = mods;
-    }
+	public String[] getDocumentationFiles() {
+		return docFiles;
+	}
 
-    public boolean equals(Object otherThing) {
-        if (!(otherThing instanceof SuiteInfo) || otherThing == null)
-            return false;
-        SuiteInfo other = (SuiteInfo) otherThing;
-        return getOwner().equals(other.getOwner())
-                && getAuthor() == other.getAuthor()
-                && getName().equals(other.getName())
-                && getLSID() == other.getLSID()
-                && getDescription().equals(other.getDescription());
-    }
+	public void setDocumentationFiles(String[] mods) {
+		this.docFiles = mods;
+	}
 
-    public int hashCode() {
-        return this.getLSID().hashCode();
-    }
+	public boolean equals(Object otherThing) {
+		if (!(otherThing instanceof SuiteInfo) || otherThing == null)
+			return false;
+		SuiteInfo other = (SuiteInfo) otherThing;
+		return getOwner().equals(other.getOwner()) && getAuthor() == other.getAuthor()
+				&& getName().equals(other.getName()) && getLSID() == other.getLSID()
+				&& getDescription().equals(other.getDescription());
+	}
 
-    public String[] getDocFiles() {
-        return docFiles;
-    }
+	public int hashCode() {
+		return this.getLSID().hashCode();
+	}
 
-    public void setDocFiles(String[] docFiles) {
-        this.docFiles = docFiles;
-    }
+	public String[] getDocFiles() {
+		return docFiles;
+	}
 
-    public String getLsid() {
-        return lsid;
-    }
+	public void setDocFiles(String[] docFiles) {
+		this.docFiles = docFiles;
+	}
 
-    public void setLsid(String lsid) {
-        this.lsid = lsid;
-    }
+	public String getLsid() {
+		return lsid;
+	}
 
-    public String[] getModuleLsids() {
-        return moduleLsids;
-    }
+	public void setLsid(String lsid) {
+		this.lsid = lsid;
+	}
 
-    public void setModuleLsids(String[] moduleLsids) {
-        this.moduleLsids = moduleLsids;
-    }
+	public String[] getModuleLsids() {
+		return moduleLsids;
+	}
 
-    public void setModuleLsids(List<String> moduleList) {
+	public void setModuleLsids(String[] moduleLsids) {
+		this.moduleLsids = moduleLsids;
+	}
 
-        this.moduleLsids = new String[moduleList.size()];
-        for (int i = 0; i < moduleList.size(); i++) {
-            moduleLsids[i] = moduleList.get(i);
-        }
-    }
+	public void setModuleLsids(List<String> moduleList) {
+
+		this.moduleLsids = new String[moduleList.size()];
+		for (int i = 0; i < moduleList.size(); i++) {
+			moduleLsids[i] = moduleList.get(i);
+		}
+	}
+
+	public String getContact() {
+		return contact;
+	}
+
+	public void setContact(String contact) {
+		this.contact = contact;
+	}
 
 }

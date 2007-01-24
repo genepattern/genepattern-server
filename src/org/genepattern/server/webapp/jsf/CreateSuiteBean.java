@@ -4,6 +4,7 @@
 package org.genepattern.server.webapp.jsf;
 
 import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
+import static org.genepattern.util.GPConstants.SUITE_NAMESPACE;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,16 +15,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.domain.Suite;
-import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
 import org.genepattern.server.util.IAuthorizationManager;
+import org.genepattern.server.webservice.server.AdminService;
 import org.genepattern.server.webservice.server.DirectoryManager;
-import org.genepattern.util.GPConstants;
-import org.genepattern.util.LSID;
+import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
+import org.genepattern.webservice.SuiteInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * @author jrobinso
@@ -31,230 +33,237 @@ import org.genepattern.util.LSID;
  */
 public class CreateSuiteBean implements java.io.Serializable {
 
-    // private static final long serialVersionUID = 352540582209631173l;
-    private String name;
+	private static Logger log = Logger.getLogger(CreateSuiteBean.class);
 
-    private String description;
+	private String name;
 
-    private String author;
+	private String description;
 
-    private String contact;
+	private String author;
 
-    private String accessId = "1"; // Public
+	private String contact;
 
-    private UploadedFile supportFile1;
+	private int accessId = 1; // Public
 
-    private UploadedFile supportFile2;
+	private UploadedFile supportFile1;
 
-    private UploadedFile supportFile3;
+	private UploadedFile supportFile2;
 
-    private List<ModuleCategory> categories;
+	private UploadedFile supportFile3;
 
-    private boolean success = false; // Default value
+	private List<ModuleCategory> categories;
 
-    private Suite currentSuite = null;
+	private boolean success = false; // Default value
 
-    public CreateSuiteBean() {
-        if (currentSuite == null) {
-            String lsid = UIBeanHelper.getRequest().getParameter("lsid");
-            if (lsid != null) {
-                currentSuite = (new SuiteDAO()).findById(lsid);
-            }
-        }
-    }
+	private SuiteInfo currentSuite = null;
 
-    public boolean isSuccess() {
-        return success;
-    }
+	public CreateSuiteBean() {
+		if (currentSuite == null) {
+			String lsid = UIBeanHelper.getRequest().getParameter("lsid");
+			if (lsid != null) {
+				try {
+					currentSuite = (new AdminService()).getSuite(lsid);
+				} catch (WebServiceException e) {
+					log.error(e);
+				}
+			}
+		}
+	}
 
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
+	public boolean isSuccess() {
+		return success;
+	}
 
-    public String getAccessId() {
-        return (currentSuite == null) ? accessId : currentSuite.getAccessId().toString();
-    }
+	public void setSuccess(boolean success) {
+		this.success = success;
+	}
 
-    public void setAccessId(String accessId) {
-        this.accessId = accessId;
-    }
+	public int getAccessId() {
+		return (currentSuite == null) ? accessId : currentSuite.getAccessId();
+	}
 
-    public String getAuthor() {
-        return (currentSuite == null) ? author : currentSuite.getAuthor();
-    }
+	public void setAccessId(int accessId) {
+		this.accessId = accessId;
+	}
 
-    public void setAuthor(String author) {
-        this.author = author;
-    }
+	public String getAuthor() {
+		return (currentSuite == null) ? author : currentSuite.getAuthor();
+	}
 
-    public String getDescription() {
-        return (currentSuite == null) ? description : currentSuite.getDescription();
-    }
+	public void setAuthor(String author) {
+		this.author = author;
+	}
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+	public String getDescription() {
+		return (currentSuite == null) ? description : currentSuite.getDescription();
+	}
 
-    public String getName() {
-        return (currentSuite == null) ? name : currentSuite.getName();
-    }
+	public void setDescription(String description) {
+		this.description = description;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public String getName() {
+		return (currentSuite == null) ? name : currentSuite.getName();
+	}
 
-    public List getCategoryColumns() {
+	public void setName(String name) {
+		this.name = name;
+	}
 
-        List<List> cols = new ArrayList<List>();
-        if (categories == null) {
-            if (currentSuite != null) {
-                categories = (new ModuleHelper()).getSelectedTasksByType(currentSuite);
-            } else {
-                categories = (new ModuleHelper()).getTasksByType();
-            }
-        }
+	public List getCategoryColumns() {
 
-        // Find the midpoint in the category list.
-        int totalCount = 0;
-        for (ModuleCategory cat : categories) {
-            totalCount += cat.getModuleCount();
-        }
-        int midpoint = totalCount / 2;
+		List<List> cols = new ArrayList<List>();
+		if (categories == null) {
+			if (currentSuite != null) {
+				categories = (new ModuleHelper()).getSelectedTasksByType(currentSuite.getModuleLsids());
+			} else {
+				categories = (new ModuleHelper()).getTasksByType();
+			}
+		}
 
-        cols.add(new ArrayList());
-        cols.add(new ArrayList());
-        int cumulativeCount = 0;
-        for (ModuleCategory cat : categories) {
-            if (cumulativeCount < midpoint) {
-                cols.get(0).add(cat);
-            } else {
-                cols.get(1).add(cat);
-            }
-            cumulativeCount += cat.getModuleCount();
-        }
-        return cols;
-    }
+		// Find the midpoint in the category list.
+		int totalCount = 0;
+		for (ModuleCategory cat : categories) {
+			totalCount += cat.getModuleCount();
+		}
+		int midpoint = totalCount / 2;
 
-    public UploadedFile getSupportFile1() {
-        return supportFile1;
-    }
+		cols.add(new ArrayList());
+		cols.add(new ArrayList());
+		int cumulativeCount = 0;
+		for (ModuleCategory cat : categories) {
+			if (cumulativeCount < midpoint) {
+				cols.get(0).add(cat);
+			} else {
+				cols.get(1).add(cat);
+			}
+			cumulativeCount += cat.getModuleCount();
+		}
+		return cols;
+	}
 
-    public void setSupportFile1(UploadedFile supportFile1) {
-        this.supportFile1 = supportFile1;
-    }
+	public UploadedFile getSupportFile1() {
+		return supportFile1;
+	}
 
-    public UploadedFile getSupportFile2() {
-        return supportFile2;
-    }
+	public void setSupportFile1(UploadedFile supportFile1) {
+		this.supportFile1 = supportFile1;
+	}
 
-    public void setSupportFile2(UploadedFile supportFile2) {
-        this.supportFile2 = supportFile2;
-    }
+	public UploadedFile getSupportFile2() {
+		return supportFile2;
+	}
 
-    public UploadedFile getSupportFile3() {
-        return supportFile3;
-    }
+	public void setSupportFile2(UploadedFile supportFile2) {
+		this.supportFile2 = supportFile2;
+	}
 
-    public void setSupportFile3(UploadedFile supportFile3) {
-        this.supportFile3 = supportFile3;
-    }
+	public UploadedFile getSupportFile3() {
+		return supportFile3;
+	}
 
-    public String save() {
-        IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
-        if (!authManager.checkPermission("createSuite", UIBeanHelper.getUserId())) {
-            UIBeanHelper.setInfoMessage("You don't have the required permissions to perform the requested operation.");
-        }
-        try {
+	public void setSupportFile3(UploadedFile supportFile3) {
+		this.supportFile3 = supportFile3;
+	}
 
-            LSID lsidObj = (currentSuite == null) ? LSIDManager.getInstance().createNewID(
-                    GPConstants.SUITE_NAMESPACE) : LSIDManager.getInstance().getNextIDVersion(
-                    currentSuite.getLsid());
-            String lsid = lsidObj.toString();
 
-            // Save database record
-            Suite suite = new Suite();
-            suite.setLsid(lsid);
-            suite.setOwner(getUserId());
-            suite.setName(name);
-            suite.setDescription(description);
-            suite.setAccessId(new Integer(accessId));
-            suite.setAuthor(author);
-            suite.setContact(contact);
+	public String save() {
+		IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
+		if (!authManager.checkPermission("createSuite", UIBeanHelper.getUserId())) {
+			UIBeanHelper.setInfoMessage("You don't have the required permissions to perform the requested operation.");
+		}
+		try {
 
-            List<String> selectedLSIDs = new ArrayList<String>();
-            for (ModuleCategory cat : categories) {
-                for (Module mod : cat.getModules()) {
-                    if (mod.isSelected()) {
-                        selectedLSIDs.add(mod.getLsid());
-                    }
-                }
-            }
-            if (!selectedLSIDs.isEmpty()) {
-                suite.setModules(selectedLSIDs);
-            }
+			if (currentSuite == null) {
+				currentSuite = new SuiteInfo();
+				currentSuite.setLsid(LSIDManager.getInstance().createNewID(SUITE_NAMESPACE).toString());
+			}
 
-            (new SuiteDAO()).save(suite);
+			// Save or update database record
 
-            // Save uploaded files, if any
-            String suiteDir = DirectoryManager.getSuiteLibDir(suite.getName(), lsid, suite.getOwner());
-            if (supportFile1 != null) {
-                saveUploadedFile(supportFile1, suiteDir);
-            }
-            if (supportFile2 != null) {
-                saveUploadedFile(supportFile2, suiteDir);
-            }
-            if (supportFile3 != null) {
-                saveUploadedFile(supportFile3, suiteDir);
-            }
+			currentSuite.setOwner(getUserId());
+			currentSuite.setName(name);
+			currentSuite.setDescription(description);
+			currentSuite.setAccessId(new Integer(accessId));
+			currentSuite.setAuthor(author);
+			currentSuite.setContact(contact);
 
-            RunTaskBean homePageBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
-            homePageBean.setSplashMessage("Suite " + suite.getName() + " was successfully created.");
+			List<String> selectedLSIDs = new ArrayList<String>();
+			for (ModuleCategory cat : categories) {
+				for (Module mod : cat.getModules()) {
+					if (mod.isSelected()) {
+						selectedLSIDs.add(mod.getLsid());
+					}
+				}
+			}
+			if (!selectedLSIDs.isEmpty()) {
+				currentSuite.setModuleLsids(selectedLSIDs);
+			}
 
-            return "home";
-        } catch (Exception e) {
-            HibernateUtil.rollbackTransaction(); // This shouldn't be
-            // neccessary, but just in
-            // case
-            throw new RuntimeException(e); // @todo -- replace with appropriate
-            // GP exception
-        }
+			LocalTaskIntegratorClient ti = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
+			ti.saveOrUpdateSuite(currentSuite);
 
-    }
+			// Save uploaded files, if any
+			String suiteDir = DirectoryManager.getSuiteLibDir(currentSuite.getName(), currentSuite.getLsid(),
+					currentSuite.getOwner());
+			if (supportFile1 != null) {
+				saveUploadedFile(supportFile1, suiteDir);
+			}
+			if (supportFile2 != null) {
+				saveUploadedFile(supportFile2, suiteDir);
+			}
+			if (supportFile3 != null) {
+				saveUploadedFile(supportFile3, suiteDir);
+			}
 
-    private void saveUploadedFile(UploadedFile uploadedFile, String suiteDir) throws FileNotFoundException, IOException {
-        String fileName = uploadedFile.getName();
-        if (fileName != null) {
-            fileName = FilenameUtils.getName(fileName);
+			RunTaskBean homePageBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
+			homePageBean.setSplashMessage("Suite " + currentSuite.getName() + " was successfully created.");
 
-        }
-        FileOutputStream out = new FileOutputStream(new File(suiteDir, fileName));
-        InputStream in = uploadedFile.getInputStream();
-        int c;
-        while ((c = in.read()) != -1) {
-            out.write(c);
-        }
-        in.close();
-        out.close();
-    }
+			return "home";
+		} catch (Exception e) {
+			HibernateUtil.rollbackTransaction(); // This shouldn't be
+			// neccessary, but just in
+			// case
+			throw new RuntimeException(e); // @todo -- replace with appropriate
+			// GP exception
+		}
 
-    public String clear() {
-        return null;
-    }
+	}
 
-    public List<ModuleCategory> getCategories() {
-        return categories;
-    }
+	private void saveUploadedFile(UploadedFile uploadedFile, String suiteDir) throws FileNotFoundException, IOException {
+		String fileName = uploadedFile.getName();
+		if (fileName != null) {
+			fileName = FilenameUtils.getName(fileName);
 
-    public void setCategories(List<ModuleCategory> categories) {
-        this.categories = categories;
-    }
+		}
+		FileOutputStream out = new FileOutputStream(new File(suiteDir, fileName));
+		InputStream in = uploadedFile.getInputStream();
+		int c;
+		while ((c = in.read()) != -1) {
+			out.write(c);
+		}
+		in.close();
+		out.close();
+	}
 
-    public String getContact() {
-        return (currentSuite == null) ? contact : currentSuite.getContact();
-    }
+	public String clear() {
+		return null;
+	}
 
-    public void setContact(String contact) {
-        this.contact = contact;
-    }
+	public List<ModuleCategory> getCategories() {
+		return categories;
+	}
+
+	public void setCategories(List<ModuleCategory> categories) {
+		this.categories = categories;
+	}
+
+	public String getContact() {
+		return (currentSuite == null) ? contact : currentSuite.getContact();
+	}
+
+	public void setContact(String contact) {
+		this.contact = contact;
+	}
 
 }

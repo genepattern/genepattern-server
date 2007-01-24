@@ -50,7 +50,6 @@ import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.dao.TaskIntegratorDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.ParameterInfo;
@@ -60,6 +59,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
 
+import static org.genepattern.util.GPConstants.*;
 /**
  * TaskIntegrator Web Service. Do a Thread.yield at beginning of each method-
  * fixes BUG in which responses from AxisServlet are sometimes empty
@@ -110,14 +110,14 @@ public class TaskIntegrator  {
                 throw new WebServiceException(e);
             }
             taskInfo.setName(cloneName);
-            taskInfo.setAccessId(GPConstants.ACCESS_PRIVATE);
+            taskInfo.setAccessId(ACCESS_PRIVATE);
             taskInfo.setUserId(userID);
             TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-            tia.put(GPConstants.USERID, userID);
-            tia.put(GPConstants.PRIVACY, GPConstants.PRIVATE);
-            oldLSID = (String) tia.remove(GPConstants.LSID);
-            if (tia.get(GPConstants.TASK_TYPE).equals(GPConstants.TASK_TYPE_PIPELINE)) {
-                PipelineModel model = PipelineModel.toPipelineModel((String) tia.get(GPConstants.SERIALIZED_MODEL));
+            tia.put(USERID, userID);
+            tia.put(PRIVACY, PRIVATE);
+            oldLSID = (String) tia.remove(LSID);
+            if (tia.get(TASK_TYPE).equals(TASK_TYPE_PIPELINE)) {
+                PipelineModel model = PipelineModel.toPipelineModel((String) tia.get(SERIALIZED_MODEL));
 
                 // update the pipeline model with the new name
                 model.setName(cloneName);
@@ -125,10 +125,10 @@ public class TaskIntegrator  {
                 
                 // update the task with the new model and command line
                 TaskInfoAttributes newTIA = AbstractPipelineCodeGenerator.getTaskInfoAttributes(model);
-                tia.put(GPConstants.SERIALIZED_MODEL, model.toXML());
-                tia.put(GPConstants.COMMAND_LINE, newTIA.get(GPConstants.COMMAND_LINE));
+                tia.put(SERIALIZED_MODEL, model.toXML());
+                tia.put(COMMAND_LINE, newTIA.get(COMMAND_LINE));
             }
-            String newLSID = modifyTask(GPConstants.ACCESS_PRIVATE, cloneName, taskInfo.getDescription(), taskInfo
+            String newLSID = modifyTask(ACCESS_PRIVATE, cloneName, taskInfo.getDescription(), taskInfo
                     .getParameterInfoArray(), tia, null, null);
             cloneTaskLib(taskInfo.getName(), cloneName, oldLSID, newLSID, userID);
             return newLSID;
@@ -542,8 +542,8 @@ public class TaskIntegrator  {
             ZipFile zippedFile = null;
             try {
                 zippedFile = new ZipFile(path);
-                ZipEntry taskManifestEntry = zippedFile.getEntry(GPConstants.MANIFEST_FILENAME);
-                ZipEntry suiteManifestEntry = zippedFile.getEntry(GPConstants.SUITE_MANIFEST_FILENAME);
+                ZipEntry taskManifestEntry = zippedFile.getEntry(MANIFEST_FILENAME);
+                ZipEntry suiteManifestEntry = zippedFile.getEntry(SUITE_MANIFEST_FILENAME);
                 if (suiteManifestEntry != null) {
                     isSuite = true;
                 }
@@ -603,8 +603,8 @@ public class TaskIntegrator  {
             boolean isZipOfZips = false;
             try {
                 zippedFile = new ZipFile(path);
-                ZipEntry taskManifestEntry = zippedFile.getEntry(GPConstants.MANIFEST_FILENAME);
-                ZipEntry suiteManifestEntry = zippedFile.getEntry(GPConstants.SUITE_MANIFEST_FILENAME);
+                ZipEntry taskManifestEntry = zippedFile.getEntry(MANIFEST_FILENAME);
+                ZipEntry suiteManifestEntry = zippedFile.getEntry(SUITE_MANIFEST_FILENAME);
                 isZipOfZips = isZipOfZips(url);
                 if (taskManifestEntry != null) {
                     isTask = true;
@@ -667,11 +667,30 @@ public class TaskIntegrator  {
             throw new WebServiceException(e);
         }
     }
+    
 
-    /**
-     * Create a new suite from the SuiteInfo object.  This method is used for creating suites
-     * in the web client,  importing suites from zip files, and modifying an existing suite.
-     * (Modifying actually creates a new suite with an updated lsid version).
+	/**
+	 * Create a new suite from the SuiteInfo object.
+	 * 
+	 * @param suiteInfo
+	 * @return
+	 * @throws WebServiceException
+	 */
+	public void saveOrUpdateSuite(SuiteInfo suiteInfo) throws WebServiceException {
+
+		isAuthorized(getUserName(), "TaskIntegrator.installSuite");
+
+		if (suiteInfo.getLSID() != null) {
+			if (suiteInfo.getLSID().trim().length() == 0)
+				suiteInfo.setLSID(null);
+		}
+
+		(new TaskIntegratorDAO()).saveOrUpdate(suiteInfo);
+	}
+
+	/**
+     * Create a new suite from the SuiteInfo object.  
+     * 
      * @param suiteInfo
      * @return
      * @throws WebServiceException
@@ -685,31 +704,28 @@ public class TaskIntegrator  {
                     suiteInfo.setLSID(null);
             }
 
-            (new TaskIntegratorDAO()).createSuite(suiteInfo);
+            (new TaskIntegratorDAO()).saveOrUpdate(suiteInfo);
 
             String suiteDir = DirectoryManager.getSuiteLibDir(suiteInfo.getName(), suiteInfo.getLSID(), suiteInfo
                     .getOwner());
-
             String[] docs = suiteInfo.getDocumentationFiles();
             for (int i = 0; i < docs.length; i++) {
-                System.out.println("Doc=" + docs[i]);
+                log.debug("Doc=" + docs[i]);
                 File f2 = new File(docs[i]);
                 // if it is a url, download it and put it in the suiteDir now
                 if (!f2.exists()) {
                     String file = GenePatternAnalysisTask.downloadTask(docs[i]);
                     f2 = new File(suiteDir, filenameFromURL(docs[i]));
                     boolean success = GenePatternAnalysisTask.rename(new File(file), f2, true);
-                    System.out.println("Doc rename =" + success);
+                    log.debug("Doc rename =" + success);
 
                 } else {
                     // move file to suitedir
-
                     File f3 = new File(suiteDir, f2.getName());
                     boolean success = GenePatternAnalysisTask.rename(f2, f3, true);
-                    System.out.println("Doc rename =" + success);
+                    log.debug("Doc rename =" + success);
 
                 }
-
             }
 
             return suiteInfo.getLSID();
@@ -784,7 +800,7 @@ public class TaskIntegrator  {
             InstallTask[] tasks = utils.getAvailableModules();
             for (int i = 0; i < tasks.length; i++) {
                 if (tasks[i].getLsid().equalsIgnoreCase(lsid)) {
-                    tasks[i].install(getUserName(), GPConstants.ACCESS_PUBLIC, new Status() {
+                    tasks[i].install(getUserName(), ACCESS_PUBLIC, new Status() {
 
                         public void beginProgress(String string) {
                         }
@@ -819,7 +835,9 @@ public class TaskIntegrator  {
     }
 
     /**
-     * Modifies the task with the given name. If the task does not exist, it
+     * @deprecated  This method is not currently used, and has not been tested for GP 3.0 and greater.
+     * 
+     * Modifies the suite with the given name. If the suite does not exist, it
      * will be created.
      * 
      * @param accessId
@@ -886,6 +904,21 @@ public class TaskIntegrator  {
         return installSuite(si);
     }
 
+    /**
+     * @deprecated This method is not currently used and has not been tested with GP 3.0.
+     * 
+     * @param access_id
+     * @param lsid
+     * @param name
+     * @param description
+     * @param author
+     * @param owner
+     * @param moduleLsids
+     * @param dataHandlers
+     * @param fileNames
+     * @return
+     * @throws WebServiceException
+     */
     public String modifySuite(int access_id, String lsid, String name, String description, String author, String owner,
             String[] moduleLsids, javax.activation.DataHandler[] dataHandlers, String[] fileNames)
             throws WebServiceException {
@@ -982,7 +1015,7 @@ public class TaskIntegrator  {
             if (parameterInfoArray == null) {
                 parameterInfoArray = new ParameterInfo[0];
             }
-            lsid = (String) taskAttributes.get(GPConstants.LSID);
+            lsid = (String) taskAttributes.get(LSID);
             oldLSID = lsid;
             // if an LSID is set, make sure that it is for the current
             // authority, not the task's source, since it is now modified
@@ -994,9 +1027,9 @@ public class TaskIntegrator  {
                         System.out.println("TaskIntegrator.modifyTask: resetting authority from " + l.getAuthority()
                                 + " to " + authority);
                         lsid = "";
-                        taskAttributes.put(GPConstants.LSID, lsid);
+                        taskAttributes.put(LSID, lsid);
                         // change owner to current user
-                        String owner = (String) taskAttributes.get(GPConstants.USERID);
+                        String owner = (String) taskAttributes.get(USERID);
                         if (owner == null) {
                             owner = "";
                         }
@@ -1004,7 +1037,7 @@ public class TaskIntegrator  {
                             owner = " (" + owner + ")";
                         }
                         owner = username + owner;
-                        taskAttributes.put(GPConstants.USERID, owner);
+                        taskAttributes.put(USERID, owner);
                     }
                 } catch (MalformedURLException mue) {
                 }
@@ -1025,7 +1058,7 @@ public class TaskIntegrator  {
                         }
 
                     });
-            taskAttributes.put(GPConstants.LSID, lsid); // update so that upon
+            taskAttributes.put(LSID, lsid); // update so that upon
             // return, the LSID is
             // the new one
             String attachmentDir = DirectoryManager.getTaskLibDir(taskName, lsid, username);
@@ -1116,7 +1149,7 @@ public class TaskIntegrator  {
         }
     }
 
-    private void isAuthorized(String user, String method) throws WebServiceException {
+    protected void isAuthorized(String user, String method) throws WebServiceException {
         if (!authManager.isAllowed(method, user)) {
             throw new WebServiceException("You do not have permission for items owned by other users.");
         }
