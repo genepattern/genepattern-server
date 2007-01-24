@@ -492,6 +492,9 @@ function toggleTask(idx, visibility) {
 		purged from the server on <%=df.format(purgeTOD.getTime()).toLowerCase()%>
 		</td>
 	</tr>
+	<tr><td><br>
+	<a href="pages/index.jsf">Return to Tasks & Pipelines Start</a>
+</td></tr>
 </table>
 
 <%
