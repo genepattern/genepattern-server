@@ -32,14 +32,14 @@
 /* ]]> */
 	</script>
 	</ui:define>
-	<ui:define name="pageTitle">GenePattern - Install/Update Tasks</ui:define>
+	<ui:define name="pageTitle">GenePattern - Install Modules &amp; Pipelines</ui:define>
 
 
 	<ui:define name="body">
 		<table width="100%" border="0" cellpadding="0" cellspacing="0"
 			class="barhead-other">
 			<tr>
-				<td>Install/Update Tasks</td>
+				<td>Install Modules &amp; Pipelines</td>
 			</tr>
 		</table>
 
@@ -104,7 +104,7 @@
 						class="barhead-task">
 						<tr>
 							<td class="barhead-version">Found
-							#{taskCatalogBean.numberOfTasks} tasks</td>
+							#{taskCatalogBean.numberOfTasks} modules</td>
 						</tr>
 					</table>
 
@@ -121,7 +121,7 @@
 									value="ALL" checked="checked" onclick="toggle(this, 'taskCatalogForm', 'installLsid');"/></td>
 
 								<td valign="top"><b>Name (Version)</b></td>
-								<td valign="top"><b>Task Type</b></td>
+								<td valign="top"><b>Module Type</b></td>
 								<td valign="top"><b>Details</b></td>
 							</tr>
 							<t:dataList var="t" value="#{taskCatalogBean.tasks}"
