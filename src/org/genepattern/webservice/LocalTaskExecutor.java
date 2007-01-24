@@ -62,7 +62,7 @@ public class LocalTaskExecutor extends TaskExecutor {
     File libdir = null;
 
     /** LSID or task name if connecting to an old server */
-    protected String taskId = null;
+    protected String taskLsid = null;
 
     /** name of file in libdir that stores task id */
     static final String ID_FILE_NAME = ".id";
@@ -94,13 +94,13 @@ public class LocalTaskExecutor extends TaskExecutor {
         try {
             Map attr = taskInfo.getTaskInfoAttributes();
             if (attr != null) {
-                taskId = (String) attr.get(org.genepattern.util.GPConstants.LSID);
+                taskLsid = (String) attr.get(org.genepattern.util.GPConstants.LSID);
             }
-            if (taskId == null) {
-                taskId = taskInfo.getName();
+            if (taskLsid == null) {
+                taskLsid = taskInfo.getName();
             }
             String taskName = taskInfo.getName();
-            sandboxdir = File.createTempFile(taskName, ".tmp");
+            sandboxdir = File.createTempFile(taskName + "tmp", null);
             sandboxdir.delete();
 
             sandboxdir.mkdirs();
@@ -115,8 +115,9 @@ public class LocalTaskExecutor extends TaskExecutor {
             }
 
             libdir = new File("libs", libdirName);
+           
             libdir.mkdirs();
-
+             
             substitutions.put("libdir", libdir + File.separator);
             if (substitutions.get(LocalTaskExecutor.JAVA) == null) {
                 String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java"
@@ -316,8 +317,8 @@ public class LocalTaskExecutor extends TaskExecutor {
 
         synchronized (taskIntegratorProxy) {
             try {
-                supportFileNames = taskIntegratorProxy.getSupportFileNames(taskId);
-                supportFileDates = taskIntegratorProxy.getLastModificationTimes(taskId, supportFileNames);
+                supportFileNames = taskIntegratorProxy.getSupportFileNames(taskLsid);
+                supportFileDates = taskIntegratorProxy.getLastModificationTimes(taskLsid, supportFileNames);
             } catch (WebServiceException wse) {
                 Throwable rootCause = wse.getRootCause();
                 if (rootCause instanceof org.apache.axis.AxisFault) {
@@ -361,7 +362,7 @@ public class LocalTaskExecutor extends TaskExecutor {
             }
 
         }
-        if (!taskId.equals(previousTaskId)) {
+        if (!taskLsid.equals(previousTaskId)) {
             File[] currentFiles = libdir.listFiles();
             for (int i = 0; i < currentFiles.length; i++) {
                 currentFiles[i].delete();
@@ -369,7 +370,7 @@ public class LocalTaskExecutor extends TaskExecutor {
             PrintWriter pw = null;
             try {
                 pw = new PrintWriter(new FileWriter(idFile));
-                pw.println(taskId);
+                pw.println(taskLsid);
             } catch (IOException e) {
             } finally {
                 if (pw != null) {
@@ -420,30 +421,8 @@ public class LocalTaskExecutor extends TaskExecutor {
             }
         }
 
-        for (int i = 0; i < downloadSupportFileNames.size(); i++) { // using
-            // jsps to
-            // download
-            // files is
-            // quicker
-            // than
-            // using
-            // SOAP
-            try {
-                String fileName = (String) downloadSupportFileNames.get(i);
-                String task = null;
-                if (oldServer) {
-                    task = taskInfo.getName();
-                } else {
-                    task = (String) taskInfo.getTaskInfoAttributes().get(org.genepattern.util.GPConstants.LSID);
-                }
-
-                URL urlFile = new URL(server + "/gp/getFile.jsp?task=" + task + "&file=" + fileName);
-                File dest = new File(libdir, fileName);
-                downloadFile(urlFile, dest);
-            } catch (IOException ioe) {
-                throw new WebServiceException(ioe);
-            }
-        }
+        taskIntegratorProxy.getSupportFiles(taskLsid, (String[]) downloadSupportFileNames.toArray(new String[0]),
+                libdir);
 
         if (DEBUG) {
             System.out.println("Downloaded " + downloadSupportFileNames);
