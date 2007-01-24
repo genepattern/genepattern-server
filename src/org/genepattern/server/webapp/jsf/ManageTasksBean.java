@@ -20,7 +20,7 @@ import javax.faces.event.ActionEvent;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
@@ -47,7 +47,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
             this.showEveryonesTasks = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesTasks",
                     String.valueOf(this.showEveryonesTasks)));
             if (this.showEveryonesTasks
-                    && !new AuthorizationManagerFactoryImpl().getAuthorizationManager().checkPermission(
+                    && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission(
                             "administrateServer", userId)) {
                 this.showEveryonesTasks = false;
 
@@ -111,7 +111,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 
     public void setShowEveryonesTasks(boolean showEveryonesTasks) {
         if (showEveryonesTasks
-                && !new AuthorizationManagerFactoryImpl().getAuthorizationManager().checkPermission(
+                && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission(
                         "administrateServer", UIBeanHelper.getUserId())) {
             showEveryonesTasks = false;
 

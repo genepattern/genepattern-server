@@ -12,7 +12,7 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf;
 
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 
 /**
@@ -24,7 +24,7 @@ public class AuthorizationBean {
     private IAuthorizationManager authManager;
 
     public AuthorizationBean() {
-        authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
+        authManager = AuthorizationManagerFactory.getAuthorizationManager();
     }
 
     public boolean isAdmin() {

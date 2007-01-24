@@ -18,7 +18,7 @@ import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
 import org.genepattern.server.genepattern.LSIDManager;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
@@ -180,8 +180,6 @@ public class IndexPageBean {
                 String versionlessLSID = (new LSID(tia.get(GPConstants.LSID))).toStringNoVersion();
                 latestTaskMap.put(versionlessLSID, taskInfo);
             }
-
-            IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
 
             TaskInfo taskInfo;
             TaskInfoAttributes tia;

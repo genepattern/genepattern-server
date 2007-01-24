@@ -22,7 +22,7 @@ import javax.faces.context.FacesContext;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -62,7 +62,7 @@ public class JobResultsBean extends JobBean {
         this.showEveryonesJobs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesJobs", String
                 .valueOf(showEveryonesJobs)));
         if (showEveryonesJobs
-                && !new AuthorizationManagerFactoryImpl().getAuthorizationManager().checkPermission(
+                && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission(
                         "administrateServer", UIBeanHelper.getUserId())) {
             showEveryonesJobs = false;
 
@@ -133,7 +133,7 @@ public class JobResultsBean extends JobBean {
 
     public void setShowEveryonesJobs(boolean showEveryonesJobs) {
         if (showEveryonesJobs
-                && !new AuthorizationManagerFactoryImpl().getAuthorizationManager().checkPermission(
+                && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission(
                         "administrateServer", UIBeanHelper.getUserId())) {
             showEveryonesJobs = false;
 

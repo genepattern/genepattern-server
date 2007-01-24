@@ -14,8 +14,7 @@ import javax.faces.model.SelectItem;
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.process.SuiteRepository;
-import org.genepattern.server.util.AuthorizationManager;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
@@ -102,7 +101,7 @@ public class SuiteCatalogBean {
         if (lsids != null) {
             final String username = UIBeanHelper.getUserId();
             final LocalTaskIntegratorClient taskIntegrator = new LocalTaskIntegratorClient(username);
-            IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
+            IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
             boolean suiteInstallAllowed = authManager.checkPermission("createSuite", username);
             if (!suiteInstallAllowed) {
                 UIBeanHelper.setInfoMessage("You don't have the required permissions to install suites.");

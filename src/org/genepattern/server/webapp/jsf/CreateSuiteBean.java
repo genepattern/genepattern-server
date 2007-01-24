@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.LSIDManager;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.AdminService;
 import org.genepattern.server.webservice.server.DirectoryManager;
@@ -168,7 +168,7 @@ public class CreateSuiteBean implements java.io.Serializable {
 
 
 	public String save() {
-		IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
+		IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
 		if (!authManager.checkPermission("createSuite", UIBeanHelper.getUserId())) {
 			UIBeanHelper.setInfoMessage("You don't have the required permissions to perform the requested operation.");
 		}

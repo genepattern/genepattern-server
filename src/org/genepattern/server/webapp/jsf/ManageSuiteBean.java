@@ -22,7 +22,7 @@ import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.process.MissingTaskException;
 import org.genepattern.server.process.ZipSuite;
 import org.genepattern.server.process.ZipSuiteWithDependents;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.webservice.SuiteInfo;
@@ -221,7 +221,7 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
      */
     private void deleteSuites(String[] suiteLsids) {
         String user = UIBeanHelper.getUserId();
-        boolean admin = new AuthorizationManagerFactoryImpl().getAuthorizationManager().checkPermission(
+        boolean admin = AuthorizationManagerFactory.getAuthorizationManager().checkPermission(
                 "administrateServer", UIBeanHelper.getUserId());
         if (suiteLsids != null) {
             for (String lsid : suiteLsids) {

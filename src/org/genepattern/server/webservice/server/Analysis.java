@@ -34,7 +34,7 @@ import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.handler.GetJobStatusHandler;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.GenericWebService;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -54,7 +54,7 @@ public class Analysis extends GenericWebService {
 
     private static Logger log = Logger.getLogger(Analysis.class);
 
-    private IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
+    private IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
 
     /**
      * Default constructor. Constructs a <code>Analysis</code> web service

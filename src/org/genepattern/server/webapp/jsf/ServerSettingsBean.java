@@ -7,7 +7,6 @@ import static org.genepattern.server.webapp.jsf.UIBeanHelper.getRequest;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -24,7 +23,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.util.PropertiesManager;
 
@@ -63,7 +62,7 @@ public class ServerSettingsBean {
      * 
      */
     public ServerSettingsBean() {
-        IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
+        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
         if (!authManager.checkPermission("administrateServer", UIBeanHelper.getUserId())) {
                throw new FacesException("You don' have the required permissions to administer the server."); 
         }

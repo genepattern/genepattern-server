@@ -34,7 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
@@ -146,7 +146,7 @@ public class JobResultsFilter implements Filter {
             // should admin be allowed here?
             allowed = false;
         } else if (isJobOwner(userid, job)
-                || new AuthorizationManagerFactoryImpl().getAuthorizationManager().checkPermission(
+                || AuthorizationManagerFactory.getAuthorizationManager().checkPermission(
                         "administrateServer", userid)) {
             allowed = true;
         }

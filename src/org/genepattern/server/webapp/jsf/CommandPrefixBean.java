@@ -15,7 +15,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -42,7 +42,7 @@ public class CommandPrefixBean {
     PropertiesManager pm = null;
 
     public CommandPrefixBean() {
-        IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
+        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
         if (!authManager.checkPermission("administrateServer", UIBeanHelper.getUserId())) {
             throw new FacesException("You don' have the required permissions to administer the server.");
         }

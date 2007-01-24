@@ -32,7 +32,7 @@ import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
 import org.genepattern.server.process.ModuleRepository;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.util.GPConstants;
@@ -264,7 +264,7 @@ public class TaskCatalogBean {
 
     public String install() {
         filter();
-        IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
+        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
         final boolean taskInstallAllowed = authManager.checkPermission("createTask", UIBeanHelper.getUserId());
         if (!taskInstallAllowed) {
             UIBeanHelper.setInfoMessage("You don't have the required permissions to install tasks.");

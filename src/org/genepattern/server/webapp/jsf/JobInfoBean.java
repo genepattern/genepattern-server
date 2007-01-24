@@ -22,8 +22,7 @@ import java.util.Map;
 import javax.faces.FacesException;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
-import org.genepattern.server.util.IAuthorizationManager;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
@@ -67,7 +66,7 @@ public class JobInfoBean {
             throw new FacesException("Job " + requestedJobNumber + " not found.");
         }
 
-        if (!new AuthorizationManagerFactoryImpl().getAuthorizationManager().checkPermission("administrateServer",
+        if (!AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer",
                 UIBeanHelper.getUserId())
                 && !job.getUserId().equals(UIBeanHelper.getUserId())) {
             throw new FacesException("You don' have the required permissions to access the requested job.");

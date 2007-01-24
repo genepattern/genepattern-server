@@ -30,11 +30,10 @@ import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.domain.TaskMasterDAO;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AdminDAOSysException;
-import org.genepattern.util.GPConstants;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.OmnigeneException;
@@ -54,7 +53,7 @@ public class AdminService implements IAdminService {
 
     AdminDAO dataService;
 
-    IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
+    IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
 
     protected String localUserName = "";
 

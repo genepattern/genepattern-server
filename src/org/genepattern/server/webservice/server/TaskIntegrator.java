@@ -12,6 +12,19 @@
 
 package org.genepattern.server.webservice.server;
 
+import static org.genepattern.util.GPConstants.ACCESS_PRIVATE;
+import static org.genepattern.util.GPConstants.ACCESS_PUBLIC;
+import static org.genepattern.util.GPConstants.COMMAND_LINE;
+import static org.genepattern.util.GPConstants.LSID;
+import static org.genepattern.util.GPConstants.MANIFEST_FILENAME;
+import static org.genepattern.util.GPConstants.PRIVACY;
+import static org.genepattern.util.GPConstants.PRIVATE;
+import static org.genepattern.util.GPConstants.SERIALIZED_MODEL;
+import static org.genepattern.util.GPConstants.SUITE_MANIFEST_FILENAME;
+import static org.genepattern.util.GPConstants.TASK_TYPE;
+import static org.genepattern.util.GPConstants.TASK_TYPE_PIPELINE;
+import static org.genepattern.util.GPConstants.USERID;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -46,7 +59,7 @@ import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
 import org.genepattern.server.process.SuiteRepository;
 import org.genepattern.server.process.ZipSuite;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.dao.TaskIntegratorDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -59,8 +72,6 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
 
-import static org.genepattern.util.GPConstants.*;
-
 /**
  * TaskIntegrator Web Service. Do a Thread.yield at beginning of each method- fixes BUG in which responses from
  * AxisServlet are sometimes empty
@@ -72,7 +83,7 @@ public class TaskIntegrator {
 
     private static Logger log = Logger.getLogger(TaskIntegrator.class);
 
-    private IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
+    private IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
 
     /**
      * Retrieve the user name from the message context

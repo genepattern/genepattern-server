@@ -137,7 +137,7 @@ import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.indexer.Indexer;
 import org.genepattern.server.indexer.IndexerDaemon;
 import org.genepattern.server.user.UsageLog;
-import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webservice.server.DirectoryManager;
@@ -3340,7 +3340,7 @@ public class GenePatternAnalysisTask  {
     public static String installNewTask(String zipFilename, String username, int access_id, boolean recursive,
             Status taskIntegrator) throws TaskInstallationException {
         Vector vProblems = new Vector();
-        IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
+        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
         if (!authManager.checkPermission("createTask", username)) {
             Vector v = new Vector();
             v.add("You do not have permisison to create or install tasks on this server");
