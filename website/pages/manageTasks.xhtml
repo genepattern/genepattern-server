@@ -7,7 +7,7 @@
       xmlns:c="http://java.sun.com/jstl/core">
       
   <ui:composition template="/templates/common.xhtml">
-    <ui:define name="pageTitle">Manage Tasks and Pipelines</ui:define>
+    <ui:define name="pageTitle">Manage Modules and Pipelines</ui:define>
     <ui:define name="headText">
       <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css"/>
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jobResults.js"/>
@@ -44,7 +44,7 @@
     }
  	
 	function confirmDelete() {
-		return confirm('Are you sure you want to delete the selected task(s)?');
+		return confirm('Are you sure you want to delete the selected module(s)?');
 
 	}
 	
@@ -57,7 +57,7 @@
       <table width="100%"  border="0" cellspacing="0" cellpadding="0">
         <tr>
           <td valign="top" class="maintasknav" id="maintasknav" align="right" width="100%">
-            <h:selectBooleanCheckbox  value="#{manageTasksBean.showEveryonesJobs}" onchange="this.form.submit();"/>show everyone's tasks&#160;&#160;&#160;&#160;
+            <h:selectBooleanCheckbox  value="#{manageTasksBean.showEveryonesTasks}" onchange="this.form.submit();"/>show everyone's modules&#160;&#160;&#160;&#160;
           </td>
         </tr>
       </table>
