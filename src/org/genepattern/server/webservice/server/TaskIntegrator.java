@@ -60,21 +60,23 @@ import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
 
 import static org.genepattern.util.GPConstants.*;
+
 /**
- * TaskIntegrator Web Service. Do a Thread.yield at beginning of each method-
- * fixes BUG in which responses from AxisServlet are sometimes empty
+ * TaskIntegrator Web Service. Do a Thread.yield at beginning of each method- fixes BUG in which responses from
+ * AxisServlet are sometimes empty
  * 
  * @author Joshua Gould
  */
 
-public class TaskIntegrator  {
+public class TaskIntegrator {
 
     private static Logger log = Logger.getLogger(TaskIntegrator.class);
 
     private IAuthorizationManager authManager = new AuthorizationManagerFactoryImpl().getAuthorizationManager();
-    
+
     /**
      * Retrieve the user name from the message context
+     * 
      * @return
      */
     protected String getUserName() {
@@ -85,7 +87,6 @@ public class TaskIntegrator  {
         }
         return username;
     }
-
 
     /**
      * Clones the given task.
@@ -107,7 +108,7 @@ public class TaskIntegrator  {
             try {
                 taskInfo = new LocalAdminClient(userID).getTask(oldLSID);
             } catch (Exception e) {
-            	log.error(e);
+                log.error(e);
                 throw new WebServiceException(e);
             }
             taskInfo.setName(cloneName);
@@ -123,7 +124,7 @@ public class TaskIntegrator  {
                 // update the pipeline model with the new name
                 model.setName(cloneName);
                 model.setUserid(userID);
-                
+
                 // update the task with the new model and command line
                 TaskInfoAttributes newTIA = AbstractPipelineCodeGenerator.getTaskInfoAttributes(model);
                 tia.put(SERIALIZED_MODEL, model.toXML());
@@ -138,7 +139,6 @@ public class TaskIntegrator  {
             throw new WebServiceException(e);
         }
     }
-
 
     /**
      * Deletes the given files that belong to the given task
@@ -228,7 +228,7 @@ public class TaskIntegrator  {
             }
             dir.delete();
         } catch (Throwable e) {
-        	log.error(e);
+            log.error(e);
             throw new WebServiceException("while deleting task " + lsid, e);
         }
     }
@@ -242,7 +242,7 @@ public class TaskIntegrator  {
             DataHandler h = new DataHandler(new FileDataSource(zipFile.getCanonicalPath()));
             return h; // FIXME delete zip file
         } catch (Exception e) {
-        	log.error(e);
+            log.error(e);
             throw new WebServiceException(e);
         }
     }
@@ -278,14 +278,14 @@ public class TaskIntegrator  {
             DataHandler h = new DataHandler(new FileDataSource(zipFile.getCanonicalPath()));
             return h;
         } catch (Exception e) {
-        	log.error(e);
+            log.error(e);
             throw new WebServiceException("while exporting to zip file", e);
         }
     }
 
     /**
-     * Return the documentation file names associated with the LSID as an array
-     * of strings.  The LSID can represent a suite or a task.
+     * Return the documentation file names associated with the LSID as an array of strings. The LSID can represent a
+     * suite or a task.
      * 
      * @param lsid
      * @return
@@ -310,14 +310,14 @@ public class TaskIntegrator  {
             }
             return docFiles;
         } catch (Exception e) {
-        	log.error(e);
+            log.error(e);
             throw new WebServiceException("while getting doc filenames", e);
         }
     }
 
     /**
-     * Gets the files that belong to the given task or suite that are considered to be
-     * documentation files.  Returned as an array of DataHandlers.
+     * Gets the files that belong to the given task or suite that are considered to be documentation files. Returned as
+     * an array of DataHandlers.
      * 
      * @param lsid
      *            The LSID
@@ -332,7 +332,7 @@ public class TaskIntegrator  {
         try {
             taskLibDir = DirectoryManager.getLibDir(lsid);
         } catch (Exception e) {
-        	log.error(e);
+            log.error(e);
             throw new WebServiceException(e);
         }
         File[] docFiles = new File(taskLibDir).listFiles(new FilenameFilter() {
@@ -363,8 +363,7 @@ public class TaskIntegrator  {
     }
 
     /**
-     * Gets the an array of the last mofification times of the given files that
-     * belong to the given task
+     * Gets the an array of the last mofification times of the given files that belong to the given task
      * 
      * @param lsid
      *            The LSID
@@ -381,7 +380,7 @@ public class TaskIntegrator  {
                 throw new WebServiceException("Invalid LSID");
             }
             long[] modificationTimes = new long[fileNames.length];
-            String attachmentDir = DirectoryManager.getTaskLibDir(lsid);
+            String attachmentDir = DirectoryManager.getTaskLibDir(null, lsid, this.getUserName());
             File dir = new File(attachmentDir);
             for (int i = 0; i < fileNames.length; i++) {
                 File f = new File(dir, fileNames[i]);
@@ -389,11 +388,10 @@ public class TaskIntegrator  {
             }
             return modificationTimes;
         } catch (Exception e) {
-        	log.error(e);
+            log.error(e);
             throw new WebServiceException("Error getting support files.", e);
         }
     }
-
 
     /**
      * Gets the an array of file names that belong to the given task
@@ -413,7 +411,7 @@ public class TaskIntegrator  {
 
         try {
             Thread.yield();
-            String attachmentDir = DirectoryManager.getTaskLibDir(lsid);
+            String attachmentDir = DirectoryManager.getTaskLibDir(null, lsid, getUserName());
             File dir = new File(attachmentDir);
             String[] oldFiles = dir.list(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
@@ -422,7 +420,7 @@ public class TaskIntegrator  {
             });
             return oldFiles;
         } catch (Exception e) {
-        	log.error(e);
+            log.error(e);
             throw new WebServiceException("while getting support filenames", e);
         }
     }
@@ -467,7 +465,7 @@ public class TaskIntegrator  {
 
         try {
             Thread.yield();
-            String attachmentDir = DirectoryManager.getTaskLibDir(lsid);
+            String attachmentDir = DirectoryManager.getTaskLibDir(null, lsid, this.getUserName());
             File dir = new File(attachmentDir);
             File f = new File(dir, fileName);
             if (!f.exists()) {
@@ -475,7 +473,7 @@ public class TaskIntegrator  {
             }
             return new DataHandler(new FileDataSource(f));
         } catch (Exception e) {
-        	log.error(e);
+            log.error(e);
             throw new WebServiceException("while getting support file " + fileName + " from " + lsid, e);
         }
     }
@@ -499,7 +497,7 @@ public class TaskIntegrator  {
             }
 
             DataHandler[] dhs = new DataHandler[fileNames.length];
-            String attachmentDir = DirectoryManager.getTaskLibDir(lsid);
+            String attachmentDir = DirectoryManager.getTaskLibDir(null, lsid, this.getUserName());
             File dir = new File(attachmentDir);
             for (int i = 0; i < fileNames.length; i++) {
                 File f = new File(dir, fileNames[i]);
@@ -510,7 +508,7 @@ public class TaskIntegrator  {
             }
             return dhs;
         } catch (Exception e) {
-        	log.error(e);
+            log.error(e);
             throw new WebServiceException("Error getting support files.", e);
         }
     }
@@ -531,7 +529,6 @@ public class TaskIntegrator  {
 
         return importZip(handler, privacy, true, null);
     }
-
 
     private String importZip(DataHandler handler, int privacy, boolean recursive, Status taskIntegrator)
             throws WebServiceException {
@@ -557,7 +554,7 @@ public class TaskIntegrator  {
                     isSuite = true;
                 }
             } catch (IOException ioe) {
-            	log.error(ioe);
+                log.error(ioe);
                 throw new WebServiceException("Couldn't open " + path + ": " + ioe.getMessage());
             }
             if (isSuite) {
@@ -566,12 +563,12 @@ public class TaskIntegrator  {
                 try {
                     lsid = GenePatternAnalysisTask.installNewTask(path, username, privacy, recursive, taskIntegrator);
                 } catch (TaskInstallationException tie) {
-                	log.error(tie);
+                    log.error(tie);
                     vProblems = tie.getErrors();
                 }
             }
         } catch (Exception e) {
-        	log.error(e);
+            log.error(e);
             throw new WebServiceException("while importing from zip file", e);
         }
         if (vProblems != null && vProblems.size() > 0) {
@@ -581,8 +578,7 @@ public class TaskIntegrator  {
     }
 
     /**
-     * Installs the zip file at the given url overwriting anything already
-     * there.
+     * Installs the zip file at the given url overwriting anything already there.
      * 
      * @param url
      *            The url of the zip file
@@ -596,7 +592,6 @@ public class TaskIntegrator  {
         isAuthorized(getUserName(), "TaskIntegrator.importZipFromURL");
         return importZipFromURL(url, privacy, true, null);
     }
-
 
     public String importZipFromURL(String url, int privacy, boolean recursive, Status taskIntegrator)
             throws WebServiceException {
@@ -625,7 +620,7 @@ public class TaskIntegrator  {
                     isSuite = true;
                 }
             } catch (IOException ioe) {
-            	log.error(ioe);
+                log.error(ioe);
                 throw new WebServiceException("Couldn't open " + path + ": " + ioe.getMessage());
             }
             if (!(isTask || isSuite || isZipOfZips)) {
@@ -657,7 +652,6 @@ public class TaskIntegrator  {
         return lsid;
     }
 
-    
     /**
      * Install the suite with the given LSID from the repository.
      * 
@@ -677,33 +671,32 @@ public class TaskIntegrator  {
 
             installSuite(suite);
         } catch (Exception e) {
-        	log.error(e);
+            log.error(e);
             throw new WebServiceException(e);
         }
     }
-    
 
-	/**
-	 * Create a new suite from the SuiteInfo object.
-	 * 
-	 * @param suiteInfo
-	 * @return
-	 * @throws WebServiceException
-	 */
-	public void saveOrUpdateSuite(SuiteInfo suiteInfo) throws WebServiceException {
+    /**
+     * Create a new suite from the SuiteInfo object.
+     * 
+     * @param suiteInfo
+     * @return
+     * @throws WebServiceException
+     */
+    public void saveOrUpdateSuite(SuiteInfo suiteInfo) throws WebServiceException {
 
-		isAuthorized(getUserName(), "TaskIntegrator.installSuite");
+        isAuthorized(getUserName(), "TaskIntegrator.installSuite");
 
-		if (suiteInfo.getLSID() != null) {
-			if (suiteInfo.getLSID().trim().length() == 0)
-				suiteInfo.setLSID(null);
-		}
+        if (suiteInfo.getLSID() != null) {
+            if (suiteInfo.getLSID().trim().length() == 0)
+                suiteInfo.setLSID(null);
+        }
 
-		(new TaskIntegratorDAO()).saveOrUpdate(suiteInfo);
-	}
+        (new TaskIntegratorDAO()).saveOrUpdate(suiteInfo);
+    }
 
-	/**
-     * Create a new suite from the SuiteInfo object.  
+    /**
+     * Create a new suite from the SuiteInfo object.
      * 
      * @param suiteInfo
      * @return
@@ -750,9 +743,9 @@ public class TaskIntegrator  {
 
     }
 
-
     /**
-     * Install a suite from a zip file.  Extracts the contents of the zip then calls installSuite(SuiteInfo)
+     * Install a suite from a zip file. Extracts the contents of the zip then calls installSuite(SuiteInfo)
+     * 
      * @param zipFile
      * @return
      * @throws WebServiceException
@@ -836,8 +829,6 @@ public class TaskIntegrator  {
         }
     }
 
-
-
     private boolean isZipOfZips(String url) throws WebServiceException {
         isAuthorized(getUserName(), "TaskIntegrator.isZipOfZips");
         File file = Util.downloadUrl(url);
@@ -849,10 +840,9 @@ public class TaskIntegrator  {
     }
 
     /**
-     * @deprecated  This method is not currently used, and has not been tested for GP 3.0 and greater.
+     * @deprecated This method is not currently used, and has not been tested for GP 3.0 and greater.
      * 
-     * Modifies the suite with the given name. If the suite does not exist, it
-     * will be created.
+     * Modifies the suite with the given name. If the suite does not exist, it will be created.
      * 
      * @param accessId
      *            One of GPConstants.ACCESS_PUBLIC or GPConstants.ACCESS_PRIVATE
@@ -870,10 +860,9 @@ public class TaskIntegrator  {
      *            lsids of modules that are in this suite
      * 
      * @param files
-     *            The file names for the <tt>dataHandlers</tt> array. If the
-     *            array has more elements than the <tt>dataHandlers</tt>
-     *            array, then the additional elements are assumed to be uploaded
-     *            files for an existing task with the given lsid.
+     *            The file names for the <tt>dataHandlers</tt> array. If the array has more elements than the
+     *            <tt>dataHandlers</tt> array, then the additional elements are assumed to be uploaded files for an
+     *            existing task with the given lsid.
      * 
      * @return The LSID of the suite
      * @exception WebServiceException
@@ -985,8 +974,7 @@ public class TaskIntegrator  {
     }
 
     /**
-     * Modifies the task with the given name. If the task does not exist, it
-     * will be created.
+     * Modifies the task with the given name. If the task does not exist, it will be created.
      * 
      * @param accessId
      *            One of GPConstants.ACCESS_PUBLIC or GPConstants.ACCESS_PRIVATE
@@ -1001,13 +989,10 @@ public class TaskIntegrator  {
      * @param dataHandlers
      *            Holds the uploaded files
      * @param fileNames
-     *            The file names for the <tt>dataHandlers</tt> array. If the
-     *            array has more elements than the <tt>dataHandlers</tt>
-     *            array, then the additional elements are assumed to be uploaded
-     *            files for an existing task with the LSID contained in
-     *            <tt>taskAttributes</tt> or the the element is of the form
-     *            'job #, filename', then the element is assumed to be an output
-     *            from a job.
+     *            The file names for the <tt>dataHandlers</tt> array. If the array has more elements than the
+     *            <tt>dataHandlers</tt> array, then the additional elements are assumed to be uploaded files for an
+     *            existing task with the LSID contained in <tt>taskAttributes</tt> or the the element is of the form
+     *            'job #, filename', then the element is assumed to be an output from a job.
      * 
      * @return The LSID of the task
      * @exception WebServiceException
@@ -1138,8 +1123,6 @@ public class TaskIntegrator  {
         return lsid;
     }
 
-
-
     protected String importZipFromURL(String url, int privacy, Status taskIntegrator) throws WebServiceException {
         return importZipFromURL(url, privacy, true, taskIntegrator);
     }
@@ -1149,6 +1132,7 @@ public class TaskIntegrator  {
             throws Exception {
         String dir = DirectoryManager.getTaskLibDir(oldTaskName, lsid, username);
         String newDir = DirectoryManager.getTaskLibDir(cloneName, cloneLSID, username);
+
         String[] oldFiles = getSupportFileNames(lsid);
         byte[] buf = new byte[100000];
         int j;

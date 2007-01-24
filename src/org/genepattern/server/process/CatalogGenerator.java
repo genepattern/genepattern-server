@@ -37,13 +37,15 @@ import org.genepattern.webservice.WebServiceException;
 /**
  * @author liefeld
  * 
- * TODO To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Style - Code Templates
+ * TODO To change the template for this generated type comment go to Window - Preferences - Java - Code Style - Code
+ * Templates
  */
 public class CatalogGenerator {
 
     HashMap moduleDocMap = new HashMap();
+
     Properties reposProps;
+
     String userID = "";
 
     public CatalogGenerator(String userID) {
@@ -52,7 +54,7 @@ public class CatalogGenerator {
 
     public String generateSuiteCatalog() throws IOException, WebServiceException, Exception {
         StringWriter strwriter = new StringWriter(); // for now just write to
-                                                        // the string
+        // the string
         BufferedWriter buff = new BufferedWriter(strwriter);
         LocalAdminClient adminClient = new LocalAdminClient(userID);
 
@@ -84,7 +86,7 @@ public class CatalogGenerator {
 
     public String generateModuleCatalog() throws IOException, WebServiceException, Exception {
         StringWriter strwriter = new StringWriter(); // for now just write to
-                                                        // the string
+        // the string
         BufferedWriter buff = new BufferedWriter(strwriter);
 
         buff.write("<?xml version=\"1.0\"?><!DOCTYPE module_repository><module_repository >");
@@ -118,9 +120,8 @@ public class CatalogGenerator {
 
     public void getModuleVersionsDocURLs(TaskInfo taskInfo) throws Exception {
         Map tia = taskInfo.getTaskInfoAttributes();
-        ZipTask zt = new ZipTask();
         String lsid = (String) tia.get(GPConstants.LSID);
-        String taskDir = DirectoryManager.getTaskLibDir((String) tia.get(GPConstants.LSID));
+        String taskDir = DirectoryManager.getTaskLibDir(null, (String) tia.get(GPConstants.LSID), this.userID);
         File dir = new File(taskDir);
 
         File[] supportFiles = dir.listFiles(new SupportFileFilter());
@@ -157,17 +158,14 @@ public class CatalogGenerator {
     }
 
     /**
-     * for a particular module (directory) write the catalog XML to the writer
-     * e.g.
+     * for a particular module (directory) write the catalog XML to the writer e.g.
      * 
-     * <site_module name="ClassNeighbors" zipfilesize="642025"
-     * timestamp="1103748609"
+     * <site_module name="ClassNeighbors" zipfilesize="642025" timestamp="1103748609"
      * url="ftp://ftp.broad.mit.edu/pub/genepattern/modules/ClassNeighbors/broad.mit.edu:cancer.software.genepattern.module.analysis/1/ClassNeighbors.zip"
-     * sitename="ftp://ftp.broad.mit.edu/pub/genepattern/modules"
-     * isexternal="false"> <support_file
+     * sitename="ftp://ftp.broad.mit.edu/pub/genepattern/modules" isexternal="false"> <support_file
      * url="ftp://ftp.broad.mit.edu/pub/genepattern/modules/ClassNeighbors/broad.mit.edu:cancer.software.genepattern.module.analysis/1/ClassNeighbors.pdf">ClassNeighbors.pdf</support_file >
-     * <manifest>#Fri Nov 19 10:24:28 EST 2004 &#xA;p12_type=java.lang.Integer
-     * &#xA;p8_prefix_when_specified= &#xA;p5_optional=
+     * <manifest>#Fri Nov 19 10:24:28 EST 2004 &#xA;p12_type=java.lang.Integer &#xA;p8_prefix_when_specified=
+     * &#xA;p5_optional=
      * 
      * <support_file
      * url="ftp://ftp.broad.mit.edu/pub/genepattern/modules/ClassNeighbors/broad.mit.edu:cancer.software.genepattern.module.analysis/1/trove.jar">trove.jar</support_file >
@@ -182,11 +180,12 @@ public class CatalogGenerator {
         Map tia = taskInfo.getTaskInfoAttributes();
         ZipTask zt = new ZipTask();
         String lsid = (String) tia.get(GPConstants.LSID);
-        String taskDir = DirectoryManager.getTaskLibDir((String) tia.get(GPConstants.LSID));
+        String taskDir = DirectoryManager.getTaskLibDir(null, (String) tia.get(GPConstants.LSID), userID);
 
         File dir = new File(taskDir);
         File manifestFile = new File(dir.getAbsolutePath(), "manifest");
-        if (!manifestFile.exists()) return;
+        if (!manifestFile.exists())
+            return;
 
         // File zipFile = zt.packageTask(taskInfo, userID);
 
@@ -269,12 +268,15 @@ public class CatalogGenerator {
         if (fqHostName == null) {
             String port = System.getProperty("GENEPATTERN_PORT");
             fqHostName = System.getProperty("fullyQualifiedHostName");
-            if (fqHostName == null) fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
-            if (fqHostName.equals("localhost")) fqHostName = "127.0.0.1";
+            if (fqHostName == null)
+                fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
+            if (fqHostName.equals("localhost"))
+                fqHostName = "127.0.0.1";
             fqHostName = fqHostName + ":" + port + "/gp/";
             ;
         }
-        if (!fqHostName.startsWith("http://")) fqHostName = "http://" + fqHostName;
+        if (!fqHostName.startsWith("http://"))
+            fqHostName = "http://" + fqHostName;
         return fqHostName;
     }
 
@@ -289,9 +291,11 @@ public class CatalogGenerator {
         BufferedReader in = new BufferedReader(new FileReader(new File(dirName, fileName)));
         String str;
         while ((str = in.readLine()) != null) {
-            if (htmlEncode) str = StringUtils.htmlEncode(str);
+            if (htmlEncode)
+                str = StringUtils.htmlEncode(str);
             writer.write(str);
-            if (includeNewlines) writer.newLine();
+            if (includeNewlines)
+                writer.newLine();
         }
 
         writer.flush();
@@ -333,9 +337,12 @@ class SupportFileFilter implements FileFilter {
 
     public boolean accept(File pathname) {
         String name = pathname.getName();
-        if (pathname.isDirectory()) return false;
-        else if ("manifest".equalsIgnoreCase(name)) return false;
-        else if (!name.endsWith(".zip")) return true;
+        if (pathname.isDirectory())
+            return false;
+        else if ("manifest".equalsIgnoreCase(name))
+            return false;
+        else if (!name.endsWith(".zip"))
+            return true;
         else {
             // its a zip file, ignore it if it contains a manifest
             try {
@@ -355,10 +362,14 @@ class DocFileFilter implements FileFilter {
 
     public boolean accept(File pathname) {
         String name = pathname.getName();
-        if (pathname.isDirectory()) return false;
-        else if ("manifest".equalsIgnoreCase(name)) return false;
-        else if (name.endsWith(".pdf")) return true;
-        else if (name.endsWith(".doc")) return true;
+        if (pathname.isDirectory())
+            return false;
+        else if ("manifest".equalsIgnoreCase(name))
+            return false;
+        else if (name.endsWith(".pdf"))
+            return true;
+        else if (name.endsWith(".doc"))
+            return true;
         else {
             return false;
         }

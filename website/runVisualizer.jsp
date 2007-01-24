@@ -94,7 +94,7 @@
 	name = taskInfo.getName();
 	TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
 	String lsid = (String)tia.get(GPConstants.LSID);
-	String libdir = DirectoryManager.getTaskLibDir(lsid);
+	String libdir = DirectoryManager.getTaskLibDir(null, lsid, userID);
 	ParameterInfo[] parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
 	if (parameterInfoArray == null) parameterInfoArray = new ParameterInfo[0];
 	File[] supportFiles = new File(libdir).listFiles();
