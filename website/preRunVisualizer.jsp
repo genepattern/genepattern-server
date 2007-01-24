@@ -164,6 +164,10 @@ try {
 </table>
 
 
-
+<table with="100%">
+<tr><td><br>
+	<a href="pages/index.jsf">Return to Tasks & Pipelines Start</a>
+</td></tr>
+</table>
 
 <jsp:include page="footer.jsp"/>
