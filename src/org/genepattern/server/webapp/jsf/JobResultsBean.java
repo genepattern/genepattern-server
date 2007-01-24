@@ -22,9 +22,7 @@ import javax.faces.context.FacesContext;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.user.UserProp;
 import org.genepattern.server.util.AuthorizationManagerFactoryImpl;
-import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -269,6 +267,15 @@ public class JobResultsBean extends JobBean {
                     return jobSortAscending ? c1.getStatus().compareTo(c2.getStatus()) : c2.getStatus().compareTo(
                             c1.getStatus());
                 } else if (column.equals("dateCompleted")) {
+                    if(c1.getDateCompleted()==null) {
+                        if(c2.getDateCompleted()==null) {
+                            return 0;
+                        }
+                        return jobSortAscending ? -1 : 1;
+                    } else if(c2.getDateCompleted()==null) {
+                        return jobSortAscending ? 1 : -1;
+                    }
+                    
                     return jobSortAscending ? c1.getDateCompleted().compareTo(c2.getDateCompleted()) : c2
                             .getDateCompleted().compareTo(c1.getDateCompleted());
                 } else if (column.equals("dateSubmitted")) {
