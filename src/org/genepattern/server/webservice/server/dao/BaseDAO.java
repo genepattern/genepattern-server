@@ -118,6 +118,7 @@ public class BaseDAO {
         List mods = suite.getModules();
 
         SuiteInfo suiteInfo = new SuiteInfo(lsid, name, description, author, owner, mods, access_id, docs);
+        suiteInfo.setContact(suite.getContact());
 
         return suiteInfo;
 
