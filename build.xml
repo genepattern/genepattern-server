@@ -137,15 +137,15 @@
     </target>
 
     <target name="gp-library-doc" depends="init" unless="skipdoc">
-        <javadoc destdir="build/doc" Author="no" Public="true" Verbose="false" classpathref="library.classpath" >
-            
-            <fileset dir="src" defaultexcludes="yes">
-                <include name="org/genepattern/data/**/*.java"/>
-                <include name="org/genepattern/client/**.java"/>
-                <include name="org/genepattern/webservice/**/*.java"/>
-                <include name="org/genepattern/util/**.java"/>
-                <include name="org/genepattern/io/**/*.java"/>
-                <include name="org/genepattern/module/**/*.java"/>
+        <javadoc destdir="build/doc" Author="no" Public="true" Verbose="false" classpathref="library.classpath">
+            <fileset dir="src">
+                <include name="org/genepattern/client/GPServer.java"/>
+            	<include name="org/genepattern/client/Util.java"/>
+            	<include name="org/genepattern/webservice/JobResult.java"/>
+            	<include name="org/genepattern/webservice/Parameter.java"/>
+            	<include name="org/genepattern/io/**/*.java"/>
+            	<include name="org/genepattern/data/expr/**/*.java"/>
+            	<include name="org/genepattern/data/matrix/**/*.java"/>
             </fileset>
         </javadoc>
     </target>
@@ -153,30 +153,15 @@
 	
     <target name="gp-library" depends="init, gp-library-doc">
     	
-    	<!-- <javac classpathref="library.classpath" debug="true" destdir="build" target="${java.target}">
-            <src path="src/org/genepattern/"/>
-            <include name="org/genepattern/client/**"/>
-            <include name="org/genepattern/data/**"/>
-            <include name="org/genepattern/io/**"/>
-            <include name="org/genepattern/module/**"/>
-            <include name="org/genepattern/webservice/**"/>
-        </javac> -->
-
-        <jar basedir="${genepattern.build}" defaultexcludes="true" jarfile="${genepattern.build}/${gp-library-jarname}">
-            <include name="xxxx"/>
+    	<jar basedir="${genepattern.build}" defaultexcludes="true" includes="**" jarfile="${genepattern.build}/${gp-library-jarname}">
             <manifest>
-                <attribute name="Class-Path" value="./lib/gp-full.jar ./lib/activation.jar ./lib/axis.jar ./lib/commons-discovery-0.2.jar ./lib/commons-logging-1.0.4.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.11.jar ./lib/mail.jar ./lib/saaj.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar "/>
-        
+                <attribute name="Class-Path" value="./lib/activation.jar ./lib/axis.jar ./lib/commons-discovery-0.2.jar ./lib/commons-logging-1.0.4.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.11.jar ./lib/mail.jar ./lib/saaj.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar "/>
             </manifest>
         </jar>
 
         <zip destfile="build/GenePattern.zip">
             <zipfileset dir="build/">
                 <include name="${gp-library-jarname}"/>
-            </zipfileset>
-
-            <zipfileset dir="build/" prefix="lib">
-            	<include name="gp-full.jar"/>
             </zipfileset>
             <zipfileset dir="website/WEB-INF/lib" prefix="lib" includes="activation.jar axis.jar commons-discovery-0.2.jar commons-logging-1.0.4.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.11.jar mail.jar saaj.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar "/>
             <zipfileset dir="build/doc" prefix="doc"/>
