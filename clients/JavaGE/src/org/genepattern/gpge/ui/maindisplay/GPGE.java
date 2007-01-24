@@ -324,7 +324,8 @@ public class GPGE {
                 baseName = name.substring(0, dotIndex);
                 extension = name.substring(dotIndex, name.length());
             }
-            if("html".equalsIgnoreCase(extension) || "htm".equalsIgnoreCase(extension)) {
+            
+            if(".html".equalsIgnoreCase(extension) || ".htm".equalsIgnoreCase(extension)) {
                 try {
                     org.genepattern.util.BrowserLauncher.openURL(sn.getURL().toString());
                 } catch (IOException e) {
