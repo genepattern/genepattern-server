@@ -281,19 +281,32 @@ public class ProvenanceFinder {
         }
 
         // if it is not a result file do nothing
-        if (!((fileURL.indexOf("retrieveResults.jsp") >= 1) || (fileURL.indexOf("jobResults") >= 1)))
+        boolean isResultFile = fileURL.indexOf("jobResults") >= 1;
+        
+        if (!((fileURL.indexOf("retrieveResults.jsp") >= 1) || (isResultFile)))
             return null;
+        
+        String jobNoStr = "";
+        
+        if (isResultFile){
+            int idx = fileURL.indexOf("jobResults");
+            idx += 11;
+            int endidx = fileURL.indexOf('/', idx);
+            jobNoStr = fileURL.substring(idx, endidx);
+            
+        } else {
+        
+            // now we think we have a local result file url so grab the job #
+            int idx = fileURL.indexOf(key + "=");
+            if (idx < 0)
+                return null; // can't find a job #
+    
+                int endIdx = fileURL.indexOf("&", idx);
+            if (endIdx == -1)
+                endIdx = fileURL.length();
 
-        // now we think we have a local result file url so grab the job #
-        int idx = fileURL.indexOf(key + "=");
-        if (idx < 0)
-            return null; // can't find a job #
-
-        int endIdx = fileURL.indexOf("&", idx);
-        if (endIdx == -1)
-            endIdx = fileURL.length();
-
-        String jobNoStr = fileURL.substring(idx + 1 + key.length(), endIdx);
+            jobNoStr = fileURL.substring(idx + 1 + key.length(), endIdx);
+        }
         return jobNoStr;
     }
 
