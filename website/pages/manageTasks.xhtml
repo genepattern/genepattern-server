@@ -7,7 +7,9 @@
       xmlns:c="http://java.sun.com/jstl/core">
       
   <ui:composition template="/templates/common.xhtml">
-    <ui:define name="pageTitle">Manage Modules and Pipelines</ui:define>
+    <ui:define name="pageTitle">
+    	GenePattern | Manage Modules and Pipelines
+    </ui:define>
     <ui:define name="headText">
       <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css"/>
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jobResults.js"/>
@@ -54,6 +56,11 @@
     </ui:define>    
     <ui:define name="body">
       <h:form >
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
+        <tr>
+          <td>Manage Modules and Pipelines</td>
+        </tr>
+      </table>
       <table width="100%"  border="0" cellspacing="0" cellpadding="0">
         <tr>
           <td valign="top" class="maintasknav" id="maintasknav" align="right" width="100%">
