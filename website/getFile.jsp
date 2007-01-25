@@ -1,5 +1,8 @@
 <%@ page
-        import="org.genepattern.server.webservice.server.DirectoryManager, org.genepattern.util.GPConstants, java.io.BufferedInputStream, java.io.File, java.io.FileInputStream, org.genepattern.server.util.IAuthorizationManager, org.genepattern.server.util.AuthorizationManagerFactoryImpl,java.io.InputStream, java.io.OutputStream" %>
+        import="org.genepattern.server.webservice.server.DirectoryManager, 
+        org.genepattern.util.GPConstants, java.io.BufferedInputStream, java.io.File, 
+        java.io.FileInputStream, org.genepattern.server.util.IAuthorizationManager, org.genepattern.server.util.AuthorizationManagerFactory,
+        java.io.InputStream, java.io.OutputStream" %>
 <%
 
     String taskName = request.getParameter("task");
@@ -36,7 +39,7 @@
 			if (in.exists()){
 			    String prefix = userID + "_";
 				if (!filename.startsWith(prefix)){
-					IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
+					IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
 					boolean isAdmin = authManager.checkPermission("administrateServer",userID );
 					if (!isAdmin){
 						System.out.println("SECURITY ALERT: " + userID +" tried to snoop someone elses file " + filename);

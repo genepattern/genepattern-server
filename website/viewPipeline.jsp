@@ -23,7 +23,7 @@
 		 org.genepattern.data.pipeline.*,
  		 org.genepattern.util.StringUtils,
 		 org.genepattern.server.*,
-         	 org.genepattern.server.webapp.RunPipelineForJsp,
+         org.genepattern.server.webapp.RunPipelineForJsp,
 		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.LSID,
@@ -32,7 +32,7 @@
 		 java.util.Map,
 		 java.util.HashMap,
 		 org.genepattern.server.util.IAuthorizationManager,
-		 org.genepattern.server.util.AuthorizationManagerFactoryImpl,
+		 org.genepattern.server.util.AuthorizationManagerFactory,
 		 java.util.*,
 		 java.util.Collection,
 		 java.util.Iterator"
@@ -47,7 +47,7 @@ System.out.println("=======================================HERE");
 
 String userID= (String)request.getAttribute("userID"); // will force login if necessary
 if (userID == null) return; // come back after login
-IAuthorizationManager authManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
+IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
 
 
 

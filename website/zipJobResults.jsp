@@ -14,7 +14,7 @@
 	       java.text.*,
 	       java.util.*,
 	       java.net.*,
-	 	 org.genepattern.server.util.AuthorizationManagerFactoryImpl,
+	 	 org.genepattern.server.util.AuthorizationManagerFactory,
 		 org.genepattern.server.util.IAuthorizationManager,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.webservice.JobInfo,
@@ -485,7 +485,7 @@ out.println("<br>");
 
 	public void writeParameters(String encodedUserId, List params, boolean showAll, String prefix, String serverURL, JspWriter out) throws java.io.IOException {
 
-		IAuthorizationManager authorizationManager = (new AuthorizationManagerFactoryImpl()).getAuthorizationManager();
+		IAuthorizationManager authorizationManager = AuthorizationManagerFactory.getAuthorizationManager();
 
 
 		for(int i = 0; i < params.size(); i++) {
