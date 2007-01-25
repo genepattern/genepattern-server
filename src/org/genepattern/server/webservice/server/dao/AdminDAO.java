@@ -304,27 +304,31 @@ public class AdminDAO extends BaseDAO {
         query.setString("userId", username);
         List<AnalysisJob> recentJobs = query.list();
 
-        StringBuffer hql = new StringBuffer();
-        hql.append("select tm  from org.genepattern.server.domain.TaskMaster tm where lsid in (");
+        if (recentJobs.isEmpty()) {
+            return new TaskInfo[0];
+        } else {
+            StringBuffer hql = new StringBuffer();
+            hql.append("select tm  from org.genepattern.server.domain.TaskMaster tm where lsid in (");
 
-        int maxTasks = Math.min(maxResults, recentJobs.size());
-        for(int i=0; i<maxTasks; i++) {
-            hql.append("'" + recentJobs.get(i).getTaskLsid() + "'");
-            if(i < maxTasks - 1) hql.append(", ");
-        }
-        hql.append(")");
-        
-        query = getSession().createQuery(hql.toString());
-        List<TaskMaster> results = query.list();
+            int maxTasks = Math.min(maxResults, recentJobs.size());
+            for (int i = 0; i < maxTasks; i++) {
+                hql.append("'" + recentJobs.get(i).getTaskLsid() + "'");
+                if (i < maxTasks - 1)
+                    hql.append(", ");
+            }
+            hql.append(")");
 
-        TaskInfo[] allTasks = new TaskInfo[results.size()];
-        for (int i = 0; i < allTasks.length; i++) {
-            allTasks[i] = taskInfoFromTaskMaster(results.get(i));
+            query = getSession().createQuery(hql.toString());
+            List<TaskMaster> results = query.list();
+
+            TaskInfo[] allTasks = new TaskInfo[results.size()];
+            for (int i = 0; i < allTasks.length; i++) {
+                allTasks[i] = taskInfoFromTaskMaster(results.get(i));
+            }
+            return allTasks;
         }
-        return allTasks;
     }
 
-    
     private static Map getLatestTasks(TaskInfo[] tasks) throws MalformedURLException {
         Map latestTasks = new HashMap();
         for (int i = 0; i < tasks.length; i++) {
