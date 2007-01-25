@@ -29,6 +29,7 @@
 
 	function callManagedBean(elExpression, parameters) {            
         var opt = {
+          method: 'POST',
           parameters: parameters + '&el=' + elExpression,
           onSuccess: receiveResponse,
           onFailure: function(t) {
@@ -49,6 +50,7 @@
           }  
         }
       }
+      
     var showDescriptions = #{runTaskBean.showParameterDescriptions}
     function toggleDescriptions() {
     	var elements = document.getElementsByName('parameter_description');
@@ -263,7 +265,7 @@ function showFileInput(id) {
 							<a
 								href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160; 
                   <a
-								onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>&#160;|&#160;
+								onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>&#160;|&#160;
 				  <a
 								href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
 						</h:outputText> <h:outputText rendered="#{!runTaskBean.pipeline}">
@@ -357,7 +359,7 @@ function showFileInput(id) {
 								<a
 									href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160;
                     <a
-									onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');">export</a>&#160;|&#160;
+									onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>&#160;|&#160;
 										<a
 									href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
 							</h:outputText> <h:outputText rendered="#{!runTaskBean.pipeline}">
