@@ -1,11 +1,3 @@
 Manifest-Version: 1.0
 Main-Class: org.genepattern.gpge.GenePattern
-Class-Path: ./lib/jdnc-0_6-all.jar ./lib/archiver.jar ./lib/dom.jar ./
- lib/broad-cg.jar  ./lib/jaxp-api.jar ./lib/log4j-1.2.4.jar ./lib/jaxb
- -rt-1.0-ea.jar ./lib/runMain.jar   ./lib/oromatcher.jar ./lib/sax.jar
-  ./lib/trove.jar ./lib/xalan.jar ./lib/xercesImpl.jar ./lib/xsltc.jar
-  ./lib/activation.jar ./lib/axis.jar ./lib/commons-discovery.jar  ./l
- ib/commons-logging.jar ./lib/javax.servlet.jar ./lib/jaxrpc.jar ./lib
- /jnet.jar ./lib/js.jar ./lib/mail.jar ./lib/saaj.jar ./lib/wsdl4j.jar
-  ./lib/ui_support.jar ./lib/gpwebservice.jar ./lib/macos.jar ./lib/fo
- rms-1.0.5.jar
+Class-Path: activation.jar./lib/ broad-cg.jar./lib/ dom.jar./lib/ javax.servlet.jar./lib/ jaxrpc.jar./lib/ js.jar./lib/ mail.jar./lib/ saaj.jar./lib/ ui_support.jar./lib/ xercesImpl.jar archiver.jar./lib/ commons-discovery-0.2.jar./lib/ forms-1.0.5.jar./lib/ jaxb-rt-1.0-ea.jar./lib/ jdnc-0_6-all.jar./lib/ log4j-1.2.11.jar./lib/ oromatcher.jar./lib/ sax.jar./lib/ wsdl4j-1.5.1.jar./lib/ xsltc.jar axis.jar./lib/ commons-logging-1.0.4.jar./lib/ gpwebservice.jar./lib/ jaxp-api.jar./lib/ jnet.jar./lib/ macos.jar./lib/ runMain.jar./lib/ trove.jar./lib/ xalan.jar
