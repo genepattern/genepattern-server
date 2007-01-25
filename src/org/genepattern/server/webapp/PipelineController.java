@@ -35,7 +35,7 @@ import org.genepattern.util.LSID;
 
 public class PipelineController {
 
-	IPipelineView viewer = null;
+	HTMLPipelineView viewer = null;
 
 	PipelineModel model = null;
 
@@ -44,7 +44,7 @@ public class PipelineController {
 	// transient means: don't persist!!
 	transient Collection tmTasks = null; // collection of TaskInfo objects
 
-	public PipelineController(IPipelineView viewer, PipelineModel model) {
+	public PipelineController(HTMLPipelineView viewer, PipelineModel model) {
 		this.viewer = viewer;
 		this.model = model;
 	}
@@ -182,25 +182,5 @@ public class PipelineController {
 		this.model = model;
 	}
 
-	public static void main(String args[]) {
-		try {
-			HTMLPipelineView viewer = new HTMLPipelineView(
-					new OutputStreamWriter(System.out), "http:", "localhost", "8080", "gp", "Mozilla/4.78", null);
-			PipelineModel model = new PipelineModel();
-			PipelineController controller = new PipelineController(viewer,
-					model);
-
-			controller.init();
-			controller.begin();
-			//controller.displayTasks();
-			controller.displayTask(new TaskInfo());
-			controller.end();
-
-		} catch (Exception e) {
-			System.err.println(e);
-			e.printStackTrace();
-		}
-		System.out.println("done");
-		System.exit(1);
-	}
+	
 }

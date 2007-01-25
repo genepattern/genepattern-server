@@ -1413,11 +1413,21 @@ nextTask:
 		PipelineModel model = new PipelineModel();
 		model.setUserID(userID);
 		HTMLPipelineView viewer = new HTMLPipelineView(out, request.getScheme(), request.getServerName(), ""+request.getServerPort(), request.getContextPath(), request.getHeader("User-Agent"), request.getParameter("name"));
+
 		PipelineController controller = new PipelineController(viewer, model);
 							
 		controller.init();
-		controller.begin();
-			
+		viewer.head();
+%>		
+<jsp:include page="navbarHead.jsp"/>
+
+</head>
+<body>
+<jsp:include page="navbar.jsp"/>
+
+<%
+		viewer.writeStartBody();
+	
 		// start with a single blank slate
 		controller.displayTask(new TaskInfo());
 		controller.end();

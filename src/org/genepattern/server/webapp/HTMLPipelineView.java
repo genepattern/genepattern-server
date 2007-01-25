@@ -48,7 +48,7 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
 
-public class HTMLPipelineView implements IPipelineView {
+public class HTMLPipelineView {
 
 	/** maximum number of tasks definable in a pipeline (arbitrary) */
 	int MAX_TASKS = 50;
@@ -100,6 +100,7 @@ public class HTMLPipelineView implements IPipelineView {
 			tmTasksByLSID = new org.genepattern.server.webservice.server.local.LocalAdminClient(
 					userID).getTaskCatalogByLSID(tmCatalog);
 		
+            
 		//dumpCatalog();
 		try {
 			writer.write("");
@@ -117,7 +118,7 @@ public class HTMLPipelineView implements IPipelineView {
 	 * @throws IOException
 	 *  
 	 */
-	protected void writeTaskData() throws IOException {
+	public void writeTaskData() throws IOException {
 		String taskName = null;
 		String lsid = null;
 		TaskInfo taskInfo = null;
@@ -295,7 +296,7 @@ public class HTMLPipelineView implements IPipelineView {
 	 * @author Jim Lerner
 	 * @throws IOException
 	 */
-	protected void writeEndHead() throws IOException {
+	public void writeEndHead() throws IOException {
 		TaskInfo taskInfo = (pipelineName != null ? (TaskInfo) tmTasksByLSID
 				.get(pipelineName) : null);
 		LSID taskLSID = null;
@@ -330,182 +331,198 @@ public class HTMLPipelineView implements IPipelineView {
 				+ (taskInfo != null ? taskInfo.getName() : "new pipeline")
 				+ "</title>\n");
 		writer.write("<script>var contextRoot = '" + contextPath + "/'; </script>");
-		writer.write("</head>\n");
-		writer.write("<body>\n");
-
-		// simulate <jsp:include page="navbar.jsp">	
-		// this will fail for 
-		try {
-			String rootDir = System.getProperty("webappDir", "./webapps/"+contextPath);
-			File f = new File(rootDir+"/navbar.html");
-			//System.out.println("F=" + f.getCanonicalPath() + "  " + f.exists());
-		InputStream is = new FileInputStream(f);
-		if (is == null) {
-			System.err.println("null connection to navbar.jsp");
-		} else {
-			byte[] buf = new byte[2000];
-			int numRead;
-			while ((numRead = is.read(buf)) != -1) {
-				String s = new String(buf, 0, numRead);
-				writer.write(s);
-				//System.out.println("S=" + s);
-			}
-		}
-		} catch (Exception e){
-			e.printStackTrace();
-		}
-				
 		
-		writer.write("<form name=\"pipeline\" action=\""
-						+ submitURL
-						+ "\"  method=\"post\" ENCTYPE=\"multipart/form-data\">\n");
-		
-		
-		writer.write("<table width=\"100%\"  border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"barhead-other\"><tr class=\"barhead-other\"><td class=\"barhead-other\">Pipeline Designer");
-
-		if (taskInfo != null) {
-			writer.write(" - " + taskInfo.getName() + " version ");
-			writer.write("<select name=\"notused\" onchange=\"javascript:window.location='pipelineDesigner.jsp?"
-							+ GPConstants.NAME
-							+ "=' + this.options[this.selectedIndex].value\" style=\"font-weight: bold; font-size: medium; outline-style: none;\">\n");
-			writer.write(versionSelector(taskInfo));
-			writer.write("</select>\n");
-		}
-		writer.write("</td></tr></table>\n");
-
-
-		writer.write("<table cols=\"2\">\n");
-
-		writer.write("<tr class=\"pipelineperameter\"><td  class=\"taskperameter\"><a name=\"0\"></a>Pipeline&nbsp;name:</td><td width=\"*\"><input name=\"pipeline_name\" value=\"\" class=\"pipelineperameterinputTextShort\" size=\""
-						+ (pipelineName != null ? pipelineName.length() : 30)
-						+ "\" onchange=\"javascript:if (document.forms['pipeline'].pipeline_name.value != '' && !isRSafe(document.forms['pipeline'].pipeline_name.value)) alert(pipelineInstruction);\"> (required)\n");
-		writer.write("<input type=\"hidden\" name=\"cloneName\">\n");
-		writer.write("<input type=\"hidden\" name=\"autoSave\">\n");
-
-		writer
-				.write("&nbsp;&nbsp;&nbsp; <select name=\"changePipeline\" onChange=\"window.location='pipelineDesigner.jsp?name=' + this.options[this.selectedIndex].value\">\n");
-
-		writer.write("<script language=\"Javascript\">\n");
-		writer
-				.write("document.writeln('<option value=\"\">new pipeline</option' + (thisTaskName == \"\" ? ' selected' : '') + '>');\n");
-
-		writer.write("for (i in TaskTypes[PIPELINE]) {\n");
-		writer.write("	var pipelineLSID = TaskTypes[PIPELINE][i];\n");
-		writer.write("	var pipelineName = TaskInfos[pipelineLSID].name;\n");
-		writer.write("	lsid = new LSID(pipelineLSID);\n");
-		writer.write("	var key = lsid.authority + '" + LSID.DELIMITER
-				+ "' + lsid.identifier + '" + LSID.DELIMITER + "';\n");
-		writer.write("	if (versionlessLSIDs[key] == null) {\n");
-		writer
-				.write("		document.writeln('<option value=\"' + pipelineLSID + '\"' + ((pipelineName == thisTaskName || pipelineLSID == thisTaskName || key == thisLSIDNoVersion) ? ' selected' : '') + ' class=\"tasks-' + lsid.authorityType + '\">' + pipelineName.substring(0, pipelineName.lastIndexOf('.')) + '</option>');\n");
-		writer.write("		versionlessLSIDs[key] = pipelineLSID;\n");
-		writer.write("	}\n");
-		writer.write("}\n");
-		writer.write("</script>\n");
-
-		writer.write("</select>\n");
-
-		// build version selector
-		if (taskInfo != null) {
-			int numVers = numVersionsAvailable(taskInfo);
-			if (numVers > 1) {
-				writer.write("<select name=\"notused\" onchange=\"javascript:window.location='pipelineDesigner.jsp?"
-							+ GPConstants.NAME
-							+ "=' + this.options[this.selectedIndex].value\">\n");
-				writer.write(versionSelector(taskInfo));
-				writer.write("</select>\n");
-			} else {
-				writer.write(""+ taskLSID.getVersion() + "\n");
-
-			}
-		}
-
-		if (pipelineName != null && pipelineName.length() > 0) {
-			writer
-					.write("<input type=\"submit\" value=\"Delete...\" name=\"delete\" onclick=\"return deletePipeline()\" class=\"little\">\n");
-			writer
-					.write("<input type=\"submit\" value=\"Clone...\" name=\"clone\" onclick=\"return clonePipeline()\" class=\"little\">\n");
-		}
-		writer.write("</td></tr>\n");
-
-		writer
-				.write("<tr class=\"pipelineperameter\"><td>Description:</td><td width=\"*\"><input name=\"pipeline_description\" value=\"\"  class=\"pipelineperameterinputText\"></td></tr>\n");
-		writer
-				.write("<tr class=\"pipelineperameter\"><td>Author:</td><td width=\"*\"><input name=\"pipeline_author\" value=\"\" class=\"pipelineperameterinputText\"> <span class='description'>name, affiliation</span></td></tr>\n");
-		writer
-				.write("<tr class=\"pipelineperameter\"><td>Contact:</td><td width=\"*\"><input name=\""
-						+ GPConstants.USERID
-						+ "\" value=\""
-						+ userID
-						+ "\" class=\"pipelineperameterinputText\"> <span class='description'>email address</span></td></tr>\n");
-
-		writer
-				.write("<tr class=\"pipelineperameter\"><td>Privacy:</td><td width=\"*\"><select name=\""
-						+ GPConstants.PRIVACY + "\">");
-		String[] privacies = GPConstants.PRIVACY_LEVELS;
-		for (int i = 0; i < privacies.length; i++) {
-			writer.write("<option value=\"" + privacies[i] + "\">"
-					+ privacies[i] + "</option>");
-		}
-		writer.write("</select></td></tr>\n");
-
-		writer
-				.write("<tr class=\"pipelineperameter\"><td valign='top'>Version comment:</td><td width=\"85%\"><textarea name=\""
-						+ GPConstants.VERSION
-						+ "\" class=\"pipelineperameterinputText\" rows=\"1\"></textarea></td></tr>\n");
-
-		// output language is no longer used, but the radio button to support it
-		// is required to avoid getting an error on existing pipelines
-		writer.write("<input type=\"radio\" name=\""
-				+ GPConstants.LANGUAGE
-				+ "\" style=\"visibility: hidden\">\n");
-
-		// JTL 3/2/05 Adding spot to add doc to pipelines
-		addPipelineDoc();
-
-		// XXX get the showLSID param from a users prefs
-		boolean showLSID = false;
-		User user = (new UserDAO()).findById(userID);
-		if (user != null){
-	        	List<UserProp> props = user.getProps();
-			UserProp userProp = null;
-	        	for (UserProp p : props) {
-	            	if (p.getKey().equals("showLSIDs")) {
-	              	  userProp = p;
-	            	    break;
-      	    	  }
-      	  	}
-			if (userProp != null) showLSID = Boolean.parseBoolean(userProp.getValue());
-		}
-		if (!showLSID){
-			writer.write("<div style=\"display: none;\">");
-		}
-		writer.write("<tr><td align=\"right\" width=\"1\">LSID:</td><td width=\"*\"><input type=\"text\" name=\""
-						+ GPConstants.LSID
-						+ "\" value=\"\" size=\"80\" readonly style=\"border-style: none\"></td></tr>\n");
-		if (!showLSID){
-			writer.write("</div>");
-		}
-
-		// TODO: great place for a summary of the tasks! Eg. Threshold -> Slice
-		// -> GetRows, next line: Slice -> NearestNeighbors.
-		// This would be an inverted tree based on input file inheritance
-
-		writer.write("</table>\n");
-
-		writer.write("<script language=\"Javascript\">\n");
-		writer.write("for (tNum = 0; tNum < MAX_TASKS; tNum++) {\n");
-		writer.write("	if (ie4 || ns4) {\n");
-		writer
-				.write("		document.writeln('<div id=\"id' + tNum + '\"></div>');\n");
-		writer.write("	} else if (ns6) {\n");
-		writer
-				.write("		document.writeln('<layer id=\"' + tNum + '\" visibility=\"show\"></layer>');\n");
-		writer.write("	}\n");
-		writer.write("}\n");
-		writer.write("</script>\n");
-
+	
 	}
+    
+    public void writeStartBody() throws IOException {
+        TaskInfo taskInfo = (pipelineName != null ? (TaskInfo) tmTasksByLSID
+                .get(pipelineName) : null);
+        LSID taskLSID = null;
+        if (taskInfo != null) {
+            try {
+                taskLSID = new LSID((String) taskInfo.giveTaskInfoAttributes()
+                        .get(GPConstants.LSID));
+            } catch (MalformedURLException mue) {
+                // ignore
+            }
+        }
+
+     
+        // simulate <jsp:include page="navbar.jsp"> 
+        // this will fail for 
+//        try {
+//            String rootDir = System.getProperty("webappDir", "./webapps/"+contextPath);
+//            File f = new File(rootDir+"/navbar.html");
+//            //System.out.println("F=" + f.getCanonicalPath() + "  " + f.exists());
+//        InputStream is = new FileInputStream(f);
+//        if (is == null) {
+//            System.err.println("null connection to navbar.jsp");
+//        } else {
+//            byte[] buf = new byte[2000];
+//            int numRead;
+//            while ((numRead = is.read(buf)) != -1) {
+//                String s = new String(buf, 0, numRead);
+//                writer.write(s);
+//                //System.out.println("S=" + s);
+//            }
+//        }
+//        } catch (Exception e){
+//            e.printStackTrace();
+//        }
+                
+        
+        writer.write("<form name=\"pipeline\" action=\""
+                        + submitURL
+                        + "\"  method=\"post\" ENCTYPE=\"multipart/form-data\">\n");
+        
+        
+        writer.write("<table width=\"100%\"  border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"barhead-other\"><tr class=\"barhead-other\"><td class=\"barhead-other\">Pipeline Designer");
+
+        if (taskInfo != null) {
+            writer.write(" - " + taskInfo.getName() + " version ");
+            writer.write("<select name=\"notused\" onchange=\"javascript:window.location='pipelineDesigner.jsp?"
+                            + GPConstants.NAME
+                            + "=' + this.options[this.selectedIndex].value\" style=\"font-weight: bold; font-size: medium; outline-style: none;\">\n");
+            writer.write(versionSelector(taskInfo));
+            writer.write("</select>\n");
+        }
+        writer.write("</td></tr></table>\n");
+
+
+        writer.write("<table cols=\"2\">\n");
+
+        writer.write("<tr class=\"pipelineperameter\"><td  class=\"taskperameter\"><a name=\"0\"></a>Pipeline&nbsp;name:</td><td width=\"*\"><input name=\"pipeline_name\" value=\"\" class=\"pipelineperameterinputTextShort\" size=\""
+                        + (pipelineName != null ? pipelineName.length() : 30)
+                        + "\" onchange=\"javascript:if (document.forms['pipeline'].pipeline_name.value != '' && !isRSafe(document.forms['pipeline'].pipeline_name.value)) alert(pipelineInstruction);\"> (required)\n");
+        writer.write("<input type=\"hidden\" name=\"cloneName\">\n");
+        writer.write("<input type=\"hidden\" name=\"autoSave\">\n");
+
+        writer
+                .write("&nbsp;&nbsp;&nbsp; <select name=\"changePipeline\" onChange=\"window.location='pipelineDesigner.jsp?name=' + this.options[this.selectedIndex].value\">\n");
+
+        writer.write("<script language=\"Javascript\">\n");
+        writer
+                .write("document.writeln('<option value=\"\">new pipeline</option' + (thisTaskName == \"\" ? ' selected' : '') + '>');\n");
+
+        writer.write("for (i in TaskTypes[PIPELINE]) {\n");
+        writer.write("  var pipelineLSID = TaskTypes[PIPELINE][i];\n");
+        writer.write("  var pipelineName = TaskInfos[pipelineLSID].name;\n");
+        writer.write("  lsid = new LSID(pipelineLSID);\n");
+        writer.write("  var key = lsid.authority + '" + LSID.DELIMITER
+                + "' + lsid.identifier + '" + LSID.DELIMITER + "';\n");
+        writer.write("  if (versionlessLSIDs[key] == null) {\n");
+        writer
+                .write("        document.writeln('<option value=\"' + pipelineLSID + '\"' + ((pipelineName == thisTaskName || pipelineLSID == thisTaskName || key == thisLSIDNoVersion) ? ' selected' : '') + ' class=\"tasks-' + lsid.authorityType + '\">' + pipelineName.substring(0, pipelineName.lastIndexOf('.')) + '</option>');\n");
+        writer.write("      versionlessLSIDs[key] = pipelineLSID;\n");
+        writer.write("  }\n");
+        writer.write("}\n");
+        writer.write("</script>\n");
+
+        writer.write("</select>\n");
+
+        // build version selector
+        if (taskInfo != null) {
+            int numVers = numVersionsAvailable(taskInfo);
+            if (numVers > 1) {
+                writer.write("<select name=\"notused\" onchange=\"javascript:window.location='pipelineDesigner.jsp?"
+                            + GPConstants.NAME
+                            + "=' + this.options[this.selectedIndex].value\">\n");
+                writer.write(versionSelector(taskInfo));
+                writer.write("</select>\n");
+            } else {
+                writer.write(""+ taskLSID.getVersion() + "\n");
+
+            }
+        }
+
+        if (pipelineName != null && pipelineName.length() > 0) {
+            writer
+                    .write("<input type=\"submit\" value=\"Delete...\" name=\"delete\" onclick=\"return deletePipeline()\" class=\"little\">\n");
+            writer
+                    .write("<input type=\"submit\" value=\"Clone...\" name=\"clone\" onclick=\"return clonePipeline()\" class=\"little\">\n");
+        }
+        writer.write("</td></tr>\n");
+
+        writer
+                .write("<tr class=\"pipelineperameter\"><td>Description:</td><td width=\"*\"><input name=\"pipeline_description\" value=\"\"  class=\"pipelineperameterinputText\"></td></tr>\n");
+        writer
+                .write("<tr class=\"pipelineperameter\"><td>Author:</td><td width=\"*\"><input name=\"pipeline_author\" value=\"\" class=\"pipelineperameterinputText\"> <span class='description'>name, affiliation</span></td></tr>\n");
+        writer
+                .write("<tr class=\"pipelineperameter\"><td>Contact:</td><td width=\"*\"><input name=\""
+                        + GPConstants.USERID
+                        + "\" value=\""
+                        + userID
+                        + "\" class=\"pipelineperameterinputText\"> <span class='description'>email address</span></td></tr>\n");
+
+        writer
+                .write("<tr class=\"pipelineperameter\"><td>Privacy:</td><td width=\"*\"><select name=\""
+                        + GPConstants.PRIVACY + "\">");
+        String[] privacies = GPConstants.PRIVACY_LEVELS;
+        for (int i = 0; i < privacies.length; i++) {
+            writer.write("<option value=\"" + privacies[i] + "\">"
+                    + privacies[i] + "</option>");
+        }
+        writer.write("</select></td></tr>\n");
+
+        writer
+                .write("<tr class=\"pipelineperameter\"><td valign='top'>Version comment:</td><td width=\"85%\"><textarea name=\""
+                        + GPConstants.VERSION
+                        + "\" class=\"pipelineperameterinputText\" rows=\"1\"></textarea></td></tr>\n");
+
+        // output language is no longer used, but the radio button to support it
+        // is required to avoid getting an error on existing pipelines
+        writer.write("<input type=\"radio\" name=\""
+                + GPConstants.LANGUAGE
+                + "\" style=\"visibility: hidden\">\n");
+
+        // JTL 3/2/05 Adding spot to add doc to pipelines
+        addPipelineDoc();
+
+        // XXX get the showLSID param from a users prefs
+        boolean showLSID = false;
+        User user = (new UserDAO()).findById(userID);
+        if (user != null){
+                List<UserProp> props = user.getProps();
+            UserProp userProp = null;
+                for (UserProp p : props) {
+                    if (p.getKey().equals("showLSIDs")) {
+                      userProp = p;
+                        break;
+                  }
+            }
+            if (userProp != null) showLSID = Boolean.parseBoolean(userProp.getValue());
+        }
+        if (!showLSID){
+            writer.write("<div style=\"display: none;\">");
+        }
+        writer.write("<tr><td align=\"right\" width=\"1\">LSID:</td><td width=\"*\"><input type=\"text\" name=\""
+                        + GPConstants.LSID
+                        + "\" value=\"\" size=\"80\" readonly style=\"border-style: none\"></td></tr>\n");
+        if (!showLSID){
+            writer.write("</div>");
+        }
+
+        // TODO: great place for a summary of the tasks! Eg. Threshold -> Slice
+        // -> GetRows, next line: Slice -> NearestNeighbors.
+        // This would be an inverted tree based on input file inheritance
+
+        writer.write("</table>\n");
+
+        writer.write("<script language=\"Javascript\">\n");
+        writer.write("for (tNum = 0; tNum < MAX_TASKS; tNum++) {\n");
+        writer.write("  if (ie4 || ns4) {\n");
+        writer
+                .write("        document.writeln('<div id=\"id' + tNum + '\"></div>');\n");
+        writer.write("  } else if (ns6) {\n");
+        writer
+                .write("        document.writeln('<layer id=\"' + tNum + '\" visibility=\"show\"></layer>');\n");
+        writer.write("  }\n");
+        writer.write("}\n");
+        writer.write("</script>\n");
+
+    }
+    
 
 	protected void addPipelineDoc() throws IOException {
 		try {
@@ -649,12 +666,22 @@ public class HTMLPipelineView implements IPipelineView {
 
 		return sb.toString();
 	}
-
-	public void begin() {
+    public void begin() {
+        taskNum = 0;
+        try {
+            writeTaskData();
+            writeEndHead();
+            writeStartBody();
+            writer.flush();
+        } catch (IOException ioe) {
+        }
+    }
+	public void head() {
 		taskNum = 0;
 		try {
 			writeTaskData();
 			writeEndHead();
+            //writeStartBody();
 			writer.flush();
 		} catch (IOException ioe) {
 		}
