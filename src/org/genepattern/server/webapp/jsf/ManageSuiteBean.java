@@ -41,13 +41,15 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
     private Map<String, String> supportFiles = null;
     
     public ManageSuiteBean() {
-	resetSuites();
     }
 
     /**
      * @return
      */
     public List<Suite> getSuites() {
+        if(suites == null) {
+            resetSuites();
+        }
         return suites;
     }
     
@@ -65,6 +67,11 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
     public boolean isCurrentSuiteSet() {
         return (currentSuite != null);
     }
+    
+    public void setCurrentSuite(Suite currentSuite) {
+        this.currentSuite = currentSuite;
+    }
+
 
     /**
      * @return
@@ -194,11 +201,11 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
     }
 
     public String edit() {
-        setCurrentSuite();
+        loadCurrentSuite();
         return "edit suite";
     }
 
-    private void setCurrentSuite() {
+    private void loadCurrentSuite() {
         if (currentSuite == null) {
             String lsid = UIBeanHelper.getRequest().getParameter("lsid");
             currentSuite = (new SuiteDAO()).findById(lsid);

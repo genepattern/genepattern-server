@@ -18,6 +18,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
@@ -216,10 +217,10 @@ public class CreateSuiteBean implements java.io.Serializable {
 				saveUploadedFile(supportFile3, suiteDir);
 			}
 
-			RunTaskBean homePageBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
-			homePageBean.setSplashMessage("Suite " + currentSuite.getName() + " was successfully created.");
+                        ManageSuiteBean manageSuiteBean = (ManageSuiteBean)UIBeanHelper.getManagedBean("#{manageSuiteBean}");
+                        manageSuiteBean.setCurrentSuite((new SuiteDAO()).findById(currentSuite.getLsid()));
 
-			return "home";
+			return "view suite";
 		} catch (Exception e) {
 			HibernateUtil.rollbackTransaction(); // This shouldn't be
 			// neccessary, but just in

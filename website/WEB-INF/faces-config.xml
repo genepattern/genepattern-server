@@ -290,6 +290,14 @@
    <to-view-id>/pages/createSuite.xhtml</to-view-id>
   </navigation-case>
  </navigation-rule>
+ <navigation-rule>
+  <display-name>view suite</display-name>
+  <from-view-id>/pages/createSuite.xhtml</from-view-id>
+  <navigation-case>
+   <from-outcome>view suite</from-outcome>
+   <to-view-id>/pages/viewSuite.xhtml</to-view-id>
+  </navigation-case>
+ </navigation-rule>
  <application>
   <view-handler>com.sun.facelets.FaceletViewHandler</view-handler>
   <!-- Replace view-handler tag with the tag below to enable trinidad  
