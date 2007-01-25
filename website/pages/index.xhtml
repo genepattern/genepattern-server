@@ -27,9 +27,9 @@
  
 /* <![CDATA[ */
 
-	function callManagedBean(elExpression, parameters) {            
+	function callManagedBean(elExpression, parameters) {          
         var opt = {
-          method: 'POST',
+          method: 'get',
           parameters: parameters + '&el=' + elExpression,
           onSuccess: receiveResponse,
           onFailure: function(t) {
@@ -37,10 +37,11 @@
           }
         } 
         new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
-      }
+      } 
 
       // The callback function - receive response from server
-      function receiveResponse( req ) {
+      function receiveResponse( req) {
+      	
         if (req.readyState == 4) {
           if (req.status == 200) { // only if "OK"
             	showCode(req.responseText);
@@ -105,7 +106,7 @@ function viewCode() {
 			params += "&" + e.name + "=" + e.value;
 		}
 	}
-	callManagedBean("recentJobsBean.taskCode", params);
+	callManagedBean("jobsBean.taskCode", params);
 	
 }
 
