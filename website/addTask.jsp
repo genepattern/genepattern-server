@@ -481,7 +481,7 @@ function addNewDomainType(name, desc){
 		  <tr class="taskperameter" title="Task name without spaces, used as the name by which the task will be invoked.">
 		  <td valign="top" >Name:*</td>
 		  <td><% if (!viewOnly) { %><input name="<%= GPConstants.NAME %>" maxlength="100" size="<%= taskInfo != null ? Math.max(taskInfo.getName().length() + 2, 20): 20 %>" 
-		  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<a href='help.jsp#Name' target='help'><img border='0' src='skin/help2.jpg'/></a><% } else { %><%= taskInfo.getName() %><% } %>
+		  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<a href='help.jsp#Name' target='help'><img border='0' src='images/help2.jpg'/></a><% } else { %><%= taskInfo.getName() %><% } %>
 		&nbsp;&nbsp;&nbsp;&nbsp;
 		
 		<% if (taskInfo != null && !viewOnly) { %>
@@ -538,7 +538,7 @@ function addNewDomainType(name, desc){
    <%} else {
       out.print(taskInfo != null ? StringUtils.htmlEncode(taskInfo.getDescription()) : "");
   } %>
-<a href='help.jsp#Description' target='help'><img border='0' src='skin/help2.jpg'/></a>
+<a href='help.jsp#Description' target='help'><img border='0' src='images/help2.jpg'/></a>
   </td>
   </tr>
 
@@ -552,7 +552,7 @@ function addNewDomainType(name, desc){
   <% } else { 
      out.print(taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.AUTHOR)) : "");
    } %>
-	<a href='help.jsp#Author' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	<a href='help.jsp#Author' target='help'><img border='0' src='images/help2.jpg'/></a>
 
        </td>
   </tr>
@@ -573,21 +573,21 @@ function addNewDomainType(name, desc){
 	      	out.print(owner);
 	   	}
 	   %>
-	<a href='help.jsp#Owner' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	<a href='help.jsp#Owner' target='help'><img border='0' src='images/help2.jpg'/></a>
 	  </td>
 	  </tr>
 
 	  <tr class="taskperameter" title="Make available to others">
 	  <td valign="top">Privacy:</td>
 	  <td><%= createSelection(tia, GPConstants.PRIVACY, privacies, "onchange=\"onPrivacyChange(this)\"", viewOnly) %>
-	<a href='help.jsp#Privacy' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	<a href='help.jsp#Privacy' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
   </tr>
 
   <tr class="taskperameter" title="Readiness for use by others">
   <td valign="top">Quality&nbsp;level:</td>
   <td ><%= createSelection(tia, GPConstants.QUALITY, qualities, "", viewOnly) %>
-	<a href='help.jsp#Quality' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	<a href='help.jsp#Quality' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
 	  </tr>
 
@@ -641,7 +641,7 @@ function addNewDomainType(name, desc){
 	   </td>
 	   <pre>
 	  <td valign="top" >
-	  <% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="60" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncodeLongString(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea> * (required) <a href='help.jsp#Command' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	  <% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="60" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncodeLongString(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea> * (required) <a href='help.jsp#Command' target='help'><img border='0' src='images/help2.jpg'/></a>
 	<% } %>
 		
 	</td>
@@ -656,7 +656,7 @@ function addNewDomainType(name, desc){
 	  <% if (!viewOnly) { %>
 		 <input type="button" onclick="addNewTaskType()" value="New..." class="little">
 	  <% } %>
-	<a href='help.jsp#TaskType' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	<a href='help.jsp#TaskType' target='help'><img border='0' src='images/help2.jpg'/></a>
 	
 	  </td>
 	  </tr>
@@ -665,7 +665,7 @@ function addNewDomainType(name, desc){
 	  <td valign="top">CPU&nbsp;type:</td>
 	  <td >         
 		<%= createSelection(tia, GPConstants.CPU_TYPE, cpuTypes, "", viewOnly) %> (if compiled for a specific one)
-	         <a href='help.jsp#cpu' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	         <a href='help.jsp#cpu' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
 	   </tr>
 	
@@ -673,7 +673,7 @@ function addNewDomainType(name, desc){
 	  <td valign="top" >operating&nbsp;system:</td>
 	  <td > 
 		<%= createSelection(tia, GPConstants.OS, oses, "", viewOnly) %> (if operating system-dependent)
-	  <a href='help.jsp#os' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	  <a href='help.jsp#os' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
 	   </tr>
 
@@ -690,7 +690,7 @@ function addNewDomainType(name, desc){
 	  <td>         
 	  <%= createSelection(tia, GPConstants.LANGUAGE, languages, "", viewOnly) %> &nbsp;
 	    <b>min. language version:</b> <% if (!viewOnly) { %><input name="<%= GPConstants.JVM_LEVEL %>" value="<%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %>" size="10"><% } else { %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %><% } %>
-	         <a href='help.jsp#Language' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	         <a href='help.jsp#Language' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
 	   </tr>
 	   
@@ -698,7 +698,7 @@ function addNewDomainType(name, desc){
 	  <td valign="top">Version&nbsp;comment:</td>
 	  <td >
 	  	<% if (!viewOnly) { %><textarea name="<%= GPConstants.VERSION %>" cols="50" rows="1"><% } %><%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.VERSION)) : "" %><% if (!viewOnly) { %></textarea><% } %>
-	   <a href='help.jsp#VersionComment' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	   <a href='help.jsp#VersionComment' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
 	   </tr>
 	
@@ -708,7 +708,7 @@ function addNewDomainType(name, desc){
 		<table>
 		<tr>
 		<td valign="top">
-			output file format(s):<a href='help.jsp#OutputDescription' target='help'><img border='0' src='skin/help2.jpg'/></a>
+			output file format(s):<a href='help.jsp#OutputDescription' target='help'><img border='0' src='images/help2.jpg'/></a>
 		</td>
 		<td valign="top">	
 	<%
@@ -799,7 +799,7 @@ function addNewDomainType(name, desc){
 	  <td >
 	<font size=-1>
 	  The actual program plus any required libraries will will be accessible to your command line as 
-	  &lt;<%= GPConstants.LIBDIR %>&gt;<file.separator><i>filename</i></font><a href='help.jsp#SupportFiles' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	  &lt;<%= GPConstants.LIBDIR %>&gt;<file.separator><i>filename</i></font><a href='help.jsp#SupportFiles' target='help'><img border='0' src='images/help2.jpg'/></a>
 	<br>
 	
 	<% for (i = 1; i <= NUM_ATTACHMENTS; i++) { %>
@@ -851,7 +851,7 @@ function addNewDomainType(name, desc){
 	<td>
 	<font size=-1>
 	  The names of these parameters will be available for the command line (above) in the form &lt;name&gt;.<br>
-	  Parameters with &quot;filename&quot; in their name will be treated as input filenames.</font>&nbsp;&nbsp;<a href='help.jsp#inputParameters' target='help'><img border='0' src='skin/help2.jpg'/></a>
+	  Parameters with &quot;filename&quot; in their name will be treated as input filenames.</font>&nbsp;&nbsp;<a href='help.jsp#inputParameters' target='help'><img border='0' src='images/help2.jpg'/></a>
 	<br/>
 	<br/>
 <br/>
