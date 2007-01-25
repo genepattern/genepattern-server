@@ -235,7 +235,6 @@ public class JobBean {
 
     }
 
-
     public String getTaskCode() {
         try {
             String language = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("language"));
@@ -277,7 +276,7 @@ public class JobBean {
         return showExecutionLogs;
     }
 
-    public String loadTask(ActionEvent event) {
+    public String loadTask() {
         String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("module"));
         UIBeanHelper.getRequest().setAttribute("matchJob",
                 UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
@@ -468,6 +467,8 @@ public class JobBean {
             try {
                 allJobs = wrapJobs(analysisClient.getJobs(showEveryonesJobs ? null : userId, -1, Integer.MAX_VALUE,
                         false));
+                sortAllJobs();
+                sortFiles();
             } catch (WebServiceException wse) {
                 log.error(wse);
                 allJobs = new ArrayList<JobResultsWrapper>();
@@ -598,14 +599,12 @@ public class JobBean {
     }
 
     /**
-     * Action method. First sorts jobs, then for each job sorts files.
+     * Jobs are always sorted, so there's nothing to do here.  This is just an action method to trigger
+     * a reload.  Could probably be better named.
      * 
      * @return
      */
     public String sort() {
-
-        sortJobs();
-        sortFiles();
         return null;
     }
 
@@ -670,11 +669,12 @@ public class JobBean {
             }
         };
 
-        for (JobResultsWrapper jobResult : getAllJobs()) {
+        for (JobResultsWrapper jobResult : allJobs) {
             sortFilesRecursive(jobResult, comparator);
         }
 
     }
+
     private void sortFilesRecursive(JobResultsWrapper jobResult, Comparator comparator) {
         Collections.sort(jobResult.getOutputFileParameterInfos(), comparator);
         for (JobResultsWrapper child : jobResult.getChildJobs()) {
@@ -683,8 +683,7 @@ public class JobBean {
 
     }
 
-
-    private void sortJobs() {
+    private void sortAllJobs() {
         final String column = getJobSortColumn();
         Comparator comparator = new Comparator() {
 
@@ -722,14 +721,14 @@ public class JobBean {
                 }
             }
         };
-        
-        Collections.sort(getAllJobs(), comparator);
+
+        Collections.sort(allJobs, comparator);
     }
 
     public boolean isJobSortAscending() {
         return jobSortAscending;
     }
-    
+
     /**
      * Force an update of the job list by nulling the current values.
      */

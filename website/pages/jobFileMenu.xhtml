@@ -34,7 +34,7 @@
           <t:dataList value="#{param.moduleMenuItems}" var="moduleMenuItem">
             <tr>
               <td>
-                <h:commandLink value="#{moduleMenuItem.key}" actionListener="#{jobsBean.loadTask}" immediate="true">
+                <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsBean.loadTask}" immediate="true">
                   <f:param value="#{moduleMenuItem.value}" name="module"/>
                   <f:param value="#{param.jobNumber}" name="jobNumber"/>
                 </h:commandLink>
