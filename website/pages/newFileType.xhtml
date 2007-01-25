@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jstl/core">
+<head>
+<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
+    
+<script type="text/javascript" language="javascript"> 
+	/* <![CDATA[ */
+      function sendData(){
+		window.opener.addNewFileType($('name').value, $('name').value);	
+		window.close();
+	}
+	/* ]]> */
+
+</script>
+<link
+	href="#{facesContext.externalContext.requestContextPath}/css/style.css"
+	rel="stylesheet" type="text/css" />
+<title>GenePattern | Add New File Type</title>
+</head>
+<body>
+
+<h2>Add New File Type</h2>
+
+<form name="data" id="data">
+<table>
+	<tr>
+		<td align="right"><nobr>File Format:</nobr></td>
+		<td><input type="text" name="name" id="name" value="" size="10" /></td>
+	</tr>
+</table>
+<center><input type="button" onclick="sendData()" value="Add" /><input type="button" onclick="window.close()" value="Cancel" /></center>
+</form>
+
+</body>
+</html>
