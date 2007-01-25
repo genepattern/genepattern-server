@@ -1,4 +1,3 @@
-
 function toggleVisibility(id) {
     var element = document.getElementById(id + "_panel");
     var panelState = "open";  // default   
@@ -96,36 +95,30 @@ function chooserModeChanged() {
 
 function updateChooserMode(mode) {            
   var opt = {
-    method:    'post',
-    postBody:  'el=moduleChooserState.updateChooserMode&mode=' + mode,
-    onSuccess: receiveResponse,
+    method:    'get',
+    parameters:  'el=moduleChooserState.updateChooserMode&mode=' + mode,
+    onSuccess: receiveModuleResponse,
     onFailure: function(t) {
       alert('Error ' + t.status + ' -- ' + t.statusText);
     }
   } 
-  new  Ajax.Request('/gp/anyThingAtAll.ajax',opt);
+  new  Ajax.Request(contextRoot + '/anyThingAtAll.ajax',opt);
 }
 
+        
 function updatePanelState(id, state) {            
   var opt = {
-    method:    'post',
-    postBody:  'el=moduleChooserState.updatePanelState&id=' + id + '&state=' + state,
-    onSuccess: receiveResponse,
+    method:    'get',
+    parameters:  'el=moduleChooserState.updatePanelState&id=' + id + '&state=' + state,
+    onSuccess: receiveModuleResponse,
     onFailure: function(t) {
       alert('Error ' + t.status + ' -- ' + t.statusText);
     }
   } 
-  new  Ajax.Request('/gp/anyThingAtAll.ajax',opt);
+  new  Ajax.Request(contextRoot + '/anyThingAtAll.ajax',opt);
 }
 
 // The callback function - receive response from server
-function receiveResponse( req ) {
-  if (req.readyState == 4) {
-    if (req.status == 200) { // only if "OK"
-      update(req.responseText);
-    } 
-    else {
-      alert("There was a problem retrieving the XML data:\n" + req.statusText);
-    }  
-  }
+function receiveModuleResponse( req ) {
+  	// server response is empty
 }
