@@ -182,9 +182,9 @@ document.location.href=location;
         <tr>
           <td valign="top" class="maintasknav" id="maintasknav" align="right" width="100%">
           	<h:outputText rendered="#{authorizationBean.admin}">
-            <h:selectBooleanCheckbox  value="#{jobResultsBean.showEveryonesJobs}" onchange="this.form.submit();"/>show everyone's jobs&#160;&#160;&#160;&#160;
+            <h:selectBooleanCheckbox  value="#{jobsBean.showEveryonesJobs}" onchange="this.form.submit();"/>show everyone's jobs&#160;&#160;&#160;&#160;
             </h:outputText>
-            <h:selectBooleanCheckbox  value="#{jobResultsBean.showExecutionLogs}" onchange="this.form.submit();" />show execution logs	
+            <h:selectBooleanCheckbox  value="#{jobsBean.showExecutionLogs}" onchange="this.form.submit();" />show execution logs	
           </td>
         </tr>
       </table>
@@ -197,7 +197,7 @@ document.location.href=location;
    
         <!-- Job sort column -->  
         <strong>sort jobs by: </strong>
-        <h:selectOneMenu value="#{jobResultsBean.jobSortColumn}">
+        <h:selectOneMenu value="#{jobsBean.jobSortColumn}">
           <f:selectItem itemLabel="job id number" itemValue="jobNumber"/>
           <f:selectItem itemLabel="name" itemValue="taskName"/>
           <f:selectItem itemLabel="date submitted" itemValue="dateSubmitted"/>
@@ -207,7 +207,7 @@ document.location.href=location;
         
         <!-- Job sort direction -->
         <img style="cursor: pointer;"
-             src="#{facesContext.externalContext.requestContextPath}#{jobResultsBean.jobSortAscending == true ? '/images/sort-up.gif' : '/images/sort-down.gif'}"
+             src="#{facesContext.externalContext.requestContextPath}#{jobsBean.jobSortAscending == true ? '/images/sort-up.gif' : '/images/sort-down.gif'}"
              alt="jobs order" width="11" height="16" border="0" align="absmiddle" 
              id="jobSortOrder" name="jobSortOrder" 
              onclick="toggleSortOrder('jobSortOrder')"
@@ -216,12 +216,12 @@ document.location.href=location;
 	    <t:inputHidden
              id="jobSortOrder_field"
              forceId="true"
-             value="#{jobResultsBean.jobSortAscending}"/>
+             value="#{jobsBean.jobSortAscending}"/>
 		 
 		 <!-- File sort column -->
 		 &#160; &#160; &#160; &#160;
 		<strong>sort files by:</strong>
-        <h:selectOneMenu value="#{jobResultsBean.fileSortColumn}">
+        <h:selectOneMenu value="#{jobsBean.fileSortColumn}">
           <f:selectItem itemLabel="name" itemValue="name"/>
           <f:selectItem itemLabel="size" itemValue="size"/>
           <f:selectItem itemLabel="date completed" itemValue="lastModified"/>
@@ -229,7 +229,7 @@ document.location.href=location;
       
         <!-- File sort direction --> 
         <img style="cursor: pointer;"
-             src="#{facesContext.externalContext.requestContextPath}#{jobResultsBean.fileSortAscending == true ? '/images/sort-up.gif' : '/images/sort-down.gif'}"
+             src="#{facesContext.externalContext.requestContextPath}#{jobsBean.fileSortAscending == true ? '/images/sort-up.gif' : '/images/sort-down.gif'}"
              alt="files order" width="11" height="16" border="0" align="absmiddle" 
              id="fileSortOrder" name="fileSortOrder" 
              onclick="toggleSortOrder('fileSortOrder')"
@@ -238,10 +238,10 @@ document.location.href=location;
 	    <t:inputHidden
              id="fileSortOrder_field"
              forceId="true"
-             value="#{jobResultsBean.fileSortAscending}"/> &#160;&#160;
+             value="#{jobsBean.fileSortAscending}"/> &#160;&#160;
              
              
-       <h:commandButton value="Sort" action="#{jobResultsBean.sort}" />
+       <h:commandButton value="Sort" action="#{jobsBean.sort}" />
 
       </div>
       
@@ -253,7 +253,7 @@ document.location.href=location;
           <td valign="top">
             <nobr>
               <div align="center">
-                <h:commandLink action="#{jobResultsBean.delete}" 
+                <h:commandLink action="#{jobsBean.delete}" 
                                onclick="if (!confirmDelete()) return false">delete</h:commandLink> 
               </div>
             </nobr>
@@ -286,7 +286,7 @@ document.location.href=location;
         </tr>
         
         <!--  Loop through job list -->
-         <t:dataList var="rootJobInfo" value="#{jobResultsBean.jobs}" rowIndexVar="jobIndex">
+         <t:dataList var="rootJobInfo" value="#{jobsBean.allJobs}" rowIndexVar="jobIndex">
  
           <script type="text/javascript" language="javascript">
             jobNumbers[#{jobIndex}]='#{rootJobInfo.jobNumber}';
@@ -317,7 +317,7 @@ document.location.href=location;
           <td valign="top" class="smalltype">
             <nobr>
               <div align="center">
-                <h:commandLink action="#{jobResultsBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink> 
+                <h:commandLink action="#{jobsBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink> 
               </div>
             </nobr>
           </td>
@@ -334,7 +334,7 @@ document.location.href=location;
     
     <!-- Set initial visibility state  -->
     <script type="text/javascript" language="javascript"> 
-      <t:dataList var="jobInfo" value="#{jobResultsBean.jobs}">
+      <t:dataList var="jobInfo" value="#{jobsBean.allJobs}">
         <h:outputText rendered="#{!jobInfo.expanded}">
             hideCategory('#{jobInfo.jobNumber}');
         </h:outputText>
@@ -346,7 +346,7 @@ document.location.href=location;
     <!-- Create menus  -->
     <ui:define name="popupMenus">
       <h:form>
-        <t:dataList var="jobInfo" value="#{jobResultsBean.jobs}">
+        <t:dataList var="jobInfo" value="#{jobsBean.allJobs}">
           <ui:include src="jobsMenu.xhtml">
             <ui:param name="job" value="#{jobInfo}"/>
           </ui:include>

@@ -18,7 +18,7 @@
         <t:graphicImage value="/images/spacer.gif" width="1" height="6"/>
       </td>
     </tr>
-    <h:outputText rendered="#{empty recentJobsBean.jobs}">
+    <h:outputText rendered="#{empty jobsBean.recentJobs}">
       <tr>
         <td>No jobs to display</td>
       </tr>
@@ -26,7 +26,7 @@
     <h:form>
     
       <!-- Loop through jobs -->
-      <t:dataList var="job" value="#{recentJobsBean.jobs}" rowIndexVar="jobIndex">
+      <t:dataList var="job" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
         <tr>
           <td width="9">
             <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
@@ -115,7 +115,8 @@
     <!-- Create menus  -->
     <ui:define name="popupMenus">
       <h:form>
-        <t:dataList var="jobInfo" value="#{recentJobsBean.jobs}" rowIndexVar="jobIndex">
+        <f:param/>
+        <t:dataList var="jobInfo" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
           <ui:include src="jobsMenu.xhtml">
             <ui:param name="job" value="#{jobInfo}"/>
           </ui:include>

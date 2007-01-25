@@ -13,7 +13,7 @@
 		<tbody>
 			<tr>
 				<td><h:commandLink value="Download"
-					actionListener="#{recentJobsBean.downloadZip}"
+					actionListener="#{jobsBean.downloadZip}"
 					immediate="true"
 					rendered="#{job.complete}">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />
@@ -21,7 +21,7 @@
 			</tr>
 			<tr>
 				<td><h:commandLink value="Reload"
-					action="#{recentJobsBean.reload}"
+					action="#{jobsBean.reload}"
 					immediate="true">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />
 				</h:commandLink></td>
@@ -29,7 +29,7 @@
 			<tr>
 				<td><h:commandLink value="Delete"
 					onclick="return confirm('Are you sure you want to delete the selected job?');"
-					actionListener="#{recentJobsBean.delete}"
+					actionListener="#{jobsBean.delete}"
 					immediate="true"
 					rendered="#{job.complete}">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />
@@ -44,7 +44,7 @@
 			</tr>
 			<tr>
 				<td><h:commandLink value="Terminate"
-					actionListener="#{recentJobsBean.terminateJob}"
+					actionListener="#{jobsBean.terminateJob}"
 					rendered="#{!job.complete}"
 					immediate="true">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />
@@ -57,7 +57,7 @@
 			</tr>
 			<tr>
 				<td><h:commandLink value="View Java Code"
-					actionListener="#{recentJobsBean.viewCode}" target="_blank"
+					actionListener="#{jobsBean.viewCode}" target="_blank"
 					immediate="true">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />
 					<f:param value="Java" name="language" />
@@ -65,7 +65,7 @@
 			</tr>
 			<tr>
 				<td><h:commandLink value="View MATLAB Code"
-					actionListener="#{recentJobsBean.viewCode}" target="_blank"
+					actionListener="#{jobsBean.viewCode}" target="_blank"
 					immediate="true">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />
 					<f:param value="MATLAB" name="language" />
@@ -73,7 +73,7 @@
 			</tr>
 			<tr>
 				<td><h:commandLink value="View R Code"
-					actionListener="#{recentJobsBean.viewCode}" target="_blank"
+					actionListener="#{jobsBean.viewCode}" target="_blank"
 					immediate="true">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />
 					<f:param value="R" name="language" />

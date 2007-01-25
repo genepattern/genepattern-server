@@ -48,11 +48,6 @@
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
-  <managed-bean-name>jobResultsBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.jsf.JobResultsBean</managed-bean-class>
-  <managed-bean-scope>request</managed-bean-scope>
- </managed-bean>
- <managed-bean>
   <managed-bean-name>userPrefsBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.UserPrefsBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
@@ -93,8 +88,8 @@
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
-  <managed-bean-name>recentJobsBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.jsf.RecentJobsBean</managed-bean-class>
+  <managed-bean-name>jobsBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.JobBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
@@ -123,7 +118,7 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.SuiteInstallBean</managed-bean-class>
   <managed-bean-scope>session</managed-bean-scope>
  </managed-bean>
-  <managed-bean>
+ <managed-bean>
   <managed-bean-name>manageTasksBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.ManageTasksBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
