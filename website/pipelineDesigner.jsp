@@ -432,7 +432,6 @@ function setPromptPosition(e, divid, anElement){
    }
 
 function closePromptWindow(divid){
-alert(divid);
 	document.getElementById(divid).style.display="none"
 }
 
