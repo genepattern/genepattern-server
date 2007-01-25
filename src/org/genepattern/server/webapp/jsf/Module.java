@@ -71,8 +71,7 @@ public class Module implements java.io.Serializable {
     }
 
     public void setSelected(boolean selected) {
-        System.out.println("Setting selected state=" + selected);
-        this.selected = selected;
+         this.selected = selected;
     }
 
     public List<SelectItem> getVersions() {
