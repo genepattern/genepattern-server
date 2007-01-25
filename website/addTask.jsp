@@ -740,7 +740,7 @@ function addNewDomainType(name, desc){
 		</td>
 	  <% if (!viewOnly) { %>
 	  	<td valign="top">         
-		 <input type="button" onclick="window.open('newFileType.html', 'newFileType', 'width=200,height=200').focus()" value="New..." class="little">
+		 <input type="button" onclick="window.open('pages/newFileType.jsf', 'Add New File Type','toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=300, height=200');" value="New..." class="little">
 	  	</td>
 	   <% }%>
 	<!--	 <td valign="top">
