@@ -39,7 +39,7 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
     private boolean includeDependents = false;
 
     private Map<String, String> supportFiles = null;
-    
+
     public ManageSuiteBean() {
     }
 
@@ -47,14 +47,14 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
      * @return
      */
     public List<Suite> getSuites() {
-        if(suites == null) {
+        if (suites == null) {
             resetSuites();
         }
         return suites;
     }
-    
+
     private void resetSuites() {
-	suites = (new SuiteDAO()).findByOwnerOrPublic(UIBeanHelper.getUserId());
+        suites = (new SuiteDAO()).findByOwnerOrPublic(UIBeanHelper.getUserId());
     }
 
     /**
@@ -67,11 +67,10 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
     public boolean isCurrentSuiteSet() {
         return (currentSuite != null);
     }
-    
+
     public void setCurrentSuite(Suite currentSuite) {
         this.currentSuite = currentSuite;
     }
-
 
     /**
      * @return
@@ -111,7 +110,7 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
         try {
             if (currentSuite != null) {
                 String suiteDirPath = DirectoryManager.getSuiteLibDir(currentSuite.getName(), currentSuite.getLsid(),
-                        currentSuite.getOwner());
+                        currentSuite.getUserId());
                 File suiteDir = new File(suiteDirPath);
                 File[] allFiles = suiteDir.listFiles();
                 int cnt = 1;
@@ -228,17 +227,17 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
      */
     private void deleteSuites(String[] suiteLsids) {
         String user = UIBeanHelper.getUserId();
-        boolean admin = AuthorizationManagerFactory.getAuthorizationManager().checkPermission(
-                "administrateServer", UIBeanHelper.getUserId());
+        boolean admin = AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer",
+                UIBeanHelper.getUserId());
         if (suiteLsids != null) {
             for (String lsid : suiteLsids) {
                 Suite s = (Suite) HibernateUtil.getSession().get(org.genepattern.server.domain.Suite.class, lsid);
-                if (s.getOwner().equals(user) || admin) {
+                if (s.getUserId().equals(user) || admin) {
                     (new SuiteDAO()).delete(s);
                     // Delete supporting files
 
                     try {
-                        String suiteDirPath = DirectoryManager.getSuiteLibDir(s.getName(), s.getLsid(), s.getOwner());
+                        String suiteDirPath = DirectoryManager.getSuiteLibDir(s.getName(), s.getLsid(), s.getUserId());
                         File suiteDir = new File(suiteDirPath);
                         File[] allFiles = suiteDir.listFiles();
                         for (File file : allFiles) {
@@ -247,11 +246,11 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
                         suiteDir.delete();
                     } catch (Exception e) {
                         HibernateUtil.rollbackTransaction(); // This
-                                                                // shouldn't be
+                        // shouldn't be
                         // neccessary, but just in
                         // case
                         throw new RuntimeException(e); // @todo -- replace with
-                                                        // appropriate
+                        // appropriate
                         // GP exception
                     }
                     // end of deleting supporting files
@@ -264,14 +263,14 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
     public void deleteSupportFile(ActionEvent event) {
         try {
             if (currentSuite != null) {
-        	String key = UIBeanHelper.getRequest().getParameter("supportFileKey");
+                String key = UIBeanHelper.getRequest().getParameter("supportFileKey");
                 String fileName = supportFiles.get(key);
                 File supportFile = new File(fileName);
-                if (supportFile!=null && supportFile.exists()) {
-                    supportFile.delete();  
+                if (supportFile != null && supportFile.exists()) {
+                    supportFile.delete();
                 }
                 supportFiles.remove(key);
-            }          
+            }
         } catch (Exception e) {
             throw new RuntimeException(e); // @todo -- replace with appropriate
             // GP exception
