@@ -650,7 +650,7 @@ try {
 			out.println("<script language=\"Javascript\">window.close();</script>");
 		}
 
-		out.println("&nbsp;&nbsp;<a href='" + request.getContextPath() + "/pages/index.jsf?lsid=" + lsid + "'>Continue to Tasks & Pipeline Start.</a>");
+		out.println("&nbsp;&nbsp;<a href='" + request.getContextPath() + "/pages/index.jsf?lsid=" + lsid + "'>Continue to Modules & Pipeline Start.</a>");
 		out.println("<br />");
 	
 

@@ -493,7 +493,7 @@ function toggleTask(idx, visibility) {
 		</td>
 	</tr>
 	<tr><td><br>
-	<a href="pages/index.jsf">Return to Tasks & Pipelines Start</a>
+	<a href="pages/index.jsf">Return to Modules & Pipelines Start</a>
 </td></tr>
 </table>
 

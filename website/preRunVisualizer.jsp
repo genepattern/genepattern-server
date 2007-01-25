@@ -65,7 +65,7 @@ response.setDateHeader("Expires", 0);
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link href="skin/favicon.ico" rel="shortcut icon">
-<title>Running Task</title>
+<title>Running Module</title>
 <jsp:include page="navbarHead.jsp"/>
 </head>
 <body>
@@ -166,7 +166,7 @@ try {
 
 <table with="100%">
 <tr><td><br>
-	<a href="pages/index.jsf">Return to Tasks & Pipelines Start</a>
+	<a href="pages/index.jsf">Return to Modules & Pipelines Start</a>
 </td></tr>
 </table>
 

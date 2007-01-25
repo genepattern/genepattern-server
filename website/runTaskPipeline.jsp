@@ -51,7 +51,7 @@ use, misuse, or functionality.
     <link href="css/style.css" rel="stylesheet" type="text/css">
     <link href="css/style-jobresults.css" rel="stylesheet" type="text/css">
     <link href="skin/favicon.ico" rel="shortcut icon">
-    <title>GenePattern - Run Task Results</title>
+    <title>GenePattern - Run Module Results</title>
 	<script language="Javascript" src="js/prototype.js"></script>
 	<script language="Javascript" src="js/commons-validator-1.3.0.js"></script>
 	<script language="Javascript" src="js/genepattern.js"></script>
@@ -484,7 +484,7 @@ show execution logs</td>
     These job results are scheduled to be purged from the server on <%= df.format(purgeTOD.getTime()).toLowerCase() %>
 </td></tr>
 <tr><td><br>
-	<a href="pages/index.jsf">Return to Tasks & Pipelines Start</a>
+	<a href="pages/index.jsf">Return to Modules & Pipelines Start</a>
 </td></tr>
 </table>
 

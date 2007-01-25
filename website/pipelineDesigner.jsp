@@ -517,7 +517,7 @@ function changeTaskType(selectorTaskType, taskNum) {
 	taskSelector.options.length = 0;
 	if (selectorTaskType.selectedIndex == 0) return; // user chose the "choose task" heading, item 0
 	var type = selectorTaskType.options[selectorTaskType.selectedIndex].value;
-	taskSelector.options[0] = new Option("- Task -", "");
+	taskSelector.options[0] = new Option("- Module -", "");
 	taskSelector.options[0].style['fontWeight'] = "bold";
 	var versionlessLSIDs = new Array();
  	for (i in TaskTypes[type]) {
@@ -868,7 +868,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 
 	taskFields = taskFields + '<br><center>\n';
 	if ((taskNum+1) < MAX_TASKS) {
-		taskFields = taskFields + '<input type="button" value="Add Another Task" onClick="addAnother(' + (taskNum+1) + 
+		taskFields = taskFields + '<input type="button" value="Add Another Module" onClick="addAnother(' + (taskNum+1) + 
 				          ', true)" name="notused" class="little">&nbsp;&nbsp;\n';
 	}
 	taskFields = taskFields + '<input type="button" value="Delete ' + task.name + '" onClick="deleteTask(' + taskNum + 

@@ -431,7 +431,7 @@ function addNewDomainType(name, desc){
 	%>
 	
 	<table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td class='barhead-other'>
-	<%= taskName == null ? "Create Task" : ((!viewOnly ? "Update " : "") + taskName  + " version ") %>
+	<%= taskName == null ? "Create Module" : ((!viewOnly ? "Update " : "") + taskName  + " version ") %>
 	<% if (taskName != null) { %>
 		<select name="notused" onchange="javascript:window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'" style="font-weight: bold; font-size: medium; outline-style: none;">
 	<%
