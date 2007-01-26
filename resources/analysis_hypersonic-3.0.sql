@@ -62,8 +62,8 @@ create index idx_analysis_job_status on analysis_job(status_id);
 create index idx_gp_user_prop_key on gp_user_prop(key);
 
 /* Add contact column to Suite */
-alter table suite add contact varchar(255);
+alter table suite add user_id varchar(255);
 
 
-update props set value='3.0.1' where key='schemaVersion';
+update props set value='3.0.2' where key='schemaVersion';
   
