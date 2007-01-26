@@ -106,13 +106,11 @@
 		        </div>
 		      </td>
 		      <td>&#160;</td>   
-		      <td>
-		      	<h:outputText value="#{taskGroup.name}"/>
-		        
+		      <td colspan="2">
+		      	<h:outputText value="#{taskGroup.name}"/>		        
 		        <br/>
 		        <h:outputText styleClass="smalltype5" value="#{taskGroup.description}"/>       
 		      </td>
-		      <td>&#160;</td>
 		    </tr>
 		    
 		    <t:dataList var="versionInfo" value="#{taskGroup.indexedVersions}">
@@ -127,10 +125,12 @@
 					  		</t:div>	
 				      	</div>
 		            </td>
-		            <td align="center"><a href="/gp/addTask.jsp?name=#{versionInfo.lsid}">#{versionInfo.version}</a></td>
-		            <td><a href="/gp/addTask.jsp?name=#{versionInfo.lsid}">#{versionInfo.reason}</a></td>
-		            <td><pre>#{versionInfo.pipelineName}</pre>
-					</td>
+		            <td align="center"><a href="#{taskGroup.pipeline ? '/gp/viewPipeline.jsp?name=' : '/gp/addTask.jsp?name='}#{versionInfo.lsid}">#{versionInfo.version}</a></td>
+		            <td><a href="#{taskGroup.pipeline ? '/gp/viewPipeline.jsp?name=' : '/gp/addTask.jsp?name='}#{versionInfo.lsid}">#{versionInfo.reason}</a></td>
+		            <td><t:dataList var="pipelineName" value="#{versionInfo.pipelineNames}">
+		                  #{pipelineName}<br/>
+		                 </t:dataList>
+		            </td>
 					
 		        </tr>  
 			 </t:dataList>

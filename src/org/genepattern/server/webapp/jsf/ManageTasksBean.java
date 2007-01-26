@@ -47,8 +47,8 @@ public class ManageTasksBean /* implements java.io.Serializable */{
             this.showEveryonesTasks = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesTasks",
                     String.valueOf(this.showEveryonesTasks)));
             if (this.showEveryonesTasks
-                    && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission(
-                            "administrateServer", userId)) {
+                    && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer",
+                            userId)) {
                 this.showEveryonesTasks = false;
 
             }
@@ -75,33 +75,28 @@ public class ManageTasksBean /* implements java.io.Serializable */{
     }
 
     private void getIndexedTasks() {
-        TaskInfo ti = null;
-        String lsid;
-        LSID lSID = null;
         indexedTasks = new HashMap<String, TaskGroup>();
-        try {
-            for (Iterator<TaskInfo> itTasks = tasks.iterator(); itTasks.hasNext();) {
-                ti = (TaskInfo) itTasks.next();
-                if (!showEveryonesTasks && !ti.getUserId().equals(UIBeanHelper.getUserId())) {
-                    continue;
-                }
+
+        for (Iterator<TaskInfo> itTasks = tasks.iterator(); itTasks.hasNext();) {
+            TaskInfo ti = (TaskInfo) itTasks.next();
+            if (showEveryonesTasks || ti.getUserId().equals(UIBeanHelper.getUserId())) {
 
                 TaskInfoAttributes tia = ti.giveTaskInfoAttributes();
-                lsid = tia.get(GPConstants.LSID);
+                String lsid = tia.get(GPConstants.LSID);
+                LSID lSID = null;
                 try {
                     lSID = new LSID(lsid);
                 } catch (MalformedURLException mue) {
-                    continue;
+                    log.error("Error creating LSID (Malformed URL): " + lsid, mue);
+                    throw new RuntimeException("Error creating LSID (Malformed URL): " + lsid);
                 }
 
                 String lsidNoVersion = lSID.toStringNoVersion();
-                TaskGroup versionInfos = (indexedTasks.containsKey(lsidNoVersion)) ? (TaskGroup) indexedTasks
-                        .get(lsidNoVersion) : new TaskGroup();
-                versionInfos.addVersionInfo(ti);
-                indexedTasks.put(lSID.toStringNoVersion(), versionInfos);
+                TaskGroup taskGroup = (indexedTasks.containsKey(lsidNoVersion)) ? indexedTasks.get(lsidNoVersion)
+                        : new TaskGroup(ti);
+                taskGroup.addVersionInfo(ti);
+                indexedTasks.put(lSID.toStringNoVersion(), taskGroup);
             }
-        } catch (Exception e) {
-
         }
     }
 
@@ -111,8 +106,8 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 
     public void setShowEveryonesTasks(boolean showEveryonesTasks) {
         if (showEveryonesTasks
-                && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission(
-                        "administrateServer", UIBeanHelper.getUserId())) {
+                && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer",
+                        UIBeanHelper.getUserId())) {
             showEveryonesTasks = false;
 
         }
@@ -171,8 +166,11 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 
         private LocalAdminClient adminClient = null;
 
+        private boolean pipeline;
+
         /** Creates new TaskInfo */
-        public TaskGroup() {
+        public TaskGroup(TaskInfo ti) {
+            pipeline = ti.isPipeline();
             adminClient = (adminClient == null) ? new LocalAdminClient(UIBeanHelper.getUserId()) : adminClient;
             indexedVersions = (indexedVersions == null) ? new TreeMap<String, VersionInfo>() : indexedVersions;
         }
@@ -189,7 +187,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
             return description;
         }
 
-        public void addVersionInfo(TaskInfo ti) throws WebServiceException {
+        public void addVersionInfo(TaskInfo ti) {
             lsidNoVersion = (lsidNoVersion == null) ? getLSID(ti.getLsid()).toStringNoVersion() : lsidNoVersion;
             name = (name == null) ? ti.getName() : name;
             description = ti.getDescription();
@@ -207,30 +205,34 @@ public class ManageTasksBean /* implements java.io.Serializable */{
                 try {
                     model = PipelineModel.toPipelineModel(xml);
                 } catch (Throwable t) {
-                    System.err.println(t.toString() + " loading pipeline model " + ti.getName() + " - " + lsid);
-                    System.err.println(xml);
+                    log.error(" loading pipeline model " + ti.getName() + " - " + lsid, t);
+                    log.error(xml);
                     return;
                 }
                 Map<String, String> mDependencies = model.getLsidDependencies(); // LSID/Vector
-                                                                                    // of
-                                                                                    // TaskInfo
-                                                                                    // map
+                // of
+                // TaskInfo
+                // map
                 TaskGroup temp = null;
 
                 for (Iterator itSubTasks = mDependencies.keySet().iterator(); itSubTasks.hasNext();) {
                     String keyLsid = (String) itSubTasks.next();
                     String lsidNoVersion = getLSID(keyLsid).toStringNoVersion();
 
-                    TaskInfo t = adminClient.getTask(keyLsid);
-                    if (t != null) {
-                        if (!showEveryonesTasks && !t.getUserId().equals(UIBeanHelper.getUserId())) {
-                            continue;
+                    try {
+                        TaskInfo t = adminClient.getTask(keyLsid);
+                        if (t != null) {
+                            if (!showEveryonesTasks && !t.getUserId().equals(UIBeanHelper.getUserId())) {
+                                continue;
+                            }
+                            temp = (indexedTasks.containsKey(lsidNoVersion)) ? indexedTasks.get(lsidNoVersion)
+                                    : new TaskGroup(ti);
+                            temp.addVersionInfo(t);
+                            temp.setPipelineName(keyLsid, ti);
+                            indexedTasks.put(lsidNoVersion, temp);
                         }
-                        temp = (indexedTasks.containsKey(lsidNoVersion)) ? indexedTasks.get(lsidNoVersion)
-                                : new TaskGroup();
-                        temp.addVersionInfo(t);
-                        temp.setPipelineName(keyLsid, ti);
-                        indexedTasks.put(lsidNoVersion, temp);
+                    } catch (WebServiceException e) {
+                        log.error(e);
                     }
                 }
             }
@@ -242,7 +244,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
         }
 
         private void setPipelineName(String lsid, TaskInfo ti) {
-            indexedVersions.get(lsid).setPipelineName(ti);
+            indexedVersions.get(lsid).addPipelineName(ti);
         }
 
         public Collection getIndexedVersions() {
@@ -276,7 +278,8 @@ public class ManageTasksBean /* implements java.io.Serializable */{
         }
 
         public class VersionInfo {
-            private String pipeline = null;
+
+            private List<String> pipelineNames = new ArrayList<String>();
 
             private boolean isUsedBy = false;
 
@@ -310,21 +313,16 @@ public class ManageTasksBean /* implements java.io.Serializable */{
                     if (reason.equals("1.0") && authority.equals(BROAD_AUTHORITY)) {
                         reason = "";
                     }
-                    if (!reason.equals("")) {
-                        reason = " (" + reason + ")";
-                    }
                 }
                 return reason;
             }
 
-            public String getPipelineName() {
-                return pipeline;
+            public List<String> getPipelineNames() {
+                return pipelineNames;
             }
 
-            public void setPipelineName(TaskInfo pti) {
-                StringBuffer temp = (pipeline == null) ? new StringBuffer() : new StringBuffer(pipeline);
-                temp.append(pti.getName() + " ver. " + getLSID(pti.getLsid()).getVersion() + "\n");
-                pipeline = temp.toString();
+            public void addPipelineName(TaskInfo pti) {
+                pipelineNames.add(pti.getName() + " ver. " + getLSID(pti.getLsid()).getVersion());
                 isUsedBy = true;
             }
 
@@ -340,6 +338,10 @@ public class ManageTasksBean /* implements java.io.Serializable */{
                 return (!isUsedBy && isOwnedByUser());
             }
 
+        }
+
+        public boolean isPipeline() {
+            return pipeline;
         }
 
     }
