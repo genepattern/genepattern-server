@@ -145,9 +145,9 @@
           <div style="min-width: 570px;">
           
             <!-- JSF (Server side) errors or messages -->
-           <!--  <h:outputText value="Please correct the following errors before proceeding:" 
-                          rendered="#{facesContext.maximumSeverity==FacesMessage.Severity.SEVERITY_ERROR}" style="font-weight:bold"/> --> 
-		    <h:messages errorClass="validation-error" errorStyle="font-weight:bold; color:red;" globalOnly="true" layout="table" />
+        <!--    <h:outputText value="Please correct the following errors before proceeding:" 
+                          rendered="#{empty facesContext.maximumSeverity==FacesMessage.Severity.SEVERITY_ERROR}" style="font-weight:bold"/> -->
+		    <h:messages errorClass="validation-error" errorStyle="font-weight:bold; color:red;" layout="table" />
 		    <h:outputText rendered="#{!empty facesContext.maximumSeverity}"><br /></h:outputText>
                           
 		    <!-- Javascript validation errors.  The JSF and Javascript error blockss will not
