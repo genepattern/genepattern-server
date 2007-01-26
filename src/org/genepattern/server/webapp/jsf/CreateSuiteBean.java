@@ -170,7 +170,7 @@ public class CreateSuiteBean implements java.io.Serializable {
     public String save() {
         IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
         if (!authManager.checkPermission("createSuite", UIBeanHelper.getUserId())) {
-            UIBeanHelper.setInfoMessage("You don't have the required permissions to perform the requested operation.");
+            UIBeanHelper.setErrorMessage("You don't have the required permissions to perform the requested operation.");
         }
         try {
 

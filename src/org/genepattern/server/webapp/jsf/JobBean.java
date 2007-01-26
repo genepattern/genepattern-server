@@ -111,7 +111,7 @@ public class JobBean {
         try {
             String jobNumber = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber"));
             if (jobNumber == null) {
-                UIBeanHelper.setInfoMessage("No job specified.");
+                UIBeanHelper.setErrorMessage("No job specified.");
                 return;
             }
             System.out.println(jobNumber);
@@ -121,7 +121,7 @@ public class JobBean {
                     pipelineName);
 
             if (lsid == null) {
-                UIBeanHelper.setInfoMessage("Unable to create pipeline.");
+                UIBeanHelper.setErrorMessage("Unable to create pipeline.");
                 return;
             }
             UIBeanHelper.getResponse().sendRedirect(

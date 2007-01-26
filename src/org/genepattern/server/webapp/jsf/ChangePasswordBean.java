@@ -85,7 +85,7 @@ public class ChangePasswordBean {
         } catch (NoSuchAlgorithmException e) {
             log.error(e);
             UIBeanHelper
-                    .setInfoMessage("An error occurred while saving your password");
+                    .setErrorMessage("An error occurred while saving your password");
             return "error";
         }
         String message = "Your new password has been saved";

@@ -73,7 +73,7 @@ public class ImportBean {
             return doImport(path, selectedUrlPrivacy.equals(ALL_USERS) ? GPConstants.ACCESS_PUBLIC
                     : GPConstants.ACCESS_PRIVATE);
         } catch (IOException e) {
-            UIBeanHelper.setInfoMessage("Unable to install " + url + ".");
+            UIBeanHelper.setErrorMessage("Unable to install " + url + ".");
             log.error(e);
             return "error";
         }
@@ -97,7 +97,7 @@ public class ImportBean {
             return doImport(file.getCanonicalPath(), selectedFilePrivacy.equals(ALL_USERS) ? GPConstants.ACCESS_PUBLIC
                     : GPConstants.ACCESS_PRIVATE);
         } catch (IOException e) {
-            UIBeanHelper.setInfoMessage("Unable to install " + zipFile.getName() + ". Please ensure that "
+            UIBeanHelper.setErrorMessage("Unable to install " + zipFile.getName() + ". Please ensure that "
                     + zipFile.getName() + " is a valid task or pipeline zip file.");
             log.error(e);
             return "error";
@@ -198,7 +198,7 @@ public class ImportBean {
 
         boolean suiteInstallAllowed = authManager.checkPermission("createSuite", username);
         if (!suiteInstallAllowed) {
-            UIBeanHelper.setInfoMessage("You do not have permission to install suites on this server.");
+            UIBeanHelper.setErrorMessage("You do not have permission to install suites on this server.");
             return "error";
         }
         final LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
@@ -209,7 +209,7 @@ public class ImportBean {
             suiteInfo = new SuiteInfo(hm);
         } catch (Exception e) {
             log.error(e);
-            UIBeanHelper.setInfoMessage("Unable to install " + new File(path).getName() + ". Please ensure that "
+            UIBeanHelper.setErrorMessage("Unable to install " + new File(path).getName() + ". Please ensure that "
                     + new File(path).getName() + " is a valid suite zip file.");
             return "error";
         }

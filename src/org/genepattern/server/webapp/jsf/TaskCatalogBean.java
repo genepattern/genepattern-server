@@ -267,7 +267,7 @@ public class TaskCatalogBean {
         IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
         final boolean taskInstallAllowed = authManager.checkPermission("createTask", UIBeanHelper.getUserId());
         if (!taskInstallAllowed) {
-            UIBeanHelper.setInfoMessage("You don't have the required permissions to install tasks.");
+            UIBeanHelper.setErrorMessage("You don't have the required permissions to install tasks.");
             return "failure";
         }
         final String[] lsids = UIBeanHelper.getRequest().getParameterValues("installLsid");

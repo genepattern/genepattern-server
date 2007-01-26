@@ -104,7 +104,7 @@ public class SuiteCatalogBean {
             IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
             boolean suiteInstallAllowed = authManager.checkPermission("createSuite", username);
             if (!suiteInstallAllowed) {
-                UIBeanHelper.setInfoMessage("You don't have the required permissions to install suites.");
+                UIBeanHelper.setErrorMessage("You don't have the required permissions to install suites.");
                 return "failure";
             }
 

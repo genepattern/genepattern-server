@@ -38,7 +38,7 @@ public class ForgotPasswordBean {
         User user = new UserDAO().findById(username);
         if (user == null) {
             UIBeanHelper
-                    .setInfoMessage("No user with the given username exists.");
+                    .setErrorMessage("No user with the given username exists.");
             return "failure";
         }
         Properties p = new Properties();
@@ -60,7 +60,7 @@ public class ForgotPasswordBean {
             msg.setSentDate(new Date());
             String email = user.getEmail();
             if (email == null) {
-                UIBeanHelper.setInfoMessage("No email address found.");
+                UIBeanHelper.setErrorMessage("No email address found.");
                 return "failure";
             }
             msg.addRecipient(Message.RecipientType.TO, new InternetAddress(
@@ -72,7 +72,7 @@ public class ForgotPasswordBean {
         } catch (MessagingException e) {
             log.error(e);
             UIBeanHelper
-                    .setInfoMessage("An error occurred while sending the email.");
+                    .setErrorMessage("An error occurred while sending the email.");
             return "failure";
         } catch (NoSuchAlgorithmException e) {
             log.error(e);
