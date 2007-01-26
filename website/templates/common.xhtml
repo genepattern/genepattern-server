@@ -144,11 +144,12 @@
           <td valign="top" class="maincontent" id="maincontent">
           <div style="min-width: 570px;">
           
-            <!-- JSF (Server side) errors -->
-            <h:outputText value="Please correct the following errors before proceeding:" 
-                          rendered="#{! empty facesContext.maximumSeverity}" style="font-weight:bold"/>
-		    <h:messages errorClass="validation-error" errorStyle="font-weight:bold; color:red;"/>
-		    
+            <!-- JSF (Server side) errors or messages -->
+           <!--  <h:outputText value="Please correct the following errors before proceeding:" 
+                          rendered="#{facesContext.maximumSeverity==FacesMessage.Severity.SEVERITY_ERROR}" style="font-weight:bold"/> --> 
+		    <h:messages errorClass="validation-error" errorStyle="font-weight:bold; color:red;" globalOnly="true" layout="table" />
+		    <h:outputText rendered="#{!empty facesContext.maximumSeverity}"><br /></h:outputText>
+                          
 		    <!-- Javascript validation errors.  The JSF and Javascript error blockss will not
 		         be visible at the same time (if JS validation fails, the form submit will not
 		         occur and thus JSF validation will not be run) -->
