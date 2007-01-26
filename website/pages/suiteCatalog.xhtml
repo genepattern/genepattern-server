@@ -14,13 +14,15 @@
 		<script type="text/javascript" language="javascript">
 
 /* <![CDATA[ */
-	function toggle(maincheckbox, theForm, name) {		
-		var isChecked = maincheckbox.checked;
-		var elements = Form.getInputs(theForm , 'checkbox', name);	
-		for (i = 0; i < elements.length; i++) {	
-			elements[i].checked = isChecked;
-			
-		}
+	function toggleAllCheckboxes(node) {	
+		var maincheckboxes = document.getElementsByName("installLsid");
+	
+	    var isChecked = node.checked;
+	    for (var i=0; i<maincheckboxes.length; i++) {
+	        if(maincheckboxes[i].type == "checkbox" && !maincheckboxes[i].disabled) {
+	          maincheckboxes[i].checked = isChecked;
+	        }
+	    }
 	}
 	
 /* ]]> */
@@ -90,7 +92,7 @@
 							<tr class="tableheader-row2">
 								<td valign="top"><input type="checkbox" name="ALL"
 									value="ALL" checked="checked"
-									onclick="toggle(this, 'suiteCatalogForm', 'installLsid');" /></td>
+									onclick="toggleAllCheckboxes(this);" /></td>
 								<td valign="top"><b>name (version)</b></td>
 								<td valign="top"><b>tasks</b></td>
 							</tr>
