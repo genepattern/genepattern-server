@@ -35,13 +35,11 @@ import org.genepattern.util.GPConstants;
  * 
  */
 public class AuthorizationFilter implements Filter {
-    private FilterConfig filterConfig = null;
 
     private IAuthorizationManager authManager = null;
 
     public void init(FilterConfig filterConfig) throws ServletException {
         try {
-            this.filterConfig = filterConfig;
 
             String gpprops = filterConfig.getInitParameter("genepattern.properties");
             System.setProperty("genepattern.properties", gpprops);
@@ -54,16 +52,14 @@ public class AuthorizationFilter implements Filter {
     }
 
     public void destroy() {
-        this.filterConfig = null;
         authManager = null;
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
             ServletException {
-        // if (filterConfig == null)
-        // return;
+
         HttpServletRequest req = (HttpServletRequest) request;
-        String requestedURI = req.getRequestURI();
+        // String requestedURI = req.getRequestURI();
 
         String rh = req.getRemoteHost();
         String p = req.getParameter("jsp_precompile");
@@ -74,15 +70,6 @@ public class AuthorizationFilter implements Filter {
             chain.doFilter(request, response);
             return;
         }
-
-        /*
-         * System.out.println("AUTH FILTER=" + requestedURI);
-         * System.out.println("\tmeth=" + req.getMethod());
-         * System.out.println("\tQS=" + req.getQueryString()); Enumeration enum =
-         * req.getHeaderNames(); while (enum.hasMoreElements()) { String na =
-         * (String)enum.nextElement(); String he = req.getHeader(na);
-         * System.out.println("\t\t" + na + " = " + he); }
-         */
 
         String userId = (String) request.getAttribute("userID");
         String uri = req.getRequestURI();
@@ -101,30 +88,30 @@ public class AuthorizationFilter implements Filter {
         }
     }
 
-    public void setNotPermittedPageRedirect(HttpServletRequest request, HttpServletResponse response) {
+    public void setNotPermittedPageRedirect(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
 
-        String URL = request.getRequestURI();
-
-        if (response == null)
+        if (response == null) {
             return;
+        }
 
         // redirect to the fully-qualified host name to make sure that the
-        // one cookie that we are allowed to write is useful
-        try {
-            String fqHostName = System.getProperty("fqHostName");
-            if (fqHostName == null) {
-                fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
-                if (fqHostName.equals("localhost"))
-                    fqHostName = "127.0.0.1";
-            }
-            String serverName = request.getServerName();
-            String fqAddress = "http://" + fqHostName + ":" + request.getServerPort() + "/gp/notpermitted.jsp?link="
-                    + URLEncoder.encode(request.getRequestURI(), GPConstants.UTF8);
+        // cookie that we are allowed to write is useful
 
-            response.sendRedirect(fqAddress);
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
+        String fqHostName = System.getProperty("fqHostName");
+        if (fqHostName == null) {
+            fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
+            if (fqHostName.equals("localhost")) {
+                fqHostName = "127.0.0.1";
+            }
         }
+
+        String notPermittedUrl = "http://" + fqHostName + ":" + request.getServerPort()
+                + request.getContextPath() + "/pages/notPermitted.jsf?link="
+                + URLEncoder.encode(request.getRequestURI(), GPConstants.UTF8);
+
+        response.sendRedirect(notPermittedUrl);
+
     }
 
 }
