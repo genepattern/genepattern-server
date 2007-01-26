@@ -15,9 +15,6 @@ package org.genepattern.visualizer;
 import java.applet.Applet;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 public class RunVisualizerApplet extends Applet {
@@ -39,13 +36,10 @@ public class RunVisualizerApplet extends Applet {
     URL source = null;
 
     public void init() {
-        
+
         try {
             source = getDocumentBase();
-            
-            Map<String, List<String>> headers = getDocumentBase().openConnection().getHeaderFields();
-            System.out.println("header fields " + headers);
-            
+
             for (int i = 0; i < wellKnownNames.length; i++) {
                 setParameter(wellKnownNames[i], getParameter(wellKnownNames[i]));
             }
@@ -103,7 +97,7 @@ public class RunVisualizerApplet extends Applet {
         showStatus("starting " + params.get(RunVisualizerConstants.NAME));
 
         showStatus("JAVA_FLAGS=" + params.get("java_flags"));
-        
+
         RunVisualizer visualizer = new RunVisualizer(params, source, supportFileNames, supportFileDates, this);
         visualizer.run();
     }
