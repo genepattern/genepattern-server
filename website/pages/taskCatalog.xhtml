@@ -16,14 +16,15 @@
 /* <![CDATA[ */
 	
 	
-	function toggle(maincheckbox, theForm, name) {		
-		var isChecked = maincheckbox.checked;
-		var elements = Form.getInputs(theForm , 'checkbox', name);	
-		for (i = 0; i < elements.length; i++) {	
-			elements[i].checked = isChecked;
-			
-		}
-		getSize();
+	function toggleAllCheckboxes(node) {	
+		var maincheckboxes = document.getElementsByName("installLsid");
+	
+	    var isChecked = node.checked;
+	    for (var i=0; i<maincheckboxes.length; i++) {
+	        if(maincheckboxes[i].type == "checkbox" && !maincheckboxes[i].disabled) {
+	          maincheckboxes[i].checked = isChecked;
+	        }
+	    }
 	}
 	
 	
@@ -118,12 +119,13 @@
 
 							<tr class="tableheader-row2">
 								<td valign="top"><input type="checkbox" name="ALL"
-									value="ALL" checked="checked" onclick="toggle(this, 'taskCatalogForm', 'installLsid');"/></td>
+									value="ALL" checked="checked" onclick="toggleAllCheckboxes(this);"/></td>
 
 								<td valign="top"><b>Name (Version)</b></td>
 								<td valign="top"><b>Module Type</b></td>
 								<td valign="top"><b>Details</b></td>
 							</tr>
+
 							<t:dataList var="t" value="#{taskCatalogBean.tasks}"
 								rowIndexVar="taskIndex">
 								
@@ -190,7 +192,6 @@
 									<td colspan="4"></td>
 								</tr>
 							</t:dataList>
-
 						</table>
 					</c:if>
 				</h:form>
