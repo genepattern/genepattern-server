@@ -1235,7 +1235,7 @@ function deleteDocFiles() {
 		selection = sel.options[sel.selectedIndex].value;
 	}
 	if (selection == null || selection == "") return;
-	if (window.confirm('Really delete ' + selection + ' from support files?\nThis will discard other pipeline changes since the last save.')) { 
+	if (window.confirm('Really remove ' + selection + ' from support files?\nThis will discard other pipeline changes since the last save.')) { 
 		window.location='saveTask.jsp?deleteFiles=' + selection + 
 			'&deleteSupportFiles=' + selection + 
 			'&<%= GPConstants.NAME %>=' + document.forms['pipeline'].pipeline_name.value +
@@ -1377,7 +1377,7 @@ nextTask:
 
 	newTask = newTask + '<table>\n';
 	newTask = newTask + '<tr><td valign="top">\n';
-	newTask = newTask + 'Choose <select onchange="changeTaskType(this, ' + taskNum + ')" name="notused" >\n';
+	newTask = newTask + 'Module Category & Name: <select onchange="changeTaskType(this, ' + taskNum + ')" name="notused" >\n';
 	newTask = newTask + '<option value="" selected style="font-weight: bold">- Category -</option>\n';
 
 	if (numSuggested > 0) {
@@ -1392,7 +1392,7 @@ nextTask:
 	newTask = newTask + '</select></td>\n';
 	newTask = newTask + '<td valign="top"></td>';
 	newTask = newTask + '<td valign="top"><select name="t' + taskNum + '" onchange="chgTask(this, ' + taskNum + ')">\n';
-	<!-- /* newTask = newTask + '<option value="" selected style="font-weight: bold">- Task -</option>'; */ -->
+	<!-- /* newTask = newTask + '<option value="" selected style="font-weight: bold">- Module -</option>'; */ -->
 	
 	
 	newTask = newTask + '</select></td></tr></table>\n';
@@ -1409,13 +1409,9 @@ nextTask:
       String userAgent = request.getHeader("User-Agent");
  
 	try {
-		PipelineModel model = new PipelineModel();
-		model.setUserID(userID);
-		HTMLPipelineView viewer = new HTMLPipelineView(out, request.getScheme(), request.getServerName(), ""+request.getServerPort(), request.getContextPath(), request.getHeader("User-Agent"), request.getParameter("name"));
+		HTMLPipelineView viewer = new HTMLPipelineView(out, request.getScheme(), request.getServerName(), ""+request.getServerPort(), request.getContextPath(), request.getHeader("User-Agent"), request.getParameter("name"), userID);
 
-		PipelineController controller = new PipelineController(viewer, model);
-							
-		controller.init();
+		viewer.init();
 		viewer.head();
 %>		
 <jsp:include page="navbarHead.jsp"/>
@@ -1425,11 +1421,10 @@ nextTask:
 <jsp:include page="navbar.jsp"/>
 
 <%
-		viewer.writeStartBody();
-	
+		viewer.writeStartBody();	
 		// start with a single blank slate
-		controller.displayTask(new TaskInfo());
-		controller.end();
+		viewer.generateTask(new TaskInfo());
+		viewer.end();
 	} catch (Exception e) {
 		out.println("<br>" + e.getMessage()+"<br>");
 		e.printStackTrace();

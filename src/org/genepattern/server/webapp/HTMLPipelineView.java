@@ -73,12 +73,15 @@ public class HTMLPipelineView {
 	Map tmTasksByLSID = null;
 
 	
+    
+    
 	public HTMLPipelineView(Writer writer, String scheme, String serverName, String serverPort, String contextPath, String userAgent,
-			String pipelineName) throws Exception {
+			String pipelineName, String userID) throws Exception {
 
 		this.submitURL = scheme+"://" + serverName + ":" + serverPort + contextPath +"/makePipeline.jsp";
 		this.writer = writer;
 		this.userAgent = userAgent;
+        this.userID = userID;
 		if (LSID.isLSID(pipelineName)) pipelineName = new LSID(pipelineName).toString();
 		this.pipelineName = pipelineName;
 		this.contextPath = contextPath;
@@ -92,22 +95,31 @@ public class HTMLPipelineView {
 	}
 	
 	
-	public void init(Collection tmCatalog, String userID) {
-		this.userID = userID;
-		this.tmCatalog = tmCatalog;
-		tmTaskTypes = preprocessTaskInfo(tmCatalog);
+	public void init() {
+        try {
+            this.tmCatalog =  new LocalAdminClient(userID).getTaskCatalog();;
+            tmTaskTypes = preprocessTaskInfo(tmCatalog);
 		
 			tmTasksByLSID = new org.genepattern.server.webservice.server.local.LocalAdminClient(
 					userID).getTaskCatalogByLSID(tmCatalog);
 		
             
-		//dumpCatalog();
-		try {
+			//dumpCatalog();
+		
 			writer.write("");
-		} catch (IOException ioe) {
+		} catch (Exception ioe) {
+            ioe.printStackTrace();
 		}
 	}
 
+    public Collection getCatalog() throws WebServiceException {
+        if (tmCatalog == null) {
+            tmCatalog = new LocalAdminClient(userID).getTaskCatalog();
+        }
+        return tmCatalog;
+    }
+    
+    
 	/**
 	 * Create TaskType, TaskInfo, ParameterInfo, and TaskTypes objects based on
 	 * their internal GenePattern data, but limited to the data actually
@@ -349,28 +361,6 @@ public class HTMLPipelineView {
         }
 
      
-        // simulate <jsp:include page="navbar.jsp"> 
-        // this will fail for 
-//        try {
-//            String rootDir = System.getProperty("webappDir", "./webapps/"+contextPath);
-//            File f = new File(rootDir+"/navbar.html");
-//            //System.out.println("F=" + f.getCanonicalPath() + "  " + f.exists());
-//        InputStream is = new FileInputStream(f);
-//        if (is == null) {
-//            System.err.println("null connection to navbar.jsp");
-//        } else {
-//            byte[] buf = new byte[2000];
-//            int numRead;
-//            while ((numRead = is.read(buf)) != -1) {
-//                String s = new String(buf, 0, numRead);
-//                writer.write(s);
-//                //System.out.println("S=" + s);
-//            }
-//        }
-//        } catch (Exception e){
-//            e.printStackTrace();
-//        }
-                
         
         writer.write("<form name=\"pipeline\" action=\""
                         + submitURL
@@ -392,34 +382,34 @@ public class HTMLPipelineView {
 
         writer.write("<table cols=\"2\">\n");
 
-        writer.write("<tr class=\"pipelineperameter\"><td  class=\"taskperameter\"><a name=\"0\"></a>Pipeline&nbsp;name:</td><td width=\"*\"><input name=\"pipeline_name\" value=\"\" class=\"pipelineperameterinputTextShort\" size=\""
+        writer.write("<tr class=\"pipelineperameter\"><td  class=\"taskperameter\"><a name=\"0\"></a>Pipeline&nbsp;name:</td><td width=\"*\"><input name=\"pipeline_name\" value=\"\" class=\"pipelineperameterinputText\" size=\""
                         + (pipelineName != null ? pipelineName.length() : 30)
                         + "\" onchange=\"javascript:if (document.forms['pipeline'].pipeline_name.value != '' && !isRSafe(document.forms['pipeline'].pipeline_name.value)) alert(pipelineInstruction);\"> (required)\n");
         writer.write("<input type=\"hidden\" name=\"cloneName\">\n");
         writer.write("<input type=\"hidden\" name=\"autoSave\">\n");
 
-        writer
-                .write("&nbsp;&nbsp;&nbsp; <select name=\"changePipeline\" onChange=\"window.location='pipelineDesigner.jsp?name=' + this.options[this.selectedIndex].value\">\n");
-
-        writer.write("<script language=\"Javascript\">\n");
-        writer
-                .write("document.writeln('<option value=\"\">new pipeline</option' + (thisTaskName == \"\" ? ' selected' : '') + '>');\n");
-
-        writer.write("for (i in TaskTypes[PIPELINE]) {\n");
-        writer.write("  var pipelineLSID = TaskTypes[PIPELINE][i];\n");
-        writer.write("  var pipelineName = TaskInfos[pipelineLSID].name;\n");
-        writer.write("  lsid = new LSID(pipelineLSID);\n");
-        writer.write("  var key = lsid.authority + '" + LSID.DELIMITER
-                + "' + lsid.identifier + '" + LSID.DELIMITER + "';\n");
-        writer.write("  if (versionlessLSIDs[key] == null) {\n");
-        writer
-                .write("        document.writeln('<option value=\"' + pipelineLSID + '\"' + ((pipelineName == thisTaskName || pipelineLSID == thisTaskName || key == thisLSIDNoVersion) ? ' selected' : '') + ' class=\"tasks-' + lsid.authorityType + '\">' + pipelineName.substring(0, pipelineName.lastIndexOf('.')) + '</option>');\n");
-        writer.write("      versionlessLSIDs[key] = pipelineLSID;\n");
-        writer.write("  }\n");
-        writer.write("}\n");
-        writer.write("</script>\n");
-
-        writer.write("</select>\n");
+//        writer
+//                .write("&nbsp;&nbsp;&nbsp; <select name=\"changePipeline\" onChange=\"window.location='pipelineDesigner.jsp?name=' + this.options[this.selectedIndex].value\">\n");
+//
+//        writer.write("<script language=\"Javascript\">\n");
+//        writer
+//                .write("document.writeln('<option value=\"\">new pipeline</option' + (thisTaskName == \"\" ? ' selected' : '') + '>');\n");
+//
+//        writer.write("for (i in TaskTypes[PIPELINE]) {\n");
+//        writer.write("  var pipelineLSID = TaskTypes[PIPELINE][i];\n");
+//        writer.write("  var pipelineName = TaskInfos[pipelineLSID].name;\n");
+//        writer.write("  lsid = new LSID(pipelineLSID);\n");
+//        writer.write("  var key = lsid.authority + '" + LSID.DELIMITER
+//                + "' + lsid.identifier + '" + LSID.DELIMITER + "';\n");
+//        writer.write("  if (versionlessLSIDs[key] == null) {\n");
+//        writer
+//                .write("        document.writeln('<option value=\"' + pipelineLSID + '\"' + ((pipelineName == thisTaskName || pipelineLSID == thisTaskName || key == thisLSIDNoVersion) ? ' selected' : '') + ' class=\"tasks-' + lsid.authorityType + '\">' + pipelineName.substring(0, pipelineName.lastIndexOf('.')) + '</option>');\n");
+//        writer.write("      versionlessLSIDs[key] = pipelineLSID;\n");
+//        writer.write("  }\n");
+//        writer.write("}\n");
+//        writer.write("</script>\n");
+//
+//        writer.write("</select>\n");
 
         // build version selector
         if (taskInfo != null) {
@@ -436,12 +426,12 @@ public class HTMLPipelineView {
             }
         }
 
-        if (pipelineName != null && pipelineName.length() > 0) {
-            writer
-                    .write("<input type=\"submit\" value=\"Delete...\" name=\"delete\" onclick=\"return deletePipeline()\" class=\"little\">\n");
-            writer
-                    .write("<input type=\"submit\" value=\"Clone...\" name=\"clone\" onclick=\"return clonePipeline()\" class=\"little\">\n");
-        }
+//        if (pipelineName != null && pipelineName.length() > 0) {
+//            writer
+//                    .write("<input type=\"submit\" value=\"Delete...\" name=\"delete\" onclick=\"return deletePipeline()\" class=\"little\">\n");
+//            writer
+//                    .write("<input type=\"submit\" value=\"Clone...\" name=\"clone\" onclick=\"return clonePipeline()\" class=\"little\">\n");
+//        }
         writer.write("</td></tr>\n");
 
         writer
@@ -549,7 +539,7 @@ public class HTMLPipelineView {
 						writer
 								.write("<nobr><select name='deleteFiles' width='30'>");
 						writer
-								.write("<option value=''>delete doc files...</option>");
+								.write("<option value=''>Remove doc files from pipeline...</option>");
 						for (int i = 0; i < docFiles.length; i++) {
 							writer.write("<option value='"
 									+ StringUtils
@@ -560,14 +550,14 @@ public class HTMLPipelineView {
 						writer.write("</select>");
 
 						writer
-								.write("<input type='button' value='Delete Doc...' class='little' onclick='deleteDocFiles()'></nobr>");
+								.write("<input type='button' value='Remove doc from pipeline...' class='little' onclick='deleteDocFiles()'></nobr>");
 					} else {
 						writer
 								.write("<input type='hidden' name='deleteFiles' value='"
 										+ docFiles[0].getName() + "'>");
-						writer.write("<input type='button' value='Delete "
+						writer.write("<input type='button' value='Remove "
 								+ docFiles[0].getName()
-								+ "'  onclick='deleteDocFiles()'>");
+								+ " from pipeline'  onclick='deleteDocFiles()'>");
 
 					}
 					writer.write("</td></tr><tr><td></td><td>Add doc file");
