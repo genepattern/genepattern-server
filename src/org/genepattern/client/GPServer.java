@@ -192,23 +192,23 @@ public class GPServer {
     }
 
     /**
-     * Returns the url to retrieve the given file as part of the given task.
+     * Returns the url to retrieve the given file as part of the given module.
      * 
-     * @param taskNameOrLSID
-     *            The task name or LSID of the task that contains the file. When
+     * @param moduleNameOrLsid
+     *            The module name or LSID of the module that contains the file. When
      *            an LSID is provided that does not include a version, the
-     *            latest available version of the task identified by the LSID
-     *            will be used. If a task name is supplied, the latest version
-     *            of the task with the nearest authority is selected. The
+     *            latest available version of the module identified by the LSID
+     *            will be used. If a module name is supplied, the latest version
+     *            of the module with the nearest authority is selected. The
      *            nearest authority is the first match in the sequence: local
      *            authority, Broad authority, other authority.
      * @param fileName
      *            The file name.
      * @return The url.
      */
-    public URL getTaskFileURL(String taskNameOrLSID, String fileName) {
+    public URL getTaskFileURL(String moduleNameOrLsid, String fileName) {
         try {
-            return new URL(server + "/gp/getFile.jsp?task=" + taskNameOrLSID + "&file="
+            return new URL(server + "/gp/getFile.jsp?task=" + moduleNameOrLsid + "&file="
                     + URLEncoder.encode(fileName, "UTF-8"));
         } catch (java.net.MalformedURLException x) {
             throw new Error(x);
@@ -304,28 +304,58 @@ public class GPServer {
     }
 
     /**
-     * Submits the given task with the given parameters and does not wait for
+     * 
+     * @param moduleNameOrLsid
+     *            The module name or LSID. When an LSID is provided that does not
+     *            include a version, the latest available version of the task
+     *            identified by the LSID will be used. If a module name is
+     *            supplied, the latest version of the module with the nearest
+     *            authority is selected. The nearest authority is the first
+     *            match in the sequence: local authority, Broad authority, other
+     *            authority.
+     * @return The array of parameter names for the specified module name or lsid.
+     * @throws WebServiceException
+     *             If an error occurs while getting the parameters.
+     */
+    public String[] getParameters(String moduleNameOrLsid) throws WebServiceException {
+        try {
+            TaskInfo taskInfo = getTask(moduleNameOrLsid);
+            ParameterInfo[] params = taskInfo.getParameterInfoArray();
+            String[] parameterNames = new String[params != null ? params.length : 0];
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    parameterNames[i] = params[i].getName();
+                }
+            }
+            return parameterNames;
+        } catch (org.genepattern.webservice.WebServiceException wse) {
+            throw new WebServiceException(wse.getMessage(), wse.getRootCause());
+        }
+    }
+
+    /**
+     * Submits the given module with the given parameters and does not wait for
      * the job to complete.
      * 
-     * @param taskNameOrLSID
-     *            The task name or LSID. When an LSID is provided that does not
+     * @param moduleNameOrLsid
+     *            The module name or LSID. When an LSID is provided that does not
      *            include a version, the latest available version of the task
-     *            identified by the LSID will be used. If a task name is
-     *            supplied, the latest version of the task with the nearest
+     *            identified by the LSID will be used. If a module name is
+     *            supplied, the latest version of the module with the nearest
      *            authority is selected. The nearest authority is the first
      *            match in the sequence: local authority, Broad authority, other
      *            authority.
      * @param parameters
-     *            The parameters to run the task with.
+     *            The parameters to run the module with.
      * @return The job number.
      * @throws WebServiceException
      *             If an error occurs during the job submission process.
      * @see #isComplete
      * @see #createJobResult
      */
-    public int runAnalysisNoWait(String taskNameOrLSID, Parameter[] parameters) throws WebServiceException {
+    public int runAnalysisNoWait(String moduleNameOrLsid, Parameter[] parameters) throws WebServiceException {
         try {
-            TaskInfo taskInfo = getTask(taskNameOrLSID);
+            TaskInfo taskInfo = getTask(moduleNameOrLsid);
             ParameterInfo[] actualParameters = Util.createParameterInfoArray(taskInfo, parameters);
             AnalysisWebServiceProxy analysisProxy = null;
             try {
@@ -342,27 +372,27 @@ public class GPServer {
     }
 
     /**
-     * Submits the given task with the given parameters and waits for the job to
+     * Submits the given module with the given parameters and waits for the job to
      * complete.
      * 
-     * @param taskNameOrLSID
-     *            The task name or LSID. When an LSID is provided that does not
+     * @param moduleNameOrLsid
+     *            The module name or LSID. When an LSID is provided that does not
      *            include a version, the latest available version of the task
-     *            identified by the LSID will be used. If a task name is
-     *            supplied, the latest version of the task with the nearest
+     *            identified by the LSID will be used. If a module name is
+     *            supplied, the latest version of the module with the nearest
      *            authority is selected. The nearest authority is the first
      *            match in the sequence: local authority, Broad authority, other
      *            authority.
      * @param parameters
-     *            The parameters to run the task with.
+     *            The parameters to run the module with.
      * @return The job result.
      * @throws WebServiceException
      *             If an error occurs during the job submission or job result
      *             retrieval process.
      */
-    public JobResult runAnalysis(String taskNameOrLSID, Parameter[] parameters) throws WebServiceException {
+    public JobResult runAnalysis(String moduleNameOrLsid, Parameter[] parameters) throws WebServiceException {
         try {
-            TaskInfo taskInfo = getTask(taskNameOrLSID);
+            TaskInfo taskInfo = getTask(moduleNameOrLsid);
             ParameterInfo[] actualParameters = Util.createParameterInfoArray(taskInfo, parameters);
             AnalysisWebServiceProxy analysisProxy = null;
             try {
@@ -411,24 +441,24 @@ public class GPServer {
     }
 
     /**
-     * Downloads the support files for the given task from the server and
-     * executes the given task locally.
+     * Downloads the support files for the given module from the server and
+     * executes the given module locally.
      * 
-     * @param taskNameOrLSID
-     *            The task name or LSID. When an LSID is provided that does not
+     * @param moduleNameOrLsid
+     *            The module name or LSID. When an LSID is provided that does not
      *            include a version, the latest available version of the task
-     *            identified by the LSID will be used. If a task name is
-     *            supplied, the latest version of the task with the nearest
+     *            identified by the LSID will be used. If a module name is
+     *            supplied, the latest version of the module with the nearest
      *            authority is selected. The nearest authority is the first
      *            match in the sequence: local authority, Broad authority, other
      *            authority.
      * @param parameters
-     *            The parameters to run the task with.
+     *            The parameters to run the module with.
      * @throws WebServiceException
      *             If an error occurs while launching the visualizer.
      */
-    public void runVisualizer(String taskNameOrLSID, Parameter[] parameters) throws WebServiceException {
-        TaskInfo taskInfo = getTask(taskNameOrLSID);
+    public void runVisualizer(String moduleNameOrLsid, Parameter[] parameters) throws WebServiceException {
+        TaskInfo taskInfo = getTask(moduleNameOrLsid);
         ParameterInfo[] actualParameters = Util.createParameterInfoArray(taskInfo, parameters);
         Map<String, String> paramName2ValueMap = new HashMap<String, String>();
         if (actualParameters != null) {

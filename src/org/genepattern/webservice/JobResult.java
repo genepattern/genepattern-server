@@ -16,12 +16,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.HttpURLConnection;
-import java.net.URLEncoder;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.genepattern.client.Util;
 import org.genepattern.util.GPConstants;
@@ -62,7 +62,7 @@ public class JobResult {
      * @param parameters
      *            The parameters that this job was run with.
      * @param lsid
-     *            The LSID of the task that produced this job result.
+     *            The LSID of the module that produced this job result.
      */
     public JobResult(URL server, int jobNumber, String[] fileNames, boolean stdout, boolean stderr,
             Parameter[] parameters, String lsid) {
@@ -76,9 +76,9 @@ public class JobResult {
     }
 
     /**
-     * Gets the LSID of the task that produced this job result.
+     * Gets the LSID of the module that produced this job result.
      * 
-     * @return The task LSID
+     * @return The module LSID
      */
     public String getLSID() {
         return lsid;
