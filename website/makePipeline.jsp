@@ -248,7 +248,7 @@ try {
 	String privacy = requestParameters.getProperty(GPConstants.PRIVACY);
 	model.setPrivacy(privacy != null && privacy.equals(GPConstants.PRIVATE));
 
-	PipelineController controller = new PipelineController(model);
+	PipelineCreationHelper controller = new PipelineCreationHelper(model);
 	lsid = controller.generateLSID();
 
 
@@ -450,7 +450,7 @@ try {
 <%
 	}
 	if (controller == null)
-	    controller = new PipelineController(model);
+	    controller = new PipelineCreationHelper(model);
 
 	//lsid = null;
 	if (vProblems.size() == 0) {
