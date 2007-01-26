@@ -88,13 +88,13 @@ function readLayer(lay) {
 }
 
 function setTask(taskNum, taskLSID) {
+
 	writeToLayer(taskNum, changeTaskHTML(taskLSID, taskNum, true));
 	showLayer(taskNum);
 }
 
 // insert a new task at the requested slot, moving all subsequent tasks down by one
 function addAnother(taskNum, scrollTo) {
-
 	// if the maximum number of tasks is already in the list, then ask whether the user intends to push the last one off the end
 	if (numTasks == MAX_TASKS) {
 		if (!confirm("There is a limit of " + numTasks + " tasks per pipeline.  Adding another task will force the " + numTasks +
@@ -532,7 +532,7 @@ function changeTaskType(selectorTaskType, taskNum) {
 	taskSelector.options.length = 0;
 	if (selectorTaskType.selectedIndex == 0) return; // user chose the "choose task" heading, item 0
 	var type = selectorTaskType.options[selectorTaskType.selectedIndex].value;
-	taskSelector.options[0] = new Option("- Task -", "");
+	taskSelector.options[0] = new Option("- Module -", "");
 	taskSelector.options[0].style['fontWeight'] = "bold";
 	var versionlessLSIDs = new Array();
  	for (i in TaskTypes[type]) {
@@ -922,6 +922,8 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 }
 
 function chgTask(selectorTask, taskNum) {
+	if ((numTasks == 0) && (taskNum == 0)) numTasks = 1;
+	
 	var taskLSID = selectorTask.options[selectorTask.selectedIndex].value;
 	var taskFields = changeTaskHTML(taskLSID, taskNum, true);
 	writeToLayer(taskNum, taskFields);
@@ -1425,7 +1427,7 @@ nextTask:
 	newTask = newTask + '</select></td>\n';
 	newTask = newTask + '<td valign="top"></td>';
 	newTask = newTask + '<td valign="top"><select name="t' + taskNum + '" onchange="chgTask(this, ' + taskNum + ')">\n';
-	<!-- /* newTask = newTask + '<option value="" selected style="font-weight: bold">- Task -</option>'; */ -->
+	<!-- /* newTask = newTask + '<option value="" selected style="font-weight: bold">- Module -</option>'; */ -->
 	
 	
 	newTask = newTask + '</select></td></tr></table>\n';
