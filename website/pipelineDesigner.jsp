@@ -411,7 +411,12 @@ var ns6=document.getElementById&&!document.all
 var xpos="30px"
 var ypos="30px"
 
-function openPromptWindow(divid){
+
+var pwrCancelCacheName = new Object();
+var pwrCancelCacheDescrip = new Object();
+
+
+function openPromptWindow(divid, taskNum, pName){
      	document.getElementById(divid).style.display=''
      	document.getElementById(divid).style.visibility='visible'
      	document.getElementById(divid).style.width=initialwidth="270px"
@@ -419,7 +424,18 @@ function openPromptWindow(divid){
      	document.getElementById(divid).style.left=xpos 
      	document.getElementById(divid).style.top=ypos    
 
+		pwrCancelCacheName[divid] = document.getElementById('t'+taskNum+'_'+pName+'_altName').value;
+		pwrCancelCacheDescrip[divid] = document.getElementById('t'+taskNum+'_'+pName+'_altDescription').value;
+
 }
+
+function cancelPromptWindow(divid, taskNum, pName){
+	document.getElementById('t'+taskNum+'_'+pName+'_altName').value = pwrCancelCacheName[divid];
+	document.getElementById('t'+taskNum+'_'+pName+'_altDescription').value = pwrCancelCacheDescrip[divid];
+	document.getElementById(divid).style.display="none"
+}
+
+
 
 function cumulativeOffset(element) {
     var valueT = 0, valueL = 0;
@@ -810,8 +826,11 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		taskFields = taskFields + '<div id="dwindowcontent" style="height:100%;text-align:center;">';
 		taskFields = taskFields + 'Define alternative name and description to display when prompting for this input.<br>';
 		taskFields = taskFields + '<br><table class="prompt-table" border="0" cellspacing="0" cellpadding="0"><tr border="0" ><td>Display Name:</td><td><input id="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/></td></tr>';
-		taskFields = taskFields + '<tr><td>Display Description:</td><td><input id="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/></td></tr>';
-		taskFields = taskFields + '</table><center><input type="button" value="Save" onclick="closePromptWindow(\'div_'+taskNum+'_'+pnum+'\')"/>&#160;&#160;<input type="button" value="Reset" onclick="resetDisplay(\''+taskNum+'\', \''+pi.name+'\', \''+pi.description+'\')"/></center>';
+
+		taskFields = taskFields + '<tr><td>Display Description:</td><td><input id="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/></td></tr></table><center>';
+		taskFields = taskFields + '<input type="button" value="Save"   onclick="closePromptWindow(\'div_'+taskNum+'_'+pnum+'\')"/>&#160;&#160;';
+		taskFields = taskFields + '<input type="button" value="Cancel" onclick="cancelPromptWindow(\'div_'+taskNum+'_'+pnum+'\', '+taskNum+', \''+pi.name+'\')"/>&#160;&#160;';
+		taskFields = taskFields + '<input type="button" value="Reset"  onclick="resetDisplay(\''+taskNum+'\', \''+pi.name+'\', \''+pi.description+'\')"/></center>';
 		taskFields = taskFields + '</div></div>';
 		taskFields = taskFields + '  </span>';
 
@@ -870,7 +889,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		
 		taskFields= taskFields + '<span id="span_altinputdisplay_'+ taskNum +'_'+pnum+'" style="display:none">';
 		
-		taskFields= taskFields + '<a onMouseDown="setPromptPosition(event,\'div_'+taskNum+'_'+pnum+'\', this)"  href="javascript:openPromptWindow(\'div_'+taskNum+'_'+pnum+'\')">set prompt when run display settings...</a>';
+		taskFields= taskFields + '<a onMouseDown="setPromptPosition(event,\'div_'+taskNum+'_'+pnum+'\', this)"  href="javascript:openPromptWindow(\'div_'+taskNum+'_'+pnum+'\', '+taskNum+', \''+pi.name+'\')">set prompt when run display settings...</a>';
 		
 		taskFields = taskFields + "</span></td><td valign=\"top\">";
 		if (pi.description.length > 0)  taskFields = taskFields + pi.description;
@@ -882,7 +901,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 
 	taskFields = taskFields + '<br><center>\n';
 	if ((taskNum+1) < MAX_TASKS) {
-		taskFields = taskFields + '<input type="button" value="Add Another Task" onClick="addAnother(' + (taskNum+1) + 
+		taskFields = taskFields + '<input type="button" value="Add Another Module" onClick="addAnother(' + (taskNum+1) + 
 				          ', true)" name="notused" class="little">&nbsp;&nbsp;\n';
 	}
 	taskFields = taskFields + '<input type="button" value="Delete ' + task.name + '" onClick="deleteTask(' + taskNum + 
