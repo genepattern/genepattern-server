@@ -103,32 +103,35 @@
 	    javaFlags = System.getProperty(RunVisualizerConstants.JAVA_FLAGS_VALUE);
 	}
 
-%>
-<applet code="<%= org.genepattern.visualizer.RunVisualizerApplet.class.getName() %>" archive="runVisualizer.jar" codebase="downloads" width="1" height="1" alt="Your browser refuses to run applets" name="<%= appletName %>">
-<param name="<%= RunVisualizerConstants.NAME %>" value="<%= name %>">
 
-<param name="<%= RunVisualizerConstants.OS %>" value="<%= StringUtils.htmlEncode(tia.get(GPConstants.OS)) %>">
-<param name="<%= RunVisualizerConstants.CPU_TYPE %>" value="<%= StringUtils.htmlEncode(tia.get(GPConstants.CPU_TYPE)) %>">
-<param name="<%= RunVisualizerConstants.LIBDIR %>" value="<%= StringUtils.htmlEncode(libdir) %>">
-<param name="<%= RunVisualizerConstants.JAVA_FLAGS_VALUE %>" value="<%= StringUtils.htmlEncode(javaFlags) %>">
+java.io.StringWriter app = new java.io.StringWriter();
+app.append("<applet code=\"" + org.genepattern.visualizer.RunVisualizerApplet.class.getName() + "\" archive=\"runVisualizer.jar\" codebase=\"downloads\" width=\"1\" height=\"1\" alt=\"Your browser refuses to run applets\" name=\"" + appletName + "\" >");
+app.append("<param name=\"" + RunVisualizerConstants.NAME + "\" value=\"" + name + "\" >");
 
 
-<param name="<%= RunVisualizerConstants.PARAM_NAMES %>" value="<%
-	for (i = 0; i < parameterInfoArray.length; i++) {
-		if (i > 0) out.print(",");
-		out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
-	}
-%>">
-<%	for (i = 0; i < parameterInfoArray.length; i++) {
-		String paramName = parameterInfoArray[i].getName();
-		if (paramName.equals("className")) { %>
-<param name="<%= paramName %>" value="<%= StringUtils.htmlEncode(parameterInfoArray[i].getDescription()) %>">
-<%			continue;
-		}
-%>
-<param name="<%= StringUtils.htmlEncode(paramName) %>" value="<%= StringUtils.htmlEncode(params.getProperty(paramName)) %>">
-<%	} %>
-<param name="<%= RunVisualizerConstants.DOWNLOAD_FILES %>" value="<%
+app.append("<param name=\"" + RunVisualizerConstants.OS + "\" value=\"" + StringUtils.htmlEncode(tia.get(GPConstants.OS)) + "\">");
+
+app.append("<param name=\"" + RunVisualizerConstants.CPU_TYPE + "\" value=\"" + StringUtils.htmlEncode(tia.get(GPConstants.CPU_TYPE)) + "\">");
+app.append("<param name=\"" + RunVisualizerConstants.LIBDIR + "\" value=\"" + StringUtils.htmlEncode(libdir) + "\">");
+app.append("<param name=\"" + RunVisualizerConstants.JAVA_FLAGS_VALUE + "\" value=\"" + StringUtils.htmlEncode(javaFlags) + "\">");
+
+StringBuffer paramValue = new StringBuffer();
+for (i = 0; i < parameterInfoArray.length; i++) {
+	if (i > 0) paramValue.append(",");
+	paramValue.append(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
+}
+
+app.append("<param name=\"" + RunVisualizerConstants.PARAM_NAMES + "\" value=\"" + paramValue.toString() + "\" >");
+
+
+for (i = 0; i < parameterInfoArray.length; i++) {
+	String paramName = parameterInfoArray[i].getName();
+	app.append("<param name=\"" + StringUtils.htmlEncode(paramName) + "\" value=\"" + StringUtils.htmlEncode(params.getProperty(paramName)) + "\" >");
+
+}
+
+StringBuffer vis = new StringBuffer();
+
 	int numToDownload = 0;
 	for (i = 0; i < parameterInfoArray.length; i++) {
 		String paramName = parameterInfoArray[i].getName();
@@ -137,24 +140,39 @@
 		     params.getProperty(paramName).startsWith("https:") ||
 		     params.getProperty(paramName).startsWith("ftp:"))) {
 			// note that this parameter is a URL that must be downloaded by adding it to the CSV list for the applet
-			if (numToDownload > 0) out.print(",");
-			out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
+			if (numToDownload > 0) {
+			    vis.append(",");
+			}
+			vis.append(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
 			numToDownload++;
 		}
 	}
-%>">
-<param name="<%= RunVisualizerConstants.COMMAND_LINE %>" value="<%= StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) %>">
-<param name="<%= RunVisualizerConstants.DEBUG%>" value="1">
-<param name="<%= RunVisualizerConstants.SUPPORT_FILE_NAMES %>" value="<%
+app.append("<param name=\"" + RunVisualizerConstants.DOWNLOAD_FILES + "\" value=\"" + vis.toString() + "\" >");
+app.append("<param name=\"" + RunVisualizerConstants.COMMAND_LINE + "\" value=\"" + StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) + "\" >");
+app.append("<param name=\"" + RunVisualizerConstants.DEBUG + "\" value=\"1\" >");
+
+StringBuffer fileNamesBuf = new StringBuffer();
+
 	for (i = 0; i < supportFiles.length; i++) {
-		if (i > 0) out.print(",");
-		out.print(StringUtils.htmlEncode(supportFiles[i].getName()));
-	} %>">
-<param name="<%= RunVisualizerConstants.SUPPORT_FILE_DATES %>" value="<%
+		if (i > 0) fileNamesBuf.append(",");
+		fileNamesBuf.append(StringUtils.htmlEncode(supportFiles[i].getName()));
+	} 
+app.append("<param name=\"" + RunVisualizerConstants.SUPPORT_FILE_NAMES + "\" value=\"" + fileNamesBuf.toString() + "\" >");
+
+    StringBuffer fileDatesBuf = new StringBuffer();
 	for (i = 0; i < supportFiles.length; i++) {
-		if (i > 0) out.print(",");
-		out.print(supportFiles[i].lastModified());
-	} %>">
-<param name="<%= RunVisualizerConstants.LSID%>" value="<%= lsid %>">
-Your browser is ignoring this applet.
-</applet>
+		if (i > 0) fileDatesBuf.append(",");
+		fileDatesBuf.append(supportFiles[i].lastModified());
+	}
+app.append("<param name=\"" + RunVisualizerConstants.SUPPORT_FILE_DATES + "\" value=\"" + fileDatesBuf.toString() + "\" >");
+app.append("<param name=\"" + RunVisualizerConstants.LSID + "\" value=\"" + lsid + "\" >");
+
+
+
+
+%>
+<SCRIPT LANGUAGE="JavaScript">
+document.writeln('<%=app.toString() %>');
+document.writeln("<PARAM name=\"browserCookie\" value=\"" + document.cookie + "\">");
+document.writeln('</applet>');
+</SCRIPT>
