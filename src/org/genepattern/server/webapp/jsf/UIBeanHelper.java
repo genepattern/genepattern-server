@@ -69,6 +69,10 @@ public class UIBeanHelper {
         getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
     }
 
+    public static void setErrorMessage(String summary) {
+        getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, summary, null));
+    }
+
     public static void setInfoMessage(UIComponent component, String summary) {
         getFacesContext().addMessage(component.getClientId(getFacesContext()),
                 new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
