@@ -91,7 +91,7 @@ public class AdminService implements IAdminService {
 
         Suite aSuite = (new SuiteDAO()).findById(lsid);
         String owner = aSuite.getUserId();
-        return owner.equals(getUserName());
+        return owner == null || owner.equals(getUserName());
 
     }
 

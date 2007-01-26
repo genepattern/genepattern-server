@@ -232,7 +232,7 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
         if (suiteLsids != null) {
             for (String lsid : suiteLsids) {
                 Suite s = (Suite) HibernateUtil.getSession().get(org.genepattern.server.domain.Suite.class, lsid);
-                if (s.getUserId().equals(user) || admin) {
+                if (s.getUserId() == null || s.getUserId().equals(user) || admin) {
                     (new SuiteDAO()).delete(s);
                     // Delete supporting files
 
