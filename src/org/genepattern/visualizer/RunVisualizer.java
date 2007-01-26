@@ -44,6 +44,8 @@ public class RunVisualizer {
 
     private String cookie;
 
+    private URL documentBase;
+
     protected static final String JAVA = "java";
 
     protected static final String JAVA_FLAGS = "java_flags";
@@ -89,6 +91,7 @@ public class RunVisualizer {
         this.supportFileNames = supportFileNames;
         this.supportFileDates = supportFileDates;
         this.cookie = applet.getParameter("browserCookie");
+        this.documentBase = applet.getDocumentBase();
     }
 
     public void run() throws IOException, Exception {
@@ -315,7 +318,9 @@ public class RunVisualizer {
         try {
 
             URLConnection conn = url.openConnection();
-            conn.setRequestProperty("Cookie", cookie);
+            if (InetAddress.getByName(url.getHost()).equals(InetAddress.getByName(documentBase.getHost()))) {
+                conn.setRequestProperty("Cookie", cookie);
+            }
             is = conn.getInputStream();
 
             dir.mkdirs();
@@ -342,7 +347,7 @@ public class RunVisualizer {
                 }
             }
         }
-     
+
         return file;
     }
 
