@@ -1167,7 +1167,7 @@ public class TaskIntegrator {
     private boolean isSuiteOwner(String user, String lsid) {
 
         Suite aSuite = (new SuiteDAO()).findById(lsid);
-        String owner = aSuite.getOwner();
+        String owner = aSuite.getUserId();
         return owner.equals(getUserName());
 
     }

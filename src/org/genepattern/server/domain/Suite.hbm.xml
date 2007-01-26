@@ -9,10 +9,10 @@
     </id>
     <property name="name" type="string" column="NAME" length="4000"/>
     <property name="author" type="string" column="AUTHOR" length="4000"/>
-    <property name="owner" type="string" column="OWNER" length="4000"/>
+    <property name="contact" type="string" column="OWNER" length="4000"/>
     <property name="description" type="string" column="DESCRIPTION" length="4000"/>
     <property name="accessId" type="integer" column="ACCESS_ID" precision="10" scale="0"/>
-    <property name="contact" type="string" column="CONTACT" length="255"/>
+    <property name="userId" type="string" column="USER_ID" length="255"/>
     <bag name="modules" table="SUITE_MODULES" order-by="module_lsid asc" cascade="none"> 
       <key>
         <column name="lsid" length="4000"/>

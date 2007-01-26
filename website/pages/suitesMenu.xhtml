@@ -10,14 +10,15 @@
         <tbody>
           <tr>
             <td>
-              <h:commandLink value="Edit" action="#{manageSuiteBean.edit}">
+              <h:commandLink value="Edit" action="#{manageSuiteBean.edit}" rendered="#{suiteInfo.ownedByUserOrPublic}">
                 <f:param name="lsid" value="#{suiteInfo.lsid}"/>
               </h:commandLink>
             </td>
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Delete" action="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false" rendered="#{suiteInfo.ownedByUser}">
+              <h:commandLink value="Delete" action="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false" 
+                             rendered="#{suiteInfo.ownedByUserOrPublic}">
                 <f:param name="selectedSuites" value="#{suiteInfo.lsid}"/>
               </h:commandLink>
             </td>

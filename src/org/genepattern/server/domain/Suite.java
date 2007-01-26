@@ -1,30 +1,42 @@
 /* Auto generated file */
 
 package org.genepattern.server.domain;
+
 import java.net.MalformedURLException;
 import java.util.*;
 
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.LSID;
 
+import static org.genepattern.util.GPConstants.*;
+
 /**
- * A hibernate mapped POJO representing a Suite.  This class is a near copy of SuiteInfo.  
- * Both are kept for an interim period as we transition to Hibernate.
+ * A hibernate mapped POJO representing a Suite. This class is a near copy of SuiteInfo. Both are kept for an interim
+ * period as we transition to Hibernate.
+ * 
  * @author jrobinso
- *
+ * 
  */
 public class Suite implements java.io.Serializable {
 
     private String lsid;
+
     private String name;
+
     private String author;
-    private String owner;
+
     private String contact;
+
     private String description;
+
+    private String userId;
+
     private Integer accessId;
+
     private List<String> modules;
-    
+
     private boolean selected = false;
+
     private boolean expanded = true;
 
     public String getLsid() {
@@ -51,12 +63,12 @@ public class Suite implements java.io.Serializable {
         this.author = value;
     }
 
-    public String getOwner() {
-        return this.owner;
+    public String getUserId() {
+        return this.userId;
     }
 
-    public void setOwner(String value) {
-        this.owner = value;
+    public void setUserId(String value) {
+        this.userId = value;
     }
 
     public String getDescription() {
@@ -83,35 +95,42 @@ public class Suite implements java.io.Serializable {
         this.modules = modules;
     }
 
-	public String getContact() {
-		return contact;
-	}
+    public String getContact() {
+        return contact;
+    }
 
-	public void setContact(String contact) {
-		this.contact = contact;
-	}
-	
-	public boolean isSelected() {
+    public void setContact(String contact) {
+        this.contact = contact;
+    }
+
+    public boolean isSelected() {
         return selected;
     }
-	
-	public boolean isExpanded() {
+
+    public boolean isExpanded() {
         return expanded;
     }
-    
+
     public String getVersion() {
         try {
             LSID lsidObject = new LSID(getLsid());
             return lsidObject.getVersion();
-        }
-        catch (MalformedURLException e) {
+        } catch (MalformedURLException e) {
             return "";
         }
     }
-    
-    public boolean isOwnedByUser() {
-    	String user = UIBeanHelper.getUserId();
-    	return (owner.equals(user))?true:false;
-    }
 
+    /**
+     * Test for "ownership". Ownership in this context means that the current user installed the suite on the server.
+     * THis is a new concept in GP 3.0, and is supported by a new field (userId). Suites from previous versions of GP
+     * will have a null value for the userId field. A value of true is returned for these instances, it is interpreted
+     * to be a public suite irrespective of access value.  Otherwise a private suite with null user_id would not be
+     * accessible by anyone.
+     * 
+     * @return true if the suite is owned by the current user
+     */
+    public boolean isOwnedByUserOrPublic() {
+        String user = UIBeanHelper.getUserId();
+        return (accessId == ACCESS_PUBLIC) || (userId == null) || (userId.length() == 0) || (userId.equals(user));
+    }
 }

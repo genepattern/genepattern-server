@@ -94,7 +94,7 @@ public class BaseDAO {
         int access_id = suite.getAccessId();
         String name = suite.getName();
         String description = suite.getDescription();
-        String owner = suite.getOwner();
+        String owner = suite.getUserId();
         String author = suite.getAuthor();
 
         ArrayList docs = new ArrayList();

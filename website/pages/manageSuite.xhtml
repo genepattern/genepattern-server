@@ -38,9 +38,8 @@
         <tr class="tableheader-row">
           <td>&#160;</td>
           <td>name</td>
-          <td>version&#160;</td>
           <td>author&#160;</td>
-          <td>owner &#160;</td>
+          <td>contact &#160;</td>
         </tr>
        
         <!--  Loop through suite list -->
@@ -50,8 +49,8 @@
 		        <!-- Suite select checkbox -->
 		        <div align="center" id="cb_suite_#{suiteInfo.name}">
 		          <c:choose>
-		            <c:when test="#{!suiteInfo.ownedByUser}">
-		              <input type="checkbox" name="selectedSuites" disabled="true" value="#{suiteInfo.lsid}" onclick="toggleSuiteCheckboxes('#{suiteInfo.lsid}');"/>
+		            <c:when test="#{!suiteInfo.ownedByUserOrPublic}">
+		              <input type="checkbox" name="selectedSuites" disabled="disabled" value="#{suiteInfo.lsid}" onclick="toggleSuiteCheckboxes('#{suiteInfo.lsid}');"/>
 		            </c:when>
 		            <c:when test="#{suiteInfo.selected}">
 		              <input type="checkbox" name="selectedSuites" checked="checked" value="#{suiteInfo.lsid}" onclick="toggleSuiteCheckboxes('#{suiteInfo.lsid}');"/>
@@ -73,13 +72,10 @@
 		        onmouseout="MM_swapImgRestore();"/>
 		      </td>
 		      <td>
-		        <h:outputText value="#{suiteInfo.version}"/>&#160;
-		      </td>
-		      <td>
 		        <h:outputText value="#{suiteInfo.author}"/>&#160;
 		      </td>
 		      <td>
-		        <h:outputText value="#{suiteInfo.owner}"/>
+		        <h:outputText value="#{suiteInfo.contact}"/> 
 		      </td>
 		  </tr>
 		  <tr valign="top" class="smalltype5" style="#{suiteInfo.description != '' ? 'display:' : 'display:none;'}">

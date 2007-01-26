@@ -60,7 +60,7 @@ public class TaskIntegratorDAO extends BaseDAO {
         s.setName(suiteInfo.getName());
         s.setDescription(suiteInfo.getDescription());
         s.setAuthor(suiteInfo.getAuthor());
-        s.setOwner(suiteInfo.getOwner());
+        s.setUserId(suiteInfo.getOwner());
         s.setAccessId(suiteInfo.getAccessId());
         s.setModules(Arrays.asList(suiteInfo.getModuleLsids()));
         s.setContact(suiteInfo.getContact());
