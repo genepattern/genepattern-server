@@ -145,20 +145,6 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
         prolog
                 .append("\n * <p> To compile and run, first download the GenePattern library from the GenePattern home page.");
 
-        prolog.append("\n * To compile:");
-        prolog.append("\n * <ul>");
-        prolog.append("\n * <li>On Windows: javac -classpath GenePattern.jar;. " + javaEncodeName(model.getName())
-                + ".java");
-        prolog.append("\n * <li>On Unix: javac -classpath GenePattern.jar:. " + javaEncodeName(model.getName())
-                + ".java");
-        prolog.append("\n * </ul>");
-
-        prolog.append("\n * To run:");
-        prolog.append("\n * <ul>:");
-        prolog.append("\n * <li>On Windows: java -classpath GenePattern.jar;. " + javaEncodeName(model.getName()));
-        prolog.append("\n * <li>On Unix: java -classpath GenePattern.jar:. " + javaEncodeName(model.getName()));
-        prolog.append("\n * </ul>");
-
         prolog.append("\n *");
         prolog.append("\n*/\n");
 
