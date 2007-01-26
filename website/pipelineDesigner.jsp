@@ -283,6 +283,20 @@ function isRSafe(varName) {
 	return ret;
 }
 
+// check if any other tasks already use this name
+function isUniqueName(varName, pipeLsid){
+	var versionlessLsid = LSIDNoVersion(pipeLsid);
+	 
+	for (task in TaskInfos) {
+		if (TaskInfos[task].name == varName) {
+			// don't error if the LSIDs match
+			var taskLsid = LSIDNoVersion(TaskInfos[task].lsid);
+			if (taskLsid != versionlessLsid) return false;
+		}
+	}
+	return true;
+}
+
 function chooseInheritTask(taskNum, param) {
 	var frm = document.forms['pipeline'];
 	frm['t' + taskNum + '_shadow' + param].value="";
@@ -432,6 +446,7 @@ function setPromptPosition(e, divid, anElement){
    }
 
 function closePromptWindow(divid){
+alert(divid);
 	document.getElementById(divid).style.display="none"
 }
 
@@ -517,7 +532,7 @@ function changeTaskType(selectorTaskType, taskNum) {
 	taskSelector.options.length = 0;
 	if (selectorTaskType.selectedIndex == 0) return; // user chose the "choose task" heading, item 0
 	var type = selectorTaskType.options[selectorTaskType.selectedIndex].value;
-	taskSelector.options[0] = new Option("- Module -", "");
+	taskSelector.options[0] = new Option("- Task -", "");
 	taskSelector.options[0].style['fontWeight'] = "bold";
 	var versionlessLSIDs = new Array();
  	for (i in TaskTypes[type]) {
@@ -797,7 +812,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		taskFields = taskFields + 'Define alternative name and description to display when prompting for this input.<br>';
 		taskFields = taskFields + '<br><table class="prompt-table" border="0" cellspacing="0" cellpadding="0"><tr border="0" ><td>Display Name:</td><td><input id="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/></td></tr>';
 		taskFields = taskFields + '<tr><td>Display Description:</td><td><input id="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/></td></tr>';
-		taskFields = taskFields + '</table><center><input type="button" value="Save" onclick="closePromptWindow(\'div_'+taskNum+'_'+pnum+'\')"/>&#160;&#160;<input type="button" value="Reset" onclick="resetDisplay(\''+taskNum+'\', \''+pi.name+'\', \''+pi.description+'\')"/></center>';
+		taskFields = taskFields + '</table><center><input type="button" value="Save" onclick="closePromptWindow(\'div_'+taskNum+'_'+pnum+'\')"/><input type="button" value="Reset" onclick="resetDisplay(\''+taskNum+'\', \''+pi.name+'\', \''+pi.description+'\')"/></center>';
 		taskFields = taskFields + '</div></div>';
 		taskFields = taskFields + '  </span>';
 
@@ -868,7 +883,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 
 	taskFields = taskFields + '<br><center>\n';
 	if ((taskNum+1) < MAX_TASKS) {
-		taskFields = taskFields + '<input type="button" value="Add Another Module" onClick="addAnother(' + (taskNum+1) + 
+		taskFields = taskFields + '<input type="button" value="Add Another Task" onClick="addAnother(' + (taskNum+1) + 
 				          ', true)" name="notused" class="little">&nbsp;&nbsp;\n';
 	}
 	taskFields = taskFields + '<input type="button" value="Delete ' + task.name + '" onClick="deleteTask(' + taskNum + 
@@ -1134,20 +1149,45 @@ function savePipeline(bMustName, cmd) {
 			var t = i;
 			deleteTask(i);
 		}
+		
 		t--;
 		if (t < 0) break;
 	}
+	// we start with a single dummy/blank task.  Check for this
+	if (numTasks == 1){
+		var taskOne = document.forms['pipeline']['t' + 0 + '_taskLSID']
+		if (taskOne == null) numTasks = 0;
+	}
+
 	var success = true;
 	var missingInheritedFileValue ='';
 
+	// validate that the name is present, RSafe and warn them if not unique
 	if (bMustName) {
-		success = (document.forms['pipeline'].pipeline_name.value.length > 0);
-		if (!success) alert('You must enter a pipeline name');
-		else {
-			success = isRSafe(document.forms['pipeline'].pipeline_name.value);
-			if (!success) alert(pipelineInstruction);
+		var pipeName = document.forms['pipeline'].pipeline_name.value;
+		var pipeLsid = document.forms['pipeline'].LSID.value;
+
+		success = (pipeName.length > 0);
+		if (!success){
+			 alert('You must enter a pipeline name');
+			 return;	
+		} 
+		success = isRSafe(pipeName);
+		if (!success){ 
+			alert(pipelineInstruction);
+			return;	
 		}
+		if (!pipeName.search(".pipeline") != -1){
+			pipeName = pipeName+".pipeline";
+		}
+		success = isUniqueName(pipeName, pipeLsid);
+		if (!success){
+			success = confirm('A pipeline named "'+ pipeName +'" already exists. Save to this name anyway?');
+			if (!success) return;
+		}
+
 	}
+	
 
 	// Netscape Navigator loses filename selections in file choosers when layers are modified
 	// although we have shadowed them into a user-visible field, the user needs to paste them back
@@ -1194,14 +1234,7 @@ function savePipeline(bMustName, cmd) {
 	   }
 	}
 	if (!success) {
-/*
-		// BUG: Netscape 7 doesn't seem to return a Window object from window.open!!!
 
-		var w = window.open("",document.forms['pipeline']['pipeline_name'].value + '_error',"height=350,width=600,menuBar=no,resizable=yes,scrollbars=yes,status=no,directories=no", true);
-		w.focus();
-		w.document.writeln("<html><head><title>Lost names of input files</title></head><body>Please copy and paste the input filenames from below each file chooser box into the file chooser above each.<br><pre>" +
-				   lostFiles + "</pre><br><a href=\"javascript:window.close()\">close window</a></body>");
-*/
 		alert("Please copy and paste the input filenames from below each file chooser box into the file chooser above each.\n\n" +
 				   lostFiles);
 	}
@@ -1392,7 +1425,7 @@ nextTask:
 	newTask = newTask + '</select></td>\n';
 	newTask = newTask + '<td valign="top"></td>';
 	newTask = newTask + '<td valign="top"><select name="t' + taskNum + '" onchange="chgTask(this, ' + taskNum + ')">\n';
-	<!-- /* newTask = newTask + '<option value="" selected style="font-weight: bold">- Module -</option>'; */ -->
+	<!-- /* newTask = newTask + '<option value="" selected style="font-weight: bold">- Task -</option>'; */ -->
 	
 	
 	newTask = newTask + '</select></td></tr></table>\n';
