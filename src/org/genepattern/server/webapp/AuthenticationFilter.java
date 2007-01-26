@@ -197,7 +197,7 @@ public class AuthenticationFilter implements Filter {
      * machines have multiple aliases
      */
     protected String getFQHostName() throws IOException {
-        String fqHostName = System.getProperty("fullyQualifiedHostName");
+        String fqHostName = System.getProperty("fqHostName");
         if (fqHostName == null) {
             fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
         }
