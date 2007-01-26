@@ -86,7 +86,7 @@ public class RegistrationBean {
             throws ValidatorException {
         User user = (new UserDAO()).findById(value.toString());
         if (user != null) {
-            String message = "An account with this username already exist.  Please choose another.";
+            String message = "An account with this username already exists.  Please choose another.";
             FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
             ((UIInput) component).setValid(false);
             throw new ValidatorException(facesMessage);
