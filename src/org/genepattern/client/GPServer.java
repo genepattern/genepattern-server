@@ -18,6 +18,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.genepattern.util.GPConstants;
@@ -195,8 +196,8 @@ public class GPServer {
      * Returns the url to retrieve the given file as part of the given module.
      * 
      * @param moduleNameOrLsid
-     *            The module name or LSID of the module that contains the file. When
-     *            an LSID is provided that does not include a version, the
+     *            The module name or LSID of the module that contains the file.
+     *            When an LSID is provided that does not include a version, the
      *            latest available version of the module identified by the LSID
      *            will be used. If a module name is supplied, the latest version
      *            of the module with the nearest authority is selected. The
@@ -304,30 +305,24 @@ public class GPServer {
     }
 
     /**
+     * Returns the array of parameters for the specified module name or lsid.
      * 
      * @param moduleNameOrLsid
-     *            The module name or LSID. When an LSID is provided that does not
-     *            include a version, the latest available version of the task
-     *            identified by the LSID will be used. If a module name is
+     *            The module name or LSID. When an LSID is provided that does
+     *            not include a version, the latest available version of the
+     *            task identified by the LSID will be used. If a module name is
      *            supplied, the latest version of the module with the nearest
      *            authority is selected. The nearest authority is the first
      *            match in the sequence: local authority, Broad authority, other
      *            authority.
-     * @return The array of parameter names for the specified module name or lsid.
+     * @return The array of parameters for the specified module name or lsid.
      * @throws WebServiceException
      *             If an error occurs while getting the parameters.
      */
-    public String[] getParameters(String moduleNameOrLsid) throws WebServiceException {
+    public ParameterInfo[] getParameters(String moduleNameOrLsid) throws WebServiceException {
         try {
             TaskInfo taskInfo = getTask(moduleNameOrLsid);
-            ParameterInfo[] params = taskInfo.getParameterInfoArray();
-            String[] parameterNames = new String[params != null ? params.length : 0];
-            if (params != null) {
-                for (int i = 0; i < params.length; i++) {
-                    parameterNames[i] = params[i].getName();
-                }
-            }
-            return parameterNames;
+            return taskInfo.getParameterInfoArray();
         } catch (org.genepattern.webservice.WebServiceException wse) {
             throw new WebServiceException(wse.getMessage(), wse.getRootCause());
         }
@@ -338,9 +333,9 @@ public class GPServer {
      * the job to complete.
      * 
      * @param moduleNameOrLsid
-     *            The module name or LSID. When an LSID is provided that does not
-     *            include a version, the latest available version of the task
-     *            identified by the LSID will be used. If a module name is
+     *            The module name or LSID. When an LSID is provided that does
+     *            not include a version, the latest available version of the
+     *            task identified by the LSID will be used. If a module name is
      *            supplied, the latest version of the module with the nearest
      *            authority is selected. The nearest authority is the first
      *            match in the sequence: local authority, Broad authority, other
@@ -372,13 +367,13 @@ public class GPServer {
     }
 
     /**
-     * Submits the given module with the given parameters and waits for the job to
-     * complete.
+     * Submits the given module with the given parameters and waits for the job
+     * to complete.
      * 
      * @param moduleNameOrLsid
-     *            The module name or LSID. When an LSID is provided that does not
-     *            include a version, the latest available version of the task
-     *            identified by the LSID will be used. If a module name is
+     *            The module name or LSID. When an LSID is provided that does
+     *            not include a version, the latest available version of the
+     *            task identified by the LSID will be used. If a module name is
      *            supplied, the latest version of the module with the nearest
      *            authority is selected. The nearest authority is the first
      *            match in the sequence: local authority, Broad authority, other
@@ -445,9 +440,9 @@ public class GPServer {
      * executes the given module locally.
      * 
      * @param moduleNameOrLsid
-     *            The module name or LSID. When an LSID is provided that does not
-     *            include a version, the latest available version of the task
-     *            identified by the LSID will be used. If a module name is
+     *            The module name or LSID. When an LSID is provided that does
+     *            not include a version, the latest available version of the
+     *            task identified by the LSID will be used. If a module name is
      *            supplied, the latest version of the module with the nearest
      *            authority is selected. The nearest authority is the first
      *            match in the sequence: local authority, Broad authority, other
