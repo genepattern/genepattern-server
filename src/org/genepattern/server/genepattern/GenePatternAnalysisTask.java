@@ -366,7 +366,8 @@ public class GenePatternAnalysisTask  {
             // server
             validateCPU(taskInfoAttributes.get(CPU_TYPE)); // eg. "x86", "ppc",
             // "alpha", "sparc"
-            validateOS(taskInfoAttributes.get(OS)); // eg. "Windows", "linux",
+            String expected = taskInfoAttributes.get(OS);
+            validateOS(expected, "run "+taskName); // eg. "Windows", "linux",
             // "Mac OS X", "OSF1",
             // "Solaris"
             validatePatches(taskInfo, null);
@@ -1323,7 +1324,7 @@ public class GenePatternAnalysisTask  {
                 + actual);
     }
 
-    protected static boolean validateOS(String expected) throws Exception {
+    protected static boolean validateOS(String expected, String action) throws Exception {
         String actual = System.getProperty("os.name");
         // eg. "Windows XP", "Linux", "Mac OS X", "OSF1"
         if (expected.equals("")) {
@@ -1343,8 +1344,8 @@ public class GenePatternAnalysisTask  {
         if (System.getProperty(COMMAND_PREFIX, null) != null) {
             return true; // don't validate for LSF
         }
-        throw new Exception("Cannot run on this platform.  Task requires a " + expected
-                + " operating system, but this server is running " + actual);
+        throw new Exception("Cannot "+action +" on this platform. Task requires a " + expected
+                + " operating system, but this server is running "+actual);
     }
 
     // check that each patch listed in the TaskInfoAttributes for this task is
@@ -2912,9 +2913,13 @@ public class GenePatternAnalysisTask  {
         taskInfo.setUserId(username);
         taskInfo.setTaskInfoAttributes(taskInfoAttributes);
         taskInfo.setParameterInfoArray(params);
-        Vector vProblems = GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);
+        Vector vProblems = GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);   
+        
         try {
-            validatePatches(taskInfo, taskIntegrator);
+            String expected = taskInfoAttributes.get(OS);
+            if (validateOS(expected, "install "+name)) {
+        	validatePatches(taskInfo, taskIntegrator);
+            }
         }
         catch (Throwable e) {
             if (e.getCause() != null) {

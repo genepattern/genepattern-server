@@ -38,8 +38,16 @@ public class TaskInstallationException extends Exception {
 
     @Override
     public String getMessage() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("Errors: ");
+	return getMessage("Errors");
+    }
+    
+    public String getWarningMessage() {
+	return getMessage("Warnings");
+    }
+    
+    private String getMessage(String type) {
+	StringBuffer buf = new StringBuffer();
+        buf.append(type+": ");
         for (int i = 0, size = errors.size(); i < size; i++) {
             if (i > 0) {
                 buf.append(" ");

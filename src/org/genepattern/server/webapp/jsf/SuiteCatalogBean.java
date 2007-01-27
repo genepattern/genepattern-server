@@ -13,11 +13,12 @@ import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.genepattern.TaskInstallationException;
+import org.genepattern.server.process.InstallSuite;
 import org.genepattern.server.process.SuiteRepository;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -100,7 +101,7 @@ public class SuiteCatalogBean {
         final String[] lsids = UIBeanHelper.getRequest().getParameterValues("installLsid");
         if (lsids != null) {
             final String username = UIBeanHelper.getUserId();
-            final LocalTaskIntegratorClient taskIntegrator = new LocalTaskIntegratorClient(username);
+            final InstallSuite s= new InstallSuite(username);
             IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
             boolean suiteInstallAllowed = authManager.checkPermission("createSuite", username);
             if (!suiteInstallAllowed) {
@@ -123,13 +124,17 @@ public class SuiteCatalogBean {
                     for (String lsid : lsids) {
                         try {
                             HibernateUtil.beginTransaction();
-                            taskIntegrator.installSuite(lsid);
+                            s.install(lsid);
                             HibernateUtil.commitTransaction();
                             installBean.setStatus(lsid, "success");
                         } catch (WebServiceException e) {
                             HibernateUtil.rollbackTransaction();
                             log.error(e);
                             installBean.setStatus(lsid, "error", e.getMessage());
+                        } catch (TaskInstallationException tie) {
+                            log.error(tie);
+                            installBean.setStatus(lsid, "taskerror", tie.getWarningMessage());
+                            HibernateUtil.commitTransaction();
                         }
                     }
                 }

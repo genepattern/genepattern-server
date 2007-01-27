@@ -54,6 +54,7 @@
         
        var complete = true;
        var objArray = eval('(' + jsonString + ')');
+       
        for(var i=0; i<objArray.length; i++) {
          var installStatus = objArray[i];
          var lsid = installStatus.lsid;
@@ -71,15 +72,23 @@
            Element.show(errorDivId);
            Element.update(errorDivId, "<p>" + installStatus.message + "</p>");
         }
+        else if (installStatus.status == "taskerror") {
+           if(cb != null) {
+             cb.src="#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
+           }
+           var errorDivId = "error_" + lsid;
+           Element.show(errorDivId);
+           Element.update(errorDivId, "<p>" + installStatus.message + "</p>");
+        }
         else {
+        
           // This suite is not finished (neither succes nor error)
           complete = false;
         }
       }
-  
+
       if(complete == true) {
         Element.update("progress_indicator", " complete")
-  
         stopPolling();
         var buttonPane = $("button_pane");
         if(buttonPane != null) { 
@@ -114,7 +123,7 @@
                 <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="12" height="12" id="cb_#{suite.lsid}"/>
               </td>
             </tr>
-            <tr><td colspan="2" valign="top" id="error_#{suitelsid}" class="validation-error" style="font-weight:bold;color:red;display:none"></td></tr>
+            <tr><td colspan="2" valign="top" id="error_#{suite.lsid}" class="validation-error" style="font-weight:bold;color:red;display:none"></td></tr>
             <tr class="taskperameter"><td colspan="2" valign="top">&#160;</td></tr>
           
           </ui:repeat>
