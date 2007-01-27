@@ -760,4 +760,9 @@ input.error, select.error {
       font-weight: bold;
 }
 
+.validation-warning {
+      color: orange;
+      font-weight: bold;
+}
+
 

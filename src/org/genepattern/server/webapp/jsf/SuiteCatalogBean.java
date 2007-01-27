@@ -133,7 +133,7 @@ public class SuiteCatalogBean {
                             installBean.setStatus(lsid, "error", e.getMessage());
                         } catch (TaskInstallationException tie) {
                             log.error(tie);
-                            installBean.setStatus(lsid, "taskerror", tie.getWarningMessage());
+                            installBean.setStatus(lsid, "warning", tie.getWarningMessage());
                             HibernateUtil.commitTransaction();
                         }
                     }
