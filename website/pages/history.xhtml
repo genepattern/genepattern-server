@@ -5,40 +5,26 @@
       xmlns:f="http://java.sun.com/jsf/core" 
       xmlns:t="http://myfaces.apache.org/tomahawk" 
       xmlns:c="http://java.sun.com/jstl/core">
-<ui:composition>
    <h:form>
-    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
-      <tr>
-        <td>History</td>
-      </tr>
-    </table>
-    <p/>
-    <table width="100%" border="0" cellpadding="5" cellspacing="0">
-      <tr valign="top">
-        <td> Display this many recent jobs:</td>
-        <td>
-          <h:inputText type="text" size="10" value="#{userPrefsBean.numberOfRecentJobs}"/>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>&#160;</td>
-        <td>
-          <h:commandButton value="Save" actionlistener="#{userPrefsBean.save}"/>
-	    </td>
-      </tr>
+    <h:panelGrid columns="3">
+		<h:outputLabel value="Display this many recent jobs:" for="recentJobs"></h:outputLabel>
+        <h:inputText id="recentJobs" size="10" value="#{userPrefsBean.numberOfRecentJobs}"/>
+        <h:message style="color: red; font-weight: bold;" for="recentJobs" />
+          <t:div rendered="">
+          
+          <h:outputText size="70" value="The number of jobs updated to #{userPrefsBean.numberOfRecentJobs}."/>
+          </t:div>
+    </h:panelGrid>   
+    <h:commandButton value="Save" action="#{userPrefsBean.save}"/>
+    </h:form>
+	<table width="100%" border="0" cellpadding="5" cellspacing="0">   
       <tr valign="top" class="settingperameter">
         <td colspan="2">&#160;</td>
       </tr>
       <tr valign="top">
         <td>&#160;</td>
         <td>The recent history size sets the maximum number of <br/>
-                recent jobs
-                that will be displayed in the task and <br/>
-                pipeline dropdowns at
-              the top of the page.</td>
+                recent jobs in the right panel of the start page.<br/></td>
       </tr>
     </table>
-    <p/>
-  </h:form>
-</ui:composition>
 </html>
