@@ -299,6 +299,46 @@ public class GenePatternAnalysisTask  {
      */
     protected boolean bCopyInputFiles = (System.getProperty("copyInputFiles") != null);
 
+    
+    /*
+     * convert a http url to a local file into a file url
+     */
+    protected  URL getLocalFileUrl(URL url, String userID){
+        try {
+        String urlStr = url.toString();
+        String file = url.getPath();
+        File jobsDir = new File(System.getProperty("jobs"));
+        int idx = -1;
+        if (file.endsWith("getFile.jsp")){
+            // task=lsid & file=filename
+            String params = url.getQuery();
+            int idx1 = params.indexOf("task=");
+            int endIdx1 = params.indexOf('&', idx1);
+            if (endIdx1 == -1) endIdx1 = params.length();
+            int idx2 = params.indexOf("file=");
+            int endIdx2 = params.indexOf('&', idx2);
+            if (endIdx2 == -1) endIdx2 = params.length();
+            String lsid = params.substring(idx1+5, endIdx1);
+            lsid = URLDecoder.decode(lsid);       
+            String filename = params.substring(idx2+5, endIdx2);
+            File inFile = new File(DirectoryManager.getTaskLibDir(lsid, lsid, userID), filename);
+            String localUrl = "File://" + inFile.getAbsolutePath();
+            return new URL(localUrl);
+            
+        } else if ((idx = urlStr.indexOf(jobsDir.getName())) != -1 ) {
+            System.out.println("\n\tJobResults= " + urlStr.substring(idx));
+            
+            // TBD
+        }
+        
+        return url;
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return url;
+    }
+    
+    
     /**
      * Called by Omnigene Analysis engine to run a single analysis job, wait for
      * completion, then report the results to the analysis_job database table.
@@ -402,6 +442,7 @@ public class GenePatternAnalysisTask  {
                     // allow parameter value substitutions within file input
                     // parameters
                     originalPath = substitute(originalPath, props, params);
+                                    
                     if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null
                             && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
                         log.debug("in: mode=" + mode + ", fileType=" + fileType + ", name=" + params[i].getValue()
@@ -413,6 +454,8 @@ public class GenePatternAnalysisTask  {
                         if (mode.equals("CACHED_IN")) {
                             originalPath = System.getProperty("jobs") + "/" + originalPath;
                         }
+                        
+                        
                         File inFile = new File(originalPath);
                         // TODO: strip Axisnnnnnaxis_ from name
                         int j;
@@ -484,6 +527,10 @@ public class GenePatternAnalysisTask  {
                         if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null
                                 && !mode.equals(ParameterInfo.OUTPUT_MODE) && originalPath != null && isURL) {
                             log.debug("in: mode=" + mode + ", fileType=" + fileType + ", name=" + params[i].getValue());
+                            
+                            
+     System.out.println("in: mode=" + mode + ", fileType=" + fileType + ", name=" + params[i].getValue());
+     
                             URI uri = new URI(originalPath);
                             final String userInfo = uri.getUserInfo();
                             if (userInfo != null) {
@@ -504,17 +551,28 @@ public class GenePatternAnalysisTask  {
                             try {
                                 url = uri.toURL();
                                 
-				              String localPrefix = System.getProperty("GenePatternURL");
-				              if (url.toString().startsWith(localPrefix)){
-				            	  String urlStr = url.toString();
-				            	  int idx = urlStr.indexOf('?');
-				            	  String sep = (idx == -1 ? "?":"&");
-				            	  String userIdURL = urlStr+ sep+ GPConstants.USERID + "=" +jobInfo.getUserId();
-				            
-				            	  url = new URL(userIdURL);
-				              }
-              
+    				            String localPrefix = System.getProperty("GenePatternURL");
+    				            if (url.toString().startsWith(localPrefix)){
+    				            	  String urlStr = url.toString();
+    				            	  int idx = urlStr.indexOf('?');
+    				            	  String sep = (idx == -1 ? "?":"&");
+    				            	  String userIdURL = urlStr+ sep+ GPConstants.USERID + "=" +jobInfo.getUserId();
+    				            
+    				            	  url = new URL(userIdURL);
+    				            }
+                                
+    				            if ((url.toString().startsWith("<GenePatternURL>")) || (url.toString().startsWith(localPrefix))){
+                                    url = getLocalFileUrl(url, jobInfo.getUserId());
+                                }
+    				            // if it is a local file, getting the input on it requires an ftp server
                                 URLConnection conn = url.openConnection();
+                                if ("file".equals(url.getProtocol())){
+                                    String fileName = url.toString().substring(7);
+                                    is = new FileInputStream(fileName);
+                                } else {
+                                    is = conn.getInputStream();
+                                }
+                                
                                 String name = getDownloadFileName(conn, url);
                                 outFile = new File(outDirName, name);
                                  if (outFile.exists()) { // ensure that 2 file
@@ -528,7 +586,6 @@ public class GenePatternAnalysisTask  {
                                 }
                                 os = new FileOutputStream(outFile);
                                 log.info("downloading " + originalPath + " to " + outFile.getAbsolutePath());
-                                is = conn.getInputStream();
                                 byte[] buf = new byte[100000];
                                 int bytesRead;
                                 while ((bytesRead = is.read(buf, 0, buf.length)) > 0) {
