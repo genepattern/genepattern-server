@@ -109,7 +109,7 @@ public class JobResultsFilter implements Filter {
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
             ServletException {
-        boolean allowed = true;
+        boolean allowed = false;
 
         String userid = (String) request.getAttribute(GPConstants.USERID);
 
