@@ -178,7 +178,7 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
                 }
 
                 if (jobSubmission.getRuntimePrompt()[i]) {
-                    invocation.append(actual.getName() + "= gp.prompt('" + actual.getName() + "')");
+                    invocation.append(actual.getName() + "= input.prompt('" + actual.getName() + "')");
 
                 } else if (actualAttributes.get(INHERIT_FILENAME) != null) {
                     int inheritedTaskNum = Integer.parseInt((String) actualAttributes.get(INHERIT_TASKNAME));// task
