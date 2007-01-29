@@ -79,6 +79,7 @@
         }
         var progressId = "progress_" + lsid;
         if(installStatus.patch != '') {
+        	Element.show(progressId);
         	Element.update(progressId, installStatus.patch);
         } else {
           	Element.hide(progressId);
@@ -120,9 +121,8 @@
                 <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="12" height="12" id="cb_#{task.lsid}"/>
               </td>
             </tr>
-            <tr><td valign="top" colspan="2" id="progress_#{task.lsid}">&#160;</td></tr>
-            <tr><td colspan="2" valign="top" id="error_#{task.lsid}" class="validation-error" style="font-weight:bold;color:red;display:none"></td></tr>
-            <tr class="taskperameter"><td colspan="2" valign="top">&#160;</td></tr>
+            <tr><td valign="top" colspan="2" id="progress_#{task.lsid}" style="display:none"></td></tr>
+            <tr class="taskperameter"><td colspan="2" valign="top" id="error_#{task.lsid}" class="validation-error" style="font-weight:bold;color:red;"></td></tr>
           </ui:repeat>
         </table>
         
