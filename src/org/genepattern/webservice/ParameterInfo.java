@@ -288,12 +288,16 @@ public class ParameterInfo implements Serializable {
         Map<String, String> uiValueToCommandLineValueMap = new HashMap<String, String>();
         if (choicesString != null && !choicesString.equals("")) {
             String[] choicesArray = choicesString.split(";");
-            for (int j = 0; j < choicesArray.length; j++) {
-                String[] choiceValueAndChoiceUIValue = choicesArray[j].split("=");
-                if (choiceValueAndChoiceUIValue.length == 2) {
-                    uiValueToCommandLineValueMap.put(choiceValueAndChoiceUIValue[1], choiceValueAndChoiceUIValue[0]);
-                } else {
-                    uiValueToCommandLineValueMap.put(choiceValueAndChoiceUIValue[0], choiceValueAndChoiceUIValue[0]);
+            if (choicesArray != null) {
+                for (int j = 0; j < choicesArray.length; j++) {
+                    String[] choiceValueAndChoiceUIValue = choicesArray[j].split("=");
+                    if (choiceValueAndChoiceUIValue.length == 2) {
+                        uiValueToCommandLineValueMap
+                                .put(choiceValueAndChoiceUIValue[1], choiceValueAndChoiceUIValue[0]);
+                    } else if (choiceValueAndChoiceUIValue.length == 1) {
+                        uiValueToCommandLineValueMap
+                                .put(choiceValueAndChoiceUIValue[0], choiceValueAndChoiceUIValue[0]);
+                    }
                 }
             }
         }
