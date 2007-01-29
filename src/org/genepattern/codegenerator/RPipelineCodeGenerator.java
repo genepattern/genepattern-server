@@ -1,507 +1,347 @@
 /*
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2006) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2006) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
 
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
-*/
-
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */
 
 package org.genepattern.codegenerator;
 
-import java.net.MalformedURLException;
-import java.util.Collection;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.GPConstants;
-import org.genepattern.util.LSID;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
-import java.util.List;
+
 /**
- * Generate R code to form a pipeline of GenePatternAnalysis tasks, complete
- * with
+ * Generate R code to form a pipeline of tasks, complete with
  * <ul>
- * <li>server/interactive execution checking and differential support for
+ * <li> server/interactive execution checking and differential support for
  * runtime prompting for missing parameters,</li>
- * <li>task existence checking,</li>
- * <li>inheritance of output files from a previous pipeline stage as input for
+ * <li> task existence checking,</li>
+ * <li> inheritance of output files from a previous pipeline stage as input for
  * a subsequent stage,</li>
- * <li>intermediate output file results reporting,</li>
- * <li>final output file selection and download,</li>
- * <li>script creation for pipelineDesigner.jsp</li>
+ * <li> intermediate output file results reporting,</li>
+ * <li> final output file selection and download,</li>
+ * <li> script creation for pipelineDesigner.jsp</li>
  * </ul>
  * 
- * @author Jim Lerner
+ * 
  */
 public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implements TaskCodeGenerator {
 
-	/** vector of tasks making up the pipeline */
-	Vector vTaskNames = new Vector();
+    public RPipelineCodeGenerator(PipelineModel model, String server, List<TaskInfo> jobSubmissionTaskInfos) {
+        super(model, server, jobSubmissionTaskInfos);
+    }
 
-	/** array of parameters for a task */
-	ParameterInfo[] pia = null;
+    public RPipelineCodeGenerator() {
 
-	/** number of tasks in the pipeline */
-	int numTasks = 0;
+    }
 
-	public RPipelineCodeGenerator(PipelineModel model,
-			String server,
-			List jobSubmissionTaskInfos) {
-      super(model, server, jobSubmissionTaskInfos);
-   }
+    public String emitUserInstructions() {
+        return model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE + " has been saved as a pipeline task on "
+                + server + ".";
+    }
 
-   public RPipelineCodeGenerator(){}
-   
-	public String emitUserInstructions() {
-		String version = "";
-		try {
-			version = new LSID(model.getLsid()).getVersion();
-		} catch (MalformedURLException mue) {
-		}
-		return model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE
-				+ " version " + version + " has been saved on " + server
-				+ ".";
-	}
+    public String emitProlog() throws GenePatternException {
+        Vector<String> vProblems = new Vector<String>();
+        
+        // check that all required parameters have been supplied
 
-	/**
-	 * generate the R source code that documents the pipeline, prompts for
-	 * runtime parameter inputs, and offers download of output results
-	 * 
-	 * @return String R code
-	 * @author Jim Lerner
-	 */
-	public String emitProlog() throws GenePatternException {
-		StringBuffer prolog = new StringBuffer();
-		Vector vProblems = new Vector();
+        int taskNum = 0;
+        for (Enumeration eTasks = model.getTasks().elements(); eTasks.hasMoreElements(); taskNum++) {
+            JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
+            String taskName = REncode(jobSubmission.getName());
 
-		prolog.append("library(GenePattern)\n\n");
-		//		prolog.append("source(url(\"" + getBaseURL() +
-		// "GenePattern.R\"))\n\n");
+            ParameterInfo[] parameterInfo = jobSubmission.giveParameterInfoArray();
 
-		prolog.append("gpLogin(\"" + model.getUserID() + "\")\n\n");
+            for (int i = 0; i < parameterInfo.length; i++) {
+                HashMap pia = parameterInfo[i].getAttributes();
+                if (pia == null) {
+                    pia = new HashMap();
+                }
 
-		prolog.append(model.getName());
-		if (!model.getName().endsWith(".pipeline")) {
-			prolog.append(".pipeline");
-		}
-		prolog.append(" <-\n");
-		prolog.append("# ");
-		prolog.append(model.getName());
-		if (model.getDescription().length() > 0) {
-			prolog.append(" - ");
-			prolog.append(model.getDescription());
-		}
-		if (model.getVersion() != null) {
-			prolog.append(" - ");
-			prolog.append(model.getVersion());
-		}
-		prolog.append("\n# generated: ");
-		prolog.append(new Date().toString());
-		prolog.append("# Author: ");
-		prolog.append(model.getAuthor());
-		prolog.append("\n# LSID: ");
-		prolog.append(model.getLsid());
-		prolog.append("\n\n");
+                if (pia.size() > 0
+                        && pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]) == null
+                        && !jobSubmission.getRuntimePrompt()[i] && parameterInfo[i].getValue().equals("")
+                        && pia.get(INHERIT_TASKNAME) == null
+                        && pia.get(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET]) == null) {
+                    vProblems.add("Missing required parameter " + parameterInfo[i].getName() + " for task " + taskName
+                            + taskNum + "\npi: " + parameterInfo[i]);
+                }
 
-		prolog.append("function(");
-
-		boolean first = true;
-		int taskNum = 1;
-		ParameterInfo[] parameterInfo = null;
-		for (Enumeration eTasks = model.getTasks().elements(); eTasks
-				.hasMoreElements(); taskNum++) {
-			numTasks++;
-			JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
-			String taskName = jobSubmission.getName();
-			String tName = taskName.replace('-', '.').replace('_', '.')
-					.replace(' ', '.');
-			String paramName = null;
-			parameterInfo = jobSubmission.giveParameterInfoArray();
-			if (parameterInfo != null) {
-				for (int i = 0; i < parameterInfo.length; i++) {
-					HashMap pia = parameterInfo[i].getAttributes();
-					if (pia == null)
-						pia = new HashMap();
-
-					// check that all required parameters have been supplied
-					if (pia.size() > 0
-							&& pia
-									.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]) == null
-							&& !jobSubmission.getRuntimePrompt()[i]
-							&& parameterInfo[i].getValue().equals("")
-							&& pia.get(INHERIT_TASKNAME) == null
-							&& pia
-									.get(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET]) == null) {
-						vProblems.add("Missing required parameter "
-								+ parameterInfo[i].getName() + " for task "
-								+ taskName + numTasks + "\npi: "
-								+ parameterInfo[i]);
-					}
-
-					if (jobSubmission.getRuntimePrompt()[i]
-							&& !parameterInfo[i].isOutputFile()) {
-						if (!first) {
-							prolog.append(", ");
-						}
-						first = false;
-						paramName = tName + taskNum + "."
-								+ parameterInfo[i].getName().replace('_', '.');
-						prolog.append(paramName);
-						String defaultValue = (String) pia
-								.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[GPConstants.PARAM_INFO_NAME_OFFSET]);
-						if (defaultValue == null)
-							defaultValue = "";
-						//					prolog.append("=gpAskUser(\"" + paramName + "\",
-						// default=\"" + defaultValue + "\", TRUE)");
-
-					}
-				}
-			}
-		}
-		if (!first) {
-			prolog.append(", ");
-		}
-		prolog.append("server=defaultServer)\n{\n");
-
-		// check for input parameters that must be specified at runtime
-		taskNum = 1;
-		for (Enumeration eTasks = model.getTasks().elements(); eTasks
-				.hasMoreElements(); taskNum++) {
-			JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
-			String taskName = jobSubmission.getName();
-			String tName = taskName.replace('-', '.').replace('_', '.')
-					.replace(' ', '.');
-			String paramName = null;
-			parameterInfo = jobSubmission.giveParameterInfoArray();
-			if (parameterInfo != null) {
-				for (int i = 0; i < parameterInfo.length; i++) {
-					if (jobSubmission.getRuntimePrompt()[i]
-							&& !parameterInfo[i].isOutputFile()) {
-						paramName = tName + taskNum + "."
-								+ parameterInfo[i].getName().replace('_', '.');
-						prolog.append("\tif (missing(" + paramName + ")) ");
-						if (parameterInfo[i].isInputFile()) {
-							prolog.append(paramName + " <- ");
-							prolog
-									.append("gpAskUserFileChoice(\"Using the next dialog, please choose an input file for "
-											+ taskName
-											+ "'s "
-											+ parameterInfo[i].getName()
-											+ "\")\n");
-						} else {
-							prolog.append(paramName
-									+ " <- gpAskUser(\""
-									+ taskName
-									+ ": "
-									+ parameterInfo[i].getName().replace('.',
-											' '));
-							if (parameterInfo[i].getDescription() != null
-									&& !parameterInfo[i].getDescription()
-											.equals(paramName)) {
-								prolog.append(" ("
-										+ parameterInfo[i].getDescription()
-										+ ")\")");
-							}
-							prolog.append("\n");
-							prolog.append("	stopifnot(" + paramName
-									+ "!=\"CANCEL\")\n");
-						}
-						//					prolog.append(" cat(\"" + paramName + "=\", " +
-						// paramName + ", \"\\n\", sep=\"\")\n");
-					}
-				}
-			}
-		}
-
-		// TODO: add userID parameter
-		// this has to be a fully-qualified URL so that it can be emailed and
-		// still have meaning when referenced
-
-		prolog
-				.append("\n\t# verify that each task defined in the pipeline actually exists on this server\n");
-		prolog.append("\tgpBeginPipeline(name=\"" + model.getName()
-				+ "\", server=server");
-		for (Enumeration eTasks = model.getTasks().elements(); eTasks
-				.hasMoreElements();) {
-			JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
-			String taskName = jobSubmission.getName();
-			prolog.append(",\n\t\t\t\"" + taskName + "\"=\""
-					+ jobSubmission.getLSID() + "\"");
-		}
-		prolog.append(")\n");
-
-		// prolog.append("\n\t#run each task and collect output\n");
-		if (vProblems.size() > 0) {
-			throw new GenePatternException("Cannot create pipeline", vProblems);
-		}
-		return prolog.toString();
-	}
-   
-   public String generateTask(AnalysisJob analysisJob, ParameterInfo[] params) {
-      JobInfo jobInfo = analysisJob.getJobInfo();
-      boolean visualizer = analysisJob.isClientJob();
-      String taskName = rEncode(jobInfo.getTaskName());
-      String lsid = jobInfo.getTaskLSID();
-      StringBuffer sb = new StringBuffer();
-      if(!visualizer) {
-         sb.append("results <- ");
-      }
-      sb.append(taskName + "(");
-         
-      if(params!=null) {
-         for(int i = 0; i < params.length; i++) {
-            if(i > 0) {
-               sb.append(", ");  
             }
-            sb.append(rEncode(params[i].getName()) + "=\"" + params[i].getValue() + "\"");  
-         }
-      }
-      if(params!=null && params.length > 0) {
-         sb.append(", ");
-      }
-      sb.append("LSID=\"" + lsid + "\")");
-      return sb.toString();
-   }
-   
 
-   
-      
-	/**
-	 * generate R code for a particular task to execute within the pipeline,
-	 * including a bit of documentation for the task. Generate file input
-	 * inheritance code for input from previously-run pipeline stages. At end of
-	 * task, generate links for downloading output files individually. Invoked
-	 * once for each task in the pipeline.
-	 * 
-	 * @param jobSubmission
-	 *            description of task
-	 * @param taskInfo
-	 *            TaskInfo for this task
-	 * @param parameterInfo
-	 *            ParameterInfo array for this task
-	 * @param taskNum
-	 *            task number (indexed from zero)
-	 * @return String generated R code
-	 * @author Jim Lerner
-	 *  
-	 */
-	public String emitTask(JobSubmission jobSubmission, TaskInfo taskInfo,
-			ParameterInfo[] parameterInfo, int taskNum)
-			throws GenePatternException {
-		StringBuffer out = new StringBuffer();
-		String tName = jobSubmission.getName().replace('-', '.').replace('_',
-				'.').replace(' ', '.');
-		vTaskNames.addElement(tName);
-		out.append("\n	# " + jobSubmission.getName() + " - "
-				+ jobSubmission.getDescription());
-		out.append("\n	# LSID: " + jobSubmission.getLSID());
-		TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-		String author = tia.get(GPConstants.AUTHOR);
-		if (author.length() > 0) {
-			out.append("\n	# author: " + author + "\n");
-		}
-		out.append("\n");
+        }
 
-		StringBuffer invocation = new StringBuffer();
-		invocation.append(rEncode(jobSubmission.getName()) + "(");
-		boolean hasServerParameter = false;
-		if (parameterInfo != null) {
-			for (int i = 0; i < parameterInfo.length; i++) {
-				ParameterInfo p = parameterInfo[i];
-				HashMap pia = p.getAttributes();
-				if (pia == null)
-					pia = new HashMap();
-				if (p.getName().equals("server"))
-					hasServerParameter = true;
-				if (i > 0)
-					invocation.append(", ");
-				invocation.append(rEncode(p.getName().replace('_', '.')) + "=");
-				if (jobSubmission.getRuntimePrompt()[i]) {
-					invocation.append(tName + (taskNum + 1) + "."
-							+ p.getName().replace('_', '.'));
-				} else if (pia.get(INHERIT_FILENAME) != null
-						&& !"NOT SET"
-								.equals((String) pia.get(INHERIT_TASKNAME))) {
-					int inheritedTaskNum = Integer.parseInt((String) pia
-							.get(INHERIT_TASKNAME));
-					invocation.append("gpUseResult(");
-					invocation.append(vTaskNames.elementAt(inheritedTaskNum));
-					invocation.append(inheritedTaskNum + 1);
-					String fname = (String) pia.get(INHERIT_FILENAME);
-					if (!Character.isDigit(fname.charAt(0))) {
-						fname = "\"" + fname + "\"";
-					}
-					invocation.append(".results[" + fname + "]");
-					invocation.append(")");
-				} else {
-					String val = p.getValue();
-					if (val == null) {
-						if (pia != null) {
-							val = (String) pia
-									.get((String) GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
-						}
-						if (val == null) {
-							val = "";
-						}
-					}
-					val = replace(val,
-							GPConstants.LEFT_DELIMITER + GPConstants.LSID
-									+ GPConstants.RIGHT_DELIMITER, model
-									.getLsid());
-					val = val.replace('\\', '/');
+        if (vProblems.size() > 0) {
+            throw new GenePatternException("Cannot create pipeline", vProblems);
+        }
 
-					// if this is a taskLib-based URL, convert it so that the
-					// server and
-					// port are evaluated at runtime, allowing the pipeline to
-					// be moved
-					// to another server without code changes
+        StringBuffer prolog = new StringBuffer();
 
-					// BUG: bug 116: this makes the pipeline non-portable to
-					// systems that can't resolve the server name or the port
-					// number!!!
-					String GenePatternURL = System.getProperty("GenePatternURL");
-					if (GenePatternURL!=null && val.indexOf(GenePatternURL) == 0) {
-						val = replace(val, server,
-								"paste(server, \"");
-						val = val + "\", sep=\"\")";
-						invocation.append(val);
-					} else {
-						invocation.append("\"" + val + "\"");
-					}
-				}
-			}
-		}
-		/*
-		 * if (!hasServerParameter) { if (parameterInfo != null) {
-		 * invocation.append(", "); } invocation.append("server=server"); }
-		 */
-		invocation.append(", LSID=\"" + jobSubmission.getLSID() + "\"");
-		invocation.append(")");
-		out.append("\t" + tName + (taskNum + 1) + ".results <- "
-				+ invocation.toString() + "\n");
+        prolog.append(" # " + model.getName());
+        if (model.getDescription().length() > 0) {
+            prolog.append(" - ");
+            prolog.append(model.getDescription());
+        }
+        if (model.getVersion() != null && !model.getVersion().trim().equals("")) {
+            prolog.append(" - version ");
+            prolog.append(model.getVersion());
+        }
+        prolog.append("\n # generated: ");
+        prolog.append(new Date().toString());
+        if (model.getAuthor() != null && !model.getAuthor().trim().equals("")) {
+            prolog.append("\n # author\t");
+            prolog.append(model.getAuthor());
+        }
+        prolog.append("\n");
+        prolog.append("\t\tlibrary(GenePattern)\n");
+        prolog.append("\t\tgp <- gp.login(\"" + server + "\", \"" + model.getUserID() + "\")\n");
 
-		return out.toString();
-	}
-	
-	/**
-	 * replace all instances of "find" in "original" string and substitute
-	 * "replace" for them
-	 * 
-	 * @param original
-	 *            String before replacements are made
-	 * @param find
-	 *            String to search for
-	 * @param replace
-	 *            String to replace the sought string with
-	 * @return String String with all replacements made
-	 * @author Jim Lerner
-	 */
-	public static final String replace(String original, String find,
-			String replace) {
-		StringBuffer res = new StringBuffer();
-		int idx = 0;
-		int i = 0;
-		while (true) {
-			i = idx;
-			idx = original.indexOf(find, idx);
-			if (idx == -1) {
-				res.append(original.substring(i));
-				break;
-			} else {
-				res.append(original.substring(i, idx));
-				res.append(replace);
-				idx += find.length();
-			}
-		}
-		return res.toString();
-	}
+        return prolog.toString();
+    }
 
-	/**
-	 * Performs housekeeping to finish off pipeline execution. This consists of
-	 * creating links for downloading some or all output files from the
-	 * pipeline's tasks.
-	 * 
-	 * @return String R code
-	 * @author Jim Lerner
-	 */
-	public String emitEpilog() {
-		StringBuffer out = new StringBuffer();
-		Vector vTasks = model.getTasks();
-		String finalOutputFilename = ((JobSubmission) vTasks.lastElement())
-				.getName().replace('-', '.').replace('_', '.')
-				.replace(' ', '.')
-				+ vTasks.size() + ".results";
-		out
-				.append("\n\t# return output as either visualization or raw files\n");
-		//		out.append(" if (!runningOnServer) {\n");
-		// TODO: ??? should I return all result files? And should I say that the
-		// pipeline result files are here?
+    /**
+     * generate Java code for a particular task to execute within the pipeline,
+     * including a bit of documentation for the task. Generate file input
+     * inheritance code for input from previously-run pipeline stages. At end of
+     * task, generate links for downloading output files individually. Invoked
+     * once for each task in the pipeline.
+     * 
+     * @param jobSubmission
+     *            description of task
+     * @param taskInfo
+     *            TaskInfo for this task
+     * @param taskNum
+     *            task number (indexed from zero)
+     * @param actualParams
+     *            Description of the Parameter
+     * @return String generated R code
+     * @exception GenePatternException
+     *                Description of the Exception
+     * @author Jim Lerner
+     */
+    public String emitTask(JobSubmission jobSubmission, TaskInfo taskInfo, ParameterInfo[] actualParams, int taskNum)
+            throws GenePatternException {
 
-		//		out.append(" return (" +
-		// ((JobSubmission)vTasks.lastElement()).getName().replace('-',
-		// '.').replace('_','.').replace(' ','.') + vTasks.size() +
-		// ".results)\n");
-		//		out.append(" }\n");
-		out.append("	return (c(");
-		int taskNum = 1;
-		for (Enumeration eTasks = model.getTasks().elements(); eTasks
-				.hasMoreElements(); taskNum++) {
-			JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
-			String taskName = jobSubmission.getName();
-			if (taskNum > 1)
-				out.append(", ");
-			out.append(taskName + taskNum + ".results");
-		}
-		out.append("))\n");
-		out.append("}\n");
-		return out.toString();
-	}
+        StringBuffer out = new StringBuffer();
+        String tName = REncode(jobSubmission.getName());
+        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+        StringBuffer invocation = new StringBuffer();
 
+        if (jobSubmission.isVisualizer()) {
+            invocation.append("run.visualizer(gp, \"" + jobSubmission.getLSID() + "\", ");
+        } else {
+            invocation.append("run.analysis(gp, \"" + jobSubmission.getLSID() + "\", ");
+        }
+        HashMap paramName2ActaulParam = new HashMap();
+        if (actualParams != null) {
+            for (int i = 0, length = actualParams.length; i < length; i++) {
+                paramName2ActaulParam.put(actualParams[i].getName(), actualParams[i]);
+            }
+        }
 
-	/**
-	 * concrete method for AbstractPipelineCodeGenerator answering: "what
-	 * language is this?"
-	 * 
-	 * @return String language (R)
-	 * @author Jim Lerner
-	 */
-	public String getLanguage() {
-		return "R";
-	}
+        ParameterInfo[] formalParams = jobSubmission.giveParameterInfoArray();
+        if (formalParams != null) {
+            for (int i = 0; i < formalParams.length; i++) {
+                ParameterInfo formal = formalParams[i];
+                ParameterInfo actual = (ParameterInfo) paramName2ActaulParam.get(formal.getName());
 
-	/**
-	 * return an R variable or function name in quotes if it needs it, otherwise
-	 * unquoted
-	 * 
-	 * @param varName
-	 *            name of R variable/method
-	 * @return String same name, with quotes surrounding if necessary
-	 * @author Jim Lerner
-	 */
-	protected String rEncode(String varName) {
-		// anything but letters, digits, and period is an invalid R identifier
-		// that must be quoted
-		if (varName.indexOf("_") == -1) {
-			return varName;
-		} else {
-			return "\"" + varName + "\"";
-		}
-	}
+                HashMap actualAttributes = null;
+                if (actual != null) {
+                    actualAttributes = actual.getAttributes();
+                }
+                if (actualAttributes == null) {
+                    actualAttributes = new HashMap();
+                }
+
+                if (i > 0) {
+                    invocation.append(", ");
+                }
+
+                if (jobSubmission.getRuntimePrompt()[i]) {
+                    invocation.append(actual.getName() + "= gp.prompt('" + actual.getName() + "')");
+
+                } else if (actualAttributes.get(INHERIT_FILENAME) != null) {
+                    int inheritedTaskNum = Integer.parseInt((String) actualAttributes.get(INHERIT_TASKNAME));// task
+                    // number
+                    // of
+                    // task to get
+                    // output from
+                    actualAttributes.remove("TYPE");
+                    actualAttributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
+
+                    String fname = (String) actualAttributes.get(INHERIT_FILENAME);// can
+                    // either
+                    // by a
+                    // number
+                    // of
+                    // stdout, stderr
+
+                    try {
+                        fname = String.valueOf(Integer.parseInt(fname) - 1);// 0th
+                        // index
+                        // is
+                        // 1st
+                        // output
+                    } catch (NumberFormatException nfe) {
+                        fname = "\"" + fname + "\"";
+                    }
+                    invocation.append(formal.getName() + "=");
+                    TaskInfo inheritedTaskInfo = (TaskInfo) jobSubmissionTaskInfos.get(inheritedTaskNum);
+                    invocation.append("gp.get.url(" + inheritedTaskInfo.getName() + (inheritedTaskNum + 1) + ".result,"
+                            + fname + ")");
+
+                } else {
+                    appendParameter(actual, invocation);
+                }
+
+            }
+
+        }
+
+        invocation.append(");");
+        if (!jobSubmission.isVisualizer()) {
+            out.append("\n\t\t" + jobSubmission.getName() + (taskNum + 1) + ".result <- " + invocation.toString()
+                    + "\n");
+        } else {
+            out.append("\n\t\t" + invocation.toString() + "\n");
+        }
+
+        return out.toString();
+    }
+
+    public String emitTaskFunction(JobSubmission jobSubmission, TaskInfo taskInfo, ParameterInfo[] parameterInfo) {
+        return "";// wrappers are generated in an additional file
+    }
+
+    public String emitEpilog() {
+        return "";
+    }
+
+    private void appendParameter(ParameterInfo actual, StringBuffer invocation) {
+        Map actualAttributes = actual.getAttributes();
+        String val = null;
+        if (actual != null) {
+            val = actual.getValue();
+        }
+        if (val == null) {
+            if (pia != null) {
+                val = (String) actualAttributes.get((String) GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
+            }
+            if (val == null) {
+                val = "";
+            }
+        }
+        val = val.replace('\\', '/');
+
+        // if this is a taskLib-based URL, convert it so that the
+        // server and
+        // port are evaluated at runtime, allowing the pipeline to
+        // be moved
+        // to another server without code changes
+
+        // BUG: bug 116: this makes the pipeline non-portable to
+        // systems that can't resolve the server name or the port
+        // number!!!
+
+        String getFile = "getFile.jsp?";
+        int index = -1;
+        if ((index = val.indexOf(getFile)) > 0) {
+            String query = val.substring(index + getFile.length(), val.length());
+            String[] queries = query.split("&");
+            String task = null;
+            String file = null;
+            for (int j = 0, length = queries.length; j < length; j++) {
+                String[] temp = queries[j].split("=");
+                try {
+                    if (temp[0].equals("file")) {
+                        file = URLDecoder.decode(temp[1], "utf-8");
+                    }
+                    if (temp[0].equals("task")) {
+                        task = URLDecoder.decode(temp[1], "utf-8");
+                        if ("<LSID>".equalsIgnoreCase(task)) {
+                            task = model.getLsid();
+                        }
+                    }
+                } catch (UnsupportedEncodingException uee) {
+                    // ignore
+                }
+            }
+            if (task != null && file != null) {
+                invocation.append(actual.getName() + " = gp.get.module.file.url(gp, \"" + task + "\", \"" + file
+                        + "\")");
+            } else {
+                invocation.append(actual.getName() + "=\"" + val + "\"");
+            }
+        } else {
+            invocation.append(actual.getName() + "=\"" + val + "\"");
+        }
+    }
+
+    public String generateTask(AnalysisJob analysisJob, ParameterInfo[] params) {
+        JobInfo job = analysisJob.getJobInfo();
+        boolean visualizer = analysisJob.isClientJob();
+        String lsid = job.getTaskLSID();
+        StringBuffer invocation = new StringBuffer();
+
+        if (!visualizer) {
+            invocation.append(job.getTaskName() + ".result <- ");
+        }
+
+        if (visualizer) {
+            invocation.append("run.visualizer(gp, ");
+        } else {
+            invocation.append("run.analysis(gp, ");
+        }
+        invocation.append("\"" + lsid + "\", ");
+
+        if (params != null) {
+            for (int i = 0; i < params.length; i++) {
+                if (i > 0) {
+                    invocation.append(", ");
+                }
+                appendParameter(params[i], invocation);
+            }
+        }
+        invocation.append(")");
+        return invocation.toString();
+    }
+
+    public String getLanguage() {
+        return "R";
+    }
 
     public String getFileExtension() {
         return ".R";
     }
+
+    protected String REncode(String varName) {
+        // anything but letters, digits, and period is an invalid R identifier
+        // that must be quoted
+        if (varName.indexOf("_") == -1) {
+            return varName;
+        } else {
+            return "\"" + varName + "\"";
+        }
+    }
+
 }
