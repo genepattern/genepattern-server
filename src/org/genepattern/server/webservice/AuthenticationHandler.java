@@ -17,15 +17,22 @@ import org.apache.axis.AxisFault;
 import org.apache.axis.Message;
 import org.apache.axis.MessageContext;
 import org.apache.log4j.Logger;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.webapp.jsf.EncryptionUtil;
 
 public class AuthenticationHandler extends org.apache.axis.handlers.BasicHandler {
-
+    boolean passwordRequired = false;
+    
     private static Logger log = Logger.getLogger(AuthenticationHandler.class);
-	public void init(){
-
-        // Placeholder -- nothing to do
-
-		super.init();
+	
+    public void init(){
+        super.init();
+        
+        String prop = System.getProperty("require.password", "false").toLowerCase();
+        passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
+        
+		
 	}
 
 
@@ -51,8 +58,19 @@ public class AuthenticationHandler extends org.apache.axis.handlers.BasicHandler
      * @return
      */
     private boolean validateUserPassword(String user, String password) {
-                
-        return true;
+        if (!passwordRequired) return true;
+        
+        User up = (new UserDAO()).findById(user);
+        try {
+        return (java.util.Arrays.equals(
+                    EncryptionUtil.encrypt(password), 
+                    up.getPassword()
+                    ));
+        } catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+       
         
     }
 }
