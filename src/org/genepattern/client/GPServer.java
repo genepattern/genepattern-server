@@ -207,7 +207,7 @@ public class GPServer {
      *            The file name.
      * @return The url.
      */
-    public URL getTaskFileURL(String moduleNameOrLsid, String fileName) {
+    public URL getModuleFileUrl(String moduleNameOrLsid, String fileName) {
         try {
             return new URL(server + "/gp/getFile.jsp?task=" + moduleNameOrLsid + "&file="
                     + URLEncoder.encode(fileName, "UTF-8"));
