@@ -16,26 +16,28 @@
     <br/><br/>
     <table width="100%" border="0" cellpadding="5" cellspacing="0">
       <tr valign="top">
-        <td>Previous Module Repository URLs:</td>
-        <td>
-          <t:selectOneListbox size="3" value="#{serverSettingsBean.settings['ModuleRepositoryURL']}" onclick="$(mrurl).value=this.value">
+        <td width="33%">Previous Module Repository URLs:</td>
+        <td width="67%">
+          <t:selectOneListbox size="3" style="width:550px" value="#{serverSettingsBean.settings['ModuleRepositoryURL']}" onclick="$(mrurl).value=this.value">
   			<f:selectItems value="#{serverSettingsBean.moduleRepositoryURLs}" />
 		  </t:selectOneListbox>        
         </td>
       </tr>
       <tr valign="top">
-        <td>Module Repository URL:</td>
-        <td>
-          <t:inputText id="mrurl" forceId="true" size="40" value="#{serverSettingsBean.settings['ModuleRepositoryURL']}"/>       
+        <td width="33%">Module Repository URL:</td>
+        <td width="67%">
+          <t:inputText id="mrurl" forceId="true" size="67" value="#{serverSettingsBean.settings['ModuleRepositoryURL']}"/>       
         </td>
       </tr>
       <tr valign="top">
-        <td>&#160;</td>
-        <td>
+        <td width="33%">&#160;</td>
+        <td width="67%">
           <h:commandButton value="Save" actionListener="#{serverSettingsBean.addModuleRepositoryURL}"/>
+          &#160;
 	      <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}">
 	      	<f:attribute name="subtype" value="Module" />
 	      </h:commandButton>
+	      &#160;
           <h:commandButton value="Remove" actionListener="#{serverSettingsBean.removeModuleRepositoryURL}"/>
         </td>
       </tr>
@@ -48,26 +50,28 @@
     <br/><br/>
     <table width="100%" border="0" cellpadding="5" cellspacing="0">
       <tr valign="top">
-        <td>Previous Suite Repository URLs:</td>
-        <td>
-          <t:selectOneListbox id="select2" forceId="true" size="3" value="#{serverSettingsBean.settings['SuiteRepositoryURL']}" onclick="$(srurl).value=this.value">
+        <td width="33%">Previous Suite Repository URLs:</td>
+        <td width="67%">
+          <t:selectOneListbox id="select2" forceId="true" size="3" style="width:550px" value="#{serverSettingsBean.settings['SuiteRepositoryURL']}" onclick="$(srurl).value=this.value">
   			<f:selectItems value="#{serverSettingsBean.suiteRepositoryURLs}" />
 		  </t:selectOneListbox>        
         </td>
       </tr>
       <tr valign="top">
-        <td>Suite Repository URL:</td>
-        <td>
-          <t:inputText id="srurl" forceId="true" size="40" value="#{serverSettingsBean.settings['SuiteRepositoryURL']}"/>       
+        <td width="33%">Suite Repository URL:</td>
+        <td width="67%">
+          <t:inputText id="srurl" forceId="true" size="67" value="#{serverSettingsBean.settings['SuiteRepositoryURL']}"/>       
         </td>
       </tr>
       <tr valign="top">
-        <td>&#160;</td>
-        <td>
+        <td width="33%">&#160;</td>
+        <td width="67%">
           <h:commandButton value="Save" actionListener="#{serverSettingsBean.addSuiteRepositoryURL}"/>
+          &#160;
 	      <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}">
 	      	<f:attribute name="subtype" value="Suite" />
 	      </h:commandButton>
+	      &#160;
           <h:commandButton value="Remove" actionListener="#{serverSettingsBean.removeSuiteRepositoryURL}"/>
         </td>
       </tr>
