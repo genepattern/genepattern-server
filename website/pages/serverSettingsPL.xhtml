@@ -5,9 +5,7 @@
       xmlns:f="http://java.sun.com/jsf/core" 
       xmlns:t="http://myfaces.apache.org/tomahawk" 
       xmlns:c="http://java.sun.com/jstl/core">
-<ui:composition>
-<h:messages showDetail="true"/>
-   <script type="text/javascript" language="javascript">
+<script type="text/javascript" language="javascript">
 	/* <![CDATA[ */
 	  function changeDb(v) {
 	  	var hsql= document.getElementById("hsql");
@@ -63,7 +61,7 @@
 	  <tr valign="top">
 	      <td>&#160;</td>
 	      <td>
-	          <h:commandButton value="Save" actionlistener="#{serverSettingsBean.saveSettings}"/>
+	          <h:commandButton value="Save" actionListener="#{serverSettingsBean.saveSettings}"/>
 	          &#160;
 	          <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}"/>
 	      </td>
@@ -74,5 +72,4 @@
     </table>
     <p/>
   </h:form>
-</ui:composition>
 </html>

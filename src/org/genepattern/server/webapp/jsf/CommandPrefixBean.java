@@ -64,6 +64,7 @@ public class CommandPrefixBean {
     }
     
     public void saveDefaultCommandPrefix(ActionEvent event) {
+	UIBeanHelper.setInfoMessage("Property successfully updated");
     	setDefault();
         System.setProperty(COMMAND_PREFIX, defaultCommandPrefix);
     }

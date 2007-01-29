@@ -688,6 +688,7 @@ public class ServerSettingsBean {
      * @return
      */
     public void saveSettings(ActionEvent event) {
+	UIBeanHelper.setInfoMessage("Property successfully updated");
         PropertiesManager.storeChanges(settings);
         PropertiesManager.storeChangesToCustomProperties(customSettings);
     }

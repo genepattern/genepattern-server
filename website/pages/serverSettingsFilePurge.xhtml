@@ -5,8 +5,7 @@
       xmlns:f="http://java.sun.com/jsf/core" 
       xmlns:t="http://myfaces.apache.org/tomahawk" 
       xmlns:c="http://java.sun.com/jstl/core">
-<ui:composition>
-  <h:form>
+<h:form>
     <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
       <tr>
         <td>File Purge Settings </td>
@@ -29,7 +28,7 @@
       <tr valign="top">
         <td>&#160;</td>
         <td>
-          <h:commandButton value="Save" actionlistener="#{serverSettingsBean.saveSettings}"/>
+          <h:commandButton value="Save" actionListener="#{serverSettingsBean.saveSettings}"/>
           &#160;
 	      <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}"/>
         </td>
@@ -50,5 +49,4 @@
     </table>
     <p/>
   </h:form>
-</ui:composition>
 </html>
