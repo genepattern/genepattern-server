@@ -2,12 +2,15 @@ package org.genepattern.server.webapp.jsf;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.faces.model.SelectItem;
 
@@ -15,9 +18,11 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.process.InstallSuite;
+import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.SuiteRepository;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
+import org.genepattern.server.webapp.jsf.TaskCatalogBean.MySelectItem;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
@@ -25,14 +30,16 @@ import org.genepattern.webservice.WebServiceException;
 
 public class SuiteCatalogBean {
 
-    private SelectItem[] states = new SelectItem[] { new SelectItem("new", "new"),
-            new SelectItem("updated", "updated"), new SelectItem("up to date", "up to date") };;
+    private final String NEW_TEXT = "Search for new suites to install";
+
+    private final String UPDATED_TEXT = "Search for updates of the currently installed suites";
+
+    private MySelectItem[] states = new MySelectItem[] { new MySelectItem("new", NEW_TEXT),
+            new MySelectItem("updated", UPDATED_TEXT) };;
 
     private static Logger log = Logger.getLogger(SuiteCatalogBean.class);
 
     private boolean error;
-
-    private List<String> selectedStates;
 
     private ArrayList<MySuiteInfo> suiteCatalogSuites;
 
@@ -81,10 +88,13 @@ public class SuiteCatalogBean {
                 }
                 suiteCatalogSuites.add(s);
             }
+            String[] requestedStates = UIBeanHelper.getRequest().getParameterValues("state");
+            if (requestedStates == null || requestedStates.length == 0) {
+                requestedStates = getDefaultStates();
+            }
+            updateSelectedItems(requestedStates, states);
+
             if (UIBeanHelper.getRequest().getParameter("suiteCatalogForm:suiteCatalogSubmit") == null) {
-                selectedStates = new ArrayList<String>();
-                selectedStates.add("new");
-                selectedStates.add("updated");
                 filter();
             }
 
@@ -96,12 +106,36 @@ public class SuiteCatalogBean {
 
     }
 
+    private static List<String> getSelection(MySelectItem[] items) {
+        List<String> selection = new ArrayList<String>();
+        for (MySelectItem i : items) {
+            if (i.isSelected()) {
+                selection.add(i.getValue().toString());
+            }
+        }
+        return selection;
+    }
+
+    private static void updateSelectedItems(String[] request, MySelectItem[] selectItems) {
+        Set<String> set = new HashSet<String>(Arrays.asList(request));
+        for (MySelectItem i : selectItems) {
+            i.setSelected(set.contains(i.getValue()));
+        }
+    }
+
+    private String[] getDefaultStates() {
+        List<String> l = new ArrayList<String>();
+        l.add(InstallTask.NEW);
+        l.add(InstallTask.UPDATED);
+        return l.toArray(new String[0]);
+    }
+
     public String install() {
 
         final String[] lsids = UIBeanHelper.getRequest().getParameterValues("installLsid");
         if (lsids != null) {
             final String username = UIBeanHelper.getUserId();
-            final InstallSuite s= new InstallSuite(username);
+            final InstallSuite s = new InstallSuite(username);
             IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
             boolean suiteInstallAllowed = authManager.checkPermission("createSuite", username);
             if (!suiteInstallAllowed) {
@@ -199,18 +233,9 @@ public class SuiteCatalogBean {
     }
 
     public void filter() {
-
-        boolean getNew = selectedStates.contains("new");
-        boolean getUpdated = selectedStates.contains("updated");
-        boolean getUpToDate = selectedStates.contains("up to date");
-        if (!getNew && !getUpdated && !getUpToDate) {
-            selectedStates.add("new");
-            selectedStates.add("updated");
-            selectedStates.add("up to date");
-            getNew = true;
-            getUpdated = true;
-            getUpToDate = true;
-        }
+        List<String> selection = getSelection(states);
+        boolean getNew = selection.contains("new");
+        boolean getUpdated = selection.contains("updated");
 
         filteredSuites = new ArrayList<MySuiteInfo>();
 
@@ -231,28 +256,14 @@ public class SuiteCatalogBean {
                 filteredSuites.add(si);
             } else if (getUpdated && state == State.UPDATED) {
                 filteredSuites.add(si);
-            } else if (getUpToDate && state == State.UPTODATE) {
-                filteredSuites.add(si);
             }
         }
         Collections.sort(filteredSuites, new SuiteNameComparator());
 
     }
 
-    public List<String> getSelectedStates() {
-        return selectedStates;
-    }
-
-    public void setSelectedStates(List<String> l) {
-        selectedStates = l;
-    }
-
-    public SelectItem[] getStates() {
+    public MySelectItem[] getStates() {
         return this.states;
-    }
-
-    public void getStates(SelectItem[] l) {
-        this.states = l;
     }
 
     public boolean isError() {
@@ -269,6 +280,29 @@ public class SuiteCatalogBean {
                 log.error(e);
                 return 0;
             }
+        }
+
+    }
+
+    public static class MySelectItem extends SelectItem {
+
+        public MySelectItem(String value, String label) {
+            super(value, label);
+
+        }
+
+        public MySelectItem(String value) {
+            super(value);
+        }
+
+        private boolean selected;
+
+        public boolean isSelected() {
+            return selected;
+        }
+
+        public void setSelected(boolean selected) {
+            this.selected = selected;
         }
 
     }
