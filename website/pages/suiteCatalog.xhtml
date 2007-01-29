@@ -28,14 +28,14 @@
 /* ]]> */
 	</script>
 	</ui:define>
-	<ui:define name="pageTitle">GenePattern - Install/Update Suites</ui:define>
+	<ui:define name="pageTitle">GenePattern - Install Suites From Repository</ui:define>
 
 
 	<ui:define name="body">
 		<table width="100%" border="0" cellpadding="0" cellspacing="0"
 			class="barhead-other">
 			<tr>
-				<td>Install/Update Suites</td>
+				<td>Install Suites From Repository</td>
 			</tr>
 		</table>
 
@@ -51,23 +51,23 @@
 				<h:form id="suiteCatalogForm">
 					<h:inputHidden id="suiteCatalogSubmit" value="1" />
 					<table border="0" cellpadding="5" cellspacing="0">
-						<tr valign="top">
-							<td colspan="2" valign="top">
-							Select from the following suites from the Suite Repository
-							to download and install.
-							</td>
-					    </tr>
 					    <tr>
-							<td valign="top"><b>State:</b>
-							<br />
-							<t:selectManyCheckbox value="#{suiteCatalogBean.selectedStates}"
-								name="state" id="state" layout="lineDirection" style="display:inline">
-								<f:selectItems value="#{suiteCatalogBean.states}" />
-							</t:selectManyCheckbox></td>
+					    <td>
+						<t:dataList var="t" value="#{suiteCatalogBean.states}" >
+								<h:outputText rendered="#{t.selected}">
+									<input type="checkbox" name="state" value="#{t.value}" checked="true">#{t.label}</input>
+								</h:outputText>
+								<h:outputText rendered="#{!t.selected}">
+									<input type="checkbox" name="state" value="#{t.value}">#{t.label}</input>
+								</h:outputText>
+								<br />
+						</t:dataList>
+						</td>
+						</tr>
 
-	
+						<tr>
 							<td><h:commandButton action="#{suiteCatalogBean.filter}"
-								value="Filter" /></td>
+								value="Search" /></td>
 
 						</tr>
 
