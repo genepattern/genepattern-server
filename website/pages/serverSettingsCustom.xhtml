@@ -20,15 +20,15 @@
         Add New Custom Settings:
       </tr>
       <tr valign="top" class="tableheader-row">
-	      	<td width="3%">name: </td>
-			<td width="10%">
+	      	<td width="5%">name: </td>
+			<td width="21%">
 				<h:inputText size="20" value="#{serverSettingsBean.newCSKey}"/>
 			</td>
 			<td width="5%">content: </td>
-			<td width="61%">
+			<td width="57%">
 				<h:inputText size="50" value="#{serverSettingsBean.newCSValue}"/>
 			</td>
-			<td>
+			<td width="10%">
 				<h:commandLink value="add" actionListener="#{serverSettingsBean.addNewCustomSetting}"/>
 			</td> 
 	  </tr>
@@ -36,19 +36,19 @@
 	<br/><br/>
 	<table width="100%" border="0" cellpadding="5" cellspacing="0">
       <tr valign="top" class="tableheader-row">
-          <td width="30%"> Name </td>
-          <td width="60%"> Content </td>         
-          <td> Delete </td>
+          <td width="33%"> Name </td>
+          <td width="57%"> Content </td>         
+          <td width="10%"> Delete </td>
       </tr>
       <t:dataList id="customSettingsTable" value="#{serverSettingsBean.customSettings}" var="aCustomSetting">
           <tr valign="top" class="tableheader-row">
-            <td>
+            <td width="33%">
               <h:outputText id="key" value="#{aCustomSetting.key}"/>
             </td>         
-            <td>
+            <td width="57%">
               <h:inputText id="value" value="#{aCustomSetting.value}"/>
             </td>            
-            <td>
+            <td width="10%">
               <h:commandLink actionListener="#{serverSettingsBean.deleteCustomSetting}">
                 <h:outputText value="delete"/>
                 <f:param name="key" value="#{aCustomSetting.key}"/>
