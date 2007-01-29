@@ -10,10 +10,6 @@
 		<h:outputLabel value="Display this many recent jobs:" for="recentJobs"></h:outputLabel>
         <h:inputText id="recentJobs" size="10" value="#{userPrefsBean.numberOfRecentJobs}"/>
         <h:message style="color: red; font-weight: bold;" for="recentJobs" />
-          <t:div rendered="">
-          
-          <h:outputText size="70" value="The number of jobs updated to #{userPrefsBean.numberOfRecentJobs}."/>
-          </t:div>
     </h:panelGrid>   
     <h:commandButton value="Save" action="#{userPrefsBean.save}"/>
     </h:form>
