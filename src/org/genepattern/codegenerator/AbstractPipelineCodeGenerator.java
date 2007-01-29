@@ -238,7 +238,7 @@ public abstract class AbstractPipelineCodeGenerator {
     public abstract String emitTask(JobSubmission jobSubmission, TaskInfo taskInfo, ParameterInfo[] parameterInfo,
             int taskNum) throws GenePatternException;
 
-    public String emitProlog() {
+    public String emitProlog() throws GenePatternException {
         return "";
     }
 
