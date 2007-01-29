@@ -124,6 +124,7 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
             HibernateUtil.rollbackTransaction(); // This shouldn't be
             // neccessary, but just in
             // case
+            log.error(e);
             throw new RuntimeException(e); // @todo -- replace with appropriate
             // GP exception
         }
@@ -194,7 +195,8 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
             taskCatalogBean.refilter(e.getMissingLsids());
             return "task catalog";
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e);
+            throw new RuntimeException(e);
         }
         return "success";
     }
@@ -249,6 +251,7 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
                         // shouldn't be
                         // neccessary, but just in
                         // case
+                        log.error(e);
                         throw new RuntimeException(e); // @todo -- replace with
                         // appropriate
                         // GP exception
@@ -272,6 +275,7 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
                 supportFiles.remove(key);
             }
         } catch (Exception e) {
+            log.error(e);
             throw new RuntimeException(e); // @todo -- replace with appropriate
             // GP exception
         }

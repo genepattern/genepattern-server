@@ -54,7 +54,8 @@ public class ManageTasksBean /* implements java.io.Serializable */{
             }
             getIndexedTasks();
         } catch (Exception e) {
-
+            log.error(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -135,8 +136,9 @@ public class ManageTasksBean /* implements java.io.Serializable */{
                     if (temp.getIndexedVersions().size() == 0) {
                         indexedTasks.remove(lsidNoVersion);
                     }
-                } catch (WebServiceException wse) {
-
+                } catch (Exception e) {
+                    log.error(e);
+                    throw new RuntimeException(e);
                 }
             }
         }
@@ -233,6 +235,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
                         }
                     } catch (WebServiceException e) {
                         log.error(e);
+                        throw new RuntimeException(e);
                     }
                 }
             }
