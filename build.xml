@@ -321,10 +321,8 @@
     <target name="analysis" depends="init,common,broad-cg,runtask,uisupport">
         <jar jarfile="${build}/gpwebservice.jar">
             <fileset dir="${build}">
-                <include name="org/genepattern/webservice/**"/>
-                <include name="org/genepattern/util/**"/>
                 <include name="org/apache/xml/**"/>
-                <include name="org/genepattern/codegenerator/**"/>
+                <include name="org/genepattern/**"/>
             </fileset>
         </jar>
     </target>
