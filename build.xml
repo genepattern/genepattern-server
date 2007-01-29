@@ -160,7 +160,7 @@
         </jar>
 
         <zip destfile="build/GenePattern.zip">
-            <zipfileset dir="build/">
+            <zipfileset dir="build/classes">
                 <include name="${gp-library-jarname}"/>
             </zipfileset>
             <zipfileset dir="website/WEB-INF/lib" prefix="lib" includes="activation.jar axis.jar commons-discovery-0.2.jar commons-logging-1.0.4.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.11.jar mail.jar saaj.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar "/>
