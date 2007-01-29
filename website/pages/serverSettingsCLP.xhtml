@@ -16,11 +16,11 @@
     <br/><br/>
     <table width="100%" border="0" cellpadding="5" cellspacing="0" class="tableheader-row">
     	<tr>
-    		<td width="31%">Default Command Prefix:</td>
-    		<td width="56%">
+    		<td width="33%">Default Command Prefix:</td>
+    		<td width="57%">
     			<h:inputText size="50" value="#{commandPrefixBean.defaultCommandPrefix}" id="defaultPrefix"/>
 			</td>
-			<td>
+			<td width="10%">
 				<h:commandButton actionListener="#{commandPrefixBean.saveDefaultCommandPrefix}" value="Save" />
 			</td>
 		</tr>
@@ -34,15 +34,15 @@
 		  	Add New Prefix:
 		  </tr>
 	      <tr valign="top">
-	      	<td width="3%">name: </td>
+	      	<td width="5%">name: </td>
 			<td width="5%">
 				<h:inputText value="#{commandPrefixBean.newPrefixName}" id="newPrefixName"/>
 			</td>
-			<td width="5%">content: </td>
-			<td width="56%">
+			<td width="7%">content: </td>
+			<td width="57%">
 				<h:inputText size="50" value="#{commandPrefixBean.newPrefixValue}" id="newPrefixVal"/>
 			</td>
-			<td>
+			<td width="10%">
 				<h:commandLink value="add prefix" actionListener="#{commandPrefixBean.saveCommandPrefixes}" />
 			</td> 
 	      </tr>
@@ -50,19 +50,19 @@
       <br/><br/>
 	  <table width="100%" border="0" cellpadding="5" cellspacing="0" style="table-layout:fixed;">
 	        <tr valign="top" class="tableheader-row">
-	          <td width="30%"> Name </td>
-	          <td width="60%"> Content </td>
-	          <td> Delete </td>
+	          <td width="33%"> Name </td>
+	          <td width="57%"> Content </td>
+	          <td width="10%"> Delete </td>
 	        </tr>
 		  	<t:dataList id="commandPrefixTable" forceId="true" value="#{commandPrefixBean.commandPrefixes}" var="aPrefix" width="80%">
 			  	<tr valign="top" class="tableheader-row">
-		            <td>
+		            <td width="33%">
 		              <h:outputText size="15" id="key" value="#{aPrefix.key}"/>
 		            </td>
-		            <td>
+		            <td width="57%">
 		              <h:outputText id="value" value="#{aPrefix.value}"/>
 		            </td>
-		            <td>
+		            <td width="10%">
 		              <h:commandLink actionListener="#{commandPrefixBean.deletePrefix}">
 		                <h:outputText value="delete"/>
 		                <f:param name="aPrefixKey" value="#{aPrefix.key}"/>
@@ -74,19 +74,19 @@
 		<br/><br/>
 		<table width="100%" border="0" cellpadding="5" cellspacing="0" style="table-layout:fixed;">
 			<tr valign="top" class="tableheader-row">
-			    <td width="30%"> Module </td>
-			    <td width="60%"> Command Prefix Name </td>         
-			    <td> Delete </td>
+			    <td width="33%"> Module </td>
+			    <td width="57%"> Command Prefix Name </td>         
+			    <td width="10%"> Delete </td>
 			</tr>
 			<t:dataList value="#{commandPrefixBean.taskPrefixMapping}" width="80%" var="aPrefixMap">
 				<tr valign="top" class="tableheader-row">
-		            <td>
+		            <td width="33%">
 		              <h:outputText value="#{aPrefixMap.key}" />
 		            </td>         
-		            <td>
+		            <td width="57%">
 		              <h:outputText value="#{aPrefixMap.value}" />
 		            </td>            
-		            <td>
+		            <td width="10%">
 		              <h:commandLink actionListener="#{commandPrefixBean.deleteTaskPrefixMapping}">
 		                <h:outputText value="delete"/>
 		                <f:param name="aPrefixMapKey" value="#{aPrefixMap.key}"/>
@@ -101,18 +101,18 @@
 				for modules ...
 			</tr>
 			<tr valign="top">
-				<td width="24%">
+				<td width="33%">
 					<h:selectManyListbox size="6" value="#{commandPrefixBean.newMappingLSID}">
 						<f:selectItems value="#{moduleListBean.latestModules}" />
 					</h:selectManyListbox>
 				</td>
-				<td width="22%">... use prefix... </td>
-				<td width="30%">
+				<td width="20%">... use prefix... </td>
+				<td width="37%">
 					<h:selectOneMenu value="#{commandPrefixBean.newMappingPrefix}">
 						<f:selectItems value="#{commandPrefixBean.commandPrefixesAsSelectItems}" />
 					</h:selectOneMenu>
 				</td>
-				<td>
+				<td width="10%">
 					<h:commandLink value="add mapping" actionListener="#{commandPrefixBean.savePrefixTaskMapping}" />
 				</td>
 			</tr>
