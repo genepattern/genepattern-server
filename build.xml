@@ -153,14 +153,14 @@
 	
     <target name="gp-library" depends="init, gp-library-doc">
     	
-    	<jar basedir="${genepattern.build}" defaultexcludes="true" includes="**/*.class" jarfile="${genepattern.build}/${gp-library-jarname}">
+    	<jar basedir="${genepattern.build}" defaultexcludes="true" includes="org/**/*.class, edu/**/*.class, **/*.xml" jarfile="${genepattern.build}/${gp-library-jarname}">
             <manifest>
                 <attribute name="Class-Path" value="./lib/activation.jar ./lib/axis.jar ./lib/commons-discovery-0.2.jar ./lib/commons-logging-1.0.4.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.11.jar ./lib/mail.jar ./lib/saaj.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar "/>
             </manifest>
         </jar>
 
         <zip destfile="build/GenePattern.zip">
-            <zipfileset dir="build/classes">
+            <zipfileset dir="${genepattern.build}">
                 <include name="${gp-library-jarname}"/>
             </zipfileset>
             <zipfileset dir="website/WEB-INF/lib" prefix="lib" includes="activation.jar axis.jar commons-discovery-0.2.jar commons-logging-1.0.4.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.11.jar mail.jar saaj.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar "/>
