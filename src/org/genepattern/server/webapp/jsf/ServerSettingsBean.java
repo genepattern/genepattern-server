@@ -71,14 +71,14 @@ public class ServerSettingsBean {
             modes = new TreeMap<String, String[]>();
             modes.put("Access", new String[] { "gp.allowed.clients" });
             modes.put("Command Line Prefix", new String[] { "gp.allowed.clients" });
-            modes.put("File Purge Settings", new String[] { "purgeJobsAfter", "purgeTime" });
-            modes.put("Java Flag Settings", new String[] { "java_flags" });
+            modes.put("File Purge", new String[] { "purgeJobsAfter", "purgeTime" });
+            modes.put("Java Flag", new String[] { "java_flags" });
             modes.put("Gene Pattern Log", null);
             modes.put("Web Server Log", null);
             modes.put("Repositories", new String[] { "ModuleRepositoryURL", "ModuleRepositoryURLs",
                     "SuiteRepositoryURL", "SuiteRepositoryURLs" });
-            modes.put("Proxy Settings", new String[] { "http.proxyHost", "http.proxyPort", "http.proxyUser" });
-            modes.put("Database Settings", new String[] { "database.vendor", "HSQL_port", "HSQL.class", "HSQL.args",
+            modes.put("Proxy", new String[] { "http.proxyHost", "http.proxyPort", "http.proxyUser" });
+            modes.put("Database", new String[] { "database.vendor", "HSQL_port", "HSQL.class", "HSQL.args",
                     "HSQL.schema", "hibernate.connection.driver_class", "hibernate.connection.shutdown",
                     "hibernate.connection.url", "hibernate.connection.username", "hibernate.connection.password",
                     "hibernate.dialect", "hibernate.default_schema", "hibernate.connection.SetBigStringTryClob" });
@@ -92,7 +92,7 @@ public class ServerSettingsBean {
                     "installedPatchLSIDs", "JavaGEInstallerURL", "AnalysisTaskQueuePollingFrequency", "num.threads",
                     "org.apache.lucene.commitLockTimeout", "org.apache.lucene.writeLockTimeout",
                     "org.apache.lucene.mergeFactor" });
-            modes.put("Create Custom Settings", null);
+            modes.put("Custom", null);
             modes.put("Shut Down Server", null);
         }
         currentMode = (String) modes.keySet().toArray()[0];
@@ -570,7 +570,29 @@ public class ServerSettingsBean {
             settings.put("hibernate.connection.SetBigStringTryClob", mode);
         }
     }
+    
+    public String getDefaultSchema() {
+        String value = (String) settings.get("hibernate.default_schema");
+        return (value == null) ? "" : value;
+    }
+    
+    public void setDefaultSchema(String defaultSchema) {
+	if (defaultSchema != null && !defaultSchema.equals("")) {
+            settings.put("hibernate.default_schema", defaultSchema);
+        }
+    }
 
+    public String getHibernatePassword() {
+        String value = (String) settings.get("hibernate.connection.password");
+        return (value == null) ? "" : value;
+    }
+    
+    public void setHibernatePassword(String hibernatePassword) {
+	if (hibernatePassword != null && !hibernatePassword.equals("")) {
+            settings.put("hibernate.connection.password", hibernatePassword);
+        }
+    }
+    
     /**
      * @return
      */
@@ -715,7 +737,7 @@ public class ServerSettingsBean {
                 if (defaultValue != null) {
                     settings.put(propertyKey, defaultValue);
                 }else {
-                    settings.put(propertyKey, "");
+                    settings.remove(propertyKey);
                 }
             }
             saveSettings(event);
