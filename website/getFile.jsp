@@ -1,16 +1,25 @@
+<%@page import="java.net.MalformedURLException;"%>
 <%@ page
         import="org.genepattern.server.webservice.server.DirectoryManager, 
         org.genepattern.util.GPConstants, java.io.BufferedInputStream, java.io.File, 
         java.io.FileInputStream, org.genepattern.server.util.IAuthorizationManager, org.genepattern.server.util.AuthorizationManagerFactory,
-        java.io.InputStream, java.io.OutputStream" %>
+        java.io.InputStream, java.io.OutputStream, java.net.URLDecoder, java.io.UnsupportedEncodingException" %>
 <%
 
     String taskName = request.getParameter("task");
+	try {
+	    taskName = URLDecoder.decode(taskName, "UTF-8");
+	} catch(UnsupportedEncodingException x) {}
+	
     if (taskName == null) {
         out.println("no such task: " + taskName);
         return;
     }
     String filename = request.getParameter("file");
+    try {
+        filename = URLDecoder.decode(filename, "UTF-8");
+    } catch(UnsupportedEncodingException x){}
+    
     if (filename == null) {
         out.println("no such file: " + filename);
         return;
@@ -66,7 +75,7 @@
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
     response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
     response.setDateHeader("Expires", 0);
-    response.setDateHeader("X-lastModified", in.lastModified());
+    response.setDateHeader("Last-Modified", in.lastModified());
     OutputStream os = response.getOutputStream();
     InputStream is = null;
     try {
