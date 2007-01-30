@@ -17,7 +17,7 @@
       <tr valign="top">
         <td width="33%">Previous Module Repository URLs:</td>
         <td width="67%">
-          <t:selectOneListbox size="3" style="width:550px" value="#{serverSettingsBean.settings['ModuleRepositoryURL']}" onclick="$(mrurl).value=this.value">
+          <t:selectOneListbox id="select1" forceId="true" size="3" style="width:550px" value="#{serverSettingsBean.settings['ModuleRepositoryURL']}" onclick="$(mrurl).value=this.value">
   			<f:selectItems value="#{serverSettingsBean.moduleRepositoryURLs}" />
 		  </t:selectOneListbox>        
         </td>

@@ -431,7 +431,7 @@ public class ServerSettingsBean {
             repositoryURLs = repositoryURLs.concat(",").concat(currentRepositoryURL);
         }
         settings.put(repositoryNames, repositoryURLs);
-        saveSettings(null);
+        
     }
 
     /**
@@ -458,8 +458,8 @@ public class ServerSettingsBean {
      * @return
      */
     public List getModuleRepositoryURLs() {
-        return getSelectItems("ModuleRepositoryURLs");
-
+	addRepositoryURL("ModuleRepositoryURL", "ModuleRepositoryURLs");
+	return getSelectItems("ModuleRepositoryURLs");
     }
 
     /**
@@ -474,6 +474,7 @@ public class ServerSettingsBean {
      */
     public void addModuleRepositoryURL(ActionEvent event) {
         addRepositoryURL("ModuleRepositoryURL", "ModuleRepositoryURLs");
+        saveSettings(null);
     }
 
     /**
@@ -489,8 +490,8 @@ public class ServerSettingsBean {
      * @return
      */
     public List getSuiteRepositoryURLs() {
+	addRepositoryURL("SuiteRepositoryURL", "SuiteRepositoryURLs");
         return getSelectItems("SuiteRepositoryURLs");
-
     }
 
     /**
@@ -505,6 +506,7 @@ public class ServerSettingsBean {
      */
     public void addSuiteRepositoryURL(ActionEvent event) {
         addRepositoryURL("SuiteRepositoryURL", "SuiteRepositoryURLs");
+        saveSettings(null);
     }
 
     /**
@@ -712,6 +714,8 @@ public class ServerSettingsBean {
                 defaultValue = (String) defaultSettings.get(propertyKey);
                 if (defaultValue != null) {
                     settings.put(propertyKey, defaultValue);
+                }else {
+                    settings.put(propertyKey, "");
                 }
             }
             saveSettings(event);
