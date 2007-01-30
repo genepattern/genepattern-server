@@ -194,6 +194,8 @@ public class ProvenanceFinder {
             ParameterInfo[] adjustedParams = createPipelineParams(job.getParameterInfoArray(), mTaskInfo
                     .getParameterInfoArray(), jobOrder);
 
+            
+            // runtime prompts will always be false in generated pipelines
             boolean[] runTimePrompt = (adjustedParams != null ? new boolean[adjustedParams.length] : null);
             if (runTimePrompt != null) {
                 for (int j = 0; j < adjustedParams.length; j++) {
@@ -203,17 +205,7 @@ public class ProvenanceFinder {
             }
 
             JobSubmission jobSubmission = new JobSubmission(mTaskInfo.getName(), mTaskInfo.getDescription(), mTia
-                    .get(GPConstants.LSID), adjustedParams, runTimePrompt, // runtime
-                    // prompts
-                    // will
-                    // always
-                    // be
-                    // false
-                    // in
-                    // these
-                    // generated
-                    // pipelines
-                    isVisualizer, mTaskInfo);
+                    .get(GPConstants.LSID), adjustedParams, runTimePrompt, isVisualizer, mTaskInfo);
 
             model.addTask(jobSubmission);
 
@@ -275,32 +267,41 @@ public class ProvenanceFinder {
         return getParamFromURL(fileURL, "job");
     }
 
+    
+    
+    
     protected String getParamFromURL(String fileURL, String key) {
         // if it is null or not a local file we can do nothing
-
-        if (fileURL == null)
-            return null;
+        String paramString = "";
+        
+        if (fileURL == null) return null;
+        
         if (!(fileURL.toUpperCase().startsWith(serverURL)) && !fileURL.startsWith("http://127.0.0.1")
                 && !fileURL.startsWith("http://localhost")) {
             return null;
         }
 
         // if it is not a result file do nothing
-        boolean isResultFile = fileURL.indexOf("jobResults") >= 1;
+        boolean isResultFile = fileURL.indexOf("jobResults") >= 0;
         
         if (!((fileURL.indexOf("retrieveResults.jsp") >= 1) || (isResultFile)))
             return null;
         
-        String jobNoStr = "";
+
         
-        if (isResultFile){
+        if (isResultFile && "job".equals(key)){
             int idx = fileURL.indexOf("jobResults");
             idx += 11;
             int endidx = fileURL.indexOf('/', idx);
-            jobNoStr = fileURL.substring(idx, endidx);
+            paramString = fileURL.substring(idx, endidx);
             
-        } else {
-        
+       } else if (isResultFile && "filename".equals(key)) {
+            int idx = fileURL.indexOf("jobResults");
+            idx += 11;
+            int endidx = fileURL.indexOf('/', idx);
+            paramString = fileURL.substring(endidx+1);
+             
+        }else {
             // now we think we have a local result file url so grab the job #
             int idx = fileURL.indexOf(key + "=");
             if (idx < 0)
@@ -310,9 +311,9 @@ public class ProvenanceFinder {
             if (endIdx == -1)
                 endIdx = fileURL.length();
 
-            jobNoStr = fileURL.substring(idx + 1 + key.length(), endIdx);
+            paramString = fileURL.substring(idx + 1 + key.length(), endIdx);
         }
-        return jobNoStr;
+        return paramString;
     }
 
     protected ArrayList<String> getLocalInputFiles(JobInfo job) {
@@ -355,7 +356,7 @@ public class ProvenanceFinder {
     }
 
     /**
-     * realing input files from the old job params to the new pipeline. Look for
+     * realigning input files from the old job params to the new pipeline. Look for
      * input files matching the request pattern like we did to find these jobs
      * and replace with gpUseResult() calls. Create a new ParameterInfo array to
      * return.
