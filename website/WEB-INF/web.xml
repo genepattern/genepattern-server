@@ -113,8 +113,9 @@
   <filter-name>ConnectionFilter</filter-name>
   <url-pattern>/*</url-pattern>
  </filter-mapping>
+ 
  <filter-mapping>
-  <filter-name>JobResultsFilter</filter-name>
+  <filter-name>AuthenticationFilter</filter-name>
   <url-pattern>/jobResults/*</url-pattern>
  </filter-mapping>
  <filter-mapping>
@@ -129,6 +130,12 @@
   <filter-name>AuthenticationFilter</filter-name>
   <url-pattern>*.ajax</url-pattern>
  </filter-mapping>
+ 
+ <filter-mapping>
+  <filter-name>JobResultsFilter</filter-name>
+  <url-pattern>/jobResults/*</url-pattern>
+ </filter-mapping>
+ 
  <filter-mapping>
   <filter-name>AuthorizationFilter</filter-name>
   <url-pattern>/services/*</url-pattern>
