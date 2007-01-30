@@ -155,7 +155,7 @@
     	
     	<jar basedir="${genepattern.build}" defaultexcludes="true" includes="org/**/*.class, edu/**/*.class, **/*.xml" jarfile="${genepattern.build}/${gp-library-jarname}">
             <manifest>
-                <attribute name="Class-Path" value="../lib/commons-httpclient-3.0.1.jar /lib/activation.jar ./lib/axis.jar ./lib/commons-discovery-0.2.jar ./lib/commons-logging-1.0.4.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.11.jar ./lib/mail.jar ./lib/saaj.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar "/>
+                <attribute name="Class-Path" value="../lib/commons-httpclient-3.0.1.jar ./lib/commons-codec-1.3.jar /lib/activation.jar ./lib/axis.jar ./lib/commons-discovery-0.2.jar ./lib/commons-logging-1.0.4.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.11.jar ./lib/mail.jar ./lib/saaj.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar "/>
             </manifest>
         </jar>
 
@@ -163,7 +163,7 @@
             <zipfileset dir="${genepattern.build}">
                 <include name="${gp-library-jarname}"/>
             </zipfileset>
-            <zipfileset dir="website/WEB-INF/lib" prefix="lib" includes="activation.jar axis.jar commons-discovery-0.2.jar commons-httpclient-3.0.1.jar commons-logging-1.0.4.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.11.jar mail.jar saaj.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar "/>
+            <zipfileset dir="website/WEB-INF/lib" prefix="lib" includes="activation.jar axis.jar commons-codec-1.3.jar commons-discovery-0.2.jar commons-httpclient-3.0.1.jar commons-logging-1.0.4.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.11.jar mail.jar saaj.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar "/>
             <zipfileset dir="build/doc" prefix="doc"/>
         </zip>
     </target>
