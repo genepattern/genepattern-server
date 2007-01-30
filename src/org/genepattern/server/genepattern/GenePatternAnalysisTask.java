@@ -525,14 +525,14 @@ public class GenePatternAnalysisTask {
                                 url = uri.toURL();
 
                                 String localPrefix = System.getProperty("GenePatternURL");
-                                if (url.toString().startsWith(localPrefix)) {
-                                    String urlStr = url.toString();
-                                    int idx = urlStr.indexOf('?');
-                                    String sep = (idx == -1 ? "?" : "&");
-                                    String userIdURL = urlStr + sep + GPConstants.USERID + "=" + jobInfo.getUserId();
-
-                                    url = new URL(userIdURL);
-                                }
+//                                if (url.toString().startsWith(localPrefix)) {
+//                                    String urlStr = url.toString();
+//                                    int idx = urlStr.indexOf('?');
+//                                    String sep = (idx == -1 ? "?" : "&");
+//                                    String userIdURL = urlStr + sep + GPConstants.USERID + "=" + jobInfo.getUserId();
+//
+//                                    url = new URL(userIdURL);
+//                                }
 
                                 System.out.println("URL= " + url);
                                 System.out.println("LocalPrefix= " + localPrefix);
