@@ -61,7 +61,7 @@
 		              <h:outputText id="value" value="#{aPrefix.value}"/>
 		            </td>
 		            <td width="10%">
-		              <h:commandLink actionListener="#{commandPrefixBean.deletePrefix}">
+		              <h:commandLink actionListener="#{commandPrefixBean.deletePrefix}" rendered="#{aPrefix.key ne 'default'}">
 		                <h:outputText value="delete"/>
 		                <f:param name="aPrefixKey" value="#{aPrefix.key}"/>
 		              </h:commandLink>
