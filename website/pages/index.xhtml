@@ -1,29 +1,25 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core">
-
-
-<ui:composition template="/templates/common.xhtml">
-	<ui:define name="headText">
-		<script type="text/javascript"
-			src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"></script>
-		<script type="text/javascript"
-			src="#{facesContext.externalContext.requestContextPath}/js/moduleChooser.js"></script>
-		<script type="text/javascript" language="javascript">
-<h:outputText>
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" 
+      xmlns:c="http://java.sun.com/jstl/core">
+  <ui:composition template="/templates/common.xhtml">
+    <ui:define name="headText">
+      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
+      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/moduleChooser.js"/>
+      <script type="text/javascript" language="javascript">
+        <h:outputText>
 	var requiredIds = new Array();
 	var requiredNames = new Array();
 </h:outputText>
-<t:dataList value="#{runTaskBean.parameters}" var="p">
-    <h:outputText rendered = "#{!p.optional}">
+        <t:dataList value="#{runTaskBean.parameters}" var="p">
+          <h:outputText rendered="#{!p.optional}">
 	requiredIds.push('#{p.name}');
     requiredNames.push('#{p.displayName}');
 	</h:outputText>
- </t:dataList>
+        </t:dataList>
  
 /* <![CDATA[ */
 
@@ -185,247 +181,226 @@ function showFileInput(id) {
 /* ]]> */
 
 </script>
-	</ui:define>
-
-	<ui:define name="pageTitle">
+    </ui:define>
+    <ui:define name="pageTitle">
 	  GenePattern 
 	  <h:outputText rendered="#{!empty runTaskBean.lsid}"> - #{runTaskBean.name}</h:outputText>
-	</ui:define>
-	<ui:define name="leftPanel">
-		<td width="242" valign="top" class="tasks" id="tasks"><ui:include
-			src="moduleChooser.xhtml" /></td>
-	</ui:define>
-	<ui:define name="rightPanel">
-		<td width="203" valign="top" class="recentjobs" id="recentjobs">
-		<ui:include src="recentJobs.xhtml" /></td>
-	</ui:define>
-
-	<ui:define name="body">
-
-		<!-- Error messages -->
-		<div id="errorMessageDiv" style="display:none;">
-		<p id="errorMessage" />
-		</div>
-
-
-		<t:div rendered="#{!empty runTaskBean.lsid}">
-			<table width="100%
+    </ui:define>
+    
+    <ui:define name="leftPanel">
+      <td width="242" valign="top" class="tasks" id="tasks">
+        <ui:include src="moduleChooser.xhtml"/>
+      </td>
+    </ui:define>
+    
+    <ui:define name="rightPanel">
+      <td width="203" valign="top" class="recentjobs" id="recentjobs">
+        <ui:include src="recentJobs.xhtml"/>
+      </td>
+    </ui:define>
+    
+    <ui:define name="body">
+      <!-- Error messages -->
+      <div id="errorMessageDiv" style="display:none;">
+        <p id="errorMessage"/>
+      </div>
+      <t:div rendered="#{!empty runTaskBean.lsid}">
+        <table width="100%
 				" border="0" cellspacing="0" cellpadding="0">
-				<tr>
-      		<td valign="top" class="maintasknav" id="maintasknav">
-      			<h:outputText rendered="#{runTaskBean.showParameterDescriptions}">
-					<input onclick="toggleDescriptions();" type="checkbox" checked="checked">Show parameter descriptions</input>
-				</h:outputText>
-				<h:outputText rendered="#{! runTaskBean.showParameterDescriptions}">
-					<input onclick="toggleDescriptions();" type="checkbox">Show parameter descriptions</input>
-				</h:outputText>
-			</td>
-	   		</tr>
-			</table>
-
-
-			<table width="100%" border="0" cellpadding="0" cellspacing="0"
-				class="barhead-task">
-				<tr>
-					<td>#{runTaskBean.name}</td>
-					<td align="right"><span class="barhead-version">version
-					#{runTaskBean.version} &#160;</span> <!-- Version menu popup icon.  Conditionally render -->
-					<h:outputText rendered="#{!empty runTaskBean.versions}">
-						<img
-							src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif"
-							name="Image_versionPopupMenu" id="Image_versionPopupMenu"
-							width="14" height="14" border="0" valign="middle"
-							onclick="pm_showMenu('versionPopupMenu', Position.cumulativeOffset(this), 0, -15);"
-							onmouseover="MM_swapImage('Image_versionPopupMenu','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)"
-							onmouseout="MM_swapImgRestore();" />
-						<br />
-					</h:outputText></td>
-				</tr>
-			</table>
-
-			<form
-				action="#{facesContext.externalContext.requestContextPath}/#{runTaskBean.formAction}"
-				method="post" id="taskForm" enctype="multipart/form-data"
-				onsubmit="return validateForm();"><input type="hidden"
-				name="taskLSID" value="#{runTaskBean.encodedLsid}" /> <input
-				type="hidden" name="taskName" value="#{runTaskBean.name}" />
-			<table border="0" cellpadding="5" cellspacing="0" class="attribute"
-				valign="top">
-				<tbody>
-					<tr class="taskperameter">
-						<td><span class="description"> <h:outputText
-							rendered="#{runTaskBean.inputParametersExist}">* required field</h:outputText>
-						</span></td>
-						<td colspan="2" class="maintasknav2"><input name="cmd"
-							value="Run" type="submit" /> <input name="reset" value="Reset"
-							onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'"
-							type="button" /> &#160;&#160; <h:outputText
-							rendered="#{runTaskBean.pipeline}">
-							<a
-								href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160; 
-                  <a
-								onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>&#160;|&#160;
-				  <a
-								href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
-						</h:outputText> <h:outputText rendered="#{!runTaskBean.pipeline}">
-							<a
-								href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160; 
-                  <a
-								href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>&#160;|&#160;
-                  <a
-								href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>
-						</h:outputText> &#160;|&#160; <a target="_blank"
-							href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
-						</td>
-					</tr>
-
-					<!-- Loop through parameters -->
-					<t:dataList value="#{runTaskBean.parameters}" var="p">
-						<tr>
-
-							<!-- Parameter label -->
-							<td valign="top"
-								class="#{p.optional==false ? 'attribute-required' : ''}"><nobr>
-							#{p.displayName} <h:outputText rendered="#{!p.optional}"
-								value="*" /> </nobr></td>
-							<td valign="top" id="#{p.name}_td"><!-- File input --> <h:outputText
-								rendered="#{p.inputType=='file'}">
-								<h:outputText rendered="#{empty p.defaultValue}">
-									<div id="#{p.name}_div_file"><input name="#{p.name}"
-										id="#{p.name}" size="30" type="file" /></div>
-									<div id="#{p.name}_div_url" style="display:none"><input
-										id="#{p.name}_url" name="#{p.name}_url" size="30" type="text"
-										value="#{p.defaultValue}" /></div>
-									<input type="radio" name="#{p.name}_cb" value="url"
-										onclick="showUrlInput('#{p.name}');">Specify URL</input>
-									<input type="radio" name="#{p.name}_cb" value="file"
-										onclick="showFileInput('#{p.name}');" checked="yes">Upload
+          <tr>
+            <td valign="top" class="maintasknav" id="maintasknav">
+              <h:outputText rendered="#{runTaskBean.showParameterDescriptions}">
+                <input onclick="toggleDescriptions();" type="checkbox" checked="checked">Show parameter descriptions</input>
+              </h:outputText>
+              <h:outputText rendered="#{! runTaskBean.showParameterDescriptions}">
+                <input onclick="toggleDescriptions();" type="checkbox">Show parameter descriptions</input>
+              </h:outputText>
+            </td>
+          </tr>
+        </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
+          <tr>
+            <td>#{runTaskBean.name}</td>
+            <td align="right">
+              <span class="barhead-version">version #{runTaskBean.version} &#160;</span>
+              <!-- Version menu popup icon.  Conditionally render -->
+              <h:outputText rendered="#{!empty runTaskBean.versions}">
+                <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" name="Image_versionPopupMenu" id="Image_versionPopupMenu" width="14" height="14" border="0" valign="middle" onclick="pm_showMenu('versionPopupMenu', Position.cumulativeOffset(this), 0, -15);" onmouseover="MM_swapImage('Image_versionPopupMenu','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" onmouseout="MM_swapImgRestore();"/>
+                <br/>
+              </h:outputText>
+            </td>
+          </tr>
+        </table>
+        <form action="#{facesContext.externalContext.requestContextPath}/#{runTaskBean.formAction}" method="post" id="taskForm" enctype="multipart/form-data" onsubmit="return validateForm();">
+          <input type="hidden" name="taskLSID" value="#{runTaskBean.encodedLsid}"/>
+          <input type="hidden" name="taskName" value="#{runTaskBean.name}"/>
+          <table border="0" cellpadding="5" cellspacing="0" class="attribute" valign="top">
+            <tbody>
+              <tr class="taskperameter">
+                <td>
+                  <span class="description">
+                    <h:outputText rendered="#{runTaskBean.inputParametersExist}">* required field</h:outputText>
+                  </span>
+                </td>
+                <td colspan="2" class="maintasknav2">
+                  <input name="cmd" value="Run" type="submit"/>
+                  <input name="reset" value="Reset" type="button"
+                         onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'"/> &#160;&#160;                          
+                  <h:outputText rendered="#{runTaskBean.pipeline}">
+                    <a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160; 
+                    <a onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>&#160;|&#160;
+                    <h:outputText rendered="#{runTaskBean.editAllowed}">
+                      <a href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>&#160;|&#160; 
+                    </h:outputText>
+                  </h:outputText>                  
+                  <h:outputText rendered="#{!runTaskBean.pipeline}">
+                    <a href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160; 
+                    <a href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>&#160;|&#160;
+                    <h:outputText rendered="#{runTaskBean.editAllowed}">
+                      <a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>&#160;|&#160; 
+                    </h:outputText>
+                  </h:outputText> 
+                  <a target="_blank" href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
+                </td>
+              </tr>
+ 
+              <!-- Loop through parameters -->
+              <t:dataList value="#{runTaskBean.parameters}" var="p">
+                <tr>
+                  <!-- Parameter label -->
+                  <td valign="top" class="#{p.optional==false ? 'attribute-required' : ''}">
+                    <nobr>
+							#{p.displayName} <h:outputText rendered="#{!p.optional}" value="*"/>
+                    </nobr>
+                  </td>
+                  <td valign="top" id="#{p.name}_td">
+                    <!-- File input -->
+                    <h:outputText rendered="#{p.inputType=='file'}">
+                      <h:outputText rendered="#{empty p.defaultValue}">
+                        <div id="#{p.name}_div_file">
+                          <input name="#{p.name}" id="#{p.name}" size="30" type="file"/>
+                        </div>
+                        <div id="#{p.name}_div_url" style="display:none">
+                          <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
+                        </div>
+                        <input type="radio" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');">Specify URL</input>
+                        <input type="radio" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');" checked="yes">Upload
 									File</input>
-								</h:outputText>
-
-								<h:outputText rendered="#{!empty p.defaultValue}">
-									<div id="#{p.name}_div_file" style="display:none"><input
-										name="#{p.name}" id="#{p.name}" size="30" type="file" /></div>
-									<div id="#{p.name}_div_url"><input id="#{p.name}_url"
-										name="#{p.name}_url" size="30" type="text"
-										value="#{p.defaultValue}" /></div>
-									<input type="radio" name="#{p.name}_cb" value="url"
-										onclick="showUrlInput('#{p.name}');" checked="yes">Specify
+                      </h:outputText>
+                      <h:outputText rendered="#{!empty p.defaultValue}">
+                        <div id="#{p.name}_div_file" style="display:none">
+                          <input name="#{p.name}" id="#{p.name}" size="30" type="file"/>
+                        </div>
+                        <div id="#{p.name}_div_url">
+                          <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
+                        </div>
+                        <input type="radio" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');" checked="yes">Specify
 									URL</input>
-									<input type="radio" name="#{p.name}_cb" value="file"
-										onclick="showFileInput('#{p.name}');">Upload File</input>
-								</h:outputText>
-							</h:outputText> <!-- Select list input --> <h:outputText
-								rendered="#{p.inputType=='select'}">
-								<select name="#{p.name}" id="#{p.name}">
-									<t:dataList value="#{p.choices}" var="c">
-										<h:outputText rendered="#{c.selected}">
-											<option value="#{c.value}" selected="true">#{c.label}</option>
-										</h:outputText>
-										<h:outputText rendered="#{!c.selected}">
-											<option value="#{c.value}">#{c.label}</option>
-										</h:outputText>
-									</t:dataList>
-								</select>
-							</h:outputText> <!--  Text or password input --> <h:outputText
-								rendered="#{p.inputType=='text' || p.inputType=='password'}">
-								<input name="#{p.name}" id="#{p.name}" size="30"
-									type="#{p.inputType}" value="#{p.defaultValue}" />
-							</h:outputText></td>
-
-						</tr>
-						
-						<tr class="taskperameter">
-							<td></td>
-							<h:outputText rendered="#{runTaskBean.showParameterDescriptions}">
-								<td valign="top" class="description"><span name="parameter_description" style="display:inline">#{p.displayDescription}</span></td>
-							</h:outputText>
-							<h:outputText rendered="#{!runTaskBean.showParameterDescriptions}">
-								<td valign="top" class="description"><span name="parameter_description" style="display:none">#{p.displayDescription}</span></td>
-							</h:outputText>
-							
-						</tr>
-					</t:dataList>
-
-					<h:outputText rendered="#{!empty runTaskBean.parameters}">
-						<tr>
-							<td valign="top">&#160;</td>
-							<td colspan="2" class="maintasknav2"><input name="cmd"
-								value="Run" type="submit" /> <input name="reset" value="Reset"
-								onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'"
-								type="button" /> &#160;&#160; <h:outputText
-								rendered="#{runTaskBean.pipeline}">
-								<a
-									href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160;
-                    <a
-									onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>&#160;|&#160;
-										<a
-									href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
-							</h:outputText> <h:outputText rendered="#{!runTaskBean.pipeline}">
-								<a
-									href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160; 
-                    <a
-									href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>
+                        <input type="radio" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');">Upload File</input>
+                      </h:outputText>
+                    </h:outputText>
+                    <!-- Select list input -->
+                    <h:outputText rendered="#{p.inputType=='select'}">
+                      <select name="#{p.name}" id="#{p.name}">
+                        <t:dataList value="#{p.choices}" var="c">
+                          <h:outputText rendered="#{c.selected}">
+                            <option value="#{c.value}" selected="true">#{c.label}</option>
+                          </h:outputText>
+                          <h:outputText rendered="#{!c.selected}">
+                            <option value="#{c.value}">#{c.label}</option>
+                          </h:outputText>
+                        </t:dataList>
+                      </select>
+                    </h:outputText>
+                    <!--  Text or password input -->
+                    <h:outputText rendered="#{p.inputType=='text' || p.inputType=='password'}">
+                      <input name="#{p.name}" id="#{p.name}" size="30" type="#{p.inputType}" value="#{p.defaultValue}"/>
+                    </h:outputText>
+                  </td>
+                </tr>
+                <tr class="taskperameter">
+                  <td/>
+                  <h:outputText rendered="#{runTaskBean.showParameterDescriptions}">
+                    <td valign="top" class="description">
+                      <span name="parameter_description" style="display:inline">#{p.displayDescription}</span>
+                    </td>
+                  </h:outputText>
+                  <h:outputText rendered="#{!runTaskBean.showParameterDescriptions}">
+                    <td valign="top" class="description">
+                      <span name="parameter_description" style="display:none">#{p.displayDescription}</span>
+                    </td>
+                  </h:outputText>
+                </tr>
+              </t:dataList>
+              <h:outputText rendered="#{!empty runTaskBean.parameters}">
+                <tr>
+                  <td valign="top">&#160;</td>
+                  <td colspan="2" class="maintasknav2">
+                    <input name="cmd" value="Run" type="submit"/>
+                    <input name="reset" value="Reset" onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'" type="button"/> &#160;&#160; <h:outputText rendered="#{runTaskBean.pipeline}">
+                      <a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160;
+                    <a onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>&#160;|&#160;
+										<a href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
+                    </h:outputText>
+                    <h:outputText rendered="#{!runTaskBean.pipeline}">
+                      <a href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160; 
+                    <a href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>
 										&#160;|&#160;
-										<a
-									href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>
-							</h:outputText> &#160;|&#160; <a target="_blank"
-								href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
-							</td>
-						</tr>
-					</h:outputText>
-				</tbody>
-			</table>
-			<p>&#160;</p>
-			<br />
-			<div class="download_code"><strong>View code to call
+										<a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>
+                    </h:outputText> &#160;|&#160; <a target="_blank" href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
+                  </td>
+                </tr>
+              </h:outputText>
+            </tbody>
+          </table>
+          <p>&#160;</p>
+          <br/>
+          <div class="download_code">
+            <strong>View code to call
 			#{runTaskBean.name}: </strong>
-			<div id="codeDiv">&#160;</div>
-			<select name="gp_languageSelector" id="gp_languageSelector">
-				<option selected="selected">- Language -</option>
-				<option>Java</option>
-				<option>MATLAB</option>
-				<option>R</option>
-			</select> &#160; <input type="button" onclick="viewCode();" value="View Code" />
-			</div>
-			</form>
-		</t:div>
-
-		<!-- No tasks are selected.  View message if any, or splash page -->
-		<t:div rendered="#{empty runTaskBean.lsid}">
-			<h:outputText rendered="#{runTaskBean.splashMessage != null}">
-				<p />
-				<h3>#{runTaskBean.splashMessage}</h3>
-			</h:outputText>
-			<h:outputText rendered="#{runTaskBean.splashMessage == null}">
-				<ui:include src="splashpage.xhtml" />
-			</h:outputText>
-		</t:div>
-	</ui:define>
-
-	<!-- Popup menu for version -->
-	<ui:define name="popupMenus">
-		<h:form>
-			<div id="versionPopupMenu"
-				style="visibility:hidden; position:absolute;" class="popupMenu">
-			<table>
-				<tbody>
-					<tr>
-						<t:dataList value="#{runTaskBean.versions}" var="version">
-							<tr>
-								<td><h:outputLink
-									value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf"> #{version}
-					  <f:param value="#{runTaskBean.lsidNoVersion}:#{version}"
-										name="lsid" />
-								</h:outputLink></td>
-							</tr>
-						</t:dataList>
-					</tr>
-				</tbody>
-			</table>
-			</div>
-		</h:form>
-	</ui:define>
-
-</ui:composition>
+            <div id="codeDiv">&#160;</div>
+            <select name="gp_languageSelector" id="gp_languageSelector">
+              <option selected="selected">- Language -</option>
+              <option>Java</option>
+              <option>MATLAB</option>
+              <option>R</option>
+            </select> &#160; <input type="button" onclick="viewCode();" value="View Code"/>
+          </div>
+        </form>
+      </t:div>
+      <!-- No tasks are selected.  View message if any, or splash page -->
+      <t:div rendered="#{empty runTaskBean.lsid}">
+        <h:outputText rendered="#{runTaskBean.splashMessage != null}">
+          <p/>
+          <h3>#{runTaskBean.splashMessage}</h3>
+        </h:outputText>
+        <h:outputText rendered="#{runTaskBean.splashMessage == null}">
+          <ui:include src="splashpage.xhtml"/>
+        </h:outputText>
+      </t:div>
+    </ui:define>
+    
+    <!-- Popup menu  -->
+    <ui:define name="popupMenus">
+      <h:form>
+        <div id="versionPopupMenu" style="visibility:hidden; position:absolute;" class="popupMenu">
+          <table>
+            <tbody>
+              <tr>
+                <t:dataList value="#{runTaskBean.versions}" var="version">
+                  <tr>
+                    <td>
+                      <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf"> #{version}
+					  <f:param value="#{runTaskBean.lsidNoVersion}:#{version}" name="lsid"/>
+                      </h:outputLink>
+                    </td>
+                  </tr>
+                </t:dataList>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </h:form>
+    </ui:define>
+  </ui:composition>
 </html>

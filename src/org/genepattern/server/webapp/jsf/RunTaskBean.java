@@ -25,6 +25,7 @@ import javax.faces.model.SelectItem;
 import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.util.AuthorizationRules;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
@@ -57,6 +58,11 @@ public class RunTaskBean {
     private static Logger log = Logger.getLogger(RunTaskBean.class);
 
     private List<String> versions;
+    
+    /**
+     * True if current user is allowed to edit the current module.
+     */
+    private boolean editAllowed = false;
 
     // This is an odd class for this variable, but RunTaskBean is the backing
     // bean
@@ -289,6 +295,9 @@ public class RunTaskBean {
             lsid = null;
             return;
         }
+        
+        editAllowed = AuthorizationRules.isAllowed(taskInfo, UIBeanHelper.getUserId(), AuthorizationRules.ActionType.Edit);
+        
         ParameterInfo[] taskParameters = taskInfo.getParameterInfoArray();
 
         String matchJob = (String) UIBeanHelper.getRequest().getAttribute("matchJob");
@@ -453,6 +462,10 @@ public class RunTaskBean {
 
     public void setVersions(List<String> versions) {
         this.versions = versions;
+    }
+
+    public boolean isEditAllowed() {
+        return editAllowed;
     }
 
 }

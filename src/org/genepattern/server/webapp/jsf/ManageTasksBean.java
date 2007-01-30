@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.util.AuthorizationManagerFactory;
+import org.genepattern.server.util.AuthorizationRules;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
@@ -265,19 +266,19 @@ public class ManageTasksBean /* implements java.io.Serializable */{
             return allUsedBy;
         }
 
-        public boolean isOneOwnedByUser() {
-            boolean oneOwnedByUser = false;
+        public boolean isOneAllowed() {
+            boolean oneAllowed = false;
             for (VersionInfo info : indexedVersions.values()) {
-                if (info.isOwnedByUser()) {
-                    oneOwnedByUser = true;
+                if (info.isAllowed()) {
+                    oneAllowed = true;
                     break;
                 }
             }
-            return oneOwnedByUser;
+            return oneAllowed;
         }
 
         public boolean isAllowed() {
-            return !isAllUsedBy() && isOneOwnedByUser();
+            return !isAllUsedBy() && isOneAllowed();
         }
 
         public class VersionInfo {
@@ -287,12 +288,18 @@ public class ManageTasksBean /* implements java.io.Serializable */{
             private boolean isUsedBy = false;
 
             private TaskInfo ti;
+            
+            private boolean deleteAuthorized = false;
+            
+            private boolean editAuthorized = false;
 
             public VersionInfo() {
             }
 
             public VersionInfo(TaskInfo ti) {
                 this.ti = ti;
+                deleteAuthorized = AuthorizationRules.isAllowed(ti, UIBeanHelper.getUserId(), AuthorizationRules.ActionType.Delete);
+                editAuthorized = AuthorizationRules.isAllowed(ti, UIBeanHelper.getUserId(), AuthorizationRules.ActionType.Edit);
             }
 
             public String getLsid() {
@@ -338,7 +345,15 @@ public class ManageTasksBean /* implements java.io.Serializable */{
             }
 
             public boolean isAllowed() {
-                return (!isUsedBy && isOwnedByUser());
+                return (!isUsedBy && deleteAuthorized);
+            }
+
+            public boolean isDeleteAuthorized() {
+                return deleteAuthorized;
+            }
+
+            public boolean isEditAuthorized() {
+                return editAuthorized;
             }
 
         }

@@ -43,6 +43,7 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
+import org.genepattern.server.util.AuthorizationRules;
 
 public class JobBean {
 
@@ -599,8 +600,8 @@ public class JobBean {
     }
 
     /**
-     * Jobs are always sorted, so there's nothing to do here.  This is just an action method to trigger
-     * a reload.  Could probably be better named.
+     * Jobs are always sorted, so there's nothing to do here. This is just an action method to trigger a reload. Could
+     * probably be better named.
      * 
      * @return
      */
@@ -755,6 +756,11 @@ public class JobBean {
 
         private int sequence = 0;
 
+        /**
+         * Is current user allowed to delete this job?
+         */
+        private boolean deleteAllowed = false;
+
         public JobResultsWrapper(JobInfo jobInfo, Map<String, Collection<TaskInfo>> kindToModules,
                 Set<String> selectedFiles, Set<String> selectedJobs) {
             this(jobInfo, kindToModules, selectedFiles, selectedJobs, 0, 0);
@@ -767,6 +773,8 @@ public class JobBean {
             this.selected = selectedJobs.contains(String.valueOf(jobInfo.getJobNumber()));
             this.level = level;
             this.sequence = sequence;
+            
+            deleteAllowed = AuthorizationRules.isAllowed(jobInfo, UIBeanHelper.getUserId(), AuthorizationRules.ActionType.Delete);
 
             // Build the list of output files from the parameter info array.
 
@@ -914,6 +922,10 @@ public class JobBean {
 
         public void setSequence(int sequence) {
             this.sequence = sequence;
+        }
+
+        public boolean isDeleteAllowed() {
+            return deleteAllowed;
         }
 
     }

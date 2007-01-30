@@ -182,7 +182,7 @@ document.location.href=location;
         <tr>
           <td valign="top" class="maintasknav" id="maintasknav" align="right" width="100%">
           	<h:outputText rendered="#{authorizationBean.admin}">
-            <h:selectBooleanCheckbox  value="#{jobsBean.showEveryonesJobs}" onchange="this.form.submit();"/>show everyone's jobs&#160;&#160;&#160;&#160;
+              <h:selectBooleanCheckbox  value="#{jobsBean.showEveryonesJobs}" onchange="this.form.submit();"/>show everyone's jobs&#160;&#160;&#160;&#160;
             </h:outputText>
             <h:selectBooleanCheckbox  value="#{jobsBean.showExecutionLogs}" onchange="this.form.submit();" />show execution logs	
           </td>
@@ -286,28 +286,28 @@ document.location.href=location;
         </tr>
         
         <!--  Loop through job list -->
-         <t:dataList var="rootJobInfo" value="#{jobsBean.allJobs}" rowIndexVar="jobIndex">
+         <t:dataList var="rootJobWrapper" value="#{jobsBean.allJobs}" rowIndexVar="jobIndex">
  
           <script type="text/javascript" language="javascript">
-            jobNumbers[#{jobIndex}]='#{rootJobInfo.jobNumber}';
+            jobNumbers[#{jobIndex}]='#{rootJobWrapper.jobNumber}';
           </script>
  
           <ui:include src="jobResultsJobs.xhtml">
-            <ui:param name="jobInfo" value="#{rootJobInfo}"/>
-            <ui:param name="parentJob" value="#{rootJobInfo.jobNumber}"/>
+            <ui:param name="jobInfo" value="#{rootJobWrapper}"/>
+            <ui:param name="parentJob" value="#{rootJobWrapper.jobNumber}"/>
           </ui:include>
           
           <!--  Loop through descendants  -->
-          <t:dataList var="childJob" value="#{rootJobInfo.descendantJobs}">
+          <t:dataList var="childJob" value="#{rootJobWrapper.descendantJobs}">
             
             <script type="text/javascript" language="javascript">
  	           var rowId = "job_row_" + #{childJob.jobNumber};
-	           addFileRow('#{rootJobInfo.jobNumber}', rowId);	  
+	           addFileRow('#{rootJobWrapper.jobNumber}', rowId);	  
 	        </script>
 
             <ui:include src="jobResultsJobs.xhtml">
-              <ui:param name="jobInfo" value="#{childJob}"/>
-              <ui:param name="parentJob" value="#{rootJobInfo.jobNumber}"/>
+              <ui:param name="jobWrapper" value="#{childJob}"/>
+              <ui:param name="parentJobNumber" value="#{rootJobWrapper.jobNumber}"/>
             </ui:include>
           </t:dataList>
         </t:dataList>

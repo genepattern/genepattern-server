@@ -12,28 +12,34 @@
 	<table>
 		<tbody>
 			<tr>
-				<td><h:commandLink value="Download"
+				<td>
+				  <h:commandLink value="Download"
 					actionListener="#{jobsBean.downloadZip}"
 					immediate="true"
 					rendered="#{job.complete}">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />
-				</h:commandLink></td>
+				  </h:commandLink>
+				</td>
 			</tr>
 			<tr>
-				<td><h:commandLink value="Reload"
+				<td>
+				  <h:commandLink value="Reload"
 					action="#{jobsBean.reload}"
 					immediate="true">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />
-				</h:commandLink></td>
+				  </h:commandLink>
+				</td>
 			</tr>
 			<tr>
-				<td><h:commandLink value="Delete"
+				<td>
+				  <h:commandLink value="Delete" 
 					onclick="return confirm('Are you sure you want to delete the selected job?');"
 					actionListener="#{jobsBean.delete}"
 					immediate="true"
-					rendered="#{job.complete}">
+					rendered="#{job.complete and job.deleteAllowed}">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />
-				</h:commandLink></td>
+				  </h:commandLink>
+				</td>
 			</tr>
 			<tr>
 				<td><a
@@ -43,12 +49,14 @@
 				</a></td>
 			</tr>
 			<tr>
-				<td><h:commandLink value="Terminate"
+				<td>
+				  <h:commandLink value="Terminate"
 					actionListener="#{jobsBean.terminateJob}"
 					rendered="#{!job.complete}"
 					immediate="true">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />
-				</h:commandLink></td>
+				  </h:commandLink>
+				</td>
 			</tr>
 			<tr>
 				<td><img
@@ -56,28 +64,34 @@
 					width="100%" height="1" /></td>
 			</tr>
 			<tr>
-				<td><h:commandLink value="View Java Code"
+				<td>
+				  <h:commandLink value="View Java Code"
 					actionListener="#{jobsBean.viewCode}" target="_blank"
 					immediate="true">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />
 					<f:param value="Java" name="language" />
-				</h:commandLink></td>
+				  </h:commandLink>
+				</td>
 			</tr>
 			<tr>
-				<td><h:commandLink value="View MATLAB Code"
+				<td>
+				  <h:commandLink value="View MATLAB Code"
 					actionListener="#{jobsBean.viewCode}" target="_blank"
 					immediate="true">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />
 					<f:param value="MATLAB" name="language" />
-				</h:commandLink></td>
+				  </h:commandLink>
+				</td>
 			</tr>
 			<tr>
-				<td><h:commandLink value="View R Code"
+				<td>
+				  <h:commandLink value="View R Code"
 					actionListener="#{jobsBean.viewCode}" target="_blank"
 					immediate="true">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />
 					<f:param value="R" name="language" />
-				</h:commandLink></td>
+				  </h:commandLink>
+				</td>
 			</tr>
 		</tbody>
 	</table>

@@ -79,14 +79,7 @@ public class AuthorizationManager implements IAuthorizationManager {
     }
 
     public boolean isAllowed(String urlOrSoapMethod, String userID) {
-        boolean allow = _isAllowed(urlOrSoapMethod, userID);
-        // System.out.println("AM IA: " + urlOrSoapMethod + " --> " + userID + "
-        // == " + allow);
-        return allow;
-    }
-
-    public boolean _isAllowed(String urlOrSoapMethod, String userID) {
-
+ 
         // convert link name to permission name and then check permission
         HashSet<String> permNames = getPermissionNameForLink(urlOrSoapMethod);
         if (permNames == emptySet)
@@ -101,17 +94,10 @@ public class AuthorizationManager implements IAuthorizationManager {
         return false;
     }
 
+    /**
+     * Check permission map.  Return true if user has specifed privelege (permissionName), false otherwise.
+     */
     public boolean checkPermission(String permissionName, String userID) {
-        // System.out.println("AM CP: ");
-
-        boolean allow = _checkPermission(permissionName, userID);
-        // System.out.println("AM CP: " + permissionName+ " --> " + userID + "
-        // == " + allow);
-        return allow;
-
-    }
-
-    public boolean _checkPermission(String permissionName, String userID) {
         HashSet<String> usersGroups = userGroups.get(userID);
         HashSet<String> openGroups = userGroups.get("*");
 

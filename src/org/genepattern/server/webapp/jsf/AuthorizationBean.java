@@ -46,9 +46,9 @@ public class AuthorizationBean {
     public boolean isDeleteTaskAllowed() {
         return authManager.checkPermission("deleteTask", UIBeanHelper.getUserId());
     }
-
-    public boolean isDeleteJobAllowed() {
-        return authManager.checkPermission("deleteJob", UIBeanHelper.getUserId());
+    
+    public boolean isDeletePipelineAllowed() {
+        return authManager.checkPermission("deletePipeline", UIBeanHelper.getUserId());
     }
 
     public boolean isAdmin(String username) {

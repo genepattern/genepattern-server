@@ -96,6 +96,14 @@ public class LSIDUtil {
             return 0;
         }
     }
+    
+    /**
+     * Convenience method.  Returns true if an lsid's authority == "MINE". 
+     * @param lsid
+     */
+    public boolean isAuthorityMine(LSID lsid) {
+        return getAuthorityType(lsid).equals(AUTHORITY_MINE);
+    }
 
     public LSID getNearerLSID(LSID lsid1, LSID lsid2) {
         int authorityComparison = compareAuthorities(lsid1, lsid2);

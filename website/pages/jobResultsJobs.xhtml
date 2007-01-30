@@ -9,72 +9,72 @@
  <ui:composition>
   
     <!--  job row -->
-    <tr id="job_row_#{jobInfo.jobNumber}" class="#{jobInfo.level == 0 ? 'task-titlerow' : 'pipelinetask-titlerow'}">
+    <tr id="job_row_#{jobWrapper.jobNumber}" class="#{jobWrapper.level == 0 ? 'task-titlerow' : 'pipelinetask-titlerow'}">
       <td>
-        <h:outputText rendered="#{jobInfo.level == 0}">
-          #{jobInfo.jobNumber}
+        <h:outputText rendered="#{jobWrapper.level == 0}">
+          #{jobWrapper.jobNumber}
         </h:outputText>
         <!--  Hidden field to hold the expansion state.  -->
-        <input type="hidden" id="expansion_state_#{jobInfo.jobNumber}" 
-               name="expansion_state_#{jobInfo.jobNumber}" value="#{jobInfo.expanded}"/>
+        <input type="hidden" id="expansion_state_#{jobWrapper.jobNumber}" 
+               name="expansion_state_#{jobWrapper.jobNumber}" value="#{jobWrapper.expanded}"/>
 
       </td>
       
       <!-- Job select checkbox -->
       <td>
-        <div id="cb_job_#{jobInfo.jobNumber}" align="center">
-           <t:div rendered="#{jobInfo.selected}">
-            <input type="checkbox" name="selectedJobs" value="#{jobInfo.jobNumber}" 
-                   onclick="toggleJobCheckboxes('#{jobInfo.jobNumber}');" checked="checked"/>
+        <div id="cb_job_#{jobWrapper.jobNumber}" align="center">
+           <t:div rendered="#{jobWrapper.selected}">
+            <input type="checkbox" name="selectedJobs" value="#{jobWrapper.jobNumber}" 
+                   onclick="toggleJobCheckboxes('#{jobWrapper.jobNumber}');" checked="checked"/>
           </t:div>
-          <t:div rendered="#{!jobInfo.selected}">
-            <input type="checkbox" name="selectedJobs" value="#{jobInfo.jobNumber}" 
-                   onclick="toggleJobCheckboxes('#{jobInfo.jobNumber}');"/>
+          <t:div rendered="#{!jobWrapper.selected}">
+            <input type="checkbox" name="selectedJobs" value="#{jobWrapper.jobNumber}" 
+                   onclick="toggleJobCheckboxes('#{jobWrapper.jobNumber}');"/>
           </t:div>
         </div>
       </td>
       
       <!-- Job visibility toggle icon -->
-      <td align="right" style="cursor: pointer;" onclick="toggleVisibility('#{jobInfo.jobNumber}');">
-        <t:div rendered="#{jobInfo.level == 0}" style="display: inline; cursor:pointer;">
-          <img id="#{jobInfo.jobNumber}_expanded_img" 
+      <td align="right" style="cursor: pointer;" onclick="toggleVisibility('#{jobWrapper.jobNumber}');">
+        <t:div rendered="#{jobWrapper.level == 0}" style="display: inline; cursor:pointer;">
+          <img id="#{jobWrapper.jobNumber}_expanded_img" 
                 src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" 
                 width="8" height="8" border="0" style="display:inline;"/>
-          <img id="#{jobInfo.jobNumber}_collapsed_img" 
+          <img id="#{jobWrapper.jobNumber}_collapsed_img" 
                src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" 
                width="8" height="8" border="0" style="display:none;"/>
         </t:div>
       </td>
  
       <!-- Task name -->
-      <td class="#{jobInfo.level == 0 ? 'task-title' : 'pipelinetask-title'}" >
-        <h:outputText rendered="#{jobInfo.level > 0}">
-           #{jobInfo.sequence}.&#160;
+      <td class="#{jobWrapper.level == 0 ? 'task-title' : 'pipelinetask-title'}" >
+        <h:outputText rendered="#{jobWrapper.level > 0}">
+           #{jobWrapper.sequence}.&#160;
         </h:outputText>
-        <h:outputText rendered="#{jobInfo.level == 0}" style="cursor: pointer;" onclick="toggleVisibility('#{jobInfo.jobNumber}');">
-            #{jobInfo.taskName}
+        <h:outputText rendered="#{jobWrapper.level == 0}" style="cursor: pointer;" onclick="toggleVisibility('#{jobWrapper.jobNumber}');">
+            #{jobWrapper.taskName}
         </h:outputText>
-        <h:outputText rendered="#{jobInfo.level > 0}">
-          #{jobInfo.taskName}
+        <h:outputText rendered="#{jobWrapper.level > 0}">
+          #{jobWrapper.taskName}
         </h:outputText>
 
         <!-- Image trigger for jobs menu popup -->
-        <t:div rendered="#{jobInfo.level == 0}" style="display: inline;">
+        <t:div rendered="#{jobWrapper.level == 0}" style="display: inline;">
           <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" 
-             name="Image2_#{jobInfo.jobNumber}" width="14" height="14" border="0" align="top" id="Image2_#{jobInfo.jobNumber}" 
-             onclick="pm_showMenu('menuDiv_#{jobInfo.jobNumber}', Position.cumulativeOffset(this), 50, 0);" 
-             onmouseover="MM_swapImage('Image2_#{jobInfo.jobNumber}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
+             name="Image2_#{jobWrapper.jobNumber}" width="14" height="14" border="0" align="top" id="Image2_#{jobWrapper.jobNumber}" 
+             onclick="pm_showMenu('menuDiv_#{jobWrapper.jobNumber}', Position.cumulativeOffset(this), 50, 0);" 
+             onmouseover="MM_swapImage('Image2_#{jobWrapper.jobNumber}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
              onmouseout="MM_swapImgRestore();"/>
         </t:div>
       </td>
       <td>&#160;</td>
       <td>
-        <h:outputText value="#{jobInfo.dateSubmitted}">
+        <h:outputText value="#{jobWrapper.dateSubmitted}">
           <f:convertDateTime pattern="MMM dd hh:mm:ss a"/>
         </h:outputText>
       </td>
       <td>
-        <h:outputText value="#{jobInfo.dateCompleted}">
+        <h:outputText value="#{jobWrapper.dateCompleted}">
           <f:convertDateTime pattern="MMM dd hh:mm:ss a"/>
         </h:outputText>
       </td>
@@ -86,8 +86,8 @@
   
     <!--  Loop through output files -->
     <ui:include src="jobResultsFiles.xhtml">
-      <ui:param name="jobInfo" value="#{jobInfo}"/>
-      <ui:param name="parentJob" value="#{parentJob}"/>
+      <ui:param name="jobWrapper" value="#{jobWrapper}"/>
+      <ui:param name="parentJobNumber" value="#{parentJobNumber}"/>
     </ui:include>
     
   </ui:composition>
