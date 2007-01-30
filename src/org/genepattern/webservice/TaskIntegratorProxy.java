@@ -13,19 +13,17 @@
 package org.genepattern.webservice;
 
 import java.io.File;
-import javax.activation.*;
 import java.net.URL;
-
 import java.rmi.RemoteException;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 
 import org.apache.axis.client.Service;
 import org.apache.axis.configuration.BasicClientConfig;
-import org.genepattern.util.GPConstants;
 
 /**
  * @author Joshua Gould
@@ -37,22 +35,20 @@ public class TaskIntegratorProxy {
 
     TaskIntegratorSoapBindingStub stub;
 
-    public TaskIntegratorProxy(String url, String userName, String password)
-            throws WebServiceException {
-        this(url, userName, null, true);
+    public TaskIntegratorProxy(String url, String userName, String password) throws WebServiceException {
+        this(url, userName, password, true);
     }
 
-    public TaskIntegratorSoapBindingStub getStub(){
-    	return stub;
+    public TaskIntegratorSoapBindingStub getStub() {
+        return stub;
     }
-    
-    public TaskIntegratorProxy(String url, String userName, String password,
-            boolean maintainSession) throws WebServiceException {
+
+    public TaskIntegratorProxy(String url, String userName, String password, boolean maintainSession)
+            throws WebServiceException {
         try {
             this.endpoint = url;
             String context = (String) System.getProperty("GP_Path", "/gp");
-            this.endpoint = this.endpoint + context
-                    + "/services/TaskIntegrator";
+            this.endpoint = this.endpoint + context + "/services/TaskIntegrator";
             if (!(endpoint.startsWith("http://"))) {
                 this.endpoint = "http://" + this.endpoint;
             }
@@ -76,8 +72,7 @@ public class TaskIntegratorProxy {
         }
     }
 
-    public String importZipFromURL(String url, int privacy)
-            throws WebServiceException {
+    public String importZipFromURL(String url, int privacy) throws WebServiceException {
         try {
             return stub.importZipFromURL(url, privacy);
         } catch (RemoteException re) {
@@ -85,18 +80,16 @@ public class TaskIntegratorProxy {
         }
     }
 
-    public String installSuite(SuiteInfo suiteInfo)
-    	throws  org.genepattern.webservice.WebServiceException {
-    	try {
-    		return stub.installSuite(suiteInfo);
-    	} catch (RemoteException re){
-    		throw new WebServiceException(re);
-    	}
-    		
+    public String installSuite(SuiteInfo suiteInfo) throws org.genepattern.webservice.WebServiceException {
+        try {
+            return stub.installSuite(suiteInfo);
+        } catch (RemoteException re) {
+            throw new WebServiceException(re);
+        }
+
     }
-    
-    public String modifySuite(SuiteInfo suiteInfo, File[] files,
-            String[] existingFileNames) throws WebServiceException {
+
+    public String modifySuite(SuiteInfo suiteInfo, File[] files, String[] existingFileNames) throws WebServiceException {
         try {
             DataHandler[] handlers = null;
             String[] uploadedFileNames = null;
@@ -117,28 +110,23 @@ public class TaskIntegratorProxy {
                 fileNames.addAll(Arrays.asList(existingFileNames));
             }
 
-            return stub.modifySuite(suiteInfo.getAccessId(), suiteInfo
-                    .getLsid(), suiteInfo.getName(),
-                    suiteInfo.getDescription(), suiteInfo.getAuthor(),
-                    suiteInfo.getOwner(), suiteInfo.getModuleLsids(), handlers,
-                    (String[]) fileNames.toArray(new String[0]));
+            return stub.modifySuite(suiteInfo.getAccessId(), suiteInfo.getLsid(), suiteInfo.getName(), suiteInfo
+                    .getDescription(), suiteInfo.getAuthor(), suiteInfo.getOwner(), suiteInfo.getModuleLsids(),
+                    handlers, (String[]) fileNames.toArray(new String[0]));
         } catch (RemoteException re) {
             throw new WebServiceException(re);
         }
     }
 
-    public String importZip(File zipFile, int privacy)
-            throws WebServiceException {
+    public String importZip(File zipFile, int privacy) throws WebServiceException {
         try {
-            return stub.importZip(new DataHandler(new FileDataSource(zipFile)),
-                    privacy);
+            return stub.importZip(new DataHandler(new FileDataSource(zipFile)), privacy);
         } catch (RemoteException re) {
             throw new WebServiceException(re);
         }
     }
 
-    public void exportToZip(String taskName, File destinationFile)
-            throws WebServiceException {
+    public void exportToZip(String taskName, File destinationFile) throws WebServiceException {
         try {
             DataHandler dh = stub.exportToZip(taskName);
             copy(dh, destinationFile);
@@ -147,8 +135,7 @@ public class TaskIntegratorProxy {
         }
     }
 
-    public void exportToZip(String taskName, boolean recursive,
-            File destinationFile) throws WebServiceException {
+    public void exportToZip(String taskName, boolean recursive, File destinationFile) throws WebServiceException {
         try {
             DataHandler dh = stub.exportToZip(taskName, recursive);
             copy(dh, destinationFile);
@@ -177,10 +164,8 @@ public class TaskIntegratorProxy {
      * @return The new LSID
      * @throws WebServiceException
      */
-    public String modifyTask(int accessId, String taskName, String description,
-            ParameterInfo[] parameterInfoArray,
-            java.util.HashMap taskAttributes, File[] files,
-            String[] existingFileNames) throws WebServiceException {
+    public String modifyTask(int accessId, String taskName, String description, ParameterInfo[] parameterInfoArray,
+            java.util.HashMap taskAttributes, File[] files, String[] existingFileNames) throws WebServiceException {
         try {
             String[] uploadedFileNames = null;
             DataHandler[] dataHandlers = null;
@@ -188,8 +173,7 @@ public class TaskIntegratorProxy {
                 dataHandlers = new DataHandler[files.length];
                 uploadedFileNames = new String[files.length];
                 for (int i = 0; i < files.length; i++) {
-                    dataHandlers[i] = new DataHandler(new FileDataSource(
-                            files[i]));
+                    dataHandlers[i] = new DataHandler(new FileDataSource(files[i]));
                     uploadedFileNames[i] = files[i].getName();
                 }
             }
@@ -200,16 +184,14 @@ public class TaskIntegratorProxy {
             if (existingFileNames != null) {
                 fileNames.addAll(Arrays.asList(existingFileNames));
             }
-            return stub.modifyTask(accessId, taskName, description,
-                    parameterInfoArray, taskAttributes, dataHandlers,
+            return stub.modifyTask(accessId, taskName, description, parameterInfoArray, taskAttributes, dataHandlers,
                     (String[]) fileNames.toArray(new String[0]));
         } catch (RemoteException re) {
             throw new WebServiceException(re);
         }
     }
 
-    public String deleteFiles(String lsid, String[] fileNames)
-            throws WebServiceException {
+    public String deleteFiles(String lsid, String[] fileNames) throws WebServiceException {
         try {
             return stub.deleteFiles(lsid, fileNames);
         } catch (RemoteException re) {
@@ -224,7 +206,7 @@ public class TaskIntegratorProxy {
             throw new WebServiceException(re);
         }
     }
-    
+
     public void deleteSuite(String lsid) throws WebServiceException {
         try {
             stub.delete(lsid);
@@ -232,16 +214,15 @@ public class TaskIntegratorProxy {
             throw new WebServiceException(re);
         }
     }
-    public void getSupportFiles(String lsid, String[] fileNames,
-            File destinationDirectory) throws WebServiceException {
+
+    public void getSupportFiles(String lsid, String[] fileNames, File destinationDirectory) throws WebServiceException {
         try {
             DataHandler[] dataHandlers = stub.getSupportFiles(lsid, fileNames);
             if (!destinationDirectory.exists()) {
                 destinationDirectory.mkdirs();
             }
             for (int i = 0, length = dataHandlers.length; i < length; i++) {
-                File destinationFile = new File(destinationDirectory,
-                        fileNames[i]);
+                File destinationFile = new File(destinationDirectory, fileNames[i]);
                 copy(dataHandlers[i], destinationFile);
             }
         } catch (RemoteException re) {
@@ -249,8 +230,7 @@ public class TaskIntegratorProxy {
         }
     }
 
-    private void copy(DataHandler dh, File destinationFile)
-            throws WebServiceException {
+    private void copy(DataHandler dh, File destinationFile) throws WebServiceException {
         File axisFile = new File(dh.getName());
         axisFile.renameTo(destinationFile);
         /*
@@ -262,8 +242,7 @@ public class TaskIntegratorProxy {
          */
     }
 
-    public String cloneTask(String lsid, String clonedTaskName)
-            throws WebServiceException {
+    public String cloneTask(String lsid, String clonedTaskName) throws WebServiceException {
         try {
             return stub.cloneTask(lsid, clonedTaskName);
         } catch (RemoteException re) {
@@ -271,8 +250,7 @@ public class TaskIntegratorProxy {
         }
     }
 
-    public long[] getLastModificationTimes(String lsid, String[] fileNames)
-            throws WebServiceException {
+    public long[] getLastModificationTimes(String lsid, String[] fileNames) throws WebServiceException {
         try {
             return stub.getLastModificationTimes(lsid, fileNames);
         } catch (RemoteException re) {
@@ -296,8 +274,7 @@ public class TaskIntegratorProxy {
         }
     }
 
-    public void exportSuiteToZip(String lsid, File destination)
-            throws WebServiceException {
+    public void exportSuiteToZip(String lsid, File destination) throws WebServiceException {
         try {
             DataHandler dh = stub.exportSuiteToZip(lsid);
             copy(dh, destination);
