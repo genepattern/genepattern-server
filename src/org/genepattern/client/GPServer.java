@@ -13,12 +13,12 @@
 package org.genepattern.client;
 
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.genepattern.util.GPConstants;
@@ -42,7 +42,7 @@ import org.genepattern.webservice.WebServiceException;
 public class GPServer {
     protected final String server; // e.g. http://localhost:8080
 
-    protected final String userName;
+    protected final String username;
 
     protected String password;
 
@@ -52,9 +52,9 @@ public class GPServer {
     protected Map<String, TaskInfo> cachedTasks;
 
     /**
-     * number of tasks to cache
+     * number of modules to cache
      */
-    protected final static int MAX_ENTRIES = 20;
+    protected final static int MAX_ENTRIES = 50;
 
     protected AdminProxy adminProxy;
 
@@ -86,7 +86,7 @@ public class GPServer {
      */
     public GPServer(String server, String username, String password) throws WebServiceException {
         this.server = server;
-        this.userName = username;
+        this.username = username;
         this.password = password;
         this.cachedTasks = new LinkedHashMap<String, TaskInfo>(MAX_ENTRIES + 1, .75F, true) {
             public boolean removeEldestEntry(Map.Entry eldest) {
@@ -94,10 +94,11 @@ public class GPServer {
             }
         };
         try {
-            adminProxy = new AdminProxy(server, userName, password);
+            adminProxy = new AdminProxy(server, username, password);
         } catch (Exception e) {
             throw new WebServiceException(e);
         }
+
     }
 
     /**
@@ -115,7 +116,7 @@ public class GPServer {
      * @return the username
      */
     public String getUsername() {
-        return userName;
+        return username;
     }
 
     private TaskInfo getTask(String lsid) throws WebServiceException {
@@ -230,7 +231,7 @@ public class GPServer {
      */
     public boolean isComplete(int jobNumber) throws WebServiceException {
         try {
-            AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, userName, password, false);
+            AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, username, password, false);
             analysisProxy.setTimeout(Integer.MAX_VALUE);
             JobInfo ji = analysisProxy.checkStatus(jobNumber);
             if (ji == null) {
@@ -256,7 +257,7 @@ public class GPServer {
      */
     public JobResult createJobResult(int jobNumber) throws WebServiceException {
         try {
-            AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, userName, password, false);
+            AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, username, password, false);
             analysisProxy.setTimeout(Integer.MAX_VALUE);
             JobInfo info = analysisProxy.checkStatus(jobNumber);
             if (info == null) {
@@ -295,7 +296,7 @@ public class GPServer {
             try {
                 return new JobResult(new URL(server), info.getJobNumber(), (String[]) resultFiles
                         .toArray(new String[0]), stdout, stderr, (Parameter[]) jobParameters.toArray(new Parameter[0]),
-                        (String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
+                        (String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID), username, password);
             } catch (java.net.MalformedURLException mfe) {
                 throw new Error(mfe);
             }
@@ -354,7 +355,7 @@ public class GPServer {
             ParameterInfo[] actualParameters = Util.createParameterInfoArray(taskInfo, parameters);
             AnalysisWebServiceProxy analysisProxy = null;
             try {
-                analysisProxy = new AnalysisWebServiceProxy(server, userName, password);
+                analysisProxy = new AnalysisWebServiceProxy(server, username, password);
                 analysisProxy.setTimeout(Integer.MAX_VALUE);
             } catch (Exception x) {
                 throw new WebServiceException(x);
@@ -391,7 +392,7 @@ public class GPServer {
             ParameterInfo[] actualParameters = Util.createParameterInfoArray(taskInfo, parameters);
             AnalysisWebServiceProxy analysisProxy = null;
             try {
-                analysisProxy = new AnalysisWebServiceProxy(server, userName, password);
+                analysisProxy = new AnalysisWebServiceProxy(server, username, password);
                 analysisProxy.setTimeout(Integer.MAX_VALUE);
             } catch (Exception x) {
                 throw new WebServiceException(x);
@@ -426,8 +427,8 @@ public class GPServer {
             try {
                 return new JobResult(new URL(job.getServer()), job.getJobInfo().getJobNumber(), (String[]) resultFiles
                         .toArray(new String[0]), stdout, stderr, (Parameter[]) jobParameters.toArray(new Parameter[0]),
-                        (String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
-            } catch (java.net.MalformedURLException mfe) {
+                        (String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID), username, password);
+            } catch (MalformedURLException mfe) {
                 throw new Error(mfe);
             }
         } catch (org.genepattern.webservice.WebServiceException wse) {
@@ -462,7 +463,7 @@ public class GPServer {
             }
         }
         try {
-            final TaskExecutor executor = new LocalTaskExecutor(taskInfo, paramName2ValueMap, userName, password,
+            final TaskExecutor executor = new LocalTaskExecutor(taskInfo, paramName2ValueMap, username, password,
                     server);
             new Thread() {
                 public void run() {
