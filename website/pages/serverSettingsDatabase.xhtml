@@ -39,10 +39,7 @@
       <tr valign="top">
         <td>Database:</td>
         <td> 
-            <h:selectOneMenu value="#{serverSettingsBean.db}" onchange="changeDb(this.value)" valueChangeListener="#{serverSettingsBean.changeDb}">
-				<f:selectItem itemValue="HSQL" itemLabel="Hsql" />
-	  			<f:selectItem itemValue="ORACLE" itemLabel="Oracle" />
-			</h:selectOneMenu>
+        	<h:outputText value="#{serverSettingsBean.db}"/>
         </td>
         <td>
 	        <t:outputText id="db" forceId="true" size="40" value="Currently, you are using #{serverSettingsBean.settings['database.vendor']}."/>
