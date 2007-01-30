@@ -293,8 +293,8 @@ document.location.href=location;
           </script>
  
           <ui:include src="jobResultsJobs.xhtml">
-            <ui:param name="jobInfo" value="#{rootJobWrapper}"/>
-            <ui:param name="parentJob" value="#{rootJobWrapper.jobNumber}"/>
+            <ui:param name="jobWrapper" value="#{rootJobWrapper}"/>
+            <ui:param name="parentJobNumber" value="#{rootJobWrapper.jobNumber}"/>
           </ui:include>
           
           <!--  Loop through descendants  -->

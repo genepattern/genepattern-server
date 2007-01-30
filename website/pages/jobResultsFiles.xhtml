@@ -7,18 +7,18 @@
       xmlns:c="http://java.sun.com/jstl/core">
       
   <!-- File section include for job results page.
-       Inputs:   jobInfo
+       Inputs:   jobWrapper
    -->
   <ui:composition>
-    <t:dataList var="fileInfo" value="#{jobInfo.outputFileParameterInfos}" rowIndexVar="index">
+    <t:dataList var="fileInfo" value="#{jobWrapper.outputFileParameterInfos}" rowIndexVar="index">
  
       <!-- Generate ID for this row and append to the fileRows array for the containing job -->
       <script type="text/javascript" language="javascript">
-        var rowId = 'file_row_' + '#{jobInfo.jobNumber}_#{index}';
+        var rowId = 'file_row_' + '#{jobWrapper.jobNumber}_#{index}';
         addFileRow('#{parentJobNumber}', rowId);
       </script>
 
-      <tr class="files" id="file_row_#{jobInfo.jobNumber}_#{index}">
+      <tr class="files" id="file_row_#{jobWrapper.jobNumber}_#{index}">
         <td>&#160;</td>
         <td>
           <!-- File selection checkbox -->
@@ -32,11 +32,11 @@
           </div>
         </td>
         <td>&#160;</td>
-        <td class="#{jobInfo.level == 0 ? '' : 'pipelinefiles'}">
+        <td class="#{jobWrapper.level == 0 ? '' : 'pipelinefiles'}">
           <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" 
                width="4" height="4" hspace="6" vspace="2" border="0"/>
            
-          <h:outputLink value="#{facesContext.externalContext.requestContextPath}/jobResults/#{jobInfo.jobNumber}/#{fileInfo.name}">
+          <h:outputLink value="#{facesContext.externalContext.requestContextPath}/jobResults/#{jobWrapper.jobNumber}/#{fileInfo.name}">
             <h:outputText>#{fileInfo.name}</h:outputText>
           </h:outputLink>
  
