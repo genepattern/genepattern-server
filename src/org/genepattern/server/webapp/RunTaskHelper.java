@@ -18,6 +18,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -224,6 +225,7 @@ public class RunTaskHelper {
                             File file = new File(value);
                             value = server + request.getContextPath() + "/getFile.jsp?task=&file="
                                     + file.getParentFile().getName() + File.separator + file.getName();
+                            value = URLEncoder.encode(value, "UTF-8");
                         }
                     }
                 }
