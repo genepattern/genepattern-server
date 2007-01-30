@@ -234,20 +234,10 @@ public class RunVisualizer {
         // don't even bother using the local files since downloading is so fast
         // and the caching is conservative
 
-        String host = source.getHost();
-        if (host.equals("localhost") || host.equals("127.0.0.1")
-                || InetAddress.getLocalHost().equals(InetAddress.getByName(host))) {
-            if (DEBUG)
-                System.out.println("using local libdir: " + (String) params.get(RunVisualizerConstants.LIBDIR));
-            return (String) params.get(RunVisualizerConstants.LIBDIR);
-        }
-
         Date startDLTime = new Date();
         File fLibdir = new File(getTempDir(), name + ".libdir");
         fLibdir.mkdirs();
-        // if (DEBUG) System.out.println("tempdir=" +
-        // fLibdir.getCanonicalPath());
-
+       
         File[] currentFiles = fLibdir.listFiles();
         int supf;
 
