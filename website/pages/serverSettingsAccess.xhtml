@@ -56,6 +56,7 @@
           <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}">
 	      	<f:attribute name="subtype" value="Module" />
 	      </h:commandButton>
+	      &#160;
 	      <h:commandButton styleClass="specified" value="Remove" actionListener="#{serverSettingsBean.removeSpecifiedClientMode}"
           	style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}"/>    
         </td>
