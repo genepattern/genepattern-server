@@ -1,9 +1,9 @@
-<%@page import="java.net.MalformedURLException;"%>
+
 <%@ page
         import="org.genepattern.server.webservice.server.DirectoryManager, 
         org.genepattern.util.GPConstants, java.io.BufferedInputStream, java.io.File, 
         java.io.FileInputStream, org.genepattern.server.util.IAuthorizationManager, org.genepattern.server.util.AuthorizationManagerFactory,
-        java.io.InputStream, java.io.OutputStream, java.net.URLDecoder, java.io.UnsupportedEncodingException" %>
+        java.io.InputStream, java.io.OutputStream, java.net.URLDecoder, java.io.UnsupportedEncodingException, java.net.MalformedURLException" %>
 <%
 
     String taskName = request.getParameter("task");
