@@ -192,7 +192,7 @@ public class PropertiesManager {
 
         try {
             String dir = System.getProperty("genepattern.properties");
-            File propFile = new File(dir, "genepattern.properties.backup");
+            File propFile = new File(dir, "genepattern.properties.default");
             fis = new FileInputStream(propFile);
             props.load(fis);
 
