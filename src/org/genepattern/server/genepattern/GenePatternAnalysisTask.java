@@ -525,31 +525,34 @@ public class GenePatternAnalysisTask {
                                 url = uri.toURL();
 
                                 String localPrefix = System.getProperty("GenePatternURL");
-//                                if (url.toString().startsWith(localPrefix)) {
-//                                    String urlStr = url.toString();
-//                                    int idx = urlStr.indexOf('?');
-//                                    String sep = (idx == -1 ? "?" : "&");
-//                                    String userIdURL = urlStr + sep + GPConstants.USERID + "=" + jobInfo.getUserId();
-//
-//                                    url = new URL(userIdURL);
-//                                }
 
-                                System.out.println("URL= " + url);
-                                System.out.println("LocalPrefix= " + localPrefix);
 
+   URLConnection conn = url.openConnection();
                                 if ((url.toString().startsWith("<GenePatternURL>"))
                                         || (url.toString().toUpperCase().startsWith(localPrefix.toUpperCase()))) {
                                     url = getLocalFileUrl(url, jobInfo.getUserId());
                                 }
                                 // if it is a local file, getting the input on it requires an ftp server
-                                URLConnection conn = url.openConnection();
+                               
                                 if ("file".equals(url.getProtocol())) {
-                                    String fileName = url.toString().substring(7);
-                                    is = new FileInputStream(fileName);
+                                    String fileName = url.toString().substring(5);
+                                    // could be "file:", "file:/", "file://" before the filename
+                                    if (fileName.startsWith("/")){
+                                        fileName = fileName.substring(1);
+                                    }
+                                    if (fileName.startsWith("/")){
+                                        fileName = fileName.substring(1);
+                                    }
+                                    File f = new File(URLDecoder.decode(fileName));
+//                                    if (!f.exists()){
+//                                        // deal with encoded names if it isn't there
+//                                        f = new File();
+//                                    }
+                                    
+                                    is = new FileInputStream(f);
                                 } else {
                                     is = conn.getInputStream();
                                 }
-
                                 String name = getDownloadFileName(conn, url);
                                 outFile = new File(outDirName, name);
                                 if (outFile.exists()) { // ensure that 2 file
