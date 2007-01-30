@@ -56,10 +56,10 @@
       <t:div rendered="#{serverSettingsBean.currentMode == 'Command Line Prefix'}">
         <ui:include src="serverSettingsCLP.xhtml"/>       
       </t:div>
-      <t:div rendered="#{serverSettingsBean.currentMode == 'File Purge Settings'}">
+      <t:div rendered="#{serverSettingsBean.currentMode == 'File Purge'}">
         <ui:include src="serverSettingsFilePurge.xhtml"/>       
       </t:div>
-      <t:div rendered="#{serverSettingsBean.currentMode == 'Java Flag Settings'}">
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Java Flag'}">
         <ui:include src="serverSettingsJavaFlags.xhtml"/>       
       </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Gene Pattern Log'}">
@@ -71,10 +71,10 @@
       <t:div rendered="#{serverSettingsBean.currentMode == 'Repositories'}">
         <ui:include src="serverSettingsRepository.xhtml"/>       
       </t:div>
-      <t:div rendered="#{serverSettingsBean.currentMode == 'Proxy Settings'}">
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Proxy'}">
         <ui:include src="serverSettingsProxy.xhtml"/>       
       </t:div>
-      <t:div rendered="#{serverSettingsBean.currentMode == 'Database Settings'}">
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Database'}">
         <ui:include src="serverSettingsDatabase.xhtml"/>       
       </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'LSID'}">
@@ -86,7 +86,7 @@
       <t:div rendered="#{serverSettingsBean.currentMode == 'Advanced'}">
         <ui:include src="serverSettingsAdvanced.xhtml"/>       
       </t:div>
-      <t:div rendered="#{serverSettingsBean.currentMode == 'Create Custom Settings'}">
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Custom'}">
         <ui:include src="serverSettingsCustom.xhtml"/>       
       </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Shut Down Server'}">
