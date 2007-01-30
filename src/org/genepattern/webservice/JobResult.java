@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -25,6 +24,7 @@ import java.util.List;
 
 import org.genepattern.client.Util;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.JobDownloader;
 
 /**
  * Encapsulates information about a job run on a GenePattern server.
@@ -46,6 +46,10 @@ public class JobResult {
 
     private String lsid;
 
+    private String username;
+
+    private String password;
+
     /**
      * Creates a new JobResult instance.
      * 
@@ -65,7 +69,7 @@ public class JobResult {
      *            The LSID of the module that produced this job result.
      */
     public JobResult(URL server, int jobNumber, String[] fileNames, boolean stdout, boolean stderr,
-            Parameter[] parameters, String lsid) {
+            Parameter[] parameters, String lsid, String username, String password) {
         this.server = server;
         this.jobNumber = jobNumber;
         this.fileNames = fileNames;
@@ -73,6 +77,9 @@ public class JobResult {
         this.stderr = stderr;
         this.parameters = parameters;
         this.lsid = lsid;
+        this.username = username;
+        this.password = password;
+
     }
 
     /**
@@ -301,7 +308,7 @@ public class JobResult {
      * prefixing the filename. If a file of this name already exists it will be
      * overwritten.
      * 
-     * @param fileName
+     * @param filename
      *            The file name.
      * @param downloadDirectory
      *            The pathname of a directory to create the file. The directory
@@ -318,54 +325,29 @@ public class JobResult {
      *             <code>null</code>
      */
 
-    public File downloadFile(String fileName, String downloadDirectory, boolean overwrite) throws IOException {
-
-        if (fileName == null || downloadDirectory == null) {
+    public File downloadFile(String filename, String downloadDirectory, boolean overwrite) throws IOException {
+        if (filename == null || downloadDirectory == null) {
             throw new NullPointerException();
         }
-        FileOutputStream fos = null;
-        InputStream is = null;
+
         File dir = new File(downloadDirectory);
         if (!dir.exists()) {
-            if (!dir.mkdirs()) {
-                throw new IOException("Unable to create download directory.");
-            }
+            dir.mkdirs();
         }
-        File file = new File(dir, fileName);
+        File file = new File(dir, filename);
         if (!overwrite && (file.exists())) {
-            fileName = "job_" + jobNumber + "_" + fileName;
-            file = new File(dir, fileName);
-        }
-        long lastModifiedDate = System.currentTimeMillis();
-        try {
-            HttpURLConnection connection = (HttpURLConnection) getURL(fileName).openConnection();
-            if (connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
-                return null;
-            }
-
-            lastModifiedDate = connection.getHeaderFieldDate("X-lastModified", lastModifiedDate);
-            is = connection.getInputStream();
-            byte[] b = new byte[100000];
-            int bytesRead = 0;
-            fos = new FileOutputStream(file);
-            while ((bytesRead = is.read(b)) != -1) {
-                fos.write(b, 0, bytesRead);
-            }
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException x) {
+            filename = "job_" + jobNumber + "_" + filename;
+            file = new File(dir, filename);
+            if (file.exists()) {
+                String suffix = null;
+                int dotIndex = filename.lastIndexOf(".");
+                if (dotIndex != -1) {
+                    suffix = filename.substring(dotIndex, filename.length());
                 }
-            }
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException x) {
-                }
-                file.setLastModified(lastModifiedDate);
+                file = File.createTempFile(filename, suffix, dir);
             }
         }
+        new JobDownloader(server.toString(), username, password).download(getJobNumber(), filename, file);
         return file;
     }
 
