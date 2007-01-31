@@ -67,206 +67,6 @@ public class Analysis extends GenericWebService {
     }
 
     /**
-     * Gets the latest versions of all tasks
-     * 
-     * @return The latest tasks
-     * @exception WebServiceException
-     *                If an error occurs
-     */
-    public TaskInfo[] getTasks() throws WebServiceException {
-        isAuthorized(getUsernameFromContext(), "Analysis.getTasks");
-        Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
-        // sometimes empty
-        return new AdminService() {
-
-            protected String getUserName() {
-                return getUsernameFromContext();
-            }
-        }.getLatestTasks();
-    }
-
-    /**
-     * Saves a record of a job that was executed on the client into the database
-     * 
-     * @param taskID
-     *            the ID of the task to run.
-     * @param parameters
-     *            the parameters
-     * @exception WebServiceException
-     *                thrown if problems are encountered
-     * @return the job information
-     */
-
-    public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
-        isAuthorized(getUsernameFromContext(), "Analysis.recordClientJob");
-
-        try {
-            AnalysisDAO dao = new AnalysisDAO();
-            int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(),
-                    org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters), -1);
-            return dao.getJobInfo(jobNo);
-        } catch (Exception e) {
-            throw new WebServiceException(e);
-        }
-    }
-
-    /**
-     * Saves a record of a job that was executed on the client into the database
-     * 
-     * @param taskID
-     *            the ID of the task to run.
-     * @param parameters
-     *            the parameters
-     * @exception WebServiceException
-     *                thrown if problems are encountered
-     * @return the job information
-     */
-
-    public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters, int parentJobNumber)
-            throws WebServiceException {
-        isAuthorized(getUsernameFromContext(), "Analysis.recordClientJob");
-        try {
-            AnalysisDAO dao = new AnalysisDAO();
-            int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(),
-                    org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters), parentJobNumber);
-            return dao.getJobInfo(jobNo);
-
-        } catch (Exception e) {
-            throw new WebServiceException(e);
-        }
-    }
-
-    public int[] getChildren(int jobId) throws WebServiceException {
-        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.getChildren");
-
-        try {
-            AnalysisDAO ds = new AnalysisDAO();
-            JobInfo[] children = ds.getChildren(jobId);
-
-            int[] jobs = new int[children.length];
-            for (int i = 0; i < children.length; i++) {
-                jobs[i] = children[i].getJobNumber();
-            }
-            return jobs;
-        } catch (Exception e) {
-            throw new WebServiceException(e);
-        }
-    }
-
-    /**
-     * Submits an analysis job to be processed. The job is a child job of the
-     * supplied parent job.
-     * 
-     * @param taskID
-     *            the ID of the task to run.
-     * @param parameters
-     *            the parameters to process
-     * @param files
-     *            a HashMap of input files sent as attachments
-     * @param parentJobId
-     *            the parent job number
-     * @return the job information for this process
-     * @exception WebServiceException
-     *                if problems are encountered
-     */
-
-    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files, int parentJobId)
-            throws WebServiceException {
-        isAuthorized(getUsernameFromContext(), "Analysis.submitJob");
-
-        try {
-            renameInputFiles(parameters, files);
-            AddNewJobHandler req = new AddNewJobHandler(taskID, getUsernameFromContext(), parameters, parentJobId);
-            return req.executeRequest();
-        } catch (Exception e) {
-            throw new WebServiceException(e);
-        }
-    }
-
-    public void wakeupQueue() {
-        AnalysisTask.getInstance().wakeupJobQueue();
-    }
-
-    private static void logAndThrow(Throwable t) throws WebServiceException {
-        log.error(t.getMessage());
-        t.printStackTrace();
-        throw new WebServiceException(t);
-    }
-
-    // find any input files and concat axis name with original file name.
-    private void renameInputFiles(ParameterInfo[] parameters, Map files) throws WebServiceException {
-        if (parameters != null)
-            for (int x = 0; x < parameters.length; x++) {
-                if (parameters[x].isInputFile()) {
-                    String orgFilename = parameters[x].getValue();
-                    Object obj = files.get(orgFilename);
-                    DataHandler dataHandler = null;
-                    if (obj instanceof AttachmentPart) {
-                        AttachmentPart ap = (AttachmentPart) obj;
-                        try {
-                            dataHandler = ap.getDataHandler();
-                        } catch (SOAPException se) {
-                            throw new WebServiceException("Error while processing files");
-                        }
-                    } else {
-                        dataHandler = (DataHandler) obj;
-                    }
-
-                    String newFilename = dataHandler.getName() + "_" + orgFilename;
-                    File f = new File(dataHandler.getName());
-                    File newFile = new File(newFilename);
-                    boolean renamed = f.renameTo(newFile);
-                    // reset parameter's value with new filename
-                    if (renamed) {
-                        parameters[x].setValue(newFilename);
-                    } else {
-                        try {
-                            parameters[x].setValue(f.getCanonicalPath());
-                        } catch (IOException ioe) {
-                            throw new WebServiceException(ioe);
-                        }
-                    }
-                }
-            }
-    }
-
-    /**
-     * Submits an analysis job to be processed.
-     * 
-     * @param taskID
-     *            the ID of the task to run.
-     * @param parameters
-     *            the parameters to process
-     * @param files
-     *            a HashMap of input files sent as attachments
-     * @return the job information for this process
-     * @exception WebServiceException
-     *                thrown if problems are encountered
-     */
-    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files) throws WebServiceException {
-        isAuthorized(getUsernameFromContext(), "Analysis.submitJob");
-
-        Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
-        // sometimes empty
-
-        // get the username
-        String username = getUsernameFromContext();
-
-        JobInfo jobInfo = null;
-
-        renameInputFiles(parameters, files);
-
-        try {
-            AddNewJobHandler req = new AddNewJobHandler(taskID, username, parameters);
-            jobInfo = req.executeRequest();
-        } catch (Throwable t) {
-            logAndThrow(t);
-        }
-
-        return jobInfo;
-    }
-
-    /**
      * Checks the status of a particular job.
      * 
      * @param jobID
@@ -293,138 +93,30 @@ public class Analysis extends GenericWebService {
         return jobInfo;
     }
 
-    /**
-     * Returns the result files of a completed job.
-     * 
-     * @param jobID
-     *            the ID of the job that completed.
-     * @return the List of FileWrappers containing the results for this process
-     * @exception WebServiceException
-     *                thrown if problems are encountered
-     */
-    public List getResultFiles(int jobID) throws WebServiceException {
-        Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
-        // sometimes empty
-        isJobOwnerOrAuthorized(getUsernameFromContext(), jobID, "Analysis.getResultFiles");// checks
-        // permissions
-
-        JobInfo jobInfo = null;
-        ArrayList<String> filenames = new ArrayList<String>();
-
-        try {
-            GetJobStatusHandler req = new GetJobStatusHandler(jobID);
-            jobInfo = req.executeRequest();
-        } catch (Throwable t) {
-            logAndThrow(t);
+    public String createProvenancePipeline(JobInfo[] jobs, String pipelineName) throws WebServiceException {
+        for (int i = 0; i < jobs.length; i++) {
+            isJobOwnerOrAuthorized(getUsernameFromContext(), jobs[i].getJobNumber(),
+                    "Analysis.createProvenancePipeline");
         }
 
-        if (jobInfo != null) {
-            ParameterInfo[] parameters = jobInfo.getParameterInfoArray();
-            if (parameters != null) {
-                for (int x = 0; x < parameters.length; x++) {
-                    if (parameters[x].isOutputFile()) {
-                        filenames.add(System.getProperty("jobs") + "/" + parameters[x].getValue());
-                    }
-                }
-            }
+        String userID = getUsernameFromContext();
+        ProvenanceFinder pf = new ProvenanceFinder(userID);
+        TreeSet<JobInfo> jobSet = new TreeSet<JobInfo>();
+        for (int i = 0; i < jobs.length; i++) {
+            jobSet.add(jobs[i]);
         }
-
-        ArrayList<FileWrapper> list = new ArrayList<FileWrapper>(filenames.size());
-
-        for (Iterator<String> iterator = filenames.iterator(); iterator.hasNext();) {
-            String fn = iterator.next();
-            File f = new File(fn);
-            DataHandler dataHandler = new DataHandler(new FileDataSource(fn));
-            list.add(new FileWrapper(dataHandler.getName(), dataHandler, f.length(), f.lastModified()));
-        }
-
-        return list;
+        return pf.createProvenancePipeline(jobSet, pipelineName);
     }
 
-    private boolean isJobOwner(String user, int jobId) {
-        AnalysisDAO ds = new AnalysisDAO();
-        JobInfo jobInfo = ds.getJobInfo(jobId);
+    public String createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName) throws WebServiceException {
+        String userID = getUsernameFromContext();
+        ProvenanceFinder pf = new ProvenanceFinder(userID);
 
-        return user.equals(jobInfo.getUserId());
-    }
+        JobInfo job = pf.findJobThatCreatedFile(fileUrlOrJobNumber);
+        isJobOwnerOrAuthorized(getUsernameFromContext(), job.getJobNumber(), "Analysis.createProvenancePipeline");
 
-    private void isSameUserOrAuthorized(String user, String requestedUser, String method) throws WebServiceException {
-        if (!user.equals(requestedUser)) {
-            if (!authManager.checkPermission("administrateServer", user)) {
-                throw new WebServiceException("You do not have permission for jobs started by other users.");
-            }
-        }
-    }
-
-    private void isJobOwnerOrAuthorized(String user, int jobId, String method) throws WebServiceException {
-        if (!isJobOwner(user, jobId)) {
-            isAuthorized(user, method);
-        }
-    }
-
-    private void isAuthorized(String user, String method) throws WebServiceException {
-        if (!authManager.isAllowed(method, user)) {
-            throw new WebServiceException("You do not have permission for items owned by other users.");
-        }
-    }
-
-    /**
-     * Terminates the execution of the given job
-     * 
-     * 
-     * 
-     * @param jobId
-     *            the job id
-     */
-    public void terminateJob(int jobId) throws WebServiceException {
-        try {
-
-            isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.terminateJob");
-            AnalysisDAO ds = new AnalysisDAO();
-
-            Process p = org.genepattern.server.genepattern.GenePatternAnalysisTask.terminatePipeline("" + jobId);
-            if (p != null) {
-                setJobStatus(jobId, JobStatus.ERROR);
-            }
-            JobInfo[] children = ds.getChildren(jobId);
-            for (int i = 0; i < children.length; i++) { // terminate all child
-                // jobs
-                terminateJob(children[i].getJobNumber());
-            }
-        } catch (WebServiceException wse) {
-            throw wse;
-        } catch (Exception e) {
-            throw new WebServiceException(e);
-        }
-    }
-
-    /**
-     * Purges the all the input and output files for the given job and expunges
-     * the job from the stored history. If the job is running if will be
-     * terminated.
-     * 
-     * user identity is checked by deleteJob to ensure it is the job owner
-     * 
-     * @param jobId
-     *            the job id
-     */
-    public void purgeJob(int jobId) throws WebServiceException {
-        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.purgeJob");
-
-        try {
-            deleteJob(jobId);
-            AnalysisDAO ds = new AnalysisDAO();
-            JobInfo[] children = ds.getChildren(jobId);
-            ds.deleteJob(jobId);
-
-            for (int i = 0; i < children.length; i++) {
-                purgeJob(children[i].getJobNumber());
-            }
-        } catch (WebServiceException wse) {
-            throw wse;
-        } catch (Exception e) {
-            throw new WebServiceException(e);
-        }
+        String lsid = pf.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
+        return lsid;
     }
 
     /**
@@ -464,36 +156,6 @@ public class Analysis extends GenericWebService {
         } catch (Exception e) {
             throw new WebServiceException(e);
         }
-    }
-
-    private ParameterInfo[] removeOutputFileParameters(JobInfo jobInfo, String value) {
-        ParameterInfo[] params = jobInfo.getParameterInfoArray();
-        if (params == null) {
-            return new ParameterInfo[0];
-        }
-        List<ParameterInfo> newParams = new ArrayList<ParameterInfo>();
-        for (int i = 0; i < params.length; i++) {
-            if (!(params[i].isOutputFile())) {
-                newParams.add(params[i]); // not an output file
-            } else if (!(params[i].getValue().equals(value))) {
-                newParams.add(params[i]); // is a different op file
-
-            }
-        }
-        return newParams.toArray(new ParameterInfo[newParams.size()]);
-    }
-
-    public JobInfo getJob(int jobId) throws WebServiceException {
-        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.getJob");// checks
-        // permissions
-
-        try {
-            AnalysisDAO ds = new AnalysisDAO();
-            return ds.getJobInfo(jobId);
-        } catch (org.genepattern.webservice.OmnigeneException oe) {
-            throw new WebServiceException(oe);
-        }
-
     }
 
     /**
@@ -558,6 +220,248 @@ public class Analysis extends GenericWebService {
 
     }
 
+    public JobInfo[] findJobsThatCreatedFile(String fileURLOrJobNumber) throws WebServiceException {
+        String userID = getUsernameFromContext();
+        ProvenanceFinder pf = new ProvenanceFinder(userID);
+
+        JobInfo job = pf.findJobThatCreatedFile(fileURLOrJobNumber);
+        isJobOwnerOrAuthorized(getUsernameFromContext(), job.getJobNumber(), "Analysis.findJobsThatCreatedFile");
+
+        Set<JobInfo> jobSet = pf.findJobsThatCreatedFile(fileURLOrJobNumber);
+        JobInfo[] jobs = new JobInfo[jobSet.size()];
+        int i = 0;
+        for (Iterator<JobInfo> iter = jobSet.iterator(); iter.hasNext(); i++) {
+            JobInfo aJob = iter.next();
+            jobs[i] = aJob;
+        }
+        return jobs;
+    }
+
+    public int[] getChildren(int jobId) throws WebServiceException {
+        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.getChildren");
+
+        try {
+            AnalysisDAO ds = new AnalysisDAO();
+            JobInfo[] children = ds.getChildren(jobId);
+
+            int[] jobs = new int[children.length];
+            for (int i = 0; i < children.length; i++) {
+                jobs[i] = children[i].getJobNumber();
+            }
+            return jobs;
+        } catch (Exception e) {
+            throw new WebServiceException(e);
+        }
+    }
+
+    public JobInfo getJob(int jobId) throws WebServiceException {
+        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.getJob");// checks
+        // permissions
+
+        try {
+            AnalysisDAO ds = new AnalysisDAO();
+            return ds.getJobInfo(jobId);
+        } catch (org.genepattern.webservice.OmnigeneException oe) {
+            throw new WebServiceException(oe);
+        }
+
+    }
+
+    /**
+     * 
+     * Gets the jobs for the current user
+     * 
+     * @param username
+     *            the username to retrieve jobs for. If <tt>null</tt> all
+     *            available jobs are returned.
+     * @param maxJobNumber
+     *            the maximum job number to include in the returned jobs or -1,
+     *            to start at the current maximum job number in the database
+     * @param maxEntries
+     *            the maximum number of jobs to return
+     * @param allJobs
+     *            if <tt>true</tt> return all jobs that the given user has
+     *            run, otherwise return jobs that have not been deleted
+     * 
+     * @return the jobs
+     */
+    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs)
+            throws WebServiceException {
+        isSameUserOrAdmin(getUsernameFromContext(), username);
+
+        try {
+            AnalysisDAO ds = new AnalysisDAO();
+            return ds.getJobs(username, maxJobNumber, maxEntries, allJobs);
+        } catch (Exception e) {
+            throw new WebServiceException(e);
+        }
+    }
+
+    public FileWrapper[] getResultFiles(int jobId, String[] filenames) throws WebServiceException {
+        Thread.yield();
+        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.getResultFiles");
+        FileWrapper[] result = new FileWrapper[filenames.length];
+
+        for (int i = 0; i < filenames.length; i++) {
+            String path = System.getProperty("jobs") + File.separator + jobId + File.separator + filenames[i];
+            File file = new File(path);
+            if (file.exists()) {
+                result[i] = new FileWrapper(file.getName(), new DataHandler(new FileDataSource(path)), file.length(),
+                        file.lastModified());
+            } else {
+                result[i] = null;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the result files of a completed job.
+     * 
+     * @param jobId
+     *            the id of the job that completed.
+     * @return the array of FileWrapper objects containing the results for the
+     *         specified job.
+     * @exception WebServiceException
+     *                thrown if problems are encountered
+     */
+    public FileWrapper[] getResultFiles(int jobId) throws WebServiceException {
+        Thread.yield();
+        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.getResultFiles");
+        ArrayList<String> filenames = new ArrayList<String>();
+        JobInfo jobInfo = null;
+        try {
+            GetJobStatusHandler req = new GetJobStatusHandler(jobId);
+            jobInfo = req.executeRequest();
+        } catch (Throwable t) {
+            logAndThrow(t);
+        }
+        if (jobInfo != null) {
+            ParameterInfo[] parameters = jobInfo.getParameterInfoArray();
+            if (parameters != null) {
+                for (ParameterInfo p : parameters) {
+                    if (p.isOutputFile()) {
+                        String path = System.getProperty("jobs") + File.separator + p.getValue();
+                        File f = new File(path);
+                        if (f.exists()) {
+                            filenames.add(path);
+                        }
+                    }
+                }
+            }
+        }
+
+        FileWrapper[] files = new FileWrapper[filenames.size()];
+        int i = 0;
+        for (Iterator<String> iterator = filenames.iterator(); iterator.hasNext(); i++) {
+            String path = iterator.next();
+            File file = new File(path);
+            files[i] = new FileWrapper(file.getName(), new DataHandler(new FileDataSource(path)), file.length(), file
+                    .lastModified());
+        }
+
+        return files;
+    }
+
+    /**
+     * Gets the latest versions of all tasks
+     * 
+     * @return The latest tasks
+     * @exception WebServiceException
+     *                If an error occurs
+     */
+    public TaskInfo[] getTasks() throws WebServiceException {
+        isAuthorized(getUsernameFromContext(), "Analysis.getTasks");
+        Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
+        // sometimes empty
+        return new AdminService() {
+
+            protected String getUserName() {
+                return getUsernameFromContext();
+            }
+        }.getLatestTasks();
+    }
+
+    /**
+     * Purges the all the input and output files for the given job and expunges
+     * the job from the stored history. If the job is running if will be
+     * terminated.
+     * 
+     * user identity is checked by deleteJob to ensure it is the job owner
+     * 
+     * @param jobId
+     *            the job id
+     */
+    public void purgeJob(int jobId) throws WebServiceException {
+        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.purgeJob");
+
+        try {
+            deleteJob(jobId);
+            AnalysisDAO ds = new AnalysisDAO();
+            JobInfo[] children = ds.getChildren(jobId);
+            ds.deleteJob(jobId);
+
+            for (int i = 0; i < children.length; i++) {
+                purgeJob(children[i].getJobNumber());
+            }
+        } catch (WebServiceException wse) {
+            throw wse;
+        } catch (Exception e) {
+            throw new WebServiceException(e);
+        }
+    }
+
+    /**
+     * Saves a record of a job that was executed on the client into the database
+     * 
+     * @param taskID
+     *            the ID of the task to run.
+     * @param parameters
+     *            the parameters
+     * @exception WebServiceException
+     *                thrown if problems are encountered
+     * @return the job information
+     */
+
+    public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
+        isAuthorized(getUsernameFromContext(), "Analysis.recordClientJob");
+
+        try {
+            AnalysisDAO dao = new AnalysisDAO();
+            int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(),
+                    org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters), -1);
+            return dao.getJobInfo(jobNo);
+        } catch (Exception e) {
+            throw new WebServiceException(e);
+        }
+    }
+
+    /**
+     * Saves a record of a job that was executed on the client into the database
+     * 
+     * @param taskID
+     *            the ID of the task to run.
+     * @param parameters
+     *            the parameters
+     * @exception WebServiceException
+     *                thrown if problems are encountered
+     * @return the job information
+     */
+
+    public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters, int parentJobNumber)
+            throws WebServiceException {
+        isAuthorized(getUsernameFromContext(), "Analysis.recordClientJob");
+        try {
+            AnalysisDAO dao = new AnalysisDAO();
+            int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(),
+                    org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters), parentJobNumber);
+            return dao.getJobInfo(jobNo);
+
+        } catch (Exception e) {
+            throw new WebServiceException(e);
+        }
+    }
+
     /**
      * Sets the status of the given job
      * 
@@ -584,33 +488,103 @@ public class Analysis extends GenericWebService {
     }
 
     /**
+     * Submits an analysis job to be processed.
      * 
-     * Gets the jobs for the current user
-     * 
-     * @param username
-     *            the username to retrieve jobs for. If <tt>null</tt> all
-     *            available jobs are returned.
-     * @param maxJobNumber
-     *            the maximum job number to include in the returned jobs or -1,
-     *            to start at the current maximum job number in the database
-     * @param maxEntries
-     *            the maximum number of jobs to return
-     * @param allJobs
-     *            if <tt>true</tt> return all jobs that the given user has
-     *            run, otherwise return jobs that have not been deleted
-     * 
-     * @return the jobs
+     * @param taskID
+     *            the ID of the task to run.
+     * @param parameters
+     *            the parameters to process
+     * @param files
+     *            a HashMap of input files sent as attachments
+     * @return the job information for this process
+     * @exception WebServiceException
+     *                thrown if problems are encountered
      */
-    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs)
-            throws WebServiceException {
-        isSameUserOrAuthorized(getUsernameFromContext(), username, "Analysis.getJobs");
+    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files) throws WebServiceException {
+        isAuthorized(getUsernameFromContext(), "Analysis.submitJob");
+
+        Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
+        // sometimes empty
+
+        // get the username
+        String username = getUsernameFromContext();
+
+        JobInfo jobInfo = null;
+
+        renameInputFiles(parameters, files);
 
         try {
-            AnalysisDAO ds = new AnalysisDAO();
-            return ds.getJobs(username, maxJobNumber, maxEntries, allJobs);
+            AddNewJobHandler req = new AddNewJobHandler(taskID, username, parameters);
+            jobInfo = req.executeRequest();
+        } catch (Throwable t) {
+            logAndThrow(t);
+        }
+
+        return jobInfo;
+    }
+
+    /**
+     * Submits an analysis job to be processed. The job is a child job of the
+     * supplied parent job.
+     * 
+     * @param taskID
+     *            the ID of the task to run.
+     * @param parameters
+     *            the parameters to process
+     * @param files
+     *            a HashMap of input files sent as attachments
+     * @param parentJobId
+     *            the parent job number
+     * @return the job information for this process
+     * @exception WebServiceException
+     *                if problems are encountered
+     */
+
+    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files, int parentJobId)
+            throws WebServiceException {
+        isAuthorized(getUsernameFromContext(), "Analysis.submitJob");
+
+        try {
+            renameInputFiles(parameters, files);
+            AddNewJobHandler req = new AddNewJobHandler(taskID, getUsernameFromContext(), parameters, parentJobId);
+            return req.executeRequest();
         } catch (Exception e) {
             throw new WebServiceException(e);
         }
+    }
+
+    /**
+     * Terminates the execution of the given job
+     * 
+     * 
+     * 
+     * @param jobId
+     *            the job id
+     */
+    public void terminateJob(int jobId) throws WebServiceException {
+        try {
+
+            isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.terminateJob");
+            AnalysisDAO ds = new AnalysisDAO();
+
+            Process p = org.genepattern.server.genepattern.GenePatternAnalysisTask.terminatePipeline("" + jobId);
+            if (p != null) {
+                setJobStatus(jobId, JobStatus.ERROR);
+            }
+            JobInfo[] children = ds.getChildren(jobId);
+            for (int i = 0; i < children.length; i++) { // terminate all child
+                // jobs
+                terminateJob(children[i].getJobNumber());
+            }
+        } catch (WebServiceException wse) {
+            throw wse;
+        } catch (Exception e) {
+            throw new WebServiceException(e);
+        }
+    }
+
+    public void wakeupQueue() {
+        AnalysisTask.getInstance().wakeupJobQueue();
     }
 
     /**
@@ -630,47 +604,93 @@ public class Analysis extends GenericWebService {
         return username;
     }
 
-    public String createProvenancePipeline(JobInfo[] jobs, String pipelineName) throws WebServiceException {
-        for (int i = 0; i < jobs.length; i++) {
-            isJobOwnerOrAuthorized(getUsernameFromContext(), jobs[i].getJobNumber(),
-                    "Analysis.createProvenancePipeline");
+    private void isAuthorized(String user, String method) throws WebServiceException {
+        if (!authManager.isAllowed(method, user)) {
+            throw new WebServiceException("You do not have permission for items owned by other users.");
         }
-
-        String userID = getUsernameFromContext();
-        ProvenanceFinder pf = new ProvenanceFinder(userID);
-        TreeSet<JobInfo> jobSet = new TreeSet<JobInfo>();
-        for (int i = 0; i < jobs.length; i++) {
-            jobSet.add(jobs[i]);
-        }
-        return pf.createProvenancePipeline(jobSet, pipelineName);
     }
 
-    public String createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName) throws WebServiceException {
-        String userID = getUsernameFromContext();
-        ProvenanceFinder pf = new ProvenanceFinder(userID);
-
-        JobInfo job = pf.findJobThatCreatedFile(fileUrlOrJobNumber);
-        isJobOwnerOrAuthorized(getUsernameFromContext(), job.getJobNumber(), "Analysis.createProvenancePipeline");
-
-        String lsid = pf.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
-        return lsid;
+    private boolean isJobOwner(String user, int jobId) {
+        AnalysisDAO ds = new AnalysisDAO();
+        JobInfo jobInfo = ds.getJobInfo(jobId);
+        if (jobInfo == null || user == null) {
+            return false;
+        }
+        return user.equals(jobInfo.getUserId());
     }
 
-    public JobInfo[] findJobsThatCreatedFile(String fileURLOrJobNumber) throws WebServiceException {
-        String userID = getUsernameFromContext();
-        ProvenanceFinder pf = new ProvenanceFinder(userID);
-
-        JobInfo job = pf.findJobThatCreatedFile(fileURLOrJobNumber);
-        isJobOwnerOrAuthorized(getUsernameFromContext(), job.getJobNumber(), "Analysis.findJobsThatCreatedFile");
-
-        Set<JobInfo> jobSet = pf.findJobsThatCreatedFile(fileURLOrJobNumber);
-        JobInfo[] jobs = new JobInfo[jobSet.size()];
-        int i = 0;
-        for (Iterator<JobInfo> iter = jobSet.iterator(); iter.hasNext(); i++) {
-            JobInfo aJob = iter.next();
-            jobs[i] = aJob;
+    private void isJobOwnerOrAuthorized(String user, int jobId, String method) throws WebServiceException {
+        if (!isJobOwner(user, jobId)) {
+            isAuthorized(user, method);
         }
-        return jobs;
+    }
+
+    private void isSameUserOrAdmin(String user, String requestedUser) throws WebServiceException {
+        if (!user.equals(requestedUser)) {
+            if (!authManager.checkPermission("administrateServer", user)) {
+                throw new WebServiceException("You do not have permission for jobs started by other users.");
+            }
+        }
+    }
+
+    private ParameterInfo[] removeOutputFileParameters(JobInfo jobInfo, String value) {
+        ParameterInfo[] params = jobInfo.getParameterInfoArray();
+        if (params == null) {
+            return new ParameterInfo[0];
+        }
+        List<ParameterInfo> newParams = new ArrayList<ParameterInfo>();
+        for (int i = 0; i < params.length; i++) {
+            if (!(params[i].isOutputFile())) {
+                newParams.add(params[i]); // not an output file
+            } else if (!(params[i].getValue().equals(value))) {
+                newParams.add(params[i]); // is a different op file
+
+            }
+        }
+        return newParams.toArray(new ParameterInfo[newParams.size()]);
+    }
+
+    // find any input files and concat axis name with original file name.
+    private void renameInputFiles(ParameterInfo[] parameters, Map files) throws WebServiceException {
+        if (parameters != null)
+            for (int x = 0; x < parameters.length; x++) {
+                if (parameters[x].isInputFile()) {
+                    String orgFilename = parameters[x].getValue();
+                    Object obj = files.get(orgFilename);
+                    DataHandler dataHandler = null;
+                    if (obj instanceof AttachmentPart) {
+                        AttachmentPart ap = (AttachmentPart) obj;
+                        try {
+                            dataHandler = ap.getDataHandler();
+                        } catch (SOAPException se) {
+                            throw new WebServiceException("Error while processing files");
+                        }
+                    } else {
+                        dataHandler = (DataHandler) obj;
+                    }
+
+                    String newFilename = dataHandler.getName() + "_" + orgFilename;
+                    File f = new File(dataHandler.getName());
+                    File newFile = new File(newFilename);
+                    boolean renamed = f.renameTo(newFile);
+                    // reset parameter's value with new filename
+                    if (renamed) {
+                        parameters[x].setValue(newFilename);
+                    } else {
+                        try {
+                            parameters[x].setValue(f.getCanonicalPath());
+                        } catch (IOException ioe) {
+                            throw new WebServiceException(ioe);
+                        }
+                    }
+                }
+            }
+    }
+
+    private static void logAndThrow(Throwable t) throws WebServiceException {
+        t.printStackTrace();
+        log.error(t.getMessage(), t);
+        throw new WebServiceException();
     }
 
 }
