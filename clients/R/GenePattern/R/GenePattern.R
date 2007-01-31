@@ -1,20 +1,12 @@
-.packageName <-"GenePattern"
-# GenePattern.R 
-
 #------------------------------------------------------------------------------------------------------
-.First.lib <- 
-function(pkgname = "GenePattern") 
-{
+.onLoad <- function (libname, pkgname) {
 	require ("rJava")
-
-	.jinit(classpath="C:\\GenePattern_rJava\\lib\\GenePattern.jar;C:\\GenePattern_rJava\\lib\\commons-discovery-0.2.jar;C:\\GenePattern_rJava\\lib\\commons-logging-1.0.4.jar;C:\\GenePattern_rJava\\lib\\jaxb-rt-1.0-ea.jar;C:\\GenePattern_rJava\\lib\\jaxrpc.jar;C:\\GenePattern_rJava\\lib\\log4j-1.2.11.jar;C:\\GenePattern_rJava\\lib\\mail.jar;C:\\GenePattern_rJava\\lib\\saaj.jar;C:\\GenePattern_rJava\\lib\\wsdl4j-1.5.1.jar;C:\\GenePattern_rJava\\lib\\activation.jar;C:\\GenePattern_rJava\\lib\\axis.jar;")
-	
+	fullPathToJars = paste (libname, pkgname, 'jars', 'GenePattern.jar', sep=.Platform$file.sep)
+	.jinit (fullPathToJars)
 	#Check that the java version is 1.5. or higher
 	jvmVersion = .jcall ("java/lang/System", "S", "getProperty", "java.version")
-  	cat (' jvm version: ', jvmVersion, '\n')
-        if (is.na (pmatch ("1.5.", jvmVersion))) 
-	{
-    		cat ('\n  You are using the wrong version of Java. Java version 1.5 is required. \n')
+    if (is.na (pmatch ("1.5.", jvmVersion))) {
+		cat ('\n  You are using the wrong version of Java. Java version 1.5 is required. \n')
 	}
 }
 #------------------------------------------------------------------------------------------------------
