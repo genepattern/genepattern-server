@@ -13,6 +13,8 @@
 package org.genepattern.server.webservice;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.xml.namespace.QName;
@@ -32,13 +34,26 @@ import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.jsf.EncryptionUtil;
 
-public class AuthenticationHandler extends org.apache.axis.handlers.BasicHandler {
+public class AuthenticationHandler extends GenePatternHandlerBase {
     boolean passwordRequired = false;
 
     private static Logger log = Logger.getLogger(AuthenticationHandler.class);
-
+    ArrayList<String> noLoginMethods = new ArrayList<String>();
+    
     public void init() {
         super.init();
+        
+        // some methods may be exempted from password protection such as
+        // Admin.getServiceInfo
+        // there are set in the server-config.wsdd as comma delimeted values
+        // in the no.login.required parameter
+        String noLogin = (String)this.getOption("no.login.required");
+        StringTokenizer strtok = new StringTokenizer(noLogin, ",");
+        while (strtok.hasMoreTokens()){
+            noLoginMethods.add(strtok.nextToken());
+        }
+ 
+        // see if we care about passwords or not
         String prop = System.getProperty("require.password", "false").toLowerCase();
         passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
 
@@ -47,59 +62,28 @@ public class AuthenticationHandler extends org.apache.axis.handlers.BasicHandler
     public void invoke(MessageContext msgContext) throws AxisFault {
         String methodSig = getOperation(msgContext);
         
-        if ("AdminService.getServiceInfo".equalsIgnoreCase(methodSig)){
-            // this is always allowed, even anonymously
-            
-        } else {
-            String username = msgContext.getUsername();
-            String password = msgContext.getPassword();
-
-            if (!validateUserPassword(username, password)) {
-                throw new AxisFault("Error: Unknown user or invalid password.");
-
-            }
+        // some methods may be exempted from password protection such as
+        // Admin.getServiceInfo
+        // there are set in the server-config.wsdd as comma delimeted values
+        // in the no.login.required parameter
+        for (String meth: noLoginMethods){
+            if (meth.equalsIgnoreCase(methodSig)) return;
         }
+      
+        String username = msgContext.getUsername();
+        String password = msgContext.getPassword();
+
+        if (!validateUserPassword(username, password)) {
+            throw new AxisFault("Error: Unknown user or invalid password.");
+
+        }
+        
         
     }
 
-    protected String getOperation(MessageContext msgContext) throws AxisFault{
-        Message requestMessage = msgContext.getCurrentMessage();
-
-      
-        Handler serviceHandler = msgContext.getService();
-        String serviceName = serviceHandler.getName();
-
-        OperationDesc operation = msgContext.getOperation();
-        SOAPService service = msgContext.getService();
-        ServiceDesc serviceDesc = service.getServiceDescription();
-        QName opQName = null;
-
-        if (operation == null) {
-            SOAPEnvelope reqEnv = requestMessage.getSOAPEnvelope();
-            Vector bodyElements = reqEnv.getBodyElements();
-            if (bodyElements.size() > 0) {
-                MessageElement element = (MessageElement) bodyElements.get(0);
-                if (element != null) {
-                    opQName = new QName(element.getNamespaceURI(), element.getName());
-                    operation = serviceDesc.getOperationByElementQName(opQName);
-                }
-            }
-        }
-
-        if (operation == null) {
-            throw new AxisFault(Messages.getMessage("noOperationForQName", opQName == null ? "null" : opQName
-                    .toString()));
-        }
-
-        Method method = operation.getMethod();
-        String methodSig = serviceName + "." + method.getName();
-        return methodSig;
-
-    }
-    
     
     /**
-     * @todo - implementation. Currently accepts any non-null user
+     * 
      * @param user
      * @param password
      * @return

@@ -30,7 +30,7 @@ import org.apache.axis.message.SOAPEnvelope;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 
-public class AuthorizationHandler extends org.apache.axis.handlers.BasicHandler {
+public class AuthorizationHandler extends GenePatternHandlerBase {
     private IAuthorizationManager authManager = null;
 
     public void init() {
@@ -51,30 +51,8 @@ public class AuthorizationHandler extends org.apache.axis.handlers.BasicHandler 
         Handler serviceHandler = msgContext.getService();
         String serviceName = serviceHandler.getName();
 
-        OperationDesc operation = msgContext.getOperation();
-        SOAPService service = msgContext.getService();
-        ServiceDesc serviceDesc = service.getServiceDescription();
-        QName opQName = null;
-
-        if (operation == null) {
-            SOAPEnvelope reqEnv = requestMessage.getSOAPEnvelope();
-            Vector bodyElements = reqEnv.getBodyElements();
-            if (bodyElements.size() > 0) {
-                MessageElement element = (MessageElement) bodyElements.get(0);
-                if (element != null) {
-                    opQName = new QName(element.getNamespaceURI(), element.getName());
-                    operation = serviceDesc.getOperationByElementQName(opQName);
-                }
-            }
-        }
-
-        if (operation == null) {
-            throw new AxisFault(Messages.getMessage("noOperationForQName", opQName == null ? "null" : opQName
-                    .toString()));
-        }
-
-        Method method = operation.getMethod();
-        String methodSig = serviceName + "." + method.getName();
+        
+        String methodSig = getOperation(msgContext);
 
         boolean allowed = authManager.isAllowed(methodSig, username);
 
