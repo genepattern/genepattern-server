@@ -91,6 +91,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URI;
@@ -141,7 +142,6 @@ import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.util.PropertiesManager;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -314,10 +314,10 @@ public class GenePatternAnalysisTask {
 
     protected File inputUrlToFile(URL url, String userId) {
         try {
-            String urlStr = url.toString();
-            String file = url.getPath();
+            String path = url.getPath();
+            path = URLDecoder.decode(path, "UTF-8");
 
-            if (file.endsWith("getFile.jsp")) {
+            if (path.endsWith("getFile.jsp")) {
                 // task=lsid & file=filename
                 String params = url.getQuery();
                 int idx1 = params.indexOf("task=");
@@ -339,9 +339,10 @@ public class GenePatternAnalysisTask {
                 }
             }
             File jobsDir = new File(System.getProperty("jobs"));
-
-            if (urlStr.indexOf(jobsDir.getName()) != -1) {
-                StringTokenizer strtok = new StringTokenizer(urlStr, "/");
+            String jobDirName = jobsDir.getName();
+            if (path.indexOf(jobDirName) != -1) {
+                path = path.substring(path.indexOf(jobDirName) + jobDirName.length());
+                StringTokenizer strtok = new StringTokenizer(path, "/");
                 String job = null;
                 String requestedFile = null;
                 if (strtok.hasMoreTokens()) {
@@ -360,7 +361,7 @@ public class GenePatternAnalysisTask {
                     return null;
                 }
 
-                return new File(jobsDir.getAbsolutePath() + "/" + requestedFile);
+                return new File(jobsDir.getAbsolutePath() + File.separator + job + File.separator + requestedFile);
 
             }
 
@@ -601,8 +602,10 @@ public class GenePatternAnalysisTask {
                                     if (url.toString().startsWith("<GenePatternURL>")
                                             || url.getHost().equalsIgnoreCase("localhost")
                                             || url.getHost().equals("127.0.0.1")
+                                            || url.getHost().equals(InetAddress.getLocalHost().getCanonicalHostName())
                                             || url.toString().equalsIgnoreCase(localPrefix)) {
                                         File file = inputUrlToFile(url, jobInfo.getUserId());
+
                                         if (file != null) {
                                             name = file.getName();
                                             is = new BufferedInputStream(new FileInputStream(file));
@@ -643,9 +646,8 @@ public class GenePatternAnalysisTask {
                                         + " before run: length=" + inputLength[i] + ", lastModified="
                                         + inputLastModified[i]);
                             } catch (IOException ioe) {
-                                log.error("An error occurred while downloading " + uri);
+                                log.error("An error occurred while downloading " + uri, ioe);
                                 os.write(("An error occurred while downloading " + uri).getBytes());
-                                ioe.printStackTrace();
                             } finally {
                                 if (userInfo != null) {
                                     Authenticator.setDefault(null);
