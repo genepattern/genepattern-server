@@ -154,6 +154,17 @@ public class ServerSettingsBean {
         log.info(msg);
         return modeArray;
     }
+    
+    /**
+     * Method to support live debugging of bean
+     */
+    public String getModesAsString() {
+        String msg = "Server modes: ";
+        for(Object m : getModes()) {
+            msg += m.toString() + " ";
+        }
+        return msg;
+    }
 
     /**
      * @param evt
