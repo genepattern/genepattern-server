@@ -13,8 +13,11 @@
 package org.genepattern.visualizer;
 
 import java.applet.Applet;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 public class RunVisualizerApplet extends Applet {
@@ -23,7 +26,7 @@ public class RunVisualizerApplet extends Applet {
     // can be used to
     // invoke the visualizer in a non-applet-specific manner
 
-    HashMap params = new HashMap();
+    Map<String, String> params = new HashMap<String, String>();
 
     String[] supportFileNames = new String[0];
 
@@ -36,7 +39,6 @@ public class RunVisualizerApplet extends Applet {
     URL source = null;
 
     public void init() {
-
         try {
             source = getDocumentBase();
 
@@ -61,9 +63,20 @@ public class RunVisualizerApplet extends Applet {
                 showStatus("No run flag set");
             }
         } catch (Throwable t) {
-
             t.printStackTrace();
+        }
+    }
 
+    @Override
+    public String getParameter(String name) {
+        String value = super.getParameter(name);
+        if (value == null) {
+            return null;
+        }
+        try {
+            return URLDecoder.decode(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            return value;
         }
     }
 

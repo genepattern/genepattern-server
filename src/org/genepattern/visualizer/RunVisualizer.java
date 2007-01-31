@@ -28,13 +28,14 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 public class RunVisualizer {
 
     protected boolean DEBUG = true;
 
-    protected HashMap params = null;
+    protected Map<String, String> params = null;
 
     protected URL source = null;
 
@@ -85,7 +86,8 @@ public class RunVisualizer {
      * 
      */
 
-    public RunVisualizer(HashMap params, URL source, String[] supportFileNames, long[] supportFileDates, Applet applet) {
+    public RunVisualizer(Map<String, String> params, URL source, String[] supportFileNames, long[] supportFileDates,
+            Applet applet) {
         this.params = params;
         this.source = source;
         this.supportFileNames = supportFileNames;
@@ -237,7 +239,7 @@ public class RunVisualizer {
         Date startDLTime = new Date();
         File fLibdir = new File(getTempDir(), name + ".libdir");
         fLibdir.mkdirs();
-       
+
         File[] currentFiles = fLibdir.listFiles();
         int supf;
 
