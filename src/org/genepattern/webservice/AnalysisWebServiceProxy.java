@@ -13,6 +13,7 @@
 package org.genepattern.webservice;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.Arrays;
@@ -265,25 +266,48 @@ public class AnalysisWebServiceProxy {
         }
     }
 
-    public String[] getResultFiles(int jobID, String[] resultFilenames) throws WebServiceException {
+    public File[] getResultFiles(int jobID, String[] resultFilenames, File downloadDirectory, boolean overwrite)
+            throws WebServiceException {
         try {
             FileWrapper[] results = stub.getResultFiles(jobID, resultFilenames);
-            String[] filenames = null;
+            File[] files = null;
             if (results != null) {
-                filenames = new String[results.length];
+                files = new File[results.length];
                 for (int i = 0; i < results.length; i++) {
                     FileWrapper fh = results[i];
                     if (fh == null) { // file doesn't exist on server
                         continue;
                     }
-                    String newFilename = fh.getDataHandler().getName() + "_" + fh.getFilename();
-                    File f = new File(fh.getDataHandler().getName());
-                    f.renameTo(new File(newFilename));
-                    filenames[i] = newFilename;
+
+                    File axisFile = new File(fh.getDataHandler().getName());
+                    String name = fh.getFilename();
+                    File file = new File(downloadDirectory, name);
+
+                    if (!overwrite && file.exists()) {
+                        name = "job_" + jobID + "_" + name;
+                        file = new File(downloadDirectory, name);
+                        if (file.exists()) {
+                            String suffix = null;
+                            String prefix = name;
+                            int dotIndex = name.lastIndexOf(".");
+                            if (dotIndex != -1) {
+                                prefix = name.substring(0, dotIndex);
+                                suffix = name.substring(dotIndex, name.length());
+                            }
+                            try {
+                                file = File.createTempFile(prefix, suffix, downloadDirectory);
+                            } catch (IOException e) {
+                                System.err.println("Unable to create temp file for " + name);
+                            }
+                        }
+                    }
+
+                    axisFile.renameTo(file);
+                    files[i] = file;
                 }
             }
 
-            return filenames;
+            return files;
         } catch (RemoteException re) {
             throw new WebServiceException(re);
         }
