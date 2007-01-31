@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="create-zip" name="package">
+<project basedir="." default="build" name="genepattern">
 
+	<target name="build" depends="create-zip, create-gzip">
+	</target>
+	
 	<target name="create-zip">
 		<zip destfile="genepattern_1.0.0.zip" whenempty="fail" defaultexcludes="true">
 			<fileset dir=".">
