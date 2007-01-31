@@ -91,10 +91,9 @@ public class StartupServlet extends HttpServlet {
         application.setAttribute("custom.properties", config.getInitParameter("custom.properties"));
         loadProperties(config);
 
-        String myUrl = System.getProperty("GenePatternURL","");
-        if (myUrl.length() == 0){
-            setGenePatternServerURL(config);            
-        }
+        
+        setServerURLs(config);            
+        
             
         String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
@@ -130,10 +129,12 @@ public class StartupServlet extends HttpServlet {
      * Set the GenePatternURL property dynamically
      * @param config
      */
-    private void setGenePatternServerURL(ServletConfig config) {
+    private void setServerURLs(ServletConfig config) {
+        // this works for Tomcat.  May not work on other containers...
+        // so they can simply define "servletContextPath" in their genepattern.properties
+        // file to avoid dynamic lookup
         String pathRoot = System.getProperty("servletContextPath",null);
         if (pathRoot == null){
-            //          this works for Tomcat.  May not work on other containers...
             pathRoot = (new File(config.getServletContext().getRealPath("/"))).getName();
         }     
             
@@ -141,34 +142,19 @@ public class StartupServlet extends HttpServlet {
         try {
             addr = InetAddress.getLocalHost();
             String host = addr.getHostName();
-            String user = System.getProperty("user.name");
             String host_address = addr.getCanonicalHostName();
-            //String host_address = addr.getHostName();
-            String host_address2 = addr.getHostAddress();
-            String domain = "";
-            /**
-             * Deal with platform differences.
-             * mac includes hostname in domain
-             * linux hostname = domain
-             * pc host and address are not overlapping
-             */
-            if (host_address.equals(host)){
-                int idx = host.indexOf(".");
-
-                if (idx >= 0){
-                    domain = host.substring(idx+1);
-                    host = host.substring(0, idx);
-                }
-            } else if (host_address.startsWith(host)){
-                domain = host_address.substring(host.length()+1);
-            } else {
-                domain = host_address;
-            }
             String port = System.getProperty("GENEPATTERN_PORT");
             
            String GenePatternServerURL = "http://" + host_address + ":"+port+"/" + pathRoot+"/";
-           System.setProperty("GenePatternURL", GenePatternServerURL);
 
+           // set the GenePatternURL to the current IP adresss unless specified in the
+           // properties file in which case we leave it alone
+           
+           String myUrl = System.getProperty("GenePatternURL","");
+           if (myUrl.length() == 0){
+               System.setProperty("GenePatternURL", GenePatternServerURL);
+           }
+                    
         } catch (UnknownHostException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
