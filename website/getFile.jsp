@@ -30,11 +30,10 @@
     }
     File in = null;
 	String userID = (String) request.getAttribute(GPConstants.USERID);
-	if (userID == null) userID = (String) request.getParameter(GPConstants.USERID);
-
+	
 	if (userID == null){ // no anonymous files 
-		((HttpServletResponse)response).sendError(HttpServletResponse.SC_NOT_FOUND);
-			return;
+	    ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
+		return;
 	}
     try {
         if (taskName.length() > 0) {
@@ -51,8 +50,9 @@
 					IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
 					boolean isAdmin = authManager.checkPermission("administrateServer",userID );
 					if (!isAdmin){
-						System.out.println("SECURITY ALERT: " + userID +" tried to snoop someone elses file " + filename);
-						in = File.createTempFile("dummy",null);
+						System.out.println("SECURITY ALERT: " + userID +" tried to access someone else's file: " + filename);
+						((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
+						return;
 					}
 				} 			
 			}	
@@ -61,12 +61,12 @@
         try {
             in = new File(DirectoryManager.getTaskLibDir(taskName, null, userID), filename);
         } catch (Exception e2) {
-            out.println("No such task " + taskName);
+            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
     }
     if (!in.exists()) {
-        out.println("no such file: " + filename);
+        ((HttpServletResponse) response).sendError(HttpServletResponse.SC_NOT_FOUND);
         return;
     }
     response.setHeader("Content-disposition", "inline; filename=\""
@@ -76,6 +76,8 @@
     response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
     response.setDateHeader("Expires", 0);
     response.setDateHeader("Last-Modified", in.lastModified());
+    response.setHeader("Content-Length", "" + in.length());
+
     OutputStream os = response.getOutputStream();
     InputStream is = null;
     try {
@@ -86,9 +88,6 @@
             os.write(b, 0, bytesRead);
         }
     } finally {
-        if (os != null) {
-          //  os.close();
-        }
         if (is != null) {
             is.close();
         }
