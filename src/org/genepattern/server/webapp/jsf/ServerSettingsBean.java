@@ -146,13 +146,7 @@ public class ServerSettingsBean {
      * @return
      */
     public Object[] getModes() {
-        Object[] modeArray = modes.keySet().toArray();
-        String msg = "Server modes: ";
-        for(Object m : modeArray) {
-            msg += m.toString() + " ";
-        }
-        log.info(msg);
-        return modeArray;
+        return modes.keySet().toArray();
     }
     
     /**
