@@ -2,12 +2,20 @@
 <project basedir="." default="create-zip" name="package">
 
 	<target name="create-zip">
-		<zip destfile="genepattern_1.0.0" whenempty="fail" defaultexcludes="true">
+		<zip destfile="genepattern_1.0.0.zip" whenempty="fail" defaultexcludes="true">
 			<fileset dir=".">
 			</fileset>
 		</zip>
 	</target>
 	
+	<target name="create-gzip">
+		<!-- OSX binary has extension .tgz, source is .tar.gz -->
+		<tar destfile="genepattern_1.0.0.tar.gz" compression="gzip">
+			<fileset dir=".">
+			</fileset>
+		</tar>
+	</target>
+
 </project>
 
 
