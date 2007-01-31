@@ -26,7 +26,7 @@
 						src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
 						width="240" height="6" /></td>
 				</tr>
-				<ui:repeat value="#{mySettingsBean.modes}" var="mode">
+				<t:dataList value="#{mySettingsBean.modes}" var="mode">
 					<tr class="#{mySettingsBean.currentMode == mode ? 'tasks_on' : ''}">
 						<td width="9" valign="middle"><img
 							src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
@@ -45,7 +45,7 @@
 							src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif"
 							width="9" height="1" /></td>
 					</tr>
-				</ui:repeat>
+				</t:dataList>
 			</table>
 			</td>
 		</h:form>

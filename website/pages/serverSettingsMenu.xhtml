@@ -12,7 +12,7 @@
           <td height="6" colspan="5"><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="1" height="6" /></td>
         </tr>
         
-        <ui:repeat value="#{serverSettingsBean.modes}" var="mode">
+        <t:dataList value="#{serverSettingsBean.modes}" var="mode">
         <tr  class="tasks_on">
           <td width="9" valign="middle"><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="8" height="8" /></td>
           <td width="4" valign="middle"><img src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif" alt="bullet" width="4" height="4" /></td>
@@ -20,7 +20,7 @@
           <td><a href="settings-access.html">Access</a></td>
           <td width="9"><img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1" /></td>
         </tr>
-        </ui:repeat>
+        </t:dataList>
         
 
       </table>

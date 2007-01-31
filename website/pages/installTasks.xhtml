@@ -112,7 +112,7 @@
         <table border="0" cellpadding="5" cellspacing="0">
           
           <!--  Loop through tasks (TaskInstallStatus beans) -->
-          <ui:repeat var="task" value="#{taskInstallBean.tasks}">
+          <t:dataList var="task" value="#{taskInstallBean.tasks}">
             <tr>
               <td valign="top">
                 <b>#{task.name}</b>
@@ -123,7 +123,7 @@
             </tr>
             <tr><td valign="top" colspan="2" id="progress_#{task.lsid}" style="display:none"></td></tr>
             <tr class="taskperameter"><td colspan="2" valign="top" id="error_#{task.lsid}" class="validation-error" style="font-weight:bold;color:red;"></td></tr>
-          </ui:repeat>
+          </t:dataList>
         </table>
         
 

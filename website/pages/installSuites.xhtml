@@ -114,7 +114,7 @@
         
         <table>
           <!--  Loop through suites (SuiteInstallStatus beans) -->
-          <ui:repeat var="suite" value="#{suiteInstallBean.suites}">
+          <t:dataList var="suite" value="#{suiteInstallBean.suites}">
             <tr>
               <td>
                 <b>#{suite.name}</b>
@@ -125,7 +125,7 @@
             </tr>
             <tr><td colspan="2" valign="top" id="error_#{suite.lsid}" class="validation-error" style="font-weight:bold;color:red;display:none"></td> </tr>
             <tr class="taskperameter"><td colspan="2" valign="top" id="warning_#{suite.lsid}" class="validation-warning" style="font-weight:bold;color:orange"></td> </tr>
-          </ui:repeat>
+          </t:dataList>
         </table>
         
     
