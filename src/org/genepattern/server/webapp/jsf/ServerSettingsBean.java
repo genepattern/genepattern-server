@@ -23,11 +23,14 @@ import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.util.PropertiesManager;
 
 public class ServerSettingsBean {
+
+    private static Logger log = Logger.getLogger("ServerSettingsBean.class");
 
     private Map<String, String[]> modes;
 
@@ -54,8 +57,9 @@ public class ServerSettingsBean {
     private Calendar cal = Calendar.getInstance();
 
     private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-    
+
     private final String gpLogPath = "GpLogPath";
+
     private final String wsLogPath = "WsLogPath";
 
     /**
@@ -64,7 +68,7 @@ public class ServerSettingsBean {
     public ServerSettingsBean() {
         IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
         if (!authManager.checkPermission("administrateServer", UIBeanHelper.getUserId())) {
-               throw new FacesException("You don' have the required permissions to administer the server."); 
+            throw new FacesException("You don' have the required permissions to administer the server.");
         }
 
         if (modes == null) {
@@ -142,7 +146,13 @@ public class ServerSettingsBean {
      * @return
      */
     public Object[] getModes() {
-        return modes.keySet().toArray();
+        Object[] modeArray = modes.keySet().toArray();
+        String msg = "Server modes: ";
+        for(Object m : modeArray) {
+            msg += m.toString() + " ";
+        }
+        log.info(msg);
+        return modeArray;
     }
 
     /**
@@ -153,9 +163,8 @@ public class ServerSettingsBean {
     }
 
     /**
-     * Return the properties object with the server settings. This should be
-     * lazy initialized, it might be called many times but we only need to read
-     * the file once.
+     * Return the properties object with the server settings. This should be lazy initialized, it might be called many
+     * times but we only need to read the file once.
      * 
      */
     public Properties getSettings() {
@@ -348,13 +357,13 @@ public class ServerSettingsBean {
      * @return
      */
     private File getGpLogFile() {
-    	String logPath=settings.getProperty("log4j.appender.R.File");
-    	if (logPath == null || !new File(logPath).exists()) {
-    		String newLogPath = settings.getProperty(gpLogPath);
-    		if (newLogPath!=null) {
-    			return new File(newLogPath);
-    		}
-    	}
+        String logPath = settings.getProperty("log4j.appender.R.File");
+        if (logPath == null || !new File(logPath).exists()) {
+            String newLogPath = settings.getProperty(gpLogPath);
+            if (newLogPath != null) {
+                return new File(newLogPath);
+            }
+        }
         return new File(logPath);
     }
 
@@ -373,13 +382,13 @@ public class ServerSettingsBean {
                 wsLog = null;
                 cal.add(Calendar.DATE, -1); // backup up one day
             }
-        }    
-        if (wsLog==null || !wsLog.exists()) {
-    		String newLogPath = settings.getProperty(wsLogPath);
-    		if (newLogPath!=null) {
-    			return new File(newLogPath);
-    		}		 		
-    	}
+        }
+        if (wsLog == null || !wsLog.exists()) {
+            String newLogPath = settings.getProperty(wsLogPath);
+            if (newLogPath != null) {
+                return new File(newLogPath);
+            }
+        }
         return wsLog;
     }
 
@@ -431,7 +440,7 @@ public class ServerSettingsBean {
             repositoryURLs = repositoryURLs.concat(",").concat(currentRepositoryURL);
         }
         settings.put(repositoryNames, repositoryURLs);
-        
+
     }
 
     /**
@@ -458,8 +467,8 @@ public class ServerSettingsBean {
      * @return
      */
     public List getModuleRepositoryURLs() {
-	addRepositoryURL("ModuleRepositoryURL", "ModuleRepositoryURLs");
-	return getSelectItems("ModuleRepositoryURLs");
+        addRepositoryURL("ModuleRepositoryURL", "ModuleRepositoryURLs");
+        return getSelectItems("ModuleRepositoryURLs");
     }
 
     /**
@@ -490,7 +499,7 @@ public class ServerSettingsBean {
      * @return
      */
     public List getSuiteRepositoryURLs() {
-	addRepositoryURL("SuiteRepositoryURL", "SuiteRepositoryURLs");
+        addRepositoryURL("SuiteRepositoryURL", "SuiteRepositoryURLs");
         return getSelectItems("SuiteRepositoryURLs");
     }
 
@@ -570,14 +579,14 @@ public class ServerSettingsBean {
             settings.put("hibernate.connection.SetBigStringTryClob", mode);
         }
     }
-    
+
     public String getDefaultSchema() {
         String value = (String) settings.get("hibernate.default_schema");
         return (value == null) ? "" : value;
     }
-    
+
     public void setDefaultSchema(String defaultSchema) {
-	if (defaultSchema != null && !defaultSchema.equals("")) {
+        if (defaultSchema != null && !defaultSchema.equals("")) {
             settings.put("hibernate.default_schema", defaultSchema);
         }
     }
@@ -586,13 +595,13 @@ public class ServerSettingsBean {
         String value = (String) settings.get("hibernate.connection.password");
         return (value == null) ? "" : value;
     }
-    
+
     public void setHibernatePassword(String hibernatePassword) {
-	if (hibernatePassword != null && !hibernatePassword.equals("")) {
+        if (hibernatePassword != null && !hibernatePassword.equals("")) {
             settings.put("hibernate.connection.password", hibernatePassword);
         }
     }
-    
+
     /**
      * @return
      */
@@ -706,13 +715,12 @@ public class ServerSettingsBean {
     }
 
     /**
-     * Save the settings back to the file. Trigger by the "submit" button on the
-     * page.
+     * Save the settings back to the file. Trigger by the "submit" button on the page.
      * 
      * @return
      */
     public void saveSettings(ActionEvent event) {
-	UIBeanHelper.setInfoMessage("Property successfully updated");
+        UIBeanHelper.setInfoMessage("Property successfully updated");
         PropertiesManager.storeChanges(settings);
         PropertiesManager.storeChangesToCustomProperties(customSettings);
     }
@@ -736,7 +744,7 @@ public class ServerSettingsBean {
                 defaultValue = (String) defaultSettings.get(propertyKey);
                 if (defaultValue != null) {
                     settings.put(propertyKey, defaultValue);
-                }else {
+                } else {
                     settings.remove(propertyKey);
                 }
             }
