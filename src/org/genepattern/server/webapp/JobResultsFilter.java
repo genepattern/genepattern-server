@@ -129,7 +129,7 @@ public class JobResultsFilter implements Filter {
             resultsPath = URLDecoder.decode(resultsPath, "UTF-8");
         } catch (UnsupportedEncodingException x) {
         }
-        
+
         StringTokenizer strtok = new StringTokenizer(resultsPath, "/");
         String job = null;
         String file = null;
@@ -146,17 +146,24 @@ public class JobResultsFilter implements Filter {
             // should admin be allowed here?
             allowed = false;
         } else if (isJobOwner(userid, job)
-                || AuthorizationManagerFactory.getAuthorizationManager().checkPermission(
-                        "administrateServer", userid)) {
+                || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer", userid)) {
             allowed = true;
         }
 
         if (allowed) {
+            File fileObj = new File(jobsDirectory + File.separator + job + File.separator + file);
+            HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+            httpServletResponse.setHeader("Content-disposition", "inline; filename=\"" + fileObj.getName() + "\"");
+            httpServletResponse.setHeader("Cache-Control", "no-store");
+            httpServletResponse.setHeader("Pragma", "no-cache");
+            httpServletResponse.setDateHeader("Expires", 0);
+            httpServletResponse.setDateHeader("Last-Modified", fileObj.lastModified());
+            httpServletResponse.setHeader("Content-Length", "" + fileObj.length());
+
             BufferedInputStream is = null;
             try {
                 OutputStream os = response.getOutputStream();
-                is = new BufferedInputStream(new FileInputStream(jobsDirectory + File.separator + job + File.separator
-                        + file));
+                is = new BufferedInputStream(new FileInputStream(fileObj));
                 byte[] b = new byte[10000];
                 int bytesRead;
                 while ((bytesRead = is.read(b)) != -1) {
