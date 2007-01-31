@@ -27,7 +27,8 @@ import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.webservice.SuiteInfo;
 
-public class ManageSuiteBean /* implements java.io.Serializable */{
+public class ManageSuiteBean {
+
     private static Logger log = Logger.getLogger(ManageSuiteBean.class);
 
     private List<Suite> suites;
@@ -237,7 +238,6 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
                 if (s.getUserId() == null || s.getUserId().equals(user) || admin) {
                     (new SuiteDAO()).delete(s);
                     // Delete supporting files
-
                     try {
                         String suiteDirPath = DirectoryManager.getSuiteLibDir(s.getName(), s.getLsid(), s.getUserId());
                         File suiteDir = new File(suiteDirPath);
@@ -247,14 +247,9 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
                         }
                         suiteDir.delete();
                     } catch (Exception e) {
-                        HibernateUtil.rollbackTransaction(); // This
-                        // shouldn't be
-                        // neccessary, but just in
-                        // case
+                        HibernateUtil.rollbackTransaction();
                         log.error(e);
-                        throw new RuntimeException(e); // @todo -- replace with
-                        // appropriate
-                        // GP exception
+                        throw new RuntimeException(e);
                     }
                     // end of deleting supporting files
                 }
@@ -276,8 +271,7 @@ public class ManageSuiteBean /* implements java.io.Serializable */{
             }
         } catch (Exception e) {
             log.error(e);
-            throw new RuntimeException(e); // @todo -- replace with appropriate
-            // GP exception
+            throw new RuntimeException(e); 
         }
     }
 
