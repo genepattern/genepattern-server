@@ -12,8 +12,21 @@
 
 package org.genepattern.server.webservice;
 
+import java.lang.reflect.Method;
+import java.util.Vector;
+
+import javax.xml.namespace.QName;
+
 import org.apache.axis.AxisFault;
+import org.apache.axis.Handler;
+import org.apache.axis.Message;
 import org.apache.axis.MessageContext;
+import org.apache.axis.description.OperationDesc;
+import org.apache.axis.description.ServiceDesc;
+import org.apache.axis.handlers.soap.SOAPService;
+import org.apache.axis.i18n.Messages;
+import org.apache.axis.message.MessageElement;
+import org.apache.axis.message.SOAPEnvelope;
 import org.apache.log4j.Logger;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
@@ -32,16 +45,59 @@ public class AuthenticationHandler extends org.apache.axis.handlers.BasicHandler
     }
 
     public void invoke(MessageContext msgContext) throws AxisFault {
+        String methodSig = getOperation(msgContext);
         
-        String username = msgContext.getUsername();
-        String password = msgContext.getPassword();
+        if ("AdminService.getServiceInfo".equalsIgnoreCase(methodSig)){
+            // this is always allowed, even anonymously
+            
+        } else {
+            String username = msgContext.getUsername();
+            String password = msgContext.getPassword();
 
-        if (!validateUserPassword(username, password)) {
-            throw new AxisFault("Error: Unknown user or invalid password.");
+            if (!validateUserPassword(username, password)) {
+                throw new AxisFault("Error: Unknown user or invalid password.");
 
+            }
         }
+        
     }
 
+    protected String getOperation(MessageContext msgContext) throws AxisFault{
+        Message requestMessage = msgContext.getCurrentMessage();
+
+      
+        Handler serviceHandler = msgContext.getService();
+        String serviceName = serviceHandler.getName();
+
+        OperationDesc operation = msgContext.getOperation();
+        SOAPService service = msgContext.getService();
+        ServiceDesc serviceDesc = service.getServiceDescription();
+        QName opQName = null;
+
+        if (operation == null) {
+            SOAPEnvelope reqEnv = requestMessage.getSOAPEnvelope();
+            Vector bodyElements = reqEnv.getBodyElements();
+            if (bodyElements.size() > 0) {
+                MessageElement element = (MessageElement) bodyElements.get(0);
+                if (element != null) {
+                    opQName = new QName(element.getNamespaceURI(), element.getName());
+                    operation = serviceDesc.getOperationByElementQName(opQName);
+                }
+            }
+        }
+
+        if (operation == null) {
+            throw new AxisFault(Messages.getMessage("noOperationForQName", opQName == null ? "null" : opQName
+                    .toString()));
+        }
+
+        Method method = operation.getMethod();
+        String methodSig = serviceName + "." + method.getName();
+        return methodSig;
+
+    }
+    
+    
     /**
      * @todo - implementation. Currently accepts any non-null user
      * @param user
