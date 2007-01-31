@@ -13,9 +13,7 @@
 package org.genepattern.webservice;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -24,7 +22,6 @@ import java.util.List;
 
 import org.genepattern.client.Util;
 import org.genepattern.util.GPConstants;
-import org.genepattern.util.JobDownloader;
 
 /**
  * Encapsulates information about a job run on a GenePattern server.
@@ -334,21 +331,14 @@ public class JobResult {
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        File file = new File(dir, filename);
-        if (!overwrite && (file.exists())) {
-            filename = "job_" + jobNumber + "_" + filename;
-            file = new File(dir, filename);
-            if (file.exists()) {
-                String suffix = null;
-                int dotIndex = filename.lastIndexOf(".");
-                if (dotIndex != -1) {
-                    suffix = filename.substring(dotIndex, filename.length());
-                }
-                file = File.createTempFile(filename, suffix, dir);
-            }
+
+        try {
+            return new AnalysisWebServiceProxy(server.toString(), username, password).getResultFiles(getJobNumber(),
+                    new String[] { filename }, dir, overwrite)[0];
+        } catch (WebServiceException e) {
+            throw new IOException("Error downloading " + filename + " for job " + getJobNumber() + ".");
         }
-        new JobDownloader(server.toString(), username, password).download(getJobNumber(), filename, file);
-        return file;
+
     }
 
     /**
