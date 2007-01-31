@@ -1,11 +1,10 @@
 Package: GenePattern
-Version: 0.1-0
-License: BSD (see BSD-License and Whitehead-License)
-Description: GenePattern web service library
+Version: 1.0
+Date: 02-01-2007
 Title: GenePattern
-Author: Jim Lerner, Center for Genomics Research, Broad Institute, Massachusetts Institute of Technology
-Maintainer: GenePattern Team <gp-help@genome.wi.mit.edu>
+Author: Marc-Danie Nazaire, Broad Institute
+Maintainer: GenePattern Team <gp-help@broad.mit.edu>
+Depends: rJava
+Description: GenePattern web service library
 URL: http://www.broad.mit.edu/cancer/software/genepattern
-Depends: XML, methods
-Date: 2003-06-02
-Built: R 1.6.1; ; Thu Jun 12 10:10:16 EDT 2003
+License: GenePattern License
