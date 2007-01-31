@@ -182,7 +182,7 @@ public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecor
       		genepatternProps = new Properties();
       		genepatternProps.load(fis);
       		fis.close();
-			URL = localizeURL(genepatternProps.getProperty("GenePatternURL"));
+			URL = localizeURL(System.getProperty("GenePatternURL"));
 
 		} catch (Exception ioe) {
 			genepatternProps = new Properties();
@@ -202,7 +202,7 @@ if (port == null) port = "PORT??";
 				.getLsid());
 		original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER
 				+ GENEPATTERN_PORT + GPConstants.RIGHT_DELIMITER, port);
-String gpUrl = genepatternProps.getProperty("GenePatternURL");
+String gpUrl = System.getProperty("GenePatternURL");
 if (gpUrl == null) gpUrl = "unknown";
 		original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER
 				+ GENEPATTERN_URL + GPConstants.RIGHT_DELIMITER, gpUrl );

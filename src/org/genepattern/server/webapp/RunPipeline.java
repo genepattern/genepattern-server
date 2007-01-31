@@ -244,8 +244,7 @@ public class RunPipeline {
                     .forName(decoratorClass)).newInstance();
         }
 
-        URL serverFromFile = new URL(genepatternProps
-                .getProperty("GenePatternURL"));
+        URL serverFromFile = new URL(System.getProperty("GenePatternURL"));
 
         String host = serverFromFile.getHost();
         if (host.equals("127.0.0.1") || host.equals("localhost")) {
