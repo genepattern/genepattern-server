@@ -18,9 +18,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
@@ -89,6 +91,11 @@ public class StartupServlet extends HttpServlet {
         application.setAttribute("custom.properties", config.getInitParameter("custom.properties"));
         loadProperties(config);
 
+        String myUrl = System.getProperty("GenePatternURL","");
+        if (myUrl.length() == 0){
+            setGenePatternServerURL(config);            
+        }
+            
         String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
             HsqlDbUtil.startDatabase();
@@ -117,6 +124,55 @@ public class StartupServlet extends HttpServlet {
         HttpsURLConnection.setDefaultHostnameVerifier(hv);
         announceReady(System.getProperties());
 
+    }
+
+    /**
+     * Set the GenePatternURL property dynamically
+     * @param config
+     */
+    private void setGenePatternServerURL(ServletConfig config) {
+        String pathRoot = System.getProperty("servletContextPath",null);
+        if (pathRoot == null){
+            //          this works for Tomcat.  May not work on other containers...
+            pathRoot = (new File(config.getServletContext().getRealPath("/"))).getName();
+        }     
+            
+        InetAddress addr;
+        try {
+            addr = InetAddress.getLocalHost();
+            String host = addr.getHostName();
+            String user = System.getProperty("user.name");
+            String host_address = addr.getCanonicalHostName();
+            //String host_address = addr.getHostName();
+            String host_address2 = addr.getHostAddress();
+            String domain = "";
+            /**
+             * Deal with platform differences.
+             * mac includes hostname in domain
+             * linux hostname = domain
+             * pc host and address are not overlapping
+             */
+            if (host_address.equals(host)){
+                int idx = host.indexOf(".");
+
+                if (idx >= 0){
+                    domain = host.substring(idx+1);
+                    host = host.substring(0, idx);
+                }
+            } else if (host_address.startsWith(host)){
+                domain = host_address.substring(host.length()+1);
+            } else {
+                domain = host_address;
+            }
+            String port = System.getProperty("GENEPATTERN_PORT");
+            
+           String GenePatternServerURL = "http://" + host_address + ":"+port+"/" + pathRoot+"/";
+           System.setProperty("GenePatternURL", GenePatternServerURL);
+
+        } catch (UnknownHostException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     protected void startDaemons(Properties props, ServletContext application) throws ServletException {
