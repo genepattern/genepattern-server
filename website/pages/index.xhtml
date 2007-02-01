@@ -194,12 +194,14 @@ function showFileInput(id) {
     </ui:define>
     
     <ui:define name="rightPanel">
+   
       <td width="203" valign="top" class="recentjobs" id="recentjobs">
         <ui:include src="recentJobs.xhtml"/>
       </td>
     </ui:define>
     
     <ui:define name="body">
+     
       <!-- Error messages -->
       <div id="errorMessageDiv" style="display:none;">
         <p id="errorMessage"/>
@@ -368,15 +370,21 @@ function showFileInput(id) {
           </div>
         </form>
       </t:div>
-      <!-- No tasks are selected.  View message if any, or splash page -->
+      
+
       <t:div rendered="#{empty runTaskBean.lsid}">
-        <h:outputText rendered="#{runTaskBean.splashMessage != null}">
-          <p/>
-          <h3>#{runTaskBean.splashMessage}</h3>
-        </h:outputText>
-        <h:outputText rendered="#{runTaskBean.splashMessage == null}">
+        <f:subview rendered="#{empty runTaskBean.splashPage}">
           <ui:include src="splashpage.xhtml"/>
-        </h:outputText>
+        </f:subview>
+        <f:subview rendered="#{runTaskBean.splashPage == 'resources'}">
+          <ui:include src="splashpageResources.xhtml"/>
+        </f:subview>
+        <f:subview rendered="#{runTaskBean.splashPage == 'downloads'}">
+          <ui:include src="splashpageDownloads.xhtml"/>
+        </f:subview>
+        <f:subview rendered="#{runTaskBean.splashPage == 'help'}">
+          <ui:include src="splashpageHelp.xhtml"/>
+        </f:subview>
       </t:div>
     </ui:define>
     

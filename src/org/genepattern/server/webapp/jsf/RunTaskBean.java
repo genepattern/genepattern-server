@@ -67,9 +67,10 @@ public class RunTaskBean {
     // This is an odd class for this variable, but RunTaskBean is the backing
     // bean
     // for the home page.
-    private String splashMessage;
+    private String splashPage;
 
     private boolean showParameterDescriptions;
+    
 
     /**
      * Initialize the task lsid. This page needs to support redirects from older
@@ -80,6 +81,8 @@ public class RunTaskBean {
      */
     public RunTaskBean() {
         String taskToRun = UIBeanHelper.getRequest().getParameter("lsid");
+        splashPage = UIBeanHelper.getRequest().getParameter("splash");
+;
         if (taskToRun == null || taskToRun.length() == 0) {
             ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper.getManagedBean("#{moduleChooserBean}");
             assert chooser != null;
@@ -448,12 +451,8 @@ public class RunTaskBean {
         }
     }
 
-    public String getSplashMessage() {
-        return splashMessage;
-    }
-
-    public void setSplashMessage(String splashMessage) {
-        this.splashMessage = splashMessage;
+    public String getSplashPage() {
+        return splashPage;
     }
 
     public List<String> getVersions() {
