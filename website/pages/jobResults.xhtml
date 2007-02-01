@@ -353,7 +353,7 @@ document.location.href=location;
           <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}">
             <ui:include src="jobFileMenu.xhtml">
               <ui:param name="job" value="#{jobInfo}"/>
-              <ui:param name="param" value="#{fileInfo}"/>      
+              <ui:param name="fileInfo" value="#{fileInfo}"/>      
             </ui:include>
           </t:dataList>
         </t:dataList>

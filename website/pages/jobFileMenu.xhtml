@@ -2,28 +2,28 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
   <ui:composition>
   	
-    <div id="menuDiv_#{param.value}" style="visibility:hidden; position:absolute;" class="popupMenu">
+    <div id="menuDiv_#{fileInfo.value}" style="visibility:hidden; position:absolute;" class="popupMenu">
       <table>
         <tbody>
           <tr>
             <td>
               <h:commandLink value="Delete" actionListener="#{jobsBean.deleteFile}" immediate="true"
                              rendered="#{jobInfo.deleteAllowed}">
-                <f:param value="#{param.value}" name="jobFile"/>
+                <f:param value="#{fileInfo.value}" name="jobFile"/>
               </h:commandLink>
             </td>
           </tr>
           <tr>
             <td>
               <h:commandLink value="Save" actionListener="#{jobsBean.saveFile}" immediate="true">
-                <f:param value="#{param.value}" name="jobFileName"/>
+                <f:param value="#{fileInfo.value}" name="jobFileName"/>
               </h:commandLink>
             </td>
           </tr>
           <tr>
             <td>
               <h:commandLink value="Create Pipeline" actionListener="#{jobsBean.createPipeline}" immediate="true">
-                <f:param value="#{param.jobNumber}" name="jobNumber"/>
+                <f:param value="#{fileInfo.jobNumber}" name="jobNumber"/>
               </h:commandLink>
             </td>
           </tr>
@@ -32,15 +32,32 @@
               <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
             </td>
           </tr>
-          <t:dataList value="#{param.moduleMenuItems}" var="moduleMenuItem">
+          
+          <t:dataList value="#{fileInfo.moduleInputParameters}" var="p">
+            <tr>
+              <td>
+                <a href="#" onclick="setInputField('#{p.key}', '#{fileInfo.value}');">#{p.value}</a>
+              </td>
+            </tr>
+          </t:dataList>
+          <h:outputText rendered="#{!empty fileInfo.moduleInputParameters}">
+          	<tr>
+            	<td>
+              	<img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
+            	</td>
+          	</tr>
+          </h:outputText>
+          
+          <t:dataList value="#{fileInfo.moduleMenuItems}" var="moduleMenuItem">
             <tr>
               <td>
                 <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsBean.loadTask}" immediate="true">
                   <f:param value="#{moduleMenuItem.value}" name="module"/>
-                  <f:param value="#{param.jobNumber}" name="jobNumber"/>
+                  <f:param value="#{fileInfo.jobNumber}" name="jobNumber"/>
                 </h:commandLink>
               </td>
             </tr>
+            
           </t:dataList>
         </tbody>
       </table>
