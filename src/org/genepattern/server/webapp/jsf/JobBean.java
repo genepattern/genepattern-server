@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.util.AuthorizationManagerFactory;
+import org.genepattern.server.util.AuthorizationRules;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -43,7 +45,6 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
-import org.genepattern.server.util.AuthorizationRules;
 
 public class JobBean {
 
@@ -55,9 +56,11 @@ public class JobBean {
 
     private Map<String, Collection<TaskInfo>> kindToModules;
 
+    private Map<String, List<KeyValuePair>> kindToInputParameters;
+
     /**
-     * Indicates whether execution logs should be shown. Manipulated by checkbox on job results page, always false on
-     * recent jobs page.
+     * Indicates whether execution logs should be shown. Manipulated by checkbox
+     * on job results page, always false on recent jobs page.
      */
     private boolean showExecutionLogs = false;
 
@@ -67,14 +70,16 @@ public class JobBean {
     private boolean fileSortAscending = true;
 
     /**
-     * Specifies file column to sort on. Possible values are name size lastModified
+     * Specifies file column to sort on. Possible values are name size
+     * lastModified
      */
     private String fileSortColumn = "name";
 
     private boolean showEveryonesJobs = true;
 
     /**
-     * Specifies job column to sort on. Possible values are jobNumber taskName dateSubmitted dateCompleted status
+     * Specifies job column to sort on. Possible values are jobNumber taskName
+     * dateSubmitted dateCompleted status
      */
     private String jobSortColumn = "jobNumber";
 
@@ -83,10 +88,51 @@ public class JobBean {
      */
     private boolean jobSortAscending = true;
 
+    String lsid; // FIXME
+
     public JobBean() {
-        TaskInfo[] tasks = new AdminDAO().getAllTasksForUser(UIBeanHelper.getUserId());
-        kindToModules = SemanticUtil.getKindToModulesMap(tasks);
         String userId = UIBeanHelper.getUserId();
+        TaskInfo[] tasks = new AdminDAO().getAllTasksForUser(userId);
+        kindToModules = SemanticUtil.getKindToModulesMap(tasks);
+
+        kindToInputParameters = new HashMap<String, List<KeyValuePair>>();
+
+        if (lsid != null) {
+            try {
+                ParameterInfo[] inputParameters = new LocalAdminClient(userId).getTask(lsid).getParameterInfoArray();
+                if (inputParameters != null) {
+                    for (ParameterInfo inputParameter : inputParameters) {
+                        if (inputParameter.isInputFile()) {
+                            List<String> fileFormats = SemanticUtil.getFileFormats(inputParameter);
+                            String displayValue = (String) inputParameter.getAttributes().get("altName");
+                            if (displayValue == null) {
+                                displayValue = inputParameter.getName();
+                            }
+                            displayValue = displayValue.replaceAll("\\.", " ");
+
+                            KeyValuePair kvp = new KeyValuePair();
+                            kvp.setKey(inputParameter.getName());
+                            kvp.setValue(displayValue);
+
+                            for (String format : fileFormats) {
+                                List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
+                                if (inputParameterNames == null) {
+                                    inputParameterNames = new ArrayList<KeyValuePair>();
+                                    kindToInputParameters.put(format, inputParameterNames);
+                                }
+                                inputParameterNames.add(kvp);
+
+                            }
+                        }
+                    }
+                }
+
+            } catch (WebServiceException e) {
+                log.error("Could not get task", e);
+            }
+
+        }
+
         this.showExecutionLogs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showExecutionLogs", String
                 .valueOf(showExecutionLogs)));
 
@@ -115,7 +161,6 @@ public class JobBean {
                 UIBeanHelper.setErrorMessage("No job specified.");
                 return;
             }
-            System.out.println(jobNumber);
             String pipelineName = "job" + jobNumber; // TODO prompt user for
             // name
             String lsid = new LocalAnalysisClient(UIBeanHelper.getUserId()).createProvenancePipeline(jobNumber,
@@ -437,7 +482,7 @@ public class JobBean {
         List<JobResultsWrapper> wrappedJobs = new ArrayList<JobResultsWrapper>(jobInfoArray.length);
         for (int i = 0; i < jobInfoArray.length; i++) {
             JobResultsWrapper wrappedJob = new JobResultsWrapper(jobInfoArray[i], kindToModules, getSelectedFiles(),
-                    getSelectedJobs());
+                    getSelectedJobs(), 0, 0, kindToInputParameters, showExecutionLogs);
             wrappedJobs.add(wrappedJob);
         }
         return wrappedJobs;
@@ -492,8 +537,8 @@ public class JobBean {
     }
 
     /**
-     * Get the list of selected files (pathnames) from the request parameters. This is converted to a set to make
-     * membership tests efficient.
+     * Get the list of selected files (pathnames) from the request parameters.
+     * This is converted to a set to make membership tests efficient.
      * 
      * @return The selected files.
      */
@@ -509,8 +554,8 @@ public class JobBean {
     }
 
     /**
-     * Get the list of selected jobs (LSIDs) from the request parameters. This is converted to a set to make membership
-     * tests efficient.
+     * Get the list of selected jobs (LSIDs) from the request parameters. This
+     * is converted to a set to make membership tests efficient.
      * 
      * @return The selected jobs.
      */
@@ -600,8 +645,8 @@ public class JobBean {
     }
 
     /**
-     * Jobs are always sorted, so there's nothing to do here. This is just an action method to trigger a reload. Could
-     * probably be better named.
+     * Jobs are always sorted, so there's nothing to do here. This is just an
+     * action method to trigger a reload. Could probably be better named.
      * 
      * @return
      */
@@ -646,11 +691,10 @@ public class JobBean {
 
     private void sortFiles() {
         final String column = getFileSortColumn();
-        Comparator comparator = new Comparator() {
+        Comparator<OutputFileInfo> comparator = new Comparator<OutputFileInfo>() {
 
-            public int compare(Object o1, Object o2) {
-                OutputFileInfo c1 = (OutputFileInfo) o1;
-                OutputFileInfo c2 = (OutputFileInfo) o2;
+            public int compare(OutputFileInfo c1, OutputFileInfo c2) {
+
                 if (column == null) {
                     return 0;
                 } else if (column.equals("name")) {
@@ -739,10 +783,10 @@ public class JobBean {
     }
 
     /**
-     * Represents a job result. Wraps JobInfo and adds methods for getting the output files and the expansion state of
-     * the associated UI panel
+     * Represents a job result. Wraps JobInfo and adds methods for getting the
+     * output files and the expansion state of the associated UI panel
      */
-    public class JobResultsWrapper {
+    public static class JobResultsWrapper {
 
         private List<JobResultsWrapper> childJobs;
 
@@ -762,19 +806,16 @@ public class JobBean {
         private boolean deleteAllowed = false;
 
         public JobResultsWrapper(JobInfo jobInfo, Map<String, Collection<TaskInfo>> kindToModules,
-                Set<String> selectedFiles, Set<String> selectedJobs) {
-            this(jobInfo, kindToModules, selectedFiles, selectedJobs, 0, 0);
-        }
-
-        public JobResultsWrapper(JobInfo jobInfo, Map<String, Collection<TaskInfo>> kindToModules,
-                Set<String> selectedFiles, Set<String> selectedJobs, int level, int sequence) {
+                Set<String> selectedFiles, Set<String> selectedJobs, int level, int sequence,
+                Map<String, List<KeyValuePair>> kindToInputParameters, boolean showExecutionLogs) {
 
             this.jobInfo = jobInfo;
             this.selected = selectedJobs.contains(String.valueOf(jobInfo.getJobNumber()));
             this.level = level;
             this.sequence = sequence;
-            
-            deleteAllowed = AuthorizationRules.isAllowed(jobInfo, UIBeanHelper.getUserId(), AuthorizationRules.ActionType.Delete);
+
+            deleteAllowed = AuthorizationRules.isAllowed(jobInfo, UIBeanHelper.getUserId(),
+                    AuthorizationRules.ActionType.Delete);
 
             // Build the list of output files from the parameter info array.
 
@@ -786,9 +827,10 @@ public class JobBean {
                     if (parameterInfoArray[i].isOutputFile()) {
                         if (showExecutionLogs || !parameterInfoArray[i].getName().equals("gp_task_execution_log.txt")) {
                             File file = new File(outputDir, parameterInfoArray[i].getName());
-                            Collection<TaskInfo> modules = kindToModules.get(SemanticUtil.getKind(file));
+                            String kind = SemanticUtil.getKind(file);
+                            Collection<TaskInfo> modules = kindToModules.get(kind);
                             OutputFileInfo pInfo = new OutputFileInfo(parameterInfoArray[i], file, modules, jobInfo
-                                    .getJobNumber());
+                                    .getJobNumber(), kindToInputParameters.get(kind));
                             pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
                             outputFiles.add(pInfo);
                         }
@@ -806,7 +848,7 @@ public class JobBean {
                 int childLevel = getLevel() + 1;
                 for (JobInfo child : children) {
                     childJobs.add(new JobResultsWrapper(child, kindToModules, selectedFiles, selectedJobs, childLevel,
-                            seq));
+                            seq, kindToInputParameters, showExecutionLogs));
                     seq++;
                 }
             } catch (WebServiceException e) {
@@ -887,7 +929,8 @@ public class JobBean {
         }
 
         /**
-         * boolean property used to conditionally render or enable some menu items.
+         * boolean property used to conditionally render or enable some menu
+         * items.
          * 
          * @return Whether the job is complete.
          */
@@ -897,8 +940,9 @@ public class JobBean {
         }
 
         /**
-         * This property supports saving of the "expanded" state of the job across requests. It is used to initialize
-         * display properties of rows associated with this job.
+         * This property supports saving of the "expanded" state of the job
+         * across requests. It is used to initialize display properties of rows
+         * associated with this job.
          * 
          * @return
          */
@@ -948,7 +992,14 @@ public class JobBean {
 
         int jobNumber;
 
-        public OutputFileInfo(ParameterInfo p, File file, Collection<TaskInfo> modules, int jobNumber) {
+        List<KeyValuePair> moduleInputParameters;
+
+        public OutputFileInfo(ParameterInfo p, File file, Collection<TaskInfo> modules, int jobNumber,
+                List<KeyValuePair> sendToParameters) {
+            this.moduleInputParameters = sendToParameters;
+            if (this.moduleInputParameters == null) {
+                this.moduleInputParameters = Collections.emptyList();
+            }
             this.p = p;
             this.size = file.length();
             this.exists = file.exists();
@@ -963,6 +1014,7 @@ public class JobBean {
                 }
                 Collections.sort(moduleMenuItems, COMPARATOR);
             }
+
             this.jobNumber = jobNumber;
         }
 
@@ -1020,6 +1072,10 @@ public class JobBean {
 
         public String toString() {
             return p.toString();
+        }
+
+        public List<KeyValuePair> getModuleInputParameters() {
+            return moduleInputParameters;
         }
     }
 
