@@ -12,22 +12,25 @@
       </tr>
     </table>
     <br/><br/>
-    <table width="100%" border="0" cellpadding="5" cellspacing="0" class="tableheader-row">
-    	<tr>
+    <table width="100%" border="0" cellpadding="5" cellspacing="0">
+    	<tr valign="top">
     		<td width="33%">Default Command Prefix:</td>
     		<td width="57%">
     			<h:inputText size="50" value="#{commandPrefixBean.defaultCommandPrefix}" id="defaultPrefix"/>
 			</td>
 			<td width="10%">
-				<h:commandButton actionListener="#{commandPrefixBean.saveDefaultCommandPrefix}" value="Save" />
+				<h:commandLink actionListener="#{commandPrefixBean.saveDefaultCommandPrefix}" value="save default" />
 			</td>
 		</tr>
-		<tr valign="top">
-	      	The default command prefix is used for all modules that do not have an explicit prefix setting below.      
+		<tr>
+	      	<td colspan="4" align="right">The default command prefix is used for all modules that do not have an explicit prefix setting below.</td>
 	    </tr>
+	    <tr class="settingperameter">
+			<td colspan="4"></td>
+		</tr>
 	  </table>
-	  <br/><br/>
-	  <table width="100%" border="0" cellpadding="5" cellspacing="0" class="tableheader-row">
+	  <br/><br/><br/><br/>
+	  <table width="100%" border="0" cellpadding="5" cellspacing="0">
 		  <tr valign="top">
 		  	Add New Prefix:
 		  </tr>
@@ -44,16 +47,19 @@
 				<h:commandLink value="add prefix" actionListener="#{commandPrefixBean.saveCommandPrefixes}" />
 			</td> 
 	      </tr>
+	      <tr class="settingperameter">
+				<td colspan="5"></td>
+		  </tr>
       </table>
-      <br/><br/>
+      <br/><br/><br/><br/>
 	  <table width="100%" border="0" cellpadding="5" cellspacing="0" style="table-layout:fixed;">
-	        <tr valign="top" class="tableheader-row">
-	          <td width="33%"> Name </td>
-	          <td width="57%"> Content </td>
-	          <td width="10%"> Delete </td>
+	        <tr valign="top" class="tableheader-row2">
+	          <td width="33%"> name </td>
+	          <td width="57%"> content </td>
+	          <td width="10%"></td>
 	        </tr>
 		  	<t:dataList id="commandPrefixTable" forceId="true" value="#{commandPrefixBean.commandPrefixes}" var="aPrefix" width="80%">
-			  	<tr valign="top" class="tableheader-row">
+			  	<tr valign="top">
 		            <td width="33%">
 		              <h:outputText size="15" id="key" value="#{aPrefix.key}"/>
 		            </td>
@@ -65,19 +71,22 @@
 		                <h:outputText value="delete"/>
 		                <f:param name="aPrefixKey" value="#{aPrefix.key}"/>
 		              </h:commandLink>
-		            </td>
+		            </td>		            
 		        </tr>
+		        <tr class="settingperameter">
+					<td colspan="4"></td>
+				</tr>
 			</t:dataList>
 		</table>
-		<br/><br/>
+		<br/><br/><br/><br/>
 		<table width="100%" border="0" cellpadding="5" cellspacing="0" style="table-layout:fixed;">
-			<tr valign="top" class="tableheader-row">
-			    <td width="33%"> Module </td>
-			    <td width="57%"> Command Prefix Name </td>         
-			    <td width="10%"> Delete </td>
+			<tr valign="top" class="tableheader-row2">
+			    <td width="33%"> module </td>
+			    <td width="57%"> command prefix name </td>         
+			    <td width="10%"></td>
 			</tr>
 			<t:dataList value="#{commandPrefixBean.taskPrefixMapping}" width="80%" var="aPrefixMap">
-				<tr valign="top" class="tableheader-row">
+				<tr valign="top">
 		            <td width="33%">
 		              <h:outputText value="#{aPrefixMap.key}" />
 		            </td>         
@@ -91,21 +100,27 @@
 		              </h:commandLink>
 		            </td>
 		        </tr>
+		        <tr class="settingperameter">
+					<td colspan="4"></td>
+				</tr>
 			</t:dataList>
 		</table>
-		<br/><br/>
-		<table width="100%" border="0" cellpadding="5" cellspacing="0" class="tableheader-row">
-			<tr valign="top">
-				for modules ...
-			</tr>
+		<br/><br/><br/><br/>
+		<table width="100%" border="0" cellpadding="5" cellspacing="0">
 			<tr valign="top">
 				<td width="38%">
+				For Modules ...</td>
+				<td width="15%">
+				... Use Prefix...</td>
+				<td></td>
+			</tr>
+			<tr valign="top">
+				<td width="33%">
 					<h:selectManyListbox size="6" value="#{commandPrefixBean.newMappingLSID}">
 						<f:selectItems value="#{moduleListBean.latestModules}" />
 					</h:selectManyListbox>
 				</td>
-				<td width="15%">... use prefix... </td>
-				<td width="37%">
+				<td width="50%">
 					<h:selectOneMenu value="#{commandPrefixBean.newMappingPrefix}">
 						<f:selectItems value="#{commandPrefixBean.commandPrefixesAsSelectItems}" />
 					</h:selectOneMenu>

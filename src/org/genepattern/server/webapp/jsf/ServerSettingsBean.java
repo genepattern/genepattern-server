@@ -698,9 +698,10 @@ public class ServerSettingsBean {
     /**
      * @param event
      */
-    public void addNewCustomSetting(ActionEvent event) {
+    public void saveNewCustomSetting(ActionEvent event) {
         if (newCSKey != "" && newCSValue != "") {
             customSettings.add(new KeyValuePair(newCSKey, newCSValue));
+            PropertiesManager.storeChangesToCustomProperties(customSettings);
         }
     }
 
