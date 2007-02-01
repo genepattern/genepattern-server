@@ -17,4 +17,11 @@ export(
   job.result.get.server.url,
   job.result.get.lsid,
   job.result.has.standard.out,
-  job.result.has.standard.error)
+  job.result.has.standard.error,
+  read.dataset,
+  read.gct,
+  read.res,
+  write.res,
+  read.cls,
+  write.cls,
+  write.gct)
