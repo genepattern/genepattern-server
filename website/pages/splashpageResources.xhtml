@@ -1,21 +1,37 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core">
-<ui:composition>
+	xmlns:ui="http://java.sun.com/jsf/facelets">
 
-<span class="barhead-other">Resources Overview</span>
-
-<br/><br/>
-The following resources are provided to support the GenePattern user community:
-<table border="0" cellspacing="4" cellpadding="2">
-<tr><td valign="top"><a href="http://www.broad.mit.edu/cancer/software/genepattern/gp_mail.html">Mailing&nbsp;List</a></td><td valign="top">Receive infrequent announcements of major releases and new GenePattern features.</td></tr>
-<tr><td valign="top"><a href="http://node255.broad.mit.edu:7080/gp/pages/contactUs.jsf">Report&nbsp;Bugs</a></td><td valign="top">Contact the GenePattern team to report problems, provide feedback, or ask questions.</td></tr>
-<tr><td valign="top"><a href="http://www.broad.mit.edu/genepattern/forum/">User&nbsp;Forum</a></td><td valign="top">Communicate with other GenePattern users about techniques, methodologies, and research interests.</td></tr>
-</table>
-
+<ui:composition template="/templates/common.xhtml">
+  <ui:define name="body">
+   <span class="barhead-other">Resources Overview</span>
+    <br/>
+    <br/>
+	The following resources are provided to support the GenePattern user community:
+	<table border="0" cellspacing="4" cellpadding="2">
+      <tr>
+        <td valign="top">
+          <a href="http://www.broad.mit.edu/cancer/software/genepattern/gp_mail.html">Mailing&#160;List</a>
+        </td>
+        <td valign="top">Receive infrequent announcements of major
+			releases and new GenePattern features.</td>
+      </tr>
+      <tr>
+        <td valign="top">
+          <a href="http://node255.broad.mit.edu:7080/gp/pages/contactUs.jsf">Report&#160;Bugs</a>
+        </td>
+        <td valign="top">Contact the GenePattern team to report
+			problems, provide feedback, or ask questions.</td>
+      </tr>
+      <tr>
+        <td valign="top">
+          <a href="http://www.broad.mit.edu/genepattern/forum/">User&#160;Forum</a>
+        </td>
+        <td valign="top">Communicate with other GenePattern users about
+			techniques, methodologies, and research interests.</td>
+      </tr>
+    </table>
+  </ui:define>
 </ui:composition>
+
 </html>
