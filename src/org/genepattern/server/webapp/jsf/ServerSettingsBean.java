@@ -226,14 +226,19 @@ public class ServerSettingsBean {
     public void setSpecifiedClientModes(List clientModes) {
         setSelectItems(clientModes, "gp.allowed.clients");
     }
+    
+    
 
     /**
      * @param event
      */
     public void addSpecifiedClientMode(ActionEvent event) {
         if (clientModes[2].equals(currentClientMode)) {
+            removeDomain(clientModes[0]);
+            removeDomain(clientModes[1]);
             String allClientModes = (String) settings.get("gp.allowed.clients");
             String[] result = allClientModes.split(",");
+            //avoid adding duplicated domains.
             boolean exist = false;
             for (int i = 0; i < result.length; i++) {
                 if (result[i] != null && result[i].equals(specifiedClientMode)) {
@@ -241,8 +246,10 @@ public class ServerSettingsBean {
                     break;
                 }
             }
-            if (!exist) {
+            if (!exist && allClientModes.length()>0) {
                 allClientModes = allClientModes.concat(",").concat(specifiedClientMode);
+            }else if (allClientModes.length()==0) {
+        	allClientModes = specifiedClientMode;
             }
             settings.put("gp.allowed.clients", allClientModes);
         }
@@ -253,15 +260,22 @@ public class ServerSettingsBean {
      * @param event
      */
     public void removeSpecifiedClientMode(ActionEvent event) {
-        String allClientModes = (String) settings.get("gp.allowed.clients");
+	event.getComponent();
+        removeDomain(specifiedClientMode);
+        saveSettings(event);
+    }
+    
+    private void removeDomain(String mode) {
+	String allClientModes = (String) settings.get("gp.allowed.clients");
         String[] result = allClientModes.split(",");
         StringBuffer newClientModes = new StringBuffer();
         for (int i = 0; i < result.length; i++) {
-            if (result[i] != null && !result[i].equals(specifiedClientMode)) {
+            if (result[i] != null && !result[i].equals(mode)) {
                 newClientModes.append(result[i]).append(",");
             }
         }
-        settings.put("gp.allowed.clients", newClientModes.substring(0, newClientModes.length() - 1).toString());
+        String newClientModesStr = (newClientModes.length()>0 ) ? newClientModes.substring(0, newClientModes.length() - 1):"";
+        settings.put("gp.allowed.clients", newClientModesStr);
     }
 
     /**

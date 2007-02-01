@@ -10,7 +10,18 @@
 	  function showControl(v) {
 		var specified= document.getElementsByClassName("specified", "root");
 		for (var i=0; i<specified.length; i++) {
-			specified[i].style.display=(v == "Specified")? '':'none';
+			specified[i].style.display=(v == "Specified")? '':'none';			
+		}
+		var firstOption = $("selectClientMode").options[0];
+		var resetOptions = ( v=="Specified" && firstOption!= null && (firstOption.value=="Any" || firstOption.value=="Local") );
+		
+		if (resetOptions) {
+			$("clientMode").value = "";
+			$("selectClientMode").options[0] = null;
+			$("save").disabled=true;
+			$("remove").disabled=true;
+		}else {
+			$("save").disabled=false;
 		}
 	  }
 	  /* ]]> */
@@ -37,28 +48,31 @@
       <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
         <td width="15%">All Client Modes:</td>
         <td >
-          <t:selectOneListbox style="width:50%" size="3" value="#{serverSettingsBean.specifiedClientMode}" onclick="$(clientMode).value=this.value">
+          <t:selectOneListbox id="selectClientMode" forceId="true" style="width:50%" size="3" value="#{serverSettingsBean.specifiedClientMode}" onclick="$(clientMode).value=this.value">
   			<f:selectItems value="#{serverSettingsBean.specifiedClientModes}" />
 		  </t:selectOneListbox>        
+        </td>
+        <td>
+        By default, localhost is always allowed to access the server even though it's not shown in the list.
         </td>
       </tr>
       <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
         <td>Specified Client Mode:</td>
         <td>
-          <t:inputText id="clientMode" forceId="true" style="width:49%" size="40" value="#{serverSettingsBean.specifiedClientMode}"/>       
+          <t:inputText id="clientMode" forceId="true" style="width:49%" size="40" value="#{serverSettingsBean.specifiedClientMode}" onkeydown="$(save).disabled=false; $(remove).disabled=false"/>       
         </td>
       </tr>
       <tr valign="top">
         <td>&#160;</td>
         <td>
-          <h:commandButton value="Save" actionListener="#{serverSettingsBean.addSpecifiedClientMode}"/>
+          <t:commandButton id="save" forceId="true" value="Save" actionListener="#{serverSettingsBean.addSpecifiedClientMode}"/>
           &#160;
           <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}">
 	      	<f:attribute name="subtype" value="Module" />
 	      </h:commandButton>
 	      &#160;
-	      <h:commandButton styleClass="specified" value="Remove" actionListener="#{serverSettingsBean.removeSpecifiedClientMode}"
-          	style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}"/>    
+	      <t:commandButton id="remove" forceId="true" styleClass="specified" value="Remove" actionListener="#{serverSettingsBean.removeSpecifiedClientMode}"
+          	style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}" onkeyup="$(clientMode).value=''"/>    
         </td>
       </tr>
       
