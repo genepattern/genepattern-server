@@ -104,6 +104,15 @@ function viewCode() {
 	
 }
 
+// sets the value of a URL input field to specified value
+// elementId input parameter id.
+// value value to set field to.
+function setInputField(elementId, value) {
+	var urlInput = $(elementId + "_url");
+	urlInput.value = value;	
+  	Element.show($(elementId + "_div_url"));
+}
+
 function validateForm() {
         var error = false;
           
