@@ -35,7 +35,7 @@
     <p/>
     <table id="root" width="100%" border="0" cellpadding="5" cellspacing="0">
       <tr valign="top">
-        <td width="15%">Allow Clients to connect from:</td>
+        <td width="20%">Allow Clients to connect from:</td>
         <td width="50%">
 	        <h:selectOneRadio value="#{serverSettingsBean.currentClientMode}" layout="pageDirection" onchange="showControl(this.value);">
 	        	<f:selectItem itemValue="Local" itemLabel="Standalone (local connections only)" />
@@ -44,22 +44,25 @@
 			</h:selectOneRadio>
           <br/>
         </td>
+        <td width="30%"></td>
       </tr>
       <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
-        <td width="15%">All Client Modes:</td>
-        <td >
+        <td width="20%">All Client Modes:</td>
+        <td width="55%" >
           <t:selectOneListbox id="selectClientMode" forceId="true" style="width:50%" size="3" value="#{serverSettingsBean.specifiedClientMode}" onclick="$(clientMode).value=this.value">
   			<f:selectItems value="#{serverSettingsBean.specifiedClientModes}" />
 		  </t:selectOneListbox>        
         </td>
-        <td>
+        <td width="25%">
         By default, localhost is always allowed to access the server even though it's not shown in the list.
         </td>
       </tr>
       <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
-        <td>Specified Client Mode:</td>
-        <td>
+        <td width="20%">Specified Client Mode:</td>
+        <td width="55%">
           <t:inputText id="clientMode" forceId="true" style="width:49%" size="40" value="#{serverSettingsBean.specifiedClientMode}" onkeydown="$(save).disabled=false; $(remove).disabled=false"/>       
+        </td>
+        <td width="25%">
         </td>
       </tr>
       <tr valign="top">
