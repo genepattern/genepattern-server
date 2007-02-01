@@ -214,7 +214,7 @@ function runTask() {
 <% } %>
 
 function addNewTaskType() {
-	var newTaskType = window.prompt("new task type", "");
+	var newTaskType = window.prompt("new module category", "");
 	if (newTaskType == null || newTaskType == "") return;
 	var fld = document.forms['task'].<%= GPConstants.TASK_TYPE %>;
 	var n = fld.options.length;
@@ -286,7 +286,7 @@ function addNewDomainType(name, desc){
 
 	<% if (taskName != null && taskInfo == null) { %>
 		<script language="javascript">
-		alert('no such task <%= taskName %>');
+		alert('no such module <%= taskName %>');
 		</script>
 	<%
 		taskName = null;
@@ -453,7 +453,7 @@ function addNewDomainType(name, desc){
 	%>
 		<font color="red">
 		<h2>
-		There are some problems with the task that need to be fixed:
+		There are some problems with the module that need to be fixed:
 		</h2>
 		<ul>
 		<%	
@@ -471,14 +471,13 @@ function addNewDomainType(name, desc){
 	<input type="hidden" name="<%= GPConstants.FORMER_NAME %>" value="<%= taskInfo != null ? taskInfo.getName() : "" %>">
 	
 	
-	Please enter the following information to submit a new or updated analysis task to <%= messages.get("ApplicationName") %>.
-	&nbsp;&nbsp;<input type="button" value="Help" onclick="window.open('help.jsp', 'help')" class="button">
+	
 	<% if (viewOnly && LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="Edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
 	
-	<br><br>
+	
 	  <table cols="2" valign="top" width="100%">
-		  
-		  <tr class="taskperameter" title="Task name without spaces, used as the name by which the task will be invoked.">
+		  <tr class="taskperameter"><td>* required field</td><td><a href='help.jsp' target='help'><img border='0' src='images/help2.jpg'/></a></td></tr>
+		  <tr class="taskperameter" title="Module name without spaces, used as the name by which the module will be invoked.">
 		  <td valign="top" >Name:*</td>
 		  <td><% if (!viewOnly) { %><input name="<%= GPConstants.NAME %>" maxlength="100" size="<%= taskInfo != null ? Math.max(taskInfo.getName().length() + 2, 20): 20 %>" 
 		  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<a href='help.jsp#Name' target='help'><img border='0' src='images/help2.jpg'/></a><% } else { %><%= taskInfo.getName() %><% } %>
@@ -494,11 +493,11 @@ function addNewDomainType(name, desc){
 		<% } %>
 	
 		   &nbsp;&nbsp;&nbsp;<select onchange="javascript:if (this.options[this.selectedIndex].value != '<%= DONT_JUMP %>') window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'">
-		  <option value="<%= DONT_JUMP %>">task catalog</option>
+		  <option value="<%= DONT_JUMP %>">module catalog</option>
 			<option value="">new task</option>
 			<%= publicTasks.toString() %>  
 			<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
-			<option value="<%= DONT_JUMP %>">private tasks (not mine)</option>
+			<option value="<%= DONT_JUMP %>">private modules</option>
 			<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
 			<%= otherTasks.toString() %>
 		  </select>
@@ -619,37 +618,20 @@ function addNewDomainType(name, desc){
 	%>
 	</td></tr>
 	<% } %>
-	
-	<% if (!viewOnly) { %>
-	  <tr>
-	  <td align="right" valign="top">
-	   </td>
-	  <td width="*"><br>    <font size=-1>
-	  Use &lt;<%= GPConstants.JAVA %>&gt; for launching a JVM, 
-	  &lt;<%= GPConstants.LIBDIR %>&gt; for accessing EXEs, DLLS, JARs, etc., <br>
-	  &lt;<i>your_param_name</i>&gt; to substitute your own parameters (listed below),<br>
-	  &lt;<i>java.system.property.name</i>&gt; to substitute from java.lang.System.getProperties().<br>
-	  You may also use environment variables and settings from your GenePatternServer/resources/genepattern.properties file.<br>
-	  Useful ones: &lt;path.separator&gt;, &lt;file.separator&gt;, &lt;os.name&gt;, &lt;perl&gt;, &lt;java&gt;, &lt;libdir&gt;
-	</font>
-	</td>
-	  </tr>
-	<% } %>
 
 	  <tr class="taskperameter" title="the command line used to invoke the application, using &lt;tags&gt; for param &amp; environment variable substitutions.">
-	  <td valign="top" >command&nbsp;line:<br>
-	   </td>
-	   <pre>
+	  <td valign="top" >Command&nbsp;line:*</td>
+	   
 	  <td valign="top" >
-	  <% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="60" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncodeLongString(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea> * (required) <a href='help.jsp#Command' target='help'><img border='0' src='images/help2.jpg'/></a>
+	  <% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="90" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncodeLongString(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea><a href='help.jsp#Command' target='help'><img border='0' src='images/help2.jpg'/></a>
 	<% } %>
 		
 	</td>
-	</pre>
+	
 	  </tr>
 
-	  <tr class="taskperameter" >
-	  <td valign="top">task&nbsp;type:
+	  <tr class="taskperameter">
+	  <td valign="top">Module&nbsp;Category:
 	</td>
 	  <td >         
 	  <%= createSelection(tia, GPConstants.TASK_TYPE, taskTypes, "", viewOnly) %>
@@ -670,7 +652,7 @@ function addNewDomainType(name, desc){
 	   </tr>
 	
 	   <tr class="taskperameter" >
-	  <td valign="top" >operating&nbsp;system:</td>
+	  <td valign="top" >Operating&nbsp;system:</td>
 	  <td > 
 		<%= createSelection(tia, GPConstants.OS, oses, "", viewOnly) %> (if operating system-dependent)
 	  <a href='help.jsp#os' target='help'><img border='0' src='images/help2.jpg'/></a>
@@ -703,7 +685,7 @@ function addNewDomainType(name, desc){
 	   </tr>
 	
 	   <tr class="taskperameter" >
-	   <td valign="top">output description:</td>
+	   <td valign="top">Output description:</td>
 	   <td>
 		<table>
 		<tr>
@@ -929,7 +911,7 @@ function addNewDomainType(name, desc){
 	
 	 </form>
 	<% if (tia != null && errors==null) { %>
-	<a href="makeZip.jsp?<%= GPConstants.NAME %>=<%= request.getParameter(GPConstants.NAME) %>&includeDependents=1">package this task into a zip file</a><br>
+	<a href="makeZip.jsp?<%= GPConstants.NAME %>=<%= request.getParameter(GPConstants.NAME) %>&includeDependents=1">package this module into a zip file</a><br>
 	<% } %>
 	<jsp:include page="footer.jsp"/>      
 </body>
