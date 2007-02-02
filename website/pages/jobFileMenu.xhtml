@@ -7,7 +7,7 @@
         <tbody>
           <tr>
             <td>
-              <h:commandLink value="Delete" actionListener="#{jobsBean.deleteFile}" immediate="true"
+              <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file?');" actionListener="#{jobsBean.deleteFile}" immediate="true"
                              rendered="#{jobInfo.deleteAllowed}">
                 <f:param value="#{fileInfo.value}" name="jobFile"/>
               </h:commandLink>
