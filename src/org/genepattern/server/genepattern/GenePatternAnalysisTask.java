@@ -2337,6 +2337,7 @@ public class GenePatternAnalysisTask {
                     for (int f = 0; f < formalParamsLength; f++) {
                         if (actuals[i].getName().equals(formalParameters[f].getName())) {
                             if (formalParameters[f].isInputFile()) {
+                               
                                 inputFilename = actuals[i].getValue();
                                 if (inputFilename == null || inputFilename.length() == 0) {
                                     continue;
@@ -2616,9 +2617,9 @@ public class GenePatternAnalysisTask {
      * @return Vector of error messages (zero length if no problems found)
      * @author Jim Lerner
      */
-    protected Vector validateParameters(Properties props, String taskName, String commandLine,
+    protected Vector<String> validateParameters(Properties props, String taskName, String commandLine,
             ParameterInfo[] actualParams, ParameterInfo[] formalParams, boolean enforceOptionalNonBlank) {
-        Vector vProblems = new Vector();
+        Vector<String> vProblems = new Vector<String>();
         String name;
         boolean runtimeValidation = (actualParams != formalParams);
         int formalParamsLength = 0;
@@ -2782,8 +2783,8 @@ public class GenePatternAnalysisTask {
      * @return Vector of error messages (vProblems with new errors appended)
      * @author Jim Lerner
      */
-    protected Vector validateSubstitutions(Properties props, String taskName, String commandLine, String source,
-            Vector vProblems, ParameterInfo[] formalParams) {
+    protected Vector<String> validateSubstitutions(Properties props, String taskName, String commandLine, String source,
+            Vector<String> vProblems, ParameterInfo[] formalParams) {
         // check that each substitution variable listed in the command line is
         // actually in props
         int start = 0;
@@ -2803,6 +2804,8 @@ public class GenePatternAnalysisTask {
                 continue;
             }
             varName = commandLine.substring(start + LEFT_DELIMITER.length(), end);
+            
+            
             if (!varName.endsWith(INPUT_PATH)) {
                 if (!props.containsKey(varName)) {
                     boolean isOptional = false;
@@ -2843,16 +2846,16 @@ public class GenePatternAnalysisTask {
      * @return Vector of error messages from validation of inputs
      * @author Jim Lerner
      */
-    public static Vector validateInputs(TaskInfo taskInfo, String taskName, TaskInfoAttributes tia,
+    public static Vector<String> validateInputs(TaskInfo taskInfo, String taskName, TaskInfoAttributes tia,
             ParameterInfo[] params) {
         GenePatternAnalysisTask gp = new GenePatternAnalysisTask();
-        Vector vProblems = null;
+        Vector<String> vProblems = null;
         try {
             Properties props = gp.setupProps(taskName, -1, 0, -1, tia, params, GenePatternAnalysisTask.getEnv(),
                     params, null);
             vProblems = gp.validateParameters(props, taskName, tia.get(COMMAND_LINE), params, params, false);
         } catch (Exception e) {
-            vProblems = new Vector();
+            vProblems = new Vector<String>();
             vProblems.add(e.toString() + " while validating inputs for " + tia.get(GPConstants.LSID));
             e.printStackTrace();
         }
