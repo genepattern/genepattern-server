@@ -243,19 +243,19 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
         File[] supportFiles = new File(libdir).listFiles();
         int i;
         String appletName = "a" + ("" + Math.random()).substring(2); // unique
-                                                                        // name
-                                                                        // so
-                                                                        // that
-                                                                        // multiple
-                                                                        // instances
-                                                                        // of
-                                                                        // applet
-                                                                        // on a
-                                                                        // single
-                                                                        // page
-                                                                        // will
-                                                                        // not
-                                                                        // collide
+        // name
+        // so
+        // that
+        // multiple
+        // instances
+        // of
+        // applet
+        // on a
+        // single
+        // page
+        // will
+        // not
+        // collide
         String javaFlags = adminClient.getUserProperty(UserPropKey.VISUALIZER_JAVA_FLAGS);
         if (javaFlags == null) {
             javaFlags = System.getProperty(RunVisualizerConstants.JAVA_FLAGS_VALUE);
@@ -293,7 +293,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
                         + StringUtils.htmlEncode(parameterInfoArray[i].getDescription()) + "\">");
                 continue;
             }
-            boolean isInputFile = (paramName.indexOf("filename") != -1);
+            boolean isInputFile = parameterInfoArray[i].isInputFile();
             String value;
             if (isInputFile)
                 value = localizeURL(params.getProperty(paramName));
@@ -306,8 +306,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
         int numToDownload = 0;
         for (i = 0; i < parameterInfoArray.length; i++) {
-            String paramName = parameterInfoArray[i].getName();
-            boolean isInputFile = (paramName.indexOf("filename") != -1);
+            boolean isInputFile = parameterInfoArray[i].isInputFile();
 
             if (isInputFile) {
                 // note that this parameter is a URL that must be downloaded by
