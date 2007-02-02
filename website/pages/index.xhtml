@@ -112,6 +112,8 @@ function setInputField(elementId, value) {
 	urlInput.value = value;	
 	Element.hide($(elementId + "_div_file"));
   	Element.show($(elementId + "_div_url"));
+  	var urlRadio =  $(elementId  + '_cb_url');
+  	urlRadio.checked = true;
 }
 
 function validateForm() {
@@ -295,8 +297,8 @@ function showFileInput(id) {
                         <div id="#{p.name}_div_url" style="display:none">
                           <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
                         </div>
-                        <input type="radio" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');">Specify URL</input>
-                        <input type="radio" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');" checked="yes">Upload
+                        <input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');">Specify URL</input>
+                        <input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');" checked="yes">Upload
 									File</input>
                       </h:outputText>
                       <h:outputText rendered="#{!empty p.defaultValue}">
@@ -306,9 +308,9 @@ function showFileInput(id) {
                         <div id="#{p.name}_div_url">
                           <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
                         </div>
-                        <input type="radio" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');" checked="yes">Specify
+                        <input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');" checked="yes">Specify
 									URL</input>
-                        <input type="radio" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');">Upload File</input>
+                        <input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');">Upload File</input>
                       </h:outputText>
                     </h:outputText>
                     <!-- Select list input -->
