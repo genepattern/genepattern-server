@@ -987,7 +987,7 @@ public class JobBean {
 
         public String getUrl() {
             HttpServletRequest request = UIBeanHelper.getRequest();
-            return request.getScheme() + "://" + request.getServerName() + ":" + request.getLocalPort()
+            return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()
                     + request.getContextPath() + "/jobResults/" + getValue();
         }
 
