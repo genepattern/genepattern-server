@@ -433,8 +433,12 @@ public class RunVisualizer {
             String temp = decode(file.substring(j + "file=".length(), file.length()));
 
             int slashIdx = temp.lastIndexOf("/");
-            if (slashIdx >= 0)
+            if(slashIdx==-1) {
+            	slashIdx = temp.lastIndexOf("\\");
+            }
+            if (slashIdx >= 0) {
                 temp = temp.substring(slashIdx + 1);
+            }
 
             return new java.util.StringTokenizer(temp, "&").nextToken();
 
