@@ -22,10 +22,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
-import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
@@ -977,6 +976,12 @@ public class JobBean {
             }
 
             this.jobNumber = jobNumber;
+        }
+
+        public String getUrl() {
+            HttpServletRequest request = UIBeanHelper.getRequest();
+            return request.getScheme() + "://" + request.getServerName() + ":" + request.getLocalPort()
+                    + request.getContextPath() + "/jobResults/" + getValue();
         }
 
         public int getJobNumber() {
