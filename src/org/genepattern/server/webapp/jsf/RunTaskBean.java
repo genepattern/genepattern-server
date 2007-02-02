@@ -25,6 +25,7 @@ import javax.faces.model.SelectItem;
 import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.AuthorizationRules;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -307,7 +308,11 @@ public class RunTaskBean {
 
         ParameterInfo[] taskParameters = taskInfo.getParameterInfoArray();
 
+        // attributes matchJob and outputFileName are set when selecting a
+        // module
+        // from an output file.
         String matchJob = (String) UIBeanHelper.getRequest().getAttribute("matchJob");
+        String matchOutputFileParameterName = (String) UIBeanHelper.getRequest().getAttribute("outputFileName");
 
         Map<String, String> reloadValues = new HashMap<String, String>();
         if (matchJob != null) {
@@ -335,27 +340,42 @@ public class RunTaskBean {
 
                 File outputDir = new File(GenePatternAnalysisTask.getJobDir("" + matchJobInfo.getJobNumber()));
 
-                // can only reload own jobs
-                if (UIBeanHelper.getUserId().equals(matchJobInfo.getUserId())) {
+                if (UIBeanHelper.getUserId().equals(matchJobInfo.getUserId())
+                        || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer",
+                                UIBeanHelper.getUserId())) {
                     ParameterInfo[] params = matchJobInfo.getParameterInfoArray();
                     if (params != null) {
+                        List<ParameterInfo> outputFileParameters = new ArrayList<ParameterInfo>();
                         for (ParameterInfo p : params) {
-                            if (p.isOutputFile()) {
-                                File file = new File(outputDir, p.getName());
+                            if (p.getName().equals(matchOutputFileParameterName)) {
+                                // put matchInputFile parameter at front of
+                                // array so that it is set to input field first
+                                outputFileParameters.add(0, p);
+                            } else {
+                                outputFileParameters.add(p);
+                            }
+                        }
+
+                        for (ParameterInfo outputParameter : outputFileParameters) {
+                            if (outputParameter.isOutputFile()) {
+
+                                File file = new File(outputDir, outputParameter.getName());
                                 String kind = SemanticUtil.getKind(file);
                                 List<String> inputParameterNames = kindToInputParameters.get(kind);
-                                // XXX ignoring parameters that have more than
-                                // one match
-                                if (inputParameterNames != null && inputParameterNames.size() == 1) {
-                                    String value = p.getValue();
-                                    int index = StringUtils.lastIndexOfFileSeparator(value);
-                                    String jobNumber = value.substring(0, index);
-                                    String filename = value.substring(index + 1);
-                                    reloadValues.put(inputParameterNames.get(0), System.getProperty("GenePatternURL")
-                                            + "jobResults/" + jobNumber + "/" + UIBeanHelper.encode(filename));
-                                    // reloadValues.put(inputParameterNames.get(0),
-                                    // "job #" + jobNumber + ", " +
-                                    // filename);
+
+                                if (inputParameterNames != null && inputParameterNames.size() >= 1) {
+                                    // XXX use first match if kind matches more
+                                    // than one input parameter
+                                    String inputParameterName = inputParameterNames.get(0);
+                                    if (!reloadValues.containsKey(inputParameterName)) {
+                                        String value = outputParameter.getValue();
+                                        int index = StringUtils.lastIndexOfFileSeparator(value);
+                                        String jobNumber = value.substring(0, index);
+                                        String filename = value.substring(index + 1);
+                                        reloadValues.put(inputParameterName, System.getProperty("GenePatternURL")
+                                                + "jobResults/" + jobNumber + "/" + UIBeanHelper.encode(filename));
+                                    }
+
                                 }
                             }
 
@@ -378,8 +398,10 @@ public class RunTaskBean {
 
                 LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
                 JobInfo reloadJob = ac.getJob(Integer.parseInt(reloadJobNumberString));
-                // can only reload own jobs
-                if (UIBeanHelper.getUserId().equals(reloadJob.getUserId())) {
+
+                if (UIBeanHelper.getUserId().equals(reloadJob.getUserId())
+                        || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer",
+                                UIBeanHelper.getUserId())) {
                     ParameterInfo[] reloadParams = reloadJob.getParameterInfoArray();
                     if (reloadParams != null) {
                         for (int i = 0; i < reloadParams.length; i++) {
