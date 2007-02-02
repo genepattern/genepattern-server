@@ -3,7 +3,7 @@
 <!-- top band with the logo -->
 <div id="topband" class="topband">
   <a href="index.jsp"target="_top"> 
-    <img src="<%=request.getContextPath()%>/images/GP-logo.gif" alt="GenePattern Portal" width="296" height="77" border="0" /> 
+    <img src="<%=request.getContextPath()%>/images/GP-logo.gif" alt="GenePattern Portal" width="229" height="48" border="0" /> 
   </a>
 </div>
 
