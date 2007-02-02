@@ -133,18 +133,18 @@ if (requestParameters.getProperty("delete") != null || requestParameters.getProp
 %>
 		<html>
 	<head>
-		<title>Saved GenePattern task</title>
+		<title>Saved GenePattern module</title>
 	</head>
 	<body>
 		<jsp:include page="navbarHead.jsp"/>
 		<jsp:include page="navbar.jsp"/>
-		<%= taskName %> has been deleted.  Any running jobs using that task have been stopped.<br>
+		<%= taskName %> has been deleted.  Any running jobs using that module have been stopped.<br>
 <%
 	} catch (Throwable t) { 
 %>
 		<html>
 	<head>
-		<title>Saved GenePattern task</title>
+		<title>Saved GenePattern module</title>
 	</head>
 	<body>
 	<jsp:include page="navbarHead.jsp"/>
@@ -192,7 +192,7 @@ if ((requestParameters.getProperty("deleteFiles") != null || requestParameters.g
 				} else { %>
 					<html>
 	<head>
-		<title>Saved GenePattern task</title>
+		<title>Saved GenePattern module</title>
 	</head>
 	<body>
 	<jsp:include page="navbarHead.jsp"/>
@@ -208,7 +208,7 @@ if ((requestParameters.getProperty("deleteFiles") != null || requestParameters.g
 %>	
 				<html>
 	<head>
-		<title>Saved GenePattern task</title>
+		<title>Saved GenePattern module</title>
 	</head>
 	<body>
 	<jsp:include page="navbarHead.jsp"/>
@@ -242,12 +242,12 @@ if (requestParameters.getProperty("clone") != null) {
 %>
 			<html>
 	<head>
-		<title>Saved GenePattern task</title>
+		<title>Saved GenePattern module</title>
 	</head>
 	<body>
 	<jsp:include page="navbarHead.jsp"/>
 			<jsp:include page="navbar.jsp"/>
-			There are some problems with the <%= cloneName %> task that need to be fixed:<br><ul>
+			There are some problems with the <%= cloneName %> module that need to be fixed:<br><ul>
 <%	
 		    	for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
 %>
@@ -263,7 +263,7 @@ if (requestParameters.getProperty("clone") != null) {
 %>
 	<html>
 	<head>
-		<title>Saved GenePattern task</title>
+		<title>Saved GenePattern module</title>
 	</head>
 	<body>
 	<jsp:include page="navbarHead.jsp"/>
@@ -528,12 +528,12 @@ timeMS dateTime loginId taskType moduleName  manifest supportFilesChanges URLToE
 %>
     <html>
 	<head>
-		<title>Saved GenePattern task</title>
+		<title>Saved GenePattern module</title>
 	</head>
 	<body>
 	<jsp:include page="navbarHead.jsp"/>
     <jsp:include page="navbar.jsp" />
-    Installation of your <a href="addTask.jsp?<%= GPConstants.NAME %>=<%= URLEncoder.encode(lsid, "UTF-8") %>"><%= taskName %></a> task (version <%= new LSID(lsid).getVersion() %>) is complete.<br><br>
+    Installation of your <a href="addTask.jsp?<%= GPConstants.NAME %>=<%= URLEncoder.encode(lsid, "UTF-8") %>"><%= taskName %></a> module (version <%= new LSID(lsid).getVersion() %>) is complete.<br><br>
 
     
 <hr><a href='<%= request.getContextPath() %>/pages/index.jsf?lsid=<%= URLEncoder.encode(lsid, "UTF-8") %>'>Run <%= taskName %></a>
