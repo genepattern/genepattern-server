@@ -126,7 +126,11 @@ app.append("<param name=\"" + RunVisualizerConstants.PARAM_NAMES + "\" value=\""
 
 for (i = 0; i < parameterInfoArray.length; i++) {
 	String paramName = parameterInfoArray[i].getName();
-	app.append("<param name=\"" + StringUtils.htmlEncode(paramName) + "\" value=\"" + StringUtils.htmlEncode(params.getProperty(paramName)) + "\" >");
+	String value = params.getProperty(paramName);
+	if(value != null) {
+		value = value.replace("\\", "\\\\");
+	}
+	app.append("<param name=\"" + StringUtils.htmlEncode(paramName) + "\" value=\"" + StringUtils.htmlEncode(value) + "\" >");
 
 }
 
