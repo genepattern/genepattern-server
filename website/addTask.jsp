@@ -685,7 +685,7 @@ function addNewDomainType(name, desc){
 	   </tr>
 	
 	   <tr class="taskperameter" >
-	   <td valign="top">Output description:</td>
+	   <td valign="top">File format(s):</td>
 	   <td>
 		<table>
 		<tr>
@@ -791,9 +791,7 @@ function addNewDomainType(name, desc){
 	  </tr>
 	<% } %>
 
-	  <tr class="taskperameter" >
-	  <td valign="top" >Current&nbsp;files:</td>
-	  <td>
+	  
 	<%
 	   if (taskName != null) {
 		   File[] allFiles = null;
@@ -801,6 +799,14 @@ function addNewDomainType(name, desc){
 		   	allFiles = taskIntegratorClient.getAllFiles(taskInfo);
 		   } catch(org.genepattern.webservice.WebServiceException wse) {
 		   	allFiles = new File[0];
+		   }
+		   if(allFiles.length > 0) {
+		      %>
+		      <tr class="taskperameter" >
+			  <td valign="top" >Current&nbsp;files:</td>
+			  <td>  
+			  <%  
+		   
 		   }
 		   for (i = 0; i < allFiles.length; i++) { %>
 			<a href="getFile.jsp?task=<%= (String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%= URLEncoder.encode(allFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(allFiles[i].getName()) %></a> 
@@ -813,7 +819,7 @@ function addNewDomainType(name, desc){
 	<%	   if (allFiles != null && allFiles.length > 0 && !viewOnly) { %>
 			   <br>
 			   <select name="deleteFiles">
-			   <option value="">delete support files...</option>
+			   <option value="">- File -</option>
 	<%		   for (i = 0; i < allFiles.length; i++) { %>
 				<option value="<%= StringUtils.htmlEncode(allFiles[i].getName()) %>"><%= allFiles[i].getName() %></option> 
 	<%		   }  %>
