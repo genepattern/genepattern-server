@@ -39,6 +39,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 import org.genepattern.server.AnalysisManager;
 import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.database.HsqlDbUtil;
@@ -78,7 +81,8 @@ public class StartupServlet extends HttpServlet {
 
     public StartupServlet() {
         System.out.println("Creating StartupServlet");
-
+        Logger log = Logger.getLogger("org.genepattern");
+        log.setLevel(Level.DEBUG);
     }
 
     public void init(ServletConfig config) throws ServletException {
