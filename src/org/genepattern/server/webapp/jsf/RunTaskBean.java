@@ -58,7 +58,7 @@ public class RunTaskBean {
     private static Logger log = Logger.getLogger(RunTaskBean.class);
 
     private List<String> versions;
-    
+
     /**
      * True if current user is allowed to edit the current module.
      */
@@ -70,7 +70,6 @@ public class RunTaskBean {
     private String splashPage;
 
     private boolean showParameterDescriptions;
-    
 
     /**
      * Initialize the task lsid. This page needs to support redirects from older
@@ -82,7 +81,7 @@ public class RunTaskBean {
     public RunTaskBean() {
         String taskToRun = UIBeanHelper.getRequest().getParameter("lsid");
         splashPage = UIBeanHelper.getRequest().getParameter("splash");
-;
+        ;
         if (taskToRun == null || taskToRun.length() == 0) {
             ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper.getManagedBean("#{moduleChooserBean}");
             assert chooser != null;
@@ -288,6 +287,10 @@ public class RunTaskBean {
     }
 
     public void setTask(String taskNameOrLsid) {
+        JobBean jobBean = (JobBean) UIBeanHelper.getManagedBean("#{jobsBean}");
+        if (jobBean != null) {
+            jobBean.setSelectedModule(taskNameOrLsid);
+        }
         TaskInfo taskInfo = null;
         try {
             taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(taskNameOrLsid);
@@ -298,9 +301,10 @@ public class RunTaskBean {
             lsid = null;
             return;
         }
-        
-        editAllowed = AuthorizationRules.isAllowed(taskInfo, UIBeanHelper.getUserId(), AuthorizationRules.ActionType.Edit);
-        
+
+        editAllowed = AuthorizationRules.isAllowed(taskInfo, UIBeanHelper.getUserId(),
+                AuthorizationRules.ActionType.Edit);
+
         ParameterInfo[] taskParameters = taskInfo.getParameterInfoArray();
 
         String matchJob = (String) UIBeanHelper.getRequest().getAttribute("matchJob");
