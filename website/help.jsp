@@ -262,8 +262,7 @@ value of that variable should be substituted at that position within the command
 a label within the web and graphical clients to prompt the user for the value for that field.  And the name is used as
 a way of identifying which parameter is which for the scripting clients.<br><br>
 
-If the name contains the word &quot;filename&quot; within it, the parameter will be treated as a file rather than
-a specific value.  When one of the <%=messages.get("ApplicationName")%> clients needs to deal with such a parameter, it will pass along a whole
+When one of the <%=messages.get("ApplicationName")%> clients needs to deal with such a parameter, it will pass along a whole
 file, rather than just the name of the file.<br><br>
 
 ConsensusClustering examples: <span class="example">kmax</span>, <span class="example">input.filename</span>

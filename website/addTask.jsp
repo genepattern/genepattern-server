@@ -838,8 +838,7 @@ function addNewDomainType(name, desc){
 	</td>
 	<td>
 	<font size=-1>
-	  The names of these parameters will be available for the command line (above) in the form &lt;name&gt;.<br>
-	  Parameters with &quot;filename&quot; in their name will be treated as input filenames.</font>&nbsp;&nbsp;<a href='help.jsp#inputParameters' target='help'><img border='0' src='images/help2.jpg'/></a>
+	  The names of these parameters will be available for the command line (above) in the form &lt;name&gt;.<br></font>&nbsp;&nbsp;<a href='help.jsp#inputParameters' target='help'><img border='0' src='images/help2.jpg'/></a>
 	<br/>
 	<br/>
 <br/>
@@ -1001,7 +1000,7 @@ for (int i = from; i < to; i++) {
 	out.append("<td valign=\"top\">" + (!viewOnly ? ("<input name=\"p" + i + "_" + GPConstants.DESCRIPTION + "\" size=\"50\"" + ((p == null || p.getDescription() == null) ? "" : ("\" value=\"" + StringUtils.htmlEncode(p.getDescription()) + "\"")) + ">") : ((p == null || p.getDescription() == null) ? "" : (StringUtils.htmlEncode(p.getDescription())))) + "</td>\n");
 	out.append("<td valign=\"top\">" + (!viewOnly ? ("<input name=\"p" + i + "_" + "value\" size=\"30\"" + ((p == null || p.getValue() == null) ? "" : ("\" value=\"" + StringUtils.htmlEncode(p.getValue()) + "\"")) + ">") : (((p == null || p.getValue() == null) ? "" : StringUtils.htmlEncode(GenePatternAnalysisTask.replace(p.getValue(), GPConstants.PARAM_INFO_CHOICE_DELIMITER, GPConstants.PARAM_INFO_CHOICE_DELIMITER+" "))))) + "</td>\n");
 
-	if (p != null && (p.isInputFile() || p.getName().indexOf("filename") != -1)) {
+	if (p != null && p.isInputFile()) {
 		attributes.put(GPConstants.PARAM_INFO_TYPE[GPConstants.PARAM_INFO_TYPE_NAME_OFFSET], GPConstants.PARAM_INFO_TYPE_INPUT_FILE);
 	}
 

@@ -344,13 +344,16 @@ for (i = 0; i < numParameterInfos; i++) {
 			attributes.put(attributeName, value);
 		}
 		pi.setAttributes(attributes);
-		if (pi.getName().indexOf("filename") != -1) {
-			pi.setAsInputFile();
-			attributes.put(GPConstants.PARAM_INFO_TYPE[GPConstants.PARAM_INFO_TYPE_NAME_OFFSET], GPConstants.PARAM_INFO_TYPE_INPUT_FILE);
-		}
 	}
 	params[i] = pi;
 }
+for(ParameterInfo p: params) {
+	if(p.getAttributes()!=null && p.getAttributes().get("type").equals("java.io.File")) {
+	    p.setAsInputFile();
+	    p.getAttributes().put(GPConstants.PARAM_INFO_TYPE[GPConstants.PARAM_INFO_TYPE_NAME_OFFSET], GPConstants.PARAM_INFO_TYPE_INPUT_FILE);
+	}
+}
+
 
 TaskInfoAttributes tia = new TaskInfoAttributes();
 for (i = 0; i < GPConstants.TASK_INFO_ATTRIBUTES.length; i++) {
