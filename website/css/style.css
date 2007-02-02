@@ -5,6 +5,8 @@ body {
 	color: #000000;
 	text-decoration: none;
 	background-color: #FFFFFF;
+	background-image: url(/gp/images/bkg.gif);
+	background-repeat: repeat-x;
 }
 a {
 	color: #000099;
@@ -26,13 +28,13 @@ a:active {
 	left:0px; 
 	top:0px; 
 	width:100%; 
-	height:77px; 
+	height:48px; 
 	z-index:1;
 	font-size: 10px;
 	font-weight: bold;
 	color: #FFFFFF;
 	text-decoration: none;
-	background-color: #6666FF;
+	background-color: #CCCC99;
 	background-image: url(/gp/images/headerbar-bkg.gif);
 	background-repeat: repeat-x;
 }
@@ -54,7 +56,7 @@ a:active {
 .navband1 {
 	position:absolute;
 	left:0px;
-	top:77px;
+	top:48px;
 	width:100%;
 	height:23px;
 	z-index:20;
@@ -106,7 +108,7 @@ a:active {
 	position:absolute;
 	left:0px;
 	right:0px;
-	top:100px;
+	top:71px;
 	width: 100%;
 	z-index:2;
 }
@@ -717,6 +719,14 @@ h6 {
 	border-color: #9999CC;
 	border-width: 2px;
 }
+
+/* This is the content wrapper for the tan border at the top of create pipeline */
+.pipeline_top {
+	border-style: solid;
+	border-color: #CCCC99;
+	border-width: 2px;
+}
+
 .purge_notice {
 	font-weight: bold;
 	color: #990000;
@@ -756,13 +766,14 @@ input.error, select.error {
 }
 
 .validation-error {
-      color: red;
-      font-weight: bold;
+	color: red;
+	font-weight: bold;
 }
 
 .validation-warning {
-      color: orange;
-      font-weight: bold;
+	color: orange;
+	font-weight: bold;
 }
+
 
 
