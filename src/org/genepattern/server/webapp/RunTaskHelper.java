@@ -225,7 +225,6 @@ public class RunTaskHelper {
                             File file = new File(value);
                             value = server + request.getContextPath() + "/getFile.jsp?task=&file="
                                     + file.getParentFile().getName() + File.separator + file.getName();
-                            value = URLEncoder.encode(value, "UTF-8");
                         }
                     }
                 }
