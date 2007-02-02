@@ -110,6 +110,7 @@ function viewCode() {
 function setInputField(elementId, value) {
 	var urlInput = $(elementId + "_url");
 	urlInput.value = value;	
+	Element.hide($(elementId + "_div_file"));
   	Element.show($(elementId + "_div_url"));
 }
 
