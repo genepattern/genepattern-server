@@ -56,6 +56,7 @@
                 <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsBean.loadTask}" immediate="true">
                   <f:param value="#{moduleMenuItem.value}" name="module"/>
                   <f:param value="#{fileInfo.jobNumber}" name="jobNumber"/>
+                  <f:param value="#{fileInfo.name}" name="name"/>
                 </h:commandLink>
               </td>
             </tr>
