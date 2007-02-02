@@ -22,7 +22,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletResponse;
 
@@ -56,7 +58,7 @@ public class JobBean {
 
     private Map<String, Collection<TaskInfo>> kindToModules;
 
-    private Map<String, List<KeyValuePair>> kindToInputParameters;
+    private Map<String, List<KeyValuePair>> kindToInputParameters = Collections.emptyMap();
 
     /**
      * Indicates whether execution logs should be shown. Manipulated by checkbox
@@ -88,50 +90,10 @@ public class JobBean {
      */
     private boolean jobSortAscending = true;
 
-    String lsid; // FIXME
-
     public JobBean() {
         String userId = UIBeanHelper.getUserId();
         TaskInfo[] tasks = new AdminDAO().getAllTasksForUser(userId);
         kindToModules = SemanticUtil.getKindToModulesMap(tasks);
-
-        kindToInputParameters = new HashMap<String, List<KeyValuePair>>();
-
-        if (lsid != null) {
-            try {
-                ParameterInfo[] inputParameters = new LocalAdminClient(userId).getTask(lsid).getParameterInfoArray();
-                if (inputParameters != null) {
-                    for (ParameterInfo inputParameter : inputParameters) {
-                        if (inputParameter.isInputFile()) {
-                            List<String> fileFormats = SemanticUtil.getFileFormats(inputParameter);
-                            String displayValue = (String) inputParameter.getAttributes().get("altName");
-                            if (displayValue == null) {
-                                displayValue = inputParameter.getName();
-                            }
-                            displayValue = displayValue.replaceAll("\\.", " ");
-
-                            KeyValuePair kvp = new KeyValuePair();
-                            kvp.setKey(inputParameter.getName());
-                            kvp.setValue(displayValue);
-
-                            for (String format : fileFormats) {
-                                List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
-                                if (inputParameterNames == null) {
-                                    inputParameterNames = new ArrayList<KeyValuePair>();
-                                    kindToInputParameters.put(format, inputParameterNames);
-                                }
-                                inputParameterNames.add(kvp);
-
-                            }
-                        }
-                    }
-                }
-
-            } catch (WebServiceException e) {
-                log.error("Could not get task", e);
-            }
-
-        }
 
         this.showExecutionLogs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showExecutionLogs", String
                 .valueOf(showExecutionLogs)));
@@ -479,6 +441,7 @@ public class JobBean {
     }
 
     private List<JobResultsWrapper> wrapJobs(JobInfo[] jobInfoArray) {
+
         List<JobResultsWrapper> wrappedJobs = new ArrayList<JobResultsWrapper>(jobInfoArray.length);
         for (int i = 0; i < jobInfoArray.length; i++) {
             JobResultsWrapper wrappedJob = new JobResultsWrapper(jobInfoArray[i], kindToModules, getSelectedFiles(),
@@ -830,7 +793,7 @@ public class JobBean {
                             String kind = SemanticUtil.getKind(file);
                             Collection<TaskInfo> modules = kindToModules.get(kind);
                             OutputFileInfo pInfo = new OutputFileInfo(parameterInfoArray[i], file, modules, jobInfo
-                                    .getJobNumber(), kindToInputParameters.get(kind));
+                                    .getJobNumber(), kind);
                             pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
                             outputFiles.add(pInfo);
                         }
@@ -994,12 +957,10 @@ public class JobBean {
 
         List<KeyValuePair> moduleInputParameters;
 
-        public OutputFileInfo(ParameterInfo p, File file, Collection<TaskInfo> modules, int jobNumber,
-                List<KeyValuePair> sendToParameters) {
-            this.moduleInputParameters = sendToParameters;
-            if (this.moduleInputParameters == null) {
-                this.moduleInputParameters = Collections.emptyList();
-            }
+        String kind;
+
+        public OutputFileInfo(ParameterInfo p, File file, Collection<TaskInfo> modules, int jobNumber, String kind) {
+            this.kind = kind;
             this.p = p;
             this.size = file.length();
             this.exists = file.exists();
@@ -1077,6 +1038,10 @@ public class JobBean {
         public List<KeyValuePair> getModuleInputParameters() {
             return moduleInputParameters;
         }
+
+        public String getKind() {
+            return kind;
+        }
     }
 
     private static class KeyValueComparator implements Comparator<KeyValuePair> {
@@ -1085,6 +1050,57 @@ public class JobBean {
             return o1.getKey().compareToIgnoreCase(o2.getKey());
         }
 
+    }
+
+    public void setSelectedModule(String selectedModule) {
+        kindToInputParameters = new HashMap<String, List<KeyValuePair>>();
+        if (selectedModule != null) {
+            try {
+                TaskInfo taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(selectedModule);
+                ParameterInfo[] inputParameters = taskInfo != null ? taskInfo.getParameterInfoArray() : null;
+                if (inputParameters != null) {
+                    for (ParameterInfo inputParameter : inputParameters) {
+                        if (inputParameter.isInputFile()) {
+                            List<String> fileFormats = SemanticUtil.getFileFormats(inputParameter);
+                            String displayValue = (String) inputParameter.getAttributes().get("altName");
+                            if (displayValue == null) {
+                                displayValue = inputParameter.getName();
+                            }
+                            displayValue = displayValue.replaceAll("\\.", " ");
+
+                            KeyValuePair kvp = new KeyValuePair();
+                            kvp.setKey(inputParameter.getName());
+                            kvp.setValue(displayValue);
+
+                            for (String format : fileFormats) {
+                                List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
+                                if (inputParameterNames == null) {
+                                    inputParameterNames = new ArrayList<KeyValuePair>();
+                                    kindToInputParameters.put(format, inputParameterNames);
+                                }
+                                inputParameterNames.add(kvp);
+
+                            }
+                        }
+                    }
+                }
+
+            } catch (WebServiceException e) {
+                log.error("Could not get module", e);
+            }
+
+        }
+        List<JobResultsWrapper> recentJobs = getRecentJobs();
+        if (recentJobs != null) {
+            for (JobResultsWrapper job : recentJobs) {
+                List<OutputFileInfo> outputFiles = job.getOutputFileParameterInfos();
+                if (outputFiles != null) {
+                    for (OutputFileInfo o : outputFiles) {
+                        o.moduleInputParameters = kindToInputParameters.get(o.getKind());
+                    }
+                }
+            }
+        }
     }
 
 }
