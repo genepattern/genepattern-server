@@ -636,7 +636,7 @@ if (taskName != null) {
 <td>
 <font size=-1>
   The names of these parameters will be available for the command line (above) in the form &lt;name&gt;.<br>
-  Parameters with &quot;filename&quot; in their name will be treated as input filenames.</font><br>
+ </font><br>
   <table cols="<%= 3+GPConstants.PARAM_INFO_ATTRIBUTES.length %>">
   <tr>
   <td width="20%" valign="bottom"><b>name</b></td>
@@ -729,7 +729,7 @@ for (int i = from; i < to; i++) {
 	out.append("<td valign=\"top\">" + (( p.getDescription() == null) ? "" : (StringUtils.htmlEncode(p.getDescription()))) + "</td>\n");
 	out.append("<td valign=\"top\">" + ((((p.getValue() == null) ? "" : StringUtils.htmlEncode(GenePatternAnalysisTask.replace(p.getValue(), GPConstants.PARAM_INFO_CHOICE_DELIMITER, GPConstants.PARAM_INFO_CHOICE_DELIMITER+" "))))) + "</td>\n");
 
-	if ( (p.isInputFile() || p.getName().indexOf("filename") != -1)) {
+	if (p.isInputFile()) {
 		attributes.put(GPConstants.PARAM_INFO_TYPE[GPConstants.PARAM_INFO_TYPE_NAME_OFFSET], GPConstants.PARAM_INFO_TYPE_INPUT_FILE);
 	}
 
