@@ -283,10 +283,17 @@ public class JobBean {
         return showExecutionLogs;
     }
 
+    /**
+     * Loads a module from an output file.
+     * 
+     * @return
+     */
     public String loadTask() {
         String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("module"));
         UIBeanHelper.getRequest().setAttribute("matchJob",
                 UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
+        UIBeanHelper.getRequest().setAttribute("outputFileName",
+                UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("name")));
         RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
         assert runTaskBean != null;
         runTaskBean.setTask(lsid);
