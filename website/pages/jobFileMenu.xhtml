@@ -36,7 +36,9 @@
           <t:dataList value="#{fileInfo.moduleInputParameters}" var="p">
             <tr>
               <td>
-                <a href="#" onclick="setInputField('#{p.key}', '#{fileInfo.value}');">#{p.value}</a>
+               <h:outputLink value="#" onclick="setInputField('#{p.key}', '#{fileInfo.url}');">
+               	 <h:outputText>#{p.value}</h:outputText>
+               </h:outputLink>
               </td>
             </tr>
           </t:dataList>
