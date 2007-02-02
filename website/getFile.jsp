@@ -8,7 +8,9 @@
 
     String taskName = request.getParameter("task");
 	try {
-	    taskName = URLDecoder.decode(taskName, "UTF-8");
+		if(taskName!= null) {
+	    	taskName = URLDecoder.decode(taskName, "UTF-8");
+		}
 	} catch(UnsupportedEncodingException x) {}
 	
     if (taskName == null) {
