@@ -68,7 +68,7 @@ public class ServerSettingsBean {
     public ServerSettingsBean() {
         IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
         if (!authManager.checkPermission("administrateServer", UIBeanHelper.getUserId())) {
-            throw new FacesException("You don' have the required permissions to administer the server.");
+            log.error(new FacesException("You don' have the required permissions to administer the server."));
         }
 
         if (modes == null) {
@@ -104,7 +104,7 @@ public class ServerSettingsBean {
             try {
                 settings = PropertiesManager.getGenePatternProperties();
             } catch (IOException ioe) {
-                ioe.getStackTrace();
+        	log.error(ioe);
             }
         }
         if (customSettings == null) {
@@ -116,14 +116,14 @@ public class ServerSettingsBean {
                 }
 
             } catch (IOException ioe) {
-                ioe.getStackTrace();
+                log.error(ioe);
             }
         }
         if (defaultSettings == null) {
             try {
                 defaultSettings = PropertiesManager.getDefaultProperties();
             } catch (IOException ioe) {
-                ioe.getStackTrace();
+        	log.error(ioe);
             }
         }
     }
@@ -293,19 +293,20 @@ public class ServerSettingsBean {
         settings.put("disable.gp.indexing", searchEngine);
     }
 
+    
     /**
-     * @param log
+     * @param logFile
      * @return
      * @throws IOException
      */
-    public String getLog(File log) throws IOException {
+    public String getLog(File logFile) throws IOException {
         StringBuffer buf = new StringBuffer();
         BufferedReader br = null;
 
         try {
 
-            if (log != null && log.exists()) {
-                br = new BufferedReader(new FileReader(log));
+            if (logFile != null && logFile.exists()) {
+                br = new BufferedReader(new FileReader(logFile));
                 String thisLine = "";
 
                 while ((thisLine = br.readLine()) != null) { // while loop
@@ -314,7 +315,7 @@ public class ServerSettingsBean {
                 } // end while
             }
         } catch (IOException exc) {
-            System.out.println(exc);
+            log.error(exc);
             System.exit(1);
         }
         return buf.toString();
@@ -354,14 +355,15 @@ public class ServerSettingsBean {
         return getLogHeader(wsLog, "Web Server");
     }
 
+    
     /**
-     * @param log
+     * @param logFile
      * @param name
      * @return
      */
-    private String getLogHeader(File log, String name) {
+    private String getLogHeader(File logFile, String name) {
         StringBuffer buf = new StringBuffer();
-        if ((log == null || !log.exists())) {
+        if ((logFile == null || !logFile.exists())) {
             buf.append("Log not found.");
         } else {
             buf.append(name + " log file from ");
@@ -390,25 +392,14 @@ public class ServerSettingsBean {
      * @return
      */
     private File getWsLogFile() {
-        File wsLog = null;
-        cal = Calendar.getInstance();
-        if (System.getProperty("serverInfo").indexOf("Apache Tomcat") != -1) {
-            for (int i = 0; i < 10; i++) {
-                String filename = "localhost." + df.format(cal.getTime()) + ".log";
-                wsLog = new File("logs", filename);
-                if (wsLog.exists())
-                    break;
-                wsLog = null;
-                cal.add(Calendar.DATE, -1); // backup up one day
-            }
-        }
-        if (wsLog == null || !wsLog.exists()) {
+	String logPath = settings.getProperty("log4j.appender.All.File");
+        if (logPath == null || !new File(logPath).exists()) {
             String newLogPath = settings.getProperty(wsLogPath);
             if (newLogPath != null) {
                 return new File(newLogPath);
             }
         }
-        return wsLog;
+        return new File(logPath);
     }
 
     /**
@@ -573,13 +564,6 @@ public class ServerSettingsBean {
      */
     public void setDb(String dbName) {
         settings.put("database.vendor", dbName);
-    }
-
-    /**
-     * @param event
-     */
-    public void changeDb(ValueChangeEvent event) {
-        String db = (String) settings.get("database.vendor");
     }
 
     /**
