@@ -485,10 +485,10 @@ a:active {
 	color: #333399;
 	text-decoration: none;
 	position:absolute;
-	right:25px;
+	right:0px;
 	top:0px;
 	z-index:40;
-	width: auto;
+	width: 100%;
 	height: 25px;
 	text-align: right;
 	
