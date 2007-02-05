@@ -425,8 +425,7 @@ if (tia != null) {
 <input type="hidden" name="<%= GPConstants.FORMER_NAME %>" value="<%= taskInfo != null ? taskInfo.getName() : "" %>">
 
 
-Please enter the following information to submit a new or updated analysis task to <%= messages.get("ApplicationName") %>.
-&nbsp;&nbsp;<input type="button" value="Help" onclick="window.open('help.jsp', 'help')" class="button">
+<input type="button" value="Help" onclick="window.open('help.jsp', 'help')" class="button">
 <% if (LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="Edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
 
 <br><br>
