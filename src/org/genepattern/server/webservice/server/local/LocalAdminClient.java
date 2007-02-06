@@ -65,10 +65,6 @@ public class LocalAdminClient {
         return tmCatalog;
     }
 
-    public Map<String, List<String>> getLSIDToVersionsMap() throws WebServiceException {
-        return service.getLSIDToVersionsMap();
-    }
-
     public TreeMap<String, TaskInfo> getTaskCatalogByLSID() throws WebServiceException {
         return getTaskCatalogByLSID(Arrays.asList(service.getAllTasks()));
     }
@@ -123,16 +119,8 @@ public class LocalAdminClient {
         return service.getSuite(lsid);
     }
 
-    public SuiteInfo[] getLatestSuites() throws WebServiceException {
-        return service.getLatestSuites();
-    }
-
     public SuiteInfo[] getAllSuites() throws WebServiceException {
         return service.getAllSuites();
-    }
-
-    public SuiteInfo[] getSuiteMembership(String lsid) throws WebServiceException {
-        return service.getSuiteMembership(lsid);
     }
 
     public String getUserProperty(String key) {

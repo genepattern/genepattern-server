@@ -59,7 +59,7 @@ public class JobInfoBean {
         LocalAnalysisClient client = new LocalAnalysisClient(UIBeanHelper.getUserId());
         JobInfo job = null;
         try {
-            job = client.checkStatus(requestedJobNumber);
+            job = client.getJob(requestedJobNumber);
             this.taskName = job.getTaskName();
         } catch (WebServiceException e) {
             log.error(e);

@@ -28,7 +28,7 @@ public class AuthorizationManagerFactory {
     }
 
     private static IAuthorizationManager init() {
-        String className = System.getProperty("org.genepattern.AuthorizationManager");
+        String className = System.getProperty("org.genepattern.server.util.AuthorizationManager");
 
         if (className == null) {
             return new AuthorizationManager();

@@ -355,12 +355,6 @@ public class GenePatternAnalysisTask {
                     return null;
                 }
 
-                if (!isJobOwner(userId, job)
-                        && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer",
-                                userId)) {
-                    return null;
-                }
-
                 return new File(jobsDir.getAbsolutePath() + File.separator + job + File.separator + requestedFile);
 
             }
@@ -3376,12 +3370,6 @@ public class GenePatternAnalysisTask {
     public static String installNewTask(String zipFilename, String username, int access_id, boolean recursive,
             Status taskIntegrator) throws TaskInstallationException {
         Vector vProblems = new Vector();
-        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        if (!authManager.checkPermission("createTask", username)) {
-            Vector v = new Vector();
-            v.add("You do not have permisison to create or install tasks on this server");
-            throw new TaskInstallationException(v);
-        }
         int i;
         ZipFile zipFile = null;
         InputStream is = null;

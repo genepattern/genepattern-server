@@ -34,12 +34,6 @@ package org.genepattern.server.util;
 public interface IAuthorizationManager  {
 	  
 
-
-	public String getCheckedLink(String link, String userID, String failureNote);
-	
-	public String getCheckedLink(String permission, String link, String userID, String failureNote);
-
-
 	public boolean isAllowed(String urlOrSoapMethod, String userID);
 
 	public boolean checkPermission(String permissionName, String userID);

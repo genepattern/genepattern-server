@@ -65,20 +65,12 @@ public class LocalAnalysisClient {
         return service.getJob(jobId);
     }
 
-    public String createProvenancePipeline(JobInfo[] jobs, String pipelineName) throws WebServiceException  {
-        return service.createProvenancePipeline(jobs, pipelineName);
-
-    }
 
     public String createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName) throws WebServiceException  {
         return service.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
 
     }
 
-    public JobInfo[] findJobsThatCreatedFile(String fileURLOrJobNumber) throws WebServiceException {
-        return service.findJobsThatCreatedFile(fileURLOrJobNumber);
-
-    }
 
     public JobInfo[] getChildren(int jobNumber) throws WebServiceException {
         int[] children = service.getChildren(jobNumber);

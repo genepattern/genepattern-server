@@ -38,10 +38,12 @@ import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.GenericWebService;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.util.GPConstants;
 import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.FileWrapper;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
@@ -57,17 +59,15 @@ public class Analysis extends GenericWebService {
     private IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
 
     /**
-     * Default constructor. Constructs a <code>Analysis</code> web service
-     * object.
+     * Default constructor. Constructs a <code>Analysis</code> web service object.
      */
     public Analysis() {
-        Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
-        // sometimes empty
+        Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are sometimes empty
 
     }
 
     /**
-     * Checks the status of a particular job.
+     * Returns the JobInfo object with the given ID, presumably to check status.
      * 
      * @param jobID
      *            the ID of the task to check
@@ -76,16 +76,12 @@ public class Analysis extends GenericWebService {
      *                thrown if problems are encountered
      */
     public JobInfo checkStatus(int jobID) throws WebServiceException {
-        Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
-        // sometimes empty
-
-        isJobOwnerOrAuthorized(getUsernameFromContext(), jobID, "Analysis.checkStatus");
+        Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are sometimes empty
 
         JobInfo jobInfo = null;
-
         try {
-            GetJobStatusHandler req = new GetJobStatusHandler(jobID);
-            jobInfo = req.executeRequest();
+            jobInfo = (new AnalysisDAO()).getJobInfo(jobID);
+            isJobOwnerOrAuthorized(getUsernameFromContext(), jobInfo);
         } catch (Throwable t) {
             logAndThrow(t);
         }
@@ -93,11 +89,16 @@ public class Analysis extends GenericWebService {
         return jobInfo;
     }
 
+    /**
+     * Create a "provenance" pipeline [DESCRIBE PLEASE] from the job array.
+     * 
+     * @param jobs
+     * @param pipelineName
+     * @return
+     * @throws WebServiceException
+     */
     public String createProvenancePipeline(JobInfo[] jobs, String pipelineName) throws WebServiceException {
-        for (int i = 0; i < jobs.length; i++) {
-            isJobOwnerOrAuthorized(getUsernameFromContext(), jobs[i].getJobNumber(),
-                    "Analysis.createProvenancePipeline");
-        }
+        isAuthorized(getUsernameFromContext(), "createPipeline");
 
         String userID = getUsernameFromContext();
         ProvenanceFinder pf = new ProvenanceFinder(userID);
@@ -108,30 +109,36 @@ public class Analysis extends GenericWebService {
         return pf.createProvenancePipeline(jobSet, pipelineName);
     }
 
+    /**
+     * Create a "provenance" pipeline [DESCRIBE PLEASE] from the file url or job number.
+     * 
+     * @param fileUrlOrJobNumber
+     * @param pipelineName
+     * @return
+     * @throws WebServiceException
+     */
     public String createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName) throws WebServiceException {
         String userID = getUsernameFromContext();
+        isAuthorized(userID, "createPipeline");
+
         ProvenanceFinder pf = new ProvenanceFinder(userID);
-
         JobInfo job = pf.findJobThatCreatedFile(fileUrlOrJobNumber);
-        isJobOwnerOrAuthorized(getUsernameFromContext(), job.getJobNumber(), "Analysis.createProvenancePipeline");
-
         String lsid = pf.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
         return lsid;
     }
 
     /**
-     * Deletes the all the input and output files for the given job and removes
-     * the job from the stored history. If the job is running if will be
-     * terminated.
+     * Deletes the input and output files for the given job and removes the job from the stored history. If the job is
+     * running if will be terminated.
      * 
-     * user identity is checked by terminateJob to ensure it is the job owner or
-     * someone with admin provileges
+     * user identity is checked by terminateJob to ensure it is the job owner or someone with admin provileges
      * 
      * @param jobId
      *            the job id
      */
     public void deleteJob(int jobId) throws WebServiceException {
-        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.deleteJob");
+
+        JobInfo jobInfo = getJob(jobId);
         try {
             terminateJob(jobId);
             File jobDir = new File(org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String
@@ -160,22 +167,20 @@ public class Analysis extends GenericWebService {
 
     /**
      * 
-     * Deletes the given output file for the given job and removes the output
-     * file from the parameter info array for the job. If <tt>jobId</tt> is a
-     * parent job and value was created by it's child, the child will be updated
-     * as well. Additionally, if <tt>jobId</tt> is a child job, the parent
-     * will be updated too.
+     * Deletes the given output file for the given job and removes the output file from the parameter info array for the
+     * job. If <tt>jobId</tt> is a parent job and value was created by it's child, the child will be updated as well.
+     * Additionally, if <tt>jobId</tt> is a child job, the parent will be updated too.
      * 
      * @param jobId
      *            the job id
      * @param value
-     *            the value of the parameter info object for the output file to
-     *            delete
+     *            the value of the parameter info object for the output file to delete
      */
     public void deleteJobResultFile(int jobId, String value) throws WebServiceException {
-        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.deleteJobResultFile");
         AnalysisDAO ds = new AnalysisDAO();
         JobInfo jobInfo = ds.getJobInfo(jobId);
+        isJobOwnerOrAuthorized(getUsernameFromContext(), jobInfo);
+
         int beforeDeletionLength = 0;
         ParameterInfo[] params = jobInfo.getParameterInfoArray();
         if (params != null) {
@@ -225,7 +230,6 @@ public class Analysis extends GenericWebService {
         ProvenanceFinder pf = new ProvenanceFinder(userID);
 
         JobInfo job = pf.findJobThatCreatedFile(fileURLOrJobNumber);
-        isJobOwnerOrAuthorized(getUsernameFromContext(), job.getJobNumber(), "Analysis.findJobsThatCreatedFile");
 
         Set<JobInfo> jobSet = pf.findJobsThatCreatedFile(fileURLOrJobNumber);
         JobInfo[] jobs = new JobInfo[jobSet.size()];
@@ -238,7 +242,6 @@ public class Analysis extends GenericWebService {
     }
 
     public int[] getChildren(int jobId) throws WebServiceException {
-        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.getChildren");
 
         try {
             AnalysisDAO ds = new AnalysisDAO();
@@ -255,15 +258,10 @@ public class Analysis extends GenericWebService {
     }
 
     public JobInfo getJob(int jobId) throws WebServiceException {
-        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.getJob");// checks
-        // permissions
-
-        try {
-            AnalysisDAO ds = new AnalysisDAO();
-            return ds.getJobInfo(jobId);
-        } catch (org.genepattern.webservice.OmnigeneException oe) {
-            throw new WebServiceException(oe);
-        }
+        AnalysisDAO ds = new AnalysisDAO();
+        JobInfo job = ds.getJobInfo(jobId);
+        isJobOwnerOrAuthorized(getUsernameFromContext(), job);
+        return job;
 
     }
 
@@ -272,16 +270,15 @@ public class Analysis extends GenericWebService {
      * Gets the jobs for the current user
      * 
      * @param username
-     *            the username to retrieve jobs for. If <tt>null</tt> all
-     *            available jobs are returned.
+     *            the username to retrieve jobs for. If <tt>null</tt> all available jobs are returned.
      * @param maxJobNumber
-     *            the maximum job number to include in the returned jobs or -1,
-     *            to start at the current maximum job number in the database
+     *            the maximum job number to include in the returned jobs or -1, to start at the current maximum job
+     *            number in the database
      * @param maxEntries
      *            the maximum number of jobs to return
      * @param allJobs
-     *            if <tt>true</tt> return all jobs that the given user has
-     *            run, otherwise return jobs that have not been deleted
+     *            if <tt>true</tt> return all jobs that the given user has run, otherwise return jobs that have not
+     *            been deleted
      * 
      * @return the jobs
      */
@@ -299,7 +296,7 @@ public class Analysis extends GenericWebService {
 
     public FileWrapper[] getResultFiles(int jobId, String[] filenames) throws WebServiceException {
         Thread.yield();
-        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.getResultFiles");
+        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId);
         FileWrapper[] result = new FileWrapper[filenames.length];
 
         for (int i = 0; i < filenames.length; i++) {
@@ -320,22 +317,15 @@ public class Analysis extends GenericWebService {
      * 
      * @param jobId
      *            the id of the job that completed.
-     * @return the array of FileWrapper objects containing the results for the
-     *         specified job.
+     * @return the array of FileWrapper objects containing the results for the specified job.
      * @exception WebServiceException
      *                thrown if problems are encountered
      */
     public FileWrapper[] getResultFiles(int jobId) throws WebServiceException {
         Thread.yield();
-        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.getResultFiles");
+        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId);
         ArrayList<String> filenames = new ArrayList<String>();
-        JobInfo jobInfo = null;
-        try {
-            GetJobStatusHandler req = new GetJobStatusHandler(jobId);
-            jobInfo = req.executeRequest();
-        } catch (Throwable t) {
-            logAndThrow(t);
-        }
+        JobInfo jobInfo = getJob(jobId);
         if (jobInfo != null) {
             ParameterInfo[] parameters = jobInfo.getParameterInfoArray();
             if (parameters != null) {
@@ -383,9 +373,8 @@ public class Analysis extends GenericWebService {
     }
 
     /**
-     * Purges the all the input and output files for the given job and expunges
-     * the job from the stored history. If the job is running if will be
-     * terminated.
+     * Purges the all the input and output files for the given job and expunges the job from the stored history. If the
+     * job is running if will be terminated.
      * 
      * user identity is checked by deleteJob to ensure it is the job owner
      * 
@@ -393,7 +382,7 @@ public class Analysis extends GenericWebService {
      *            the job id
      */
     public void purgeJob(int jobId) throws WebServiceException {
-        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.purgeJob");
+        isJobOwnerOrAuthorized(getUsernameFromContext(), jobId);
 
         try {
             deleteJob(jobId);
@@ -468,12 +457,11 @@ public class Analysis extends GenericWebService {
      * @param jobId
      *            the job id
      * @param status
-     *            the job status. One of "Pending", "Processing", "Finished, or
-     *            "Error"
+     *            the job status. One of "Pending", "Processing", "Finished, or "Error"
      */
     public void setJobStatus(int jobId, String status) throws WebServiceException {
         try {
-            isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.setJobStatus");
+            isJobOwnerOrAuthorized(getUsernameFromContext(), jobId);
 
             AnalysisDAO ds = new AnalysisDAO();
 
@@ -524,8 +512,7 @@ public class Analysis extends GenericWebService {
     }
 
     /**
-     * Submits an analysis job to be processed. The job is a child job of the
-     * supplied parent job.
+     * Submits an analysis job to be processed. The job is a child job of the supplied parent job.
      * 
      * @param taskID
      *            the ID of the task to run.
@@ -564,7 +551,7 @@ public class Analysis extends GenericWebService {
     public void terminateJob(int jobId) throws WebServiceException {
         try {
 
-            isJobOwnerOrAuthorized(getUsernameFromContext(), jobId, "Analysis.terminateJob");
+            isJobOwnerOrAuthorized(getUsernameFromContext(), jobId);
             AnalysisDAO ds = new AnalysisDAO();
 
             Process p = org.genepattern.server.genepattern.GenePatternAnalysisTask.terminatePipeline("" + jobId);
@@ -588,11 +575,9 @@ public class Analysis extends GenericWebService {
     }
 
     /**
-     * Returns the username trying to access this service. The username is
-     * retrieved from the incoming soap header.
+     * Returns the username trying to access this service. The username is retrieved from the incoming soap header.
      * 
-     * @return a String containing the username or an empty string if one not
-     *         found.
+     * @return a String containing the username or an empty string if one not found.
      */
     protected String getUsernameFromContext() {
         // get the context then the username from the soap header
@@ -604,24 +589,24 @@ public class Analysis extends GenericWebService {
         return username;
     }
 
-    private void isAuthorized(String user, String method) throws WebServiceException {
-        if (!authManager.isAllowed(method, user)) {
-            throw new WebServiceException("You do not have permission for items owned by other users.");
+    private void isAuthorized(String user, String permissionName) throws WebServiceException {
+        if (!authManager.checkPermission(permissionName, user)) {
+            throw new WebServiceException("You do not have permission to perform this action.");
         }
     }
 
-    private boolean isJobOwner(String user, int jobId) {
+
+    private void isJobOwnerOrAuthorized(String user, int jobId) throws WebServiceException {
         AnalysisDAO ds = new AnalysisDAO();
         JobInfo jobInfo = ds.getJobInfo(jobId);
-        if (jobInfo == null || user == null) {
-            return false;
+        if (!jobInfo.getUserId().equals(user)) {
+            isAuthorized(user, "adminJobs");
         }
-        return user.equals(jobInfo.getUserId());
     }
 
-    private void isJobOwnerOrAuthorized(String user, int jobId, String method) throws WebServiceException {
-        if (!isJobOwner(user, jobId)) {
-            isAuthorized(user, method);
+    private void isJobOwnerOrAuthorized(String user, JobInfo jobInfo) throws WebServiceException {
+        if (!jobInfo.getUserId().equals(user)) {
+            isAuthorized(user, "adminJobs");
         }
     }
 
@@ -688,9 +673,8 @@ public class Analysis extends GenericWebService {
     }
 
     private static void logAndThrow(Throwable t) throws WebServiceException {
-        t.printStackTrace();
         log.error(t.getMessage(), t);
-        throw new WebServiceException();
+        throw new WebServiceException(t);
     }
 
 }

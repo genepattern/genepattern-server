@@ -111,7 +111,7 @@ public class TaskIntegrator {
      *                If an error occurs
      */
     public String cloneTask(String oldLSID, String cloneName) throws WebServiceException {
-        isAuthorized(getUserName(), "TaskIntegrator.cloneTask");
+        isAuthorized(getUserName(), "createTask");
         String userID = getUserName();
 
         try {
@@ -245,8 +245,6 @@ public class TaskIntegrator {
     }
 
     public DataHandler exportSuiteToZip(String lsid) throws WebServiceException {
-        isAuthorized(getUserName(), "TaskIntegrator.exportSuiteToZip");
-
         try {
             ZipSuite zs = new ZipSuite();
             File zipFile = zs.packageSuite(lsid, getUserName());
@@ -268,13 +266,10 @@ public class TaskIntegrator {
      *                If an error occurs
      */
     public DataHandler exportToZip(String lsid) throws WebServiceException {
-        isAuthorized(getUserName(), "TaskIntegrator.exportToZip");
         return exportToZip(lsid, false);
     }
 
     public DataHandler exportToZip(String lsid, boolean recursive) throws WebServiceException {
-        isAuthorized(getUserName(), "TaskIntegrator.exportToZip");
-
         try {
             Thread.yield();
             String username = getUserName();
@@ -536,14 +531,11 @@ public class TaskIntegrator {
      *             If an error occurs
      */
     public String importZip(DataHandler handler, int privacy) throws WebServiceException {
-        isAuthorized(getUserName(), "TaskIntegrator.importZip");
-
         return importZip(handler, privacy, true, null);
     }
 
     private String importZip(DataHandler handler, int privacy, boolean recursive, Status taskIntegrator)
             throws WebServiceException {
-        isAuthorized(getUserName(), "TaskIntegrator.importZip");
         Vector vProblems = null;
         String lsid = null;
         try {
@@ -569,9 +561,11 @@ public class TaskIntegrator {
                 throw new WebServiceException("Couldn't open " + path + ": " + ioe.getMessage());
             }
             if (isSuite) {
+                isAuthorized(getUserName(), "createSuite");
                 lsid = installSuite(zippedFile);
             } else {
                 try {
+                    isAuthorized(getUserName(), "createTask");
                     lsid = GenePatternAnalysisTask.installNewTask(path, username, privacy, recursive, taskIntegrator);
                 } catch (TaskInstallationException tie) {
                     log.error(tie);
@@ -600,13 +594,11 @@ public class TaskIntegrator {
      *             If an error occurs
      */
     public String importZipFromURL(String url, int privacy) throws WebServiceException {
-        isAuthorized(getUserName(), "TaskIntegrator.importZipFromURL");
         return importZipFromURL(url, privacy, true, null);
     }
 
     public String importZipFromURL(String url, int privacy, boolean recursive, Status taskIntegrator)
             throws WebServiceException {
-        isAuthorized(getUserName(), "TaskIntegrator.importZipFromURL");
         File zipFile = null;
         ZipFile zippedFile;
         InputStream is = null;
@@ -628,7 +620,7 @@ public class TaskIntegrator {
                     isTask = true;
                 }
                 if (suiteManifestEntry != null) {
-                    isSuite = true;
+                     isSuite = true;
                 }
             } catch (IOException ioe) {
                 log.error(ioe);
@@ -643,6 +635,7 @@ public class TaskIntegrator {
                 // replace task, do not version lsid or replace the lsid in the
                 // zip
                 // with a local one
+                isAuthorized(getUserName(), "createTask");
                 lsid = GenePatternAnalysisTask.installNewTask(path, username, privacy, recursive, taskIntegrator);
             }
         } catch (TaskInstallationException tie) {
@@ -671,7 +664,7 @@ public class TaskIntegrator {
      */
 
     public void installSuite(String lsid) throws WebServiceException {
-        isAuthorized(getUserName(), "TaskIntegrator.installSuite");
+        isAuthorized(getUserName(), "createSuite");
         try {
             SuiteRepository sr = new SuiteRepository();
             HashMap suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
@@ -696,7 +689,7 @@ public class TaskIntegrator {
      */
     public void saveOrUpdateSuite(SuiteInfo suiteInfo) throws WebServiceException {
 
-        isAuthorized(getUserName(), "TaskIntegrator.installSuite");
+        isAuthorized(getUserName(), "createSuite");
 
         if (suiteInfo.getLSID() != null) {
             if (suiteInfo.getLSID().trim().length() == 0)
@@ -714,7 +707,7 @@ public class TaskIntegrator {
      * @throws WebServiceException
      */
     public String installSuite(SuiteInfo suiteInfo) throws WebServiceException {
-        isAuthorized(getUserName(), "TaskIntegrator.installSuite");
+        isAuthorized(getUserName(), "createSuite");
 
         try {
             if (suiteInfo.getLSID() != null) {
@@ -762,7 +755,7 @@ public class TaskIntegrator {
      * @throws WebServiceException
      */
     public String installSuite(ZipFile zipFile) throws WebServiceException {
-        isAuthorized(getUserName(), "TaskIntegrator.installSuite");
+        isAuthorized(getUserName(), "createSuite");
         try {
             System.out.println("Installing suite from zip");
 
@@ -812,7 +805,7 @@ public class TaskIntegrator {
      */
 
     public void installTask(String lsid) throws WebServiceException {
-        isAuthorized(getUserName(), "TaskIntegrator.installTask");
+        isAuthorized(getUserName(), "createTask");
         InstallTasksCollectionUtils utils = new InstallTasksCollectionUtils(getUserName(), false);
         try {
             InstallTask[] tasks = utils.getAvailableModules();
@@ -841,7 +834,6 @@ public class TaskIntegrator {
     }
 
     private boolean isZipOfZips(String url) throws WebServiceException {
-        isAuthorized(getUserName(), "TaskIntegrator.isZipOfZips");
         File file = Util.downloadUrl(url);
         try {
             return org.genepattern.server.TaskUtil.isZipOfZips(file);
@@ -1012,7 +1004,7 @@ public class TaskIntegrator {
     public String modifyTask(int accessId, String taskName, String description, ParameterInfo[] parameterInfoArray,
             Map taskAttributes, DataHandler[] dataHandlers, String[] fileNames) throws WebServiceException {
 
-        isAuthorized(getUserName(), "TaskIntegrator.modifyTask");
+        isAuthorized(getUserName(), "createTask");
 
         String lsid = null;
         String username = getUserName();
@@ -1159,8 +1151,8 @@ public class TaskIntegrator {
     }
 
     protected void isAuthorized(String user, String method) throws WebServiceException {
-        if (!authManager.isAllowed(method, user)) {
-            throw new WebServiceException("You do not have permission for items owned by other users.");
+        if (!authManager.checkPermission(method, user)) {
+            throw new WebServiceException("You do not have permission to perfom this action.");
         }
     }
 

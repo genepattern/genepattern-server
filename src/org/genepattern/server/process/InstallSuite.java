@@ -65,7 +65,7 @@ public class InstallSuite{
      * @throws WebServiceException
      */
     public void install(String lsid) throws WebServiceException, TaskInstallationException {
-        isAuthorized(username, "TaskIntegrator.installSuite");
+        isAuthorized(username, "createModule");
         try {
             SuiteRepository sr = new SuiteRepository();
             HashMap suites = sr.getSuites(System.getProperty("SuiteRepositoryURL"));
@@ -92,7 +92,7 @@ public class InstallSuite{
      * @throws WebServiceException
      */
     public String install(SuiteInfo suiteInfo) throws WebServiceException, TaskInstallationException {
-        isAuthorized(username, "TaskIntegrator.installSuite");
+        isAuthorized(username, "createModule");
 
         try {
             if (suiteInfo.getLSID() != null) {
@@ -156,7 +156,7 @@ public class InstallSuite{
      */
 
     public void installTask(String lsid) throws WebServiceException, TaskInstallationException {
-        isAuthorized(username, "TaskIntegrator.installTask");
+        isAuthorized(username, "createModule");
         InstallTasksCollectionUtils utils = new InstallTasksCollectionUtils(username, false);
         try {
             InstallTask[] tasks = utils.getAvailableModules();
@@ -209,8 +209,8 @@ public class InstallSuite{
             return url;
     }
     
-    protected void isAuthorized(String user, String method) throws WebServiceException {
-        if (!authManager.isAllowed(method, user)) {
+    protected void isAuthorized(String user, String permissionName) throws WebServiceException {
+        if (!authManager.checkPermission(permissionName, user)) {
             throw new WebServiceException("You do not have permission for items owned by other users.");
         }
     }

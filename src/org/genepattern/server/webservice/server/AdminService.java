@@ -26,6 +26,7 @@ import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
 import org.apache.axis.MessageContext;
+import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.domain.TaskMaster;
@@ -42,62 +43,35 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
 /**
- * AdminService Web Service. Do a Thread.yield at beginning of each method-
- * fixes BUG in which responses from AxisServlet are sometimes empty
+ * AdminService Web Service. Do a Thread.yield at beginning of each method- fixes BUG in which responses from
+ * AxisServlet are sometimes empty
  * 
  * @author Joshua Gould
  */
 
 public class AdminService implements IAdminService {
+    private static Logger log = Logger.getLogger(AdminService.class);
+
     static Map<String, String> serviceInfoMap;
 
-    AdminDAO dataService;
+    AdminDAO adminDAO;
 
     IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
 
     protected String localUserName = "";
 
     public AdminService() {
-        dataService = new AdminDAO();
+        adminDAO = new AdminDAO();
     }
 
     public AdminService(String localUser) {
-        dataService = new AdminDAO();
+        adminDAO = new AdminDAO();
         localUserName = localUser;
     }
 
-    private void isAuthorized(String user, String method) throws WebServiceException {
-        if (!authManager.isAllowed(method, user)) {
-            throw new WebServiceException("You do not have permission for items owned by other users.");
-        }
-    }
-
-    private boolean isTaskOwner(String user, String lsid) throws WebServiceException {
-
-        TaskMaster tm = (new TaskMasterDAO()).findByIdLsid(lsid);
-        if (tm == null)
-            return false; // can't own what you can't see
-        return user.equals(tm.getUserId());
-    }
-
-    private void isTaskOwnerOrAuthorized(String user, String lsid, String method) throws WebServiceException {
-
-        if (!isTaskOwner(user, lsid)) {
-            isAuthorized(user, method);
-        }
-    }
-
-    private boolean isSuiteOwner(String user, String lsid) {
-
-        Suite aSuite = (new SuiteDAO()).findById(lsid);
-        String owner = aSuite.getUserId();
-        return owner == null || owner.equals(getUserName());
-
-    }
-
-    private void isSuiteOwnerOrAuthorized(String user, String lsid, String method) throws WebServiceException {
-        if (!isSuiteOwner(user, lsid)) {
-            isAuthorized(user, method);
+    private void isAuthorized(String user, String permissionName) throws WebServiceException {
+        if (!authManager.checkPermission(permissionName, user)) {
+            throw new WebServiceException("You are not authorized to perform this action.");
         }
     }
 
@@ -114,19 +88,18 @@ public class AdminService implements IAdminService {
     }
 
     public Map getServiceInfo() throws WebServiceException {
-        isAuthorized(getUserName(), "AdminService.getServiceInfo");
         Thread.yield();
         return serviceInfoMap;
     }
 
     public DataHandler getServerLog() throws WebServiceException {
-        isAuthorized(getUserName(), "AdminService.getServerLog");
+        isAuthorized(getUserName(), "adminServer");
         Thread.yield();
         return getLog(false);
     }
 
     public DataHandler getGenePatternLog() throws WebServiceException {
-        isAuthorized(getUserName(), "AdminService.getGenePatternLog");
+        isAuthorized(getUserName(), "adminServer");
         Thread.yield();
         return getLog(true);
     }
@@ -159,54 +132,78 @@ public class AdminService implements IAdminService {
         return new DataHandler(new FileDataSource(f));
     }
 
+    /**
+     * Returns all tasks that are owned by the user, or are public.
+     */
     public TaskInfo[] getAllTasks() throws WebServiceException {
-        isAuthorized(getUserName(), "AdminService.getAllTasks");
-
         Thread.yield();
         try {
-            return dataService.getAllTasksForUser(getUserName());
+            return adminDAO.getAllTasksForUser(getUserName());
         } catch (OmnigeneException e) {
             throw new WebServiceException(e);
         }
     }
 
     public TaskInfo getTask(String lsidOrTaskName) throws WebServiceException {
-        isTaskOwnerOrAuthorized(getUserName(), lsidOrTaskName, "AdminService.getTask");
         Thread.yield();
         try {
-            return dataService.getTask(lsidOrTaskName, getUserName());
+            TaskInfo taskInfo = adminDAO.getTask(lsidOrTaskName, getUserName());
+            if (taskInfo != null) {
+                isTaskOwnerOrAuthorized(taskInfo);
+            }
+            return taskInfo;
         } catch (OmnigeneException e) {
             throw new WebServiceException(e);
         }
     }
 
+    private void isTaskOwnerOrAuthorized(TaskInfo taskInfo) throws WebServiceException {
+        if (!(taskInfo.getAccessId() == GPConstants.ACCESS_PUBLIC) || (taskInfo.getUserId().equals(getUserName()))) {
+            isAuthorized(getUserName(), "adminModules");
+        }
+    }
+
+    /**
+     * Return the latest version of each task accessible to the user sorted by task name. Tasks are groupd by LSID minus
+     * the version, so tasks with the same nambe but different authority are treated as distinct by this method. To
+     * group tasks by name use getLatestTasksByName().
+     */
     public TaskInfo[] getLatestTasks() throws WebServiceException {
-        isAuthorized(getUserName(), "AdminService.getLatestTasks");
         Thread.yield();
         try {
-            return dataService.getLatestTasks(getUserName());
+            return adminDAO.getLatestTasks(getUserName());
         } catch (Exception e) {
             throw new WebServiceException(e);
         }
     }
 
-    public TaskInfo[] getLatestTasksByName() throws WebServiceException {
-        isAuthorized(getUserName(), "AdminService.getLatestTasksByName");
+    /**
+     * Returns an array of the latest tasks for the current user. The returned array will not contain tasks with the
+     * same name. If more than one task with the same name exists on the server, the returned array will contain the one
+     * task with the name that is closest to the server LSID authority. The closest authority is the first match in the
+     * sequence: local server authority, Broad authority, other authority.
+     * 
+     * @param username
+     *            The username to get the tasks for.
+     * @return The array of tasks.
+     * @throws AdminDAOSysException
+     *             If an error occurs.
+     */
 
+    public TaskInfo[] getLatestTasksByName() throws WebServiceException {
         Thread.yield();
         try {
-            return dataService.getLatestTasksByName(getUserName());
+            return adminDAO.getLatestTasksByName(getUserName());
         } catch (AdminDAOSysException e) {
             throw new WebServiceException(e);
         }
     }
 
     public Map<String, List<String>> getSuiteLsidToVersionsMap() throws WebServiceException {
-        isAuthorized(getUserName(), "AdminService.getSuiteLsidToVersionsMap");
         Map<String, List<String>> suiteLsid2VersionsMap = new HashMap<String, List<String>>();
         SuiteInfo[] allSuites;
         try {
-            allSuites = dataService.getAllSuites();
+            allSuites = adminDAO.getAllSuites();
         } catch (AdminDAOSysException e1) {
             throw new WebServiceException(e1);
         }
@@ -225,6 +222,7 @@ public class AdminService implements IAdminService {
                     }
                     versions.add(lsid.getVersion());
                 } catch (java.net.MalformedURLException e) {
+                    log.error(e);
                 }
             }
         }
@@ -232,12 +230,11 @@ public class AdminService implements IAdminService {
     }
 
     public Map<String, List<String>> getLSIDToVersionsMap() throws WebServiceException {
-        isAuthorized(getUserName(), "AdminService.getLSIDToVersionsMap");
         Thread.yield();
         Map<String, List<String>> lsid2VersionsMap = new HashMap<String, List<String>>();
         TaskInfo[] tasks = null;
         try {
-            tasks = dataService.getAllTasksForUser(getUserName());
+            tasks = adminDAO.getAllTasksForUser(getUserName());
         } catch (OmnigeneException e) {
             throw new WebServiceException(e);
         }
@@ -262,33 +259,31 @@ public class AdminService implements IAdminService {
     }
 
     public SuiteInfo getSuite(String lsid) throws WebServiceException {
-        isSuiteOwnerOrAuthorized(getUserName(), lsid, "AdminService.getSuite");
         try {
-            SuiteInfo suite = dataService.getSuite(lsid);
-
-            String owner = suite.getOwner();
-            if (suite.getAccessId() == GPConstants.ACCESS_PRIVATE) {
-                if (!owner.equals(getUserName())) {
-                    throw new WebServiceException("You may not view a private suite you are not the owner of.");
-                }
-            }
+            SuiteInfo suite = adminDAO.getSuite(lsid);
+            isSuiteOwnerOrAuthorized(suite);
             return suite;
         } catch (OmnigeneException e) {
             throw new WebServiceException(e);
         }
     }
 
+    private void isSuiteOwnerOrAuthorized(SuiteInfo suite) throws WebServiceException {
+        if (!(suite.getAccessId() == GPConstants.ACCESS_PUBLIC) || (suite.getOwner().equals(getUserName()))) {
+            isAuthorized(getUserName(), "adminSuites");
+        }
+    }
+
     /**
-     * Gets the latest versions of all suites
+     * Gets the latest versions of all suites that are either public, or owned by the current user.
      * 
      * @return The latest suites
      * @exception WebServiceException
      *                If an error occurs
      */
     public SuiteInfo[] getLatestSuites() throws WebServiceException {
-        isAuthorized(getUserName(), "AdminService.getLatestSuites");
         try {
-            return dataService.getLatestSuites(getUserName());
+            return adminDAO.getLatestSuitesForUser(getUserName());
         } catch (AdminDAOSysException e) {
             throw new WebServiceException(e);
         }
@@ -296,16 +291,15 @@ public class AdminService implements IAdminService {
     }
 
     /**
-     * Gets all versions of all suites
+     * Gets all versions of all suites that are either owned by the current user, or are public.
      * 
      * @return The suites
      * @exception WebServiceException
-     *                If an error occurs
+     *                if an error occurs
      */
     public SuiteInfo[] getAllSuites() throws WebServiceException {
-        isAuthorized(getUserName(), "AdminService.getAllSuites");
         try {
-            return dataService.getAllSuites(getUserName());
+            return adminDAO.getAllSuites(getUserName());
         } catch (AdminDAOSysException e) {
             throw new WebServiceException(e);
         }
@@ -320,9 +314,8 @@ public class AdminService implements IAdminService {
      *                If an error occurs
      */
     public SuiteInfo[] getSuiteMembership(String taskLsid) throws WebServiceException {
-        isTaskOwnerOrAuthorized(getUserName(), taskLsid, "AdminService.getSuiteMembership");
         try {
-            return dataService.getSuiteMembership(taskLsid);
+            return adminDAO.getSuiteMembership(taskLsid);
         } catch (OmnigeneException e) {
             throw new WebServiceException(e);
         }

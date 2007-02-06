@@ -329,8 +329,16 @@ public class AdminDAO extends BaseDAO {
         }
     }
 
+    
+    /**
+     * Returns a map containing the latest version of each task in the input array.
+     * The keys for the map are the no-version LSIDs of the tasks.
+     * @param tasks
+     * @return
+     * @throws MalformedURLException
+     */
     private static Map getLatestTasks(TaskInfo[] tasks) throws MalformedURLException {
-        Map latestTasks = new HashMap();
+        Map<String, TaskInfo> latestTasks = new HashMap<String, TaskInfo>();
         for (int i = 0; i < tasks.length; i++) {
             TaskInfo ti = tasks[i];
             LSID tiLSID = new LSID((String) ti.getTaskInfoAttributes().get(GPConstants.LSID));
@@ -343,10 +351,7 @@ public class AdminDAO extends BaseDAO {
                 LSID altLSID = new LSID((String) altTi.getTaskInfoAttributes().get(GPConstants.LSID));
                 if (altLSID.compareTo(tiLSID) > 0) {
                     latestTasks.put(tiLSID.toStringNoVersion(), ti); // it
-                    // is
-                    // newer
-                } // else it is older so leave it out
-
+                } 
             }
         }
         return latestTasks;
@@ -361,7 +366,6 @@ public class AdminDAO extends BaseDAO {
 
                 try {
                     LSID existingLsid = new LSID((String) t.getTaskInfoAttributes().get(GPConstants.LSID));
-
                     LSID currentLSID = new LSID((String) tasks[i].getTaskInfoAttributes().get(GPConstants.LSID));
                     LSID closer = LSIDManager.getInstance().getNearerLSID(existingLsid, currentLSID);
                     if (closer == currentLSID) {
@@ -378,9 +382,10 @@ public class AdminDAO extends BaseDAO {
         return (TaskInfo[]) map.values().toArray(new TaskInfo[0]);
     }
 
+    
     public TaskInfo[] getLatestTasks(String username) {
 
-        TaskInfo[] tasks = this.getAllTasksForUser(username);
+        TaskInfo[] tasks = getAllTasksForUser(username);
         if (tasks == null) {
             return new TaskInfo[0];
         }
@@ -511,9 +516,9 @@ public class AdminDAO extends BaseDAO {
         }
     }
 
-    public SuiteInfo[] getLatestSuites(String userName) throws AdminDAOSysException {
+    public SuiteInfo[] getLatestSuitesForUser(String userName) throws AdminDAOSysException {
         ArrayList latestSuites = _getLatestSuites();
-        ArrayList allowedSuites = new ArrayList();
+        ArrayList<SuiteInfo> allowedSuites = new ArrayList<SuiteInfo>();
         for (Iterator iter = latestSuites.iterator(); iter.hasNext();) {
             SuiteInfo si = (SuiteInfo) iter.next();
             if (si.getAccessId() == GPConstants.ACCESS_PRIVATE) {

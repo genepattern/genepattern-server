@@ -167,7 +167,7 @@ public class JobBean {
         try {
             int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
             LocalAnalysisClient client = new LocalAnalysisClient(UIBeanHelper.getUserId());
-            JobInfo job = client.checkStatus(jobNumber);
+            JobInfo job = client.getJob(jobNumber);
             if (job == null) {
                 return;
             }

@@ -113,7 +113,7 @@ public class AdminDAOTest extends DAOTestCase {
      */
     public void testGetLatestSuitesByUser() throws Exception {
         String user = "jlerner@broad.mit.edu";
-        SuiteInfo [] suites = dao.getLatestSuites(user);
+        SuiteInfo [] suites = dao.getLatestSuitesForUser(user);
         assertTrue(suites.length > 0);
 
     }
