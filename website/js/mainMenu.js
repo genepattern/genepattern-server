@@ -5,7 +5,6 @@ function mmLoadMenus() {
   if (window.mm_menu_documentation) return;
 
   window.mm_menu_tasks = new Menu("root",140,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_tasks.addMenuItem("Start","location=contextRoot + '/pages/index.jsf'");
   if(createPipelineAllowed) {
   	mm_menu_tasks.addMenuItem("New&nbsp;Pipeline","location=contextRoot + '/pipelineDesigner.jsp'");
   }
