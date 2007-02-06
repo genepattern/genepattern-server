@@ -249,7 +249,7 @@ public class JobBean {
 
             TaskInfo taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(lsid);
             if (taskInfo == null) {
-                return "Task not found";
+                return "Module not found";
             }
             ParameterInfo[] parameters = taskInfo.getParameterInfoArray();
 
