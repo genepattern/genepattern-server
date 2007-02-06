@@ -5,6 +5,19 @@
 
 <permissionMap>
 
+<permission name="adminModules">
+	<group name="*"/>
+</permission>
+<permission name="adminSuites">
+	<group name="*"/>
+</permission>
+<permission name="adminPipelines">
+	<group name="*"/>
+</permission>
+
+<permission name="createModule">
+	<group name="genepatternTaskCreators"/>
+</permission>
 
 <permission name="createTask">
 	<group name="genepatternTaskCreators"/>
