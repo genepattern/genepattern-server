@@ -157,7 +157,42 @@
 	
 		
 	function confirmDelete() {
-		return confirm('Are you sure you want to delete the selected job(s)?');
+		var jobs = document.getElementsByClassName("jobResult", "jobsForm");
+       	var files = document.getElementsByClassName("jobFile", "jobsForm");
+       	var numJobsChecked = 0;
+       	for(var i = 0, length = jobs.length; i < length && numJobsChecked < 2; i++) {
+       		if(jobs[i].checked) {
+       			numJobsChecked++;
+       		}
+       	}
+       	
+       	var numFilesChecked = 0;
+       	for(var i = 0, length = files.length; i < length && numFilesChecked < 2; i++) {
+       		if(files[i].checked) {
+       			numFilesChecked++;
+       		}
+       	}
+       	if(numJobsChecked==0 && numFilesChecked==0) {
+       		return alert("No jobs or files selected.");
+       	}
+       	var jobString = "";
+       	if(numJobsChecked == 1) {
+       		jobString = " job";
+       	} else if(numJobsChecked > 1) {
+       		jobString = " jobs";
+       	}
+       	
+       	var fileString = "";
+       	if(numJobsChecked > 0) {
+       		fileString = " and";
+       	}
+       	
+       	if(numFilesChecked==1) {
+      		fileString += " file";
+       	} else if(numFilesChecked > 1) {
+       		fileString += " files";
+       	}
+		return confirm('Are you sure you want to delete the selected' + jobString + fileString + '?');
 
 	}
 	
@@ -177,7 +212,7 @@ document.location.href=location;
     </ui:define>
 	
     <ui:define name="body">
-      <h:form> 
+      <h:form id="jobsForm"> 
       <table width="100%"  border="0" cellspacing="0" cellpadding="0">
         <tr>
           <td valign="top" class="maintasknav" id="maintasknav" align="right" width="100%">
