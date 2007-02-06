@@ -361,7 +361,7 @@ onclick="toggleLogs()">show execution logs
 <table cellspacing="4">
 <tr>
    <th valign="bottom" align="right"><b><u>job &nabla;</u></b></th>
-   <th valign="bottom"><b><u>task</u></b></th>
+   <th valign="bottom"><b><u>module</u></b></th>
    <th valign="bottom"><b><u>submitted</u></b></th>
    <th valign="bottom"><b><u>completed</u></b></th>
    <th valign="bottom"><b><u>status</u></b></th>

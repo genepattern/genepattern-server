@@ -75,7 +75,7 @@ use, misuse, or functionality.
 		
 		TaskInfo task = runTaskHelper.getTaskInfo();
 		if (task == null) {
-			out.println("Unable to find task");
+			out.println("Unable to find module");
 	   		return;
 		}
 	        

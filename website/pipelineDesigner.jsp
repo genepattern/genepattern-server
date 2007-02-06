@@ -38,7 +38,7 @@ var ie4 = (document.all) ? true : false;
 var ns4 = (document.layers) ? true : false;
 var ns6 = (document.getElementById && !document.all) ? true : false;
 var numTasks = 0;
-var NOT_SET = "[task not yet selected]";
+var NOT_SET = "[module not yet selected]";
 var stopLoading = false;
 var MAX_TASK_DESCRIPTION_LENGTH = 70;
 var myAuthority = '<%= LSIDManager.getInstance().getAuthority() %>';
@@ -97,7 +97,7 @@ function setTask(taskNum, taskLSID) {
 function addAnother(taskNum, scrollTo) {
 	// if the maximum number of tasks is already in the list, then ask whether the user intends to push the last one off the end
 	if (numTasks == MAX_TASKS) {
-		if (!confirm("There is a limit of " + numTasks + " tasks per pipeline.  Adding another task will force the " + numTasks +
+		if (!confirm("There is a limit of " + numTasks + " modules per pipeline.  Adding another module will force the " + numTasks +
 			     "th to be deleted.  Press OK to delete '" + MAX_TASKS + ". " + 
 			     document.forms["pipeline"]['t' + (MAX_TASKS-1) + '_taskName'].value +
 			     "' and insert another.")) {
@@ -168,7 +168,7 @@ function addAnother(taskNum, scrollTo) {
 				var selector = document.forms["pipeline"]['t' + i + '_i_' + param];
 				var selected = selector.options[selector.selectedIndex].value;
 				selector.length = 0;
-				selector.options[0] = new Option('Choose task', NOT_SET);
+				selector.options[0] = new Option('Choose module', NOT_SET);
 				selector.options[0].disabled = true;
 				for (t = 0; t < i; t++) {
 					if (t != taskNum) {
@@ -238,7 +238,7 @@ function deleteTask(taskNum) {
 					var selector = document.forms["pipeline"]['t' + oldTaskNum + '_i_' + param];
 					var selected = selector.options[selector.selectedIndex].value;
 					selector.length = 0;
-					selector.options[0] = new Option('Choose task', NOT_SET);
+					selector.options[0] = new Option('Choose module', NOT_SET);
 					selector.options[0].disabled = true;
 					for (t = 0; t < newTaskNum; t++) {
 					   	var tName = document.forms["pipeline"]['t' + t + '_taskName'].value;
@@ -722,10 +722,10 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 
 	var task = TaskInfos[taskLSID];
 	if (task == null) {
-		alert('no such task \"' + taskLSID + '\".  Aborting pipeline loading.');
+		alert('no such module \"' + taskLSID + '\".  Aborting pipeline loading.');
 		stopLoading = true;
 		window.stop();	
-		return ('<hr class="pipelineDesigner">no such task \"' + taskLSID + '\".  Aborting pipeline loading.');
+		return ('<hr class="pipelineDesigner">no such module \"' + taskLSID + '\".  Aborting pipeline loading.');
 	}
 	
 	taskFields = taskFields + "<br/><div class=\"pipeline_item\">";
@@ -857,7 +857,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 				     '" type="text" readonly size="60" tabindex="-1" class="shadow">';
 			if (taskNum > 0) {
 				taskFields = taskFields + '<br><nobr>or use output from <select name="t' + taskNum + '_i_' + param + 
-							  '" onchange="chooseInheritTask(' + taskNum + ', ' + param + ')"><option value=' + NOT_SET + '" disabled>Choose task</option>\n';
+							  '" onchange="chooseInheritTask(' + taskNum + ', ' + param + ')"><option value=' + NOT_SET + '" disabled>Choose module</option>\n';
 				for (t = 0; t < taskNum; t++) {
 					taskFields = taskFields + '<option value="' + t + '">' + (t+1) + '.  ' + 
 						     document.forms['pipeline']['t' + t + '_taskName'].value + '</option>\n';
@@ -922,7 +922,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 					var selected = selector.options[selector.selectedIndex].value;
 					if (selector.selectedIndex == 0) selected = -1; // ensure no match against task 0
 					selector.length = 0;
-					selector.options[0] = new Option('Choose task', NOT_SET);
+					selector.options[0] = new Option('Choose module', NOT_SET);
 					selector.options[0].disabled = true;
 					for (t = 0; t < i; t++) {
 						if (t != taskNum) {
@@ -1024,7 +1024,7 @@ function setSelector(selector, findValue) {
 		val = vals + fld.options[f].value + "=" + fld.options[f].text + "\n";
 	}
 	alert('setSelector: could not find ' + findValue + ' among ' + fld.options.length +
-	      ' items in ' + taskName + ' (task ' + (parseInt(taskNum)+1) + ') field ' + 
+	      ' items in ' + taskName + ' (module ' + (parseInt(taskNum)+1) + ') field ' + 
 	      userFieldName + '.  Values are:\n' + vals);
 }
 
@@ -1102,7 +1102,7 @@ function setTaskName(taskNum, taskName, taskLSID) {
 		alert("Step " + (taskNum+1) + ": unable to locate " + taskName + '(' + taskLSID + ')');
 		writeToLayer(taskNum, newTaskHTML(taskNum) + 
 			(new LSID(requestedLSID).authority != myAuthority ?
-			 ('<br><a href="/gp/pages/taskCatalog.jsf?<%= GPConstants.LSID %>=' + requestedLSID + '">load ' + taskName + ' from Broad task catalog</a>') : ""));
+			 ('<br><a href="/gp/pages/taskCatalog.jsf?<%= GPConstants.LSID %>=' + requestedLSID + '">load ' + taskName + ' from Broad module catalog</a>') : ""));
 		showLayer(taskNum);
 		// XXX: there will be problems in subsequent stages that inherit files from this stage
 		//stopLoading = true;
@@ -1120,9 +1120,9 @@ function setFileInheritance(thisTaskNum, thisParamNum, fromTaskNum, fromFileNum)
 
 	if (document.forms['pipeline']['t' + thisTaskNum + '_if_' + thisParamNum] == null) {
 		if (stopLoading) return;
-		alert("Parameter #" + (thisParamNum+1) + " in task #" + (thisTaskNum+1) + ", " + 
+		alert("Parameter #" + (thisParamNum+1) + " in module #" + (thisTaskNum+1) + ", " + 
 			document.forms['pipeline']['t' + thisTaskNum + '_taskName'].value + 
-			", is no longer an input file.  This parameter will not inherit input from task #" + 
+			", is no longer an input file.  This parameter will not inherit input from module #" + 
 			(fromTaskNum+1) + ", " + document.forms['pipeline']['t' + fromTaskNum + '_taskName'].value + 
 			", file #" + fromFileNum);
 		return;
@@ -1134,9 +1134,9 @@ function setFileInheritance(thisTaskNum, thisParamNum, fromTaskNum, fromFileNum)
 	   	var task = TaskInfos[document.forms["pipeline"]['t' + thisTaskNum + '_taskLSID'].value];
 		var pi = task.parameterInfoArray[thisParamNum];
 
-		alert("Warning: parameter #" + (thisParamNum+1) + " in task #" + (thisTaskNum+1) + ", " + 
+		alert("Warning: parameter #" + (thisParamNum+1) + " in module #" + (thisTaskNum+1) + ", " + 
 			document.forms['pipeline']['t' + thisTaskNum + '_taskName'].value + 
-			", inherits " + pi.name + " from task #" + 
+			", inherits " + pi.name + " from module #" + 
 			(fromTaskNum+1) + ", " + document.forms['pipeline']['t' + fromTaskNum + '_taskName'].value + 
 			", file #" + fromFileNum + ", which is currently not defined.");
 	}
@@ -1244,9 +1244,9 @@ function savePipeline(bMustName, cmd) {
 			if (!promptWhenRun.checked && !pi.isOptional){
 				
 				if ((inheritTask == null) || (inheritFile == null)) {
-					missingInheritedFileValue = "task " + i + " inherited value for " + pi.name + " is not fully specified";
+					missingInheritedFileValue = "module " + i + " inherited value for " + pi.name + " is not fully specified";
 				}else if ((inheritTask.value != null) && (inheritFile.value == '')){
-					missingInheritedFileValue = "task " + i + " inherited value for " + pi.name + " is not fully specified";
+					missingInheritedFileValue = "module " + i + " inherited value for " + pi.name + " is not fully specified";
 				}
 			}
 		   }
@@ -1265,7 +1265,7 @@ function savePipeline(bMustName, cmd) {
 
 	if (numTasks == 0) {
 		success = false;
-		alert('No tasks defined in pipeline');
+		alert('No modules defined in pipeline');
 	}
 	if (success) {
 		document.forms['pipeline']['cmd'].value = cmd;

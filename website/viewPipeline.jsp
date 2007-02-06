@@ -264,7 +264,7 @@ for(int i = 0; i < tasks.size(); i++) {
       formalParams = new ParameterInfo[0];
    } else if (!unknownTask){
 	 %>
-          <td width=\"8\"><a href="#" onClick="toggleTask(null, <%=displayNumber-1%>)" ><img id="arrowTask<%=displayNumber-1%>" src="images/arrow-pipelinetask-right.gif" alt="hide task" width="8" height="8" vspace="3" border="0" /></a></td>
+          <td width=\"8\"><a href="#" onClick="toggleTask(null, <%=displayNumber-1%>)" ><img id="arrowTask<%=displayNumber-1%>" src="images/arrow-pipelinetask-right.gif" alt="hide module" width="8" height="8" vspace="3" border="0" /></a></td>
           <td><%=displayNumber%>. <a href="addTask.jsp?view=1&name=<%=js.getLSID()%>"> <%=js.getName()%></a> </td>
 		<td class='smalltype' align='right'>version <%=taskLsidVersion %></td></tr></table>
 		<table class="attribute">
@@ -279,14 +279,14 @@ for(int i = 0; i < tasks.size(); i++) {
 			
 			LSID altVersionLSID = new LSID((String)(altVersionTia.get(GPConstants.LSID)) );
 
-			out.print("<td width=\"8\">&nbsp;</td><td>&nbsp;&nbsp; "+displayNumber+". <font color='red'>"+ js.getName() + "</font></font> This task version <b>("+taskLSID.getVersion()+")</b> is not present on this server.</td><td class='smalltype' align='right'>version "+taskLsidVersion +"</td></tr></table><table><tr><td>&nbsp;</td><td> The version present on this server is <br>"  );
+			out.print("<td width=\"8\">&nbsp;</td><td>&nbsp;&nbsp; "+displayNumber+". <font color='red'>"+ js.getName() + "</font></font> This module version <b>("+taskLSID.getVersion()+")</b> is not present on this server.</td><td class='smalltype' align='right'>version "+taskLsidVersion +"</td></tr></table><table><tr><td>&nbsp;</td><td> The version present on this server is <br>"  );
 		out.print("<dd><a href=\"addTask.jsp?view=1&name=" + js.getName() + "\">" + js.getName() + " <b>("+altVersionLSID .getVersion()+")</b> </a> " + StringUtils.htmlEncode(formalTask.getDescription()) + "</td>");
 
 		
 
 		} else {
 
-			out.print("<td width=\"8\">&nbsp;</td><td><font color='red'>"+ js.getName() + "</font></font> This task is not present on this server</td>"  );
+			out.print("<td width=\"8\">&nbsp;</td><td><font color='red'>"+ js.getName() + "</font></font> This module is not present on this server</td>"  );
 
 		}
 

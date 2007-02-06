@@ -38,7 +38,7 @@ response.setDateHeader("Expires", 0);
 TaskInfo ti = null;
 String name = request.getParameter("name"); 
 if (name == null || name.length() == 0) {
-	out.println("Must specify task name as name argument to this page");
+	out.println("Must specify module name as name argument to this page");
 	return;
 }
 

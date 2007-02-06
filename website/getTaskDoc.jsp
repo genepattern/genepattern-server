@@ -51,7 +51,7 @@ if (name == null) {
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link href="skin/favicon.ico" rel="shortcut icon">
-<title>GenePattern task documentation</title>
+<title>GenePattern module documentation</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 <script language="JavaScript">
 function toggleVersions(divname) {
@@ -234,7 +234,7 @@ function toggleVersions(divname) {
 }
 ti = GenePatternAnalysisTask.getTaskInfo(name, userID);
 if (ti == null) {
-	out.print("No such task: " + name);
+	out.print("No such module: " + name);
 	return;
 }
 tia = ti.giveTaskInfoAttributes();
@@ -253,7 +253,7 @@ if (filename == null) {
 	<head>
 	<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 	<link href="skin/favicon.ico" rel="shortcut icon">
-	<title>GenePattern task documentation</title>
+	<title>GenePattern module documentation</title>
 	<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 	</head>
 	<body>
@@ -276,7 +276,7 @@ if (!in.exists()) {
 	<head>
 	<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 	<link href="skin/favicon.ico" rel="shortcut icon">
-	<title>GenePattern task documentation</title>
+	<title>GenePattern module documentation</title>
 	<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 	</head>
 	<body>

@@ -172,7 +172,7 @@ The module type helps someone who is building a pipeline by creating an organizi
 If the module type for a new module doesn't fit well within the existing list, click the &quot;new...&quot;
  button and add a new module type
 entry.  The list of module types is created dynamically based upon the module types of all of the installed modules.
-If the last module of a given type is deleted, that module type will be removed from the task type list.<br><br>
+If the last module of a given type is deleted, that module type will be removed from the module type list.<br><br>
 
 ConsensusClustering example: <span class="example">Clustering</span>
 

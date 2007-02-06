@@ -467,7 +467,7 @@ if (logFilename != null) {
 /* 
 log file format:
 
-timeMS dateTime loginId taskType moduleName  manifest supportFilesChanges URLToEditPage URLToZipDownload
+timeMS dateTime loginId moduleType moduleName  manifest supportFilesChanges URLToEditPage URLToZipDownload
 76576574 2003-11-03_17:34:11 liefeld "Filter" SelectFeaturesColumns "manifest" "foo.jar,bar.jar" http://elm:8080/gp/addTask.jsp?name=SelectFeaturesColumns http://elm:8080/gp/makeZip.jsp?name=SelectFeaturesColumns
 */
 

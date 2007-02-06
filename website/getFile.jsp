@@ -14,7 +14,7 @@
 	} catch(UnsupportedEncodingException x) {}
 	
     if (taskName == null) {
-        out.println("no such task: " + taskName);
+        out.println("no such module: " + taskName);
         return;
     }
     String filename = request.getParameter("file");

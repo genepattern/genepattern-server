@@ -23,7 +23,7 @@ String title = request.getParameter("title");
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
-<title>include all tasks used by <%= title %></title>
+<title>include all modules used by <%= title %></title>
 <script language="Javascript">
 // submit and close
 function doSubmit(btn) {
@@ -38,12 +38,12 @@ function doSubmit(btn) {
 <body>	
 <form name="ask">
 
-Press 'Include tasks' to include all tasks used by <%= title %> in the exported zip file.  <br><br>
+Press 'Include modules' to include all modules used by <%= title %> in the exported zip file.  <br><br>
 Press 'Pipeline only' to include only the <%= title %> pipeline definition itself<br>
 
 <br>
 <center>
-<input type="button" name="IncludeDependents" value="Include tasks" onclick="doSubmit(this)" class="little">
+<input type="button" name="IncludeDependents" value="Include modules" onclick="doSubmit(this)" class="little">
 <input type="button" name="DontIncludeDependents" value="Pipeline only" onclick="doSubmit(this)" class="little">
 <br>
 <input type="button" name="Cancel" value="Cancel export" onclick="javascript:window.close()" class="little">

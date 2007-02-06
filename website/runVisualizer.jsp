@@ -66,7 +66,7 @@
 		<%= StringUtils.htmlEncode(message) %><br>
 		<br>
 <% 		if (taskInfo != null) { %>
-			<a href="addTask.jsp?<%= GPConstants.NAME %>=<%= name %>&view=1">view/edit <%= taskInfo.getName() %> task</a><br>
+			<a href="addTask.jsp?<%= GPConstants.NAME %>=<%= name %>&view=1">view/edit <%= taskInfo.getName() %> module</a><br>
 			<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= name %>">view <%= taskInfo.getName() %> documentation</a><br>
 <%		} %>
 		<jsp:include page="footer.jsp"/>
@@ -77,14 +77,14 @@
 	}
 
 	if (name == null) { %>
-		must specify task name and input parameters in request
+		must specify module name and input parameters in request
 <%
 		return;
 	}
 
 	if (taskInfo == null) {
 %>
-		Can't load task info for <%= name %> for user <%= userID %>.
+		Can't load module info for <%= name %> for user <%= userID %>.
 <%
 		return;
 	}

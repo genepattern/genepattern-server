@@ -42,7 +42,7 @@
 	session="false" contentType="text/html" language="Java" %>
 
 <font size='+1' color='red'><b> Warning </b></font><br>
-The task could not be run. The following required parameters need to have values provided;
+The module could not be run. The following required parameters need to have values provided;
 <p>
 
 <%

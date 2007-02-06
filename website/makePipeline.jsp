@@ -299,7 +299,7 @@ try {
 			mTaskInfo = (TaskInfo)taskCatalog.get(taskName);
 		}
 		if (mTaskInfo == null) {
-			vProblems.add("makePipeline: couldn't find task number " + taskNum + " searching for name " + taskName + " or LSID " + taskLSID);
+			vProblems.add("makePipeline: couldn't find module number " + taskNum + " searching for name " + taskName + " or LSID " + taskLSID);
 			continue;
 		}
 		TaskInfoAttributes mTia = mTaskInfo.giveTaskInfoAttributes();

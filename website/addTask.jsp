@@ -157,7 +157,7 @@ taskTypes = (String[])tsTaskTypes.toArray(new String[0]);
 <link href="css/style.css" rel="stylesheet" type="text/css">
 <link href="skin/favicon.ico" rel="shortcut icon">
 
-<title><%= taskName == null ? "add GenePattern task" : ((!viewOnly ? "update " : "") + taskName + " version " + new LSID(tia.get(GPConstants.LSID)).getVersion()) %></title>
+<title><%= taskName == null ? "add GenePattern module" : ((!viewOnly ? "update " : "") + taskName + " version " + new LSID(tia.get(GPConstants.LSID)).getVersion()) %></title>
 <% if (viewOnly) { %>
 <style>.hideable { border-style: none; readonly: true; }</style>
 <% } %>
@@ -199,7 +199,7 @@ function confirmDeleteSupportFiles() {
 
 <% if (taskInfo != null) { %>
 function cloneTask() {
-		var cloneName = window.prompt("Name for cloned task", "copyOf<%= taskName %>");
+		var cloneName = window.prompt("Name for cloned module", "copyOf<%= taskName %>");
 		if (cloneName == null || cloneName.length == 0) {
 			return;
 		}
@@ -494,7 +494,7 @@ function addNewDomainType(name, desc){
 	
 		   &nbsp;&nbsp;&nbsp;<select onchange="javascript:if (this.options[this.selectedIndex].value != '<%= DONT_JUMP %>') window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'">
 		  <option value="<%= DONT_JUMP %>">module catalog</option>
-			<option value="">new task</option>
+			<option value="">new module</option>
 			<%= publicTasks.toString() %>  
 			<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
 			<option value="<%= DONT_JUMP %>">private modules</option>
