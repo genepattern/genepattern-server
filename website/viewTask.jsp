@@ -142,7 +142,7 @@ taskTypes = (String[])tsTaskTypes.toArray(new String[0]);
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link href="skin/favicon.ico" rel="shortcut icon">
 
-<title><%= taskName == null ? "add GenePattern task" : ( taskName + " version " + new LSID(tia.get(GPConstants.LSID)).getVersion()) %></title>
+<title><%= taskName == null ? "add GenePattern module" : ( taskName + " version " + new LSID(tia.get(GPConstants.LSID)).getVersion()) %></title>
 
 <style>.hideable { border-style: none; readonly: true; }</style>
 
@@ -177,7 +177,7 @@ function confirmDeleteSupportFiles() {
 <% if (taskInfo != null) { %>
 function cloneTask() {
 	while (true) {
-		var cloneName = window.prompt("Name for cloned task", "copyOf<%= taskName %>");
+		var cloneName = window.prompt("Name for cloned module", "copyOf<%= taskName %>");
 		if (cloneName == null || cloneName.length == 0) {
 			return;
 		}
@@ -193,7 +193,7 @@ function runTask() {
 <% } %>
 
 function addNewTaskType() {
-	var newTaskType = window.prompt("new task type", "");
+	var newTaskType = window.prompt("new module type", "");
 	if (newTaskType == null || newTaskType == "") return;
 	var fld = document.forms['task'].<%= GPConstants.TASK_TYPE %>;
 	var n = fld.options.length;
@@ -263,7 +263,7 @@ function addNewDomainType(name, desc){
 <jsp:include page="navbar.jsp"/>
 <% if (taskName != null && taskInfo == null) { %>
 	<script language="javascript">
-	alert('no such task <%= taskName %>');
+	alert('no such module <%= taskName %>');
 	</script>
 <%
 	taskName = null;
@@ -405,7 +405,7 @@ if (tia != null) {
 
 %>
 
-<h2><%= taskName == null ? "Create new "+ messages.get("ApplicationName") +" task" : ( taskName  + " version ") %>
+<h2><%= taskName == null ? "Create new "+ messages.get("ApplicationName") +" module" : ( taskName  + " version ") %>
 <% if (taskName != null) { %>
 	<select name="notused" onchange="javascript:window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= "&view=1"  %>'" style="font-weight: bold; font-size: medium; outline-style: none;">
 <%
@@ -432,7 +432,7 @@ if (tia != null) {
   <table cols="2" valign="top">
   <col align="right" width="20%">
   <col align="left" width="*">
-  <tr title="Task name without spaces, used as the name by which the task will be invoked.">
+  <tr title="Module name without spaces, used as the name by which the module will be invoked.">
   <td align="right"><b>Name:</b></td>
   <td width="*"><%= taskInfo.getName() %>
 
@@ -448,11 +448,11 @@ if (tia != null) {
 <% } %>
 
    &nbsp;&nbsp;&nbsp;<select onchange="javascript:if (this.options[this.selectedIndex].value != '<%= DONT_JUMP %>') window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '&view=1'">
-  <option value="<%= DONT_JUMP %>">task catalog</option>
-	<option value="">new task</option>
+  <option value="<%= DONT_JUMP %>">module catalog</option>
+	<option value="">new module</option>
 	<%= publicTasks.toString() %>  
 	<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
-	<option value="<%= DONT_JUMP %>">private tasks (not mine)</option>
+	<option value="<%= DONT_JUMP %>">private modules (not mine)</option>
 	<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
 	<%= otherTasks.toString() %>
   </select>
@@ -696,7 +696,7 @@ if (taskName != null) {
  </form>
 
 <% if (tia != null) { %>
-<a href="makeZip.jsp?<%= GPConstants.NAME %>=<%= request.getParameter(GPConstants.NAME) %>&includeDependents=1">package this task into a zip file</a><br>
+<a href="makeZip.jsp?<%= GPConstants.NAME %>=<%= request.getParameter(GPConstants.NAME) %>&includeDependents=1">package this module into a zip file</a><br>
 <% } %>
 <jsp:include page="footer.jsp"/>
 </body>
