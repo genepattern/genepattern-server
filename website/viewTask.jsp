@@ -541,7 +541,7 @@ if (taskName != null) {
   </tr>
 
   <tr>
-  <td align="right"><b>task&nbsp;type:</b></td>
+  <td align="right"><b>module&nbsp;type:</b></td>
   <td width="*"> <%= tia.get(GPConstants.TASK_TYPE) %>       
   </td>
   </tr>
