@@ -24,11 +24,11 @@
       <td>
         <div id="cb_job_#{jobWrapper.jobNumber}" align="center">
            <t:div rendered="#{jobWrapper.selected}">
-            <input type="checkbox" name="selectedJobs" value="#{jobWrapper.jobNumber}" 
+            <input type="checkbox" class="jobResult" name="selectedJobs" value="#{jobWrapper.jobNumber}" 
                    onclick="toggleJobCheckboxes('#{jobWrapper.jobNumber}');" checked="checked"/>
           </t:div>
           <t:div rendered="#{!jobWrapper.selected}">
-            <input type="checkbox" name="selectedJobs" value="#{jobWrapper.jobNumber}" 
+            <input type="checkbox" class="jobResult" name="selectedJobs" value="#{jobWrapper.jobNumber}" 
                    onclick="toggleJobCheckboxes('#{jobWrapper.jobNumber}');"/>
           </t:div>
         </div>
