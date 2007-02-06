@@ -24,10 +24,10 @@
           <!-- File selection checkbox -->
           <div align="center">
             <t:div rendered="#{fileInfo.selected}">
-              <input type="checkbox" name="selectedFiles" checked="checked" value="#{fileInfo.value}"/>
+              <input type="checkbox" class="jobFile" name="selectedFiles" checked="checked" value="#{fileInfo.value}"/>
             </t:div>
             <t:div rendered="#{!fileInfo.selected}">
-              <input type="checkbox" name="selectedFiles" value="#{fileInfo.value}"/>
+              <input type="checkbox" class="jobFile" name="selectedFiles" value="#{fileInfo.value}"/>
             </t:div>
           </div>
         </td>
