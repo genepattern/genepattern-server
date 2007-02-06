@@ -441,7 +441,7 @@ if (tia != null) {
 <% if (taskInfo != null) { %>
   <input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
 
-<% if (authManager.isAllowed("addTask.jsp", userID)) { %>
+<% if (authManager.checkPermission("createTask", userID)){ %>
   <input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
 <%}%>
 
