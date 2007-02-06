@@ -213,11 +213,12 @@ function(gp.server, module.name.or.lsid, filename)
 	}	
 
 	url <- .jcall(gp.server,"Ljava/net/URL;", "getModuleFileUrl", module.name.or.lsid, filename)
+    url <- .jcall(url, "S", "toString")
 
 	return(url)	
 }
 
-
+#------------------------------------------------------------------------------------------------------
 job.result.get.url <-
 #
 #Returns the url to download the given file name.
@@ -234,11 +235,10 @@ function(job.result, filename.or.file.output.order)
 	
 	url <- .jcall(job.result, "Ljava/net/URL;", "getURL", filename.or.file.output.order)
 
-	url <- .jcall(url, "S", "toString")Ê
+	url <- .jcall(url, "S", "toString")
 	
 	return(url)
-} 
-
+}
 #------------------------------------------------------------------------------------------------------
 job.result.get.output.filenames <-
 function(job.result)
@@ -260,7 +260,7 @@ function(job.result, file.type)
 
 	url <- .jcall(job.result, "Ljava/net/URL;", "getURLForFileType", file.type)
 	
-	url <- .jcall(url, "S", "toString")Ê
+	url <- .jcall(url, "S", "toString")
 
 	return(url)
 }
@@ -333,7 +333,7 @@ function(job.result)
 	}
 
 	server.url <- .jcall(job.result, "Ljava/net/URL;", "getServerURL")
-	server.url <- .jcall(server.url, "S", "toString")Ê
+	server.url <- .jcall(server.url, "S", "toString")
 
 	return(server.url)
 }
@@ -376,7 +376,7 @@ function(job.result)
 
 	return(has.standard.error) 	
 }
-
+#------------------------------------------------------------------------------------------------------
 
 
 
@@ -388,7 +388,7 @@ check.extension <- function(file.name, extension) {
 	}
 	return(file.name)
 }
-
+#------------------------------------------------------------------------------------------------------
 read.dataset <- function(file) {
 	result <- regexpr(paste(".gct","$",sep=""), tolower(file))
 	if(result[[1]] != -1)
@@ -399,7 +399,7 @@ read.dataset <- function(file) {
 	
 	stop("Input is not a res or gct file.")	
 }
-
+#------------------------------------------------------------------------------------------------------
 read.gct <- function(file) {
 	if (is.character(file)) 
         if (file == "") 
@@ -439,7 +439,7 @@ read.gct <- function(file) {
 	row.names(data) <- x[,1]
 	return(list(row.descriptions=row.descriptions, data=data))
 }
-
+#------------------------------------------------------------------------------------------------------
 read.res <- function(filename)
 {
   # read line 1: sample names
@@ -478,7 +478,7 @@ read.res <- function(filename)
   return(list(row.descriptions=row.descriptions, column.descriptions=descriptions, data=data, calls=calls))
 }
 
-
+#------------------------------------------------------------------------------------------------------
 write.res <-
 #
 # write a res structure as a file
@@ -534,7 +534,7 @@ function(res, filename, check.file.extension=TRUE)
 	write.table(m, file=f, col.names=FALSE, row.names=FALSE, append=TRUE, quote=FALSE, sep="\t", eol="\n")
 	return(filename)
 }
-
+#------------------------------------------------------------------------------------------------------
 read.cls <- function(file) {
 	# returns a list containing the following components: 
 	# labels the factor of class labels
@@ -578,7 +578,7 @@ read.cls <- function(file) {
 	r
 }
 
-
+#------------------------------------------------------------------------------------------------------
 write.cls <-
 #
 # write a CLS result to a file.
@@ -608,7 +608,7 @@ function(cls, filename, check.file.extension=TRUE)
 	cat(file=file, cls$labels[[length(cls$labels)]]-1)
 	return(filename) 
 }
-
+#------------------------------------------------------------------------------------------------------
 write.gct <-
 #
 # save a GCT result to a file, optionally ensuring the filename has the extension .gct
@@ -649,7 +649,7 @@ function(gct, filename, check.file.extension=TRUE)
 	return(filename)
 }
 
-
+#------------------------------------------------------------------------------------------------------
 # like read.table, but doesn't check to make sure all rows have same number of columns
 .my.read.table <- function (file, header = FALSE, sep = "", quote = "\"'", dec = ".", row.names, col.names, as.is = FALSE, na.strings = "NA", colClasses, nrows = -1, skip = 0, check.names = TRUE, fill = !blank.lines.skip, strip.white = FALSE, blank.lines.skip = TRUE, comment.char = "") 
 {
