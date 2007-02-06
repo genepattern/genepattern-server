@@ -218,7 +218,6 @@ function(gp.server, module.name.or.lsid, filename)
 }
 
 
-#*******************************************************************************************************
 job.result.get.url <-
 #
 #Returns the url to download the given file name.
@@ -235,8 +234,11 @@ function(job.result, filename.or.file.output.order)
 	
 	url <- .jcall(job.result, "Ljava/net/URL;", "getURL", filename.or.file.output.order)
 
+	url <- .jcall(url, "S", "toString")Ê
+	
 	return(url)
-}
+} 
+
 #------------------------------------------------------------------------------------------------------
 job.result.get.output.filenames <-
 function(job.result)
@@ -257,6 +259,8 @@ function(job.result, file.type)
 	}
 
 	url <- .jcall(job.result, "Ljava/net/URL;", "getURLForFileType", file.type)
+	
+	url <- .jcall(url, "S", "toString")Ê
 
 	return(url)
 }
@@ -329,6 +333,7 @@ function(job.result)
 	}
 
 	server.url <- .jcall(job.result, "Ljava/net/URL;", "getServerURL")
+	server.url <- .jcall(server.url, "S", "toString")Ê
 
 	return(server.url)
 }
