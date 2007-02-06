@@ -21,7 +21,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.AuthorizationRules;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
@@ -288,9 +287,9 @@ public class ManageTasksBean /* implements java.io.Serializable */{
             private boolean isUsedBy = false;
 
             private TaskInfo ti;
-            
+
             private boolean deleteAuthorized = false;
-            
+
             private boolean editAuthorized = false;
 
             public VersionInfo() {
@@ -298,8 +297,11 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 
             public VersionInfo(TaskInfo ti) {
                 this.ti = ti;
-                deleteAuthorized = AuthorizationRules.isAllowed(ti, UIBeanHelper.getUserId(), AuthorizationRules.ActionType.Delete);
-                editAuthorized = AuthorizationRules.isAllowed(ti, UIBeanHelper.getUserId(), AuthorizationRules.ActionType.Edit);
+                String userId = UIBeanHelper.getUserId();
+                deleteAuthorized = ti.getUserId().equals(userId)
+                        || AuthorizationManagerFactory.getAuthorizationManager()
+                                .checkPermission("adminModules", userId);
+                editAuthorized = ti.getUserId().equals(userId);
             }
 
             public String getLsid() {

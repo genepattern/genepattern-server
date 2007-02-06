@@ -6,13 +6,13 @@
 <permissionMap>
 
 <permission name="adminModules">
-	<group name="*"/>
+	<group name="genepatternAdministrators"/>
 </permission>
 <permission name="adminSuites">
-	<group name="*"/>
+	<group name="genepatternAdministrators"/>
 </permission>
 <permission name="adminPipelines">
-	<group name="*"/>
+	<group name="genepatternAdministrators"/>
 </permission>
 
 <permission name="createModule">

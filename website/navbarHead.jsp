@@ -8,7 +8,6 @@
   var createTaskAllowed = <%= authorizationBean.isCreateTaskAllowed(username) %>;
   var createPipelineAllowed = <%= authorizationBean.isCreatePipelineAllowed(username) %>;
   var createSuiteAllowed = <%= authorizationBean.isCreateSuiteAllowed(username) %>;
-  var deleteTaskAllowed = <%= authorizationBean.isDeleteTaskAllowed(username) %>;
 
       
 </script>
