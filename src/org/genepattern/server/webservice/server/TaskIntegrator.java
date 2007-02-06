@@ -102,6 +102,8 @@ public class TaskIntegrator {
     /**
      * Clones the given task.
      * 
+     * Cloning is a form of task creation and requires teh "createTask" permission
+     * 
      * @param lsid
      *            The lsid of the task to clone
      * @param cloneName
@@ -154,6 +156,8 @@ public class TaskIntegrator {
     /**
      * Deletes the given files that belong to the given task
      * 
+     * Only owners and administrators may delete a task.
+     * 
      * @param lsid
      *            The LSID
      * @param fileNames
@@ -163,7 +167,7 @@ public class TaskIntegrator {
      *                If an error occurs
      */
     public String deleteFiles(String lsid, String[] fileNames) throws WebServiceException {
-        isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.deleteFiles");
+        isTaskOwnerOrAuthorized(getUserName(), lsid, "adminModules");
         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
@@ -201,7 +205,7 @@ public class TaskIntegrator {
      */
     public void delete(String lsid) throws WebServiceException {
         if (LSIDUtil.isSuiteLSID(lsid)) {
-            isSuiteOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.delete");
+            isSuiteOwnerOrAuthorized(getUserName(), lsid, "adminSuites");
             TaskIntegratorDAO dao = new TaskIntegratorDAO();
             dao.deleteSuite(lsid);
 
@@ -219,7 +223,7 @@ public class TaskIntegrator {
      *                If an error occurs
      */
     public void deleteTask(String lsid) throws WebServiceException {
-        isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.deleteTask");
+        isTaskOwnerOrAuthorized(getUserName(), lsid, "adminModules");
         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
@@ -298,8 +302,7 @@ public class TaskIntegrator {
      * @throws WebServiceException
      */
     public String[] getDocFileNames(String lsid) throws WebServiceException {
-        isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.getDocFileNames");
-        if (lsid == null || lsid.equals("")) {
+         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
 
@@ -333,8 +336,7 @@ public class TaskIntegrator {
      */
     public DataHandler[] getDocFiles(String lsid) throws WebServiceException {
         String taskLibDir = null;
-        isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.getDocFiles");
-
+ 
         try {
             taskLibDir = DirectoryManager.getLibDir(lsid);
         } catch (Exception e) {
@@ -380,7 +382,6 @@ public class TaskIntegrator {
      *                If an error occurs
      */
     public long[] getLastModificationTimes(String lsid, String[] fileNames) throws WebServiceException {
-        isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.getLastModificationTimes");
         try {
             if (lsid == null || lsid.equals("")) {
                 throw new WebServiceException("Invalid LSID");
@@ -409,7 +410,6 @@ public class TaskIntegrator {
      *                If an error occurs
      */
     public String[] getSupportFileNames(String lsid) throws WebServiceException {
-        isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.getSupportFileNames");
 
         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
@@ -441,8 +441,7 @@ public class TaskIntegrator {
      *                If an error occurs
      */
     public DataHandler[] getSupportFiles(String lsid) throws WebServiceException {
-        isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.getSupportFiles");
-        if (lsid == null || lsid.equals("")) {
+         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
 
@@ -463,8 +462,7 @@ public class TaskIntegrator {
      * @throws WebServiceException
      */
     private DataHandler getSupportFile(String lsid, String fileName) throws WebServiceException {
-        isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.getSupportFile");
-
+  
         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
@@ -496,8 +494,7 @@ public class TaskIntegrator {
      *                If an error occurs
      */
     public DataHandler[] getSupportFiles(String lsid, String[] fileNames) throws WebServiceException {
-        isTaskOwnerOrAuthorized(getUserName(), lsid, "TaskIntegrator.getSupportFiles");
-        try {
+         try {
             if (lsid == null || lsid.equals("")) {
                 throw new WebServiceException("Invalid LSID");
             }
@@ -1150,8 +1147,8 @@ public class TaskIntegrator {
         }
     }
 
-    protected void isAuthorized(String user, String method) throws WebServiceException {
-        if (!authManager.checkPermission(method, user)) {
+    protected void isAuthorized(String user, String permission) throws WebServiceException {
+        if (!authManager.checkPermission(permission, user)) {
             throw new WebServiceException("You do not have permission to perfom this action.");
         }
     }
@@ -1177,10 +1174,10 @@ public class TaskIntegrator {
         return user.equals(tm.getUserId());
     }
 
-    private void isTaskOwnerOrAuthorized(String user, String lsid, String method) throws WebServiceException {
+    private void isTaskOwnerOrAuthorized(String user, String lsid, String permission) throws WebServiceException {
 
         if (!isTaskOwner(user, lsid)) {
-            isAuthorized(user, method);
+            isAuthorized(user, permission);
         }
     }
 
