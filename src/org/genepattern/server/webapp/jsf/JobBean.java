@@ -34,7 +34,6 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.AuthorizationRules;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -783,8 +782,9 @@ public class JobBean {
             this.level = level;
             this.sequence = sequence;
 
-            deleteAllowed = AuthorizationRules.isAllowed(jobInfo, UIBeanHelper.getUserId(),
-                    AuthorizationRules.ActionType.Delete);
+            deleteAllowed = jobInfo.getUserId().equals(UIBeanHelper.getUserId())
+            || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
+                    UIBeanHelper.getUserId());
 
             // Build the list of output files from the parameter info array.
 

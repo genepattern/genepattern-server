@@ -26,7 +26,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.AuthorizationRules;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
@@ -303,8 +302,9 @@ public class RunTaskBean {
             return;
         }
 
-        editAllowed = AuthorizationRules.isAllowed(taskInfo, UIBeanHelper.getUserId(),
-                AuthorizationRules.ActionType.Edit);
+        editAllowed = taskInfo.getUserId().equals(UIBeanHelper.getUserId())
+        || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
+                UIBeanHelper.getUserId());
 
         ParameterInfo[] taskParameters = taskInfo.getParameterInfoArray();
 
