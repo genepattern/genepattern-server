@@ -296,7 +296,7 @@ public class RunTaskBean {
         try {
             taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(taskNameOrLsid);
         } catch (WebServiceException e) {
-            log.error("Unable to get task " + taskNameOrLsid, e);
+            log.error("Unable to get module " + taskNameOrLsid, e);
         }
         if (taskInfo == null) {
             lsid = null;

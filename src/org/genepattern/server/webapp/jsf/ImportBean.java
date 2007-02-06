@@ -98,7 +98,7 @@ public class ImportBean {
                     : GPConstants.ACCESS_PRIVATE);
         } catch (IOException e) {
             UIBeanHelper.setErrorMessage("Unable to install " + zipFile.getName() + ". Please ensure that "
-                    + zipFile.getName() + " is a valid task or pipeline zip file.");
+                    + zipFile.getName() + " is a valid module or pipeline zip file.");
             log.error(e);
             return "error";
         }
@@ -132,13 +132,13 @@ public class ImportBean {
                 UIBeanHelper.setInfoMessage("You do not have permission to install pipelines on this server.");
                 return "error";
             } else if (!taskInstallAllowed) {
-                UIBeanHelper.setInfoMessage("You do not have permission to install tasks on this server.");
+                UIBeanHelper.setInfoMessage("You do not have permission to install modules on this server.");
                 return "error";
             }
         } catch (IOException e) {
             log.error(e);
             UIBeanHelper.setInfoMessage("Unable to install " + new File(path).getName() + ". Please ensure that "
-                    + new File(path).getName() + " is a valid task or pipeline zip file.");
+                    + new File(path).getName() + " is a valid module or pipeline zip file.");
             return "error";
         }
         final boolean doRecursive = taskInstallAllowed; // TODO ask user?

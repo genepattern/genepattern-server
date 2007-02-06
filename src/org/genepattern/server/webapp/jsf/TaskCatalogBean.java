@@ -43,9 +43,9 @@ public class TaskCatalogBean {
 
     private List<MyTask> filteredTasks;
 
-    private final String NEW_TEXT = "Search for new tasks to install";
+    private final String NEW_TEXT = "Search for new modules to install";
 
-    private final String UPDATED_TEXT = "Search for updates of the currently installed tasks";
+    private final String UPDATED_TEXT = "Search for updates of the currently installed modules";
 
     private final String PLATFORM_INDEPENDENT = "Platform Independent";
 
@@ -267,7 +267,7 @@ public class TaskCatalogBean {
         IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
         final boolean taskInstallAllowed = authManager.checkPermission("createTask", UIBeanHelper.getUserId());
         if (!taskInstallAllowed) {
-            UIBeanHelper.setErrorMessage("You don't have the required permissions to install tasks.");
+            UIBeanHelper.setErrorMessage("You don't have the required permissions to install modules.");
             return "failure";
         }
         final String[] lsids = UIBeanHelper.getRequest().getParameterValues("installLsid");
