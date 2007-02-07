@@ -16,26 +16,25 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Collections;
+import java.text.NumberFormat;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import org.genepattern.data.matrix.*;
-import org.genepattern.io.*;
-import org.genepattern.io.expr.*;
-import org.genepattern.io.expr.cls.*;
-import org.genepattern.io.expr.gct.*;
-import org.genepattern.io.expr.res.*;
+
+import org.genepattern.data.matrix.ClassVector;
+import org.genepattern.io.IOdfHandler;
+import org.genepattern.io.OdfParser;
+import org.genepattern.io.ParseException;
+import org.genepattern.io.expr.IExpressionDataHandler;
+import org.genepattern.io.expr.IExpressionDataParser;
+import org.genepattern.io.expr.cls.ClsReader;
+import org.genepattern.io.expr.gct.GctParser;
+import org.genepattern.io.expr.res.ResParser;
 
 /**
  * Displays information about a selected file
- * 
+ *
  * @author Joshua Gould
  */
 public class FileInfoUtil {
@@ -93,8 +92,7 @@ public class FileInfoUtil {
 
                 // keyValuePairs.add(new KeyValuePair("Number of Classes",
                 // String.valueOf(cv.getClassCount())));
-                fileInfo.setAnnotation(new KeyValuePair("Data Points", String
-                        .valueOf(cv.size())));
+                fileInfo.setAnnotation(new KeyValuePair("Data Points", String.valueOf(cv.size())));
             } else if (parser instanceof OdfParser) {
                 ((OdfParser) parser).parse(is);
 
@@ -112,12 +110,10 @@ public class FileInfoUtil {
             fileInfo.setAnnotation(new KeyValuePair("Error", message));
         } catch (IOException ioe) {
             ioe.printStackTrace();
-            fileInfo.setAnnotation(new KeyValuePair("Error",
-                    "Unable to parse file"));
+            fileInfo.setAnnotation(new KeyValuePair("Error", "Unable to parse file"));
         } catch (Throwable t) {
             t.printStackTrace();
-            fileInfo.setAnnotation(new KeyValuePair("Error",
-                    "Unable to parse file"));
+            fileInfo.setAnnotation(new KeyValuePair("Error", "Unable to parse file"));
         }
         return fileInfo;
     }
@@ -132,8 +128,7 @@ public class FileInfoUtil {
             FileInfo fileInfo = new FileInfo();
 
             if (dotIndex != -1) {// see if file has an extension
-                String suffix = pathname.substring(dotIndex + 1, pathname
-                        .length());
+                String suffix = pathname.substring(dotIndex + 1, pathname.length());
                 suffix = suffix.toLowerCase();
                 fileInfo.setKind(suffix);
 
@@ -163,22 +158,11 @@ public class FileInfoUtil {
         return null;
     }
 
-    public static FileInfo getInfo(URL url, String name) {
-        if (url == null) {
-            return null;
-        }
-
-        InputStream is = null;
+    public static FileInfo getInfo(InputStream is, String name, long length) {
         try {
-            URLConnection conn = url.openConnection();
-            is = conn.getInputStream();
-            long length = 0;
-            try {
-                length = Long.parseLong(conn.getHeaderField("content-length"));
-            } catch (Exception e) {
+            if (length == -1) {
                 length = is.available();
             }
-
             String size = getSize(length);
             FileInfo fileInfo = _getInfo(name, is);
             fileInfo.setSize(size);
@@ -194,9 +178,29 @@ public class FileInfoUtil {
             }
         }
         return null;
+
+    }
+
+    public static FileInfo getInfo(URL url, String name) {
+        if (url == null) {
+            return null;
+        }
+
+        try {
+            URLConnection conn = url.openConnection();
+            long length = Long.parseLong(conn.getHeaderField("content-length"));
+            return getInfo(conn.getInputStream(), name, length);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+
     }
 
     private static String getSize(long lengthInBytes) {
+        if (lengthInBytes <= 0) {
+            return "";
+        }
         String size = null;
         if (lengthInBytes >= 1073741824) {
             double gigabytes = lengthInBytes / 1073741824.0;
@@ -229,7 +233,7 @@ public class FileInfoUtil {
 
     /**
      * Description of the Class
-     * 
+     *
      * @author Joshua Gould
      */
     public static class FileInfo {
@@ -274,13 +278,12 @@ public class FileInfoUtil {
         }
     }
 
-    private static class MyIExpressionDataHandler implements
-            IExpressionDataHandler {
+    private static class MyIExpressionDataHandler implements IExpressionDataHandler {
         int rows, columns;
 
         public KeyValuePair getKeyValuePair() {
-            return new KeyValuePair("Dimensions", String.valueOf(rows)
-                    + " rows x " + String.valueOf(columns) + " columns");
+            return new KeyValuePair("Dimensions", String.valueOf(rows) + " rows x " + String.valueOf(columns)
+                    + " columns");
 
         }
 
@@ -296,26 +299,22 @@ public class FileInfoUtil {
             throw new EndParseException();
         }
 
-        public void init(int rows, int columns, String[] rowMetaDataNames,
-                String[] columnMetaDataNames, String[] matrices)
-                throws ParseException {
+        public void init(int rows, int columns, String[] rowMetaDataNames, String[] columnMetaDataNames,
+                String[] matrices) throws ParseException {
             this.rows = rows;
             this.columns = columns;
             throw new EndParseException();
         }
 
-        public void data(int row, int column, int depth, String s)
-                throws ParseException {
+        public void data(int row, int column, int depth, String s) throws ParseException {
             throw new EndParseException();
         }
 
-        public void rowMetaData(int row, int depth, String s)
-                throws ParseException {
+        public void rowMetaData(int row, int depth, String s) throws ParseException {
             throw new EndParseException();
         }
 
-        public void columnMetaData(int column, int depth, String s)
-                throws ParseException {
+        public void columnMetaData(int column, int depth, String s) throws ParseException {
             throw new EndParseException();
         }
     }
@@ -338,13 +337,10 @@ public class FileInfoUtil {
 
         public KeyValuePair getKeyValuePair() {
             if ("Dataset".equals(model)) {
-                return new KeyValuePair("Dimensions", rows + " rows x "
-                        + columns + " columns");
+                return new KeyValuePair("Dimensions", rows + " rows x " + columns + " columns");
             } else if ("Prediction Results".equals(model)) {
-                int total = Integer.parseInt(numCorrect)
-                        + Integer.parseInt(numErrors);
-                return new KeyValuePair("Accuracy", numCorrect + "/" + total
-                        + " correct");
+                int total = Integer.parseInt(numCorrect) + Integer.parseInt(numErrors);
+                return new KeyValuePair("Accuracy", numCorrect + "/" + total + " correct");
             } else if ("Prediction Features".equals(model)) {
                 return new KeyValuePair("Features", numFeatures);
             }
