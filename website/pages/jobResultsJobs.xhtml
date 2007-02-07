@@ -22,16 +22,18 @@
       
       <!-- Job select checkbox -->
       <td>
+        <h:outputText rendered="#{jobWrapper.level == 0}" >
         <div id="cb_job_#{jobWrapper.jobNumber}" align="center">
-           <t:div rendered="#{jobWrapper.selected}">
+           <h:outputText rendered="#{jobWrapper.selected}">
             <input type="checkbox" class="jobResult" name="selectedJobs" value="#{jobWrapper.jobNumber}" 
                    onclick="toggleJobCheckboxes('#{jobWrapper.jobNumber}');" checked="checked"/>
-          </t:div>
-          <t:div rendered="#{!jobWrapper.selected}">
+          </h:outputText>
+          <h:outputText rendered="#{!jobWrapper.selected}">
             <input type="checkbox" class="jobResult" name="selectedJobs" value="#{jobWrapper.jobNumber}" 
                    onclick="toggleJobCheckboxes('#{jobWrapper.jobNumber}');"/>
-          </t:div>
+          </h:outputText>
         </div>
+        </h:outputText>
       </td>
       
       <!-- Job visibility toggle icon -->
