@@ -17,9 +17,7 @@ function mmLoadMenus() {
   	mm_menu_tasks.addMenuItem("Install&nbsp;from&nbsp;repository","location=contextRoot + '/pages/taskCatalog.jsf'");
   }	
   mm_menu_tasks.addMenuItem("Install&nbsp;from&nbsp;zip","location=contextRoot + '/pages/importTask.jsf'");
-  if(deleteTaskAllowed) {
-  	mm_menu_tasks.addMenuItem("Manage","location=contextRoot + '/pages/manageTasks.jsf'");
-  }
+  mm_menu_tasks.addMenuItem("Manage","location=contextRoot + '/pages/manageTasks.jsf'");
   mm_menu_tasks.hideOnMouseOut=true;
   mm_menu_tasks.bgColor='#CCCC66';
   mm_menu_tasks.menuBorder=0;
