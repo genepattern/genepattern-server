@@ -119,18 +119,4 @@ public class Suite implements java.io.Serializable {
             return "";
         }
     }
-
-    /**
-     * Test for "ownership". Ownership in this context means that the current user installed the suite on the server.
-     * THis is a new concept in GP 3.0, and is supported by a new field (userId). Suites from previous versions of GP
-     * will have a null value for the userId field. A value of true is returned for these instances, it is interpreted
-     * to be a public suite irrespective of access value.  Otherwise a private suite with null user_id would not be
-     * accessible by anyone.
-     * 
-     * @return true if the suite is owned by the current user
-     */
-    public boolean isOwnedByUserOrPublic() {
-        String user = UIBeanHelper.getUserId();
-        return (accessId == ACCESS_PUBLIC) || (userId == null) || (userId.length() == 0) || (userId.equals(user));
-    }
 }

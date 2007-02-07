@@ -14,7 +14,7 @@
     <script type="text/javascript" language="javascript"> 
       var contextRoot = '#{facesContext.externalContext.requestContextPath}';
       var javaGEInstallerURL = '#{genepatternProperties.properties["JavaGEInstallerURL"]}';
-      var createTaskAllowed = #{authorizationBean.createTaskAllowed};
+      var createTaskAllowed = #{authorizationBean.createModuleAllowed};
       var createPipelineAllowed = #{authorizationBean.createPipelineAllowed};
       var createSuiteAllowed = #{authorizationBean.createSuiteAllowed};
      </script>
@@ -120,7 +120,7 @@
            onclick="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" 
            onmouseover="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" 
            onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160; 
-        <c:if test="#{authorizationBean.admin}">
+        <c:if test="#{authorizationBean.adminServer}">
         	<a name="link13" id="link4" 
         	    href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf"
            		onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" 

@@ -50,7 +50,7 @@
 			    String prefix = userID + "_";
 				if (!filename.startsWith(prefix)){
 					IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-					boolean isAdmin = authManager.checkPermission("administrateServer",userID );
+					boolean isAdmin = authManager.checkPermission("adminJobs",userID );
 					if (!isAdmin){
 						System.out.println("SECURITY ALERT: " + userID +" tried to access someone else's file: " + filename);
 						((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);

@@ -5,41 +5,31 @@
 
 <permissionMap>
 
+<permission name="adminJobs">
+	<group name="administrators"/>
+</permission>
 <permission name="adminModules">
-	<group name="genepatternAdministrators"/>
+	<group name="administrators"/>
 </permission>
 <permission name="adminSuites">
-	<group name="genepatternAdministrators"/>
+	<group name="administrators"/>
 </permission>
 <permission name="adminPipelines">
-	<group name="genepatternAdministrators"/>
+	<group name="administrators"/>
+</permission>
+<permission name="adminServer">
+	<group name="administrators"/>
 </permission>
 
 <permission name="createModule">
-	<group name="genepatternTaskCreators"/>
-</permission>
-
-<permission name="createTask">
-	<group name="genepatternTaskCreators"/>
+	<group name="administrators"/>
 </permission>
 
 <permission name="createPipeline">
-	<group name="genepatternTaskCreators"/>
-</permission>
-
-<permission name="administrateServer">
-	<group name="genepatternAdministrators"/>
-</permission>
-
-<permission name="createSuite">
 	<group name="*"/>
 </permission>
 
-<permission name="deleteTask">
-	<group name="genepatternTaskCreators"/>
-</permission>
-
-<permission name="deleteJob">
+<permission name="createSuite">
 	<group name="*"/>
 </permission>
 

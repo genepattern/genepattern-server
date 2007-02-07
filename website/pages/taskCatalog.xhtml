@@ -47,7 +47,7 @@
 		<c:choose>
 			<c:when test="#{taskCatalogBean.error}">
 				<p>Sorry, the module repository is not currently available.</p>
-				<c:if test="#{authorizationBean.admin}">
+				<c:if test="#{authorizationBean.adminServer}">
 					<p>If you use a web proxy to connect to the internet, please
 					ensure your <a href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">web proxy settings</a> are
 					correct</p>

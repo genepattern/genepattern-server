@@ -49,7 +49,7 @@
 		        <!-- Suite select checkbox -->
 		        <div align="center" id="cb_suite_#{suiteInfo.name}">
 		          <c:choose>
-		            <c:when test="#{!suiteInfo.ownedByUserOrPublic}">
+		            <c:when test="#{!(suiteInfo.userId == requestScope.userID) and !authorizationBean.adminSuites}">
 		              <input type="checkbox" name="selectedSuites" disabled="disabled" value="#{suiteInfo.lsid}" onclick="toggleSuiteCheckboxes('#{suiteInfo.lsid}');"/>
 		            </c:when>
 		            <c:when test="#{suiteInfo.selected}">

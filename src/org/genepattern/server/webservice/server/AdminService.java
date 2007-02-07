@@ -33,6 +33,7 @@ import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.domain.TaskMasterDAO;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AdminDAOSysException;
 import org.genepattern.util.GPConstants;
@@ -291,7 +292,7 @@ public class AdminService implements IAdminService {
     }
 
     /**
-     * Gets all versions of all suites that are either owned by the current user, or are public.
+     * Gets all versions of all suites that are visible to the current user.
      * 
      * @return The suites
      * @exception WebServiceException
@@ -299,7 +300,12 @@ public class AdminService implements IAdminService {
      */
     public SuiteInfo[] getAllSuites() throws WebServiceException {
         try {
-            return adminDAO.getAllSuites(getUserName());
+            if (AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminSuites", getUserName())) {
+                return adminDAO.getAllSuites();
+            } else {
+                return adminDAO.getAllSuites();
+
+            }
         } catch (AdminDAOSysException e) {
             throw new WebServiceException(e);
         }

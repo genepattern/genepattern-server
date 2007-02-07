@@ -10,7 +10,7 @@
         <tbody>
           <tr>
             <td>
-              <h:commandLink value="Edit" action="#{manageSuiteBean.edit}" rendered="#{suiteInfo.ownedByUserOrPublic}">
+              <h:commandLink value="Edit" action="#{manageSuiteBean.edit}" rendered="#{suiteInfo.userId == requestScope.userID}">
                 <f:param name="lsid" value="#{suiteInfo.lsid}"/>
               </h:commandLink>
             </td>
@@ -18,7 +18,7 @@
           <tr>
             <td>
               <h:commandLink value="Delete" action="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false" 
-                             rendered="#{suiteInfo.ownedByUserOrPublic}">
+                             rendered="#{(suiteInfo.userId == requestScope.userID) or authorizationBean.adminSuites}">
                 <f:param name="selectedSuites" value="#{suiteInfo.lsid}"/>
               </h:commandLink>
             </td>

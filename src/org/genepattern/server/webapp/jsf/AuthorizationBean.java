@@ -27,11 +27,27 @@ public class AuthorizationBean {
         authManager = AuthorizationManagerFactory.getAuthorizationManager();
     }
 
-    public boolean isAdmin() {
-        return authManager.checkPermission("administrateServer", UIBeanHelper.getUserId());
+    public boolean isAdminServer() {
+        return authManager.checkPermission("adminServer", UIBeanHelper.getUserId());
+    }
+    
+    public boolean isAdminJobs() {
+        return authManager.checkPermission("adminServer", UIBeanHelper.getUserId());
     }
 
-    public boolean isCreateTaskAllowed() {
+    public boolean isAdminModules() {
+        return authManager.checkPermission("adminServer", UIBeanHelper.getUserId());
+    }
+    
+    public boolean isAdminPipeline() {
+        return authManager.checkPermission("adminServer", UIBeanHelper.getUserId());
+    }
+
+    public boolean isAdminSuites() {
+        return authManager.checkPermission("adminServer", UIBeanHelper.getUserId());
+    }
+
+    public boolean isCreateModuleAllowed() {
         return authManager.checkPermission("createModule", UIBeanHelper.getUserId());
     }
 
@@ -44,12 +60,12 @@ public class AuthorizationBean {
     }
 
  
-
-    public boolean isAdmin(String username) {
-        return authManager.checkPermission("administrateServer", username);
+    // The methods below are to support jsps
+    public boolean isAdminServer(String username) {
+        return authManager.checkPermission("adminServer", username);
     }
 
-    public boolean isCreateTaskAllowed(String username) {
+    public boolean isCreateModuleAllowed(String username) {
         return authManager.checkPermission("createModule", username);
     }
 

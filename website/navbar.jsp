@@ -43,7 +43,7 @@
            onclick="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" 
            onmouseover="MM_showMenu(window.mm_menu_downloads,x,y,null,'link2')" 
            onmouseout="MM_startTimeout();">Downloads</a> &#160;&#160;&#160;&#160;&#160;&#160; 
-        <% if(authorizationBean.isAdmin(username)) { %>
+        <% if(authorizationBean.isAdminServer(username)) { %>
         	<a name="link13" id="link4" 
         	    href="<%=request.getContextPath()%>/pages/serverSettings.jsf"
            		onclick="MM_showMenu(window.mm_menu_administration,x,y,null,'link13')" 
