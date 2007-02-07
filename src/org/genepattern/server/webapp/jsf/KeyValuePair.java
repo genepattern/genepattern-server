@@ -1,11 +1,11 @@
 package org.genepattern.server.webapp.jsf;
 
 public class KeyValuePair {
-    public String altKey;
+    private String altKey;
 
-    public String key;
+    private String key;
 
-    public String value;
+    private String value;
 
     public KeyValuePair() {
 
@@ -45,6 +45,11 @@ public class KeyValuePair {
 
     public void setValue(String n) {
         value = n;
+    }
+
+    @Override
+    public String toString() {
+        return "Key=" + getKey() + ", Alt. Key=" + getAltKey() + ", Value=" + getValue();
     }
 
 }
