@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -783,8 +784,8 @@ public class JobBean {
             this.sequence = sequence;
 
             deleteAllowed = jobInfo.getUserId().equals(UIBeanHelper.getUserId())
-            || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
-                    UIBeanHelper.getUserId());
+                    || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
+                            UIBeanHelper.getUserId());
 
             // Build the list of output files from the parameter info array.
 
@@ -1065,54 +1066,72 @@ public class JobBean {
     }
 
     public void setSelectedModule(String selectedModule) {
-        kindToInputParameters = new HashMap<String, List<KeyValuePair>>();
-        if (selectedModule != null) {
-            try {
-                TaskInfo taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(selectedModule);
-                ParameterInfo[] inputParameters = taskInfo != null ? taskInfo.getParameterInfoArray() : null;
-                if (inputParameters != null) {
-                    for (ParameterInfo inputParameter : inputParameters) {
-                        if (inputParameter.isInputFile()) {
-                            List<String> fileFormats = SemanticUtil.getFileFormats(inputParameter);
-                            String displayValue = (String) inputParameter.getAttributes().get("altName");
-                            if (displayValue == null) {
-                                displayValue = inputParameter.getName();
-                            }
-                            displayValue = displayValue.replaceAll("\\.", " ");
-
-                            KeyValuePair kvp = new KeyValuePair();
-                            kvp.setKey(inputParameter.getName());
-                            kvp.setValue(displayValue);
-
-                            for (String format : fileFormats) {
-                                List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
-                                if (inputParameterNames == null) {
-                                    inputParameterNames = new ArrayList<KeyValuePair>();
-                                    kindToInputParameters.put(format, inputParameterNames);
-                                }
-                                inputParameterNames.add(kvp);
-
-                            }
-                        }
-                    }
-                }
-
-            } catch (WebServiceException e) {
-                log.error("Could not get module", e);
-            }
-
-        }
         List<JobResultsWrapper> recentJobs = getRecentJobs();
-        if (recentJobs != null) {
-            for (JobResultsWrapper job : recentJobs) {
-                List<OutputFileInfo> outputFiles = job.getOutputFileParameterInfos();
-                if (outputFiles != null) {
-                    for (OutputFileInfo o : outputFiles) {
-                        o.moduleInputParameters = kindToInputParameters.get(o.getKind());
+        if (selectedModule == null || recentJobs == null || recentJobs.size() == 0) {
+            return;
+        }
+        kindToInputParameters = new HashMap<String, List<KeyValuePair>>();
+
+        TaskInfo taskInfo = null;
+        try {
+            taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(selectedModule);
+        } catch (WebServiceException e) {
+            log.error("Could not get module", e);
+            return;
+        }
+        ParameterInfo[] inputParameters = taskInfo != null ? taskInfo.getParameterInfoArray() : null;
+        List<KeyValuePair> unannotatedParameters = new ArrayList<KeyValuePair>();
+        if (inputParameters != null) {
+            for (ParameterInfo inputParameter : inputParameters) {
+                if (inputParameter.isInputFile()) {
+                    List<String> fileFormats = SemanticUtil.getFileFormats(inputParameter);
+                    String displayValue = (String) inputParameter.getAttributes().get("altName");
+
+                    if (displayValue == null) {
+                        displayValue = inputParameter.getName();
+                    }
+                    displayValue = displayValue.replaceAll("\\.", " ");
+
+                    KeyValuePair kvp = new KeyValuePair();
+                    kvp.setKey(inputParameter.getName());
+                    kvp.setValue(displayValue);
+
+                    if (fileFormats.size() == 0) {
+                        unannotatedParameters.add(kvp);
+                    }
+                    for (String format : fileFormats) {
+                        List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
+                        if (inputParameterNames == null) {
+                            inputParameterNames = new ArrayList<KeyValuePair>();
+                            kindToInputParameters.put(format, inputParameterNames);
+                        }
+                        inputParameterNames.add(kvp);
                     }
                 }
             }
         }
+
+        // add unannotated parameters to end of list for each kind
+        if (unannotatedParameters.size() > 0) {
+            for (Iterator<String> it = kindToInputParameters.keySet().iterator(); it.hasNext();) {
+                List<KeyValuePair> inputParameterNames = kindToInputParameters.get(it.next());
+                inputParameterNames.addAll(unannotatedParameters);
+            }
+        }
+
+        for (JobResultsWrapper job : recentJobs) {
+            List<OutputFileInfo> outputFiles = job.getOutputFileParameterInfos();
+            if (outputFiles != null) {
+                for (OutputFileInfo o : outputFiles) {
+                    List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
+                    if (moduleInputParameters == null) {
+                        moduleInputParameters = unannotatedParameters;
+                    }
+                    o.moduleInputParameters = moduleInputParameters;
+                }
+            }
+        }
+
     }
 
 }
