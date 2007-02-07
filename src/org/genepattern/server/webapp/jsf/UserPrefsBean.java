@@ -14,6 +14,7 @@ package org.genepattern.server.webapp.jsf;
 
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
@@ -24,22 +25,27 @@ public class UserPrefsBean {
 
     private UserProp recentJobsProp;
 
+    private static Logger log = Logger.getLogger(UserPrefsBean.class);
+
     public UserPrefsBean() {
         UserDAO dao = new UserDAO();
         String userId = UIBeanHelper.getUserId();
         javaFlagsProp = dao.getProperty(userId, UserPropKey.VISUALIZER_JAVA_FLAGS, System
                 .getProperty("visualizer_java_flags"));
-        try {
-        	String historySize = (String)PropertiesManager.getDefaultProperties().get("historySize");
-        	recentJobsProp = dao.getProperty(userId, UserPropKey.RECENT_JOBS_TO_SHOW, (historySize==null) ? "4" : historySize);
 
-        } catch (IOException ioe) {
-            ioe.getStackTrace();
+        String historySize = null;
+        try {
+            historySize = (String) PropertiesManager.getDefaultProperties().get("historySize");
+        } catch (IOException e) {
+            log.error("Unable to retrive historySize property", e);
         }
+        recentJobsProp = dao.getProperty(userId, UserPropKey.RECENT_JOBS_TO_SHOW, (historySize == null) ? "10"
+                : historySize);
+
     }
 
     public String save() {
-        UIBeanHelper.setInfoMessage("Property successfully updated");
+        UIBeanHelper.setInfoMessage("Property successfully updated.");
         return "my settings";
     }
 
@@ -48,14 +54,14 @@ public class UserPrefsBean {
     }
 
     public void setNumberOfRecentJobs(String value) {
-    	try {
-    		Integer.parseInt(value);
-    	} catch(NumberFormatException e) {
-    		System.out.println("error: " +e);
-    		return;
-    	}
+        try {
+            Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            log.info("Unable to parse " + value, e);
+            return;
+        }
         recentJobsProp.setValue(value);
-        
+
     }
 
     public UserProp getJavaFlags() {
