@@ -36,7 +36,7 @@ import org.genepattern.webservice.WebServiceException;
 
 /**
  * Mantains an internal cache of analysis services.
- * 
+ *
  * @author Joshua Gould
  */
 public class AnalysisServiceManager {
@@ -59,8 +59,7 @@ public class AnalysisServiceManager {
 
     private Map filteredLsid2VersionsMap = new HashMap();
 
-    private Comparator versionComparator = new ReverseComparator(
-            LSIDVersionComparator.INSTANCE);
+    private Comparator versionComparator = new ReverseComparator(LSIDVersionComparator.INSTANCE);
 
     private List suites;
 
@@ -105,26 +104,22 @@ public class AnalysisServiceManager {
 
                         try {
                             LSID l = new LSID(lsids[j]);
-                            List versions = (List) filteredLsid2VersionsMap
-                                    .get(l.toStringNoVersion());
+                            List versions = (List) filteredLsid2VersionsMap.get(l.toStringNoVersion());
                             if (versions == null) {
                                 versions = new ArrayList();
-                                filteredLsid2VersionsMap.put(l
-                                        .toStringNoVersion(), versions);
+                                filteredLsid2VersionsMap.put(l.toStringNoVersion(), versions);
                             }
-                            if (l.getVersion() != null
-                                    && !l.getVersion().equals("")) {
+                            if (l.getVersion() != null && !l.getVersion().equals("")) {
                                 versions.add(l.getVersion());
                             }
                         } catch (MalformedURLException e) {
                             e.printStackTrace();
                         }
 
-                        TaskInfo task = new org.genepattern.webservice.AdminProxy(
-                                server, username, password, false).getTask(lsids[j]);
+                        TaskInfo task = new org.genepattern.webservice.AdminProxy(server, username, password, false)
+                                .getTask(lsids[j]);
                         if (task != null) {
-                            filteredTasks.put(lsids[j], new AnalysisService(
-                                    server, task));
+                            filteredTasks.put(lsids[j], new AnalysisService(server, task));
                         } else {
                             System.out.println("Can't find " + lsids[j]);
                         }
@@ -142,7 +137,7 @@ public class AnalysisServiceManager {
 
     /**
      * Notify this service manager that a task was installed
-     * 
+     *
      * @param lsid
      */
     public void taskInstalled(LSID lsid) {
@@ -158,12 +153,10 @@ public class AnalysisServiceManager {
 
         if (isLatestVersion(lsid)) {
             String lsidNoVersionString = lsid.toStringNoVersion();
-            for (Iterator it = lsid2LatestAnalysisServices.keySet().iterator(); it
-                    .hasNext();) {
+            for (Iterator it = lsid2LatestAnalysisServices.keySet().iterator(); it.hasNext();) {
                 String taskLSID = (String) it.next();
                 try {
-                    if (lsidNoVersionString.equals(new LSID(taskLSID)
-                            .toStringNoVersion())) {
+                    if (lsidNoVersionString.equals(new LSID(taskLSID).toStringNoVersion())) {
                         it.remove();
                         break;
                     }
@@ -173,14 +166,13 @@ public class AnalysisServiceManager {
             }
             TaskInfo task = null;
             try {
-                task = new org.genepattern.webservice.AdminProxy(server,
-                        username, password, false).getTask(lsid.toString());
+                task = new org.genepattern.webservice.AdminProxy(server, username, password, false).getTask(lsid
+                        .toString());
             } catch (WebServiceException e) {
                 e.printStackTrace();
             }
             if (task != null) {
-                lsid2LatestAnalysisServices.put(lsid.toString(),
-                        new AnalysisService(server, task));
+                lsid2LatestAnalysisServices.put(lsid.toString(), new AnalysisService(server, task));
             } else {
                 System.err.println("Installed task " + lsid + " not found.");
             }
@@ -197,7 +189,7 @@ public class AnalysisServiceManager {
     /**
      * Returns <tt>true</tt> if the given <tt>lsid</tt> is the latest
      * version of the task, <tt>false</tt> otherwise
-     * 
+     *
      * @param lsid
      *            an lsid
      * @return whether the lsid is the latest version
@@ -213,14 +205,13 @@ public class AnalysisServiceManager {
             return true;
         }
         String latestInstalledVersion = (String) versions.get(0);
-        return versionComparator.compare(lsid.getVersion(),
-                latestInstalledVersion) > 0;
+        return versionComparator.compare(lsid.getVersion(), latestInstalledVersion) > 0;
 
     }
 
     /**
      * Gets the <tt>AnalysisServiceManager</tt> instance
-     * 
+     *
      * @return the instance
      */
     public static AnalysisServiceManager getInstance() {
@@ -230,7 +221,7 @@ public class AnalysisServiceManager {
     /**
      * Sets the server that this <tt>AnalysisServiceManager</tt> connects to.
      * Clears the internal cache of analysis services.
-     * 
+     *
      * @param server
      *            A server URL, for example http://127.0.0.1:8080
      * @param username
@@ -240,6 +231,9 @@ public class AnalysisServiceManager {
         this.server = server;
         this.username = username;
         this.password = password;
+        if (this.password == null) {
+            this.password = "";
+        }
         lsid2LatestAnalysisServices.clear();
         lsid2VersionsMap.clear();
         lsid2AnalysisServices.clear();
@@ -250,7 +244,7 @@ public class AnalysisServiceManager {
      * Gets the internal cache of a map of the module LSIDs without the version
      * to a <tt>List</tt> of versions. Invoke refresh to update the internal
      * cache.
-     * 
+     *
      * @return the lsid to versions map. The list of versions is sorted in
      *         descending order (latest version first).
      */
@@ -261,7 +255,7 @@ public class AnalysisServiceManager {
     /**
      * Returns <tt>true</tt> if the server is localhost, <tt>false</tt>
      * otherwise
-     * 
+     *
      * @return whether the server is localhost
      */
     public boolean isLocalHost() {
@@ -272,8 +266,7 @@ public class AnalysisServiceManager {
                 return true;
             }
             InetAddress localHost = InetAddress.getLocalHost();
-            return localHost.getCanonicalHostName().equals(
-                    InetAddress.getByName(host).getCanonicalHostName());
+            return localHost.getCanonicalHostName().equals(InetAddress.getByName(host).getCanonicalHostName());
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -282,7 +275,7 @@ public class AnalysisServiceManager {
 
     /**
      * Refreshes the modules
-     * 
+     *
      * @throws WebServiceException
      */
     public void refresh() throws WebServiceException {
@@ -296,7 +289,7 @@ public class AnalysisServiceManager {
     /**
      * Retrieves the latest versions of all analysis services from the server
      * stores the analysis services internally
-     * 
+     *
      * @exception WebServiceException
      *                Description of the Exception
      */
@@ -304,18 +297,15 @@ public class AnalysisServiceManager {
         this.lsid2LatestAnalysisServices.clear();
         this.lsid2AnalysisServices.clear();
 
-        TaskInfo[] tasks = new AnalysisWebServiceProxy(server, username, password)
-                .getTasks();
+        TaskInfo[] tasks = new AnalysisWebServiceProxy(server, username, password).getTasks();
         for (int i = 0; i < tasks.length; i++) {
             TaskInfo task = tasks[i];
-            String lsid = (String) task.getTaskInfoAttributes().get(
-                    GPConstants.LSID);
+            String lsid = (String) task.getTaskInfoAttributes().get(GPConstants.LSID);
             String lsidOrTaskName = lsid != null ? lsid : task.getName();
-            lsid2LatestAnalysisServices.put(lsidOrTaskName,
-                    new AnalysisService(server, task));
+            lsid2LatestAnalysisServices.put(lsidOrTaskName, new AnalysisService(server, task));
         }
-        this.lsid2VersionsMap = new org.genepattern.webservice.AdminProxy(
-                server, username, password).getLSIDToVersionsMap();
+        this.lsid2VersionsMap = new org.genepattern.webservice.AdminProxy(server, username, password)
+                .getLSIDToVersionsMap();
 
         for (Iterator it = lsid2VersionsMap.keySet().iterator(); it.hasNext();) {
             List versions = (List) lsid2VersionsMap.get(it.next());
@@ -329,7 +319,7 @@ public class AnalysisServiceManager {
     /**
      * Gets the internal cache of the latest analysis services. Invoke refresh
      * to update the internal cache.
-     * 
+     *
      * @return the collections of the latest analysis services
      */
     public Collection getLatestAnalysisServices() {
@@ -339,17 +329,16 @@ public class AnalysisServiceManager {
     /**
      * Gets the internal cache of the latest analysis services. Invoke refresh
      * to update the internal cache.
-     * 
+     *
      * @return the collections of the latest analysis services
      */
     public Collection getLatestAnalysisServices(boolean ignoreFilter) {
-        return suites == null || ignoreFilter ? lsid2LatestAnalysisServices
-                .values() : filteredTasks.values();
+        return suites == null || ignoreFilter ? lsid2LatestAnalysisServices.values() : filteredTasks.values();
     }
 
     /**
      * Gets the server
-     * 
+     *
      * @return the server
      */
     public String getServer() {
@@ -358,7 +347,7 @@ public class AnalysisServiceManager {
 
     /**
      * Gets the username
-     * 
+     *
      * @return the username
      */
     public String getUsername() {
@@ -368,7 +357,7 @@ public class AnalysisServiceManager {
     /**
      * Gets the analysis service with the given task name or lsid or
      * <code>null</code> if no such service exists.
-     * 
+     *
      * @param lsid
      *            an LSID
      * @return the analysis service
@@ -377,12 +366,11 @@ public class AnalysisServiceManager {
         if (lsid == null) {
             return null;
         }
-        AnalysisService service = (AnalysisService) lsid2LatestAnalysisServices
-                .get(lsid);
+        AnalysisService service = (AnalysisService) lsid2LatestAnalysisServices.get(lsid);
         if (service == null) {
             try {
-                TaskInfo task = new org.genepattern.webservice.AdminProxy(
-                        server, username, password, false).getTask(lsid);// old
+                TaskInfo task = new org.genepattern.webservice.AdminProxy(server, username, password, false)
+                        .getTask(lsid);// old
                 // servers
                 // don't
                 // have
