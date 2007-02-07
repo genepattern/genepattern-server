@@ -20,7 +20,6 @@
 <permission name="adminServer">
 	<group name="administrators"/>
 </permission>
-
 <permission name="createModule">
 	<group name="administrators"/>
 </permission>

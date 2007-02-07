@@ -5,7 +5,7 @@
   var contextRoot = "<%=request.getContextPath()%>/";
   <% String username = (String) request.getAttribute("userid"); %>
   var javaGEInstallerURL = '<%= genepatternProperties.getProperties().get("JavaGEInstallerURL") %>';
-  var createTaskAllowed = <%= authorizationBean.isCreateTaskAllowed(username) %>;
+  var createTaskAllowed = <%= authorizationBean.isCreateModuleAllowed(username) %>;
   var createPipelineAllowed = <%= authorizationBean.isCreatePipelineAllowed(username) %>;
   var createSuiteAllowed = <%= authorizationBean.isCreateSuiteAllowed(username) %>;
 

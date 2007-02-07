@@ -2,12 +2,12 @@
 
 <userGroups>
 
-<group name="genepatternAdministrators">
+<group name="administrators">
 	<user name="*"/>
 	<user name="admin"/>
 </group>
 
-<group name="genepatternTaskCreators">
+<group name="public">
 	<user name="*"/>
 </group>
 
