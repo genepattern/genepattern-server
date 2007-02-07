@@ -23,7 +23,6 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -32,12 +31,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
+
+import org.genepattern.util.JobDownloader;
 
 /**
  * @author Joshua Gould
- * 
+ *
  */
 public class LocalTaskExecutor extends TaskExecutor {
     private final static String JAVA = "java";
@@ -77,9 +76,19 @@ public class LocalTaskExecutor extends TaskExecutor {
 
     private static int MAX_FILE_NAME_LENGTH = 255;
 
+    /**
+     *
+     * @param taskInfo
+     * @param substitutions
+     * @param username
+     * @param password
+     * @param server
+     * @throws WebServiceException
+     */
     public LocalTaskExecutor(TaskInfo taskInfo, Map substitutions, String username, String password, String server)
             throws WebServiceException {
         super(taskInfo, substitutions, username);
+        this.userName = username;
         this.server = server;
         this.password = password;
         try {
@@ -115,9 +124,9 @@ public class LocalTaskExecutor extends TaskExecutor {
             }
 
             libdir = new File("libs", libdirName);
-           
+
             libdir.mkdirs();
-             
+
             substitutions.put("libdir", libdir + File.separator);
             if (substitutions.get(LocalTaskExecutor.JAVA) == null) {
                 String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java"
@@ -175,7 +184,7 @@ public class LocalTaskExecutor extends TaskExecutor {
 
     /**
      * Determines the 'best' name of a file at the given url.
-     * 
+     *
      * @param url
      *            Description of the Parameter
      * @return The uRLFileName
@@ -256,34 +265,25 @@ public class LocalTaskExecutor extends TaskExecutor {
     /**
      * Downloads the file at the given URL and saves it locally to the specified
      * file.
-     * 
+     *
      * @param url
-     *            Description of the Parameter
+     *            THe URL to download
      * @param destinationFile
-     *            Description of the Parameter
+     *            The file to save the URL to.
      * @exception IOException
-     *                Description of the Exception
+     *                If an error occurs.
      */
     private void downloadFile(URL url, File destinationFile) throws IOException {
+        URL serverUrl = new URL(server);
+        if (serverUrl.getHost().equals(url.getHost()) && serverUrl.getPort() == url.getPort()) {
+            new JobDownloader(server, userName, password).download(url.toString(), destinationFile);
+            return;
+        }
+
         InputStream is = null;
         FileOutputStream fos = null;
-        File file = null;
         try {
             URLConnection conn = url.openConnection();
-            if (conn instanceof HttpURLConnection) {
-                if (((HttpURLConnection) conn).getResponseCode() == HttpURLConnection.HTTP_GONE) {
-                    String urlFile = url.getFile();
-                    String baseName = urlFile.substring(urlFile.lastIndexOf("/") + 1);
-
-                    if (baseName.indexOf("retrieveResults.jsp") != -1 && (urlFile.lastIndexOf("filename=")) != -1) {
-                        throw new IOException("The file " + destinationFile.getName() + " is not available.");
-                    } else {
-                        throw new IOException("The url " + url + " is not available.");
-                    }
-
-                }
-
-            }
             is = conn.getInputStream();
             fos = new FileOutputStream(destinationFile);
             byte[] buf = new byte[100000];
@@ -303,8 +303,8 @@ public class LocalTaskExecutor extends TaskExecutor {
 
     /**
      * Downloads the support files for the given task to libdir.
-     * 
-     * 
+     *
+     *
      * @exception IOException
      *                Description of the Exception
      * @exception org.genepattern.webservice.WebServiceException
