@@ -55,9 +55,9 @@ public class AdminDAO extends BaseDAO {
     static Logger log = Logger.getLogger(AdminDAO.class);
 
     /**
-     * Returns the versions of the tasks with the same versionless LSID as the given LSID. The returned list is in
-     * ascending order.
-     * 
+     * Returns the versions of the tasks with the same versionless LSID as the
+     * given LSID. The returned list is in ascending order.
+     *
      * @param lsid
      *            the LSID.
      * @param username
@@ -190,7 +190,7 @@ public class AdminDAO extends BaseDAO {
             }
 
             List<TaskMaster> results = query.list();
-            List tasksWithGivenName = new ArrayList();
+            List<TaskInfo> tasksWithGivenName = new ArrayList<TaskInfo>();
             for (TaskMaster tm : results) {
                 tasksWithGivenName.add(taskInfoFromTaskMaster(tm));
             }
@@ -290,7 +290,7 @@ public class AdminDAO extends BaseDAO {
     }
 
     /**
-     * 
+     *
      * @param username
      * @param maxResults
      * @return
@@ -329,10 +329,10 @@ public class AdminDAO extends BaseDAO {
         }
     }
 
-    
     /**
-     * Returns a map containing the latest version of each task in the input array.
-     * The keys for the map are the no-version LSIDs of the tasks.
+     * Returns a map containing the latest version of each task in the input
+     * array. The keys for the map are the no-version LSIDs of the tasks.
+     *
      * @param tasks
      * @return
      * @throws MalformedURLException
@@ -351,15 +351,28 @@ public class AdminDAO extends BaseDAO {
                 LSID altLSID = new LSID((String) altTi.getTaskInfoAttributes().get(GPConstants.LSID));
                 if (altLSID.compareTo(tiLSID) > 0) {
                     latestTasks.put(tiLSID.toStringNoVersion(), ti); // it
-                } 
+                }
             }
         }
         return latestTasks;
     }
 
+    /**
+     * Returns an array of the latest tasks for the specified user. The returned
+     * array will not contain tasks with the same name. If more than one task
+     * with the same name exists on the server, the returned array will contain
+     * the one task with the name that is closest to the server LSID authority.
+     * The closest authority is the first match in the sequence: local server
+     * authority, Broad authority, other authority.
+     *
+     * @param username
+     *            The username to get the tasks for.
+     * @return The array of tasks.
+     * @throws AdminDAOSysException
+     */
     public TaskInfo[] getLatestTasksByName(String username) throws AdminDAOSysException {
         TaskInfo[] tasks = getLatestTasks(username);
-        Map map = new LinkedHashMap();
+        Map<String, TaskInfo> map = new LinkedHashMap<String, TaskInfo>();
         for (int i = 0; i < tasks.length; i++) {
             TaskInfo t = (TaskInfo) map.get(tasks[i].getName());
             if (t != null) {
@@ -382,7 +395,6 @@ public class AdminDAO extends BaseDAO {
         return (TaskInfo[]) map.values().toArray(new TaskInfo[0]);
     }
 
-    
     public TaskInfo[] getLatestTasks(String username) {
 
         TaskInfo[] tasks = getAllTasksForUser(username);
@@ -414,7 +426,7 @@ public class AdminDAO extends BaseDAO {
 
     /**
      * To remove registered task based on task ID
-     * 
+     *
      * @param taskID
      * @throws OmnigeneException
      * @throws RemoteException
@@ -464,7 +476,7 @@ public class AdminDAO extends BaseDAO {
 
     /**
      * Gets the latest versions of all suites
-     * 
+     *
      * @return The latest suites
      * @exception WebServiceException
      *                If an error occurs
@@ -539,7 +551,7 @@ public class AdminDAO extends BaseDAO {
 
     /**
      * Gets all versions of all suites
-     * 
+     *
      * @return The suites
      * @exception WebServiceException
      *                If an error occurs
@@ -576,7 +588,7 @@ public class AdminDAO extends BaseDAO {
 
     /**
      * Gets all suites this task is a part of
-     * 
+     *
      * @return The suites
      * @exception WebServiceException
      *                If an error occurs
@@ -584,7 +596,7 @@ public class AdminDAO extends BaseDAO {
     public SuiteInfo[] getSuiteMembership(String taskLsid) throws OmnigeneException {
         PreparedStatement st = null;
         ResultSet rs = null;
-        ArrayList suites = new ArrayList();
+        ArrayList<SuiteInfo> suites = new ArrayList<SuiteInfo>();
         try {
             st = getSession().connection().prepareStatement("SELECT lsid FROM suite_modules where module_lsid = ?");
             st.setString(1, taskLsid);
@@ -598,14 +610,13 @@ public class AdminDAO extends BaseDAO {
         } finally {
             cleanupJDBC(rs, st);
         }
-        return (SuiteInfo[]) suites.toArray(new SuiteInfo[suites.size()]);
+        return suites.toArray(new SuiteInfo[suites.size()]);
     }
 
-    static class TaskNameComparator implements Comparator {
+    static class TaskNameComparator implements Comparator<TaskInfo> {
 
-        public int compare(Object o1, Object o2) {
-            TaskInfo t1 = (TaskInfo) o1;
-            TaskInfo t2 = (TaskInfo) o2;
+        public int compare(TaskInfo t1, TaskInfo t2) {
+
             return t1.getName().compareToIgnoreCase(t2.getName());
         }
 
