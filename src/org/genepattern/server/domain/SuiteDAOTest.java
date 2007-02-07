@@ -31,6 +31,16 @@ public class SuiteDAOTest {
     }
 
     @Test
+    public final void testFindAll() {
+        SuiteDAO dao = new SuiteDAO();
+        List<Suite> suites = dao.findAll();
+        for(Suite s : suites) {
+            System.out.println(s.getUserId());
+        }
+        assertTrue(suites.size() > 0);
+    }
+
+    @Test
     public final void testFindByOwner() {
         SuiteDAO dao = new SuiteDAO();
         String userId = "jrobinso@broad.mit.edu";
@@ -38,4 +48,11 @@ public class SuiteDAOTest {
         assertTrue(suites.size() > 0);
     }
 
+    @Test
+    public final void testFindByOwnerOrPublic() {
+        SuiteDAO dao = new SuiteDAO();
+        String userId = "jrobinso@broad.mit.edu";
+        List suites = dao.findByOwnerOrPublic(userId);
+        assertTrue(suites.size() > 0);
+    }
 }

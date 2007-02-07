@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.faces.application.ApplicationFactory;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletResponse;
@@ -54,8 +55,19 @@ public class ManageSuiteBean {
         return suites;
     }
 
+    /**
+     * Query for suites the current user is authorized to see.  This method should be moved to the service layer.
+     *
+     */
     private void resetSuites() {
-        suites = (new SuiteDAO()).findByOwnerOrPublic(UIBeanHelper.getUserId());
+        if (AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminSuites",
+                UIBeanHelper.getUserId())) {
+            suites = (new SuiteDAO()).findAll();
+        } else {
+            suites = (new SuiteDAO()).findByOwnerOrPublic(UIBeanHelper.getUserId());
+
+        }
+
     }
 
     /**
@@ -271,7 +283,7 @@ public class ManageSuiteBean {
             }
         } catch (Exception e) {
             log.error(e);
-            throw new RuntimeException(e); 
+            throw new RuntimeException(e);
         }
     }
 

@@ -41,10 +41,15 @@ public class SuiteDAO extends BaseDAO {
 
     }
 
+    /**
+     * 
+     * @param ownerName
+     * @return
+     */
     public List<Suite> findByOwner(String ownerName) {
         try {
             Query query = HibernateUtil.getSession().createQuery(
-                    "from org.genepattern.server.domain.Suite where owner = :ownerName order by name");
+                    "from org.genepattern.server.domain.Suite where userId = :ownerName order by name");
             query.setString("ownerName", ownerName);
             return query.list();
         }
@@ -58,7 +63,7 @@ public class SuiteDAO extends BaseDAO {
     public List<Suite> findByOwnerOrPublic(String ownerName) {
         try {
             Query query = HibernateUtil.getSession().createQuery(
-                    "from org.genepattern.server.domain.Suite where owner = :ownerName  or accessId = 1 order by name");
+                    "from org.genepattern.server.domain.Suite where userId = :ownerName  or accessId = 1 order by name");
             query.setString("ownerName", ownerName);
             return query.list();
         }
