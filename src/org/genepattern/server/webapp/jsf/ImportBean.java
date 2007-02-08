@@ -118,7 +118,7 @@ public class ImportBean {
 
         AuthorizationManager authManager = new AuthorizationManager();
         final String username = UIBeanHelper.getUserId();
-        boolean taskInstallAllowed = authManager.checkPermission("createTask", username);
+        boolean taskInstallAllowed = authManager.checkPermission("createModule", username);
         boolean pipelineInstallAllowed = authManager.checkPermission("createPipeline", username);
 
         final LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
@@ -128,9 +128,11 @@ public class ImportBean {
             taskInfo = TaskUtil.getTaskInfoFromZip(new File(path));
 
             boolean isPipelineZip = TaskUtil.isPipeline(taskInfo);
-            if (isPipelineZip && !pipelineInstallAllowed) {
-                UIBeanHelper.setInfoMessage("You do not have permission to install pipelines on this server.");
-                return "error";
+            if (isPipelineZip) {
+                if (!pipelineInstallAllowed) {
+                    UIBeanHelper.setInfoMessage("You do not have permission to install pipelines on this server.");
+                    return "error";
+                }
             } else if (!taskInstallAllowed) {
                 UIBeanHelper.setInfoMessage("You do not have permission to install modules on this server.");
                 return "error";
