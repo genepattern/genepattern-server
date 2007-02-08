@@ -1,0 +1,24 @@
+<!-- map of users to groups -->
+
+<userGroups>
+
+<group name="administrators">
+	<user name="admin"/>
+	<user name="helga"/>
+	<user name="hkuehn"/>
+	<user name="jgould"/>
+	<user name="jonbistline"/>
+	<user name="jrobinso@broad.mit.edu"/>
+	<user name="michaelr"/>
+	<user name="mnazaire"/>
+	<user name="qgao"/>
+	<user name="rebecca@fagandesign.com"/>
+    <user name="ted"/>
+</group>
+
+<group name="public">
+	<user name="*"/>
+</group>
+
+
+</userGroups>
