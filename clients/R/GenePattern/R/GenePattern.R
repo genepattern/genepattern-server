@@ -20,16 +20,16 @@
 	}
 }
 #------------------------------------------------------------------------------------------------------
-gp.login <- 
+gp.login <-
 #
 # Connect to gpServer.
 #
-function(server.name, user.name, password = NULL) 
+function(server.name, user.name, password = NULL)
 {
     gp.server <- .jnew("org/genepattern/client/GPServer", server.name,  user.name, password)
 
     return(gp.server)
-}	
+}
 #------------------------------------------------------------------------------------------------------
 run.analysis <-
 #
@@ -41,24 +41,24 @@ function(gp.server, module.name.or.lsid, ...)
 	if(is.null(gp.server))
 	{
 		stop("gp.server is NULL")
-	}		
+	}
 
 	parameters <- list()
 	index <- 1
 	args <- list(...)
-	for(name in names(args)) 
+	for(name in names(args))
 	{
 		parameter <- .jnew("org/genepattern/webservice/Parameter", name, args[[name]])
 		parameters[index] <- list(parameter)
-		index <- index + 1		
+		index <- index + 1
 	}
 
 	parameter.array <- .jarray(parameters, contents.class="org/genepattern/webservice/Parameter")
-		
+
 	job.result <- .jcall(gp.server, "Lorg/genepattern/webservice/JobResult;", "runAnalysis", module.name.or.lsid, parameter.array)
 
 	return(job.result)
-}    	
+}
 #------------------------------------------------------------------------------------------------------
 run.analysis.no.wait <-
 #
@@ -70,18 +70,18 @@ function(gp.server, module.name.or.lsid, ...)
 	if(is.null(gp.server))
 	{
 		stop("gp.server is NULL")
-	}	
+	}
 
 	parameters <- list()
 	index <- 1
 	args <- list(...)
-	for(name in names(args)) 
+	for(name in names(args))
 	{
 		parameter <- .jnew("org/genepattern/webservice/Parameter", name, args[[name]])
 		parameters[index] <- list(parameter)
-		index <- index + 1		
+		index <- index + 1
 	}
-	
+
 	parameter.array <- .jarray(parameters, contents.class="org/genepattern/webservice/Parameter")
 
 	result <- .jcall(gp.server, "I", "runAnalysisNoWait", module.name.or.lsid, parameter.array)
@@ -101,14 +101,14 @@ function(gp.server, job.number)
 
 	if(!is.complete(gp.server, job.number))
 		stop(paste("Cannot create JobResult: Job ", job.number, " has not completed"))
-		
+
 	job.result <- .jcall(gp.server, "Lorg/genepattern/webservice/JobResult;", "createJobResult", job.number)
 
-	return (job.result)	
+	return (job.result)
 }
 #------------------------------------------------------------------------------------------------------
 
-is.complete <- 
+is.complete <-
 #
 # Checks if the given job is complete.
 #
@@ -117,7 +117,7 @@ function(gp.server, job.number)
 	if(is.null(gp.server))
 	{
 		stop("gp.server is NULL")
-	}			
+	}
 
 	job.number <- as.integer(job.number)
 
@@ -136,19 +136,19 @@ function(gp.server, module.name.or.lsid, ...)
 	if(is.null(gp.server))
 	{
 		stop("gp.server is NULL")
-	}		
+	}
 
 	parameters <- list()
 	index <- 1
 	args <- list(...)
-	for(name in names(args)) 
+	for(name in names(args))
 	{
 		parameter <- .jnew("org/genepattern/webservice/Parameter", name, args[[name]])
 		parameters[index] <- list(parameter)
-		index <- index + 1		
+		index <- index + 1
 	}
-	
-	parameter.array <- .jarray(parameters, contents.class="org/genepattern/webservice/Parameter")	
+
+	parameter.array <- .jarray(parameters, contents.class="org/genepattern/webservice/Parameter")
 
 	.jcall(gp.server,"V", "runVisualizer", module.name.or.lsid, parameter.array)
 }
@@ -156,23 +156,23 @@ function(gp.server, module.name.or.lsid, ...)
 get.parameters <-
 #
 # Returns a list of parameters for the specified module name or lsid.
-# 
+#
 function(gp.server, module.name.or.lsid)
 {
 	if(is.null(gp.server))
 	{
 		stop("gp.server is NULL")
-	}	
+	}
 
 	parameter.info.array <- .jcall(gp.server,"[Lorg/genepattern/webservice/ParameterInfo;", "getParameters", module.name.or.lsid)
-	
+
 	if(is.null(parameter.info.array))
-		return(NULL) 
-		
-	parameter.info.list <- list()	
+		return(NULL)
+
+	parameter.info.list <- list()
 	for(i in 1:length(parameter.info.array))
-	{	
-		parameter.info <- parameter.info.array[[i]]		
+	{
+		parameter.info <- parameter.info.array[[i]]
 
 		parameter.info.list[i] <- .jcall(parameter.info, "S", "toString")
 	}
@@ -180,19 +180,19 @@ function(gp.server, module.name.or.lsid)
 	return(parameter.info.list)
 }
 #------------------------------------------------------------------------------------------------------
-is.windows <- 
-function() 
+is.windows <-
+function()
 {
 	Sys.info()[["sysname"]]=="Windows"
 }
 #------------------------------------------------------------------------------------------------------
-input.prompt <- 
-function(prompt) 
+input.prompt <-
+function(prompt)
 {
-	if (is.windows()) 
+	if (is.windows())
 	{
 		return(winDialogString(message = prompt, default = ""))
-	} 
+	}
 	else
 	{
 		cat(prompt)
@@ -205,17 +205,17 @@ gp.get.module.file.url <-
 #
 #Returns the url to retrieve the given file as part of the given module.
 #
-function(gp.server, module.name.or.lsid, filename) 
+function(gp.server, module.name.or.lsid, filename)
 {
 	if(is.null(gp.server))
 	{
 		stop("gp.server is NULL")
-	}	
+	}
 
 	url <- .jcall(gp.server,"Ljava/net/URL;", "getModuleFileUrl", module.name.or.lsid, filename)
     url <- .jcall(url, "S", "toString")
 
-	return(url)	
+	return(url)
 }
 
 #------------------------------------------------------------------------------------------------------
@@ -232,11 +232,11 @@ function(job.result, filename.or.file.output.order)
 
 	if(is.numeric(filename.or.file.output.order))
 		filename.or.file.output.order <- as.integer(filename.or.file.output.order)
-	
+
 	url <- .jcall(job.result, "Ljava/net/URL;", "getURL", filename.or.file.output.order)
 
 	url <- .jcall(url, "S", "toString")
-	
+
 	return(url)
 }
 #------------------------------------------------------------------------------------------------------
@@ -246,8 +246,8 @@ function(job.result)
 	output.filenames.array <- .jcall(job.result, "[S", "getOutputFileNames")
 
 	output.filenames.list <- as.list(output.filenames.array)
-	
-	return(output.filenames.list)		
+
+	return(output.filenames.list)
 }
 #------------------------------------------------------------------------------------------------------
 job.result.get.url.for.file.type <-
@@ -259,7 +259,7 @@ function(job.result, file.type)
 	}
 
 	url <- .jcall(job.result, "Ljava/net/URL;", "getURLForFileType", file.type)
-	
+
 	url <- .jcall(url, "S", "toString")
 
 	return(url)
@@ -292,10 +292,10 @@ function(job.result, filename, download.directory, overwrite = TRUE)
 	}
 
 	file <- .jcall(job.result, "Ljava/io/File;", "downloadFile", filename, download.directory)
-	
+
 	filename <- .jcall(file, "S", "getAbsolutePath")
 
-	return(filename)	
+	return(filename)
 }
 #------------------------------------------------------------------------------------------------------
 job.result.download.files <-
@@ -317,10 +317,10 @@ function(job.result, download.directory, overwrite = TRUE)
 	for(i in 1:length(files.array))
 	{
 		file <- files.array[[i]]
-		filenames.list[i] <- .jcall(file, "S", "getAbsolutePath")	
+		filenames.list[i] <- .jcall(file, "S", "getAbsolutePath")
 	}
 
-	return(filenames.list)	
+	return(filenames.list)
 }
 #------------------------------------------------------------------------------------------------------
 job.result.get.server.url <-
@@ -329,7 +329,7 @@ function(job.result)
 	if(is.null(job.result))
 	{
 		stop("job.result is NULL")
-	
+
 	}
 
 	server.url <- .jcall(job.result, "Ljava/net/URL;", "getServerURL")
@@ -345,10 +345,10 @@ function(job.result)
 	{
 		stop("job.result is NULL")
 	}
-	
+
 	lsid <- .jcall(job.result, "S", "getLSID")
 
-	return(lsid) 	
+	return(lsid)
 }
 #------------------------------------------------------------------------------------------------------
 job.result.has.standard.out <-
@@ -361,7 +361,7 @@ function(job.result)
 
 	has.standard.out <- .jcall(job.result, "Z", "hasStandardOut")
 
-	return(has.standard.out) 	
+	return(has.standard.out)
 }
 #------------------------------------------------------------------------------------------------------
 job.result.has.standard.error <-
@@ -374,7 +374,7 @@ function(job.result)
 
 	has.standard.error <- .jcall(job.result, "Z", "hasStandardError")
 
-	return(has.standard.error) 	
+	return(has.standard.error)
 }
 #------------------------------------------------------------------------------------------------------
 
@@ -384,7 +384,7 @@ function(job.result)
 check.extension <- function(file.name, extension) {
 	ext <- regexpr(paste(extension,"$",sep=""), tolower(file.name))
 	if(ext[[1]] == -1) {
-		file.name <- paste(file.name, extension, sep="") 
+		file.name <- paste(file.name, extension, sep="")
 	}
 	return(file.name)
 }
@@ -396,45 +396,45 @@ read.dataset <- function(file) {
 	result <- regexpr(paste(".res","$",sep=""), tolower(file))
 	if(result[[1]] != -1)
 		return(read.res(file))
-	
-	stop("Input is not a res or gct file.")	
+
+	stop("Input is not a res or gct file.")
 }
 #------------------------------------------------------------------------------------------------------
 read.gct <- function(file) {
-	if (is.character(file)) 
-        if (file == "") 
+	if (is.character(file))
+        if (file == "")
             file <- stdin()
         else {
             file <- file(file, "r")
             on.exit(close(file))
         }
-	if (!inherits(file, "connection")) 
+	if (!inherits(file, "connection"))
         stop("argument `file' must be a character string or connection")
-		  
+
    # line 1 version
-	version <- readLines(file, n=1) 
-	
+	version <- readLines(file, n=1)
+
 	# line 2 dimensions
-	dimensions <- scan(file, what=list("integer", "integer"), nmax=1, quiet=TRUE)   
+	dimensions <- scan(file, what=list("integer", "integer"), nmax=1, quiet=TRUE)
 	rows <- dimensions[[1]]
 	columns <- dimensions[[2]]
 	# line 3 Name\tDescription\tSample names...
-	column.names <- read.table(file, header=FALSE, nrows=1, sep="\t", fill=FALSE) 
+	column.names <- read.table(file, header=FALSE, nrows=1, sep="\t", fill=FALSE)
 	column.names <-column.names[3:length(column.names)]
 
-	
+
 	if(length(column.names)!=columns) {
-		stop(paste("Number of sample names", length(column.names), "not equal to the number of columns", columns, "."))	
+		stop(paste("Number of sample names", length(column.names), "not equal to the number of columns", columns, "."))
 	}
-	
+
 	colClasses <- c(rep(c("character"), 2), rep(c("double"), columns))
-	
+
 	x <- read.table(file, header=FALSE, quote="", row.names=NULL, comment.char="", sep="\t", colClasses=colClasses, fill=FALSE)
-	row.descriptions <- as.character(x[,2]) 
+	row.descriptions <- as.character(x[,2])
 	data <- as.matrix(x[seq(from=3, to=dim(x)[2], by=1)])
-	
+
 	column.names <- column.names[!is.na(column.names)]
-	
+
 	colnames(data) <- column.names
 	row.names(data) <- x[,1]
 	return(list(row.descriptions=row.descriptions, data=data))
@@ -447,7 +447,7 @@ read.res <- function(filename)
   # delete the NA entries for the tab-tab columns
   headings <- headings[!is.na(headings)]
   colNames <- headings[3:length(headings)]
-   
+
   # read line 2: sample descriptions
   descriptions <- scan(filename, skip=1, nlines=1, sep="\t", fill=F, blank.lines.skip=F, quiet=T, what="character")
   # delete the NA entries for the tab-tab columns
@@ -455,20 +455,20 @@ read.res <- function(filename)
   if(length(descriptions) > 0) {
   	descriptions <- descriptions[3:length(descriptions)]
   }
-  # handle optionally missing number of lines (not used, but need to decide whether to ignore before actual data)  
+  # handle optionally missing number of lines (not used, but need to decide whether to ignore before actual data)
   numLines <- as.list(read.table(filename, header=FALSE, skip=2, nrows=1, sep="\t", fill=FALSE))
   numLines <- numLines[!is.na(numLines)] # remove NA entries
   skip <- (3 - ifelse(length(numLines) == 1, 0, 1)) # skip 3 lines if line number is present, 2 otherwise
 
-  columns <- length(headings) - 2 # substract 2 for gene description and name 
+  columns <- length(headings) - 2 # substract 2 for gene description and name
   colClasses <- c(c("character", "character"), rep(c("double", "character"), columns))
- 
-  
+
+
   x <- .my.read.table(filename, header=FALSE, sep="\t", comment.char="", skip=skip, colClasses=colClasses, row.names=NULL, quote=NULL, fill=FALSE)
-  
+
   data <- as.matrix(x[c(seq(from=3,length=(dim(x)[2]-3)/2, by=2))])
   calls <- as.matrix(x[c(seq(from=4,length=(dim(x)[2]-3)/2, by=2))])
-  
+
   row.names <- x[,2]
   row.names(data) <- row.names
   row.names(calls) <- row.names
@@ -494,39 +494,39 @@ function(res, filename, check.file.extension=TRUE)
 	cat("Description\tAccession\t", file=f, append=TRUE)
 	cat(colnames(res$data), sep="\t\t", file=f, append=TRUE)
 	cat("\n", file=f, append=TRUE)
-	
+
 	# write the descriptions
 	if(!is.null(res$column.descriptions)) {
 		cat("\t", file=f, append=TRUE)
 		cat(res$column.descriptions, sep="\t\t", file=f, append=TRUE)
-	} 
+	}
 	cat("\n", file=f, append=TRUE)
-	
+
 	# write the size
 	cat(NROW(res$data), "\n", sep="", file=f, append=TRUE)
-	
+
 	# write the data
 	# 1st combine matrices
 	dim <- dim(res$data)
 	dim[2] <- dim[2]*2
-	
+
 	m <- matrix(nrow=dim[1], ncol=dim[2]+2)
-	
+
 	if(!is.null(res$row.descriptions)) {
 		m[,1] <- res$row.descriptions
 	} else {
 		m[, 1] <- ''
 	}
-	
+
 	m[,2] <- row.names(res$data)
-	
+
 	index <- 3
 	for(i in 1:dim(res$data)[2]) {
 		m[,index] <- res$data[,i]
 		index <- index + 2
 	}
 	index <- 4
-	
+
 	for(i in 1:dim(res$calls)[2]) {
 		m[,index] <- as.character(res$calls[,i])
 		index <- index + 2
@@ -536,27 +536,27 @@ function(res, filename, check.file.extension=TRUE)
 }
 #------------------------------------------------------------------------------------------------------
 read.cls <- function(file) {
-	# returns a list containing the following components: 
+	# returns a list containing the following components:
 	# labels the factor of class labels
 	# names the names of the class labels if present
-	
-	if (is.character(file)) 
-        if (file == "") 
+
+	if (is.character(file))
+        if (file == "")
             file <- stdin()
         else {
             file <- file(file, "r")
             on.exit(close(file))
         }
-    if (!inherits(file, "connection")) 
+    if (!inherits(file, "connection"))
         stop("argument `file' must be a character string or connection")
-   
+
 	line1 <- scan(file, nlines=1, what="character", quiet=TRUE)
-	
+
 	numberOfDataPoints <- as.integer(line1[1])
 	numberOfClasses <- as.integer(line1[2])
-	
+
 	line2 <- scan(file, nlines=1, what="character", quiet=TRUE)
-	
+
 	classNames <- NULL
 	if(line2[1] =='#') { # class names are given
 		classNames <- as.vector(line2[2:length(line2)])
@@ -564,7 +564,7 @@ read.cls <- function(file) {
 	} else {
 		line3 <- line2
 	}
-	
+
 	if(is.null(classNames)) {
 		labels <- as.factor(line3)
 		classNames <- levels(labels)
@@ -572,7 +572,7 @@ read.cls <- function(file) {
 		labels <- factor(line3, labels=classNames)
 	}
 	if(numberOfDataPoints!=length(labels)) {
-		stop("Incorrect number of data points") 	
+		stop("Incorrect number of data points")
 	}
 	r <- list(labels=labels,names=classNames)
 	r
@@ -589,7 +589,7 @@ function(cls, filename, check.file.extension=TRUE)
 	}
 	file <- file(filename, "w")
 	on.exit(close(file))
- 
+
 	cat(file=file, length(cls$labels), length(levels(cls$labels)), "1\n")
 
 	if(length(cls$names) > 0) {
@@ -606,37 +606,36 @@ function(cls, filename, check.file.extension=TRUE)
 		cat(file=file, " ")
 	}
 	cat(file=file, cls$labels[[length(cls$labels)]]-1)
-	return(filename) 
+	return(filename)
 }
 #------------------------------------------------------------------------------------------------------
 write.gct <-
 #
-# save a GCT result to a file, optionally ensuring the filename has the extension .gct
+# save a GCT result to a file, ensuring the filename has the extension .gct
 #
 function(gct, filename, check.file.extension=TRUE)
 {
 	if(check.file.extension) {
-		filename <- check.extension(filename, ".gct") 
+		filename <- check.extension(filename, ".gct")
 	}
 	f <- file(filename, "w")
 	on.exit(close(f))
-	
+
 
 	cat("#1.2", "\n", file=f, append=TRUE, sep="")
 	cat(dim(gct$data)[1], "\t", dim(gct$data)[2], "\n", file=f, append=TRUE, sep="")
 	cat("Name", "\t", file=f, append=TRUE, sep="")
 	cat("Description", file=f, append=TRUE, sep="")
 	names <- colnames(gct$data)
-	cat("\t", names[1], file=f, append=TRUE, sep="")
 
-	for(j in 2:length(names)) {
+	for(j in 1:length(names)) {
 		cat("\t", names[j], file=f, append=TRUE, sep="")
 	}
 
 	cat("\n", file=f, append=TRUE, sep="")
 	m <- matrix(nrow = dim(gct$data)[1], ncol = 2)
 
-	m[, 1] <- row.names(gct$data)		
+	m[, 1] <- row.names(gct$data)
 
 	if(!is.null(gct$row.descriptions)) {
 		m[, 2] <- gct$row.descriptions
@@ -644,42 +643,42 @@ function(gct, filename, check.file.extension=TRUE)
 		m[, 2] <- ''
 	}
 	m <- cbind(m, gct$data)
-	
+
 	write.table(m, file=f, append=TRUE, quote=FALSE, sep="\t", eol="\n", col.names=FALSE, row.names=FALSE)
 	return(filename)
 }
 
 #------------------------------------------------------------------------------------------------------
 # like read.table, but doesn't check to make sure all rows have same number of columns
-.my.read.table <- function (file, header = FALSE, sep = "", quote = "\"'", dec = ".", row.names, col.names, as.is = FALSE, na.strings = "NA", colClasses, nrows = -1, skip = 0, check.names = TRUE, fill = !blank.lines.skip, strip.white = FALSE, blank.lines.skip = TRUE, comment.char = "") 
+.my.read.table <- function (file, header = FALSE, sep = "", quote = "\"'", dec = ".", row.names, col.names, as.is = FALSE, na.strings = "NA", colClasses, nrows = -1, skip = 0, check.names = TRUE, fill = !blank.lines.skip, strip.white = FALSE, blank.lines.skip = TRUE, comment.char = "")
 {
 	if (is.character(file)) {
 		file <- file(file, "r")
 		on.exit(close(file))
 	}
-	if (!inherits(file, "connection")) 
+	if (!inherits(file, "connection"))
 		stop("argument `file' must be a character string or connection")
 	if (!isOpen(file)) {
 		open(file, "r")
 		on.exit(close(file))
 	}
-	if (skip > 0) 
+	if (skip > 0)
 		readLines(file, skip)
-		
-	first <- readLines(file, n=1) 
+
+	first <- readLines(file, n=1)
 	pushBack(first, file)
-	temp <- strsplit(first, "\t") 
+	temp <- strsplit(first, "\t")
 	cols <- as.integer(length(temp[[1]])) # number of columns
-	 
-	if (missing(col.names)) 
+
+	if (missing(col.names))
         col.names <- paste("V", 1:cols, sep = "")
-	
+
 	what <- rep(list(""), cols)
 	names(what) <- col.names
 	colClasses[colClasses %in% c("real", "double")] <- "numeric"
 	known <- colClasses %in% c("logical", "integer", "numeric", "complex", "character")
 	what[known] <- sapply(colClasses[known], do.call, list(0))
-    
+
 	data <- scan(file = file, what = what, sep = sep, quote = quote, dec = dec, nmax = nrows, skip = 0, na.strings = na.strings, quiet = TRUE, fill = fill, strip.white = strip.white, blank.lines.skip = blank.lines.skip, multi.line = FALSE, comment.char = comment.char)
 	nlines <- length(data[[1]])
 	if (cols != length(data)) {
@@ -690,7 +689,7 @@ function(gct, filename, check.file.extension=TRUE)
         as.is <- rep(as.is, length = cols)
 	}
 	else if (is.numeric(as.is)) {
-	  if (any(as.is < 1 | as.is > cols)) 
+	  if (any(as.is < 1 | as.is > cols))
 			stop("invalid numeric as.is expression")
 	  i <- rep(FALSE, cols)
 	  i[as.is] <- TRUE
@@ -698,14 +697,14 @@ function(gct, filename, check.file.extension=TRUE)
 	}
 	else if (is.character(as.is)) {
 	  i <- match(as.is, col.names, 0)
-	  if (any(i <= 0)) 
+	  if (any(i <= 0))
 			warning("not all columns named in as.is exist")
 	  i <- i[i > 0]
 	  as.is <- rep(FALSE, cols)
 	  as.is[i] <- TRUE
 	}
-	else if (length(as.is) != cols) 
-		stop(paste("as.is has the wrong length", length(as.is), 
+	else if (length(as.is) != cols)
+		stop(paste("as.is has the wrong length", length(as.is),
 			"!= cols =", cols))
 	if (missing(row.names)) {
 		if (rlabp) {
@@ -719,7 +718,7 @@ function(gct, filename, check.file.extension=TRUE)
 	}
 	else if (is.character(row.names)) {
 		if (length(row.names) == 1) {
-			rowvar <- (1:cols)[match(col.names, row.names, 0) == 
+			rowvar <- (1:cols)[match(col.names, row.names, 0) ==
 				 1]
 			row.names <- data[[rowvar]]
 			data <- data[-rowvar]
