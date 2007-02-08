@@ -82,7 +82,7 @@ public class ModuleHelper {
         return categories;
     }
 
-    public List<ModuleCategory> getSelectedTasksByType(String [] selectedLsids) {
+    public List<ModuleCategory> getSelectedTasksByType(String[] selectedLsids) {
 
         List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
         Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();

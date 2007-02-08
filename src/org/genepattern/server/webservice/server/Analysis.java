@@ -284,7 +284,7 @@ public class Analysis extends GenericWebService {
      */
     public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs)
             throws WebServiceException {
-        if (!username.equals(getUsernameFromContext())) {
+        if(username == null || !username.equals(getUsernameFromContext())) {
             if (!authManager.checkPermission("adminServer", getUsernameFromContext())) {
                 throw new WebServiceException("You do not have permission for jobs started by other users.");
             }

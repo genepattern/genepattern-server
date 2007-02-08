@@ -100,13 +100,8 @@ public class JobBean {
                 .valueOf(fileSortAscending)));
         this.fileSortColumn = new UserDAO().getPropertyValue(userId, "fileSortColumn", fileSortColumn);
         this.showEveryonesJobs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesJobs", String
-                .valueOf(showEveryonesJobs)));
-        if (showEveryonesJobs
-                && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
-                        UIBeanHelper.getUserId())) {
-            showEveryonesJobs = false;
-
-        }
+                .valueOf(showEveryonesJobs))) && AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
+                        UIBeanHelper.getUserId()) ;
         this.jobSortColumn = new UserDAO().getPropertyValue(userId, "jobSortColumn", jobSortColumn);
         this.jobSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "jobSortAscending", String
                 .valueOf(jobSortAscending)));
@@ -474,6 +469,7 @@ public class JobBean {
     }
 
     public List<JobResultsWrapper> getAllJobs() {
+
         if (allJobs == null) {
             String userId = UIBeanHelper.getUserId();
             LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
@@ -600,13 +596,10 @@ public class JobBean {
     }
 
     public void setShowEveryonesJobs(boolean showEveryonesJobs) {
-        if (showEveryonesJobs
-                && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
-                        UIBeanHelper.getUserId())) {
-            showEveryonesJobs = false;
 
-        }
-        this.showEveryonesJobs = showEveryonesJobs;
+        this.showEveryonesJobs = showEveryonesJobs
+                && AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
+                        UIBeanHelper.getUserId());
         new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesJobs", String.valueOf(showEveryonesJobs));
         this.resetJobs();
     }

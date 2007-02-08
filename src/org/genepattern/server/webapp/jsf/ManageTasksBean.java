@@ -46,10 +46,12 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 
             String userId = UIBeanHelper.getUserId();
             this.showEveryonesTasks = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesTasks",
-                    String.valueOf(this.showEveryonesTasks)));
+                    String.valueOf(this.showEveryonesTasks)))
+                    && AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminModules",
+                            UIBeanHelper.getUserId());
+            ;
             if (this.showEveryonesTasks
-                    && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminModules",
-                            userId)) {
+                    && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminModules", userId)) {
                 this.showEveryonesTasks = false;
 
             }
