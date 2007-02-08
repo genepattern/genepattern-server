@@ -230,7 +230,7 @@ import org.w3c.dom.NodeList;
  * sharing) can be accomplished using a web browser</li>
  * </ul>
  * </ul>
- * 
+ *
  * @author Jim Lerner
  * @version 1.0
  * @see org.genepattern.server.AnalysisTask
@@ -304,7 +304,7 @@ public class GenePatternAnalysisTask {
     /**
      * Returns a local URL as a File object or <tt>null</tt> if the URL can
      * not be represented as a File
-     * 
+     *
      * @param url
      *            The URL to convert to a File.
      * @param userId
@@ -335,7 +335,10 @@ public class GenePatternAnalysisTask {
                 String filename = params.substring(idx2 + 5, endIdx2);
                 // check that user can access requested task
                 if (new LocalAdminClient(userId).getTask(lsid) != null) {
-                    return new File(DirectoryManager.getTaskLibDir(lsid, lsid, userId), filename);
+                    File file = new File(DirectoryManager.getTaskLibDir(lsid, lsid, userId), filename);
+                    if(file.exists()) {
+                        return file;
+                    }
                 }
             }
             File jobsDir = new File(System.getProperty("jobs"));
@@ -355,12 +358,15 @@ public class GenePatternAnalysisTask {
                     return null;
                 }
 
-                return new File(jobsDir.getAbsolutePath() + File.separator + job + File.separator + requestedFile);
+                File file = new File(jobsDir.getAbsolutePath() + File.separator + job + File.separator + requestedFile);
+                if(file.exists()) {
+                    return file;
+                }
 
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error getting file", e);
         }
         return null;
     }
@@ -389,7 +395,7 @@ public class GenePatternAnalysisTask {
      * filesystem, executing the application, and then returning any of the
      * output files from the sandbox directory where it ran to the analysis_job
      * database (and ultimately to the caller).
-     * 
+     *
      * @param o
      *            JobInfo object
      * @author Jim Lerner
@@ -591,13 +597,20 @@ public class GenePatternAnalysisTask {
                                     name = f.getName();
                                 } else {
                                     URL url = uri.toURL();
-                                    String localPrefix = System.getProperty("GenePatternURL");
+                                    String gpHost = null;
+                                    try {
+                                        if (System.getProperty("GenePatternURL") != null) {
+                                            URL gpUrl = new URL(System.getProperty("GenePatternURL"));
+                                            gpHost = gpUrl.getHost();
+                                        }
+                                    } catch (MalformedURLException mfe) {
+                                    }
 
                                     if (url.toString().startsWith("<GenePatternURL>")
                                             || url.getHost().equalsIgnoreCase("localhost")
                                             || url.getHost().equals("127.0.0.1")
                                             || url.getHost().equals(InetAddress.getLocalHost().getCanonicalHostName())
-                                            || url.toString().equalsIgnoreCase(localPrefix)) {
+                                            || url.getHost().equals(gpHost)) {
                                         File file = inputUrlToFile(url, jobInfo.getUserId());
 
                                         if (file != null) {
@@ -1054,7 +1067,7 @@ public class GenePatternAnalysisTask {
 
     /**
      * Record job completion status in the database.
-     * 
+     *
      * @param jobInfo
      * @param parentJobInfo
      * @param jobStatus
@@ -1080,7 +1093,7 @@ public class GenePatternAnalysisTask {
      * Get the appropriate command prefix to use for this module. The hierarchy
      * goes like this; 1. task version specific entry in task prefix mapping 2.
      * task versionless entry in task prefix mapping 3. default command prefix
-     * 
+     *
      * @param taskInfoAttributes
      * @param props
      */
@@ -1129,7 +1142,7 @@ public class GenePatternAnalysisTask {
 
     /**
      * Update AnalysisJob
-     * 
+     *
      * @param jobInfo
      * @param parentJobInfo
      * @param jobStatus
@@ -1191,7 +1204,7 @@ public class GenePatternAnalysisTask {
 
     /**
      * Gets a filename that is as similar as possible to the given url
-     * 
+     *
      * @param conn
      *            The connection
      * @param u
@@ -1904,7 +1917,7 @@ public class GenePatternAnalysisTask {
      * that prefix is prepended to the substitution value as the substitution is
      * made. For example, if the prefix is "-f " and the parameter "/foo/bar" is
      * supplied, the ultimate substitution will be "-f /foo/bar".
-     * 
+     *
      * @param commandLine
      *            command line with just variable names rather than values
      * @param props
@@ -2005,7 +2018,7 @@ public class GenePatternAnalysisTask {
 
     /**
      * Deletes a task, by name, from the Omnigene task_master database.
-     * 
+     *
      * @param lsid
      *            name of task to delete
      * @author Jim Lerner
@@ -2039,7 +2052,7 @@ public class GenePatternAnalysisTask {
      * Provides a TreeMap, sorted by case-insensitive task name, of all of the
      * tasks registered in the task_master table that are handled by the
      * GenePatternAnalysisTask class.
-     * 
+     *
      * @return TreeMap whose key is task name, and whose value is a TaskInfo
      *         object (with nested TaskInfoAttributes and ParameterInfo[]).
      * @author Jim Lerner
@@ -2056,7 +2069,7 @@ public class GenePatternAnalysisTask {
      * getTasks for a specific userID returns a TreeMap of all of the
      * GenePatternAnalysisTask-supported tasks that are visible to a particular
      * userID. Tasks are presented in case-insensitive alphabetical order.
-     * 
+     *
      * @param userID
      *            userID controlling which private tasks will be returned. All
      *            public tasks are also returned, and are interleaved
@@ -2103,7 +2116,7 @@ public class GenePatternAnalysisTask {
     /**
      * For a given taskName, look up the TaskInfo object in the database and
      * return it to the caller. TODO: involve userID in the search!
-     * 
+     *
      * @param taskName
      *            name of the task to locate
      * @return TaskInfo complete description of the task (including nested
@@ -2145,7 +2158,7 @@ public class GenePatternAnalysisTask {
      * supporting enhanced transparency of execution in the GenePattern
      * environment for scripts and applications. TODO: add userID to the search
      * for the task.
-     * 
+     *
      * @param taskName
      *            name of the task whose <libdir>should be added to the path
      * @param envVariables
@@ -2201,7 +2214,7 @@ public class GenePatternAnalysisTask {
      * <p/> <p/> Called by onJob() to create actual run-time parameter lookup,
      * and by validateInputs() for both task save-time and task run-time
      * parameter validation. <p/>
-     * 
+     *
      * @param taskName
      *            name of task to be run
      * @param jobNumber
@@ -2331,7 +2344,7 @@ public class GenePatternAnalysisTask {
                     for (int f = 0; f < formalParamsLength; f++) {
                         if (actuals[i].getName().equals(formalParameters[f].getName())) {
                             if (formalParameters[f].isInputFile()) {
-                               
+
                                 inputFilename = actuals[i].getValue();
                                 if (inputFilename == null || inputFilename.length() == 0) {
                                     continue;
@@ -2392,7 +2405,7 @@ public class GenePatternAnalysisTask {
     /**
      * Takes care of quotes in command line. Ensures that quoted arguments are
      * placed into a single element in the command array
-     * 
+     *
      * @param commandLine
      * @return the new command line
      */
@@ -2439,7 +2452,7 @@ public class GenePatternAnalysisTask {
      * stopped by jobID. <p/> <p/> Please read about the BUG in the runCommand
      * comments related to a race condition in the closure of the stdin stream
      * after forking the process.
-     * 
+     *
      * @param commandLine
      *            String representation of the command line to run with all
      *            substitutions for parameters made.
@@ -2538,7 +2551,7 @@ public class GenePatternAnalysisTask {
     /**
      * takes a filename, "short name" of a file, and JobInfo object and adds the
      * descriptor of the file to the JobInfo as an output file.
-     * 
+     *
      * @param jobInfo
      *            JobInfo object that will hold output file descriptor
      * @param fileName
@@ -2570,7 +2583,7 @@ public class GenePatternAnalysisTask {
      * and attempts to terminate the job. Note that Process.destroy() is not
      * always successful. If a process cannot be killed without a "kill -9", it
      * seems not to die from a Process.destroy() either.
-     * 
+     *
      * @param jobID
      *            JobInfo jobID number
      * @param htWhere
@@ -2591,7 +2604,7 @@ public class GenePatternAnalysisTask {
      * parameters that are cited actually exist. Optional parameters need not be
      * cited in the command line. Parameter names that match a list of reserved
      * names are also called out.
-     * 
+     *
      * @param props
      *            Properties containing environment variables
      * @param taskName
@@ -2757,7 +2770,7 @@ public class GenePatternAnalysisTask {
     /**
      * checks that each substition variable listed in the task command line
      * actually exists in the ParameterInfo array for the task.
-     * 
+     *
      * @param props
      *            Properties object containing substitution variable name/value
      *            pairs
@@ -2777,8 +2790,8 @@ public class GenePatternAnalysisTask {
      * @return Vector of error messages (vProblems with new errors appended)
      * @author Jim Lerner
      */
-    protected Vector<String> validateSubstitutions(Properties props, String taskName, String commandLine, String source,
-            Vector<String> vProblems, ParameterInfo[] formalParams) {
+    protected Vector<String> validateSubstitutions(Properties props, String taskName, String commandLine,
+            String source, Vector<String> vProblems, ParameterInfo[] formalParams) {
         // check that each substitution variable listed in the command line is
         // actually in props
         int start = 0;
@@ -2798,8 +2811,7 @@ public class GenePatternAnalysisTask {
                 continue;
             }
             varName = commandLine.substring(start + LEFT_DELIMITER.length(), end);
-            
-            
+
             if (!varName.endsWith(INPUT_PATH)) {
                 if (!props.containsKey(varName)) {
                     boolean isOptional = false;
@@ -2830,7 +2842,7 @@ public class GenePatternAnalysisTask {
      * takes a taskInfoAttributes and ParameterInfo array for a new task and
      * validates that the input parameters are all accounted for. It returns a
      * Vector of error messages to the caller (zero length if all okay).
-     * 
+     *
      * @param taskName
      *            name of task (used in error messages)
      * @param tia
@@ -2867,7 +2879,7 @@ public class GenePatternAnalysisTask {
      * on the current locale: the precise set of characters allowed is given by
      * the C expression (isalnum(c) || c==’.’) and will include accented letters
      * in many Western European locales.
-     * 
+     *
      * @param varName
      *            proposed variable name
      * @return boolean if the proposed name is R-legal
@@ -2898,7 +2910,7 @@ public class GenePatternAnalysisTask {
 
     /**
      * encapsulate an invalid R identifier name in quotes if necessary
-     * 
+     *
      * @param varName
      *            variable name
      * @return variable name, quoted if necessary
@@ -2921,7 +2933,7 @@ public class GenePatternAnalysisTask {
      * updated task database entry (via a DBLoader invocation). If there are
      * validation errors, the task is not created and the error message(s) are
      * returned to the caller. Otherwise (all okay), null is returned.
-     * 
+     *
      * @param name
      *            task name
      * @param description
@@ -3104,7 +3116,7 @@ public class GenePatternAnalysisTask {
      * job are/will be stored. <b>This routine depends on having the System
      * property java.io.tmpdir set the same for both the Tomcat and JBoss
      * instantiations. </b>
-     * 
+     *
      * @param jobNumber
      *            the job number whose storage directory is being sought
      * @return String directory name on server of this job's files
@@ -3127,7 +3139,7 @@ public class GenePatternAnalysisTask {
      * file extension is returned. The TreeMap keys are in the format " <name>,
      * <size><date>", and the values are URL hrefs to each task, ready to
      * download.
-     * 
+     *
      * @return TreeMap of task description/URL pairs. See
      *         getSourceForgeTasks(projectName, fileType) for more information.
      * @throws IOException
@@ -3148,7 +3160,7 @@ public class GenePatternAnalysisTask {
      * to dig up this information and returns it in a pseudo-structured format.
      * It isn't pretty, but it does work. Unfortunately, SourceForge is fairly
      * slow to render the underlying page.
-     * 
+     *
      * @param projectName
      *            name of the SourceForge project (eg. "genepattern")
      * @param fileType
@@ -3245,7 +3257,7 @@ public class GenePatternAnalysisTask {
     /**
      * inspects a GenePattern-packaged task in a zip file and returns the name
      * of the task contained therein
-     * 
+     *
      * @param zipFilename
      *            filename of zip file containing a GenePattern task
      * @return name of task in zip file
@@ -3262,7 +3274,7 @@ public class GenePatternAnalysisTask {
      * opens a GenePattern-packaged task and returns a Properties object
      * containing all of the TaskInfo, TaskInfoAttributes, and ParameterInfo[]
      * data for the task.
-     * 
+     *
      * @param zipFilename
      *            filename of the GenePattern task zip file
      * @return Properties object containing key/value pairs for all of the
@@ -3299,7 +3311,7 @@ public class GenePatternAnalysisTask {
      * opens a GenePattern-packaged task in the form of a remote URL and returns
      * a Properties object containing all of the TaskInfo, TaskInfoAttributes,
      * and ParameterInfo[] data for the task.
-     * 
+     *
      * @param zipURL
      *            URL of the GenePattern task zip file
      * @return Properties object containing key/value pairs for all of the
@@ -3360,7 +3372,7 @@ public class GenePatternAnalysisTask {
      * file, unpacks it, and installs the task in the Omnigene task database.
      * Any taskLib entries (files such as scripts, DLLs, properties, etc.) from
      * the zip file are installed in the appropriate taskLib directory.
-     * 
+     *
      * @param zipFilename
      *            filename of zip file containing task to install
      * @return Vector of String error messages if unsuccessful, null if okay
@@ -3682,7 +3694,7 @@ public class GenePatternAnalysisTask {
     /**
      * downloads a file from a URL and returns the path to the local file to the
      * caller.
-     * 
+     *
      * @param zipURL
      *            String URL of file to download
      * @return String filename of temporary downloaded file on server
@@ -3774,7 +3786,7 @@ public class GenePatternAnalysisTask {
      * itself. Note that the returned <code>TaskInfo</code> instances have
      * getID() equal to -1, getParameterInfo() will be <code>null</code>,
      * getUserId is <code>null</code>, and getAccessId is 0.
-     * 
+     *
      * @throws IOException
      */
     public static Vector getZipOfZipsTaskInfos(File zipf) throws IOException {
@@ -3909,7 +3921,7 @@ public class GenePatternAnalysisTask {
      * accepts a jobID and Process object, logging them in the
      * htRunningPipelines Hashtable. When the pipeline terminates, they will be
      * removed from the Hashtable by terminateJob.
-     * 
+     *
      * @param jobID
      *            job ID number
      * @param p
@@ -3929,7 +3941,7 @@ public class GenePatternAnalysisTask {
      * being invoked by a separate process (not GenePatternAnalysisTask), but is
      * using the rest of the infrastructure to get input files, store output
      * files, and retrieve status and result files.
-     * 
+     *
      * @param userID
      *            user who owns this pipeline data instance
      * @param parameter_info
@@ -3972,7 +3984,7 @@ public class GenePatternAnalysisTask {
      * eventual return to the invoker. This routine is actually invoked from
      * updatePipelineStatus.jsp. The jobStatus constants are those defined in
      * edu.mit.wi.omnigene.framework.analysis.JobStatus
-     * 
+     *
      * @param jobNumber
      *            jobID of the pipeline whose status is to be updated
      * @param jobStatus
@@ -4008,7 +4020,7 @@ public class GenePatternAnalysisTask {
      * for eventual return to the invoker. This routine is actually invoked from
      * updatePipelineStatus.jsp. The jobStatus constants are those defined in
      * edu.mit.wi.omnigene.framework.analysis.JobStatus
-     * 
+     *
      * @param jobNumber
      *            jobID of the pipeline whose status is to be updated
      * @param jobStatus
@@ -4047,7 +4059,7 @@ public class GenePatternAnalysisTask {
      * in this code. The pipeline behavior only occurs when run via
      * runPipeline.jsp, allowing intermediate results of the task to appear,
      * which would not happen if it were run as a task (all or none for output).
-     * 
+     *
      * @param jobID
      *            JobInfo jobNumber
      * @return Process of the pipeline if running, else null
@@ -4109,7 +4121,7 @@ public class GenePatternAnalysisTask {
      * the path or in the same directory, and this manipulation makes it
      * transparent to them. <p/> <p/> Implementation: spawn a process that
      * performs either a "sh -c set" (on Unix) or "cmd /c set" on Windows.
-     * 
+     *
      * @return Hashtable of environment variable name/value pairs
      * @author Jim Lerner
      */
@@ -4143,7 +4155,7 @@ public class GenePatternAnalysisTask {
      * Creates a new Thread which blocks on reads to an InputStream, appends
      * their output to the given file. The thread terminates upon EOF from the
      * InputStream.
-     * 
+     *
      * @param is
      *            InputStream to read from
      * @param file
@@ -4186,7 +4198,7 @@ public class GenePatternAnalysisTask {
 
     /**
      * writes a string to a file
-     * 
+     *
      * @param dirName
      *            directory in which to create the file
      * @param filename
@@ -4223,7 +4235,7 @@ public class GenePatternAnalysisTask {
      * Utility function to convert a HashTable to a String[]. Used because the
      * Runtime.exec() method requires a String[] of environment variables, which
      * stem from a Hashtable.
-     * 
+     *
      * @param htEntries
      *            input Hashtable
      * @return String[] array of String of name=value elements from input
@@ -4244,7 +4256,7 @@ public class GenePatternAnalysisTask {
     /**
      * replace all instances of "find" in "original" string and substitute
      * "replace" for them
-     * 
+     *
      * @param original
      *            String before replacements are made
      * @param find
@@ -4277,7 +4289,7 @@ public class GenePatternAnalysisTask {
      * renames a file, even across filesystems. If the underlying Java rename()
      * fails because the source and destination are not on the same filesystem,
      * this method performs a copy instead.
-     * 
+     *
      * @param from
      *            File which is to be renamed
      * @param to
@@ -4395,7 +4407,7 @@ public class GenePatternAnalysisTask {
     /**
      * Test method for the GenePatternAnalysisTask class. Currently tests
      * installation of several tasks.
-     * 
+     *
      * @throws OmnigeneException
      * @throws RemoteException
      * @author Jim Lerner
@@ -4557,7 +4569,7 @@ public class GenePatternAnalysisTask {
 
     /**
      * loads the request into queue
-     * 
+     *
      * @return Vector of JobInfo
      * @author Raj Kuttan
      */
@@ -4703,7 +4715,7 @@ public class GenePatternAnalysisTask {
      * a name, description, array of ParameterInfo declarations, and an
      * XML-encoded form of TaskInfoAttributes. These are all persisted in the
      * Omnigene database and recalled when a task is going to be invoked.
-     * 
+     *
      * @author Jim Lerner
      * @see DBLoader;
      */
