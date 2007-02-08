@@ -40,7 +40,7 @@ import org.genepattern.util.GPConstants;
 
 /**
  * Servlet filter that requires user to log in to access certain pages
- * 
+ *
  * @author Liefeld
  */
 public class AuthenticationFilter implements Filter {
@@ -78,11 +78,11 @@ public class AuthenticationFilter implements Filter {
 
         if (isAuthenticated((HttpServletRequest) request, (HttpServletResponse) response)) {
             for (int i = 0, length = forwardIfLoggedInPages.length; i < length; i++) {
-            	if (requestedURI.contains(forwardIfLoggedInPages[i]) && req.getParameter("origin")==null) {
+                if (requestedURI.contains(forwardIfLoggedInPages[i]) && req.getParameter("origin") == null) {
                     ((HttpServletResponse) response).sendRedirect(req.getContextPath() + homePage);
                     return;
-                }else if (requestedURI.contains(forwardIfLoggedInPages[i]) && req.getParameter("origin")!=null) {
-                	chain.doFilter(request, response);
+                } else if (requestedURI.contains(forwardIfLoggedInPages[i]) && req.getParameter("origin") != null) {
+                    chain.doFilter(request, response);
                     return;
                 }
             }
@@ -129,11 +129,12 @@ public class AuthenticationFilter implements Filter {
 
     /**
      * Check to see if user is logged in and has registerd in database.
-     * 
+     *
      */
     private boolean isSignedIn(String userId, HttpServletRequest request, HttpServletResponse response) {
-        if (!passwordRequired) { // don't check for valid session id if no
-            // password is required-GPConstants.USERID cookie is sufficient for
+        if (!passwordRequired) {
+            // don't check for valid session if no password is
+            // required-GPConstants.USERID cookie is sufficient for
             // authentication
 
             HibernateUtil.beginTransaction();
@@ -151,7 +152,6 @@ public class AuthenticationFilter implements Filter {
 
             return true;
         } else {
-
             if (request.isRequestedSessionIdFromURL()) { // disallow passing
                 // the
                 // session id from the
@@ -161,18 +161,7 @@ public class AuthenticationFilter implements Filter {
             }
 
             HttpSession session = request.getSession(false);
-            if (session == null) {
-                return false;
-            }
-            // This filter might run before the HibernateFilter. Open
-            // transaction
-            // just in case. The transaction is closed automatically.
-            HibernateUtil.beginTransaction();
-            User user = new UserDAO().findById(userId);
-            if (user != null && session.getId().equals(user.getSessionId())) {
-                return true;
-            }
-            return false;
+            return session != null;
         }
     }
 

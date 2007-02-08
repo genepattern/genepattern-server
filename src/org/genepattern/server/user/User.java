@@ -18,8 +18,7 @@ public class User {
     int totalLoginCount;
 
     List<UserProp> props;
-    
-    String sessionId;
+
 
     public List<UserProp> getProps() {
         return props;
@@ -79,14 +78,6 @@ public class User {
 
     public void incrementLoginCount() {
         totalLoginCount++;
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
     }
 
 }

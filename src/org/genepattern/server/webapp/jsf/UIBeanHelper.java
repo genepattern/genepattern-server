@@ -126,7 +126,6 @@ public class UIBeanHelper {
     public static void logout() {
         User user = new UserDAO().findById(UIBeanHelper.getUserId());
         assert user != null;
-        user.setSessionId(null);
         Cookie[] cookies = UIBeanHelper.getRequest().getCookies();
         if (cookies != null) {
             for (Cookie c : cookies) {
@@ -144,7 +143,7 @@ public class UIBeanHelper {
     }
 
     /**
-     * 
+     *
      * @param username
      * @param sessionOnly
      *            whether the login cookie should be set for the session only
@@ -156,7 +155,7 @@ public class UIBeanHelper {
     }
 
     /**
-     * 
+     *
      * @param username
      * @param sessionOnly
      *            whether the login cookie should be set for the session only
@@ -170,9 +169,6 @@ public class UIBeanHelper {
         HttpSession session = request.getSession();
         User user = new UserDAO().findById(username);
         assert user != null;
-        if (sessionOnly) {
-            user.setSessionId(session.getId());
-        }
         user.incrementLoginCount();
         user.setLastLoginDate(new Date());
         user.setLastLoginIP(request.getRemoteAddr());
