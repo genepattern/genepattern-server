@@ -4,11 +4,11 @@
  * This software and its documentation are copyright (2003-2006) by the
  * Broad Institute/Massachusetts Institute of Technology. All rights are
  * reserved.
- *  
+ *
  * This software is supplied without any warranty or guaranteed support
  * whatsoever. Neither the Broad Institute nor MIT can be responsible for its
  * use, misuse, or functionality.
- *  
+ *
  *******************************************************************************/
 
 package org.genepattern.server.webapp;
@@ -40,30 +40,30 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 
 /**
- * 
+ *
  * Security filter on job results pages which are now accessible via normal http
  * without using the retrieveResults.jsp page
- * 
+ *
  * In 3.0, you are allowed access to the directory of your own jobs only but not
  * the parent dir of your jobs or anyone elses jobs
- * 
+ *
  * This is determined by looking at the URL, taking the job # as whatever
  * follows the "jobResults" part in the url
- * 
- * 
+ *
+ *
  * reqURL: http://gp21e-789.broad.mit.edu:8080/gp/jobResults/92/foo.out
  * contextPath: /gp reqURI: /gp/jobResults/92/foo.out ServletPath:
  * /jobResults/92/foo.out
- * 
+ *
  * and in genepattern.properties we typically have jobs=./webapps/gp/jobResults
  * which defines the directory the files are in
- * 
+ *
  * In this first implementation, we'll assume the dir name 'jobResults' cannot
  * be changed in any GP install
- * 
+ *
  * @author Ted Liefeld
  * @author Joshua Gould
- * 
+ *
  */
 public class JobResultsFilter implements Filter {
 
@@ -146,7 +146,7 @@ public class JobResultsFilter implements Filter {
             // should admin be allowed here?
             allowed = false;
         } else if (isJobOwner(userid, job)
-                || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer", userid)) {
+                || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs", userid)) {
             allowed = true;
         }
 
