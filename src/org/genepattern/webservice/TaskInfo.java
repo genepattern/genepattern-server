@@ -28,7 +28,7 @@ import org.genepattern.util.GPConstants;
 public class TaskInfo implements Serializable {
 
     // The maximum size of the "short name"
-    private static int shortNameLimit = 37;
+    private static int shortNameLimit = 33;
 
     private int taskID = 0;
     private String taskName = "";
