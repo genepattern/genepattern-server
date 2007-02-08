@@ -4,7 +4,7 @@
     <ui:define name="pageTitle">Contact Us</ui:define>
     <ui:define name="headText">
       <style>
-      	.infomessages { 
+      	.infomessages {
       		font-family: Verdana, Arial, Helvetica, sans-serif;
       		font-weight: bold;
 			font-size: 12px;
@@ -12,11 +12,11 @@
       		padding-left: 100px;
 			width: 100%;
 			line-height: 200px;
-			
+
       	}
       </style>
 	  <script language="JavaScript">
-	  function validate() { 
+	  function validate() {
 	      var mail = document.getElementById("ct_form:replyTo").value;
 	      var message = document.getElementById("ct_form:message").value;
 	      if (mail == '') {
@@ -64,45 +64,52 @@
 	  </script>
     </ui:define>
     <ui:define name="body">
-    
+
 		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
 	      <tr>
 	        <td>Contact Page</td>
 	      </tr>
 	    </table>
 	    <t:div rendered="#{!contactUsBean.sent}">
-	    
+
 		<p>Enter your email address and message below, we will contact you as soon as possible.</p>
-		
+
 		<table width="1%" style="margin-left: 80px;">
 			 <h:form id="ct_form">
 			 <tr>
 			     <td>
 			         <table cellspacing="2" cellpadding="1" width="1%">
 			              <tr>
-			                 <td nowrap="true" valign="top">Return address:</td>
+			                 <td nowrap="true" valign="top">Return Address:</td>
 			                 <td>
-			                    <h:inputText style="width: 250px" id="replyTo" size="40" value="#{contactUsBean.replyTo}"/>			                    	
+			                    <h:inputText style="width: 250px" id="replyTo" size="40" required="true" requiredMessage="Return address is required"
+			                    value="#{contactUsBean.replyTo}" validator="#{contactUsBean.validateEmail}"/>
+			                 </td>
+			              </tr>
+			              <tr>
+			                 <td nowrap="true" valign="top">Subject:</td>
+			                 <td>
+			                    <h:inputText style="width: 250px" id="subject" size="40" value="#{contactUsBean.subject}"/>
 			                 </td>
 			              </tr>
 			              <tr>
 			                  <td nowrap="true" valign="top">Message:</td>
 			                  <td>
-			                   	<h:inputTextarea style="width: 350px" rows="5" id="message" value="#{contactUsBean.message}"/>
+			                   	<h:inputTextarea style="width: 350px" rows="5" id="message" required="true" requiredMessage="Message is required" value="#{contactUsBean.message}"/>
 			                  </td>
 			              </tr>
 			              <tr>
 			                  <td colspan="2" align="right">
-			                    <h:commandButton value="Send" onclick="return validate()" action="#{contactUsBean.send}"/>
+			                    <h:commandButton value="Send"  action="#{contactUsBean.send}"/>
 			                  </td>
 			              </tr>
 			          </table>
 			      </td>
 			  </tr>
 			  </h:form>
-		</table>    
+		</table>
 		</t:div>
-		<h:outputText styleClass="infomessages" size="40" value="#{contactUsBean.infoMessages}" rendered="#{contactUsBean.sent}"/>	
+		<h:outputText styleClass="infomessages" size="40" value="#{contactUsBean.infoMessages}" rendered="#{contactUsBean.sent}"/>
     </ui:define>
   </ui:composition>
 </html>
