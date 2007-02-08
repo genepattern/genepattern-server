@@ -601,7 +601,7 @@ public class JobBean {
 
     public void setShowEveryonesJobs(boolean showEveryonesJobs) {
         if (showEveryonesJobs
-                && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer",
+                && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
                         UIBeanHelper.getUserId())) {
             showEveryonesJobs = false;
 
