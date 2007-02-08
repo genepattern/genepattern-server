@@ -102,7 +102,7 @@ public class TaskIntegrator {
     /**
      * Clones the given task.
      * 
-     * Cloning is a form of task creation and requires teh "createTask" permission
+     * Cloning is a form of task creation and requires teh "createModule" permission
      * 
      * @param lsid
      *            The lsid of the task to clone
@@ -113,7 +113,7 @@ public class TaskIntegrator {
      *                If an error occurs
      */
     public String cloneTask(String oldLSID, String cloneName) throws WebServiceException {
-        isAuthorized(getUserName(), "createTask");
+        isAuthorized(getUserName(), "createModule");
         String userID = getUserName();
 
         try {
@@ -302,7 +302,7 @@ public class TaskIntegrator {
      * @throws WebServiceException
      */
     public String[] getDocFileNames(String lsid) throws WebServiceException {
-         if (lsid == null || lsid.equals("")) {
+        if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
 
@@ -336,7 +336,7 @@ public class TaskIntegrator {
      */
     public DataHandler[] getDocFiles(String lsid) throws WebServiceException {
         String taskLibDir = null;
- 
+
         try {
             taskLibDir = DirectoryManager.getLibDir(lsid);
         } catch (Exception e) {
@@ -441,7 +441,7 @@ public class TaskIntegrator {
      *                If an error occurs
      */
     public DataHandler[] getSupportFiles(String lsid) throws WebServiceException {
-         if (lsid == null || lsid.equals("")) {
+        if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
 
@@ -462,7 +462,7 @@ public class TaskIntegrator {
      * @throws WebServiceException
      */
     private DataHandler getSupportFile(String lsid, String fileName) throws WebServiceException {
-  
+
         if (lsid == null || lsid.equals("")) {
             throw new WebServiceException("Invalid LSID");
         }
@@ -494,7 +494,7 @@ public class TaskIntegrator {
      *                If an error occurs
      */
     public DataHandler[] getSupportFiles(String lsid, String[] fileNames) throws WebServiceException {
-         try {
+        try {
             if (lsid == null || lsid.equals("")) {
                 throw new WebServiceException("Invalid LSID");
             }
@@ -562,7 +562,7 @@ public class TaskIntegrator {
                 lsid = installSuite(zippedFile);
             } else {
                 try {
-                    isAuthorized(getUserName(), "createTask");
+                    isAuthorized(getUserName(), "createModule");
                     lsid = GenePatternAnalysisTask.installNewTask(path, username, privacy, recursive, taskIntegrator);
                 } catch (TaskInstallationException tie) {
                     log.error(tie);
@@ -617,7 +617,7 @@ public class TaskIntegrator {
                     isTask = true;
                 }
                 if (suiteManifestEntry != null) {
-                     isSuite = true;
+                    isSuite = true;
                 }
             } catch (IOException ioe) {
                 log.error(ioe);
@@ -632,7 +632,10 @@ public class TaskIntegrator {
                 // replace task, do not version lsid or replace the lsid in the
                 // zip
                 // with a local one
-                isAuthorized(getUserName(), "createTask");
+                if (!(authManager.checkPermission("createModule", getUserName()) || (authManager.checkPermission(
+                        "createPipeline", getUserName()) && recursive == false))) {
+                    throw new WebServiceException("You do not have permission to install modules on this server.");
+                }
                 lsid = GenePatternAnalysisTask.installNewTask(path, username, privacy, recursive, taskIntegrator);
             }
         } catch (TaskInstallationException tie) {
@@ -802,7 +805,7 @@ public class TaskIntegrator {
      */
 
     public void installTask(String lsid) throws WebServiceException {
-        isAuthorized(getUserName(), "createTask");
+        isAuthorized(getUserName(), "createModule");
         InstallTasksCollectionUtils utils = new InstallTasksCollectionUtils(getUserName(), false);
         try {
             InstallTask[] tasks = utils.getAvailableModules();
@@ -1001,7 +1004,7 @@ public class TaskIntegrator {
     public String modifyTask(int accessId, String taskName, String description, ParameterInfo[] parameterInfoArray,
             Map taskAttributes, DataHandler[] dataHandlers, String[] fileNames) throws WebServiceException {
 
-        isAuthorized(getUserName(), "createTask");
+        isAuthorized(getUserName(), "createModule");
 
         String lsid = null;
         String username = getUserName();
