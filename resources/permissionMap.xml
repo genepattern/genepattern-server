@@ -20,18 +20,15 @@
 <permission name="adminServer">
 	<group name="administrators"/>
 </permission>
+
 <permission name="createModule">
 	<group name="administrators"/>
 </permission>
-
 <permission name="createPipeline">
 	<group name="*"/>
 </permission>
-
 <permission name="createSuite">
 	<group name="*"/>
 </permission>
-
-
 
 </permissionMap>

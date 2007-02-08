@@ -10,7 +10,7 @@
         <tbody>
           <tr>
             <td>
-              <h:commandLink value="Edit" action="#{manageSuiteBean.edit}" rendered="#{suiteInfo.userId == requestScope.userID}">
+              <h:commandLink value="Edit" action="#{manageSuiteBean.edit}" rendered="#{manageSuiteBean.editPermissions[suiteInfo.lsid]}">
                 <f:param name="lsid" value="#{suiteInfo.lsid}"/>
               </h:commandLink>
             </td>

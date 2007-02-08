@@ -3,7 +3,6 @@
 <userGroups>
 
 <group name="administrators">
-	<user name="*"/>
 	<user name="admin"/>
 </group>
 

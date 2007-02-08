@@ -26,6 +26,7 @@ import org.genepattern.server.process.ZipSuiteWithDependents;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.SuiteInfo;
 
 public class ManageSuiteBean {
@@ -33,6 +34,8 @@ public class ManageSuiteBean {
     private static Logger log = Logger.getLogger(ManageSuiteBean.class);
 
     private List<Suite> suites;
+
+    private Map<String, Boolean> editPermissions;
 
     private Suite currentSuite = null;
 
@@ -56,8 +59,8 @@ public class ManageSuiteBean {
     }
 
     /**
-     * Query for suites the current user is authorized to see.  This method should be moved to the service layer.
-     *
+     * Query for suites the current user is authorized to see.
+     * 
      */
     private void resetSuites() {
         if (AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminSuites",
@@ -65,9 +68,19 @@ public class ManageSuiteBean {
             suites = (new SuiteDAO()).findAll();
         } else {
             suites = (new SuiteDAO()).findByOwnerOrPublic(UIBeanHelper.getUserId());
-
         }
 
+        editPermissions = new HashMap<String, Boolean>();
+        for (Suite s : suites) {
+            boolean canEdit = s.getUserId().equals(UIBeanHelper.getUserId())
+                    && LSIDUtil.getInstance().isAuthorityMine(s.getLsid());
+            editPermissions.put(s.getLsid(), canEdit);
+
+        }
+    }
+
+    public Map getEditPermissions() {
+        return editPermissions;
     }
 
     /**

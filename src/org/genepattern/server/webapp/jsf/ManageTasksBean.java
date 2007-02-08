@@ -25,6 +25,7 @@ import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
@@ -301,7 +302,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
                 deleteAuthorized = ti.getUserId().equals(userId)
                         || AuthorizationManagerFactory.getAuthorizationManager()
                                 .checkPermission("adminModules", userId);
-                editAuthorized = ti.getUserId().equals(userId);
+                editAuthorized = ti.getUserId().equals(userId) && LSIDUtil.getInstance().isAuthorityMine(ti.getLsid());
             }
 
             public String getLsid() {

@@ -15,12 +15,18 @@ package org.genepattern.util;
 import static org.genepattern.util.GPConstants.TASK_NAMESPACE;
 import static org.genepattern.util.GPConstants.SUITE_NAMESPACE;
 
+import java.net.MalformedURLException;
+
+import org.apache.log4j.Logger;
+
 /**
  * @author Liefeld
  * 
  * 
  */
 public class LSIDUtil {
+
+    private static Logger log = Logger.getLogger(LSIDUtil.class);
 
     public static String AUTHORITY_MINE = "mine";
 
@@ -96,13 +102,26 @@ public class LSIDUtil {
             return 0;
         }
     }
-    
+
     /**
-     * Convenience method.  Returns true if an lsid's authority == "MINE". 
+     * Convenience method. Returns true if an lsid's authority == "MINE".
+     * 
      * @param lsid
      */
     public boolean isAuthorityMine(LSID lsid) {
         return getAuthorityType(lsid).equals(AUTHORITY_MINE);
+    }
+
+    public boolean isAuthorityMine(String lsid) {
+        LSID lsidObj;
+        try {
+            lsidObj = new LSID(lsid);
+            return isAuthorityMine(lsidObj);
+        } catch (MalformedURLException e) {
+            log.error(e);
+            return false;
+        }
+
     }
 
     public LSID getNearerLSID(LSID lsid1, LSID lsid2) {
