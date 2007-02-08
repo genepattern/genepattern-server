@@ -284,7 +284,11 @@ public class Analysis extends GenericWebService {
      */
     public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs)
             throws WebServiceException {
-        isSameUserOrAdmin(getUsernameFromContext(), username);
+        if (!username.equals(getUsernameFromContext())) {
+            if (!authManager.checkPermission("adminServer", getUsernameFromContext())) {
+                throw new WebServiceException("You do not have permission for jobs started by other users.");
+            }
+        }
 
         try {
             AnalysisDAO ds = new AnalysisDAO();
@@ -595,7 +599,6 @@ public class Analysis extends GenericWebService {
         }
     }
 
-
     private void isJobOwnerOrAuthorized(String user, int jobId) throws WebServiceException {
         AnalysisDAO ds = new AnalysisDAO();
         JobInfo jobInfo = ds.getJobInfo(jobId);
@@ -612,7 +615,7 @@ public class Analysis extends GenericWebService {
 
     private void isSameUserOrAdmin(String user, String requestedUser) throws WebServiceException {
         if (!user.equals(requestedUser)) {
-            if (!authManager.checkPermission("administrateServer", user)) {
+            if (!authManager.checkPermission("adminServer", user)) {
                 throw new WebServiceException("You do not have permission for jobs started by other users.");
             }
         }

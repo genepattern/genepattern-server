@@ -67,7 +67,7 @@ public class ServerSettingsBean {
      */
     public ServerSettingsBean() {
         IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        if (!authManager.checkPermission("administrateServer", UIBeanHelper.getUserId())) {
+        if (!authManager.checkPermission("adminServer", UIBeanHelper.getUserId())) {
             log.error(new FacesException("You don' have the required permissions to administer the server."));
         }
 

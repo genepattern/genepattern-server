@@ -72,10 +72,9 @@ public class RunTaskBean {
     private boolean showParameterDescriptions;
 
     /**
-     * Initialize the task lsid. This page needs to support redirects from older
-     * .jsp pages as well as jsf navigation. JSP pages will pass the lsid in as
-     * a request parameter. Look for it there first, if the paramter is null get
-     * it from the moduleChooserBean.
+     * Initialize the task lsid. This page needs to support redirects from older .jsp pages as well as jsf navigation.
+     * JSP pages will pass the lsid in as a request parameter. Look for it there first, if the paramter is null get it
+     * from the moduleChooserBean.
      * 
      */
     public RunTaskBean() {
@@ -302,9 +301,7 @@ public class RunTaskBean {
             return;
         }
 
-        editAllowed = taskInfo.getUserId().equals(UIBeanHelper.getUserId())
-        || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
-                UIBeanHelper.getUserId());
+        editAllowed = taskInfo.getUserId().equals(UIBeanHelper.getUserId());
 
         ParameterInfo[] taskParameters = taskInfo.getParameterInfoArray();
 
@@ -341,7 +338,7 @@ public class RunTaskBean {
                 File outputDir = new File(GenePatternAnalysisTask.getJobDir("" + matchJobInfo.getJobNumber()));
 
                 if (UIBeanHelper.getUserId().equals(matchJobInfo.getUserId())
-                        || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer",
+                        || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
                                 UIBeanHelper.getUserId())) {
                     ParameterInfo[] params = matchJobInfo.getParameterInfoArray();
                     if (params != null) {
@@ -400,7 +397,7 @@ public class RunTaskBean {
                 JobInfo reloadJob = ac.getJob(Integer.parseInt(reloadJobNumberString));
 
                 if (UIBeanHelper.getUserId().equals(reloadJob.getUserId())
-                        || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer",
+                        || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
                                 UIBeanHelper.getUserId())) {
                     ParameterInfo[] reloadParams = reloadJob.getParameterInfoArray();
                     if (reloadParams != null) {

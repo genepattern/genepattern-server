@@ -255,7 +255,7 @@ public class ManageSuiteBean {
      */
     private void deleteSuites(String[] suiteLsids) {
         String user = UIBeanHelper.getUserId();
-        boolean admin = AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer",
+        boolean admin = AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminSuites",
                 UIBeanHelper.getUserId());
         if (suiteLsids != null) {
             for (String lsid : suiteLsids) {

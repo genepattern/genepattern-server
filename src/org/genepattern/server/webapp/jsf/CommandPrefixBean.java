@@ -43,7 +43,7 @@ public class CommandPrefixBean {
 
     public CommandPrefixBean() {
         IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        if (!authManager.checkPermission("administrateServer", UIBeanHelper.getUserId())) {
+        if (!authManager.checkPermission("adminServer", UIBeanHelper.getUserId())) {
             throw new FacesException("You don' have the required permissions to administer the server.");
         }
         admin = new LocalAdminClient(UIBeanHelper.getUserId());

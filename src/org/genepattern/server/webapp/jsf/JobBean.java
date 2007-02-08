@@ -60,8 +60,8 @@ public class JobBean {
     private Map<String, List<KeyValuePair>> kindToInputParameters = Collections.emptyMap();
 
     /**
-     * Indicates whether execution logs should be shown. Manipulated by checkbox
-     * on job results page, always false on recent jobs page.
+     * Indicates whether execution logs should be shown. Manipulated by checkbox on job results page, always false on
+     * recent jobs page.
      */
     private boolean showExecutionLogs = false;
 
@@ -71,16 +71,14 @@ public class JobBean {
     private boolean fileSortAscending = true;
 
     /**
-     * Specifies file column to sort on. Possible values are name size
-     * lastModified
+     * Specifies file column to sort on. Possible values are name size lastModified
      */
     private String fileSortColumn = "name";
 
     private boolean showEveryonesJobs = true;
 
     /**
-     * Specifies job column to sort on. Possible values are jobNumber taskName
-     * dateSubmitted dateCompleted status
+     * Specifies job column to sort on. Possible values are jobNumber taskName dateSubmitted dateCompleted status
      */
     private String jobSortColumn = "jobNumber";
 
@@ -104,7 +102,7 @@ public class JobBean {
         this.showEveryonesJobs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesJobs", String
                 .valueOf(showEveryonesJobs)));
         if (showEveryonesJobs
-                && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer",
+                && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
                         UIBeanHelper.getUserId())) {
             showEveryonesJobs = false;
 
@@ -506,8 +504,8 @@ public class JobBean {
     }
 
     /**
-     * Get the list of selected files (pathnames) from the request parameters.
-     * This is converted to a set to make membership tests efficient.
+     * Get the list of selected files (pathnames) from the request parameters. This is converted to a set to make
+     * membership tests efficient.
      * 
      * @return The selected files.
      */
@@ -523,8 +521,8 @@ public class JobBean {
     }
 
     /**
-     * Get the list of selected jobs (LSIDs) from the request parameters. This
-     * is converted to a set to make membership tests efficient.
+     * Get the list of selected jobs (LSIDs) from the request parameters. This is converted to a set to make membership
+     * tests efficient.
      * 
      * @return The selected jobs.
      */
@@ -614,8 +612,8 @@ public class JobBean {
     }
 
     /**
-     * Jobs are always sorted, so there's nothing to do here. This is just an
-     * action method to trigger a reload. Could probably be better named.
+     * Jobs are always sorted, so there's nothing to do here. This is just an action method to trigger a reload. Could
+     * probably be better named.
      * 
      * @return
      */
@@ -752,8 +750,8 @@ public class JobBean {
     }
 
     /**
-     * Represents a job result. Wraps JobInfo and adds methods for getting the
-     * output files and the expansion state of the associated UI panel
+     * Represents a job result. Wraps JobInfo and adds methods for getting the output files and the expansion state of
+     * the associated UI panel
      */
     public static class JobResultsWrapper {
 
@@ -899,8 +897,7 @@ public class JobBean {
         }
 
         /**
-         * boolean property used to conditionally render or enable some menu
-         * items.
+         * boolean property used to conditionally render or enable some menu items.
          * 
          * @return Whether the job is complete.
          */
@@ -910,9 +907,8 @@ public class JobBean {
         }
 
         /**
-         * This property supports saving of the "expanded" state of the job
-         * across requests. It is used to initialize display properties of rows
-         * associated with this job.
+         * This property supports saving of the "expanded" state of the job across requests. It is used to initialize
+         * display properties of rows associated with this job.
          * 
          * @return
          */

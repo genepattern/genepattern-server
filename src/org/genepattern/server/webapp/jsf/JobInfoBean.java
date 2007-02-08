@@ -66,7 +66,7 @@ public class JobInfoBean {
             throw new FacesException("Job " + requestedJobNumber + " not found.");
         }
 
-        if (!AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer",
+        if (!AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
                 UIBeanHelper.getUserId())
                 && !job.getUserId().equals(UIBeanHelper.getUserId())) {
             throw new FacesException("You don' have the required permissions to access the requested job.");
