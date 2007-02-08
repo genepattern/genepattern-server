@@ -33,7 +33,7 @@ function(server.name, user.name, password = NULL)
 #------------------------------------------------------------------------------------------------------
 run.analysis <-
 #
-# Submits the given task with the given parameters and waits for the job to
+# Submits the given module with the given parameters and waits for the job to
 # complete and returns a list of output files or NULL.
 #
 function(gp.server, module.name.or.lsid, ...)
