@@ -1,24 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="build" name="genepattern">
+<project basedir="." default="create-gzip" name="genepattern">
 
-	<target name="build" depends="create-zip, create-gzip">
-	</target>
-	
-	<target name="create-zip">
-		<zip destfile="GenePattern_1.0.0.zip" whenempty="fail" defaultexcludes="true">
-			<fileset dir="." includes="GenePattern/**">
-			</fileset>
-		</zip>
-	</target>
-	
+
 	<target name="create-gzip">
 		<!-- OSX binary has extension .tgz, source is .tar.gz -->
-		<tar destfile="GenePattern_1.0.0.tar.gz" compression="gzip">
+		<tar destfile="downloads/GenePattern_1.0.0.tar.gz" compression="gzip">
 			<fileset dir="." includes="GenePattern/**">
 			</fileset>
 		</tar>
 		
-		<tar destfile="GenePattern_1.0.0.tgz" compression="gzip">
+		<tar destfile="downloads/GenePattern_1.0.0.tgz" compression="gzip">
 			<fileset dir="." includes="GenePattern/**">
 			</fileset>
 		</tar>
