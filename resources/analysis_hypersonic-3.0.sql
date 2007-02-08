@@ -64,6 +64,9 @@ create index idx_gp_user_prop_key on gp_user_prop(key);
 /* Add contact column to Suite */
 alter table suite add user_id varchar(255);
 
+update table set user_id = owner where user_id is null;
 
-update props set value='3.0.2' where key='schemaVersion';
+update props set value='3.0' where key='schemaVersion';
+
+
   
