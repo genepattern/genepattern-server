@@ -265,7 +265,7 @@ public class TaskCatalogBean {
     public String install() {
         filter();
         IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        final boolean taskInstallAllowed = authManager.checkPermission("createTask", UIBeanHelper.getUserId());
+        final boolean taskInstallAllowed = authManager.checkPermission("createModule", UIBeanHelper.getUserId());
         if (!taskInstallAllowed) {
             UIBeanHelper.setErrorMessage("You don't have the required permissions to install modules.");
             return "failure";
