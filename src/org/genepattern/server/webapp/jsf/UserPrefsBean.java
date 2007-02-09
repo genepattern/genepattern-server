@@ -44,32 +44,29 @@ public class UserPrefsBean {
 
     }
 
-    public String save() {
-        UIBeanHelper.setInfoMessage("Property successfully updated.");
+    public String saveJavaFlags() {
+        UIBeanHelper.setInfoMessage("Visualizer memory successfully updated.");
         return "my settings";
     }
 
-    public String getNumberOfRecentJobs() {
-        return recentJobsProp.getValue();
+    public String saveRecentJobs() {
+        UIBeanHelper.setInfoMessage("Number of recent jobs successfully updated.");
+        return "my settings";
     }
 
-    public void setNumberOfRecentJobs(String value) {
-        try {
-            Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            UIBeanHelper.setErrorMessage(value + " is not a number.");
-            log.info("Unable to parse " + value, e);
-            return;
-        }
-        recentJobsProp.setValue(value);
-
+    public int getNumberOfRecentJobs() {
+        return Integer.parseInt(recentJobsProp.getValue());
     }
 
-    public UserProp getJavaFlags() {
-        return javaFlagsProp;
+    public void setNumberOfRecentJobs(int value) {
+        recentJobsProp.setValue(String.valueOf(value));
     }
 
-    public void setJavaFlags(UserProp javaFlagsProp) {
-        this.javaFlagsProp = javaFlagsProp;
+    public String getJavaFlags() {
+        return javaFlagsProp.getValue();
+    }
+
+    public void setJavaFlags(String value) {
+        this.javaFlagsProp.setValue(value);
     }
 }
