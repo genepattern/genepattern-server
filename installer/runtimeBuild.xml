@@ -21,7 +21,7 @@
 		<copyfile src="${Rlib}GenePattern/R/GenePattern" dest="${output.dir}/GenePattern.R"/>
 	</target>
 
-	<target name="post-install" depends="saveDefaultProperties, create-tar-and-zip, copyRSource"/>
+	<target name="post-install" depends="saveDefaultProperties, copyRSource"/>
 
 	<target name="sleep5seconds">
 		<sleep seconds="5"/>
