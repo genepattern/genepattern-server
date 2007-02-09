@@ -99,6 +99,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -302,6 +303,36 @@ public class GenePatternAnalysisTask {
     protected boolean bCopyInputFiles = (System.getProperty("copyInputFiles") != null);
 
     /**
+     * Tests whether the specified URL referes to the local host.
+     * @param url The URL to check whether it refers to the local host.
+     * @return <tt>true</tt> if the specified URL refers to the local host.
+     */
+    protected boolean isLocalHost(URL url) {
+    	String gpHost = null;
+    	String hostAddress = null;
+    	try {
+            if (System.getProperty("GenePatternURL") != null) {
+                URL gpUrl = new URL(System.getProperty("GenePatternURL"));
+                gpHost = gpUrl.getHost();
+                hostAddress = InetAddress.getLocalHost().getHostAddress();
+            }
+        } catch (MalformedURLException mfe) {
+        } catch(UnknownHostException uhe) {
+        }
+        
+    	String requestedHost = url.getHost();
+    	try {
+    	    return (url.toString().startsWith("<GenePatternURL>") || requestedHost.equals("localhost")
+    			|| requestedHost.equals("127.0.0.1")
+    			|| requestedHost.equals(InetAddress.getLocalHost().getCanonicalHostName())
+    			|| requestedHost.equals(gpHost) || InetAddress.getByName(requestedHost).getHostAddress().equals(hostAddress));
+
+    	}catch(UnknownHostException x) {
+    	    log.error("Unknown host", x);
+    	    return false;
+    	}
+    }
+    /**
      * Returns a local URL as a File object or <tt>null</tt> if the URL can
      * not be represented as a File
      *
@@ -343,8 +374,10 @@ public class GenePatternAnalysisTask {
             }
             File jobsDir = new File(System.getProperty("jobs"));
             String jobDirName = jobsDir.getName();
-            if (path.indexOf(jobDirName) != -1) {
-                path = path.substring(path.indexOf(jobDirName) + jobDirName.length());
+            int jobDirIndex = -1;
+            log.info("userid " + userId + " jobDirName " + jobDirName);
+            if ((jobDirIndex = path.lastIndexOf(jobDirName)) != -1) {
+                path = path.substring(jobDirIndex + jobDirName.length());
                 StringTokenizer strtok = new StringTokenizer(path, "/");
                 String job = null;
 
@@ -358,10 +391,13 @@ public class GenePatternAnalysisTask {
                 if (job == null || requestedFilename == null) {
                     return null;
                 }
+                log.info("requestedFilename " + requestedFilename);
                 if (isJobOwner(userId, job)
                         || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs", userId)) {
                     File jobDir = new File(jobsDir, job);
+                    log.info("jobDir " + jobDir.getCanonicalPath());
                     File file = new File(jobDir, requestedFilename);
+                    log.info("file " + file.getCanonicalPath());
                     if (file.exists()) {
                         return file;
                     }
@@ -574,8 +610,7 @@ public class GenePatternAnalysisTask {
                         }
                         if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null
                                 && !mode.equals(ParameterInfo.OUTPUT_MODE) && originalPath != null && isURL) {
-                            log.debug("in: mode=" + mode + ", fileType=" + fileType + ", name=" + params[i].getValue());
-
+                           
                             URI uri = new URI(originalPath);
                             final String userInfo = uri.getUserInfo();
                             if (userInfo != null) {
@@ -602,19 +637,10 @@ public class GenePatternAnalysisTask {
                                 } else {
                                     URL url = uri.toURL();
                                     String gpHost = null;
-                                    try {
-                                        if (System.getProperty("GenePatternURL") != null) {
-                                            URL gpUrl = new URL(System.getProperty("GenePatternURL"));
-                                            gpHost = gpUrl.getHost();
-                                        }
-                                    } catch (MalformedURLException mfe) {
-                                    }
-
-                                    if (url.toString().startsWith("<GenePatternURL>")
-                                            || url.getHost().equalsIgnoreCase("localhost")
-                                            || url.getHost().equals("127.0.0.1")
-                                            || url.getHost().equals(InetAddress.getLocalHost().getCanonicalHostName())
-                                            || url.getHost().equals(gpHost)) {
+                                    String hostAddress = null;
+                                    
+                                    
+                                    if (isLocalHost(url)) {
                                         File file = inputUrlToFile(url, jobInfo.getUserId());
 
                                         if (file != null) {
@@ -642,7 +668,6 @@ public class GenePatternAnalysisTask {
                                     outFile = File.createTempFile(name, null, new File(outDirName));
                                 }
                                 os = new FileOutputStream(outFile);
-                                log.info("downloading " + originalPath + " to " + outFile.getAbsolutePath());
                                 byte[] buf = new byte[100000];
                                 int bytesRead;
                                 while ((bytesRead = is.read(buf, 0, buf.length)) != -1) {
@@ -653,9 +678,7 @@ public class GenePatternAnalysisTask {
                                 params[i].setValue(outFile.getCanonicalPath());
                                 inputLastModified[i] = outFile.lastModified();
                                 inputLength[i] = outFile.length();
-                                log.debug("inherited downloaded input file " + outFile.getCanonicalPath()
-                                        + " before run: length=" + inputLength[i] + ", lastModified="
-                                        + inputLastModified[i]);
+                               
                             } catch (IOException ioe) {
                                 log.error("An error occurred while downloading " + uri, ioe);
                                 os.write(("An error occurred while downloading " + uri).getBytes());
