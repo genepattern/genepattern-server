@@ -150,7 +150,9 @@ public class AdminService implements IAdminService {
         try {
             TaskInfo taskInfo = adminDAO.getTask(lsidOrTaskName, getUserName());
             if (taskInfo != null) {
-                isTaskOwnerOrAuthorized(taskInfo);
+                if (!(taskInfo.getAccessId() == GPConstants.ACCESS_PUBLIC || taskInfo.getUserId().equals(getUserName()))) {
+                    isAuthorized(getUserName(), "adminModules");
+                }
             }
             return taskInfo;
         } catch (OmnigeneException e) {
