@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.genepattern.server.webapp.jsf;
 
@@ -91,7 +91,6 @@ public class ManageTasksBean /* implements java.io.Serializable */{
                 try {
                     lSID = new LSID(lsid);
                 } catch (MalformedURLException mue) {
-                    System.out.println(mue.getMessage());
                     log.error("Error creating LSID (Malformed URL): " + lsid, mue);
                     throw new RuntimeException("Error creating LSID (Malformed URL): " + lsid);
                 }
@@ -201,7 +200,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 
         /**
          * Add a specific specific versioned task.
-         * 
+         *
          * @param taskInfo
          */
         public void addVersionInfo(TaskInfo taskInfo) {
