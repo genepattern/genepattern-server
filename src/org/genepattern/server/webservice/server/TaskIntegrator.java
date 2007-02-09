@@ -562,7 +562,10 @@ public class TaskIntegrator {
                 lsid = installSuite(zippedFile);
             } else {
                 try {
-                    isAuthorized(getUserName(), "createModule");
+                    if (!(authManager.checkPermission("createModule", getUserName()) || (authManager.checkPermission(
+                            "createPipeline", getUserName()) && recursive == false))) {
+                        throw new WebServiceException("You do not have permission to install modules on this server.");
+                    }
                     lsid = GenePatternAnalysisTask.installNewTask(path, username, privacy, recursive, taskIntegrator);
                 } catch (TaskInstallationException tie) {
                     log.error(tie);
@@ -627,6 +630,7 @@ public class TaskIntegrator {
                 throw new WebServiceException("Couldn't find task or suite manifest in zip file ");
             }
             if (isSuite) {
+                isAuthorized(getUserName(), "createSuite");
                 lsid = installSuite(zippedFile);
             } else { // isTask
                 // replace task, do not version lsid or replace the lsid in the
