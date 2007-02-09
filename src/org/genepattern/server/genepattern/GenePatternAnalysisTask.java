@@ -336,7 +336,7 @@ public class GenePatternAnalysisTask {
                 // check that user can access requested task
                 if (new LocalAdminClient(userId).getTask(lsid) != null) {
                     File file = new File(DirectoryManager.getTaskLibDir(lsid, lsid, userId), filename);
-                    if(file.exists()) {
+                    if (file.exists()) {
                         return file;
                     }
                 }
@@ -347,20 +347,24 @@ public class GenePatternAnalysisTask {
                 path = path.substring(path.indexOf(jobDirName) + jobDirName.length());
                 StringTokenizer strtok = new StringTokenizer(path, "/");
                 String job = null;
-                String requestedFile = null;
+
                 if (strtok.hasMoreTokens()) {
                     job = strtok.nextToken();
                 }
+                String requestedFilename = null;
                 if (strtok.hasMoreTokens()) {
-                    requestedFile = strtok.nextToken();
+                    requestedFilename = strtok.nextToken();
                 }
-                if (job == null || requestedFile == null) {
+                if (job == null || requestedFilename == null) {
                     return null;
                 }
-
-                File file = new File(jobsDir.getAbsolutePath() + File.separator + job + File.separator + requestedFile);
-                if(file.exists()) {
-                    return file;
+                if (isJobOwner(userId, job)
+                        || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs", userId)) {
+                    File jobDir = new File(jobsDir, job);
+                    File file = new File(jobDir, requestedFilename);
+                    if (file.exists()) {
+                        return file;
+                    }
                 }
 
             }
