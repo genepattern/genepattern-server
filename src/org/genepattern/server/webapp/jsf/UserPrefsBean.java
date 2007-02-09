@@ -57,6 +57,7 @@ public class UserPrefsBean {
         try {
             Integer.parseInt(value);
         } catch (NumberFormatException e) {
+            UIBeanHelper.setErrorMessage(value + " is not a number.");
             log.info("Unable to parse " + value, e);
             return;
         }
