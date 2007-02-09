@@ -5,6 +5,8 @@ package org.genepattern.server.webapp.jsf;
 
 import java.util.Date;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -20,8 +22,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserDAO;
 
 
 
@@ -32,6 +32,8 @@ public class ContactUsBean {
 	private boolean sent=false;
 
 	private static Logger log = Logger.getLogger(ContactUsBean.class);
+
+	public static final String EMAIL_REGEXP_PATTERN = "^[\\w-\\.]+@([\\w-]+\\.)([\\w-]+\\.[\\w-]+)*[\\w-]{2,4}$";
 
 	/**
 	 * @return
@@ -137,7 +139,7 @@ public class ContactUsBean {
 	    String address = (String)value;
 	    try {
 	      InternetAddress emailAddr = new InternetAddress(address);
-	      if ( ! hasNameAndDomain(address) ) {
+	      if ( ! address.matches(EMAIL_REGEXP_PATTERN) ) {
 		  ((UIInput) component).setValid(false);
 		  throw new ValidatorException(facesMessage);
 	      }
@@ -146,10 +148,4 @@ public class ContactUsBean {
 		throw new ValidatorException(facesMessage);
 	    }
         }
-
-	private static boolean hasNameAndDomain(String aEmailAddress){
-	    String[] tokens = aEmailAddress.split("@");
-	    return
-	     (tokens.length == 2 && !tokens[0].equals("") && !tokens[1].equals("")) ;
-	}
 }
