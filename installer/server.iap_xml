@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using Macrovision's InstallAnywhere 7.1 Enterprise, Build 2781
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Thu Feb 08 15:05:37 EST 2007 -->
+     DATE:   Fri Feb 09 09:42:12 EST 2007 -->
 <InstallAnywhere_Deployment_Project increments="9934">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
@@ -10,9 +10,9 @@
 		<scriptID>12,42,11,77,81,50,48,56,55,70,80,83,77,52,83,52</scriptID>
 		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,53,46,48,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,67,112,49,50,53,50</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,16,-93,-10,0,32,80,112,117,98,89,98,113,97,113,65,81,86,58,65,67,66,70,65,64,69,66,69,48,63,71,5,2,3,8,86,98,0,1,0,0</authorizationID>
+		<authorizationID>1,0,0,16,-93,-9,64,96,80,112,117,98,89,98,113,97,113,65,81,86,58,65,67,66,70,65,64,69,66,69,48,63,71,5,2,13,10,84,102,0,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="583">
+	<installationObjects uniqueObjects="584">
 		<object class="com.zerog.ia.installer.Installer" objectID="72a1c4b4b1bf">
 			<property name="classpath">
 				<object class="java.util.Vector"/>
@@ -4007,79 +4007,6 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 						</object>
 					</method>
 					<method name="addElement">
-						<object class="com.zerog.ia.installer.actions.ASCIIFileManipulator" objectID="9bef6fad83e2">
-							<property name="additionalText">
-								<string><![CDATA[]]></string>
-							</property>
-							<property name="fileTargetType">
-								<int>1</int>
-							</property>
-							<property name="newFilePath">
-								<string><![CDATA[]]></string>
-							</property>
-							<property name="systemFilePath">
-								<string><![CDATA[$R$$/$library$/$GenePattern$/$R$/$genepattern.properties]]></string>
-							</property>
-							<property name="lineEndingsType">
-								<int>3</int>
-							</property>
-							<property name="textOptionsType">
-								<int>2</int>
-							</property>
-							<property name="searchAndReplaceVector">
-								<object class="java.util.Vector"/>
-							</property>
-							<property name="substituteIAVariables">
-								<boolean>true</boolean>
-							</property>
-							<property name="backup">
-								<boolean>false</boolean>
-							</property>
-						</object>
-					</method>
-					<method name="addElement">
-						<object class="com.zerog.ia.installer.actions.ASCIIFileManipulator" objectID="3371f2ceb722">
-							<property name="additionalText">
-								<string><![CDATA[]]></string>
-							</property>
-							<property name="fileTargetType">
-								<int>1</int>
-							</property>
-							<property name="newFilePath">
-								<string><![CDATA[]]></string>
-							</property>
-							<property name="systemFilePath">
-								<string><![CDATA[$R$$/$library$/$GenePattern$/$R$/$genepattern.properties]]></string>
-							</property>
-							<property name="lineEndingsType">
-								<int>3</int>
-							</property>
-							<property name="textOptionsType">
-								<int>2</int>
-							</property>
-							<property name="searchAndReplaceVector">
-								<object class="java.util.Vector">
-									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.SearchAndReplacePropertyData" objectID="3372cf92b723">
-											<property name="propertyValue">
-												<string><![CDATA[/]]></string>
-											</property>
-											<property name="propertyName">
-												<string><![CDATA[\]]></string>
-											</property>
-										</object>
-									</method>
-								</object>
-							</property>
-							<property name="substituteIAVariables">
-								<boolean>false</boolean>
-							</property>
-							<property name="backup">
-								<boolean>false</boolean>
-							</property>
-						</object>
-					</method>
-					<method name="addElement">
 						<object class="com.zerog.ia.installer.actions.ASCIIFileManipulator" objectID="27389a048c8d">
 							<property name="additionalText">
 								<string><![CDATA[]]></string>
@@ -6218,7 +6145,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 				<object class="java.util.Properties">
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[February 8, 2007 3:05:35 PM EST]]></string>
+						<string><![CDATA[February 9, 2007 9:42:10 AM EST]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.merge]]></string>
@@ -7054,7 +6981,7 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="b670b21d8705">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="ba7248ba8704">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -9174,7 +9101,7 @@ it will search for ones in this list]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="b670b23b873e">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="ba7248e2873c">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -9873,7 +9800,7 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="b670b250874f">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="ba7248ec874f">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -12558,6 +12485,40 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 											<property name="targetCheckKind">
 												<int>1</int>
 											</property>
+											<rules logicalOperation="AND">
+												<object class="com.zerog.ia.installer.rules.FileFolderPathChk" objectID="ba736066878d">
+													<property name="path">
+														<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$jobResults]]></string>
+													</property>
+													<property name="checkIsFileFolder">
+														<boolean>true</boolean>
+													</property>
+													<property name="isFile">
+														<boolean>false</boolean>
+													</property>
+													<property name="checkExists">
+														<boolean>true</boolean>
+													</property>
+													<property name="exists">
+														<boolean>true</boolean>
+													</property>
+													<property name="checkReadWrite">
+														<boolean>false</boolean>
+													</property>
+													<property name="isReadable">
+														<boolean>true</boolean>
+													</property>
+													<property name="isWriteable">
+														<boolean>true</boolean>
+													</property>
+													<property name="checksInUseNotNotInUse">
+														<boolean>false</boolean>
+													</property>
+													<property name="checkInUse">
+														<boolean>false</boolean>
+													</property>
+												</object>
+											</rules>
 										</object>
 										<object class="com.zerog.ia.installer.actions.MoveFolderAction" objectID="b67615fa8795">
 											<property name="useInstalledFile">
@@ -12567,13 +12528,79 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[$USER_INSTALL_DIR$$/$oldJobs]]></string>
 											</property>
 											<property name="destination">
-												<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$jobResults]]></string>
+												<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$]]></string>
 											</property>
 											<property name="uninstallFlag">
 												<boolean>true</boolean>
 											</property>
 											<property name="folderOptions">
-												<int>90</int>
+												<int>91</int>
+											</property>
+											<property name="renames">
+												<boolean>true</boolean>
+											</property>
+											<property name="destinationRename">
+												<string><![CDATA[jobResults]]></string>
+											</property>
+											<property name="overrideUnixPermissions">
+												<boolean>false</boolean>
+											</property>
+											<property name="unixPermissions">
+												<string><![CDATA[777]]></string>
+											</property>
+											<property name="targetCheckKind">
+												<int>1</int>
+											</property>
+											<rules logicalOperation="AND">
+												<object class="com.zerog.ia.installer.rules.FileFolderPathChk" objectID="ba751e7d878d">
+													<property name="path">
+														<string><![CDATA[$USER_INSTALL_DIR$$/$oldJobs]]></string>
+													</property>
+													<property name="checkIsFileFolder">
+														<boolean>true</boolean>
+													</property>
+													<property name="isFile">
+														<boolean>false</boolean>
+													</property>
+													<property name="checkExists">
+														<boolean>true</boolean>
+													</property>
+													<property name="exists">
+														<boolean>true</boolean>
+													</property>
+													<property name="checkReadWrite">
+														<boolean>false</boolean>
+													</property>
+													<property name="isReadable">
+														<boolean>true</boolean>
+													</property>
+													<property name="isWriteable">
+														<boolean>true</boolean>
+													</property>
+													<property name="checksInUseNotNotInUse">
+														<boolean>false</boolean>
+													</property>
+													<property name="checkInUse">
+														<boolean>false</boolean>
+													</property>
+												</object>
+											</rules>
+										</object>
+										<object class="com.zerog.ia.installer.actions.MoveFolderAction" objectID="ba7324c7878d">
+											<property name="useInstalledFile">
+												<boolean>false</boolean>
+											</property>
+											<property name="existingFilePath">
+												<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$temp]]></string>
+											</property>
+											<property name="destination">
+												<string><![CDATA[$USER_INSTALL_DIR$$/$oldJobs]]></string>
+											</property>
+											<property name="uninstallFlag">
+												<boolean>true</boolean>
+											</property>
+											<property name="folderOptions">
+												<int>91</int>
 											</property>
 											<property name="renames">
 												<boolean>false</boolean>
@@ -12587,6 +12614,40 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 											<property name="targetCheckKind">
 												<int>1</int>
 											</property>
+											<rules logicalOperation="AND">
+												<object class="com.zerog.ia.installer.rules.FileFolderPathChk" objectID="ba747cf6878d">
+													<property name="path">
+														<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$temp]]></string>
+													</property>
+													<property name="checkIsFileFolder">
+														<boolean>true</boolean>
+													</property>
+													<property name="isFile">
+														<boolean>false</boolean>
+													</property>
+													<property name="checkExists">
+														<boolean>true</boolean>
+													</property>
+													<property name="exists">
+														<boolean>true</boolean>
+													</property>
+													<property name="checkReadWrite">
+														<boolean>false</boolean>
+													</property>
+													<property name="isReadable">
+														<boolean>true</boolean>
+													</property>
+													<property name="isWriteable">
+														<boolean>true</boolean>
+													</property>
+													<property name="checksInUseNotNotInUse">
+														<boolean>false</boolean>
+													</property>
+													<property name="checkInUse">
+														<boolean>false</boolean>
+													</property>
+												</object>
+											</rules>
 										</object>
 									</installChildren>
 								</object>
@@ -13110,6 +13171,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 					<visualChildren>
 						<object refID="334b4447b44b"/>
 						<object refID="b674f8fc8795"/>
+						<object refID="ba7324c7878d"/>
 						<object refID="afccf83195c9"/>
 						<object refID="885bdc2a8409"/>
 						<object refID="885b3f568408"/>
