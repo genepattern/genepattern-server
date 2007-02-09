@@ -42,7 +42,7 @@ public class JobHelper {
             double megabytes = size / 1048576.0;
             return numberFormat.format(megabytes) + " MB";
         } else {
-            return Math.max(1, Math.ceil(size / 1024.0)) + " KB";
+            return Math.max(0, Math.ceil(size / 1024.0)) + " KB";
         }
     }
 
