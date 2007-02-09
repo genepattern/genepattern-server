@@ -31,7 +31,13 @@ gp.login <-
 #
 function(server.name, user.name, password = NULL)
 {
-    gp.server <- .jnew("org/genepattern/client/GPServer", server.name,  user.name, password)
+    gp.server <- .jnew("org/genepattern/client/GPServer", server.name,  user.name, password, check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+    	e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 
     return(gp.server)
 }
@@ -60,7 +66,13 @@ function(gp.server, module.name.or.lsid, ...)
 
 	parameter.array <- .jarray(parameters, contents.class="org/genepattern/webservice/Parameter")
 
-	job.result <- .jcall(gp.server, "Lorg/genepattern/webservice/JobResult;", "runAnalysis", module.name.or.lsid, parameter.array)
+	job.result <- .jcall(gp.server, "Lorg/genepattern/webservice/JobResult;", "runAnalysis", module.name.or.lsid, parameter.array, check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 
 	return(job.result)
 }
@@ -89,7 +101,13 @@ function(gp.server, module.name.or.lsid, ...)
 
 	parameter.array <- .jarray(parameters, contents.class="org/genepattern/webservice/Parameter")
 
-	result <- .jcall(gp.server, "I", "runAnalysisNoWait", module.name.or.lsid, parameter.array)
+	result <- .jcall(gp.server, "I", "runAnalysisNoWait", module.name.or.lsid, parameter.array, check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 
 	return(result)
 }
@@ -107,12 +125,17 @@ function(gp.server, job.number)
 	if(!is.complete(gp.server, job.number))
 		stop(paste("Cannot create JobResult: Job ", job.number, " has not completed"))
 
-	job.result <- .jcall(gp.server, "Lorg/genepattern/webservice/JobResult;", "createJobResult", job.number)
+	job.result <- .jcall(gp.server, "Lorg/genepattern/webservice/JobResult;", "createJobResult", job.number, check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 
 	return (job.result)
 }
 #------------------------------------------------------------------------------------------------------
-
 is.complete <-
 #
 # Checks if the given job is complete.
@@ -126,7 +149,13 @@ function(gp.server, job.number)
 
 	job.number <- as.integer(job.number)
 
-	complete <- .jcall(gp.server, "Z", "isComplete", job.number)
+	complete <- .jcall(gp.server, "Z", "isComplete", job.number, check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 
 	return(complete)
 }
@@ -155,7 +184,13 @@ function(gp.server, module.name.or.lsid, ...)
 
 	parameter.array <- .jarray(parameters, contents.class="org/genepattern/webservice/Parameter")
 
-	.jcall(gp.server,"V", "runVisualizer", module.name.or.lsid, parameter.array)
+	.jcall(gp.server,"V", "runVisualizer", module.name.or.lsid, parameter.array, check = FALSE)
+
+	if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 }
 #------------------------------------------------------------------------------------------------------
 get.parameters <-
@@ -169,7 +204,13 @@ function(gp.server, module.name.or.lsid)
 		stop("gp.server is NULL")
 	}
 
-	parameter.info.array <- .jcall(gp.server,"[Lorg/genepattern/webservice/ParameterInfo;", "getParameters", module.name.or.lsid)
+	parameter.info.array <- .jcall(gp.server,"[Lorg/genepattern/webservice/ParameterInfo;", "getParameters", module.name.or.lsid, check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 
 	if(is.null(parameter.info.array))
 		return(NULL)
@@ -217,12 +258,18 @@ function(gp.server, module.name.or.lsid, filename)
 		stop("gp.server is NULL")
 	}
 
-	url <- .jcall(gp.server,"Ljava/net/URL;", "getModuleFileUrl", module.name.or.lsid, filename)
+	url <- .jcall(gp.server,"Ljava/net/URL;", "getModuleFileUrl", module.name.or.lsid, filename, check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
+
     url <- .jcall(url, "S", "toString")
 
 	return(url)
 }
-
 #------------------------------------------------------------------------------------------------------
 job.result.get.url <-
 #
@@ -238,7 +285,13 @@ function(job.result, filename.or.file.output.order)
 	if(is.numeric(filename.or.file.output.order))
 		filename.or.file.output.order <- as.integer(filename.or.file.output.order)
 
-	url <- .jcall(job.result, "Ljava/net/URL;", "getURL", filename.or.file.output.order)
+	url <- .jcall(job.result, "Ljava/net/URL;", "getURL", filename.or.file.output.order, check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 
 	url <- .jcall(url, "S", "toString")
 
@@ -248,7 +301,13 @@ function(job.result, filename.or.file.output.order)
 job.result.get.output.filenames <-
 function(job.result)
 {
-	output.filenames.array <- .jcall(job.result, "[S", "getOutputFileNames")
+	output.filenames.array <- .jcall(job.result, "[S", "getOutputFileNames", check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 
 	output.filenames.list <- as.list(output.filenames.array)
 
@@ -263,7 +322,13 @@ function(job.result, file.type)
 		stop("job.result is NULL")
 	}
 
-	url <- .jcall(job.result, "Ljava/net/URL;", "getURLForFileType", file.type)
+	url <- .jcall(job.result, "Ljava/net/URL;", "getURLForFileType", file.type, check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 
 	url <- .jcall(url, "S", "toString")
 
@@ -278,7 +343,13 @@ function(job.result)
 		stop("job.result is NULL")
 	}
 
-	job.number <- .jcall(job.result, "I", "getJobNumber")
+	job.number <- .jcall(job.result, "I", "getJobNumber", check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 
 	return(job.number)
 }
@@ -296,9 +367,16 @@ function(job.result, filename, download.directory, overwrite = TRUE)
 		stop("download directory cannot be NULL")
 	}
 
-	file <- .jcall(job.result, "Ljava/io/File;", "downloadFile", filename, download.directory)
+	file <- .jcall(job.result, "Ljava/io/File;", "downloadFile", filename, download.directory, check = FALSE)
 
-	filename <- .jcall(file, "S", "getAbsolutePath")
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
+
+    if(!is.null(file))
+	    filename <- .jcall(file, "S", "getAbsolutePath")
 
 	return(filename)
 }
@@ -316,7 +394,13 @@ function(job.result, download.directory, overwrite = TRUE)
 		stop("download directory cannot be NULL")
 	}
 
-	files.array <- .jcall(job.result, "[Ljava/io/File;", "downloadFiles", download.directory, overwrite)
+	files.array <- .jcall(job.result, "[Ljava/io/File;", "downloadFiles", download.directory, overwrite, check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 
 	filenames.list <- list()
 	for(i in 1:length(files.array))
@@ -337,7 +421,14 @@ function(job.result)
 
 	}
 
-	server.url <- .jcall(job.result, "Ljava/net/URL;", "getServerURL")
+	server.url <- .jcall(job.result, "Ljava/net/URL;", "getServerURL", check = FALSE)
+
+	if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
+
 	server.url <- .jcall(server.url, "S", "toString")
 
 	return(server.url)
@@ -351,7 +442,13 @@ function(job.result)
 		stop("job.result is NULL")
 	}
 
-	lsid <- .jcall(job.result, "S", "getLSID")
+	lsid <- .jcall(job.result, "S", "getLSID", check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 
 	return(lsid)
 }
@@ -364,7 +461,13 @@ function(job.result)
 		stop("job.result is NULL")
 	}
 
-	has.standard.out <- .jcall(job.result, "Z", "hasStandardOut")
+	has.standard.out <- .jcall(job.result, "Z", "hasStandardOut", check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 
 	return(has.standard.out)
 }
@@ -377,12 +480,17 @@ function(job.result)
 		stop("job.result is NULL")
 	}
 
-	has.standard.error <- .jcall(job.result, "Z", "hasStandardError")
+	has.standard.error <- .jcall(job.result, "Z", "hasStandardError", check = FALSE)
+
+    if (!is.null(e <-.jgetEx(clear = TRUE)))
+    {
+        e.message <- .jcall(e, "S", "toString")
+    	stop(e.message)
+    }
 
 	return(has.standard.error)
 }
 #------------------------------------------------------------------------------------------------------
-
 
 
 # extension e.g. '.gct'
@@ -482,7 +590,6 @@ read.res <- function(filename)
   colnames(calls) <- colNames
   return(list(row.descriptions=row.descriptions, column.descriptions=descriptions, data=data, calls=calls))
 }
-
 #------------------------------------------------------------------------------------------------------
 write.res <-
 #
@@ -582,7 +689,6 @@ read.cls <- function(file) {
 	r <- list(labels=labels,names=classNames)
 	r
 }
-
 #------------------------------------------------------------------------------------------------------
 write.cls <-
 #
@@ -652,7 +758,6 @@ function(gct, filename, check.file.extension=TRUE)
 	write.table(m, file=f, append=TRUE, quote=FALSE, sep="\t", eol="\n", col.names=FALSE, row.names=FALSE)
 	return(filename)
 }
-
 #------------------------------------------------------------------------------------------------------
 # like read.table, but doesn't check to make sure all rows have same number of columns
 .my.read.table <- function (file, header = FALSE, sep = "", quote = "\"'", dec = ".", row.names, col.names, as.is = FALSE, na.strings = "NA", colClasses, nrows = -1, skip = 0, check.names = TRUE, fill = !blank.lines.skip, strip.white = FALSE, blank.lines.skip = TRUE, comment.char = "")
