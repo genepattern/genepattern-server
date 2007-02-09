@@ -17,20 +17,6 @@
 		<copyfile src="${USER_INSTALL_DIR}/resources/genepattern.properties" dest="${USER_INSTALL_DIR}/resources/genepattern.properties.default"/>
 	</target>
 
-	<target name="create-zip" depends="init">
-		<echo> Zipping up ${Rlib} </echo>
-		<zip basedir="${Rlib}" destfile="${zip-file}" whenempty="fail" update="true">
-			<include name="GenePattern/**"/>
-		</zip>
-	</target>
-	
-	<target name="create-tar" depends="init">
-		<echo> Tarring up ${Rlib} </echo>
-		<tar basedir="${Rlib}" destfile="${tar-file}" compression="gzip" includes="GenePattern/**"/>
-	</target>
-	
-	<target name="create-tar-and-zip" depends="create-zip, create-tar" />
-
 	<target name="copyRSource" depends="init">
 		<copyfile src="${Rlib}GenePattern/R/GenePattern" dest="${output.dir}/GenePattern.R"/>
 	</target>
