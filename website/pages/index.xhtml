@@ -147,7 +147,7 @@ function validateForm() {
             
             if (validate && (value == null || value == "")) {
                	numErrors++;
-               	messageString += "<li/>" +  displayName;
+               	messageString += "<li>" +  displayName + "</li>";
             	e.className = "error";
             	if(urlInput!=null) {
          			urlInput.className = "error";
@@ -170,7 +170,7 @@ function validateForm() {
 			}
         	d.style.display = "block";
    			messageString += "</ul>";
-          	Element.update('errorMessageContent', messageString);
+         	Element.update('errorMessageContent', messageString);
         } 
         return numErrors == 0;
     }
@@ -216,7 +216,7 @@ function showFileInput(id) {
      
       <!-- Error messages -->
       <div id="errorMessageDiv" style="display:none;">
-        <p id="errorMessage"/>
+        <div id="errorMessage"/>
       </div>
       <t:div rendered="#{!empty runTaskBean.lsid}">
         <table width="100%
