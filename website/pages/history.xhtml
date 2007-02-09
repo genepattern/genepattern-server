@@ -1,26 +1,28 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" 
-      xmlns:ui="http://java.sun.com/jsf/facelets" 
-      xmlns:h="http://java.sun.com/jsf/html" 
-      xmlns:f="http://java.sun.com/jsf/core" 
-      xmlns:t="http://myfaces.apache.org/tomahawk" 
-      xmlns:c="http://java.sun.com/jstl/core">
-   <h:form>
-    <h:panelGrid columns="3">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jstl/core">
+<h:form>
+	<h:panelGrid columns="2">
 		<h:outputLabel value="Display this many recent jobs:" for="recentJobs"></h:outputLabel>
-        <h:inputText id="recentJobs" size="10" value="#{userPrefsBean.numberOfRecentJobs}"/>
-        <h:message style="color: red; font-weight: bold;" for="recentJobs" />
-    </h:panelGrid>   
-    <h:commandButton value="Save" action="#{userPrefsBean.save}"/>
-    </h:form>
-	<table width="100%" border="0" cellpadding="5" cellspacing="0">   
-      <tr valign="top" class="settingperameter">
-        <td colspan="2">&#160;</td>
-      </tr>
-      <tr valign="top">
-        <td>&#160;</td>
-        <td>The recent history size sets the maximum number of <br/>
-                recent jobs in the right panel of the start page.<br/></td>
-      </tr>
-    </table>
+		<h:inputText id="recentJobs" size="10"
+			value="#{userPrefsBean.numberOfRecentJobs}"
+			requiredMessage="Number of recents jobs is required." required="true" />
+	</h:panelGrid>
+	<h:commandButton value="Save" action="#{userPrefsBean.saveRecentJobs}" />
+</h:form>
+<table width="100%" border="0" cellpadding="5" cellspacing="0">
+	<tr valign="top" class="settingperameter">
+		<td colspan="2">&#160;</td>
+	</tr>
+	<tr valign="top">
+		<td>&#160;</td>
+		<td>The recent history size sets the maximum number of <br />
+		recent jobs in the right panel of the start page.<br />
+		</td>
+	</tr>
+</table>
 </html>
