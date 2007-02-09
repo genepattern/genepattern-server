@@ -64,6 +64,7 @@
                style="#{category.expanded == true ? 'display:block;' : 'display:none;'}"> 
           <t:dataList var="taskInfo" value="#{category.modules}" >
             <span class="#{taskInfo.name == moduleChooserBean.selectedModule ? 'tasks_on' : (taskInfo.fromBroad == false ? 'task-mine' : '')}">
+              <nobr>
               <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="15" height="1" />
               <img src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif" width="4" height="4" />
               &#160;
@@ -71,6 +72,7 @@
                   <f:param name="task" value="#{taskInfo.name}"/>
                 </h:commandLink>
                 <br></br>
+              </nobr>
              </span>
           </t:dataList>
           </div>
