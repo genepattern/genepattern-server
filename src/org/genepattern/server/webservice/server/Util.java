@@ -38,6 +38,13 @@ public class Util {
     private Util() {
     }
 
+    /**
+     * Download the contents at the url and save them to a local temp file. Return a handle to the local file.
+     * 
+     * @param url
+     * @return handle to local temp file
+     * @throws WebServiceException
+     */
     public static File downloadUrl(String url) throws WebServiceException {
         if (new File(url).exists()) {
             return new File(url);
