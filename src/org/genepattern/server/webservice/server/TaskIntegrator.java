@@ -48,6 +48,7 @@ import org.apache.axis.MessageContext;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.TaskUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.domain.TaskMaster;
@@ -63,6 +64,7 @@ import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.dao.TaskIntegratorDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.ParameterInfo;
@@ -113,7 +115,6 @@ public class TaskIntegrator {
      *                If an error occurs
      */
     public String cloneTask(String oldLSID, String cloneName) throws WebServiceException {
-        isAuthorized(getUserName(), "createModule");
         String userID = getUserName();
 
         try {
@@ -128,6 +129,9 @@ public class TaskIntegrator {
             taskInfo.setAccessId(ACCESS_PRIVATE);
             taskInfo.setUserId(userID);
             TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+
+            isAuthorizedCreateTask(userID, tia);
+
             tia.put(USERID, userID);
             tia.put(PRIVACY, PRIVATE);
             oldLSID = (String) tia.remove(LSID);
@@ -562,10 +566,9 @@ public class TaskIntegrator {
                 lsid = installSuite(zippedFile);
             } else {
                 try {
-                    if (!(authManager.checkPermission("createModule", getUserName()) || (authManager.checkPermission(
-                            "createPipeline", getUserName()) && recursive == false))) {
-                        throw new WebServiceException("You do not have permission to install modules on this server.");
-                    }
+                    TaskInfo ti = TaskUtil.getTaskInfoFromZip(zipFile);
+                    isAuthorizedCreateTask(getUserName(), ti.getTaskInfoAttributes());
+
                     lsid = GenePatternAnalysisTask.installNewTask(path, username, privacy, recursive, taskIntegrator);
                 } catch (TaskInstallationException tie) {
                     log.error(tie);
@@ -632,14 +635,11 @@ public class TaskIntegrator {
             if (isSuite) {
                 isAuthorized(getUserName(), "createSuite");
                 lsid = installSuite(zippedFile);
-            } else { // isTask
-                // replace task, do not version lsid or replace the lsid in the
-                // zip
-                // with a local one
-                if (!(authManager.checkPermission("createModule", getUserName()) || (authManager.checkPermission(
-                        "createPipeline", getUserName()) && recursive == false))) {
-                    throw new WebServiceException("You do not have permission to install modules on this server.");
-                }
+            } else {
+                TaskInfo ti = TaskUtil.getTaskInfoFromZip(zipFile);
+                isAuthorizedCreateTask(getUserName(), ti.getTaskInfoAttributes());
+
+                // isTask replace task, do not version lsid or replace the lsid in the zip with a local one
                 lsid = GenePatternAnalysisTask.installNewTask(path, username, privacy, recursive, taskIntegrator);
             }
         } catch (TaskInstallationException tie) {
@@ -846,6 +846,15 @@ public class TaskIntegrator {
         }
     }
 
+    private boolean isPipeline(String url) throws WebServiceException {
+        File file = Util.downloadUrl(url);
+        try {
+            return org.genepattern.server.TaskUtil.isZipOfZips(file);
+        } catch (java.io.IOException ioe) {
+            throw new WebServiceException(ioe);
+        }
+    }
+
     /**
      * @deprecated This method is not currently used, and has not been tested for GP 3.0 and greater.
      * 
@@ -1008,8 +1017,6 @@ public class TaskIntegrator {
     public String modifyTask(int accessId, String taskName, String description, ParameterInfo[] parameterInfoArray,
             Map taskAttributes, DataHandler[] dataHandlers, String[] fileNames) throws WebServiceException {
 
-        isAuthorized(getUserName(), "createModule");
-
         String lsid = null;
         String username = getUserName();
         String oldLSID = null;
@@ -1048,6 +1055,10 @@ public class TaskIntegrator {
                 } catch (MalformedURLException mue) {
                 }
             }
+
+            TaskInfoAttributes tia = new TaskInfoAttributes(taskAttributes);
+            isAuthorizedCreateTask(getUserName(), tia);
+
             lsid = GenePatternAnalysisTask.installNewTask(taskName, description, parameterInfoArray,
                     new TaskInfoAttributes(taskAttributes), username, accessId, new Status() {
 
@@ -1158,6 +1169,17 @@ public class TaskIntegrator {
         if (!authManager.checkPermission(permission, user)) {
             throw new WebServiceException("You do not have permission to perfom this action.");
         }
+    }
+
+    private void isAuthorizedCreateTask(String user, TaskInfoAttributes tia) throws WebServiceException {
+        if (!(authManager.checkPermission("createModule", user) || (authManager.checkPermission("createPipeline", user) && isPipeline(tia)))) {
+            throw new WebServiceException("You do not have permission to perfom this action.");
+
+        }
+    }
+
+    private boolean isPipeline(TaskInfoAttributes tia) {
+        return tia != null && tia.get(TASK_TYPE) != null && tia.get(TASK_TYPE).endsWith("pipeline");
     }
 
     private boolean isSuiteOwner(String user, String lsid) {
