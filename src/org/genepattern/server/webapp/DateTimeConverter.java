@@ -7,27 +7,27 @@
  * of the Common Development and Distribution License
  * (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at
  * https://javaserverfaces.dev.java.net/CDDL.html or
- * legal/CDDLv1.0.txt. 
+ * legal/CDDLv1.0.txt.
  * See the License for the specific language governing
  * permission and limitations under the License.
- * 
+ *
  * When distributing Covered Code, include this CDDL
  * Header Notice in each file and include the License file
- * at legal/CDDLv1.0.txt.    
+ * at legal/CDDLv1.0.txt.
  * If applicable, add the following below the CDDL Header,
  * with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * [Name of File] [ver.__] [Date]
- * 
+ *
  * Copyright 2005 Sun Microsystems Inc. All Rights Reserved
  */
 
-package javax.faces.convert;
+package org.genepattern.server.webapp;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -35,15 +35,20 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+
 import javax.faces.component.StateHolder;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.convert.ConverterException;
+
+import com.sun.faces.util.MessageFactory;
 
 /**
  * <p>
  * {@link Converter} implementation for <code>java.util.Date</code> values.
  * </p>
- * 
+ *
  * <p>
  * The <code>getAsObject()</code> method parses a String into a
  * <code>java.util.Date</code>, according to the following algorithm:
@@ -72,7 +77,7 @@ import javax.faces.context.FacesContext;
  * <li>In all cases, parsing must be non-lenient; the given string must
  * strictly adhere to the parsing format.</li>
  * </ul>
- * 
+ *
  * <p>
  * The <code>getAsString()</code> method expects a value of type
  * <code>java.util.Date</code> (or a subclass), and creates a formatted String
@@ -183,13 +188,19 @@ public class DateTimeConverter implements Converter, StateHolder {
 
     private Locale locale = null;
 
-    private String pattern = null;
+    private static final String DEFAULT_PATTERN = "MMM dd hh:mm:ss a";
+
+    private String pattern = DEFAULT_PATTERN;
 
     private String timeStyle = "default";
 
     private TimeZone timeZone = DEFAULT_TIME_ZONE;
 
     private String type = "date";
+
+    public DateTimeConverter() {
+
+    }
 
     // -------------------------------------------------------------- Properties
 
@@ -212,7 +223,7 @@ public class DateTimeConverter implements Converter, StateHolder {
      * cause a {@link ConverterException} when <code>getAsObject()</code> or
      * <code>getAsString()</code> is called.
      * </p>
-     * 
+     *
      * @param dateStyle
      *            The new style code
      */
@@ -246,7 +257,7 @@ public class DateTimeConverter implements Converter, StateHolder {
      * stored in the {@link javax.faces.component.UIViewRoot} for the current
      * request will be utilized.
      * </p>
-     * 
+     *
      * @param locale
      *            The new <code>Locale</code> (or <code>null</code>)
      */
@@ -276,13 +287,16 @@ public class DateTimeConverter implements Converter, StateHolder {
      * {@link ConverterException} when <code>getAsObject()</code> or
      * <code>getAsString()</code> is called.
      * </p>
-     * 
+     *
      * @param pattern
      *            The new format pattern
      */
     public void setPattern(String pattern) {
 
         this.pattern = pattern;
+        if (this.pattern == null) {
+            this.pattern = DEFAULT_PATTERN;
+        }
 
     }
 
@@ -306,7 +320,7 @@ public class DateTimeConverter implements Converter, StateHolder {
      * cause a {@link ConverterException} when <code>getAsObject()</code> or
      * <code>getAsString()</code> is called.
      * </p>
-     * 
+     *
      * @param timeStyle
      *            The new style code
      */
@@ -332,7 +346,7 @@ public class DateTimeConverter implements Converter, StateHolder {
      * <p>
      * Set the <code>TimeZone</code> used to interpret a time value.
      * </p>
-     * 
+     *
      * @param timeZone
      *            The new time zone
      */
@@ -361,7 +375,7 @@ public class DateTimeConverter implements Converter, StateHolder {
      * invalid value will cause a {@link ConverterException} when
      * <code>getAsObject()</code> or <code>getAsString()</code> is called.
      * </p>
-     * 
+     *
      * @param type
      *            The new date style
      */
@@ -404,7 +418,7 @@ public class DateTimeConverter implements Converter, StateHolder {
 
             // Create and configure the parser to be used
             parser = getDateFormat(context, locale);
-            
+
             if (null != timeZone) {
                 parser.setTimeZone(timeZone);
             }
@@ -440,7 +454,7 @@ public class DateTimeConverter implements Converter, StateHolder {
      *             {@inheritDoc}
      */
     public String getAsString(FacesContext context, UIComponent component, Object value) {
-    
+
         if (context == null || component == null) {
             throw new NullPointerException();
         }
@@ -463,6 +477,7 @@ public class DateTimeConverter implements Converter, StateHolder {
 
             // Create and configure the formatter to be used
             DateFormat formatter = getDateFormat(context, locale);
+
             if (null != timeZone) {
                 formatter.setTimeZone(timeZone);
             }
@@ -486,13 +501,13 @@ public class DateTimeConverter implements Converter, StateHolder {
      * Return a <code>DateFormat</code> instance to use for formatting and
      * parsing in this {@link Converter}.
      * </p>
-     * 
+     *
      * @param context
      *            The {@link FacesContext} for the current request
      * @param locale
      *            The <code>Locale</code> used to select formatting and
      *            parsing conventions
-     * 
+     *
      * @throws ConverterException
      *             if no instance can be created
      */
@@ -527,7 +542,7 @@ public class DateTimeConverter implements Converter, StateHolder {
      * Return the <code>Locale</code> we will use for localizing our
      * formatting and parsing processing.
      * </p>
-     * 
+     *
      * @param context
      *            The {@link FacesContext} for the current request
      */
@@ -546,10 +561,10 @@ public class DateTimeConverter implements Converter, StateHolder {
      * <p>
      * Return the style constant for the specified style name.
      * </p>
-     * 
+     *
      * @param name
      *            Name of the style for which to return a constant
-     * 
+     *
      * @throws ConverterException
      *             if the style name is not valid
      */
