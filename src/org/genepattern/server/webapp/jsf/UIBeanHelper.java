@@ -123,23 +123,25 @@ public class UIBeanHelper {
         return getUserId() != null;
     }
 
-    public static void logout() {
-        User user = new UserDAO().findById(UIBeanHelper.getUserId());
-        assert user != null;
-        Cookie[] cookies = UIBeanHelper.getRequest().getCookies();
+    public static void logout(HttpServletRequest request, HttpServletResponse response, HttpSession session) {
+        Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie c : cookies) {
                 if (GPConstants.USERID.equals(c.getName())) {
                     c.setMaxAge(0);
-                    c.setPath(getRequest().getContextPath());
-                    UIBeanHelper.getResponse().addCookie(c);
+                    c.setPath(request.getContextPath());
+                    response.addCookie(c);
                     break;
                 }
             }
         }
-        UIBeanHelper.getRequest().removeAttribute(GPConstants.USERID);
-        UIBeanHelper.getRequest().removeAttribute("userID");
-        UIBeanHelper.getSession().invalidate();
+        request.removeAttribute(GPConstants.USERID);
+        request.removeAttribute("userID");
+        session.invalidate();
+    }
+
+    public static void logout() {
+        logout(getRequest(), getResponse(), getSession());
     }
 
     /**
