@@ -10,6 +10,28 @@
 		<script type="text/javascript"
 			src="#{facesContext.externalContext.requestContextPath}/js/prototype.js" />
 	</ui:define>
+	<ui:define name="validationInit">
+    <script type="text/javascript" language="javascript">
+    <h:outputText rendered="#{mySettingsBean.currentMode == 'Change Email'}">
+      /* <![CDATA[ */
+
+      function onLoad()
+      {
+        var objForm = document.forms["changeEmailForm"];
+
+        objForm.newEmail.required = 1;
+        objForm.newEmail.regexp = "JSVAL_RX_EMAIL";
+        objForm.newEmail.err = "Missing or invalid email";
+
+        objForm.confirmNewEmail.equals = "newEmail";
+        objForm.confirmNewEmail.err = "Emails do not match";
+      }
+
+       /* ]]> */
+       </h:outputText>
+
+    </script>
+  </ui:define>
 	<ui:define name="pageTitle">GenePattern Account Information</ui:define>
 	<ui:define name="leftPanel">
 		<h:form>
