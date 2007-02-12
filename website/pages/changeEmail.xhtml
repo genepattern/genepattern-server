@@ -5,23 +5,21 @@
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk">
 
-<h:form>
+<h:form onsubmit="return validateForm(this);" id="changeEmailForm">
 	<h:panelGrid columns="2">
 		<h:outputLabel value="Current Email" for="currentEmail"></h:outputLabel>
 		<h:outputLabel value="#{changeEmailBean.currentEmail}"></h:outputLabel>
-		
+
 		<h:outputLabel value="New Email" for="newEmail"></h:outputLabel>
-		<h:inputText size="50" id="newEmail" required="true"
+		<t:inputText size="50" id="newEmail" required="true"
 			value="#{changeEmailBean.newEmail}"
-			validator="#{changeEmailBean.validateEmail}"  requiredMessage="New Email is required">
-			<t:validateEmail />
-		</h:inputText>
-		
+			validator="#{changeEmailBean.validateEmail}" forceId="true" requiredMessage="New Email is required" />
+
 		<h:outputLabel value="Confirm New Email" for="confirmNewEmail"></h:outputLabel>
-		<h:inputText size="50" id="confirmNewEmail" required="true"
+		<t:inputText size="50" id="confirmNewEmail" required="true"
 			value="#{changeEmailBean.confirmNewEmail}"
-			binding="#{changeEmailBean.emailConfirmComponent}" requiredMessage="Confirm New Email is required"/>
-		
+			binding="#{changeEmailBean.emailConfirmComponent}" forceId="true" requiredMessage="Confirm New Email is required" />
+
 	</h:panelGrid>
 	<h:commandButton action="#{changeEmailBean.changeEmail}" value="Save" />
 
