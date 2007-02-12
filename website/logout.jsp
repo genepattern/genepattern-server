@@ -10,31 +10,10 @@
   use, misuse, or functionality.
 */ -->
 
-
-<%@ page import="org.genepattern.server.user.User,
-		 org.genepattern.server.user.UserDAO,
-		 org.genepattern.util.GPConstants"
-	session="true" contentType="text/html" language="Java" %><% 
-	
-	User user = new UserDAO().findById((String)request.getAttribute(GPConstants.USERID));
-    assert user != null;
-    user.setSessionId(null);
-    Cookie[] cookies = request.getCookies();
-    if (cookies != null) {
-        for (Cookie c : cookies) {
-            if (GPConstants.USERID.equals(c.getName())) {
-                c.setMaxAge(0);
-                c.setPath(request.getContextPath());
-                response.addCookie(c);
-                break;
-            }
-        }
-    }
-    request.removeAttribute(GPConstants.USERID);
-    request.removeAttribute("userID");
-    session.invalidate();
-
+<%@ page
+	session="true" contentType="text/html" language="Java" %>
+<%
+	org.genepattern.server.webapp.jsf.UIBeanHelper.logout(request, response, session);
 %>
-<html>
-<jsp:forward page="/pages/login.jsf" /> 
-</html>
+<jsp:forward page="/pages/login.jsf" />
+
