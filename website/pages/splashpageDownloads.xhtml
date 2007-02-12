@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" 
+<html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets">
 
 <ui:composition>
@@ -7,21 +7,20 @@
 <span class="barhead-other">Downloads Overview</span>
 
 <br/><br/>
-Download the GenePattern Java Client and programming libraries:
+Download the GenePattern Desktop Client and programming libraries:
 <table border="0" cellspacing="4" cellpadding="2">
   <tr>
     <td valign="top">
-      <a href="http://www.broad.mit.edu/cancer/software/genepattern/download/gpge/2.0.2/install.htm">Install&#160;Java&#160;Client</a>
+      <a href="#{genepatternProperties.properties['JavaGEInstallerURL']}">Install&#160;Java&#160;Client</a>
     </td>
-    <td valign="top">The Java Client provides an easy-to-use desktop application as an alternative user interface for GenePattern. 
+    <td valign="top">The Desktop Client provides an easy-to-use desktop application as an alternative user interface for GenePattern.
 <b>GenePattern administrators:</b> You can modify GenePattern server settings only from the Web Client.</td>
   </tr>
   <tr>
     <td valign="top">
       <a href="#{facesContext.externalContext.requestContextPath}/pages/downloadProgrammingLibaries.jsf">Programming &amp; &#160;Libraries</a>
     </td>
-    <td valign="top">Java, Matlab, and R libraries allow programmers 
-to run GenePattern tasks and visualizers from their applications.</td>
+    <td valign="top">Java, MATLAB, and R libraries allow programmers to run GenePattern modules from their applications.</td>
   </tr>
 </table>
 
