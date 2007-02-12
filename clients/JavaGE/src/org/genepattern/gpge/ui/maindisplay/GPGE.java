@@ -127,7 +127,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * Main class for GPGE functionality
- * 
+ *
  * @author Joshua Gould
  */
 public class GPGE {
@@ -514,7 +514,7 @@ public class GPGE {
     /**
      * Loads a task with the parameters that were used in the specified job into
      * the AnalysisTaskPanel
-     * 
+     *
      * @param job
      *            the job
      */
@@ -1801,9 +1801,6 @@ public class GPGE {
                         Map categoryToAnalysisServices = AnalysisServiceUtil
                                 .getCategoryToAnalysisServicesMap(analysisServiceManager.getLatestAnalysisServices());
 
-                        if (categoryToAnalysisServices.size() == 0) {
-                            showNoModulesInstalledDialog();
-                        }
                         analysisMenu.rebuild(categoryToAnalysisServices);
                         visualizerMenu.rebuild(categoryToAnalysisServices);
                         pipelineMenu.rebuild(categoryToAnalysisServices);
@@ -1818,6 +1815,28 @@ public class GPGE {
         rebuildTasksUI();
     }
 
+    private void refresh() {
+        try {
+            analysisServiceManager.refresh();
+            if (analysisServiceManager.getLatestAnalysisServices().size() == 0) {
+                showNoModulesInstalledDialog();
+            }
+        } catch (WebServiceException wse) {
+            if (wse.getRootCause() instanceof org.apache.axis.AxisFault) {
+                org.apache.axis.AxisFault af = (org.apache.axis.AxisFault) wse.getRootCause();
+                if (af.getFaultString().startsWith("Error: Unknown user or invalid password")) {
+                    GenePattern.showErrorDialog("Unknown user or invalid password.");
+                    return;
+                }
+            }
+
+            if (!disconnectedFromServer(wse)) {
+                GenePattern.showErrorDialog("An error occurred while retrieving the modules from the server.");
+            }
+        }
+
+    }
+
     public void refreshModules(boolean displayMessage) {
         if (displayMessage) {
             MessageDialog.getInstance().setText("Retrieving modules");
@@ -1826,15 +1845,7 @@ public class GPGE {
         setChangeServerActionsEnabled(false);
         CLThread thread = new CLThread() {
             public void run() {
-                try {
-                    analysisServiceManager.refresh();
-                } catch (WebServiceException wse) {
-                    wse.printStackTrace();
-                    if (!disconnectedFromServer(wse)) {
-                        GenePattern.showErrorDialog("An error occurred while retrieving the modules from the server.");
-                    }
-                }
-
+                refresh();
                 final Collection latestTasks = analysisServiceManager.getLatestAnalysisServices();
 
                 inputTypeToMenuItemsMap = SemanticUtil.getInputTypeToMenuItemsMap(latestTasks);
@@ -1843,9 +1854,7 @@ public class GPGE {
                     public void run() {
                         Map categoryToAnalysisServices = AnalysisServiceUtil
                                 .getCategoryToAnalysisServicesMap(latestTasks);
-                        if (categoryToAnalysisServices.size() == 0) {
-                            showNoModulesInstalledDialog();
-                        }
+
                         analysisMenu.rebuild(categoryToAnalysisServices);
                         visualizerMenu.rebuild(categoryToAnalysisServices);
                         pipelineMenu.rebuild(categoryToAnalysisServices);
@@ -1883,7 +1892,6 @@ public class GPGE {
                 }
             }
         });
-
         try {
             String server = analysisServiceManager.getServer() + "/gp/pages/taskCatalog.jsf";
             String text = "<html><body><font face=\"Arial, Helvetica, sans-serif\">There are no modules installed on the server. Go to "
@@ -1899,7 +1907,13 @@ public class GPGE {
         }
         pane.setMargin(new Insets(5, 5, 5, 5));
         pane.setEditable(false);
-        JOptionPane.showMessageDialog(GenePattern.getDialogParent(), pane, "GenePattern", JOptionPane.WARNING_MESSAGE);
+        SwingUtilities.invokeLater(new Thread() {
+            public void run() {
+                JOptionPane.showMessageDialog(GenePattern.getDialogParent(), pane, "GenePattern",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        });
+
     }
 
     void createMenus() {
