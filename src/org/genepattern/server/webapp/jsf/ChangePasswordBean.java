@@ -36,43 +36,32 @@ public class ChangePasswordBean {
 
     private UIInput passwordConfirmComponent;
 
-    private boolean passwordSet;
-
     public ChangePasswordBean() {
-        User user = (new UserDAO()).findById(UIBeanHelper.getUserId());
-        assert user != null;
-        // password will be null if server was initially configured not to
-        // require password
-        passwordSet = user.getPassword() != null;
 
     }
 
-    public void validatePassword(FacesContext context, UIComponent component,
-            Object value) throws ValidatorException {
+    public void validatePassword(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         if (!value.equals(passwordConfirmComponent.getSubmittedValue())) {
             String message = "Your new password entries did not match.";
-            FacesMessage facesMessage = new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR, message, message);
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
             ((UIInput) component).setValid(false);
             throw new ValidatorException(facesMessage);
         }
     }
 
-    public void validateCurrentPassword(FacesContext context,
-            UIComponent component, Object value) throws ValidatorException {
+    public void validateCurrentPassword(FacesContext context, UIComponent component, Object value)
+            throws ValidatorException {
         User user = (new UserDAO()).findById(UIBeanHelper.getUserId());
 
         boolean correctPassword = false;
         try {
-            correctPassword = Arrays.equals(EncryptionUtil.encrypt(value
-                    .toString()), (user.getPassword()));
+            correctPassword = Arrays.equals(EncryptionUtil.encrypt(value.toString()), (user.getPassword()));
         } catch (NoSuchAlgorithmException e) {
             log.error(e);
         }
         if (!correctPassword) {
             String message = "Please specify the correct current password.";
-            FacesMessage facesMessage = new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR, message, message);
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
             ((UIInput) component).setValid(false);
             throw new ValidatorException(facesMessage);
         }
@@ -84,8 +73,7 @@ public class ChangePasswordBean {
             user.setPassword(EncryptionUtil.encrypt(newPassword));
         } catch (NoSuchAlgorithmException e) {
             log.error(e);
-            UIBeanHelper
-                    .setErrorMessage("An error occurred while saving your password");
+            UIBeanHelper.setErrorMessage("An error occurred while saving your password");
             return "error";
         }
         String message = "Your new password has been saved";
@@ -123,13 +111,5 @@ public class ChangePasswordBean {
 
     public void setNewPassword(String newPassword) {
         this.newPassword = newPassword;
-    }
-
-    public boolean isPasswordSet() {
-        return passwordSet;
-    }
-
-    public void setPasswordSet(boolean passwordSet) {
-        this.passwordSet = passwordSet;
     }
 }
