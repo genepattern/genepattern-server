@@ -1,11 +1,11 @@
 <!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" 
-      xmlns:ui="http://java.sun.com/jsf/facelets" 
-      xmlns:h="http://java.sun.com/jsf/html" 
-      xmlns:f="http://java.sun.com/jsf/core" 
-      xmlns:t="http://myfaces.apache.org/tomahawk" 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
-    
+
 <ui:composition>
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
@@ -24,7 +24,7 @@
       </tr>
     </h:outputText>
     <h:form>
-    
+
       <!-- Loop through jobs -->
       <t:dataList var="job" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
         <tr>
@@ -39,31 +39,29 @@
           </td>
           <td>
             <font class="recentjobs-sh">#{job.taskName}</font>
-            
+
             <!-- Image trigger for jobs menu popup -->
-            <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif" 
-                 name="Image2_#{job.jobNumber}" width="14" height="14" border="0" align="top" 
-                 id="Image2_#{job.jobNumber}" onclick="pm_showMenu('menuDiv_#{job.jobNumber}', Position.cumulativeOffset(this), 50, 100);" 
-                 onmouseover="MM_swapImage('Image2_#{job.jobNumber}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)" 
+            <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif"
+                 name="Image2_#{job.jobNumber}" width="14" height="14" border="0" align="top"
+                 id="Image2_#{job.jobNumber}" onclick="pm_showMenu('menuDiv_#{job.jobNumber}', Position.cumulativeOffset(this), 50, 100);"
+                 onmouseover="MM_swapImage('Image2_#{job.jobNumber}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)"
                  onmouseout="MM_swapImgRestore();"/>
             <br/>
-            
-            <h:outputText value="#{job.dateCompleted}">
-              <f:convertDateTime pattern="MMM dd hh:mm:ss a"/>
-            </h:outputText>
+
+            <h:outputText value="#{job.dateCompleted}" converter="gp" />
             <br/>
-            
+
             <!--  Loop through output files -->
             <ui:include src="recentJobsFiles.xhtml">
               <ui:param name="recentJob" value="#{job}"/>
             </ui:include>
-            
+
           </td>
           <td width="9">
             <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
           </td>
-        </tr>        
- 
+        </tr>
+
         <!-- Now loop through all descenant jobs (pipeline).  Descendants do not get there own menu -->
         <t:dataList var="descendant" value="#{job.descendantJobs}" rowIndexVar="descIndex">
         <tr>
@@ -71,7 +69,7 @@
             <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
           </td>
           <td valign="top" class="recentjobs-sh">
-            
+
           </td>
           <td width="9">
             <img src="images/spacer.gif" width="9" height="1"/>
@@ -86,9 +84,9 @@
             </ui:include>
           </td>
         </tr>
-            
+
         </t:dataList>
-        
+
         <tr>
           <td colspan="5">
             <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" vspace="5"/>
@@ -96,7 +94,7 @@
         </tr>
       </t:dataList>
     </h:form>
-   
+
   </table>
   <p>
     <br/>
@@ -111,7 +109,7 @@
   <p>
     <br/>
   </p>
-  
+
     <!-- Create menus  -->
     <ui:define name="popupMenus">
       <h:form>
@@ -123,12 +121,12 @@
           <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}" rowIndexVar="paramIndex">
             <ui:include src="jobFileMenu.xhtml">
               <ui:param name="job" value="#{jobInfo}"/>
-              <ui:param name="fileInfo" value="#{fileInfo}"/>       
+              <ui:param name="fileInfo" value="#{fileInfo}"/>
             </ui:include>
           </t:dataList>
         </t:dataList>
       </h:form>
     </ui:define>
-   
+
   </ui:composition>
 </html>
