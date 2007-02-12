@@ -217,9 +217,9 @@ document.location.href=location;
         <tr>
           <td valign="top" class="maintasknav" id="maintasknav" align="right" width="100%">
           	<h:outputText rendered="#{authorizationBean.adminJobs}">
-              <h:selectBooleanCheckbox  value="#{jobsBean.showEveryonesJobs}" onchange="this.form.submit();"/>show everyone's jobs&#160;&#160;&#160;&#160;
+              <h:selectBooleanCheckbox  value="#{jobsBean.showEveryonesJobs}" onclick="this.form.submit();"/>show everyone's jobs&#160;&#160;&#160;&#160;
             </h:outputText>
-            <h:selectBooleanCheckbox  value="#{jobsBean.showExecutionLogs}" onchange="this.form.submit();" />show execution logs	
+            <h:selectBooleanCheckbox  value="#{jobsBean.showExecutionLogs}" onclick="this.form.submit();" />show execution logs	
           </td>
         </tr>
       </table>
