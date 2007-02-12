@@ -2,6 +2,11 @@
 <!DOCTYPE faces-config PUBLIC "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"
                               "http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
 <faces-config>
+<converter>
+  <converter-id>gp</converter-id>
+  <converter-class>org.genepattern.server.webapp.DateTimeConverter</converter-class>
+</converter>
+
  <managed-bean>
   <managed-bean-name>authorizationBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.AuthorizationBean</managed-bean-class>
@@ -300,7 +305,9 @@
  </navigation-rule>
  <application>
   <view-handler>com.sun.facelets.FaceletViewHandler</view-handler>
-  <!-- Replace view-handler tag with the tag below to enable trinidad  
+  <!-- Replace view-handler tag with the tag below to enable trinidad
  <default-render-kit-id>org.apache.myfaces.trinidad.core</default-render-kit-id>  -->
  </application>
+
+
 </faces-config>
