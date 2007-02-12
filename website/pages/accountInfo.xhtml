@@ -6,32 +6,41 @@
 	xmlns:t="http://myfaces.apache.org/tomahawk"
 	xmlns:c="http://java.sun.com/jstl/core">
 <ui:composition template="/templates/common.xhtml">
-	<ui:define name="headText">
-		<script type="text/javascript"
-			src="#{facesContext.externalContext.requestContextPath}/js/prototype.js" />
-	</ui:define>
 	<ui:define name="validationInit">
     <script type="text/javascript" language="javascript">
     <h:outputText rendered="#{mySettingsBean.currentMode == 'Change Email'}">
       /* <![CDATA[ */
-
       function onLoad()
       {
-        var objForm = document.forms["changeEmailForm"];
+       var objForm = document.forms["changeEmailForm"];
 
         objForm.newEmail.required = 1;
-        objForm.newEmail.regexp = "JSVAL_RX_EMAIL";
         objForm.newEmail.err = "Missing or invalid email";
+		objForm.newEmail.regexp = "JSVAL_RX_EMAIL";
 
         objForm.confirmNewEmail.equals = "newEmail";
         objForm.confirmNewEmail.err = "Emails do not match";
       }
-
        /* ]]> */
-       </h:outputText>
+	</h:outputText>
 
+	<h:outputText rendered="#{mySettingsBean.currentMode == 'Change Password'}">
+      /* <![CDATA[ */
+      function onLoad()
+      {
+       var objForm = document.forms["changePasswordForm"];
+
+        objForm.newPassword.required = 1;
+        objForm.newPassword.err = "Missing new password";
+
+        objForm.confirmNewPassword.equals = "newPassword";
+        objForm.confirmNewPassword.err = "Passwords do not match";
+      }
+       /* ]]> */
+	</h:outputText>
     </script>
   </ui:define>
+
 	<ui:define name="pageTitle">GenePattern Account Information</ui:define>
 	<ui:define name="leftPanel">
 		<h:form>
