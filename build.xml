@@ -27,6 +27,7 @@
     <property name="runVisualizer-jarname" value="runVisualizer.jar"/>
     <property name="signingKey" value="gEnEpAtTeRn"/>
     <property name="keyStore" value="${build}/keystore"/>
+    <property name="build.properties.file" value="resources/build.properties" />
 
     <path id="genepattern.root">
         <pathelement location="${basedir}"/>
@@ -123,7 +124,7 @@
                source="${java.target}"
                excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**"
                 />
-	
+
 	  <copy todir="${genepattern.build}">
             <fileset dir="${src}" includes="**/*.xml"/>
         </copy>
@@ -150,9 +151,9 @@
         </javadoc>
     </target>
 
-	
+
     <target name="gp-library" depends="init, gp-library-doc">
-    	
+
     	<jar basedir="${genepattern.build}" defaultexcludes="true" includes="org/**/*.class, edu/**/*.class, **/*.xml" jarfile="${genepattern.build}/${gp-library-jarname}">
             <manifest>
                 <attribute name="Class-Path" value="./lib/activation.jar ./lib/axis.jar ./lib/commons-discovery-0.2.jar ./lib/commons-logging-1.0.4.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.11.jar ./lib/mail.jar ./lib/saaj.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar "/>
@@ -210,11 +211,11 @@
                destdir="build"
                srcdir="${src}"
                target="${java.target}"
-               source="${java.target}"				
+               source="${java.target}"
                includes="org/genepattern/data/**/*.java, org/genepattern/io/**/*.java, org/genepattern/server/domain/**/*.java"
           />
 	  </target>
-	  
+
 	   <target depends="init,compile-cg" name="broad-cg">
         <!-- Makes broad-cg.jar -->
         <jar basedir="build"
@@ -222,9 +223,9 @@
              includes="org/genepattern/data/**/*.class, org/genepattern/io/**/*.class, org/genepattern/server/domain/**/*.class"
              jarfile="build/${broad-cg-jarname}"/>
     </target>
-    
-    
-    
+
+
+
 	  <target depends="init" description="Compiles files for broad-cg jar" name="compile-cg-1-4">
 		  <mkdir dir="build-cg" />
         <javac classpathref="library.classpath"
@@ -232,11 +233,11 @@
                destdir="build-cg"
                srcdir="${src}"
                target="1.4"
-               source="1.4"				
+               source="1.4"
                includes="org/genepattern/data/expr/*.java, org/genepattern/data/matrix/*.java, org/genepattern/io/**/*.java"
           />
 	  </target>
-    
+
      <target depends="init,compile-cg-1-4" name="broad-cg-1-4">
         <!-- Makes broad-cg.jar -->
         <jar basedir="build-cg"
@@ -244,13 +245,13 @@
              includes="org/genepattern/data/**/*.class, org/genepattern/io/**/*.class"
              jarfile="build-cg/${broad-cg-jarname}"/>
     </target>
-    
-   
-    
+
+
+
     <target name="broad-cg-doc" depends="init">
         <javadoc classpathref="library.classpath" destdir="docs/api" version="true" author="false" use="true">
             <fileset dir="src" defaultexcludes="yes">
-            	<include name="org/genepattern/data/expr/*.java"/> 
+            	<include name="org/genepattern/data/expr/*.java"/>
             	<include name="org/genepattern/data/matrix/*.java"/>
             	<include name="org/genepattern/io/**/*.java"/>
             </fileset>
@@ -486,7 +487,7 @@
 
         <property file="build.versionNumbers"/>
 
-        <propertyfile comment="Created by ANT; defines the build version, date etc." file="resources/build.properties">
+        <propertyfile comment="Created by ANT; defines the build version, date etc." file="${build.properties.file}">
             <entry key="build" operation="=" pattern="yyyyMMdd" type="date" value="now"/>
             <entry key="date" pattern="EEE, MMM d yyyy" type="date" value="now"/>
             <entry key="version.major" operation="=" type="int" value="${version.major}"/>
