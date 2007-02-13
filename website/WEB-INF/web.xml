@@ -3,13 +3,13 @@
  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 
  <display-name>GenePattern</display-name>
- <error-page>
-    <exception-type>java.lang.Exception</exception-type>
-    <location>/pages/internalError.jsf</location>
+<error-page>
+    <error-code>500</error-code>
+    <location>/internalError.jsp</location>
 </error-page>
 <error-page>
     <error-code>404</error-code>
-    <location>/pages/notFound.jsf</location>
+    <location>/notFound.jsp</location>
 </error-page>
 
  <context-param>
