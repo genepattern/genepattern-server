@@ -27,7 +27,7 @@ import java.util.Properties;
 
 /**
  * Convenience class for getting the build information.
- * 
+ *
  * @author kohm
  */
 public class BuildProperties {
@@ -131,7 +131,7 @@ public class BuildProperties {
         InputStream is = null;
         try {
             URL url = BuildProperties.class
-                    .getResource("/org/genepattern/resources/build.properties");
+                    .getResource("/build.properties");
             if (url != null) {
                 is = url.openStream();
                 PROPERTIES.load(is);
