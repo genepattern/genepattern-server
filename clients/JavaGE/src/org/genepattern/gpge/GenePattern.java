@@ -43,7 +43,7 @@ import org.genepattern.util.StringUtils;
 
 /**
  * GPGE Launcher
- * 
+ *
  * @author kohm
  */
 public final class GenePattern {
@@ -233,7 +233,7 @@ public final class GenePattern {
             }
         }
         // change the markers to the real property values
-        // System.out.println("Before contents="+contents);
+
         contents = StringUtils.replaceAll(contents, "${PROGRAM_NAME}",
                 BuildProperties.PROGRAM_NAME);
         contents = StringUtils.replaceAll(contents, "${FULL_VERSION}",
@@ -243,10 +243,7 @@ public final class GenePattern {
         contents = StringUtils.replaceAll(contents, "${BUILD.TAG}", String
                 .valueOf(BuildProperties.BUILD_TAG));
 
-        // System.out.println("After contents="+contents);
 
-        // javax.swing.JEditorPane notes = new
-        // javax.swing.JEditorPane("text/plain", contents);
 
         javax.swing.JTextArea notes = new javax.swing.JTextArea(contents);
         notes.setMargin(new Insets(5, 5, 5, 5));
