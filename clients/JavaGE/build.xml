@@ -1,53 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project basedir="src" default="targets" name="Graphical Environment for GenePattern">
+<project basedir="src" default="package">
+	<import file="../../build.xml"/>
 
-	<target description="Echos all the targets" name="targets">
-		<antstructure output="../gpge.dtd" />
-		<echo append="true">
-			<![CDATA[This should be a complete build file needed to compile and make GenePattern Graphical Environment as a jar file.
+	<target name="_setCvsTag">
+		<antcall target="version_updater">
+			 <param name="build.properties.file" value="../build.properties"/>
+		</antcall>
 
-Targets:
-
-package
-creates a jar file that can be run with the current lib directory.
-
-clean
-removes all class files
-
-compile
-compiles modified java files
-
-build
-cleans then compiles all java files
-
-run
-runs the program without first creating the jar file.  Note that it does not build nor compile first.
-
-To build the project from scratch:
-ant build
-
-To create a test jar file:
-ant package
-]]>
-		</echo>
 	</target>
 
-	<target name="setCvsTag" unless="cvsTag">
-		<property name="cvsTag" value="This build was not tagged in CVS" />
-	</target>
+	<target name="init" depends="_setCvsTag">
 
-	<target name="init" depends="setCvsTag">
-		<echo message="gpge basedir: ${basedir}" />
-		<!-- Create the time stamp -->
-		<tstamp />
-		<property name="appfile" value="../gpge.jar" description="The name of the application file (.jar)" />
-		<property name="version_file" value="org/genepattern/gpge/resources/build.properties" description="Set this to the location of the version property file." />
-		<property name="manifest" value="../gp.mf" description="The manifest file" />
-		<property name="initials" value="gpge" description="The initials for the version properties" />
-		<property name="gpge_dist_dir" value="../../gpge_distibution" description="The path to the ditribution dir for GenePattern Graphical Environment" />
+		<property name="appfile" value="../gpge.jar" />
+		<property name="manifest" value="../gp.mf" />
+		<property name="gpge_dist_dir" value="../../gpge_distibution" />
 
-		<property name="root_dir" value="../../.." description="The path to the library" />
+		<property name="root_dir" value="../../.." />
 		<path id="library.classpath" description="defines the classpath based on the value of &apos;libpath&apos;.">
 			<fileset dir="${root_dir}/lib" id="jar.dir.1">
 				<include name="*.jar" />
@@ -58,7 +27,6 @@ ant package
 				<include name="*.zip" />
 			</fileset>
 			<fileset dir="${root_dir}/build" id="jar.dir.3" includes="gpwebservice.jar broad-cg.jar ui_support.jar, runMain.jar" />
-
 		</path>
 
 	</target>
@@ -69,18 +37,17 @@ ant package
 		<jar destfile="${appfile}" manifest="${manifest}">
 			<fileset dir="build" includes="**" />
 			<fileset dir="." includes="org/genepattern/gpge/resources/**" />
+			<fileset dir=".." includes="build.properties" />
 		</jar>
 	</target>
 
-
-
-	<target name="clean" description="Removes all the .class files">
+	<target name="clean">
 		<delete>
 			<fileset dir="build" includes="**/*.class" />
 		</delete>
 	</target>
 
-	<target name="compile" depends="init" description="Compiles the .java files that have been modified or that don&apos;t have .class files">
+	<target name="compile" depends="init">
 		<mkdir dir="build" />
 		<javac debug="true" defaultexcludes="true" deprecation="false" destdir="build" includes="**" optimize="false" proceed="false" srcdir=".">
 			<classpath refid="library.classpath" />
@@ -90,7 +57,7 @@ ant package
 
 	<target depends="clean,compile" description="Cleans the source then compiles all" name="build" />
 
-	<target depends="init" description="Run the program" name="run">
+	<target depends="init" description="Runs the program" name="run">
 		<java classname="org.genepattern.gpge.GenePattern" fork="true">
 			<classpath>
 				<pathelement location="../gpge.jar" />
