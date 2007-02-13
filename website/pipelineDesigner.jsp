@@ -825,9 +825,9 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		taskFields = taskFields + '<div id="div_'+taskNum+'_'+pnum+'" class="prompt-window" style="position:absolute;background-color:#FFFFFF;left:0px;top:0px;display:none" onSelectStart="return false">';
 		taskFields = taskFields + '<div id="dwindowcontent" style="height:100%;text-align:center;">';
 		taskFields = taskFields + 'Define alternative name and description to display when prompting for this input.<br>';
-		taskFields = taskFields + '<br><table class="prompt-table" border="0" cellspacing="0" cellpadding="0"><tr border="0" ><td>Display Name:</td><td><input id="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/></td></tr>';
+		taskFields = taskFields + '<br><table class="prompt-table" border="0" cellspacing="0" cellpadding="0"><tr border="0" ><td>Display Name:</td><td><input id="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'" name="t'+taskNum+'_'+pi.name+'_altName" value="'+pi.name+'"/></td></tr>';
 
-		taskFields = taskFields + '<tr><td>Display Description:</td><td><input id="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/></td></tr></table><center>';
+		taskFields = taskFields + '<tr><td>Display Description:</td><td><input id="t'+taskNum+'_'+pi.name+'_altDescription" name="t'+taskNum+'_'+pi.name+'_altDescription" value="'+pi.description+'"/></td></tr></table><center>';
 		taskFields = taskFields + '<input type="button" value="Save"   onclick="closePromptWindow(\'div_'+taskNum+'_'+pnum+'\')"/>&#160;&#160;';
 		taskFields = taskFields + '<input type="button" value="Cancel" onclick="cancelPromptWindow(\'div_'+taskNum+'_'+pnum+'\', '+taskNum+', \''+pi.name+'\')"/>&#160;&#160;';
 		taskFields = taskFields + '<input type="button" value="Reset"  onclick="resetDisplay(\''+taskNum+'\', \''+pi.name+'\', \''+pi.description+'\')"/></center>';

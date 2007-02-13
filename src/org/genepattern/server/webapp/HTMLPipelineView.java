@@ -985,22 +985,29 @@ public class HTMLPipelineView {
 							if (atpi.getName().equals(pname)){
 								HashMap atts = atpi.getAttributes();
 								// System.out.println("PIA=" + atpi.getName() + "  --- " + pname);
-								pi.getAttributes().put("altName", atts.get("altName"));
-								pi.getAttributes().put("altDescription", atts.get("altDescription"));
+								String altName =  (String)atts.get("altName");
+								if (altName == null) altName = pi.getName();
+								String altDesc = (String)atts.get("altDescription");
+								if (altDesc == null) altDesc = pi.getDescription();
+
+								pi.getAttributes().put("altName", altName);
+								pi.getAttributes().put("altDescription", altDesc);
 							
-								
 								s.append("	setParameter(" + taskNum + ", \""
 									+ pi.getName() + "_altName\", \""
-									+ javascriptEncode((String)atts.get("altName"))
+									+ javascriptEncode(altName)
 									+ "\");\n");
 								
 								s.append("	setParameter(" + taskNum + ", \""
 									+ pi.getName() + "_altDescription\", \""
-									+ javascriptEncode((String)atts.get("altDescription"))
+									+ javascriptEncode(altDesc)
 									+ "\");\n");
 								
-								s.append(" document.getElementById('span_"+taskNum+"_"+i +"').style.display=\"inline\";   ");
+								s.append(" document.getElementById('div_"+taskNum+"_"+i +"').style.display=\"inline\";   ");
 								s.append(" document.getElementById('span_input_"+taskNum+"_"+i +"').style.display=\"inline\";   ");
+
+ 								s.append("cb=document.forms['pipeline']['t"+i+"_prompt_"+k+"'];");
+								s.append("promptOnRunChecked(cb, "+i+", "+k+", '');");
 
 							}
 						}
