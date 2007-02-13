@@ -270,9 +270,9 @@ function showFileInput(id) {
                   <h:outputText rendered="#{!runTaskBean.pipeline}">
                     <a href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160; 
                     <a href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>&#160;|&#160;
-                    <h:outputText rendered="#{runTaskBean.editAllowed}">
+                    <h:panelGroup rendered="#{runTaskBean.editAllowed}">
                       <a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>&#160;|&#160; 
-                    </h:outputText>
+                    </h:panelGroup>
                   </h:outputText> 
                   <a target="_blank" href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
                 </td>
@@ -351,17 +351,22 @@ function showFileInput(id) {
                   <td valign="top">&#160;</td>
                   <td colspan="2" class="maintasknav2">
                     <input name="cmd" value="Run" type="submit"/>
-                    <input name="reset" value="Reset" onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'" type="button"/> &#160;&#160; <h:outputText rendered="#{runTaskBean.pipeline}">
+                    <input name="reset" value="Reset" onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'" type="button"/> &#160;&#160; 
+                    <h:panelGroup rendered="#{runTaskBean.pipeline}">
                       <a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160;
-                    <a onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>&#160;|&#160;
-										<a href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
-                    </h:outputText>
-                    <h:outputText rendered="#{!runTaskBean.pipeline}">
+                      <a onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>&#160;|&#160;
+					  <h:panelGroup rendered="#{runTaskBean.editAllowed}">
+					    <a href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>
+					  </h:panelGroup>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{!runTaskBean.pipeline}">
                       <a href="#{facesContext.externalContext.requestContextPath}/viewTask.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160; 
-                    <a href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>
-										&#160;|&#160;
-										<a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>
-                    </h:outputText> &#160;|&#160; <a target="_blank" href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
+                      <a href="#{facesContext.externalContext.requestContextPath}/makeZip.jsp?name=#{runTaskBean.lsid}">export</a>&#160;|&#160;
+					  <h:panelGroup rendered="#{runTaskBean.editAllowed}">
+					    <a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{runTaskBean.lsid}">edit</a>
+					  </h:panelGroup>
+                    </h:panelGroup> &#160;|&#160; 
+                    <a target="_blank" href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp?name=#{runTaskBean.lsid}">help</a>
                   </td>
                 </tr>
               </h:outputText>
