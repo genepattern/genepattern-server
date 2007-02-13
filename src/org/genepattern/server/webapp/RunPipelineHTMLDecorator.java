@@ -307,15 +307,33 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
         int numToDownload = 0;
         for (i = 0; i < parameterInfoArray.length; i++) {
             boolean isInputFile = parameterInfoArray[i].isInputFile();
-
-            if (isInputFile) {
+			String paramName = parameterInfoArray[i].getName();
+            
+           // if (isInputFile) {
                 // note that this parameter is a URL that must be downloaded by
                 // adding it to the CSV list for the applet
-                if (numToDownload > 0)
-                    out.print(",");
-                out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
+            //    if (numToDownload > 0)
+            //        out.print(",");
+            //    out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
+            //    numToDownload++;
+            //}
+			if (isInputFile || 
+		    	(params.getProperty(paramName).startsWith("http:") ||
+		    	 params.getProperty(paramName).startsWith("https:") ||
+		    	 params.getProperty(paramName).startsWith("ftp:"))) 
+				{
+				// note that this parameter is a URL that must be downloaded by adding it to the 
+				//CSV list for the applet
+				if (numToDownload > 0) {
+				    out.print(",");
+				}
+				out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
                 numToDownload++;
-            }
+			}
+	
+
+
+
         }
         out.println("\">");
 
