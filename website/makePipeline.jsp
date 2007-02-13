@@ -90,9 +90,12 @@
 
             if (fi.isFormField()) {
            		requestParameters.put(fi.getFieldName(), fi.getString());
-		//	System.out.println("TestP " +  fi.getFieldName()+" = "+ fi.getString());
+				//System.out.println("TestP " +  fi.getFieldName()+" = "+ fi.getString());
 
             } else {
+				//System.out.println("-- TestP " +  fi.getFieldName());
+
+
                 // it is the file
                 fileCount++;
                 String name = fi.getName();
@@ -340,6 +343,7 @@ try {
 					String altDescKey = taskPrefix + "_" + paramName + "_altDescription";
 					String altDesc = requestParameters.getProperty(altDescKey);				
 					
+
 					if (altName != null){
 						p.getAttributes().put("altName", altName);
 					}
@@ -351,8 +355,10 @@ try {
 
 				String inheritFrom = requestParameters.getProperty(taskPrefix + "_i_" + i);
 
-				boolean inherited = (inheritFrom != null && inheritFrom.length() > 0 && !inheritFrom.equals("NOT SET") && !inheritFrom.startsWith("[task")  );
 
+				// safari comes in with '[module not set]' because it just needs to be different
+				boolean inherited = (inheritFrom != null && inheritFrom.length() > 0 && !inheritFrom.equals("NOT SET") && !inheritFrom.startsWith("[module")  );
+				
 				boolean isOptional = (((String)p.getAttributes().get(GPConstants.PARAM_INFO_OPTIONAL[0])).length() > 0);
 
 //System.out.println(taskName + ": " + paramName + "=" + val + ", prompt= " + runTimePrompt[i] + ", optional=" + isOptional + ", inherited=" + inherited + " (" + requestParameters.getProperty(taskPrefix + "_i_" + i) + "), isInputFile=" + p.isInputFile());
