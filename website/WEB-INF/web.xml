@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee"
  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
  <display-name>GenePattern</display-name>
+ <error-page>
+    <exception-type>java.lang.Exception</exception-type>
+    <location>/pages/internalError.jsf</location>
+</error-page>
+<error-page>
+    <error-code>404</error-code>
+    <location>/pages/notFound.jsf</location>
+</error-page>
+
  <context-param>
   <param-name>javax.faces.DEFAULT_SUFFIX</param-name>
   <param-value>.xhtml</param-value>
@@ -12,7 +22,7 @@
  </context-param>
  <context-param>
   <param-name>facelets.DEVELOPMENT</param-name>
-  <param-value>true</param-value>
+  <param-value>false</param-value>
  </context-param>
  <context-param>
   <param-name>javax.faces.STATE_SAVING_METHOD</param-name>
@@ -50,7 +60,7 @@
    <param-name>home</param-name>
    <param-value>/pages/index.jsf</param-value>
   </init-param>
-  
+
  </filter>
  <filter>
   <filter-name>ConnectionFilter</filter-name>
@@ -77,8 +87,8 @@
    <param-value>../resources</param-value>
   </init-param>
  </filter>
- 
- 
+
+
  <filter>
   <filter-name>HibernateFilter</filter-name>
   <filter-class>org.genepattern.server.webapp.HibernateSessionRequestFilter</filter-class>
@@ -113,7 +123,7 @@
   <filter-name>ConnectionFilter</filter-name>
   <url-pattern>/*</url-pattern>
  </filter-mapping>
- 
+
  <filter-mapping>
   <filter-name>AuthenticationFilter</filter-name>
   <url-pattern>/jobResults/*</url-pattern>
@@ -130,12 +140,12 @@
   <filter-name>AuthenticationFilter</filter-name>
   <url-pattern>*.ajax</url-pattern>
  </filter-mapping>
- 
+
  <filter-mapping>
   <filter-name>JobResultsFilter</filter-name>
   <url-pattern>/jobResults/*</url-pattern>
  </filter-mapping>
- 
+
  <filter-mapping>
   <filter-name>AuthorizationFilter</filter-name>
   <url-pattern>/services/*</url-pattern>
@@ -197,7 +207,7 @@
   <servlet-name>AxisServlet</servlet-name>
   <url-pattern>/services/*</url-pattern>
  </servlet-mapping>
- 
+
   <servlet>
   <display-name>AjaxServlet</display-name>
   <servlet-name>AjaxServlet</servlet-name>
@@ -208,12 +218,9 @@
   <servlet-name>AjaxServlet</servlet-name>
   <url-pattern>*.ajax</url-pattern>
  </servlet-mapping>
- 
- 
+
  <welcome-file-list>
   <welcome-file>/index.jsp</welcome-file>
  </welcome-file-list>
- <login-config>
-  <auth-method>BASIC</auth-method>
- </login-config>
+
 </web-app>
