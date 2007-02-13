@@ -12,7 +12,7 @@ import org.hibernate.Query;
 
 /**
  * Home object for domain model class User.
- * 
+ *
  * @see org.genepattern.server.user.User
  * @author Hibernate Tools
  */
@@ -21,7 +21,7 @@ public class UserDAO extends BaseDAO {
     public static final Logger log = Logger.getLogger(UserDAO.class);
 
     public User findById(String id) {
-        log.debug("getting Props instance with id: " + id);
+        log.debug("getting User instance with id: " + id);
         try {
             return (User) HibernateUtil.getSession().get("org.genepattern.server.user.User", id);
         } catch (RuntimeException re) {
@@ -59,6 +59,9 @@ public class UserDAO extends BaseDAO {
                 prop.setValue(defaultValue);
                 prop.setGpUserId(userId);
                 User user = findById(userId);
+                if (user == null) {
+                    throw new NullPointerException(userId + " not found.");
+                }
                 List<UserProp> props = user.getProps();
                 if (props == null) {
                     props = new ArrayList<UserProp>();
