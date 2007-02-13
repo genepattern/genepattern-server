@@ -161,7 +161,11 @@ public class AuthenticationFilter implements Filter {
             }
 
             HttpSession session = request.getSession(false);
-            return session != null;
+            if (session != null) {
+                HibernateUtil.beginTransaction();
+                return new UserDAO().findById(userId) != null;
+            }
+            return false;
         }
     }
 
