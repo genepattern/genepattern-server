@@ -78,7 +78,7 @@
    <handler type="URLMapper"/>
    <handler type="java:org.apache.axis.handlers.http.HTTPAuthHandler"/>
    <handler name="Authentication" type="java:org.genepattern.server.webservice.AuthenticationHandler">
-   		<parameter name="no.login.required" value="AdminService.serviceInfo"/>
+   		<parameter name="no.login.required" value="AdminService.getServiceInfo"/>
    </handler>
  
   </requestFlow>
@@ -87,7 +87,7 @@
   <responseFlow>
    <handler type="java:org.apache.axis.transport.local.LocalResponder"/>
    <handler name="Authentication" type="java:org.genepattern.server.webservice.AuthenticationHandler">
-   		<parameter name="no.login.required" value="AdminService.serviceInfo"/>
+   		<parameter name="no.login.required" value="AdminService.getServiceInfo"/>
    </handler>
 
   </responseFlow>
