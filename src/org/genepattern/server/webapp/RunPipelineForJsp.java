@@ -126,7 +126,7 @@ public class RunPipelineForJsp {
             out.println("<tr class=\"paleBackground\" >");
             out
                     .println(
-                            "<td colspan='4' align='center' border = 'none'> <a href='addZip.jsp'>Import zip file </a>");
+                            "<td colspan='4' align='center' border = 'none'> <a href='pages/importTask.jsf'>Install from zip file </a>");
             out
                     .println(
                             " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ");
