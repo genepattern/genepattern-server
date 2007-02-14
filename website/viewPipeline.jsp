@@ -42,7 +42,7 @@
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
-  
+
 System.out.println("=======================================HERE");
 
 String userID= (String)request.getAttribute("userID"); // will force login if necessary
@@ -60,7 +60,7 @@ if (pipelineName == null) {
 PipelineModel model = null;
 
 if (LSID.isLSID(pipelineName)) pipelineName = new LSID(pipelineName).toString();
-		
+
 TaskInfo task = new org.genepattern.server.webservice.server.local.LocalAdminClient(userID).getTask(pipelineName);
 String version = "";
 if (task != null) {
@@ -105,13 +105,13 @@ function toggleTask(visible, i) {
 	} else {
 		formobj.style.display = "block";
 		if (arrowImg != null)
-			arrowImg.src="images/arrow-pipelinetask-down.gif" 
+			arrowImg.src="images/arrow-pipelinetask-down.gif"
 	}
 }
 
 function toggleLSID(visible) {
 	formobj = document.getElementById('pipeline_lsid');
-	
+
 	if(!visible) {
 		formobj.style.display = "none";
 	} else {
@@ -148,7 +148,7 @@ function runpipeline( url) {
 		window.location= url;
 }
 </script>
-	
+
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
 <title><%=task.getName()%></title>
@@ -167,11 +167,9 @@ out.println("<p><font size='+2'><b>" + displayName+ "</font> version <font size=
 String lsid = (String) task.getTaskInfoAttributes().get(GPConstants.LSID);
 boolean showEdit = false;
 try {
-	LSIDManager manager = LSIDManager.getInstance();
-	String authority = manager.getAuthorityType(new org.genepattern.util.LSID(lsid));
-	if(authority.equals(LSIDUtil.AUTHORITY_MINE)) {
-		showEdit = task.getTaskInfoAttributes().get(GPConstants.PRIVACY).equals(GPConstants.PUBLIC) || task.getTaskInfoAttributes().get(GPConstants.USERID).equals(userID);
-	}
+
+	showEdit = task.getUserId().equals(userID) && LSIDUtil.getInstance().isAuthorityMine(task.getLsid());
+
 } catch(Exception e){e.printStackTrace(System.out);}
 if(showEdit) {
 	String editURL = "pipelineDesigner.jsp?name=" + pipelineName;
@@ -184,7 +182,7 @@ out.println("  <input type=\"button\" value=\"Clone...\" name=\"clone\"       cl
 
 if (! RunPipelineForJsp.isMissingTasks(model, userID)){
 	out.println("  <input type=\"button\" value=\"Run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; />");
-}				
+}
 //XXXXXXXXXXXXX
 String descrip = task.getDescription();
 out.print("<span id=\"pipeline_lsid\" style=\"display:none;\">");
@@ -193,8 +191,8 @@ out.print("<pre>     " + lsid + "</pre></span>");
 
 if ((descrip != null) && (descrip.length() > 0))
 	out.println("</br>"+ descrip);
-out.println("<br>Owner: " + task.getUserId());
-		
+out.println("<br>Author: " + StringUtils.htmlEncode(task.getTaskInfoAttributes().get(GPConstants.AUTHOR)));
+
 
 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 File[] docFiles = taskIntegratorClient.getDocFiles(task);
@@ -241,12 +239,12 @@ for(int i = 0; i < tasks.size(); i++) {
 		String taskLSIDstr = js.getLSID();
 		LSID taskLSID = new LSID(taskLSIDstr);
 		String taskLSIDstrNoVer = taskLSID.toStringNoVersion();
-		
+
 		unknownTaskVersion = !GenePatternAnalysisTask.taskExists(taskLSIDstrNoVer , userID);
 	}
    	String taskLSIDstr = js.getLSID();
 	LSID taskLSID = new LSID(taskLSIDstr);
-	String taskLsidVersion = taskLSID.getVersion();	
+	String taskLsidVersion = taskLSID.getVersion();
 
 	Map tia = formalTask!=null?formalTask.getTaskInfoAttributes():null;
 
@@ -271,18 +269,18 @@ for(int i = 0; i < tasks.size(); i++) {
 	 	<tr><td>&nbsp;</td><td><%= StringUtils.htmlEncode(formalTask.getDescription())%></td>
     <%
 
-		
+
 	} else {
 		if (!unknownTaskVersion) {
 			TaskInfo altVersionInfo = GenePatternAnalysisTask.getTaskInfo(taskLSID.toStringNoVersion(), userID);
 			Map altVersionTia = altVersionInfo.getTaskInfoAttributes();
-			
+
 			LSID altVersionLSID = new LSID((String)(altVersionTia.get(GPConstants.LSID)) );
 
 			out.print("<td width=\"8\">&nbsp;</td><td>&nbsp;&nbsp; "+displayNumber+". <font color='red'>"+ js.getName() + "</font></font> This module version <b>("+taskLSID.getVersion()+")</b> is not present on this server.</td><td class='smalltype' align='right'>version "+taskLsidVersion +"</td></tr></table><table><tr><td>&nbsp;</td><td> The version present on this server is <br>"  );
 		out.print("<dd><a href=\"addTask.jsp?view=1&name=" + js.getName() + "\">" + js.getName() + " <b>("+altVersionLSID .getVersion()+")</b> </a> " + StringUtils.htmlEncode(formalTask.getDescription()) + "</td>");
 
-		
+
 
 		} else {
 
@@ -305,7 +303,7 @@ for(int i = 0; i < tasks.size(); i++) {
 out.println("<table cellspacing='0' width='100%' class='attribute'>");
 	boolean[] runtimePrompt = js.getRuntimePrompt();
 	java.util.Map paramName2FormalParamMap = new java.util.HashMap();
-   
+
 	for(int j = 0; j < formalParams.length; j++) {
 		paramName2FormalParamMap.put(formalParams[j].getName(), formalParams[j]);
 	}
@@ -330,7 +328,7 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
 			if (paramName.equals(parameterInfo[k].getName())){
 				informalParam = parameterInfo[k];
 				break;
-			}		
+			}
 		} // for k
 		if (informalParam == null) {
 			informalParam = formalParam;
@@ -339,7 +337,7 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
 
  		String value = null;
 		if(formalParam.isInputFile()) {
-			
+
 			java.util.Map pipelineAttributes = informalParam.getAttributes();
 
 			String taskNumber = null;
@@ -366,20 +364,20 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
 				}
 				JobSubmission previousTask = (JobSubmission) tasks.get(taskNumberInt);
 				int displayTaskNumber = taskNumberInt + 1;
-				
+
 				value = "Use <b>" + inheritedOutputFileName + "</b> from <a href=\"#"+displayTaskNumber +"\">" + displayTaskNumber + ". " + previousTask.getName() +"</a>";
 			} else {
-        
-				value = informalParam.getValue(); 	
+
+				value = informalParam.getValue();
 				Properties props = System.getProperties();
-				props.setProperty("LSID", lsid);	
-				
-			            
+				props.setProperty("LSID", lsid);
+
+
 				try {
 					new java.net.URL(value); // see if parameter if a URL
 					value = "<a href=\"" + value + "\">" + value + "</a>";
-               
-				} catch(java.net.MalformedURLException x) { 
+
+				} catch(java.net.MalformedURLException x) {
 					try {
 						String svalue = GenePatternAnalysisTask.substitute(value, props, null);
 						new java.net.URL(svalue); // see if parameter if a URL
@@ -389,13 +387,13 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
 						if (idx >= 0) filename = value.substring(idx+5);
 						value = "<a href=\"" + svalue + "\">" + filename + "</a>";
 
-	
+
 					} catch (java.net.MalformedURLException xx){
 			               value = StringUtils.htmlEncode(value);
 					}
 				}
 			}
-			
+
 		}  else {
 			String[] values = formalParam.getValue().split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 			String[] eachValue;
@@ -411,16 +409,16 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
 			}
 			value = StringUtils.htmlEncode(value);
 		}
-      
+
 		paramName = paramName.replace('.', ' ');
 		//	out.print("<dd>" + paramName);
 		//	out.println(": " + value);
-		
+
 		out.print("<tr class='taskperameter'><td width='25%' class='attribute-required'>" + paramName );
-		
-	
+
+
 		out.flush();
-	
+
 		out.print(":</td><td class='attribute-required' >" + value);
 		out.print("</td><td class='attribute-required' >" + paramDescription);
 
@@ -432,7 +430,7 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
 
 	out.println("</div>");
    out.println("</div><br>");
-   
+
 
 
 }out.println("<table cellspacing='0' width='100%' frame='box'>");
