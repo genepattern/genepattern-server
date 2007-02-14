@@ -72,9 +72,9 @@ public class HTMLPipelineView {
 
 	Map tmTasksByLSID = null;
 
-	
-    
-    
+
+
+
 	public HTMLPipelineView(Writer writer, String scheme, String serverName, String serverPort, String contextPath, String userAgent,
 			String pipelineName, String userID) throws Exception {
 
@@ -85,7 +85,7 @@ public class HTMLPipelineView {
 		if (LSID.isLSID(pipelineName)) pipelineName = new LSID(pipelineName).toString();
 		this.pipelineName = pipelineName;
 		this.contextPath = contextPath;
-		
+
 		if (userAgent.indexOf("Mozilla/4") > -1
 				&& userAgent.indexOf("MSIE") == -1) {
 			System.err.println("userAgent=" + userAgent);
@@ -93,19 +93,19 @@ public class HTMLPipelineView {
 					"Cannot design pipelines using Netscape Navigator 4.x.  Try Netscape Navigator version 7 or Internet Explorer instead.");
 		}
 	}
-	
-	
+
+
 	public void init() {
         try {
             this.tmCatalog =  new LocalAdminClient(userID).getTaskCatalog();;
             tmTaskTypes = preprocessTaskInfo(tmCatalog);
-		
+
 			tmTasksByLSID = new org.genepattern.server.webservice.server.local.LocalAdminClient(
 					userID).getTaskCatalogByLSID(tmCatalog);
-		
-            
+
+
 			//dumpCatalog();
-		
+
 			writer.write("");
 		} catch (Exception ioe) {
             ioe.printStackTrace();
@@ -118,17 +118,17 @@ public class HTMLPipelineView {
         }
         return tmCatalog;
     }
-    
-    
+
+
 	/**
 	 * Create TaskType, TaskInfo, ParameterInfo, and TaskTypes objects based on
 	 * their internal GenePattern data, but limited to the data actually
 	 * necessary for building a pipeline. Populate TaskTypes and TaskInfo array.
 	 * TaskTypes is an associative array of task names organized by task type.
-	 * 
+	 *
 	 * @author Jim Lerner
 	 * @throws IOException
-	 *  
+	 *
 	 */
 	public void writeTaskData() throws IOException {
 		String taskName = null;
@@ -245,7 +245,7 @@ public class HTMLPipelineView {
 					}
 					writer.write(fileFormats);
 					writer.write(")"); // close array of file formats
-					
+
 					writer.write(", new Array("); // create array of domains
 					String domain = (String)pia.get(GPConstants.DOMAIN);
 					if (domain == null || domain.length() == 0) {
@@ -255,7 +255,7 @@ public class HTMLPipelineView {
 					}
 					writer.write(domain);
 					writer.write(")"); // close array of domains
-				
+
 
 					writer.write(")");
 				}
@@ -284,7 +284,7 @@ public class HTMLPipelineView {
 				}
 				writer.write(fileFormats);
 				writer.write(")"); // close array of file formats
-				
+
 				writer.write(", new Array("); // create array of domains
 				String domain = tia.get(GPConstants.DOMAIN);
 				if (domain == null || domain.length() == 0) {
@@ -294,7 +294,7 @@ public class HTMLPipelineView {
 				}
 				writer.write(domain);
 				writer.write(")"); // close array of domains
-				
+
 				writer.write(");\n"); // close TaskInfo
 			}
 		}
@@ -304,7 +304,7 @@ public class HTMLPipelineView {
 
 	/**
 	 * generate the body of the page
-	 * 
+	 *
 	 * @author Jim Lerner
 	 * @throws IOException
 	 */
@@ -343,10 +343,10 @@ public class HTMLPipelineView {
 				+ (taskInfo != null ? taskInfo.getName() : "new pipeline")
 				+ "</title>\n");
 		writer.write("<script>var contextRoot = '" + contextPath + "/'; </script>");
-		
-	
+
+
 	}
-    
+
     public void writeStartBody() throws IOException {
         TaskInfo taskInfo = (pipelineName != null ? (TaskInfo) tmTasksByLSID
                 .get(pipelineName) : null);
@@ -360,13 +360,13 @@ public class HTMLPipelineView {
             }
         }
 
-     
-        
+
+
         writer.write("<form name=\"pipeline\" action=\""
                         + submitURL
                         + "\"  method=\"post\" ENCTYPE=\"multipart/form-data\">\n");
-        
-        
+
+
         writer.write("<table width=\"100%\"  border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"barhead-other\"><tr class=\"barhead-other\"><td class=\"barhead-other\">Pipeline Designer");
 
         if (taskInfo != null) {
@@ -382,9 +382,9 @@ public class HTMLPipelineView {
 
         writer.write("<table cols=\"2\">\n");
 
-        writer.write("<tr class=\"pipelineperameter\"><td  class=\"taskperameter\"><a name=\"0\"></a>Pipeline&nbsp;name:</td><td width=\"*\"><input name=\"pipeline_name\" value=\"\" class=\"pipelineperameterinputText\" size=\""
+        writer.write("<tr class=\"pipelineperameter\"><td  class=\"taskperameter\"><a name=\"0\"></a>Pipeline&nbsp;name*:</td><td width=\"*\"><input name=\"pipeline_name\" value=\"\" class=\"pipelineperameterinputText\" size=\""
                         + (pipelineName != null ? pipelineName.length() : 30)
-                        + "\" onchange=\"javascript:if (document.forms['pipeline'].pipeline_name.value != '' && !isRSafe(document.forms['pipeline'].pipeline_name.value)) alert(pipelineInstruction);\"> (required)\n");
+                        + "\" onchange=\"javascript:if (document.forms['pipeline'].pipeline_name.value != '' && !isRSafe(document.forms['pipeline'].pipeline_name.value)) alert(pipelineInstruction);\">\n");
         writer.write("<input type=\"hidden\" name=\"cloneName\">\n");
         writer.write("<input type=\"hidden\" name=\"autoSave\">\n");
 
@@ -439,11 +439,7 @@ public class HTMLPipelineView {
         writer
                 .write("<tr class=\"pipelineperameter\"><td>Author:</td><td width=\"*\"><input name=\"pipeline_author\" value=\"\" class=\"pipelineperameterinputText\"> <span class='description'>name, affiliation</span></td></tr>\n");
         writer
-                .write("<tr class=\"pipelineperameter\"><td>Contact:</td><td width=\"*\"><input name=\""
-                        + GPConstants.USERID
-                        + "\" value=\""
-                        + userID
-                        + "\" class=\"pipelineperameterinputText\"> <span class='description'>email address</span></td></tr>\n");
+                .write("<input type=\"hidden\" name=\"" + GPConstants.USERID +  "\" value=\"" + userID + "\"\n");
 
         writer
                 .write("<tr class=\"pipelineperameter\"><td>Privacy:</td><td width=\"*\"><select name=\""
@@ -512,7 +508,7 @@ public class HTMLPipelineView {
         writer.write("</script>\n");
 
     }
-    
+
 
 	protected void addPipelineDoc() throws IOException {
 		try {
@@ -611,7 +607,7 @@ public class HTMLPipelineView {
 				}
 
 			}
-	
+
 		}
 		return numVersions;
 	}
@@ -691,9 +687,9 @@ public class HTMLPipelineView {
 
 	/**
 	 * handle visualization step at end of processing pipeline
-	 * 
+	 *
 	 * @author Jim Lerner
-	 *  
+	 *
 	 */
 	public void end() {
 		try {
@@ -805,7 +801,7 @@ public class HTMLPipelineView {
 	/**
 	 * creates the script that pipelineDesigner.jsp uses to reload the pipeline
 	 * design for post-creation editing
-	 * 
+	 *
 	 * @return Javascript code (almost language-agnostic)
 	 * @author Jim Lerner
 	 */
@@ -871,7 +867,7 @@ public class HTMLPipelineView {
 
 				if (taskInfo == null) {
 					LSID missingLSID = new LSID(jobSubmission.getLSID());
-					
+
 					String msg = jobSubmission.getName();
 					String authType = LSIDUtil.getInstance().getAuthorityType(missingLSID);
 
@@ -881,7 +877,7 @@ public class HTMLPipelineView {
 						msg += "("+ missingLSID.getVersion()+")";
 					}
 
-					//System.err.println("HTMLPipelineView.getJavascript:  " +msg);	
+					//System.err.println("HTMLPipelineView.getJavascript:  " +msg);
 					//s.append("alert('"+msg+"')\n");
 					loadErrors.add(msg);
 
@@ -979,7 +975,7 @@ public class HTMLPipelineView {
 // XXXXXXXXXXXXXXXx set altName and altDescription nto the boxes xxXXXXXXXXXXXXXXXXXXXXXXXXX
 						int count = i+1;
 						String pname = taskInfo.getName() + count +"." + pi.getName();
-						
+
 						for (int k=0; k < tpi.length; k++){
 							ParameterInfo atpi = tpi[k];
 							if (atpi.getName().equals(pname)){
@@ -992,17 +988,17 @@ public class HTMLPipelineView {
 
 								pi.getAttributes().put("altName", altName);
 								pi.getAttributes().put("altDescription", altDesc);
-							
+
 								s.append("	setParameter(" + taskNum + ", \""
 									+ pi.getName() + "_altName\", \""
 									+ javascriptEncode(altName)
 									+ "\");\n");
-								
+
 								s.append("	setParameter(" + taskNum + ", \""
 									+ pi.getName() + "_altDescription\", \""
 									+ javascriptEncode(altDesc)
 									+ "\");\n");
-								
+
 								s.append(" document.getElementById('div_"+taskNum+"_"+i +"').style.display=\"inline\";   ");
 								s.append(" document.getElementById('span_input_"+taskNum+"_"+i +"').style.display=\"inline\";   ");
 
@@ -1021,7 +1017,7 @@ if (loadErrors.size() > 0) {
 		if (i != (loadErrors.size()-1))
 			msg.append(", ");
 	}
-	s.append("alert('"+msg.toString()+"');");	
+	s.append("alert('"+msg.toString()+"');");
 
 }
 			if (stopLoading) {
@@ -1047,12 +1043,12 @@ if (loadErrors.size() > 0) {
 	/**
 	 * return a TreeMap of task types, each of whose values is a TreeMap of
 	 * TaskInfo of that type of task, each of whose values is a TaskInfo
-	 * 
+	 *
 	 * @return TreeMap of task types
 	 * @param tmCatalog
 	 *            TreeMap of TaskInfo of all tasks
 	 * @author Jim Lerner
-	 *  
+	 *
 	 */
 	protected TreeMap preprocessTaskInfo(Collection tmCatalog) {
 		TreeMap tmTaskTypes = new TreeMap(String.CASE_INSENSITIVE_ORDER);
@@ -1084,9 +1080,9 @@ if (loadErrors.size() > 0) {
 
 	/**
 	 * debug routine
-	 * 
+	 *
 	 * @author Jim Lerner
-	 *  
+	 *
 	 */
 	protected void dumpCatalog() {
 		TreeMap tmTasks = null;
