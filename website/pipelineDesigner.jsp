@@ -23,7 +23,7 @@
 <!doctype HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
-    
+
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link href="css/style.css" rel="stylesheet" type="text/css">
 <link href="skin/favicon.ico" rel="shortcut icon">
@@ -98,7 +98,7 @@ function addAnother(taskNum, scrollTo) {
 	// if the maximum number of tasks is already in the list, then ask whether the user intends to push the last one off the end
 	if (numTasks == MAX_TASKS) {
 		if (!confirm("There is a limit of " + numTasks + " modules per pipeline.  Adding another module will force the " + numTasks +
-			     "th to be deleted.  Press OK to delete '" + MAX_TASKS + ". " + 
+			     "th to be deleted.  Press OK to delete '" + MAX_TASKS + ". " +
 			     document.forms["pipeline"]['t' + (MAX_TASKS-1) + '_taskName'].value +
 			     "' and insert another.")) {
 			// user cancelled the add, just return
@@ -141,12 +141,12 @@ function addAnother(taskNum, scrollTo) {
 				if (oldTaskNum > 0) {
 					setFileInheritance(newTaskNum, param, inheritsFromTaskNum, getSelectorValues(document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param]));
 				}
-				else { 
+				else {
 					//alert('not setting file inheritance');
-				} 
+				}
 	   		} else {
 				setParameter(newTaskNum, pi.name, document.forms["pipeline"]['t' + oldTaskNum + '_' + pi.name].value);
-	   		} 
+	   		}
 	   	}
 	}
 	var newTask = newTaskHTML(taskNum);
@@ -176,11 +176,11 @@ function addAnother(taskNum, scrollTo) {
 						selector.options[selector.options.length] = new Option((t+1) + '.  ' + document.forms["pipeline"]['t' + t + '_taskName'].value, t, (t == selected), (t == selected));
 					}
 				}
-	   		} 
+	   		}
 	   	}
 	}
 	numTasks++;
-	if (scrollTo && navigator.userAgent.indexOf("Safari") == -1) window.location.hash = taskNum; // scroll to the new task 
+	if (scrollTo && navigator.userAgent.indexOf("Safari") == -1) window.location.hash = taskNum; // scroll to the new task
 }
 
 function deleteTask(taskNum) {
@@ -212,7 +212,7 @@ function deleteTask(taskNum) {
 				if (newTaskNum == 0 && document.forms["pipeline"]['t' + oldTaskNum + '_i_' + param].selectedIndex > 0) {
 					var inheritsFromTaskNum = document.forms["pipeline"]['t' + oldTaskNum + '_i_' + param].options[document.forms["pipeline"]['t' + oldTaskNum + '_i_' + param].selectedIndex].value;
 					if (inheritsFromTaskNum == taskNum) {
-						warnings = warnings + (newTaskNum+1) + '. ' + taskName + ' has lost its inherited input for ' + 
+						warnings = warnings + (newTaskNum+1) + '. ' + taskName + ' has lost its inherited input for ' +
 							   pi.name + '\n';
 					}
 				}
@@ -228,7 +228,7 @@ function deleteTask(taskNum) {
 						inheritsFromTaskNum = inheritsFromTaskNum-1;
 					} else if (inheritsFromTaskNum == taskNum) {
 						if (document.forms["pipeline"]['t' + oldTaskNum + '_i_' + param].selectedIndex > 0) {
-							warnings = warnings + (newTaskNum+1) + '. ' + taskName + ' has lost its inherited input for ' + 
+							warnings = warnings + (newTaskNum+1) + '. ' + taskName + ' has lost its inherited input for ' +
 								   pi.name + '\n';
 							continue; // don't set inheritance if it inherited from the deleted task
 						}
@@ -246,7 +246,7 @@ function deleteTask(taskNum) {
 							continue;
 						}
 						if (t != taskNum) {
-							selector.options[selector.options.length] = new Option((t+1) + '.  ' + 
+							selector.options[selector.options.length] = new Option((t+1) + '.  ' +
 								document.forms["pipeline"]['t' + t + '_taskName'].value, t,
 								(t == selected), (t == selected));
 						} else {
@@ -257,7 +257,7 @@ function deleteTask(taskNum) {
 				}
 	   		} else {
 				setParameter(newTaskNum, pi.name, document.forms["pipeline"]['t' + oldTaskNum + '_' + pi.name].value);
-	   		} 
+	   		}
 	   	}
 	}
 	numTasks--;
@@ -286,7 +286,7 @@ function isRSafe(varName) {
 // check if any other tasks already use this name
 function isUniqueName(varName, pipeLsid){
 	var versionlessLsid = LSIDNoVersion(pipeLsid);
-	 
+
 	for (task in TaskInfos) {
 		if (TaskInfos[task].name == varName) {
 			// don't error if the LSIDs match
@@ -309,7 +309,7 @@ function chooseInheritTask(taskNum, param) {
 	ctl.options.selectedIndex = 0;
 	ctl.options.selectedIndex = idx;
 	ctl.focus();
-	
+
 	var inheritFromTaskNum = ctl.options[idx].value;
 
 	var lsid = frm['t' + inheritFromTaskNum + '_taskLSID'].value;
@@ -317,7 +317,7 @@ function chooseInheritTask(taskNum, param) {
 	var fileFormats = ti.fileFormats;
 
 	frm['t' + taskNum + '_prompt_' + param].checked = false;
-	
+
 	ctl = frm['t' + taskNum + '_if_' + param];
 	// clear any previous entries in the file number selector
 	ctl.options.length = 0;
@@ -325,7 +325,7 @@ function chooseInheritTask(taskNum, param) {
 	// semantic knowledge first!
 	ctl.options[ctl.options.length]  = new Option('Choose output file', NOT_SET);
 	ctl.options[ctl.options.length-1].disabled = true;
-	
+
 	for (f = 0; f < fileFormats.length; f++) {
 		var ff = fileFormats[f];
 		ctl.options[ctl.options.length]  = new Option(ff, ff);
@@ -341,7 +341,7 @@ function chooseInheritTask(taskNum, param) {
 	ctl.options[ctl.options.length]  = new Option('4th output', '4');
 	ctl.options[ctl.options.length]  = new Option('stdout', 'stdout');
 	ctl.options[ctl.options.length]  = new Option('stderr', 'stderr');
-	
+
 }
 
 function promptOnRunChecked(checkbox, taskNum, param, paramName) {
@@ -353,7 +353,7 @@ function promptOnRunChecked(checkbox, taskNum, param, paramName) {
 		spannerInput.style.display = "none";
 		spannerInput = document.getElementById('span_altinputdisplay_' + taskNum + '_' + param);
 		spannerInput.style.display = "inline";
-	
+
 		if (paramName != '') {
 			ctl = frm['t' + taskNum + '_' + paramName];
 			if (ctl.type == 'text') {
@@ -372,7 +372,7 @@ function promptOnRunChecked(checkbox, taskNum, param, paramName) {
 			frm['t' + taskNum + '_shadow' + param].value='';
 
 			if (taskNum > 0) {
-	
+
 				// clear the two inheritance selectors
 				frm['t' + taskNum + '_i_' + param].selectedIndex=0;
 				frm['t' + taskNum + '_if_' + param].selectedIndex=0;
@@ -385,8 +385,8 @@ function promptOnRunChecked(checkbox, taskNum, param, paramName) {
 		spannerInput.style.display = "inline";
 		spannerInput = document.getElementById('span_altinputdisplay_' + taskNum + '_' + param);
 		spannerInput.style.display = "none";
-		
-	
+
+
 
 		// unchecked the box
 		if (paramName != '') {
@@ -421,8 +421,8 @@ function openPromptWindow(divid, taskNum, pName){
      	document.getElementById(divid).style.visibility='visible'
      	document.getElementById(divid).style.width=initialwidth="270px"
      	document.getElementById(divid).style.height=initialheight="120px"
-     	document.getElementById(divid).style.left=xpos 
-     	document.getElementById(divid).style.top=ypos    
+     	document.getElementById(divid).style.left=xpos
+     	document.getElementById(divid).style.top=ypos
 
 		pwrCancelCacheName[divid] = document.getElementById('t'+taskNum+'_'+pName+'_altName').value;
 		pwrCancelCacheDescrip[divid] = document.getElementById('t'+taskNum+'_'+pName+'_altDescription').value;
@@ -448,7 +448,7 @@ function cumulativeOffset(element) {
   }
 
 function setPromptPosition(e, divid, anElement){
-   
+
     //xpos=(document.body.scrollLeft + (ie5? event.clientX : e.clientX)) + "px";
     //ypos=(document.body.scrollTop - 100  + ((ie5? event.clientY : e.clientY)))+"px";
 
@@ -570,8 +570,8 @@ function changeTaskType(selectorTaskType, taskNum) {
 		var t = taskSelector.options.length-1;
 		taskSelector.options[t].setAttribute('class', "tasks-" + taskLSID.authorityType);
 		taskSelector.options[t].style['fontWeight'] = "normal";
-	
-	
+
+
 	}
 }
 
@@ -670,12 +670,12 @@ function chgLSIDVer(oldTaskNum, selector) {
 			if (oldTaskNum > 0) {
 				setFileInheritance(newTaskNum, param, inheritsFromTaskNum, getSelectorValues(document.forms["pipeline"]['t' + oldTaskNum + '_if_' + oldParam]));
 			}
-			else { 
+			else {
 				//alert('not setting file inheritance');
-			} 
+			}
    		} else {
 			setParameter(newTaskNum, pi.name, document.forms["pipeline"]['t' + oldTaskNum + '_' + pi.name].value);
-   		} 
+   		}
    	}
 	// all of the old task is copied to the new one
 
@@ -702,12 +702,12 @@ function chgLSIDVer(oldTaskNum, selector) {
 			if (oldTaskNum > 0) {
 				setFileInheritance(newTaskNum, param, inheritsFromTaskNum, getSelectorValues(document.forms["pipeline"]['t' + oldTaskNum + '_if_' + param]));
 			}
-			else { 
+			else {
 				//alert('not setting file inheritance');
-			} 
+			}
    		} else {
 			setParameter(newTaskNum, pi.name, document.forms["pipeline"]['t' + oldTaskNum + '_' + pi.name].value);
-   		} 
+   		}
    	}
 	t = oldTaskNum;
 	oldTaskNum = newTaskNum;
@@ -724,10 +724,10 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 	if (task == null) {
 		alert('no such module \"' + taskLSID + '\".  Aborting pipeline loading.');
 		stopLoading = true;
-		window.stop();	
+		window.stop();
 		return ('<hr class="pipelineDesigner">no such module \"' + taskLSID + '\".  Aborting pipeline loading.');
 	}
-	
+
 	taskFields = taskFields + "<br/><div class=\"pipeline_item\">";
 
 	taskFields = taskFields + '<input type="hidden" name="t' + taskNum + '_taskName" value="' + task.name + '">';
@@ -738,7 +738,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 
 
 	taskFields = taskFields + (taskNum+1) + '.&nbsp;' + task.name + ':&nbsp;</td>';
-	
+
 
 
 // create selector showing all versions of this task (same authority/namespace/identifier)
@@ -755,9 +755,9 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 
 	if (sameTasks.length > 1){
 		taskFields = taskFields + '<select name="t' + taskNum + '_taskLSIDv" onchange="chgLSIDVer(' + taskNum + ', this)">\n';
-	
+
 		for (t in sameTasks) {
-		taskFields = taskFields + '<option value="' + wildcard + sameTasks[t] + '"' + 
+		taskFields = taskFields + '<option value="' + wildcard + sameTasks[t] + '"' +
 			     (sameTasks[t] == latestVersion ? ' selected' : '') +
 			     '>' + sameTasks[t] + (t == 0 ? " (latest)" : "") + '</option>\n';
 		}
@@ -766,9 +766,9 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 	} else {
 		taskFields = taskFields + latestVersion;
 	}
-	
+
 	taskFields = taskFields + '</td>\n';
-	
+
 
 
 // end version selector
@@ -784,7 +784,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 	taskFields = taskFields + '</td></tr>\n';
 
 	taskFields = taskFields + '<tr><td>&nbsp;</td><td colspan="2" class="description">'+task.description+'</td><td>\n';
-	
+
 
 
 	if (task.docs.length > 0 || task.taskType == PIPELINE) {
@@ -804,7 +804,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 	} else {
 		taskFields = taskFields + '<tr><td></td><td colspan="2"><i>' + task.name + ' has no input parameters</i>';
 	}
-	
+
 	var pnum = -1;
 	for (param in task.parameterInfoArray) {
 		pnum = pnum + 1;
@@ -817,7 +817,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		taskFields = taskFields + '\n  onclick=\"promptOnRunChecked(this, ' + taskNum + ', ' + param + ', \'' + (pi.isInputFile ? "" : pi.name) + '\');\"';
 		taskFields = taskFields + '>';
 
-		
+
 		// XXX add ability to submit an alternate name for prompt when run params
   		taskFields = taskFields + '<span id="span_'+taskNum+'_'+pnum+'" style="display:none">'
 		var namestr = "\'t'+taskNum+'\'_\''+pi.name+'\'_altName\'";
@@ -843,27 +843,27 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		taskFields = taskFields + '<td valign="top"><nobr>';
 		taskFields = taskFields + pi.name.replace(/\./g,' ').replace(/\_/g,' ') + ':</nobr>';
 		taskFields = taskFields + '</td>\n';
-		
+
 		// input area for the field
 		taskFields = taskFields + '<td> <span id="span_input_'+taskNum+'_'+pnum+'" style="display:inline">';
 		if (pi.isInputFile) {
-			taskFields = taskFields + '<input type="file" name="t' + taskNum + '_' + pi.name + 
+			taskFields = taskFields + '<input type="file" name="t' + taskNum + '_' + pi.name +
 						  '" size="30" ' +
-						  'onchange="changeFile(this, ' + taskNum + ', ' + param + ')" ' + 
+						  'onchange="changeFile(this, ' + taskNum + ', ' + param + ')" ' +
 						  'onblur="blurFile(this, ' + taskNum + ', ' + param + ')" ' +
 						  'ondrop="dropFile(this, ' + taskNum + ', ' + param + ')" ' +
 						  'class="little">';
-			taskFields = taskFields + '<br><input name="t' + taskNum + '_shadow' + param + 
+			taskFields = taskFields + '<br><input name="t' + taskNum + '_shadow' + param +
 				     '" type="text" readonly size="60" tabindex="-1" class="shadow">';
 			if (taskNum > 0) {
-				taskFields = taskFields + '<br><nobr>or use output from <select name="t' + taskNum + '_i_' + param + 
+				taskFields = taskFields + '<br><nobr>or use output from <select name="t' + taskNum + '_i_' + param +
 							  '" onchange="chooseInheritTask(' + taskNum + ', ' + param + ')"><option value=' + NOT_SET + '" disabled>Choose module</option>\n';
 				for (t = 0; t < taskNum; t++) {
-					taskFields = taskFields + '<option value="' + t + '">' + (t+1) + '.  ' + 
+					taskFields = taskFields + '<option value="' + t + '">' + (t+1) + '.  ' +
 						     document.forms['pipeline']['t' + t + '_taskName'].value + '</option>\n';
 				}
 				taskFields = taskFields + ' </select>\n';
-				
+
 				taskFields = taskFields + ' &nbsp;';
 				taskFields = taskFields + '<select name="t' + taskNum + '_if_' + param + '"' +
 					' onChange="changeTaskInheritFile(this, ' + taskNum + ', ' + param + ', \'' + pi.name + '\')" >\n';
@@ -875,7 +875,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		} else if (choices.length < 2) {
 			taskFields = taskFields + "<input name='t" + taskNum + "_" + pi.name + "' value='" + pi.defaultValue + "'> ";
 		} else {
-			taskFields = taskFields + "	<select name='t" + taskNum + "_" + pi.name + 
+			taskFields = taskFields + "	<select name='t" + taskNum + "_" + pi.name +
 					"' onchange='changeChoice(this, " + taskNum + ", " + param + ")'>\n";
 			for (i in choices) {
 				var c = choices[i].split('=');
@@ -886,25 +886,25 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 			taskFields = taskFields + ' ';
 		}
 		taskFields = taskFields + "</span>";
-		
+
 		taskFields= taskFields + '<span id="span_altinputdisplay_'+ taskNum +'_'+pnum+'" style="display:none">';
-		
+
 		taskFields= taskFields + '<a onMouseDown="setPromptPosition(event,\'div_'+taskNum+'_'+pnum+'\', this)"  href="javascript:openPromptWindow(\'div_'+taskNum+'_'+pnum+'\', '+taskNum+', \''+pi.name+'\')">set prompt when run display settings...</a>';
-		
+
 		taskFields = taskFields + "</span></td><td valign=\"top\">";
 		if (pi.description.length > 0)  taskFields = taskFields + pi.description;
 		taskFields = taskFields + "&nbsp;</td></tr>\n";
-		
+
 	}
 	taskFields = taskFields + '</table>\n';
 	taskFields = taskFields + '</div>\n';
 
 	taskFields = taskFields + '<br><center>\n';
 	if ((taskNum+1) < MAX_TASKS) {
-		taskFields = taskFields + '<input type="button" value="Add Another Module" onClick="addAnother(' + (taskNum+1) + 
+		taskFields = taskFields + '<input type="button" value="Add Another Module" onClick="addAnother(' + (taskNum+1) +
 				          ', true)" name="notused" class="little">&nbsp;&nbsp;\n';
 	}
-	taskFields = taskFields + '<input type="button" value="Delete ' + task.name + '" onClick="deleteTask(' + taskNum + 
+	taskFields = taskFields + '<input type="button" value="Delete ' + task.name + '" onClick="deleteTask(' + taskNum +
 				  ')" name="notused" class="little">\n</center>';
 
 	if (bUpdateInheritance) {
@@ -931,7 +931,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 							selector.options[selector.options.length] = new Option((t+1) + '.  ' + TaskInfos[taskLSID].name, t, (t == selected), (t == selected));
 						}
 					}
-		   		} 
+		   		}
 		   	}
 		}
 	}
@@ -941,7 +941,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 
 function chgTask(selectorTask, taskNum) {
 	if ((numTasks == 0) && (taskNum == 0)) numTasks = 1;
-	
+
 	var taskLSID = selectorTask.options[selectorTask.selectedIndex].value;
 	var taskFields = changeTaskHTML(taskLSID, taskNum, true);
 	writeToLayer(taskNum, taskFields);
@@ -987,7 +987,7 @@ function setSelector(selector, findValue) {
 		if (taskName == NOT_SET) return;
 	}
 	var fld = document.forms['pipeline'][selector];
-	if (fld == null) { 
+	if (fld == null) {
 		var paramName = selector.substring(selector.indexOf("_") + 1);
 		alert(taskName + "'s " + paramName + " parameter does not exist in the current task definition!");
 		return;
@@ -1024,7 +1024,7 @@ function setSelector(selector, findValue) {
 		val = vals + fld.options[f].value + "=" + fld.options[f].text + "\n";
 	}
 	alert('setSelector: could not find ' + findValue + ' among ' + fld.options.length +
-	      ' items in ' + taskName + ' (module ' + (parseInt(taskNum)+1) + ') field ' + 
+	      ' items in ' + taskName + ' (module ' + (parseInt(taskNum)+1) + ') field ' +
 	      userFieldName + '.  Values are:\n' + vals);
 }
 
@@ -1100,9 +1100,9 @@ function setTaskName(taskNum, taskName, taskLSID) {
 	}
 	if (!found) {
 		alert("Step " + (taskNum+1) + ": unable to locate " + taskName + '(' + taskLSID + ')');
-		writeToLayer(taskNum, newTaskHTML(taskNum) + 
+		writeToLayer(taskNum, newTaskHTML(taskNum) +
 			(new LSID(requestedLSID).authority != myAuthority ?
-			 ('<br><a href="/gp/pages/taskCatalog.jsf?<%= GPConstants.LSID %>=' + requestedLSID + '">load ' + taskName + ' from Broad module catalog</a>') : ""));
+			 ('<br><a href="<%=request.getContextPath()%>/pages/taskCatalog.jsf?<%= GPConstants.LSID %>=' + requestedLSID + '">load ' + taskName + ' from Broad module catalog</a>') : ""));
 		showLayer(taskNum);
 		// XXX: there will be problems in subsequent stages that inherit files from this stage
 		//stopLoading = true;
@@ -1120,10 +1120,10 @@ function setFileInheritance(thisTaskNum, thisParamNum, fromTaskNum, fromFileNum)
 
 	if (document.forms['pipeline']['t' + thisTaskNum + '_if_' + thisParamNum] == null) {
 		if (stopLoading) return;
-		alert("Parameter #" + (thisParamNum+1) + " in module #" + (thisTaskNum+1) + ", " + 
-			document.forms['pipeline']['t' + thisTaskNum + '_taskName'].value + 
-			", is no longer an input file.  This parameter will not inherit input from module #" + 
-			(fromTaskNum+1) + ", " + document.forms['pipeline']['t' + fromTaskNum + '_taskName'].value + 
+		alert("Parameter #" + (thisParamNum+1) + " in module #" + (thisTaskNum+1) + ", " +
+			document.forms['pipeline']['t' + thisTaskNum + '_taskName'].value +
+			", is no longer an input file.  This parameter will not inherit input from module #" +
+			(fromTaskNum+1) + ", " + document.forms['pipeline']['t' + fromTaskNum + '_taskName'].value +
 			", file #" + fromFileNum);
 		return;
 	}
@@ -1134,10 +1134,10 @@ function setFileInheritance(thisTaskNum, thisParamNum, fromTaskNum, fromFileNum)
 	   	var task = TaskInfos[document.forms["pipeline"]['t' + thisTaskNum + '_taskLSID'].value];
 		var pi = task.parameterInfoArray[thisParamNum];
 
-		alert("Warning: parameter #" + (thisParamNum+1) + " in module #" + (thisTaskNum+1) + ", " + 
-			document.forms['pipeline']['t' + thisTaskNum + '_taskName'].value + 
-			", inherits " + pi.name + " from module #" + 
-			(fromTaskNum+1) + ", " + document.forms['pipeline']['t' + fromTaskNum + '_taskName'].value + 
+		alert("Warning: parameter #" + (thisParamNum+1) + " in module #" + (thisTaskNum+1) + ", " +
+			document.forms['pipeline']['t' + thisTaskNum + '_taskName'].value +
+			", inherits " + pi.name + " from module #" +
+			(fromTaskNum+1) + ", " + document.forms['pipeline']['t' + fromTaskNum + '_taskName'].value +
 			", file #" + fromFileNum + ", which is currently not defined.");
 	}
 
@@ -1161,7 +1161,7 @@ function setParameter(taskNum, paramName, paramValue) {
 function checkMatchingRadioValue(radioName, radioValue) {
 }
 
-// called to validate that the pipeline inputs are acceptable before submitting		
+// called to validate that the pipeline inputs are acceptable before submitting
 function savePipeline(bMustName, cmd) {
 	// delete all stages that aren't defined yet
 	for (i = numTasks-1; i >= 0; i--) {
@@ -1169,7 +1169,7 @@ function savePipeline(bMustName, cmd) {
 			var t = i;
 			deleteTask(i);
 		}
-		
+
 		t--;
 		if (t < 0) break;
 	}
@@ -1190,12 +1190,12 @@ function savePipeline(bMustName, cmd) {
 		success = (pipeName.length > 0);
 		if (!success){
 			 alert('You must enter a pipeline name');
-			 return;	
-		} 
+			 return;
+		}
 		success = isRSafe(pipeName);
-		if (!success){ 
+		if (!success){
 			alert(pipelineInstruction);
-			return;	
+			return;
 		}
 		if (!pipeName.search(".pipeline") != -1){
 			pipeName = pipeName+".pipeline";
@@ -1207,12 +1207,12 @@ function savePipeline(bMustName, cmd) {
 		}
 
 	}
-	
+
 
 	// Netscape Navigator loses filename selections in file choosers when layers are modified
 	// although we have shadowed them into a user-visible field, the user needs to paste them back
 	// into the file chooser so that the files will be uploaded to the server upon submission
-	
+
 	var lostFiles = "";
 	for (i=0; i < numTasks; i++) {
 	   var taskLSID = document.forms['pipeline']['t' + i + '_taskLSID'].value;
@@ -1225,11 +1225,11 @@ function savePipeline(bMustName, cmd) {
 		   var fileChooserValue = document.forms['pipeline']['t' + i + '_' + pi.name];
 		   var shadowValue = document.forms['pipeline']['t' + i + '_shadow' + param].value;
 
-		   if (shadowValue != '' 
-				&& fileChooserValue.value != shadowValue 
+		   if (shadowValue != ''
+				&& fileChooserValue.value != shadowValue
 				&& shadowValue.indexOf('http://') != 0
-		       	&& shadowValue.indexOf('https://') != 0 
-				&& shadowValue.indexOf('ftp://') != 0 
+		       	&& shadowValue.indexOf('https://') != 0
+				&& shadowValue.indexOf('ftp://') != 0
 				&& shadowValue.indexOf('<GenePatternURL>') != 0) {
 			lostFiles = lostFiles + (i+1) + '. ' + task.name + ': ' + pi.name + ' (was ' + shadowValue + ')\n';
 			success = false;
@@ -1240,9 +1240,9 @@ function savePipeline(bMustName, cmd) {
 		  	var inheritFile = document.forms['pipeline']['t' + i + '_if_' + j];
 			var promptWhenRun = document.forms['pipeline']['t' +i + "_prompt_" + j];
 
-	
+
 			if (!promptWhenRun.checked && !pi.isOptional){
-				
+
 				if ((inheritTask == null) || (inheritFile == null)) {
 					missingInheritedFileValue = "module " + i + " inherited value for " + pi.name + " is not fully specified";
 				}else if ((inheritTask.value != null) && (inheritFile.value == '')){
@@ -1288,9 +1288,9 @@ function deleteDocFiles() {
 		selection = sel.options[sel.selectedIndex].value;
 	}
 	if (selection == null || selection == "") return;
-	if (window.confirm('Really remove ' + selection + ' from support files?\nThis will discard other pipeline changes since the last save.')) { 
-		window.location='saveTask.jsp?deleteFiles=' + selection + 
-			'&deleteSupportFiles=' + selection + 
+	if (window.confirm('Really remove ' + selection + ' from support files?\nThis will discard other pipeline changes since the last save.')) {
+		window.location='saveTask.jsp?deleteFiles=' + selection +
+			'&deleteSupportFiles=' + selection +
 			'&<%= GPConstants.NAME %>=' + document.forms['pipeline'].pipeline_name.value +
 			'&<%= GPConstants.LSID %>=' + document.forms['pipeline']['LSID'].value +
 			'&forward=pipelineDesigner.jsp' +
@@ -1302,7 +1302,7 @@ function deleteDocFiles() {
 function clonePipeline() {
 	while (true) {
 		var cloneName = window.prompt("Name for cloned pipeline", "copyOf" + document.forms['pipeline'].pipeline_name.value);
-		
+
 		// user cancelled?
 		if (cloneName == null || cloneName.length == 0) {
 			return false;
@@ -1366,7 +1366,7 @@ function sortSuggested(task1, task2) {
 // when a new task is requested, generate the inital task type selection HTML
 function newTaskHTML(taskNum) {
 	var newTask = '';
-	newTask = newTask + '<hr class="pipelineDesigner">\n'; 
+	newTask = newTask + '<hr class="pipelineDesigner">\n';
 	newTask = newTask + '<a name="' + (taskNum+1) + '">\n'; // anchor for each task
 
 	// build a list of tasks whose input file formats potentially match the output formats of tasks already in the pipeline
@@ -1423,7 +1423,7 @@ nextTask:
 			continue;
 		}
 		LSIDsWithoutVersions[task.lsidNoVersion] = task.lsidNoVersion;
-		TaskTypes[suggested][TaskTypes[suggested].length] = task.lsid;	
+		TaskTypes[suggested][TaskTypes[suggested].length] = task.lsid;
 	}
 	// sort by name (case-insensitive, then by LSID descending)!
 	TaskTypes[suggested].sort(sortTaskTypesByName);
@@ -1446,12 +1446,12 @@ nextTask:
 	newTask = newTask + '<td valign="top"></td>';
 	newTask = newTask + '<td valign="top"><select name="t' + taskNum + '" onchange="chgTask(this, ' + taskNum + ')">\n';
 	<!-- /* newTask = newTask + '<option value="" selected style="font-weight: bold">- Module -</option>'; */ -->
-	
-	
+
+
 	newTask = newTask + '</select></td></tr></table>\n';
 	newTask = newTask + '<input type="hidden" name="t' + taskNum + '_taskName" value="' + NOT_SET + '">';
 	if (taskNum > 0) {
-		newTask = newTask + '<br><center><input type="button" value="Delete" onClick="deleteTask(' + taskNum + 
+		newTask = newTask + '<br><center><input type="button" value="Delete" onClick="deleteTask(' + taskNum +
 				    ')" name="notused" class="little"></center>';
 	}
 	return newTask;
@@ -1460,13 +1460,13 @@ nextTask:
 </script>
 <%
       String userAgent = request.getHeader("User-Agent");
- 
+
 	try {
 		HTMLPipelineView viewer = new HTMLPipelineView(out, request.getScheme(), request.getServerName(), ""+request.getServerPort(), request.getContextPath(), request.getHeader("User-Agent"), request.getParameter("name"), userID);
 
 		viewer.init();
 		viewer.head();
-%>		
+%>
 <jsp:include page="navbarHead.jsp"/>
 
 </head>
@@ -1474,7 +1474,7 @@ nextTask:
 <jsp:include page="navbar.jsp"/>
 
 <%
-		viewer.writeStartBody();	
+		viewer.writeStartBody();
 		// start with a single blank slate
 		viewer.generateTask(new TaskInfo());
 		viewer.end();
@@ -1482,8 +1482,8 @@ nextTask:
 		out.println("<br>" + e.getMessage()+"<br>");
 		e.printStackTrace();
 	}
-					
-				
+
+
 	if (request.getParameter("autoSave") != null) {
 %>
 	<script language="Javascript">

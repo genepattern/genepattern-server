@@ -163,7 +163,7 @@ taskTypes = (String[])tsTaskTypes.toArray(new String[0]);
 <% } %>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 
-<script language="JavaScript" src="/gp/js/collapsiblePanel.js"></script>
+<script language="JavaScript" src="<%=request.getContextPath()%>/js/collapsiblePanel.js"></script>
 <script type="text/javascript" language="javascript">
 
 function showFileFormats(sel, i) {

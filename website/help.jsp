@@ -57,7 +57,7 @@ Each input field is explained in detail below.  There are three sections to the 
 
 An example for each field is given based on the Consensus Clustering module, which may be
 uploaded from the
-<a href="/gp/pages/taskCatalog.jsf?taskType=Clustering&state=new&state=updated&state=up%20to%20date&name=ConsensusClustering"><nobr><%=messages.get("ApplicationName")%> public website</nobr></a> if you haven't already installed it.
+<a href="<%=request.getContextPath()%>/pages/taskCatalog.jsf?taskType=Clustering&state=new&state=updated&state=up%20to%20date&name=ConsensusClustering">module repository</a> if you haven't already installed it.
 <br>
 
 <h2><a name="taskLevelAttributes">Entering module-level attributes</a></h2>
