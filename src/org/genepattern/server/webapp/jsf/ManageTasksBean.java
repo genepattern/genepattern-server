@@ -33,7 +33,7 @@ import org.genepattern.webservice.WebServiceException;
 public class ManageTasksBean /* implements java.io.Serializable */{
     private static Logger log = Logger.getLogger(ManageTasksBean.class);
 
-    private Collection tasks;
+    private Collection<TaskInfo> tasks;
 
     private Map<String, TaskGroup> indexedTasks = null;
 
@@ -69,10 +69,10 @@ public class ManageTasksBean /* implements java.io.Serializable */{
             resetIndexedTasks();
         }
         List<TaskGroup> sortedTasks = new ArrayList<TaskGroup>(indexedTasks.values());
-        Collections.sort(sortedTasks, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                String n1 = ((TaskGroup) o1).getName();
-                String n2 = ((TaskGroup) o2).getName();
+        Collections.sort(sortedTasks, new Comparator<TaskGroup>() {
+            public int compare(TaskGroup o1, TaskGroup o2) {
+                String n1 = o1.getName();
+                String n2 = o2.getName();
                 return n1.compareToIgnoreCase(n2);
             }
 
@@ -150,7 +150,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
         }
     }
 
-    private LSID getLSID(String lsid) {
+    private static LSID getLSID(String lsid) {
         LSID lSID = null;
         try {
             lSID = new LSID(lsid);
@@ -161,8 +161,6 @@ public class ManageTasksBean /* implements java.io.Serializable */{
     }
 
     public class TaskGroup implements Serializable {
-
-        // The maximum size of the "short name"
 
         private String lsidNoVersion = null;
 
@@ -184,6 +182,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
             lsidNoVersion = getLSID(ti.getLsid()).toStringNoVersion();
             name = ti.getName();
             description = ti.getDescription();
+
         }
 
         public String getLsidNoVersion() {
@@ -289,7 +288,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 
     }
 
-    public class VersionInfo {
+    public static class VersionInfo {
 
         private List<String> pipelineNames = new ArrayList<String>();
 
@@ -339,6 +338,10 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 
         public List<String> getPipelineNames() {
             return pipelineNames;
+        }
+
+        public String getOwner() {
+            return ti != null ? ti.getUserId() : null;
         }
 
         public void addPipelineName(TaskInfo pti) {
