@@ -31,6 +31,7 @@ import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.util.LSIDUtil;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.JobInfo;
@@ -301,7 +302,8 @@ public class RunTaskBean {
             return;
         }
 
-        editAllowed = taskInfo.getUserId().equals(UIBeanHelper.getUserId());
+        editAllowed = taskInfo.getUserId().equals(UIBeanHelper.getUserId())
+                && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
 
         ParameterInfo[] taskParameters = taskInfo.getParameterInfoArray();
 
