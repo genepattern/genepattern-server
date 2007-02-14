@@ -115,7 +115,7 @@ if (taskName != null) {
 		}
 	}
 
-Collection tmTasks = adminClient.getTaskCatalog(); 
+Collection tmTasks = adminClient.getTaskCatalog();
 TreeSet tsTaskTypes = new TreeSet(String.CASE_INSENSITIVE_ORDER);
 
 // well-known task types, regardless of domain
@@ -163,7 +163,7 @@ function confirmDeleteSupportFiles() {
 	var sel = document.forms['task'].deleteFiles;
 	var selection = sel.options[sel.selectedIndex].value;
 	if (selection == null || selection == "") return;
-	if (window.confirm('Really delete ' + selection + ' from ' + document.forms['task']['<%= GPConstants.FORMER_NAME %>'].value + '\'s support files?')) { 
+	if (window.confirm('Really delete ' + selection + ' from ' + document.forms['task']['<%= GPConstants.FORMER_NAME %>'].value + '\'s support files?')) {
 		//window.location='saveTask.jsp?deleteSupportFiles=1&deleteFiles=' + selection + '&<%= GPConstants.NAME %>=' + document.forms['task'].<%= GPConstants.NAME %>.value + '&<%= GPConstants.LSID %>=' + document.forms['task']['<%= GPConstants.LSID %>'].value;
 		sel.form.deleteSupportFiles.value = "1";
 		sel.form.submit();
@@ -301,7 +301,7 @@ if (tia != null) {
 		description = ti.getDescription();
 		TaskInfoAttributes tia2 = ti.giveTaskInfoAttributes();
 		if (tia2 == null) continue;
-		
+
 		String domain = tia2.get(GPConstants.DOMAIN);
 		if (domain != null && domain.length() > 0){
 			String[] domains = domain.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
@@ -315,7 +315,7 @@ if (tia != null) {
 			for (int y = 0; y< fileFormats.length; y++){
 				tmFileFormats.put(fileFormats[y], fileFormats[y]);
 			}
-		}	
+		}
 	        ParameterInfo[] pia = new ParameterFormatConverter().getParameterInfoArray(ti.getParameterInfo());
 		if (pia != null) {
 			for (int pNum = 0; pNum < pia.length; pNum++) {
@@ -346,7 +346,7 @@ if (tia != null) {
 			}
 
 			versionlessLSID = l.toStringNoVersion();
-			String key = versionlessLSID+"."+name;			
+			String key = versionlessLSID+"."+name;
 			if (hmLSIDsWithoutVersions.containsKey(key) &&
 			    ((TaskInfo)hmLSIDsWithoutVersions.get(key)).getName().equals(name)) {
 				continue;
@@ -363,9 +363,9 @@ if (tia != null) {
 
 		String n = (lsid != null ? lsid : name);
 		if (n == null) n = "";
-		sb.append("<option value=\"" + n + "\"" + (tia != null && n.equals((String)tia.get(GPConstants.LSID)) ? " selected" : "") + 
-				 " class=\"tasks-" + authorityType + "\">" + 
-				 (lsid != null ? ti.getName()  : name) + (!bMine ? owner : "") + 
+		sb.append("<option value=\"" + n + "\"" + (tia != null && n.equals((String)tia.get(GPConstants.LSID)) ? " selected" : "") +
+				 " class=\"tasks-" + authorityType + "\">" +
+				 (lsid != null ? ti.getName()  : name) + (!bMine ? owner : "") +
 				 (authorityType.equals(LSIDUtil.AUTHORITY_FOREIGN) ? (" (" + l.getAuthority() + ")") : "") +
 				 "</option>\n");
 	}
@@ -450,7 +450,7 @@ if (tia != null) {
    &nbsp;&nbsp;&nbsp;<select onchange="javascript:if (this.options[this.selectedIndex].value != '<%= DONT_JUMP %>') window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '&view=1'">
   <option value="<%= DONT_JUMP %>">module catalog</option>
 	<option value="">new module</option>
-	<%= publicTasks.toString() %>  
+	<%= publicTasks.toString() %>
 	<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
 	<option value="<%= DONT_JUMP %>">private modules (not mine)</option>
 	<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
@@ -492,13 +492,6 @@ if (tia != null) {
   </td>
   </tr>
 
-  <tr title="Your user ID">
-  <td align="right"><b>Owner:</b></td>
-  <td width="*">
-<%= (tia == null ? userID : tia.get(GPConstants.USERID))   %>
-  </td>
-  </tr>
-
   <tr title="Make available to others">
   <td align="right"><b>Privacy:</b></td>
   <td width="*"><%= tia.get(GPConstants.PRIVACY) %>	</td>
@@ -509,7 +502,7 @@ if (tia != null) {
   <td width="*"><%= tia.get(GPConstants.QUALITY) %></td>
   </tr>
 
-<% 
+<%
 if (taskName != null) {
 	File[] docFiles = taskIntegratorClient.getDocFiles(taskInfo);
 %><tr><td align="right"><%
@@ -518,10 +511,10 @@ if (taskName != null) {
 	if (hasDoc || isPipeline) {
 %><b>Documentation:</b></td><td width="*"><%
 	}
-	if (hasDoc) { 
+	if (hasDoc) {
  		for (i = 0; i < docFiles.length; i++) { %>
-<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(docFiles[i].getName()) %></a> 
-<% 		} 
+<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(docFiles[i].getName()) %></a>
+<% 		}
  	}
 	if (isPipeline) {
 %>
@@ -542,7 +535,7 @@ if (taskName != null) {
 
   <tr>
   <td align="right"><b>module&nbsp;type:</b></td>
-  <td width="*"> <%= tia.get(GPConstants.TASK_TYPE) %>       
+  <td width="*"> <%= tia.get(GPConstants.TASK_TYPE) %>
   </td>
   </tr>
 
@@ -572,7 +565,7 @@ if (taskName != null) {
     <b>min. language version: </b><%= StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) %>
          </td>
    </tr>
-   
+
   <td align="right" valign="top"><b>Version&nbsp;comment:</b></td>
   <td width="*">
   	<%= StringUtils.htmlEncode(tia.get(GPConstants.VERSION)) %>
@@ -587,7 +580,7 @@ if (taskName != null) {
 	<td valign="top">
 		output file format(s):
 	</td>
-	<td valign="top">	
+	<td valign="top">
 <%
 		attributeValue = (tia != null ? tia.get(GPConstants.FILE_FORMAT) : "");
 		if (attributeValue == null) attributeValue = "";
@@ -595,12 +588,12 @@ if (taskName != null) {
 		<%= attributeValue %>
 
 	</td>
- 
 
-<!--	 <td valign="top"></td> 
-	<td valign="top"> 
 
-  
+<!--	 <td valign="top"></td>
+	<td valign="top">
+
+
 
    <!--	<td valign="top"> </td> -->
  	</tr>
@@ -612,23 +605,23 @@ if (taskName != null) {
    </tr>
    <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_LSIDS %>" value="<%= tia != null ? tia.get(GPConstants.REQUIRED_PATCH_LSIDS) : "" %>">
    <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_URLS %>" value="<%= tia != null ? tia.get(GPConstants.REQUIRED_PATCH_URLS) : "" %>">
-   
-  
+
+
 
   <tr>
   <td align="right" valign="top"><b>Current&nbsp;files:</b></td>
   <td width="*">
 <%
   	   File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
-	   
+
 	   for (i = 0; i < allFiles.length; i++) { %>
-		<a href="getFile.jsp?task=<%= (String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%= URLEncoder.encode(allFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(allFiles[i].getName()) %></a> 
+		<a href="getFile.jsp?task=<%= (String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%= URLEncoder.encode(allFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(allFiles[i].getName()) %></a>
 <%	   }  %>
 
   <br>
   </td>
    </tr>
-        
+
 <tr><td valign="top" align="right"><b>Parameters:</b><font size=-1>&nbsp;</font><br>
 <table cols="1"><tr><td><font size="-1">&nbsp;</font></td></tr><tr><td><font size="-1">&nbsp;</font></td></tr><tr><td align="right"><br><br><br><i>example:</i></td></tr></table>
 </td>
@@ -641,8 +634,8 @@ if (taskName != null) {
   <td width="20%" valign="bottom"><b>name</b></td>
   <td width="30%" valign="bottom"><b>description (optional)</b></td>
   <td width="20" valign="bottom"><b>choices</b><br><font size="-1">(optional semicolon-separated list of choices.)</font></td>
-<% 
-  for (int attribute = 0; attribute < GPConstants.PARAM_INFO_ATTRIBUTES.length; attribute++) { 
+<%
+  for (int attribute = 0; attribute < GPConstants.PARAM_INFO_ATTRIBUTES.length; attribute++) {
 		attributeName = ((String)GPConstants.PARAM_INFO_ATTRIBUTES[attribute][GPConstants.PARAM_INFO_NAME_OFFSET]);
 		if (attributeName != null) attributeName = attributeName.replace(GPConstants.PARAM_INFO_SPACER, ' ');
 
@@ -669,7 +662,7 @@ if (taskName != null) {
 
 <tr><td></td></tr>
 <tr><td colspan="3" align="center">
-<% 
+<%
 	lsid = tia.get(GPConstants.LSID);
 	l = new LSID(lsid);
 	authorityType = LSIDManager.getInstance().getAuthorityType(l);
@@ -681,8 +674,8 @@ if (taskName != null) {
 		<% if (authManager.isAllowed("addTask.jsp", userID)) { %>
   <input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
 <%		}
- 	} 
-  
+ 	}
+
 %>
 </td></tr>
 
@@ -716,7 +709,7 @@ String attributeName = null;
 String attributeValue = null;
 String attributeType = null;
 
-for (int i = from; i < to; i++) { 
+for (int i = from; i < to; i++) {
 	p = (parameterInfoArray != null && i < parameterInfoArray.length) ? parameterInfoArray[i] : null;
 	if ( p == null) continue;
 	attributes = null;
@@ -742,11 +735,11 @@ for (int i = from; i < to; i++) {
 			if (attributeValue == null) {
 				attributeValue = "";
 			}
-			
-			out.append(StringUtils.htmlEncode(attributeValue));
-			
 
-		} else if (attributeType.equals(GPConstants.PARAM_INFO_CHOICE)) {			
+			out.append(StringUtils.htmlEncode(attributeValue));
+
+
+		} else if (attributeType.equals(GPConstants.PARAM_INFO_CHOICE)) {
 			attributeValue = (String)attributes.get(attributeName);
 			if (attributeValue == null) {
 				attributeValue = "";
@@ -754,10 +747,10 @@ for (int i = from; i < to; i++) {
 			String[][]choices = null;
 			choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
 			boolean multiple = (GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum].length > GPConstants.PARAM_INFO_CHOICE_TYPES_MULTIPLE_OFFSET);
-			
-			
+
+
 			if (!multiple) {
-				for (int choice = 0; choice < choices.length; choice++) { 
+				for (int choice = 0; choice < choices.length; choice++) {
 				    if (choices[choice][1].equals(attributeValue)) {
 					out.append(StringUtils.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]));
 				    }
@@ -765,7 +758,7 @@ for (int i = from; i < to; i++) {
 			} else {
 				out.append(StringUtils.htmlEncode(attributeValue));
 			}
-			
+
 
 		} else if (attributeType.equals(GPConstants.PARAM_INFO_CHECKBOX)) {
 			attributeValue = (String)attributes.get(attributeName);
