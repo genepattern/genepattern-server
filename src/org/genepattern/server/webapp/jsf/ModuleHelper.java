@@ -28,7 +28,7 @@ public class ModuleHelper {
      * 
      */
     public ModuleHelper() {
-        allTasks = (new AdminDAO()).getAllTasksForUser(getUserId());
+        allTasks = (new AdminDAO()).getLatestTasks(getUserId());
     }
 
     /**
@@ -47,7 +47,7 @@ public class ModuleHelper {
      */
     public ModuleCategory getAllTasks() {
         AdminDAO dao = new AdminDAO();
-        return new ModuleCategory("All", dao.getAllTasksForUser(getUserId()));
+        return new ModuleCategory("All", allTasks);
     }
 
     /**
