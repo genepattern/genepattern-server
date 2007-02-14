@@ -87,7 +87,7 @@ public class RunPipelineForJsp {
         if (((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) && (out != null)) {
             out
                     .println(
-                            "<font color='red' size=\"+1\"><b>Warning:</b></font><br>The following task versions do not exist on this server. Before running this pipeline you will need to edit the pipeline to use the available version or import them.");
+                            "<font color='red' size=\"+1\"><b>Warning:</b></font><br>The following module versions do not exist on this server. Before running this pipeline you will need to edit the pipeline to use the available module version or install the required modules.");
             out.println("<table width='100%'  border='1'>");
             out
                     .println(
