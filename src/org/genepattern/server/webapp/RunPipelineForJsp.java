@@ -96,7 +96,7 @@ public class RunPipelineForJsp {
         if (((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) && (out != null)) {
             out.println("<form method=\"post\" action=\"pages/taskCatalog.jsf\">");
         }
-        if (unknownTaskNames.size() > 0) {       	
+        if (unknownTaskNames.size() > 0) {
             for (Iterator iter = unknownTaskNames.keySet().iterator(); iter
                     .hasNext();) {
                 String name = (String) iter.next();
@@ -105,7 +105,7 @@ public class RunPipelineForJsp {
                 out.println("<tr><td>" + name + "</td><td>" + absentlsid.getVersion() + "</td><td></td><td> " +
                         absentlsid.toStringNoVersion() + "</td></tr>");
             }
-        	
+
         }
         if (unknownTaskVersions.size() > 0) {
             for (Iterator iter = unknownTaskVersions.keySet().iterator(); iter
@@ -121,7 +121,7 @@ public class RunPipelineForJsp {
                         altVersionLSID.getVersion() + "</td><td>" + absentlsid.toStringNoVersion() + "</td></tr>");
             }
         }
-        
+
         if ((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) {
             out.println("<tr class=\"paleBackground\" >");
             out
@@ -133,7 +133,7 @@ public class RunPipelineForJsp {
             out
                     .println("<input type=\"hidden\" name=\"checkAll\" value=\"1\"  >");
             out
-                    .println("<input type=\"submit\" value=\"install/update from catalog\"  ></td></form>");
+                    .println("<input type=\"submit\" value=\"Install from repository\"  ></td></form>");
             out.println("</tr>");
             out.println("</table>");
         }
@@ -334,36 +334,36 @@ public class RunPipelineForJsp {
         return jobID;
     }
 
-    
+
     protected static String  paramsAsString(ParameterInfo[] params, HashMap commandLineParams, String baseURL){
     	if (params == null) return "";
     	if (params.length == 0) return "";
-    	
-    	
+
+
     	for (ParameterInfo p : params){
     		String k = (String)p.getName();
     		Object val = commandLineParams.get(k);
     		String value = val.toString();
-    		
+
     		if (val instanceof File){
     			File f = (File)val;
     			value = baseURL + "getFile.jsp?task=&file=" + f.getParentFile().getName() +"/" + f.getName();
-    		} 
-    		
+    		}
+
      		System.out.println("P= " + p.getName() + "=" + value);
     		p.setValue(value);
     	}
-    	
+
     	return ParameterFormatConverter.getJaxbString(params);
     }
-    
+
     public static Process runPipeline(TaskInfo taskInfo, String name, String baseURL, String decorator, String userID,
                                       HashMap commandLineParams) throws Exception {
         Map tia = taskInfo.getTaskInfoAttributes();
         String lsid = (String) tia.get(GPConstants.LSID);
 
         String params = paramsAsString(taskInfo.getParameterInfoArray(), commandLineParams, baseURL);
-        
+
         JobInfo jobInfo = GenePatternAnalysisTask.createPipelineJob(userID, params, taskInfo.getName(), lsid);
 
         jobID = jobInfo.getJobNumber();
@@ -397,7 +397,7 @@ public class RunPipelineForJsp {
         }
         HibernateUtil.commitTransaction(); // ensure this is in the DB
         HibernateUtil.beginTransaction();
-        
+
         return process;
     }
 
