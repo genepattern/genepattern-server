@@ -53,7 +53,6 @@ response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 
 String userID= (String)request.getAttribute("userID"); // will force login if necessary
-if (userID == null) return; // come back after login
 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 LocalAdminClient adminClient = new LocalAdminClient(userID);
 // drop-down selection lists
@@ -83,7 +82,7 @@ TaskInfoAttributes tia = null;
 if (taskName != null && taskName.length() == 0) taskName = null;
 
 Vector errors = (Vector) request.getAttribute("errors");
-if(errors!=null) {  
+if(errors!=null) {
 	taskInfo = (TaskInfo) request.getAttribute("taskInfo");
 	tia = taskInfo.giveTaskInfoAttributes();
 	parameterInfoArray = taskInfo.getParameterInfoArray();
@@ -97,9 +96,10 @@ if(errors!=null) {
 		   parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
 			tia = taskInfo.giveTaskInfoAttributes();
 			LSID lsid = new LSID((String)tia.get(GPConstants.LSID));
-			viewOnly |= !LSIDManager.getInstance().getAuthorityType(lsid).equals(LSIDUtil.AUTHORITY_MINE);
+			boolean editable = taskInfo.getUserId().equals(userID) && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
+			viewOnly = !editable;
 } else {
-	
+
 %>
 <script language="javascript">
 	window.alert("<%= taskName %> does not exist");
@@ -129,7 +129,7 @@ if(errors!=null) {
 		}
 	}
 
-Collection tmTasks = adminClient.getTaskCatalog(); 
+Collection tmTasks = adminClient.getTaskCatalog();
 TreeSet tsTaskTypes = new TreeSet(String.CASE_INSENSITIVE_ORDER);
 
 // well-known task types, regardless of domain
@@ -189,7 +189,7 @@ function confirmDeleteSupportFiles() {
 	var sel = document.forms['task'].deleteFiles;
 	var selection = sel.options[sel.selectedIndex].value;
 	if (selection == null || selection == "") return;
-	if (window.confirm('Really delete ' + selection + ' from ' + document.forms['task']['<%= GPConstants.FORMER_NAME %>'].value + '\'s support files?\nThis will discard other changes since the last save.')) { 
+	if (window.confirm('Really delete ' + selection + ' from ' + document.forms['task']['<%= GPConstants.FORMER_NAME %>'].value + '\'s support files?\nThis will discard other changes since the last save.')) {
 		//window.location='saveTask.jsp?deleteSupportFiles=1&deleteFiles=' + selection + '&<%= GPConstants.NAME %>=' + document.forms['task'].<%= GPConstants.NAME %>.value + '&<%= GPConstants.LSID %>=' + document.forms['task']['<%= GPConstants.LSID %>'].value;
 		sel.form.deleteSupportFiles.value = "1";
 		sel.form.submit();
@@ -204,7 +204,7 @@ function cloneTask() {
 			return;
 		}
 		window.location = "saveTask.jsp?clone=1&<%= GPConstants.NAME %>=<%= taskName %>&<%= GPConstants.LSID %>=<%= tia.get(GPConstants.LSID) %>&cloneName=" + cloneName + "&<%= GPConstants.USERID %>=<%= userID %>";
-	
+
 }
 
 function runTask() {
@@ -291,17 +291,17 @@ function addNewDomainType(name, desc){
 	<%
 		taskName = null;
 		}
-	
+
 	StringBuffer publicTasks = new StringBuffer();
 	String name;
 	String description;
 	String lsid;
 	StringBuffer otherTasks = new StringBuffer();
 	String DONT_JUMP = "dontJump";
-	
+
 	// used to avoid displaying multiple versions of same basic task
 	HashMap hmLSIDsWithoutVersions = new HashMap();
-	
+
 	// used to track multiple versions of current task
 	Vector vVersions = new Vector();
 	LSID l = null;
@@ -324,7 +324,7 @@ function addNewDomainType(name, desc){
 		description = ti.getDescription();
 		TaskInfoAttributes tia2 = ti.giveTaskInfoAttributes();
 		if (tia2 == null) continue;
-		
+
 		String domain = tia2.get(GPConstants.DOMAIN);
 		if (domain != null && domain.length() > 0){
 			String[] domains = domain.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
@@ -338,7 +338,7 @@ function addNewDomainType(name, desc){
 			for (int y = 0; y< fileFormats.length; y++){
 				tmFileFormats.put(fileFormats[y], fileFormats[y]);
 			}
-		}	
+		}
 	        ParameterInfo[] pia = new ParameterFormatConverter().getParameterInfoArray(ti.getParameterInfo());
 		if (pia != null) {
 			for (int pNum = 0; pNum < pia.length; pNum++) {
@@ -367,9 +367,9 @@ function addNewDomainType(name, desc){
 			if (versionlessLSID.equals(thisLSIDNoVersion)) {
 				vVersions.add(lsid);
 			}
-			
+
 			versionlessLSID = l.toStringNoVersion();
-			String key = versionlessLSID+"."+name;			
+			String key = versionlessLSID+"."+name;
 			if (hmLSIDsWithoutVersions.containsKey(key) &&
 			    ((TaskInfo)hmLSIDsWithoutVersions.get(key)).getName().equals(name)) {
 				continue;
@@ -386,9 +386,9 @@ function addNewDomainType(name, desc){
 
 		String n = (lsid != null ? lsid : name);
 		if (n == null) n = "";
-		sb.append("<option value=\"" + n + "\"" + (tia != null && n.equals((String)tia.get(GPConstants.LSID)) ? " selected" : "") + 
-				 " class=\"tasks-" + authorityType + "\">" + 
-				 (lsid != null ? ti.getName()  : name) + (!bMine ? owner : "") + 
+		sb.append("<option value=\"" + n + "\"" + (tia != null && n.equals((String)tia.get(GPConstants.LSID)) ? " selected" : "") +
+				 " class=\"tasks-" + authorityType + "\">" +
+				 (lsid != null ? ti.getName()  : name) + (!bMine ? owner : "") +
 				 (authorityType.equals(LSIDUtil.AUTHORITY_FOREIGN) ? (" (" + l.getAuthority() + ")") : "") +
 				 "</option>\n");
 	}
@@ -429,7 +429,7 @@ function addNewDomainType(name, desc){
 	}
 
 	%>
-	
+
 	<table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td class='barhead-other'>
 	<%= taskName == null ? "Create Module" : ((!viewOnly ? "Update " : "") + taskName  + " version ") %>
 	<% if (taskName != null) { %>
@@ -445,7 +445,7 @@ function addNewDomainType(name, desc){
 	%>
 		</select>
 	<% } %>
-	
+
 	</td></tr></tbody>
 	</table>
 	<%
@@ -456,7 +456,7 @@ function addNewDomainType(name, desc){
 		There are some problems with the module that need to be fixed:
 		</h2>
 		<ul>
-		<%	
+		<%
 			for (java.util.Enumeration eProblems = errors.elements(); eProblems.hasMoreElements(); ) {
 		%>
 				<li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
@@ -469,20 +469,20 @@ function addNewDomainType(name, desc){
 
 	<form name="task" action="saveTask.jsp" method="post" ENCTYPE="multipart/form-data">
 	<input type="hidden" name="<%= GPConstants.FORMER_NAME %>" value="<%= taskInfo != null ? taskInfo.getName() : "" %>">
-	
-	
-	
+
+
+
 	<% if (viewOnly && LSIDManager.getInstance().getAuthorityType(new LSID(tia.get(GPConstants.LSID))).equals(LSIDUtil.AUTHORITY_MINE)) { %><input type="button" value="Edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button"><% } %>
-	
-	
+
+
 	  <table cols="2" valign="top" width="100%">
 		  <tr class="taskperameter"><td>* required field</td><td><a href='help.jsp' target='help'><img border='0' src='images/help2.jpg'/></a></td></tr>
 		  <tr class="taskperameter" title="Module name without spaces, used as the name by which the module will be invoked.">
 		  <td valign="top" >Name:*</td>
-		  <td><% if (!viewOnly) { %><input name="<%= GPConstants.NAME %>" maxlength="100" size="<%= taskInfo != null ? Math.max(taskInfo.getName().length() + 2, 20): 20 %>" 
+		  <td><% if (!viewOnly) { %><input name="<%= GPConstants.NAME %>" maxlength="100" size="<%= taskInfo != null ? Math.max(taskInfo.getName().length() + 2, 20): 20 %>"
 		  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<a href='help.jsp#Name' target='help'><img border='0' src='images/help2.jpg'/></a><% } else { %><%= taskInfo.getName() %><% } %>
 		&nbsp;&nbsp;&nbsp;&nbsp;
-		
+
 		<% if (taskInfo != null && !viewOnly) { %>
 		  <input type="button" value="<%= DELETE %>..." name="<%= DELETE %>" class="little"
 		   onclick="if (window.confirm('Really delete the ' + document.forms['task'].<%= GPConstants.NAME %>.value + ' task?')) { window.location='saveTask.jsp?delete=1&<%= GPConstants.NAME %>=' + document.forms['task'].<%= GPConstants.NAME %>.value + '&<%= GPConstants.LSID %>=' + document.forms['task'].<%= GPConstants.LSID %>.value; }">
@@ -491,11 +491,11 @@ function addNewDomainType(name, desc){
 		  <input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
 		  <input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
 		<% } %>
-	
+
 		   &nbsp;&nbsp;&nbsp;<select onchange="javascript:if (this.options[this.selectedIndex].value != '<%= DONT_JUMP %>') window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'">
 		  <option value="<%= DONT_JUMP %>">module catalog</option>
 			<option value="">new module</option>
-			<%= publicTasks.toString() %>  
+			<%= publicTasks.toString() %>
 			<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
 			<option value="<%= DONT_JUMP %>">private modules</option>
 			<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
@@ -548,7 +548,7 @@ function addNewDomainType(name, desc){
   if(!viewOnly) { %>
   <input name="<%= GPConstants.AUTHOR %>" size="80" class="hideable"
        value="<%= taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.AUTHOR)) : "" %>"> (name, affiliation)
-  <% } else { 
+  <% } else {
      out.print(taskInfo != null ? StringUtils.htmlEncode(tia.get(GPConstants.AUTHOR)) : "");
    } %>
 	<a href='help.jsp#Author' target='help'><img border='0' src='images/help2.jpg'/></a>
@@ -559,12 +559,12 @@ function addNewDomainType(name, desc){
   <tr class="taskperameter" title="Your user ID">
   <td valign="top">Owner:</td>
   <td >
-	<% 
-	   String owner = (tia == null ? userID : tia.get(GPConstants.USERID)); 
+	<%
+	   String owner = (tia == null ? userID : tia.get(GPConstants.USERID));
 	  	if(!viewOnly) { %>
 	   <input name="<%= GPConstants.USERID %>" size="50" class="hideable"
-		       value="<%= owner %>" 
-			
+		       value="<%= owner %>"
+
 		       <%= (tia == null || owner.equals("") || userID.equals(owner) || userID.equals(taskInfo.getUserId())) ? "" : "readonly" %>>
 		       (email address)
 	   <%
@@ -590,7 +590,7 @@ function addNewDomainType(name, desc){
 	</td>
 	  </tr>
 
-	<% 
+	<%
 	if (taskName != null) {
 		File[] docFiles = null;
 		try {
@@ -604,10 +604,10 @@ function addNewDomainType(name, desc){
 		if (hasDoc || isPipeline) {
 	%>Documentation:</td><td width="*"><%
 		}
-		if (hasDoc) { 
+		if (hasDoc) {
 	 		for (i = 0; i < docFiles.length; i++) { %>
-	<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(docFiles[i].getName()) %></a> 
-	<% 		} 
+	<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= StringUtils.htmlEncode(request.getParameter(GPConstants.NAME)) %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(docFiles[i].getName()) %></a>
+	<% 		}
 	 	}
 		if (isPipeline) {
 	%>
@@ -621,39 +621,39 @@ function addNewDomainType(name, desc){
 
 	  <tr class="taskperameter" title="the command line used to invoke the application, using &lt;tags&gt; for param &amp; environment variable substitutions.">
 	  <td valign="top" >Command&nbsp;line:*</td>
-	   
+
 	  <td valign="top" >
 	  <% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="90" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncodeLongString(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea><a href='help.jsp#Command' target='help'><img border='0' src='images/help2.jpg'/></a>
 	<% } %>
-		
+
 	</td>
-	
+
 	  </tr>
 
 	  <tr class="taskperameter">
 	  <td valign="top">Module&nbsp;Category:
 	</td>
-	  <td >         
+	  <td >
 	  <%= createSelection(tia, GPConstants.TASK_TYPE, taskTypes, "", viewOnly) %>
 	  <% if (!viewOnly) { %>
 		 <input type="button" onclick="addNewTaskType()" value="New..." class="little">
 	  <% } %>
 	<a href='help.jsp#TaskType' target='help'><img border='0' src='images/help2.jpg'/></a>
-	
+
 	  </td>
 	  </tr>
 
 	   <tr class="taskperameter" >
 	  <td valign="top">CPU&nbsp;type:</td>
-	  <td >         
+	  <td >
 		<%= createSelection(tia, GPConstants.CPU_TYPE, cpuTypes, "", viewOnly) %> (if compiled for a specific one)
 	         <a href='help.jsp#cpu' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
 	   </tr>
-	
+
 	   <tr class="taskperameter" >
 	  <td valign="top" >Operating&nbsp;system:</td>
-	  <td > 
+	  <td >
 		<%= createSelection(tia, GPConstants.OS, oses, "", viewOnly) %> (if operating system-dependent)
 	  <a href='help.jsp#os' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
@@ -662,20 +662,20 @@ function addNewDomainType(name, desc){
 	<%--
 	   <tr>
 	  <td align="right"><b>Java&nbsp;JVM&nbsp;level:</b></td>
-	  <td width="*">         
+	  <td width="*">
 		<%= createSelection(tia, GPConstants.JVM_LEVEL, jvms, "", viewOnly) %> (if Java is used)
 	         </td>
 	   </tr>
 	--%>
 	   <tr class="taskperameter" >
 	  <td valign="top" >Language:</td>
-	  <td>         
+	  <td>
 	  <%= createSelection(tia, GPConstants.LANGUAGE, languages, "", viewOnly) %> &nbsp;
 	    <b>min. language version:</b> <% if (!viewOnly) { %><input name="<%= GPConstants.JVM_LEVEL %>" value="<%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %>" size="10"><% } else { %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.JVM_LEVEL)) : "" %><% } %>
 	         <a href='help.jsp#Language' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
 	   </tr>
-	   
+
 	   <tr class="taskperameter" >
 	  <td valign="top">Version&nbsp;comment:</td>
 	  <td >
@@ -683,7 +683,7 @@ function addNewDomainType(name, desc){
 	   <a href='help.jsp#VersionComment' target='help'><img border='0' src='images/help2.jpg'/></a>
 	</td>
 	   </tr>
-	
+
 	   <tr class="taskperameter" >
 	   <td valign="top">File format(s):</td>
 	   <td>
@@ -692,12 +692,12 @@ function addNewDomainType(name, desc){
 		<td valign="top">
 			output file format(s):<a href='help.jsp#OutputDescription' target='help'><img border='0' src='images/help2.jpg'/></a>
 		</td>
-		<td valign="top">	
+		<td valign="top">
 	<%
 			attributeValue = (tia != null ? tia.get(GPConstants.FILE_FORMAT) : "");
 			if (attributeValue == null) attributeValue = "";
 	%>
-	<% if (!viewOnly) { 
+	<% if (!viewOnly) {
 			String[] file_formats = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 			String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[FILE_FORMAT_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
 	%>
@@ -721,14 +721,14 @@ function addNewDomainType(name, desc){
 	<% } %>
 		</td>
 	  <% if (!viewOnly) { %>
-	  	<td valign="top">         
+	  	<td valign="top">
 		 <input type="button" onclick="window.open('pages/newFileType.jsf', 'Add New File Type','toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=300, height=200');" value="New..." class="little">
 	  	</td>
 	   <% }%>
 	<!--	 <td valign="top">
 		domain(s):
-		</td> 
-		<td valign="top"> 
+		</td>
+		<td valign="top">
 	<%
 			//attributeValue = (tia != null ? tia.get(GPConstants.DOMAIN) : "");
 			//if (attributeValue == null) attributeValue = "";
@@ -739,7 +739,7 @@ function addNewDomainType(name, desc){
 		/*{
 			String[] taskDomains = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 			String[][] choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[DOMAIN_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
-	
+
 			//System.out.println("domain offset: " + DOMAIN_PARAM_OFFSET);
 			for(Iterator itChoices = tmDomains.values().iterator(); itChoices.hasNext(); ) {
 				String c = (String)itChoices.next();
@@ -750,7 +750,7 @@ function addNewDomainType(name, desc){
 						break;
 					}
 				}
-			
+
 				out.println("<option value=\"" + c + "\"" + (isSelected ? " selected" : "") + ">" + StringUtils.htmlEncode(c) + "</option>");
 			}
 		}*/
@@ -761,7 +761,7 @@ function addNewDomainType(name, desc){
 	<% //} %>
 	<!--	</td> -->
 	  <% //if (!viewOnly) { %>
-	  <!--	<td valign="top">         
+	  <!--	<td valign="top">
 		 <input type="button" onclick="javascript:window.open('newDomain.html', 'newDomain', 'width=200,height=200').focus()"  value="new..." class="little">
 	  	</td> -->
 	  <%// } %>
@@ -773,17 +773,17 @@ function addNewDomainType(name, desc){
 	   </tr>
 	   <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_LSIDS %>" value="<%= tia != null ? tia.get(GPConstants.REQUIRED_PATCH_LSIDS) : "" %>">
 	   <input type="hidden" name="<%= GPConstants.REQUIRED_PATCH_URLS %>" value="<%= tia != null ? tia.get(GPConstants.REQUIRED_PATCH_URLS) : "" %>">
-	   
+
 	  <% if (!viewOnly) { %>
 	   <tr>
 	  <td valign="top">Support&nbsp;files:<br>(jar, dll, exe, pl, doc, etc.)<br>
 	  </td>
 	  <td >
 	<font size=-1>
-	  The actual program plus any required libraries will will be accessible to your command line as 
+	  The actual program plus any required libraries will will be accessible to your command line as
 	  &lt;<%= GPConstants.LIBDIR %>&gt;<file.separator><i>filename</i></font><a href='help.jsp#SupportFiles' target='help'><img border='0' src='images/help2.jpg'/></a>
 	<br>
-	
+
 	<% for (i = 1; i <= NUM_ATTACHMENTS; i++) { %>
 	  	<input type="file" name="file<%= i %>" size="70" class="little"><br>
 	<% } %>
@@ -791,7 +791,7 @@ function addNewDomainType(name, desc){
 	  </tr>
 	<% } %>
 
-	  
+
 	<%
 	   if (taskName != null) {
 		   File[] allFiles = null;
@@ -804,36 +804,36 @@ function addNewDomainType(name, desc){
 		      %>
 		      <tr class="taskperameter" >
 			  <td valign="top" >Current&nbsp;files:</td>
-			  <td>  
-			  <%  
-		   
+			  <td>
+			  <%
+
 		   }
 		   for (i = 0; i < allFiles.length; i++) { %>
-			<a href="getFile.jsp?task=<%= (String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%= URLEncoder.encode(allFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(allFiles[i].getName()) %></a> 
+			<a href="getFile.jsp?task=<%= (String)taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID) %>&file=<%= URLEncoder.encode(allFiles[i].getName()) %>" target="new"><%= StringUtils.htmlEncode(allFiles[i].getName()) %></a>
 				<% if (i!=0 && i%10==0) {%>
-				
-					<br/><% 
+
+					<br/><%
 				}
 		   }  %>
-	
+
 	<%	   if (allFiles != null && allFiles.length > 0 && !viewOnly) { %>
 			   <br>
 			   <select name="deleteFiles">
 			   <option value="">- File -</option>
 	<%		   for (i = 0; i < allFiles.length; i++) { %>
-				<option value="<%= StringUtils.htmlEncode(allFiles[i].getName()) %>"><%= allFiles[i].getName() %></option> 
+				<option value="<%= StringUtils.htmlEncode(allFiles[i].getName()) %>"><%= allFiles[i].getName() %></option>
 	<%		   }  %>
 			   </select>
 			   <input type="hidden" name="deleteSupportFiles" value="">
 			   <input type="button" value="<%= DELETE %>..." class="little" onclick="confirmDeleteSupportFiles()">
 	<%	   } %>
-	
+
 	<%   } %>
 	  <br>
 
 	  </td>
 	   </tr>
-        
+
 	<tr><td valign="top" >Parameters:<font size=-1>&nbsp;</font><br>
 	</td>
 	<td>
@@ -847,14 +847,14 @@ function addNewDomainType(name, desc){
 	  <td width="20%" valign="bottom"><b>name</b></td>
 	  <td width="30%" valign="bottom"><b>description (optional)</b></td>
 	  <td width="20" valign="bottom"><b>choices</b><br><font size="-1">(optional semicolon-separated list of choices.)</font></td>
-	<% 
-	  for (int attribute = 0; attribute < GPConstants.PARAM_INFO_ATTRIBUTES.length; attribute++) { 
+	<%
+	  for (int attribute = 0; attribute < GPConstants.PARAM_INFO_ATTRIBUTES.length; attribute++) {
 			attributeName = ((String)GPConstants.PARAM_INFO_ATTRIBUTES[attribute][GPConstants.PARAM_INFO_NAME_OFFSET]);
 			if (attributeName != null) attributeName = attributeName.replace(GPConstants.PARAM_INFO_SPACER, ' ');
 			if(attributeName.equals("fileFormat")) {
 				attributeName = "file format";
 			}
-	
+
 	%>
 	  <td valign="bottom"><b><%= attributeName %></b></td>
 	<% } %>
@@ -865,9 +865,9 @@ function addNewDomainType(name, desc){
 	  <td><i>2=green, default;0=red;1=blue</i></td>
 	  <td><i>2</i></td>
 	  </tr>
-	
+
 	<%= createParameterEntries(0, NUM_PARAMETERS, parameterInfoArray, taskInfo, viewOnly) %>
-	
+
 	<% if (!viewOnly) { %>
 	<tr><td></td></tr>
 	<tr><td colspan="3" align="center">
@@ -885,14 +885,14 @@ function addNewDomainType(name, desc){
 	<div id="parameters" style="display: none">
 	-->
 	<%= createParameterEntries(NUM_PARAMETERS, GPConstants.MAX_PARAMETERS, parameterInfoArray, taskInfo, viewOnly) %>
-	
+
 	<tr><td></td></tr>
 	<tr><td colspan="3" align="center">
 	<% if (!viewOnly) { %>
 	<input type="submit" value="Save" name="save" class="little">&nbsp;&nbsp;
 	<input type="reset" value="Clear" class="little">&nbsp;&nbsp;
 	<input type="button" value="Help" onclick="window.open('help.jsp', 'help')" class="little">
-	<% } else { 
+	<% } else {
 		lsid = tia.get(GPConstants.LSID);
 		l = new LSID(lsid);
 		authorityType = LSIDManager.getInstance().getAuthorityType(l);
@@ -902,23 +902,23 @@ function addNewDomainType(name, desc){
 	<%	} else { %>
 			<input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
 			<input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
-	<% 	} 
+	<% 	}
 	  }
 	%>
 	</td></tr>
 
 	<!-- </div> -->
-	
+
 	</table>
-	
+
 	 </td></tr></table>
 	   <p/>
-	
+
 	 </form>
 	<% if (tia != null && errors==null) { %>
 	<a href="makeZip.jsp?<%= GPConstants.NAME %>=<%= request.getParameter(GPConstants.NAME) %>&includeDependents=1">package this module into a zip file</a><br>
 	<% } %>
-	<jsp:include page="footer.jsp"/>      
+	<jsp:include page="footer.jsp"/>
 </body>
 
 </html>
@@ -988,7 +988,7 @@ String attributeName = null;
 String attributeValue = null;
 String attributeType = null;
 
-for (int i = from; i < to; i++) { 
+for (int i = from; i < to; i++) {
 	p = (parameterInfoArray != null && i < parameterInfoArray.length) ? parameterInfoArray[i] : null;
 	if (viewOnly && p == null) continue;
 	attributes = null;
@@ -1022,7 +1022,7 @@ for (int i = from; i < to; i++) {
 				out.append("\">\n");
 			}
 
-		} else if (attributeType.equals(GPConstants.PARAM_INFO_CHOICE)) {			
+		} else if (attributeType.equals(GPConstants.PARAM_INFO_CHOICE)) {
 			attributeValue = (String)attributes.get(attributeName);
 			if (attributeValue == null) {
 				attributeValue = "";
@@ -1030,7 +1030,7 @@ for (int i = from; i < to; i++) {
 			String[][]choices = null;
 			choices = (String[][])GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET];
 			boolean multiple = (GPConstants.PARAM_INFO_ATTRIBUTES[attributeNum].length > GPConstants.PARAM_INFO_CHOICE_TYPES_MULTIPLE_OFFSET);
-			
+
 			if (!viewOnly) {
 			 	String [] items = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
 				boolean isFileFormat = attributeName.equals("fileFormat");
@@ -1039,16 +1039,16 @@ for (int i = from; i < to; i++) {
 					if(p==null || !p.isInputFile()) {
 						display = "none";
 					}
-					out.append("<div id=\"p" + i + "_fileFormatDiv\" style=\"display:" + display + "\">"); 
-					
+					out.append("<div id=\"p" + i + "_fileFormatDiv\" style=\"display:" + display + "\">");
+
 				}
 				if(!isFileFormat) {
 					out.append("<select onchange=\"showFileFormats(this," + i + ")\" name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple size=\"" + Math.min(3, choices.length) + "\"" : "") + ">\n");
-				} else { 
+				} else {
 					out.append("<select name=\"p" + i + "_" + attributeName + "\"" + (multiple ? " multiple size=\"" + Math.min(3, choices.length) + "\"" : "") + ">\n");
 				}
-				
-				for (int choice = 0; choice < choices.length; choice++) { 
+
+				for (int choice = 0; choice < choices.length; choice++) {
 					boolean selected = false;
 					for (int sel = 0; sel < items.length; sel++) {
 
@@ -1057,16 +1057,16 @@ for (int i = from; i < to; i++) {
 							break;
 						}
 					}
-					out.append("<option value=\"" + 
-						    choices[choice][GPConstants.PARAM_INFO_TYPE_OFFSET] + "\"" + 
-						    (selected ? " selected" : "") + ">" + 
+					out.append("<option value=\"" +
+						    choices[choice][GPConstants.PARAM_INFO_TYPE_OFFSET] + "\"" +
+						    (selected ? " selected" : "") + ">" +
 						    StringUtils.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]) +
 						    "</option>\n");
 				}
 				out.append("</select>\n");
 			} else {
 				if (!multiple) {
-					for (int choice = 0; choice < choices.length; choice++) { 
+					for (int choice = 0; choice < choices.length; choice++) {
 					    if (choices[choice][1].equals(attributeValue)) {
 						out.append(StringUtils.htmlEncode(choices[choice][GPConstants.PARAM_INFO_NAME_OFFSET]));
 					    }
@@ -1096,5 +1096,4 @@ for (int i = from; i < to; i++) {
 } // end of method
 %>
 </div>
-   
-  
+
