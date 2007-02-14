@@ -272,7 +272,7 @@ public class AdminService implements IAdminService {
     }
 
     private void isSuiteOwnerOrAuthorized(SuiteInfo suite) throws WebServiceException {
-        if (!(suite.getAccessId() == GPConstants.ACCESS_PUBLIC) || (suite.getOwner().equals(getUserName()))) {
+        if (!(suite.getAccessId() == GPConstants.ACCESS_PUBLIC || suite.getOwner().equals(getUserName()))) {
             isAuthorized(getUserName(), "adminSuites");
         }
     }

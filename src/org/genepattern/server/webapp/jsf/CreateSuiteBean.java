@@ -24,6 +24,7 @@ import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.AdminService;
 import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -42,8 +43,6 @@ public class CreateSuiteBean implements java.io.Serializable {
 
     private String author;
 
-    private String contact;
-
     private int accessId = 1; // Public
 
     private UploadedFile supportFile1;
@@ -58,14 +57,15 @@ public class CreateSuiteBean implements java.io.Serializable {
 
     private SuiteInfo currentSuite = null;
 
-    public CreateSuiteBean() {
+    public CreateSuiteBean() throws WebServiceException {
         if (currentSuite == null) {
             String lsid = UIBeanHelper.getRequest().getParameter("lsid");
             if (lsid != null) {
                 try {
-                    currentSuite = (new AdminService()).getSuite(lsid);
+                    currentSuite = (new LocalAdminClient(UIBeanHelper.getUserId())).getSuite(lsid);
                 } catch (WebServiceException e) {
                     log.error(e);
+                    throw e;
                 }
             }
         }
@@ -186,7 +186,6 @@ public class CreateSuiteBean implements java.io.Serializable {
             currentSuite.setDescription(description);
             currentSuite.setAccessId(new Integer(accessId));
             currentSuite.setAuthor(author);
-            currentSuite.setContact(contact);
 
             List<String> selectedLSIDs = new ArrayList<String>();
             for (ModuleCategory cat : categories) {
@@ -256,14 +255,6 @@ public class CreateSuiteBean implements java.io.Serializable {
 
     public void setCategories(List<ModuleCategory> categories) {
         this.categories = categories;
-    }
-
-    public String getContact() {
-        return (currentSuite == null) ? contact : currentSuite.getContact();
-    }
-
-    public void setContact(String contact) {
-        this.contact = contact;
     }
 
 }
