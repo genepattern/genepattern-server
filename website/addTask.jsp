@@ -555,27 +555,6 @@ function addNewDomainType(name, desc){
 
        </td>
   </tr>
-
-  <tr class="taskperameter" title="Your user ID">
-  <td valign="top">Owner:</td>
-  <td >
-	<%
-	   String owner = (tia == null ? userID : tia.get(GPConstants.USERID));
-	  	if(!viewOnly) { %>
-	   <input name="<%= GPConstants.USERID %>" size="50" class="hideable"
-		       value="<%= owner %>"
-
-		       <%= (tia == null || owner.equals("") || userID.equals(owner) || userID.equals(taskInfo.getUserId())) ? "" : "readonly" %>>
-		       (email address)
-	   <%
-		} else {
-	      	out.print(owner);
-	   	}
-	   %>
-	<a href='help.jsp#Owner' target='help'><img border='0' src='images/help2.jpg'/></a>
-	  </td>
-	  </tr>
-
 	  <tr class="taskperameter" title="Make available to others">
 	  <td valign="top">Privacy:</td>
 	  <td><%= createSelection(tia, GPConstants.PRIVACY, privacies, "onchange=\"onPrivacyChange(this)\"", viewOnly) %>
