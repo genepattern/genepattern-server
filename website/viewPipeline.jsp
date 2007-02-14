@@ -43,10 +43,9 @@ response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 
-System.out.println("=======================================HERE");
 
 String userID= (String)request.getAttribute("userID"); // will force login if necessary
-if (userID == null) return; // come back after login
+
 IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
 
 
@@ -177,11 +176,11 @@ if(showEdit) {
 }
 
 if (authManager.checkPermission("createPipeline", userID)){
-out.println("  <input type=\"button\" value=\"Clone...\" name=\"clone\"       class=\"little\" onclick=\"cloneTask('"+displayName+"', '" + pipelineName + "', '" + userID + "')\"; />");
+out.println("  <input type=\"button\" value=\"Clone...\" name=\"clone\" class=\"little\" onclick=\"cloneTask('"+displayName+"', '" + pipelineName + "', '" + userID + "')\"; />");
 }
 
 if (! RunPipelineForJsp.isMissingTasks(model, userID)){
-	out.println("  <input type=\"button\" value=\"Run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; />");
+	out.println("  <input type=\"button\" value=\"Run\" name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; />");
 }
 //XXXXXXXXXXXXX
 String descrip = task.getDescription();
@@ -190,7 +189,7 @@ out.print("<pre>     " + lsid + "</pre></span>");
 
 
 if ((descrip != null) && (descrip.length() > 0))
-	out.println("</br>"+ descrip);
+	out.println("<br>"+ descrip);
 out.println("<br>Author: " + StringUtils.htmlEncode(task.getTaskInfoAttributes().get(GPConstants.AUTHOR)));
 
 
@@ -433,12 +432,11 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
 
 
 
-}out.println("<table cellspacing='0' width='100%' frame='box'>");
+}
 if (! RunPipelineForJsp.isMissingTasks(model, userID)){
-
 out.println("<table width='100%'><tr><td align='center'><input type=\"button\" value=\"Run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; /></td></tr></table>");
 }
-out.println("</table>");
+
 %>
 <jsp:include page="footer.jsp"/>
 </body>
