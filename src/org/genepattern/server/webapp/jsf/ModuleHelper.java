@@ -22,13 +22,21 @@ import org.genepattern.webservice.TaskInfo;
 public class ModuleHelper {
     private static Logger log = Logger.getLogger(ModuleHelper.class);
 
-    private TaskInfo[] allTasks;
+    private TaskInfo[] tasks;
+
+    public ModuleHelper() {
+        this(false);
+    }
 
     /**
      * 
      */
-    public ModuleHelper() {
-        allTasks = (new AdminDAO()).getLatestTasks(getUserId());
+    public ModuleHelper(boolean allVersions) {
+        if (allVersions) {
+            tasks = (new AdminDAO()).getAllTasksForUser(getUserId());
+        } else {
+            tasks = (new AdminDAO()).getLatestTasks(getUserId());
+        }
     }
 
     /**
@@ -45,9 +53,9 @@ public class ModuleHelper {
     /**
      * @return
      */
-    public ModuleCategory getAllTasks() {
+    public ModuleCategory getTasks() {
         AdminDAO dao = new AdminDAO();
-        return new ModuleCategory("All", allTasks);
+        return new ModuleCategory("All", tasks);
     }
 
     /**
@@ -58,8 +66,8 @@ public class ModuleHelper {
         List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
         Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
 
-        for (int i = 0; i < allTasks.length; i++) {
-            TaskInfo ti = allTasks[i];
+        for (int i = 0; i < tasks.length; i++) {
+            TaskInfo ti = tasks[i];
             String taskType = ti.getTaskInfoAttributes().get("taskType");
             if (taskType == null || taskType.length() == 0) {
                 taskType = "Uncategorized";
@@ -87,8 +95,8 @@ public class ModuleHelper {
         List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
         Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
 
-        for (int i = 0; i < allTasks.length; i++) {
-            TaskInfo ti = allTasks[i];
+        for (int i = 0; i < tasks.length; i++) {
+            TaskInfo ti = tasks[i];
             String taskType = ti.getTaskInfoAttributes().get("taskType");
             if (taskType == null || taskType.length() == 0) {
                 taskType = "Uncategorized";
@@ -126,12 +134,12 @@ public class ModuleHelper {
         AdminDAO dao = new AdminDAO();
 
         Map<String, TaskInfo> taskMap = new HashMap<String, TaskInfo>();
-        for (int i = 0; i < allTasks.length; i++) {
+        for (int i = 0; i < tasks.length; i++) {
             try {
-                LSID lsidObj = new LSID(allTasks[i].getLsid());
-                taskMap.put(lsidObj.toStringNoVersion(), allTasks[i]);
+                LSID lsidObj = new LSID(tasks[i].getLsid());
+                taskMap.put(lsidObj.toStringNoVersion(), tasks[i]);
             } catch (MalformedURLException e) {
-                log.error("Error parsing lsid: " + allTasks[i].getLsid(), e);
+                log.error("Error parsing lsid: " + tasks[i].getLsid(), e);
             }
         }
 

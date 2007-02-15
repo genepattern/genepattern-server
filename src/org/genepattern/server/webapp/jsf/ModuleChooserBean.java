@@ -73,7 +73,7 @@ public class ModuleChooserBean implements java.io.Serializable {
                 tmp.add(recent);
                 
                 if (mode.equals("all")) {
-                    ModuleCategory cat = helper.getAllTasks();
+                    ModuleCategory cat = helper.getTasks();
                     cat.setExpanded(!moduleChooserState.isClosed(cat.getIdentifier()));
                     tmp.add(cat);
                 }

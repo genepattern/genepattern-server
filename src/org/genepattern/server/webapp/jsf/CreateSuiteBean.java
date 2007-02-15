@@ -116,9 +116,9 @@ public class CreateSuiteBean implements java.io.Serializable {
         List<List> cols = new ArrayList<List>();
         if (categories == null) {
             if (currentSuite != null) {
-                categories = (new ModuleHelper()).getSelectedTasksByType(currentSuite.getModuleLsids());
+                categories = (new ModuleHelper(true)).getSelectedTasksByType(currentSuite.getModuleLsids());
             } else {
-                categories = (new ModuleHelper()).getTasksByType();
+                categories = (new ModuleHelper(true)).getTasksByType();
             }
         }
 
