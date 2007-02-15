@@ -24,15 +24,19 @@
    		</filterset>
 	</copy>	
 	
+	<exec dir="." executable="c:\\progra~1\\macrovision\\instal~1.1en\\build.exe" >
+	  <arg line="${basedir}/GP_server.iap_xml +x +lv +j +wv"/>
+	</exec>
 
 
-      <buildinstaller IAProjectFile="${basedir}/GP_server.iap_xml" 
+      <!-- buildinstaller IAProjectFile="${basedir}/GP_server.iap_xml" 
 		BuildMacOSX="true"
 		BuildPureJava="true"
 		BuildWindowsWithVM="true"
 		BuildLinuxWithVM="true"
 		InstallerStdOutRedirect="${basedir}/installerStdOut.txt"
-		InstallerStdErrRedirect="${basedir}/installerStdErr.txt" />
+		InstallerStdErrRedirect="${basedir}/installerStdErr.txt" /   -->
+
 	<copy file="version.txt" tofile="GP_server_Build_Output/Web_Installers/version.txt"/>
 
 
