@@ -64,10 +64,11 @@
         <t:div rendered="#{jobWrapper.level == 0}" style="display: inline;">
           <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif"
              name="Image2_#{jobWrapper.jobNumber}" width="14" height="14" border="0" align="top" id="Image2_#{jobWrapper.jobNumber}"
-             onclick="pm_showMenu('menuDiv_#{jobWrapper.jobNumber}', Position.cumulativeOffset(this), 50, 0);"
+             onclick="pm_showMenu('menuDiv_#{jobWrapper.jobNumber}', Position.cumulativeOffset(this), 50, 50);"
              onmouseover="MM_swapImage('Image2_#{jobWrapper.jobNumber}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)"
              onmouseout="MM_swapImgRestore();"/>
         </t:div>
+             
       </td>
       <td>&#160;</td>
       <td>

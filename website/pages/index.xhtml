@@ -239,7 +239,7 @@ function showFileInput(id) {
               <span class="barhead-version">version #{runTaskBean.version} &#160;</span>
               <!-- Version menu popup icon.  Conditionally render -->
               <h:outputText rendered="#{!empty runTaskBean.versions}">
-                <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" name="Image_versionPopupMenu" id="Image_versionPopupMenu" width="14" height="14" border="0" valign="middle" onclick="pm_showMenu('versionPopupMenu', Position.cumulativeOffset(this), 0, -15);" onmouseover="MM_swapImage('Image_versionPopupMenu','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" onmouseout="MM_swapImgRestore();"/>
+                <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" name="Image_versionPopupMenu" id="Image_versionPopupMenu" width="14" height="14" border="0" valign="middle" onclick="pm_showMenu('versionPopupMenu', Position.cumulativeOffset(this), 0, 15);" onmouseover="MM_swapImage('Image_versionPopupMenu','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" onmouseout="MM_swapImgRestore();"/>
                 <br/>
               </h:outputText>
             </td>
@@ -408,7 +408,7 @@ function showFileInput(id) {
     <!-- Popup menu  -->
     <ui:define name="popupMenus">
       <h:form>
-        <div id="versionPopupMenu" style="visibility:hidden; position:absolute;" class="popupMenu">
+        <div id="versionPopupMenu" style="display:none; position:absolute;" class="popupMenu">
           <table>
             <tbody>
               <tr>
@@ -426,6 +426,21 @@ function showFileInput(id) {
           </table>
         </div>
       </h:form>
+       <h:form>
+        <f:param/>
+        <t:dataList var="jobInfo" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
+          <ui:include src="jobsMenu.xhtml">
+            <ui:param name="job" value="#{jobInfo}"/>
+          </ui:include>
+          <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}" rowIndexVar="paramIndex">
+            <ui:include src="jobFileMenu.xhtml">
+              <ui:param name="job" value="#{jobInfo}"/>
+              <ui:param name="fileInfo" value="#{fileInfo}"/>
+            </ui:include>
+          </t:dataList>
+        </t:dataList>
+      </h:form>
     </ui:define>
+
   </ui:composition>
 </html>

@@ -384,7 +384,7 @@ document.location.href=location;
         <t:dataList var="jobInfo" value="#{jobsBean.allJobs}">
           <ui:include src="jobsMenu.xhtml">
             <ui:param name="job" value="#{jobInfo}"/>
-          </ui:include>
+          </ui:include>  
           <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}">
             <ui:include src="jobFileMenu.xhtml">
               <ui:param name="job" value="#{jobInfo}"/>
