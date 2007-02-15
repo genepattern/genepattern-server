@@ -6,4 +6,18 @@ function(servername, username, password)
 }
 
 
+test.invalid.run.analysis <-
+function(gp.server, module.or.lsid, ...)
+{
+	checkException(run.analysis(gp.server, module.or.lsid, ...), "Exception not found as expected") 
+}
 
+test.valid.run.analysis <-
+function(gp.server, module.or.lsid, ...)
+{ 
+	error <- get_error(run.analysis(gp.server, module.or.lsid, ...)) 
+	if(is.logical(error))
+		return(checkEquals(error, NA)) 
+	
+	return(FALSE)
+}
