@@ -128,8 +128,13 @@
 					  		</t:div>
 				      	</div>
 		            </td>
-		            <td align="center"><a href="#{taskGroup.pipeline ? '#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=' : '#{facesContext.externalContext.requestContextPath}/addTask.jsp?name='}#{versionInfo.lsid}">#{versionInfo.version}</a></td>
-		            <td><a href="#{taskGroup.pipeline ? '#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=' : '#{facesContext.externalContext.requestContextPath}/addTask.jsp?name='}#{versionInfo.lsid}">#{versionInfo.reason}</a></td>
+		            <td align="center"><h:outputText rendered="#{taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
+		            <h:outputText rendered="#{!taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
+		            </td>
+		            <td>
+		            <h:outputText rendered="#{taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{versionInfo.lsid}">#{versionInfo.reason}</a></h:outputText>
+		            <h:outputText rendered="#{!taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{versionInfo.lsid}">#{versionInfo.reason}</a></h:outputText>
+		            </td>
 					<td>#{versionInfo.owner}</td>
 		            <td><t:dataList var="pipelineName" value="#{versionInfo.pipelineNames}">
 		                  #{pipelineName}<br/>
