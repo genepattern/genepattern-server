@@ -73,7 +73,7 @@ public class RunVisualizer {
      *            prior to execution RunVisualizerConstants.LSID=LSID of
      *            visualizer task PLUS all of the input parameters that the task
      *            requires (eg. input.filename, out.stub, etc.)
-     * 
+     *
      * @param source
      *            URL to the server (eg. http://localhost:8080), used for
      *            downloading task support files
@@ -83,7 +83,7 @@ public class RunVisualizer {
      * @param supportFileDates
      *            array of lastModified entries (longs) corresponding to each
      *            support file
-     * 
+     *
      */
 
     public RunVisualizer(Map<String, String> params, URL source, String[] supportFileNames, long[] supportFileDates,
@@ -308,9 +308,8 @@ public class RunVisualizer {
         File file = null;
 
         try {
-
             URLConnection conn = url.openConnection();
-            if (InetAddress.getByName(url.getHost()).equals(InetAddress.getByName(documentBase.getHost()))) {
+            if (url.getHost().equals(documentBase.getHost()) && url.getPort() == documentBase.getPort()) {
                 conn.setRequestProperty("Cookie", cookie);
             }
             is = conn.getInputStream();
@@ -433,8 +432,8 @@ public class RunVisualizer {
             String temp = decode(file.substring(j + "file=".length(), file.length()));
 
             int slashIdx = temp.lastIndexOf("/");
-            if(slashIdx==-1) {
-            	slashIdx = temp.lastIndexOf("\\");
+            if (slashIdx == -1) {
+                slashIdx = temp.lastIndexOf("\\");
             }
             if (slashIdx >= 0) {
                 temp = temp.substring(slashIdx + 1);
@@ -495,7 +494,7 @@ public class RunVisualizer {
     /**
      * replace all instances of "find" in "original" string and substitute
      * "replace" for them
-     * 
+     *
      * @param original
      *            String before replacements are made
      * @param find
