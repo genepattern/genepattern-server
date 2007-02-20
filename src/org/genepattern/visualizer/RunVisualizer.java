@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
@@ -33,29 +32,29 @@ import java.util.StringTokenizer;
 
 public class RunVisualizer {
 
-    protected boolean DEBUG = true;
+    private boolean DEBUG = false;
 
-    protected Map<String, String> params = null;
+    private Map<String, String> params = null;
 
-    protected URL source = null;
+    private String[] supportFileNames = null;
 
-    protected String[] supportFileNames = null;
-
-    protected long[] supportFileDates = null;
+    private long[] supportFileDates = null;
 
     private String cookie;
 
     private URL documentBase;
 
-    protected static final String JAVA = "java";
+    private String server;
 
-    protected static final String JAVA_FLAGS = "java_flags";
+    private static final String JAVA = "java";
 
-    protected static final String ANY = "any";
+    private static final String JAVA_FLAGS = "java_flags";
 
-    protected static final String leftDelimiter = "<";
+    private static final String ANY = "any";
 
-    protected static final String rightDelimiter = ">";
+    private static final String leftDelimiter = "<";
+
+    private static final String rightDelimiter = ">";
 
     /**
      * @param params
@@ -74,9 +73,6 @@ public class RunVisualizer {
      *            visualizer task PLUS all of the input parameters that the task
      *            requires (eg. input.filename, out.stub, etc.)
      *
-     * @param source
-     *            URL to the server (eg. http://localhost:8080), used for
-     *            downloading task support files
      * @param supportFileNames
      *            array of names (without paths) of required support files for
      *            this task
@@ -86,21 +82,20 @@ public class RunVisualizer {
      *
      */
 
-    public RunVisualizer(Map<String, String> params, URL source, String[] supportFileNames, long[] supportFileDates,
-            Applet applet) {
+    public RunVisualizer(Map<String, String> params, String[] supportFileNames, long[] supportFileDates, Applet applet) {
         this.params = params;
-        this.source = source;
         this.supportFileNames = supportFileNames;
         this.supportFileDates = supportFileDates;
         this.cookie = applet.getParameter("browserCookie");
         this.documentBase = applet.getDocumentBase();
+        this.server = documentBase.getProtocol() + "://" + documentBase.getHost() + ":" + documentBase.getPort();
     }
 
     public void run() throws IOException, Exception {
-        DEBUG = (params.get("DEBUG") != null);
-        if (DEBUG)
-            System.out.println("runVisualizer: " + (String) params.get(RunVisualizerConstants.NAME) + " starting");
 
+        if (DEBUG) {
+            System.out.println("runVisualizer: " + (String) params.get(RunVisualizerConstants.NAME) + " starting");
+        }
         // download all of the files locally, preferably checking against a
         // cache
         String libdir = downloadSupportFiles();
@@ -117,7 +112,7 @@ public class RunVisualizer {
             javaFlags = "";
 
         params.put(JAVA_FLAGS, javaFlags);
-        params.put("GENEPATTERN_PORT", "" + source.getPort());
+        params.put("GENEPATTERN_PORT", "" + documentBase.getPort());
 
         // check OS and CPU restrictions of TaskInfoAttributes against this
         // server
@@ -174,16 +169,13 @@ public class RunVisualizer {
             end = var.indexOf(rightDelimiter, start);
             if (end == -1)
                 break;
-            // if (DEBUG) System.out.println("found " + var.substring(start, end
-            // + leftDelimiter.length()));
             variableName = var.substring(start + leftDelimiter.length(), end);
             argValue = System.getProperty(variableName);
             if (argValue == null) {
                 argValue = (String) params.get(variableName);
             }
             if (argValue != null) {
-                // if (DEBUG) System.out.println("replacing it with " +
-                // argValue);
+
                 if (hmDownloadables != null && hmDownloadables.containsKey(variableName)) {
                     try {
                         argValue = ((File) hmDownloadables.get(variableName)).getCanonicalPath();
@@ -281,7 +273,7 @@ public class RunVisualizer {
                 }
                 Date startTime = new Date();
 
-                URL urlFile = new URL(source, "/gp/getFile.jsp?task=" + lsid + "&file="
+                URL urlFile = new URL(server + "/gp/getFile.jsp?task=" + encode(lsid) + "&file="
                         + encode(supportFileNames[supf]));
                 File file = downloadFile(urlFile, fLibdir, supportFileNames[supf]);
                 file.setLastModified(supportFileDates[supf]);
@@ -301,7 +293,17 @@ public class RunVisualizer {
         return fLibdir.getCanonicalPath();
     }
 
-    // download a URL to a local file and return a File object for it
+    /**
+     *
+     * download a URL to a local file and return a File object for it
+     *
+     * @param url
+     *            The url to download.
+     * @param dir
+     *            The directory to download the URL to.
+     * @param filename
+     *            The filename to download the URL to.
+     */
     protected File downloadFile(URL url, File dir, String filename) throws IOException {
         InputStream is = null;
         FileOutputStream fos = null;
@@ -311,6 +313,7 @@ public class RunVisualizer {
             URLConnection conn = url.openConnection();
             if (url.getHost().equals(documentBase.getHost()) && url.getPort() == documentBase.getPort()) {
                 conn.setRequestProperty("Cookie", cookie);
+                conn.connect();
             }
             is = conn.getInputStream();
 
@@ -611,8 +614,7 @@ public class RunVisualizer {
                 f++;
             }
 
-            RunVisualizer visualizer = new RunVisualizer(params, source, supportFileNames, supportFileDates,
-                    new Applet());
+            RunVisualizer visualizer = new RunVisualizer(params, supportFileNames, supportFileDates, new Applet());
             visualizer.run();
         } catch (Throwable t) {
             t.printStackTrace();

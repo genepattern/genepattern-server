@@ -111,7 +111,7 @@ public class RunVisualizerApplet extends Applet {
 
         showStatus("JAVA_FLAGS=" + params.get("java_flags"));
 
-        RunVisualizer visualizer = new RunVisualizer(params, source, supportFileNames, supportFileDates, this);
+        RunVisualizer visualizer = new RunVisualizer(params, supportFileNames, supportFileDates, this);
         visualizer.run();
     }
 
