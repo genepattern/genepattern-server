@@ -1,18 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="create-gzip" name="genepattern">
 
-
 	<target name="create-gzip">
-		<!-- OSX binary has extension .tgz, source is .tar.gz -->
+		<!-- OSX binary has extension .tgz, source package is .tar.gz -->
 		<tar destfile="downloads/GenePattern_1.0.0.tar.gz" compression="gzip">
 			<fileset dir="." includes="GenePattern/**">
 			</fileset>
 		</tar>
-		
-		<tar destfile="downloads/GenePattern_1.0.0.tgz" compression="gzip">
-			<fileset dir="." includes="GenePattern/**">
-			</fileset>
-		</tar>
+
 	</target>
 
 </project>

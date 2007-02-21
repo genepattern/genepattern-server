@@ -1,1 +1,7 @@
-To build the package for Unix and Mac, run the target create-gzip in the ant build script. To build the package for Windows, install the package on Mac or Unix and then zip the installed GenePattern package directory.
+To build the package for Unix, run the target create-gzip in the ant build script.
+
+To build the package for Windows, install the package on Mac or Unix and then zip the installed
+GenePattern package directory.
+
+To build the package for Mac, install the package on Mac or Unix and then tar gzip the installed
+GenePattern package directory.
