@@ -221,8 +221,14 @@ public class AuthenticationFilter implements Filter {
             }
 
             String contextPath = request.getContextPath();
+
             String basePath = request.getScheme() + "://" + fqHostName + ":" + request.getServerPort() + contextPath;
+
             String fullQualifiedLoginPage = basePath + loginPage;
+
+            if (basePath.charAt(basePath.length() - 1) != '/' && targetURL != null && targetURL.charAt(0) != '/') {
+                targetURL = "/" + targetURL;
+            }
             targetURL = basePath + targetURL;
 
             if (targetURL != null && !targetURL.contains(loginPage)) { // don't
