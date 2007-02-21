@@ -11,7 +11,7 @@
 */ -->
 
 
-<%@ page session="false" contentType="text/html" language="Java" %>
+<%@ page session="true" contentType="text/html" language="Java" %>
 <%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
@@ -23,19 +23,19 @@ String title = request.getParameter("title");
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
-<title>include all modules used by <%= title %></title>
+<title>Include all modules used by <%= title %></title>
 <script language="Javascript">
 // submit and close
 function doSubmit(btn) {
-	window.opener.location = "makeZip.jsp?name=<%= request.getParameter("name") %>" + 
-				 (btn.name == "includeDependents" ? "&includeDependents=1" : "") + 
+	window.opener.location = "makeZip.jsp?name=<%= request.getParameter("name") %>" +
+				 (btn.name == "includeDependents" ? "&includeDependents=1" : "") +
 				 "&close=1";
 	window.close();
 	return false;
 }
 </script>
 </head>
-<body>	
+<body>
 <form name="ask">
 
 Press 'Include modules' to include all modules used by <%= title %> in the exported zip file.  <br><br>
