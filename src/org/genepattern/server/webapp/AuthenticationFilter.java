@@ -49,12 +49,11 @@ public class AuthenticationFilter implements Filter {
 
     private String[] noAuthorizationRequiredPages;
 
-    /** Forward to home page if logged in user requests these pages */
-    private String[] forwardIfLoggedInPages;
-
     private String homePage;
 
     private boolean passwordRequired;
+
+    private String loginPage;
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
             ServletException {
@@ -77,11 +76,11 @@ public class AuthenticationFilter implements Filter {
         }
 
         if (isAuthenticated((HttpServletRequest) request, (HttpServletResponse) response)) {
-            for (int i = 0, length = forwardIfLoggedInPages.length; i < length; i++) {
-                if (requestedURI.contains(forwardIfLoggedInPages[i]) && req.getParameter("origin") == null) {
+            for (int i = 0, length = noAuthorizationRequiredPages.length; i < length; i++) {
+                if (requestedURI.contains(noAuthorizationRequiredPages[i]) && req.getParameter("origin") == null) {
                     ((HttpServletResponse) response).sendRedirect(req.getContextPath() + homePage);
                     return;
-                } else if (requestedURI.contains(forwardIfLoggedInPages[i]) && req.getParameter("origin") != null) {
+                } else if (requestedURI.contains(noAuthorizationRequiredPages[i]) && req.getParameter("origin") != null) {
                     chain.doFilter(request, response);
                     return;
                 }
@@ -95,7 +94,7 @@ public class AuthenticationFilter implements Filter {
                     return;
                 }
             }
-            setLoginPageRedirect((HttpServletRequest) request, (HttpServletResponse) response);
+            redirectToLoginPage((HttpServletRequest) request, (HttpServletResponse) response);
         }
     }
 
@@ -200,7 +199,7 @@ public class AuthenticationFilter implements Filter {
         return fqHostName;
     }
 
-    public void setLoginPageRedirect(HttpServletRequest request, HttpServletResponse response) {
+    public void redirectToLoginPage(HttpServletRequest request, HttpServletResponse response) {
         String currentURL = request.getRequestURI();
         // get everything after the context root
         int firstSlash = currentURL.indexOf("/", 1); // jump past the
@@ -209,10 +208,6 @@ public class AuthenticationFilter implements Filter {
         if (firstSlash != -1) {
             targetURL = currentURL.substring(firstSlash + 1, currentURL.length());
         }
-
-        // if (targetURL != null && request.getQueryString() != null) {
-        // targetURL = targetURL + ("?" + request.getQueryString());
-        // }
 
         // redirect to the fully-qualified host name to make sure that the
         // cookie that we are allowed to write is useful
@@ -226,21 +221,18 @@ public class AuthenticationFilter implements Filter {
             }
 
             String contextPath = request.getContextPath();
-            if (contextPath != null && contextPath.charAt(contextPath.length() - 1) != '/') {
-                contextPath += "/";
-            }
             String basePath = request.getScheme() + "://" + fqHostName + ":" + request.getServerPort() + contextPath;
-            String fqAddress = basePath + "pages/login.jsf";
+            String fullQualifiedLoginPage = basePath + loginPage;
             targetURL = basePath + targetURL;
 
-            if (targetURL != null && !targetURL.contains("login.jsf")) { // don't
+            if (targetURL != null && !targetURL.contains(loginPage)) { // don't
                 // redirect
                 // back to
                 // login
                 // page
                 request.getSession().setAttribute("origin", targetURL);
             }
-            response.sendRedirect(fqAddress);
+            response.sendRedirect(fullQualifiedLoginPage);
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
@@ -312,11 +304,8 @@ public class AuthenticationFilter implements Filter {
             noAuthorizationRequiredPages[i] = noAuthorizationRequiredPages[i].trim();
         }
 
-        forwardIfLoggedInPages = filterconfig.getInitParameter("forward.if.logged.in").split(",");
-        for (int i = 0; i < forwardIfLoggedInPages.length; i++) {
-            forwardIfLoggedInPages[i] = forwardIfLoggedInPages[i].trim();
-        }
-        homePage = filterconfig.getInitParameter("home").trim();
+        homePage = filterconfig.getInitParameter("home.page").trim();
+        loginPage = filterconfig.getInitParameter("login.page").trim();
 
     }
 

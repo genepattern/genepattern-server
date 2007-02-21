@@ -53,11 +53,11 @@
    <param-value>login.jsf,registerUser.jsf,forgotPassword.jsf</param-value>
   </init-param>
   <init-param>
-   <param-name>forward.if.logged.in</param-name>
-   <param-value>login.jsf,registerUser.jsf,forgotPassword.jsf</param-value>
+   <param-name>login.page</param-name>
+   <param-value>/pages/login.jsf</param-value>
   </init-param>
   <init-param>
-   <param-name>home</param-name>
+   <param-name>home.page</param-name>
    <param-value>/pages/index.jsf</param-value>
   </init-param>
 
