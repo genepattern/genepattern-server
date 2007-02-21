@@ -226,8 +226,10 @@ public class AuthenticationFilter implements Filter {
 
             String fullQualifiedLoginPage = basePath + loginPage;
 
-            if (basePath.charAt(basePath.length() - 1) != '/' && targetURL != null && targetURL.charAt(0) != '/') {
-                targetURL = "/" + targetURL;
+            if (basePath.charAt(basePath.length() - 1) != '/') {
+                if (targetURL != null && targetURL.length() >= 1 && targetURL.charAt(0) != '/') {
+                    targetURL = "/" + targetURL;
+                }
             }
             targetURL = basePath + targetURL;
 
