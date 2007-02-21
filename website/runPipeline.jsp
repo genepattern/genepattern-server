@@ -137,8 +137,8 @@
                         }
                     }
                     if (parameterInfoArray != null && parameterInfoArray.length > 0) {
-                        // the pipeline needs parameters.  If they are provided, set them 
-                        // into the correct place. 
+                        // the pipeline needs parameters.  If they are provided, set them
+                        // into the correct place.
                         for (int i = 0; i < parameterInfoArray.length; i++) {
                             ParameterInfo param = parameterInfoArray[i];
                             String key = param.getName();
@@ -248,8 +248,8 @@ var outputFileCount = new Array();
 
                         StringBuffer cc = new StringBuffer();
                         // create threads to read from the command's stdout and stderr streams
-                        Thread stdoutReader = copyStream(process.getInputStream(), out, cc, DEBUG, false);
-                        Thread stderrReader = copyStream(process.getErrorStream(), out, cc, DEBUG, true);
+                        Thread stdoutReader = copyStream(process.getInputStream(), cc, DEBUG, false);
+                        Thread stderrReader = copyStream(process.getErrorStream(), cc, DEBUG, true);
                         stderrReader.setPriority(stdoutReader.getPriority() - 1);
                         OutputStream stdin = process.getOutputStream();
 
@@ -266,7 +266,7 @@ function checkAll(frm, bChecked) {
 		frm.elements[i].checked = bChecked;
 	}
 }
-  
+
 // check all the files in the job by its index
 function checkAllInTask(idx, taskcb) {
 	frm = document.forms["results"];
@@ -279,12 +279,12 @@ function checkAllInTask(idx, taskcb) {
 
 	}
 }
- 
+
 
 function setEmailNotification(jobId){
 		var cb = document.getElementById('emailCheckbox');
 		var ue = document.getElementById("userEmail");
-		var valid = jcv_checkEmail(ue.value); 
+		var valid = jcv_checkEmail(ue.value);
 		if (!valid){
 			var em = prompt("Email on completion to?:");
 			if (em == null){
@@ -292,7 +292,7 @@ function setEmailNotification(jobId){
 				return;
 			} else {
 				ue.value = em;
-				valid = jcv_checkEmail(ue.value); 
+				valid = jcv_checkEmail(ue.value);
 				if (!valid){
 					cb.checked = false;
 					alert(ue.value + ' is not a valid email address');
@@ -313,23 +313,23 @@ function toggleLogs() {
 	var cb = document.getElementById('logCheckbox');
 	var visible = cb.checked;
 	var frm = document.forms["results"];
-    
+
 	for(var i = 0; i < (numTasks + 1); i++) {
-		
+
 		divObj = document.getElementById('executionLogRow'+i);
-		
+
 		if(!visible) {
 			divObj.style.display = "none";
 			divObj.visibility=false;
 		} else {
 			divObj.style.display = "";
-			divObj.visibility=true;	
+			divObj.visibility=true;
 		}
 
 
 	}
 }
-   
+
 function openAllTasks(){
 	for(var i = 1; i < (numTasks + 1); i++) {
 		toggleTask(i, false);
@@ -361,24 +361,24 @@ function toggleTask(idx, visibility) {
 	var fileCount = outputFileCount[idx];
 
 	arrowdown = document.getElementById('downarrow'+idx);
-	setVisibility(arrowdown, visibility);	
+	setVisibility(arrowdown, visibility);
 
 	arrowright = document.getElementById('rightarrow'+idx);
-	setVisibility(arrowright, !visibility);	
+	setVisibility(arrowright, !visibility);
 
 	logRow = document.getElementById('executionLogRow'+idx);
-	setVisibility(logRow, visibility);	
-	
+	setVisibility(logRow, visibility);
+
 	for(var i = 0; i < (fileCount + 1); i++) {
-		
+
 		adiv  = document.getElementById(idBase +i);
 		if (adiv != null){
 		setVisibility(adiv, visibility);
 		}
-	}		
-	
-}	
-	
+	}
+
+}
+
   function deleteCheckedFiles(){
 	 var frm = document.forms["results"];
        var really = confirm('Really delete the checked files?');
@@ -387,13 +387,13 @@ function toggleTask(idx, visibility) {
 	cmd.name="delete";
 	cmd.value="true";
  	frm.submit();
-	
+
 	cmd.name="cmdElement";
   }
- 
+
  function downloadCheckedFiles(){
 	 var frm = document.forms["results"];
-	
+
 	cmd = frm.elements['cmdElement'];
 	cmd.name="download";
 	cmd.value="true";
@@ -437,6 +437,7 @@ function toggleTask(idx, visibility) {
 <!--span id='output'-->
 <%
                         out.flush();
+
                         // copy the generated code to the stdin of the R process
                         if (DEBUG)
                             out.println("<pre>");
@@ -444,7 +445,7 @@ function toggleTask(idx, visibility) {
                         // wait for all output so that nothing is left buffered at end of process
                         stdoutReader.join();
                         stderrReader.join();
-                        out.flush();
+                        out.println(cc.toString());
 
                         // output an extra </table> tag in case the pipeline was stopped, which would leave an open table tag and cause the
                         // supposedly trailing output to come out before the table itself!
@@ -458,7 +459,7 @@ function toggleTask(idx, visibility) {
 	document.getElementById("stopCmd").visibility=false;
 
 
-	
+
 		</script>
 <%
                         GregorianCalendar purgeTOD = new GregorianCalendar();
@@ -538,7 +539,7 @@ function toggleTask(idx, visibility) {
                 }
             }
 %>
-<%!Thread copyStream(final InputStream is, final JspWriter out, final StringBuffer cc, final boolean DEBUG,
+<%!Thread copyStream(final InputStream is, final StringBuffer cc, final boolean DEBUG,
             final boolean htmlEncode) throws IOException {
         // create thread to read from the a process' output or error stream
         Thread copyThread = new Thread(new Runnable() {
@@ -558,13 +559,8 @@ function toggleTask(idx, visibility) {
                         }
                         bNeedsBreak = (line.length() > 0 && (line.indexOf("<") == -1 || line.indexOf("<-") != -1) && line
                                 .indexOf(">") == -1);
-                        out.print(line);
-                        if (bNeedsBreak)
-                            out.println("<br>");
-                        for (int i = 0; i < 8 * 1024; i++)
-                            out.print(" ");
-                        out.println();
-                        out.flush();
+
+
                         cc.append(line);
                         if (bNeedsBreak)
                             cc.append("<br>\n");
