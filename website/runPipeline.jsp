@@ -445,8 +445,9 @@ function toggleTask(idx, visibility) {
                         // wait for all output so that nothing is left buffered at end of process
                         stdoutReader.join();
                         stderrReader.join();
+                        out.println("<p>");
                         out.println(cc.toString());
-
+                        out.println("</p>");
                         // output an extra </table> tag in case the pipeline was stopped, which would leave an open table tag and cause the
                         // supposedly trailing output to come out before the table itself!
                         if (DEBUG)
