@@ -685,6 +685,14 @@ public class RunPipeline {
         if (file.getName().toLowerCase().endsWith(".odf")) {
             return ODFModelType(file).equalsIgnoreCase(fileFormat);
         } else {
+            // when fileFormat does not contain the '.' character, assume that fileFormat
+            // refers to a file extension and prepend  '.'. For example if value of fileFormat is 'gct',
+            // fileFormat becomes '.gct' when testing if file.getName() ends with fileFormat
+            // when the file format does contain the '.' character, assume fileFormat can refer to a complete
+            // filename (e.g. all_aml_train.gct).
+            if (fileFormat.indexOf('.') == -1) {
+                fileFormat = "." + fileFormat;
+            }
             return file.getName().toLowerCase().endsWith(fileFormat.toLowerCase());
         }
     }
