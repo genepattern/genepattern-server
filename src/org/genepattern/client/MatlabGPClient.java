@@ -42,6 +42,12 @@ public class MatlabGPClient extends GPServer {
 			throws WebServiceException {
 		super(server, userName);
 	}
+	
+	public MatlabGPClient(String server, String userName, String password)
+			throws WebServiceException {
+		super(server, userName, password);
+	}
+
 
 	/**
 	 * Contacts this GenePattern server and retrieves a map of task ids to
