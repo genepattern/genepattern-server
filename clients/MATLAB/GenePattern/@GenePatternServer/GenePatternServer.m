@@ -1,4 +1,4 @@
-function obj=GenePatternServer(url, userID)
+function obj=GenePatternServer(url, userID, password)
 
 pathOK = initGenePatternPath;
 if (~pathOK)
@@ -18,7 +18,7 @@ obj.methods = [];
 obj = class(obj, 'GenePatternServer');
 
 
-obj.javaInstance = org.genepattern.client.MatlabGPClient(url,userID);
+obj.javaInstance = org.genepattern.client.MatlabGPClient(url,userID,password);
 obj.latestModules = obj.javaInstance.getLatestServices();
 obj.allModules = obj.javaInstance.getServices();
 
