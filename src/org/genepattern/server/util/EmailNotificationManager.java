@@ -1,10 +1,20 @@
 package org.genepattern.server.util;
 
-import javax.mail.*;
-import javax.mail.internet.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
 import org.genepattern.server.webapp.DNSClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.webservice.JobInfo;
@@ -46,14 +56,14 @@ public class EmailNotificationManager {
         threads.remove(aThread);
     }
 
-    public void sendJobCompletionEmail(String user, String jobID) {
+    public void sendJobCompletionEmail(String user, String jobId) {
         String status = "status unknown";
-        String task = "";
+        String moduleName = "";
         try {
             LocalAnalysisClient analysis = new LocalAnalysisClient(user);
-            JobInfo jobInfo = analysis.checkStatus(Integer.parseInt(jobID));
+            JobInfo jobInfo = analysis.checkStatus(Integer.parseInt(jobId));
             status = jobInfo.getStatus();
-            task = jobInfo.getTaskName();
+            moduleName = jobInfo.getTaskName();
         } catch (Exception e) {
             // swallow it and send the link without status
             status = "Finished";
@@ -61,13 +71,12 @@ public class EmailNotificationManager {
 
         String addresses = user;
         String from = "GenePattern@" + System.getProperty("gpServerHostAddress");
-        String subject = "Job " + jobID + " - " + task + " - " + status;
+        String subject = "Job " + jobId + " - " + moduleName + " - " + status;
         StringBuffer msg = new StringBuffer();
-        msg.append("The results for job " + jobID + "," + task + " , are available on the <br>");
-        // msg.append("<a href='http://gp21e-789.broad.mit.edu:8080/gp/pages/jobResults.jsf?jobID=jobID'>GenePattern
-        // JobResults Page</a>");
-        msg.append("<a href='" + System.getProperty("GenePatternURL")
-                + "/pages/jobResults.jsf?jobID=jobID'>GenePattern JobResults Page</a>");
+        msg.append("The results for job " + jobId + ", " + moduleName + ", are available on the ");
+
+        msg.append("<a href=\"" + System.getProperty("GenePatternURL")
+                + "pages/jobResults.jsf?jobNumber=" + jobId + "\">GenePattern Job Results Page</a>");
 
         emailToAddresses(addresses, from, subject, msg.toString());
 
@@ -241,7 +250,7 @@ class JobWaitThread extends Thread {
     /**
      * make the sleep time go up as it takes longer to exec. eg for 100 tries of 1000ms (1 sec) first 20 are 1 sec each
      * next 20 are 2 sec each next 20 are 4 sec each next 20 are 8 sec each any beyond this are 16 sec each
-     * 
+     *
      * @param init
      *            Description of the Parameter
      * @param maxTries
