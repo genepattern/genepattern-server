@@ -7,6 +7,7 @@ if (~pathOK)
 	return;
 end
 
+if (nargin==2) password='';
 
 obj.url = url;
 obj.userID = userID;
@@ -18,7 +19,7 @@ obj.methods = [];
 obj = class(obj, 'GenePatternServer');
 
 
-obj.javaInstance = org.genepattern.client.MatlabGPClient(url,userID,password);
+obj.javaInstance = org.genepattern.client.MatlabGPClient(url,userID, password);
 obj.latestModules = obj.javaInstance.getLatestServices();
 obj.allModules = obj.javaInstance.getServices();
 
