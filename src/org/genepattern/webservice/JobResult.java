@@ -25,7 +25,7 @@ import org.genepattern.util.GPConstants;
 
 /**
  * Encapsulates information about a job run on a GenePattern server.
- * 
+ *
  * @author Joshua Gould
  */
 public class JobResult {
@@ -49,7 +49,7 @@ public class JobResult {
 
     /**
      * Creates a new JobResult instance.
-     * 
+     *
      * @param server
      *            The server on which this job was run.
      * @param jobNumber
@@ -81,7 +81,7 @@ public class JobResult {
 
     /**
      * Gets the LSID of the module that produced this job result.
-     * 
+     *
      * @return The module LSID
      */
     public String getLSID() {
@@ -92,7 +92,7 @@ public class JobResult {
      * Allocates a new array containing the file names of the output files that
      * this job created excluding the standard output file and the standard
      * error file.
-     * 
+     *
      * @return The output file names
      */
     public String[] getOutputFileNames() {
@@ -102,7 +102,7 @@ public class JobResult {
     /**
      * Allocates a new array containing the input parameters that this job was
      * invoked with
-     * 
+     *
      * @return The parameters
      */
     public Parameter[] getParameters() {
@@ -112,7 +112,7 @@ public class JobResult {
     /**
      * Returns the url to download the file that was created in the given
      * creation order
-     * 
+     *
      * @param creationOrder
      *            The file creation order, starting at 0.
      * @return The url to retrieve the file from.
@@ -136,12 +136,12 @@ public class JobResult {
 
     /**
      * Returns the url to download the given file name.
-     * 
+     *
      * @param fileName
      *            The file name.
      * @return The url to retrieve the file from.
      */
-    public URL getURL(String fileName) {
+    public URL getURLForFileName(String fileName) {
         try {
             return new URL(getServerURL() + "/gp/jobResults/" + getJobNumber() + "/"
                     + URLEncoder.encode(fileName, "UTF-8"));
@@ -154,31 +154,33 @@ public class JobResult {
 
     /**
      * Returns the url to download the given file output file type from.
-     * 
+     *
      * @param fileType
      *            The file type (e.g. gct)
      * @return The url to retrieve the file from or <tt>null</tt> if a file
      *         with the given type was not found.
      */
-    public URL getURLForFileType(String fileType) {
+    public URL getURL(String fileType) {
         for (int i = 0; i < fileNames.length; i++) {
             String fileName = fileNames[i];
-            int dotIndex = fileName.lastIndexOf(".");
-            if (dotIndex > 0 && (dotIndex + 1) < fileName.length()) {
-                String extension = fileName.substring(dotIndex + 1, fileName.length());
-                if (extension.equalsIgnoreCase(fileType)) {
-                    return getURL(fileName);
-                } else if (extension.equalsIgnoreCase("odf")) {
-                    try {
-                        String modelType = Util.getOdfModelType(getURL(fileName).openStream());
-                        if (fileType.equalsIgnoreCase(modelType)) {
-                            return getURL(fileName);
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
+            if (fileName.toLowerCase().endsWith(".odf")) {
+                try {
+                    String modelType = Util.getOdfModelType(getURLForFileName(fileName).openStream());
+                    if (fileType.equalsIgnoreCase(modelType)) {
+                        return getURLForFileName(fileName);
                     }
+                } catch (IOException e) {
+                    // ignore
                 }
             }
+            String endsWithString = fileType;
+            if (endsWithString.indexOf('.') == -1) {
+                endsWithString = "." + endsWithString;
+            }
+            if (fileName.toLowerCase().endsWith(endsWithString.toLowerCase())) {
+                return getURLForFileName(fileName);
+            }
+
         }
         return null;
 
@@ -186,7 +188,7 @@ public class JobResult {
 
     /**
      * Tests whether this job wrote to the standard error stream.
-     * 
+     *
      * @return <tt>true</> if this job wrote to the standard error stream; <tt>
      *      false</tt> otherwise.
      */
@@ -196,7 +198,7 @@ public class JobResult {
 
     /**
      * Tests whether this job wrote to the standard output stream.
-     * 
+     *
      * @return <tt>true</> if this job wrote to the standard output stream; <tt>
      *      false</tt> otherwise.
      */
@@ -208,7 +210,7 @@ public class JobResult {
      * Downloads all the available result files from the server to the given
      * download directory. If the directory already exists and contains files of
      * the same name, it will overwrite the files.
-     * 
+     *
      * @param downloadDirectory
      *            The pathname of a directory to create the files. The directory
      *            will be created if it does not exist.
@@ -230,8 +232,8 @@ public class JobResult {
      * the same name, it will overwrite the files if <code>overwrite</code> is
      * <code>true</code>, and if <true>false</code> it will prepend job_#_
      * to the file name of any preexisting file.
-     * 
-     * 
+     *
+     *
      * @param downloadDirectory
      *            The pathname of a directory to create the files. The directory
      *            will be created if it does not exist.
@@ -278,7 +280,7 @@ public class JobResult {
      * directory. The name of the downloaded file will be equal to the given
      * file name. If a file of the same name already exists in the given
      * directory it will be overwritten.
-     * 
+     *
      * @param fileName
      *            The file name.
      * @param downloadDirectory
@@ -304,7 +306,7 @@ public class JobResult {
      * name in the given directory then the file will be written with job_#_
      * prefixing the filename. If a file of this name already exists it will be
      * overwritten.
-     * 
+     *
      * @param filename
      *            The file name.
      * @param downloadDirectory
@@ -343,7 +345,7 @@ public class JobResult {
 
     /**
      * Gets the url of the server that this job was run on.
-     * 
+     *
      * @return The server url.
      */
 
@@ -353,7 +355,7 @@ public class JobResult {
 
     /**
      * Gets the job number for this job.
-     * 
+     *
      * @return The job number
      */
     public int getJobNumber() {
