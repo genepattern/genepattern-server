@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -60,8 +61,8 @@ public class JobBean {
     private Map<String, List<KeyValuePair>> kindToInputParameters = Collections.emptyMap();
 
     /**
-     * Indicates whether execution logs should be shown. Manipulated by checkbox on job results page, always false on
-     * recent jobs page.
+     * Indicates whether execution logs should be shown. Manipulated by checkbox
+     * on job results page, always false on recent jobs page.
      */
     private boolean showExecutionLogs = false;
 
@@ -71,14 +72,16 @@ public class JobBean {
     private boolean fileSortAscending = true;
 
     /**
-     * Specifies file column to sort on. Possible values are name size lastModified
+     * Specifies file column to sort on. Possible values are name size
+     * lastModified
      */
     private String fileSortColumn = "name";
 
     private boolean showEveryonesJobs = true;
 
     /**
-     * Specifies job column to sort on. Possible values are jobNumber taskName dateSubmitted dateCompleted status
+     * Specifies job column to sort on. Possible values are jobNumber taskName
+     * dateSubmitted dateCompleted status
      */
     private String jobSortColumn = "jobNumber";
 
@@ -100,8 +103,9 @@ public class JobBean {
                 .valueOf(fileSortAscending)));
         this.fileSortColumn = new UserDAO().getPropertyValue(userId, "fileSortColumn", fileSortColumn);
         this.showEveryonesJobs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesJobs", String
-                .valueOf(showEveryonesJobs))) && AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
-                        UIBeanHelper.getUserId()) ;
+                .valueOf(showEveryonesJobs)))
+                && AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
+                        UIBeanHelper.getUserId());
         this.jobSortColumn = new UserDAO().getPropertyValue(userId, "jobSortColumn", jobSortColumn);
         this.jobSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "jobSortAscending", String
                 .valueOf(jobSortAscending)));
@@ -136,7 +140,7 @@ public class JobBean {
 
     /**
      * Delete the selected job. Should this also delete the files?
-     * 
+     *
      * @param event
      */
     public void delete(ActionEvent event) {
@@ -260,9 +264,9 @@ public class JobBean {
             JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, jobParameters, UIBeanHelper.getUserId(), lsid,
                     taskInfo.getName());
 
-            AnalysisJob job = new AnalysisJob(System.getProperty("GenePatternURL"), jobInfo, JobBean
-                    .isVisualizer(taskInfo));
-
+            URL url = new URL(System.getProperty("GenePatternURL"));
+            String server = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
+            AnalysisJob job = new AnalysisJob(server, jobInfo, JobBean.isVisualizer(taskInfo));
             return CodeGeneratorUtil.getCode(language, job);
         } catch (WebServiceException e) {
             log.error("Error getting code.", e);
@@ -278,7 +282,7 @@ public class JobBean {
 
     /**
      * Loads a module from an output file.
-     * 
+     *
      * @return
      */
     public String loadTask() {
@@ -426,7 +430,7 @@ public class JobBean {
 
     /**
      * Delete the selected job. Should this also delete the files?
-     * 
+     *
      * @param event
      */
     protected void deleteJob(int jobNumber) {
@@ -500,9 +504,9 @@ public class JobBean {
     }
 
     /**
-     * Get the list of selected files (pathnames) from the request parameters. This is converted to a set to make
-     * membership tests efficient.
-     * 
+     * Get the list of selected files (pathnames) from the request parameters.
+     * This is converted to a set to make membership tests efficient.
+     *
      * @return The selected files.
      */
     private Set<String> getSelectedFiles() {
@@ -517,9 +521,9 @@ public class JobBean {
     }
 
     /**
-     * Get the list of selected jobs (LSIDs) from the request parameters. This is converted to a set to make membership
-     * tests efficient.
-     * 
+     * Get the list of selected jobs (LSIDs) from the request parameters. This
+     * is converted to a set to make membership tests efficient.
+     *
      * @return The selected jobs.
      */
     private Set<String> getSelectedJobs() {
@@ -539,7 +543,7 @@ public class JobBean {
 
     /**
      * Delete the selected jobs and files.
-     * 
+     *
      * @return
      */
     public String delete() {
@@ -605,9 +609,9 @@ public class JobBean {
     }
 
     /**
-     * Jobs are always sorted, so there's nothing to do here. This is just an action method to trigger a reload. Could
-     * probably be better named.
-     * 
+     * Jobs are always sorted, so there's nothing to do here. This is just an
+     * action method to trigger a reload. Could probably be better named.
+     *
      * @return
      */
     public String sort() {
@@ -616,7 +620,7 @@ public class JobBean {
 
     /**
      * Delete a list of jobs.
-     * 
+     *
      * @param jobNumbers
      */
     private void deleteJobs(String[] jobNumbers) {
@@ -743,8 +747,8 @@ public class JobBean {
     }
 
     /**
-     * Represents a job result. Wraps JobInfo and adds methods for getting the output files and the expansion state of
-     * the associated UI panel
+     * Represents a job result. Wraps JobInfo and adds methods for getting the
+     * output files and the expansion state of the associated UI panel
      */
     public static class JobResultsWrapper {
 
@@ -820,7 +824,7 @@ public class JobBean {
 
         /**
          * Returns a list all descendant jobs, basically a flattened tree.
-         * 
+         *
          * @return The descendant jobs.
          */
         public List<JobResultsWrapper> getDescendantJobs() {
@@ -890,8 +894,9 @@ public class JobBean {
         }
 
         /**
-         * boolean property used to conditionally render or enable some menu items.
-         * 
+         * boolean property used to conditionally render or enable some menu
+         * items.
+         *
          * @return Whether the job is complete.
          */
         public boolean isComplete() {
@@ -900,9 +905,10 @@ public class JobBean {
         }
 
         /**
-         * This property supports saving of the "expanded" state of the job across requests. It is used to initialize
-         * display properties of rows associated with this job.
-         * 
+         * This property supports saving of the "expanded" state of the job
+         * across requests. It is used to initialize display properties of rows
+         * associated with this job.
+         *
          * @return
          */
         public boolean isExpanded() {
