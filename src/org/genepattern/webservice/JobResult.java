@@ -20,8 +20,10 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.genepattern.client.Util;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.JobDownloader;
 
 /**
  * Encapsulates information about a job run on a GenePattern server.
@@ -158,19 +160,26 @@ public class JobResult {
      * @param fileType
      *            The file type (e.g. gct)
      * @return The url to retrieve the file from or <tt>null</tt> if a file
-     *         with the given type was not found.
+     *         with the given type could not be found.
      */
     public URL getURL(String fileType) {
         for (int i = 0; i < fileNames.length; i++) {
             String fileName = fileNames[i];
             if (fileName.toLowerCase().endsWith(".odf")) {
+                GetMethod get = null;
                 try {
-                    String modelType = Util.getOdfModelType(getURLForFileName(fileName).openStream());
+                    JobDownloader d = new JobDownloader(server.toString(), username, password);
+                    get = d.getGetMethod(jobNumber, fileName);
+                    String modelType = Util.getOdfModelType(get.getResponseBodyAsStream());
                     if (fileType.equalsIgnoreCase(modelType)) {
                         return getURLForFileName(fileName);
                     }
                 } catch (IOException e) {
                     // ignore
+                } finally {
+                    if (get != null) {
+                        get.releaseConnection();
+                    }
                 }
             }
             String endsWithString = fileType;
@@ -328,16 +337,42 @@ public class JobResult {
         if (filename == null || downloadDirectory == null) {
             throw new NullPointerException();
         }
-
         File dir = new File(downloadDirectory);
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
         try {
-            return new AnalysisWebServiceProxy(server.toString(), username, password).getResultFiles(getJobNumber(),
-                    new String[] { filename }, dir, overwrite)[0];
-        } catch (WebServiceException e) {
+            JobDownloader d = new JobDownloader(server.toString(), username, password);
+            File outputFile = new File(dir, filename);
+            if (outputFile.exists() && !overwrite) {
+                String name = "job_" + getJobNumber() + "_" + filename;
+                outputFile = new File(downloadDirectory, name);
+                if (outputFile.exists()) {
+                    String suffix = null;
+                    String prefix = name;
+                    int dotIndex = name.lastIndexOf(".");
+                    if (dotIndex != -1) {
+                        prefix = name.substring(0, dotIndex);
+                        suffix = name.substring(dotIndex, name.length());
+
+                    }
+                    if (prefix.length() < 3) {
+                        prefix += "tmp";
+                    }
+                    try {
+                        outputFile = File.createTempFile(prefix, suffix, dir);
+                    } catch (IOException e) {
+                        throw new IOException("Unable to create temp file.");
+                    }
+                }
+            } else if (outputFile.exists() && overwrite) {
+                outputFile.delete();
+            }
+
+            d.download(jobNumber, filename, outputFile);
+            return outputFile;
+        } catch (IOException e) {
             throw new IOException("Error downloading " + filename + " for job " + getJobNumber() + ".");
         }
 
