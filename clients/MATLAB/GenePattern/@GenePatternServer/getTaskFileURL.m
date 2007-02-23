@@ -4,6 +4,6 @@ function url = getTaskFileURL(obj, pipelineName, fileName)
 %
 %
 
-jUrl = obj.javaInstance.getTaskFileURL(pipelineName, fileName);
+jUrl = obj.javaInstance.getModuleFileUrl(pipelineName, fileName);
 
 url = char(jUrl.toString());
