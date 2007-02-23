@@ -15,11 +15,10 @@ package org.genepattern.codegenerator;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
 
 import org.genepattern.data.pipeline.JobSubmission;
@@ -44,8 +43,8 @@ import org.genepattern.webservice.TaskInfoAttributes;
  * <li>final output file selection and download,</li>
  * <li>script creation for pipelineDesigner.jsp</li>
  * </ul>
- * 
- * 
+ *
+ *
  * @author Ted Liefeld
  * @created Sept 26, 2004
  */
@@ -73,7 +72,7 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator
     /**
      * generate the R source code that documents the pipeline, prompts for
      * runtime parameter inputs, and offers download of output results
-     * 
+     *
      * @return String R code
      * @exception GenePatternException
      *                Description of the Exception
@@ -197,7 +196,7 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator
      * inheritance code for input from previously-run pipeline stages. At end of
      * task, generate links for downloading output files individually. Invoked
      * once for each task in the pipeline.
-     * 
+     *
      * @param jobSubmission
      *            description of task
      * @param taskInfo
@@ -346,7 +345,7 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator
                             // XXX - file from tasklib
                             invocation.append(paramVar + "."
                                     + matlabEncodeName(formal.getName())
-                                    + "= getTaskFileURL(gpServer, '" + task
+                                    + "= getModuleFileUrl(gpServer, '" + task
                                     + "', '" + file + "');");
                         } else {
                             invocation.append(paramVar + "."
@@ -394,7 +393,7 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator
      * creating links for downloading some or all output files from the
      * pipeline's tasks, and running of a visualizer on the final results, if
      * requested by the user.
-     * 
+     *
      * @return String code
      * @author Jim Lerner
      */
@@ -406,7 +405,7 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator
     /**
      * concrete method for AbstractPipelineCodeGenerator answering: "what
      * language is this?"
-     * 
+     *
      * @return String language (Java)
      * @author Jim Lerner
      */
