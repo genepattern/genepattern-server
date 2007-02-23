@@ -42,8 +42,8 @@ import org.genepattern.webservice.TaskInfoAttributes;
  * <li> final output file selection and download,</li>
  * <li> script creation for pipelineDesigner.jsp</li>
  * </ul>
- * 
- * 
+ *
+ *
  */
 public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implements TaskCodeGenerator {
 
@@ -62,7 +62,7 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
 
     public String emitProlog() throws GenePatternException {
         Vector<String> vProblems = new Vector<String>();
-        
+
         // check that all required parameters have been supplied
 
         int taskNum = 0;
@@ -113,8 +113,8 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
             prolog.append(model.getAuthor());
         }
         prolog.append("\n");
-        prolog.append("\t\tlibrary(GenePattern)\n");
-        prolog.append("\t\tgp <- gp.login(\"" + server + "\", \"" + model.getUserID() + "\")\n");
+        prolog.append("library(GenePattern)\n");
+        prolog.append("gp <- gp.login(\"" + server + "\", \"" + model.getUserID() + "\")\n");
 
         return prolog.toString();
     }
@@ -125,7 +125,7 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
      * inheritance code for input from previously-run pipeline stages. At end of
      * task, generate links for downloading output files individually. Invoked
      * once for each task in the pipeline.
-     * 
+     *
      * @param jobSubmission
      *            description of task
      * @param taskInfo
@@ -143,8 +143,7 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
             throws GenePatternException {
 
         StringBuffer out = new StringBuffer();
-        String tName = REncode(jobSubmission.getName());
-        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+
         StringBuffer invocation = new StringBuffer();
 
         if (jobSubmission.isVisualizer()) {
@@ -178,7 +177,7 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
                 }
 
                 if (jobSubmission.getRuntimePrompt()[i]) {
-                    invocation.append(actual.getName() + "= input.prompt('" + actual.getName() + "')");
+                    invocation.append(actual.getName() + "=input.prompt('" + actual.getName() + "')");
 
                 } else if (actualAttributes.get(INHERIT_FILENAME) != null) {
                     int inheritedTaskNum = Integer.parseInt((String) actualAttributes.get(INHERIT_TASKNAME));// task
@@ -207,7 +206,7 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
                     }
                     invocation.append(formal.getName() + "=");
                     TaskInfo inheritedTaskInfo = (TaskInfo) jobSubmissionTaskInfos.get(inheritedTaskNum);
-                    invocation.append("gp.get.url(" + inheritedTaskInfo.getName() + (inheritedTaskNum + 1) + ".result,"
+                    invocation.append("job.result.get.url(" + inheritedTaskInfo.getName() + (inheritedTaskNum + 1) + ".result,"
                             + fname + ")");
 
                 } else {
@@ -218,7 +217,7 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
 
         }
 
-        invocation.append(");");
+        invocation.append(")");
         if (!jobSubmission.isVisualizer()) {
             out.append("\n\t\t" + jobSubmission.getName() + (taskNum + 1) + ".result <- " + invocation.toString()
                     + "\n");
@@ -287,7 +286,7 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
                 }
             }
             if (task != null && file != null) {
-                invocation.append(actual.getName() + " = gp.get.module.file.url(gp, \"" + task + "\", \"" + file
+                invocation.append(actual.getName() + "=gp.get.module.file.url(gp, \"" + task + "\", \"" + file
                         + "\")");
             } else {
                 invocation.append(actual.getName() + "=\"" + val + "\"");

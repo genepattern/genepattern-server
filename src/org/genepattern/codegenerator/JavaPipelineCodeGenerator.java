@@ -15,12 +15,12 @@ package org.genepattern.codegenerator;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Vector;
 import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
@@ -44,8 +44,8 @@ import org.genepattern.webservice.TaskInfoAttributes;
  * <li> final output file selection and download,</li>
  * <li> script creation for pipelineDesigner.jsp</li>
  * </ul>
- * 
- * 
+ *
+ *
  * @author Ted Liefeld
  * @created April 26, 2004
  */
@@ -65,14 +65,14 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
     }
 
     public String emitUserInstructions() {
-        return model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE + " has been saved as a pipeline task on "
+        return model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE + " has been saved as a pipeline on "
                 + server + ".";
     }
 
     /**
      * generate the R source code that documents the pipeline, prompts for
      * runtime parameter inputs, and offers download of output results
-     * 
+     *
      * @return String R code
      * @exception GenePatternException
      *                Description of the Exception
@@ -106,11 +106,11 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
                             && !jobSubmission.getRuntimePrompt()[i] && parameterInfo[i].getValue().equals("")
                             && pia.get(INHERIT_TASKNAME) == null
                             && pia.get(GPConstants.PARAM_INFO_PREFIX[GPConstants.PARAM_INFO_NAME_OFFSET]) == null) {
-                        vProblems.add("Missing required parameter " + parameterInfo[i].getName() + " for task "
+                        vProblems.add("Missing required parameter " + parameterInfo[i].getName() + " for module "
                                 + taskName + taskNum + "\npi: " + parameterInfo[i]);
                     }
                     if (jobSubmission.getRuntimePrompt()[i]) {
-                        prompts.add("Enter " + parameterInfo[i].getName().replace('.', ' ') + " for task " + taskName
+                        prompts.add("Enter " + parameterInfo[i].getName().replace('.', ' ') + " for module " + taskName
                                 + ": ");
                     }
                 }
@@ -180,13 +180,12 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
         invocation.append("gpServer.");
         if (visualizer) {
             invocation.append("runVisualizer(");
-        }
-        else {
+        } else {
             invocation.append("runAnalysis(");
         }
         invocation.append("\"" + lsid + "\", ");
         invocation.append("new Parameter[]{");
-                       
+
         if (params != null) {
             for (int i = 0; i < params.length; i++) {
                 if (i > 0) {
@@ -205,7 +204,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
      * inheritance code for input from previously-run pipeline stages. At end of
      * task, generate links for downloading output files individually. Invoked
      * once for each task in the pipeline.
-     * 
+     *
      * @param jobSubmission
      *            description of task
      * @param taskInfo
@@ -230,8 +229,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
 
         if (jobSubmission.isVisualizer()) {
             invocation.append("runVisualizer(\"" + jobSubmission.getLSID() + "\", new Parameter[]{");
-        }
-        else {
+        } else {
             invocation.append("runAnalysis(\"" + jobSubmission.getLSID() + "\", new Parameter[]{");
         }
         HashMap paramName2ActaulParam = new HashMap();
@@ -263,8 +261,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
                 if (jobSubmission.getRuntimePrompt()[i]) {
                     invocation.append("new Parameter(\"" + formal.getName() + "\", prompts[" + numPrompts + "])");
                     numPrompts++;
-                }
-                else if (actualAttributes.get(INHERIT_FILENAME) != null) {
+                } else if (actualAttributes.get(INHERIT_FILENAME) != null) {
                     int inheritedTaskNum = Integer.parseInt((String) actualAttributes.get(INHERIT_TASKNAME));// task
                     // number
                     // of
@@ -287,14 +284,12 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
                         // is
                         // 1st
                         // output
-                    }
-                    catch (NumberFormatException nfe) {
+                    } catch (NumberFormatException nfe) {
                         fname = "\"" + fname + "\"";
                     }
                     invocation.append("results[" + resultsIndex + "].getURL(" + fname);
                     invocation.append(").toString())");
-                }
-                else {
+                } else {
                     appendParameter(actual, invocation);
                 }
 
@@ -302,12 +297,11 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
 
         }
 
-        invocation.append("}); // " + jobSubmission.getName());
+        invocation.append("});");
         if (!jobSubmission.isVisualizer()) {
             out.append("\n\t\tresults[" + numNonVisualizersSeen + "] = " + invocation.toString() + "\n");
             numNonVisualizersSeen++;
-        }
-        else {
+        } else {
             out.append("\n\t\t" + invocation.toString() + "\n");
         }
 
@@ -324,7 +318,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
      * creating links for downloading some or all output files from the
      * pipeline's tasks, and running of a visualizer on the final results, if
      * requested by the user.
-     * 
+     *
      * @return String R code
      * @author Jim Lerner
      */
@@ -343,7 +337,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
     }
 
     private void appendParameter(ParameterInfo actual, StringBuffer invocation) {
-        java.util.Map actualAttributes = actual.getAttributes();
+        Map actualAttributes = actual.getAttributes();
         String val = null;
         if (actual != null) {
             val = actual.getValue();
@@ -351,6 +345,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
         if (val == null) {
             if (pia != null) {
                 val = (String) actualAttributes.get((String) GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
+
             }
             if (val == null) {
                 val = "";
@@ -387,20 +382,17 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
                             task = model.getLsid();
                         }
                     }
-                }
-                catch (UnsupportedEncodingException uee) {
+                } catch (UnsupportedEncodingException uee) {
                     // ignore
                 }
             }
             if (task != null && file != null) {
-                invocation.append("new Parameter(\"" + actual.getName() + "\", gpServer.getTaskFileURL(\"" + task
+                invocation.append("new Parameter(\"" + actual.getName() + "\", gpServer.getModuleFileUrl(\"" + task
                         + "\", \"" + file + "\").toString())");
-            }
-            else {
+            } else {
                 invocation.append("new Parameter(\"" + actual.getName() + "\", \"" + val + "\")");
             }
-        }
-        else {
+        } else {
             invocation.append("new Parameter(\"" + actual.getName() + "\", \"" + val + "\")");
         }
     }
@@ -408,14 +400,14 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
     /**
      * concrete method for AbstractPipelineCodeGenerator answering: "what
      * language is this?"
-     * 
+     *
      * @return String language (Java)
      * @author Jim Lerner
      */
     public String getLanguage() {
         return "Java";
     }
-    
+
     public String getFileExtension() {
         return ".java";
     }
