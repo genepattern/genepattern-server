@@ -25,14 +25,14 @@
  		 org.genepattern.server.webservice.server.local.LocalAdminClient,
 		 java.util.Enumeration,
 		 java.util.Properties,
-		 java.io.File" 
+		 java.io.File"
    session="false" language="Java" %><%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
 
 	String userID= (String)request.getAttribute("userID"); // will force login if necessary
-	
+
 	// create a map of params and attributes in case this call was from a dispatch
 	Properties params = new Properties();
 
@@ -47,7 +47,7 @@
 			params.put(key, request.getAttribute(key).toString());
 		}
 	}
-	
+
 	String name = params.getProperty(GPConstants.NAME);
 	TaskInfo taskInfo = GenePatternAnalysisTask.getTaskInfo(name, userID);
 	String message = params.getProperty("message");
@@ -60,7 +60,7 @@
 		<link href="skin/favicon.ico" rel="shortcut icon">
 		<jsp:include page="navbarHead.jsp"/>
 		</head>
-		
+
 		<body>
 		<jsp:include page="navbar.jsp"/>
 		<%= StringUtils.htmlEncode(message) %><br>
@@ -105,7 +105,7 @@
 
 
 java.io.StringWriter app = new java.io.StringWriter();
-app.append("<applet code=\"" + org.genepattern.visualizer.RunVisualizerApplet.class.getName() + "\" archive=\"runVisualizer.jar\" codebase=\"downloads\" width=\"1\" height=\"1\" alt=\"Your browser refuses to run applets\" name=\"" + appletName + "\" >");
+app.append("<applet code=\"" + org.genepattern.visualizer.RunVisualizerApplet.class.getName() + "\" archive=\"runVisualizer.jar,commons-httpclient-3.0.1.jar,commons-logging-1.0.4.jar,commons-codec-1.3.jar\" codebase=\"downloads\" width=\"1\" height=\"1\" alt=\"Your browser refuses to run applets\" name=\"" + appletName + "\" >");
 app.append("<param name=\"" + RunVisualizerConstants.NAME + "\" value=\"" + name + "\" >");
 
 
@@ -160,7 +160,7 @@ StringBuffer fileNamesBuf = new StringBuffer();
 	for (i = 0; i < supportFiles.length; i++) {
 		if (i > 0) fileNamesBuf.append(",");
 		fileNamesBuf.append(StringUtils.htmlEncode(supportFiles[i].getName()));
-	} 
+	}
 app.append("<param name=\"" + RunVisualizerConstants.SUPPORT_FILE_NAMES + "\" value=\"" + fileNamesBuf.toString() + "\" >");
 
     StringBuffer fileDatesBuf = new StringBuffer();
