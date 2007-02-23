@@ -314,15 +314,15 @@ function(job.result)
 	return(output.filenames.list)
 }
 #------------------------------------------------------------------------------------------------------
-job.result.get.url.for.file.type <-
-function(job.result, file.type)
+job.result.get.url.for.file.name <-
+function(job.result, file.name)
 {
 	if(is.null(job.result))
 	{
 		stop("job.result is NULL")
 	}
 
-	url <- .jcall(job.result, "Ljava/net/URL;", "getURLForFileType", file.type, check = FALSE)
+	url <- .jcall(job.result, "Ljava/net/URL;", "getURLForFileName", file.name, check = FALSE)
 
     if (!is.null(e <-.jgetEx(clear = TRUE)))
     {
