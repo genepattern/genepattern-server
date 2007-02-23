@@ -30,6 +30,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpState;
+import org.apache.commons.httpclient.cookie.CookiePolicy;
+import org.apache.commons.httpclient.methods.GetMethod;
+
 public class RunVisualizer {
 
     private boolean DEBUG = false;
@@ -308,14 +313,20 @@ public class RunVisualizer {
         InputStream is = null;
         FileOutputStream fos = null;
         File file = null;
-
+        GetMethod get = null;
         try {
-            URLConnection conn = url.openConnection();
             if (url.getHost().equals(documentBase.getHost()) && url.getPort() == documentBase.getPort()) {
-                conn.setRequestProperty("Cookie", cookie);
-                conn.connect();
+                HttpClient client = new HttpClient();
+                client.setState(new HttpState());
+                client.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
+                get = new GetMethod(url.toString());
+                get.addRequestHeader("Cookie", cookie);
+                client.executeMethod(get);
+                is = get.getResponseBodyAsStream();
+            } else {
+                URLConnection conn = url.openConnection();
+                is = conn.getInputStream();
             }
-            is = conn.getInputStream();
 
             dir.mkdirs();
             file = new File(dir, filename);
@@ -339,6 +350,9 @@ public class RunVisualizer {
                 } catch (IOException e) {
 
                 }
+            }
+            if (get != null) {
+                get.releaseConnection();
             }
         }
 
