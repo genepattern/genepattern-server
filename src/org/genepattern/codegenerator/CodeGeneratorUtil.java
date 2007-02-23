@@ -4,15 +4,16 @@
  * This software and its documentation are copyright (2003-2006) by the
  * Broad Institute/Massachusetts Institute of Technology. All rights are
  * reserved.
- *  
+ *
  * This software is supplied without any warranty or guaranteed support
  * whatsoever. Neither the Broad Institute nor MIT can be responsible for its
  * use, misuse, or functionality.
- *  
+ *
  *******************************************************************************/
 package org.genepattern.codegenerator;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,17 +36,14 @@ public class CodeGeneratorUtil {
     static {
         languageToCodeGenerator = new HashMap<String, TaskCodeGenerator>();
         languageToCodeGenerator.put("Java", new JavaPipelineCodeGenerator());
-        languageToCodeGenerator
-                .put("MATLAB", new MATLABPipelineCodeGenerator());
+        languageToCodeGenerator.put("MATLAB", new MATLABPipelineCodeGenerator());
         languageToCodeGenerator.put("R", new RPipelineCodeGenerator());
     }
 
     private static Logger log = Logger.getLogger(CodeGeneratorUtil.class);
 
-    public static String getJobResultFileName(JobInfo job,
-            int parameterInfoIndex) {
-        String fileName = job.getParameterInfoArray()[parameterInfoIndex]
-                .getValue();
+    public static String getJobResultFileName(JobInfo job, int parameterInfoIndex) {
+        String fileName = job.getParameterInfoArray()[parameterInfoIndex].getValue();
         int index1 = fileName.lastIndexOf('/');
         int index2 = fileName.lastIndexOf('\\');
         int index = (index1 > index2 ? index1 : index2);
@@ -56,11 +54,9 @@ public class CodeGeneratorUtil {
         return fileName;
     }
 
-    public static int getJobCreationJobNumber(JobInfo job,
-            int parameterInfoIndex) {
+    public static int getJobCreationJobNumber(JobInfo job, int parameterInfoIndex) {
         int jobNumber = job.getJobNumber();
-        String fileName = job.getParameterInfoArray()[parameterInfoIndex]
-                .getValue();
+        String fileName = job.getParameterInfoArray()[parameterInfoIndex].getValue();
         int index1 = fileName.lastIndexOf('/');
         int index2 = fileName.lastIndexOf('\\');
         int index = (index1 > index2 ? index1 : index2);
@@ -78,7 +74,7 @@ public class CodeGeneratorUtil {
 
     /**
      * Generates code for a job
-     * 
+     *
      * @param language
      *            the language.
      * @param job
@@ -88,8 +84,7 @@ public class CodeGeneratorUtil {
      *             if an error occurs while generating the code.
      */
 
-    public static String getCode(String language, AnalysisJob job)
-            throws Exception {
+    public static String getCode(String language, AnalysisJob job) throws Exception {
         TaskCodeGenerator codeGenerator = languageToCodeGenerator.get(language);
         final JobInfo jobInfo = job.getJobInfo();
         String username = job.getJobInfo().getUserId();
@@ -98,32 +93,24 @@ public class CodeGeneratorUtil {
         ParameterInfo[] params = jobInfo.getParameterInfoArray();
         for (int i = 0; i < params.length; i++) {
             if (!params[i].isOutputFile()) {
-                String mode = params[i].getAttributes() != null ? (String) params[i]
-                        .getAttributes().get(ParameterInfo.MODE)
-                        : null;
-                if (mode != null
-                        && mode.equals(ParameterInfo.CACHED_INPUT_MODE)) {
+                String mode = params[i].getAttributes() != null ? (String) params[i].getAttributes().get(
+                        ParameterInfo.MODE) : null;
+                if (mode != null && mode.equals(ParameterInfo.CACHED_INPUT_MODE)) {
                     String name = getJobResultFileName(jobInfo, i);
                     int jobNumber = getJobCreationJobNumber(jobInfo, i);
                     try {
-                        String url = job.getServer()
-                                + System.getProperty("GP_Path")
-                                + "jobResults/" + jobNumber
-                                + "/"
+                        String url = job.getServer() + System.getProperty("GP_Path") + "jobResults/" + jobNumber + "/"
                                 + java.net.URLEncoder.encode(name, "UTF-8");
 
-                        parameterInfoList.add(new ParameterInfo(params[i]
-                                .getName(), url, ""));
+                        parameterInfoList.add(new ParameterInfo(params[i].getName(), url, ""));
                     } catch (UnsupportedEncodingException x) {
                         log.error(x);
                         throw new Exception("Unable to encode " + name);
                     }
                 } else if (params[i].getAttributes() != null
                         && params[i].getAttributes().get("client_filename") != null) {
-                    String clientFile = (String) params[i].getAttributes().get(
-                            "client_filename");
-                    parameterInfoList.add(new ParameterInfo(
-                            params[i].getName(), clientFile, ""));
+                    String clientFile = (String) params[i].getAttributes().get("client_filename");
+                    parameterInfoList.add(new ParameterInfo(params[i].getName(), clientFile, ""));
                 } else {
                     parameterInfoList.add(params[i]);
                 }
@@ -135,8 +122,7 @@ public class CodeGeneratorUtil {
         String code = null;
         if (taskInfo != null) { // task exists on server
 
-            String serializedModel = (String) taskInfo.getTaskInfoAttributes()
-                    .get("serializedModel");
+            String serializedModel = (String) taskInfo.getTaskInfoAttributes().get("serializedModel");
             if (serializedModel != null && serializedModel.length() > 0) {
                 Map<String, ParameterInfo> runtimePrompts = new HashMap<String, ParameterInfo>();
                 for (int i = 0; i < parameterInfoList.size(); i++) {
@@ -148,8 +134,8 @@ public class CodeGeneratorUtil {
 
                 PipelineModel model = null;
                 try {
-                    model = PipelineModel.toPipelineModel((String) taskInfo
-                            .getTaskInfoAttributes().get("serializedModel"));
+                    model = PipelineModel.toPipelineModel((String) taskInfo.getTaskInfoAttributes().get(
+                            "serializedModel"));
                 } catch (Exception e) {
                     log.error(e);
                     throw e;
@@ -163,29 +149,25 @@ public class CodeGeneratorUtil {
                     for (int j = 0; j < p.size(); j++) {
                         ParameterInfo pi = (ParameterInfo) p.get(j);
                         if (pi.getAttributes().get("runTimePrompt") != null) {
-                            String key = js.getName() + (i + 1) + "."
-                                    + pi.getName();
-                            ParameterInfo rt = (ParameterInfo) runtimePrompts
-                                    .get(key);
+                            String key = js.getName() + (i + 1) + "." + pi.getName();
+                            ParameterInfo rt = (ParameterInfo) runtimePrompts.get(key);
                             p.set(j, rt);
                         }
                     }
-                    model.setLsid((String) taskInfo.getTaskInfoAttributes()
-                            .get(GPConstants.LSID));
+                    model.setLsid((String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
                     model.setUserID(username);
 
                     TaskInfo pipelineStep = adminClient.getTask(js.getLSID());
 
                     if (pipelineStep == null) {
-                        throw new Exception("Missing task " + js.getName()
-                                + ".");
+                        throw new Exception("Missing module " + js.getName() + ".");
                     }
                     taskInfos.add(pipelineStep);
                 }
                 try {
-                    code = AbstractPipelineCodeGenerator.getCode(model,
-                            taskInfos, System.getProperty("GenePatternURL"),
-                            codeGenerator.getLanguage());
+                    URL url = new URL(System.getProperty("GenePatternURL"));
+                    String server = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
+                    code = AbstractPipelineCodeGenerator.getCode(model, taskInfos, server, codeGenerator.getLanguage());
                 } catch (Exception e) {
                     log.error(e);
                     throw e;
@@ -196,9 +178,7 @@ public class CodeGeneratorUtil {
         }
 
         if (code == null) {
-            code = codeGenerator.generateTask(job,
-                    (ParameterInfo[]) parameterInfoList
-                            .toArray(new ParameterInfo[0]));
+            code = codeGenerator.generateTask(job, (ParameterInfo[]) parameterInfoList.toArray(new ParameterInfo[0]));
         }
         return code;
     }
