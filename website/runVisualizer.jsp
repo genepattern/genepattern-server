@@ -105,7 +105,7 @@
 
 
 java.io.StringWriter app = new java.io.StringWriter();
-app.append("<applet code=\"" + org.genepattern.visualizer.RunVisualizerApplet.class.getName() + "\" archive=\"runVisualizer.jar,commons-httpclient-3.0.1.jar,commons-logging-1.0.4.jar,commons-codec-1.3.jar\" codebase=\"downloads\" width=\"1\" height=\"1\" alt=\"Your browser refuses to run applets\" name=\"" + appletName + "\" >");
+app.append("<applet code=\"" + org.genepattern.visualizer.RunVisualizerApplet.class.getName() + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.3.jar\" codebase=\"downloads\" width=\"1\" height=\"1\" alt=\"Your browser refuses to run applets\" name=\"" + appletName + "\" >");
 app.append("<param name=\"" + RunVisualizerConstants.NAME + "\" value=\"" + name + "\" >");
 
 
