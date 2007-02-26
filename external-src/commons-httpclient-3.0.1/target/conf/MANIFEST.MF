@@ -1,0 +1,6 @@
+Extension-Name: httpclient
+Specification-Vendor: Apache Software Foundation
+Specification-Version: 1.0
+Implementation-Vendor: Apache Software Foundation
+Implementation-Version: 3.0.1
+
