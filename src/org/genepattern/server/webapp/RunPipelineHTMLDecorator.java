@@ -51,7 +51,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
     protected static String GET_JOB_JSP = "getJobResults.jsp?jobID=";
 
-    protected static String GET_TASK_JSP = "viewTask.jsp?view=1&name=";
+    protected static String GET_TASK_JSP = "addTask.jsp?view=1&name=";
 
     protected static String GET_TASK_FILE = "jobResults";
 
@@ -122,7 +122,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
     /**
      * called before a task is executed
-     * 
+     *
      * If this is for a visualizer, write out the applet code
      */
     int currentIndex = -1;
@@ -308,7 +308,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
         for (i = 0; i < parameterInfoArray.length; i++) {
             boolean isInputFile = parameterInfoArray[i].isInputFile();
 			String paramName = parameterInfoArray[i].getName();
-            
+
            // if (isInputFile) {
                 // note that this parameter is a URL that must be downloaded by
                 // adding it to the CSV list for the applet
@@ -317,12 +317,12 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
             //    out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
             //    numToDownload++;
             //}
-			if (isInputFile || 
+			if (isInputFile ||
 		    	(params.getProperty(paramName).startsWith("http:") ||
 		    	 params.getProperty(paramName).startsWith("https:") ||
-		    	 params.getProperty(paramName).startsWith("ftp:"))) 
+		    	 params.getProperty(paramName).startsWith("ftp:")))
 				{
-				// note that this parameter is a URL that must be downloaded by adding it to the 
+				// note that this parameter is a URL that must be downloaded by adding it to the
 				//CSV list for the applet
 				if (numToDownload > 0) {
 				    out.print(",");
@@ -330,7 +330,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 				out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
                 numToDownload++;
 			}
-	
+
 
 
 
@@ -366,7 +366,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
     /**
      * called after a task execution is complete
-     * 
+     *
      * If this is for a visualizer, do nothing
      */
     public void recordTaskCompletion(JobInfo jobInfo, String name) {
