@@ -66,8 +66,7 @@ public final class GenePattern {
 
     public GenePattern() {
         try {
-            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager
-                    .getSystemLookAndFeelClassName());
+            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
 
         } catch (Exception e) {
         }
@@ -78,22 +77,18 @@ public final class GenePattern {
     }
 
     static void loadDefaults() {
-        URL imgURL = GenePattern.class
-                .getResource("/org/genepattern/gpge/resources/GPGE_small.jpg");
+        URL imgURL = GenePattern.class.getResource("/org/genepattern/gpge/resources/GPGE_small.jpg");
         if (imgURL != null) {
             icon = new ImageIcon(imgURL);
         }
-        URL imgURL2 = GenePattern.class
-                .getResource("/org/genepattern/gpge/resources/GPGE_small2.jpg");
+        URL imgURL2 = GenePattern.class.getResource("/org/genepattern/gpge/resources/GPGE_small2.jpg");
         if (imgURL2 != null) {
             smallIcon = new ImageIcon(imgURL2);
         }
 
         if (!GPGE.RUNNING_ON_MAC) {
-            javax.swing.UIDefaults uiDefaults = javax.swing.UIManager
-                    .getDefaults();
-            uiDefaults.put("Viewport.background",
-                    new javax.swing.plaf.ColorUIResource(Color.white));
+            javax.swing.UIDefaults uiDefaults = javax.swing.UIManager.getDefaults();
+            uiDefaults.put("Viewport.background", new javax.swing.plaf.ColorUIResource(Color.white));
         }
 
     }
@@ -104,8 +99,7 @@ public final class GenePattern {
 
     /** shows the splash screen */
     public static JWindow showSplashScreen() {
-        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit()
-                .getScreenSize();
+        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
 
         final java.net.URL url = GenePattern.class
                 .getResource("/org/genepattern/gpge/resources/GenePattern_splash.png");
@@ -134,12 +128,11 @@ public final class GenePattern {
         new GenePattern();
     }
 
-    public static void showMessageDialog(final String title,
-            final String message) {
+    public static void showMessageDialog(final String title, final String message) {
         Runnable runnable = new Runnable() {
             public void run() {
-                javax.swing.JOptionPane.showMessageDialog(parentFrame, message,
-                        title, javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                javax.swing.JOptionPane.showMessageDialog(parentFrame, message, title,
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -156,8 +149,8 @@ public final class GenePattern {
     public static void showErrorDialog(final String title, final String message) {
         Runnable runnable = new Runnable() {
             public void run() {
-                javax.swing.JOptionPane.showMessageDialog(parentFrame, message,
-                        "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                javax.swing.JOptionPane.showMessageDialog(parentFrame, message, "Error",
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -167,10 +160,8 @@ public final class GenePattern {
         }
     }
 
-    public static boolean disconnectedFromServer(
-            org.genepattern.webservice.WebServiceException wse) {
-        return disconnectedFromServer(wse, AnalysisServiceManager.getInstance()
-                .getServer());
+    public static boolean disconnectedFromServer(org.genepattern.webservice.WebServiceException wse) {
+        return disconnectedFromServer(wse, AnalysisServiceManager.getInstance().getServer());
     }
 
     /**
@@ -178,17 +169,14 @@ public final class GenePattern {
      * disconnected from the server, <tt>false</tt> otherwise. If
      * <tt>true</tt> pops open a dialog to alert the user.
      */
-    public static boolean disconnectedFromServer(
-            org.genepattern.webservice.WebServiceException wse, String server) {
+    public static boolean disconnectedFromServer(org.genepattern.webservice.WebServiceException wse, String server) {
         if (wse.getRootCause() instanceof org.apache.axis.AxisFault) {
-            org.apache.axis.AxisFault af = (org.apache.axis.AxisFault) wse
-                    .getRootCause();
+            org.apache.axis.AxisFault af = (org.apache.axis.AxisFault) wse.getRootCause();
             Throwable t = af.getCause();
-            if (t instanceof java.net.ConnectException
-                    || t instanceof java.net.UnknownHostException) {
+            if (t instanceof java.net.ConnectException || t instanceof java.net.UnknownHostException) {
                 String message = "Unable to connect to " + server;
-                javax.swing.JOptionPane.showMessageDialog(parentFrame, message,
-                        "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                javax.swing.JOptionPane.showMessageDialog(parentFrame, message, "Error",
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
                 return true;
             }
         }
@@ -208,8 +196,7 @@ public final class GenePattern {
         String contents = null;
         InputStream in = null;
         try {
-            in = GenePattern.class
-                    .getResourceAsStream("/org/genepattern/gpge/resources/About_GenePattern.html");
+            in = GenePattern.class.getResourceAsStream("/org/genepattern/gpge/resources/About_GenePattern.html");
             StringBuffer sb = new StringBuffer();
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String s = null;
@@ -219,10 +206,8 @@ public final class GenePattern {
             }
             contents = sb.toString();
         } catch (IOException ex) {
-            System.err
-                    .println("Couldn't get the about text for this application");
-            contents = BuildProperties.PROGRAM_NAME + ' '
-                    + BuildProperties.FULL_VERSION + " Build "
+            System.err.println("Couldn't get the about text for this application");
+            contents = BuildProperties.PROGRAM_NAME + ' ' + BuildProperties.FULL_VERSION + " Build "
                     + BuildProperties.BUILD;
         } finally {
             try {
@@ -234,39 +219,28 @@ public final class GenePattern {
         }
         // change the markers to the real property values
 
-        contents = StringUtils.replaceAll(contents, "${PROGRAM_NAME}",
-                BuildProperties.PROGRAM_NAME);
-        contents = StringUtils.replaceAll(contents, "${FULL_VERSION}",
-                BuildProperties.FULL_VERSION);
-        contents = StringUtils.replaceAll(contents, "${BUILD.DATE}", String
-                .valueOf(BuildProperties.BUILD_DATE));
-        contents = StringUtils.replaceAll(contents, "${BUILD.TAG}", String
-                .valueOf(BuildProperties.BUILD_TAG));
-
-
+        contents = StringUtils.replaceAll(contents, "${version.major}", BuildProperties.MAJOR_VERSION);
+        contents = StringUtils.replaceAll(contents, "${version.minor}", String.valueOf(BuildProperties.MINOR_VERSION));
+        contents = StringUtils.replaceAll(contents, "${build.tag}", String.valueOf(BuildProperties.BUILD_TAG));
+        contents = StringUtils.replaceAll(contents, "${date}", String.valueOf(BuildProperties.BUILD_DATE));
 
         javax.swing.JTextArea notes = new javax.swing.JTextArea(contents);
         notes.setMargin(new Insets(5, 5, 5, 5));
         notes.setEditable(false);
 
-        final javax.swing.JScrollPane scroll_pane = new javax.swing.JScrollPane(
-                notes);
-        javax.swing.JOptionPane.showMessageDialog(getDialogParent(),
-                scroll_pane, "About GenePattern",
+        final javax.swing.JScrollPane scroll_pane = new javax.swing.JScrollPane(notes);
+        javax.swing.JOptionPane.showMessageDialog(getDialogParent(), scroll_pane, "About GenePattern",
                 JOptionPane.INFORMATION_MESSAGE, icon);
 
     }
 
     /** shows the about dialog */
     public static final void showErrors() {
-        java.net.URL url = GenePattern.class
-                .getResource("/org/genepattern/gpge/resources/Error_preamble.html");
+        java.net.URL url = GenePattern.class.getResource("/org/genepattern/gpge/resources/Error_preamble.html");
         try {
-            ReportPanel errors_panel = new ReportPanel(url, REPORTER
-                    .getErrors());
-            javax.swing.JOptionPane.showMessageDialog(getDialogParent(),
-                    errors_panel, "GenePattern Analysis Module Errors",
-                    JOptionPane.ERROR_MESSAGE, icon);
+            ReportPanel errors_panel = new ReportPanel(url, REPORTER.getErrors());
+            javax.swing.JOptionPane.showMessageDialog(getDialogParent(), errors_panel,
+                    "GenePattern Analysis Module Errors", JOptionPane.ERROR_MESSAGE, icon);
         } catch (java.io.IOException ex) {
             System.err.println("Could not display errors");
         }
