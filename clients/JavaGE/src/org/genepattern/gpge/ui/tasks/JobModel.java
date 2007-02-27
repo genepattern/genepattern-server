@@ -41,7 +41,7 @@ import org.genepattern.webservice.WebServiceException;
 
 /**
  * Job model
- * 
+ *
  * @author Joshua Gould
  */
 public class JobModel extends AbstractSortableTreeTableModel {
@@ -124,13 +124,13 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
         }
         new JobDownloader(job.getServer(), AnalysisServiceManager.getInstance().getUsername(), AnalysisServiceManager
-                .getInstance().getUsername()).download(Integer.parseInt(jobNumber), fileName, destination);
+                .getInstance().getPassword()).download(Integer.parseInt(jobNumber), fileName, destination);
 
     }
 
     /**
      * Removes the given file from the model
-     * 
+     *
      * @param serverFile
      *            Description of the Parameter
      */
@@ -144,7 +144,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
     /**
      * Deletes all the jobs from server
-     * 
+     *
      */
     public void deleteAll() throws WebServiceException {
         List children = root.getChildren();
@@ -164,7 +164,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
     /**
      * Deletes the given file from the server
-     * 
+     *
      * @param serverFile
      *            Description of the Parameter
      */
@@ -185,7 +185,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
     /**
      * Deletes the all the output files for a job from the server
-     * 
+     *
      * @param node
      *            Description of the Parameter
      */
@@ -201,7 +201,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
     /**
      * Removes the job from the model
-     * 
+     *
      * @param jobNumber
      *            the job number to remove
      */
@@ -498,7 +498,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
     /**
      * Description of the Class
-     * 
+     *
      * @author Joshua Gould
      */
     public static class ServerFileNode extends SendableTreeNode implements Comparable {
@@ -570,7 +570,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
         /**
          * Gets the job number that created this file
-         * 
+         *
          * @return
          */
         public int getJobNumber() {
@@ -579,7 +579,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
         /**
          * Gets the file name on the server for this output file
-         * 
+         *
          * @return
          */
         public String getFileName() {
@@ -588,7 +588,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
         /**
          * Returns the url to download the file from
-         * 
+         *
          * @return The url to retrieve the file from.
          */
         public URL getURL() {
@@ -654,7 +654,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
     /**
      * Description of the Class
-     * 
+     *
      * @author Joshua Gould
      */
     public static class JobNode extends DefaultMutableTreeNode {
