@@ -58,7 +58,7 @@ h2 {
 			<a href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.directory}/#{p.value}">#{p.displayValue}</a>
 		</h:outputText>
 		<h:outputText rendered="#{empty p.directory}">
-			<a href="#{facesContext.externalContext.requestContextPath}/getInputFile.jsp?file=#{p.value}">#{p.displayValue}</a>
+			<a href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.value}">#{p.displayValue}</a>
 		</h:outputText>
 	</h:outputText>
 	<h:outputText rendered="#{!p.url and !p.exists}">
