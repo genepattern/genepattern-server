@@ -31,7 +31,7 @@
 		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.webservice.server.DirectoryManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask"
-	session="false" language="Java" %><% 
+	session="false" language="Java" %><%
 
 
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -74,11 +74,11 @@ function toggleVersions(divname) {
 
 <body>
 	<jsp:include page="navbar.jsp"/>
-	
+
 	<table>
 		<tr>
 		<td valign="top">
-		Note: most documentation is in Adobe's PDF format and requires Acrobat Reader for viewing.  If you don't have it, 
+		Note: most documentation is in Adobe's PDF format and requires Acrobat Reader for viewing.  If you don't have it,
 		you can download it at no cost from the Adobe website.
 		</td>
 		<td valign="top">
@@ -95,7 +95,7 @@ function toggleVersions(divname) {
 		</thead>
 		<tbody>
 		<%
-		
+
 		Collection tasks = adminClient.getTaskCatalog();
 		HashMap taskMap = new HashMap();
 		for (Iterator iter = tasks.iterator(); iter.hasNext(); ){
@@ -105,7 +105,7 @@ function toggleVersions(divname) {
 			if (versions == null) {
 				versions = new ArrayList();
 				taskMap.put(lsid.toStringNoVersion(), versions);
-			}					
+			}
 			versions.add(ti);
 		}
 		for (Iterator iter = taskMap.keySet().iterator(); iter.hasNext(); ){
@@ -116,13 +116,13 @@ function toggleVersions(divname) {
 						public int compare(Object o1, Object o2) {
 							TaskInfo t1 = (TaskInfo)o1;
 							TaskInfo t2 = (TaskInfo)o2;
-								
-							LSID l1, l2;					
+
+							LSID l1, l2;
 							try {
 								l1 = new LSID((String)t1.giveTaskInfoAttributes().get(GPConstants.LSID));
 								l2 = new LSID((String)t2.giveTaskInfoAttributes().get(GPConstants.LSID));
 								return l2.getVersion().compareToIgnoreCase(l1.getVersion());
-		
+
 							} catch (MalformedURLException mue) {
 								// ignore
 								return 0;
@@ -131,24 +131,24 @@ function toggleVersions(divname) {
 					});
 			taskMap.put(key, sortedVersions);
 		}
-		
-		
+
+
 		TreeMap sortedTaskMap = new TreeMap ( new Comparator() {
 			public int compare(Object o1, Object o2) {
 				String k1 = (String)o1;
 				String k2 = (String)o2;
-				return k1.compareToIgnoreCase(k2);		
+				return k1.compareToIgnoreCase(k2);
 			}
 		} ) ;
-		
-		
-		
+
+
+
 		for (Iterator iter = taskMap.keySet().iterator(); iter.hasNext(); ) {
 			String key = (String)iter.next();
 			TaskInfo[] versions = (TaskInfo[])taskMap.get(key);
 			sortedTaskMap.put(((versions[0]).getName()), versions);
 		}
-		
+
 		String description;
 		LSID lsid;
 		String taskType;
@@ -166,7 +166,7 @@ function toggleVersions(divname) {
 				boolean isPipeline = taskType.equals(GPConstants.TASK_TYPE_PIPELINE);
 				String indent = "";
 				String taskName = ti.getName();
-				
+
 				if (j >= 1){
 				 	indent="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 					if (firstName.equalsIgnoreCase(taskName)) taskName = "";
@@ -185,26 +185,26 @@ function toggleVersions(divname) {
 				<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= lsid %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>"><%= docFiles[i].getName() %></a>
 		<%
 					}
-		
+
 		out.println("</div></td></tr>");
-		
+
 				} else {  // Only one or first one
-		
+
 		%>
 			<tr>
 			<td valign="top"><%= indent %>
-				<a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipelineDesigner.jsp" %>?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><nobr><%= ti.getName() %> 
+				<a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipelineDesigner.jsp" %>?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><nobr><%= ti.getName() %>
 				(<%= lsid.getVersion() %>)</nobr><a/>
 		<%
 			if (versions.length > 1){
-		%>		
+		%>
 			<input id="<%=firstName%>cb" type="checkbox" onClick="toggleVersions('<%=firstName%>') "> Show all versions</input>
-			<%	
+			<%
 			}
-		%>		
+		%>
 				</td>
-			
-		
+
+
 			<td valign="top"><%= StringUtils.htmlEncode(description) %>
 			<br>
 		<%
@@ -214,14 +214,14 @@ function toggleVersions(divname) {
 		%>
 				<a href="getTaskDoc.jsp?<%= GPConstants.NAME %>=<%= lsid %>&file=<%= URLEncoder.encode(docFiles[i].getName()) %>"><%= docFiles[i].getName() %></a>
 		<%
-			
+
 					}
 				}
 			}
 		%>
 			</td></tr>
 		<%
-		
+
 		}
 		%>
 		</tbody>
@@ -296,8 +296,8 @@ if (contentType == null) {
 	htTypes.put(".zip", "application/zip");
 	htTypes.put("." + GPConstants.TASK_TYPE_PIPELINE, "text/plain");
 	htTypes.put(".class", "application/octet-stream");
-	htTypes.put(".doc", "application/pdf");
-	htTypes.put(".pdf", "application/msword");
+	htTypes.put(".pdf", "application/pdf");
+	htTypes.put(".doc", "application/msword");
 
 	i = filename.lastIndexOf(".");
 	String extension = (i > -1 ? filename.substring(i) : "");
@@ -311,16 +311,21 @@ response.setHeader("Content-Type", contentType);
 response.setHeader("Content-disposition", "inline; filename=\""
         + filename + "\"");
 
-      FileInputStream ins = new java.io.FileInputStream(in);
-	int c = 0;
-  	while ((c = ins.read()) != -1) {
-   		out.write(c);
-  	}
-	out.flush();
-	ins.close();
-	ins = null;
 
+	OutputStream os = response.getOutputStream();
+	InputStream is = null;
+    try {
+        is = new BufferedInputStream(new FileInputStream(in));
+        byte[] b = new byte[10000];
+        int bytesRead;
+        while ((bytesRead = is.read(b)) != -1) {
+            os.write(b, 0, bytesRead);
+        }
+    } finally {
+        if (is != null) {
+            is.close();
+        }
+	}
+    os.flush();
 
-
-return;
 %>
