@@ -93,7 +93,7 @@ import com.jgoodies.forms.layout.RowSpec;
 // params start at one
 public class PipelineEditor extends JPanel implements TaskDisplay,
         PipelineListener {
-    private static final String CHOOSE_TASK = "Choose Task";
+    private static final String CHOOSE_TASK = "Choose Module";
 
     private static final boolean DEBUG = false;
 
@@ -159,9 +159,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
     private void enableButtons() {
         deleteButton.setEnabled(model.getTaskCount() > 0);
         if (model.getTaskCount() == 0) {
-            addAfterButton.setText("Add Task");
+            addAfterButton.setText("Add Module");
         } else {
-            addAfterButton.setText("Add Task After");
+            addAfterButton.setText("Add Module After");
         }
         int index = tasksInPipelineComboBox.getSelectedIndex();
         addBeforeButton.setEnabled(model.getTaskCount() != 0);
@@ -176,7 +176,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
     /**
      * Only one instance should be created by the ViewManager
-     * 
+     *
      */
     public PipelineEditor() {
         MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
@@ -213,9 +213,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
         tasksInPipelineComboBox = new JComboBox();
 
-        addAfterButton = new JButton("Add Task After");
+        addAfterButton = new JButton("Add Module After");
 
-        addBeforeButton = new JButton("Add Task Before");
+        addBeforeButton = new JButton("Add Module Before");
 
         deleteButton = new JButton("Delete");
 
@@ -478,7 +478,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
     }
 
     /**
-     * 
+     *
      * @param saveTask
      *            if <tt>true</tt> save the task on the server, otherwise
      *            update the paramter values in the model
@@ -802,7 +802,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
             temp.add(nameField, cc.xy(3, 1));
 
             if (versionComboBox != null) {
-                temp.add(versionComboBox, cc.xy(4, 1));
+                temp.add(versionComboBox, cc.xy(5, 1));
             }
 
             temp.add(descriptionLabel, cc.xy(1, 3));
@@ -1009,14 +1009,14 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
 
         if (addAfter) {
             if (model.getTaskCount() == 0) {
-                title = "Add Task";
+                title = "Add Module";
             } else {
-                title = "Add Task After " + (jobSubmissionIndex + 1) + ". "
+                title = "Add Module After " + (jobSubmissionIndex + 1) + ". "
                         + model.getTaskName(jobSubmissionIndex);
             }
             insertionIndex = jobSubmissionIndex + 1;
         } else {
-            title = "Add Task Before " + (jobSubmissionIndex + 1) + ". "
+            title = "Add Module Before " + (jobSubmissionIndex + 1) + ". "
                     + model.getTaskName(jobSubmissionIndex);
             insertionIndex = jobSubmissionIndex;
         }
@@ -1269,7 +1269,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
         }
 
         /**
-         * 
+         *
          * @param taskIndex
          *            the task index for this parameter
          * @param model
@@ -1548,9 +1548,9 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
             togglePanel.setBackground(getBackground());
             popupMenu = new JPopupMenu();
 
-            final JMenuItem addTaskAfterItem = new JMenuItem("Add Task After");
+            final JMenuItem addTaskAfterItem = new JMenuItem("Add Module After");
             popupMenu.add(addTaskAfterItem);
-            final JMenuItem addBeforeItem = new JMenuItem("Add Task Before");
+            final JMenuItem addBeforeItem = new JMenuItem("Add Module Before");
             popupMenu.add(addBeforeItem);
             moveUpItem = new JMenuItem("Move Up");
             popupMenu.add(moveUpItem);
