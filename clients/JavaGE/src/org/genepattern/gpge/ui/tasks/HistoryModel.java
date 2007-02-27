@@ -12,6 +12,7 @@
 
 package org.genepattern.gpge.ui.tasks;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,12 +32,11 @@ import org.genepattern.webservice.WebServiceException;
 
 /**
  * Maintains list of all jobs on server
- * 
+ *
  * @author Joshua Gould
- * 
+ *
  */
-public class HistoryModel extends AbstractTableModel implements
-        GPGEMessageListener, ColumnSorter {
+public class HistoryModel extends AbstractTableModel implements GPGEMessageListener, ColumnSorter {
     static HistoryModel instance = new HistoryModel();
 
     ArrayList historyList = new ArrayList();
@@ -65,16 +65,14 @@ public class HistoryModel extends AbstractTableModel implements
             JobMessage je = (JobMessage) message;
             if (je.getType() == JobMessage.JOB_SUBMITTED) {
                 add(je.getJob());
-            } else if (je.getType() == JobMessage.JOB_STATUS_CHANGED
-                    || je.getType() == JobMessage.JOB_COMPLETED) {
+            } else if (je.getType() == JobMessage.JOB_STATUS_CHANGED || je.getType() == JobMessage.JOB_COMPLETED) {
                 fireTableStructureChanged();
             }
         }
     }
 
     private void add(AnalysisJob job) {
-        int insertionIndex = Collections.binarySearch(historyList, job,
-                comparator);
+        int insertionIndex = Collections.binarySearch(historyList, job, comparator);
 
         if (insertionIndex < 0) {
             insertionIndex = -insertionIndex - 1;
@@ -117,13 +115,11 @@ public class HistoryModel extends AbstractTableModel implements
             if (!complete) {
                 return jobInfo.getStatus();
             }
-            return java.text.DateFormat.getDateTimeInstance(
-                    java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
-                    .format(jobInfo.getDateCompleted());
+            return jobInfo.getDateCompleted() == null ? null : DateFormat.getDateTimeInstance(DateFormat.SHORT,
+                    DateFormat.SHORT).format(jobInfo.getDateCompleted());
         case 2:
-            return java.text.DateFormat.getDateTimeInstance(
-                    java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
-                    .format(jobInfo.getDateSubmitted());
+            return jobInfo.getDateSubmitted() == null ? null : DateFormat.getDateTimeInstance(DateFormat.SHORT,
+                    DateFormat.SHORT).format(jobInfo.getDateSubmitted());
         default:
             return null;
         }
@@ -158,8 +154,8 @@ public class HistoryModel extends AbstractTableModel implements
         historyList.clear();
         String server = AnalysisServiceManager.getInstance().getServer();
         String username = AnalysisServiceManager.getInstance().getUsername();
-        AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(server,
-                username, AnalysisServiceManager.getInstance().getPassword());
+        AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(server, username, AnalysisServiceManager
+                .getInstance().getPassword());
         JobInfo[] jobs = proxy.getJobs(username, true);
         for (int i = 0; i < jobs.length; i++) {
             historyList.add(new AnalysisJob(server, jobs[i]));
@@ -168,10 +164,8 @@ public class HistoryModel extends AbstractTableModel implements
     }
 
     public void remove(int row) throws WebServiceException {
-        AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(
-                AnalysisServiceManager.getInstance().getServer(),
-                AnalysisServiceManager.getInstance().getUsername(),
-                AnalysisServiceManager.getInstance().getPassword());
+        AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(AnalysisServiceManager.getInstance().getServer(),
+                AnalysisServiceManager.getInstance().getUsername(), AnalysisServiceManager.getInstance().getPassword());
         proxy.purgeJob(getJob(row).getJobInfo().getJobNumber());
         historyList.remove(row);
         this.fireTableRowsDeleted(row, row);
