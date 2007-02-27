@@ -634,11 +634,6 @@ try {
 <%
 		return;
 	} else {
-%>
-		<script language="Javascript">
-		addNavbarItem("<%= model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE %>", "<%= model.getLsid() %>");
-		</script>
-<%
 		// delete the legacy R file for the pipeline, if it exists
 		pipelineName = model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE;
 		String dir = DirectoryManager.getTaskLibDir(pipelineName, lsid, userID);
