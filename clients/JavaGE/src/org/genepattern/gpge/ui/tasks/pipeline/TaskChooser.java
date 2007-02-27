@@ -68,7 +68,7 @@ public class TaskChooser extends CenteredDialog {
 		pipelineComponent.addTask(indexToAdd, wrapper.svc);
 		//getOwner().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 	}
-	
+
 	public TaskChooser(Frame parent, String title,
 			PipelineEditor _pipelineComponent, int _indexToAdd) {
 		super(parent);
@@ -109,7 +109,7 @@ public class TaskChooser extends CenteredDialog {
 				          }
 				     }
 				 });
-				 
+
 				tasksList.addListSelectionListener(new ListSelectionListener() {
 
 					public void valueChanged(ListSelectionEvent e) {
@@ -142,10 +142,10 @@ public class TaskChooser extends CenteredDialog {
 		middlePanel.add(categoryScrollPane, BorderLayout.WEST);
 		middlePanel.add(tasksScrollPane, BorderLayout.EAST);
 		tasksScrollPane.setVisible(false);
-		
-		JLabel taskLabel = new JLabel("Task");
+
+		JLabel taskLabel = new JLabel("Module");
 		taskLabel.setFont(taskLabel.getFont().deriveFont(Font.BOLD, taskLabel.getFont().getSize2D()+2));
-		
+
 		tasksScrollPane.setColumnHeaderView(taskLabel);
 		JPanel buttonPanel = new JPanel();
 		final JButton cancelBtn = new JButton("Cancel");
@@ -170,7 +170,7 @@ public class TaskChooser extends CenteredDialog {
 		setSize(450, 250);
 		show();
 	}
-	
+
 
 	private static class AnalysisServiceWrapper {
 		AnalysisService svc;
