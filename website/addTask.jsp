@@ -492,26 +492,9 @@ function addNewDomainType(name, desc){
 		  <input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
 		<% } %>
 
-		   &nbsp;&nbsp;&nbsp;<select onchange="javascript:if (this.options[this.selectedIndex].value != '<%= DONT_JUMP %>') window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'">
-		  <option value="<%= DONT_JUMP %>">module catalog</option>
-			<option value="">new module</option>
-			<%= publicTasks.toString() %>
-			<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
-			<option value="<%= DONT_JUMP %>">private modules</option>
-			<option value="<%= DONT_JUMP %>">-----------------------------------------</option>
-			<%= otherTasks.toString() %>
-		  </select>
-		  <select name="notused" onchange="javascript:window.location='addTask.jsp?<%= GPConstants.NAME %>=' + this.options[this.selectedIndex].value + '<%= viewOnly ? "&view=1" : "" %>'">
-		<%
-			for (Iterator itVersions = vVersions.iterator(); itVersions.hasNext(); ) {
-				String vLSID = (String)itVersions.next();
-				l = new LSID(vLSID);
-		%>
-				<option value="<%= l.toString() %>"<%= vLSID.equals(lsid) ? " selected" : "" %>><%= l.getVersion() %></option>
-		<%
-			}
-		%>
-		  </select>
+		   &nbsp;&nbsp;&nbsp;
+
+
 
 	</td>
   </tr>
