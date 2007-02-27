@@ -639,9 +639,11 @@ public class GPGE {
             }
         }
 
-        if (savedParamName2Param.size() > 1) { // whatever is left is an
-            // un-recycled parameter. Let the
-            // user know.
+        savedParamName2Param.remove("PIPELINE_ARG.StopAfterTask");
+//      whatever is left is an
+        // un-recycled parameter. Let the
+        // user know.
+        if (savedParamName2Param.size() > 1) {
             errorMessage.append("Ignoring now unused parameters ");
         } else if (savedParamName2Param.size() == 1) {
             errorMessage.append("Ignoring now unused parameter ");
