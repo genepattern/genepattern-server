@@ -22,6 +22,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -95,7 +96,7 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
      * creates. Should be set to true if running from the web client and false
      * if the pipeline was submitted from the java client. This method needs to
      * be invoked before beforePipelineRuns is called to have any effect.
-     * 
+     *
      * @param b
      *            whether to notify the pipeline of execution log output file
      */
@@ -137,20 +138,23 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
         try {
             pipelineStart = new Date();
 
-            URL url = new URL(URL + "skin/stylesheet.css");
+            try {
+                URL url = new URL(URL + "skin/stylesheet.css");
+                HttpURLConnection uconn = (HttpURLConnection) url.openConnection();
+                uconn.setDoInput(true);
+                InputStream in = uconn.getInputStream();
 
-            HttpURLConnection uconn = (HttpURLConnection) url.openConnection();
-            uconn.setDoInput(true);
-            InputStream in = uconn.getInputStream();
+                // read reply
+                StringBuffer b = new StringBuffer("<head><STYLE TYPE=\"text/css\"> <!--");
+                BufferedReader r = new BufferedReader(new InputStreamReader(in));
+                String line;
+                while ((line = r.readLine()) != null)
+                    b.append(line);
+                b.append("--> </style>");
+                logWriter.println(b.toString());
+            } catch (MalformedURLException mfe) {
 
-            // read reply
-            StringBuffer b = new StringBuffer("<head><STYLE TYPE=\"text/css\"> <!--");
-            BufferedReader r = new BufferedReader(new InputStreamReader(in));
-            String line;
-            while ((line = r.readLine()) != null)
-                b.append(line);
-            b.append("--> </style>");
-            logWriter.println(b.toString());
+            }
 
             // logWriter.println("<link href=\""+URL+"/stylesheet.css\"
             // rel=\"stylesheet\" type=\"text/css\">");
@@ -169,12 +173,16 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 
             // register the execution log as an output file of the pipeline
             if (notifyPipelineOfOutputFile) {
-                String updateUrl = URL + "updatePipelineStatus.jsp?jobID=" + System.getProperty("jobID") + "&"
-                        + GPConstants.NAME + "=";
-                updateUrl += "&filename=" + jobDir.getName() + File.separator + logFile.getName();
-                url = new URL(updateUrl);
-                uconn = (HttpURLConnection) url.openConnection();
-                int rc = uconn.getResponseCode();
+                try {
+                    String updateUrl = URL + "updatePipelineStatus.jsp?jobID=" + System.getProperty("jobID") + "&"
+                            + GPConstants.NAME + "=";
+                    updateUrl += "&filename=" + jobDir.getName() + File.separator + logFile.getName();
+                    URL url = new URL(updateUrl);
+                    HttpURLConnection uconn = (HttpURLConnection) url.openConnection();
+                    uconn.getResponseCode();
+                } catch (MalformedURLException mfe) {
+
+                }
             }
 
         } catch (Exception e) {
@@ -199,7 +207,7 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
         }
 
         ParameterInfo[] params = jobSubmission.giveParameterInfoArray();
-      
+
         logWriter.println("<table width='100%' frame='box' cellspacing='0'>");
         boolean odd = false;
         for (int i = 0; i < params.length; i++) {
@@ -342,7 +350,7 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
         cal.setTimeInMillis(deltaMillis);
         cal.setTimeZone(new SimpleTimeZone(0, ""));
         elapsedDateFormat.setTimeZone(new SimpleTimeZone(0, ""));// set to
-                                                                    // GMT
+        // GMT
         // for the
         // calculation
         return elapsedDateFormat.format(cal.getTime());
