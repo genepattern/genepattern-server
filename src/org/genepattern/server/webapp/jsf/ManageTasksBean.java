@@ -29,6 +29,7 @@ import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
+import org.genepattern.util.LSIDVersionComparator;
 
 public class ManageTasksBean /* implements java.io.Serializable */{
     private static Logger log = Logger.getLogger(ManageTasksBean.class);
@@ -105,6 +106,8 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 
             }
         }
+        
+        
     }
 
     public boolean isShowEveryonesTasks() {
@@ -164,11 +167,9 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 
         private String lsidNoVersion = null;
 
-        private String name = null;
-
         private String description = null;
 
-        private Map<String, VersionInfo> indexedVersions;
+        private TreeMap<String, VersionInfo> indexedVersions;
 
         private LocalAdminClient adminClient = null;
 
@@ -178,9 +179,18 @@ public class ManageTasksBean /* implements java.io.Serializable */{
         public TaskGroup(TaskInfo ti) {
             pipeline = ti.isPipeline();
             adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
-            indexedVersions = new TreeMap<String, VersionInfo>();
+            indexedVersions = new TreeMap<String, VersionInfo>(new Comparator(){
+                public int compare(Object o1, Object o2) {
+                    try {
+                        LSID lsid1 = new LSID(o1.toString());
+                        LSID lsid2 = new LSID(o2.toString());
+                        return LSIDVersionComparator.INSTANCE.compare(lsid2.getVersion(), lsid1.getVersion());
+                    } catch (MalformedURLException e) {
+                        log.error(e);
+                        return 0;
+                    }
+                }});
             lsidNoVersion = getLSID(ti.getLsid()).toStringNoVersion();
-            name = ti.getName();
             description = ti.getDescription();
 
         }
@@ -190,7 +200,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
         }
 
         public String getName() {
-            return name;
+            return indexedVersions.isEmpty() ? "" : indexedVersions.get(indexedVersions.firstKey()).getName();
         }
 
         public String getDescription() {
@@ -299,6 +309,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
         private boolean deleteAuthorized = false;
 
         private boolean editAuthorized = false;
+        
 
         public VersionInfo() {
         }
@@ -363,6 +374,10 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 
         public boolean isEditAuthorized() {
             return editAuthorized;
+        }
+
+        public String getName() {
+            return ti.getName();
         }
 
     }
