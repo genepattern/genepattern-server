@@ -356,17 +356,18 @@ public class GPGE {
         String title = null;
         if (node instanceof JobModel.ServerFileNode) {
             JobModel.ServerFileNode jobResult = (JobModel.ServerFileNode) node;
-            JobModel.JobNode jobNode = (JobModel.JobNode) jobResult.getParent();
+
             try {
                 file = File.createTempFile("tmp", null);
                 deleteFile = true;
-                JobModel.downloadJobResultFile(jobNode.job, jobResult.index, file);
-                title = JobModel.getJobResultFileName(jobNode.job, jobResult.index) + " Job "
-                        + jobNode.job.getJobInfo().getJobNumber();
+                JobModel.downloadJobResultFile(jobResult.getJobNumber(), jobResult.getParameterValue(), file);
+                title = JobModel.getJobResultFileName(jobResult.getParameterValue()) + " Job "
+                        + jobResult.getJobNumber();
             } catch (IOException ioe) {
                 ioe.printStackTrace();
-                GenePattern.showErrorDialog("An error occurred while downloading "
-                        + JobModel.getJobResultFileName(jobNode.job, jobResult.index));
+                GenePattern.showErrorDialog("An error occurred while downloading result file for job number "
+                        + jobResult.getJobNumber() + ".");
+
                 return;
             }
         } else if (node instanceof ProjectDirModel.FileNode) {
@@ -400,7 +401,7 @@ public class GPGE {
     }
 
     public void showSaveDialog(final JobModel.ServerFileNode node) {
-        final File initiallySelectedFile = new File(node.toString());
+        final File initiallySelectedFile = new File(JobModel.getJobResultFileName(node));
         final File outputFile = GUIUtil.showSaveDialog(initiallySelectedFile);
 
         if (outputFile != null) {
@@ -640,7 +641,7 @@ public class GPGE {
         }
 
         savedParamName2Param.remove("PIPELINE_ARG.StopAfterTask");
-//      whatever is left is an
+        // whatever is left is an
         // un-recycled parameter. Let the
         // user know.
         if (savedParamName2Param.size() > 1) {
@@ -814,23 +815,24 @@ public class GPGE {
                 String status = job.getJobInfo().getStatus();
                 fileMenu.jobCompletedDialog.add(jobNumber, taskName, status);
                 ParameterInfo[] params = job.getJobInfo().getParameterInfoArray();
-                int stderrIndex = -1;
+
+                String parameterValue = null;
                 if (params != null) {
                     for (int i = 0; i < params.length; i++) {
                         if (params[i].isOutputFile()) {
                             if (params[i].getValue().equals(jobNumber + "/stderr.txt")
                                     || params[i].getValue().equals(jobNumber + "\\stderr.txt")) {
-                                stderrIndex = i;
+                                parameterValue = params[i].getValue();
                                 break;
                             }
                         }
                     }
                 }
-                if (stderrIndex >= 0) {
+                if (parameterValue != null) {
                     File stderrFile = null;
                     try {
                         stderrFile = File.createTempFile("stderr.txt", null);
-                        JobModel.downloadJobResultFile(job, stderrIndex, stderrFile);
+                        JobModel.downloadJobResultFile(jobNumber, parameterValue, stderrFile);
                         GenePattern.showModuleErrorDialog("Job " + jobNumber + " Error", fileToString(stderrFile));
                     } catch (IOException ioe) {
                         ioe.printStackTrace();
