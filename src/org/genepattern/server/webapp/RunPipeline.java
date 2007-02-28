@@ -18,44 +18,43 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.security.Security;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import java.util.List;
-import java.util.ArrayList;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 
+import org.apache.log4j.PropertyConfigurator;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.util.GPConstants;
-
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.AnalysisService;
-
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.server.domain.JobStatus;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 import org.xml.sax.InputSource;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Note that RunPipeline may only be run on the server side in the context of a
@@ -146,6 +145,8 @@ public class RunPipeline {
             try {
                 fis = new FileInputStream(genePatternPropertiesFile);
                 genepatternProps.load(fis);
+            } catch (IOException x) {
+                System.err.println("Unable to open properties file.");
             } finally {
                 if (fis != null) {
                     fis.close();
@@ -203,11 +204,7 @@ public class RunPipeline {
 
                 }
             }
-
-            String pipelineFileName = args[0];
-            String userId = args[1];
-            System.setProperty("userId", userId);
-
+            String pipelineLSID = System.getProperty(GPConstants.LSID);
             // set the tasklib. In the genepattern.properties it may be relative
             // to tomcat but we are
             // in a pipeline 2 dirs deeper. If it does not start wit a ".." use
@@ -221,7 +218,10 @@ public class RunPipeline {
             }
             System.setProperty("tasklib", taskLib);
 
-            String pipelineLSID = System.getProperty(GPConstants.LSID);
+            String pipelineFileName = args[0];
+            String userId = args[1];
+            System.setProperty("userId", userId);
+
             int jobId = -1;
             if (System.getProperty("jobID") == null) { // null when run using
                 // java
@@ -237,13 +237,23 @@ public class RunPipeline {
                 String decoratorClass = System.getProperty("decorator");
                 decorator = (RunPipelineOutputDecoratorIF) (Class.forName(decoratorClass)).newInstance();
             }
+            URL serverFromFile = null;
 
-            URL serverFromFile = new URL(System.getProperty("GenePatternURL"));
+            try {
+                serverFromFile = new URL(System.getProperty("GenePatternURL"));
+            } catch (Exception x) {
+                String host = "127.0.0.1";
+                try {
+                    host = InetAddress.getLocalHost().getCanonicalHostName();
+                } catch (UnknownHostException uhe) {
+                }
+                String protocol = serverFromFile != null ? serverFromFile.getProtocol() : "http";
+                serverFromFile = new URL(protocol + "://" + host + ":" + System.getProperty("GENEPATTERN_PORT"));
+
+                System.setProperty("GenePatternURL", serverFromFile.toString() + "/gp/");
+            }
 
             String host = serverFromFile.getHost();
-            if (host.equals("127.0.0.1") || host.equals("localhost")) {
-                host = InetAddress.getLocalHost().getCanonicalHostName();
-            }
             String server = serverFromFile.getProtocol() + "://" + host + ":" + serverFromFile.getPort();
             PipelineModel pipelineModel = getPipelineModel(pipelineFileName, pipelineLSID, server);
             RunPipeline rp = new RunPipeline(server, userId, jobId, pipelineModel, decorator);
@@ -685,10 +695,14 @@ public class RunPipeline {
         if (file.getName().toLowerCase().endsWith(".odf")) {
             return ODFModelType(file).equalsIgnoreCase(fileFormat);
         } else {
-            // when fileFormat does not contain the '.' character, assume that fileFormat
-            // refers to a file extension and prepend  '.'. For example if value of fileFormat is 'gct',
-            // fileFormat becomes '.gct' when testing if file.getName() ends with fileFormat
-            // when the file format does contain the '.' character, assume fileFormat can refer to a complete
+            // when fileFormat does not contain the '.' character, assume that
+            // fileFormat
+            // refers to a file extension and prepend '.'. For example if value
+            // of fileFormat is 'gct',
+            // fileFormat becomes '.gct' when testing if file.getName() ends
+            // with fileFormat
+            // when the file format does contain the '.' character, assume
+            // fileFormat can refer to a complete
             // filename (e.g. all_aml_train.gct).
             if (fileFormat.indexOf('.') == -1) {
                 fileFormat = "." + fileFormat;
