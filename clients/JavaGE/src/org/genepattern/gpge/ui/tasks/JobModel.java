@@ -53,8 +53,6 @@ public class JobModel extends AbstractSortableTreeTableModel {
 
     RootNode root = new RootNode();
 
-    private int sortColumn = 0;
-
     private final JobNodeComparator TASK_NAME_COMPARATOR = new JobNodeComparator(
             "org.genepattern.gpge.ui.tasks.JobModel$TaskNameComparator", true);
 
@@ -73,11 +71,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
     }
 
     public static String getJobResultFileName(ServerFileNode node) {
-        return getJobResultFileName(((JobNode) node.getParent()).job, node.index);
-    }
-
-    private static int getJobCreationJobNumber(ServerFileNode node) {
-        return getJobCreationJobNumber(((JobNode) node.getParent()).job, node.index);
+        return getJobResultFileName(node.getParameterValue());
     }
 
     public static boolean isComplete(AnalysisJob job) {
@@ -85,8 +79,8 @@ public class JobModel extends AbstractSortableTreeTableModel {
                 || job.getJobInfo().getStatus().equals(JobStatus.ERROR);
     }
 
-    public static String getJobResultFileName(AnalysisJob job, int parameterInfoIndex) {
-        String fileName = job.getJobInfo().getParameterInfoArray()[parameterInfoIndex].getValue();
+    public static String getJobResultFileName(String value) {
+        String fileName = value;
         int index1 = fileName.lastIndexOf('/');
         int index2 = fileName.lastIndexOf('\\');
         int index = (index1 > index2 ? index1 : index2);
@@ -97,33 +91,20 @@ public class JobModel extends AbstractSortableTreeTableModel {
         return fileName;
     }
 
-    public static int getJobCreationJobNumber(AnalysisJob job, int parameterInfoIndex) {
-        int jobNumber = job.getJobInfo().getJobNumber();
-        String fileName = job.getJobInfo().getParameterInfoArray()[parameterInfoIndex].getValue();
-        int index1 = fileName.lastIndexOf('/');
-        int index2 = fileName.lastIndexOf('\\');
-        int index = (index1 > index2 ? index1 : index2);
-        if (index != -1) {
-            jobNumber = Integer.parseInt(fileName.substring(0, index));
-
-        }
-        return jobNumber;
-    }
-
-    public static void downloadJobResultFile(AnalysisJob job, int parameterInfoIndex, File destination)
+    public static void downloadJobResultFile(int jobNumberInt, String parameterValue, File destination)
             throws IOException {
-        String jobNumber = String.valueOf(job.getJobInfo().getJobNumber());
+        String jobNumber = String.valueOf(jobNumberInt);
 
-        String fileName = job.getJobInfo().getParameterInfoArray()[parameterInfoIndex].getValue();
+        String fileName = parameterValue;
+
         int index1 = fileName.lastIndexOf('/');
         int index2 = fileName.lastIndexOf('\\');
         int index = (index1 > index2 ? index1 : index2);
         if (index != -1) {
-            jobNumber = fileName.substring(0, index);
             fileName = fileName.substring(index + 1, fileName.length());
-
         }
-        new JobDownloader(job.getServer(), AnalysisServiceManager.getInstance().getUsername(), AnalysisServiceManager
+        String server = AnalysisServiceManager.getInstance().getServer();
+        new JobDownloader(server, AnalysisServiceManager.getInstance().getUsername(), AnalysisServiceManager
                 .getInstance().getPassword()).download(Integer.parseInt(jobNumber), fileName, destination);
 
     }
@@ -171,11 +152,10 @@ public class JobModel extends AbstractSortableTreeTableModel {
     public void delete(ServerFileNode serverFile) throws WebServiceException {
         JobNode node = (JobNode) serverFile.getParent();
 
-        JobInfo jobInfo = node.job.getJobInfo();
-        AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(node.job.getServer(), jobInfo.getUserId(),
-                AnalysisServiceManager.getInstance().getPassword());
+        AnalysisWebServiceProxy proxy = new AnalysisWebServiceProxy(node.job.getServer(), AnalysisServiceManager
+                .getInstance().getUsername(), AnalysisServiceManager.getInstance().getPassword());
 
-        proxy.deleteJobResultFile(jobInfo.getJobNumber(), jobInfo.getParameterInfoArray()[serverFile.index].getValue());
+        proxy.deleteJobResultFile(serverFile.getJobNumber(), serverFile.getParameterValue());
 
         int serverFileIndex = node.getIndex(serverFile);
         node.remove(serverFileIndex);
@@ -329,7 +309,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
     public void sortOrderChanged(SortEvent e) {
         int column = e.getColumn();
         boolean ascending = e.isAscending();
-        sortColumn = column;
+
         List children = root.getChildren();
 
         if (column == 0) {
@@ -514,18 +494,21 @@ public class JobModel extends AbstractSortableTreeTableModel {
          */
         private final String displayPrefix;
 
-        /**
-         * The index in the <tt>ParameterInfo</tt> array of this job result
-         * file
-         */
-        public final int index;
+        private int jobNumber = -1;
 
         private FileInfoUtil.FileInfo fileInfo;
 
-        public ServerFileNode(String displayPrefix, String name, int index) {
+        private String value;
+
+        public ServerFileNode(String displayPrefix, String name, String value) {
+            this(displayPrefix, name, value, -1);
+        }
+
+        public ServerFileNode(String displayPrefix, String name, String value, int jobNumber) {
             this.displayPrefix = displayPrefix;
             this.name = name;
-            this.index = index;
+            this.value = value;
+            this.jobNumber = jobNumber;
         }
 
         public boolean equals(Object obj) {
@@ -549,7 +532,8 @@ public class JobModel extends AbstractSortableTreeTableModel {
             GetMethod get = null;
             try {
                 get = new JobDownloader(server, username, password).getGetMethod(getJobNumber(), name);
-                fileInfo = FileInfoUtil.getInfo(get.getResponseBodyAsStream(), displayString, get.getResponseContentLength());
+                fileInfo = FileInfoUtil.getInfo(get.getResponseBodyAsStream(), displayString, get
+                        .getResponseContentLength());
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -564,8 +548,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
         }
 
         public String getParameterValue() {
-            JobNode parent = (JobNode) getParent();
-            return parent.job.getJobInfo().getParameterInfoArray()[index].getValue();
+            return value;
         }
 
         /**
@@ -574,7 +557,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
          * @return
          */
         public int getJobNumber() {
-            return getJobCreationJobNumber(this);
+            return jobNumber != -1 ? jobNumber : ((JobNode) getParent()).job.getJobInfo().getJobNumber();
         }
 
         /**
@@ -595,7 +578,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
             try {
                 JobNode parent = (JobNode) getParent();
                 AnalysisJob job = parent.job;
-                int jobNumber = getJobCreationJobNumber(this);
+                int jobNumber = getJobNumber();
                 return new URL(job.getServer() + "/gp/jobResults/" + jobNumber + "/" + URLEncoder.encode(name, "UTF-8"));
             } catch (MalformedURLException x) {
                 throw new Error(x);
@@ -605,9 +588,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
         }
 
         public void download(File destination) throws IOException {
-            JobNode parent = (JobNode) getParent();
-            AnalysisJob job = parent.job;
-            downloadJobResultFile(job, index, destination);
+            downloadJobResultFile(getJobNumber(), value, destination);
         }
 
         public String toString() {
@@ -677,7 +658,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
             return jobToString(job);
         }
 
-        private int addOutputFiles(ParameterInfo[] jobParameterInfo, JobInfo[] childJobs) {
+        private int addOutputFiles(ParameterInfo[] jobParameterInfo) {
             int numOutputFiles = 0;
 
             for (int j = 0; j < jobParameterInfo.length; j++) {
@@ -688,24 +669,55 @@ public class JobModel extends AbstractSortableTreeTableModel {
                     int index2 = fileName.lastIndexOf('\\');
                     int index = (index1 > index2 ? index1 : index2);
                     if (index != -1) {
-                        int paramJobNumber = Integer.parseInt(fileName.substring(0, index));
-                        if (childJobs != null) {
-                            for (int k = 0; k < childJobs.length; k++) {
-                                if (childJobs[k].getJobNumber() == paramJobNumber) {
-                                    displayPrefix = (k + 1) + "." + childJobs[k].getTaskName() + ":";
-                                    break;
-                                }
-                            }
-                        }
+
                         fileName = fileName.substring(index + 1, fileName.length());
 
                     }
 
-                    ServerFileNode child = new ServerFileNode(displayPrefix, fileName, j);
+                    ServerFileNode child = new ServerFileNode(displayPrefix, fileName, jobParameterInfo[j].getValue());
                     if (children == null || !children.contains(child)) {
                         this.add(child);
                         child.updateFileInfo();
                         numOutputFiles++;
+                    }
+                }
+            }
+            return numOutputFiles;
+        }
+
+        private int addOutputFiles(JobInfo[] childJobs) {
+            int numOutputFiles = 0;
+
+            for (int i = 0; i < childJobs.length; i++) {
+                ParameterInfo[] parameters = childJobs[i].getParameterInfoArray();
+                for (int j = 0; j < parameters.length; j++) {
+                    if (parameters[j].isOutputFile()) {
+                        String displayPrefix = null;
+                        String fileName = parameters[j].getValue();
+                        int index1 = fileName.lastIndexOf('/');
+                        int index2 = fileName.lastIndexOf('\\');
+                        int index = (index1 > index2 ? index1 : index2);
+                        if (index != -1) {
+                            int paramJobNumber = Integer.parseInt(fileName.substring(0, index));
+                            if (childJobs != null) {
+                                for (int k = 0; k < childJobs.length; k++) {
+                                    if (childJobs[k].getJobNumber() == paramJobNumber) {
+                                        displayPrefix = (k + 1) + "." + childJobs[k].getTaskName() + ":";
+                                        break;
+                                    }
+                                }
+                            }
+                            fileName = fileName.substring(index + 1, fileName.length());
+
+                        }
+
+                        ServerFileNode child = new ServerFileNode(displayPrefix, fileName, parameters[j].getValue(),
+                                childJobs[i].getJobNumber());
+                        if (children == null || !children.contains(child)) {
+                            this.add(child);
+                            child.updateFileInfo();
+                            numOutputFiles++;
+                        }
                     }
                 }
             }
@@ -724,6 +736,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
                         AnalysisServiceManager.getInstance().getUsername(), AnalysisServiceManager.getInstance()
                                 .getPassword());
                 childJobNumbers = proxy.getChildren(jobNumber);
+
             } catch (WebServiceException wse) {
                 wse.printStackTrace();
             }
@@ -732,17 +745,18 @@ public class JobModel extends AbstractSortableTreeTableModel {
                 try {
                     JobInfo[] children = new JobInfo[childJobNumbers.length];
                     for (int i = 0; i < children.length; i++) {
+                        System.out.println("Child " + childJobNumbers[i]);
                         children[i] = proxy.checkStatus(childJobNumbers[i]);
                     }
-                    numOutputFiles += addOutputFiles(jobParameterInfo, children);
+                    numOutputFiles += addOutputFiles(children);
                 } catch (WebServiceException wse) {
                     wse.printStackTrace();
                     this.removeAllChildren();
-                    numOutputFiles = addOutputFiles(jobParameterInfo, null);
+                    numOutputFiles = addOutputFiles(jobParameterInfo);
                 }
 
             } else {
-                numOutputFiles = addOutputFiles(jobParameterInfo, null);
+                numOutputFiles = addOutputFiles(jobParameterInfo);
             }
             if (children != null) {
                 Collections.sort(children, JobModel.getInstance().fileComparator);
