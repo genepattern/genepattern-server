@@ -24,6 +24,8 @@ import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Properties;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
@@ -178,7 +180,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
             out.print(aParam.getName().replace('.', ' '));
             out.print("=");
 
-            if (isInputFile) {
+            if (isInputFile || (value.indexOf("<GenePatternURL>") >= 0)) {
                 // convert from "localhost" to the actual host name so that
                 // it can be referenced from anywhere (eg. visualizer on
                 // non-local client)
@@ -212,6 +214,9 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
     public void writeVisualizerAppletTag(JobSubmission jobSubmission) {
         // PUT APPLET HERE
+		StringWriter strOut = new StringWriter();
+		PrintWriter out = new PrintWriter(strOut);
+
 
         String userId = System.getProperty("userId");
         LocalAdminClient adminClient = new LocalAdminClient(userId);
@@ -264,7 +269,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
         out
                 .println("<applet code=\""
                         + org.genepattern.visualizer.RunVisualizerApplet.class.getName()
-                        + "\" archive=\"runVisualizer.jar\" codebase=\"downloads\" width=\"1\" height=\"1\" alt=\"Your browser refuses to run applets\" name=\""
+                        + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.3.jar\" codebase=\"downloads\" width=\"1\" height=\"1\" alt=\"Your browser refuses to run applets\" name=\""
                         + appletName + "\">");
         out.println("<param name=\"" + RunVisualizerConstants.NAME + "\" value=\"" + name + "\">");
         out.println("<param name=\"" + RunVisualizerConstants.OS + "\" value=\""
@@ -288,14 +293,18 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
         for (i = 0; i < parameterInfoArray.length; i++) {
             String paramName = parameterInfoArray[i].getName();
+			
+
             if (paramName.equals("className")) {
                 out.println("<param name=\"" + paramName + "\" value=\""
                         + StringUtils.htmlEncode(parameterInfoArray[i].getDescription()) + "\">");
                 continue;
             }
             boolean isInputFile = parameterInfoArray[i].isInputFile();
-            String value;
-            if (isInputFile)
+            String value = params.getProperty(paramName);
+
+
+            if (isInputFile || (value.indexOf("<GenePatternURL>") >= 0))
                 value = localizeURL(params.getProperty(paramName));
             else
                 value = StringUtils.htmlEncode(params.getProperty(paramName));
@@ -308,19 +317,16 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
         for (i = 0; i < parameterInfoArray.length; i++) {
             boolean isInputFile = parameterInfoArray[i].isInputFile();
 			String paramName = parameterInfoArray[i].getName();
+			String paramValue = params.getProperty(paramName);
+			// make URL substitution
+			if (paramValue.indexOf("<GenePatternURL>") >= 0){
+				paramValue = paramValue.replace("<GenePatternURL>", System.getProperty("GenePatternURL"));
+			}
 
-           // if (isInputFile) {
-                // note that this parameter is a URL that must be downloaded by
-                // adding it to the CSV list for the applet
-            //    if (numToDownload > 0)
-            //        out.print(",");
-            //    out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
-            //    numToDownload++;
-            //}
 			if (isInputFile ||
-		    	(params.getProperty(paramName).startsWith("http:") ||
-		    	 params.getProperty(paramName).startsWith("https:") ||
-		    	 params.getProperty(paramName).startsWith("ftp:")))
+		    	(paramValue.startsWith("http:") ||
+		    	 paramValue.startsWith("https:") ||
+		    	 paramValue.startsWith("ftp:"))) 
 				{
 				// note that this parameter is a URL that must be downloaded by adding it to the
 				//CSV list for the applet
@@ -358,10 +364,23 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
         out.println("\">");
 
         out.println("<param name=\"" + RunVisualizerConstants.LSID + "\" value=\"" + lsid + "\">");
-        out.println("Your browser is ignoring this applet.");
+		out.print("<PARAM name=\"browserCookie\" value=\"' + document.cookie + '\">");
+        out.print("</applet>");
+ 
+		//
+		// now have javascript emit this applet tag to get the cookie set properly
+		//	
+		out.flush();
 
-        out.println("</applet>");
-        out.flush();
+		
+		this.out.println("<SCRIPT LANGUAGE=\"Javascript\">");
+		this.out.println("document.writeln('"+ strOut.toString() +"');");
+		this.out.println("</SCRIPT>");
+
+		
+
+
+        this.out.flush();
     }
 
     /**
