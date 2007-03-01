@@ -7,7 +7,9 @@ if (~pathOK)
 	return;
 end
 
-if (nargin==2) password='';
+if (nargin==2) 
+    password='';
+end
 
 obj.url = url;
 obj.userID = userID;
@@ -57,4 +59,3 @@ for i=0:obj.allModules.size()-1
     end
 
 end
-
