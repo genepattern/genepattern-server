@@ -25,7 +25,7 @@
 	</copy>	
 	
 	<exec dir="." executable="c:\\progra~1\\macrovision\\instal~1.1en\\build.exe" >
-	  <arg line="${basedir}/GP_server.iap_xml +x +lv +j +wv"/>
+	  <arg line="${basedir}/GP_server.iap_xml +x +l +s +lv +j +wv"/>
 	</exec>
 
 
