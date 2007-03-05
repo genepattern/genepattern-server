@@ -857,7 +857,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 				     '" type="text" readonly size="60" tabindex="-1" class="shadow">';
 			if (taskNum > 0) {
 				taskFields = taskFields + '<br><nobr>or use output from <select name="t' + taskNum + '_i_' + param +
-							  '" onchange="chooseInheritTask(' + taskNum + ', ' + param + ')"><option value=' + NOT_SET + '" disabled>Choose module</option>\n';
+							  '" onchange="chooseInheritTask(' + taskNum + ', ' + param + ')"><option value=' + NOT_SET + '" >Choose module</option>\n';
 				for (t = 0; t < taskNum; t++) {
 					taskFields = taskFields + '<option value="' + t + '">' + (t+1) + '.  ' +
 						     document.forms['pipeline']['t' + t + '_taskName'].value + '</option>\n';

@@ -273,9 +273,10 @@ try {
 			if (attachmentName.trim().length() == 0) continue;
 			String fieldName = key;
 			String fullName = fieldName; // attachedFile.getFilePathName();
-			if (fullName.startsWith("http:") || fullName.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:")) {
+			if (fullName.startsWith("http:") || fullName.startsWith("https:") || fullName.startsWith("ftp:") || fullName.startsWith("file:") || (fullName.startsWith("<GenePatternURL>"))) {
 				// don't bother trying to save a file that is a URL, retrieve it at execution time instead
 				htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
+
 				continue;
 			}
 			
@@ -367,9 +368,14 @@ try {
 				if (inherited) {
 					runTimePrompt[i] = false;
 					inheritedTaskNum = requestParameters.getProperty(taskPrefix + "_i_" + i);
-					inheritedFilename = "";
-					inheritedFilename += requestParameters.getProperty(taskPrefix + "_if_" + i);
+					inheritedFilename = null;
+					String inheritFromFile = requestParameters.getProperty(taskPrefix + "_if_" + i);
+					if ((inheritFromFile != null) && (!inheritFromFile.startsWith("[module")) && !inheritFrom.equals("NOT SET")  ){
+						inheritedFilename = ""+ inheritFromFile ;
+					} else {
+						vProblems.add("Step " + (taskNum+1) + ", " + taskName + ", is missing required parameter " + p.getName());
 
+					}
 				}
 
 				if (runTimePrompt[i]) {
@@ -384,6 +390,7 @@ try {
 					if (DEBUG) out.println(taskPrefix + "_i_" + i + "=" + requestParameters.getProperty(taskPrefix + "_i_" + i) + "<br>");
 					if (DEBUG) out.println(taskPrefix + "_if_" + i + "=" + requestParameters.getProperty(taskPrefix + "_if_" + i) + "<br>");
 				}
+
 				if (DEBUG) out.println(paramName + " is " + (inherited ? "" : "not ") + " inherited and is " + (runTimePrompt[i] ? "" : "not ") + " runtime-prompted<br>");
 
 				// inheritance and run time prompt both have priority over explicitly named input file
