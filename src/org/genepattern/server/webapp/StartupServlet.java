@@ -55,7 +55,7 @@ import org.w3c.dom.NodeList;
 
 /*
  * GenePattern startup servlet
- * 
+ *
  * This servlet performs periodic maintenance, based on definitions in the
  * <omnigene.conf>/genepattern.properties file @author Jim Lerner
  */
@@ -70,8 +70,6 @@ public class StartupServlet extends HttpServlet {
 
     public StartupServlet() {
         System.out.println("Creating StartupServlet");
-        Logger log = Logger.getLogger("org.genepattern");
-        log.setLevel(Level.DEBUG);
     }
 
     public void init(ServletConfig config) throws ServletException {
@@ -84,10 +82,10 @@ public class StartupServlet extends HttpServlet {
         application.setAttribute("custom.properties", config.getInitParameter("custom.properties"));
         loadProperties(config);
 
-        
-        setServerURLs(config);            
-        
-            
+
+        setServerURLs(config);
+
+
         String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
             HsqlDbUtil.startDatabase();
@@ -99,7 +97,7 @@ public class StartupServlet extends HttpServlet {
         // Do not remove!
         AnalysisManager.getInstance();
         AnalysisTask.startQueue();
-        
+
         startDaemons(System.getProperties(), application);
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         //
@@ -129,25 +127,25 @@ public class StartupServlet extends HttpServlet {
         String pathRoot = System.getProperty("servletContextPath",null);
         if (pathRoot == null){
             pathRoot = (new File(config.getServletContext().getRealPath("/"))).getName();
-        }     
-            
+        }
+
         InetAddress addr;
         try {
             addr = InetAddress.getLocalHost();
             String host = addr.getHostName();
             String host_address = addr.getCanonicalHostName();
             String port = System.getProperty("GENEPATTERN_PORT");
-            
+
            String GenePatternServerURL = "http://" + host_address + ":"+port+"/" + pathRoot+"/";
 
            // set the GenePatternURL to the current IP adresss unless specified in the
            // properties file in which case we leave it alone
-           
+
            String myUrl = System.getProperty("GenePatternURL","");
            if (myUrl.length() == 0){
                System.setProperty("GenePatternURL", GenePatternServerURL);
            }
-                    
+
         } catch (UnknownHostException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -192,7 +190,7 @@ public class StartupServlet extends HttpServlet {
         }
     }
 
-  
+
 
     protected void announceReady(Properties props) {
         String message = "GenePattern server version " + System.getProperty("GenePatternVersion") + " build "
@@ -370,7 +368,7 @@ public class StartupServlet extends HttpServlet {
             fis = new FileInputStream(propFile);
             props.load(fis);
             log("loaded GP properties from " + propFile.getCanonicalPath());
-            
+
             if (customPropFile.exists()) {
             	customFis = new FileInputStream(customPropFile);
             	props.load(customFis);
@@ -447,12 +445,12 @@ public class StartupServlet extends HttpServlet {
          * DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new
          * InputSource(new FileReader(fileServerXml))); Element root =
          * doc.getDocumentElement();
-         * 
+         *
          * HashMap hmProps = new HashMap(); processNode(root, hmProps); if
          * (hmProps.containsKey("port") && hmProps.containsKey("path")) { String
          * scheme = "http"; if (hmProps.containsKey("scheme")) scheme = (String)
          * hmProps.get("scheme");
-         * 
+         *
          * props.setProperty("GenePatternURL", scheme + "://127.0.0.1:" +
          * hmProps.get("port") + hmProps.get("path") + "/"); } if
          * (hmProps.containsKey("port")) { props.setProperty("GENEPATTERN_PORT",
