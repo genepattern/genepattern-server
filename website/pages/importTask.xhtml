@@ -8,7 +8,7 @@
 
 <ui:composition template="/templates/common.xhtml">
 <ui:define name="validationInit">
-    <script type="text/javascript" language="javascript"> 
+    <script type="text/javascript" language="javascript">
       /* <![CDATA[ */
       function onLoad()
       {
@@ -18,7 +18,6 @@
 
 		e = $("url");
         e.required = 1;
-        e.regexp = /^\w*$/;
         e.err = "Missing URL";
       }
        /* ]]> */
@@ -32,8 +31,8 @@
 		<ui:define name="pageTitle">GenePattern - Install Suites</ui:define>
 	</h:outputText>
 	<ui:define name="body">
-		
-		
+
+
 		<table width="100%" border="0" cellpadding="0" cellspacing="0"
 			class="barhead-other">
 			<tr><td>
@@ -45,7 +44,7 @@
 				</h:outputText>
 			</td></tr>
 		</table>
-		
+
 		<table width="100%" border="0" cellpadding="10" cellspacing="0">
 			<tr valign="top" class="settingperameter">
 				<td><strong>Install from zip file:</strong></td>
