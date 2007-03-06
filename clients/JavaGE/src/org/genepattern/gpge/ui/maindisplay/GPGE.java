@@ -76,6 +76,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpState;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.genepattern.gpge.CLThread;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.PropertyManager;
@@ -425,8 +429,23 @@ public class GPGE {
         }
     }
 
-    public void changeServer(final String server, final String username, final String password) {
+    public void changeServer(String _server, final String username, final String password) {
         analysisServiceManager = AnalysisServiceManager.getInstance();
+        // get fully qualified host name
+        GetMethod get = new GetMethod(_server + "/gp/pages/login.jsf");
+        HttpClient client = new HttpClient();
+        client.setState(new HttpState());
+        try {
+            client.executeMethod(get);
+            URL serverUrl = new URL(_server);
+            _server = serverUrl.getProtocol() + "://" + get.getURI().getHost() + ":" + serverUrl.getPort();
+
+        } catch (Exception e) { // ignore
+
+        } finally {
+            get.releaseConnection();
+        }
+        final String server = _server;
 
         analysisServiceManager.changeServer(server, username, password);
         MessageManager.notifyListeners(new ChangeViewMessageRequest(this,
@@ -859,7 +878,7 @@ public class GPGE {
                 System.out.println("No service info returned from server.");
             }
         } catch (WebServiceException e1) {
-            e1.printStackTrace();
+            System.out.println("Error getting service info from server.");
         }
 
         changeServer(server, username, password);
