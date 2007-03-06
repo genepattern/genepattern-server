@@ -14,9 +14,9 @@
 		<script type="text/javascript" language="javascript">
 
 /* <![CDATA[ */
-	function toggleAllCheckboxes(node) {	
+	function toggleAllCheckboxes(node) {
 		var maincheckboxes = document.getElementsByName("installLsid");
-	
+
 	    var isChecked = node.checked;
 	    for (var i=0; i<maincheckboxes.length; i++) {
 	        if(maincheckboxes[i].type == "checkbox" && !maincheckboxes[i].disabled) {
@@ -24,7 +24,7 @@
 	        }
 	    }
 	}
-	
+
 /* ]]> */
 	</script>
 	</ui:define>
@@ -109,9 +109,9 @@
 										onchange="javascript:document.forms['suiteCatalogForm'].install#{suiteIndex}.value=this.options[this.selectedIndex].value"
 										class="tasks-broad">
 
-										
+
 										<option value="#{t.lsid}">#{t.lsidVersion}</option>
-											
+
 										<t:dataList var="l" value="#{t.laterVersions}">
 											<option value="#{l.lsid}">#{l.lsidVersion} -
 											#{l.versionComment}</option>
@@ -135,11 +135,11 @@
 									</td>
 								</tr>
 
-								<tr>
+								<!--tr>
 									<td valign="top" colspan="2">
-										
+
 									<a href="#{t.url}">download zip</a></td>
-								</tr>
+								</tr-->
 								<tr class="settingperameter">
 									<td colspan="4"></td>
 								</tr>
