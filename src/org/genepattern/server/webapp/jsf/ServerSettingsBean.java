@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.genepattern.server.webapp.jsf;
 
@@ -63,7 +63,7 @@ public class ServerSettingsBean {
     private final String wsLogPath = "WsLogPath";
 
     /**
-     * 
+     *
      */
     public ServerSettingsBean() {
         IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
@@ -76,7 +76,7 @@ public class ServerSettingsBean {
             modes.put("Access", new String[] { "gp.allowed.clients" });
             modes.put("Command Line Prefix", new String[] { "gp.allowed.clients" });
             modes.put("File Purge", new String[] { "purgeJobsAfter", "purgeTime" });
-            modes.put("Java Flag", new String[] { "java_flags" });
+            modes.put("Java Flag", new String[] { "java_flags", "visualizer_java_flags", "r_flags" });
             modes.put("Gene Pattern Log", null);
             modes.put("Web Server Log", null);
             modes.put("Repositories", new String[] { "ModuleRepositoryURL", "ModuleRepositoryURLs",
@@ -148,7 +148,7 @@ public class ServerSettingsBean {
     public Object[] getModes() {
         return modes.keySet().toArray();
     }
-    
+
     /**
      * Method to support live debugging of bean
      */
@@ -170,7 +170,7 @@ public class ServerSettingsBean {
     /**
      * Return the properties object with the server settings. This should be lazy initialized, it might be called many
      * times but we only need to read the file once.
-     * 
+     *
      */
     public Properties getSettings() {
         return settings;
@@ -226,8 +226,8 @@ public class ServerSettingsBean {
     public void setSpecifiedClientModes(List clientModes) {
         setSelectItems(clientModes, "gp.allowed.clients");
     }
-    
-    
+
+
 
     /**
      * @param event
@@ -264,7 +264,7 @@ public class ServerSettingsBean {
         removeDomain(specifiedClientMode);
         saveSettings(event);
     }
-    
+
     private void removeDomain(String mode) {
 	String allClientModes = (String) settings.get("gp.allowed.clients");
         String[] result = allClientModes.split(",");
@@ -293,7 +293,7 @@ public class ServerSettingsBean {
         settings.put("disable.gp.indexing", searchEngine);
     }
 
-    
+
     /**
      * @param logFile
      * @return
@@ -355,7 +355,7 @@ public class ServerSettingsBean {
         return getLogHeader(wsLog, "Web Server");
     }
 
-    
+
     /**
      * @param logFile
      * @param name
@@ -720,7 +720,7 @@ public class ServerSettingsBean {
 
     /**
      * Save the settings back to the file. Trigger by the "submit" button on the page.
-     * 
+     *
      * @return
      */
     public void saveSettings(ActionEvent event) {
