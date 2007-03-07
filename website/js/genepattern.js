@@ -23,10 +23,10 @@ function stopJob(button, jobId) {
 }
 
 //request email notification for a user and a job
- function requestEmailNotification(userEmail, jobId) {            
+ function requestEmailNotification(userEmail, userId, jobId) {            
         var opt = {
           method:    'post',
-          postBody:  'cmd=notifyEmailJobCompletion&userID='+userEmail+'&jobID='+jobId,
+          postBody:  'cmd=notifyEmailJobCompletion&userEmail='+userEmail+'&userID='+userId+'&jobID='+jobId,
           onSuccess: ajaxEmailResponse,
           onFailure: function(t) {
             alert('Error ' + t.status + ' -- ' + t.statusText);
@@ -35,11 +35,11 @@ function stopJob(button, jobId) {
         new  Ajax.Request('./notifyJobCompletion.ajax',opt);
       }
 
-  function cancelEmailNotification(userEmail, jobId) {  
+  function cancelEmailNotification(userEmail, userId, jobId) {  
 		 		    
         var opt = {
           method:    'post',
-          postBody:  'cmd=cancelEmailJobCompletion&userID='+userEmail+'&jobID='+jobId,
+          postBody:  'cmd=cancelEmailJobCompletion&userEmail='+userEmail+'&userID='+userId+'&jobID='+jobId,
           onSuccess: ajaxEmailResponse,
           onFailure: function(t) {
             alert('Error ' + t.status + ' -- ' + t.statusText);

@@ -67,26 +67,26 @@ use, misuse, or functionality.
 	String userEmail = null;
 	String jobId = null;
     try {
-
+        
 		userID = (String) request.getAttribute(GPConstants.USERID);
 		LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
-
+	        
 		RunTaskHelper runTaskHelper = new RunTaskHelper(userID, request);
-
+		
 		TaskInfo task = runTaskHelper.getTaskInfo();
 		if (task == null) {
 			out.println("Unable to find module");
 	   		return;
 		}
-
+	        
 		String lsid = runTaskHelper.getTaskLsid();
 		String taskName = runTaskHelper.getTaskName();
-
-
+		
+		
 		String tmpDirName = runTaskHelper.getTempDirectory().getName();
 		Map<String, String> requestParameters = runTaskHelper.getRequestParameters();
-
-
+        
+        
         try {
 			User user = (new UserDAO()).findById(userID);
 			userEmail = user.getEmail();
@@ -100,12 +100,12 @@ use, misuse, or functionality.
 
         // set up the call to the analysis engine
         String server = request.getScheme() + "://" + InetAddress.getLocalHost().getCanonicalHostName() + ":" + System.getProperty("GENEPATTERN_PORT");
-
-
-
+   
+               
+        
         ParameterInfo[] parmInfos = task.getParameterInfoArray();
         parmInfos = parmInfos == null ? parmInfos = new ParameterInfo[0] : parmInfos;
-
+       
       	List<ParameterInfo> missingReqParams = runTaskHelper.getMissingParameters();
         if (missingReqParams.size() > 0) {
             System.out.println("" + missingReqParams);
@@ -117,8 +117,8 @@ use, misuse, or functionality.
 </html>
 <%
         return;
-    }
-
+    }   
+               
     JobInfo job = analysisClient.submitJob(task.getID(), parmInfos);
     jobId = "" + job.getJobNumber();
 
@@ -146,7 +146,7 @@ use, misuse, or functionality.
     }
     function downloadCheckedFiles(){
 	 var frm = document.forms["results"];
-
+	
 	cmd = frm.elements['cmdElement'];
 	cmd.name="download";
 	cmd.value="true";
@@ -162,7 +162,8 @@ use, misuse, or functionality.
    function setEmailNotification(jobId){
 		var cb = document.getElementById('emailCheckbox');
 		var ue = document.getElementById("userEmail");
-		var valid = jcv_checkEmail(ue.value);
+		var uid = document.getElementById("userID");
+		var valid = jcv_checkEmail(ue.value); 
 		if (!valid){
 			var em = prompt("Email on completion to?:");
 			if (em == null){
@@ -170,7 +171,7 @@ use, misuse, or functionality.
 				return;
 			} else {
 				ue.value = em;
-				valid = jcv_checkEmail(ue.value);
+				valid = jcv_checkEmail(ue.value); 
 				if (!valid){
 					cb.checked = false;
 					alert(ue.value + ' is not a valid email address');
@@ -180,23 +181,23 @@ use, misuse, or functionality.
 		}
 
  	  	if (cb.checked) {
-			requestEmailNotification(ue.value, jobId);
+			requestEmailNotification(ue.value, uid.value, jobId);
 	 	} else {
-			cancelEmailNotification(ue.value, jobId);
+			cancelEmailNotification(ue.value, uid.value, jobId);
 		}
    }
 
-
+ 
 function toggleLogs() {
 	var cb = document.getElementById('logCheckbox');
 	var visible = cb.checked;
-
+	
  	var frm = document.forms["results"];
-
+       
 	divObj = document.getElementById('executionLogDiv');
 	cbdivObj = document.getElementById('executionLogCBDiv');
 	cbObj = frm.executionLogCB;
-
+	
 	divObj.style.color='#EFEFEF';
 
 	if(!visible) {
@@ -212,7 +213,7 @@ function toggleLogs() {
 		cbdivObj.visibility=true;
 
 	}
-
+	
 }
 
 
@@ -224,6 +225,8 @@ function toggleLogs() {
 
 	    <input type="checkbox" id="emailCheckbox" onclick="setEmailNotification(<%=jobId%>);" value="checkbox"/>email notification&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="hidden" id="userEmail" value="<%= userEmail %>"/>
+		<input type="hidden" id="userID" value="<%= userID %>"/>
+
 
 
 
@@ -231,14 +234,14 @@ function toggleLogs() {
 show execution logs</td>
         </tr>
 </table>
-
+ 
 <table width="100%"  border="0" cellpadding="0" cellspacing="0" class="barhead-task">
      <tr>
         <td><%=requestParameters.get("taskName")%> Status </td>
      </tr>
 </table>
 
-
+    
 <table width='100%' cellpadding="0">
     <tr>
 	  <td width="50px">
@@ -269,7 +272,7 @@ show execution logs</td>
 
               <td><div align="center">
                     <input name="checkbox" type="checkbox" value="checkbox" checked="true" onclick="checkAll(this)" />
-
+               
               </div></td>
               <td>&nbsp;</td>
               <td>name and parameters </td>
@@ -280,12 +283,12 @@ show execution logs</td>
     <td colspan=2>&nbsp;</td>
 
     <td colspan=1>
-        <%=requestParameters.get("taskName")%>
+        <%=requestParameters.get("taskName")%> 
     </td>
     </tr>
     <tr><td/><td/><td/><td>
         <%
-
+		
 
             ParameterInfo[] formalParameterInfoArray = null;
             try {
@@ -349,22 +352,22 @@ show execution logs</td>
 
 
     <%
-
+     
         out.flush();
         String status = "started";
         while (!(status.equalsIgnoreCase("ERROR") || (status
                 .equalsIgnoreCase("Finished")))) {
-            Thread.sleep(500);
+            Thread.sleep(500);         
             job = analysisClient.checkStatus(job.getJobNumber());
-
+       
             if (job != null)  status = job.getStatus();
-
+            
         }
 
         // after task completes jobInfo is the same as job
         JobInfo jobInfo = job;
         ParameterInfo[] jobParams = jobInfo.getParameterInfoArray();
-
+           
 
         StringBuffer sbOut = new StringBuffer();
         for (int j = 0; j < jobParams.length; j++) {
@@ -373,13 +376,13 @@ show execution logs</td>
             }
 			boolean executionLog = false;
             sbOut.setLength(0);
-
+			
             String fileName = new File("../../" + jobParams[j].getValue())
                     .getName();
-    		if (fileName.equals(GPConstants.TASKLOG)) executionLog = true;
-
-
-
+    		if (fileName.equals(GPConstants.TASKLOG)) executionLog = true;        
+	
+			
+			
 			sbOut.append("<tr><td>&nbsp;</td><td align='center'>");
 
 			if (executionLog){
@@ -387,7 +390,7 @@ show execution logs</td>
 			}
 
 			sbOut.append("<input type=\"checkbox\" value=\"");
-
+			
             sbOut.append(""+jobInfo.getJobNumber() + "/" + fileName);
             sbOut.append("\" name=\"dl\" ");
 			if (executionLog){
@@ -421,14 +424,14 @@ show execution logs</td>
             } catch (UnsupportedEncodingException uee) {
                 // ignore
             }
-
+            
             sbOut.append("\">" + StringUtils.htmlEncode(fileName) + "</a>");
 			if (executionLog){
 				sbOut.append("</span>");
 			}
 			sbOut.append("</td></tr>");
             out.println(sbOut.toString());
-
+            
         }
     out.println("<tr><td colspan=4>&nbsp;</td></tr>");
 
@@ -436,7 +439,7 @@ show execution logs</td>
 
 
            out.flush();
-
+        
          out.println("</form></td></tr>");
  out.println("<tr><td colspan=4>&nbsp;</td></tr>");
 
@@ -449,10 +452,10 @@ show execution logs</td>
 	document.getElementById("stopCmd").disabled=true;
 	document.getElementById("stopCmd").visibility=false;
 
-
+ 
     var emailCB = document.getElementById("emailCheckbox");
     emailCB.enabled=false;
-
+    
 </script>
 <%
     GregorianCalendar purgeTOD = new GregorianCalendar();

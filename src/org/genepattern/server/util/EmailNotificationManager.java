@@ -36,13 +36,13 @@ public class EmailNotificationManager {
         return instance;
     }
 
-    public void addWaitingUser(String user, String jobID) {
-        JobWaitThread waiter = new JobWaitThread(user, jobID);
+    public void addWaitingUser(String email, String user, String jobID) {
+        JobWaitThread waiter = new JobWaitThread(email, user, jobID);
         threads.add(waiter);
         waiter.start();
     }
 
-    public void removeWaitingUser(String user, String jobID) {
+    public void removeWaitingUser(String email, String user, String jobID) {
         for (JobWaitThread aJobThread : threads) {
             if (aJobThread.matchJobAndUser(user, jobID)) {
                 aJobThread.quietStop();
@@ -56,7 +56,7 @@ public class EmailNotificationManager {
         threads.remove(aThread);
     }
 
-    public void sendJobCompletionEmail(String user, String jobId) {
+    public void sendJobCompletionEmail(String email, String user, String jobId) {
         String status = "status unknown";
         String moduleName = "";
         try {
@@ -69,7 +69,7 @@ public class EmailNotificationManager {
             status = "Finished";
         }
 
-        String addresses = user;
+        String addresses = email;
         String from = "GenePattern@" + System.getProperty("gpServerHostAddress");
         String subject = "Job " + jobId + " - " + moduleName + " - " + status;
         StringBuffer msg = new StringBuffer();
@@ -175,6 +175,7 @@ public class EmailNotificationManager {
 
 class JobWaitThread extends Thread {
     String user = null;
+	String email = null;
 
     int jobID;
 
@@ -184,8 +185,9 @@ class JobWaitThread extends Thread {
 
     boolean stopQuietly = false;
 
-    public JobWaitThread(String user, String jobID) {
+    public JobWaitThread(String email, String user, String jobID) {
         this.user = user;
+		this.email = email;
         this.jobID = Integer.parseInt(jobID);
     }
 
@@ -195,7 +197,7 @@ class JobWaitThread extends Thread {
 
     public void run() {
         try {
-            LocalAnalysisClient analysis = new LocalAnalysisClient(user);
+           LocalAnalysisClient analysis = new LocalAnalysisClient(user);
 
             String status = "";
             JobInfo info = null;
@@ -207,6 +209,7 @@ class JobWaitThread extends Thread {
                     Thread.sleep(sleep);
                 } catch (InterruptedException ie) {
                 }
+
                 info = analysis.checkStatus(jobID);
                 status = info.getStatus();
                 sleep = incrementSleep(initialSleep, maxTries, count);
@@ -214,7 +217,7 @@ class JobWaitThread extends Thread {
             }
             // the job is done. Send an email to the user
             if (!stopQuietly) {
-                EmailNotificationManager.getInstance().sendJobCompletionEmail(user, "" + jobID);
+                EmailNotificationManager.getInstance().sendJobCompletionEmail(email, user, "" + jobID);
             }
         } catch (Exception e) {
             // problem getting status. Send an email indicating this and
@@ -222,7 +225,7 @@ class JobWaitThread extends Thread {
             e.printStackTrace();
 
             EmailNotificationManager em = EmailNotificationManager.getInstance();
-            String addresses = user;
+            String addresses = email;
             String from = "GenePattern@" + System.getProperty("gpServerHostAddress");
             String subject = "Job " + jobID + " - status unavailable";
             StringBuffer msg = new StringBuffer();
@@ -230,7 +233,7 @@ class JobWaitThread extends Thread {
             msg.append("\nThe job may or may not be finished.  When it is complete you will be able to");
             msg.append("get the results from here:\n ");
             msg
-                    .append("<a href='http://gp21e-789.broad.mit.edu:8080/gp/pages/jobResults.jsf?jobID=jobID'>GenePattern Results Page</a>");
+                    .append("<a href='"+System.getProperty("GenePatternURL")+"/pages/jobResults.jsf?jobID=jobID'>GenePattern Results Page</a>");
             msg.append("\n\nSee the GenePattern logs for the error details.");
 
             em.emailToAddresses(addresses, from, subject, msg.toString());

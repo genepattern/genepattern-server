@@ -105,11 +105,13 @@ public class AjaxServlet extends javax.servlet.http.HttpServlet implements
 			// setup for polling, put any return into value
 			String jobID = ((String[]) parameterMap.get("jobID"))[0];
 			String userID= ((String[]) parameterMap.get("userID"))[0];
-			EmailNotificationManager.getInstance().addWaitingUser(userID, jobID);
+			String userEmail= ((String[]) parameterMap.get("userEmail"))[0];
+			EmailNotificationManager.getInstance().addWaitingUser(userEmail, userID, jobID);
 		} else if ("cancelEmailJobCompletion".equalsIgnoreCase(cmd)){
 			String jobID = ((String[]) parameterMap.get("jobID"))[0];
 			String userID= ((String[]) parameterMap.get("userID"))[0]; 		
-			EmailNotificationManager.getInstance().removeWaitingUser(userID, jobID);
+			String userEmail= ((String[]) parameterMap.get("userEmail"))[0];
+			EmailNotificationManager.getInstance().removeWaitingUser(userEmail, userID, jobID);
 		}
 		
 		

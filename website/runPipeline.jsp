@@ -284,6 +284,7 @@ function checkAllInTask(idx, taskcb) {
 function setEmailNotification(jobId){
 		var cb = document.getElementById('emailCheckbox');
 		var ue = document.getElementById("userEmail");
+		var uid = document.getElementById("userID");
 		var valid = jcv_checkEmail(ue.value);
 		if (!valid){
 			var em = prompt("Email on completion to?:");
@@ -300,11 +301,10 @@ function setEmailNotification(jobId){
 				}
 			}
 		}
-
  	  	if (cb.checked) {
-			requestEmailNotification(ue.value, jobId);
+			requestEmailNotification(ue.value, uid.value, jobId);
 	 	} else {
-			cancelEmailNotification(ue.value, jobId);
+			cancelEmailNotification(ue.value, uid.value, jobId);
 		}
    }
 var numTasks = <%=numTasks%>;
@@ -409,7 +409,8 @@ function toggleTask(idx, visibility) {
 			type="checkbox" id="emailCheckbox"
 			onclick="setEmailNotification(<%=jobID%>);" value="checkbox" />email
 		notification&nbsp;&nbsp;&nbsp;&nbsp; <input type="hidden"
-			id="userEmail" value="<%= userEmail %>" /> <input name="showLogs"
+			id="userEmail" value="<%= userEmail %>" /> <input type="hidden"
+			id="userID" value="<%= userID %>" /> <input name="showLogs"
 			id="logCheckbox" type="checkbox" onclick="toggleLogs()"
 			value="showLogs" checked="checked" /> show execution logs</td>
 	</tr>
