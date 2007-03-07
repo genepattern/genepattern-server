@@ -28,7 +28,7 @@ String title = request.getParameter("title");
 // submit and close
 function doSubmit(btn) {
 	window.opener.location = "makeZip.jsp?name=<%= request.getParameter("name") %>" +
-				 (btn.name == "includeDependents" ? "&includeDependents=1" : "") +
+				 (btn.name == "IncludeDependents" ? "&includeDependents=1" : "") +
 				 "&close=1";
 	window.close();
 	return false;
