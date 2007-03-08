@@ -571,6 +571,7 @@ public class TaskIntegrator {
             throws WebServiceException {
         File zipFile = null;
         if (recursive) {
+            // recursive install only allowed if createModule permission granted
             recursive = authManager.checkPermission("createModule", getUserName());
         }
         try {
