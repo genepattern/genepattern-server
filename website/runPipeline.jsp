@@ -429,8 +429,7 @@ function toggleTask(idx, visibility) {
 		</td>
 		<td>Running <a
 			href="viewPipeline.jsp?view=1&name=<%=taskInfo.getTaskInfoAttributes().get("LSID")%>"><%=taskInfo.getName()%>
-		</a> as job # <a href="getJobResults.jsp?jobID=<%=jobID%>"><%=jobID%>
-		</a> on <%=new Date()%></td>
+		</a> as job # <%=jobID%> on <%=java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.LONG, java.text.DateFormat.LONG).format(new Date())%>.
 	</tr>
 </table>
 
