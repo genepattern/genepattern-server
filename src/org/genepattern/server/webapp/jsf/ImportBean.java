@@ -4,9 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.zip.ZipFile;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.model.SelectItem;
@@ -16,15 +13,13 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.genepattern.server.TaskUtil;
+import org.genepattern.server.TaskUtil.ZipFileType;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.process.SuiteRepository;
 import org.genepattern.server.util.AuthorizationManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
-import org.genepattern.webservice.SuiteInfo;
-import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
 
@@ -99,55 +94,48 @@ public class ImportBean {
         } catch (IOException e) {
             UIBeanHelper.setErrorMessage("Unable to install " + zipFile.getName() + ". Please ensure that "
                     + zipFile.getName() + " is a valid module or pipeline zip file.");
-            log.error(e);
+            log.error("Error importing zip", e);
             return "error";
         }
-
     }
 
-    private String doImport(final String path, final int privacy) throws IOException {
-        if (TaskUtil.isSuiteZip(new File(path))) {
+    private String doImport(final String path, final int privacy) {
+        ZipFileType zipFileType = TaskUtil.getZipFileType(new File(path));
+        if (zipFileType.equals(ZipFileType.INVALID_ZIP)) {
+            UIBeanHelper.setInfoMessage(new File(path).getName() + " is not a valid GenePattern zip file.");
+            return "error";
+        } else if (zipFileType.equals(ZipFileType.MODULE_ZIP) || zipFileType.equals(ZipFileType.PIPELINE_ZIP)
+                || zipFileType.equals(ZipFileType.PIPELINE_ZIP_OF_ZIPS)) {
+            return doTaskImport(path, privacy, zipFileType);
+        } else {
             return doSuiteImport(path, privacy);
         }
-
-        return doTaskImport(path, privacy);
-
     }
 
-    private String doTaskImport(final String path, final int privacy) {
-
+    private String doTaskImport(final String path, final int privacy, ZipFileType zipFileType) {
         AuthorizationManager authManager = new AuthorizationManager();
         final String username = UIBeanHelper.getUserId();
-        boolean taskInstallAllowed = authManager.checkPermission("createModule", username);
-        boolean pipelineInstallAllowed = authManager.checkPermission("createPipeline", username);
-
+        boolean createModuleAllowed = authManager.checkPermission("createModule", username);
+        boolean createPipelineAllowed = authManager.checkPermission("createPipeline", username);
         final LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
 
-        TaskInfo taskInfo;
-        try {
-            taskInfo = TaskUtil.getTaskInfoFromZip(new File(path));
-
-            boolean isPipelineZip = TaskUtil.isPipeline(taskInfo);
-            if (isPipelineZip) {
-                if (!pipelineInstallAllowed) {
-                    UIBeanHelper.setInfoMessage("You do not have permission to install pipelines on this server.");
-                    return "error";
-                }
-            } else if (!taskInstallAllowed) {
-                UIBeanHelper.setInfoMessage("You do not have permission to install modules on this server.");
+        if (zipFileType.equals(ZipFileType.PIPELINE_ZIP) || zipFileType.equals(ZipFileType.PIPELINE_ZIP_OF_ZIPS)) {
+            if (!createPipelineAllowed) {
+                UIBeanHelper.setInfoMessage("You do not have permission to install pipelines on this server.");
                 return "error";
             }
-        } catch (IOException e) {
-            log.error(e);
-            UIBeanHelper.setInfoMessage("Unable to install " + new File(path).getName() + ". Please ensure that "
-                    + new File(path).getName() + " is a valid module or pipeline zip file.");
+        } else if (!createModuleAllowed) {
+            UIBeanHelper.setInfoMessage("You do not have permission to install modules on this server.");
             return "error";
         }
-        final boolean doRecursive = taskInstallAllowed; // TODO ask user?
+
+        final boolean doRecursive = createModuleAllowed; // TODO ask user?
 
         final TaskInstallBean installBean = (TaskInstallBean) UIBeanHelper.getManagedBean("#{taskInstallBean}");
-        installBean.setTasks(new String[] { taskInfo.getLsid() }, new String[] { taskInfo.getName() });
-        final String lsid = taskInfo.getLsid();
+        final String lsid = "" + System.currentTimeMillis();
+        String name = new File(path).getName();
+        installBean.setTasks(new String[] { lsid }, new String[] { name });
+
         new Thread() {
             public void run() {
                 try {
@@ -194,8 +182,7 @@ public class ImportBean {
     }
 
     private String doSuiteImport(final String path, final int privacy) {
-
-        AuthorizationManager authManager = new AuthorizationManager();
+        final AuthorizationManager authManager = new AuthorizationManager();
         final String username = UIBeanHelper.getUserId();
 
         boolean suiteInstallAllowed = authManager.checkPermission("createSuite", username);
@@ -205,26 +192,31 @@ public class ImportBean {
         }
         final LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
 
-        SuiteInfo suiteInfo;
-        try {
-            HashMap hm = SuiteRepository.getSuiteMap(new ZipFile(path));
-            suiteInfo = new SuiteInfo(hm);
-        } catch (Exception e) {
-            log.error(e);
-            UIBeanHelper.setErrorMessage("Unable to install " + new File(path).getName() + ". Please ensure that "
-                    + new File(path).getName() + " is a valid suite zip file.");
-            return "error";
-        }
-
         final SuiteInstallBean installBean = (SuiteInstallBean) UIBeanHelper.getManagedBean("#{suiteInstallBean}");
-        installBean.setSuites(new String[] { suiteInfo.getLsid() }, new String[] { suiteInfo.getName() });
-        final String lsid = suiteInfo.getLsid();
+        final String lsid = "" + System.currentTimeMillis();
+        final String name = new File(path).getName();
+        installBean.setSuites(new String[] { lsid }, new String[] { name });
+
         new Thread() {
             public void run() {
                 try {
                     HibernateUtil.beginTransaction();
+                    taskIntegratorClient.importZipFromURL(path, privacy, authManager.checkPermission("createModule",
+                            username), new Status() {
 
-                    taskIntegratorClient.installSuite(new ZipFile(path));
+                        public void beginProgress(String string) {
+                        }
+
+                        public void continueProgress(int percent) {
+                        }
+
+                        public void endProgress() {
+                        }
+
+                        public void statusMessage(String message) {
+                            installBean.setStatus(lsid, null, message);
+                        }
+                    });
                     HibernateUtil.commitTransaction();
                     installBean.setStatus(lsid, "success");
                 } catch (WebServiceException e) {
@@ -237,9 +229,6 @@ public class ImportBean {
                         installBean.setStatus(lsid, "error");
                     }
 
-                    log.error(e);
-                } catch (IOException e) {
-                    installBean.setStatus(lsid, "error");
                     log.error(e);
                 }
                 new File(path).delete();

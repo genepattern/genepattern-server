@@ -16,11 +16,9 @@ import static org.genepattern.util.GPConstants.ACCESS_PRIVATE;
 import static org.genepattern.util.GPConstants.ACCESS_PUBLIC;
 import static org.genepattern.util.GPConstants.COMMAND_LINE;
 import static org.genepattern.util.GPConstants.LSID;
-import static org.genepattern.util.GPConstants.MANIFEST_FILENAME;
 import static org.genepattern.util.GPConstants.PRIVACY;
 import static org.genepattern.util.GPConstants.PRIVATE;
 import static org.genepattern.util.GPConstants.SERIALIZED_MODEL;
-import static org.genepattern.util.GPConstants.SUITE_MANIFEST_FILENAME;
 import static org.genepattern.util.GPConstants.TASK_TYPE;
 import static org.genepattern.util.GPConstants.TASK_TYPE_PIPELINE;
 import static org.genepattern.util.GPConstants.USERID;
@@ -35,6 +33,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -49,6 +48,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.TaskUtil;
+import org.genepattern.server.TaskUtil.ZipFileType;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.domain.TaskMaster;
@@ -75,9 +75,9 @@ import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
 
 /**
- * TaskIntegrator Web Service. Do a Thread.yield at beginning of each method- fixes BUG in which responses from
- * AxisServlet are sometimes empty
- * 
+ * TaskIntegrator Web Service. Do a Thread.yield at beginning of each method-
+ * fixes BUG in which responses from AxisServlet are sometimes empty
+ *
  * @author Joshua Gould
  */
 
@@ -89,7 +89,7 @@ public class TaskIntegrator {
 
     /**
      * Retrieve the user name from the message context
-     * 
+     *
      * @return
      */
     protected String getUserName() {
@@ -103,9 +103,10 @@ public class TaskIntegrator {
 
     /**
      * Clones the given task.
-     * 
-     * Cloning is a form of task creation and requires teh "createModule" permission
-     * 
+     *
+     * Cloning is a form of task creation and requires teh "createModule"
+     * permission
+     *
      * @param lsid
      *            The lsid of the task to clone
      * @param cloneName
@@ -159,9 +160,9 @@ public class TaskIntegrator {
 
     /**
      * Deletes the given files that belong to the given task
-     * 
+     *
      * Only owners and administrators may delete a task.
-     * 
+     *
      * @param lsid
      *            The LSID
      * @param fileNames
@@ -201,7 +202,7 @@ public class TaskIntegrator {
 
     /**
      * Deletes the given task, suite or other object identified by the lsid
-     * 
+     *
      * @param lsid
      *            The LSID
      * @exception WebServiceException
@@ -220,7 +221,7 @@ public class TaskIntegrator {
 
     /**
      * Deletes the given task
-     * 
+     *
      * @param lsid
      *            The LSID
      * @exception WebServiceException
@@ -266,7 +267,7 @@ public class TaskIntegrator {
 
     /**
      * Exports the given task to a zip file
-     * 
+     *
      * @param lsid
      *            The LSID
      * @return The zip file
@@ -298,9 +299,9 @@ public class TaskIntegrator {
     }
 
     /**
-     * Return the documentation file names associated with the LSID as an array of strings. The LSID can represent a
-     * suite or a task.
-     * 
+     * Return the documentation file names associated with the LSID as an array
+     * of strings. The LSID can represent a suite or a task.
+     *
      * @param lsid
      * @return
      * @throws WebServiceException
@@ -329,9 +330,9 @@ public class TaskIntegrator {
     }
 
     /**
-     * Gets the files that belong to the given task or suite that are considered to be documentation files. Returned as
-     * an array of DataHandlers.
-     * 
+     * Gets the files that belong to the given task or suite that are considered
+     * to be documentation files. Returned as an array of DataHandlers.
+     *
      * @param lsid
      *            The LSID
      * @return The docFiles
@@ -375,8 +376,9 @@ public class TaskIntegrator {
     }
 
     /**
-     * Gets the an array of the last mofification times of the given files that belong to the given task
-     * 
+     * Gets the an array of the last mofification times of the given files that
+     * belong to the given task
+     *
      * @param lsid
      *            The LSID
      * @param fileNames
@@ -406,7 +408,7 @@ public class TaskIntegrator {
 
     /**
      * Gets the an array of file names that belong to the given task
-     * 
+     *
      * @param lsid
      *            The LSID
      * @return The supportFileNames
@@ -437,7 +439,7 @@ public class TaskIntegrator {
 
     /**
      * Gets the an array of files that belong to the given task
-     * 
+     *
      * @param lsid
      *            The LSID
      * @return The supportFiles
@@ -459,7 +461,7 @@ public class TaskIntegrator {
 
     /**
      * Return a specific support file as a DataHandler.
-     * 
+     *
      * @param lsid
      * @param fileName
      * @return
@@ -488,7 +490,7 @@ public class TaskIntegrator {
 
     /**
      * Gets the an array of the given files that belong to the given task
-     * 
+     *
      * @param lsid
      *            The LSID
      * @param fileNames
@@ -522,8 +524,8 @@ public class TaskIntegrator {
 
     /**
      * Installs the zip file overwriting anything already there.
-     * 
-     * @param dataHandler
+     *
+     * @param handler
      *            The zip file
      * @param privacy
      *            One of GPConstants.ACCESS_PUBLIC or GPConstants.ACCESS_PRIVATE
@@ -535,61 +537,26 @@ public class TaskIntegrator {
         return importZip(handler, privacy, true, null);
     }
 
-    private String importZip(DataHandler handler, int privacy, boolean recursive, Status taskIntegrator)
+    private String importZip(DataHandler handler, int privacy, boolean recursive, Status status)
             throws WebServiceException {
-        Vector vProblems = null;
-        String lsid = null;
+        Thread.yield();
+        File axisFile = Util.getAxisFile(handler);
+        File zipFile = new File(handler.getName() + ".zip");
+        axisFile.renameTo(zipFile);
         try {
-            Thread.yield();
-            String username = getUserName();
-            File axisFile = Util.getAxisFile(handler);
-            File zipFile = new File(handler.getName() + ".zip");
-            axisFile.renameTo(zipFile);
-            String path = zipFile.getCanonicalPath();
-
-            // determine if we are installing a task or a suite
-            boolean isSuite = false;
-            ZipFile zippedFile = null;
-            try {
-                zippedFile = new ZipFile(path);
-                ZipEntry taskManifestEntry = zippedFile.getEntry(MANIFEST_FILENAME);
-                ZipEntry suiteManifestEntry = zippedFile.getEntry(SUITE_MANIFEST_FILENAME);
-                if (suiteManifestEntry != null) {
-                    isSuite = true;
-                }
-            } catch (IOException ioe) {
-                log.error(ioe);
-                throw new WebServiceException("Couldn't open " + path + ": " + ioe.getMessage());
-            }
-            if (isSuite) {
-                isAuthorized(getUserName(), "createSuite");
-                lsid = installSuite(zippedFile);
-            } else {
-                try {
-                    TaskInfo ti = TaskUtil.getTaskInfoFromZip(zipFile);
-                    isAuthorizedCreateTask(getUserName(), ti.getTaskInfoAttributes());
-
-                    lsid = GenePatternAnalysisTask.installNewTask(path, username, privacy, recursive, taskIntegrator);
-                } catch (TaskInstallationException tie) {
-                    log.error(tie);
-                    vProblems = tie.getErrors();
-                }
-            }
-        } catch (Exception e) {
-            log.error(e);
-            throw new WebServiceException("while importing from zip file", e);
+            return importZipFromURL(zipFile.getCanonicalPath(), privacy, recursive, status);
+        } catch (IOException e) {
+            throw new WebServiceException();
         }
-        if (vProblems != null && vProblems.size() > 0) {
-            throw new WebServiceErrorMessageException(vProblems);
-        }
-        return lsid;
+
     }
 
     /**
-     * Installs the zip file at the given url overwriting anything already there.
-     * 
+     * Installs the zip file at the given url overwriting anything already
+     * there.
+     *
      * @param url
-     *            The url of the zip file
+     *            The url or the file path of the zip file.
      * @param privacy
      *            One of GPConstants.ACCESS_PUBLIC or GPConstants.ACCESS_PRIVATE
      * @return The LSID of the task
@@ -603,44 +570,36 @@ public class TaskIntegrator {
     public String importZipFromURL(String url, int privacy, boolean recursive, Status taskIntegrator)
             throws WebServiceException {
         File zipFile = null;
-        ZipFile zippedFile;
-        InputStream is = null;
-        String lsid = null;
+        if (recursive) {
+            recursive = authManager.checkPermission("createModule", getUserName());
+        }
         try {
             String username = getUserName();
             zipFile = Util.downloadUrl(url);
-            String path = zipFile.getCanonicalPath();
-            // determine if we are installing a task or a suite
-            boolean isTask = false;
-            boolean isSuite = false;
-            boolean isZipOfZips = false;
-            try {
-                zippedFile = new ZipFile(path);
-                ZipEntry taskManifestEntry = zippedFile.getEntry(MANIFEST_FILENAME);
-                ZipEntry suiteManifestEntry = zippedFile.getEntry(SUITE_MANIFEST_FILENAME);
-                isZipOfZips = isZipOfZips(url);
-                if (taskManifestEntry != null) {
-                    isTask = true;
-                }
-                if (suiteManifestEntry != null) {
-                    isSuite = true;
-                }
-            } catch (IOException ioe) {
-                log.error(ioe);
-                throw new WebServiceException("Couldn't open " + path + ": " + ioe.getMessage());
-            }
-            if (!(isTask || isSuite || isZipOfZips)) {
+
+            ZipFileType type = TaskUtil.getZipFileType(zipFile);
+            if (zipFile.equals(ZipFileType.INVALID_ZIP)) {
                 throw new WebServiceException("Couldn't find task or suite manifest in zip file ");
             }
-            if (isSuite) {
-                isAuthorized(getUserName(), "createSuite");
-                lsid = installSuite(zippedFile);
-            } else {
-                TaskInfo ti = TaskUtil.getTaskInfoFromZip(zipFile);
-                isAuthorizedCreateTask(getUserName(), ti.getTaskInfoAttributes());
 
-                // isTask replace task, do not version lsid or replace the lsid in the zip with a local one
-                lsid = GenePatternAnalysisTask.installNewTask(path, username, privacy, recursive, taskIntegrator);
+            if (type.equals(ZipFileType.MODULE_ZIP)) {
+                isAuthorized(getUserName(), "createModule");
+                return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive,
+                        taskIntegrator);
+            } else if (type.equals(ZipFileType.PIPELINE_ZIP)) {
+                isAuthorized(getUserName(), "createPipeline");
+                return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive,
+                        taskIntegrator);
+            } else if (type.equals(ZipFileType.PIPELINE_ZIP_OF_ZIPS)) {
+                isAuthorized(getUserName(), "createPipeline");
+                return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive,
+                        taskIntegrator);
+            } else if (type.equals(ZipFileType.SUITE_ZIP)) {
+                isAuthorized(getUserName(), "createSuite");
+                return installSuite(zipFile, privacy);
+            } else if (type.equals(ZipFileType.SUITE_ZIP_OF_ZIPS)) {
+                isAuthorized(getUserName(), "createSuite");
+                return installSuiteFromZipOfZips(zipFile, recursive, privacy);
             }
         } catch (TaskInstallationException tie) {
             throw new WebServiceErrorMessageException(tie.getErrors());
@@ -650,24 +609,19 @@ public class TaskIntegrator {
             if (zipFile != null) {
                 zipFile.delete();
             }
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException x) {
-                }
-            }
         }
-        return lsid;
+        return url;
+
     }
 
     /**
      * Install the suite with the given LSID from the repository.
-     * 
+     *
      * @param lsid
      * @throws WebServiceException
      */
 
-    public void installSuite(String lsid) throws WebServiceException {
+    private void installSuiteFromRepository(String lsid) throws WebServiceException {
         isAuthorized(getUserName(), "createSuite");
         try {
             SuiteRepository sr = new SuiteRepository();
@@ -677,7 +631,7 @@ public class TaskIntegrator {
             // get the info from the HashMap and install it into the DB
             SuiteInfo suite = new SuiteInfo(hm);
 
-            installSuite(suite);
+            installSuite(suite, GPConstants.ACCESS_PUBLIC);
         } catch (Exception e) {
             log.error(e);
             throw new WebServiceException(e);
@@ -686,12 +640,11 @@ public class TaskIntegrator {
 
     /**
      * Create a new suite from the SuiteInfo object.
-     * 
+     *
      * @param suiteInfo
-     * @return
      * @throws WebServiceException
      */
-    public void saveOrUpdateSuite(SuiteInfo suiteInfo) throws WebServiceException {
+    private void saveOrUpdateSuite(SuiteInfo suiteInfo) throws WebServiceException {
 
         isAuthorized(getUserName(), "createSuite");
 
@@ -705,12 +658,11 @@ public class TaskIntegrator {
 
     /**
      * Create a new suite from the SuiteInfo object.
-     * 
+     *
      * @param suiteInfo
-     * @return
      * @throws WebServiceException
      */
-    public String installSuite(SuiteInfo suiteInfo) throws WebServiceException {
+    private String installSuite(SuiteInfo suiteInfo, int privacy) throws WebServiceException {
         isAuthorized(getUserName(), "createSuite");
 
         try {
@@ -718,7 +670,7 @@ public class TaskIntegrator {
                 if (suiteInfo.getLSID().trim().length() == 0)
                     suiteInfo.setLSID(null);
             }
-
+            suiteInfo.setAccessId(privacy);
             (new TaskIntegratorDAO()).saveOrUpdate(suiteInfo);
 
             String suiteDir = DirectoryManager.getSuiteLibDir(suiteInfo.getName(), suiteInfo.getLSID(), suiteInfo
@@ -751,57 +703,167 @@ public class TaskIntegrator {
 
     }
 
+    private String installSuite(File file, int privacy) throws WebServiceException {
+        isAuthorized(getUserName(), "createSuite");
+        ZipFile suiteZipFile = null;
+
+        try {
+            suiteZipFile = new ZipFile(file);
+            SuiteInfo suiteInfo = new SuiteInfo(SuiteRepository.getSuiteMap(suiteZipFile));
+
+            // now we need to extract the doc files and repoint the suiteInfo
+            // docfiles to the file url of the extracted version
+            String[] filenames = suiteInfo.getDocumentationFiles();
+            if (filenames != null) {
+                File tmpDir = File.createTempFile("dir", null);
+                tmpDir.delete();
+                tmpDir.mkdirs();
+
+                for (int j = 0; j < filenames.length; j++) {
+                    String name = filenames[j];
+                    ZipEntry zipEntry = (ZipEntry) suiteZipFile.getEntry(name);
+                    if (zipEntry != null) {
+                        File outFile = unzip(tmpDir, suiteZipFile, zipEntry);
+                        filenames[j] = outFile.toURL().toString();
+                    }
+                }
+            }
+
+            suiteZipFile.close();
+            String lsid = installSuite(suiteInfo, privacy);
+            return lsid;
+        } catch (Exception e) {
+            throw new WebServiceException(e);
+        } finally {
+            if (suiteZipFile != null) {
+                try {
+                    suiteZipFile.close();
+                } catch (IOException e) {
+
+                }
+            }
+        }
+
+    }
+
     /**
-     * Install a suite from a zip file. Extracts the contents of the zip then calls installSuite(SuiteInfo)
-     * 
+     * Install a suite from a zip of zips. Extracts the contents of the zip then
+     * calls installSuite(SuiteInfo)
+     *
      * @param zipFile
      * @return
      * @throws WebServiceException
      */
-    public String installSuite(ZipFile zipFile) throws WebServiceException {
+    private String installSuiteFromZipOfZips(File file, boolean recursive, int privacy) throws WebServiceException {
         isAuthorized(getUserName(), "createSuite");
+        if (recursive) {
+            recursive = authManager.checkPermission("createModule", getUserName());
+        }
         try {
-            System.out.println("Installing suite from zip");
 
-            HashMap hm = SuiteRepository.getSuiteMap(zipFile);
-            SuiteInfo suite = new SuiteInfo(hm);
+            SuiteInfo suiteInfo;
+            try {
+                suiteInfo = TaskUtil.getSuiteInfoFromZipOfZips(file);
+            } catch (Exception e) {
+                throw new WebServiceException("Invalid suite zip file.");
+            }
 
+            File suiteSuiteFile = TaskUtil.getFirstEntry(file);
+
+            ZipFile suiteZipFile = new ZipFile(suiteSuiteFile);
             // now we need to extract the doc files and repoint the suiteInfo
             // docfiles to the file url of the extracted version
-            String[] filenames = suite.getDocumentationFiles();
-            for (int j = 0; j < filenames.length; j++) {
-                int i = 0;
-                String name = filenames[j];
-                ZipEntry zipEntry = (ZipEntry) zipFile.getEntry(name);
-                System.out.println("name= " + name + " ze= " + zipEntry);
-                if (zipEntry != null) {
-                    InputStream is = zipFile.getInputStream(zipEntry);
-                    File outFile = new File(System.getProperty("java.io.tmpdir"), zipEntry.getName());
-                    FileOutputStream os = new FileOutputStream(outFile);
-                    long numRead = 0;
-                    byte[] buf = new byte[100000];
-                    while ((i = is.read(buf, 0, buf.length)) > 0) {
-                        os.write(buf, 0, i);
-                        numRead += i;
+            String[] filenames = suiteInfo.getDocumentationFiles();
+            if (filenames != null) {
+                File tmpDir = File.createTempFile("dir", null);
+                tmpDir.delete();
+                tmpDir.mkdirs();
+                for (int j = 0; j < filenames.length; j++) {
+                    String name = filenames[j];
+                    ZipEntry zipEntry = (ZipEntry) suiteZipFile.getEntry(name);
+                    if (zipEntry != null) {
+                        File outFile = unzip(tmpDir, suiteZipFile, zipEntry);
+                        filenames[j] = outFile.toURL().toString();
                     }
-                    os.close();
-                    os = null;
-                    outFile.setLastModified(zipEntry.getTime());
-                    is.close();
-                    filenames[j] = outFile.toURL().toString();
                 }
             }
 
-            return installSuite(suite);
-        } catch (Exception e) {
-            log.error(e);
-            throw new WebServiceException(e);
+            suiteZipFile.close();
+            String lsid = installSuite(suiteInfo, privacy);
+            if (recursive) {
+                // install modules
+                ZipFile zipOfZips = new ZipFile(file);
+                Enumeration e = zipOfZips.entries();
+                if (e.hasMoreElements()) {
+                    e.nextElement(); // ignore first entry which is the suite
+                    // zip
+                }
+                File tmpDir = File.createTempFile("dir", null);
+                tmpDir.delete();
+                tmpDir.mkdirs();
+                while (e.hasMoreElements()) {
+                    File moduleZipFile = unzip(tmpDir, zipOfZips, (ZipEntry) e.nextElement());
+                    importZipFromURL(moduleZipFile.getCanonicalPath(), privacy, false, new Status() {
+
+                        public void beginProgress(String string) {
+                        }
+
+                        public void continueProgress(int percent) {
+                        }
+
+                        public void endProgress() {
+                        }
+
+                        public void statusMessage(String message) {
+                        }
+
+                    });
+                }
+            }
+            return lsid;
+        } catch (IOException ioe) {
+            throw new WebServiceException(ioe);
+
+        }
+    }
+
+
+    private File unzip(File unzipDirectory, ZipFile zipFile, ZipEntry zipEntry) throws IOException {
+        InputStream is = null;
+        FileOutputStream os = null;
+
+        try {
+            is = zipFile.getInputStream(zipEntry);
+            String name = zipEntry.getName();
+            File outputFile = new File(unzipDirectory, name);
+            os = new FileOutputStream(outputFile);
+            byte[] buf = new byte[100000];
+            int bytesRead;
+            while ((bytesRead = is.read(buf)) != -1) {
+                os.write(buf, 0, bytesRead);
+            }
+            outputFile.setLastModified(zipEntry.getTime());
+            return outputFile;
+
+        } finally {
+            try {
+                if (is != null)
+                    is.close();
+            } catch (IOException e) {
+
+            }
+            try {
+                if (os != null)
+                    os.close();
+            } catch (IOException e) {
+
+            }
         }
     }
 
     /**
      * Installs the task with the given LSID from the module repository
-     * 
+     *
      * @param lsid
      *            The task LSID
      * @throws WebServiceException
@@ -837,29 +899,13 @@ public class TaskIntegrator {
         }
     }
 
-    private boolean isZipOfZips(String url) throws WebServiceException {
-        File file = Util.downloadUrl(url);
-        try {
-            return org.genepattern.server.TaskUtil.isZipOfZips(file);
-        } catch (java.io.IOException ioe) {
-            throw new WebServiceException(ioe);
-        }
-    }
-
-    private boolean isPipeline(String url) throws WebServiceException {
-        File file = Util.downloadUrl(url);
-        try {
-            return org.genepattern.server.TaskUtil.isZipOfZips(file);
-        } catch (java.io.IOException ioe) {
-            throw new WebServiceException(ioe);
-        }
-    }
-
     /**
-     * @deprecated This method is not currently used, and has not been tested for GP 3.0 and greater.
-     * 
-     * Modifies the suite with the given name. If the suite does not exist, it will be created.
-     * 
+     * @deprecated This method is not currently used, and has not been tested
+     *             for GP 3.0 and greater.
+     *
+     * Modifies the suite with the given name. If the suite does not exist, it
+     * will be created.
+     *
      * @param accessId
      *            One of GPConstants.ACCESS_PUBLIC or GPConstants.ACCESS_PRIVATE
      * @param name
@@ -874,12 +920,13 @@ public class TaskIntegrator {
      *            The owner
      * @param moduleLsids
      *            lsids of modules that are in this suite
-     * 
+     *
      * @param files
-     *            The file names for the <tt>dataHandlers</tt> array. If the array has more elements than the
-     *            <tt>dataHandlers</tt> array, then the additional elements are assumed to be uploaded files for an
-     *            existing task with the given lsid.
-     * 
+     *            The file names for the <tt>dataHandlers</tt> array. If the
+     *            array has more elements than the <tt>dataHandlers</tt>
+     *            array, then the additional elements are assumed to be uploaded
+     *            files for an existing task with the given lsid.
+     *
      * @return The LSID of the suite
      * @exception WebServiceException
      *                If an error occurs
@@ -920,12 +967,13 @@ public class TaskIntegrator {
         }
 
         SuiteInfo si = new SuiteInfo(newlsid, name, description, author, owner, moduleLsids, access_id, docs);
-        return installSuite(si);
+        return installSuite(si, access_id);
     }
 
     /**
-     * @deprecated This method is not currently used and has not been tested with GP 3.0.
-     * 
+     * @deprecated This method is not currently used and has not been tested
+     *             with GP 3.0.
+     *
      * @param access_id
      * @param lsid
      * @param name
@@ -990,8 +1038,9 @@ public class TaskIntegrator {
     }
 
     /**
-     * Modifies the task with the given name. If the task does not exist, it will be created.
-     * 
+     * Modifies the task with the given name. If the task does not exist, it
+     * will be created.
+     *
      * @param accessId
      *            One of GPConstants.ACCESS_PUBLIC or GPConstants.ACCESS_PRIVATE
      * @param taskName
@@ -1005,11 +1054,14 @@ public class TaskIntegrator {
      * @param dataHandlers
      *            Holds the uploaded files
      * @param fileNames
-     *            The file names for the <tt>dataHandlers</tt> array. If the array has more elements than the
-     *            <tt>dataHandlers</tt> array, then the additional elements are assumed to be uploaded files for an
-     *            existing task with the LSID contained in <tt>taskAttributes</tt> or the the element is of the form
-     *            'job #, filename', then the element is assumed to be an output from a job.
-     * 
+     *            The file names for the <tt>dataHandlers</tt> array. If the
+     *            array has more elements than the <tt>dataHandlers</tt>
+     *            array, then the additional elements are assumed to be uploaded
+     *            files for an existing task with the LSID contained in
+     *            <tt>taskAttributes</tt> or the the element is of the form
+     *            'job #, filename', then the element is assumed to be an output
+     *            from a job.
+     *
      * @return The LSID of the task
      * @exception WebServiceException
      *                If an error occurs
