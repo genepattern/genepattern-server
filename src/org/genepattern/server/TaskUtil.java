@@ -311,14 +311,12 @@ public class TaskUtil {
      *                if an error occurs during reading
      */
 
-    private static TaskInfo getTaskInfoFromZip(File file) throws IOException {
-
+    public static TaskInfo getTaskInfoFromZip(File file) throws IOException {
         ZipFile zipFile = null;
         try {
             zipFile = new ZipFile(file);
             ZipEntry manifestEntry = zipFile.getEntry(GPConstants.MANIFEST_FILENAME);
             if (manifestEntry == null) {
-                zipFile.close();
                 throw new IOException(file.getName() + " is missing a GenePattern manifest file.");
             }
             return getTaskInfoFromManifest(zipFile.getInputStream(manifestEntry));
