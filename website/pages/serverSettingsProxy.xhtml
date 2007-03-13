@@ -1,9 +1,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" 
-      xmlns:ui="http://java.sun.com/jsf/facelets" 
-      xmlns:h="http://java.sun.com/jsf/html" 
-      xmlns:f="http://java.sun.com/jsf/core" 
-      xmlns:t="http://myfaces.apache.org/tomahawk" 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
 <h:form>
    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
@@ -16,19 +16,19 @@
       <tr valign="top">
         <td>Proxy Host:</td>
         <td>
-          <h:inputText type="text" size="40" value="#{serverSettingsBean.settings['http.proxyHost']}"/>
+          <h:inputText type="text" size="40" value="#{serverSettingsBean.proxyHost}"/>
         </td>
       </tr>
       <tr valign="top">
         <td>Proxy Port:</td>
         <td>
-          <h:inputText type="text" size="40" value="#{serverSettingsBean.settings['http.proxyPort']}"/>
+          <h:inputText type="text" size="40" value="#{serverSettingsBean.proxyPort}"/>
         </td>
       </tr>
       <tr valign="top">
         <td>Proxy Username:</td>
         <td>
-          <h:inputText size="40" value="#{serverSettingsBean.settings['http.proxyUser']}"/>
+          <h:inputText size="40" value="#{serverSettingsBean.proxyUser}"/>
         </td>
       </tr>
       <tr valign="top">
@@ -53,7 +53,7 @@
         <td>
           <p>Proxy settings are needed only to connect to the Module
                   Repository, and only if your organization has a web proxy between
-                  you and the internet. 
+                  you and the internet.
                 Username and password are required
                 only if your proxy requires authentication. The username
                 and password values will not be saved to the config file for

@@ -17,10 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.Vector;
 
 import javax.faces.FacesException;
 import javax.faces.event.ActionEvent;
-import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
@@ -48,15 +48,11 @@ public class ServerSettingsBean {
 
     private Properties defaultSettings;
 
-    private String proxyPassword;
-
     private String newCSKey = "";
 
     private String newCSValue = "";
 
     private Calendar cal = Calendar.getInstance();
-
-    private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 
     private final String gpLogPath = "GpLogPath";
 
@@ -81,7 +77,8 @@ public class ServerSettingsBean {
             modes.put("Web Server Log", null);
             modes.put("Repositories", new String[] { "ModuleRepositoryURL", "ModuleRepositoryURLs",
                     "SuiteRepositoryURL", "SuiteRepositoryURLs" });
-            modes.put("Proxy", new String[] { "http.proxyHost", "http.proxyPort", "http.proxyUser" });
+            modes.put("Proxy", new String[] { "http.proxyHost", "http.proxyPort", "http.proxyUser", "http.proxyPassword",
+        	    "ftp.proxyHost", "ftp.proxyPort", "ftp.proxyUser", "ftp.proxyPassword" });
             modes.put("Database", new String[] { "database.vendor", "HSQL_port", "HSQL.class", "HSQL.args",
                     "HSQL.schema", "hibernate.connection.driver_class", "hibernate.connection.shutdown",
                     "hibernate.connection.url", "hibernate.connection.username", "hibernate.connection.password",
@@ -540,15 +537,47 @@ public class ServerSettingsBean {
     /**
      * @return
      */
+    public void setProxyHost(String host) {
+	settings.put("http.proxyHost", host);
+	settings.put("ftp.proxyHost", host);
+    }
+
+    public String getProxyHost() {
+	return (String)settings.get("http.proxyHost");
+    }
+
+    public void setProxyPort(String port) {
+	settings.put("http.proxyPort", port);
+	settings.put("ftp.proxyPort", port);
+    }
+
+    public String getProxyPort() {
+	return (String)settings.get("http.proxyPort");
+    }
+
+    public void setProxyUser(String user) {
+	settings.put("http.proxyUser", user);
+	settings.put("ftp.proxyUser", user);
+    }
+
+    public String getProxyUser() {
+	return (String)settings.get("http.proxyUser");
+    }
+
+
+    /**
+     * @return
+     */
     public String getProxyPassword() {
-        return proxyPassword;
+	return (String)System.getProperty("http.proxyPassword");
     }
 
     /**
      * @param password
      */
     public void setProxyPassword(String password) {
-        proxyPassword = password;
+	System.setProperty("http.proxyPassword", password);
+	System.setProperty("ftp.proxyPassword", password);
     }
 
     /**
@@ -739,6 +768,7 @@ public class ServerSettingsBean {
 
         if (propertyKeys != null) {
             String defaultValue;
+            Vector<String> keysToRemove = new Vector<String>();
             for (String propertyKey : propertyKeys) {
                 if (subtype.equals("Module") && !propertyKey.contains(subtype)) {
                     continue;
@@ -750,9 +780,13 @@ public class ServerSettingsBean {
                     settings.put(propertyKey, defaultValue);
                 } else {
                     settings.remove(propertyKey);
+                    keysToRemove.add(propertyKey);
                 }
             }
-            saveSettings(event);
+            if (keysToRemove.size()>0) {
+        	PropertiesManager.removeProperties(keysToRemove);
+            }
+            this.saveSettings(event);
         }
     }
 
