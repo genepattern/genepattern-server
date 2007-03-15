@@ -25,14 +25,25 @@
 
 	function callManagedBean(elExpression, parameters) {
         var opt = {
-          method: 'get',
-          parameters: parameters + '&el=' + elExpression,
+          method: 'post',
+          postBody: parameters + '&el=' + elExpression,
           onSuccess: receiveResponse,
           onFailure: function(t) {
             alert('Error ' + t.status + ' -- ' + t.statusText);
           }
         }
         new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
+	}
+
+      // The callback function - receive response from server
+      function receiveResponse( req) {
+
+        if (req.readyState == 4) {
+          if (req.status == 200) { // only if "OK"
+            	showCode(req.responseText);
+          }
+
+        }
       }
 
       // The callback function - receive response from server
@@ -46,17 +57,19 @@
         }
       }
 
-    var showDescriptions = #{runTaskBean.showParameterDescriptions}
+    var showDescriptions = #{runTaskBean.showParameterDescriptions};
     function toggleDescriptions() {
-    	var elements = document.getElementsByName('parameter_description');
+    	var elements= document.getElementsByClassName("parameter_description");
+
     	showDescriptions = !showDescriptions;
     	var display = "none";
     	if(showDescriptions) {
     		display = "";
     	}
-    	for(var i = 0; i < elements.length; i++) {
-    		elements[i].style.display=display;
-    	}
+		for(var i = 0; i < elements.length; i++) {
+			var e = elements[i];
+			e.style.display=display;
+		}
 
     	var params = 'value=' + showDescriptions;
 		callManagedBean("runTaskBean.updateShowParameterDescriptions", params);
@@ -67,7 +80,7 @@
 	}
 
 	function showCode(code) {
-		var txt = '<p>' + code + '</p>';
+		var txt = new String(code).escapeHTML() + "<br /><br />";
 		Element.update('codeDiv', txt);
      	Element.show($('codeDiv'));
 
@@ -86,14 +99,14 @@ function exportPipeline(lsid, title) {
 }
 
 function viewCode() {
-	var selector = $('gp_languageSelector');
-	if(selector.selectedIndex==0) {
+	var language = $F('gp_languageSelector');
+	if(language=='- Language -') {
 		window.alert('Please select a language');
 		return false;
 	}
 	var form = $('taskForm');
 
-	var params = 'language=' + selector.options[selector.selectedIndex].value;
+	var params = 'language=' + language;
 	for(var i = 0; i < form.elements.length; i++) {
 		var e = form.elements[i];
 		if(e.name!='gp_languageSelector') {
@@ -340,12 +353,12 @@ function showFileInput(id) {
                   <td/>
                   <h:outputText rendered="#{runTaskBean.showParameterDescriptions}">
                     <td valign="top" class="description">
-                      <span name="parameter_description" style="display:inline">#{p.displayDescription}</span>
+                      <span class="parameter_description" style="display:inline">#{p.displayDescription}</span>
                     </td>
                   </h:outputText>
                   <h:outputText rendered="#{!runTaskBean.showParameterDescriptions}">
                     <td valign="top" class="description">
-                      <span name="parameter_description" style="display:none">#{p.displayDescription}</span>
+                      <span class="parameter_description" style="display:none">#{p.displayDescription}</span>
                     </td>
                   </h:outputText>
                 </tr>
