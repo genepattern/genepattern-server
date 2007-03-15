@@ -9,7 +9,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -27,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.util.PropertiesManager;
+import org.genepattern.server.webapp.StartupServlet;
 
 public class ServerSettingsBean {
 
@@ -77,8 +77,8 @@ public class ServerSettingsBean {
             modes.put("Web Server Log", null);
             modes.put("Repositories", new String[] { "ModuleRepositoryURL", "ModuleRepositoryURLs",
                     "SuiteRepositoryURL", "SuiteRepositoryURLs" });
-            modes.put("Proxy", new String[] { "http.proxyHost", "http.proxyPort", "http.proxyUser", "http.proxyPassword",
-        	    "ftp.proxyHost", "ftp.proxyPort", "ftp.proxyUser", "ftp.proxyPassword" });
+            modes.put("Proxy", new String[] { "http.proxyHost", "http.proxyPort", "http.proxyUser",
+                    "http.proxyPassword", "ftp.proxyHost", "ftp.proxyPort", "ftp.proxyUser", "ftp.proxyPassword" });
             modes.put("Database", new String[] { "database.vendor", "HSQL_port", "HSQL.class", "HSQL.args",
                     "HSQL.schema", "hibernate.connection.driver_class", "hibernate.connection.shutdown",
                     "hibernate.connection.url", "hibernate.connection.username", "hibernate.connection.password",
@@ -101,7 +101,7 @@ public class ServerSettingsBean {
             try {
                 settings = PropertiesManager.getGenePatternProperties();
             } catch (IOException ioe) {
-        	log.error(ioe);
+                log.error(ioe);
             }
         }
         if (customSettings == null) {
@@ -120,7 +120,7 @@ public class ServerSettingsBean {
             try {
                 defaultSettings = PropertiesManager.getDefaultProperties();
             } catch (IOException ioe) {
-        	log.error(ioe);
+                log.error(ioe);
             }
         }
     }
@@ -151,7 +151,7 @@ public class ServerSettingsBean {
      */
     public String getModesAsString() {
         String msg = "Server modes: ";
-        for(Object m : getModes()) {
+        for (Object m : getModes()) {
             msg += m.toString() + " ";
         }
         return msg;
@@ -165,8 +165,9 @@ public class ServerSettingsBean {
     }
 
     /**
-     * Return the properties object with the server settings. This should be lazy initialized, it might be called many
-     * times but we only need to read the file once.
+     * Return the properties object with the server settings. This should be
+     * lazy initialized, it might be called many times but we only need to read
+     * the file once.
      *
      */
     public Properties getSettings() {
@@ -224,8 +225,6 @@ public class ServerSettingsBean {
         setSelectItems(clientModes, "gp.allowed.clients");
     }
 
-
-
     /**
      * @param event
      */
@@ -235,7 +234,7 @@ public class ServerSettingsBean {
             removeDomain(clientModes[1]);
             String allClientModes = (String) settings.get("gp.allowed.clients");
             String[] result = allClientModes.split(",");
-            //avoid adding duplicated domains.
+            // avoid adding duplicated domains.
             boolean exist = false;
             for (int i = 0; i < result.length; i++) {
                 if (result[i] != null && result[i].equals(specifiedClientMode)) {
@@ -243,10 +242,10 @@ public class ServerSettingsBean {
                     break;
                 }
             }
-            if (!exist && allClientModes.length()>0) {
+            if (!exist && allClientModes.length() > 0) {
                 allClientModes = allClientModes.concat(",").concat(specifiedClientMode);
-            }else if (allClientModes.length()==0) {
-        	allClientModes = specifiedClientMode;
+            } else if (allClientModes.length() == 0) {
+                allClientModes = specifiedClientMode;
             }
             settings.put("gp.allowed.clients", allClientModes);
         }
@@ -257,13 +256,13 @@ public class ServerSettingsBean {
      * @param event
      */
     public void removeSpecifiedClientMode(ActionEvent event) {
-	event.getComponent();
+        event.getComponent();
         removeDomain(specifiedClientMode);
         saveSettings(event);
     }
 
     private void removeDomain(String mode) {
-	String allClientModes = (String) settings.get("gp.allowed.clients");
+        String allClientModes = (String) settings.get("gp.allowed.clients");
         String[] result = allClientModes.split(",");
         StringBuffer newClientModes = new StringBuffer();
         for (int i = 0; i < result.length; i++) {
@@ -271,7 +270,8 @@ public class ServerSettingsBean {
                 newClientModes.append(result[i]).append(",");
             }
         }
-        String newClientModesStr = (newClientModes.length()>0 ) ? newClientModes.substring(0, newClientModes.length() - 1):"";
+        String newClientModesStr = (newClientModes.length() > 0) ? newClientModes.substring(0,
+                newClientModes.length() - 1) : "";
         settings.put("gp.allowed.clients", newClientModesStr);
     }
 
@@ -289,7 +289,6 @@ public class ServerSettingsBean {
     public void setSearchEngine(String searchEngine) {
         settings.put("disable.gp.indexing", searchEngine);
     }
-
 
     /**
      * @param logFile
@@ -352,7 +351,6 @@ public class ServerSettingsBean {
         return getLogHeader(wsLog, "Web Server");
     }
 
-
     /**
      * @param logFile
      * @param name
@@ -389,7 +387,7 @@ public class ServerSettingsBean {
      * @return
      */
     private File getWsLogFile() {
-	String logPath = settings.getProperty("log4j.appender.All.File");
+        String logPath = settings.getProperty("log4j.appender.All.File");
         if (logPath == null || !new File(logPath).exists()) {
             String newLogPath = settings.getProperty(wsLogPath);
             if (newLogPath != null) {
@@ -538,46 +536,45 @@ public class ServerSettingsBean {
      * @return
      */
     public void setProxyHost(String host) {
-	settings.put("http.proxyHost", host);
-	settings.put("ftp.proxyHost", host);
+        settings.put("http.proxyHost", host);
+        settings.put("ftp.proxyHost", host);
     }
 
     public String getProxyHost() {
-	return (String)settings.get("http.proxyHost");
+        return (String) settings.get("http.proxyHost");
     }
 
     public void setProxyPort(String port) {
-	settings.put("http.proxyPort", port);
-	settings.put("ftp.proxyPort", port);
+        settings.put("http.proxyPort", port);
+        settings.put("ftp.proxyPort", port);
     }
 
     public String getProxyPort() {
-	return (String)settings.get("http.proxyPort");
+        return (String) settings.get("http.proxyPort");
     }
 
     public void setProxyUser(String user) {
-	settings.put("http.proxyUser", user);
-	settings.put("ftp.proxyUser", user);
+        settings.put("http.proxyUser", user);
+        settings.put("ftp.proxyUser", user);
     }
 
     public String getProxyUser() {
-	return (String)settings.get("http.proxyUser");
+        return (String) settings.get("http.proxyUser");
     }
-
 
     /**
      * @return
      */
     public String getProxyPassword() {
-	return (String)System.getProperty("http.proxyPassword");
+        return (String) System.getProperty("http.proxyPassword");
     }
 
     /**
      * @param password
      */
     public void setProxyPassword(String password) {
-	System.setProperty("http.proxyPassword", password);
-	System.setProperty("ftp.proxyPassword", password);
+        System.setProperty("http.proxyPassword", password);
+        System.setProperty("ftp.proxyPassword", password);
     }
 
     /**
@@ -748,7 +745,8 @@ public class ServerSettingsBean {
     }
 
     /**
-     * Save the settings back to the file. Trigger by the "submit" button on the page.
+     * Save the settings back to the file. Trigger by the "submit" button on the
+     * page.
      *
      * @return
      */
@@ -783,11 +781,32 @@ public class ServerSettingsBean {
                     keysToRemove.add(propertyKey);
                 }
             }
-            if (keysToRemove.size()>0) {
-        	PropertiesManager.removeProperties(keysToRemove);
+            if (keysToRemove.size() > 0) {
+                PropertiesManager.removeProperties(keysToRemove);
             }
             this.saveSettings(event);
         }
+    }
+
+    public String getPurgeJobsAfter() {
+        return (String) settings.get("purgeJobsAfter");
+    }
+
+    public void setPurgeJobsAfter(String purgeJobsAfter) {
+        settings.setProperty("purgeJobsAfter", purgeJobsAfter);
+    }
+
+    public String getPurgeTime() {
+        return (String) settings.get("purgeTime");
+    }
+
+    public void setPurgeTime(String purgeTime) {
+        settings.setProperty("purgeTime", purgeTime);
+    }
+
+    public void savePurgeSettings(ActionEvent event) {
+        saveSettings(event);
+        StartupServlet.startJobPurger();
     }
 
 }
