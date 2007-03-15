@@ -43,6 +43,8 @@ public class TaskCatalogBean {
 
     private List<MyTask> filteredTasks;
 
+    private final String UP_TO_DATE = "Search for up to date modules";
+
     private final String NEW_TEXT = "Search for new modules to install";
 
     private final String UPDATED_TEXT = "Search for updates of the currently installed modules";
@@ -51,8 +53,8 @@ public class TaskCatalogBean {
 
     private MySelectItem[] operatingSystems = new MySelectItem[] { new MySelectItem("any", PLATFORM_INDEPENDENT) };
 
-    private MySelectItem[] states = new MySelectItem[] { new MySelectItem("new", NEW_TEXT),
-            new MySelectItem("updated", UPDATED_TEXT) };;
+    private MySelectItem[] states = new MySelectItem[] { new MySelectItem(InstallTask.NEW, NEW_TEXT),
+            new MySelectItem(InstallTask.UPDATED, UPDATED_TEXT), new MySelectItem(InstallTask.UPTODATE, UP_TO_DATE) };;
 
     private HashSet missingLsids;
 
@@ -593,8 +595,7 @@ public class TaskCatalogBean {
             return task.hashCode();
         }
 
-        public boolean install(String username, int access_id, Status status)
-                throws TaskInstallationException {
+        public boolean install(String username, int access_id, Status status) throws TaskInstallationException {
             return task.install(username, access_id, status);
         }
 
