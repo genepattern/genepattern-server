@@ -1,20 +1,21 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" 
-      xmlns:ui="http://java.sun.com/jsf/facelets" 
-      xmlns:h="http://java.sun.com/jsf/html" 
-      xmlns:f="http://java.sun.com/jsf/core" 
-      xmlns:t="http://myfaces.apache.org/tomahawk" 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
 <script type="text/javascript" language="javascript">
 	/* <![CDATA[ */
 	  function showControl(v) {
-		var specified= document.getElementsByClassName("specified", "root");
+	  	var specified= document.getElementsByClassName("specified", "root");
+
 		for (var i=0; i<specified.length; i++) {
-			specified[i].style.display=(v == "Specified")? '':'none';			
+			specified[i].style.display=(v == "Specified")? '':'none';
 		}
 		var firstOption = $("selectClientMode").options[0];
 		var resetOptions = ( v=="Specified" && firstOption!= null && (firstOption.value=="Any" || firstOption.value=="Local") );
-		
+
 		if (resetOptions) {
 			$("clientMode").value = "";
 			$("selectClientMode").options[0] = null;
@@ -37,9 +38,9 @@
       <tr valign="top">
         <td width="20%">Allow Clients to connect from:</td>
         <td width="50%">
-	        <h:selectOneRadio value="#{serverSettingsBean.currentClientMode}" layout="pageDirection" onchange="showControl(this.value);">
+	        <h:selectOneRadio value="#{serverSettingsBean.currentClientMode}" layout="pageDirection" onclick="showControl(this.value);">
 	        	<f:selectItem itemValue="Local" itemLabel="Standalone (local connections only)" />
-	  			<f:selectItem itemValue="Any" itemLabel="Any Computer" />				
+	  			<f:selectItem itemValue="Any" itemLabel="Any Computer" />
 				<f:selectItem itemValue="Specified" itemLabel="These Domains (comma delimited list):" />
 			</h:selectOneRadio>
           <br/>
@@ -47,20 +48,20 @@
         <td width="30%"></td>
       </tr>
       <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
-        <td width="20%">All Client Modes:</td>
+        <td width="20%">Allowed ip addresses:</td>
         <td width="55%" >
           <t:selectOneListbox id="selectClientMode" forceId="true" style="width:50%" size="3" value="#{serverSettingsBean.specifiedClientMode}" onclick="$(clientMode).value=this.value">
   			<f:selectItems value="#{serverSettingsBean.specifiedClientModes}" />
-		  </t:selectOneListbox>        
+		  </t:selectOneListbox>
         </td>
         <td width="25%">
         By default, localhost is always allowed to access the server even though it's not shown in the list.
         </td>
       </tr>
       <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
-        <td width="20%">Specified Client Mode:</td>
+        <td width="20%">Enter an ip address:</td>
         <td width="55%">
-          <t:inputText id="clientMode" forceId="true" style="width:49%" size="40" value="#{serverSettingsBean.specifiedClientMode}" onkeydown="$(save).disabled=false; $(remove).disabled=false"/>       
+          <t:inputText id="clientMode" forceId="true" style="width:49%" size="40" value="#{serverSettingsBean.specifiedClientMode}" onkeydown="$(save).disabled=false; $(remove).disabled=false"/>
         </td>
         <td width="25%">
         </td>
@@ -75,10 +76,10 @@
 	      </h:commandButton>
 	      &#160;
 	      <t:commandButton id="remove" forceId="true" styleClass="specified" value="Remove" actionListener="#{serverSettingsBean.removeSpecifiedClientMode}"
-          	style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}" onkeyup="$(clientMode).value=''"/>    
+          	style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}" onkeyup="$(clientMode).value=''"/>
         </td>
       </tr>
-      
+
     </table>
     <p/>
   </h:form>
