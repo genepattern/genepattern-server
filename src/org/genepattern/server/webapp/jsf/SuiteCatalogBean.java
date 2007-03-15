@@ -22,7 +22,6 @@ import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.SuiteRepository;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
-import org.genepattern.server.webapp.jsf.TaskCatalogBean.MySelectItem;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
@@ -34,8 +33,10 @@ public class SuiteCatalogBean {
 
     private final String UPDATED_TEXT = "Search for updates of the currently installed suites";
 
-    private MySelectItem[] states = new MySelectItem[] { new MySelectItem("new", NEW_TEXT),
-            new MySelectItem("updated", UPDATED_TEXT) };;
+    private final String UP_TO_DATE = "Search for up to date suites";
+
+    private MySelectItem[] states = new MySelectItem[] { new MySelectItem(InstallTask.NEW, NEW_TEXT),
+            new MySelectItem(InstallTask.UPDATED, UPDATED_TEXT), new MySelectItem(InstallTask.UPTODATE, UP_TO_DATE) };
 
     private static Logger log = Logger.getLogger(SuiteCatalogBean.class);
 
@@ -205,7 +206,7 @@ public class SuiteCatalogBean {
 
     /**
      * Gets whether the suite is already installed (without regard to version)
-     * 
+     *
      */
     public boolean isAlreadyInstalled(String lsid) {
         try {
@@ -234,8 +235,9 @@ public class SuiteCatalogBean {
 
     public void filter() {
         List<String> selection = getSelection(states);
-        boolean getNew = selection.contains("new");
-        boolean getUpdated = selection.contains("updated");
+        boolean getNew = selection.contains(InstallTask.NEW);
+        boolean getUpdated = selection.contains(InstallTask.UPDATED);
+        boolean getUpToDate = selection.contains(InstallTask.UPTODATE);
 
         filteredSuites = new ArrayList<MySuiteInfo>();
 
@@ -255,6 +257,8 @@ public class SuiteCatalogBean {
             if (getNew && state == State.NEW) {
                 filteredSuites.add(si);
             } else if (getUpdated && state == State.UPDATED) {
+                filteredSuites.add(si);
+            } else if (getUpToDate && state == State.UPTODATE) {
                 filteredSuites.add(si);
             }
         }
