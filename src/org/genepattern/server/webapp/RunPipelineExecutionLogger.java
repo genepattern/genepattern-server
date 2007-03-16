@@ -191,7 +191,7 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
     }
 
     public void recordTaskExecution(JobSubmission jobSubmission, int idx, int numSteps) {
-        logWriter.println("<font size='+1'>" + idx + ". <a href=\"addTask.jsp?view=1&name=" + jobSubmission.getLSID()
+        logWriter.println("<font size='+1'>" + idx + ". <a href=\"../../addTask.jsp?view=1&name=" + jobSubmission.getLSID()
                 + "\">" + jobSubmission.getName() + "</a></font> " + jobSubmission.getDescription());
         logWriter.print("<div id=\"lsid" + idx + "\" style=\"display:block;\">");
         logWriter.print("<pre>    " + jobSubmission.getLSID() + "</pre>");
@@ -215,13 +215,20 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
             boolean isInputFile = aParam.isInputFile();
             HashMap hmAttributes = aParam.getAttributes();
             String paramType = null;
-            if (hmAttributes != null)
+            if (hmAttributes != null){
                 paramType = (String) hmAttributes.get(ParameterInfo.TYPE);
-            if (!isInputFile && !aParam.isOutputFile() && paramType != null
-                    && paramType.equals(ParameterInfo.FILE_TYPE)) {
+			}
+
+			String pValue = aParam.getValue();
+         	boolean hasInputURL = pValue .startsWith("<GenePatternURL>");
+
+            isInputFile = aParam.isInputFile();
+            if (!isInputFile 
+					&& !aParam.isOutputFile() 
+					&& paramType != null
+                    && paramType.equals(ParameterInfo.FILE_TYPE) 	) {
                 isInputFile = true;
             }
-            isInputFile = aParam.isInputFile();
 
             if (odd) {
                 logWriter.println("<tr>");
@@ -233,16 +240,24 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
             logWriter.println("</td>");
 
             logWriter.println("<td>");
-            if (isInputFile) {
+		   if (isInputFile  || hasInputURL ) {
                 // convert from "localhost" to the actual host name so that
                 // it can be referenced from anywhere (eg. visualizer on
                 // non-local client)
                 logWriter.print("<a href=\"");
-                logWriter.print(localizeURL(aParam.getValue()));
+                logWriter.print(localizeURL(pValue));
                 logWriter.print("\">");
+				if (hasInputURL ){
+					int nidx = pValue.indexOf("file=");
+					int endNidx = pValue.indexOf("&", nidx);
+					if (endNidx == -1) endNidx = pValue.length();
 
+					if (nidx > 0) {
+						pValue = pValue.substring(nidx+5, endNidx);
+					}
+				}
             }
-            logWriter.print(htmlEncode(localizeURL(aParam.getValue())));
+            logWriter.print(htmlEncode(localizeURL(pValue)));
 
             if (isInputFile) {
                 logWriter.print("</a>");

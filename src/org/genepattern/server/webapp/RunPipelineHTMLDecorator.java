@@ -53,7 +53,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
     protected static String GET_JOB_JSP = "getJobResults.jsp?jobID=";
 
-    protected static String GET_TASK_JSP = "addTask.jsp?view=1&name=";
+    protected static String GET_TASK_JSP = "../../addTask.jsp?view=1&name=";
 
     protected static String GET_TASK_FILE = "jobResults";
 
