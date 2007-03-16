@@ -19,31 +19,56 @@
 
 
     // Toggle the version checkboxes for a particular task
-    function toggleChildrenCheckboxes(node, id)
-    { 	var checkboxDivs = document.getElementsByName("div_"+id);
+    function toggleChildrenCheckboxes(node, lsidNoVersion)
+    { 	
     	var isChecked = node.checked;
-
-    	for (var i=0; i<checkboxDivs.length; i++) {
-    		var childrenCheckboxes = checkboxDivs[i].getElementsByTagName("input");
-    		for (var j=0; j<childrenCheckboxes.length; j++) {
-		        if(childrenCheckboxes[j].type == "checkbox" && !childrenCheckboxes[j].disabled) {
-		          	childrenCheckboxes[j].checked = isChecked;
-		        }
-		    }
+    	var cbIds = checkboxes[lsidNoVersion]
+    	for (var i=0; i<cbIds.length; i++) {
+    		$(cbIds[i]).checked = isChecked;
     	}
     }
 
-    // Toggle all checkboxes.
+    // Toggle all checkboxes.  This should toggle only task row checkboxes,
     function toggleAllCheckboxes(node)
-    {	 var maincheckboxes = document.getElementsByTagName("input");
-
-	     var isChecked = node.checked;
-	     for (var i=0; i<maincheckboxes.length; i++) {
-	         if(maincheckboxes[i].type == "checkbox" && !maincheckboxes[i].disabled) {
-	          	maincheckboxes[i].checked = isChecked;
+    {
+         var isChecked = node.checked;
+         var taskCheckboxes = document.getElementsByName("selectedTasks");
+	     for (var i=0; i<taskCheckboxes.length; i++) 
+	     {
+	         var cb = $(taskCheckboxes[i]);
+	         if(!cb.disabled) 
+	         {
+	          	cb.checked = isChecked;
+	         }
+	      }
+	      
+         var versionCheckboxes = document.getElementsByName("selectedVersions");
+	     for (var i=0; i<versionCheckboxes.length; i++) 
+	     {
+	         var cb = $(versionCheckboxes[i]);
+	         if(!cb.disabled) 
+	         {
+	          	cb.checked = isChecked;
 	         }
 	      }
     }
+    
+    
+    
+    var checkboxes = new Object();
+    var allCheckboxes = new Array();
+    function addVersionCheckbox(lsidNoVersion, cbId) 
+    {
+      var cbIds = checkboxes[lsidNoVersion];
+      if(cbIds == null) {
+        cbIds = new Array();
+        checkboxes[lsidNoVersion] = cbIds;
+        allCheckboxes[allCheckboxes.length];
+      }
+      cbIds[cbIds.length] = cbId;
+      allCheckboxes[allCheckboxes.length] = cbId;
+    }
+    
 
 	function confirmDelete() {
 		return confirm('Are you sure you want to delete the selected module(s)?');
@@ -99,10 +124,12 @@
 		        <!-- Task select checkbox -->
 		        <div align="center" id="main_#{taskGroup.lsidNoVersion}">
 		        	<t:div rendered="#{!taskGroup.allowed}">
-					  	<input type="checkbox" name="selectedTasks" disabled="true" value="#{taskGroup.lsidNoVersion}" onclick="toggleChildrenCheckboxes(this, '#{taskGroup.lsidNoVersion}');"/>
+					  	<input type="checkbox" name="selectedTasks" disabled="true" value="#{taskGroup.lsidNoVersion}"
+					  	       onclick="toggleChildrenCheckboxes(this, '#{taskGroup.lsidNoVersion}');"/>
 					</t:div>
 					<t:div rendered="#{taskGroup.allowed}">
-					  	<input type="checkbox" name="selectedTasks" value="#{taskGroup.lsidNoVersion}" onclick="toggleChildrenCheckboxes(this, '#{taskGroup.lsidNoVersion}');"/>
+					  	<input type="checkbox" name="selectedTasks" value="#{taskGroup.lsidNoVersion}" 
+					  	       onclick="toggleChildrenCheckboxes(this, '#{taskGroup.lsidNoVersion}');"/>
 					</t:div>
 
 		        </div>
@@ -115,16 +142,22 @@
 		      </td>
 		    </tr>
 
-		    <t:dataList var="versionInfo" value="#{taskGroup.indexedVersions}">
+		    <t:dataList var="versionInfo" value="#{taskGroup.indexedVersions}"  rowIndexVar="index">
+		    
+		    
 		    	<tr valign="top" class="smalltype5">
 		            <td align="center">
 					  	<div align="center" name="div_#{taskGroup.lsidNoVersion}">
 					  		<t:div rendered="#{!versionInfo.allowed}">
 					  			<input type="checkbox" name="selectedVersions" disabled="true" value="#{versionInfo.lsid}"/>
-
 					  		</t:div>
 					  		<t:div rendered="#{versionInfo.allowed}">
-					  			<input type="checkbox" name="selectedVersions" value="#{versionInfo.lsid}"/>
+		                        <!-- Generate ID for this rows checkbox and append to the checkbox array for the containing task -->
+		                        <script type="text/javascript" language="javascript">
+                                    var cbId = 'cb_#{taskGroup.lsidNoVersion}' + '_#{index}';
+                                    addVersionCheckbox('#{taskGroup.lsidNoVersion}', cbId);
+                                </script>
+					  			<input type="checkbox" name="selectedVersions" value="#{versionInfo.lsid}" id="cb_#{taskGroup.lsidNoVersion}_#{index}"/>
 					  		</t:div>
 				      	</div>
 		            </td>
