@@ -30,7 +30,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * Dialog that lets users change server that they're connecting to
- * 
+ *
  * @author Joshua Gould
  */
 public class ChangeServerDialog extends CenteredDialog {
@@ -40,18 +40,22 @@ public class ChangeServerDialog extends CenteredDialog {
 
     private JPasswordField passwordField;
 
+    private boolean showServerInput = true;
+
     public ChangeServerDialog(java.awt.Frame owner) {
         super(owner);
         setTitle("Server Settings");
         setModal(false);
     }
 
-    public void show(String server, String username, String password,
-            ActionListener okListener) {
+    public void setShowServerInput(boolean b) {
+        this.showServerInput = b;
+    }
+
+    public void show(String server, String username, String password, ActionListener okListener) {
         passwordField = new JPasswordField(20);
         passwordField.setText(password);
-        serverLabel = new JLabel("Server Name: ",
-                javax.swing.SwingConstants.RIGHT);
+        serverLabel = new JLabel("Server Name: ", javax.swing.SwingConstants.RIGHT);
         serverTextField = new JTextField(20);
         URL url = null;
         try {
@@ -66,8 +70,7 @@ public class ChangeServerDialog extends CenteredDialog {
         if (url != null) {
             portTextField.setText("" + url.getPort());
         }
-        usernameLabel = new JLabel("Username: ",
-                javax.swing.SwingConstants.RIGHT);
+        usernameLabel = new JLabel("Username: ", javax.swing.SwingConstants.RIGHT);
         usernameTextField = new JTextField(20);
         usernameTextField.setText(username);
         JButton okButton = new JButton("OK");
@@ -81,23 +84,23 @@ public class ChangeServerDialog extends CenteredDialog {
                 dispose();
             }
         });
-        FormLayout formLayout = new FormLayout(
-                "right:pref:none, 6px, left:pref:none, 6px",
+        FormLayout formLayout = new FormLayout("right:pref:none, 6px, left:pref:none, 6px",
                 "6px, pref, 6px, pref, 6px, pref, 6px, pref, 6px, pref");
 
         JPanel inputPanel = new JPanel(formLayout);
         CellConstraints cc = new CellConstraints();
-        inputPanel.add(serverLabel, cc.xy(1, 2));
-        inputPanel.add(serverTextField, cc.xy(3, 2));
+        if (showServerInput) {
+            inputPanel.add(serverLabel, cc.xy(1, 2));
+            inputPanel.add(serverTextField, cc.xy(3, 2));
+            inputPanel.add(portLabel, cc.xy(1, 4));
+            inputPanel.add(portTextField, cc.xy(3, 4));
 
-        inputPanel.add(portLabel, cc.xy(1, 4));
-        inputPanel.add(portTextField, cc.xy(3, 4));
+        }
 
         inputPanel.add(usernameLabel, cc.xy(1, 6));
         inputPanel.add(usernameTextField, cc.xy(3, 6));
 
-        inputPanel.add(new JLabel("Password: ",
-                javax.swing.SwingConstants.RIGHT), cc.xy(1, 8));
+        inputPanel.add(new JLabel("Password: ", javax.swing.SwingConstants.RIGHT), cc.xy(1, 8));
         inputPanel.add(passwordField, cc.xy(3, 8));
 
         JPanel buttonPanel = new JPanel();
