@@ -78,7 +78,7 @@
         <h:outputText value="#{jobWrapper.dateCompleted}" converter="gp" />
       </td>
       <td>
-        <div align="center" class="status-finished">finished</div>
+        <div align="center" class="status-#{jobWrapper.status}">#{jobWrapper.status}</div>
       </td>
     </tr>
     <!--  End job row  -->

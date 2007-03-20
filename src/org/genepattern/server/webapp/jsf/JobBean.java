@@ -874,9 +874,9 @@ public class JobBean {
         }
 
         public String getStatus() {
-            return jobInfo.getStatus();
+            return jobInfo.getStatus().toLowerCase();
         }
-
+        
         public int getTaskID() {
             return jobInfo.getTaskID();
         }
