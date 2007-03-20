@@ -77,7 +77,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.genepattern.gpge.CLThread;
@@ -868,11 +867,29 @@ public class GPGE {
         String password = "";
 
         try {
+
             Map info = new AdminProxy(server, username, "").getServiceInfo();
             if (info != null) {
                 String requirePassword = (String) info.get("require.password");
                 if ("true".equalsIgnoreCase(requirePassword)) {
-                    password = JOptionPane.showInputDialog(frame, "Please enter your password");
+                    final ChangeServerDialog d = new ChangeServerDialog(frame);
+                    d.setModal(true);
+                    d.setShowServerInput(false);
+                    d.show(null, username, null, new ActionListener() {
+
+                        public void actionPerformed(ActionEvent e) {
+                            d.dispose();
+                        }
+
+                    });
+                    String temp = d.getUsername();
+                    if (temp != null && !temp.equals("")) {
+                        username = temp;
+                    }
+                    String temp2 = d.getPassword();
+                    if (temp2 != null) {
+                        password = temp2;
+                    }
                 }
             } else {
                 System.out.println("No service info returned from server.");
@@ -2324,6 +2341,32 @@ public class GPGE {
 
     }
 
+    private void showChangeServerDialog() {
+        final ChangeServerDialog dialog = new ChangeServerDialog(frame);
+        dialog.show(analysisServiceManager.getServer(), analysisServiceManager.getUsername(), analysisServiceManager
+                .getPassword(), new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+                String server = dialog.getServer();
+                String username = dialog.getUsername();
+                String password = dialog.getPassword();
+                try {
+                    int port = Integer.parseInt(dialog.getPort());
+
+                    server = server + ":" + port;
+                    if (!server.toLowerCase().startsWith("http://")) {
+                        server = "http://" + server;
+                    }
+
+                    changeServer(server, username, password);
+
+                } catch (NumberFormatException nfe) {
+                    GenePattern.showMessageDialog("Invalid port. Please try again.");
+                }
+            }
+        });
+    }
+
     static class SuiteMenuItem extends JMenuItem {
         String lsid;
 
@@ -2536,29 +2579,7 @@ public class GPGE {
             changeServerMenuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent e) {
 
-                    final ChangeServerDialog dialog = new ChangeServerDialog(frame);
-                    dialog.show(analysisServiceManager.getServer(), analysisServiceManager.getUsername(),
-                            analysisServiceManager.getPassword(), new ActionListener() {
-                                public void actionPerformed(ActionEvent e) {
-                                    dialog.dispose();
-                                    String server = dialog.getServer();
-                                    String username = dialog.getUsername();
-                                    String password = dialog.getPassword();
-                                    try {
-                                        int port = Integer.parseInt(dialog.getPort());
-
-                                        server = server + ":" + port;
-                                        if (!server.toLowerCase().startsWith("http://")) {
-                                            server = "http://" + server;
-                                        }
-
-                                        changeServer(server, username, password);
-
-                                    } catch (NumberFormatException nfe) {
-                                        GenePattern.showMessageDialog("Invalid port. Please try again.");
-                                    }
-                                }
-                            });
+                    showChangeServerDialog();
 
                 }
             });
