@@ -148,7 +148,7 @@ public class AuthenticationFilter implements Filter {
                     log.error(e);
                 }
             }
-
+            HibernateUtil.commitTransaction();
             return true;
         } else {
             if (request.isRequestedSessionIdFromURL()) { // disallow passing
@@ -162,7 +162,9 @@ public class AuthenticationFilter implements Filter {
             HttpSession session = request.getSession(false);
             if (session != null) {
                 HibernateUtil.beginTransaction();
-                return new UserDAO().findById(userId) != null;
+                boolean returnValue = new UserDAO().findById(userId) != null;
+                HibernateUtil.commitTransaction();
+                return returnValue;
             }
             return false;
         }
