@@ -49,7 +49,6 @@ import org.genepattern.gpge.message.SuiteInstallMessage;
 import org.genepattern.gpge.ui.maindisplay.TogglePanel;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceManager;
 import org.genepattern.gpge.ui.tasks.AnalysisServiceUtil;
-import org.genepattern.gpge.ui.tasks.VersionComboBox;
 import org.genepattern.gpge.ui.util.GUIUtil;
 import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.GPConstants;
@@ -65,9 +64,9 @@ import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * Used to create/edit a suite
- * 
+ *
  * @author Joshua Gould
- * 
+ *
  */
 public class SuiteEditor extends JPanel {
 
@@ -88,17 +87,13 @@ public class SuiteEditor extends JPanel {
                     }
                     if (lsid != null && !lsid.equals("")) {
                         try {
-                            final AdminProxy proxy = new AdminProxy(
-                                    AnalysisServiceManager.getInstance()
-                                            .getServer(),
-                                    AnalysisServiceManager.getInstance()
-                                            .getUsername(), AnalysisServiceManager.getInstance()
-                                            .getPassword());
+                            final AdminProxy proxy = new AdminProxy(AnalysisServiceManager.getInstance().getServer(),
+                                    AnalysisServiceManager.getInstance().getUsername(), AnalysisServiceManager
+                                            .getInstance().getPassword());
                             proxy.getSuite(lsid);
 
                         } catch (WebServiceException e) {
-                            GenePattern.showMessageDialog(suiteInfo.getName()
-                                    + " has been deleted from the server.");
+                            GenePattern.showMessageDialog(suiteInfo.getName() + " has been deleted from the server.");
                         }
                     }
                 }
@@ -152,18 +147,15 @@ public class SuiteEditor extends JPanel {
         if (suiteInfo.getModuleLsids() != null) {
             moduleLsids.addAll(Arrays.asList(suiteInfo.getModuleLsids()));
         }
-        Map categoryToAnalysisServices = AnalysisServiceUtil
-                .getCategoryToAnalysisServicesMap(AnalysisServiceManager
-                        .getInstance().getLatestAnalysisServices(true));
-        Map lsid2VersionsMap = AnalysisServiceManager.getInstance()
-                .getLSIDToVersionsMap();
+        Map categoryToAnalysisServices = AnalysisServiceUtil.getCategoryToAnalysisServicesMap(AnalysisServiceManager
+                .getInstance().getLatestAnalysisServices(true));
+        Map lsid2VersionsMap = AnalysisServiceManager.getInstance().getLSIDToVersionsMap();
         CellConstraints cc = new CellConstraints();
 
         int[] totals = new int[categoryToAnalysisServices.size()];
         int index = 0;
         int numTasks = 0;
-        for (Iterator keys = categoryToAnalysisServices.keySet().iterator(); keys
-                .hasNext();) {
+        for (Iterator keys = categoryToAnalysisServices.keySet().iterator(); keys.hasNext();) {
             String category = (String) keys.next();
             List services = (List) categoryToAnalysisServices.get(category);
             numTasks += services.size();
@@ -184,32 +176,26 @@ public class SuiteEditor extends JPanel {
             }
         }
 
-        FormLayout leftLayout = new FormLayout("pref",
-                createRowSpec(categoryIndex + 1));
-        FormLayout rightLayout = new FormLayout("pref",
-                createRowSpec(categoryToAnalysisServices.size() - categoryIndex
-                        + 1));
+        FormLayout leftLayout = new FormLayout("pref", createRowSpec(categoryIndex + 1));
+        FormLayout rightLayout = new FormLayout("pref", createRowSpec(categoryToAnalysisServices.size() - categoryIndex
+                + 1));
 
         JPanel leftTasksPanel = new JPanel(leftLayout);
         JPanel rightTasksPanel = new JPanel(rightLayout);
 
         int row = 1;
         JPanel panel = leftTasksPanel;
-        for (Iterator keys = categoryToAnalysisServices.keySet().iterator(); keys
-                .hasNext();) {
+        for (Iterator keys = categoryToAnalysisServices.keySet().iterator(); keys.hasNext();) {
 
             String category = (String) keys.next();
             List services = (List) categoryToAnalysisServices.get(category);
 
-            JPanel categoryPanel = new JPanel(new FormLayout(
-                    "left:pref:g(0), left:pref:g(1)", createRowSpec(services
-                            .size() + 1)));
+            JPanel categoryPanel = new JPanel(new FormLayout("left:pref:g(0), left:pref:g(1)", createRowSpec(services
+                    .size() + 1)));
 
-            categoryPanel
-                    .setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
+            categoryPanel.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
             JLabel categoryLabel = new JLabel(category);
-            categoryLabel
-                    .setFont(categoryLabel.getFont().deriveFont(Font.BOLD));
+            categoryLabel.setFont(categoryLabel.getFont().deriveFont(Font.BOLD));
 
             categoryPanel.add(categoryLabel, cc.xyw(1, 1, 2));
 
@@ -219,11 +205,9 @@ public class SuiteEditor extends JPanel {
                 AnalysisService svc = (AnalysisService) services.get(i);
 
                 try {
-                    LSID lsid = new LSID((String) svc.getTaskInfo()
-                            .getTaskInfoAttributes().get(GPConstants.LSID));
+                    LSID lsid = new LSID((String) svc.getTaskInfo().getTaskInfoAttributes().get(GPConstants.LSID));
 
-                    List versions = (List) lsid2VersionsMap.get(lsid
-                            .toStringNoVersion());
+                    List versions = (List) lsid2VersionsMap.get(lsid.toStringNoVersion());
 
                     categoryPanel.add(cb, cc.xy(1, i + 2));
 
@@ -232,8 +216,7 @@ public class SuiteEditor extends JPanel {
                     if (versions != null && versions.size() > 1) {
                         versionsComboBox = new JComboBox();
                         for (int j = 0; j < versions.size(); j++) {
-                            String moduleLsid = lsid.toStringNoVersion() + ":"
-                                    + versions.get(j);
+                            String moduleLsid = lsid.toStringNoVersion() + ":" + versions.get(j);
                             versionsComboBox.addItem(versions.get(j));
                             if (moduleLsids.contains(moduleLsid)) {
                                 cb.setSelected(true);
@@ -248,16 +231,14 @@ public class SuiteEditor extends JPanel {
                         temp.add(versionsComboBox);
 
                     } else {
-                        JLabel taskNameLabel = new JLabel(svc.getName() + " ("
-                                + lsid.getVersion() + ")");
+                        JLabel taskNameLabel = new JLabel(svc.getName() + " (" + lsid.getVersion() + ")");
                         temp.add(taskNameLabel);
                         if (moduleLsids.contains(lsid.toString())) {
                             cb.setSelected(true);
                         }
                     }
                     categoryPanel.add(temp, cc.xy(2, i + 2));
-                    checkBoxes
-                            .add(new TaskSelector(cb, lsid, versionsComboBox));
+                    checkBoxes.add(new TaskSelector(cb, lsid, versionsComboBox));
 
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
@@ -271,8 +252,7 @@ public class SuiteEditor extends JPanel {
             panel.add(categoryPanel, cc.xy(1, row++));
         }
 
-        JPanel tasksPanel = new JPanel(new FormLayout("pref, 10dlu, pref",
-                "pref"));
+        JPanel tasksPanel = new JPanel(new FormLayout("pref, 10dlu, pref", "pref"));
         tasksPanel.add(leftTasksPanel, cc.xy(1, 1, "left, top"));
         tasksPanel.add(rightTasksPanel, cc.xy(3, 1, "left, top"));
 
@@ -293,38 +273,30 @@ public class SuiteEditor extends JPanel {
                         public void run() {
 
                             try {
-                                AnalysisServiceManager asm = AnalysisServiceManager
-                                        .getInstance();
-                                final File destination = GUIUtil
-                                        .showSaveDialog(new File(suiteInfo
-                                                .getName()
-                                                + ".zip"),
-                                                "Select destination zip file");
+                                AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
+                                final File destination = GUIUtil.showSaveDialog(new File(suiteInfo.getName() + ".zip"),
+                                        "Select destination zip file");
                                 if (destination == null) {
                                     return;
                                 }
-                                new TaskIntegratorProxy(asm.getServer(), asm
-                                        .getUsername(), asm.getPassword()).exportSuiteToZip(
-                                        suiteInfo.getLsid(), destination);
+                                new TaskIntegratorProxy(asm.getServer(), asm.getUsername(), asm.getPassword())
+                                        .exportSuiteToZip(suiteInfo.getLsid(), destination);
 
                             } catch (WebServiceException e1) {
                                 e1.printStackTrace();
-                                GenePattern
-                                        .showErrorDialog("An error occurred while exporting the suite "
-                                                + suiteInfo.getName());
+                                GenePattern.showErrorDialog("An error occurred while exporting the suite "
+                                        + suiteInfo.getName());
                             }
                         }
                     }.start();
 
                 } else if (e.getSource() == saveButton) {
-                    int accessId = headerPanel.privacyComboBox
-                            .getSelectedItem().equals("Public") ? GPConstants.ACCESS_PUBLIC
+                    int accessId = headerPanel.privacyComboBox.getSelectedItem().equals("Public") ? GPConstants.ACCESS_PUBLIC
                             : GPConstants.ACCESS_PRIVATE;
                     suiteInfo.setAccessId(accessId);
                     suiteInfo.setName(headerPanel.nameField.getText());
                     if (suiteInfo.getName().trim().equals("")) {
-                        GenePattern
-                                .showErrorDialog("Please supply a suite name.");
+                        GenePattern.showErrorDialog("Please supply a suite name.");
                         return;
                     }
                     suiteInfo.setAuthor(headerPanel.authorField.getText());
@@ -338,8 +310,7 @@ public class SuiteEditor extends JPanel {
                         return;
                     }
 
-                    suiteInfo.setDescription(headerPanel.descriptionField
-                            .getText());
+                    suiteInfo.setDescription(headerPanel.descriptionField.getText());
                     JComboBox docComboBox = headerPanel.docComboBox;
                     final List localDocFiles = new ArrayList();
                     final List serverDocFiles = new ArrayList();
@@ -355,62 +326,44 @@ public class SuiteEditor extends JPanel {
                         }
                     }
 
-                    suiteInfo.setDocumentationFiles((String[]) serverDocFiles
-                            .toArray(new String[0]));
+                    suiteInfo.setDocumentationFiles((String[]) serverDocFiles.toArray(new String[0]));
                     List moduleLsids = new ArrayList();
                     for (int i = 0; i < checkBoxes.size(); i++) {
                         TaskSelector ts = (TaskSelector) checkBoxes.get(i);
                         if (ts.cb.isSelected()) {
                             if (ts.versionsComboBox != null) {
-                                moduleLsids
-                                        .add(ts.lsid.toStringNoVersion()
-                                                + ":"
-                                                + ts.versionsComboBox
-                                                        .getSelectedItem());
+                                moduleLsids.add(ts.lsid.toStringNoVersion() + ":"
+                                        + ts.versionsComboBox.getSelectedItem());
                             } else {
                                 moduleLsids.add(ts.lsid.toString());
                             }
                         }
                     }
-                    suiteInfo.setModuleLSIDs((String[]) moduleLsids
-                            .toArray(new String[0]));
+                    suiteInfo.setModuleLSIDs((String[]) moduleLsids.toArray(new String[0]));
 
-                    final AnalysisServiceManager asm = AnalysisServiceManager
-                            .getInstance();
+                    final AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
                     new CLThread() {
                         public void run() {
                             try {
 
-                                String lsid = new TaskIntegratorProxy(asm
-                                        .getServer(), asm.getUsername(), asm.getPassword())
-                                        .modifySuite(suiteInfo,
-                                                (File[]) localDocFiles
-                                                        .toArray(new File[0]),
-                                                (String[]) serverDocFiles
-                                                        .toArray(new String[0]));
+                                String lsid = new TaskIntegratorProxy(asm.getServer(), asm.getUsername(), asm
+                                        .getPassword()).modifySuite(suiteInfo, (File[]) localDocFiles
+                                        .toArray(new File[0]), (String[]) serverDocFiles.toArray(new String[0]));
                                 suiteInfo.setLsid(lsid);
-                                headerPanel.lsidField.setText(lsid);
-                                GenePattern.showMessageDialog("Saved "
-                                        + suiteInfo.getName());
+
+                                GenePattern.showMessageDialog("Saved " + suiteInfo.getName());
                                 try {
-                                    MessageManager
-                                            .notifyListeners(new SuiteInstallMessage(
-                                                    SuiteEditor.this, lsid));
+                                    MessageManager.notifyListeners(new SuiteInstallMessage(SuiteEditor.this, lsid));
                                 } catch (MalformedURLException e) {
                                     e.printStackTrace();
                                 }
-                                MessageManager
-                                        .notifyListeners(new ChangeViewMessageRequest(
-                                                SuiteEditor.this,
-                                                ChangeViewMessageRequest.SHOW_EDIT_SUITE_REQUEST,
-                                                new AdminProxy(asm.getServer(),
-                                                        asm.getUsername(), asm.getPassword())
-                                                        .getSuite(lsid)));
+                                MessageManager.notifyListeners(new ChangeViewMessageRequest(SuiteEditor.this,
+                                        ChangeViewMessageRequest.SHOW_EDIT_SUITE_REQUEST, new AdminProxy(asm
+                                                .getServer(), asm.getUsername(), asm.getPassword()).getSuite(lsid)));
                             } catch (WebServiceException e1) {
                                 e1.printStackTrace();
-                                GenePattern
-                                        .showErrorDialog("An error occurred while saving the suite "
-                                                + suiteInfo.getName());
+                                GenePattern.showErrorDialog("An error occurred while saving the suite "
+                                        + suiteInfo.getName());
                             }
                         }
                     }.start();
@@ -448,43 +401,28 @@ public class SuiteEditor extends JPanel {
 
         private JComboBox docComboBox;
 
-        private JLabel lsidField;
-
         public HeaderPanel(final SuiteInfo suiteInfo) {
             boolean view = false;
             setLayout(new BorderLayout());
 
             String name = suiteInfo.getName();
             JLabel nameLabel = new JLabel("Name:");
-            nameField = view ? GUIUtil.createLabelLikeTextField(name, 40)
-                    : new JTextField(name, 40);
+            nameField = view ? GUIUtil.createLabelLikeTextField(name, 40) : new JTextField(name, 40);
 
             JLabel descriptionLabel = new JLabel("Description:");
-            descriptionField = view ? GUIUtil.createLabelLikeTextField(
-                    suiteInfo.getDescription(), 40) : new JTextField(suiteInfo
-                    .getDescription(), 40);
-            JComboBox versionComboBox = null;
-            if (name != null && !name.equals("")) {
-                versionComboBox = new VersionComboBox(suiteInfo.getLSID(),
-                        ChangeViewMessageRequest.SHOW_EDIT_SUITE_REQUEST, true);
-            }
-            CellConstraints cc = new CellConstraints();
-            JPanel temp = new JPanel(new FormLayout(
-                    "right:pref:none, 3dlu, pref, pref",
-                    "pref, 3dlu, pref, pref"));
+            descriptionField = view ? GUIUtil.createLabelLikeTextField(suiteInfo.getDescription(), 40)
+                    : new JTextField(suiteInfo.getDescription(), 40);
 
-          
+            CellConstraints cc = new CellConstraints();
+            JPanel temp = new JPanel(new FormLayout("right:pref:none, 3dlu, pref, pref", "pref, 3dlu, pref, pref"));
+
             JLabel icon = new JLabel(GenePattern.getSmallIcon());
             JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT));
             p.add(icon);
             p.add(nameLabel);
-            
+
             temp.add(p, cc.xy(1, 1));
             temp.add(nameField, cc.xy(3, 1));
-
-            if (versionComboBox != null) {
-                temp.add(versionComboBox, cc.xy(4, 1));
-            }
 
             temp.add(descriptionLabel, cc.xy(1, 3));
             temp.add(descriptionField, cc.xy(3, 3));
@@ -497,26 +435,23 @@ public class SuiteEditor extends JPanel {
                 rowSpec.append("pref, ");
                 rowSpec.append("3dlu");
             }
-            JPanel detailsPanel = new JPanel(new FormLayout(
-                    "right:pref:none, 3dlu, left:pref", rowSpec.toString()));
+            JPanel detailsPanel = new JPanel(new FormLayout("right:pref:none, 3dlu, left:pref", rowSpec.toString()));
             // detailsPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
             JLabel authorLabel = new JLabel("Author:");
-            authorField = view ? GUIUtil.createLabelLikeTextField(suiteInfo
-                    .getAuthor(), 40) : new JTextField(suiteInfo.getAuthor(),
-                    40);
+            authorField = view ? GUIUtil.createLabelLikeTextField(suiteInfo.getAuthor(), 40) : new JTextField(suiteInfo
+                    .getAuthor(), 40);
             detailsPanel.add(authorLabel, cc.xy(1, 1));
             detailsPanel.add(authorField, cc.xy(3, 1));
 
             JLabel ownerLabel = new JLabel("Owner:");
-            ownerField = view ? GUIUtil.createLabelLikeTextField(suiteInfo
-                    .getOwner(), 40) : new JTextField(suiteInfo.getOwner(), 40);
+            ownerField = view ? GUIUtil.createLabelLikeTextField(suiteInfo.getOwner(), 40) : new JTextField(suiteInfo
+                    .getOwner(), 40);
             detailsPanel.add(ownerLabel, cc.xy(1, 3));
             detailsPanel.add(ownerField, cc.xy(3, 3));
 
             JLabel privacyLabel = new JLabel("Privacy:");
 
-            privacyComboBox = new JComboBox(
-                    new String[] { "Public", "Private" });
+            privacyComboBox = new JComboBox(new String[] { "Public", "Private" });
             if (suiteInfo.getAccessId() == GPConstants.ACCESS_PUBLIC) {
                 privacyComboBox.setSelectedIndex(0);
             } else {
@@ -527,10 +462,8 @@ public class SuiteEditor extends JPanel {
             if (!view) {
                 detailsPanel.add(privacyComboBox, cc.xy(3, 5));
             } else {
-                String privacyString = suiteInfo.getAccessId() == GPConstants.ACCESS_PRIVATE ? "Private"
-                        : "Public";
-                detailsPanel.add(GUIUtil
-                        .createLabelLikeTextField(privacyString), cc.xy(3, 5));
+                String privacyString = suiteInfo.getAccessId() == GPConstants.ACCESS_PRIVATE ? "Private" : "Public";
+                detailsPanel.add(GUIUtil.createLabelLikeTextField(privacyString), cc.xy(3, 5));
             }
 
             JLabel documentationLabel = new JLabel("Documentation:");
@@ -550,11 +483,9 @@ public class SuiteEditor extends JPanel {
                     if (docComboBox.getSelectedItem() == null) {
                         return;
                     }
-                    if (GUIUtil
-                            .showConfirmDialog("Are you sure you want to delete "
-                                    + docComboBox.getSelectedItem() + "?")) {
-                        docComboBox
-                                .removeItemAt(docComboBox.getSelectedIndex());
+                    if (GUIUtil.showConfirmDialog("Are you sure you want to delete " + docComboBox.getSelectedItem()
+                            + "?")) {
+                        docComboBox.removeItemAt(docComboBox.getSelectedIndex());
                     }
                 }
             });
@@ -577,11 +508,8 @@ public class SuiteEditor extends JPanel {
 
                 public void actionPerformed(ActionEvent e) {
                     String s = (String) docComboBox.getSelectedItem();
-                    String url = AnalysisServiceManager.getInstance()
-                            .getServer()
-                            + "/gp/getFile.jsp?task="
-                            + suiteInfo.getLSID()
-                            + "&file=" + s;
+                    String url = AnalysisServiceManager.getInstance().getServer() + "/gp/getFile.jsp?task="
+                            + suiteInfo.getLSID() + "&file=" + s;
 
                     try {
                         BrowserLauncher.openURL(url);
@@ -592,8 +520,7 @@ public class SuiteEditor extends JPanel {
             });
 
             detailsPanel.add(documentationLabel, cc.xy(1, 9));
-            JPanel docPanel = new JPanel(new FormLayout(
-                    "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref", "pref"));
+            JPanel docPanel = new JPanel(new FormLayout("pref, 3dlu, pref, 3dlu, pref, 3dlu, pref", "pref"));
             docPanel.add(docComboBox, cc.xy(1, 1));
             docPanel.add(deleteDocBtn, cc.xy(3, 1));
             docPanel.add(addDocBtn, cc.xy(5, 1));
@@ -601,12 +528,6 @@ public class SuiteEditor extends JPanel {
 
             detailsPanel.add(docPanel, cc.xy(3, 9));
 
-            if (name != null) {
-                JLabel lsidLabel = new JLabel("LSID:");
-                lsidField = new JLabel(suiteInfo.getLSID());
-                detailsPanel.add(lsidLabel, cc.xy(1, 11));
-                detailsPanel.add(lsidField, cc.xy(3, 11));
-            }
             TogglePanel detailsToggle = new TogglePanel("Details", detailsPanel);
 
             JPanel bottom = new JPanel(new BorderLayout());
