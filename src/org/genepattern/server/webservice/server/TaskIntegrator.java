@@ -645,7 +645,7 @@ public class TaskIntegrator {
      * @param suiteInfo
      * @throws WebServiceException
      */
-    private void saveOrUpdateSuite(SuiteInfo suiteInfo) throws WebServiceException {
+    private String saveOrUpdateSuite(SuiteInfo suiteInfo) throws WebServiceException {
 
         isAuthorized(getUserName(), "createSuite");
 
@@ -654,7 +654,7 @@ public class TaskIntegrator {
                 suiteInfo.setLSID(null);
         }
 
-        (new TaskIntegratorDAO()).saveOrUpdate(suiteInfo);
+        return (new TaskIntegratorDAO()).saveOrUpdate(suiteInfo);
     }
 
     /**
@@ -901,8 +901,7 @@ public class TaskIntegrator {
     }
 
     /**
-     * @deprecated This method is not currently used, and has not been tested
-     *             for GP 3.0 and greater.
+     * 
      *
      * Modifies the suite with the given name. If the suite does not exist, it
      * will be created.
@@ -932,16 +931,13 @@ public class TaskIntegrator {
      * @exception WebServiceException
      *                If an error occurs
      */
-    public String modifySuite(int access_id, String lsid, String name, String description, String author, String owner,
+    private String modifySuite(int access_id, String lsid, String name, String description, String author, String owner,
             ArrayList moduleLsids, ArrayList<File> files) throws WebServiceException {
 
-        String newlsid = lsid;
-        ArrayList<String> docs = new ArrayList<String>();
+         ArrayList<String> docs = new ArrayList<String>();
 
         if ((lsid != null) && (lsid.length() > 0)) {
             try {
-                LSIDManager lsidManager = LSIDManager.getInstance();
-                newlsid = lsidManager.getNextIDVersion(lsid).toString();
 
                 LocalAdminClient adminClient = new LocalAdminClient("GenePattern");
 
@@ -958,23 +954,20 @@ public class TaskIntegrator {
                 log.error(e);
                 throw new WebServiceException(e);
             }
-        } else {
-            newlsid = null;
-        }
+        } 
 
         for (int i = 0; i < files.size(); i++) {
             File f = files.get(i);
             docs.add(f.getAbsolutePath());
         }
 
-        SuiteInfo si = new SuiteInfo(newlsid, name, description, author, owner, moduleLsids, access_id, docs);
-        return installSuite(si, access_id);
+        SuiteInfo si = new SuiteInfo(lsid, name, description, author, owner, moduleLsids, access_id, docs);
+        return saveOrUpdateSuite(si);
+//        return installSuite(si, access_id);
     }
 
     /**
-     * @deprecated This method is not currently used and has not been tested
-     *             with GP 3.0.
-     *
+     * 
      * @param access_id
      * @param lsid
      * @param name

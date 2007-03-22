@@ -35,7 +35,7 @@ public class TaskIntegratorDAO extends BaseDAO {
         getSession().delete(s);
     }
 
-    public void saveOrUpdate(SuiteInfo suiteInfo) {
+    public String saveOrUpdate(SuiteInfo suiteInfo) {
         String lsid = suiteInfo.getLsid();
         Suite s = null;
 
@@ -70,6 +70,7 @@ public class TaskIntegratorDAO extends BaseDAO {
         } else {
             getSession().save(s);
         }
+        return s.getLsid();
     }
 
     public SuiteInfo getSuite(String lsid) throws AdminDAOSysException {
