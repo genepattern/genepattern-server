@@ -585,7 +585,7 @@ function addNewDomainType(name, desc){
 	  <td valign="top" >Command&nbsp;line:*</td>
 
 	  <td valign="top" >
-	  <% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="90" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncodeLongString(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea><a href='help.jsp#Command' target='help'><img border='0' src='images/help2.jpg'/></a>
+	  <% if (!viewOnly) { %><textarea name="<%= GPConstants.COMMAND_LINE %>" cols="90" rows="5"><% } %><%= tia != null ? StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) : "" %><% if (!viewOnly) { %></textarea><a href='help.jsp#Command' target='help'><img border='0' src='images/help2.jpg'/></a>
 	<% } %>
 
 	</td>
