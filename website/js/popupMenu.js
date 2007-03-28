@@ -22,8 +22,9 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
    pm_showing = true;
    var style = $(id).style;
    var isIe = navigator.appVersion.match(/\bMSIE\b/);
-   var width = document.documentElement.clientWidth;
-   var height = document.documentElement.clientHeight;
+   var width = f_clientWidth();
+   var height = f_clientHeight();
+   
    if(pos) {
       if(pos[0] < (width / 2)) {
         // Menu is on left side of page, use left align
@@ -31,7 +32,7 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
       }
       else {
         // Menu is on right side of page, user right align. 
-        style.right = Math.max(0, width - pos[0] - horizOffset) + "px"; 
+        style.right = Math.max(-f_scrollLeft(), width - pos[0] - horizOffset) + "px"; 
       }
       if(pos[1] < (height / 2)) {
         // Menu is on top half of page, use top align
@@ -39,8 +40,8 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
       }
       else {
         // Menu is on bottom half of page, user bottom align. 
-        style.bottom = Math.max(0, height - pos[1] - vertOffset) + "px"; 
-      } 
+        style.bottom = Math.max(-f_scrollTop(), height - pos[1] - vertOffset)+ "px"; 
+       } 
     }
     style.display = "";
 } 
@@ -53,8 +54,45 @@ function pm_hideMenu(id) {
     $(id).style.display = "none";
     pm_currentId = null;
   }
-  
-} 
+}
 
+
+// Some (hopefully) browser independent functions for size and position
+
+function f_clientWidth() {
+	return f_filterResults (
+		window.innerWidth ? window.innerWidth : 0,
+		document.documentElement ? document.documentElement.clientWidth : 0,
+		document.body ? document.body.clientWidth : 0
+	);
+}
+function f_clientHeight() {
+	return f_filterResults (
+		window.innerHeight ? window.innerHeight : 0,
+		document.documentElement ? document.documentElement.clientHeight : 0,
+		document.body ? document.body.clientHeight : 0
+	);
+}
+function f_scrollLeft() {
+	return f_filterResults (
+		window.pageXOffset ? window.pageXOffset : 0,
+		document.documentElement ? document.documentElement.scrollLeft : 0,
+		document.body ? document.body.scrollLeft : 0
+	);
+}
+function f_scrollTop() {
+	return f_filterResults (
+		window.pageYOffset ? window.pageYOffset : 0,
+		document.documentElement ? document.documentElement.scrollTop : 0,
+		document.body ? document.body.scrollTop : 0
+	);
+}
+function f_filterResults(n_win, n_docel, n_body) {
+	var n_result = n_win ? n_win : 0;
+	if (n_docel && (!n_result || (n_result > n_docel)))
+		n_result = n_docel;
+	return n_body && (!n_result || (n_result > n_body)) ? n_body : n_result;
+}
+ 
 
 
