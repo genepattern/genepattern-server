@@ -1,5 +1,5 @@
 <project name="HttpClient" default="compile" basedir=".">
-<!--
+	<!--
         "HttpClient" component of the Jakarta Commons Subproject
         $Id$
         author: Remy Maucherat ( mailto:remm@apache.org )
@@ -11,248 +11,219 @@
         author: Oleg Kalnichevski ( mailto:oleg@ural.ru )
 -->
 
-<!-- ========== Properties: Property Files  =============================== -->
+	<property name="java.target" value="1.4" />
 
-  <property file="${basedir}/build.properties"/>     <!-- Component local   -->
-  <property file="${basedir}/../build.properties"/>  <!-- Commons local     -->
-  <property file="${user.home}/build.properties"/>   <!-- User local        -->
+	<!-- ========== Properties: Property Files  =============================== -->
 
-<!-- ========== Properties: External Dependencies ========================= -->
+	<property file="${basedir}/build.properties" />
+	<!-- Component local   -->
+	<property file="${basedir}/../build.properties" />
+	<!-- Commons local     -->
+	<property file="${user.home}/build.properties" />
+	<!-- User local        -->
 
-  <property name="lib.dir" value="./lib"/>
+	<!-- ========== Properties: External Dependencies ========================= -->
 
-  <property name="commons-logging.jar" value="${lib.dir}/commons-logging.jar"/>
-  <property name="commons-codec.jar" value="${lib.dir}/commons-codec-1.3.jar"/>
+	<property name="lib.dir" value="./lib" />
 
-<!-- ========== Properties: Javadoc Properties    ========================= -->
+	<property name="commons-logging.jar" value="${lib.dir}/commons-logging.jar" />
+	<property name="commons-codec.jar" value="${lib.dir}/commons-codec-1.3.jar" />
 
-  <property name="javadoc.j2sdk.link" value="http://java.sun.com/products/jdk/1.2/docs/api/"/>
-  <property name="javadoc.logging.link" value="http://jakarta.apache.org/commons/logging/apidocs/"/>
+	<!-- ========== Properties: Javadoc Properties    ========================= -->
 
-<!-- ========== Properties: Component Declarations ======================== -->
+	<property name="javadoc.j2sdk.link" value="http://java.sun.com/products/jdk/1.2/docs/api/" />
+	<property name="javadoc.logging.link" value="http://jakarta.apache.org/commons/logging/apidocs/" />
 
-  <!-- The name of this component -->
-  <property name="component.name"          value="httpclient"/>
+	<!-- ========== Properties: Component Declarations ======================== -->
 
-  <!-- The title of this component -->
-  <property name="component.title"         value="HttpClient Library"/>
+	<!-- The name of this component -->
+	<property name="component.name" value="httpclient" />
 
-  <!-- The current version number of this component -->
-  <property name="component.version"       value="3.0.1"/>
+	<!-- The title of this component -->
+	<property name="component.title" value="HttpClient Library" />
 
-<!-- ========== Properties: Source Directories ============================ -->
+	<!-- The current version number of this component -->
+	<property name="component.version" value="3.0.1" />
 
-  <!-- The base directory for component configuration files -->
-  <property name="conf.home"               value="src/conf"/>
+	<!-- ========== Properties: Source Directories ============================ -->
 
-  <!-- The base directory for component sources -->
-  <property name="source.home"             value="src"/>
+	<!-- The base directory for component configuration files -->
+	<property name="conf.home" value="src/conf" />
 
-  <!-- The base directory for documenation -->
-  <property name="docs.home"               value="docs"/>
+	<!-- The base directory for component sources -->
+	<property name="source.home" value="src" />
 
-<!-- ========== Properties: Test Configuration ============================ -->
+	<!-- The base directory for documenation -->
+	<property name="docs.home" value="docs" />
 
-  <!-- The base directory for unit test sources -->
-  <property name="test.home"               value="src/test"/>
+	<!-- ========== Properties: Test Configuration ============================ -->
 
-  <!-- The Junit test jarfile -->
-  <property name="junit.jar" value="${lib.dir}/junit.jar"/>
+	<!-- The base directory for unit test sources -->
+	<property name="test.home" value="src/test" />
 
-  <!-- The commons-logging friendly logger class to use for tests -->
-  <property name="httpclient.test.log" value="org.apache.commons.logging.impl.SimpleLog"/>
+	<!-- The Junit test jarfile -->
+	<property name="junit.jar" value="${lib.dir}/junit.jar" />
 
-<!-- ========== Properties: Destination Directories ======================= -->
+	<!-- The commons-logging friendly logger class to use for tests -->
+	<property name="httpclient.test.log" value="org.apache.commons.logging.impl.SimpleLog" />
 
-  <!-- The base directory for compilation targets -->
-  <property name="build.home"              value="target"/>
+	<!-- ========== Properties: Destination Directories ======================= -->
 
-  <!-- The base directory for distribution targets -->
-  <property name="dist.home"               value="dist"/>
+	<!-- The base directory for compilation targets -->
+	<property name="build.home" value="target" />
 
-<!-- ========== Compiler Defaults ========================================= -->
+	<!-- The base directory for distribution targets -->
+	<property name="dist.home" value="dist" />
 
-  <!-- Should Java compilations set the 'debug' compiler option? -->
-  <property name="compile.debug"           value="false"/>
+	<!-- ========== Compiler Defaults ========================================= -->
 
-  <!-- Should Java compilations set the 'deprecation' compiler option? -->
-  <property name="compile.deprecation"     value="true"/>
+	<!-- Should Java compilations set the 'debug' compiler option? -->
+	<property name="compile.debug" value="false" />
 
-  <!-- Should Java compilations set the 'optimize' compiler option? -->
-  <property name="compile.optimize"        value="true"/>
+	<!-- Should Java compilations set the 'deprecation' compiler option? -->
+	<property name="compile.deprecation" value="true" />
 
-  <!-- Construct compile classpath -->
-  <path id="compile.classpath">
-    <pathelement location="${build.home}/classes"/>
-    <pathelement location="${commons-logging.jar}"/>
-    <pathelement location="${commons-codec.jar}"/>
-  </path>
+	<!-- Should Java compilations set the 'optimize' compiler option? -->
+	<property name="compile.optimize" value="true" />
 
-<!-- ========== Test Execution Defaults =================================== -->
+	<!-- Construct compile classpath -->
+	<path id="compile.classpath">
+		<pathelement location="${build.home}/classes" />
+		<pathelement location="${commons-logging.jar}" />
+		<pathelement location="${commons-codec.jar}" />
+	</path>
 
-  <!-- Construct unit test classpath -->
-  <path id="test.classpath">
-    <pathelement location="${build.home}/classes"/>
-    <pathelement location="${build.home}/tests"/>
-    <pathelement location="${junit.jar}"/>
-    <pathelement location="${commons-logging.jar}"/>
-    <pathelement location="${commons-codec.jar}"/>
-    <pathelement location="${conf.home}"/>
-  </path>
+	<!-- ========== Test Execution Defaults =================================== -->
 
-  <!-- Should all tests fail if one does? -->
-  <property name="test.failonerror"    value="true"/>
+	<!-- Construct unit test classpath -->
+	<path id="test.classpath">
+		<pathelement location="${build.home}/classes" />
+		<pathelement location="${build.home}/tests" />
+		<pathelement location="${junit.jar}" />
+		<pathelement location="${commons-logging.jar}" />
+		<pathelement location="${commons-codec.jar}" />
+		<pathelement location="${conf.home}" />
+	</path>
 
-  <!-- The root test to execute -->
-  <property name="test.runner"         value="junit.textui.TestRunner"/>
-  <property name="test.entry"          value="org.apache.commons.httpclient.TestAll"/>
+	<!-- Should all tests fail if one does? -->
+	<property name="test.failonerror" value="true" />
 
-<!-- ========== Targets =================================================== -->
+	<!-- The root test to execute -->
+	<property name="test.runner" value="junit.textui.TestRunner" />
+	<property name="test.entry" value="org.apache.commons.httpclient.TestAll" />
 
-<!-- ========== Targets: "Internal" Targets =============================== -->
+	<!-- ========== Targets =================================================== -->
 
-  <target name="init"
-          description="Initialize and evaluate conditionals">
-    <echo message="-------- ${component.title} ${component.version} --------"/>
-    <filter token="name"    value="${component.name}"/>
-    <filter token="version" value="${component.version}"/>
-  </target>
+	<!-- ========== Targets: "Internal" Targets =============================== -->
 
-  <target name="prepare" depends="init"
-          description="Prepare build directory">
-    <mkdir dir="${build.home}"/>
-    <mkdir dir="${build.home}/classes"/>
-    <mkdir dir="${build.home}/conf"/>
-    <mkdir dir="${build.home}/docs"/>
-    <mkdir dir="${build.home}/docs/api"/>
-    <mkdir dir="${build.home}/tests"/>
-    <mkdir dir="${build.home}/examples"/>
-  </target>
+	<target name="init" description="Initialize and evaluate conditionals">
+		<echo message="-------- ${component.title} ${component.version} --------" />
+		<filter token="name" value="${component.name}" />
+		<filter token="version" value="${component.version}" />
+	</target>
 
-  <target name="static" depends="prepare"
-          description="Copy static files to build directory">
-    <tstamp/>
-    <copy todir="${build.home}/conf" filtering="on">
-      <fileset dir="${conf.home}" includes="*.MF"/>
-      <fileset dir="${conf.home}" includes="*.properties"/>
-    </copy>
-  </target>
+	<target name="prepare" depends="init" description="Prepare build directory">
+		<mkdir dir="${build.home}" />
+		<mkdir dir="${build.home}/classes" />
+		<mkdir dir="${build.home}/conf" />
+		<mkdir dir="${build.home}/docs" />
+		<mkdir dir="${build.home}/docs/api" />
+		<mkdir dir="${build.home}/tests" />
+		<mkdir dir="${build.home}/examples" />
+	</target>
 
-<!-- ========== Targets: "External" Targets =============================== -->
+	<target name="static" depends="prepare" description="Copy static files to build directory">
+		<tstamp />
+		<copy todir="${build.home}/conf" filtering="on">
+			<fileset dir="${conf.home}" includes="*.MF" />
+			<fileset dir="${conf.home}" includes="*.properties" />
+		</copy>
+	</target>
 
-  <target name="dist" depends="compile,doc"
-          description="Create binary distribution">
-    <mkdir dir="${dist.home}"/>
-    <copy file="LICENSE.txt" todir="${dist.home}"/>
-    <copy file="build.xml" todir="${dist.home}"/>
-    <copy file="build.properties.sample" todir="${dist.home}"/>
-    <copy file="README.txt" todir="${dist.home}"/>
-    <jar jarfile  ="${dist.home}/commons-${component.name}.jar"
-         basedir  ="${build.home}/classes"
-         manifest ="${build.home}/conf/MANIFEST.MF">
-      <metainf dir="${dist.home}">
-        <include name="LICENSE.txt"/>
-      </metainf>
-    </jar>
-    <mkdir dir="${dist.home}/src"/>
-    <copy todir="${dist.home}/src" filtering="on">
-      <fileset dir="${source.home}"/>
-    </copy>
-    <mkdir dir="${dist.home}/lib"/>
-    <copy todir="${dist.home}/lib">
-      <fileset dir="lib"/>
-    </copy>
-  </target>
+	<!-- ========== Targets: "External" Targets =============================== -->
 
-<!-- ========== Targets: "External" Targets: Clean-up ===================== -->
+	<target name="dist" depends="compile,doc" description="Create binary distribution">
+		<mkdir dir="${dist.home}" />
+		<copy file="LICENSE.txt" todir="${dist.home}" />
+		<copy file="build.xml" todir="${dist.home}" />
+		<copy file="build.properties.sample" todir="${dist.home}" />
+		<copy file="README.txt" todir="${dist.home}" />
+		<jar jarfile="${dist.home}/commons-${component.name}.jar" basedir="${build.home}/classes" manifest="${build.home}/conf/MANIFEST.MF">
+			<metainf dir="${dist.home}">
+				<include name="LICENSE.txt" />
+			</metainf>
+		</jar>
+		<mkdir dir="${dist.home}/src" />
+		<copy todir="${dist.home}/src" filtering="on">
+			<fileset dir="${source.home}" />
+		</copy>
+		<mkdir dir="${dist.home}/lib" />
+		<copy todir="${dist.home}/lib">
+			<fileset dir="lib" />
+		</copy>
+	</target>
 
-  <target name="clean"
-          description="Clean build and distribution directories">
-    <delete dir="${build.home}"/>
-    <delete dir="${dist.home}"/>
-  </target>
+	<!-- ========== Targets: "External" Targets: Clean-up ===================== -->
 
-  <target name="all" depends="clean,compile"
-          description="Clean and compile all components"/>
+	<target name="clean" description="Clean build and distribution directories">
+		<delete dir="${build.home}" />
+		<delete dir="${dist.home}" />
+	</target>
 
-<!-- ========== Targets: "External" Targets: Compilation ================== -->
+	<target name="all" depends="clean,compile" description="Clean and compile all components" />
 
-  <target name="compile" depends="static"
-          description="Compile shareable components">
-    <javac srcdir      ="${source.home}/java"
-           destdir     ="${build.home}/classes"
-           debug       ="${compile.debug}"
-           deprecation ="${compile.deprecation}"
-           optimize    ="${compile.optimize}">
-      <classpath refid="compile.classpath"/>
-    </javac>
-    <javac srcdir      ="${source.home}/examples"
-           destdir     ="${build.home}/examples"
-           debug       ="${compile.debug}"
-           deprecation ="${compile.deprecation}"
-           optimize    ="${compile.optimize}">
-      <classpath refid="compile.classpath"/>
-    </javac>
-  </target>
+	<!-- ========== Targets: "External" Targets: Compilation ================== -->
 
-  <target name="compile.tests" depends="compile"
-          description="Compile unit test cases">
-    <javac srcdir      ="${test.home}"
-           destdir     ="${build.home}/tests"
-           debug       ="${compile.debug}"
-           deprecation ="${compile.deprecation}"
-           optimize    ="${compile.optimize}">
-      <classpath refid="test.classpath"/>
-    </javac>
-    <copy todir="${build.home}/tests" filtering="on">
-      <fileset dir="${test.home}" includes="**/*.properties" />
-    </copy>
-    <copy todir="${build.home}/tests" filtering="off">
-      <fileset dir="${test.home}" includes="**/*.keystore" />
-    </copy>
-  </target>
+	<target name="compile" depends="static" description="Compile shareable components">
+		<javac srcdir="${source.home}/java" destdir="${build.home}/classes" debug="${compile.debug}" deprecation="${compile.deprecation}" optimize="${compile.optimize}" target="${java.target}" source="${java.target}">
+			<classpath refid="compile.classpath" />
+		</javac>
+		<javac srcdir="${source.home}/examples" destdir="${build.home}/examples" debug="${compile.debug}" deprecation="${compile.deprecation}" optimize="${compile.optimize}" target="${java.target}" source="${java.target}">
+			<classpath refid="compile.classpath" />
+		</javac>
+	</target>
 
-<!-- ========== Targets: "External" Targets: Testing ====================== -->
+	<target name="compile.tests" depends="compile" description="Compile unit test cases">
+		<javac srcdir="${test.home}" destdir="${build.home}/tests" debug="${compile.debug}" deprecation="${compile.deprecation}" optimize="${compile.optimize}" target="${java.target}" source="${java.target}">
+			<classpath refid="test.classpath" />
+		</javac>
+		<copy todir="${build.home}/tests" filtering="on">
+			<fileset dir="${test.home}" includes="**/*.properties" />
+		</copy>
+		<copy todir="${build.home}/tests" filtering="off">
+			<fileset dir="${test.home}" includes="**/*.keystore" />
+		</copy>
+	</target>
 
-  <target name="test" depends="compile.tests" if="test.entry"
-          description="Run all unit test cases">
-      <java classname="${test.runner}" fork="yes" failonerror="${test.failonerror}">
-        <jvmarg value="-Dorg.apache.commons.logging.Log=${httpclient.test.log}"/>
-        <arg value="${test.entry}"/>
-        <classpath refid="test.classpath"/>
-      </java>
-  </target>
+	<!-- ========== Targets: "External" Targets: Testing ====================== -->
 
-<!-- ========== Targets: "External" Targets: Documenation ================= -->
+	<target name="test" depends="compile.tests" if="test.entry" description="Run all unit test cases">
+		<java classname="${test.runner}" fork="yes" failonerror="${test.failonerror}">
+			<jvmarg value="-Dorg.apache.commons.logging.Log=${httpclient.test.log}" />
+			<arg value="${test.entry}" />
+			<classpath refid="test.classpath" />
+		</java>
+	</target>
 
-  <target name="doc" depends="javadoc"
-          description="Create component documentation.">
-    <mkdir dir="${dist.home}"/>
-    <mkdir dir="${dist.home}/docs"/>
-    <copy todir="${dist.home}/docs" filtering="off">
-      <fileset dir="docs"/>
-    </copy>
-  </target>
+	<!-- ========== Targets: "External" Targets: Documenation ================= -->
 
-  <target name="javadoc" depends="compile"
-          description="Create component Javadoc documentation">
-    <mkdir dir="${dist.home}"/>
-    <mkdir dir="${dist.home}/docs"/>
-    <mkdir dir="${dist.home}/docs/api"/>
-    <javadoc sourcepath   ="${source.home}/java"
-             destdir      ="${dist.home}/docs/api"
-             packagenames ="org.apache.commons.*"
-             author       ="true"
-             protected    ="true"
-             version      ="true"
-             doctitle     ="&lt;h1&gt;${component.title}&lt;/h1&gt;"
-             windowtitle  ="${component.title} (Version ${component.version})"
-             bottom       ="Copyright (c) 1999-2005 - Apache Software Foundation"
-    >
-      <classpath refid="test.classpath"/>
-      <link href="${javadoc.j2sdk.link}"/>
-      <link href="${javadoc.logging.link}"/>
-    </javadoc>
-  </target>
+	<target name="doc" depends="javadoc" description="Create component documentation.">
+		<mkdir dir="${dist.home}" />
+		<mkdir dir="${dist.home}/docs" />
+		<copy todir="${dist.home}/docs" filtering="off">
+			<fileset dir="docs" />
+		</copy>
+	</target>
+
+	<target name="javadoc" depends="compile" description="Create component Javadoc documentation">
+		<mkdir dir="${dist.home}" />
+		<mkdir dir="${dist.home}/docs" />
+		<mkdir dir="${dist.home}/docs/api" />
+		<javadoc sourcepath="${source.home}/java" destdir="${dist.home}/docs/api" packagenames="org.apache.commons.*" author="true" protected="true" version="true" doctitle="&lt;h1&gt;${component.title}&lt;/h1&gt;" windowtitle="${component.title} (Version ${component.version})" bottom="Copyright (c) 1999-2005 - Apache Software Foundation">
+			<classpath refid="test.classpath" />
+			<link href="${javadoc.j2sdk.link}" />
+			<link href="${javadoc.logging.link}" />
+		</javadoc>
+	</target>
 
 </project>
