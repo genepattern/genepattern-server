@@ -39,7 +39,7 @@ public class RunVisualizer {
 
     private boolean DEBUG = false;
 
-    private Map<String, String> params = null;
+    private Map params = null;
 
     private String[] supportFileNames = null;
 
@@ -87,7 +87,7 @@ public class RunVisualizer {
      *
      */
 
-    public RunVisualizer(Map<String, String> params, String[] supportFileNames, long[] supportFileDates, Applet applet) {
+    public RunVisualizer(Map params, String[] supportFileNames, long[] supportFileDates, Applet applet) {
         this.params = params;
         this.supportFileNames = supportFileNames;
         this.supportFileDates = supportFileDates;

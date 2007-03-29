@@ -20,13 +20,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.swing.JOptionPane;
+
 public class RunVisualizerApplet extends Applet {
 
     // get all of the applet input parameters and create a HashMap of them that
     // can be used to
     // invoke the visualizer in a non-applet-specific manner
 
-    Map<String, String> params = new HashMap<String, String>();
+    Map params = new HashMap();
 
     String[] supportFileNames = new String[0];
 
@@ -64,10 +66,11 @@ public class RunVisualizerApplet extends Applet {
             }
         } catch (Throwable t) {
             t.printStackTrace();
+            JOptionPane.showMessageDialog(this, "An error occurred while launching "
+                    + params.get(RunVisualizerConstants.NAME) + ".");
         }
     }
 
-    @Override
     public String getParameter(String name) {
         String value = super.getParameter(name);
         if (value == null) {
