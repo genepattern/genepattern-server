@@ -377,6 +377,22 @@
     </target>
 
 
+	<target name="build-visualizer-applet" depends="init, makeKeystore">
+		<mkdir dir="applet-build" />
+		 <javac
+                destdir="applet-build"
+                srcdir="src"
+                classpathref="library.classpath" includes="org/genepattern/visualizer/*.java" target="1.4" source="1.4" />
+
+        <jar basedir="applet-build"
+             defaultexcludes="true"
+             includes="org/genepattern/visualizer/*.class"
+             jarfile="${genepattern.build}/${runVisualizer-jarname}">
+        </jar>
+        <signjar jar="${genepattern.build}/${runVisualizer-jarname}" alias="Genepattern" storepass="${signingKey}"
+                 keypass="${signingKey}" keystore="${keyStore}"/>
+
+	</target>
     <!-- =================================================================== -->
     <!-- Custom post-compilation step                                        -->
     <!-- =================================================================== -->
@@ -384,7 +400,7 @@
         <ant antfile="post-compile.xml" dir="${genepattern.root}"/>
     </target>
     <!-- 	       classpathref="library.classpath" -->
-    <target depends="init,prepare-compile,common,analysis, clients,makeKeystore" name="website">
+    <target depends="init,prepare-compile,common,analysis,clients,build-visualizer-applet" name="website">
         <mkdir dir="${genepattern.build}/website/classes"/>
         <mkdir dir="${genepattern.build}/website/lib"/>
         <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB"/>
@@ -394,16 +410,6 @@
                 srcdir="${genepattern.website}/WEB-INF/classes"
                 classpathref="library.classpath"/>
 
-        <jar basedir="${genepattern.build}"
-             defaultexcludes="true"
-             includes="org/genepattern/visualizer/*.class"
-             jarfile="${genepattern.build}/${runVisualizer-jarname}">
-            <manifest>
-                <attribute name="Main-Class" value="org.genepattern.visualizer.RunVisualizer"/>
-            </manifest>
-        </jar>
-        <signjar jar="${genepattern.build}/${runVisualizer-jarname}" alias="Genepattern" storepass="${signingKey}"
-                 keypass="${signingKey}" keystore="${keyStore}"/>
 
         <!-- copy the web sites jar files to build/web-site/lib -->
         <!-- ***** NOTE THAT THIS IS THE DEFINITIVE LIST ****** -->
@@ -439,17 +445,10 @@
         <antcall target="post-compile" inheritall="true" inheritrefs="true"/>
     </target>
 
-    <target depends="init,common,analysis,makeKeystore" name="quick-website">
+    <target depends="init,common,analysis,build-visualizer-applet" name="quick-website">
         <mkdir dir="${genepattern.build}/website/classes"/>
         <javac destdir="${genepattern.build}/website/classes" srcdir="${genepattern.website}/WEB-INF/classes"
                classpathref="library.classpath"/>
-        <jar basedir="${genepattern.build}"
-             defaultexcludes="true"
-             includes="org/genepattern/visualizer/*.class"
-             jarfile="${genepattern.build}/${runVisualizer-jarname}"/>
-
-        <signjar jar="${genepattern.build}/${runVisualizer-jarname}" alias="Genepattern" storepass="${signingKey}"
-                 keypass="${signingKey}" keystore="${keyStore}"/>
         <!-- Now call any custom post-compilation people want to do -->
         <antcall target="post-compile"/>
     </target>
