@@ -3,17 +3,17 @@ var pm_currentId;
 var pm_showing = false;
 
 function pm_registerClickHandler() {
-    Event.observe(window.document, 'click', pm_clickHandler, false);  
-} 
+    Event.observe(window.document, 'click', pm_clickHandler, false);
+}
 
 function pm_clickHandler() {
   if(!pm_showing) {
-    pm_hideMenu(pm_currentId); 
-  } 
+    pm_hideMenu(pm_currentId);
+  }
   pm_showing = false;
   return true;
 }
- 
+
 function pm_showMenu(id, pos, horizOffset, vertOffset) {
    if(pm_currentId != null) {
      pm_hideMenu(pm_currentId)
@@ -21,41 +21,39 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
    pm_currentId = id;
    pm_showing = true;
    var style = $(id).style;
-   var isIe = navigator.appVersion.match(/\bMSIE\b/);
-   
    var cDim = clientDim();
    var width = cDim.w; //  f_clientWidth();
    var height = cDim.h; //  f_clientHeight();
-   
+
    if(pos) {
       if(pos[0] < (width / 2)) {
         // Menu is on left side of page, use left align
         style.left = Math.max(0, pos[0] - horizOffset) + "px";
       }
       else {
-        // Menu is on right side of page, user right align. 
-        style.right = Math.max(-f_scrollLeft(), width - pos[0] - horizOffset) + "px"; 
+        // Menu is on right side of page, user right align.
+        style.right = Math.max(-f_scrollLeft(), width - pos[0] - horizOffset) + "px";
       }
       if(pos[1] < (height / 2)) {
         // Menu is on top half of page, use top align
         style.top = Math.max(0, pos[1] - vertOffset) + "px";
       }
       else {
-        var agt = navigator.userAgent.toLowerCase();
-    	var isSafari = agt.indexOf("safari") != -1;
-    	if(isSafari) { // height is computed incorrectly in Safari
-    		style.top = Math.max(0, pos[1] - vertOffset) + "px";
-    	} else {
-           // Menu is on bottom half of page, user bottom align. 
-           style.bottom = Math.max(-f_scrollTop(), height - pos[1] - vertOffset)+ "px"; 
-        }
-       } 
+    //    var agt = navigator.userAgent.toLowerCase();
+    //	var isSafari = agt.indexOf("safari") != -1;
+    //	if(isSafari) { // height is computed incorrectly in Safari
+    //		style.top = Math.max(0, pos[1] - vertOffset) + "px";
+    //	} else {
+           // Menu is on bottom half of page, user bottom align.
+           style.bottom = Math.max(-f_scrollTop(), height - pos[1] - vertOffset)+ "px";
+     //   }
+       }
     }
     style.display = "";
-} 
+}
 
 
-  
+
 function pm_hideMenu(id) {
   var menu = $(id);
   if(menu != null) {
@@ -70,7 +68,7 @@ function clientDim() {
   var w = window;
   var b = document.body;
   var d = new Object();
-  
+
   if (w.innerWidth) {
     d.w = w.innerWidth;
     d.h = w.innerHeight;
@@ -121,6 +119,6 @@ function f_filterResults(n_win, n_docel, n_body) {
 		n_result = n_docel;
 	return n_body && (!n_result || (n_result > n_body)) ? n_body : n_result;
 }
- 
+
 
 
