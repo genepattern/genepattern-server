@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.genepattern.server.webapp.jsf;
 
@@ -7,20 +7,21 @@ import static org.genepattern.server.webapp.jsf.UIBeanHelper.getRequest;
 
 import javax.faces.event.ActionEvent;
 
-import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserDAO;
-
 public class MySettingsBean {
 
-    private static String[] modes = new String[] { "Change Password",
-            "Change Email", "Visualizer Memory", "History"};
+    private String[] modes;
 
-    private String currentMode = modes[0]; // Default
+    private String currentMode;
 
     /**
-     * 
+     *
      */
     public MySettingsBean() {
+        String prop = System.getProperty("require.password", "false").toLowerCase();
+        boolean passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
+        modes = passwordRequired ? new String[] { "Change Email", "Change Password", "History", "Visualizer Memory" }
+                : new String[] { "Change Email", "History", "Visualizer Memory" };
+        currentMode = modes[0]; // Default
     }
 
     /**
@@ -47,7 +48,5 @@ public class MySettingsBean {
     public String[] getModes() {
         return modes;
     }
-
-   
 
 }
