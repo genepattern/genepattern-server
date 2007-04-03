@@ -32,19 +32,19 @@ public class AuthorizationBean {
     }
     
     public boolean isAdminJobs() {
-        return authManager.checkPermission("adminServer", UIBeanHelper.getUserId());
+        return authManager.checkPermission("adminJobs", UIBeanHelper.getUserId());
     }
 
     public boolean isAdminModules() {
-        return authManager.checkPermission("adminServer", UIBeanHelper.getUserId());
+        return authManager.checkPermission("adminModules", UIBeanHelper.getUserId());
     }
     
     public boolean isAdminPipeline() {
-        return authManager.checkPermission("adminServer", UIBeanHelper.getUserId());
+        return authManager.checkPermission("adminPipelines", UIBeanHelper.getUserId());
     }
 
     public boolean isAdminSuites() {
-        return authManager.checkPermission("adminServer", UIBeanHelper.getUserId());
+        return authManager.checkPermission("adminSuites", UIBeanHelper.getUserId());
     }
 
     public boolean isCreateModuleAllowed() {
