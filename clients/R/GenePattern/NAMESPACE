@@ -10,7 +10,6 @@ export(
   gp.get.module.file.url,
   job.result.get.url,
   job.result.get.output.filenames,
-  job.result.get.url.for.file.type,
   job.result.get.job.number,
   job.result.download.file,
   job.result.download.files,
