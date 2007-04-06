@@ -143,7 +143,10 @@ public class ImportBean {
 
                     taskIntegratorClient.importZipFromURL(path, privacy, doRecursive, new Status() {
 
-                        public void beginProgress(String string) {
+                        public void beginProgress(String message) {
+                            if (message != null) {
+                                installBean.appendPatchProgressMessage(lsid, message + "<br />");
+                            }
                         }
 
                         public void continueProgress(int percent) {
@@ -153,7 +156,9 @@ public class ImportBean {
                         }
 
                         public void statusMessage(String message) {
-                            installBean.setStatus(lsid, null, message);
+                            if (message != null) {
+                                installBean.appendPatchProgressMessage(lsid, message + "<br />");
+                            }
                         }
 
                     });
