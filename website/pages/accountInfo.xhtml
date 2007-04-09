@@ -38,6 +38,20 @@
       }
        /* ]]> */
 	</h:outputText>
+
+	<h:outputText rendered="#{mySettingsBean.currentMode == 'History'}">
+      /* <![CDATA[ */
+      function onLoad()
+      {
+       var objForm = document.forms["historyForm"];
+
+        objForm.recentJobs.required = 1;
+        objForm.recentJobs.err = "Recent jobs must be a number consisting one or more digits.";
+        (12).regexp=
+		objForm.recentJobs.regexp = /^\d+$/;
+      }
+       /* ]]> */
+	</h:outputText>
     </script>
   </ui:define>
 
