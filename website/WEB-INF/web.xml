@@ -100,7 +100,7 @@
   <init-param>
    <description>Ignore files greather than this max size</description>
    <param-name>uploadMaxFileSize</param-name>
-   <param-value>100m</param-value>
+   <param-value>10g</param-value>
   </init-param>
   <init-param>
    <description>Keep files less than this threshold in memory</description>
