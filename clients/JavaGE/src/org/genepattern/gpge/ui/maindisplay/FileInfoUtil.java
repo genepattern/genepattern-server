@@ -35,7 +35,7 @@ import org.genepattern.io.expr.res.ResParser;
 /**
  * Displays information about a selected file
  *
- * @author Joshua Gould
+
  */
 public class FileInfoUtil {
     static NumberFormat numberFormat;
@@ -234,7 +234,7 @@ public class FileInfoUtil {
     /**
      * Description of the Class
      *
-     * @author Joshua Gould
+
      */
     public static class FileInfo {
         private String kind = "";

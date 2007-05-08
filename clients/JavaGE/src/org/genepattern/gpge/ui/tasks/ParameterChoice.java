@@ -19,7 +19,7 @@ import java.util.StringTokenizer;
 
 /**
  * 
- * @author Joshua Gould
+
  * 
  */
 public class ParameterChoice {

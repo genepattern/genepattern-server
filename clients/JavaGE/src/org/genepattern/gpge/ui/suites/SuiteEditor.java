@@ -65,7 +65,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * Used to create/edit a suite
  *
- * @author Joshua Gould
+
  *
  */
 public class SuiteEditor extends JPanel {

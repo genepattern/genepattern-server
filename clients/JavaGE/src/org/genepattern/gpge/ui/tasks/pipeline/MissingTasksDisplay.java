@@ -50,7 +50,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * Displays missing tasks in a pipeline
  * 
- * @author Joshua Gould
+
  * 
  */
 public class MissingTasksDisplay {

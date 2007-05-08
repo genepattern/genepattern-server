@@ -39,7 +39,7 @@ import org.genepattern.webservice.TaskInfo;
 /**
  * Utility class for code generation
  *
- * @author Joshua Gould
+
  */
 public class Util {
     private Util() {

@@ -25,7 +25,7 @@ import org.genepattern.gpge.ui.maindisplay.FileInfoUtil;
 /**
  * Displays information about a selected file
  * 
- * @author Joshua Gould
+
  */
 public class FileInfoComponent extends JPanel {
 	JLabel nameLabel = new JLabel("   ");

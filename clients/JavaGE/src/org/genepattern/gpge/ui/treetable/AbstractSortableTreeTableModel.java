@@ -33,7 +33,7 @@ import org.genepattern.gpge.ui.table.*;
 /**
  * Description of the Class
  * 
- * @author Joshua Gould
+
  */
 public abstract class AbstractSortableTreeTableModel implements
 		SortTreeTableModel {

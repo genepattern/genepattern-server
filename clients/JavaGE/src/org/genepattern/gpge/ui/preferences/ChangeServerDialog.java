@@ -31,7 +31,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * Dialog that lets users change server that they're connecting to
  *
- * @author Joshua Gould
+
  */
 public class ChangeServerDialog extends CenteredDialog {
     private JLabel serverLabel, portLabel, usernameLabel;

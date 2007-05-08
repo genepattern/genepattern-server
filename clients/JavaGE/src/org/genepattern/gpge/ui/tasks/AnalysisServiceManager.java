@@ -37,7 +37,7 @@ import org.genepattern.webservice.WebServiceException;
 /**
  * Mantains an internal cache of analysis services.
  *
- * @author Joshua Gould
+
  */
 public class AnalysisServiceManager {
     private String server;

@@ -18,7 +18,7 @@ import java.util.Iterator;
 /**
  * The interface for objects that can display a task
  * 
- * @author Joshua Gould
+
  */
 public interface TaskDisplay {
 

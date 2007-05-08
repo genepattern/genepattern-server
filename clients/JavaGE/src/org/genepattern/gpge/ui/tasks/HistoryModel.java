@@ -33,7 +33,7 @@ import org.genepattern.webservice.WebServiceException;
 /**
  * Maintains list of all jobs on server
  *
- * @author Joshua Gould
+
  *
  */
 public class HistoryModel extends AbstractTableModel implements GPGEMessageListener, ColumnSorter {

@@ -29,7 +29,7 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
 /**
- * @author Joshua Gould
+
  * @created May 18, 2004
  */
 public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
@@ -102,7 +102,7 @@ public class JavaGELocalTaskExecutor extends LocalTaskExecutor {
     }
 
     /**
-     * @author Joshua Gould
+
      * @created May 18, 2004
      */
     static class StreamGobbler extends CLThread {

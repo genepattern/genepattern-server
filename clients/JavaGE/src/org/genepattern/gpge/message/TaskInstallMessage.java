@@ -20,7 +20,7 @@ import org.genepattern.util.LSID;
 /**
  * A message that indicates a new task was installed on the server
  * 
- * @author Joshua Gould
+
  * 
  */
 public class TaskInstallMessage extends AbstractGPGEMessage {

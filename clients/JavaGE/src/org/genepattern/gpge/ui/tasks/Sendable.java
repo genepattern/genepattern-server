@@ -16,7 +16,7 @@ package org.genepattern.gpge.ui.tasks;
 /**
  * The interface that objects must implement to enable "Send To" behavior
  * 
- * @author Joshua Gould
+
  * 
  */
 public interface Sendable {

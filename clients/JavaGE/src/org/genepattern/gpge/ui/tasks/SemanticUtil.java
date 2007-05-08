@@ -31,7 +31,7 @@ import org.genepattern.webservice.TaskInfo;
  * 
  * 
  * 
- * @author Joshua Gould
+
  * 
  */
 

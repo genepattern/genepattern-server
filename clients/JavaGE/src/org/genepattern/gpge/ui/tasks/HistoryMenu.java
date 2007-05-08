@@ -43,7 +43,7 @@ import org.genepattern.webservice.WebServiceException;
 /**
  * A menu that displays the most recent jobs
  * 
- * @author Joshua Gould
+
  * 
  */
 public class HistoryMenu extends JMenu {

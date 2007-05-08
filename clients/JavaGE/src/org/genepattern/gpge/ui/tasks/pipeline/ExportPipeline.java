@@ -26,7 +26,7 @@ import org.genepattern.webservice.WebServiceException;
 
 /**
  * 
- * @author Joshua Gould
+
  * 
  */
 public class ExportPipeline {

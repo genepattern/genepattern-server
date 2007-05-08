@@ -24,7 +24,7 @@ import javax.swing.JTextField;
 /**
  * A text field that has a popup menu with Cut, Copy, and Paste actions
  * 
- * @author Joshua Gould
+
  * 
  */
 public class ContextMenuTextField extends JTextField {

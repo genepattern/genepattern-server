@@ -26,7 +26,7 @@ import org.genepattern.webservice.AnalysisService;
 /**
  * Utility class for organizing information about analysis services
  * 
- * @author Joshua Gould
+
  */
 public class AnalysisServiceUtil {
    /** Case insensitive comparator used to sort analysis services */

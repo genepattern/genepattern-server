@@ -61,7 +61,7 @@ import com.jgoodies.forms.layout.RowSpec;
 /**
  * Displays an array of <tt>ParameterInfo</tt> objects
  * 
- * @author Joshua Gould
+
  *  
  */
 public class ParameterInfoPanel extends JPanel {

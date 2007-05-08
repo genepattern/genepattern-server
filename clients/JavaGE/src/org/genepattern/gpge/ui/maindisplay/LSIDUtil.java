@@ -18,7 +18,7 @@ import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
 
 /**
- * @author Joshua Gould
+
  */
 public class LSIDUtil {
 	private LSIDUtil() {

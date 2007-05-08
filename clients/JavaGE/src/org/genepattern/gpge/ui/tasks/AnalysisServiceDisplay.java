@@ -59,7 +59,7 @@ import org.genepattern.webservice.TaskInfo;
 /**
  * Displays an <tt>AnalysisService</tt>
  * 
- * @author Joshua Gould
+
  */
 public class AnalysisServiceDisplay extends JPanel implements TaskDisplay {
     /** the currently displayed <tt>AnalysisService</tt> */

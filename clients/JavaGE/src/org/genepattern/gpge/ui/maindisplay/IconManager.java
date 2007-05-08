@@ -18,7 +18,7 @@ import javax.swing.*;
 /**
  * Manages application icons
  * 
- * @author Joshua Gould
+
  */
 public class IconManager {
     public final static String DELETE_ICON = "delete.gif";

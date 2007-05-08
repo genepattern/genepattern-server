@@ -41,7 +41,7 @@ import org.genepattern.webservice.WebServiceException;
 /**
  * Runs tasks for the GPGE
  * 
- * @author Joshua Gould
+
  */
 public class TaskLauncher {
 

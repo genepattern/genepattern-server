@@ -33,7 +33,7 @@ import org.genepattern.gpge.GenePattern;
 /**
  * Runs tasks for the GPGE
  * 
- * @author Joshua Gould
+
  */
 public class RunTask {
 	AnalysisService analysisService;

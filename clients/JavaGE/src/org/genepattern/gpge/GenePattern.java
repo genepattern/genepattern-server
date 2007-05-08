@@ -43,7 +43,7 @@ import org.genepattern.util.StringUtils;
 
 /**
  * GPGE Launcher
- *
+ * 
  * @author kohm
  */
 public final class GenePattern {

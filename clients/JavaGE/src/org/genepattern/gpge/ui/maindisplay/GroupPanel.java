@@ -36,7 +36,7 @@ import com.jgoodies.forms.layout.FormLayout;
  * A panel that allows the user the ability to toggle the of visibility of a
  * group of components
  * 
- * @author Joshua Gould
+
  * 
  */
 public class GroupPanel extends JPanel {

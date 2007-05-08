@@ -46,7 +46,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 /**
  * A dialog that lets users choose a task to add to a pipeline
- * @author Joshua Gould
+
  *
  */
 public class TaskChooser extends CenteredDialog {

@@ -16,7 +16,7 @@ package org.genepattern.gpge.ui.project;
 /**
  * Description of the Interface
  * 
- * @author Joshua Gould
+
  */
 public interface ProjectDirectoryListener extends java.util.EventListener {
 

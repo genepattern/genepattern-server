@@ -42,7 +42,7 @@ import org.genepattern.webservice.WebServiceException;
 /**
  * Job model
  *
- * @author Joshua Gould
+
  */
 public class JobModel extends AbstractSortableTreeTableModel {
     String[] columnNames = { "Name", "Kind", "Completed" };
@@ -479,7 +479,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
     /**
      * Description of the Class
      *
-     * @author Joshua Gould
+
      */
     public static class ServerFileNode extends SendableTreeNode implements Comparable {
         /** The name of this output file */
@@ -636,7 +636,7 @@ public class JobModel extends AbstractSortableTreeTableModel {
     /**
      * Description of the Class
      *
-     * @author Joshua Gould
+
      */
     public static class JobNode extends DefaultMutableTreeNode {
 

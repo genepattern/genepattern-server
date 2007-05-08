@@ -48,7 +48,7 @@ import com.jgoodies.forms.layout.RowSpec;
 /**
  * Allows users to change visible suites
  * 
- * @author Joshua Gould
+
  * 
  */
 public class SuitesPreferences {

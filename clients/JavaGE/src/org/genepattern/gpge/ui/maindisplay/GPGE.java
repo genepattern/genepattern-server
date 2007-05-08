@@ -131,7 +131,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * Main class for GPGE functionality
  *
- * @author Joshua Gould
+ *
  */
 public class GPGE {
 

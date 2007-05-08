@@ -33,7 +33,7 @@ import org.genepattern.gpge.ui.maindisplay.SendableTreeNode;
 /**
  * Project directory model
  * 
- * @author Joshua Gould
+
  */
 public class ProjectDirModel extends AbstractSortableTreeTableModel {
 	String[] columnNames = { "Name", "Kind", "Date Modified" };
@@ -388,7 +388,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 	/**
 	 * Description of the Class
 	 * 
-	 * @author Joshua Gould
+
 	 */
 	public static class ProjectDirNode extends DefaultMutableTreeNode {
 
@@ -459,7 +459,7 @@ public class ProjectDirModel extends AbstractSortableTreeTableModel {
 	/**
 	 * Description of the Class
 	 * 
-	 * @author Joshua Gould
+
 	 */
 	public static class FileNode extends SendableTreeNode {
 

@@ -20,7 +20,7 @@ import org.genepattern.util.LSID;
 /**
  * A message that indicates a new suite was installed on the server
  * 
- * @author Joshua Gould
+
  * 
  */
 public class SuiteInstallMessage extends AbstractGPGEMessage {

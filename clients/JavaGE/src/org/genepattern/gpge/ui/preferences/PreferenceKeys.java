@@ -16,7 +16,7 @@ package org.genepattern.gpge.ui.preferences;
 /**
  * Keys for the properties stored in ~/gp/gp.properties
  * 
- * @author Joshua Gould
+
  */
 public class PreferenceKeys {
 

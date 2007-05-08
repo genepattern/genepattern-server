@@ -16,7 +16,7 @@ import org.genepattern.gpge.ui.maindisplay.GPGE;
 
 /**
  * 
- * @author Joshua Gould
+ * 
  * 
  */
 public class CLThread extends Thread {

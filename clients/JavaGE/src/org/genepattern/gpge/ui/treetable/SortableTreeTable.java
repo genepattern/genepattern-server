@@ -55,7 +55,7 @@ import org.genepattern.gpge.ui.table.*;
 /**
  * A tree table that supports sorting the columns
  * 
- * @author Joshua Gould
+
  */
 public class SortableTreeTable extends JTreeTable implements
 		DragSourceListener, DragGestureListener {
