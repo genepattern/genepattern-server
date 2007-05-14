@@ -11,7 +11,7 @@ function writeGenePatternExpressionFile(path, format, data, rowNames, columnName
 %   columnDescriptions  - unless loading from a gct filefrom a MATLAB
 %   matrix (if absent, columnNames will be used for this)
 %   calls               - M*N matrix of ints for A/P calls (res format only)
-% 
+%
 % Return
 %   none.
 global GenePatternPathSet
@@ -25,8 +25,8 @@ end
 [rownum, colnum] = size(data);
 mu = org.genepattern.util.MatlabUtil();
 
-exData = mu.asExpressionData(rownum, colnum,rowNames, rowDescriptions, columnNames, colDescriptions, data);
+exData = mu.asDataset(rownum, colnum,rowNames, rowDescriptions, columnNames, colDescriptions, data);
 
-outfile = org.genepattern.io.IOUtil.write(exData, format, path, true);
+outfile = org.genepattern.io.IOUtil.writeDataset(exData, format, path, true);
 
 

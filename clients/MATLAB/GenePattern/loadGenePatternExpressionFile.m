@@ -2,7 +2,7 @@ function expressionDataset=loadGenePatternExpressionFile(path)
 % Load a res, gct or odf file into a MATLAB structure
 %
 % Parameters
-%   path    - full path to a res, gct or odf format expression file 
+%   path    - full path to a res, gct or odf format expression file
 %
 % Return:  A MATLAB structure with the following elements
 %   data                - M by N matrix of doubles
@@ -14,21 +14,7 @@ function expressionDataset=loadGenePatternExpressionFile(path)
 global GenePatternPathSet
 initGenePatternPath();
 
-pathLen = length(path);
-extension = path(pathLen - 3:pathLen);
-edc = org.genepattern.io.expr.ExpressionDataCreator();
-
-if (extension == '.res')
-    reader = org.genepattern.io.expr.res.ResReader();
-elseif (extension == '.gct')
-    reader = org.genepattern.io.expr.gct.GctReader();    
-elseif (extension == '.odf')
-    reader = org.genepattern.io.expr.odf.OdfDatasetReader();
-else
-   return 
-end
-edata = reader.read(path, edc);
-edataset = edata.getExpressionMatrix;
+edata = org.genepattern.io.IOUtil.readDataset(path);
 expressionDataset.data = edata.getArray();
 [rowcount, colcount] = size(expressionDataset.data);
 
@@ -37,7 +23,7 @@ rowDescriptions = edata.getRowDescriptions();
 
 colNames = edata.getColumnNames();
 if (not (extension == '.gct'))
-    colDescriptions = edata.getColumnDescriptions(); 
+    colDescriptions = edata.getColumnDescriptions();
 end
 
 expressionDataset.rowNames = cellstr(char(rowNames));
