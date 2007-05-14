@@ -4,11 +4,11 @@
  * This software and its documentation are copyright (2003-2006) by the
  * Broad Institute/Massachusetts Institute of Technology. All rights are
  * reserved.
- *  
+ *
  * This software is supplied without any warranty or guaranteed support
  * whatsoever. Neither the Broad Institute nor MIT can be responsible for its
  * use, misuse, or functionality.
- *  
+ *
  *******************************************************************************/
 package org.genepattern.util;
 
@@ -26,9 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.genepattern.io.IOdfHandler;
-import org.genepattern.io.OdfParser;
 import org.genepattern.io.ParseException;
+import org.genepattern.io.odf.OdfHandler;
+import org.genepattern.io.odf.OdfParser;
 import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -48,7 +48,7 @@ public class SemanticUtil {
         }
         if (extension.equalsIgnoreCase("odf")) {
             OdfParser parser = new OdfParser();
-            OdfHandler handler = new OdfHandler();
+            MyOdfHandler handler = new MyOdfHandler();
             FileInputStream fis = null;
             parser.setHandler(handler);
             try {
@@ -69,7 +69,7 @@ public class SemanticUtil {
         }
     }
 
-    private static class OdfHandler implements IOdfHandler {
+    private static class MyOdfHandler implements OdfHandler {
         public String model;
 
         public void endHeader() throws ParseException {
@@ -92,12 +92,12 @@ public class SemanticUtil {
     }
 
     /**
-     * 
+     *
      * Returns <code>true</code> if the given kind returned from is an
      * acceptable input file
-     * 
+     *
      * format for the given input parameter
-     * 
+     *
      */
     public static boolean isCorrectKind(String[] inputTypes, String kind) {
         if (inputTypes == null || inputTypes.length == 0) {
@@ -110,10 +110,10 @@ public class SemanticUtil {
     }
 
     /**
-     * 
+     *
      * Gets a map which maps the input type as a string to a list of analysis
      * services that take that input type as an input parameter
-     * 
+     *
      */
     public static Map<String, List<AnalysisService>> getKindToModulesMap(Collection<AnalysisService> analysisServices) {
         Iterator<AnalysisService> temp = analysisServices.iterator();
