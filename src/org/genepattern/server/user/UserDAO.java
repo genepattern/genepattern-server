@@ -22,12 +22,10 @@ public class UserDAO extends BaseDAO {
 
     public User findById(String id) {
         log.debug("getting User instance with id: " + id);
-        try {
-            return (User) HibernateUtil.getSession().get("org.genepattern.server.user.User", id);
-        } catch (RuntimeException re) {
-            log.error("get failed", re);
-            throw re;
+        if (id == null) {
+            return null;
         }
+        return (User) HibernateUtil.getSession().get("org.genepattern.server.user.User", id);
     }
 
     public void setProperty(String userId, String key, String value) {
