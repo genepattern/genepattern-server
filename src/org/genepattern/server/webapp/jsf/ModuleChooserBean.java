@@ -13,50 +13,48 @@
 package org.genepattern.server.webapp.jsf;
 
 import static org.genepattern.server.webapp.jsf.UIBeanHelper.getRequest;
-import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.faces.event.ActionEvent;
-import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.webservice.server.dao.AdminDAO;
-import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.util.LSID;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.WebServiceException;
-import java.util.*;
 
 public class ModuleChooserBean implements java.io.Serializable {
-    /**
-     * 
-     */
+
     private static final long serialVersionUID = -9026970426503039995L;
 
     private static Logger log = Logger.getLogger(ModuleChooserBean.class);
 
     private List<ModuleCategoryGroup> categoryGroups = null;
 
-    private String[] modes = { "category", "suite", "all" };
- 
-    private String selectedModule = "";
-   
-    private CollapsiblePanelState moduleChooserState;
-    
-    public ModuleChooserBean() {
-	moduleChooserState = (CollapsiblePanelState) UIBeanHelper.getManagedBean("#{moduleChooserState}");
-    }
+    private List<SelectItem> modes;
 
+    private String selectedModule = "";
+
+    private CollapsiblePanelState moduleChooserState;
+
+    public ModuleChooserBean() {
+        moduleChooserState = (CollapsiblePanelState) UIBeanHelper.getManagedBean("#{moduleChooserState}");
+        boolean showCategoryView = Boolean.valueOf(System.getProperty("module.chooser.show.category.view", "true"));
+        modes = new ArrayList<SelectItem>(3);
+        if (showCategoryView) {
+            modes.add(new SelectItem("category"));
+        }
+        boolean showSuiteView = Boolean.valueOf(System.getProperty("module.chooser.show.suite.view", "true"));
+        if (showSuiteView) {
+            modes.add(new SelectItem("suite"));
+        }
+        boolean showAllView = Boolean.valueOf(System.getProperty("module.chooser.show.all.view", "true"));
+        if (showAllView) {
+            modes.add(new SelectItem("all"));
+        }
+        if (moduleChooserState.getSelectedMode() == null) {
+            moduleChooserState.setSelectedMode(modes.get(0).getLabel());
+        }
+    }
 
     public List<ModuleCategoryGroup> getTasks() {
         if (categoryGroups == null) {
@@ -64,26 +62,25 @@ public class ModuleChooserBean implements java.io.Serializable {
             categoryGroups = new ArrayList<ModuleCategoryGroup>();
 
             ModuleHelper helper = new ModuleHelper();
-            for (String mode : modes) {
-        	/* Create the "recent" psuedo category */
+            for (SelectItem item : modes) {
+                String mode = item.getLabel();
+                /* Create the "recent" psuedo category */
                 List<ModuleCategory> tmp = new ArrayList<ModuleCategory>();
                 ModuleCategory recent = helper.getRecentlyUsed();
                 recent.setIdPrefix(mode);
                 recent.setExpanded(!moduleChooserState.isClosed(recent.getIdentifier()));
                 tmp.add(recent);
-                
+
                 if (mode.equals("all")) {
                     ModuleCategory cat = helper.getTasks();
                     cat.setExpanded(!moduleChooserState.isClosed(cat.getIdentifier()));
                     tmp.add(cat);
-                }
-                else if (mode.equals("suite")) {
+                } else if (mode.equals("suite")) {
                     for (ModuleCategory cat : helper.getTasksBySuite()) {
                         cat.setExpanded(!moduleChooserState.isClosed(cat.getIdentifier()));
                         tmp.add(cat);
                     }
-                }
-                else if (mode.equals("category")) {
+                } else if (mode.equals("category")) {
                     for (ModuleCategory cat : helper.getTasksByType()) {
                         cat.setExpanded(!moduleChooserState.isClosed(cat.getIdentifier()));
                         tmp.add(cat);
@@ -98,16 +95,14 @@ public class ModuleChooserBean implements java.io.Serializable {
     public String getSelectedModule() {
         return selectedModule;
     }
-    
 
     public void setSelectedModule(String selectedModule) {
-	this.selectedModule = selectedModule;
+        this.selectedModule = selectedModule;
         RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
         if (runTaskBean != null) {
             runTaskBean.setTask(selectedModule);
         }
     }
-
 
     public void moduleClicked(ActionEvent event) {
         setSelectedModule(getRequest().getParameter("task"));
@@ -117,25 +112,8 @@ public class ModuleChooserBean implements java.io.Serializable {
         return UIBeanHelper.getUserId();
     }
 
-    private String getVersion(TaskInfo ti) {
-
-        try {
-            LSID lsid = new LSID(ti.getLsid());
-            return lsid.getVersion();
-        }
-        catch (MalformedURLException e) {
-            log.error("Bad LSID", e);
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    public String[] getModes() {
+    public List<SelectItem> getModes() {
         return modes;
-    }
-
-    public void setModes(String[] modes) {
-        this.modes = modes;
     }
 
     public class ModuleCategoryGroup implements java.io.Serializable {
@@ -155,17 +133,15 @@ public class ModuleChooserBean implements java.io.Serializable {
         public String getMode() {
             return mode;
         }
-
     }
 
     public String getSelectedMode() {
-	String mode = moduleChooserState.getSelectedMode();
-	return (mode == null ? "category" : mode);
+        String mode = moduleChooserState.getSelectedMode();
+        return (mode == null ? "category" : mode);
     }
 
     public void setSelectedMode(String selectedMode) {
-
-	moduleChooserState.setSelectedMode(selectedMode);
+        moduleChooserState.setSelectedMode(selectedMode);
     }
 
 }
