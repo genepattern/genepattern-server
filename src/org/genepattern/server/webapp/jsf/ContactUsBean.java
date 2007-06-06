@@ -20,130 +20,107 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
-
-
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserDAO;
 
 public class ContactUsBean {
-    	private String subject;
-	private String replyTo;
-	private String message;
-	private boolean sent=false;
+    private String subject;
 
-	private static Logger log = Logger.getLogger(ContactUsBean.class);
+    private String replyTo;
 
-	public static final String EMAIL_REGEXP_PATTERN = "^[\\w-\\.]+@([\\w-]+\\.)([\\w-]+\\.[\\w-]+)*[\\w-]{2,4}$";
+    private String message;
 
-	/**
-	 * @return
-	 */
-	public String getReplyTo() {
-		return replyTo;
-	}
+    private boolean sent = false;
 
-	/**
-	 * @param replyTo
-	 */
-	public void setReplyTo(String replyTo) {
-		this.replyTo=replyTo;
-	}
+    private static Logger log = Logger.getLogger(ContactUsBean.class);
 
-	/**
-	 * @return
-	 */
-	public String getSubject() {
-		return subject;
-	}
+    public static final String EMAIL_REGEXP_PATTERN = "^[\\w-\\.]+@([\\w-]+\\.)([\\w-]+\\.[\\w-]+)*[\\w-]{2,4}$";
 
-
-	/**
-	 * @param subject
-	 */
-	public void setSubject(String subject) {
-		this.subject=subject;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getMessage() {
-		return message;
-	}
-
-	/**
-	 * @param message
-	 */
-	public void setMessage(String message) {
-		this.message=message;
-	}
-
-	/**
-	 * @return
-	 */
-	public String send() {
-	    Properties p = new Properties();
-            String mailServer = System.getProperty("smtp.server", "imap.broad.mit.edu");
-            p.put("mail.host", mailServer);
-
-            Session mailSession = Session.getDefaultInstance(p, null);
-            mailSession.setDebug(false);
-            MimeMessage msg = new MimeMessage(mailSession);
-
-            try {
-                msg.setSubject(subject);
-                msg.setText("Reply to "+replyTo+"!\n"+message);
-                msg.setFrom(new InternetAddress(replyTo));
-                msg.setSentDate(new Date());
-
-                String email = "gp-help@broad.mit.edu";
-
-                msg.addRecipient(Message.RecipientType.TO, new InternetAddress(
-            	    email));
-                Transport.send(msg);
-            } catch (MessagingException e) {
-                log.error(e);
-                UIBeanHelper
-                .setErrorMessage("An error occurred while sending the email.");
-                return "failure";
-            }
-            sent = true;
-            return "success";
-	}
-
-	/**
-	 * @return
-	 */
-	public boolean isSent() {
-		return sent;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getInfoMessages() {
-		if (!sent)
-			return "An error occurred while sending the email.";
-		return "Your request has been sent!";
-	}
-
-	public void validateEmail(FacesContext context, UIComponent component, Object value)
-        throws ValidatorException {
-	    String message = "The return address entered is not valid.";
-	    FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
-
-	    if (value == null) {
-		((UIInput) component).setValid(false);
-		throw new ValidatorException(facesMessage);
-	    }
-	    String address = (String)value;
-	    try {
-	      InternetAddress emailAddr = new InternetAddress(address);
-	      if ( ! address.matches(EMAIL_REGEXP_PATTERN) ) {
-		  ((UIInput) component).setValid(false);
-		  throw new ValidatorException(facesMessage);
-	      }
-	    }catch (AddressException ex){
-		((UIInput) component).setValid(false);
-		throw new ValidatorException(facesMessage);
-	    }
+    public ContactUsBean() {
+        User user = new UserDAO().findById(UIBeanHelper.getUserId());
+        if (user != null) {
+            replyTo = user.getEmail();
         }
+    }
+
+    public String getReplyTo() {
+        return replyTo;
+    }
+
+    public void setReplyTo(String replyTo) {
+        this.replyTo = replyTo;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String send() {
+        Properties p = new Properties();
+        String mailServer = System.getProperty("smtp.server", "imap.broad.mit.edu");
+        p.put("mail.host", mailServer);
+
+        Session mailSession = Session.getDefaultInstance(p, null);
+        mailSession.setDebug(false);
+        MimeMessage msg = new MimeMessage(mailSession);
+
+        try {
+            msg.setSubject(subject);
+            msg.setText(message);
+            msg.setFrom(new InternetAddress(replyTo));
+            msg.setSentDate(new Date());
+            String email = "gp-help@broad.mit.edu";
+            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
+            Transport.send(msg);
+        } catch (MessagingException e) {
+            log.error(e);
+            UIBeanHelper.setErrorMessage("An error occurred while sending the email.");
+            return "failure";
+        }
+        sent = true;
+        return "success";
+    }
+
+    public boolean isSent() {
+        return sent;
+    }
+
+    public String getInfoMessages() {
+        if (!sent)
+            return "An error occurred while sending the email.";
+        return "Your request has been sent!";
+    }
+
+    public void validateEmail(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        String message = "The return address entered is not valid.";
+        FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
+
+        if (value == null) {
+            ((UIInput) component).setValid(false);
+            throw new ValidatorException(facesMessage);
+        }
+        String address = (String) value;
+        try {
+            InternetAddress emailAddr = new InternetAddress(address);
+            if (!address.matches(EMAIL_REGEXP_PATTERN)) {
+                ((UIInput) component).setValid(false);
+                throw new ValidatorException(facesMessage);
+            }
+        } catch (AddressException ex) {
+            ((UIInput) component).setValid(false);
+            throw new ValidatorException(facesMessage);
+        }
+    }
 }
