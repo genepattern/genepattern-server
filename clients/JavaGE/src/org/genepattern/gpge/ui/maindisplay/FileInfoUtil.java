@@ -22,27 +22,27 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.genepattern.data.matrix.ClassVector;
-import org.genepattern.io.IOdfHandler;
-import org.genepattern.io.OdfParser;
+import org.genepattern.io.DatasetHandler;
+import org.genepattern.io.DatasetParser;
 import org.genepattern.io.ParseException;
-import org.genepattern.io.expr.IExpressionDataHandler;
-import org.genepattern.io.expr.IExpressionDataParser;
-import org.genepattern.io.expr.cls.ClsReader;
-import org.genepattern.io.expr.gct.GctParser;
-import org.genepattern.io.expr.res.ResParser;
+import org.genepattern.io.cls.ClsReader;
+import org.genepattern.io.gct.GctParser;
+import org.genepattern.io.odf.OdfHandler;
+import org.genepattern.io.odf.OdfParser;
+import org.genepattern.io.res.ResParser;
+import org.genepattern.matrix.DefaultClassVector;
 
 /**
  * Displays information about a selected file
  *
-
+ *
  */
 public class FileInfoUtil {
     static NumberFormat numberFormat;
 
     static OdfSummaryHandler odfSummaryHandler = new OdfSummaryHandler();
 
-    static MyIExpressionDataHandler expressionDataHandler = new MyIExpressionDataHandler();
+    static MyDatasetHandler datasetHandler = new MyDatasetHandler();
 
     static {
         numberFormat = NumberFormat.getInstance();
@@ -55,11 +55,11 @@ public class FileInfoUtil {
         extensionToReaderMap = new HashMap();
 
         GctParser gctParser = new GctParser();
-        gctParser.setHandler(expressionDataHandler);
+        gctParser.setHandler(datasetHandler);
         extensionToReaderMap.put("gct", gctParser);
 
         ResParser resParser = new ResParser();
-        resParser.setHandler(expressionDataHandler);
+        resParser.setHandler(datasetHandler);
         extensionToReaderMap.put("res", resParser);
 
         ClsReader clsReader = new ClsReader();
@@ -82,13 +82,13 @@ public class FileInfoUtil {
             fileInfo.setKind(suffix);
         }
         try {
-            if (parser instanceof IExpressionDataParser) {
-                ((IExpressionDataParser) parser).parse(is);
+            if (parser instanceof DatasetParser) {
+                ((DatasetParser) parser).parse(is);
 
             } else if (parser instanceof ClsReader) {
 
                 ClsReader clsReader = (ClsReader) parser;
-                ClassVector cv = clsReader.read(is);
+                DefaultClassVector cv = clsReader.read(is);
 
                 // keyValuePairs.add(new KeyValuePair("Number of Classes",
                 // String.valueOf(cv.getClassCount())));
@@ -98,8 +98,8 @@ public class FileInfoUtil {
 
             }
         } catch (EndParseException epe) {// ignore
-            if (parser instanceof IExpressionDataParser) {
-                fileInfo.setAnnotation(expressionDataHandler.getKeyValuePair());
+            if (parser instanceof DatasetParser) {
+                fileInfo.setAnnotation(datasetHandler.getKeyValuePair());
             } else if (parser instanceof OdfParser) {
                 fileInfo.setKind(odfSummaryHandler.getModel());
                 fileInfo.setAnnotation(odfSummaryHandler.getKeyValuePair());
@@ -234,7 +234,7 @@ public class FileInfoUtil {
     /**
      * Description of the Class
      *
-
+     *
      */
     public static class FileInfo {
         private String kind = "";
@@ -278,7 +278,7 @@ public class FileInfoUtil {
         }
     }
 
-    private static class MyIExpressionDataHandler implements IExpressionDataHandler {
+    private static class MyDatasetHandler implements DatasetHandler {
         int rows, columns;
 
         public KeyValuePair getKeyValuePair() {
@@ -317,6 +317,9 @@ public class FileInfoUtil {
         public void columnMetaData(int column, int depth, String s) throws ParseException {
             throw new EndParseException();
         }
+
+        public void beginRow(int rowIndex) throws ParseException {
+        }
     }
 
     private static class EndParseException extends ParseException {
@@ -325,7 +328,7 @@ public class FileInfoUtil {
         }
     }
 
-    private static class OdfSummaryHandler implements IOdfHandler {
+    private static class OdfSummaryHandler implements OdfHandler {
         String model;
 
         String rows, columns;
