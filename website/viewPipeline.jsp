@@ -135,9 +135,6 @@ function cloneTask(origName, lsid, user) {
 		if (cloneName == null || cloneName.length == 0) {
 			return;
 		}
-		if(cloneName.lastIndexOf(".pipeline")==-1) {
-			cloneName = cloneName + ".pipeline";
-		}
 		window.location = "saveTask.jsp?clone=1&name="+origName+"&LSID=" + lsid + "&cloneName=" + cloneName + "&userid=" + user + "&pipeline=1";
 		break;
 	}

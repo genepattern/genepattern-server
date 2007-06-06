@@ -1197,9 +1197,6 @@ function savePipeline(bMustName, cmd) {
 			alert(pipelineInstruction);
 			return;
 		}
-		if (!pipeName.search(".pipeline") != -1){
-			pipeName = pipeName+".pipeline";
-		}
 		success = isUniqueName(pipeName, pipeLsid);
 		if (!success){
 			success = confirm('A pipeline named "'+ pipeName +'" already exists. Save to this name anyway?');

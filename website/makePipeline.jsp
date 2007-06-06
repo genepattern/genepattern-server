@@ -99,7 +99,7 @@
                 // it is the file
                 fileCount++;
                 String name = fi.getName();
-                
+
                 if (name == null || name.equals("")) {
                     continue;
                 }
@@ -171,7 +171,7 @@ try {
 			<jsp:include page="navbar.jsp"/>
 			Stopped and deleted <%= taskInfo.getName() %> along with its support files.<br><br>
 <%
-		} catch (Throwable t) { 
+		} catch (Throwable t) {
 			out.println(t + " while attempting to delete " + pipelineName);
 		}
 		return;
@@ -182,7 +182,7 @@ try {
 	if (bRun && (pipelineName == null || pipelineName.trim().length() == 0)) {
 		pipelineName = "unnamed" + "." + GPConstants.TASK_TYPE_PIPELINE;
 	}
-	
+
 	if (!bRun && (pipelineName == null || pipelineName.trim().length() == 0)) {
 %>
 		<html>
@@ -191,18 +191,18 @@ try {
 		<link href="skin/favicon.ico" rel="shortcut icon">
 		<title>Delete pipeline</title>
 		<jsp:include page="navbarHead.jsp"/>
-			
+
 		</head>
 		<body>
 		<jsp:include page="navbar.jsp"/>
-		Error: pipeline must be named.  
+		Error: pipeline must be named.
 		<a href="javascript:window.close()">back</a>
 <%
 		return;
 	}
-	
+
 	Hashtable htFilenames = new Hashtable(); // map form field names to filenames for attached (fixed) files
-	
+
 	// tranform requestParameters into model data
 	String taskName;
 	String taskPrefix = null;
@@ -222,7 +222,7 @@ try {
 	String language = requestParameters.getProperty(GPConstants.LANGUAGE);
 	if (language == null) language = "R";
 	String version = requestParameters.getProperty(GPConstants.VERSION);
-	
+
 	JobSubmission jobSubmission = null;
 	String paramName = null;
 	String modelName = pipelineName;
@@ -264,7 +264,7 @@ try {
 		File attachedFile = null;
 		for (Iterator iter = requestFiles.keySet().iterator(); iter.hasNext(); ){
 			key = (String)iter.next();
-			
+
 			attachedFile = (File)requestFiles.get(key);
 			if (DEBUG) System.out.println("\n=>   '" + attachedFile.getName() +"'  "+ attachedFile.exists());
 
@@ -279,7 +279,7 @@ try {
 
 				continue;
 			}
-			
+
 			if (isTemp) {
 				// leave the task name blank for getFile and put the file into the temp directory
 				model.setLsid("");
@@ -323,27 +323,27 @@ try {
 
 				String paramKey = taskPrefix + "_" + paramName;
 
-				
+
 				String val = requestParameters.getProperty(paramKey);
 
-        
+
 				if (val == null) {
 					paramKey = taskName + (taskNum+1) + "." + taskPrefix + "_" + paramName;
 					val = requestParameters.getProperty(paramKey);
 				}
 				if (val != null) val = GenePatternAnalysisTask.replace(val, "\\", "\\\\");
-                                
+
 				p.setValue(val);
 
 				runTimePrompt[i] = (requestParameters.getProperty(taskPrefix + "_prompt_" + i) != null);
-                                
+
 				if (runTimePrompt[i]){
 					// get an alternate name for the param
 					String altNameKey = taskPrefix + "_" + paramName + "_altName";
-					String altName = requestParameters.getProperty(altNameKey);				
+					String altName = requestParameters.getProperty(altNameKey);
 					String altDescKey = taskPrefix + "_" + paramName + "_altDescription";
-					String altDesc = requestParameters.getProperty(altDescKey);				
-					
+					String altDesc = requestParameters.getProperty(altDescKey);
+
 
 					if (altName != null){
 						p.getAttributes().put("altName", altName);
@@ -351,7 +351,7 @@ try {
 					if (altDesc != null){
 						p.getAttributes().put("altDescription", altDesc);
 					}
-					
+
 				}
 
 				String inheritFrom = requestParameters.getProperty(taskPrefix + "_i_" + i);
@@ -359,11 +359,11 @@ try {
 
 				// safari comes in with '[module not set]' because it just needs to be different
 				boolean inherited = (inheritFrom != null && inheritFrom.length() > 0 && !inheritFrom.equals("NOT SET") && !inheritFrom.startsWith("[module")  );
-				
+
 				boolean isOptional = (((String)p.getAttributes().get(GPConstants.PARAM_INFO_OPTIONAL[0])).length() > 0);
 
 //System.out.println(taskName + ": " + paramName + "=" + val + ", prompt= " + runTimePrompt[i] + ", optional=" + isOptional + ", inherited=" + inherited + " (" + requestParameters.getProperty(taskPrefix + "_i_" + i) + "), isInputFile=" + p.isInputFile());
-		
+
 				// inheritance has priority over run time prompt
 				if (inherited) {
 					runTimePrompt[i] = false;
@@ -383,7 +383,7 @@ try {
 					model.addInputParameter(taskName + (taskNum + 1) + "." + paramName, p);
 				} else {
 					p.getAttributes().put("runTimePrompt", null);
-				
+
 				}
 
 				if (inheritedTaskNum != null || inheritedFilename != null) {
@@ -429,7 +429,7 @@ try {
 				// if runtime prompt, save choice list for display later
 				if (runTimePrompt[i]) {
 					p.setValue(origValue);
-				} 
+				}
 
 				// else {
 					//p.getAttributes().put("runTimePrompt", null);
@@ -439,11 +439,11 @@ try {
 				}
 			}
 		}
-                
-                
+
+
 		boolean isVisualizer = ((String)mTia.get(GPConstants.TASK_TYPE)).equals(GPConstants.TASK_TYPE_VISUALIZER);
 		jobSubmission = new JobSubmission(taskName, mTaskInfo.getDescription(), taskLSID, params, runTimePrompt, isVisualizer, mTaskInfo);
-		
+
 
 		model.addTask(jobSubmission);
 	}
@@ -468,7 +468,7 @@ try {
 	//lsid = null;
 	if (vProblems.size() == 0) {
 		String oldLSID = origLSID;
-	
+
 		if (bClone) {
 			model.setName(requestParameters.getProperty("cloneName"));
 			// TODO: change URLs that are task-relative to point to the new task
@@ -483,7 +483,7 @@ try {
 			model.setLsid("");
 		}
 
-		
+
 		if (!bRun) {
 			// save the task to the database
 			try {
@@ -513,7 +513,7 @@ try {
 				dir = new File(attachmentDir);
 				dir.mkdir();
 			} else {
-				model.setLsid("");	
+				model.setLsid("");
 				dir = tmpDir;
 			}
 			File attachedFile = null;
@@ -533,14 +533,14 @@ try {
 						htFilenames.put(fieldName, fullName); // map between form field name and filesystem name
 						continue;
 					}
-					
+
 					htFilenames.put(fieldName, "<GenePatternURL>getFile.jsp?task=" + URLEncoder.encode(lsid) + "&file=" + URLEncoder.encode(attachmentName)); // map between form field name and filesystem name
 
 
 					if (dir != tmpDir){
 					File attachment = new File(dir, attachedFile.getName());
 					if (attachment.exists()) attachment.delete();
-					
+
 					FileChannel inChannel = null, outChannel = null;
 					try	{
 						inChannel = new FileInputStream(attachedFile).getChannel();
@@ -564,15 +564,15 @@ try {
 		if (bRun) {
 			request.setAttribute("cmd", "run");
 			request.setAttribute("name", pipelineName + (pipelineName.endsWith(GPConstants.TASK_TYPE_PIPELINE) ? "" : ("." + GPConstants.TASK_TYPE_PIPELINE)));
-			
+
 			request.setAttribute("saved", Boolean.FALSE);
-         
+
 			pTia = controller.giveTaskInfoAttributes();
                         pTaskInfo.setTaskInfoAttributes(pTia);
                         pTaskInfo.setParameterInfoArray(controller.giveParameterInfoArray());
 			pTaskInfo.setName(pipelineName + "." + GPConstants.TASK_TYPE_PIPELINE);
 			pTia.put(GPConstants.COMMAND_LINE, GPConstants.LEFT_DELIMITER + GPConstants.R + GPConstants.RIGHT_DELIMITER + " scriptNameNotUsed.r " + pipelineName + "." + GPConstants.TASK_TYPE_PIPELINE);
-			
+
 			pTia.put(GPConstants.CPU_TYPE, GPConstants.ANY);
 			pTia.put(GPConstants.OS, GPConstants.ANY);
 			pTia.put(GPConstants.LANGUAGE, language);
@@ -587,7 +587,7 @@ try {
 				String singleTaskRun = taskName + "1.t0_";
 
 				for (Iterator iter = requestFiles.keySet().iterator(); iter.hasNext(); ){
-		
+
 					String n = (String)iter.next();
 					if (n.indexOf(singleTaskRun) != -1) {
 						String n2 = taskName + "1." + n.substring(singleTaskRun.length());
@@ -607,9 +607,9 @@ try {
 					request.setAttribute(strippedName, (String)htFilenames.get(key));
 				}
 			}
-			
+
 			request.setAttribute("smartUpload", requestParameters);
-			request.setAttribute("name", pipelineName + ".pipeline");
+			request.setAttribute("name", pipelineName);
 			request.getRequestDispatcher("runPipeline.jsp").forward(request, response);
 
 
@@ -621,7 +621,7 @@ try {
 %>
 		There are some problems with the <%= model.getName() %> pipeline description that need to be fixed:<br>
 		<ul>
-<%	
+<%
     		for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements(); ) {
 %>
 			<li><%= StringUtils.htmlEncode((String)eProblems.nextElement()) %></li>
@@ -660,10 +660,10 @@ try {
 
 		out.println("&nbsp;&nbsp;<a href='" + request.getContextPath() + "/pages/index.jsf?lsid=" + lsid + "'>Continue to Modules & Pipeline Start.</a>");
 		out.println("<br />");
-	
 
-		
-		
+
+
+
 
 	}
 } catch (Exception e) {
