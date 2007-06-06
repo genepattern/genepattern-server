@@ -790,7 +790,7 @@ public class JobBean {
                 File outputDir = new File(GenePatternAnalysisTask.getJobDir("" + jobInfo.getJobNumber()));
                 for (int i = 0; i < parameterInfoArray.length; i++) {
                     if (parameterInfoArray[i].isOutputFile()) {
-                        if (showExecutionLogs || !parameterInfoArray[i].getName().equals("gp_task_execution_log.txt")) {
+                        if (showExecutionLogs || !parameterInfoArray[i].getName().equals(GPConstants.TASKLOG)) {
                             File file = new File(outputDir, parameterInfoArray[i].getName());
                             String kind = SemanticUtil.getKind(file);
                             Collection<TaskInfo> modules = kindToModules.get(kind);
@@ -876,7 +876,7 @@ public class JobBean {
         public String getStatus() {
             return jobInfo.getStatus().toLowerCase();
         }
-        
+
         public int getTaskID() {
             return jobInfo.getTaskID();
         }
