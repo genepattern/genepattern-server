@@ -126,7 +126,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
         }
 
         prolog.append("/**\n");
-        prolog.append(" * " + model.getName() + ".pipeline");
+        prolog.append(" * " + model.getName());
         if (model.getDescription().length() > 0) {
             prolog.append(" - ");
             prolog.append(model.getDescription());

@@ -82,7 +82,7 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator
         StringBuffer prolog = new StringBuffer();
         Vector vProblems = new Vector();
 
-        prolog.append("% " + model.getName() + ".pipeline");
+        prolog.append("% " + model.getName());
         if (model.getDescription().length() > 0) {
             prolog.append(" - ");
             prolog.append(model.getDescription());
