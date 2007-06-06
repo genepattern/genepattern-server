@@ -4,16 +4,16 @@
     <ui:define name="pageTitle">Create Suite</ui:define>
     <ui:define name="headText">
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/suite.js"/>
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js"/>  
+      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js"/>
     </ui:define>
-    
+
     <ui:define name="body">
       <h:form id="form1" enctype="multipart/form-data" onsubmit="return validateForm();">
       	<f:attribute name="lsid" value="#{manageSuiteBean.currentSuite == null ? '' : manageSuiteBean.currentSuite.lsid}"/>
         <!--  The category list is used upon submit.  -->
         <t:saveState value="#{createSuiteBean}"/>
         <t:saveState value="#{manageSuiteBean}"/>
-        <h:messages/> 
+        <h:messages/>
         <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
           <tr>
             <td>#{manageSuiteBean.currentSuite == null ? 'Create New ' : 'Edit'} GenePattern Suite</td>
@@ -23,7 +23,7 @@
           <tr class="taskperameter">
             <td valign="top" class="attribute-required">Name:*</td>
             <td>
-              <t:inputText value="#{createSuiteBean.name}" size="40"  id="nameField" forceId="true"/> &#160; 
+              <t:inputText value="#{createSuiteBean.name}" size="40"  id="nameField" forceId="true"/> &#160;
               <div id="nameErrorMessageDiv" style="display:none;">
                 <font color="red">&#160;&#160; Name is required</font>
               </div>
@@ -51,7 +51,7 @@
               <h:message for="privacySelect"/>
             </td>
           </tr>
-          
+
           <tr class="taskperameter">
             <td>Support Files:<br/>
             </td>
@@ -112,38 +112,38 @@
             <td>&#160;</td>
           </tr>
         </table>
-        
+
         <!-- Module selection -->
-                
+
         <table width="100%" border="0" cellspacing="0" cellpadding="5">
           <tr valign="top">
-          
+
             <!-- Loop through the columns (hardcoded on the backing bean to 2 columns) -->
             <t:dataList var="col" value="#{createSuiteBean.categoryColumns}">
               <td width="50%">
-              
+
                 <!--  Loop through the categories -->
                 <t:dataList var="category" value="#{col}">
                   <div class="pipeline_item">
-                  
+
                     <!-- Category header  Clicking on the header hides or shows the panel contents -->
                     <!--     The category.expanded property sets the inital hide/show values -->
                     <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
                       <tr style="cursor: pointer;" onclick="toggleVisibility('#{category.identifier}');">
-                        <td width="8" >            
-                            <img id="#{category.identifier}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif" 
-                                 width="8" height="8" border="0" 
+                        <td width="8" >
+                            <img id="#{category.identifier}_expanded_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif"
+                                 width="8" height="8" border="0"
                                  style="#{category.expanded == true ? 'display:inline;' : 'display:none;'}"/>
-                            <img id="#{category.identifier}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif" 
-                                 width="8" height="8" border="0" 
+                            <img id="#{category.identifier}_collapsed_img" src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif"
+                                 width="8" height="8" border="0"
                                  style="#{category.expanded  == true ? 'display:none;' : 'display:inline;'}"/>
                         </td>
                         <td>
-                          #{category.name} 
+                          #{category.name}
                         </td>
                       </tr>
                     </table>
-                    
+
                     <!--  The module list.  The list is conditionally displayed based on the categories "expanded" property -->
                     <div id="#{category.identifier}_panel" class="category_panel">
                     <table border="0" cellpadding="3" cellspacing="0" class="attribute" valign="top">
@@ -170,7 +170,7 @@
                               </div>
                             </td>
                             <td valign="top">
-                              <a href="#">#{module.name}</a>
+                              #{module.name}
                             </td>
                             <td valign="top">&#160;</td>
                             <td valign="top" class="description">
@@ -197,7 +197,7 @@
           <br/>
           <t:graphicImage value="/images/divider-pix1.gif" width="100%" height="2" vspace="5"/>
           <h:commandButton action="#{createSuiteBean.save}" value="Save"/>
-          &#160; 
+          &#160;
           <h:commandButton action="#{createSuiteBean.clear}" value="Clear" immediate="true" type="reset"/>
         </div>
       </h:form>
