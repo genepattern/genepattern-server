@@ -50,7 +50,7 @@
   </init-param>
   <init-param>
    <param-name>no.login.required</param-name>
-   <param-value>login.jsf,registerUser.jsf,forgotPassword.jsf</param-value>
+   <param-value>login.jsf,registerUser.jsf,forgotPassword.jsf,about.jsf,contactUs.jsf</param-value>
   </init-param>
   <init-param>
    <param-name>login.page</param-name>
