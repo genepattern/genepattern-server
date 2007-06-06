@@ -16,7 +16,7 @@
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.webservice.ParameterFormatConverter,
 		 org.genepattern.webservice.OmnigeneException,
-		 org.genepattern.server.util.AccessManager,
+		 org.genepattern.server.util.*,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.genepattern.LSIDManager,
 		 org.genepattern.server.webservice.server.local.*,
@@ -52,7 +52,10 @@ response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 
-String userID= (String)request.getAttribute("userID"); // will force login if necessary
+String userID= (String)request.getAttribute("userID");
+IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+boolean createModuleAllowed = authManager.checkPermission("createModule", userID);
+
 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 LocalAdminClient adminClient = new LocalAdminClient(userID);
 // drop-down selection lists
@@ -96,7 +99,7 @@ if(errors!=null) {
 		   parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
 			tia = taskInfo.giveTaskInfoAttributes();
 			LSID lsid = new LSID((String)tia.get(GPConstants.LSID));
-			boolean editable = taskInfo.getUserId().equals(userID) && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
+			boolean editable = createModuleAllowed && taskInfo.getUserId().equals(userID) && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
 			viewOnly = !editable;
 } else {
 
@@ -486,16 +489,15 @@ function addNewDomainType(name, desc){
 		<% if (taskInfo != null && !viewOnly) { %>
 		  <input type="button" value="<%= DELETE %>..." name="<%= DELETE %>" class="little"
 		   onclick="if (window.confirm('Really delete the ' + document.forms['task'].<%= GPConstants.NAME %>.value + ' task?')) { window.location='saveTask.jsp?delete=1&<%= GPConstants.NAME %>=' + document.forms['task'].<%= GPConstants.NAME %>.value + '&<%= GPConstants.LSID %>=' + document.forms['task'].<%= GPConstants.LSID %>.value; }">
-		<% } %>
-		<% if (taskInfo != null) { %>
-		  <input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
-		  <input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
-		<% } %>
-
-		   &nbsp;&nbsp;&nbsp;
-
-
-
+		<% }
+		if (taskInfo != null) { %>
+			<input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
+			<%
+		  	if(createModuleAllowed) { %>
+				<input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
+		 <%	}
+		 } %>
+		 &nbsp;&nbsp;&nbsp;
 	</td>
   </tr>
 
@@ -863,7 +865,11 @@ function addNewDomainType(name, desc){
 			<input type="button" value="Edit" onclick="window.location='addTask.jsp?name=<%= request.getParameter(GPConstants.NAME) %>'" class="button">
 	<%	} else { %>
 			<input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
-			<input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
+			<%
+		  	if(createModuleAllowed) { %>
+				<input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
+		 	<%	} %>
+
 	<% 	}
 	  }
 	%>
