@@ -47,6 +47,16 @@ public class AuthenticationFilter implements Filter {
 
     private static Logger log = Logger.getLogger(AuthenticationFilter.class);
 
+    /**
+     * List of jsf pages that user can access if not logged in. If user requests
+     * one of these pages while logged in, he is forwarded to the home page.
+     */
+    private String[] noAuthorizationRequiredPagesRedirect;
+
+    /**
+     * List of jsf pages that user can access if not logged in. If user requests
+     * one of these pages while logged in, he goes to the requested page.
+     */
     private String[] noAuthorizationRequiredPages;
 
     private String homePage;
@@ -76,20 +86,28 @@ public class AuthenticationFilter implements Filter {
         }
 
         if (isAuthenticated((HttpServletRequest) request, (HttpServletResponse) response)) {
-            for (int i = 0, length = noAuthorizationRequiredPages.length; i < length; i++) {
-                if (requestedURI.contains(noAuthorizationRequiredPages[i]) && req.getParameter("origin") == null) {
-                    ((HttpServletResponse) response).sendRedirect(req.getContextPath() + homePage);
-                    return;
-                } else if (requestedURI.contains(noAuthorizationRequiredPages[i]) && req.getParameter("origin") != null) {
-                    chain.doFilter(request, response);
+            boolean origin = req.getParameter("origin") != null;
+            for (int i = 0, length = noAuthorizationRequiredPagesRedirect.length; i < length; i++) {
+                if (requestedURI.contains(noAuthorizationRequiredPagesRedirect[i])) {
+                    if (!origin) {
+                        ((HttpServletResponse) response).sendRedirect(req.getContextPath() + homePage);
+                    } else {
+                        chain.doFilter(request, response);
+                    }
                     return;
                 }
             }
             chain.doFilter(request, response);
         } else {
-            // escape valve for some pages that do not require authentication
+            // escape valve for pages that do not require authentication
             for (int i = 0, length = noAuthorizationRequiredPages.length; i < length; i++) {
                 if (requestedURI.contains(noAuthorizationRequiredPages[i])) {
+                    chain.doFilter(request, response);
+                    return;
+                }
+            }
+            for (int i = 0, length = noAuthorizationRequiredPagesRedirect.length; i < length; i++) {
+                if (requestedURI.contains(noAuthorizationRequiredPagesRedirect[i])) {
                     chain.doFilter(request, response);
                     return;
                 }
@@ -309,14 +327,23 @@ public class AuthenticationFilter implements Filter {
         }
         String prop = props.getProperty("require.password", "false").toLowerCase();
         passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
-        noAuthorizationRequiredPages = filterconfig.getInitParameter("no.login.required").split(",");
-        for (int i = 0; i < noAuthorizationRequiredPages.length; i++) {
-            noAuthorizationRequiredPages[i] = noAuthorizationRequiredPages[i].trim();
-        }
-
+        noAuthorizationRequiredPagesRedirect = csvToArray(filterconfig
+                .getInitParameter("no.login.required.redirect.to.home"));
+        noAuthorizationRequiredPages = csvToArray(filterconfig.getInitParameter("no.login.required"));
         homePage = filterconfig.getInitParameter("home.page").trim();
         loginPage = filterconfig.getInitParameter("login.page").trim();
 
+    }
+
+    private String[] csvToArray(String s) {
+        if (s == null) {
+            return new String[0];
+        }
+        String[] tokens = s.split(",");
+        for (int i = 0; i < tokens.length; i++) {
+            tokens[i] = tokens[i].trim();
+        }
+        return tokens;
     }
 
 }

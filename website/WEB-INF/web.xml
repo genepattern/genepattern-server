@@ -49,8 +49,14 @@
    <param-value>../resources</param-value>
   </init-param>
   <init-param>
+   <!--  List of jsf pages that user can access if not logged in. If user requests one of these pages while logged in, he is redirected to the home page.  -->
+   <param-name>no.login.required.redirect.to.home</param-name>
+   <param-value>login.jsf,registerUser.jsf,forgotPassword.jsf</param-value>
+  </init-param>
+  <init-param>
+  <!-- List of jsf pages that user can access if not logged in. If user requests one of these pages while logged in, he goes to the requested page. -->
    <param-name>no.login.required</param-name>
-   <param-value>login.jsf,registerUser.jsf,forgotPassword.jsf,about.jsf,contactUs.jsf</param-value>
+   <param-value>about.jsf,contactUs.jsf</param-value>
   </init-param>
   <init-param>
    <param-name>login.page</param-name>
