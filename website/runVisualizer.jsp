@@ -112,9 +112,8 @@ app.append("<param name=\"" + RunVisualizerConstants.NAME + "\" value=\"" + name
 app.append("<param name=\"" + RunVisualizerConstants.OS + "\" value=\"" + StringUtils.htmlEncode(tia.get(GPConstants.OS)) + "\">");
 
 app.append("<param name=\"" + RunVisualizerConstants.CPU_TYPE + "\" value=\"" + StringUtils.htmlEncode(tia.get(GPConstants.CPU_TYPE)) + "\">");
-app.append("<param name=\"" + RunVisualizerConstants.LIBDIR + "\" value=\"" + StringUtils.htmlEncode(libdir) + "\">");
 app.append("<param name=\"" + RunVisualizerConstants.JAVA_FLAGS_VALUE + "\" value=\"" + StringUtils.htmlEncode(javaFlags) + "\">");
-
+app.append("<param name=\"" + RunVisualizerConstants.CONTEXT_PATH + "\" value=\"" + StringUtils.htmlEncode(request.getContextPath()) + "\">");
 StringBuffer paramValue = new StringBuffer();
 for (i = 0; i < parameterInfoArray.length; i++) {
 	if (i > 0) paramValue.append(",");
