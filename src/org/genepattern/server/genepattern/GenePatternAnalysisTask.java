@@ -304,34 +304,38 @@ public class GenePatternAnalysisTask {
 
     /**
      * Tests whether the specified URL referes to the local host.
-     * @param url The URL to check whether it refers to the local host.
+     *
+     * @param url
+     *            The URL to check whether it refers to the local host.
      * @return <tt>true</tt> if the specified URL refers to the local host.
      */
     protected boolean isLocalHost(URL url) {
-    	String gpHost = null;
-    	String hostAddress = null;
-    	try {
+        String gpHost = null;
+        String hostAddress = null;
+        try {
             if (System.getProperty("GenePatternURL") != null) {
                 URL gpUrl = new URL(System.getProperty("GenePatternURL"));
                 gpHost = gpUrl.getHost();
                 hostAddress = InetAddress.getLocalHost().getHostAddress();
             }
         } catch (MalformedURLException mfe) {
-        } catch(UnknownHostException uhe) {
+        } catch (UnknownHostException uhe) {
         }
-        
-    	String requestedHost = url.getHost();
-    	try {
-    	    return (url.toString().startsWith("<GenePatternURL>") || requestedHost.equals("localhost")
-    			|| requestedHost.equals("127.0.0.1")
-    			|| requestedHost.equals(InetAddress.getLocalHost().getCanonicalHostName())
-    			|| requestedHost.equals(gpHost) || InetAddress.getByName(requestedHost).getHostAddress().equals(hostAddress));
 
-    	}catch(UnknownHostException x) {
-    	    log.error("Unknown host", x);
-    	    return false;
-    	}
+        String requestedHost = url.getHost();
+        try {
+            return (url.toString().startsWith("<GenePatternURL>") || requestedHost.equals("localhost")
+                    || requestedHost.equals("127.0.0.1")
+                    || requestedHost.equals(InetAddress.getLocalHost().getCanonicalHostName())
+                    || requestedHost.equals(gpHost) || InetAddress.getByName(requestedHost).getHostAddress().equals(
+                    hostAddress));
+
+        } catch (UnknownHostException x) {
+            log.error("Unknown host", x);
+            return false;
+        }
     }
+
     /**
      * Returns a local URL as a File object or <tt>null</tt> if the URL can
      * not be represented as a File
@@ -349,7 +353,7 @@ public class GenePatternAnalysisTask {
             path = URLDecoder.decode(path, "UTF-8");
 
             if (path.endsWith("getFile.jsp")) {
-                // task=lsid & file=filename
+                // request parameters are: task=lsid & file=filename
                 String params = url.getQuery();
                 int idx1 = params.indexOf("task=");
                 int endIdx1 = params.indexOf('&', idx1);
@@ -364,7 +368,30 @@ public class GenePatternAnalysisTask {
                 String lsid = params.substring(idx1 + 5, endIdx1);
                 lsid = URLDecoder.decode(lsid, "UTF-8");
                 String filename = params.substring(idx2 + 5, endIdx2);
-                // check that user can access requested task
+                if (filename == null) {
+                    return null;
+                }
+                filename = URLDecoder.decode(filename, "UTF-8");
+                if (lsid == null || lsid.trim().equals("")) { // input file
+                    // look in temp for pipelines run without saving
+                    File in = new File(System.getProperty("java.io.tmpdir"), filename);
+                    // now we need to check whether this is the user or an admin
+                    // trying to look at the file
+                    if (in.exists()) {
+                        String prefix = userId + "_";
+                        if (!filename.startsWith(prefix)) {
+                            IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+                            if (!authManager.checkPermission("adminJobs", userId)) {
+                                return null;
+                            }
+                        }
+                        return in;
+                    } else {
+                        return null;
+                    }
+
+                }
+                // check that user can access requested module
                 if (new LocalAdminClient(userId).getTask(lsid) != null) {
                     File file = new File(DirectoryManager.getTaskLibDir(lsid, lsid, userId), filename);
                     if (file.exists()) {
@@ -610,7 +637,7 @@ public class GenePatternAnalysisTask {
                         }
                         if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null
                                 && !mode.equals(ParameterInfo.OUTPUT_MODE) && originalPath != null && isURL) {
-                           
+
                             URI uri = new URI(originalPath);
                             final String userInfo = uri.getUserInfo();
                             if (userInfo != null) {
@@ -638,8 +665,7 @@ public class GenePatternAnalysisTask {
                                     URL url = uri.toURL();
                                     String gpHost = null;
                                     String hostAddress = null;
-                                    
-                                    
+
                                     if (isLocalHost(url)) {
                                         File file = inputUrlToFile(url, jobInfo.getUserId());
 
@@ -678,7 +704,7 @@ public class GenePatternAnalysisTask {
                                 params[i].setValue(outFile.getCanonicalPath());
                                 inputLastModified[i] = outFile.lastModified();
                                 inputLength[i] = outFile.length();
-                               
+
                             } catch (IOException ioe) {
                                 log.error("An error occurred while downloading " + uri, ioe);
                                 os.write(("An error occurred while downloading " + uri).getBytes());
