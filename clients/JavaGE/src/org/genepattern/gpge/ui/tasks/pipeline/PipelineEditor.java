@@ -95,7 +95,6 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
         PipelineListener {
     private static final String CHOOSE_TASK = "Choose Module";
 
-    private static final boolean DEBUG = false;
 
     private static final int INPUT_FIELD_COLUMN = 5;
 
@@ -563,14 +562,13 @@ public class PipelineEditor extends JPanel implements TaskDisplay,
             List taskFiles = new ArrayList();
             taskFiles.addAll(localInputFiles);
             taskFiles.addAll(model.getLocalDocFiles());
-
             existingFileNames.addAll(model.getServerDocFiles());
-
+            int accessId = model.getPrivacy();
             String lsid = new TaskIntegratorProxy(AnalysisServiceManager
                     .getInstance().getServer(), AnalysisServiceManager
                     .getInstance().getUsername(), AnalysisServiceManager
                     .getInstance().getPassword(), false).modifyTask(
-                    GPConstants.ACCESS_PUBLIC, ti.getName(), ti
+                    accessId, ti.getName(), ti
                             .getDescription(), ti.getParameterInfoArray(),
                     (HashMap) ti.getTaskInfoAttributes(), (File[]) taskFiles
                             .toArray(new File[0]), (String[]) existingFileNames
