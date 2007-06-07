@@ -69,7 +69,7 @@ public class JobBean {
     /**
      * File sort direction (true for ascending, false for descending)
      */
-    private boolean fileSortAscending = true;
+    private boolean fileSortAscending = false;
 
     /**
      * Specifies file column to sort on. Possible values are name size
@@ -77,7 +77,7 @@ public class JobBean {
      */
     private String fileSortColumn = "name";
 
-    private boolean showEveryonesJobs = true;
+    private boolean showEveryonesJobs = false;
 
     /**
      * Specifies job column to sort on. Possible values are jobNumber taskName
@@ -88,7 +88,7 @@ public class JobBean {
     /**
      * Job sort direction (true for ascending, false for descending)
      */
-    private boolean jobSortAscending = true;
+    private boolean jobSortAscending = false;
 
     public JobBean() {
         String userId = UIBeanHelper.getUserId();
