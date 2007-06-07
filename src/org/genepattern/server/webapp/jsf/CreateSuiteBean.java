@@ -1,13 +1,14 @@
 /**
- * 
+ *
  */
 package org.genepattern.server.webapp.jsf;
 
 import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
 import static org.genepattern.util.GPConstants.SUITE_NAMESPACE;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,16 +23,16 @@ import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
-import org.genepattern.server.webservice.server.AdminService;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.WebServiceException;
 
 /**
  * @author jrobinso
- * 
+ *
  */
 public class CreateSuiteBean implements java.io.Serializable {
 
@@ -43,7 +44,7 @@ public class CreateSuiteBean implements java.io.Serializable {
 
     private String author;
 
-    private int accessId = 1; // Public
+    private int accessId = GPConstants.ACCESS_PUBLIC;
 
     private UploadedFile supportFile1;
 
@@ -53,7 +54,7 @@ public class CreateSuiteBean implements java.io.Serializable {
 
     private List<ModuleCategory> categories;
 
-    private boolean success = false; // Default value
+    private boolean success = false;
 
     private SuiteInfo currentSuite = null;
 
@@ -229,20 +230,35 @@ public class CreateSuiteBean implements java.io.Serializable {
 
     }
 
-    private void saveUploadedFile(UploadedFile uploadedFile, String suiteDir) throws FileNotFoundException, IOException {
+    private void saveUploadedFile(UploadedFile uploadedFile, String suiteDir) throws IOException {
         String fileName = uploadedFile.getName();
         if (fileName != null) {
             fileName = FilenameUtils.getName(fileName);
-
         }
-        FileOutputStream out = new FileOutputStream(new File(suiteDir, fileName));
-        InputStream in = uploadedFile.getInputStream();
-        int c;
-        while ((c = in.read()) != -1) {
-            out.write(c);
+        BufferedOutputStream out = null;
+        InputStream in = null;
+        try {
+            out = new BufferedOutputStream(new FileOutputStream(new File(suiteDir, fileName)));
+            in = new BufferedInputStream(uploadedFile.getInputStream());
+            int c;
+            byte[] b = new byte[10240];
+            while ((c = in.read(b)) != -1) {
+                out.write(b, 0, c);
+            }
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException x) {
+                }
+            }
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException x) {
+                }
+            }
         }
-        in.close();
-        out.close();
     }
 
     public String clear() {
