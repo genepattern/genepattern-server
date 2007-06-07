@@ -137,7 +137,6 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 
         try {
             pipelineStart = new Date();
-
             try {
                 URL url = new URL(URL + "skin/stylesheet.css");
                 HttpURLConnection uconn = (HttpURLConnection) url.openConnection();
@@ -152,7 +151,7 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
                     b.append(line);
                 b.append("--> </style>");
                 logWriter.println(b.toString());
-            } catch (MalformedURLException mfe) {
+            } catch (Exception e) {
 
             }
 
@@ -223,8 +222,8 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
          	boolean hasInputURL = pValue .startsWith("<GenePatternURL>");
 
             isInputFile = aParam.isInputFile();
-            if (!isInputFile 
-					&& !aParam.isOutputFile() 
+            if (!isInputFile
+					&& !aParam.isOutputFile()
 					&& paramType != null
                     && paramType.equals(ParameterInfo.FILE_TYPE) 	) {
                 isInputFile = true;
