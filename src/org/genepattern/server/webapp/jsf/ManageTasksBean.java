@@ -6,6 +6,7 @@ package org.genepattern.server.webapp.jsf;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -26,12 +27,12 @@ import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
+import org.genepattern.util.LSIDVersionComparator;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
-import org.genepattern.util.LSIDVersionComparator;
 
-public class ManageTasksBean /* implements java.io.Serializable */{
+public class ManageTasksBean {
     private static Logger log = Logger.getLogger(ManageTasksBean.class);
 
     private Collection<TaskInfo> tasks;
@@ -43,8 +44,6 @@ public class ManageTasksBean /* implements java.io.Serializable */{
     public ManageTasksBean() {
         LocalAdminClient adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
         try {
-            tasks = (tasks == null) ? adminClient.getTaskCatalog() : tasks;
-
             String userId = UIBeanHelper.getUserId();
             this.showEveryonesTasks = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesTasks",
                     String.valueOf(this.showEveryonesTasks)))
@@ -54,7 +53,10 @@ public class ManageTasksBean /* implements java.io.Serializable */{
             if (this.showEveryonesTasks
                     && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminModules", userId)) {
                 this.showEveryonesTasks = false;
-
+            }
+            if (tasks == null) {
+                tasks = showEveryonesTasks ? Arrays.asList(adminClient.getAllTasksForModuleAdmin()) : adminClient
+                        .getTaskCatalog();
             }
         } catch (WebServiceException e) {
             log.error(e);
@@ -106,8 +108,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 
             }
         }
-        
-        
+
     }
 
     public boolean isShowEveryonesTasks() {
@@ -116,7 +117,7 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 
     public void setShowEveryonesTasks(boolean showEveryonesTasks) {
         if (showEveryonesTasks
-                && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("administrateServer",
+                && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminModules",
                         UIBeanHelper.getUserId())) {
             showEveryonesTasks = false;
 
@@ -175,11 +176,10 @@ public class ManageTasksBean /* implements java.io.Serializable */{
 
         private boolean pipeline;
 
-        /** Creates new TaskInfo */
         public TaskGroup(TaskInfo ti) {
             pipeline = ti.isPipeline();
             adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
-            indexedVersions = new TreeMap<String, VersionInfo>(new Comparator(){
+            indexedVersions = new TreeMap<String, VersionInfo>(new Comparator() {
                 public int compare(Object o1, Object o2) {
                     try {
                         LSID lsid1 = new LSID(o1.toString());
@@ -189,7 +189,8 @@ public class ManageTasksBean /* implements java.io.Serializable */{
                         log.error(e);
                         return 0;
                     }
-                }});
+                }
+            });
             lsidNoVersion = getLSID(ti.getLsid()).toStringNoVersion();
             description = ti.getDescription();
 
@@ -309,7 +310,6 @@ public class ManageTasksBean /* implements java.io.Serializable */{
         private boolean deleteAuthorized = false;
 
         private boolean editAuthorized = false;
-        
 
         public VersionInfo() {
         }
