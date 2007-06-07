@@ -14,6 +14,7 @@ package org.genepattern.server.webapp.jsf;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,10 +74,11 @@ public class RunTaskBean {
     private boolean showParameterDescriptions;
 
     /**
-     * Initialize the task lsid. This page needs to support redirects from older .jsp pages as well as jsf navigation.
-     * JSP pages will pass the lsid in as a request parameter. Look for it there first, if the paramter is null get it
-     * from the moduleChooserBean.
-     * 
+     * Initialize the task lsid. This page needs to support redirects from older
+     * .jsp pages as well as jsf navigation. JSP pages will pass the lsid in as
+     * a request parameter. Look for it there first, if the paramter is null get
+     * it from the moduleChooserBean.
+     *
      */
     public RunTaskBean() {
         String taskToRun = UIBeanHelper.getRequest().getParameter("lsid");
@@ -98,7 +100,7 @@ public class RunTaskBean {
 
     /**
      * Update the show parameter descriptions property using AJAX
-     * 
+     *
      * @return
      */
     public String getUpdateShowParameterDescriptions() {
@@ -405,6 +407,15 @@ public class RunTaskBean {
                     if (reloadParams != null) {
                         for (int i = 0; i < reloadParams.length; i++) {
                             String value = reloadParams[i].getValue();
+                            if (reloadParams[i].isInputFile()) {
+                                try {
+                                    new URL(value);
+                                } catch (MalformedURLException mfe) {
+                                    File file = new File(value);
+                                    value = System.getProperty("GenePatternURL") + "getFile.jsp?task=&file="
+                                            + file.getParentFile().getName() + "/" + file.getName();
+                                }
+                            }
                             reloadValues.put(reloadParams[i].getName(), value);
                         }
                     }
