@@ -14,7 +14,6 @@ package org.genepattern.server.webservice.server.local;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -22,11 +21,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.webservice.server.AdminService;
-import org.genepattern.server.webservice.server.IAdminService;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -50,6 +47,16 @@ public class LocalAdminClient {
 
     public List<String> getVersions(LSID lsid) {
         return new AdminDAO().getVersions(lsid, userName);
+    }
+
+    /**
+     * Gets all tasks in the database regardless of privacy or owner. Should
+     * only be called for a user with moduleAdmin priveleges.
+     *
+     * @return All tasks in the database.
+     */
+    public TaskInfo[] getAllTasksForModuleAdmin() {
+        return new AdminDAO().getAllTasks();
     }
 
     public TreeMap<String, TaskInfo> getTaskCatalogByLSID(Collection<TaskInfo> tasks) {
