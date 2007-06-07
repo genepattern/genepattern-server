@@ -92,9 +92,7 @@ public class JobBean {
 
     public JobBean() {
         String userId = UIBeanHelper.getUserId();
-        TaskInfo[] tasks = new AdminDAO().getAllTasksForUser(userId);
-        kindToModules = SemanticUtil.getKindToModulesMap(tasks);
-
+        kindToModules = SemanticUtil.getKindToModulesMap(new AdminDAO().getLatestTasks(userId));
         this.showExecutionLogs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showExecutionLogs", String
                 .valueOf(showExecutionLogs)));
 
@@ -109,7 +107,6 @@ public class JobBean {
         this.jobSortColumn = new UserDAO().getPropertyValue(userId, "jobSortColumn", jobSortColumn);
         this.jobSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "jobSortAscending", String
                 .valueOf(jobSortAscending)));
-
     }
 
     public void createPipeline(ActionEvent e) {
