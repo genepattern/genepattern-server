@@ -62,33 +62,18 @@
             				<td><t:outputText size="60" value="Current Support Files: "/></td>
             				<td>&#160;</td>
             			</tr>
-            			<tr style="#{manageSuiteBean.supportFiles.sf1 != null ? 'display:' : 'display:none;'}">
-            				<td><t:outputText size="60" value="#{manageSuiteBean.supportFiles.sf1}"/></td>
+
+            			<t:dataList var="f" value="#{manageSuiteBean.supportFiles}">
+            			<tr>
+            				<td><t:outputText size="60" value="#{f}"/></td>
             				<td>
             					<h:commandLink actionListener="#{manageSuiteBean.deleteSupportFile}" onclick="if (!confirmDeleteSupportFile()) return false">
                                		<t:outputText size="60" value="delete"/>
-                               		<f:param name="supportFileKey" value="sf1"/>
+                               		<f:param name="supportFileKey" value="#{f}"/>
                                	</h:commandLink>
                             </td>
             			</tr>
-            			<tr style="#{manageSuiteBean.supportFiles.sf2 != null ? 'display:' : 'display:none;'}">
-             				<td><t:outputText size="60" value="#{manageSuiteBean.supportFiles.sf2}"/></td>
-            				<td>
-            					<h:commandLink actionListener="#{manageSuiteBean.deleteSupportFile}" onclick="if (!confirmDeleteSupportFile()) return false">
-                               		<t:outputText size="60" value="delete"/>
-                               		<f:param name="supportFileKey" value="sf2"/>
-                               	</h:commandLink>
-                            </td>
-            			</tr>
-            			<tr style="#{manageSuiteBean.supportFiles.sf3 != null ? 'display:' : 'display:none;'}">
-            				<td><t:outputText size="60" value="#{manageSuiteBean.supportFiles.sf3}"/></td>
-            				<td>
-            					<h:commandLink actionListener="#{manageSuiteBean.deleteSupportFile}" onclick="if (!confirmDeleteSupportFile()) return false">
-                               		<t:outputText size="60" value="delete"/>
-                               		<f:param name="supportFileKey" value="sf3"/>
-                               	</h:commandLink>
-                            </td>
-            			</tr>
+            			</t:dataList>
             		</table>
 			  </t:div>
 			  <br/>
