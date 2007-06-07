@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.genepattern.server.webapp.jsf;
 
@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.faces.application.ApplicationFactory;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletResponse;
@@ -43,14 +42,9 @@ public class ManageSuiteBean {
 
     private boolean includeDependents = false;
 
-    private Map<String, String> supportFiles = null;
-
     public ManageSuiteBean() {
     }
 
-    /**
-     * @return
-     */
     public List<Suite> getSuites() {
         if (suites == null) {
             resetSuites();
@@ -60,7 +54,7 @@ public class ManageSuiteBean {
 
     /**
      * Query for suites the current user is authorized to see.
-     * 
+     *
      */
     private void resetSuites() {
         if (AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminSuites",
@@ -83,9 +77,6 @@ public class ManageSuiteBean {
         return editPermissions;
     }
 
-    /**
-     * @return
-     */
     public Suite getCurrentSuite() {
         return currentSuite;
     }
@@ -98,9 +89,6 @@ public class ManageSuiteBean {
         this.currentSuite = currentSuite;
     }
 
-    /**
-     * @return
-     */
     public List getCategoryColumnsForSuite() {
         List<List> cols = new ArrayList<List>();
 
@@ -131,35 +119,21 @@ public class ManageSuiteBean {
         return cols;
     }
 
-    public Map getSupportFiles() {
-
-        try {
-            if (currentSuite != null) {
+    public String[] getSupportFiles() {
+        if (currentSuite != null) {
+            try {
                 String suiteDirPath = DirectoryManager.getSuiteLibDir(currentSuite.getName(), currentSuite.getLsid(),
                         currentSuite.getUserId());
                 File suiteDir = new File(suiteDirPath);
-                File[] allFiles = suiteDir.listFiles();
-                int cnt = 1;
-                supportFiles = (allFiles.length > 0) ? new HashMap<String, String>() : null;
-                for (File file : allFiles) {
-                    supportFiles.put("sf" + cnt, file.getAbsolutePath());
-                    cnt++;
-                }
+                return suiteDir.list();
+            } catch (Exception e) {
+                log.error(e);
+                HibernateUtil.rollbackTransaction();
             }
-        } catch (Exception e) {
-            HibernateUtil.rollbackTransaction(); // This shouldn't be
-            // neccessary, but just in
-            // case
-            log.error(e);
-            throw new RuntimeException(e); // @todo -- replace with appropriate
-            // GP exception
         }
-        return supportFiles;
+        return null;
     }
 
-    /**
-     * @return
-     */
     public String view() {
         String lsid = UIBeanHelper.getRequest().getParameter("lsid");
         currentSuite = (new SuiteDAO()).findById(lsid);
@@ -241,7 +215,7 @@ public class ManageSuiteBean {
 
     /**
      * Delete the selected jobs and files.
-     * 
+     *
      * @return
      */
     public String delete() {
@@ -284,19 +258,25 @@ public class ManageSuiteBean {
     }
 
     public void deleteSupportFile(ActionEvent event) {
-        try {
-            if (currentSuite != null) {
-                String key = UIBeanHelper.getRequest().getParameter("supportFileKey");
-                String fileName = supportFiles.get(key);
-                File supportFile = new File(fileName);
-                if (supportFile != null && supportFile.exists()) {
-                    supportFile.delete();
+        if (currentSuite != null) {
+            String key = UIBeanHelper.getRequest().getParameter("supportFileKey");
+            String[] supportFiles = getSupportFiles();
+            if (supportFiles != null) {
+                for (String f : supportFiles) {
+                    if (f.equals(key)) {
+                        try {
+                            String suiteDirPath = DirectoryManager.getSuiteLibDir(currentSuite.getName(), currentSuite
+                                    .getLsid(), currentSuite.getUserId());
+                            new File(suiteDirPath, f).delete();
+
+                        } catch (Exception e) {
+                            log.error(e);
+                        }
+                        break;
+
+                    }
                 }
-                supportFiles.remove(key);
             }
-        } catch (Exception e) {
-            log.error(e);
-            throw new RuntimeException(e);
         }
     }
 
