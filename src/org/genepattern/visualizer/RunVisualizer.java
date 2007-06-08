@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
@@ -32,12 +33,13 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpState;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.GetMethod;
 
 public class RunVisualizer {
 
-    private boolean DEBUG = false;
+    private boolean DEBUG = true;
 
     private Map params = null;
 
@@ -50,6 +52,8 @@ public class RunVisualizer {
     private URL documentBase;
 
     private String server;
+
+    private String contextPath;
 
     private static final String JAVA = "java";
 
@@ -94,6 +98,10 @@ public class RunVisualizer {
         this.cookie = applet.getParameter("browserCookie");
         this.documentBase = applet.getDocumentBase();
         this.server = documentBase.getProtocol() + "://" + documentBase.getHost() + ":" + documentBase.getPort();
+        this.contextPath = applet.getParameter(RunVisualizerConstants.CONTEXT_PATH);
+        if (contextPath == null) {
+            contextPath = "/gp";
+        }
     }
 
     public void run() throws IOException, Exception {
@@ -105,8 +113,8 @@ public class RunVisualizer {
         // cache
         String libdir = downloadSupportFiles();
 
-        // libdir is where all of the support files will be found, either local
-        // or remote
+        // libdir is where all of the support files will be found on the client
+        // computer
         params.put(RunVisualizerConstants.LIBDIR, libdir + File.separator);
 
         String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java"
@@ -131,9 +139,6 @@ public class RunVisualizer {
         if (DEBUG)
             System.out.println("runVisualizer: " + (String) params.get(RunVisualizerConstants.NAME) + " done");
     }
-
-    // TODO: report unused parameters
-    // TODO: report unfound substitutions
 
     protected String[] doCommandLineSubstitutions() throws IOException {
         // do input argument substitution in command line
@@ -278,7 +283,7 @@ public class RunVisualizer {
                 }
                 Date startTime = new Date();
 
-                URL urlFile = new URL(server + "/gp/getFile.jsp?task=" + encode(lsid) + "&file="
+                URL urlFile = new URL(server + contextPath + "/getFile.jsp?task=" + encode(lsid) + "&file="
                         + encode(supportFileNames[supf]));
                 File file = downloadFile(urlFile, fLibdir, supportFileNames[supf]);
                 file.setLastModified(supportFileDates[supf]);
@@ -316,14 +321,24 @@ public class RunVisualizer {
         GetMethod get = null;
         try {
             if (url.getHost().equals(documentBase.getHost()) && url.getPort() == documentBase.getPort()) {
+                if (DEBUG) {
+                    System.out.println("Downloading " + url + " using HttpClient");
+                }
                 HttpClient client = new HttpClient();
                 client.setState(new HttpState());
                 client.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
                 get = new GetMethod(url.toString());
                 get.addRequestHeader("Cookie", cookie);
-                client.executeMethod(get);
+                int statusCode = client.executeMethod(get);
+                if (statusCode != HttpStatus.SC_OK) {
+                    System.err.println("Method failed: " + get.getStatusLine());
+                }
                 is = get.getResponseBodyAsStream();
+
             } else {
+                if (DEBUG) {
+                    System.out.println("Downloading " + url + " using Java classes");
+                }
                 URLConnection conn = url.openConnection();
                 is = conn.getInputStream();
             }
@@ -406,8 +421,12 @@ public class RunVisualizer {
     }
 
     private static String decode(String s) {
+        return decode(s, "UTF-8");
+    }
+
+    private static String decode(String s, String encoding) {
         try {
-            return URLDecoder.decode(s, "UTF-8");
+            return URLDecoder.decode(s, encoding);
         } catch (NoSuchMethodError e) {
             return URLDecoder.decode(s);
         } catch (java.io.UnsupportedEncodingException x) {
@@ -474,15 +493,25 @@ public class RunVisualizer {
     // local filename for the command
     // line substitution
 
-    protected HashMap downloadInputURLs() throws IOException {
+    protected HashMap downloadInputURLs() {
         // create a mapping between downloadable files and their actual
         // (post-download) filenames
         HashMap hmDownloadables = new HashMap();
         StringTokenizer stDownloadables = new StringTokenizer((String) params
                 .get(RunVisualizerConstants.DOWNLOAD_FILES), ",");
+        if (DEBUG) {
+            System.out.println(RunVisualizerConstants.DOWNLOAD_FILES + ": "
+                    + params.get(RunVisualizerConstants.DOWNLOAD_FILES));
+        }
         String name = (String) params.get(RunVisualizerConstants.NAME);
         String prefix = (name.length() < 3 ? "dl" + name : name);
-        File tempdir = File.createTempFile(prefix, ".tmp");
+        File tempdir = null;
+        try {
+            tempdir = File.createTempFile(prefix, ".tmp");
+        } catch (IOException e1) {
+            System.out.println("Unable to create temp directory.");
+            throw new RuntimeException(e1);
+        }
         tempdir.delete();
         tempdir.mkdir();
         tempdir.deleteOnExit();
@@ -490,18 +519,29 @@ public class RunVisualizer {
         while (stDownloadables.hasMoreTokens()) {
             String paramName = stDownloadables.nextToken();
             String paramURL = (String) params.get(paramName);
+            paramURL = variableSubstitution(paramURL, hmDownloadables);
+            if (paramURL.startsWith("getFile.jsp")) {
+                paramURL = server + contextPath + "/" + paramURL;
+            }
+            String filename = null;
+            URL url = null;
             try {
-                paramURL = variableSubstitution(paramURL, hmDownloadables);
-
-                String filename = getURLFileName(new URL(paramURL));
-                if (DEBUG) {
-                    System.out.println("downloading " + paramURL + " to " + tempdir + " as " + filename);
-                }
-                File file = downloadFile(new URL(paramURL), tempdir, filename);
+                paramURL = paramURL.replace(" ", "%20");
+                url = new URL(paramURL);
+                filename = getURLFileName(url);
+            } catch (MalformedURLException e) {
+                System.out.println(paramURL + " is malformed.");
+                continue;
+            }
+            if (DEBUG) {
+                System.out.println("downloading URL " + paramURL + " to directory " + tempdir + " as " + filename);
+            }
+            try {
+                File file = downloadFile(url, tempdir, filename);
                 file.deleteOnExit();
                 hmDownloadables.put(paramName, file);
-            } catch (Exception mfe) {
-                mfe.printStackTrace();
+            } catch (IOException ioe) {
+                System.out.println("Error downloading URL " + paramURL);
             }
 
         }
@@ -580,7 +620,7 @@ public class RunVisualizer {
     public static void main(String[] args) {
         String[] wellKnownNames = { RunVisualizerConstants.NAME, RunVisualizerConstants.COMMAND_LINE,
                 RunVisualizerConstants.DEBUG, RunVisualizerConstants.OS, RunVisualizerConstants.CPU_TYPE,
-                RunVisualizerConstants.LIBDIR, RunVisualizerConstants.DOWNLOAD_FILES, RunVisualizerConstants.LSID };
+                RunVisualizerConstants.DOWNLOAD_FILES, RunVisualizerConstants.LSID };
         int PARAM_NAMES = 7;
         int SUPPORT_FILE_NAMES = PARAM_NAMES + 1;
         int SUPPORT_FILE_DATES = SUPPORT_FILE_NAMES + 1;
