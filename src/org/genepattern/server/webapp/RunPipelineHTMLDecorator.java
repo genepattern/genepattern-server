@@ -214,9 +214,8 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
     public void writeVisualizerAppletTag(JobSubmission jobSubmission) {
         // PUT APPLET HERE
-		StringWriter strOut = new StringWriter();
-		PrintWriter out = new PrintWriter(strOut);
-
+        StringWriter strOut = new StringWriter();
+        PrintWriter out = new PrintWriter(strOut);
 
         String userId = System.getProperty("userId");
         LocalAdminClient adminClient = new LocalAdminClient(userId);
@@ -276,11 +275,8 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
                 + StringUtils.htmlEncode(tia.get(GPConstants.OS)) + "\">");
         out.println("<param name=\"" + RunVisualizerConstants.CPU_TYPE + "\" value=\""
                 + StringUtils.htmlEncode(tia.get(GPConstants.CPU_TYPE)) + "\">");
-        out.println("<param name=\"" + RunVisualizerConstants.LIBDIR + "\" value=\"" + StringUtils.htmlEncode(libdir)
-                + "\">");
         out.println("<param name=\"" + RunVisualizerConstants.JAVA_FLAGS_VALUE + "\" value=\""
                 + StringUtils.htmlEncode(javaFlags) + "\">");
-
         out.println("<param name=\"" + RunVisualizerConstants.PARAM_NAMES + "\" value=\"");
 
         for (i = 0; i < parameterInfoArray.length; i++) {
@@ -293,7 +289,6 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
         for (i = 0; i < parameterInfoArray.length; i++) {
             String paramName = parameterInfoArray[i].getName();
-			
 
             if (paramName.equals("className")) {
                 out.println("<param name=\"" + paramName + "\" value=\""
@@ -302,7 +297,6 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
             }
             boolean isInputFile = parameterInfoArray[i].isInputFile();
             String value = params.getProperty(paramName);
-
 
             if (isInputFile || (value.indexOf("<GenePatternURL>") >= 0))
                 value = localizeURL(params.getProperty(paramName));
@@ -316,30 +310,30 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
         int numToDownload = 0;
         for (i = 0; i < parameterInfoArray.length; i++) {
             boolean isInputFile = parameterInfoArray[i].isInputFile();
-			String paramName = parameterInfoArray[i].getName();
-			String paramValue = params.getProperty(paramName);
-			// make URL substitution
-			if (paramValue.indexOf("<GenePatternURL>") >= 0){
-				paramValue = paramValue.replace("<GenePatternURL>", System.getProperty("GenePatternURL"));
-			}
+            String paramName = parameterInfoArray[i].getName();
+            String paramValue = params.getProperty(paramName);
+            // make URL substitution
+            if (paramValue.indexOf("<GenePatternURL>") >= 0) {
+                paramValue = paramValue.replace("<GenePatternURL>", System.getProperty("GenePatternURL"));
+            }
 
-			if (isInputFile ||
-		    	(paramValue.startsWith("http:") ||
-		    	 paramValue.startsWith("https:") ||
-		    	 paramValue.startsWith("ftp:"))) 
-				{
-				// note that this parameter is a URL that must be downloaded by adding it to the
-				//CSV list for the applet
-				if (numToDownload > 0) {
-				    out.print(",");
-				}
-				out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
+            boolean isUrl = false;
+            try {
+                new URL(paramValue);
+                isUrl = true;
+            } catch (Exception x) {
+            }
+            if (isInputFile || isUrl) {
+                // note that this parameter is a URL that must be downloaded
+                // by
+                // adding it to the
+                // CSV list for the applet
+                if (numToDownload > 0) {
+                    out.print(",");
+                }
+                out.print(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
                 numToDownload++;
-			}
-
-
-
-
+            }
         }
         out.println("\">");
 
@@ -364,21 +358,18 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
         out.println("\">");
 
         out.println("<param name=\"" + RunVisualizerConstants.LSID + "\" value=\"" + lsid + "\">");
-		out.print("<PARAM name=\"browserCookie\" value=\"' + document.cookie + '\">");
+        out.print("<PARAM name=\"browserCookie\" value=\"' + document.cookie + '\">");
         out.print("</applet>");
- 
-		//
-		// now have javascript emit this applet tag to get the cookie set properly
-		//	
-		out.flush();
 
-		
-		this.out.println("<SCRIPT LANGUAGE=\"Javascript\">");
-		this.out.println("document.writeln('"+ strOut.toString() +"');");
-		this.out.println("</SCRIPT>");
+        //
+        // now have javascript emit this applet tag to get the cookie set
+        // properly
+        //
+        out.flush();
 
-		
-
+        this.out.println("<SCRIPT LANGUAGE=\"Javascript\">");
+        this.out.println("document.writeln('" + strOut.toString() + "');");
+        this.out.println("</SCRIPT>");
 
         this.out.flush();
     }

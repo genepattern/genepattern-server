@@ -25,6 +25,7 @@
  		 org.genepattern.server.webservice.server.local.LocalAdminClient,
 		 java.util.Enumeration,
 		 java.util.Properties,
+		 java.net.URLEncoder,
 		 java.io.File"
    session="false" language="Java" %><%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -54,6 +55,7 @@
    	if (message != null) {
 %>
 		<%@page import="org.genepattern.server.user.UserPropKey"%>
+<%@page import="java.net.URLEncoder;"%>
 <html>
 		<head>
 		<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
@@ -129,30 +131,30 @@ for (i = 0; i < parameterInfoArray.length; i++) {
 	if(value != null) {
 		value = value.replace("\\", "\\\\");
 	}
-	app.append("<param name=\"" + StringUtils.htmlEncode(paramName) + "\" value=\"" + StringUtils.htmlEncode(value) + "\" >");
+	app.append("<param name=\"" + StringUtils.htmlEncode(paramName) + "\" value=\"" + URLEncoder.encode(value, "UTF-8") + "\">");
 
 }
 
 StringBuffer vis = new StringBuffer();
 
-	int numToDownload = 0;
-	for (i = 0; i < parameterInfoArray.length; i++) {
-		String paramName = parameterInfoArray[i].getName();
-		if (parameterInfoArray[i].isInputFile() && params.getProperty(paramName) != null &&
-		    (params.getProperty(paramName).startsWith("http:") ||
-		     params.getProperty(paramName).startsWith("https:") ||
-		     params.getProperty(paramName).startsWith("ftp:"))) {
+int numToDownload = 0;
+for (i = 0; i < parameterInfoArray.length; i++) {
+	String paramName = parameterInfoArray[i].getName();
+	if (parameterInfoArray[i].isInputFile() && params.getProperty(paramName) != null) {
+	    try {
+	 		new java.net.URL(params.getProperty(paramName));
 			// note that this parameter is a URL that must be downloaded by adding it to the CSV list for the applet
 			if (numToDownload > 0) {
-			    vis.append(",");
+		    	vis.append(",");
 			}
-			vis.append(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
+			vis.append(parameterInfoArray[i].getName());
 			numToDownload++;
-		}
+	    } catch(Exception x){}
 	}
-app.append("<param name=\"" + RunVisualizerConstants.DOWNLOAD_FILES + "\" value=\"" + vis.toString() + "\" >");
-app.append("<param name=\"" + RunVisualizerConstants.COMMAND_LINE + "\" value=\"" + StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) + "\" >");
-app.append("<param name=\"" + RunVisualizerConstants.DEBUG + "\" value=\"1\" >");
+}
+app.append("<param name=\"" + RunVisualizerConstants.DOWNLOAD_FILES + "\" value=\"" + URLEncoder.encode(vis.toString(), "UTF-8") + "\">");
+app.append("<param name=\"" + RunVisualizerConstants.COMMAND_LINE + "\" value=\"" + StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) + "\">");
+app.append("<param name=\"" + RunVisualizerConstants.DEBUG + "\" value=\"1\">");
 
 StringBuffer fileNamesBuf = new StringBuffer();
 

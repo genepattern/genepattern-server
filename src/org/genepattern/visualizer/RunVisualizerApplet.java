@@ -14,7 +14,6 @@ package org.genepattern.visualizer;
 
 import java.applet.Applet;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,21 +27,18 @@ public class RunVisualizerApplet extends Applet {
     // can be used to
     // invoke the visualizer in a non-applet-specific manner
 
-    Map params = new HashMap();
+    private Map params = new HashMap();
 
-    String[] supportFileNames = new String[0];
+    private String[] supportFileNames = new String[0];
 
-    long[] supportFileDates = new long[0];
+    private long[] supportFileDates = new long[0];
 
-    String[] wellKnownNames = { RunVisualizerConstants.NAME, RunVisualizerConstants.COMMAND_LINE,
-            RunVisualizerConstants.DEBUG, RunVisualizerConstants.OS, RunVisualizerConstants.CPU_TYPE,
-            RunVisualizerConstants.LIBDIR, RunVisualizerConstants.DOWNLOAD_FILES, RunVisualizerConstants.LSID };
-
-    URL source = null;
+    private String[] wellKnownNames = { RunVisualizerConstants.NAME, RunVisualizerConstants.COMMAND_LINE,
+            RunVisualizerConstants.OS, RunVisualizerConstants.CPU_TYPE, RunVisualizerConstants.DOWNLOAD_FILES,
+            RunVisualizerConstants.LSID };
 
     public void init() {
         try {
-            source = getDocumentBase();
 
             for (int i = 0; i < wellKnownNames.length; i++) {
                 setParameter(wellKnownNames[i], getParameter(wellKnownNames[i]));
@@ -58,12 +54,7 @@ public class RunVisualizerApplet extends Applet {
 
             setSupportFileNames(getParameter(RunVisualizerConstants.SUPPORT_FILE_NAMES));
             setSupportFileDates(getParameter(RunVisualizerConstants.SUPPORT_FILE_DATES));
-
-            if (getParameter(RunVisualizerConstants.NO_RUN) == null) {
-                run();
-            } else {
-                showStatus("No run flag set");
-            }
+            run();
         } catch (Throwable t) {
             t.printStackTrace();
             JOptionPane.showMessageDialog(this, "An error occurred while launching "
@@ -95,7 +86,6 @@ public class RunVisualizerApplet extends Applet {
             supportFileNames[f] = stFileNames.nextToken();
             f++;
         }
-
     }
 
     public void setSupportFileDates(String csvDates) throws NumberFormatException {
@@ -110,10 +100,6 @@ public class RunVisualizerApplet extends Applet {
 
     public void run() throws Exception {
         validateInputs();
-        showStatus("starting " + params.get(RunVisualizerConstants.NAME));
-
-        showStatus("JAVA_FLAGS=" + params.get("java_flags"));
-
         RunVisualizer visualizer = new RunVisualizer(params, supportFileNames, supportFileDates, this);
         visualizer.run();
     }
@@ -127,21 +113,6 @@ public class RunVisualizerApplet extends Applet {
             if (params.get(wellKnownNames[i]) == null)
                 throw new Exception("Missing input parameter " + wellKnownNames[i]);
         }
-    }
-
-    public void destroy() {
-        showStatus("RunVisualizerApplet.destroy");
-        super.destroy();
-    }
-
-    public void start() {
-        showStatus("RunVisualizerApplet.start");
-        super.start();
-    }
-
-    public void stop() {
-        showStatus("RunVisualizerApplet.stop");
-        super.stop();
     }
 
 }
