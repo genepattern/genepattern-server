@@ -1,17 +1,5 @@
 var fileRows = new Object();
 
-function validateForm() {
-   var inputElement = $("nameField");
-   var d = $("nameErrorMessageDiv");
-   if (inputElement.value == null || inputElement.value == "") {  
-       d.style.display = "inline";
-       return false;
-   }else {        
-       d.style.display = "hidden";
-       return true;
-   }
-}
-    
 function getContext() {
     return '#{facesContext.externalContext.requestContextPath}';
 }
@@ -31,7 +19,7 @@ function toggleSuiteCheckboxes(id) {
         }
     }
 }
-		
+
 function confirmDelete() {
 	return confirm('Are you sure you want to delete the selected suite(s)?');
 }
