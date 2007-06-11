@@ -69,6 +69,9 @@ public class CreateSuiteBean implements java.io.Serializable {
                     throw e;
                 }
             }
+        } else {
+            // set default author
+            author = UIBeanHelper.getUserId();
         }
     }
 
@@ -112,17 +115,8 @@ public class CreateSuiteBean implements java.io.Serializable {
         this.name = name;
     }
 
-    public List getCategoryColumns() {
-
-        List<List> cols = new ArrayList<List>();
-        if (categories == null) {
-            if (currentSuite != null) {
-                categories = (new ModuleHelper(true)).getSelectedTasksByType(currentSuite.getModuleLsids());
-            } else {
-                categories = (new ModuleHelper(true)).getTasksByType();
-            }
-        }
-
+    public static List<List<ModuleCategory>> layoutSuiteCategories(List<ModuleCategory> categories) {
+        List<List<ModuleCategory>> cols = new ArrayList<List<ModuleCategory>>();
         // Find the midpoint in the category list.
         int totalCount = 0;
         for (ModuleCategory cat : categories) {
@@ -130,11 +124,11 @@ public class CreateSuiteBean implements java.io.Serializable {
         }
         int midpoint = totalCount / 2;
 
-        cols.add(new ArrayList());
-        cols.add(new ArrayList());
+        cols.add(new ArrayList<ModuleCategory>());
+        cols.add(new ArrayList<ModuleCategory>());
         int cumulativeCount = 0;
         for (ModuleCategory cat : categories) {
-            if (cumulativeCount < midpoint) {
+            if (cumulativeCount <= midpoint) {
                 cols.get(0).add(cat);
             } else {
                 cols.get(1).add(cat);
@@ -142,6 +136,17 @@ public class CreateSuiteBean implements java.io.Serializable {
             cumulativeCount += cat.getModuleCount();
         }
         return cols;
+    }
+
+    public List<List<ModuleCategory>> getCategoryColumns() {
+        if (categories == null) {
+            if (currentSuite != null) {
+                categories = (new ModuleHelper(true)).getSelectedTasksByType(currentSuite.getModuleLsids());
+            } else {
+                categories = (new ModuleHelper(true)).getTasksByType();
+            }
+        }
+        return CreateSuiteBean.layoutSuiteCategories(categories);
     }
 
     public UploadedFile getSupportFile1() {
@@ -192,14 +197,15 @@ public class CreateSuiteBean implements java.io.Serializable {
             for (ModuleCategory cat : categories) {
                 for (Module mod : cat.getModules()) {
                     if (mod.isSelected()) {
-                        selectedLSIDs.add(mod.getLsid());
+                        String lsid = mod.getLSID().toStringNoVersion();
+                        if (mod.getSelectedVersion() != null && !mod.getSelectedVersion().equals("")) {
+                            lsid += ":" + mod.getSelectedVersion();
+                        }
+                        selectedLSIDs.add(lsid);
                     }
                 }
             }
-            if (!selectedLSIDs.isEmpty()) {
-                currentSuite.setModuleLsids(selectedLSIDs);
-            }
-
+            currentSuite.setModuleLsids(selectedLSIDs);
             LocalTaskIntegratorClient ti = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
             ti.saveOrUpdateSuite(currentSuite);
 
@@ -218,14 +224,12 @@ public class CreateSuiteBean implements java.io.Serializable {
 
             ManageSuiteBean manageSuiteBean = (ManageSuiteBean) UIBeanHelper.getManagedBean("#{manageSuiteBean}");
             manageSuiteBean.setCurrentSuite((new SuiteDAO()).findById(currentSuite.getLsid()));
-
             return "view suite";
         } catch (Exception e) {
             HibernateUtil.rollbackTransaction(); // This shouldn't be
             // neccessary, but just in
             // case
-            throw new RuntimeException(e); // @todo -- replace with appropriate
-            // GP exception
+            throw new RuntimeException(e);
         }
 
     }
