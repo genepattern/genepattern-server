@@ -117,7 +117,7 @@
                             <td valign="top">&#160;</td>
                             <td valign="top" class="description">
                               <div align="center">
-                                <h:outputText value="#{module.selectedVersion}"/>
+                              	<h:outputText value="#{module.selectedVersion eq '' ? 'latest': module.selectedVersion}"/>
                               </div>
                             </td>
                           </tr>
