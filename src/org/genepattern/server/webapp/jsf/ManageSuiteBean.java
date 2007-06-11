@@ -89,34 +89,13 @@ public class ManageSuiteBean {
         this.currentSuite = currentSuite;
     }
 
-    public List getCategoryColumnsForSuite() {
-        List<List> cols = new ArrayList<List>();
-
+    public List<List<ModuleCategory>> getCategoryColumnsForSuite() {
         if (currentSuite != null) {
             if (categories == null) {
                 categories = (new ModuleHelper()).getTasksByTypeForSuite(currentSuite);
             }
-
-            // Find the midpoint in the category list.
-            int totalCount = 0;
-            for (ModuleCategory cat : categories) {
-                totalCount += cat.getModuleCount();
-            }
-            int midpoint = totalCount / 2;
-
-            cols.add(new ArrayList());
-            cols.add(new ArrayList());
-            int cumulativeCount = 0;
-            for (ModuleCategory cat : categories) {
-                if (cumulativeCount <= midpoint) {
-                    cols.get(0).add(cat);
-                } else {
-                    cols.get(1).add(cat);
-                }
-                cumulativeCount += cat.getModuleCount();
-            }
         }
-        return cols;
+        return CreateSuiteBean.layoutSuiteCategories(categories);
     }
 
     public String[] getSupportFiles() {
