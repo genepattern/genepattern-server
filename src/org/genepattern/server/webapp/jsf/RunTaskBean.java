@@ -83,7 +83,6 @@ public class RunTaskBean {
     public RunTaskBean() {
         String taskToRun = UIBeanHelper.getRequest().getParameter("lsid");
         splashPage = UIBeanHelper.getRequest().getParameter("splash");
-        ;
         if (taskToRun == null || taskToRun.length() == 0) {
             ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper.getManagedBean("#{moduleChooserBean}");
             assert chooser != null;
