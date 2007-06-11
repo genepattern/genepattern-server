@@ -29,7 +29,7 @@ public class ModuleHelper {
     }
 
     /**
-     * 
+     *
      */
     public ModuleHelper(boolean allVersions) {
         if (allVersions) {
@@ -90,8 +90,17 @@ public class ModuleHelper {
         return categories;
     }
 
+    /**
+     * Gets all module categories for the modules in this <tt>ModuleHelper</tt>
+     * instance.
+     *
+     * @param selectedLsids
+     *            The module LSIDs that belong to the suite of interest. Used to
+     *            set the selected and selectedVersion properties of
+     *            <tt>Module</tt> instances.
+     * @return The module categories.
+     */
     public List<ModuleCategory> getSelectedTasksByType(String[] selectedLsids) {
-
         List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
         Map<String, List<TaskInfo>> taskMap = new HashMap<String, List<TaskInfo>>();
 
@@ -111,14 +120,10 @@ public class ModuleHelper {
 
         List<String> categoryNames = new ArrayList<String>(taskMap.keySet());
         Collections.sort(categoryNames);
-        ModuleCategory mc;
         for (String categoryName : categoryNames) {
-            TaskInfo[] modules = new TaskInfo[taskMap.get(categoryName).size()];
-            modules = taskMap.get(categoryName).toArray(modules);
-
-            mc = new ModuleCategory(categoryName, modules);
+            TaskInfo[] modules = taskMap.get(categoryName).toArray(new TaskInfo[0]);
+            ModuleCategory mc = new ModuleCategory(categoryName, modules);
             mc.setSelected(Arrays.asList(selectedLsids));
-
             categories.add(mc);
         }
         return categories;
@@ -126,7 +131,7 @@ public class ModuleHelper {
 
     /**
      * Return a list of tasks categorized by suite.
-     * 
+     *
      * @return
      */
     public List<ModuleCategory> getTasksBySuite() {
