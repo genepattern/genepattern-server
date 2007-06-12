@@ -130,53 +130,37 @@ public class ModuleHelper {
     }
 
     /**
-     * Return a list of tasks categorized by suite.
+     * Return a list of module categories grouped by suite.
      *
      * @return
      */
     public List<ModuleCategory> getTasksBySuite() {
-
-        AdminDAO dao = new AdminDAO();
-
-        Map<String, TaskInfo> taskMap = new HashMap<String, TaskInfo>();
-        for (int i = 0; i < tasks.length; i++) {
-            try {
-                LSID lsidObj = new LSID(tasks[i].getLsid());
-                taskMap.put(lsidObj.toStringNoVersion(), tasks[i]);
-            } catch (MalformedURLException e) {
-                log.error("Error parsing lsid: " + tasks[i].getLsid(), e);
-            }
-        }
-
         List<Suite> suites = (new SuiteDAO()).findAll();
         List<ModuleCategory> categories = new ArrayList<ModuleCategory>(suites.size());
         for (Suite suite : suites) {
             List<String> lsids = suite.getModules();
             List<TaskInfo> suiteTasks = new ArrayList<TaskInfo>();
             for (String lsid : lsids) {
-                try {
-                    LSID lsidObj = new LSID(lsid);
-                    TaskInfo ti = taskMap.get(lsidObj.toStringNoVersion());
-                    if (ti != null) {
-                        suiteTasks.add(ti);
-                    }
-                } catch (MalformedURLException e) {
-                    // TODO Auto-generated catch block
-                    log.error("Error parsing lsid: " + lsid, e);
+                TaskInfo ti = new AdminDAO().getTask(lsid, UIBeanHelper.getUserId());
+                if (ti != null) {
+                    suiteTasks.add(ti);
                 }
             }
-            TaskInfo[] taskArray = new TaskInfo[suiteTasks.size()];
-            suiteTasks.toArray(taskArray);
-            categories.add(new ModuleCategory(suite.getName(), taskArray));
-
+            TaskInfo[] taskArray = suiteTasks.toArray(new TaskInfo[0]);
+            categories.add(new ModuleCategory(suite.getName(), taskArray, false));
         }
         return categories;
 
     }
 
     /**
+     * Used when viewing/editing a suite. If modules not in suite, selected
+     * version of <tt>Module</tt> set to latest, otherwise selected version
+     * set to version in suite.
+     *
      * @param suite
-     * @return
+     *            The suite.
+     * @return The modules.
      */
     public List<ModuleCategory> getTasksByTypeForSuite(Suite suite) {
         List<ModuleCategory> categories = new ArrayList<ModuleCategory>();
@@ -185,7 +169,6 @@ public class ModuleHelper {
 
         Map<String, TaskInfo> queriedTasks = (new AdminDAO()).getAllTasksForUserWithLsids(getUserId(), lsids);
         for (Map.Entry entry : queriedTasks.entrySet()) {
-            // TaskInfo ti = (TaskInfo)entry.getValue();
             addTaskInfoToMap(entry, taskMap);
         }
 
