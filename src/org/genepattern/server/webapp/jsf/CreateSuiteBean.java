@@ -68,10 +68,10 @@ public class CreateSuiteBean implements java.io.Serializable {
                     log.error(e);
                     throw e;
                 }
+            } else {
+                // set default author
+                author = UIBeanHelper.getUserId();
             }
-        } else {
-            // set default author
-            author = UIBeanHelper.getUserId();
         }
     }
 
