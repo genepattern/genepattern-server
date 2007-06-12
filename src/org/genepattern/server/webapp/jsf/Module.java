@@ -52,6 +52,11 @@ public class Module implements java.io.Serializable {
         versions.add(new SelectItem(lsid.getVersion(), lsid.getVersion()));
     }
 
+    public String getSelectedLsid() {
+        return selectedVersion == null || selectedVersion.equals("") ? lsid.toString() : lsid.toStringNoVersion() + ":"
+                + selectedVersion;
+    }
+
     public void addVersion(LSID lsid) {
         versions.add(new SelectItem(lsid.getVersion(), lsid.getVersion()));
     }
