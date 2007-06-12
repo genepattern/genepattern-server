@@ -57,16 +57,16 @@
               #{category.name}
           </span>
 
-         <div  id="#{category.identifier}_panel" class="category_panel" categoryId='#{category.identifier}'
+         <div id="#{category.identifier}_panel" class="category_panel" categoryId='#{category.identifier}'
                style="#{category.expanded == true ? 'display:block;' : 'display:none;'}">
-          <t:dataList var="taskInfo" value="#{category.modules}" >
-            <span class="#{taskInfo.name == moduleChooserBean.selectedModule ? 'tasks_on' : (taskInfo.fromBroad == false ? 'task-mine' : '')}">
+          <t:dataList var="module" value="#{category.modules}" >
+            <span class="#{module.name == moduleChooserBean.selectedModule ? 'tasks_on' : (module.fromBroad == false ? 'task-mine' : '')}">
               <nobr>
               <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="15" height="1" />
               <img src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif" width="4" height="4" />
               &#160;
-                <h:commandLink value="#{taskInfo.shortName}" actionListener="#{moduleChooserBean.moduleClicked}" style="white-space: nowrap;">
-                  <f:param name="task" value="#{taskInfo.name}"/>
+                <h:commandLink value="#{module.shortName}" actionListener="#{moduleChooserBean.moduleClicked}" style="white-space: nowrap;">
+                  <f:param name="task" value="#{module.selectedLsid}"/>
                 </h:commandLink>
                 <br></br>
               </nobr>
