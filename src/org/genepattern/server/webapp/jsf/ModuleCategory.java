@@ -31,8 +31,36 @@ public class ModuleCategory implements java.io.Serializable {
     private String name;
 
     public ModuleCategory(String name, TaskInfo[] taskInfos) {
+        this(name, taskInfos, true);
+    }
+
+    public ModuleCategory(String name, TaskInfo[] taskInfos, boolean selectLatestVersion) {
         this.name = name;
-        initialize(taskInfos);
+        HashMap<String, Module> tmp = new HashMap<String, Module>();
+        for (TaskInfo ti : taskInfos) {
+            try {
+                LSID lsid = new LSID(ti.getLsid());
+                Module module = tmp.get(ti.getName());
+                if (module == null) {
+                    module = new Module(ti, lsid);
+                    module.setSelectedVersion(selectLatestVersion ? "" : lsid.getVersion());
+                    tmp.put(ti.getName(), module);
+                } else {
+                    module.addVersion(lsid);
+                }
+            } catch (MalformedURLException e) {
+                log.error("Malformed lsid: " + ti.getLsid(), e);
+            }
+        }
+        modules = new ArrayList<Module>(tmp.values());
+        Collections.sort(modules, new Comparator<Module>() {
+            public int compare(Module o1, Module o2) {
+                String n1 = o1.getName();
+                String n2 = o2.getName();
+                return n1.compareToIgnoreCase(n2);
+            }
+
+        });
     }
 
     public String getIdentifier() {
@@ -105,32 +133,6 @@ public class ModuleCategory implements java.io.Serializable {
 
     public void toggleExpanded(ActionEvent event) {
         expanded = !expanded;
-    }
-
-    private void initialize(TaskInfo[] taskInfos) {
-        HashMap<String, Module> tmp = new HashMap<String, Module>();
-        for (TaskInfo ti : taskInfos) {
-            try {
-                LSID lsid = new LSID(ti.getLsid());
-                Module module = tmp.get(ti.getName());
-                if (module == null) {
-                    tmp.put(ti.getName(), new Module(ti, lsid));
-                } else {
-                    module.addVersion(lsid);
-                }
-            } catch (MalformedURLException e) {
-                log.error("Malformed lsid: " + ti.getLsid(), e);
-            }
-        }
-        modules = new ArrayList<Module>(tmp.values());
-        Collections.sort(modules, new Comparator<Module>() {
-            public int compare(Module o1, Module o2) {
-                String n1 = o1.getName();
-                String n2 = o2.getName();
-                return n1.compareToIgnoreCase(n2);
-            }
-
-        });
     }
 
 }
