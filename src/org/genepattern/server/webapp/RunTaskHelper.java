@@ -4,11 +4,11 @@
  * This software and its documentation are copyright (2003-2006) by the
  * Broad Institute/Massachusetts Institute of Technology. All rights are
  * reserved.
- *  
+ *
  * This software is supplied without any warranty or guaranteed support
  * whatsoever. Neither the Broad Institute nor MIT can be responsible for its
  * use, misuse, or functionality.
- *  
+ *
  *******************************************************************************/
 package org.genepattern.server.webapp;
 
@@ -40,9 +40,9 @@ import org.genepattern.webservice.WebServiceException;
 
 /**
  * Class for parsing request parameters for running tasks
- * 
+ *
  * @author Joshua Gould
- * 
+ *
  */
 public class RunTaskHelper {
     /** map between form field name and filesystem name */
@@ -68,13 +68,13 @@ public class RunTaskHelper {
 
     /**
      * Creates a new RunTaskHelper instance
-     * 
+     *
      * @param username
      *            The user name of the user that is running the task
      * @param request
      *            The HTTP request. The request should have the request or
      *            attribute taskLSID defined.
-     * 
+     *
      */
     public RunTaskHelper(String username, HttpServletRequest request) throws IOException, FileUploadException {
 
@@ -85,7 +85,7 @@ public class RunTaskHelper {
         HashMap<String, FileItem> nameToFileItemMap = new HashMap<String, FileItem>();
 
         // prefix is used to restrict access to input files based on username
-        String prefix = username +  "_";
+        String prefix = username + "_";
         tempDir = File.createTempFile(prefix + "run", null);
         tempDir.delete();
         tempDir.mkdir();
@@ -214,7 +214,7 @@ public class RunTaskHelper {
                 if (value == null) {
                     pinfo.getAttributes().put(ParameterInfo.TYPE, "");
                 }
-                if (value != null) {
+                if (value != null && !value.equals("")) {
                     try {
                         new URL(value);
                         HashMap attrs = pinfo.getAttributes();
@@ -223,8 +223,14 @@ public class RunTaskHelper {
                     } catch (MalformedURLException mfe) {
                         if (visualizer) {
                             File file = new File(value);
-                            value = server + request.getContextPath() + "/getFile.jsp?task=&file="
-                                    + file.getParentFile().getName() + File.separator + file.getName();
+                            File parent = file.getParentFile();
+                            if (parent != null) {
+                                value = server + request.getContextPath() + "/getFile.jsp?task=&file="
+                                        + parent.getName() + File.separator + file.getName();
+                            } else {
+                                value = "";
+                            }
+
                         }
                     }
                 }
@@ -256,7 +262,7 @@ public class RunTaskHelper {
 
     /**
      * Returns the directory where the input files are stored.
-     * 
+     *
      * @return The temp directory.
      */
     public File getTempDirectory() {
