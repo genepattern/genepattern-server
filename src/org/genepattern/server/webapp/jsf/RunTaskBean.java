@@ -351,7 +351,8 @@ public class RunTaskBean {
                                 // put matchInputFile parameter at front of
                                 // array so that it is set to input field first
                                 outputFileParameters.add(0, p);
-                            } else {
+                            } else if (!p.getName().equals(GPConstants.STDERR)
+                                    && !p.getName().equals(GPConstants.STDOUT)) {
                                 outputFileParameters.add(p);
                             }
                         }
