@@ -60,25 +60,8 @@
 	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
 
-      Properties requestParameters = new Properties();
+   Properties requestParameters = new Properties();
 	HashMap  requestFiles = new HashMap();
-
-  	if (!request.getMethod().equalsIgnoreCase("post")) {
-%>
-			<html>
-			<head>
-			<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
-			<link href="skin/favicon.ico" rel="shortcut icon">
-			<title>Delete pipeline</title>
-			<jsp:include page="navbarHead.jsp"/>
-			</head>
-			<body>
-			<jsp:include page="navbar.jsp"/>
-		Error: must submit from <a href="pipelineDesigner.jsp">pipelineDesigner.jsp</a>
-<jsp:include page="footer.jsp"></jsp:include>
-<%
-		return;
-	}
 
         DiskFileUpload fub = new DiskFileUpload();
         boolean isEncodedPost = FileUpload.isMultipartContent(request);
@@ -644,11 +627,8 @@ try {
 		// delete the legacy R file for the pipeline, if it exists
 		pipelineName = model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE;
 		String dir = DirectoryManager.getTaskLibDir(pipelineName, lsid, userID);
-
-      out.println(model.getName() + " version " + new org.genepattern.util.LSID(model.getLsid()).getVersion()  + " has been saved.<br><br>");
-
+      	out.println(model.getName() + " version " + new org.genepattern.util.LSID(model.getLsid()).getVersion()  + " has been saved.<br><br>");
 		new File(dir, model.getName() + ".r").delete();
-
 		if (requestParameters.getProperty("cmd").equals(CLONE)) {
 			response.sendRedirect("pipelineDesigner.jsp?" + GPConstants.NAME + "=" + lsid);
 			return;
