@@ -1358,7 +1358,7 @@ public class GenePatternAnalysisTask {
             bw.write("    server:  ");
             String GP_URL = System.getProperty("GenePatternURL");
             bw.write(GP_URL);
-            bw.write("\n# Task: " + jobInfo.getTaskName() + " " + jobInfo.getTaskLSID());
+            bw.write("\n# Module: " + jobInfo.getTaskName() + " " + jobInfo.getTaskLSID());
             bw.write("\n# Parameters: ");
             ParameterInfo pinfos[] = jobInfo.getParameterInfoArray();
             for (int pi = 0; pinfos != null && pi < pinfos.length; pi++) {
