@@ -12,9 +12,11 @@
 
 package org.genepattern.server.webapp;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URLEncoder;
+import java.util.Properties;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -31,25 +33,14 @@ import org.genepattern.util.GPConstants;
 
 /**
  * @author Liefeld
- * 
- * 
+ *
+ *
  */
 public class AuthorizationFilter implements Filter {
 
     private IAuthorizationManager authManager = null;
 
-    public void init(FilterConfig filterConfig) throws ServletException {
-        try {
-
-            String gpprops = filterConfig.getInitParameter("genepattern.properties");
-            System.setProperty("genepattern.properties", gpprops);
-
-            authManager = AuthorizationManagerFactory.getAuthorizationManager();
-
-        } catch (Exception e) {
-            throw new ServletException(e);
-        }
-    }
+    private boolean redirectToFqHostName;
 
     public void destroy() {
         authManager = null;
@@ -88,30 +79,52 @@ public class AuthorizationFilter implements Filter {
         }
     }
 
+    public void init(FilterConfig filterconfig) throws ServletException {
+        try {
+            String dir = filterconfig.getInitParameter("genepattern.properties");
+            System.setProperty("genepattern.properties", dir);
+
+            File propFile = new File(dir, "genepattern.properties");
+            File customPropFile = new File(dir, "custom.properties");
+            Properties props = new Properties();
+
+            if (propFile.exists()) {
+                AuthenticationFilter.loadProperties(props, propFile);
+            }
+
+            if (customPropFile.exists()) {
+                AuthenticationFilter.loadProperties(props, customPropFile);
+            }
+
+            authManager = AuthorizationManagerFactory.getAuthorizationManager();
+            redirectToFqHostName = Boolean.valueOf(props.getProperty("redirect.to.fq.host", "true"));
+
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
+    }
+
     public void setNotPermittedPageRedirect(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-
         if (response == null) {
             return;
         }
 
-        // redirect to the fully-qualified host name to make sure that the
-        // cookie that we are allowed to write is useful
-
-        String fqHostName = System.getProperty("fqHostName");
-        if (fqHostName == null) {
-            fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
-            if (fqHostName.equals("localhost")) {
-                fqHostName = "127.0.0.1";
+        String fqHostName = request.getServerName();
+        if (redirectToFqHostName) {
+            // redirect to the fully-qualified host name
+            fqHostName = System.getProperty("fqHostName");
+            if (fqHostName == null) {
+                fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
+                if (fqHostName.equals("localhost")) {
+                    fqHostName = "127.0.0.1";
+                }
             }
         }
 
-        String notPermittedUrl = "http://" + fqHostName + ":" + request.getServerPort()
-                + request.getContextPath() + "/pages/notPermitted.jsf?link="
-                + URLEncoder.encode(request.getRequestURI(), GPConstants.UTF8);
-
+        String notPermittedUrl = "http://" + fqHostName + ":" + request.getServerPort() + request.getContextPath()
+                + "/pages/notPermitted.jsf?link=" + URLEncoder.encode(request.getRequestURI(), GPConstants.UTF8);
         response.sendRedirect(notPermittedUrl);
-
     }
 
 }
